@@ -18,6 +18,7 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -94,7 +95,7 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
   [super viewDidLoad];
 
   self.styler.shouldHideSeparators = YES;
-  self.collectionView.backgroundColor = [UIColor clearColor];
+  self.collectionView.backgroundColor = UIColor.clearColor;
 
   // Add an inset at the bottom so the user can see whether it is possible to
   // scroll to see additional accounts.
@@ -265,12 +266,12 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  self.view.backgroundColor = [UIColor whiteColor];
+  self.view.backgroundColor = [UIColor colorNamed:kBackgroundColor];
 
   _titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
   _titleLabel.text =
       l10n_util::GetNSString(IDS_IOS_SIGNED_IN_ACCOUNTS_VIEW_TITLE);
-  _titleLabel.textColor = [[MDCPalette greyPalette] tint900];
+  _titleLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
   _titleLabel.font = [MDCTypography headlineFont];
   _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:_titleLabel];
@@ -286,7 +287,7 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
   _infoLabel.text =
       l10n_util::GetNSString(IDS_IOS_SIGNED_IN_ACCOUNTS_VIEW_INFO);
   _infoLabel.numberOfLines = 0;
-  _infoLabel.textColor = [[MDCPalette greyPalette] tint700];
+  _infoLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
   _infoLabel.font = [MDCTypography body1Font];
   _infoLabel.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:_infoLabel];
@@ -298,12 +299,12 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
   [_primaryButton
       setTitle:l10n_util::GetNSString(IDS_IOS_SIGNED_IN_ACCOUNTS_VIEW_OK_BUTTON)
       forState:UIControlStateNormal];
-  [_primaryButton setBackgroundColor:[[MDCPalette cr_bluePalette] tint500]
+  [_primaryButton setBackgroundColor:[UIColor colorNamed:kBlueColor]
                             forState:UIControlStateNormal];
-  [_primaryButton setTitleColor:[UIColor whiteColor]
+  [_primaryButton setTitleColor:[UIColor colorNamed:kSolidButtonTextColor]
                        forState:UIControlStateNormal];
-  _primaryButton.underlyingColorHint = [UIColor blackColor];
-  _primaryButton.inkColor = [UIColor colorWithWhite:1 alpha:0.2f];
+  _primaryButton.underlyingColorHint = [UIColor colorNamed:kBackgroundColor];
+  _primaryButton.inkColor = [UIColor colorNamed:kMDCInkColor];
   _primaryButton.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:_primaryButton];
 
@@ -315,12 +316,12 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
       setTitle:l10n_util::GetNSString(
                    IDS_IOS_SIGNED_IN_ACCOUNTS_VIEW_SETTINGS_BUTTON)
       forState:UIControlStateNormal];
-  [_secondaryButton setBackgroundColor:[UIColor whiteColor]
+  [_secondaryButton setBackgroundColor:UIColor.clearColor
                               forState:UIControlStateNormal];
-  [_secondaryButton setTitleColor:[[MDCPalette cr_bluePalette] tint500]
+  [_secondaryButton setTitleColor:[UIColor colorNamed:kBlueColor]
                          forState:UIControlStateNormal];
-  _secondaryButton.underlyingColorHint = [UIColor whiteColor];
-  _secondaryButton.inkColor = [UIColor colorWithWhite:0 alpha:0.06f];
+  _secondaryButton.underlyingColorHint = [UIColor colorNamed:kBackgroundColor];
+  _secondaryButton.inkColor = [UIColor colorNamed:kMDCSecondaryInkColor];
   _secondaryButton.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:_secondaryButton];
 

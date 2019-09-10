@@ -9,6 +9,7 @@
 
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/common/web_test/fake_bluetooth_chooser.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom.h"
 
 namespace content {
@@ -89,7 +90,7 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
  private:
   // Creates and stores a FakeBluetoothChooserFactory instance.
   void CreateFakeBluetoothChooserFactory(
-      mojom::FakeBluetoothChooserFactoryRequest request);
+      mojo::PendingReceiver<mojom::FakeBluetoothChooserFactory> receiver);
   // TODO(https://crbug.com/955171): Remove this and use BindClipboardHost
   // directly once it uses service_manager::BinderMap instead of
   // service_manager::BinderRegistry.

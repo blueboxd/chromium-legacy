@@ -166,9 +166,20 @@
 // Returns matcher for the "Payment Methods" button in the settings menu.
 + (id<GREYMatcher>)paymentMethodsButton;
 
+// Returns matcher for the "Add Credit Card" view in the Settings menu.
++ (id<GREYMatcher>)addCreditCardView;
+
 // Returns matcher for the "Add Payment Method" button in the Settings Payment
 // Methods view.
 + (id<GREYMatcher>)addPaymentMethodButton;
+
+// Returns matcher for the "Add" credit card button in the Payment
+// Methods add credit card view.
++ (id<GREYMatcher>)addCreditCardButton;
+
+// Returns matcher for the "Cancel" button in the Payment Methods add credit
+// card view.
++ (id<GREYMatcher>)addCreditCardCancelButton;
 
 // Returns matcher for the tools menu table view.
 + (id<GREYMatcher>)toolsMenuView;

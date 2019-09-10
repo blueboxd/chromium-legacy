@@ -170,6 +170,7 @@ void ProfileMenuView::BuildMenu() {
   }
   BuildIdentity();
   BuildAutofillButtons();
+  BuildSelectableProfiles();
 }
 
 void ProfileMenuView::OnAvatarMenuChanged(
@@ -346,13 +347,15 @@ void ProfileMenuView::OnSignoutButtonClicked() {
                               kUserMenu_SignOutAllAccounts);
 }
 
-void ProfileMenuView::OnOtherProfileButtonClicked(int profile_index) {
+void ProfileMenuView::OnOtherProfileSelected(
+    const base::FilePath& profile_path) {
   RecordClick(ActionableItem::kOtherProfileButton);
   // TODO(crbug.com/995757): Remove user action.
   base::RecordAction(base::UserMetricsAction("ProfileChooser_ProfileClicked"));
-  avatar_menu_->SwitchToProfile(profile_index, /*always_create=*/false,
-                                ProfileMetrics::SWITCH_PROFILE_ICON);
   Hide();
+  profiles::SwitchToProfile(profile_path, /*always_create=*/false,
+                            ProfileManager::CreateCallback(),
+                            ProfileMetrics::SWITCH_PROFILE_ICON);
 }
 
 void ProfileMenuView::OnCookiesClearedOnExitLinkClicked() {
@@ -409,6 +412,22 @@ void ProfileMenuView::BuildAutofillButtons() {
       l10n_util::GetStringUTF16(IDS_PROFILES_ADDRESSES_LINK),
       base::BindRepeating(&ProfileMenuView::OnAddressesButtonClicked,
                           base::Unretained(this)));
+}
+
+void ProfileMenuView::BuildSelectableProfiles() {
+  auto profile_entries = g_browser_process->profile_manager()
+                             ->GetProfileAttributesStorage()
+                             .GetAllProfilesAttributes();
+  for (ProfileAttributesEntry* profile_entry : profile_entries) {
+    // The current profile is excluded.
+    if (profile_entry->GetPath() == browser()->profile()->GetPath())
+      continue;
+
+    AddSelectableProfile(
+        profile_entry->GetAvatarIcon(), profile_entry->GetName(),
+        base::BindRepeating(&ProfileMenuView::OnOtherProfileSelected,
+                            base::Unretained(this), profile_entry->GetPath()));
+  }
 }
 
 void ProfileMenuView::AddProfileMenuView(AvatarMenu* avatar_menu) {
@@ -740,8 +759,8 @@ void ProfileMenuView::AddOptionsView(bool display_lock,
           profiles::SHAPE_CIRCLE);
       views::Button* button = CreateAndAddButton(
           *image.ToImageSkia(), profiles::GetProfileSwitcherTextForItem(item),
-          base::BindRepeating(&ProfileMenuView::OnOtherProfileButtonClicked,
-                              base::Unretained(this), profile_index));
+          base::BindRepeating(&ProfileMenuView::OnOtherProfileSelected,
+                              base::Unretained(this), item.profile_path));
 
       if (!first_profile_button_)
         first_profile_button_ = button;

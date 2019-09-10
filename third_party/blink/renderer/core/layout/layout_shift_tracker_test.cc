@@ -60,23 +60,6 @@ TEST_F(LayoutShiftTrackerTest, SimpleBlockMovement) {
   EXPECT_FLOAT_EQ(60.0, GetLayoutShiftTracker().OverallMaxDistance());
 }
 
-TEST_F(LayoutShiftTrackerTest, GranularitySnapping) {
-  if (RuntimeEnabledFeatures::JankTrackingSweepLineEnabled())
-    return;
-
-  SetBodyInnerHTML(R"HTML(
-    <style>
-      #j { position: relative; width: 304px; height: 104px; }
-    </style>
-    <div id='j'></div>
-  )HTML");
-  GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
-                                                  AtomicString("top: 58px"));
-  UpdateAllLifecyclePhases();
-  // Rect locations and sizes should snap to multiples of 600 / 60 = 10.
-  EXPECT_FLOAT_EQ(0.1, GetLayoutShiftTracker().Score());
-}
-
 TEST_F(LayoutShiftTrackerTest, Transform) {
   SetBodyInnerHTML(R"HTML(
     <style>

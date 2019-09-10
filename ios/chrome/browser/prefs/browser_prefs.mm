@@ -71,6 +71,9 @@ namespace {
 const char kReverseAutologinEnabled[] = "reverse_autologin.enabled";
 const char kLastKnownGoogleURL[] = "browser.last_known_google_url";
 const char kLastPromptedGoogleURL[] = "browser.last_prompted_google_url";
+
+// Deprecated 9/2019
+const char kGoogleServicesUsername[] = "google.services.username";
 }
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
@@ -180,6 +183,7 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(kReverseAutologinEnabled, true);
   registry->RegisterStringPref(kLastKnownGoogleURL, std::string());
   registry->RegisterStringPref(kLastPromptedGoogleURL, std::string());
+  registry->RegisterStringPref(kGoogleServicesUsername, std::string());
 }
 
 // This method should be periodically pruned of year+ old migrations.
@@ -208,4 +212,7 @@ void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
   syncer::ClearObsoleteSyncLongPollIntervalSeconds(prefs);
   prefs->ClearPref(kLastKnownGoogleURL);
   prefs->ClearPref(kLastPromptedGoogleURL);
+
+  // Added 09/2019
+  prefs->ClearPref(kGoogleServicesUsername);
 }

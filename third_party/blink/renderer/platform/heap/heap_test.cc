@@ -690,7 +690,8 @@ class ThreadPersistentHeapTester : public ThreadedTesterBase {
     Persistent<PersistentChain> persistent_chain_;
   };
 
-  class PersistentChain : public GarbageCollectedFinalized<PersistentChain> {
+  class PersistentChain final
+      : public GarbageCollectedFinalized<PersistentChain> {
    public:
     explicit PersistentChain(int count) {
       ref_counted_chain_ = base::AdoptRef(RefCountedChain::Create(count));
@@ -721,7 +722,7 @@ void CheckWithSlack(T expected, T actual, int slack) {
   EXPECT_GE((intptr_t)expected + slack, (intptr_t)actual);
 }
 
-class TraceCounter : public GarbageCollectedFinalized<TraceCounter> {
+class TraceCounter final : public GarbageCollectedFinalized<TraceCounter> {
  public:
   TraceCounter() : trace_count_(0) {}
 
@@ -755,7 +756,7 @@ class ClassWithMember : public GarbageCollected<ClassWithMember> {
   Member<TraceCounter> trace_counter_;
 };
 
-class SimpleFinalizedObject
+class SimpleFinalizedObject final
     : public GarbageCollectedFinalized<SimpleFinalizedObject> {
  public:
   SimpleFinalizedObject() = default;
@@ -887,7 +888,8 @@ class ConstructorAllocation : public GarbageCollected<ConstructorAllocation> {
   Member<IntWrapper> int_wrapper_;
 };
 
-class LargeHeapObject : public GarbageCollectedFinalized<LargeHeapObject> {
+class LargeHeapObject final
+    : public GarbageCollectedFinalized<LargeHeapObject> {
  public:
   LargeHeapObject() { int_wrapper_ = MakeGarbageCollected<IntWrapper>(23); }
   ~LargeHeapObject() { destructor_calls_++; }
@@ -917,7 +919,7 @@ int LargeHeapObject::destructor_calls_ = 0;
 // "keep alive" persistent reference that is set & cleared across
 // ref-counting operations.
 //
-class RefCountedAndGarbageCollected
+class RefCountedAndGarbageCollected final
     : public GarbageCollectedFinalized<RefCountedAndGarbageCollected> {
  public:
   RefCountedAndGarbageCollected() : keep_alive_(PERSISTENT_FROM_HERE) {}
@@ -951,7 +953,7 @@ class RefCountedAndGarbageCollected
 
 int RefCountedAndGarbageCollected::destructor_calls_ = 0;
 
-class RefCountedAndGarbageCollected2
+class RefCountedAndGarbageCollected2 final
     : public HeapTestOtherSuperClass,
       public GarbageCollectedFinalized<RefCountedAndGarbageCollected2> {
  public:
@@ -1027,7 +1029,7 @@ class WithWeakMember : public Bar {
   WeakMember<Bar> weak_bar_;
 };
 
-class Observable : public GarbageCollectedFinalized<Observable> {
+class Observable final : public GarbageCollectedFinalized<Observable> {
   USING_PRE_FINALIZER(Observable, WillFinalize);
 
  public:
@@ -1051,7 +1053,7 @@ class Observable : public GarbageCollectedFinalized<Observable> {
 
 bool Observable::will_finalize_was_called_ = false;
 
-class ObservableWithPreFinalizer
+class ObservableWithPreFinalizer final
     : public GarbageCollectedFinalized<ObservableWithPreFinalizer> {
   USING_PRE_FINALIZER(ObservableWithPreFinalizer, Dispose);
 
@@ -1210,7 +1212,7 @@ Persistent<FinalizationObserverWithHashMap::ObserverMap>*
 
 class SuperClass;
 
-class PointsBack : public GarbageCollectedFinalized<PointsBack> {
+class PointsBack final : public GarbageCollectedFinalized<PointsBack> {
  public:
   PointsBack() : back_pointer_(nullptr) { ++alive_count_; }
   ~PointsBack() { --alive_count_; }
@@ -1258,7 +1260,7 @@ class SuperClass : public GarbageCollectedFinalized<SuperClass> {
 };
 
 int SuperClass::alive_count_ = 0;
-class SubData : public GarbageCollectedFinalized<SubData> {
+class SubData final : public GarbageCollectedFinalized<SubData> {
  public:
   SubData() { ++alive_count_; }
   ~SubData() { --alive_count_; }
@@ -1377,7 +1379,8 @@ WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::VectorObjectNoTrace)
 
 namespace blink {
 
-class OneKiloByteObject : public GarbageCollectedFinalized<OneKiloByteObject> {
+class OneKiloByteObject final
+    : public GarbageCollectedFinalized<OneKiloByteObject> {
  public:
   ~OneKiloByteObject() { destructor_calls_++; }
   char* Data() { return data_; }
@@ -1408,7 +1411,7 @@ class DynamicallySizedObject : public GarbageCollected<DynamicallySizedObject> {
   DynamicallySizedObject() = default;
 };
 
-class FinalizationAllocator
+class FinalizationAllocator final
     : public GarbageCollectedFinalized<FinalizationAllocator> {
  public:
   FinalizationAllocator(Persistent<IntWrapper>* wrapper) : wrapper_(wrapper) {}
@@ -1428,7 +1431,7 @@ class FinalizationAllocator
   Persistent<IntWrapper>* wrapper_;
 };
 
-class PreFinalizerBackingShrinkForbidden
+class PreFinalizerBackingShrinkForbidden final
     : public GarbageCollectedFinalized<PreFinalizerBackingShrinkForbidden> {
   USING_PRE_FINALIZER(PreFinalizerBackingShrinkForbidden, Dispose);
 
@@ -1485,7 +1488,7 @@ TEST_F(HeapTest, PreFinalizerBackingShrinkForbidden) {
   PreciselyCollectGarbage();
 }
 
-class PreFinalizerVectorBackingExpandForbidden
+class PreFinalizerVectorBackingExpandForbidden final
     : public GarbageCollectedFinalized<
           PreFinalizerVectorBackingExpandForbidden> {
   USING_PRE_FINALIZER(PreFinalizerVectorBackingExpandForbidden, Dispose);
@@ -1515,7 +1518,7 @@ TEST(HeapDeathTest, PreFinalizerVectorBackingExpandForbidden) {
   TestSupportingGC::PreciselyCollectGarbage();
 }
 
-class PreFinalizerHashTableBackingExpandForbidden
+class PreFinalizerHashTableBackingExpandForbidden final
     : public GarbageCollectedFinalized<
           PreFinalizerHashTableBackingExpandForbidden> {
   USING_PRE_FINALIZER(PreFinalizerHashTableBackingExpandForbidden, Dispose);
@@ -2369,7 +2372,7 @@ typedef std::pair<Member<IntWrapper>, WeakMember<IntWrapper>> PairStrongWeak;
 typedef std::pair<WeakMember<IntWrapper>, int> PairWeakUnwrapped;
 typedef std::pair<int, WeakMember<IntWrapper>> PairUnwrappedWeak;
 
-class Container : public GarbageCollected<Container> {
+class Container final : public GarbageCollected<Container> {
  public:
   HeapHashMap<Member<IntWrapper>, Member<IntWrapper>> map;
   HeapHashSet<Member<IntWrapper>> set;
@@ -5318,7 +5321,7 @@ static bool AllocateAndReturnBool() {
 }
 
 template <typename T>
-class TraceIfNeededTester
+class TraceIfNeededTester final
     : public GarbageCollectedFinalized<TraceIfNeededTester<T>> {
  public:
   TraceIfNeededTester() = default;
@@ -5492,7 +5495,7 @@ TEST_F(HeapTest, AllocationInSuperConstructorArgument) {
   ThreadState::Current()->CollectAllGarbageForTesting();
 }
 
-class NonNodeAllocatingNodeInDestructor
+class NonNodeAllocatingNodeInDestructor final
     : public GarbageCollectedFinalized<NonNodeAllocatingNodeInDestructor> {
  public:
   ~NonNodeAllocatingNodeInDestructor() {
@@ -6065,7 +6068,8 @@ TEST_F(HeapTest, PersistentAssignsDeletedValue) {
   PreciselyCollectGarbage();
 }
 
-struct HeapHashMapWrapper : GarbageCollectedFinalized<HeapHashMapWrapper> {
+struct HeapHashMapWrapper final
+    : GarbageCollectedFinalized<HeapHashMapWrapper> {
   HeapHashMapWrapper() {
     for (int i = 0; i < 100; ++i) {
       map_.insert(MakeGarbageCollected<IntWrapper>(i),

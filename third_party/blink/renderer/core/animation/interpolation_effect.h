@@ -52,7 +52,7 @@ class CORE_EXPORT InterpolationEffect
   void Trace(Visitor*);
 
  private:
-  class InterpolationRecord
+  class InterpolationRecord final
       : public GarbageCollectedFinalized<InterpolationRecord> {
    public:
     InterpolationRecord(Interpolation* interpolation,

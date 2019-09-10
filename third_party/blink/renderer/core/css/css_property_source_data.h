@@ -83,7 +83,8 @@ WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::CSSPropertySourceData)
 
 namespace blink {
 
-class CSSRuleSourceData : public GarbageCollectedFinalized<CSSRuleSourceData> {
+class CSSRuleSourceData final
+    : public GarbageCollectedFinalized<CSSRuleSourceData> {
  public:
   explicit CSSRuleSourceData(StyleRule::RuleType type) : type(type) {}
   void Trace(blink::Visitor* visitor) { visitor->Trace(child_rules); }

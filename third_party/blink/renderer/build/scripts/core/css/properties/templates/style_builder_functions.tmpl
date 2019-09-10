@@ -324,6 +324,7 @@ To<Longhand>(resolved_property).{{apply_call}};
     {% endcall %}
 
     {% call(property) apply_inherit(property) %}
+  state.Style()->Clear{{action}}Directives();
   const CounterDirectiveMap* parent_map = state.ParentStyle()->GetCounterDirectives();
   if (!parent_map)
     return;

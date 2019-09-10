@@ -62,7 +62,6 @@
 #include "media/base/test_data_util.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/buildflags.h"
-#include "media/gpu/format_utils.h"
 #include "media/gpu/gpu_video_decode_accelerator_factory.h"
 #include "media/gpu/test/fake_video_decode_accelerator.h"
 #include "media/gpu/test/rendering_helper.h"

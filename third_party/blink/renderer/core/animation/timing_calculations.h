@@ -279,7 +279,6 @@ static inline base::Optional<double> CalculateDirectedProgress(
 static inline base::Optional<double> CalculateTransformedProgress(
     Timing::Phase phase,
     base::Optional<double> directed_progress,
-    double iteration_duration,
     bool is_current_direction_forward,
     scoped_refptr<TimingFunction> timing_function) {
   if (!directed_progress)

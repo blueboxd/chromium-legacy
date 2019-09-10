@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/css/css_image_set_value.h"
 #include "third_party/blink/renderer/core/css/css_image_value.h"
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
+#include "third_party/blink/renderer/core/css/css_light_dark_color_pair.h"
 #include "third_party/blink/renderer/core/css/css_math_expression_node.h"
 #include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
@@ -859,8 +860,8 @@ static bool ParseColorFunction(CSSParserTokenRange& range, RGBA32& result) {
   return true;
 }
 
-static CSSValuePair* ParseLightDarkColor(CSSParserTokenRange& range,
-                                         CSSParserMode mode) {
+static CSSLightDarkColorPair* ParseLightDarkColor(CSSParserTokenRange& range,
+                                                  CSSParserMode mode) {
   if (range.Peek().FunctionId() != CSSValueID::kInternalLightDarkColor)
     return nullptr;
   if (!isValueAllowedInMode(CSSValueID::kInternalLightDarkColor, mode))
@@ -872,8 +873,7 @@ static CSSValuePair* ParseLightDarkColor(CSSParserTokenRange& range,
   CSSValue* dark_color = ConsumeColor(args, kUASheetMode);
   if (!dark_color || !args.AtEnd())
     return nullptr;
-  return MakeGarbageCollected<CSSValuePair>(light_color, dark_color,
-                                            CSSValuePair::kKeepIdenticalValues);
+  return MakeGarbageCollected<CSSLightDarkColorPair>(light_color, dark_color);
 }
 
 CSSValue* ConsumeColor(CSSParserTokenRange& range,

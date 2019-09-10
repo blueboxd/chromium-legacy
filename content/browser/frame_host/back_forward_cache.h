@@ -114,6 +114,14 @@ class CONTENT_EXPORT BackForwardCache {
   // (BackForwardCache enabled), and one without.
   void DisableForTesting(DisableForTestingReason reason);
 
+  // Sets the number of documents that can be stored in the cache. This is meant
+  // for use from within tests only.
+  // If |cache_size_limit_for_testing| is 0 (the default), the normal cache
+  // size limit will be used.
+  void set_cache_size_limit_for_testing(size_t cache_size_limit_for_testing) {
+    cache_size_limit_for_testing_ = cache_size_limit_for_testing;
+  }
+
  private:
   // Contains the set of stored RenderFrameHost.
   // Invariant:
@@ -121,8 +129,13 @@ class CONTENT_EXPORT BackForwardCache {
   // - Once the list is full, the least recently used document is evicted.
   std::list<std::unique_ptr<RenderFrameHostImpl>> render_frame_hosts_;
 
-  // Whether the BackforwardCached has been disabled for testing.
+  // Only used in tests. Whether the BackforwardCached has been disabled for
+  // testing.
   bool is_disabled_for_testing_ = false;
+
+  // Only used in tests. If non-zero, this value will be used as the cache size
+  // limit.
+  size_t cache_size_limit_for_testing_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(BackForwardCache);
 };

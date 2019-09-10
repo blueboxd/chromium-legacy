@@ -3740,6 +3740,7 @@ void Element::focus(const FocusParams& params) {
     return;
 
   if (AuthorShadowRoot() && AuthorShadowRoot()->delegatesFocus()) {
+    UseCounter::Count(GetDocument(), WebFeature::kDelegateFocus);
     Element* focused_element = GetDocument().FocusedElement();
     if (focused_element &&
         IsShadowIncludingInclusiveAncestorOf(*focused_element))

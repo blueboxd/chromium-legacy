@@ -242,6 +242,10 @@ class AccountReconcilor : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, MultiloginLogout);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestForceDiceMigration,
                            TableRowTest);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestActiveDirectory,
+                           TableRowTestMergeSession);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestActiveDirectory,
+                           TableRowTestMultilogin);
 
   void set_timer_for_testing(std::unique_ptr<base::OneShotTimer> timer);
 

@@ -89,7 +89,7 @@ class DirectoryUpdateHandlerProcessUpdateTest : public ::testing::Test {
 
  private:
   // Needed to initialize the directory.
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   TestDirectorySetterUpper dir_maker_;
   scoped_refptr<FakeModelWorker> ui_worker_;
 };
@@ -547,7 +547,7 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
 
  private:
   // Needed to initialize the directory.
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   TestDirectorySetterUpper dir_maker_;
   std::unique_ptr<TestEntryFactory> entry_factory_;
 

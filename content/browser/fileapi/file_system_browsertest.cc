@@ -23,7 +23,6 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "storage/browser/fileapi/file_system_features.h"
 #include "storage/browser/quota/quota_manager.h"
 
 using storage::QuotaManager;
@@ -37,8 +36,6 @@ class FileSystemBrowserTest : public ContentBrowserTest,
  public:
   FileSystemBrowserTest() {
     is_incognito_ = GetParam();
-    feature_list_.InitAndEnableFeature(
-        storage::features::kEnableFilesystemInIncognito);
   }
 
   void SimpleTest(const GURL& test_url) {

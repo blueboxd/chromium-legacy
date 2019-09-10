@@ -366,8 +366,8 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
   }
 
   // Range info.
-  AXRangeInfoData* range_info = node_ptr_->range_info.get();
-  if (range_info) {
+  if (node_ptr_->range_info) {
+    AXRangeInfoData* range_info = node_ptr_->range_info.get();
     out_data->AddFloatAttribute(ax::mojom::FloatAttribute::kValueForRange,
                                 range_info->current);
     out_data->AddFloatAttribute(ax::mojom::FloatAttribute::kMinValueForRange,

@@ -1930,7 +1930,7 @@ TEST_F(IncrementalMarkingTest, HeapCompactWithStaleSlotInNestedContainer) {
   driver.FinishGC();
 }
 
-class Destructed : public GarbageCollectedFinalized<Destructed> {
+class Destructed final : public GarbageCollectedFinalized<Destructed> {
  public:
   ~Destructed() { n_destructed++; }
 
@@ -1941,7 +1941,7 @@ class Destructed : public GarbageCollectedFinalized<Destructed> {
 
 size_t Destructed::n_destructed = 0;
 
-class Wrapper : public GarbageCollectedFinalized<Wrapper> {
+class Wrapper final : public GarbageCollectedFinalized<Wrapper> {
  public:
   using HashType = HeapLinkedHashSet<Member<Destructed>>;
 

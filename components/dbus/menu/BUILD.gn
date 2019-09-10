@@ -10,12 +10,6 @@ component("menu") {
     "menu.h",
     "menu_property_list.cc",
     "menu_property_list.h",
-    "properties_interface.cc",
-    "properties_interface.h",
-    "success_barrier_callback.cc",
-    "success_barrier_callback.h",
-    "types.cc",
-    "types.h",
   ]
   defines = [ "IS_DBUS_IMPL" ]
   deps = [
@@ -23,6 +17,7 @@ component("menu") {
     "//base:i18n",
   ]
   public_deps = [
+    "//components/dbus/properties",
     "//dbus",
     "//skia",
     "//ui/base",
@@ -37,8 +32,6 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "menu_property_list_unittest.cc",
-    "success_barrier_callback_unittest.cc",
-    "types_unittest.cc",
   ]
   deps = [
     ":menu",

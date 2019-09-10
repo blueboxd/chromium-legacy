@@ -12,7 +12,8 @@
 #import "content/app_shim_remote_cocoa/render_widget_host_view_cocoa.h"
 #include "content/common/render_widget_host_ns_view.mojom.h"
 #include "content/public/common/widget_type.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "ui/accelerated_widget_mac/display_ca_layer_tree.h"
 #include "ui/display/display_observer.h"
 
@@ -28,9 +29,10 @@ class RenderWidgetHostNSViewBridge : public mojom::RenderWidgetHostNSView,
                                RenderWidgetHostNSViewHostHelper* client_helper);
   ~RenderWidgetHostNSViewBridge() override;
 
-  // Bind to a remote request for a mojo interface.
-  void BindRequest(
-      mojom::RenderWidgetHostNSViewAssociatedRequest bridge_request);
+  // Bind to a remote receiver for a mojo interface.
+  void BindReceiver(
+      mojo::PendingAssociatedReceiver<mojom::RenderWidgetHostNSView>
+          bridge_receiver);
 
   // TODO(ccameron): RenderWidgetHostViewMac and other functions currently use
   // this method to communicate directly with RenderWidgetHostViewCocoa. The
@@ -91,8 +93,8 @@ class RenderWidgetHostNSViewBridge : public mojom::RenderWidgetHostNSView,
   // Cached copy of the tooltip text, to avoid redundant calls.
   base::string16 tooltip_text_;
 
-  // The binding for this object (only used when remotely instantiated).
-  mojo::AssociatedBinding<mojom::RenderWidgetHostNSView> binding_;
+  // The receiver for this object (only used when remotely instantiated).
+  mojo::AssociatedReceiver<mojom::RenderWidgetHostNSView> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostNSViewBridge);
 };

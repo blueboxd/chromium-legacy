@@ -9,8 +9,10 @@
 
 #include "content/public/browser/bluetooth_chooser.h"
 #include "content/shell/common/web_test/fake_bluetooth_chooser.mojom.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "url/origin.h"
 
 namespace content {
@@ -36,8 +38,8 @@ class FakeBluetoothChooser : public mojom::FakeBluetoothChooser,
   // is opened, ownership of this instance will shift to the caller of
   // WebContentsDelegate::RunBluetoothChooser.
   FakeBluetoothChooser(
-      mojom::FakeBluetoothChooserRequest request,
-      mojom::FakeBluetoothChooserClientAssociatedPtrInfo client_ptr_info);
+      mojo::PendingReceiver<mojom::FakeBluetoothChooser> receiver,
+      mojo::PendingAssociatedRemote<mojom::FakeBluetoothChooserClient> client);
 
   // Resets the test scan duration to timeout immediately and sends a
   // |CHOOSER_CLOSED| event to the client.
@@ -68,11 +70,11 @@ class FakeBluetoothChooser : public mojom::FakeBluetoothChooser,
   // Stores the callback function that handles chooser events.
   EventHandler event_handler_;
 
-  mojo::Binding<mojom::FakeBluetoothChooser> binding_;
+  mojo::Receiver<mojom::FakeBluetoothChooser> receiver_;
 
   // Stores the associated pointer to the client that will be receiving events
   // from FakeBluetoothChooser.
-  mojom::FakeBluetoothChooserClientAssociatedPtr client_ptr_;
+  mojo::AssociatedRemote<mojom::FakeBluetoothChooserClient> client_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeBluetoothChooser);
 };

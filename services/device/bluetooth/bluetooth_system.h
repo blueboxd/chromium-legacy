@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/dbus/bluetooth_adapter_client.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/device/public/mojom/bluetooth_system.mojom.h"
 
 namespace bluez {
@@ -24,7 +25,7 @@ namespace device {
 class BluetoothSystem : public mojom::BluetoothSystem,
                         public bluez::BluetoothAdapterClient::Observer {
  public:
-  static void Create(mojom::BluetoothSystemRequest request,
+  static void Create(mojo::PendingReceiver<mojom::BluetoothSystem> receiver,
                      mojom::BluetoothSystemClientPtr client);
 
   explicit BluetoothSystem(mojom::BluetoothSystemClientPtr client);

@@ -720,6 +720,11 @@ bool RendererBlinkPlatformImpl::IsWebRtcHWDecodingEnabled() {
       switches::kDisableWebRtcHWDecoding);
 }
 
+bool RendererBlinkPlatformImpl::AllowsLoopbackInPeerConnection() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAllowLoopbackInPeerConnection);
+}
+
 blink::WebVideoCaptureImplManager*
 RendererBlinkPlatformImpl::GetVideoCaptureImplManager() {
   RenderThreadImpl* thread = RenderThreadImpl::current();

@@ -14,6 +14,8 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "ui/base/material_design/material_design_controller_observer.h"
 #include "ui/events/event.h"
@@ -25,14 +27,15 @@ class AvatarToolbarButton : public ToolbarButton,
                             public BrowserListObserver,
                             public ProfileAttributesStorage::Observer,
                             public signin::IdentityManager::Observer,
-                            public ui::MaterialDesignControllerObserver {
+                            public ui::MaterialDesignControllerObserver,
+                            public autofill::PersonalDataManagerObserver {
  public:
   explicit AvatarToolbarButton(Browser* browser);
   ~AvatarToolbarButton() override;
 
   void UpdateIcon();
   void UpdateText();
-  void SetSuppressAvatarButtonState(bool suppress_avatar_button_state);
+  void SetAutofillIconVisible(bool autofill_icon_visible);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AvatarToolbarButtonTest,
@@ -43,6 +46,7 @@ class AvatarToolbarButton : public ToolbarButton,
     kIncognitoProfile,
     kGuestSession,
     kGenericProfile,
+    kHighlightAnimation,
     kAnimatedSignIn,
     kSyncPaused,
     kSyncError,
@@ -84,6 +88,9 @@ class AvatarToolbarButton : public ToolbarButton,
   // ui::MaterialDesignControllerObserver:
   void OnTouchUiChanged() override;
 
+  // autofill::PersonalDataManagerObserver:
+  void OnCreditCardSaved() override;
+
   void ExpandToShowEmail();
   void ResetUserEmail();
 
@@ -98,12 +105,22 @@ class AvatarToolbarButton : public ToolbarButton,
   // Sets |user_email_| and initiates showing the email (if non-empty).
   void SetUserEmail(const std::string& user_email);
 
+  void ShowHighlightAnimation();
+  void HideHighlightAnimation();
+
   Browser* const browser_;
   Profile* const profile_;
 
-  // Indicates if the avatar icon should show text and update highlight color
-  // when sync state is not normal.
-  bool suppress_avatar_button_state_ = false;
+  autofill::PersonalDataManager* personal_data_manager_;
+
+  // Whether the avatar highlight animation is visible. If true, hide avatar
+  // button sync paused/error state and update highlight color.
+  bool highlight_animation_visible_ = false;
+
+  // Whether any autofill icon is visible in |this|'s parent container. Set by
+  // |ToolbarPageActionIconContainerView|. If true, hide avatar button sync
+  // paused/error state.
+  bool autofill_icon_visible_ = false;
 
   // The user email that we're currently showing in an animation or empty if no
   // animation is in progress.

@@ -102,7 +102,7 @@ class OobeConfigurationClientTest : public testing::Test {
   // The client to be tested.
   std::unique_ptr<OobeConfigurationClient> client_;
   // A message loop to emulate asynchronous behavior.
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   // The mock bus.
   scoped_refptr<dbus::MockBus> mock_bus_;
   // The mock object proxy.

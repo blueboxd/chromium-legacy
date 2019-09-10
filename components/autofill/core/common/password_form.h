@@ -338,6 +338,10 @@ struct PasswordForm {
   // not set.
   bool IsSingleUsername() const;
 
+  // Returns whether this form is stored in the account-scoped store, i.e.
+  // whether |from_store == Store::kAccountStore|.
+  bool IsUsingAccountStore() const;
+
   // Equality operators for testing.
   bool operator==(const PasswordForm& form) const;
   bool operator!=(const PasswordForm& form) const;

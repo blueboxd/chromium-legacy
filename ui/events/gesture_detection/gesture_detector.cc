@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+#include "base/numerics/ranges.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "ui/events/gesture_detection/gesture_listeners.h"
@@ -446,7 +447,7 @@ void GestureDetector::Init(const Config& config) {
   DCHECK_GT(config.maximum_swipe_deviation_angle, 0);
   DCHECK_LE(config.maximum_swipe_deviation_angle, 45);
   const float maximum_swipe_deviation_angle =
-      std::min(45.f, std::max(0.001f, config.maximum_swipe_deviation_angle));
+      base::ClampToRange(config.maximum_swipe_deviation_angle, 0.001f, 45.0f);
   min_swipe_direction_component_ratio_ =
       1.f / tan(gfx::DegToRad(maximum_swipe_deviation_angle));
 

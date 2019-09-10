@@ -1334,20 +1334,6 @@ TEST_F(IdentityManagerTest, GetAccountsCookieMutator) {
   EXPECT_TRUE(mutator);
 }
 
-#if defined(OS_IOS)
-TEST_F(IdentityManagerTest, ForceTriggerOnCookieChange) {
-  base::RunLoop run_loop;
-  identity_manager_observer()->SetOnAccountsInCookieUpdatedCallback(
-      run_loop.QuitClosure());
-
-  SetListAccountsResponseNoAccounts(test_url_loader_factory());
-  // Forces the processing of OnCookieChange and it calls
-  // OnGaiaAccountsInCookieUpdated.
-  identity_manager()->ForceTriggerOnCookieChange();
-  run_loop.Run();
-}
-#endif
-
 #if defined(OS_CHROMEOS)
 // On ChromeOS, AccountTrackerService first receives the normalized email
 // address from GAIA and then later has it updated with the user's

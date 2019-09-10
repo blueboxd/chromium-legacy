@@ -311,6 +311,11 @@ void CreditCardSaveManager::OnDidUploadCard(
     // removed.
     GetCreditCardSaveStrikeDatabase()->ClearStrikes(
         base::UTF16ToUTF8(upload_request_.card.LastFourDigits()));
+
+    // After a card is successfully saved to server, notifies the
+    // |personal_data_manager_|. PDM uses this information to update the avatar
+    // button UI.
+    personal_data_manager_->OnCreditCardSaved();
   } else if (show_save_prompt_.has_value() && show_save_prompt_.value()) {
     // If the upload failed and the bubble was actually shown (NOT just the
     // icon), count that as a strike against offering upload in the future.

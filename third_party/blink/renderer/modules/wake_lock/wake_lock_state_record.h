@@ -19,7 +19,7 @@ class ScriptPromiseResolver;
 
 // https://w3c.github.io/wake-lock/#concepts-and-state-record
 // Per-document and per-wake lock type internal data.
-class MODULES_EXPORT WakeLockStateRecord
+class MODULES_EXPORT WakeLockStateRecord final
     : public GarbageCollectedFinalized<WakeLockStateRecord> {
  public:
   WakeLockStateRecord(ExecutionContext*, WakeLockType);

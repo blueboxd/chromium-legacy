@@ -54,6 +54,7 @@ class ScriptExecutorDelegate {
   virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;
   virtual WebsiteLoginFetcher* GetWebsiteLoginFetcher() = 0;
   virtual content::WebContents* GetWebContents() = 0;
+  virtual std::string GetAccountEmailAddress() = 0;
   virtual void EnterState(AutofillAssistantState state) = 0;
 
   // Make the area of the screen that correspond to the given elements

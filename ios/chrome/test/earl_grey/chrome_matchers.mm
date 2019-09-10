@@ -209,8 +209,20 @@ id<GREYMatcher> PaymentMethodsButton() {
   return [ChromeMatchersAppInterface paymentMethodsButton];
 }
 
+id<GREYMatcher> AddCreditCardView() {
+  return [ChromeMatchersAppInterface addCreditCardView];
+}
+
 id<GREYMatcher> AddPaymentMethodButton() {
   return [ChromeMatchersAppInterface addPaymentMethodButton];
+}
+
+id<GREYMatcher> AddCreditCardButton() {
+  return [ChromeMatchersAppInterface addCreditCardButton];
+}
+
+id<GREYMatcher> AddCreditCardCancelButton() {
+  return [ChromeMatchersAppInterface addCreditCardCancelButton];
 }
 
 id<GREYMatcher> ToolsMenuView() {

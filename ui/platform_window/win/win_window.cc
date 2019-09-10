@@ -20,7 +20,8 @@ namespace {
 
 bool use_popup_as_root_window_for_test = false;
 
-gfx::Rect GetWindowBoundsForClientBounds(DWORD style, DWORD ex_style,
+gfx::Rect GetWindowBoundsForClientBounds(DWORD style,
+                                         DWORD ex_style,
                                          const gfx::Rect& bounds) {
   RECT wr;
   wr.left = bounds.x();
@@ -31,8 +32,8 @@ gfx::Rect GetWindowBoundsForClientBounds(DWORD style, DWORD ex_style,
 
   // Make sure to keep the window onscreen, as AdjustWindowRectEx() may have
   // moved part of it offscreen.
-  gfx::Rect window_bounds(wr.left, wr.top,
-                          wr.right - wr.left, wr.bottom - wr.top);
+  gfx::Rect window_bounds(wr.left, wr.top, wr.right - wr.left,
+                          wr.bottom - wr.top);
   window_bounds.set_x(std::max(0, window_bounds.x()));
   window_bounds.set_y(std::max(0, window_bounds.y()));
   return window_bounds;
@@ -54,16 +55,15 @@ WinWindow::WinWindow(PlatformWindowDelegate* delegate, const gfx::Rect& bounds)
   SetWindowText(hwnd(), L"WinWindow");
 }
 
-WinWindow::~WinWindow() {
-}
+WinWindow::~WinWindow() {}
 
 void WinWindow::Destroy() {
   if (IsWindow(hwnd()))
     DestroyWindow(hwnd());
 }
 
-void WinWindow::Show() {
-  ShowWindow(hwnd(), SW_SHOWNORMAL);
+void WinWindow::Show(bool inactive) {
+  ShowWindow(hwnd(), inactive ? SW_SHOWNOACTIVATE : SW_SHOWNORMAL);
 }
 
 void WinWindow::Hide() {
@@ -78,8 +78,7 @@ void WinWindow::PrepareForShutdown() {}
 
 void WinWindow::SetBounds(const gfx::Rect& bounds) {
   gfx::Rect window_bounds = GetWindowBoundsForClientBounds(
-      GetWindowLong(hwnd(), GWL_STYLE),
-      GetWindowLong(hwnd(), GWL_EXSTYLE),
+      GetWindowLong(hwnd(), GWL_STYLE), GetWindowLong(hwnd(), GWL_EXSTYLE),
       bounds);
   unsigned int flags = SWP_NOREPOSITION;
   if (!::IsWindowVisible(hwnd()))
@@ -142,8 +141,7 @@ void WinWindow::MoveCursorTo(const gfx::Point& location) {
   ::SetCursorPos(location.x(), location.y());
 }
 
-void WinWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {
-}
+void WinWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {}
 
 void WinWindow::SetRestoredBoundsInPixels(const gfx::Rect& bounds) {}
 
@@ -151,10 +149,22 @@ gfx::Rect WinWindow::GetRestoredBoundsInPixels() const {
   return gfx::Rect();
 }
 
+void WinWindow::SetZOrderLevel(ZOrderLevel order) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+ZOrderLevel WinWindow::GetZOrderLevel() const {
+  NOTIMPLEMENTED_LOG_ONCE();
+  return ZOrderLevel::kNormal;
+}
+
 LRESULT WinWindow::OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param) {
-  MSG msg = { hwnd(), message, w_param, l_param,
-              static_cast<DWORD>(GetMessageTime()),
-              { CR_GET_X_LPARAM(l_param), CR_GET_Y_LPARAM(l_param) } };
+  MSG msg = {hwnd(),
+             message,
+             w_param,
+             l_param,
+             static_cast<DWORD>(GetMessageTime()),
+             {CR_GET_X_LPARAM(l_param), CR_GET_Y_LPARAM(l_param)}};
   std::unique_ptr<Event> event = EventFromNative(msg);
   if (IsMouseEventFromTouch(message))
     event->set_flags(event->flags() | EF_FROM_TOUCH);
@@ -172,7 +182,7 @@ LRESULT WinWindow::OnCaptureChanged(UINT message,
 }
 
 LRESULT WinWindow::OnKeyEvent(UINT message, WPARAM w_param, LPARAM l_param) {
-  MSG msg = { hwnd(), message, w_param, l_param };
+  MSG msg = {hwnd(), message, w_param, l_param};
   KeyEvent event(msg);
   delegate_->DispatchEvent(&event);
   SetMsgHandled(event.handled());
@@ -207,13 +217,11 @@ void WinWindow::OnPaint(HDC) {
 }
 
 void WinWindow::OnWindowPosChanged(WINDOWPOS* window_pos) {
-  if (!(window_pos->flags & SWP_NOSIZE) ||
-      !(window_pos->flags & SWP_NOMOVE)) {
+  if (!(window_pos->flags & SWP_NOSIZE) || !(window_pos->flags & SWP_NOMOVE)) {
     RECT cr;
     GetClientRect(hwnd(), &cr);
-    delegate_->OnBoundsChanged(
-        gfx::Rect(window_pos->x, window_pos->y,
-                  cr.right - cr.left, cr.bottom - cr.top));
+    delegate_->OnBoundsChanged(gfx::Rect(
+        window_pos->x, window_pos->y, cr.right - cr.left, cr.bottom - cr.top));
   }
 }
 

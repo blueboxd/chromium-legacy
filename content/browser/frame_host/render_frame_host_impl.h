@@ -1031,6 +1031,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void GetIdleManager(
       mojo::PendingReceiver<blink::mojom::IdleManager> receiver);
 
+  void GetPresentationService(
+      mojo::PendingReceiver<blink::mojom::PresentationService> receiver);
+
   void GetSpeechSynthesis(
       mojo::PendingReceiver<blink::mojom::SpeechSynthesis> receiver);
 

@@ -11,6 +11,7 @@
 
 #include <algorithm>
 
+#include "base/numerics/ranges.h"
 #include "base/win/scoped_variant.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/win/tsf_input_scope.h"
@@ -461,9 +462,9 @@ STDMETHODIMP TSFTextStore::QueryInsert(LONG acp_test_start,
   const LONG composition_start = static_cast<LONG>(composition_start_);
   const LONG buffer_size = static_cast<LONG>(string_buffer_document_.size());
   *acp_result_start =
-      std::min(std::max(composition_start, acp_test_start), buffer_size);
+      base::ClampToRange(acp_test_start, composition_start, buffer_size);
   *acp_result_end =
-      std::min(std::max(composition_start, acp_test_end), buffer_size);
+      base::ClampToRange(acp_test_end, composition_start, buffer_size);
   return S_OK;
 }
 

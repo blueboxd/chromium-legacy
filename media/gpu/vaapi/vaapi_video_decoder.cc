@@ -11,9 +11,9 @@
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/format_utils.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
-#include "media/gpu/format_utils.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/linux/dmabuf_video_frame_pool.h"
 #include "media/gpu/linux/platform_video_frame_utils.h"
@@ -519,12 +519,12 @@ void VaapiVideoDecoder::ChangeFrameResolutionTask() {
   const gfx::Rect visible_rect = decoder_->GetVisibleRect();
   gfx::Size natural_size = GetNaturalSize(visible_rect, pixel_aspect_ratio_);
   gfx::Size pic_size = decoder_->GetPicSize();
-  const VideoPixelFormat format =
+  const base::Optional<VideoPixelFormat> format =
       GfxBufferFormatToVideoPixelFormat(GetBufferFormat());
-  frame_layout_ = VideoFrameLayout::Create(format, pic_size);
+  CHECK(format);
+  frame_layout_ = VideoFrameLayout::Create(*format, pic_size);
   DCHECK(frame_layout_);
-  frame_pool_->NegotiateFrameFormat(*frame_layout_, visible_rect,
-                                    natural_size);
+  frame_pool_->NegotiateFrameFormat(*frame_layout_, visible_rect, natural_size);
   frame_pool_->SetMaxNumFrames(decoder_->GetRequiredNumOfPictures());
 
   // All pending decode operations will be completed before triggering a

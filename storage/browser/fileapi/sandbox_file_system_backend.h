@@ -74,18 +74,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxFileSystemBackend
   // This method can only be called on the file thread.
   SandboxFileSystemBackendDelegate::OriginEnumerator* CreateOriginEnumerator();
 
-  void set_enable_temporary_file_system_in_incognito(bool enable) {
-    enable_temporary_file_system_in_incognito_ = enable;
-  }
-  bool enable_temporary_file_system_in_incognito() const {
-    return enable_temporary_file_system_in_incognito_;
-  }
-
-
  private:
   SandboxFileSystemBackendDelegate* delegate_;  // Not owned.
-
-  bool enable_temporary_file_system_in_incognito_;
 
   DISALLOW_COPY_AND_ASSIGN(SandboxFileSystemBackend);
 };

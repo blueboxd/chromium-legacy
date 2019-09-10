@@ -297,7 +297,6 @@
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/loader/fetch/null_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_load_observer.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
@@ -326,45 +325,6 @@ static WeakDocumentSet& liveDocumentSet();
 #endif
 
 namespace blink {
-
-namespace {
-
-class ResourceLoadObserverForUnintentionalRequestsMadeByImportedDocument final
-    : public ResourceLoadObserver {
-  void DidStartRequest(const FetchParameters&, ResourceType type) override {
-    UMA_HISTOGRAM_ENUMERATION("HTMLImport.UnexpectedRequest", type);
-  }
-  void WillSendRequest(uint64_t identifier,
-                       const ResourceRequest&,
-                       const ResourceResponse& redirect_response,
-                       ResourceType,
-                       const FetchInitiatorInfo&) override {}
-  void DidChangePriority(uint64_t identifier,
-                         ResourceLoadPriority,
-                         int intra_priority_value) override {}
-  void DidReceiveResponse(uint64_t identifier,
-                          const ResourceRequest& request,
-                          const ResourceResponse& response,
-                          const Resource* resource,
-                          ResponseSource) override {}
-  void DidReceiveData(uint64_t identifier,
-                      base::span<const char> chunk) override {}
-  void DidReceiveTransferSizeUpdate(uint64_t identifier,
-                                    int transfer_size_diff) override {}
-  void DidDownloadToBlob(uint64_t identifier, BlobDataHandle*) override {}
-  void DidFinishLoading(uint64_t identifier,
-                        base::TimeTicks finish_time,
-                        int64_t encoded_data_length,
-                        int64_t decoded_body_length,
-                        bool should_report_corb_blocking) override {}
-  void DidFailLoading(const KURL&,
-                      uint64_t identifier,
-                      const ResourceError&,
-                      int64_t encoded_data_length,
-                      IsInternalRequest) override {}
-};
-
-}  // namespace
 
 using namespace html_names;
 
@@ -1187,11 +1147,8 @@ Document::Document(const DocumentInit& initializer,
         GetTaskRunner(TaskType::kNetworking), nullptr /* loader_factory */));
 
     if (imports_controller_) {
-      // We don't expect the fetcher to be used, so add a ResourceLoadObserver
-      // which counts such unexpected use.
-      fetcher_->SetResourceLoadObserver(
-          MakeGarbageCollected<
-              ResourceLoadObserverForUnintentionalRequestsMadeByImportedDocument>());
+      // We don't expect the fetcher to be used, so count such unexpected use.
+      fetcher_->SetShouldLogRequestAsInvalidInImportedDocument();
     }
   }
   DCHECK(fetcher_);
@@ -4239,7 +4196,9 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient* chrome_client,
   return false;
 }
 
-void Document::DispatchUnloadEvents(DocumentLoadTiming* timing) {
+void Document::DispatchUnloadEvents(
+    SecurityOrigin* committing_origin,
+    base::Optional<Document::UnloadEventTiming>* unload_timing) {
   PluginScriptForbiddenScope forbid_plugin_destructor_scripting;
   if (parser_)
     parser_->StopParsing();
@@ -4297,21 +4256,25 @@ void Document::DispatchUnloadEvents(DocumentLoadTiming* timing) {
 
       load_event_progress_ = kUnloadEventInProgress;
       Event& unload_event = *Event::Create(event_type_names::kUnload);
-      if (timing && timing->UnloadEventStart().is_null() &&
-          timing->UnloadEventEnd().is_null()) {
-        DCHECK(!timing->NavigationStart().is_null());
-        const base::TimeTicks unload_event_start = base::TimeTicks::Now();
-        timing->MarkUnloadEventStart(unload_event_start);
-        frame_->DomWindow()->DispatchEvent(unload_event, this);
-        const base::TimeTicks unload_event_end = base::TimeTicks::Now();
+      const base::TimeTicks unload_event_start = base::TimeTicks::Now();
+      frame_->DomWindow()->DispatchEvent(unload_event, this);
+      const base::TimeTicks unload_event_end = base::TimeTicks::Now();
+
+      if (unload_timing) {
+        // Record unload event timing when navigating cross-document.
         DEFINE_STATIC_LOCAL(
             CustomCountHistogram, unload_histogram,
             ("DocumentEventTiming.UnloadDuration", 0, 10000000, 50));
         unload_histogram.CountMicroseconds(unload_event_end -
                                            unload_event_start);
-        timing->MarkUnloadEventEnd(unload_event_end);
-      } else {
-        frame_->DomWindow()->DispatchEvent(unload_event, frame_->GetDocument());
+
+        // Fill in the unload timing if the new document origin has access to
+        // them.
+        if (committing_origin->CanRequest(Url())) {
+          auto& timing = unload_timing->emplace();
+          timing.unload_event_start = unload_event_start;
+          timing.unload_event_end = unload_event_end;
+        }
       }
     }
     load_event_progress_ = kUnloadEventHandled;

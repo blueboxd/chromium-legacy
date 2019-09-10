@@ -24615,6 +24615,8 @@ Called by update_net_error_codes.py.-->
   <int value="3027" label="PointerLockUnadjustedMovement"/>
   <int value="3028" label="CreateObjectBlob"/>
   <int value="3029" label="QuotaRead"/>
+  <int value="3030" label="DelegateFocus"/>
+  <int value="3031" label="DelegateFocusNotFirstInFlatTree"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -59856,7 +59858,7 @@ Full version information for the fingerprint enum values:
   <int value="18" label="kSafeBrowsingIncidentsSent"/>
   <int value="19" label="kSwReporterPromptVersion"/>
   <int value="20" label="kSwReporterPromptReason"/>
-  <int value="21" label="kGoogleServicesUsername"/>
+  <int value="21" label="kGoogleServicesUsername (Obsolete 9/2019)"/>
   <int value="22" label="kSwReporterPromptSeed"/>
   <int value="23" label="kGoogleServicesAccountId"/>
   <int value="24" label="kGoogleServicesLastAccountId"/>

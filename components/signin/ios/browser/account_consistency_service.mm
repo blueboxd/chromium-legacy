@@ -19,6 +19,7 @@
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/public/base/account_consistency_method.h"
+#include "components/signin/public/identity_manager/accounts_cookie_mutator.h"
 #include "ios/web/common/web_view_creation_util.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/navigation/web_state_policy_decider.h"
@@ -473,7 +474,7 @@ void AccountConsistencyService::OnBrowsingDataRemoved() {
   // APISID cookie has been removed, notify the GCMS.
   // TODO(https://crbug.com/930582) : Remove the need to expose this method
   // or move it to the network::CookieManager.
-  identity_manager_->ForceTriggerOnCookieChange();
+  identity_manager_->GetAccountsCookieMutator()->ForceTriggerOnCookieChange();
 }
 
 void AccountConsistencyService::OnPrimaryAccountSet(

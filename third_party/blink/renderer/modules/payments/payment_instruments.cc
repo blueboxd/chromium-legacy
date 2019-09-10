@@ -97,7 +97,7 @@ ScriptPromise RejectNotAllowedToUsePaymentFeatures(ScriptState* script_state) {
 // referenced by |PaymentInstrument| will not be traced through the callback and
 // can be prematurely destroyed.
 // TODO(keishi): Remove this conversion if IDLDictionaryBase situation changes.
-class PaymentInstrumentParameter
+class PaymentInstrumentParameter final
     : public GarbageCollectedFinalized<PaymentInstrumentParameter> {
  public:
   explicit PaymentInstrumentParameter(const PaymentInstrument* instrument)

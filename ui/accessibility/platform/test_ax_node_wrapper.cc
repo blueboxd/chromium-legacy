@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <utility>
 
+#include "base/numerics/ranges.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_action_data.h"
@@ -487,9 +488,9 @@ bool TestAXNodeWrapper::AccessibilityPerformAction(
       int scroll_y_max =
           GetData().GetIntAttribute(ax::mojom::IntAttribute::kScrollYMax);
       int scroll_x =
-          std::max(scroll_x_min, std::min(data.target_point.x(), scroll_x_max));
+          base::ClampToRange(data.target_point.x(), scroll_x_min, scroll_x_max);
       int scroll_y =
-          std::max(scroll_y_min, std::min(data.target_point.y(), scroll_y_max));
+          base::ClampToRange(data.target_point.y(), scroll_y_min, scroll_y_max);
 
       ReplaceIntAttribute(node_->id(), ax::mojom::IntAttribute::kScrollX,
                           scroll_x);

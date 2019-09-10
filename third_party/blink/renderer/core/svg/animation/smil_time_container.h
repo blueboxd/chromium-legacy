@@ -43,7 +43,8 @@ class SMILTime;
 class SVGElement;
 class SVGSVGElement;
 
-class SMILTimeContainer : public GarbageCollectedFinalized<SMILTimeContainer> {
+class SMILTimeContainer final
+    : public GarbageCollectedFinalized<SMILTimeContainer> {
  public:
   // Sorted list
   using AnimationId = std::pair<WeakMember<SVGElement>, QualifiedName>;

@@ -441,8 +441,9 @@ TEST_F(AccountConsistencyServiceTest, DomainsClearedOnBrowsingDataRemoved) {
   base::RunLoop run_loop;
   identity_test_env_->identity_manager_observer()
       ->SetOnAccountsInCookieUpdatedCallback(run_loop.QuitClosure());
-  // OnBrowsingDataRemoved triggers IdentityManager::ForceTriggerOnCookieChange
-  // and finally IdentityManager::Observer::OnAccountsInCookieUpdated is called.
+  // OnBrowsingDataRemoved triggers
+  // AccountsCookieMutator::ForceTriggerOnCookieChange and finally
+  // IdentityManager::Observer::OnAccountsInCookieUpdated is called.
   account_consistency_service_->OnBrowsingDataRemoved();
   run_loop.Run();
 
@@ -468,8 +469,9 @@ TEST_F(AccountConsistencyServiceTest, DomainsClearedOnBrowsingDataRemoved2) {
   base::RunLoop run_loop;
   identity_test_env_->identity_manager_observer()
       ->SetOnAccountsInCookieUpdatedCallback(run_loop.QuitClosure());
-  // OnBrowsingDataRemoved triggers IdentityManager::ForceTriggerOnCookieChange
-  // and finally IdentityManager::Observer::OnAccountsInCookieUpdated is called.
+  // OnBrowsingDataRemoved triggers
+  // AccountsCookieMutator::ForceTriggerOnCookieChange and finally
+  // IdentityManager::Observer::OnAccountsInCookieUpdated is called.
   account_consistency_service_->OnBrowsingDataRemoved();
   run_loop.Run();
   EXPECT_TRUE(remove_cookie_callback_called_);

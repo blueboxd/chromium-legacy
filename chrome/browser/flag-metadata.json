@@ -1208,11 +1208,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "enable-filesystem-in-incognito",
-    "owners": [ "rhalavati" ],
-    "expiry_milestone": 78
-  },
-  {
     "name": "enable-filtering-scroll-events",
     "owners": [ "axantoine", "eirage", "nzolghadr", "input-dev" ],
     "expiry_milestone": 80

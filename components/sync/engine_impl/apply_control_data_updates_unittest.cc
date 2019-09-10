@@ -64,7 +64,7 @@ class ApplyControlDataUpdatesTest : public ::testing::Test {
 
  private:
   // Needed for directory init.
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   TestDirectorySetterUpper dir_maker_;
 
   DISALLOW_COPY_AND_ASSIGN(ApplyControlDataUpdatesTest);

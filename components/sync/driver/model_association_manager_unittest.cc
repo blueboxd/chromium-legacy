@@ -54,8 +54,8 @@ class SyncModelAssociationManagerTest : public testing::Test {
   SyncModelAssociationManagerTest() {}
 
  protected:
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::UI};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::UI};
   MockModelAssociationManagerDelegate delegate_;
   DataTypeController::TypeMap controllers_;
 };

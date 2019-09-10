@@ -1941,9 +1941,8 @@ void RasterDecoderImpl::DoCopySubTextureINTERNALGL(
                              gr_context());
 
   gles2::Texture::ImageState image_state;
-  gl::GLImage* image =
-      source_texture->GetLevelImage(source_target, 0, &image_state);
-  if (image) {
+  if (gl::GLImage* image =
+          source_texture->GetLevelImage(source_target, 0, &image_state)) {
     base::Optional<ScopedPixelUnpackState> pixel_unpack_state;
     if (image->GetType() == gl::GLImage::Type::MEMORY &&
         shared_context_state_->need_context_state_reset()) {

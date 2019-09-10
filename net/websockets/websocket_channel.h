@@ -156,6 +156,7 @@ class NET_EXPORT WebSocketChannel {
 #if defined(OS_ANDROID)
   static const uint64_t kReceiveQuotaThreshold = 1 << 15;
 #else
+  // |2^n - delta| is better than 2^n on Linux. See crrev.com/c/1792208.
   static const uint64_t kReceiveQuotaThreshold = 65500;
 #endif
 

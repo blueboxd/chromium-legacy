@@ -683,6 +683,48 @@ public class AutofillAssistantCollectUserDataUiTest {
         return viewHolder;
     }
 
+    /**
+     * If the default email is set, the most complete profile with that email address should be
+     * default-selected.
+     */
+    @Test
+    @MediumTest
+    public void testDefaultEmail() throws Exception {
+        AssistantCollectUserDataModel model = new AssistantCollectUserDataModel();
+        AssistantCollectUserDataCoordinator coordinator = createCollectUserDataCoordinator(model);
+        AutofillAssistantCollectUserDataTestHelper.MockDelegate delegate =
+                new AutofillAssistantCollectUserDataTestHelper.MockDelegate();
+        AutofillAssistantCollectUserDataTestHelper
+                .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
+                () -> new AutofillAssistantCollectUserDataTestHelper.ViewHolder(coordinator));
+
+        /* Set up fake profiles such that the correct default choice is last. */
+        mHelper.addDummyProfile("Jane Doe", "jane@gmail.com", "98004");
+        mHelper.addDummyProfile("", "joe@gmail.com", "");
+        mHelper.addDummyProfile("Joe Doe", "joe@gmail.com", "98004");
+
+        /* Request all PR sections. */
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            model.set(AssistantCollectUserDataModel.REQUEST_NAME, true);
+            model.set(AssistantCollectUserDataModel.REQUEST_EMAIL, true);
+            model.set(AssistantCollectUserDataModel.DEFAULT_EMAIL, "joe@gmail.com");
+            model.set(AssistantCollectUserDataModel.DELEGATE, delegate);
+            model.set(AssistantCollectUserDataModel.VISIBLE, true);
+        });
+
+        for (int i = 0; i < viewHolder.mContactList.getItemCount(); i++) {
+            if (viewHolder.mContactList.isChecked(viewHolder.mContactList.getItem(i))) {
+                testContact("joe@gmail.com", "Joe Doe\njoe@gmail.com",
+                        viewHolder.mContactSection.getCollapsedView(),
+                        viewHolder.mContactList.getItem(i));
+                break;
+            }
+        }
+
+        assertThat(delegate.mContact.getPayerEmail(), is("joe@gmail.com"));
+        assertThat(delegate.mContact.getPayerName(), is("Joe Doe"));
+    }
+
     private View getPaymentSummaryErrorView(ViewHolder viewHolder) {
         return viewHolder.mPaymentSection.findViewById(R.id.payment_method_summary)
                 .findViewById(R.id.incomplete_error);

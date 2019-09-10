@@ -520,6 +520,10 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   return base::FeatureList::IsEnabled(kSettingsAddPaymentMethod);
 }
 
++ (BOOL)isCreditCardScannerEnabled {
+  return base::FeatureList::IsEnabled(kCreditCardScanner);
+}
+
 #pragma mark - ScopedBlockPopupsPref
 
 + (ContentSetting)popupPrefValue {

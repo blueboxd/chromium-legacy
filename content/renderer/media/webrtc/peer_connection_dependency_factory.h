@@ -14,9 +14,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/webrtc/stun_field_trial.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "ipc/ipc_platform_file.h"
+#include "third_party/blink/public/platform/modules/peerconnection/stun_field_trial.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/p2p/stunprober/stun_prober.h"
 
@@ -33,6 +33,7 @@ class Thread;
 }
 
 namespace blink {
+class IpcNetworkManager;
 class WebLocalFrame;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
@@ -41,7 +42,6 @@ class WebRtcAudioDeviceImpl;
 
 namespace content {
 
-class IpcNetworkManager;
 class IpcPacketSocketFactory;
 class MdnsResponderAdapter;
 class P2PPortAllocator;
@@ -158,7 +158,7 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
 
   // network_manager_ must be deleted on the worker thread. The network manager
   // uses |p2p_socket_dispatcher_|.
-  std::unique_ptr<IpcNetworkManager> network_manager_;
+  std::unique_ptr<blink::IpcNetworkManager> network_manager_;
   std::unique_ptr<IpcPacketSocketFactory> socket_factory_;
 
   scoped_refptr<webrtc::PeerConnectionFactoryInterface> pc_factory_;
@@ -166,7 +166,7 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
   scoped_refptr<P2PSocketDispatcher> p2p_socket_dispatcher_;
   scoped_refptr<blink::WebRtcAudioDeviceImpl> audio_device_;
 
-  std::unique_ptr<StunProberTrial> stun_trial_;
+  std::unique_ptr<blink::StunProberTrial> stun_trial_;
 
   // PeerConnection threads. signaling_thread_ is created from the
   // "current" chrome thread.

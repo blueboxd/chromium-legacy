@@ -12,12 +12,12 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
-#include "content/renderer/p2p/socket_client.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/ip_endpoint.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/p2p_socket_type.h"
 #include "services/network/public/mojom/p2p.mojom.h"
+#include "third_party/blink/public/platform/modules/p2p/socket_client.h"
 
 namespace base {
 class TimeTicks;
@@ -30,7 +30,7 @@ class P2PSocketDispatcher;
 // P2P socket that routes all calls over Mojo.
 //
 // The object runs on the WebRTC worker thread.
-class P2PSocketClientImpl : public P2PSocketClient,
+class P2PSocketClientImpl : public blink::P2PSocketClient,
                             public network::mojom::P2PSocketClient {
  public:
   P2PSocketClientImpl(
@@ -46,7 +46,7 @@ class P2PSocketClientImpl : public P2PSocketClient,
                     uint16_t min_port,
                     uint16_t max_port,
                     const network::P2PHostAndIPEndPoint& remote_address,
-                    P2PSocketClientDelegate* delegate);
+                    blink::P2PSocketClientDelegate* delegate);
 
   // Send the |data| to the |address| using Differentiated Services Code Point
   // |dscp|. Return value is the unique packet_id for this packet.
@@ -63,7 +63,7 @@ class P2PSocketClientImpl : public P2PSocketClient,
 
   int GetSocketID() const override;
 
-  void SetDelegate(P2PSocketClientDelegate* delegate) override;
+  void SetDelegate(blink::P2PSocketClientDelegate* delegate) override;
 
  private:
   enum State {
@@ -100,7 +100,7 @@ class P2PSocketClientImpl : public P2PSocketClient,
   P2PSocketDispatcher* dispatcher_;
   base::ThreadChecker thread_checker_;
   int socket_id_;
-  P2PSocketClientDelegate* delegate_;
+  blink::P2PSocketClientDelegate* delegate_;
   State state_;
   const net::NetworkTrafficAnnotationTag traffic_annotation_;
 

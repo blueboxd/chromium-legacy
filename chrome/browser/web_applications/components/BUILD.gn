@@ -13,6 +13,7 @@ source_set("components") {
     "external_install_options.h",
     "externally_installed_web_app_prefs.cc",
     "externally_installed_web_app_prefs.h",
+    "file_handler_manager.cc",
     "file_handler_manager.h",
     "install_bounce_metric.cc",
     "install_bounce_metric.h",

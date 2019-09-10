@@ -59,9 +59,6 @@ void PrimaryAccountManager::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kReverseAutologinRejectedEmailList);
   registry->RegisterBooleanPref(prefs::kSigninAllowed, true);
   registry->RegisterBooleanPref(prefs::kSignedInWithCredentialProvider, false);
-
-  // Deprecated prefs: will be removed in a future release.
-  registry->RegisterStringPref(prefs::kGoogleServicesUsername, std::string());
 }
 
 // static
@@ -81,62 +78,11 @@ void PrimaryAccountManager::Initialize(PrefService* local_state) {
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kClearTokenService)) {
     client_->GetPrefs()->ClearPref(prefs::kGoogleServicesAccountId);
-    client_->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
     client_->GetPrefs()->ClearPref(prefs::kGoogleServicesUserAccountId);
   }
 
   std::string pref_account_id =
       client_->GetPrefs()->GetString(prefs::kGoogleServicesAccountId);
-
-  // Handle backward compatibility: if kGoogleServicesAccountId is empty, but
-  // kGoogleServicesUsername is not, then this is an old profile that needs to
-  // be updated.  kGoogleServicesUserAccountId should not be empty, and contains
-  // the gaia_id.  Use both properties to prime the account tracker before
-  // proceeding.
-  if (pref_account_id.empty()) {
-    std::string pref_account_username =
-        client_->GetPrefs()->GetString(prefs::kGoogleServicesUsername);
-    if (!pref_account_username.empty()) {
-      // This is an old profile connected to a google account.  Migrate from
-      // kGoogleServicesUsername to kGoogleServicesAccountId.
-      std::string pref_gaia_id =
-          client_->GetPrefs()->GetString(prefs::kGoogleServicesUserAccountId);
-
-      // If kGoogleServicesUserAccountId is empty, then this is either a cros
-      // machine or a really old profile on one of the other platforms.  However
-      // in this case the account tracker should have the gaia_id so fetch it
-      // from there.
-      if (pref_gaia_id.empty()) {
-        CoreAccountInfo info = account_tracker_service_->FindAccountInfoByEmail(
-            pref_account_username);
-        pref_gaia_id = info.gaia;
-      }
-
-      // If |pref_gaia_id| is still empty, this means the profile has been in
-      // an auth error state for some time (since M39).  It could also mean
-      // a profile that has not been used since M33.  Before migration to gaia
-      // id is complete, the returned value will be the normalized email, which
-      // is correct.  After the migration, the returned value will be empty,
-      // which means the user is essentially signed out.
-      // TODO(rogerta): may want to show a toast or something.
-      pref_account_id =
-          account_tracker_service_
-              ->SeedAccountInfo(pref_gaia_id, pref_account_username)
-              .id;
-
-      // Set account id before removing obsolete user name in case crash in the
-      // middle.
-      client_->GetPrefs()->SetString(prefs::kGoogleServicesAccountId,
-                                     pref_account_id);
-
-      // Now remove obsolete preferences.
-      client_->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
-    }
-
-    // TODO(rogerta): once migration to gaia id is complete, remove
-    // kGoogleServicesUserAccountId and change all uses of that pref to
-    // kGoogleServicesAccountId.
-  }
 
   if (!pref_account_id.empty()) {
     if (account_tracker_service_->GetMigrationState() ==

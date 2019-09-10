@@ -116,8 +116,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
   if (!self.languageItem.canOfferTranslate) {
     offerTranslateItem.enabled = NO;
-    offerTranslateItem.textColor =
-        UIColorFromRGB(kSettingsCellsDetailTextColor);
+    offerTranslateItem.textColor = [UIColor colorNamed:kTextSecondaryColor];
   }
   [model addItem:offerTranslateItem
       toSectionWithIdentifier:SectionIdentifierOptions];

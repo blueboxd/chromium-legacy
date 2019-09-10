@@ -24,5 +24,6 @@ source_set("presentation") {
     "//base",
     "//ios/chrome/browser/ui/infobars/banners:public",
     "//ios/chrome/browser/ui/util",
+    "//ios/chrome/common/colors",
   ]
 }

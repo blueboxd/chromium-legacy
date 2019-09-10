@@ -791,6 +791,29 @@
             ]
         }
     ],
+    "AutofillKeyboardAccessory": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_Full",
+                    "enable_features": [
+                        "AutofillKeyboardAccessoryView",
+                        "AutofillManualFallbackAndroid"
+                    ]
+                },
+                {
+                    "name": "Disabled",
+                    "disable_features": [
+                        "AutofillKeyboardAccessoryView",
+                        "AutofillManualFallbackAndroid"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillLocalCardMigrationUsesStrikeSystemV2": [
         {
             "platforms": [
@@ -4162,29 +4185,6 @@
                     "params": {
                         "dismissal_count": "3"
                     }
-                }
-            ]
-        }
-    ],
-    "PasswordsKeyboardAccessory": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutomaticPasswordGeneration",
-                        "PasswordsKeyboardAccessory"
-                    ]
-                },
-                {
-                    "name": "Disabled",
-                    "disable_features": [
-                        "AutomaticPasswordGeneration",
-                        "PasswordsKeyboardAccessory"
-                    ]
                 }
             ]
         }

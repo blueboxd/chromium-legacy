@@ -11,12 +11,7 @@
 #include <numeric>
 #include <vector>
 
-// The first and last 4 values are randomly chosen bytes to be used by test as
-// "magic" values indicating the beginning and the end of the array. This array
-// needs to be an exported symbol to avoid compiler optimization which is why it
-// is not declared as "const".
-unsigned char array[18] = {151, 155, 125, 68, 1,  2,   3,  4,   5,
-                           6,   7,   8,   9,  10, 236, 55, 136, 224};
+#include "libtest_array.h"  // NOLINT(build/include)
 
 extern "C" {
 int GetSum();
@@ -25,8 +20,8 @@ int GetSum();
 int GetSum() {
   // We are using some c++ features here to better simulate a c++ library and
   // cause more code reach to catch potential memory errors.
-  std::vector<int> sum_array(&array[4], &array[4] + 10);
+  std::vector<int> sum_array(std::begin(array), std::end(array));
   int sum = std::accumulate(sum_array.begin(), sum_array.end(), 0);
-  // sum should be equal to 55.
+  // sum should be equal to 1046506.
   return sum;
 }

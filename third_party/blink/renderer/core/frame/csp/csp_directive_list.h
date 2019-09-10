@@ -28,7 +28,7 @@ enum class ResourceType : uint8_t;
 
 typedef HeapVector<Member<SourceListDirective>> SourceListDirectiveVector;
 
-class CORE_EXPORT CSPDirectiveList
+class CORE_EXPORT CSPDirectiveList final
     : public GarbageCollectedFinalized<CSPDirectiveList> {
  public:
   static CSPDirectiveList* Create(ContentSecurityPolicy*,

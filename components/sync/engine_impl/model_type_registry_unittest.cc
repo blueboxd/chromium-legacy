@@ -101,7 +101,7 @@ class ModelTypeRegistryTest : public ::testing::Test {
     return test_user_share_.user_share()->directory.get();
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   TestUserShare test_user_share_;
   CancelationSignal cancelation_signal_;

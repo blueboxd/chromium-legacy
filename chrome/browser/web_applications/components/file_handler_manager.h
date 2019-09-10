@@ -8,6 +8,9 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/scoped_observer.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "components/services/app_service/public/cpp/file_handler_info.h"
 
@@ -15,10 +18,13 @@ class Profile;
 
 namespace web_app {
 
-class FileHandlerManager {
+class FileHandlerManager : public AppRegistrarObserver {
  public:
-  explicit FileHandlerManager(Profile* profile) : profile_(profile) {}
-  virtual ~FileHandlerManager() = default;
+  explicit FileHandlerManager(Profile* profile);
+  ~FileHandlerManager() override;
+
+  // |registrar| is used to observe OnWebAppInstalled/Uninstalled events.
+  void SetSubsystems(AppRegistrar* registrar);
 
   // Gets all file handlers for |app_id|. |nullptr| if the app has no file
   // handlers.
@@ -31,6 +37,14 @@ class FileHandlerManager {
 
  private:
   Profile* const profile_;
+  AppRegistrar* registrar_ = nullptr;
+
+  // AppRegistrarObserver:
+  void OnWebAppInstalled(const AppId& app_id) override;
+  void OnWebAppUninstalled(const AppId& app_id) override;
+  void OnAppRegistrarDestroyed() override;
+
+  ScopedObserver<AppRegistrar, AppRegistrarObserver> registrar_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(FileHandlerManager);
 };

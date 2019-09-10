@@ -158,7 +158,7 @@ class BiodClientTest : public testing::Test {
 
   std::map<std::string, std::unique_ptr<dbus::Response>> pending_method_calls_;
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   // Mock bus and proxy for simulating calls.
   scoped_refptr<dbus::MockBus> bus_;

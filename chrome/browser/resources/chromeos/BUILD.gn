@@ -65,6 +65,7 @@ group("closure_compile") {
     "bluetooth_pairing_dialog:closure_compile",
     "braille_ime:closure_compile",
     "camera/src/js:closure_compile",
+    "crostini_installer:closure_compile",
     "internet_config_dialog:closure_compile",
     "internet_detail_dialog:closure_compile",
     "login:closure_compile",

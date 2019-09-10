@@ -143,7 +143,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void DownloadURL(const ResourceRequest&,
                    DownloadCrossOriginRedirects) override;
   void LoadErrorPage(int reason) override;
-  bool NavigateBackForward(int offset, bool from_script) const override;
+  bool NavigateBackForward(int offset) const override;
   void DidAccessInitialDocument() override;
   void DidDisplayInsecureContent() override;
   void DidContainInsecureFormAction() override;

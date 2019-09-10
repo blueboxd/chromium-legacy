@@ -222,7 +222,8 @@ class AssistantCollectUserDataBinder
             if (availablePaymentMethods == null) availablePaymentMethods = Collections.emptyList();
             view.mPaymentMethodSection.onAvailablePaymentMethodsChanged(availablePaymentMethods);
             return true;
-        } else if (propertyKey == AssistantCollectUserDataModel.AVAILABLE_PROFILES) {
+        } else if (propertyKey == AssistantCollectUserDataModel.AVAILABLE_PROFILES
+                || propertyKey == AssistantCollectUserDataModel.DEFAULT_EMAIL) {
             List<PersonalDataManager.AutofillProfile> autofillProfiles =
                     model.get(AssistantCollectUserDataModel.AVAILABLE_PROFILES);
             if (autofillProfiles == null) {
@@ -232,7 +233,8 @@ class AssistantCollectUserDataBinder
                 view.mContactDetailsSection.onProfilesChanged(autofillProfiles,
                         model.get(AssistantCollectUserDataModel.REQUEST_EMAIL),
                         model.get(AssistantCollectUserDataModel.REQUEST_NAME),
-                        model.get(AssistantCollectUserDataModel.REQUEST_PHONE));
+                        model.get(AssistantCollectUserDataModel.REQUEST_PHONE),
+                        model.get(AssistantCollectUserDataModel.DEFAULT_EMAIL));
             }
             if (model.get(AssistantCollectUserDataModel.REQUEST_PAYMENT)) {
                 view.mPaymentMethodSection.onProfilesChanged(autofillProfiles);

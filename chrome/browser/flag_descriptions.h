@@ -347,9 +347,6 @@ extern const char kEnableDeferAllScriptWithoutOptimizationHintsDescription[];
 extern const char kEnableSaveDataName[];
 extern const char kEnableSaveDataDescription[];
 
-extern const char kEnableFilesystemInIncognitoName[];
-extern const char kEnableFilesystemInIncognitoDescription[];
-
 extern const char kEnableNoScriptPreviewsName[];
 extern const char kEnableNoScriptPreviewsDescription[];
 

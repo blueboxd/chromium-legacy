@@ -368,9 +368,9 @@ void Surface::RemoveSubSurface(Surface* sub_surface) {
   TRACE_EVENT1("exo", "Surface::RemoveSubSurface", "sub_surface",
                sub_surface->AsTracedValue());
 
-  window_->RemoveChild(sub_surface->window());
   if (sub_surface->window()->IsVisible())
     sub_surface->window()->Hide();
+  window_->RemoveChild(sub_surface->window());
 
   DCHECK(ListContainsEntry(pending_sub_surfaces_, sub_surface));
   pending_sub_surfaces_.erase(

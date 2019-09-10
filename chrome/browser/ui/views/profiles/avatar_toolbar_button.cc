@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile.h"
@@ -45,6 +46,9 @@ namespace {
 
 constexpr base::TimeDelta kEmailExpansionDuration =
     base::TimeDelta::FromSeconds(3);
+
+constexpr base::TimeDelta kHighlightAnimationDuration =
+    base::TimeDelta::FromSeconds(2);
 
 ProfileAttributesEntry* GetProfileAttributesEntry(Profile* profile) {
   ProfileAttributesEntry* entry;
@@ -127,9 +131,15 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
   UpdateText();
 
   md_observer_.Add(ui::MaterialDesignController::GetInstance());
+
+  personal_data_manager_ = autofill::PersonalDataManagerFactory::GetForProfile(
+      profile_->GetOriginalProfile());
+  personal_data_manager_->AddObserver(this);
 }
 
-AvatarToolbarButton::~AvatarToolbarButton() {}
+AvatarToolbarButton::~AvatarToolbarButton() {
+  personal_data_manager_->RemoveObserver(this);
+}
 
 void AvatarToolbarButton::UpdateIcon() {
   // If widget isn't set, the button doesn't have access to the theme provider
@@ -178,6 +188,14 @@ void AvatarToolbarButton::UpdateText() {
       }
       break;
     }
+    case State::kHighlightAnimation:
+      // If the highlight animation is visible, hide the avatar sync
+      // paused/error state even if there is no autofill icon visible in the
+      // parent container.
+      color = AdjustHighlightColorForContrast(
+          GetThemeProvider(), gfx::kGoogleBlue300, gfx::kGoogleBlue600,
+          gfx::kGoogleBlue050, gfx::kGoogleBlue900);
+      break;
     case State::kSyncError:
       color = AdjustHighlightColorForContrast(
           GetThemeProvider(), gfx::kGoogleRed300, gfx::kGoogleRed600,
@@ -203,10 +221,9 @@ void AvatarToolbarButton::UpdateText() {
   SetTooltipText(GetAvatarTooltipText());
 }
 
-void AvatarToolbarButton::SetSuppressAvatarButtonState(
-    bool suppress_avatar_button_state) {
+void AvatarToolbarButton::SetAutofillIconVisible(bool autofill_icon_visible) {
   DCHECK_NE(GetState(), State::kIncognitoProfile);
-  suppress_avatar_button_state_ = suppress_avatar_button_state;
+  autofill_icon_visible_ = autofill_icon_visible;
   UpdateText();
 }
 
@@ -302,6 +319,19 @@ void AvatarToolbarButton::OnTouchUiChanged() {
   PreferredSizeChanged();
 }
 
+void AvatarToolbarButton::OnCreditCardSaved() {
+  DCHECK_NE(GetState(), State::kIncognitoProfile);
+  DCHECK_NE(GetState(), State::kGuestSession);
+  DCHECK(!profile_->IsOffTheRecord());
+  ShowHighlightAnimation();
+
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&AvatarToolbarButton::HideHighlightAnimation,
+                     weak_ptr_factory_.GetWeakPtr()),
+      kHighlightAnimationDuration);
+}
+
 void AvatarToolbarButton::ExpandToShowEmail() {
   DCHECK(user_email_.has_value());
   DCHECK(!waiting_for_image_to_show_user_email_);
@@ -342,6 +372,7 @@ base::string16 AvatarToolbarButton::GetAvatarTooltipText() const {
       return l10n_util::GetStringFUTF16(IDS_AVATAR_BUTTON_SYNC_PAUSED_TOOLTIP,
                                         GetProfileName());
     case State::kNormal:
+    case State::kHighlightAnimation:
       return GetProfileName();
   }
   NOTREACHED();
@@ -372,6 +403,7 @@ gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon(
       return gfx::CreateVectorIcon(kUserAccountAvatarIcon, icon_size,
                                    icon_color);
     case State::kAnimatedSignIn:
+    case State::kHighlightAnimation:
     case State::kSyncError:
     case State::kSyncPaused:
     case State::kNormal:
@@ -448,9 +480,12 @@ AvatarToolbarButton::State AvatarToolbarButton::GetState() const {
   if (user_email_.has_value() && !waiting_for_image_to_show_user_email_)
     return State::kAnimatedSignIn;
 
+  if (highlight_animation_visible_)
+    return State::kHighlightAnimation;
+
 #if !defined(OS_CHROMEOS)
   if (identity_manager->HasPrimaryAccount() && profile_->IsSyncAllowed() &&
-      error_controller_.HasAvatarError() && !suppress_avatar_button_state_) {
+      error_controller_.HasAvatarError() && !autofill_icon_visible_) {
     // When DICE is enabled and the error is an auth error, the sync-paused
     // icon is shown.
     int unused;
@@ -483,4 +518,14 @@ void AvatarToolbarButton::SetUserEmail(const std::string& user_email) {
   // displayed by UpdateIcon().
   waiting_for_image_to_show_user_email_ = true;
   UpdateIcon();
+}
+
+void AvatarToolbarButton::ShowHighlightAnimation() {
+  highlight_animation_visible_ = true;
+  UpdateText();
+}
+
+void AvatarToolbarButton::HideHighlightAnimation() {
+  highlight_animation_visible_ = false;
+  UpdateText();
 }

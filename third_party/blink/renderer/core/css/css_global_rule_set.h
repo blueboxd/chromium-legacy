@@ -22,7 +22,8 @@ class RuleSet;
 // possible to the ScopedStyleResolver as possible to avoid full reconstruction
 // of these rulesets on shadow tree changes. See https://crbug.com/401359
 
-class CSSGlobalRuleSet : public GarbageCollectedFinalized<CSSGlobalRuleSet> {
+class CSSGlobalRuleSet final
+    : public GarbageCollectedFinalized<CSSGlobalRuleSet> {
  public:
   CSSGlobalRuleSet() = default;
 

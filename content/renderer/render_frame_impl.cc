@@ -5221,11 +5221,10 @@ void RenderFrameImpl::DidBlockNavigation(
 }
 
 void RenderFrameImpl::NavigateBackForwardSoon(int offset,
-                                              bool has_user_gesture,
-                                              bool from_script) {
+                                              bool has_user_gesture) {
   render_view()->NavigateBackForwardSoon(offset, has_user_gesture);
   Send(new FrameHostMsg_GoToEntryAtOffset(GetRoutingID(), offset,
-                                          has_user_gesture, from_script));
+                                          has_user_gesture));
 }
 
 base::UnguessableToken RenderFrameImpl::GetDevToolsFrameToken() {

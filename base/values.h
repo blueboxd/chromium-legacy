@@ -178,6 +178,18 @@ class BASE_EXPORT Value {
   ListStorage& GetList();
   span<const Value> GetList() const;
 
+  // Appends |value| to the end of the list.
+  // Note: These CHECK that type() is Type::LIST.
+  void Append(bool value);
+  void Append(int value);
+  void Append(double value);
+  void Append(const char* value);
+  void Append(StringPiece value);
+  void Append(std::string&& value);
+  void Append(const char16* value);
+  void Append(StringPiece16 value);
+  void Append(Value&& value);
+
   // |FindKey| looks up |key| in the underlying dictionary. If found, it returns
   // a pointer to the element. Otherwise it returns nullptr.
   // returned. Callers are expected to perform a check against null before using
@@ -803,24 +815,25 @@ class BASE_EXPORT ListValue : public Value {
   // DEPRECATED, use GetList()::erase() instead.
   iterator Erase(iterator iter, std::unique_ptr<Value>* out_value);
 
+  using Value::Append;
   // Appends a Value to the end of the list.
-  // DEPRECATED, use GetList()::push_back() instead.
+  // DEPRECATED, use Value::Append() instead.
   void Append(std::unique_ptr<Value> in_value);
 
   // Convenience forms of Append.
-  // DEPRECATED, use GetList()::emplace_back() instead.
+  // DEPRECATED, use Value::Append() instead.
   void AppendBoolean(bool in_value);
   void AppendInteger(int in_value);
   void AppendDouble(double in_value);
   void AppendString(StringPiece in_value);
   void AppendString(const string16& in_value);
-  // DEPRECATED, use GetList()::emplace_back() in a loop instead.
+  // DEPRECATED, use Value::Append() in a loop instead.
   void AppendStrings(const std::vector<std::string>& in_values);
   void AppendStrings(const std::vector<string16>& in_values);
 
   // Appends a Value if it's not already present. Returns true if successful,
   // or false if the value was already
-  // DEPRECATED, use std::find() with GetList()::push_back() instead.
+  // DEPRECATED, use std::find() with Value::Append() instead.
   bool AppendIfNotPresent(std::unique_ptr<Value> in_value);
 
   // Insert a Value at index.

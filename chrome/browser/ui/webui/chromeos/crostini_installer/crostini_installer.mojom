@@ -1,0 +1,21 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module chromeos.crostini_installer.mojom;
+
+// Lives in the browser process. A renderer uses this to create a page handler
+// for controlling Crostini installation.
+interface PageHandlerFactory {
+  // Create a page handler to control Crostini installation.
+  CreatePageHandler(pending_remote<Page> page,
+                    pending_receiver<PageHandler> handler);
+};
+
+// Lives in the browser process. A renderer use this to control Crostini
+// installation.
+interface PageHandler {};
+
+// Lives in the renderer process. The browser uses this to sends installation
+// updates to the web page in the render.
+interface Page {};

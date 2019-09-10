@@ -790,9 +790,12 @@ void AccountReconcilor::FinishReconcile(
 
   if (first_account.empty()) {
     DCHECK(!delegate_->ShouldAbortReconcileIfPrimaryHasError());
+    auto revoke_option =
+        delegate_->ShouldRevokeTokensIfNoPrimaryAccount()
+            ? AccountReconcilorDelegate::RevokeTokenOption::kRevoke
+            : AccountReconcilorDelegate::RevokeTokenOption::kDoNotRevoke;
     reconcile_is_noop_ = !RevokeAllSecondaryTokens(
-        identity_manager_,
-        AccountReconcilorDelegate::RevokeTokenOption::kRevoke, primary_account,
+        identity_manager_, revoke_option, primary_account,
         delegate_->IsAccountConsistencyEnforced(),
         signin_metrics::SourceForRefreshTokenOperation::
             kAccountReconcilor_Reconcile);

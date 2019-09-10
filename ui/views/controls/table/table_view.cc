@@ -16,6 +16,7 @@
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
+#include "base/numerics/ranges.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -964,7 +965,7 @@ TableView::PaintRegion TableView::GetPaintRegion(
 
   PaintRegion region;
   region.min_row =
-      std::min(GetRowCount() - 1, std::max(0, bounds.y() / row_height_));
+      base::ClampToRange(bounds.y() / row_height_, 0, GetRowCount() - 1);
   region.max_row = bounds.bottom() / row_height_;
   if (bounds.bottom() % row_height_ != 0)
     region.max_row++;

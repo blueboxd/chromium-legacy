@@ -82,6 +82,11 @@ static_library("browser") {
   ]
 
   if (is_chromeos) {
+    sources += [
+      "active_directory_account_reconcilor_delegate.cc",
+      "active_directory_account_reconcilor_delegate.h",
+    ]
+    deps += [ "//chromeos/tpm:tpm" ]
     sources -= [
       "signin_status_metrics_provider.cc",
       "signin_status_metrics_provider_delegate.cc",
@@ -110,7 +115,6 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "account_investigator_unittest.cc",
-    "account_reconcilor_delegate_unittest.cc",
     "account_reconcilor_unittest.cc",
     "dice_account_reconcilor_delegate_unittest.cc",
     "mice_account_reconcilor_delegate_unittest.cc",
@@ -143,6 +147,7 @@ source_set("unit_tests") {
   ]
 
   if (is_chromeos) {
+    deps += [ "//chromeos/tpm:test_support" ]
     sources -= [
       "account_investigator_unittest.cc",
       "signin_status_metrics_provider_unittest.cc",

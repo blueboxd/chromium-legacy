@@ -387,6 +387,9 @@ class PersonalDataManager : public KeyedService,
   // Notifies observers that the waiting should be stopped.
   void NotifyPersonalDataObserver();
 
+  // Called when at least one (can be multiple) card was saved.
+  void OnCreditCardSaved();
+
   void set_client_profile_validator_for_test(
       AutofillProfileValidator* validator) {
     client_profile_validator_ = validator;

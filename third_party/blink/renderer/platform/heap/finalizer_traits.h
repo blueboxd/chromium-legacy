@@ -5,6 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_FINALIZER_TRAITS_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_FINALIZER_TRAITS_H_
 
+#include <type_traits>
+
+#include "base/template_util.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace WTF {
@@ -15,6 +18,19 @@ class ListHashSetNode;
 }  // namespace WTF
 
 namespace blink {
+
+namespace internal {
+
+template <typename T, typename = void>
+struct HasFinalizeGarbageCollectedObject : std::false_type {};
+
+template <typename T>
+struct HasFinalizeGarbageCollectedObject<
+    T,
+    base::void_t<decltype(std::declval<T>().FinalizeGarbageCollectedObject())>>
+    : std::true_type {};
+
+}  // namespace internal
 
 // The FinalizerTraitImpl specifies how to finalize objects. Objects that
 // inherit from GarbageCollectedFinalized are finalized by calling their

@@ -15,7 +15,6 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/fileapi/file_system_context.h"
-#include "storage/browser/fileapi/file_system_features.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
 #include "storage/browser/fileapi/obfuscated_file_util_memory_delegate.h"
 #include "storage/browser/fileapi/plugin_private_file_system_backend.h"
@@ -102,8 +101,7 @@ void FileSystemFileStreamReader::DidCreateSnapshot(
   // Keep the reference (if it's non-null) so that the file won't go away.
   snapshot_ref_ = std::move(file_ref);
 
-  if (file_system_context_->is_incognito() &&
-      base::FeatureList::IsEnabled(features::kEnableFilesystemInIncognito)) {
+  if (file_system_context_->is_incognito()) {
     base::WeakPtr<ObfuscatedFileUtilMemoryDelegate> memory_file_util_delegate;
     if (url_.type() == kFileSystemTypePluginPrivate) {
       auto* backend = static_cast<PluginPrivateFileSystemBackend*>(

@@ -23,10 +23,10 @@
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
+#include "third_party/blink/public/mojom/worker/subresource_loader_updater.mojom.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "url/gurl.h"
@@ -51,7 +51,7 @@ struct NavigationResponseOverrideParameters;
 // service workers, ServiceWorkerFetchContextImpl class is used instead.
 class CONTENT_EXPORT WebWorkerFetchContextImpl
     : public blink::WebWorkerFetchContext,
-      public blink::mojom::ServiceWorkerSubresourceLoaderUpdater,
+      public blink::mojom::SubresourceLoaderUpdater,
       public blink::mojom::ServiceWorkerWorkerClient,
       public blink::mojom::RendererPreferenceWatcher {
  public:
@@ -81,7 +81,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
       std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           fallback_factory_info,
-      mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+      mojo::PendingReceiver<blink::mojom::SubresourceLoaderUpdater>
           pending_subresource_loader_updater);
 
   // Clones this fetch context for a nested worker.
@@ -97,7 +97,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
       std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           fallback_factory_info,
-      mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+      mojo::PendingReceiver<blink::mojom::SubresourceLoaderUpdater>
           pending_subresource_loader_updater,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
@@ -194,7 +194,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
       std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           fallback_factory_info,
-      mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+      mojo::PendingReceiver<blink::mojom::SubresourceLoaderUpdater>
           pending_subresource_loader_updater,
       std::unique_ptr<URLLoaderThrottleProvider> throttle_provider,
       std::unique_ptr<WebSocketHandshakeThrottleProvider>
@@ -214,7 +214,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
       std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           fallback_factory_info,
-      mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+      mojo::PendingReceiver<blink::mojom::SubresourceLoaderUpdater>
           pending_subresource_loader_updater,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
@@ -226,7 +226,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // controlled by a service worker.
   void ResetServiceWorkerURLLoaderFactory();
 
-  // Implements blink::mojom::ServiceWorkerSubresourceLoaderUpdater.
+  // Implements blink::mojom::SubresourceLoaderUpdater.
   void UpdateSubresourceLoaderFactories(
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           subresource_loader_factories) override;
@@ -291,9 +291,9 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // loaders via Host/TrackedChildURLLoaderFactoryBundle. For shared workers,
   // the renderer process detects the crash, and terminates the worker instead
   // of recovery.
-  mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+  mojo::PendingReceiver<blink::mojom::SubresourceLoaderUpdater>
       pending_subresource_loader_updater_;
-  mojo::Receiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+  mojo::Receiver<blink::mojom::SubresourceLoaderUpdater>
       subresource_loader_updater_{this};
 
   // Initialized on the worker thread when InitializeOnWorkerThread() is called.

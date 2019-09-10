@@ -34,6 +34,7 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
+#include "third_party/blink/public/mojom/worker/subresource_loader_updater.mojom.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_error.h"
 #include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_client.h"
 #include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_proxy.h"
@@ -103,7 +104,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
           preference_watcher_receiver,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders,
-      mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+      mojo::PendingReceiver<blink::mojom::SubresourceLoaderUpdater>
           subresource_loader_updater,
       const GURL& script_url_to_skip_throttling,
       scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner);
@@ -223,7 +224,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       pending_service_worker_receiver_;
   mojo::PendingReceiver<blink::mojom::ControllerServiceWorker>
       controller_receiver_;
-  mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+  mojo::PendingReceiver<blink::mojom::SubresourceLoaderUpdater>
       pending_subresource_loader_updater_;
 
   // This is bound on the initiator thread.

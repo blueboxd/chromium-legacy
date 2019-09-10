@@ -132,13 +132,9 @@ class PLATFORM_EXPORT V8PerContextData final {
 
   // For each possible type of wrapper, we keep a boilerplate object.
   // The boilerplate is used to create additional wrappers of the same type.
-  typedef V8GlobalValueMap<const WrapperTypeInfo*, v8::Object, v8::kNotWeak>
-      WrapperBoilerplateMap;
-  WrapperBoilerplateMap wrapper_boilerplates_;
+  V8GlobalValueMap<const WrapperTypeInfo*, v8::Object> wrapper_boilerplates_;
 
-  typedef V8GlobalValueMap<const WrapperTypeInfo*, v8::Function, v8::kNotWeak>
-      ConstructorMap;
-  ConstructorMap constructor_map_;
+  V8GlobalValueMap<const WrapperTypeInfo*, v8::Function> constructor_map_;
 
   std::unique_ptr<gin::ContextHolder> context_holder_;
 

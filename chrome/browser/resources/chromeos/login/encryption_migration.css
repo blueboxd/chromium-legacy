@@ -4,7 +4,8 @@
 
 oobe-dialog {
   height: 640px;
-  max-height: calc(100vh - 56px);  /* Subtracting LoginShelfView's height. */
+  /* Subtracting LoginShelfView's height. */
+  max-height: calc(100vh - var(--shelf-area-height));
   max-width: 100vw;
   min-height: 0 !important;  /* Making <oobe-dialog> shrinkable. */
   min-width: 0 !important;  /* Making <oobe-dialog> shrinkable. */

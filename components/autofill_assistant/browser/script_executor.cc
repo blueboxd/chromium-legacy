@@ -499,6 +499,10 @@ content::WebContents* ScriptExecutor::GetWebContents() {
   return delegate_->GetWebContents();
 }
 
+std::string ScriptExecutor::GetAccountEmailAddress() {
+  return delegate_->GetAccountEmailAddress();
+}
+
 void ScriptExecutor::SetDetails(std::unique_ptr<Details> details) {
   return delegate_->SetDetails(std::move(details));
 }

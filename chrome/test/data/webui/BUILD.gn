@@ -203,6 +203,7 @@ js2gtest("browser_tests_js_mojo_lite_webui") {
 
   if (is_chromeos) {
     sources += [
+      "chromeos/crostini_installer_browsertest.js",
       "chromeos/machine_learning_internals_browsertest.js",
       "multidevice_setup/multidevice_setup_browsertest.js",
     ]

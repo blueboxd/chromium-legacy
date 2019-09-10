@@ -176,6 +176,7 @@ source_set("unit_test") {
     "//base/test:test_support",
     "//gpu:test_support",
     "//gpu/ipc/service",
+    "//media",
     "//media/gpu:common",
     "//mojo/core/embedder",
     "//testing/gmock",

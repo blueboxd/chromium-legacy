@@ -46,7 +46,7 @@ class CSSAnimations;
 using AnimationCountedSet = HeapHashCountedSet<WeakMember<Animation>>;
 using WorkletAnimationSet = HeapHashSet<WeakMember<WorkletAnimationBase>>;
 
-class CORE_EXPORT ElementAnimations
+class CORE_EXPORT ElementAnimations final
     : public GarbageCollectedFinalized<ElementAnimations> {
  public:
   ElementAnimations();

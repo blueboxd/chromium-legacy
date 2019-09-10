@@ -308,7 +308,7 @@ void LocalFrame::DetachImpl(FrameDetachType type) {
   // both when unloading itself and when unloading its descendants.
   IgnoreOpensDuringUnloadCountIncrementer ignore_opens_during_unload(
       GetDocument());
-  loader_.DispatchUnloadEvent();
+  loader_.DispatchUnloadEvent(nullptr, nullptr);
   DetachChildren();
 
   // All done if detaching the subframes brought about a detach of this frame
@@ -376,7 +376,7 @@ void LocalFrame::DetachImpl(FrameDetachType type) {
 }
 
 bool LocalFrame::DetachDocument() {
-  return Loader().DetachDocument();
+  return Loader().DetachDocument(nullptr, nullptr);
 }
 
 void LocalFrame::CheckCompleted() {

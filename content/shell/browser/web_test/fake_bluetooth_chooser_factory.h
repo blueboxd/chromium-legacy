@@ -8,7 +8,8 @@
 #include <memory>
 
 #include "content/shell/common/web_test/fake_bluetooth_chooser.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace content {
 
@@ -16,8 +17,9 @@ class FakeBluetoothChooser;
 
 // Implementation of FakeBluetoothChooserFactory in
 // src/content/shell/common/web_test/fake_bluetooth_chooser.mojom to create
-// FakeBluetoothChoosers with a FakeBluetoothChooserClientAssociatedPtr that
-// they can use to send events to the client.
+// FakeBluetoothChoosers with a
+// mojo::PendingAssociatedRemote<FakeBluetoothChooserClient> that they can use
+// to send events to the client.
 //
 // The implementation details for FakeBluetoothChooser can be found in the Web
 // Bluetooth Test Scanning design document.
@@ -29,29 +31,28 @@ class FakeBluetoothChooserFactory : public mojom::FakeBluetoothChooserFactory {
   ~FakeBluetoothChooserFactory() override;
 
   // WebTestContentBrowserClient will create an instance of this class when a
-  // request is bound. It will maintain ownership of the instance.
+  // receiver is bound. It will maintain ownership of the instance.
   static std::unique_ptr<FakeBluetoothChooserFactory> Create(
-      mojom::FakeBluetoothChooserFactoryRequest request) {
-    return std::unique_ptr<FakeBluetoothChooserFactory>(
-        new FakeBluetoothChooserFactory(std::move(request)));
+      mojo::PendingReceiver<mojom::FakeBluetoothChooserFactory> receiver) {
+    return base::WrapUnique(
+        new FakeBluetoothChooserFactory(std::move(receiver)));
   }
 
   // Creates an instance of FakeBluetoothChooser and stores it in
   // |next_fake_bluetooth_chooser_|. This will DCHECK if
   // |next_fake_bluetooth_chooser_| is not null.
   void CreateFakeBluetoothChooser(
-      mojom::FakeBluetoothChooserRequest request,
-      mojom::FakeBluetoothChooserClientAssociatedPtrInfo client_ptr_info)
-      override;
+      mojo::PendingReceiver<mojom::FakeBluetoothChooser> receiver,
+      mojom::FakeBluetoothChooserClientAssociatedPtrInfo client) override;
 
   // Transfers ownership of |next_fake_bluetooth_chooser_| to the caller.
   std::unique_ptr<FakeBluetoothChooser> GetNextFakeBluetoothChooser();
 
  private:
   explicit FakeBluetoothChooserFactory(
-      mojom::FakeBluetoothChooserFactoryRequest request);
+      mojo::PendingReceiver<mojom::FakeBluetoothChooserFactory> receiver);
 
-  mojo::Binding<mojom::FakeBluetoothChooserFactory> binding_;
+  mojo::Receiver<mojom::FakeBluetoothChooserFactory> receiver_;
 
   std::unique_ptr<FakeBluetoothChooser> next_fake_bluetooth_chooser_;
 };

@@ -48,9 +48,8 @@
 
 namespace blink {
 
-class CORE_EXPORT CSSValuePool
+class CORE_EXPORT CSSValuePool final
     : public GarbageCollectedFinalized<CSSValuePool> {
-
  public:
   using PassKey = util::PassKey<CSSValuePool>;
 

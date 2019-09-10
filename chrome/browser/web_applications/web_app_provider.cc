@@ -190,6 +190,7 @@ void WebAppProvider::ConnectSubsystems() {
   system_web_app_manager_->SetSubsystems(pending_app_manager_.get(),
                                          registrar_.get(), ui_manager_.get());
   web_app_policy_manager_->SetSubsystems(pending_app_manager_.get());
+  file_handler_manager_->SetSubsystems(registrar_.get());
 
   connected_ = true;
 }

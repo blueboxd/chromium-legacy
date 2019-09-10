@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 
 struct CoreAccountId;
@@ -62,6 +63,16 @@ class AccountsCookieMutator {
   // Triggers a ListAccounts fetch. Can be used in circumstances where clients
   // know that the contents of the Gaia cookie might have changed.
   virtual void TriggerCookieJarUpdate() = 0;
+
+#if defined(OS_IOS)
+  // Forces the processing of GaiaCookieManagerService::OnCookieChange. On
+  // iOS, it's necessary to force-trigger the processing of cookie changes
+  // from the client as the normal mechanism for internally observing them
+  // is not wired up.
+  // TODO(https://crbug.com/930582) : Remove the need to expose this method
+  // or move it to the network::CookieManager.
+  virtual void ForceTriggerOnCookieChange() = 0;
+#endif
 
   // Remove all accounts from the Gaia cookie.
   virtual void LogOutAllAccounts(gaia::GaiaSource source) = 0;

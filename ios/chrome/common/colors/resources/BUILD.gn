@@ -30,6 +30,7 @@ group("resources") {
     ":grid_theme_dark_selection_tint_color",
     ":grid_theme_selection_tint_color",
     ":mdc_ink_color",
+    ":mdc_secondary_ink_color",
     ":placeholder_image_tint_color",
     ":red_color",
     ":red_dark_color",
@@ -205,6 +206,12 @@ colorset("red_dark_color") {
 colorset("mdc_ink_color") {
   sources = [
     "mdc_ink_color.colorset/Contents.json",
+  ]
+}
+
+colorset("mdc_secondary_ink_color") {
+  sources = [
+    "mdc_secondary_ink_color.colorset/Contents.json",
   ]
 }
 

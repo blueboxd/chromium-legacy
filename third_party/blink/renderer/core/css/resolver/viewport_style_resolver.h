@@ -44,7 +44,7 @@ class DocumentStyleSheetCollection;
 class MutableCSSPropertyValueSet;
 class StyleRuleViewport;
 
-class CORE_EXPORT ViewportStyleResolver
+class CORE_EXPORT ViewportStyleResolver final
     : public GarbageCollectedFinalized<ViewportStyleResolver> {
  public:
   explicit ViewportStyleResolver(Document&);

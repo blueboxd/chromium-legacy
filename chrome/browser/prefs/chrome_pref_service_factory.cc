@@ -151,10 +151,6 @@ const prefs::TrackedPreferenceMetadata kTrackedPrefs[] = {
     {19, prefs::kSwReporterPromptVersion, EnforcementLevel::ENFORCE_ON_LOAD,
      PrefTrackingStrategy::ATOMIC, ValueType::IMPERSONAL},
 #endif
-    // This pref is deprecated and will be removed a few releases after M43.
-    // kGoogleServicesAccountId replaces it.
-    {21, prefs::kGoogleServicesUsername, EnforcementLevel::ENFORCE_ON_LOAD,
-     PrefTrackingStrategy::ATOMIC, ValueType::PERSONAL},
 #if defined(OS_WIN)
     {22, prefs::kSwReporterPromptSeed, EnforcementLevel::ENFORCE_ON_LOAD,
      PrefTrackingStrategy::ATOMIC, ValueType::IMPERSONAL},

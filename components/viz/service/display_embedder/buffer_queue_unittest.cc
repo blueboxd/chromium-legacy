@@ -104,20 +104,6 @@ const gpu::SurfaceHandle kFakeSurfaceHandle = 1;
 const unsigned int kBufferQueueInternalformat = GL_RGBA;
 const gfx::BufferFormat kBufferQueueFormat = gfx::BufferFormat::RGBA_8888;
 
-class MockBufferQueue : public BufferQueue {
- public:
-  MockBufferQueue(gpu::gles2::GLES2Interface* gl,
-                  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-                  const gpu::Capabilities& capabilities)
-      : BufferQueue(gl,
-                    kBufferQueueFormat,
-                    gpu_memory_buffer_manager,
-                    kFakeSurfaceHandle,
-                    capabilities) {}
-  MOCK_METHOD4(CopyBufferDamage,
-               void(unsigned, unsigned, const gfx::Rect&, const gfx::Rect&));
-};
-
 class BufferQueueTest : public ::testing::Test {
  public:
   BufferQueueTest() {}
@@ -130,9 +116,10 @@ class BufferQueueTest : public ::testing::Test {
     context_provider_ = TestContextProvider::Create(std::move(context));
     context_provider_->BindToCurrentThread();
     gpu_memory_buffer_manager_.reset(new StubGpuMemoryBufferManager);
-    mock_output_surface_ = new MockBufferQueue(
-        context_provider_->ContextGL(), gpu_memory_buffer_manager_.get(),
-        context_provider_->ContextCapabilities());
+    mock_output_surface_ =
+        new BufferQueue(context_provider_->ContextGL(), kBufferQueueFormat,
+                        gpu_memory_buffer_manager_.get(), kFakeSurfaceHandle,
+                        context_provider_->ContextCapabilities());
     output_surface_.reset(mock_output_surface_);
   }
 
@@ -184,7 +171,6 @@ class BufferQueueTest : public ::testing::Test {
   }
 
   void SwapBuffers(const gfx::Rect& damage) {
-    output_surface_->CopyDamageForCurrentSurface(damage);
     output_surface_->SwapBuffers(damage);
   }
 
@@ -214,7 +200,7 @@ class BufferQueueTest : public ::testing::Test {
   scoped_refptr<TestContextProvider> context_provider_;
   std::unique_ptr<StubGpuMemoryBufferManager> gpu_memory_buffer_manager_;
   std::unique_ptr<BufferQueue> output_surface_;
-  MockBufferQueue* mock_output_surface_;
+  BufferQueue* mock_output_surface_;
 };
 
 namespace {
@@ -300,43 +286,9 @@ TEST(BufferQueueStandaloneTest, BufferCreation) {
   EXPECT_GT(output_surface->GetCurrentBuffer(&stencil), 0u);
 }
 
-TEST(BufferQueueStandaloneTest, CopyBufferDamage) {
-  scoped_refptr<TestContextProvider> context_provider =
-      TestContextProvider::Create();
-  context_provider->BindToCurrentThread();
-  std::unique_ptr<StubGpuMemoryBufferManager> gpu_memory_buffer_manager;
-  std::unique_ptr<BufferQueue> output_surface;
-  gpu_memory_buffer_manager.reset(new StubGpuMemoryBufferManager);
-
-  output_surface.reset(
-      new BufferQueue(context_provider->ContextGL(), kBufferQueueFormat,
-                      gpu_memory_buffer_manager.get(), kFakeSurfaceHandle,
-                      context_provider->ContextCapabilities()));
-  EXPECT_TRUE(
-      output_surface->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false));
-  // Trigger a sub-buffer copy to exercise all paths.
-  unsigned stencil;
-  EXPECT_GT(output_surface->GetCurrentBuffer(&stencil), 0u);
-  output_surface->CopyDamageForCurrentSurface(screen_rect);
-  output_surface->SwapBuffers(screen_rect);
-  output_surface->PageFlipComplete();
-  EXPECT_GT(output_surface->GetCurrentBuffer(&stencil), 0u);
-  output_surface->CopyDamageForCurrentSurface(small_damage);
-  output_surface->SwapBuffers(small_damage);
-}
-
 TEST_F(BufferQueueTest, PartialSwapReuse) {
   EXPECT_TRUE(
       output_surface_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false));
-  EXPECT_CALL(*mock_output_surface_,
-              CopyBufferDamage(_, _, small_damage, screen_rect))
-      .Times(1);
-  EXPECT_CALL(*mock_output_surface_,
-              CopyBufferDamage(_, _, small_damage, small_damage))
-      .Times(1);
-  EXPECT_CALL(*mock_output_surface_,
-              CopyBufferDamage(_, _, large_damage, small_damage))
-      .Times(1);
   SendFullFrame();
   SendDamagedFrame(small_damage);
   SendDamagedFrame(small_damage);
@@ -348,9 +300,6 @@ TEST_F(BufferQueueTest, PartialSwapReuse) {
 TEST_F(BufferQueueTest, PartialSwapFullFrame) {
   EXPECT_TRUE(
       output_surface_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false));
-  EXPECT_CALL(*mock_output_surface_,
-              CopyBufferDamage(_, _, small_damage, screen_rect))
-      .Times(1);
   SendFullFrame();
   SendDamagedFrame(small_damage);
   SendFullFrame();
@@ -358,15 +307,37 @@ TEST_F(BufferQueueTest, PartialSwapFullFrame) {
   EXPECT_EQ(next_frame()->damage, screen_rect);
 }
 
+// Make sure that each time we swap buffers, the damage gets propagated to the
+// previously swapped buffers.
+TEST_F(BufferQueueTest, PartialSwapWithTripleBuffering) {
+  unsigned stencil = 0;
+  EXPECT_TRUE(
+      output_surface_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false));
+  SendFullFrame();
+  SendFullFrame();
+  // Let's triple buffer.
+  EXPECT_GT(output_surface_->GetCurrentBuffer(&stencil), 0u);
+  SwapBuffers(small_damage);
+  EXPECT_GT(output_surface_->GetCurrentBuffer(&stencil), 0u);
+  EXPECT_EQ(3, CountBuffers());
+  // The whole buffer needs to be redrawn since it's a newly allocated buffer
+  EXPECT_EQ(output_surface_->CurrentBufferDamage(), screen_rect);
+
+  SendDamagedFrame(overlapping_damage);
+  // The next buffer should include damage from |overlapping_damage| and
+  // |small_damage|.
+  EXPECT_GT(output_surface_->GetCurrentBuffer(&stencil), 0u);
+  const auto current_buffer_damage = output_surface_->CurrentBufferDamage();
+  EXPECT_TRUE(current_buffer_damage.Contains(overlapping_damage));
+  EXPECT_TRUE(current_buffer_damage.Contains(small_damage));
+
+  // Let's make sure the damage is not trivially the whole screen.
+  EXPECT_NE(current_buffer_damage, screen_rect);
+}
+
 TEST_F(BufferQueueTest, PartialSwapOverlapping) {
   EXPECT_TRUE(
       output_surface_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false));
-  EXPECT_CALL(*mock_output_surface_,
-              CopyBufferDamage(_, _, small_damage, screen_rect))
-      .Times(1);
-  EXPECT_CALL(*mock_output_surface_,
-              CopyBufferDamage(_, _, overlapping_damage, small_damage))
-      .Times(1);
 
   SendFullFrame();
   SendDamagedFrame(small_damage);
@@ -596,38 +567,20 @@ TEST_F(BufferQueueTest, AllocateFails) {
   SwapBuffers(screen_rect);
   EXPECT_FALSE(current_frame());
 
-  // Try another swap. It should copy the buffer damage from the back
-  // surface.
   gpu_memory_buffer_manager_->set_allocate_succeeds(true);
   EXPECT_GT(output_surface_->GetCurrentBuffer(&stencil), 0u);
-  unsigned int source_texture = in_flight_surfaces().front()->texture;
-  unsigned int target_texture = current_frame()->texture;
-  testing::Mock::VerifyAndClearExpectations(mock_output_surface_);
-  EXPECT_CALL(*mock_output_surface_,
-              CopyBufferDamage(target_texture, source_texture, small_damage, _))
-      .Times(1);
   SwapBuffers(small_damage);
-  testing::Mock::VerifyAndClearExpectations(mock_output_surface_);
 
-  // Destroy the just-created buffer, and try another swap. The copy should
-  // come from the displayed surface (because both in-flight surfaces are
-  // gone now).
+  // Destroy the just-created buffer, and try another swap.
   output_surface_->PageFlipComplete();
   in_flight_surfaces().back().reset();
   EXPECT_EQ(2u, in_flight_surfaces().size());
   for (auto& surface : in_flight_surfaces())
     EXPECT_FALSE(surface);
   EXPECT_GT(output_surface_->GetCurrentBuffer(&stencil), 0u);
-  source_texture = displayed_frame()->texture;
   EXPECT_TRUE(current_frame());
   EXPECT_TRUE(displayed_frame());
-  target_texture = current_frame()->texture;
-  testing::Mock::VerifyAndClearExpectations(mock_output_surface_);
-  EXPECT_CALL(*mock_output_surface_,
-              CopyBufferDamage(target_texture, source_texture, small_damage, _))
-      .Times(1);
   SwapBuffers(small_damage);
-  testing::Mock::VerifyAndClearExpectations(mock_output_surface_);
 }
 
 }  // namespace

@@ -31,11 +31,12 @@ class RenderWidgetHostNSViewBridgeOwner
  public:
   explicit RenderWidgetHostNSViewBridgeOwner(
       mojom::RenderWidgetHostNSViewHostAssociatedPtr client,
-      mojom::RenderWidgetHostNSViewAssociatedRequest bridge_request)
+      mojo::PendingAssociatedReceiver<mojom::RenderWidgetHostNSView>
+          bridge_receiver)
       : host_(std::move(client)) {
     bridge_ = std::make_unique<remote_cocoa::RenderWidgetHostNSViewBridge>(
         host_.get(), this);
-    bridge_->BindRequest(std::move(bridge_request));
+    bridge_->BindReceiver(std::move(bridge_receiver));
     host_.set_connection_error_handler(
         base::BindOnce(&RenderWidgetHostNSViewBridgeOwner::OnConnectionError,
                        base::Unretained(this)));
@@ -130,7 +131,7 @@ class RenderWidgetHostNSViewBridgeOwner
 
 void CreateRenderWidgetHostNSView(
     mojo::ScopedInterfaceEndpointHandle host_handle,
-    mojo::ScopedInterfaceEndpointHandle view_request_handle) {
+    mojo::ScopedInterfaceEndpointHandle view_receiver_handle) {
   // Cast from the stub interface to the mojom::RenderWidgetHostNSViewHost
   // and mojom::RenderWidgetHostNSView private interfaces.
   // TODO(ccameron): Remove the need for this cast.
@@ -138,13 +139,13 @@ void CreateRenderWidgetHostNSView(
   mojom::RenderWidgetHostNSViewHostAssociatedPtr host(
       mojo::AssociatedInterfacePtrInfo<mojom::RenderWidgetHostNSViewHost>(
           std::move(host_handle), 0));
-  mojom::RenderWidgetHostNSViewAssociatedRequest ns_view_request(
-      std::move(view_request_handle));
 
   // Create a RenderWidgetHostNSViewBridgeOwner. The resulting object will be
   // destroyed when its underlying pipe is closed.
   ignore_result(new RenderWidgetHostNSViewBridgeOwner(
-      std::move(host), std::move(ns_view_request)));
+      std::move(host),
+      mojo::PendingAssociatedReceiver<mojom::RenderWidgetHostNSView>(
+          std::move(view_receiver_handle))));
 }
 
 void CreateWebContentsNSView(

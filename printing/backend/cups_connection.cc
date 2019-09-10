@@ -124,7 +124,7 @@ std::vector<CupsPrinter> CupsConnection::GetDests() {
   auto dests = std::move(enumerator.get_dests());
   std::vector<CupsPrinter> printers;
   for (auto& dest : dests) {
-    printers.emplace_back(cups_http_.get(), std::move(dest), nullptr);
+    printers.emplace_back(cups_http_.get(), std::move(dest));
   }
 
   return printers;
@@ -139,10 +139,8 @@ std::unique_ptr<CupsPrinter> CupsConnection::GetPrinter(
   if (!dest)
     return nullptr;
 
-  cups_dinfo_t* info = cupsCopyDestInfo(cups_http_.get(), dest);
   return std::make_unique<CupsPrinter>(
-      cups_http_.get(), std::unique_ptr<cups_dest_t, DestinationDeleter>(dest),
-      std::unique_ptr<cups_dinfo_t, DestInfoDeleter>(info));
+      cups_http_.get(), std::unique_ptr<cups_dest_t, DestinationDeleter>(dest));
 }
 
 bool CupsConnection::GetJobs(const std::vector<std::string>& printer_ids,

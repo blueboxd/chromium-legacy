@@ -37,7 +37,7 @@ namespace xpath {
 
 struct EvaluationContext;
 
-class ValueData : public GarbageCollectedFinalized<ValueData> {
+class ValueData final : public GarbageCollectedFinalized<ValueData> {
  public:
   ValueData() : node_set_(NodeSet::Create()) {}
   explicit ValueData(const NodeSet& node_set)

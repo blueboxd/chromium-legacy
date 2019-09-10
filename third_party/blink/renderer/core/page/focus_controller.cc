@@ -1190,8 +1190,29 @@ Element* FocusController::FindFocusableElementInShadowHost(
   OwnerMap owner_map;
   ScopedFocusNavigation scope =
       ScopedFocusNavigation::OwnedByShadowHost(shadow_host, owner_map);
-  return FindFocusableElementAcrossFocusScopes(kWebFocusTypeForward, scope,
-                                               owner_map);
+  Element* result = FindFocusableElementAcrossFocusScopes(kWebFocusTypeForward,
+                                                          scope, owner_map);
+  if (!result)
+    return nullptr;
+  // Check if |found| is the first focusable element under |element|, and count
+  // if it's not.
+  const Node* current = &shadow_host;
+  while ((current = FlatTreeTraversal::Next(*current))) {
+    if (!current->IsElementNode())
+      continue;
+    if (current == result) {
+      // We've reached |found|, which means |found| is the first focusable
+      // element so we don't count this.
+      break;
+    }
+    if (ToElement(current)->IsFocusable()) {
+      UseCounter::Count(shadow_host.GetDocument(),
+                        WebFeature::kDelegateFocusNotFirstInFlatTree);
+      break;
+    }
+  }
+
+  return result;
 }
 
 Element* FocusController::FindFocusableElementAfter(Element& element,

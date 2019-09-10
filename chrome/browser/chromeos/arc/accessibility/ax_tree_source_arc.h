@@ -11,6 +11,7 @@
 
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_info_data.h"
 #include "components/arc/mojom/accessibility_helper.mojom.h"
+#include "extensions/browser/api/automation_internal/automation_event_router.h"
 #include "ui/accessibility/ax_action_handler.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -87,6 +88,10 @@ class AXTreeSourceArc : public ui::AXTreeSource<ArcAccessibilityInfoData*,
   bool is_notification() { return is_notification_; }
 
   bool is_input_method_window() { return is_input_method_window_; }
+
+ protected:
+  virtual extensions::AutomationEventRouterInterface* GetAutomationEventRouter()
+      const;
 
  private:
   friend class arc::AXTreeSourceArcTest;

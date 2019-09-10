@@ -649,6 +649,7 @@ bool MouseEventManager::SlideFocusOnShadowHostIfNecessary(
   if (element.AuthorShadowRoot() &&
       element.AuthorShadowRoot()->delegatesFocus()) {
     Document* doc = frame_->GetDocument();
+    UseCounter::Count(doc, WebFeature::kDelegateFocus);
     Element* focused_element = doc->FocusedElement();
     if (focused_element &&
         element.IsShadowIncludingInclusiveAncestorOf(*focused_element)) {

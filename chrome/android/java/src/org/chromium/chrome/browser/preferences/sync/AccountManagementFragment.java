@@ -43,11 +43,11 @@ import org.chromium.chrome.browser.signin.SignOutDialogFragment.SignOutDialogLis
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.signin.SigninUtils;
-import org.chromium.chrome.browser.signin.SignoutReason;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.GAIAServiceType;
+import org.chromium.components.signin.metrics.SignoutReason;
 
 import java.util.List;
 

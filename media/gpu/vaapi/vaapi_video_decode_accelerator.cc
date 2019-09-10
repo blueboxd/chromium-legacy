@@ -25,9 +25,9 @@
 #include "base/trace_event/trace_event.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/format_utils.h"
 #include "media/base/unaligned_shared_memory.h"
 #include "media/gpu/accelerated_video_decoder.h"
-#include "media/gpu/format_utils.h"
 #include "media/gpu/h264_decoder.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/vaapi_common.h"
@@ -579,11 +579,13 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
   VLOGF(2) << "Requesting " << requested_num_pics_
            << " pictures of size: " << requested_pic_size_.ToString();
 
-  const VideoPixelFormat format = GfxBufferFormatToVideoPixelFormat(
-      vaapi_picture_factory_->GetBufferFormat());
+  const base::Optional<VideoPixelFormat> format =
+      GfxBufferFormatToVideoPixelFormat(
+          vaapi_picture_factory_->GetBufferFormat());
+  CHECK(format);
   task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&Client::ProvidePictureBuffersWithVisibleRect,
-                                client_, requested_num_pics_, format, 1,
+                                client_, requested_num_pics_, *format, 1,
                                 requested_pic_size_, requested_visible_rect_,
                                 vaapi_picture_factory_->GetGLTextureTarget()));
   // |client_| may respond via AssignPictureBuffers().

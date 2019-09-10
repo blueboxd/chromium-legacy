@@ -44,6 +44,7 @@
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
 #include "third_party/blink/renderer/core/frame/sandbox_flags.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_state_machine.h"
@@ -57,7 +58,6 @@
 namespace blink {
 
 class ContentSecurityPolicy;
-class Document;
 class DocumentLoader;
 class LocalFrame;
 class Frame;
@@ -180,12 +180,23 @@ class CORE_EXPORT FrameLoader final {
   // This will attempt to detach the current document. It will dispatch unload
   // events and abort XHR requests. Returns true if the frame is ready to
   // receive the next document commit, or false otherwise.
-  bool DetachDocument();
+  bool DetachDocument(SecurityOrigin* committing_origin,
+                      base::Optional<Document::UnloadEventTiming>*);
 
   FrameLoaderStateMachine* StateMachine() const { return &state_machine_; }
 
   bool ShouldClose(bool is_reload = false);
-  void DispatchUnloadEvent();
+
+  // Dispatches the Unload event for the current document. If this is due to the
+  // commit of a navigation, both |committing_origin| and the
+  // Optional<Document::UnloadEventTiming>* should be non null.
+  // |committing_origin| is the origin of the document that is being committed.
+  // If it is allowed to access the unload timings of the current document, the
+  // Document::UnloadEventTiming will be created and populated.
+  // If the dispatch of the unload event is not due to a commit, both parameters
+  // should be null.
+  void DispatchUnloadEvent(SecurityOrigin* committing_origin,
+                           base::Optional<Document::UnloadEventTiming>*);
 
   bool AllowPlugins(ReasonForCallingAllowPlugins);
 
@@ -248,10 +259,9 @@ class CORE_EXPORT FrameLoader final {
   std::unique_ptr<TracedValue> ToTracedValue() const;
   void TakeObjectSnapshot() const;
 
-  void WillCommitNavigation();
-
   // Commits the given |document_loader|.
-  void CommitDocumentLoader(DocumentLoader* document_loader);
+  void CommitDocumentLoader(DocumentLoader* document_loader,
+                            const base::Optional<Document::UnloadEventTiming>&);
 
   LocalFrameClient* Client() const;
 

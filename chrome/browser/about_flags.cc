@@ -144,7 +144,6 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "services/service_manager/sandbox/features.h"
 #include "services/service_manager/sandbox/switches.h"
-#include "storage/browser/fileapi/file_system_features.h"
 #include "third_party/blink/public/common/experiments/memory_ablation_experiment.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/forcedark/forcedark_switches.h"
@@ -3748,11 +3747,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAmbientAuthenticationInGuestSessionDescription,
      kOsAll,
      FEATURE_VALUE_TYPE(features::kEnableAmbientAuthenticationInGuestSession)},
-
-    {"enable-filesystem-in-incognito",
-     flag_descriptions::kEnableFilesystemInIncognitoName,
-     flag_descriptions::kEnableFilesystemInIncognitoDescription, kOsAll,
-     FEATURE_VALUE_TYPE(storage::features::kEnableFilesystemInIncognito)},
 
     {"enable-send-tab-to-self-show-sending-ui",
      flag_descriptions::kSendTabToSelfShowSendingUIName,

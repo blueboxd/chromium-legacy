@@ -376,7 +376,7 @@ public class PickerCategoryView extends OptimizedFrameLayout
             List<ContactsPickerListener.Contact> contacts, int umaId) {
         int selectCount = contacts != null ? contacts.size() : 0;
         int contactCount = mPickerAdapter.getAllContacts().size();
-        int percentageShared = (100 * selectCount) / contactCount;
+        int percentageShared = contactCount > 0 ? (100 * selectCount) / contactCount : 0;
 
         int propertiesRequested = ContactsPickerPropertiesRequested.PROPERTIES_NONE;
         if (includeNames) propertiesRequested |= ContactsPickerPropertiesRequested.PROPERTIES_NAMES;

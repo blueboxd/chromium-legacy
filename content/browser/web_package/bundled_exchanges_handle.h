@@ -48,8 +48,6 @@ class BundledExchangesHandle final {
   bool IsReadyForLoading();
 
  private:
-  class PrimaryURLRedirectLoader;
-
   void CreateURLLoader(const network::ResourceRequest& resource_request,
                        network::mojom::URLLoaderRequest request,
                        network::mojom::URLLoaderClientPtr client);

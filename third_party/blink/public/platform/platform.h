@@ -656,6 +656,8 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   virtual bool IsWebRtcHWDecodingEnabled() { return true; }
 
+  virtual bool AllowsLoopbackInPeerConnection() { return false; }
+
   // VideoCapture -------------------------------------------------------
 
   virtual WebVideoCaptureImplManager* GetVideoCaptureImplManager() {

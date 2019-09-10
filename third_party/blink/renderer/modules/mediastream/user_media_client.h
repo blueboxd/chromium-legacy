@@ -62,7 +62,7 @@ class MODULES_EXPORT UserMediaClient
           media_devices_dispatcher);
 
  private:
-  class Request : public GarbageCollectedFinalized<Request> {
+  class Request final : public GarbageCollectedFinalized<Request> {
    public:
     explicit Request(std::unique_ptr<UserMediaRequestInfo> request);
     explicit Request(blink::ApplyConstraintsRequest* request);

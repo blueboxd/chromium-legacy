@@ -28,6 +28,7 @@ source_set("elements") {
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/util",
+    "//ios/chrome/common/colors",
   ]
 }
 

@@ -104,26 +104,13 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
   void OnNativeWidgetCreated(const Widget::InitParams& params) override;
   std::unique_ptr<aura::client::DragDropClient> CreateDragDropClient(
       DesktopNativeCursorManager* cursor_manager) override;
-  void Show(ui::WindowShowState show_state,
-            const gfx::Rect& restore_bounds) override;
   bool IsVisible() const override;
-  void SetSize(const gfx::Size& requested_size) override;
   void StackAbove(aura::Window* window) override;
   void StackAtTop() override;
-  void GetWindowPlacement(gfx::Rect* bounds,
-                          ui::WindowShowState* show_state) const override;
-  gfx::Rect GetRestoredBounds() const override;
   std::string GetWorkspace() const override;
   void SetShape(std::unique_ptr<Widget::ShapeRects> native_shape) override;
   bool IsActive() const override;
-  void Maximize() override;
-  void Minimize() override;
-  void Restore() override;
-  bool IsMaximized() const override;
-  bool IsMinimized() const override;
   bool HasCapture() const override;
-  void SetZOrderLevel(ui::ZOrderLevel order) override;
-  ui::ZOrderLevel GetZOrderLevel() const override;
   void SetVisibleOnAllWorkspaces(bool always_visible) override;
   bool IsVisibleOnAllWorkspaces() const override;
   Widget::MoveLoopResult RunMoveLoop(
@@ -135,8 +122,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
   bool ShouldUseNativeFrame() const override;
   bool ShouldWindowContentsBeTransparent() const override;
   void FrameTypeChanged() override;
-  void SetFullscreen(bool fullscreen) override;
-  bool IsFullscreen() const override;
   void SetOpacity(float opacity) override;
   void SetAspectRatio(const gfx::SizeF& aspect_ratio) override;
   void SetWindowIcons(const gfx::ImageSkia& window_icon,
@@ -151,18 +136,11 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
   bool ShouldCreateVisibilityController() const override;
 
   // Overridden from aura::WindowTreeHost:
-  void ShowImpl() override;
-  void HideImpl() override;
-  void SetBoundsInPixels(const gfx::Rect& requested_bounds_in_pixels) override;
   void SetCapture() override;
   void ReleaseCapture() override;
 
  private:
   friend class DesktopWindowTreeHostX11HighDPITest;
-
-  // Initializes our X11 surface to draw on. This method performs all
-  // initialization related to talking to the X11 server.
-  void InitX11Window(const Widget::InitParams& params);
 
   // Overridden from WmMoveResizeHandler
   void DispatchHostWindowDragMovement(
@@ -191,21 +169,12 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
   // See comment for variable open_windows_.
   static std::list<XID>& open_windows();
 
-  // Map the window (shows it) taking into account the given |show_state|.
-  void MapWindow(ui::WindowShowState show_state);
-
   void SetWindowTransparency();
-
-  // Relayout the widget's client and non-client views.
-  void Relayout();
 
   void DelayedChangeFrameType(Widget::FrameType new_type);
 
   // Enables event listening after closing |dialog|.
   void EnableEventListening();
-
-  // Set visibility and fire OnNativeWidgetVisibilityChanged() if it changed.
-  void SetVisible(bool visible);
 
   // Callback for a swapbuffer after resize.
   void OnCompleteSwapWithNewSize(const gfx::Size& size);
@@ -239,16 +208,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
   ui::XWindow* GetXWindow();
   const ui::XWindow* GetXWindow() const;
 
-  // The bounds of our window before we were maximized.
-  gfx::Rect restored_bounds_in_pixels_;
-
-  // Whether |xwindow_| was requested to be fullscreen via SetFullscreen().
-  bool is_fullscreen_ = false;
-
-  // The z-order level of the window; the window exhibits "always on top"
-  // behavior if > 0.
-  ui::ZOrderLevel z_order_ = ui::ZOrderLevel::kNormal;
-
   DesktopDragDropClientAuraX11* drag_drop_client_ = nullptr;
 
   std::unique_ptr<WindowEventFilter> non_client_event_filter_;
@@ -264,9 +223,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
   // A list of all (top-level) windows that have been created but not yet
   // destroyed.
   static std::list<gfx::AcceleratedWidget>* open_windows_;
-
-  // Cached value for SetVisible.  Not the same as the IsVisible public API.
-  bool is_compositor_set_visible_ = false;
 
   std::unique_ptr<aura::ScopedWindowTargeter> targeter_for_modal_;
 

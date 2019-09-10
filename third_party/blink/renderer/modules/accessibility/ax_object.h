@@ -101,7 +101,7 @@ class IgnoredReason {
   void Trace(blink::Visitor* visitor) { visitor->Trace(related_object); }
 };
 
-class NameSourceRelatedObject
+class NameSourceRelatedObject final
     : public GarbageCollectedFinalized<NameSourceRelatedObject> {
  public:
   WeakMember<AXObject> object;

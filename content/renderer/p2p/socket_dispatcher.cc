@@ -9,23 +9,23 @@
 #include "content/child/child_process.h"
 #include "content/child/child_thread_impl.h"
 #include "content/public/common/service_names.mojom.h"
-#include "content/renderer/p2p/network_list_observer.h"
 #include "content/renderer/p2p/socket_client_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "services/network/public/cpp/p2p_param_traits.h"
+#include "third_party/blink/public/platform/modules/p2p/network_list_observer.h"
 
 namespace content {
 
 P2PSocketDispatcher::P2PSocketDispatcher()
     : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       network_list_observers_(
-          new base::ObserverListThreadSafe<NetworkListObserver>()) {}
+          new base::ObserverListThreadSafe<blink::NetworkListObserver>()) {}
 
 P2PSocketDispatcher::~P2PSocketDispatcher() {
 }
 
 void P2PSocketDispatcher::AddNetworkListObserver(
-    NetworkListObserver* network_list_observer) {
+    blink::NetworkListObserver* network_list_observer) {
   network_list_observers_->AddObserver(network_list_observer);
   main_task_runner_->PostTask(
       FROM_HERE,
@@ -34,7 +34,7 @@ void P2PSocketDispatcher::AddNetworkListObserver(
 }
 
 void P2PSocketDispatcher::RemoveNetworkListObserver(
-    NetworkListObserver* network_list_observer) {
+    blink::NetworkListObserver* network_list_observer) {
   network_list_observers_->RemoveObserver(network_list_observer);
 }
 
@@ -65,7 +65,7 @@ void P2PSocketDispatcher::NetworkListChanged(
   default_ipv4_local_address_ = default_ipv4_local_address;
   default_ipv6_local_address_ = default_ipv6_local_address;
   network_list_observers_->Notify(
-      FROM_HERE, &NetworkListObserver::OnNetworkListChanged, networks,
+      FROM_HERE, &blink::NetworkListObserver::OnNetworkListChanged, networks,
       default_ipv4_local_address, default_ipv6_local_address);
 }
 
@@ -80,7 +80,7 @@ void P2PSocketDispatcher::RequestInterfaceIfNecessary() {
 void P2PSocketDispatcher::RequestNetworkEventsIfNecessary() {
   if (network_notification_client_receiver_.is_bound()) {
     network_list_observers_->Notify(
-        FROM_HERE, &NetworkListObserver::OnNetworkListChanged, networks_,
+        FROM_HERE, &blink::NetworkListObserver::OnNetworkListChanged, networks_,
         default_ipv4_local_address_, default_ipv6_local_address_);
   } else {
     GetP2PSocketManager()->get()->StartNetworkNotifications(

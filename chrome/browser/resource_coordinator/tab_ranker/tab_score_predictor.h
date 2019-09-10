@@ -46,7 +46,7 @@ class TabScorePredictor {
   enum ScorerType {
     kMRUScorer = 0,
     kMLScorer = 1,
-    KPairwiseScorer = 2,
+    kPairwiseScorer = 2,
     kFrecencyScorer = 3,
     kMaxValue = kFrecencyScorer
   };
@@ -69,16 +69,27 @@ class TabScorePredictor {
       const std::map<int32_t, base::Optional<TabFeatures>>& tabs);
 
  private:
+  friend class ScoreTabsWithPairwiseScorerTest;
+
   // Loads the preprocessor config if not already loaded.
   void LazyInitialize();
 
+  // Calculates reactivation score of a single tab with mru feature.
   TabRankerResult ScoreTabWithMRUScorer(const TabFeatures& tab, float* score);
+  // Calculates reactivation score of a single tab with ml model.
   TabRankerResult ScoreTabWithMLScorer(const TabFeatures& tab, float* score);
+  // Preprocess and inferences on the |example|.
   TabRankerResult PredictWithPreprocess(assist_ranker::RankerExample* example,
                                         float* score);
-  TabRankerResult ScoreTabsWithPairwiseScorer(const TabFeatures& tab1,
-                                              const TabFeatures& tab2,
-                                              float* score);
+  // Calculates the relative reaction score between tab1 and tab2.
+  // For pairwise model, the ml model is applied to the pair(tab1, tab2).
+  // For non-pairwise model, the score is the difference of reactivation
+  // scores on these two tabs.
+  TabRankerResult ScoreTabsPairs(const TabFeatures& tab1,
+                                 const TabFeatures& tab2,
+                                 float* score);
+  std::map<int32_t, float> ScoreTabsWithPairwiseScorer(
+      const std::map<int32_t, base::Optional<TabFeatures>>& tabs);
   TabRankerResult ScoreTabWithFrecencyScorer(const TabFeatures& tab,
                                              float* score);
 

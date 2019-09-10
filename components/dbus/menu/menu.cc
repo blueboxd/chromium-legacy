@@ -15,8 +15,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/dbus/menu/properties_interface.h"
-#include "components/dbus/menu/success_barrier_callback.h"
+#include "components/dbus/properties/dbus_properties.h"
+#include "components/dbus/properties/success_barrier_callback.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -163,7 +163,7 @@ DbusMenu::DbusMenu(dbus::ExportedObject* exported_object,
         base::BindRepeating(&DbusMenu::OnExported, weak_factory_.GetWeakPtr()));
   }
 
-  properties_ = std::make_unique<DbusPropertiesInterface>(menu_, barrier_);
+  properties_ = std::make_unique<DbusProperties>(menu_, barrier_);
   properties_->RegisterInterface(kInterfaceDbusMenu);
   auto set_property = [&](const std::string& property_name, auto&& value) {
     properties_->SetProperty(kInterfaceDbusMenu, property_name,

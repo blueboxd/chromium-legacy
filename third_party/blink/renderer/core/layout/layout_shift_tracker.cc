@@ -28,8 +28,7 @@ namespace blink {
 
 static constexpr base::TimeDelta kTimerDelay =
     base::TimeDelta::FromMilliseconds(500);
-static const float kRegionGranularitySteps = 60.0;
-// TODO: Vary by Finch experiment parameter.
+// TODO(crbug.com/1000716): Remove granularity scaling logic.
 static const float kSweepLineRegionGranularity = 1.0;
 static const float kMovementThreshold = 3.0;  // CSS pixels.
 
@@ -53,11 +52,7 @@ static float GetMoveDistance(const FloatRect& old_rect,
 
 float LayoutShiftTracker::RegionGranularityScale(
     const IntRect& viewport) const {
-  if (RuntimeEnabledFeatures::JankTrackingSweepLineEnabled())
-    return kSweepLineRegionGranularity;
-
-  return kRegionGranularitySteps /
-         std::min(viewport.Height(), viewport.Width());
+  return kSweepLineRegionGranularity;
 }
 
 static bool EqualWithinMovementThreshold(const FloatPoint& a,
@@ -220,13 +215,9 @@ void LayoutShiftTracker::ObjectShifted(
   visible_old_rect.Scale(scale);
   visible_new_rect.Scale(scale);
 
-  if (RuntimeEnabledFeatures::JankTrackingSweepLineEnabled()) {
-    region_experimental_.AddRect(visible_old_rect);
-    region_experimental_.AddRect(visible_new_rect);
-  } else {
-    region_.Unite(Region(visible_old_rect));
-    region_.Unite(Region(visible_new_rect));
-  }
+  // TODO(crbug.com/1000716): Rename region_experimental_.
+  region_experimental_.AddRect(visible_old_rect);
+  region_experimental_.AddRect(visible_new_rect);
 }
 
 void LayoutShiftTracker::NotifyObjectPrePaint(
@@ -269,7 +260,7 @@ double LayoutShiftTracker::SubframeWeightingFactor() const {
 void LayoutShiftTracker::NotifyPrePaintFinished() {
   if (!IsActive())
     return;
-  bool use_sweep_line = RuntimeEnabledFeatures::JankTrackingSweepLineEnabled();
+  bool use_sweep_line = true;
   bool region_is_empty =
       use_sweep_line ? region_experimental_.IsEmpty() : region_.IsEmpty();
   if (region_is_empty)
@@ -459,10 +450,8 @@ std::unique_ptr<TracedValue> LayoutShiftTracker::PerFrameTraceData(
   float granularity_scale = RegionGranularityScale(
       IntRect(IntPoint(),
               frame_view_->GetScrollableArea()->VisibleContentRect().Size()));
-  if (RuntimeEnabledFeatures::JankTrackingSweepLineEnabled())
-    RegionToTracedValue(region_experimental_, granularity_scale, *value);
-  else
-    RegionToTracedValue(region_, granularity_scale, *value);
+
+  RegionToTracedValue(region_experimental_, granularity_scale, *value);
 
   value->SetBoolean("is_main_frame", frame_view_->GetFrame().IsMainFrame());
   value->SetBoolean("had_recent_input", input_detected);

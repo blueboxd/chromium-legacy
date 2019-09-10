@@ -152,6 +152,10 @@ content::WebContents* Controller::GetWebContents() {
   return web_contents();
 }
 
+std::string Controller::GetAccountEmailAddress() {
+  return client_->GetAccountEmailAddress();
+}
+
 void Controller::SetTouchableElementArea(const ElementAreaProto& area) {
   touchable_element_area()->SetFromProto(area);
 }

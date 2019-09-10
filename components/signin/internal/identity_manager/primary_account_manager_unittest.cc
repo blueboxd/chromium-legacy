@@ -328,58 +328,6 @@ TEST_F(PrimaryAccountManagerTest, SigninNotAllowed) {
 }
 #endif
 
-TEST_F(PrimaryAccountManagerTest, UpgradeToNewPrefs) {
-  user_prefs_.SetString(prefs::kGoogleServicesUsername, "user@gmail.com");
-  user_prefs_.SetString(prefs::kGoogleServicesUserAccountId, "account_id");
-  CreatePrimaryAccountManager();
-  EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedAccountInfo().email);
-
-  if (account_tracker()->GetMigrationState() ==
-      AccountTrackerService::MIGRATION_NOT_STARTED) {
-    // TODO(rogerta): until the migration to gaia id, the account id will remain
-    // the old username.
-    EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedAccountId());
-    EXPECT_EQ("user@gmail.com",
-              user_prefs_.GetString(prefs::kGoogleServicesAccountId));
-  } else {
-    EXPECT_EQ("account_id", manager_->GetAuthenticatedAccountId());
-    EXPECT_EQ("account_id",
-              user_prefs_.GetString(prefs::kGoogleServicesAccountId));
-  }
-  EXPECT_EQ("", user_prefs_.GetString(prefs::kGoogleServicesUsername));
-
-  // Make sure account tracker was updated.
-  AccountInfo info =
-      account_tracker()->GetAccountInfo(manager_->GetAuthenticatedAccountId());
-  EXPECT_EQ("user@gmail.com", info.email);
-  EXPECT_EQ("account_id", info.gaia);
-}
-
-TEST_F(PrimaryAccountManagerTest, CanonicalizesPrefs) {
-  // This unit test is not needed after migrating to gaia id.
-  if (account_tracker()->GetMigrationState() ==
-      AccountTrackerService::MIGRATION_NOT_STARTED) {
-    user_prefs_.SetString(prefs::kGoogleServicesUsername, "user.C@gmail.com");
-
-    CreatePrimaryAccountManager();
-    EXPECT_EQ("user.C@gmail.com",
-              manager_->GetAuthenticatedAccountInfo().email);
-
-    // TODO(rogerta): until the migration to gaia id, the account id will remain
-    // the old username.
-    EXPECT_EQ("userc@gmail.com", manager_->GetAuthenticatedAccountId());
-    EXPECT_EQ("userc@gmail.com",
-              user_prefs_.GetString(prefs::kGoogleServicesAccountId));
-    EXPECT_EQ("", user_prefs_.GetString(prefs::kGoogleServicesUsername));
-
-    // Make sure account tracker has a canonicalized username.
-    AccountInfo info = account_tracker()->GetAccountInfo(
-        manager_->GetAuthenticatedAccountId());
-    EXPECT_EQ("user.C@gmail.com", info.email);
-    EXPECT_EQ("userc@gmail.com", info.account_id);
-  }
-}
-
 TEST_F(PrimaryAccountManagerTest, GaiaIdMigration) {
   if (account_tracker()->GetMigrationState() !=
       AccountTrackerService::MIGRATION_NOT_STARTED) {
@@ -404,35 +352,6 @@ TEST_F(PrimaryAccountManagerTest, GaiaIdMigration) {
 
     CreatePrimaryAccountManager();
 
-    EXPECT_EQ(gaia_id, manager_->GetAuthenticatedAccountId());
-    EXPECT_EQ(gaia_id, user_prefs_.GetString(prefs::kGoogleServicesAccountId));
-  }
-}
-
-TEST_F(PrimaryAccountManagerTest, VeryOldProfileGaiaIdMigration) {
-  if (account_tracker()->GetMigrationState() !=
-      AccountTrackerService::MIGRATION_NOT_STARTED) {
-    std::string email = "user@gmail.com";
-    std::string gaia_id = "account_gaia_id";
-
-    PrefService* client_prefs = signin_client()->GetPrefs();
-    client_prefs->SetInteger(prefs::kAccountIdMigrationState,
-                             AccountTrackerService::MIGRATION_NOT_STARTED);
-    ListPrefUpdate update(client_prefs, prefs::kAccountInfo);
-    update->Clear();
-    auto dict = std::make_unique<base::DictionaryValue>();
-    dict->SetString("account_id", email);
-    dict->SetString("email", email);
-    dict->SetString("gaia", gaia_id);
-    update->Append(std::move(dict));
-
-    account_tracker()->Shutdown();
-    account_tracker()->Initialize(prefs(), base::FilePath());
-
-    client_prefs->ClearPref(prefs::kGoogleServicesAccountId);
-    client_prefs->SetString(prefs::kGoogleServicesUsername, email);
-
-    CreatePrimaryAccountManager();
     EXPECT_EQ(gaia_id, manager_->GetAuthenticatedAccountId());
     EXPECT_EQ(gaia_id, user_prefs_.GetString(prefs::kGoogleServicesAccountId));
   }

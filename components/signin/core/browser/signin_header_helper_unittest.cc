@@ -112,7 +112,7 @@ class SigninHeaderHelperTest : public testing::Test {
   }
 #endif
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   bool sync_enabled_ = false;
   std::string device_id_ = kTestDeviceId;

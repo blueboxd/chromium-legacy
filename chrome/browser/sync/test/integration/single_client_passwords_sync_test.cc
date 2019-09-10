@@ -5,6 +5,7 @@
 #include "base/base64.h"
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
 #include "chrome/browser/sync/test/integration/feature_toggler.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
@@ -15,6 +16,7 @@
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/sync/password_sync_bridge.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync/base/time.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -492,7 +494,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
   ASSERT_TRUE(GetClient(0)->SignInPrimaryAccount());
   GetSyncService(0)->GetUserSettings()->SetSyncRequested(true);
   GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete();
-  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
+  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
 
   ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
 
@@ -540,12 +542,63 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
 }
 #endif  // !defined(OS_CHROMEOS)
 
+IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
+                       SwitchesStoresOnEnablingSync) {
+  AddTestPasswordToFakeServer();
+
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  // On ChromeOS, Sync-the-feature starts automatically as soon as a primary
+  // account is signed in. To prevent that, explicitly set SyncRequested to
+  // false on ChromeOS.
+#if defined(OS_CHROMEOS)
+  GetSyncService(0)->GetUserSettings()->SetSyncRequested(false);
+#endif  // !defined(OS_CHROMEOS)
+
+  // Sign in to a primary account, but don't enable Sync-the-feature.
+  // Note: This state shouldn't actually be reachable (the flow for setting a
+  // primary account also enables Sync), but still best to cover it here.
+  ASSERT_TRUE(GetClient(0)->SignInPrimaryAccount());
+  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
+  ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
+
+  // Make sure the password showed up in the account store.
+  password_manager::PasswordStore* account_store =
+      passwords_helper::GetAccountPasswordStore(0);
+  ASSERT_EQ(passwords_helper::GetAllLogins(account_store).size(), 1u);
+
+  // Turn on Sync-the-feature.
+  GetSyncService(0)->GetUserSettings()->SetSyncRequested(true);
+  GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete();
+  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
+  ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
+
+  // Make sure the password is now in the profile store, but *not* in the
+  // account store anymore.
+  password_manager::PasswordStore* profile_store =
+      passwords_helper::GetPasswordStore(0);
+  EXPECT_EQ(passwords_helper::GetAllLogins(profile_store).size(), 1u);
+  EXPECT_EQ(passwords_helper::GetAllLogins(account_store).size(), 0u);
+
+  // Turn off Sync-the-feature again.
+  // Note: Turning Sync off without signing out isn't actually exposed to the
+  // user, so this generally shouldn't happen. Still best to cover it here.
+  GetSyncService(0)->GetUserSettings()->SetSyncRequested(false);
+  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
+  ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
+
+  // Now the password should be in both stores: The profile store does *not* get
+  // cleared when Sync gets disabled.
+  EXPECT_EQ(passwords_helper::GetAllLogins(profile_store).size(), 1u);
+  EXPECT_EQ(passwords_helper::GetAllLogins(account_store).size(), 1u);
+}
+
 // The unconsented primary account isn't supported on ChromeOS (see
 // IdentityManager::ComputeUnconsentedPrimaryAccountInfo()) so Sync won't start
 // up for a secondary account.
 #if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
-                       SwitchesFromAccountToProfileStore) {
+                       SwitchesStoresOnMakingAccountPrimary) {
   AddTestPasswordToFakeServer();
 
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
@@ -561,7 +614,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
       passwords_helper::GetAccountPasswordStore(0);
   ASSERT_EQ(passwords_helper::GetAllLogins(account_store).size(), 1u);
 
-  // Turn on Sync-the-feature.
+  // Make the account primary and turn on Sync-the-feature.
   secondary_account_helper::MakeAccountPrimary(GetProfile(0), "user@email.com");
   GetSyncService(0)->GetUserSettings()->SetSyncRequested(true);
   GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete();
@@ -574,6 +627,20 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
       passwords_helper::GetPasswordStore(0);
   EXPECT_EQ(passwords_helper::GetAllLogins(profile_store).size(), 1u);
   EXPECT_EQ(passwords_helper::GetAllLogins(account_store).size(), 0u);
+
+  // Clear the primary account to put Sync into transport mode again.
+  // Note: Clearing the primary account without also signing out isn't exposed
+  // to the user, so this shouldn't happen. Still best to cover it here.
+  signin::ClearPrimaryAccount(
+      IdentityManagerFactory::GetForProfile(GetProfile(0)),
+      signin::ClearPrimaryAccountPolicy::KEEP_ALL_ACCOUNTS);
+  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
+  ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
+
+  // Now the password should be in both stores: The profile store does *not* get
+  // cleared when Sync gets disabled.
+  EXPECT_EQ(passwords_helper::GetAllLogins(profile_store).size(), 1u);
+  EXPECT_EQ(passwords_helper::GetAllLogins(account_store).size(), 1u);
 }
 #endif  // !defined(OS_CHROMEOS)
 

@@ -4,6 +4,7 @@
 
 #include "content/renderer/pepper/pepper_video_capture_host.h"
 
+#include "base/numerics/ranges.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_media_device_manager.h"
 #include "content/renderer/pepper/pepper_platform_video_capture.h"
@@ -339,11 +340,11 @@ void PepperVideoCaptureHost::SetRequestedInfo(
     const PP_VideoCaptureDeviceInfo_Dev& device_info,
     uint32_t buffer_count) {
   // Clamp the buffer count to between 1 and |kMaxBuffers|.
-  buffer_count_hint_ = std::min(std::max(buffer_count, 1U), kMaxBuffers);
+  buffer_count_hint_ = base::ClampToRange(buffer_count, 1U, kMaxBuffers);
   // Clamp the frame rate to between 1 and |kMaxFramesPerSecond - 1|.
   int frames_per_second =
-      std::min(std::max(device_info.frames_per_second, 1U),
-               static_cast<uint32_t>(media::limits::kMaxFramesPerSecond - 1));
+      base::ClampToRange(device_info.frames_per_second, 1U,
+                         uint32_t{media::limits::kMaxFramesPerSecond - 1});
 
   video_capture_params_.requested_format = media::VideoCaptureFormat(
       gfx::Size(device_info.width, device_info.height), frames_per_second,

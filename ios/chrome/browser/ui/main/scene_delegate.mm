@@ -10,4 +10,46 @@
 
 @implementation SceneDelegate
 
+- (SceneState*)sceneState {
+  if (!_sceneState) {
+    _sceneState = [[SceneState alloc] init];
+  }
+  return _sceneState;
+}
+
+#pragma mark - UISceneDelegate
+
+#pragma mark Connecting and Disconnecting the Scene
+
+- (void)scene:(UIScene*)scene
+    willConnectToSession:(UISceneSession*)session
+                 options:(UISceneConnectionOptions*)connectionOptions
+    API_AVAILABLE(ios(13)) {
+  self.sceneState.activationLevel = SceneActivationLevelBackground;
+}
+
+- (void)sceneDidDisconnect:(UIScene*)scene API_AVAILABLE(ios(13)) {
+  self.sceneState.activationLevel = SceneActivationLevelUnattached;
+}
+
+#pragma mark Transitioning to the Foreground
+
+- (void)sceneWillEnterForeground:(UIScene*)scene API_AVAILABLE(ios(13)) {
+  self.sceneState.activationLevel = SceneActivationLevelForegroundInactive;
+}
+
+- (void)sceneDidBecomeActive:(UIScene*)scene API_AVAILABLE(ios(13)) {
+  self.sceneState.activationLevel = SceneActivationLevelForegroundActive;
+}
+
+#pragma mark Transitioning to the Background
+
+- (void)sceneWillResignActive:(UIScene*)scene API_AVAILABLE(ios(13)) {
+  self.sceneState.activationLevel = SceneActivationLevelForegroundInactive;
+}
+
+- (void)sceneDidEnterBackground:(UIScene*)scene API_AVAILABLE(ios(13)) {
+  self.sceneState.activationLevel = SceneActivationLevelBackground;
+}
+
 @end

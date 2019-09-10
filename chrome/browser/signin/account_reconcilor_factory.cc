@@ -29,6 +29,8 @@
 #include "chrome/browser/chromeos/account_manager/account_migration_runner.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/tpm/install_attributes.h"
+#include "components/signin/core/browser/active_directory_account_reconcilor_delegate.h"
 #include "components/user_manager/user_manager.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #endif
@@ -166,6 +168,13 @@ AccountReconcilorFactory::CreateAccountReconcilorDelegate(Profile* profile) {
       if (profile->IsChild()) {
         return std::make_unique<ChromeOSChildAccountReconcilorDelegate>(
             IdentityManagerFactory::GetForProfile(profile));
+      }
+
+      // Only for Active Directory accounts on Chrome OS.
+      if (chromeos::features::IsAccountManagerEnabled() &&
+          chromeos::InstallAttributes::Get()->IsActiveDirectoryManaged()) {
+        return std::make_unique<
+            signin::ActiveDirectoryAccountReconcilorDelegate>();
       }
 
       // TODO(sinhak): Remove the if-condition (and use

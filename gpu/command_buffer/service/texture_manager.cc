@@ -2759,9 +2759,9 @@ bool TextureManager::ValidateTexImage(ContextState* state,
                                       const DoTexImageArguments& args,
                                       TextureRef** texture_ref) {
   const Validators* validators = feature_info_->validators();
-  if (((args.command_type == DoTexImageArguments::kTexImage2D) &&
+  if (((args.command_type == DoTexImageArguments::CommandType::kTexImage2D) &&
        !validators->texture_target.IsValid(args.target)) ||
-      ((args.command_type == DoTexImageArguments::kTexImage3D) &&
+      ((args.command_type == DoTexImageArguments::CommandType::kTexImage3D) &&
        !validators->texture_3_d_target.IsValid(args.target))) {
     ERRORSTATE_SET_GL_ERROR_INVALID_ENUM(
         error_state, function_name, args.target, "target");
@@ -2956,7 +2956,7 @@ void TextureManager::ValidateAndDoTexImage(
   if (texture_state->unpack_overlapping_rows_separately_unpack_buffer &&
       buffer) {
     ContextState::Dimension dimension =
-        (args.command_type == DoTexImageArguments::kTexImage3D)
+        (args.command_type == DoTexImageArguments::CommandType::kTexImage3D)
             ? ContextState::k3D
             : ContextState::k2D;
     const PixelStoreParams unpack_params(state->GetUnpackParams(dimension));
@@ -2970,11 +2970,22 @@ void TextureManager::ValidateAndDoTexImage(
                                 args);
 
       DoTexSubImageArguments sub_args = {
-          args.target, args.level, 0, 0, 0, args.width, args.height, args.depth,
-          args.format, args.type, args.pixels, args.pixels_size, args.padding,
-          args.command_type == DoTexImageArguments::kTexImage3D
-              ? DoTexSubImageArguments::kTexSubImage3D
-              : DoTexSubImageArguments::kTexSubImage2D};
+          args.target,
+          args.level,
+          0,
+          0,
+          0,
+          args.width,
+          args.height,
+          args.depth,
+          args.format,
+          args.type,
+          args.pixels,
+          args.pixels_size,
+          args.padding,
+          args.command_type == DoTexImageArguments::CommandType::kTexImage3D
+              ? DoTexSubImageArguments::CommandType::kTexSubImage3D
+              : DoTexSubImageArguments::CommandType::kTexSubImage2D};
       DoTexSubImageRowByRowWorkaround(texture_state, state, sub_args,
                                       unpack_params);
 
@@ -2983,7 +2994,7 @@ void TextureManager::ValidateAndDoTexImage(
     }
   }
 
-  if (args.command_type == DoTexImageArguments::kTexImage3D &&
+  if (args.command_type == DoTexImageArguments::CommandType::kTexImage3D &&
       texture_state->unpack_image_height_workaround_with_unpack_buffer &&
       buffer) {
     ContextState::Dimension dimension = ContextState::k3D;
@@ -3008,7 +3019,7 @@ void TextureManager::ValidateAndDoTexImage(
           args.pixels,
           args.pixels_size,
           args.padding,
-          DoTexSubImageArguments::kTexSubImage3D};
+          DoTexSubImageArguments::CommandType::kTexSubImage3D};
       DoTexSubImageLayerByLayerWorkaround(texture_state, state, sub_args,
                                           unpack_params);
 
@@ -3028,11 +3039,22 @@ void TextureManager::ValidateAndDoTexImage(
                                 args);
 
       DoTexSubImageArguments sub_args = {
-          args.target, args.level, 0, 0, 0, args.width, args.height, args.depth,
-          args.format, args.type, args.pixels, args.pixels_size, args.padding,
-          args.command_type == DoTexImageArguments::kTexImage3D ?
-              DoTexSubImageArguments::kTexSubImage3D :
-              DoTexSubImageArguments::kTexSubImage2D};
+          args.target,
+          args.level,
+          0,
+          0,
+          0,
+          args.width,
+          args.height,
+          args.depth,
+          args.format,
+          args.type,
+          args.pixels,
+          args.pixels_size,
+          args.padding,
+          args.command_type == DoTexImageArguments::CommandType::kTexImage3D
+              ? DoTexSubImageArguments::CommandType::kTexSubImage3D
+              : DoTexSubImageArguments::CommandType::kTexSubImage2D};
       DoTexSubImageWithAlignmentWorkaround(texture_state, state, sub_args);
 
       SetLevelCleared(texture_ref, args.target, args.level, true);
@@ -3070,9 +3092,11 @@ bool TextureManager::ValidateTexSubImage(ContextState* state,
                                          TextureRef** texture_ref) {
   const Validators* validators = feature_info_->validators();
 
-  if ((args.command_type == DoTexSubImageArguments::kTexSubImage2D &&
+  if ((args.command_type ==
+           DoTexSubImageArguments::CommandType::kTexSubImage2D &&
        !validators->texture_target.IsValid(args.target)) ||
-      (args.command_type == DoTexSubImageArguments::kTexSubImage3D &&
+      (args.command_type ==
+           DoTexSubImageArguments::CommandType::kTexSubImage3D &&
        !validators->texture_3_d_target.IsValid(args.target))) {
     ERRORSTATE_SET_GL_ERROR_INVALID_ENUM(error_state, function_name,
                                          args.target, "target");
@@ -3201,7 +3225,8 @@ void TextureManager::ValidateAndDoTexSubImage(
       args.width != tex_width || args.height != tex_height ||
       args.depth != tex_depth) {
     gfx::Rect cleared_rect;
-    if (args.command_type == DoTexSubImageArguments::kTexSubImage2D &&
+    if (args.command_type ==
+            DoTexSubImageArguments::CommandType::kTexSubImage2D &&
         CombineAdjacentRects(
             texture->GetLevelClearedRect(args.target, args.level),
             gfx::Rect(args.xoffset, args.yoffset, args.width, args.height),
@@ -3230,7 +3255,8 @@ void TextureManager::ValidateAndDoTexSubImage(
   if (texture_state->unpack_overlapping_rows_separately_unpack_buffer &&
       buffer) {
     ContextState::Dimension dimension =
-        (args.command_type == DoTexSubImageArguments::kTexSubImage3D)
+        (args.command_type ==
+         DoTexSubImageArguments::CommandType::kTexSubImage3D)
             ? ContextState::k3D
             : ContextState::k2D;
     const PixelStoreParams unpack_params(state->GetUnpackParams(dimension));
@@ -3245,7 +3271,8 @@ void TextureManager::ValidateAndDoTexSubImage(
     }
   }
 
-  if (args.command_type == DoTexSubImageArguments::kTexSubImage3D &&
+  if (args.command_type ==
+          DoTexSubImageArguments::CommandType::kTexSubImage3D &&
       texture_state->unpack_image_height_workaround_with_unpack_buffer &&
       buffer) {
     ContextState::Dimension dimension = ContextState::k3D;
@@ -3276,7 +3303,8 @@ void TextureManager::ValidateAndDoTexSubImage(
     texture->GetLevelType(args.target, args.level, &tex_type, &internal_format);
     // NOTE: In OpenGL ES 2/3 border is always zero. If that changes we'll need
     // to look it up.
-    if (args.command_type == DoTexSubImageArguments::kTexSubImage3D) {
+    if (args.command_type ==
+        DoTexSubImageArguments::CommandType::kTexSubImage3D) {
       glTexImage3D(args.target, args.level,
                    AdjustTexInternalFormat(feature_info_.get(), internal_format,
                                            args.type),
@@ -3293,7 +3321,8 @@ void TextureManager::ValidateAndDoTexSubImage(
     }
   } else {
     TRACE_EVENT0("gpu", "SubImage");
-    if (args.command_type == DoTexSubImageArguments::kTexSubImage3D) {
+    if (args.command_type ==
+        DoTexSubImageArguments::CommandType::kTexSubImage3D) {
       glTexSubImage3D(args.target, args.level, args.xoffset, args.yoffset,
                       args.zoffset, args.width, args.height, args.depth,
                       AdjustTexFormat(feature_info_.get(), args.format),
@@ -3315,7 +3344,8 @@ void TextureManager::DoTexSubImageWithAlignmentWorkaround(
   DCHECK(args.width > 0 && args.height > 0 && args.depth > 0);
 
   uint32_t offset = ToGLuint(args.pixels);
-  if (args.command_type == DoTexSubImageArguments::kTexSubImage2D) {
+  if (args.command_type ==
+      DoTexSubImageArguments::CommandType::kTexSubImage2D) {
     PixelStoreParams params = state->GetUnpackParams(ContextState::k2D);
     if (args.height > 1) {
       glTexSubImage2D(args.target, args.level, args.xoffset, args.yoffset,
@@ -3436,7 +3466,8 @@ void TextureManager::DoTexSubImageRowByRowWorkaround(
     row_bytes += unpack_params.alignment - alignment_diff;
   }
   DCHECK_EQ(0, row_bytes % unpack_params.alignment);
-  if (args.command_type == DoTexSubImageArguments::kTexSubImage3D) {
+  if (args.command_type ==
+      DoTexSubImageArguments::CommandType::kTexSubImage3D) {
     GLsizei image_height = args.height;
     if (unpack_params.image_height != 0) {
       image_height = unpack_params.image_height;
@@ -3651,7 +3682,7 @@ void TextureManager::DoTexImage(DecoderTextureState* texture_state,
 
   ERRORSTATE_COPY_REAL_GL_ERRORS_TO_WRAPPER(error_state, function_name);
   {
-    if (args.command_type == DoTexImageArguments::kTexImage3D) {
+    if (args.command_type == DoTexImageArguments::CommandType::kTexImage3D) {
       glTexImage3D(args.target, args.level,
                    AdjustTexInternalFormat(feature_info_.get(),
                                            args.internal_format, args.type),
@@ -3668,7 +3699,7 @@ void TextureManager::DoTexImage(DecoderTextureState* texture_state,
     }
   }
   GLenum error = ERRORSTATE_PEEK_GL_ERROR(error_state, function_name);
-  if (args.command_type == DoTexImageArguments::kTexImage3D) {
+  if (args.command_type == DoTexImageArguments::CommandType::kTexImage3D) {
     UMA_HISTOGRAM_CUSTOM_ENUMERATION("GPU.Error_TexImage3D", error,
         GetAllGLErrors());
   } else {

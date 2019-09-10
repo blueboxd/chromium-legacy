@@ -54,6 +54,56 @@ const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     "by Blink, but based on a user initiated navigation."
   )");
 
+// A class to provide a network::mojom::URLLoader interface to redirect a
+// request to the BundledExchanges to the main resource url.
+class PrimaryURLRedirectLoader final : public network::mojom::URLLoader {
+ public:
+  PrimaryURLRedirectLoader(
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client)
+      : client_(std::move(client)) {}
+
+  void OnReadyToRedirect(const network::ResourceRequest& resource_request,
+                         const GURL& url) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    DCHECK(client_.is_connected());
+    network::ResourceResponseHead response_head;
+    response_head.encoded_data_length = 0;
+    response_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+        net::HttpUtil::AssembleRawHeaders(
+            base::StringPrintf("HTTP/1.1 %d %s\r\n", 303, "See Other")));
+
+    net::RedirectInfo redirect_info = net::RedirectInfo::ComputeRedirectInfo(
+        "GET", resource_request.url, resource_request.site_for_cookies,
+        resource_request.top_frame_origin,
+        resource_request.update_first_party_url_on_redirect
+            ? net::URLRequest::FirstPartyURLPolicy::
+                  UPDATE_FIRST_PARTY_URL_ON_REDIRECT
+            : net::URLRequest::FirstPartyURLPolicy::
+                  NEVER_CHANGE_FIRST_PARTY_URL,
+        resource_request.referrer_policy, resource_request.referrer.spec(), 303,
+        url, /*referrer_policy_header=*/base::nullopt,
+        /*insecure_scheme_was_upgraded=*/false, /*copy_fragment=*/true,
+        /*is_signed_exchange_fallback_redirect=*/false);
+    client_->OnReceiveRedirect(redirect_info, response_head);
+  }
+
+ private:
+  // mojom::URLLoader overrides:
+  void FollowRedirect(const std::vector<std::string>& removed_headers,
+                      const net::HttpRequestHeaders& modified_headers,
+                      const base::Optional<GURL>& new_url) override {}
+  void SetPriority(net::RequestPriority priority,
+                   int intra_priority_value) override {}
+  void PauseReadingBodyFromNet() override {}
+  void ResumeReadingBodyFromNet() override {}
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  mojo::Remote<network::mojom::URLLoaderClient> client_;
+
+  DISALLOW_COPY_AND_ASSIGN(PrimaryURLRedirectLoader);
+};
+
 // A class to inherit NavigationLoaderInterceptor for the navigation to a
 // BundledExchanges.
 class Interceptor final : public NavigationLoaderInterceptor {
@@ -88,69 +138,6 @@ class Interceptor final : public NavigationLoaderInterceptor {
 };
 
 }  // namespace
-
-// A class to provide a network::mojom::URLLoader interface to redirect a
-// request to the BundledExchanges to the main resource url.
-class BundledExchangesHandle::PrimaryURLRedirectLoader final
-    : public network::mojom::URLLoader {
- public:
-  PrimaryURLRedirectLoader(
-      const network::ResourceRequest& resource_request,
-      mojo::PendingRemote<network::mojom::URLLoaderClient> client)
-      : client_(std::move(client)) {
-    redirect_info_ = net::RedirectInfo::ComputeRedirectInfo(
-        "GET", resource_request.url, resource_request.site_for_cookies,
-        resource_request.top_frame_origin,
-        resource_request.update_first_party_url_on_redirect
-            ? net::URLRequest::FirstPartyURLPolicy::
-                  UPDATE_FIRST_PARTY_URL_ON_REDIRECT
-            : net::URLRequest::FirstPartyURLPolicy::
-                  NEVER_CHANGE_FIRST_PARTY_URL,
-        resource_request.referrer_policy, resource_request.referrer.spec(), 303,
-        GURL(), /*referrer_policy_header=*/base::nullopt,
-        /*insecure_scheme_was_upgraded=*/false, /*copy_fragment=*/true,
-        /*is_signed_exchange_fallback_redirect=*/false);
-  }
-
-  void OnReadyToRedirect(
-      const GURL& url,
-      data_decoder::mojom::BundleMetadataParseErrorPtr error) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    DCHECK(client_.is_connected());
-
-    // TODO(crbug.com/966753): Handle |error|.
-
-    network::ResourceResponseHead response_head;
-    response_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-        net::HttpUtil::AssembleRawHeaders(
-            base::StringPrintf("HTTP/1.1 %d %s\r\n", 303, "See Other")));
-    redirect_info_.new_url = url;
-    client_->OnReceiveRedirect(redirect_info_, response_head);
-  }
-
-  base::WeakPtr<PrimaryURLRedirectLoader> GetWeakPtr() {
-    return weak_factory_.GetWeakPtr();
-  }
-
- private:
-  // mojom::URLLoader overrides:
-  void FollowRedirect(const std::vector<std::string>& removed_headers,
-                      const net::HttpRequestHeaders& modified_headers,
-                      const base::Optional<GURL>& new_url) override {}
-  void SetPriority(net::RequestPriority priority,
-                   int intra_priority_value) override {}
-  void PauseReadingBodyFromNet() override {}
-  void ResumeReadingBodyFromNet() override {}
-
-  SEQUENCE_CHECKER(sequence_checker_);
-
-  mojo::Remote<network::mojom::URLLoaderClient> client_;
-  net::RedirectInfo redirect_info_;
-
-  base::WeakPtrFactory<PrimaryURLRedirectLoader> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PrimaryURLRedirectLoader);
-};
 
 BundledExchangesHandle::BundledExchangesHandle() {}
 
@@ -223,14 +210,10 @@ void BundledExchangesHandle::CreateURLLoader(
   }
 
   auto redirect_loader =
-      std::make_unique<BundledExchangesHandle::PrimaryURLRedirectLoader>(
-          resource_request, client.PassInterface());
-  redirect_loader->OnReadyToRedirect(std::move(primary_url_),
-                                     std::move(metadata_error_));
-  std::unique_ptr<network::mojom::URLLoader> url_loader(
-      std::move(redirect_loader));
+      std::make_unique<PrimaryURLRedirectLoader>(client.PassInterface());
+  redirect_loader->OnReadyToRedirect(resource_request, primary_url_);
   mojo::MakeSelfOwnedReceiver(
-      std::move(url_loader),
+      std::move(redirect_loader),
       mojo::PendingReceiver<network::mojom::URLLoader>(std::move(request)));
 }
 

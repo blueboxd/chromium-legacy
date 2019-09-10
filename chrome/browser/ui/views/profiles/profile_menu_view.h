@@ -83,7 +83,7 @@ class ProfileMenuView : public ProfileMenuViewBase, public AvatarMenuObserver {
   void OnSigninButtonClicked();
   void OnSigninAccountButtonClicked(AccountInfo account);
   void OnSignoutButtonClicked();
-  void OnOtherProfileButtonClicked(int profile_index);
+  void OnOtherProfileSelected(const base::FilePath& profile_path);
   void OnCookiesClearedOnExitLinkClicked();
 
   // Should be called inside each button/link action.
@@ -100,6 +100,7 @@ class ProfileMenuView : public ProfileMenuViewBase, public AvatarMenuObserver {
   // Helper methods for building the menu.
   void BuildIdentity();
   void BuildAutofillButtons();
+  void BuildSelectableProfiles();
 
   // Adds the profile chooser view.
   void AddProfileMenuView(AvatarMenu* avatar_menu);

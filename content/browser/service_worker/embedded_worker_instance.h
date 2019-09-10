@@ -34,6 +34,7 @@
 #include "third_party/blink/public/mojom/service_worker/embedded_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
+#include "third_party/blink/public/mojom/worker/subresource_loader_updater.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -370,7 +371,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
 
   // Remote interface to talk to a running service worker. Used to update
   // subresource loader factories in the service worker.
-  mojo::Remote<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+  mojo::Remote<blink::mojom::SubresourceLoaderUpdater>
       subresource_loader_updater_;
 
   base::WeakPtrFactory<EmbeddedWorkerInstance> weak_factory_{this};

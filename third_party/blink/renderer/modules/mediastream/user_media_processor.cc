@@ -263,7 +263,7 @@ UserMediaRequestInfo::UserMediaRequestInfo(
       is_processing_user_gesture(is_processing_user_gesture) {}
 
 // Class for storing state of the the processing of getUserMedia requests.
-class UserMediaProcessor::RequestInfo
+class UserMediaProcessor::RequestInfo final
     : public GarbageCollectedFinalized<UserMediaProcessor::RequestInfo> {
  public:
   using ResourcesReady =

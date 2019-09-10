@@ -41,7 +41,7 @@ namespace blink {
 // TODO(ricea): Create internal versions of ReadableStreamDefaultReader::Read()
 // and WritableStreamDefaultWriter::Write() to bypass promise creation and so
 // reduce the number of allocations on the hot path.
-class ReadableStreamNative::PipeToEngine
+class ReadableStreamNative::PipeToEngine final
     : public GarbageCollectedFinalized<PipeToEngine> {
  public:
   PipeToEngine(ScriptState* script_state, PipeOptions pipe_options)

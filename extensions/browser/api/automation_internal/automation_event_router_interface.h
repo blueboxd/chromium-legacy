@@ -51,6 +51,11 @@ class AutomationEventRouterInterface {
       bool result,
       content::BrowserContext* browser_context = nullptr) = 0;
 
+  // Notify the source extension of the result to getTextLocation.
+  virtual void DispatchGetTextLocationDataResult(
+      const ui::AXActionData& data,
+      const base::Optional<gfx::Rect>& rect) {}
+
   AutomationEventRouterInterface() {}
   virtual ~AutomationEventRouterInterface() {}
 

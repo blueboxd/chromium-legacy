@@ -72,7 +72,8 @@ struct BluetoothDeviceInfo {
 
 // Factory to get an instance of the BluetoothSystem interface.
 interface BluetoothSystemFactory {
-  Create(BluetoothSystem& system, BluetoothSystemClient system_client);
+  Create(pending_receiver<BluetoothSystem> system,
+         BluetoothSystemClient system_client);
 };
 
 // High level interface targeted towards UI level components that:

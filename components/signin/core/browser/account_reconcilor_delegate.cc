@@ -184,6 +184,10 @@ bool AccountReconcilorDelegate::ShouldRevokeTokensOnCookieDeleted() {
   return false;
 }
 
+bool AccountReconcilorDelegate::ShouldRevokeTokensIfNoPrimaryAccount() const {
+  return true;
+}
+
 base::TimeDelta AccountReconcilorDelegate::GetReconcileTimeout() const {
   return base::TimeDelta::Max();
 }

@@ -63,7 +63,7 @@ class WeakHandleTest : public ::testing::Test {
     h.Call(from_here, &Base::Test);
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
 TEST_F(WeakHandleTest, Uninitialized) {

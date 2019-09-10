@@ -21,7 +21,7 @@ class Visitor;
 // need to be stored somewhere: promises on the stack should generally use
 // v8::Local<v8::Promise>, or ScriptPromise if they are to be returned to the
 // bindings code.
-class CORE_EXPORT StreamPromiseResolver
+class CORE_EXPORT StreamPromiseResolver final
     : public GarbageCollectedFinalized<StreamPromiseResolver> {
  public:
   // Implements "a promise rejected with" from the INFRA standard.

@@ -491,7 +491,7 @@ class HeapHashMap : public HashMap<KeyArg,
                                    KeyTraitsArg,
                                    MappedTraitsArg,
                                    HeapAllocator> {
-  IS_GARBAGE_COLLECTED_TYPE();
+  IS_GARBAGE_COLLECTED_CONTAINER_TYPE();
   DISALLOW_NEW();
 
   static void CheckType() {
@@ -524,7 +524,7 @@ template <typename ValueArg,
           typename TraitsArg = HashTraits<ValueArg>>
 class HeapHashSet
     : public HashSet<ValueArg, HashArg, TraitsArg, HeapAllocator> {
-  IS_GARBAGE_COLLECTED_TYPE();
+  IS_GARBAGE_COLLECTED_CONTAINER_TYPE();
   DISALLOW_NEW();
 
   static void CheckType() {
@@ -552,7 +552,7 @@ template <typename ValueArg,
           typename TraitsArg = HashTraits<ValueArg>>
 class HeapLinkedHashSet
     : public LinkedHashSet<ValueArg, HashArg, TraitsArg, HeapAllocator> {
-  IS_GARBAGE_COLLECTED_TYPE();
+  IS_GARBAGE_COLLECTED_CONTAINER_TYPE();
   DISALLOW_NEW();
   // HeapLinkedHashSet is using custom callbacks for compaction that rely on the
   // fact that the container itself does not move.
@@ -586,7 +586,7 @@ class HeapListHashSet
                          inlineCapacity,
                          HashArg,
                          HeapListHashSetAllocator<ValueArg, inlineCapacity>> {
-  IS_GARBAGE_COLLECTED_TYPE();
+  IS_GARBAGE_COLLECTED_CONTAINER_TYPE();
   DISALLOW_NEW();
 
   static void CheckType() {
@@ -614,7 +614,7 @@ template <typename Value,
           typename Traits = HashTraits<Value>>
 class HeapHashCountedSet
     : public HashCountedSet<Value, HashFunctions, Traits, HeapAllocator> {
-  IS_GARBAGE_COLLECTED_TYPE();
+  IS_GARBAGE_COLLECTED_CONTAINER_TYPE();
   DISALLOW_NEW();
 
   static void CheckType() {
@@ -639,7 +639,7 @@ class HeapHashCountedSet
 
 template <typename T, wtf_size_t inlineCapacity = 0>
 class HeapVector : public Vector<T, inlineCapacity, HeapAllocator> {
-  IS_GARBAGE_COLLECTED_TYPE();
+  IS_GARBAGE_COLLECTED_CONTAINER_TYPE();
   DISALLOW_NEW();
 
   static void CheckType() {
@@ -690,7 +690,7 @@ class HeapVector : public Vector<T, inlineCapacity, HeapAllocator> {
 
 template <typename T, wtf_size_t inlineCapacity = 0>
 class HeapDeque : public Deque<T, inlineCapacity, HeapAllocator> {
-  IS_GARBAGE_COLLECTED_TYPE();
+  IS_GARBAGE_COLLECTED_CONTAINER_TYPE();
   DISALLOW_NEW();
 
   static void CheckType() {

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "build/build_config.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
 #include "components/signin/internal/identity_manager/gaia_cookie_manager_service.h"
 #include "google_apis/gaia/core_account_id.h"
@@ -58,6 +59,12 @@ void AccountsCookieMutatorImpl::SetAccountsInCookie(
 void AccountsCookieMutatorImpl::TriggerCookieJarUpdate() {
   gaia_cookie_manager_service_->TriggerListAccounts();
 }
+
+#if defined(OS_IOS)
+void AccountsCookieMutatorImpl::ForceTriggerOnCookieChange() {
+  gaia_cookie_manager_service_->ForceOnCookieChangeProcessing();
+}
+#endif
 
 void AccountsCookieMutatorImpl::LogOutAllAccounts(gaia::GaiaSource source) {
   gaia_cookie_manager_service_->LogOutAllAccounts(source);

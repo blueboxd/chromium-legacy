@@ -158,12 +158,12 @@ void ToolbarPageActionIconContainerView::UpdateAvatarIconStateUi() {
   if (browser_->profile()->IsIncognitoProfile())
     return;
 
-  bool suppress_avatar_button_state = false;
+  bool autofill_icon_visible = false;
   for (PageActionIconView* icon_view : page_action_icons_) {
     if (icon_view->GetVisible()) {
-      suppress_avatar_button_state = true;
+      autofill_icon_visible = true;
       break;
     }
   }
-  avatar_->SetSuppressAvatarButtonState(suppress_avatar_button_state);
+  avatar_->SetAutofillIconVisible(autofill_icon_visible);
 }

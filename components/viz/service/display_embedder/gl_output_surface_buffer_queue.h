@@ -14,6 +14,7 @@
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display_embedder/gl_output_surface.h"
 #include "components/viz/service/display_embedder/viz_process_context_provider.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/swap_result.h"
@@ -57,11 +58,11 @@ class GLOutputSurfaceBufferQueue : public GLOutputSurface {
   // OutputSurface implementation.
   void BindFramebuffer() override;
   void SwapBuffers(OutputSurfaceFrame frame) override;
+  gfx::Rect GetCurrentFramebufferDamage() const override;
   uint32_t GetFramebufferCopyTextureFormat() override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
   gfx::BufferFormat GetOverlayBufferFormat() const override;
-  void SetDrawRectangle(const gfx::Rect& damage) override;
 
   // GLOutputSurface:
   void DidReceiveSwapBuffersAck(const gfx::SwapResponse& response) override;

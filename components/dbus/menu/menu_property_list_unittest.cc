@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/strings/utf_string_conversions.h"
-#include "components/dbus/menu/types.h"
+#include "components/dbus/properties/types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/models/menu_model.h"

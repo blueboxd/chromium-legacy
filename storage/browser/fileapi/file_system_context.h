@@ -279,12 +279,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
                                            FileSystemType type,
                                            const base::FilePath& path) const;
 
-#if defined(OS_CHROMEOS)
-  // Used only on ChromeOS for now. It can be removed when
-  // kEnableFilesystemInIncognito feature flag is removed.
-  void EnableTemporaryFileSystemInIncognito();
-#endif
-
   SandboxFileSystemBackendDelegate* sandbox_delegate() {
     return sandbox_delegate_.get();
   }

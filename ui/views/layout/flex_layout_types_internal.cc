@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <tuple>
 
+#include "base/numerics/ranges.h"
 #include "base/strings/stringprintf.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point.h"
@@ -73,8 +74,8 @@ void NormalizedSize::SetToMax(int main, int cross) {
 }
 
 void NormalizedSize::SetToMin(int main, int cross) {
-  main_ = std::max(0, std::min(main_, main));
-  cross_ = std::max(0, std::min(cross_, cross));
+  main_ = base::ClampToRange(main, 0, main_);
+  cross_ = base::ClampToRange(cross, 0, cross_);
 }
 
 void NormalizedSize::SetToMax(const NormalizedSize& other) {

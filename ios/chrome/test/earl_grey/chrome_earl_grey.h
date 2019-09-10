@@ -372,6 +372,9 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Returns YES if SettingsAddPaymentMethod feature is enabled.
 - (BOOL)isSettingsAddPaymentMethodEnabled WARN_UNUSED_RESULT;
 
+// Returns YES if CreditCardScanner feature is enabled.
+- (BOOL)isCreditCardScannerEnabled WARN_UNUSED_RESULT;
+
 #pragma mark - Popup Blocking
 
 // Gets the current value of the popup content setting preference for the

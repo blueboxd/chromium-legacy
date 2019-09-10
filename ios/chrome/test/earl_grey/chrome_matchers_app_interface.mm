@@ -21,6 +21,7 @@
 #import "ios/chrome/browser/ui/payments/payment_request_view_controller.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_constants.h"
+#import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
@@ -418,8 +419,20 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
       buttonWithAccessibilityLabelID:(IDS_AUTOFILL_PAYMENT_METHODS)];
 }
 
++ (id<GREYMatcher>)addCreditCardView {
+  return grey_accessibilityID(kAddCreditCardViewID);
+}
+
 + (id<GREYMatcher>)addPaymentMethodButton {
   return grey_accessibilityID(kSettingsAddPaymentMethodButtonId);
+}
+
++ (id<GREYMatcher>)addCreditCardButton {
+  return grey_accessibilityID(kSettingsAddCreditCardButtonID);
+}
+
++ (id<GREYMatcher>)addCreditCardCancelButton {
+  return grey_accessibilityID(kSettingsAddCreditCardCancelButtonID);
 }
 
 + (id<GREYMatcher>)toolsMenuView {

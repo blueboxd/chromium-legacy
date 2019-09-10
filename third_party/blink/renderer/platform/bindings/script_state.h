@@ -204,7 +204,7 @@ class PLATFORM_EXPORT ScriptState final
 // ScriptStateProtectingContext keeps the context associated with the
 // ScriptState alive.  You need to call Clear() once you no longer need the
 // context. Otherwise, the context will leak.
-class ScriptStateProtectingContext
+class ScriptStateProtectingContext final
     : public GarbageCollectedFinalized<ScriptStateProtectingContext> {
  public:
   explicit ScriptStateProtectingContext(ScriptState* script_state)

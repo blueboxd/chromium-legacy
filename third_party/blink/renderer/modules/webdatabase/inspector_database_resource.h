@@ -39,7 +39,7 @@
 namespace blink {
 class Database;
 
-class InspectorDatabaseResource
+class InspectorDatabaseResource final
     : public GarbageCollectedFinalized<InspectorDatabaseResource> {
  public:
   InspectorDatabaseResource(Database*,

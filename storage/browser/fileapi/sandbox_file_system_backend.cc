@@ -19,7 +19,6 @@
 #include "storage/browser/fileapi/file_stream_reader.h"
 #include "storage/browser/fileapi/file_stream_writer.h"
 #include "storage/browser/fileapi/file_system_context.h"
-#include "storage/browser/fileapi/file_system_features.h"
 #include "storage/browser/fileapi/file_system_operation.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/fileapi/file_system_options.h"
@@ -38,9 +37,7 @@ namespace storage {
 
 SandboxFileSystemBackend::SandboxFileSystemBackend(
     SandboxFileSystemBackendDelegate* delegate)
-    : delegate_(delegate),
-      enable_temporary_file_system_in_incognito_(base::FeatureList::IsEnabled(
-          features::kEnableFilesystemInIncognito)) {}
+    : delegate_(delegate) {}
 
 SandboxFileSystemBackend::~SandboxFileSystemBackend() = default;
 
@@ -68,8 +65,7 @@ void SandboxFileSystemBackend::ResolveURL(const FileSystemURL& url,
   DCHECK(CanHandleType(url.type()));
   DCHECK(delegate_);
   if (delegate_->file_system_options().is_incognito() &&
-      !(url.type() == kFileSystemTypeTemporary &&
-        enable_temporary_file_system_in_incognito_)) {
+      url.type() != kFileSystemTypeTemporary) {
     // TODO(kinuko): return an isolated temporary directory.
     std::move(callback).Run(GURL(), std::string(),
                             base::File::FILE_ERROR_SECURITY);

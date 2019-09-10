@@ -53,7 +53,7 @@ class ImageDataFetcherTest : public testing::Test {
                void(const std::string&, const RequestMetadata&));
 
  protected:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;

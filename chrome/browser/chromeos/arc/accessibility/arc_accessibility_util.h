@@ -12,9 +12,11 @@
 namespace arc {
 namespace mojom {
 enum class AccessibilityEventType;
+class AccessibilityNodeInfoData;
 }  // namespace mojom
 
-ax::mojom::Event ToAXEvent(mojom::AccessibilityEventType arc_event_type);
+ax::mojom::Event ToAXEvent(mojom::AccessibilityEventType arc_event_type,
+                           mojom::AccessibilityNodeInfoData* node_info_data);
 
 }  // namespace arc
 

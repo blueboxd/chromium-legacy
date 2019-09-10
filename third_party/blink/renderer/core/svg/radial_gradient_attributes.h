@@ -114,7 +114,7 @@ struct RadialGradientAttributes final : GradientAttributes {
 };
 
 // Wrapper object for the RadialGradientAttributes part object.
-class RadialGradientAttributesWrapper
+class RadialGradientAttributesWrapper final
     : public GarbageCollectedFinalized<RadialGradientAttributesWrapper> {
  public:
   RadialGradientAttributesWrapper() = default;

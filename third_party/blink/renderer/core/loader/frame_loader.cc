@@ -57,7 +57,6 @@
 #include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/ignore_opens_during_unload_count_incrementer.h"
 #include "third_party/blink/renderer/core/events/page_transition_event.h"
@@ -206,11 +205,8 @@ void FrameLoader::Init() {
       frame_, kWebNavigationTypeOther, std::move(navigation_params),
       nullptr /* extra_data */);
   provisional_document_loader_->StartLoading();
-  WillCommitNavigation();
-  if (!DetachDocument())
-    return;
 
-  CommitDocumentLoader(provisional_document_loader_.Release());
+  CommitDocumentLoader(provisional_document_loader_.Release(), base::nullopt);
 
   // Load the document if needed.
   document_loader_->StartLoadingResponse();
@@ -299,21 +295,20 @@ void FrameLoader::SaveScrollState() {
   Client()->DidUpdateCurrentHistoryItem();
 }
 
-void FrameLoader::DispatchUnloadEvent() {
+void FrameLoader::DispatchUnloadEvent(
+    SecurityOrigin* committing_origin,
+    base::Optional<Document::UnloadEventTiming>* timing) {
   FrameNavigationDisabler navigation_disabler(*frame_);
   SaveScrollState();
 
   Document* document = frame_->GetDocument();
   if (document && !SVGImage::IsInSVGImage(document)) {
-    document->DispatchUnloadEvents(
-        provisional_document_loader_
-            ? &provisional_document_loader_->GetTiming()
-            : nullptr);
+    document->DispatchUnloadEvents(committing_origin, timing);
     // Remove event listeners if we're firing unload events for a reason other
     // than committing a navigation. In the commit case, we'll determine whether
     // event listeners should be retained when choosing whether to reuse the
     // LocalDOMWindow.
-    if (!provisional_document_loader_)
+    if (!timing)
       document->RemoveAllEventListenersRecursively();
   }
 }
@@ -917,6 +912,10 @@ void FrameLoader::CommitNavigation(
     DCHECK(history_item);
   }
 
+  base::Optional<Document::UnloadEventTiming> unload_timing;
+  scoped_refptr<SecurityOrigin> security_origin =
+      SecurityOrigin::Create(navigation_params->url);
+
   // TODO(dgozman): get rid of provisional document loader and most of the code
   // below. We should probably call DocumentLoader::CommitNavigation directly.
   DocumentLoader* provisional_document_loader = Client()->CreateDocumentLoader(
@@ -941,15 +940,15 @@ void FrameLoader::CommitNavigation(
     virtual_time_pauser_.PauseVirtualTime();
 
     provisional_document_loader_->StartLoading();
-    WillCommitNavigation();
-
-    if (!DetachDocument())
+    virtual_time_pauser_.UnpauseVirtualTime();
+    DCHECK(Client()->HasWebView());
+    if (!DetachDocument(security_origin.get(), &unload_timing))
       return;
   }
 
   std::move(call_before_attaching_new_document).Run();
 
-  CommitDocumentLoader(provisional_document_loader_.Release());
+  CommitDocumentLoader(provisional_document_loader_.Release(), unload_timing);
 
   // Load the document if needed.
   document_loader_->StartLoadingResponse();
@@ -1012,7 +1011,9 @@ void FrameLoader::DidAccessInitialDocument() {
   }
 }
 
-bool FrameLoader::DetachDocument() {
+bool FrameLoader::DetachDocument(
+    SecurityOrigin* committing_origin,
+    base::Optional<Document::UnloadEventTiming>* timing) {
   PluginScriptForbiddenScope forbid_plugin_destructor_scripting;
   DocumentLoader* pdl = provisional_document_loader_;
 
@@ -1031,7 +1032,7 @@ bool FrameLoader::DetachDocument() {
   IgnoreOpensDuringUnloadCountIncrementer ignore_opens_during_unload(
       frame_->GetDocument());
   if (document_loader_)
-    DispatchUnloadEvent();
+    DispatchUnloadEvent(committing_origin, timing);
   frame_->DetachChildren();
   // The previous calls to dispatchUnloadEvent() and detachChildren() can
   // execute arbitrary script via things like unload events. If the executed
@@ -1065,24 +1066,22 @@ bool FrameLoader::DetachDocument() {
   return true;
 }
 
-void FrameLoader::WillCommitNavigation() {
-  DCHECK(Client()->HasWebView());
-
-  // Check if the destination page is allowed to access the previous page's
-  // timing information.
-  if (frame_->GetDocument()) {
-    scoped_refptr<const SecurityOrigin> security_origin =
-        SecurityOrigin::Create(provisional_document_loader_->Url());
-    provisional_document_loader_->GetTiming()
-        .SetHasSameOriginAsPreviousDocument(
-            security_origin->CanRequest(frame_->GetDocument()->Url()));
-  }
-  virtual_time_pauser_.UnpauseVirtualTime();
-}
-
-void FrameLoader::CommitDocumentLoader(DocumentLoader* document_loader) {
+void FrameLoader::CommitDocumentLoader(
+    DocumentLoader* document_loader,
+    const base::Optional<Document::UnloadEventTiming>& unload_timing) {
   document_loader_ = document_loader;
   CHECK(document_loader_);
+
+  // Update the DocumentLoadTiming with the timings from the previous document
+  // unload event.
+  if (unload_timing.has_value()) {
+    document_loader_->GetTiming().SetHasSameOriginAsPreviousDocument(true);
+    document_loader_->GetTiming().MarkUnloadEventStart(
+        unload_timing->unload_event_start);
+    document_loader_->GetTiming().MarkUnloadEventEnd(
+        unload_timing->unload_event_end);
+  }
+
   document_loader_->MarkAsCommitted();
 
   TakeObjectSnapshot();

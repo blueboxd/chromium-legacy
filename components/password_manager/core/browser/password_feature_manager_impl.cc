@@ -19,6 +19,7 @@ bool PasswordFeatureManagerImpl::IsGenerationEnabled() const {
       return false;
     case SYNCING_WITH_CUSTOM_PASSPHRASE:
     case SYNCING_NORMAL_ENCRYPTION:
+    case ACCOUNT_PASSWORDS_ACTIVE_NORMAL_ENCRYPTION:
       return true;
   }
 }
@@ -32,6 +33,7 @@ bool PasswordFeatureManagerImpl::ShouldCheckReuseOnLeakDetection() const {
     case SYNCING_WITH_CUSTOM_PASSPHRASE:
       return false;
     case SYNCING_NORMAL_ENCRYPTION:
+    case ACCOUNT_PASSWORDS_ACTIVE_NORMAL_ENCRYPTION:
       return true;
   }
 }

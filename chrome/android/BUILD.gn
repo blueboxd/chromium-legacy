@@ -420,7 +420,6 @@ android_library("chrome_java") {
     "//chrome:payments_journey_logger_enum_javagen",
     "//chrome:pref_enum_javagen",
     "//chrome:quick_action_category_enum_javagen",
-    "//chrome:signin_metrics_enum_javagen",
     "//chrome/browser/notifications/scheduler/public:jni_enums",
     "//chrome/browser:sharing_device_capability_generated_enum",
     "//chrome/browser:sharing_send_message_result_generated_enum",

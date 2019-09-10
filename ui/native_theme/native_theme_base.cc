@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/numerics/ranges.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_shader.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -964,8 +965,10 @@ SkColor NativeThemeBase::SaturateAndBrighten(SkScalar* hsv,
                                              SkScalar brighten_amount) const {
   SkScalar color[3];
   color[0] = hsv[0];
-  color[1] = Clamp(hsv[1] + saturate_amount, 0.0, 1.0);
-  color[2] = Clamp(hsv[2] + brighten_amount, 0.0, 1.0);
+  color[1] =
+      base::ClampToRange(hsv[1] + saturate_amount, SkScalar{0}, SK_Scalar1);
+  color[2] =
+      base::ClampToRange(hsv[2] + brighten_amount, SkScalar{0}, SK_Scalar1);
   return SkHSVToColor(color);
 }
 
@@ -1012,12 +1015,6 @@ void NativeThemeBase::DrawBox(cc::PaintCanvas* canvas,
   DrawVertLine(canvas, rect.x(), rect.y(), bottom, flags);
 }
 
-SkScalar NativeThemeBase::Clamp(SkScalar value,
-                                SkScalar min,
-                                SkScalar max) const {
-  return std::min(std::max(value, min), max);
-}
-
 SkColor NativeThemeBase::OutlineColor(SkScalar* hsv1, SkScalar* hsv2) const {
   // GTK Theme engines have way too much control over the layout of
   // the scrollbar. We might be able to more closely approximate its
@@ -1046,8 +1043,10 @@ SkColor NativeThemeBase::OutlineColor(SkScalar* hsv1, SkScalar* hsv2) const {
   //
   // The following code has been tested to look OK with all of the
   // default GTK themes.
-  SkScalar min_diff = Clamp((hsv1[1] + hsv2[1]) * 1.2f, 0.28f, 0.5f);
-  SkScalar diff = Clamp(fabs(hsv1[2] - hsv2[2]) / 2, min_diff, 0.5f);
+  SkScalar min_diff =
+      base::ClampToRange((hsv1[1] + hsv2[1]) * 1.2f, 0.28f, 0.5f);
+  SkScalar diff =
+      base::ClampToRange(fabs(hsv1[2] - hsv2[2]) / 2, min_diff, 0.5f);
 
   if (hsv1[2] + hsv2[2] > 1.0)
     diff = -diff;

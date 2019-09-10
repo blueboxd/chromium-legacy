@@ -303,13 +303,10 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
       return nullptr;
     }
 
-    viz::ResourceFormat resource_format = viz::GetResourceFormat(buffer_format);
-
     return base::WrapUnique(new ExternalVkImageBacking(
-        mailbox, viz::GetResourceFormat(buffer_format), size, color_space,
-        usage, context_state, vk_image, vk_device_memory, memory_size,
-        vk_image_info.format, command_pool, ycbcr_info,
-        GetDawnFormat(resource_format), {}));
+        mailbox, resource_format, size, color_space, usage, context_state,
+        vk_image, vk_device_memory, memory_size, vk_image_info.format,
+        command_pool, ycbcr_info, GetDawnFormat(resource_format), {}));
   }
 
   if (gfx::NumberOfPlanesForLinearBufferFormat(buffer_format) != 1) {
@@ -788,8 +785,8 @@ bool ExternalVkImageBacking::WritePixels(size_t data_size,
   {
     ScopedSingleUseCommandBufferRecorder recorder(*command_buffer);
     GrVkImageInfo image_info;
-    bool result = backend_texture_.getVkImageInfo(&image_info);
-    DCHECK(result);
+    bool success = backend_texture_.getVkImageInfo(&image_info);
+    DCHECK(success);
     if (image_info.fImageLayout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
       command_buffer->TransitionImageLayout(
           image_info.fImage, image_info.fImageLayout,

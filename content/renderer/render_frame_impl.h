@@ -786,9 +786,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidBlockNavigation(const blink::WebURL& blocked_url,
                           const blink::WebURL& initiator_url,
                           blink::NavigationBlockedReason reason) override;
-  void NavigateBackForwardSoon(int offset,
-                               bool has_user_gesture,
-                               bool from_script) override;
+  void NavigateBackForwardSoon(int offset, bool has_user_gesture) override;
   base::UnguessableToken GetDevToolsFrameToken() override;
   void RenderFallbackContentInParentProcess() override;
   void AbortClientNavigation() override;

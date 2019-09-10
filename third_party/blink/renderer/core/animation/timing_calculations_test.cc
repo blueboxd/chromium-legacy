@@ -317,7 +317,7 @@ TEST(AnimationTimingCalculationsTest, CalculateDirectedProgress) {
 
 TEST(AnimationTimingCalculationsTest, TransformedProgress) {
   // CalculateTransformedProgress(
-  //     phase, directed_progress, iteration_duraction,
+  //     phase, directed_progress,
   //     is_current_direction_forward, timing_function)
 
   scoped_refptr<TimingFunction> timing_function =
@@ -325,53 +325,53 @@ TEST(AnimationTimingCalculationsTest, TransformedProgress) {
 
   // directed_progress is null.
   EXPECT_FALSE(CalculateTransformedProgress(Timing::kPhaseActive, base::nullopt,
-                                            1, true, timing_function));
+                                            true, timing_function));
 
   // At step boundaries.
   // Forward direction.
-  EXPECT_EQ(0, CalculateTransformedProgress(Timing::kPhaseBefore, 0, 1, true,
+  EXPECT_EQ(0, CalculateTransformedProgress(Timing::kPhaseBefore, 0, true,
                                             timing_function));
-  EXPECT_EQ(0, CalculateTransformedProgress(Timing::kPhaseBefore, 0.25, 1, true,
+  EXPECT_EQ(0, CalculateTransformedProgress(Timing::kPhaseBefore, 0.25, true,
                                             timing_function));
-  EXPECT_EQ(0.25, CalculateTransformedProgress(Timing::kPhaseAfter, 0.25, 1,
-                                               true, timing_function));
-  EXPECT_EQ(0.25, CalculateTransformedProgress(Timing::kPhaseBefore, 0.5, 1,
-                                               true, timing_function));
-  EXPECT_EQ(0.5, CalculateTransformedProgress(Timing::kPhaseAfter, 0.5, 1, true,
-                                              timing_function));
-  EXPECT_EQ(0.5, CalculateTransformedProgress(Timing::kPhaseBefore, 0.75, 1,
-                                              true, timing_function));
-  EXPECT_EQ(0.75, CalculateTransformedProgress(Timing::kPhaseAfter, 0.75, 1,
-                                               true, timing_function));
-  EXPECT_EQ(0.75, CalculateTransformedProgress(Timing::kPhaseBefore, 1, 1, true,
+  EXPECT_EQ(0.25, CalculateTransformedProgress(Timing::kPhaseAfter, 0.25, true,
                                                timing_function));
-  EXPECT_EQ(1, CalculateTransformedProgress(Timing::kPhaseAfter, 1, 1, true,
+  EXPECT_EQ(0.25, CalculateTransformedProgress(Timing::kPhaseBefore, 0.5, true,
+                                               timing_function));
+  EXPECT_EQ(0.5, CalculateTransformedProgress(Timing::kPhaseAfter, 0.5, true,
+                                              timing_function));
+  EXPECT_EQ(0.5, CalculateTransformedProgress(Timing::kPhaseBefore, 0.75, true,
+                                              timing_function));
+  EXPECT_EQ(0.75, CalculateTransformedProgress(Timing::kPhaseAfter, 0.75, true,
+                                               timing_function));
+  EXPECT_EQ(0.75, CalculateTransformedProgress(Timing::kPhaseBefore, 1, true,
+                                               timing_function));
+  EXPECT_EQ(1, CalculateTransformedProgress(Timing::kPhaseAfter, 1, true,
                                             timing_function));
   // Reverse direction.
-  EXPECT_EQ(1, CalculateTransformedProgress(Timing::kPhaseBefore, 1, 1, false,
+  EXPECT_EQ(1, CalculateTransformedProgress(Timing::kPhaseBefore, 1, false,
                                             timing_function));
-  EXPECT_EQ(0.75, CalculateTransformedProgress(Timing::kPhaseAfter, 1, 1, false,
+  EXPECT_EQ(0.75, CalculateTransformedProgress(Timing::kPhaseAfter, 1, false,
                                                timing_function));
-  EXPECT_EQ(0.75, CalculateTransformedProgress(Timing::kPhaseBefore, 0.75, 1,
+  EXPECT_EQ(0.75, CalculateTransformedProgress(Timing::kPhaseBefore, 0.75,
                                                false, timing_function));
-  EXPECT_EQ(0.5, CalculateTransformedProgress(Timing::kPhaseAfter, 0.75, 1,
-                                              false, timing_function));
-  EXPECT_EQ(0.5, CalculateTransformedProgress(Timing::kPhaseBefore, 0.5, 1,
-                                              false, timing_function));
-  EXPECT_EQ(0.25, CalculateTransformedProgress(Timing::kPhaseAfter, 0.5, 1,
+  EXPECT_EQ(0.5, CalculateTransformedProgress(Timing::kPhaseAfter, 0.75, false,
+                                              timing_function));
+  EXPECT_EQ(0.5, CalculateTransformedProgress(Timing::kPhaseBefore, 0.5, false,
+                                              timing_function));
+  EXPECT_EQ(0.25, CalculateTransformedProgress(Timing::kPhaseAfter, 0.5, false,
+                                               timing_function));
+  EXPECT_EQ(0.25, CalculateTransformedProgress(Timing::kPhaseBefore, 0.25,
                                                false, timing_function));
-  EXPECT_EQ(0.25, CalculateTransformedProgress(Timing::kPhaseBefore, 0.25, 1,
-                                               false, timing_function));
-  EXPECT_EQ(0, CalculateTransformedProgress(Timing::kPhaseAfter, 0.25, 1, false,
+  EXPECT_EQ(0, CalculateTransformedProgress(Timing::kPhaseAfter, 0.25, false,
                                             timing_function));
 
   // Edges cases
-  EXPECT_EQ(1, CalculateTransformedProgress(Timing::kPhaseAfter, 1 - 1e-16, 1,
+  EXPECT_EQ(1, CalculateTransformedProgress(Timing::kPhaseAfter, 1 - 1e-16,
                                             true, timing_function));
   scoped_refptr<TimingFunction> step_start_timing_function =
       StepsTimingFunction::Create(4, StepsTimingFunction::StepPosition::START);
-  EXPECT_EQ(0, CalculateTransformedProgress(Timing::kPhaseAfter, 1e-16, 1,
-                                            false, step_start_timing_function));
+  EXPECT_EQ(0, CalculateTransformedProgress(Timing::kPhaseAfter, 1e-16, false,
+                                            step_start_timing_function));
 }
 
 }  // namespace blink

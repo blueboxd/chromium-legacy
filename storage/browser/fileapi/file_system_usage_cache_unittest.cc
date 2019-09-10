@@ -11,9 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "storage/browser/fileapi/file_system_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using storage::FileSystemUsageCache;
@@ -23,12 +21,7 @@ namespace content {
 class FileSystemUsageCacheTest : public testing::Test,
                                  public ::testing::WithParamInterface<bool> {
  public:
-  FileSystemUsageCacheTest() : usage_cache_(is_incognito()) {
-    if (is_incognito()) {
-      feature_list_.InitAndEnableFeature(
-          storage::features::kEnableFilesystemInIncognito);
-    }
-  }
+  FileSystemUsageCacheTest() : usage_cache_(is_incognito()) {}
 
   void SetUp() override { ASSERT_TRUE(data_dir_.CreateUniqueTempDir()); }
 
@@ -42,7 +35,6 @@ class FileSystemUsageCacheTest : public testing::Test,
   FileSystemUsageCache* usage_cache() { return &usage_cache_; }
 
  private:
-  base::test::ScopedFeatureList feature_list_;
   base::test::SingleThreadTaskEnvironment task_environment_;
   base::ScopedTempDir data_dir_;
   FileSystemUsageCache usage_cache_;

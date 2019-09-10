@@ -458,6 +458,44 @@ TEST(ValuesTest, MoveList) {
   EXPECT_EQ(123, blank.GetList().back().GetInt());
 }
 
+TEST(ValuesTest, Append) {
+  ListValue value;
+  value.Append(true);
+  EXPECT_TRUE(value.GetList().back().is_bool());
+
+  value.Append(123);
+  EXPECT_TRUE(value.GetList().back().is_int());
+
+  value.Append(3.14);
+  EXPECT_TRUE(value.GetList().back().is_double());
+
+  std::string str = "foo";
+  value.Append(str.c_str());
+  EXPECT_TRUE(value.GetList().back().is_string());
+
+  value.Append(StringPiece(str));
+  EXPECT_TRUE(value.GetList().back().is_string());
+
+  value.Append(std::move(str));
+  EXPECT_TRUE(value.GetList().back().is_string());
+
+  string16 str16 = ASCIIToUTF16("bar");
+  value.Append(str16.c_str());
+  EXPECT_TRUE(value.GetList().back().is_string());
+
+  value.Append(base::StringPiece16(str16));
+  EXPECT_TRUE(value.GetList().back().is_string());
+
+  value.Append(Value());
+  EXPECT_TRUE(value.GetList().back().is_none());
+
+  value.Append(Value(Value::Type::DICTIONARY));
+  EXPECT_TRUE(value.GetList().back().is_dict());
+
+  value.Append(Value(Value::Type::LIST));
+  EXPECT_TRUE(value.GetList().back().is_list());
+}
+
 TEST(ValuesTest, FindKey) {
   Value::DictStorage storage;
   storage.emplace("foo", std::make_unique<Value>("bar"));

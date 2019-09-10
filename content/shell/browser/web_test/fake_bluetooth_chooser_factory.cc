@@ -11,11 +11,11 @@ namespace content {
 FakeBluetoothChooserFactory::~FakeBluetoothChooserFactory() {}
 
 void FakeBluetoothChooserFactory::CreateFakeBluetoothChooser(
-    mojom::FakeBluetoothChooserRequest request,
-    mojom::FakeBluetoothChooserClientAssociatedPtrInfo client_ptr_info) {
+    mojo::PendingReceiver<mojom::FakeBluetoothChooser> receiver,
+    mojom::FakeBluetoothChooserClientAssociatedPtrInfo client) {
   DCHECK(!next_fake_bluetooth_chooser_);
   next_fake_bluetooth_chooser_ = std::make_unique<FakeBluetoothChooser>(
-      std::move(request), std::move(client_ptr_info));
+      std::move(receiver), std::move(client));
 }
 
 std::unique_ptr<FakeBluetoothChooser>
@@ -24,7 +24,7 @@ FakeBluetoothChooserFactory::GetNextFakeBluetoothChooser() {
 }
 
 FakeBluetoothChooserFactory::FakeBluetoothChooserFactory(
-    mojom::FakeBluetoothChooserFactoryRequest request)
-    : binding_(this, std::move(request)) {}
+    mojo::PendingReceiver<mojom::FakeBluetoothChooserFactory> receiver)
+    : receiver_(this, std::move(receiver)) {}
 
 }  // namespace content

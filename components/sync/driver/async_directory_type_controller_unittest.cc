@@ -175,7 +175,8 @@ class AsyncDirectoryTypeControllerFake : public AsyncDirectoryTypeController {
 class SyncAsyncDirectoryTypeControllerTest : public testing::Test {
  public:
   SyncAsyncDirectoryTypeControllerTest()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
+      : task_environment_(
+            base::test::SingleThreadTaskEnvironment::MainThreadType::UI),
         backend_thread_("dbthread") {}
 
   void SetUp() override {
@@ -249,7 +250,7 @@ class SyncAsyncDirectoryTypeControllerTest : public testing::Test {
 
   static void SignalDone(WaitableEvent* done) { done->Signal(); }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   base::Thread backend_thread_;
 
   StartCallbackMock start_callback_;

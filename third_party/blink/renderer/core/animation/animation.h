@@ -421,7 +421,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   // CompositorAnimation objects need to eagerly sever their connection to their
   // Animation delegate; use a separate 'holder' on-heap object to accomplish
   // that.
-  class CompositorAnimationHolder
+  class CompositorAnimationHolder final
       : public GarbageCollectedFinalized<CompositorAnimationHolder> {
     USING_PRE_FINALIZER(CompositorAnimationHolder, Dispose);
 

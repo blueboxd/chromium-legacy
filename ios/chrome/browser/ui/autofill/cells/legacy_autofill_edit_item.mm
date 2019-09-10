@@ -7,6 +7,7 @@
 #include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
@@ -175,9 +176,9 @@ const CGFloat kLabelAndFieldGap = 5;
        withFontScaling:(BOOL)withFontScaling {
   if (cellStyle == CollectionViewCellStyle::kUIKit) {
     self.textLabel.font = [UIFont systemFontOfSize:kUIKitMainFontSize];
-    self.textLabel.textColor = UIColorFromRGB(kUIKitMainTextColor);
+    self.textLabel.textColor = UIColor.cr_labelColor;
     self.textField.font = [UIFont systemFontOfSize:kUIKitMainFontSize];
-    self.textField.textColor = [UIColor grayColor];
+    self.textField.textColor = UIColor.cr_secondaryLabelColor;
   } else {
     MaybeSetUILabelScaledFont(withFontScaling, self.textLabel,
                               [[MDCTypography fontLoader] mediumFontOfSize:14]);

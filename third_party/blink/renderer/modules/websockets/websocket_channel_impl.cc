@@ -102,7 +102,7 @@ class WebSocketChannelImpl::BlobLoader final
   std::unique_ptr<FileReaderLoader> loader_;
 };
 
-class WebSocketChannelImpl::Message
+class WebSocketChannelImpl::Message final
     : public GarbageCollectedFinalized<WebSocketChannelImpl::Message> {
  public:
   Message(const std::string&, base::OnceClosure completion_callback);

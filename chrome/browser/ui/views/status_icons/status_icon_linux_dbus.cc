@@ -17,9 +17,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/dbus/menu/menu.h"
-#include "components/dbus/menu/properties_interface.h"
-#include "components/dbus/menu/success_barrier_callback.h"
-#include "components/dbus/menu/types.h"
+#include "components/dbus/properties/dbus_properties.h"
+#include "components/dbus/properties/success_barrier_callback.h"
+#include "components/dbus/properties/types.h"
 #include "components/dbus/thread_linux/dbus_thread_linux.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
@@ -279,7 +279,7 @@ void StatusIconLinuxDbus::OnOwnership(const std::string& service_name,
       bus_->GetExportedObject(dbus::ObjectPath(kPathDbusMenu)), barrier_);
   UpdateMenuImpl(delegate_->GetMenuModel(), false);
 
-  properties_ = std::make_unique<DbusPropertiesInterface>(item_, barrier_);
+  properties_ = std::make_unique<DbusProperties>(item_, barrier_);
   properties_->RegisterInterface(kInterfaceStatusNotifierItem);
   auto set_property = [&](const std::string& property_name, auto&& value) {
     properties_->SetProperty(kInterfaceStatusNotifierItem, property_name,

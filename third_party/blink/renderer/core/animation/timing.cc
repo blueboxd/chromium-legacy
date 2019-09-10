@@ -182,9 +182,9 @@ Timing::CalculatedTiming Timing::CalculateTimings(
   const base::Optional<double> directed_progress = CalculateDirectedProgress(
       simple_iteration_progress, current_iteration, direction);
 
-  progress = CalculateTransformedProgress(
-      current_phase, directed_progress, iteration_duration,
-      current_direction_is_forwards, timing_function);
+  progress = CalculateTransformedProgress(current_phase, directed_progress,
+                                          current_direction_is_forwards,
+                                          timing_function);
 
   double time_to_next_iteration = std::numeric_limits<double>::infinity();
   // Conditionally compute the time to next iteration, which is only

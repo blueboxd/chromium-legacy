@@ -10,7 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "device/bluetooth/device.h"
 #include "device/bluetooth/public/mojom/gatt_result_type_converter.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace bluetooth {
 Device::~Device() {
@@ -20,12 +20,12 @@ Device::~Device() {
 // static
 void Device::Create(scoped_refptr<device::BluetoothAdapter> adapter,
                     std::unique_ptr<device::BluetoothGattConnection> connection,
-                    mojom::DeviceRequest request) {
+                    mojo::PendingReceiver<mojom::Device> receiver) {
   auto device_impl =
       base::WrapUnique(new Device(adapter, std::move(connection)));
   auto* device_ptr = device_impl.get();
-  device_ptr->binding_ =
-      mojo::MakeStrongBinding(std::move(device_impl), std::move(request));
+  device_ptr->receiver_ =
+      mojo::MakeSelfOwnedReceiver(std::move(device_impl), std::move(receiver));
 }
 
 // static
@@ -54,7 +54,7 @@ void Device::DeviceChanged(device::BluetoothAdapter* adapter,
   }
 
   if (!device->IsGattConnected()) {
-    binding_->Close();
+    receiver_->Close();
   }
 }
 
@@ -72,7 +72,7 @@ void Device::GattServicesDiscovered(device::BluetoothAdapter* adapter,
 }
 
 void Device::Disconnect() {
-  binding_->Close();
+  receiver_->Close();
 }
 
 void Device::GetInfo(GetInfoCallback callback) {

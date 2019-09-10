@@ -23,7 +23,7 @@ class StyleRuleProperty;
 
 using CSSInterpolationTypes = Vector<std::unique_ptr<CSSInterpolationType>>;
 
-class CORE_EXPORT PropertyRegistration
+class CORE_EXPORT PropertyRegistration final
     : public GarbageCollectedFinalized<PropertyRegistration> {
  public:
   static PropertyRegistration* MaybeCreate(Document&,

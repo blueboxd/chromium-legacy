@@ -23,7 +23,7 @@ class Document;
 class StyleRuleKeyframe;
 class StyleSheetContents;
 
-class CORE_EXPORT CSSParserContext
+class CORE_EXPORT CSSParserContext final
     : public GarbageCollectedFinalized<CSSParserContext> {
  public:
   // https://drafts.csswg.org/selectors/#profiles

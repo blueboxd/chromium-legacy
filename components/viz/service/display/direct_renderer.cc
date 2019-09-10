@@ -792,10 +792,12 @@ void DirectRenderer::UseRenderPass(const RenderPass* render_pass) {
 gfx::Rect DirectRenderer::ComputeScissorRectForRenderPass(
     const RenderPass* render_pass) const {
   const RenderPass* root_render_pass = current_frame()->root_render_pass;
-  const gfx::Rect root_damage_rect = current_frame()->root_damage_rect;
+  gfx::Rect root_damage_rect = current_frame()->root_damage_rect;
 
-  if (render_pass == root_render_pass)
+  if (render_pass == root_render_pass) {
+    root_damage_rect.Union(output_surface_->GetCurrentFramebufferDamage());
     return root_damage_rect;
+  }
 
   // If the root damage rect has been expanded due to overlays, all the other
   // damage rect calculations are incorrect.

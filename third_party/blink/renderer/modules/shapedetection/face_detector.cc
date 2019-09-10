@@ -44,10 +44,11 @@ FaceDetector::FaceDetector(ExecutionContext* context,
   if (auto* interface_provider = context->GetInterfaceProvider()) {
     interface_provider->GetInterface(std::move(request));
   }
-  provider->CreateFaceDetection(mojo::MakeRequest(&face_service_, task_runner),
-                                std::move(face_detector_options));
+  provider->CreateFaceDetection(
+      face_service_.BindNewPipeAndPassReceiver(task_runner),
+      std::move(face_detector_options));
 
-  face_service_.set_connection_error_handler(WTF::Bind(
+  face_service_.set_disconnect_handler(WTF::Bind(
       &FaceDetector::OnFaceServiceConnectionError, WrapWeakPersistent(this)));
 }
 

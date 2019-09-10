@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "components/signin/public/identity_manager/accounts_cookie_mutator.h"
 
 class AccountTrackerService;
@@ -46,6 +47,10 @@ class AccountsCookieMutatorImpl : public AccountsCookieMutator {
           set_accounts_in_cookies_completed_callback) override;
 
   void TriggerCookieJarUpdate() override;
+
+#if defined(OS_IOS)
+  void ForceTriggerOnCookieChange() override;
+#endif
 
   void LogOutAllAccounts(gaia::GaiaSource source) override;
 

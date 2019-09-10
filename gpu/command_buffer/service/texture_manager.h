@@ -1162,7 +1162,7 @@ class GPU_GLES2_EXPORT TextureManager
   }
 
   struct DoTexImageArguments {
-    enum TexImageCommandType {
+    enum class CommandType {
       kTexImage2D,
       kTexImage3D,
     };
@@ -1179,7 +1179,7 @@ class GPU_GLES2_EXPORT TextureManager
     const void* pixels;
     uint32_t pixels_size;
     uint32_t padding;
-    TexImageCommandType command_type;
+    CommandType command_type;
   };
 
   bool ValidateTexImage(ContextState* state,
@@ -1198,7 +1198,7 @@ class GPU_GLES2_EXPORT TextureManager
                              const DoTexImageArguments& args);
 
   struct DoTexSubImageArguments {
-    enum TexSubImageCommandType {
+    enum class CommandType {
       kTexSubImage2D,
       kTexSubImage3D,
     };
@@ -1216,7 +1216,7 @@ class GPU_GLES2_EXPORT TextureManager
     const void* pixels;
     uint32_t pixels_size;
     uint32_t padding;
-    TexSubImageCommandType command_type;
+    CommandType command_type;
   };
 
   bool ValidateTexSubImage(ContextState* state,

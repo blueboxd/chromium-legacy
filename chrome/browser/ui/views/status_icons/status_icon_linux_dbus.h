@@ -24,7 +24,7 @@ class ImageSkia;
 }  // namespace gfx
 
 class DbusMenu;
-class DbusPropertiesInterface;
+class DbusProperties;
 
 // A status icon following the StatusNotifierItem specification.
 // https://www.freedesktop.org/wiki/Specifications/StatusNotifierItem/StatusNotifierItem/
@@ -93,7 +93,7 @@ class StatusIconLinuxDbus : public views::StatusIconLinux,
 
   base::RepeatingCallback<void(bool)> barrier_;
 
-  std::unique_ptr<DbusPropertiesInterface> properties_;
+  std::unique_ptr<DbusProperties> properties_;
 
   std::unique_ptr<DbusMenu> menu_;
   // A menu that contains the click action (if there is a click action) and a

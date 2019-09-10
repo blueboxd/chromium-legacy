@@ -9,7 +9,9 @@
 
 namespace arc {
 
-ax::mojom::Event ToAXEvent(mojom::AccessibilityEventType arc_event_type) {
+ax::mojom::Event ToAXEvent(
+    mojom::AccessibilityEventType arc_event_type,
+    mojom::AccessibilityNodeInfoData* focused_node_info_data) {
   switch (arc_event_type) {
     case mojom::AccessibilityEventType::VIEW_FOCUSED:
     case mojom::AccessibilityEventType::VIEW_ACCESSIBILITY_FOCUSED:
@@ -32,8 +34,18 @@ ax::mojom::Event ToAXEvent(mojom::AccessibilityEventType arc_event_type) {
       return ax::mojom::Event::kAlert;
     case mojom::AccessibilityEventType::VIEW_SCROLLED:
       return ax::mojom::Event::kScrollPositionChanged;
-    case mojom::AccessibilityEventType::VIEW_SELECTED:
-      return ax::mojom::Event::kValueChanged;
+    case mojom::AccessibilityEventType::VIEW_SELECTED: {
+      // In Android, VIEW_SELECTED event is fired in the two cases below:
+      // 1. Changing a value in ProgressBar or TimePicker.
+      //    (this usage is NOT documented)
+      // 2. Selecting an item in the context of an AdapterView.
+      //    (officially documented in Android Developer doc below)
+      //    https://developer.android.com/reference/android/view/accessibility/AccessibilityEvent#TYPE_VIEW_SELECTED
+      if (focused_node_info_data && focused_node_info_data->range_info)
+        return ax::mojom::Event::kValueChanged;
+      else
+        return ax::mojom::Event::kSelection;
+    }
     case mojom::AccessibilityEventType::VIEW_HOVER_EXIT:
     case mojom::AccessibilityEventType::TOUCH_EXPLORATION_GESTURE_START:
     case mojom::AccessibilityEventType::TOUCH_EXPLORATION_GESTURE_END:

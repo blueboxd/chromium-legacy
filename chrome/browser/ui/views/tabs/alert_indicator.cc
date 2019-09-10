@@ -20,8 +20,10 @@ namespace {
 // Fade-in/out duration for the tab indicator animations.  Fade-in is quick to
 // immediately notify the user.  Fade-out is more gradual, so that the user has
 // a chance of finding a tab that has quickly "blipped" on and off.
-constexpr int kIndicatorFadeInDurationMs = 200;
-constexpr int kIndicatorFadeOutDurationMs = 1000;
+constexpr auto kIndicatorFadeInDuration =
+    base::TimeDelta::FromMilliseconds(200);
+constexpr auto kIndicatorFadeOutDuration =
+    base::TimeDelta::FromMilliseconds(1000);
 
 // Interval between frame updates of the tab indicator animations.  This is not
 // the usual 60 FPS because a trade-off must be made between tab UI animation
@@ -33,21 +35,15 @@ constexpr base::TimeDelta kIndicatorFrameInterval =
 // "in" state.
 class TabRecordingIndicatorAnimation : public gfx::MultiAnimation {
  public:
-  ~TabRecordingIndicatorAnimation() override {}
+  TabRecordingIndicatorAnimation(const gfx::MultiAnimation::Parts& parts,
+                                 const base::TimeDelta interval)
+      : MultiAnimation(parts, interval) {}
+  ~TabRecordingIndicatorAnimation() override = default;
 
   // Overridden to provide alternating "towards in" and "towards out" behavior.
   double GetCurrentValue() const override;
 
   static std::unique_ptr<TabRecordingIndicatorAnimation> Create();
-
- private:
-  TabRecordingIndicatorAnimation(const gfx::MultiAnimation::Parts& parts,
-                                 const base::TimeDelta interval)
-      : MultiAnimation(parts, interval) {}
-
-  // Number of times to "toggle throb" the recording and tab capture indicators
-  // when they first appear.
-  static const int kCaptureIndicatorThrobCycles = 5;
 };
 
 double TabRecordingIndicatorAnimation::GetCurrentValue() const {
@@ -57,18 +53,22 @@ double TabRecordingIndicatorAnimation::GetCurrentValue() const {
 
 std::unique_ptr<TabRecordingIndicatorAnimation>
 TabRecordingIndicatorAnimation::Create() {
+  // Number of times to "toggle throb" the recording and tab capture indicators
+  // when they first appear.
+  constexpr size_t kCaptureIndicatorThrobCycles = 5;
+
   MultiAnimation::Parts parts;
   static_assert(
       kCaptureIndicatorThrobCycles % 2 != 0,
       "odd number of cycles required so animation finishes in showing state");
-  for (int i = 0; i < kCaptureIndicatorThrobCycles; ++i) {
+  for (size_t i = 0; i < kCaptureIndicatorThrobCycles; ++i) {
     parts.push_back(MultiAnimation::Part(
-        i % 2 ? kIndicatorFadeOutDurationMs : kIndicatorFadeInDurationMs,
+        i % 2 ? kIndicatorFadeOutDuration : kIndicatorFadeInDuration,
         gfx::Tween::EASE_IN));
   }
 
-  std::unique_ptr<TabRecordingIndicatorAnimation> animation(
-      new TabRecordingIndicatorAnimation(parts, kIndicatorFrameInterval));
+  auto animation = std::make_unique<TabRecordingIndicatorAnimation>(
+      parts, kIndicatorFrameInterval);
   animation->set_continuous(false);
   return animation;
 }
@@ -139,10 +139,10 @@ std::unique_ptr<gfx::Animation> CreateTabAlertIndicatorFadeAnimation(
   gfx::MultiAnimation::Parts parts;
   const bool is_for_fade_in = (alert_state != TabAlertState::NONE);
   parts.push_back(gfx::MultiAnimation::Part(
-      is_for_fade_in ? kIndicatorFadeInDurationMs : kIndicatorFadeOutDurationMs,
+      is_for_fade_in ? kIndicatorFadeInDuration : kIndicatorFadeOutDuration,
       gfx::Tween::EASE_IN));
-  std::unique_ptr<gfx::MultiAnimation> animation(
-      new gfx::MultiAnimation(parts, kIndicatorFrameInterval));
+  auto animation =
+      std::make_unique<gfx::MultiAnimation>(parts, kIndicatorFrameInterval);
   animation->set_continuous(false);
   return std::move(animation);
 }

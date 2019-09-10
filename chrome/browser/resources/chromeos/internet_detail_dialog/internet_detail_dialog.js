@@ -24,7 +24,10 @@ Polymer({
     guid: String,
 
     /** @private {!chromeos.networkConfig.mojom.ManagedProperties|undefined} */
-    managedProperties_: Object,
+    managedProperties_: {
+      type: Object,
+      observer: 'managedPropertiesChanged_',
+    },
 
     /** @private {?OncMojo.DeviceStateProperties} */
     deviceState_: {
@@ -53,6 +56,12 @@ Polymer({
       }
     },
   },
+
+  /**
+   * Set to true once the action button has been focused.
+   * @private {boolean}
+   */
+  didSetFocus_: false,
 
   /**
    * Set to true to once the initial properties have been received. This
@@ -132,6 +141,21 @@ Polymer({
           loadTimeData.getString('networkListItemNoNetwork'),
       vpnNameTemplate: loadTimeData.getString('vpnNameTemplate'),
     };
+  },
+
+  /** @private */
+  managedPropertiesChanged_: function() {
+    assert(this.managedProperties_);
+
+    // Focus the action button once the initial state is set.
+    if (!this.didSetFocus_ &&
+        this.showConnectDisconnect_(this.managedProperties_)) {
+      const button = this.$$('#title .action-button:not([hidden])');
+      if (button) {
+        button.focus();
+        this.didSetFocus_ = true;
+      }
+    }
   },
 
   /** @private */

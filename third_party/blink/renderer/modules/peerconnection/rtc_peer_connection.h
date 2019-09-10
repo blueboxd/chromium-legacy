@@ -372,7 +372,7 @@ class MODULES_EXPORT RTCPeerConnection final
                            GetTrackRemoveStreamAndGCWithPersistentStream);
 
   typedef base::OnceCallback<bool()> BoolFunction;
-  class EventWrapper : public GarbageCollectedFinalized<EventWrapper> {
+  class EventWrapper final : public GarbageCollectedFinalized<EventWrapper> {
    public:
     EventWrapper(Event*, BoolFunction);
     // Returns true if |m_setupFunction| returns true or it is null.

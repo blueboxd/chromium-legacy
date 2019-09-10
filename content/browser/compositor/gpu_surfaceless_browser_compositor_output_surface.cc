@@ -120,6 +120,12 @@ void GpuSurfacelessBrowserCompositorOutputSurface::BindFramebuffer() {
   }
 }
 
+gfx::Rect
+GpuSurfacelessBrowserCompositorOutputSurface::GetCurrentFramebufferDamage()
+    const {
+  return buffer_queue_->CurrentBufferDamage();
+}
+
 GLenum GpuSurfacelessBrowserCompositorOutputSurface::
     GetFramebufferCopyTextureFormat() {
   return buffer_queue_->internal_format();
@@ -182,7 +188,6 @@ unsigned GpuSurfacelessBrowserCompositorOutputSurface::UpdateGpuFence() {
 void GpuSurfacelessBrowserCompositorOutputSurface::SetDrawRectangle(
     const gfx::Rect& damage) {
   GpuBrowserCompositorOutputSurface::SetDrawRectangle(damage);
-  buffer_queue_->CopyDamageForCurrentSurface(damage);
 }
 
 }  // namespace content

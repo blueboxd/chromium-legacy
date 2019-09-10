@@ -220,10 +220,6 @@ void WebRuntimeFeatures::EnableInputMultipleFieldsUI(bool enable) {
   RuntimeEnabledFeatures::SetInputMultipleFieldsUIEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableJankTrackingSweepLine(bool enable) {
-  RuntimeEnabledFeatures::SetJankTrackingSweepLineEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableBuiltInModuleAll(bool enable) {
   RuntimeEnabledFeatures::SetBuiltInModuleAllEnabled(enable);
 }

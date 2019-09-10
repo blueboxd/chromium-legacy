@@ -54,6 +54,10 @@ content::WebContents* FakeScriptExecutorDelegate::GetWebContents() {
   return nullptr;
 }
 
+std::string FakeScriptExecutorDelegate::GetAccountEmailAddress() {
+  return std::string();
+}
+
 void FakeScriptExecutorDelegate::EnterState(AutofillAssistantState state) {
   state_ = state;
 }

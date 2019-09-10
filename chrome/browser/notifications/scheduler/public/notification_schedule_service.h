@@ -42,10 +42,9 @@ class NotificationScheduleService : public KeyedService {
   // Returns the user action handler to process notification events.
   virtual UserActionHandler* GetUserActionHandler() = 0;
 
-  ~NotificationScheduleService() override = default;
-
  protected:
   NotificationScheduleService() = default;
+  ~NotificationScheduleService() override = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NotificationScheduleService);

@@ -26,7 +26,6 @@
 #include "media/base/unaligned_shared_memory.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
-#include "media/gpu/format_utils.h"
 #include "media/gpu/linux/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/video_frame_mapper.h"

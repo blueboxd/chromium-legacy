@@ -3001,7 +3001,7 @@
     "type": "console_test_launcher",
   },
   "weblayer_shell": {
-    "label": "//weblayer/shell:weblayer_shell",
+    "label": "//weblayer/shell/android:run_weblayer_shell",
     "type": "additional_compile_target",
   },
   "wm_unittests": {

@@ -9,11 +9,11 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "content/renderer/p2p/socket_client_delegate.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/render_thread_impl.h"
 #include "crypto/random.h"
 #include "services/network/public/cpp/p2p_param_traits.h"
+#include "third_party/blink/public/platform/modules/p2p/socket_client_delegate.h"
 
 namespace {
 
@@ -52,7 +52,7 @@ void P2PSocketClientImpl::Init(
     uint16_t min_port,
     uint16_t max_port,
     const network::P2PHostAndIPEndPoint& remote_address,
-    P2PSocketClientDelegate* delegate) {
+    blink::P2PSocketClientDelegate* delegate) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(delegate);
   // |delegate_| is only accessesed on |delegate_message_loop_|.
@@ -114,7 +114,8 @@ int P2PSocketClientImpl::GetSocketID() const {
   return socket_id_;
 }
 
-void P2PSocketClientImpl::SetDelegate(P2PSocketClientDelegate* delegate) {
+void P2PSocketClientImpl::SetDelegate(
+    blink::P2PSocketClientDelegate* delegate) {
   DCHECK(thread_checker_.CalledOnValidThread());
   delegate_ = delegate;
 }

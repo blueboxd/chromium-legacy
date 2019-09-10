@@ -30,6 +30,19 @@ namespace views {
 
 namespace {
 
+bool DetermineInactivity(ui::WindowShowState show_state) {
+  if (show_state != ui::SHOW_STATE_DEFAULT &&
+      show_state != ui::SHOW_STATE_NORMAL &&
+      show_state != ui::SHOW_STATE_INACTIVE &&
+      show_state != ui::SHOW_STATE_MAXIMIZED) {
+    // It will behave like SHOW_STATE_NORMAL.
+    NOTIMPLEMENTED_LOG_ONCE();
+  }
+
+  // See comment in PlatformWindow::Show().
+  return show_state == ui::SHOW_STATE_INACTIVE;
+}
+
 ui::PlatformWindowInitProperties ConvertWidgetInitParamsToInitProperties(
     const Widget::InitParams& params) {
   ui::PlatformWindowInitProperties properties;
@@ -60,7 +73,6 @@ ui::PlatformWindowInitProperties ConvertWidgetInitParamsToInitProperties(
       break;
   }
 
-  properties.bounds = params.bounds;
   properties.activatable =
       params.activatable == Widget::InitParams::ACTIVATABLE_YES;
   properties.force_show_in_taskbar = params.force_show_in_taskbar;
@@ -122,6 +134,9 @@ void DesktopWindowTreeHostPlatform::Init(const Widget::InitParams& params) {
   ui::PlatformWindowInitProperties properties =
       ConvertWidgetInitParamsToInitProperties(params);
   AddAdditionalInitProperties(params, &properties);
+
+  // Calculate initial bounds.
+  properties.bounds = ToPixelRect(params.bounds);
 
   CreateAndSetPlatformWindow(std::move(properties));
   // Disable compositing on tooltips as a workaround for
@@ -251,25 +266,26 @@ aura::WindowTreeHost* DesktopWindowTreeHostPlatform::AsWindowTreeHost() {
 
 void DesktopWindowTreeHostPlatform::Show(ui::WindowShowState show_state,
                                          const gfx::Rect& restore_bounds) {
-  if (show_state == ui::SHOW_STATE_MAXIMIZED && !restore_bounds.IsEmpty())
-    platform_window()->SetRestoredBoundsInPixels(ToPixelRect(restore_bounds));
+  if (compositor())
+    SetVisible(true);
 
-  if (compositor()) {
-    platform_window()->Show();
-    compositor()->SetVisible(true);
-  }
+  platform_window()->Show(DetermineInactivity(show_state));
 
   switch (show_state) {
     case ui::SHOW_STATE_MAXIMIZED:
       platform_window()->Maximize();
+      if (!restore_bounds.IsEmpty()) {
+        // Enforce |restored_bounds_in_pixels_| since calling Maximize() could
+        // have reset it.
+        platform_window()->SetRestoredBoundsInPixels(
+            ToPixelRect(restore_bounds));
+      }
       break;
     case ui::SHOW_STATE_MINIMIZED:
       platform_window()->Minimize();
       break;
     case ui::SHOW_STATE_FULLSCREEN:
-      // TODO(sky): this isn't necessarily the same as explicitly setting
-      // fullscreen.
-      platform_window()->ToggleFullscreen();
+      SetFullscreen(true);
       break;
     default:
       break;
@@ -300,10 +316,10 @@ bool DesktopWindowTreeHostPlatform::IsVisible() const {
 }
 
 void DesktopWindowTreeHostPlatform::SetSize(const gfx::Size& size) {
-  gfx::Rect screen_bounds =
-      gfx::ConvertRectToDIP(device_scale_factor(), GetBoundsInPixels());
-  screen_bounds.set_size(size);
-  SetBoundsInDIP(screen_bounds);
+  gfx::Size size_in_pixels = ToPixelRect(gfx::Rect(size)).size();
+  auto bounds_in_pixels = GetBoundsInPixels();
+  bounds_in_pixels.set_size(size_in_pixels);
+  WindowTreeHostPlatform::SetBoundsInPixels(bounds_in_pixels);
 }
 
 void DesktopWindowTreeHostPlatform::StackAbove(aura::Window* window) {
@@ -345,9 +361,18 @@ void DesktopWindowTreeHostPlatform::CenterWindow(const gfx::Size& size) {
 void DesktopWindowTreeHostPlatform::GetWindowPlacement(
     gfx::Rect* bounds,
     ui::WindowShowState* show_state) const {
-  NOTIMPLEMENTED_LOG_ONCE();
-  *bounds = gfx::Rect(0, 0, 640, 840);
-  *show_state = ui::SHOW_STATE_NORMAL;
+  *bounds = GetRestoredBounds();
+
+  if (IsFullscreen())
+    *show_state = ui::SHOW_STATE_FULLSCREEN;
+  else if (IsMinimized())
+    *show_state = ui::SHOW_STATE_MINIMIZED;
+  else if (IsMaximized())
+    *show_state = ui::SHOW_STATE_MAXIMIZED;
+  else if (!IsActive())
+    *show_state = ui::SHOW_STATE_INACTIVE;
+  else
+    *show_state = ui::SHOW_STATE_NORMAL;
 }
 
 gfx::Rect DesktopWindowTreeHostPlatform::GetWindowBoundsInScreen() const {
@@ -362,12 +387,18 @@ gfx::Rect DesktopWindowTreeHostPlatform::GetClientAreaBoundsInScreen() const {
 }
 
 gfx::Rect DesktopWindowTreeHostPlatform::GetRestoredBounds() const {
+  // We can't reliably track the restored bounds of a window, but we can get
+  // the 90% case down. When *chrome* is the process that requests maximizing
+  // or restoring bounds, we can record the current bounds before we request
+  // maximization, and clear it when we detect a state change.
   gfx::Rect restored_bounds = platform_window()->GetRestoredBoundsInPixels();
+
   // When window is resized, |restored bounds| is not set and empty.
   // If |restored bounds| is empty, it returns the current window size.
-  gfx::Rect bounds =
-      !restored_bounds.IsEmpty() ? restored_bounds : GetBoundsInPixels();
-  return ToDIPRect(bounds);
+  if (!restored_bounds.IsEmpty())
+    return ToDIPRect(restored_bounds);
+
+  return GetWindowBoundsInScreen();
 }
 
 std::string DesktopWindowTreeHostPlatform::GetWorkspace() const {
@@ -401,14 +432,18 @@ bool DesktopWindowTreeHostPlatform::IsActive() const {
 
 void DesktopWindowTreeHostPlatform::Maximize() {
   platform_window()->Maximize();
+  if (IsMinimized())
+    Show(ui::SHOW_STATE_NORMAL, gfx::Rect());
 }
 
 void DesktopWindowTreeHostPlatform::Minimize() {
+  ReleaseCapture();
   platform_window()->Minimize();
 }
 
 void DesktopWindowTreeHostPlatform::Restore() {
   platform_window()->Restore();
+  Show(ui::SHOW_STATE_NORMAL, gfx::Rect());
 }
 
 bool DesktopWindowTreeHostPlatform::IsMaximized() const {
@@ -426,13 +461,11 @@ bool DesktopWindowTreeHostPlatform::HasCapture() const {
 }
 
 void DesktopWindowTreeHostPlatform::SetZOrderLevel(ui::ZOrderLevel order) {
-  // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED_LOG_ONCE();
+  platform_window()->SetZOrderLevel(order);
 }
 
 ui::ZOrderLevel DesktopWindowTreeHostPlatform::GetZOrderLevel() const {
-  // TODO: needs PlatformWindow support.
-  return ui::ZOrderLevel::kNormal;
+  return platform_window()->GetZOrderLevel();
 }
 
 void DesktopWindowTreeHostPlatform::SetVisibleOnAllWorkspaces(
@@ -517,8 +550,19 @@ void DesktopWindowTreeHostPlatform::FrameTypeChanged() {
 }
 
 void DesktopWindowTreeHostPlatform::SetFullscreen(bool fullscreen) {
-  if (IsFullscreen() != fullscreen)
-    platform_window()->ToggleFullscreen();
+  if (IsFullscreen() == fullscreen)
+    return;
+
+  platform_window()->ToggleFullscreen();
+
+  // The state must change synchronously to let media react on fullscreen
+  // changes.
+  DCHECK_EQ(fullscreen, IsFullscreen());
+
+  if (IsFullscreen() == fullscreen)
+    Relayout();
+  // Else: the widget will be relaid out either when the window bounds change
+  // or when |platform_window|'s fullscreen state changes.
 }
 
 bool DesktopWindowTreeHostPlatform::IsFullscreen() const {
@@ -599,6 +643,10 @@ gfx::Transform DesktopWindowTreeHostPlatform::GetRootTransform() const {
   return transform;
 }
 
+void DesktopWindowTreeHostPlatform::ShowImpl() {
+  Show(ui::SHOW_STATE_NORMAL, gfx::Rect());
+}
+
 void DesktopWindowTreeHostPlatform::DispatchEvent(ui::Event* event) {
 #if defined(USE_OZONE)
   // Make sure the |event| is marked as a non-client if it's a non-client
@@ -634,18 +682,28 @@ void DesktopWindowTreeHostPlatform::OnClosed() {
 
 void DesktopWindowTreeHostPlatform::OnWindowStateChanged(
     ui::PlatformWindowState new_state) {
+  bool was_minimized = old_state_ == ui::PlatformWindowState::kMinimized;
+  bool is_minimized = new_state == ui::PlatformWindowState::kMinimized;
+
   // Propagate minimization/restore to compositor to avoid drawing 'blank'
   // frames that could be treated as previews, which show content even if a
   // window is minimized.
-  bool visible = new_state != ui::PlatformWindowState::kMinimized;
-  if (visible != compositor()->IsVisible()) {
-    compositor()->SetVisible(visible);
-    native_widget_delegate_->OnNativeWidgetVisibilityChanged(visible);
+  if (is_minimized != was_minimized) {
+    if (is_minimized) {
+      SetVisible(false);
+      content_window()->Hide();
+    } else {
+      content_window()->Show();
+      SetVisible(true);
+    }
   }
 
-  // It might require relayouting when state property has been changed.
-  if (visible)
-    Relayout();
+  old_state_ = new_state;
+
+  // Now that we have different window properties, we may need to relayout the
+  // window. (The windows code doesn't need this because their window change is
+  // synchronous.)
+  Relayout();
 }
 
 void DesktopWindowTreeHostPlatform::OnCloseRequest() {
@@ -714,6 +772,17 @@ Widget* DesktopWindowTreeHostPlatform::GetWidget() {
 
 const Widget* DesktopWindowTreeHostPlatform::GetWidget() const {
   return native_widget_delegate_->AsWidget();
+}
+
+void DesktopWindowTreeHostPlatform::SetVisible(bool visible) {
+  if (is_compositor_set_visible_ == visible)
+    return;
+
+  is_compositor_set_visible_ = visible;
+  if (compositor())
+    compositor()->SetVisible(visible);
+
+  native_widget_delegate()->OnNativeWidgetVisibilityChanged(visible);
 }
 
 void DesktopWindowTreeHostPlatform::AddAdditionalInitProperties(

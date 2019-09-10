@@ -103,8 +103,11 @@
   </translations>
   <release allow_pseudo="false" seq="1">
     <messages fallback_to_english="true">
-      <message name="IDS_AUTOFILL_KEYBOARD_ACCESSORY_CONTENT_DESCRIPTION" desc="The text announced by the screen reader when the autofill suggestions are shown.">
+      <message name="IDS_AUTOFILL_KEYBOARD_ACCESSORY_CONTENT_DESCRIPTION" desc="The text announced by the screen reader when the password suggestions are shown.">
         Passwords available
+      </message>
+      <message name="IDS_AUTOFILL_KEYBOARD_ACCESSORY_MODERN_CONTENT_DESCRIPTION" desc="The text announced by the screen reader when the autofill suggestions and fallbacks are shown.">
+        Filling suggestions available in keyboard accessory
       </message>
       <message name="IDS_KEYBOARD_ACCESSORY_SHEET_HIDE" desc="Description for the active icon button that closes an accessory sheet and brings back the keyboard.">
           Show keyboard

@@ -37,13 +37,14 @@ class SentNodes;
 // ContentCaptureTask gets the data per document by using
 // GetUnsentDocumentSession() and GetNextUnsentNode(), and must send
 // all data out before capturing on-screen content again.
-class TaskSession : public GarbageCollectedFinalized<TaskSession> {
+class TaskSession final : public GarbageCollectedFinalized<TaskSession> {
  public:
   // This class manages the captured content and the detached nodes per
   // document, the data is moved to the ContentCaptureTask while required. This
   // class has an instance per document, will be released while the associated
   // document is GC-ed, see TaskSession::to_document_session_.
-  class DocumentSession : public GarbageCollectedFinalized<DocumentSession> {
+  class DocumentSession final
+      : public GarbageCollectedFinalized<DocumentSession> {
    public:
     // The callback for total_sent_nodes_ metrics.
     using SentNodeCountCallback = base::RepeatingCallback<void(size_t)>;

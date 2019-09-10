@@ -88,10 +88,6 @@ const char* const kDesktopSwitches[] = {
     "password-store=basic",
     "use-mock-keychain",
     "test-type=webdriver",
-    // In theory the following switch should have no effects, but its absence
-    // would cause VizHitTestSurfaceLayer feature to be enabled on Chromium
-    // builds, causing a test failure due to https://crbug.com/996865.
-    "force-fieldtrials",
     // TODO(yoichio): This is temporary switch to support chrome internal
     // components migration from the old web APIs.
     // After completion of the migration, we should remove this.

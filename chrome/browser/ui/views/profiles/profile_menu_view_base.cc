@@ -218,6 +218,28 @@ void ProfileMenuViewBase::AddShortcutFeatureButton(
   RegisterClickAction(button, std::move(action));
 }
 
+void ProfileMenuViewBase::AddSelectableProfile(const gfx::Image& image,
+                                               const base::string16& name,
+                                               base::RepeatingClosure action) {
+  constexpr int kTopMargin = 8;
+  constexpr int kImageSize = 22;
+
+  // Initialize layout if this is the first time a button is added.
+  if (!selectable_profiles_container_->GetLayoutManager()) {
+    selectable_profiles_container_->SetLayoutManager(
+        std::make_unique<views::BoxLayout>(
+            views::BoxLayout::Orientation::kVertical,
+            gfx::Insets(kTopMargin, 0, 0, 0)));
+  }
+
+  gfx::Image sized_image =
+      profiles::GetSizedAvatarIcon(image, /*is_rectangle=*/true, kImageSize,
+                                   kImageSize, profiles::SHAPE_CIRCLE);
+  views::Button* button = selectable_profiles_container_->AddChildView(
+      std::make_unique<HoverButton>(this, sized_image.AsImageSkia(), name));
+  RegisterClickAction(button, std::move(action));
+}
+
 ax::mojom::Role ProfileMenuViewBase::GetAccessibleWindowRole() {
   // Return |ax::mojom::Role::kDialog| which will make screen readers announce
   // the following in the listed order:
@@ -307,6 +329,8 @@ void ProfileMenuViewBase::Reset() {
   identity_info_container_ =
       components->AddChildView(std::make_unique<views::View>());
   shortcut_features_container_ =
+      components->AddChildView(std::make_unique<views::View>());
+  selectable_profiles_container_ =
       components->AddChildView(std::make_unique<views::View>());
 
   // Create a scroll view to hold the components.

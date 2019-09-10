@@ -100,11 +100,6 @@ void GLOutputSurfaceBufferQueue::Reshape(const gfx::Size& size,
   }
 }
 
-void GLOutputSurfaceBufferQueue::SetDrawRectangle(const gfx::Rect& damage) {
-  GLOutputSurface::SetDrawRectangle(damage);
-  buffer_queue_->CopyDamageForCurrentSurface(damage);
-}
-
 void GLOutputSurfaceBufferQueue::SwapBuffers(OutputSurfaceFrame frame) {
   DCHECK(buffer_queue_);
 
@@ -118,6 +113,10 @@ void GLOutputSurfaceBufferQueue::SwapBuffers(OutputSurfaceFrame frame) {
   buffer_queue_->SwapBuffers(damage_rect);
 
   GLOutputSurface::SwapBuffers(std::move(frame));
+}
+
+gfx::Rect GLOutputSurfaceBufferQueue::GetCurrentFramebufferDamage() const {
+  return buffer_queue_->CurrentBufferDamage();
 }
 
 uint32_t GLOutputSurfaceBufferQueue::GetFramebufferCopyTextureFormat() {

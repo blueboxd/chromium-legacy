@@ -73,8 +73,9 @@ class AutomationEventRouter : public ui::AXEventBundleSink,
       content::BrowserContext* browser_context = nullptr) override;
 
   // Notify the source extension of the result to getTextLocation.
-  void DispatchGetTextLocationDataResult(const ui::AXActionData& data,
-                                         const base::Optional<gfx::Rect>& rect);
+  void DispatchGetTextLocationDataResult(
+      const ui::AXActionData& data,
+      const base::Optional<gfx::Rect>& rect) override;
 
  private:
   struct AutomationListener {

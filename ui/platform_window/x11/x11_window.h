@@ -44,7 +44,7 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   void SetXEventDelegate(XEventDelegate* delegate);
 
   // PlatformWindow:
-  void Show() override;
+  void Show(bool inactive) override;
   void Hide() override;
   void Close() override;
   void PrepareForShutdown() override;
@@ -67,6 +67,8 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   void ConfineCursorToBounds(const gfx::Rect& bounds) override;
   void SetRestoredBoundsInPixels(const gfx::Rect& bounds) override;
   gfx::Rect GetRestoredBoundsInPixels() const override;
+  void SetZOrderLevel(ZOrderLevel order) override;
+  ZOrderLevel GetZOrderLevel() const override;
 
  protected:
   PlatformWindowDelegateLinux* platform_window_delegate() const {
@@ -104,6 +106,11 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   // X11WindowOzone sets own event dispatcher now.
   virtual void SetPlatformEventDispatcher();
 
+  // Adjusts |requested_size_in_pixels| to avoid the WM "feature" where setting
+  // the window size to the monitor size causes the WM to set the EWMH for
+  // fullscreen.
+  gfx::Size AdjustSizeForDisplay(const gfx::Size& requested_size_in_pixels);
+
   // Stores current state of this window.
   PlatformWindowState state_ = PlatformWindowState::kUnknown;
 
@@ -113,6 +120,13 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
 
   // Tells if the window got a ::Close call.
   bool is_shutting_down_ = false;
+
+  // The z-order level of the window; the window exhibits "always on top"
+  // behavior if > 0.
+  ui::ZOrderLevel z_order_ = ui::ZOrderLevel::kNormal;
+
+  // The bounds of our window before the window was maximized.
+  gfx::Rect restored_bounds_in_pixels_;
 
   DISALLOW_COPY_AND_ASSIGN(X11Window);
 };

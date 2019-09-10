@@ -5,4 +5,5 @@ include_rules = [
   "+mojo",
   "+ui/base",
   "+ui/latency",
+  "+media/base/media_switches.h",
 ]

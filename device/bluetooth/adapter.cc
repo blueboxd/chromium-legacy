@@ -12,6 +12,7 @@
 #include "device/bluetooth/device.h"
 #include "device/bluetooth/discovery_session.h"
 #include "device/bluetooth/public/mojom/connect_result_type_converter.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace bluetooth {
@@ -32,7 +33,7 @@ void Adapter::ConnectToDevice(const std::string& address,
 
   if (!device) {
     std::move(callback).Run(mojom::ConnectResult::DEVICE_NO_LONGER_IN_RANGE,
-                            nullptr /* device */);
+                            /* device */ mojo::NullRemote());
     return;
   }
 
@@ -132,17 +133,17 @@ void Adapter::DeviceRemoved(device::BluetoothAdapter* adapter,
 void Adapter::OnGattConnected(
     ConnectToDeviceCallback callback,
     std::unique_ptr<device::BluetoothGattConnection> connection) {
-  mojom::DevicePtr device_ptr;
+  mojo::PendingRemote<mojom::Device> device;
   Device::Create(adapter_, std::move(connection),
-                 mojo::MakeRequest(&device_ptr));
-  std::move(callback).Run(mojom::ConnectResult::SUCCESS, std::move(device_ptr));
+                 device.InitWithNewPipeAndPassReceiver());
+  std::move(callback).Run(mojom::ConnectResult::SUCCESS, std::move(device));
 }
 
 void Adapter::OnConnectError(
     ConnectToDeviceCallback callback,
     device::BluetoothDevice::ConnectErrorCode error_code) {
   std::move(callback).Run(mojo::ConvertTo<mojom::ConnectResult>(error_code),
-                          nullptr /* Device */);
+                          /* device */ mojo::NullRemote());
 }
 
 void Adapter::OnStartDiscoverySession(

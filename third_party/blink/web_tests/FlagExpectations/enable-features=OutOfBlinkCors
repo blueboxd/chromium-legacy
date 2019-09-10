@@ -23,3 +23,12 @@ crbug.com/870173 virtual/omt-worker-fetch/external/wpt/fetch/sec-metadata/redire
 crbug.com/870173 virtual/omt-worker-fetch/external/wpt/resource-timing/cors-preflight.any.html [ Pass ]
 crbug.com/870173 virtual/omt-worker-fetch/external/wpt/resource-timing/cors-preflight.any.worker.html [ Pass ]
 crbug.com/870173 virtual/omt-worker-fetch/http/tests/workers/worker-redirect.html [ Pass ]
+
+# The fetch-request-xhr.https.html fails on some checks, but has an expectation
+# file to ignore text diffs. It also fails on the same checks even with
+# OOR-CORS, but with different texts. Just mark them as Failure.
+crbug.com/870173 external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
+crbug.com/870173 virtual/cache-storage-parallel/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
+crbug.com/870173 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
+crbug.com/870173 virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
+crbug.com/870173 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]

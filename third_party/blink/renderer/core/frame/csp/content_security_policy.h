@@ -128,7 +128,7 @@ class CORE_EXPORT ContentSecurityPolicyDelegate : public GarbageCollectedMixin {
       const blink::WebVector<WebContentSecurityPolicy>&) = 0;
 };
 
-class CORE_EXPORT ContentSecurityPolicy
+class CORE_EXPORT ContentSecurityPolicy final
     : public GarbageCollectedFinalized<ContentSecurityPolicy> {
  public:
   enum ExceptionStatus { kWillThrowException, kWillNotThrowException };

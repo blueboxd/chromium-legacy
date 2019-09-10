@@ -36,6 +36,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "third_party/blink/renderer/platform/heap/finalizer_traits.h"
 #include "third_party/blink/renderer/platform/heap/gc_info.h"
 #include "third_party/blink/renderer/platform/heap/heap_page.h"
 #include "third_party/blink/renderer/platform/heap/process_heap.h"
@@ -171,6 +172,14 @@ class ObjectAliveTrait<T, true> {
     return header->IsMarked();
   }
 };
+
+template <typename T, typename = int>
+struct IsGarbageCollectedContainer : std::false_type {};
+
+template <typename T>
+struct IsGarbageCollectedContainer<
+    T,
+    typename T::IsGarbageCollectedCollectionTypeMarker> : std::true_type {};
 
 }  // namespace internal
 
@@ -533,6 +542,13 @@ template <typename T, typename... Args>
 T* MakeGarbageCollected(Args&&... args) {
   static_assert(WTF::IsGarbageCollectedType<T>::value,
                 "T needs to be a garbage collected object");
+  static_assert(std::is_trivially_destructible<T>::value ||
+                    std::has_virtual_destructor<T>::value ||
+                    std::is_final<T>::value ||
+                    internal::IsGarbageCollectedContainer<T>::value ||
+                    internal::HasFinalizeGarbageCollectedObject<T>::value,
+                "Finalized GarbageCollected class should either have a virtual "
+                "destructor or be marked as final.");
   void* memory = T::AllocateObject(sizeof(T));
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(memory);
   // Placement new as regular operator new() is deleted.
@@ -553,6 +569,13 @@ template <typename T, typename... Args>
 T* MakeGarbageCollected(AdditionalBytes additional_bytes, Args&&... args) {
   static_assert(WTF::IsGarbageCollectedType<T>::value,
                 "T needs to be a garbage collected object");
+  static_assert(std::is_trivially_destructible<T>::value ||
+                    std::has_virtual_destructor<T>::value ||
+                    std::is_final<T>::value ||
+                    internal::IsGarbageCollectedContainer<T>::value ||
+                    internal::HasFinalizeGarbageCollectedObject<T>::value,
+                "Finalized GarbageCollected class should either have a virtual "
+                "destructor or be marked as final.");
   void* memory = T::AllocateObject(sizeof(T) + additional_bytes.value);
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(memory);
   // Placement new as regular operator new() is deleted.

@@ -24,24 +24,15 @@ const char kCUPSPrinterStateOpt[] = "printer-state";
 namespace printing {
 
 CupsPrinter::CupsPrinter(http_t* http,
-                         std::unique_ptr<cups_dest_t, DestinationDeleter> dest,
-                         std::unique_ptr<cups_dinfo_t, DestInfoDeleter> info)
-    : cups_http_(http),
-      destination_(std::move(dest)),
-      dest_info_(std::move(info)) {
+                         std::unique_ptr<cups_dest_t, DestinationDeleter> dest)
+    : cups_http_(http), destination_(std::move(dest)) {
   DCHECK(cups_http_);
   DCHECK(destination_);
 }
 
-CupsPrinter::CupsPrinter(CupsPrinter&& printer)
-    : cups_http_(printer.cups_http_),
-      destination_(std::move(printer.destination_)),
-      dest_info_(std::move(printer.dest_info_)) {
-  DCHECK(cups_http_);
-  DCHECK(destination_);
-}
+CupsPrinter::CupsPrinter(CupsPrinter&& printer) = default;
 
-CupsPrinter::~CupsPrinter() {}
+CupsPrinter::~CupsPrinter() = default;
 
 bool CupsPrinter::is_default() const {
   return destination_->is_default;
@@ -49,7 +40,7 @@ bool CupsPrinter::is_default() const {
 
 ipp_attribute_t* CupsPrinter::GetSupportedOptionValues(
     const char* option_name) const {
-  if (!InitializeDestInfo())
+  if (!EnsureDestInfo())
     return nullptr;
 
   return cupsFindDestSupported(cups_http_, destination_.get(), dest_info_.get(),
@@ -75,7 +66,7 @@ std::vector<base::StringPiece> CupsPrinter::GetSupportedOptionValueStrings(
 
 ipp_attribute_t* CupsPrinter::GetDefaultOptionValue(
     const char* option_name) const {
-  if (!InitializeDestInfo())
+  if (!EnsureDestInfo())
     return nullptr;
 
   return cupsFindDestDefault(cups_http_, destination_.get(), dest_info_.get(),
@@ -84,7 +75,7 @@ ipp_attribute_t* CupsPrinter::GetDefaultOptionValue(
 
 bool CupsPrinter::CheckOptionSupported(const char* name,
                                        const char* value) const {
-  if (!InitializeDestInfo())
+  if (!EnsureDestInfo())
     return false;
 
   int supported = cupsCheckDestSupported(cups_http_, destination_.get(),
@@ -133,11 +124,7 @@ std::string CupsPrinter::GetMakeAndModel() const {
   return make_and_model ? std::string(make_and_model) : std::string();
 }
 
-bool CupsPrinter::IsAvailable() const {
-  return InitializeDestInfo();
-}
-
-bool CupsPrinter::InitializeDestInfo() const {
+bool CupsPrinter::EnsureDestInfo() const {
   if (dest_info_)
     return true;
 

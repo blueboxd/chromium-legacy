@@ -36,6 +36,7 @@ import org.chromium.components.signin.AccountTrackerService;
 import org.chromium.components.signin.identitymanager.CoreAccountId;
 import org.chromium.components.signin.identitymanager.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.IdentityManager;
+import org.chromium.components.signin.metrics.SignoutReason;
 import org.chromium.components.sync.AndroidSyncSettings;
 
 import java.util.concurrent.atomic.AtomicInteger;

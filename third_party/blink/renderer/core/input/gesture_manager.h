@@ -22,7 +22,7 @@ class MouseEventManager;
 
 // This class takes care of gestures and delegating the action based on the
 // gesture to the responsible class.
-class CORE_EXPORT GestureManager
+class CORE_EXPORT GestureManager final
     : public GarbageCollectedFinalized<GestureManager> {
  public:
   GestureManager(LocalFrame&,

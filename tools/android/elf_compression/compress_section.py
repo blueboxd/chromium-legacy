@@ -26,7 +26,21 @@ Technically this script does the following steps:
 
 import argparse
 import logging
+import os
+import pathlib
+import subprocess
 import sys
+import tempfile
+
+import compression
+import elf_headers
+
+COMPRESSED_SECTION_NAME = '.compressed_library_data'
+ADDRESS_ALIGN = 0x1000
+
+# src/third_party/llvm-build/Release+Asserts/bin/llvm-objcopy
+OBJCOPY_PATH = pathlib.Path(__file__).resolve().parents[3].joinpath(
+    'third_party/llvm-build/Release+Asserts/bin/llvm-objcopy')
 
 
 def _SetupLogging():
@@ -51,10 +65,73 @@ def _ParseArguments():
   parser.add_argument(
       '-r',
       '--right_range',
-      help='End (inclusive) of the target part of the library',
+      help='End (exclusive) of the target part of the library',
       type=int,
       required=True)
   return parser.parse_args()
+
+
+def _FileRangeToVirtualAddressRange(data, l, r):
+  """Returns virtual address range corresponding to given file range.
+
+  Since we have to resolve them by their virtual address, parsing of LOAD
+  segments is required here.
+  """
+  elf = elf_headers.ElfHeader(data)
+  for phdr in elf.GetPhdrs():
+    if phdr.p_type == elf_headers.ProgramHeader.Type.PT_LOAD.value:
+      # Current version of the prototype only supports ranges which are fully
+      # contained inside one LOAD segment. It should cover most of the common
+      # cases.
+      if phdr.p_offset >= r or phdr.p_offset + phdr.p_filesz <= l:
+        # Range doesn't overlap.
+        continue
+      if phdr.p_offset > l or phdr.p_offset + phdr.p_filesz < r:
+        # Range overlap with LOAD segment but isn't fully covered by it.
+        raise RuntimeError('Range is not contained within one LOAD segment')
+      l_virt = phdr.p_vaddr + (l - phdr.p_offset)
+      r_virt = phdr.p_vaddr + (r - phdr.p_offset)
+      return l_virt, r_virt
+  raise RuntimeError('Specified range is outside of all LOAD segments.')
+
+
+def _CopyRangeIntoCompressedSection(data, l, r):
+  """Adds a new section containing compressed version of provided range."""
+  virtual_l, virtual_r = _FileRangeToVirtualAddressRange(data, l, r)
+  # LOAD segments borders are being rounded to the page size so we have to
+  # shrink [l, r) so corresponding virtual addresses are aligned.
+  if virtual_l % ADDRESS_ALIGN != 0:
+    l += ADDRESS_ALIGN - (virtual_l % ADDRESS_ALIGN)
+  r -= virtual_r % ADDRESS_ALIGN
+  if l >= r:
+    raise RuntimeError('Range collapsed after aligning by page size')
+
+  compressed_range = compression.CompressData(data[l:r])
+
+  with tempfile.TemporaryDirectory() as tmpdir:
+    # The easiest way to add a new section is to use objcopy, but it requires
+    # for all of the data to be stored in files.
+    objcopy_input_file = os.path.join(tmpdir, 'input')
+    objcopy_data_file = os.path.join(tmpdir, 'data')
+    objcopy_output_file = os.path.join(tmpdir, 'output')
+
+    with open(objcopy_input_file, 'wb') as f:
+      f.write(data)
+    with open(objcopy_data_file, 'wb') as f:
+      f.write(compressed_range)
+
+    objcopy_args = [
+        OBJCOPY_PATH, objcopy_input_file, objcopy_output_file, '--add-section',
+        '{}={}'.format(COMPRESSED_SECTION_NAME, objcopy_data_file)
+    ]
+    run_result = subprocess.run(
+        objcopy_args, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+    if run_result.returncode != 0:
+      raise RuntimeError('objcopy failed with status code {}: {}'.format(
+          run_result.returncode, run_result.stderr))
+
+    with open(objcopy_output_file, 'rb') as f:
+      data[:] = bytearray(f.read())
 
 
 def main():
@@ -64,6 +141,8 @@ def main():
   with open(args.input, 'rb') as f:
     data = f.read()
     data = bytearray(data)
+
+  _CopyRangeIntoCompressedSection(data, args.left_range, args.right_range)
 
   with open(args.output, 'wb') as f:
     f.write(data)

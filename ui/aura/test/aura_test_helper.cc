@@ -57,10 +57,8 @@ AuraTestHelper::AuraTestHelper(std::unique_ptr<Env> env)
 }
 
 AuraTestHelper::~AuraTestHelper() {
-  CHECK(setup_called_)
-      << "AuraTestHelper::SetUp() never called.";
-  CHECK(teardown_called_)
-      << "AuraTestHelper::TearDown() never called.";
+  CHECK(setup_called_) << "AuraTestHelper::SetUp() never called.";
+  CHECK(teardown_called_) << "AuraTestHelper::TearDown() never called.";
 }
 
 // static
@@ -107,6 +105,7 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
   display::Screen* screen = display::Screen::GetScreen();
   gfx::Size host_size(screen ? screen->GetPrimaryDisplay().GetSizeInPixel()
                              : gfx::Size(800, 600));
+
   // This must be reset before creating TestScreen, which sets up the display
   // scale factor for this test iteration.
   display::Display::ResetForceDeviceScaleFactorForTesting();

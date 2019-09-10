@@ -44,7 +44,7 @@ namespace blink {
 
 class SQLTransactionBackend;
 
-class SQLTransactionCoordinator
+class SQLTransactionCoordinator final
     : public GarbageCollectedFinalized<SQLTransactionCoordinator> {
  public:
   SQLTransactionCoordinator();

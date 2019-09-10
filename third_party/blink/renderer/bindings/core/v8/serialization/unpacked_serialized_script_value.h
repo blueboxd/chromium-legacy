@@ -35,7 +35,7 @@ class ImageBitmap;
 // but (for security reasons) separate JavaScript wrappers must exist. For this
 // reason, a SerializedScriptValue can only be unpacked once, but thereafter it
 // can be deserialized multiple times.
-class CORE_EXPORT UnpackedSerializedScriptValue
+class CORE_EXPORT UnpackedSerializedScriptValue final
     : public GarbageCollectedFinalized<UnpackedSerializedScriptValue> {
  public:
   // Callers should use SerializedScriptValue::Unpack.

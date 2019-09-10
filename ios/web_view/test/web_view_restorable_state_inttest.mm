@@ -22,13 +22,6 @@ namespace ios_web_view {
 // methods.
 typedef ios_web_view::WebViewInttestBase WebViewRestorableStateTest;
 TEST_F(WebViewRestorableStateTest, EncodeDecode) {
-#if !TARGET_IPHONE_SIMULATOR
-  if (@available(iOS 12.2, *)) {
-  } else {
-    // crbug.com/(1001965): Test disabled on iOS 12.1 and older devices.
-    return;
-  }
-#endif
   // Load 2 URLs to create non-default state.
   ASSERT_FALSE([web_view_ lastCommittedURL]);
   ASSERT_FALSE([web_view_ visibleURL]);
@@ -46,6 +39,13 @@ TEST_F(WebViewRestorableStateTest, EncodeDecode) {
   // Create second web view and restore its state from the first web view.
   CWVWebView* restored_web_view = test::CreateWebView();
   test::CopyWebViewState(web_view_, restored_web_view);
+  // The WKWebView must be present in the view hierarchy in order to prevent
+  // WebKit optimizations which may pause internal parts of the web view
+  // without notice. Work around this by adding the view directly.
+  // TODO(crbug.com/944077): Remove this workaround once fixed in ios/web_view.
+  UIViewController* view_controller =
+      [[[UIApplication sharedApplication] keyWindow] rootViewController];
+  [view_controller.view addSubview:restored_web_view];
 
   // Wait for restore to finish.
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^bool {

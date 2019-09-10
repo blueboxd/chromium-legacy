@@ -5377,6 +5377,7 @@ grit("resources") {
   if (is_chromeos) {
     deps += [
       "//chrome/browser/ui/webui/chromeos/add_supervision:mojo_bindings_js",
+      "//chrome/browser/ui/webui/chromeos/crostini_installer:mojo_bindings_js",
       "//chrome/browser/ui/webui/chromeos/machine_learning:mojo_bindings_js",
     ]
   }

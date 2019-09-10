@@ -69,7 +69,7 @@ class AudioSystemToServiceAdapterTestBase : public testing::Test {
   // AudioSystem conformance tests won't set expecnations.
   NiceMock<MockFunction<void(void)>> system_info_bind_requested_;
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<media::MockAudioManager> audio_manager_;
   std::unique_ptr<mojom::SystemInfo> system_info_impl_;
   std::unique_ptr<mojo::Receiver<mojom::SystemInfo>> system_info_receiver_;
@@ -433,8 +433,8 @@ class AudioSystemToServiceAdapterDisconnectTest : public testing::Test {
   MOCK_METHOD0(ClientConnected, void(void));
   MOCK_METHOD0(ClientDisconnected, void(void));
 
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::TimeSource::MOCK_TIME};
 
   const base::Optional<std::string> valid_reply_{kValidReplyId};
   base::MockCallback<media::AudioSystem::OnDeviceIdCallback> response_received_;

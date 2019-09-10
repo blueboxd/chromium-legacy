@@ -19,7 +19,7 @@
 #include "device/bluetooth/dbus/bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/bluetooth_device_client.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace device {
 
@@ -59,10 +59,12 @@ base::Optional<std::array<uint8_t, 6>> ParseAddress(
 
 }  // namespace
 
-void BluetoothSystem::Create(mojom::BluetoothSystemRequest request,
-                             mojom::BluetoothSystemClientPtr client) {
-  mojo::MakeStrongBinding(std::make_unique<BluetoothSystem>(std::move(client)),
-                          std::move(request));
+void BluetoothSystem::Create(
+    mojo::PendingReceiver<mojom::BluetoothSystem> receiver,
+    mojom::BluetoothSystemClientPtr client) {
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<BluetoothSystem>(std::move(client)),
+      std::move(receiver));
 }
 
 BluetoothSystem::BluetoothSystem(mojom::BluetoothSystemClientPtr client) {

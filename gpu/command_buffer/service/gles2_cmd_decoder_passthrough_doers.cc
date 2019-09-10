@@ -125,7 +125,7 @@ GLuint GetTextureServiceID(gl::GLApi* api,
   }
 
   if (create_if_missing) {
-    GLuint service_id = 0;
+    service_id = 0;
     api->glGenTexturesFn(1, &service_id);
     resources->texture_id_map.SetIDMapping(client_id, service_id);
     return service_id;

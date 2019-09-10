@@ -24,7 +24,7 @@ class WebKeyboardEvent;
 
 enum class OverrideCapsLockState { kDefault, kOn, kOff };
 
-class CORE_EXPORT KeyboardEventManager
+class CORE_EXPORT KeyboardEventManager final
     : public GarbageCollectedFinalized<KeyboardEventManager> {
  public:
   static const int kAccessKeyModifiers =

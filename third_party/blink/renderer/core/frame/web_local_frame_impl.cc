@@ -686,7 +686,7 @@ void WebLocalFrameImpl::DispatchUnloadEvent() {
   // when unloading itself.
   IgnoreOpensDuringUnloadCountIncrementer ignore_opens_during_unload(
       GetFrame()->GetDocument());
-  GetFrame()->Loader().DispatchUnloadEvent();
+  GetFrame()->Loader().DispatchUnloadEvent(nullptr, nullptr);
 }
 
 void WebLocalFrameImpl::ExecuteScript(const WebScriptSource& source) {

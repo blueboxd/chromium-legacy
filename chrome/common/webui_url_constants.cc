@@ -213,6 +213,7 @@ const char kChromeUICertificateManagerHost[] = "certificate-manager";
 const char kChromeUIConfirmPasswordChangeHost[] = "confirm-password-change";
 const char kChromeUIConfirmPasswordChangeUrl[] =
     "chrome://confirm-password-change";
+const char kChromeUICrostiniInstallerHost[] = "crostini-installer";
 const char kChromeUICryptohomeHost[] = "cryptohome";
 const char kChromeUIDeviceEmulatorHost[] = "device-emulator";
 const char kChromeUIDiscoverURL[] = "chrome://oobe/discover";
@@ -276,6 +277,7 @@ bool IsSystemWebUIHost(base::StringPiece host) {
       kChromeUIBluetoothPairingHost,
       kChromeUICellularSetupHost,
       kChromeUICertificateManagerHost,
+      kChromeUICrostiniInstallerHost,
       kChromeUICryptohomeHost,
       kChromeUIDeviceEmulatorHost,
       kChromeUIFirstRunHost,

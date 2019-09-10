@@ -47,7 +47,7 @@ class StyleRuleImport;
 class StyleRuleNamespace;
 enum class ParseSheetResult;
 
-class CORE_EXPORT StyleSheetContents
+class CORE_EXPORT StyleSheetContents final
     : public GarbageCollectedFinalized<StyleSheetContents> {
  public:
   static const Document* SingleOwnerDocument(const StyleSheetContents*);

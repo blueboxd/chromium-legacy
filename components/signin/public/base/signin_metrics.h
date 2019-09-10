@@ -26,7 +26,7 @@ enum DifferentPrimaryAccounts {
 };
 
 // Track all the ways a profile can become signed out as a histogram.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.signin
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.signin.metrics
 // GENERATED_JAVA_CLASS_NAME_OVERRIDE: SignoutReason
 enum ProfileSignout : int {
   // The value used within unit tests.
@@ -128,7 +128,7 @@ enum Source {
 // "Signin.SigninStartedAccessPoint" and "Signin.SigninCompletedAccessPoint"
 // histograms.
 // A Java counterpart will be generated for this enum.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.signin
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.signin.metrics
 // GENERATED_JAVA_CLASS_NAME_OVERRIDE: SigninAccessPoint
 enum class AccessPoint : int {
   ACCESS_POINT_START_PAGE = 0,
@@ -183,7 +183,7 @@ enum class PromoAction : int {
 
 // Enum values which enumerates all reasons to start sign in process.
 // A Java counterpart will be generated for this enum.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.signin
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.signin.metrics
 // GENERATED_JAVA_CLASS_NAME_OVERRIDE: SigninReason
 enum class Reason : int {
   REASON_SIGNIN_PRIMARY_ACCOUNT = 0,
@@ -248,6 +248,7 @@ enum class AccountEquality : int {
 // When the user is give a choice of deleting their profile or not when signing
 // out, the |DELETED| or |KEEPING| metric should be used. If the user is not
 // given any option, then use the |IGNORE_METRIC| value should be used.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.signin.metrics
 enum class SignoutDelete : int {
   DELETED = 0,
   KEEPING,

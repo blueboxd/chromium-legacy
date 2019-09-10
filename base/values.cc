@@ -340,6 +340,51 @@ span<const Value> Value::GetList() const {
   return list_;
 }
 
+void Value::Append(bool value) {
+  CHECK(is_list());
+  list_.emplace_back(value);
+}
+
+void Value::Append(int value) {
+  CHECK(is_list());
+  list_.emplace_back(value);
+}
+
+void Value::Append(double value) {
+  CHECK(is_list());
+  list_.emplace_back(value);
+}
+
+void Value::Append(const char* value) {
+  CHECK(is_list());
+  list_.emplace_back(value);
+}
+
+void Value::Append(StringPiece value) {
+  CHECK(is_list());
+  list_.emplace_back(value);
+}
+
+void Value::Append(std::string&& value) {
+  CHECK(is_list());
+  list_.emplace_back(std::move(value));
+}
+
+void Value::Append(const char16* value) {
+  CHECK(is_list());
+  list_.emplace_back(value);
+}
+
+void Value::Append(StringPiece16 value) {
+  CHECK(is_list());
+  list_.emplace_back(value);
+}
+
+void Value::Append(Value&& value) {
+  CHECK(is_list());
+  list_.emplace_back(std::move(value));
+}
+
 Value* Value::FindKey(StringPiece key) {
   return const_cast<Value*>(static_cast<const Value*>(this)->FindKey(key));
 }

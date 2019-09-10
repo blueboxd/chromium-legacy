@@ -15,7 +15,11 @@ extern NSString* const kDisabledTintColor;
 extern NSString* const kGridThemeSelectionTintColor;
 // Background color used in the rounded squares behind favicons.
 extern NSString* const kFaviconBackgroundColor;
+// Ink color for an MDC button.
 extern NSString* const kMDCInkColor;
+// Ink color for a secondary style MDC button (button with transparent
+// background).
+extern NSString* const kMDCSecondaryInkColor;
 // Color used to tint placeholder images and icons.
 extern NSString* const kPlaceholderImageTintColor;
 extern NSString* const kScrimBackgroundColor;

@@ -28,7 +28,7 @@ class PresentationAvailabilityObserver;
 // TODO(crbug.com/780109): Improve encapsulation of PresentationAvailability and
 // this class by moving the multiple URL tracking logic to the former, and
 // consolidating this class's APIs to take repeating callbacks.
-class MODULES_EXPORT PresentationAvailabilityState
+class MODULES_EXPORT PresentationAvailabilityState final
     : public GarbageCollectedFinalized<PresentationAvailabilityState> {
  public:
   explicit PresentationAvailabilityState(mojom::blink::PresentationService*);
@@ -60,7 +60,7 @@ class MODULES_EXPORT PresentationAvailabilityState
   // Tracks listeners of presentation displays availability for
   // |availability_urls|. Shared with PresentationRequest objects with the same
   // set of URLs.
-  class AvailabilityListener
+  class AvailabilityListener final
       : public GarbageCollectedFinalized<AvailabilityListener> {
    public:
     explicit AvailabilityListener(const Vector<KURL>& availability_urls);

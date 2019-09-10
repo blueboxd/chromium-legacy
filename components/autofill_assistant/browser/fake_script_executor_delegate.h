@@ -35,6 +35,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   WebsiteLoginFetcher* GetWebsiteLoginFetcher() override;
   content::WebContents* GetWebContents() override;
+  std::string GetAccountEmailAddress() override;
   void EnterState(AutofillAssistantState state) override;
   void SetTouchableElementArea(const ElementAreaProto& element) override;
   void SetStatusMessage(const std::string& message) override;

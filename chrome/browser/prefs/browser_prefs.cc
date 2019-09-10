@@ -495,6 +495,9 @@ const char kSameVersionStartupCount[] =
 // Deprecated 8/2019
 const char kHintLoadedCounts[] = "optimization_guide.hint_loaded_counts";
 
+// Deprecated 9/2019
+const char kGoogleServicesUsername[] = "google.services.username";
+
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -571,6 +574,7 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterBooleanPref(kInsecureExtensionUpdatesEnabled, false);
 
   registry->RegisterDictionaryPref(kHintLoadedCounts);
+  registry->RegisterStringPref(kGoogleServicesUsername, std::string());
 }
 
 }  // namespace
@@ -1179,4 +1183,7 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   // Added 8/2019
   profile_prefs->ClearPref(kInsecureExtensionUpdatesEnabled);
   profile_prefs->ClearPref(kHintLoadedCounts);
+
+  // Added 9/2019
+  profile_prefs->ClearPref(kGoogleServicesUsername);
 }

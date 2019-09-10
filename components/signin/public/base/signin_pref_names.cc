@@ -56,12 +56,10 @@ const char kGoogleServicesHostedDomain[] = "google.services.hosted_domain";
 const char kGoogleServicesLastAccountId[] = "google.services.last_account_id";
 
 // String the identifies the last user that logged into sync and other
-// google services. As opposed to kGoogleServicesUsername, this value is not
-// cleared on signout, but while the user is signed in the two values will
-// be the same.  This pref remains in order to pre-fill the sign in page when
-// reconnecting a profile, but programmatic checks to see if a given account
-// is the same as the last account should use kGoogleServicesLastAccountId
-// instead.
+// google services. This value is not cleared on signout.
+// This pref remains in order to pre-fill the sign in page when reconnecting a
+// profile, but programmatic checks to see if a given account is the same as the
+// last account should use kGoogleServicesLastAccountId instead.
 const char kGoogleServicesLastUsername[] = "google.services.last_username";
 
 // Device id scoped to single signin. This device id will be regenerated if user
@@ -73,11 +71,6 @@ const char kGoogleServicesSigninScopedDeviceId[] =
 // Obfuscated account ID that identifies the current user logged into sync and
 // other google services.
 const char kGoogleServicesUserAccountId[] = "google.services.user_account_id";
-
-// String that identifies the current user logged into sync and other google
-// services.
-// DEPRECATED.
-const char kGoogleServicesUsername[] = "google.services.username";
 
 // Local state pref containing a string regex that restricts which accounts
 // can be used to log in to chrome (e.g. "*@google.com"). If missing or blank,

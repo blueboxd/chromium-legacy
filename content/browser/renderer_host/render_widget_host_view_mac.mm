@@ -251,7 +251,7 @@ void RenderWidgetHostViewMac::MigrateNSViewBridge(
   // destroying the associated bridge), and close the binding (to allow it
   // to be re-bound). Note that |in_process_ns_view_bridge_| remains valid.
   remote_ns_view_client_binding_.Close();
-  remote_ns_view_ptr_.reset();
+  remote_ns_view_.reset();
 
   // Enable accessibility focus overriding for remote NSViews.
   accessibility_focus_overrider_.SetAppIsRemote(remote_cocoa_application !=
@@ -265,24 +265,24 @@ void RenderWidgetHostViewMac::MigrateNSViewBridge(
 
   remote_cocoa::mojom::RenderWidgetHostNSViewHostAssociatedPtr client;
   remote_ns_view_client_binding_.Bind(mojo::MakeRequest(&client));
-  remote_cocoa::mojom::RenderWidgetHostNSViewAssociatedRequest bridge_request =
-      mojo::MakeRequest(&remote_ns_view_ptr_);
+  mojo::PendingAssociatedReceiver<remote_cocoa::mojom::RenderWidgetHostNSView>
+      view_receiver = remote_ns_view_.BindNewEndpointAndPassReceiver();
 
   // Cast from mojom::RenderWidgetHostNSViewHostPtr and
-  // mojom::RenderWidgetHostNSViewBridgeRequest to the public interfaces
-  // accepted by the application.
+  // mojo::PendingAssociatedReceiver<mojom::RenderWidgetHostNSView> to the
+  // public interfaces accepted by the application.
   // TODO(ccameron): Remove the need for this cast.
   // https://crbug.com/888290
   mojo::AssociatedInterfacePtrInfo<remote_cocoa::mojom::StubInterface>
       stub_client(client.PassInterface().PassHandle(), 0);
   remote_cocoa::mojom::StubInterfaceAssociatedRequest stub_bridge_request(
-      bridge_request.PassHandle());
+      view_receiver.PassHandle());
 
   remote_cocoa_application->CreateRenderWidgetHostNSView(
       std::move(stub_client), std::move(stub_bridge_request));
 
-  ns_view_ = remote_ns_view_ptr_.get();
-  remote_ns_view_ptr_->SetParentWebContentsNSView(parent_ns_view_id);
+  ns_view_ = remote_ns_view_.get();
+  remote_ns_view_->SetParentWebContentsNSView(parent_ns_view_id);
 }
 
 void RenderWidgetHostViewMac::SetParentUiLayer(ui::Layer* parent_ui_layer) {
@@ -702,7 +702,7 @@ void RenderWidgetHostViewMac::Destroy() {
   ns_view_ = nullptr;
   in_process_ns_view_bridge_.reset();
   remote_ns_view_client_binding_.Close();
-  remote_ns_view_ptr_.reset();
+  remote_ns_view_.reset();
 
   // Delete the delegated frame state, which will reach back into
   // host().

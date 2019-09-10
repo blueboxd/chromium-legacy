@@ -15,11 +15,9 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "storage/browser/fileapi/file_system_backend.h"
-#include "storage/browser/fileapi/file_system_features.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/browser/fileapi/sandbox_file_system_backend_delegate.h"
 #include "storage/browser/test/test_file_system_options.h"
@@ -75,18 +73,9 @@ void DidOpenFileSystem(base::File::Error* error_out,
 
 }  // namespace
 
-class SandboxFileSystemBackendTest
-    : public testing::Test,
-      public ::testing::WithParamInterface<bool> {
+class SandboxFileSystemBackendTest : public testing::Test {
  protected:
   void SetUp() override {
-    if (IsIncognitoEnabled()) {
-      feature_list_.InitAndEnableFeature(
-          storage::features::kEnableFilesystemInIncognito);
-    } else {
-      feature_list_.InitAndDisableFeature(
-          storage::features::kEnableFilesystemInIncognito);
-    }
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     SetUpNewDelegate(CreateAllowFileAccessOptions());
   }
@@ -104,8 +93,6 @@ class SandboxFileSystemBackendTest
     SetUpNewDelegate(options);
     backend_.reset(new SandboxFileSystemBackend(delegate_.get()));
   }
-
-  bool IsIncognitoEnabled() { return GetParam(); }
 
   storage::SandboxFileSystemBackendDelegate::OriginEnumerator*
   CreateOriginEnumerator() const {
@@ -150,19 +137,16 @@ class SandboxFileSystemBackendTest
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<storage::SandboxFileSystemBackendDelegate> delegate_;
   std::unique_ptr<storage::SandboxFileSystemBackend> backend_;
-  base::test::ScopedFeatureList feature_list_;
 };
 
-INSTANTIATE_TEST_SUITE_P(, SandboxFileSystemBackendTest, ::testing::Bool());
-
-TEST_P(SandboxFileSystemBackendTest, Empty) {
+TEST_F(SandboxFileSystemBackendTest, Empty) {
   SetUpNewBackend(CreateAllowFileAccessOptions());
   std::unique_ptr<SandboxFileSystemBackendDelegate::OriginEnumerator>
       enumerator(CreateOriginEnumerator());
   ASSERT_TRUE(enumerator->Next().is_empty());
 }
 
-TEST_P(SandboxFileSystemBackendTest, EnumerateOrigins) {
+TEST_F(SandboxFileSystemBackendTest, EnumerateOrigins) {
   SetUpNewBackend(CreateAllowFileAccessOptions());
   const char* temporary_origins[] = {
     "http://www.bar.com/",
@@ -211,7 +195,7 @@ TEST_P(SandboxFileSystemBackendTest, EnumerateOrigins) {
   EXPECT_EQ(persistent_size, persistent_actual_size);
 }
 
-TEST_P(SandboxFileSystemBackendTest, GetRootPathCreateAndExamine) {
+TEST_F(SandboxFileSystemBackendTest, GetRootPathCreateAndExamine) {
   std::vector<base::FilePath> returned_root_path(
       base::size(kRootPathTestCases));
   SetUpNewBackend(CreateAllowFileAccessOptions());
@@ -251,7 +235,7 @@ TEST_P(SandboxFileSystemBackendTest, GetRootPathCreateAndExamine) {
   }
 }
 
-TEST_P(SandboxFileSystemBackendTest,
+TEST_F(SandboxFileSystemBackendTest,
        GetRootPathCreateAndExamineWithNewBackend) {
   std::vector<base::FilePath> returned_root_path(
       base::size(kRootPathTestCases));
@@ -275,7 +259,7 @@ TEST_P(SandboxFileSystemBackendTest,
   EXPECT_EQ(root_path1.value(), root_path2.value());
 }
 
-TEST_P(SandboxFileSystemBackendTest, GetRootPathGetWithoutCreate) {
+TEST_F(SandboxFileSystemBackendTest, GetRootPathGetWithoutCreate) {
   SetUpNewBackend(CreateDisallowFileAccessOptions());
 
   // Try to get a root directory without creating.
@@ -288,7 +272,7 @@ TEST_P(SandboxFileSystemBackendTest, GetRootPathGetWithoutCreate) {
   }
 }
 
-TEST_P(SandboxFileSystemBackendTest, GetRootPathInIncognito) {
+TEST_F(SandboxFileSystemBackendTest, GetRootPathInIncognito) {
   SetUpNewBackend(CreateIncognitoFileSystemOptions());
 
   // Try to get a root directory.
@@ -296,15 +280,14 @@ TEST_P(SandboxFileSystemBackendTest, GetRootPathInIncognito) {
     SCOPED_TRACE(testing::Message() << "RootPath (incognito) #" << i << " "
                  << kRootPathTestCases[i].expected_path);
     EXPECT_EQ(
-        IsIncognitoEnabled() &&
-            kRootPathTestCases[i].type == storage::kFileSystemTypeTemporary,
+        kRootPathTestCases[i].type == storage::kFileSystemTypeTemporary,
         GetRootPath(GURL(kRootPathTestCases[i].origin_url),
                     kRootPathTestCases[i].type,
                     storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT, nullptr));
   }
 }
 
-TEST_P(SandboxFileSystemBackendTest, GetRootPathFileURI) {
+TEST_F(SandboxFileSystemBackendTest, GetRootPathFileURI) {
   SetUpNewBackend(CreateDisallowFileAccessOptions());
   for (size_t i = 0; i < base::size(kRootPathFileURITestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "RootPathFileURI (disallow) #"
@@ -316,7 +299,7 @@ TEST_P(SandboxFileSystemBackendTest, GetRootPathFileURI) {
   }
 }
 
-TEST_P(SandboxFileSystemBackendTest, GetRootPathFileURIWithAllowFlag) {
+TEST_F(SandboxFileSystemBackendTest, GetRootPathFileURIWithAllowFlag) {
   SetUpNewBackend(CreateAllowFileAccessOptions());
   for (size_t i = 0; i < base::size(kRootPathFileURITestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "RootPathFileURI (allow) #"

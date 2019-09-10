@@ -9,25 +9,27 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/memory/singleton.h"
 #include "base/process/process.h"
-#include "base/unguessable_token.h"
-#include "base/values.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/branding_buildflags.h"
+#include "components/dbus/properties/dbus_properties.h"
+#include "components/dbus/properties/success_barrier_callback.h"
 #include "components/dbus/thread_linux/dbus_thread_linux.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "dbus/property.h"
-#include "dbus/values_util.h"
 #include "ui/base/mpris/mpris_service_observer.h"
 
 namespace mpris {
 
 namespace {
 
-constexpr int kDebounceTimeoutMilliseconds = 50;
-constexpr int kNumMethodsToExport = 14;
+constexpr int kNumMethodsToExport = 11;
 
 }  // namespace
 
@@ -38,9 +40,7 @@ MprisServiceImpl* MprisServiceImpl::GetInstance() {
 
 MprisServiceImpl::MprisServiceImpl()
     : service_name_(std::string(kMprisAPIServiceNamePrefix) +
-                    std::to_string(base::Process::Current().Pid())) {
-  InitializeProperties();
-}
+                    base::NumberToString(base::Process::Current().Pid())) {}
 
 MprisServiceImpl::~MprisServiceImpl() {
   if (bus_) {
@@ -66,57 +66,54 @@ void MprisServiceImpl::RemoveObserver(MprisServiceObserver* observer) {
 }
 
 void MprisServiceImpl::SetCanGoNext(bool value) {
-  SetPropertyInternal(media_player2_player_properties_, "CanGoNext",
-                      base::Value(value));
+  properties_->SetProperty(kMprisAPIPlayerInterfaceName, "CanGoNext",
+                           DbusBoolean(value));
 }
 
 void MprisServiceImpl::SetCanGoPrevious(bool value) {
-  SetPropertyInternal(media_player2_player_properties_, "CanGoPrevious",
-                      base::Value(value));
+  properties_->SetProperty(kMprisAPIPlayerInterfaceName, "CanGoPrevious",
+                           DbusBoolean(value));
 }
 
 void MprisServiceImpl::SetCanPlay(bool value) {
-  SetPropertyInternal(media_player2_player_properties_, "CanPlay",
-                      base::Value(value));
+  properties_->SetProperty(kMprisAPIPlayerInterfaceName, "CanPlay",
+                           DbusBoolean(value));
 }
 
 void MprisServiceImpl::SetCanPause(bool value) {
-  SetPropertyInternal(media_player2_player_properties_, "CanPause",
-                      base::Value(value));
+  properties_->SetProperty(kMprisAPIPlayerInterfaceName, "CanPause",
+                           DbusBoolean(value));
 }
 
 void MprisServiceImpl::SetPlaybackStatus(PlaybackStatus value) {
-  base::Value status;
-  switch (value) {
-    case PlaybackStatus::kPlaying:
-      status = base::Value("Playing");
-      break;
-    case PlaybackStatus::kPaused:
-      status = base::Value("Paused");
-      break;
-    case PlaybackStatus::kStopped:
-      status = base::Value("Stopped");
-      break;
-  }
-  SetPropertyInternal(media_player2_player_properties_, "PlaybackStatus",
-                      status);
+  auto status = [&]() {
+    switch (value) {
+      case PlaybackStatus::kPlaying:
+        return DbusString("Playing");
+      case PlaybackStatus::kPaused:
+        return DbusString("Paused");
+      case PlaybackStatus::kStopped:
+        return DbusString("Stopped");
+    }
+  };
+  properties_->SetProperty(kMprisAPIPlayerInterfaceName, "PlaybackStatus",
+                           status());
 }
 
 void MprisServiceImpl::SetTitle(const base::string16& value) {
-  SetMetadataPropertyInternal("xesam:title", base::Value(value));
+  SetMetadataPropertyInternal(
+      "xesam:title", MakeDbusVariant(DbusString(base::UTF16ToUTF8(value))));
 }
 
 void MprisServiceImpl::SetArtist(const base::string16& value) {
-  // xesam:artist is actually supposed to be a list of strings, but base::Value
-  // only supports lists of base::Value, which makes this difficult to correctly
-  // propagate to |AddPropertiesToWriter()|. Instead, we'll only track the
-  // string in |media_player2_player_properties_| and special-case within
-  // |AddPropertiesToWriter()|.
-  SetMetadataPropertyInternal("xesam:artist", base::Value(value));
+  SetMetadataPropertyInternal(
+      "xesam:artist",
+      MakeDbusVariant(MakeDbusArray(DbusString(base::UTF16ToUTF8(value)))));
 }
 
 void MprisServiceImpl::SetAlbum(const base::string16& value) {
-  SetMetadataPropertyInternal("xesam:album", base::Value(value));
+  SetMetadataPropertyInternal(
+      "xesam:album", MakeDbusVariant(DbusString(base::UTF16ToUTF8(value))));
 }
 
 std::string MprisServiceImpl::GetServiceName() const {
@@ -125,35 +122,41 @@ std::string MprisServiceImpl::GetServiceName() const {
 
 void MprisServiceImpl::InitializeProperties() {
   // org.mpris.MediaPlayer2 interface properties.
-  media_player2_properties_["CanQuit"] = base::Value(false);
-  media_player2_properties_["CanRaise"] = base::Value(false);
-  media_player2_properties_["HasTrackList"] = base::Value(false);
+  auto set_property = [&](const std::string& property_name, auto&& value) {
+    properties_->SetProperty(kMprisAPIInterfaceName, property_name,
+                             std::move(value), false);
+  };
+  set_property("CanQuit", DbusBoolean(false));
+  set_property("CanRaise", DbusBoolean(false));
+  set_property("HasTrackList", DbusBoolean(false));
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  media_player2_properties_["Identity"] = base::Value("Chrome");
+  set_property("Identity", DbusString("Chrome"));
 #else
-  media_player2_properties_["Identity"] = base::Value("Chromium");
+  set_property("Identity", DbusString("Chromium"));
 #endif
-  media_player2_properties_["SupportedUriSchemes"] =
-      base::Value(base::Value::Type::LIST);
-  media_player2_properties_["SupportedMimeTypes"] =
-      base::Value(base::Value::Type::LIST);
+  set_property("SupportedUriSchemes", DbusArray<DbusString>());
+  set_property("SupportedMimeTypes", DbusArray<DbusString>());
 
   // org.mpris.MediaPlayer2.Player interface properties.
-  media_player2_player_properties_["PlaybackStatus"] = base::Value("Stopped");
-  media_player2_player_properties_["Rate"] = base::Value(1.0);
-  media_player2_player_properties_["Metadata"] =
-      base::Value(base::Value::DictStorage());
-  media_player2_player_properties_["Volume"] = base::Value(1.0);
-  media_player2_player_properties_["Position"] = base::Value(0);
-  media_player2_player_properties_["MinimumRate"] = base::Value(1.0);
-  media_player2_player_properties_["MaximumRate"] = base::Value(1.0);
-  media_player2_player_properties_["CanGoNext"] = base::Value(false);
-  media_player2_player_properties_["CanGoPrevious"] = base::Value(false);
-  media_player2_player_properties_["CanPlay"] = base::Value(false);
-  media_player2_player_properties_["CanPause"] = base::Value(false);
-  media_player2_player_properties_["CanSeek"] = base::Value(false);
-  media_player2_player_properties_["CanControl"] = base::Value(true);
+  auto set_player_property = [&](const std::string& property_name,
+                                 auto&& value) {
+    properties_->SetProperty(kMprisAPIPlayerInterfaceName, property_name,
+                             std::move(value), false);
+  };
+  set_player_property("PlaybackStatus", DbusString("Stopped"));
+  set_player_property("Rate", DbusDouble(1.0));
+  set_player_property("Metadata", DbusDictionary());
+  set_player_property("Volume", DbusDouble(1.0));
+  set_player_property("Position", DbusInt64(0));
+  set_player_property("MinimumRate", DbusDouble(1.0));
+  set_player_property("MaximumRate", DbusDouble(1.0));
+  set_player_property("CanGoNext", DbusBoolean(false));
+  set_player_property("CanGoPrevious", DbusBoolean(false));
+  set_player_property("CanPlay", DbusBoolean(false));
+  set_player_property("CanPause", DbusBoolean(false));
+  set_player_property("CanSeek", DbusBoolean(false));
+  set_player_property("CanControl", DbusBoolean(false));
 }
 
 void MprisServiceImpl::InitializeDbusInterface() {
@@ -169,6 +172,17 @@ void MprisServiceImpl::InitializeDbusInterface() {
   exported_object_ =
       bus_->GetExportedObject(dbus::ObjectPath(kMprisAPIObjectPath));
   int num_methods_attempted_to_export = 0;
+
+  // kNumMethodsToExport calls for method export, 1 call for properties
+  // initialization.
+  barrier_ = SuccessBarrierCallback(
+      kNumMethodsToExport + 1,
+      base::BindOnce(&MprisServiceImpl::OnInitialized, base::Unretained(this)));
+
+  properties_ = std::make_unique<DbusProperties>(exported_object_, barrier_);
+  properties_->RegisterInterface(kMprisAPIInterfaceName);
+  properties_->RegisterInterface(kMprisAPIPlayerInterfaceName);
+  InitializeProperties();
 
   // Helper lambdas for exporting methods while keeping track of the number of
   // exported methods.
@@ -217,45 +231,28 @@ void MprisServiceImpl::InitializeDbusInterface() {
   export_unhandled_method(kMprisAPIPlayerInterfaceName, "SetPosition");
   export_unhandled_method(kMprisAPIPlayerInterfaceName, "OpenUri");
 
-  // Set up org.freedesktop.DBus.Properties interface.
-  // https://dbus.freedesktop.org/doc/dbus-specification.html#standard-interfaces-properties
-  export_method(dbus::kPropertiesInterface, dbus::kPropertiesGetAll,
-                base::BindRepeating(&MprisServiceImpl::GetAllProperties,
-                                    base::Unretained(this)));
-  export_method(dbus::kPropertiesInterface, dbus::kPropertiesGet,
-                base::BindRepeating(&MprisServiceImpl::GetProperty,
-                                    base::Unretained(this)));
-  export_unhandled_method(dbus::kPropertiesInterface, dbus::kPropertiesSet);
-
   DCHECK_EQ(kNumMethodsToExport, num_methods_attempted_to_export);
 }
 
 void MprisServiceImpl::OnExported(const std::string& interface_name,
                                   const std::string& method_name,
                                   bool success) {
-  if (!success) {
-    service_failed_to_start_ = true;
-    return;
+  barrier_.Run(success);
+}
+
+void MprisServiceImpl::OnInitialized(bool success) {
+  if (success) {
+    bus_->RequestOwnership(service_name_,
+                           dbus::Bus::ServiceOwnershipOptions::REQUIRE_PRIMARY,
+                           base::BindRepeating(&MprisServiceImpl::OnOwnership,
+                                               base::Unretained(this)));
   }
-
-  num_methods_exported_++;
-
-  // Still waiting for more methods to finish exporting.
-  if (num_methods_exported_ < kNumMethodsToExport)
-    return;
-
-  bus_->RequestOwnership(service_name_,
-                         dbus::Bus::ServiceOwnershipOptions::REQUIRE_PRIMARY,
-                         base::BindRepeating(&MprisServiceImpl::OnOwnership,
-                                             base::Unretained(this)));
 }
 
 void MprisServiceImpl::OnOwnership(const std::string& service_name,
                                    bool success) {
-  if (!success) {
-    service_failed_to_start_ = true;
+  if (!success)
     return;
-  }
 
   service_ready_ = true;
 
@@ -317,228 +314,16 @@ void MprisServiceImpl::DoNothing(
   response_sender.Run(dbus::Response::FromMethodCall(method_call));
 }
 
-// org.freedesktop.DBus.Properties.GetAll(in STRING interface_name,
-//                                        out DICT<STRING,VARIANT> props);
-void MprisServiceImpl::GetAllProperties(
-    dbus::MethodCall* method_call,
-    dbus::ExportedObject::ResponseSender response_sender) {
-  dbus::MessageReader reader(method_call);
-  std::string interface;
-  if (!reader.PopString(&interface)) {
-    response_sender.Run(nullptr);
-    return;
-  }
-
-  std::unique_ptr<dbus::Response> response =
-      dbus::Response::FromMethodCall(method_call);
-  dbus::MessageWriter writer(response.get());
-
-  if (interface == kMprisAPIInterfaceName) {
-    AddPropertiesToWriter(&writer, media_player2_properties_);
-  } else if (interface == kMprisAPIPlayerInterfaceName) {
-    AddPropertiesToWriter(&writer, media_player2_player_properties_);
-  } else if (interface == dbus::kPropertiesInterface) {
-    // There are no properties to give for this interface.
-    PropertyMap empty_properties_map;
-    AddPropertiesToWriter(&writer, empty_properties_map);
-  } else {
-    // The given interface is not supported, so return a null response.
-    response_sender.Run(nullptr);
-    return;
-  }
-
-  response_sender.Run(std::move(response));
-}
-
-// org.freedesktop.DBus.Properties.Get(in STRING interface_name,
-//                                     in STRING property_name,
-//                                     out VARIANT value);
-void MprisServiceImpl::GetProperty(
-    dbus::MethodCall* method_call,
-    dbus::ExportedObject::ResponseSender response_sender) {
-  dbus::MessageReader reader(method_call);
-  std::string interface;
-  if (!reader.PopString(&interface)) {
-    response_sender.Run(nullptr);
-    return;
-  }
-
-  std::string property_name;
-  if (!reader.PopString(&property_name)) {
-    response_sender.Run(nullptr);
-    return;
-  }
-
-  std::unique_ptr<dbus::Response> response =
-      dbus::Response::FromMethodCall(method_call);
-  dbus::MessageWriter writer(response.get());
-
-  bool success = false;
-  if (interface == kMprisAPIInterfaceName) {
-    auto property_iter = media_player2_properties_.find(property_name);
-    if (property_iter != media_player2_properties_.end()) {
-      dbus::AppendValueDataAsVariant(&writer, property_iter->second);
-      success = true;
-    }
-  } else if (interface == kMprisAPIPlayerInterfaceName) {
-    auto property_iter = media_player2_player_properties_.find(property_name);
-    if (property_iter != media_player2_player_properties_.end()) {
-      if (property_name == "Metadata") {
-        const base::DictionaryValue* metadata = nullptr;
-        property_iter->second.GetAsDictionary(&metadata);
-        AddMetadataToWriter(&writer, metadata);
-      } else {
-        dbus::AppendValueDataAsVariant(&writer, property_iter->second);
-      }
-      success = true;
-    }
-  }
-
-  // If we don't support the given property, return a null response.
-  if (!success) {
-    response_sender.Run(nullptr);
-    return;
-  }
-
-  response_sender.Run(std::move(response));
-}
-
-void MprisServiceImpl::AddPropertiesToWriter(dbus::MessageWriter* writer,
-                                             const PropertyMap& properties) {
-  DCHECK(writer);
-
-  dbus::MessageWriter array_writer(nullptr);
-  dbus::MessageWriter dict_entry_writer(nullptr);
-
-  writer->OpenArray("{sv}", &array_writer);
-
-  for (auto& property : properties) {
-    array_writer.OpenDictEntry(&dict_entry_writer);
-    dict_entry_writer.AppendString(property.first);
-
-    if (property.first == "Metadata") {
-      const base::DictionaryValue* metadata = nullptr;
-      property.second.GetAsDictionary(&metadata);
-      AddMetadataToWriter(&dict_entry_writer, metadata);
-    } else {
-      dbus::AppendValueDataAsVariant(&dict_entry_writer, property.second);
-    }
-
-    array_writer.CloseContainer(&dict_entry_writer);
-  }
-
-  writer->CloseContainer(&array_writer);
-}
-
-void MprisServiceImpl::AddMetadataToWriter(
-    dbus::MessageWriter* writer,
-    const base::DictionaryValue* metadata) {
-  // We need to special-case Metadata's xesam:artist when emitting properties,
-  // since |dbus::AppendValueDataAsVariant()| only supports arrays of variants
-  // and not arrays of strings.
-  DCHECK(writer);
-  DCHECK(metadata);
-
-  dbus::MessageWriter metadata_variant_writer(nullptr);
-  writer->OpenVariant("a{sv}", &metadata_variant_writer);
-  dbus::MessageWriter metadata_writer(nullptr);
-  metadata_variant_writer.OpenArray("{sv}", &metadata_writer);
-
-  for (base::DictionaryValue::Iterator iter(*metadata); !iter.IsAtEnd();
-       iter.Advance()) {
-    dbus::MessageWriter metadata_entry_writer(nullptr);
-    metadata_writer.OpenDictEntry(&metadata_entry_writer);
-    metadata_entry_writer.AppendString(iter.key());
-
-    if (iter.key() == "xesam:artist") {
-      // Here, we convert our string value for artist into an array of
-      // strings to append to the message.
-      dbus::MessageWriter artist_writer(nullptr);
-      metadata_entry_writer.OpenVariant("as", &artist_writer);
-
-      std::vector<std::string> artists{iter.value().GetString()};
-      artist_writer.AppendArrayOfStrings(artists);
-
-      metadata_entry_writer.CloseContainer(&artist_writer);
-    } else {
-      dbus::AppendValueDataAsVariant(&metadata_entry_writer, iter.value());
-    }
-
-    metadata_writer.CloseContainer(&metadata_entry_writer);
-  }
-
-  metadata_variant_writer.CloseContainer(&metadata_writer);
-  writer->CloseContainer(&metadata_variant_writer);
-}
-
-void MprisServiceImpl::SetPropertyInternal(PropertyMap& property_map,
-                                           const std::string& property_name,
-                                           const base::Value& new_value) {
-  if (property_map[property_name] == new_value)
-    return;
-
-  property_map[property_name] = new_value.Clone();
-
-  changed_properties_.insert(property_name);
-
-  EmitPropertiesChangedSignalDebounced();
-}
-
 void MprisServiceImpl::SetMetadataPropertyInternal(
     const std::string& property_name,
-    const base::Value& new_value) {
-  base::Value& metadata = media_player2_player_properties_["Metadata"];
-  base::Value* current_value = metadata.FindKey(property_name);
-
-  if (current_value && *current_value == new_value)
-    return;
-  metadata.SetKey(property_name, new_value.Clone());
-
-  changed_properties_.insert("Metadata");
-
-  EmitPropertiesChangedSignalDebounced();
-}
-
-void MprisServiceImpl::EmitPropertiesChangedSignalDebounced() {
-  properties_changed_debounce_timer_.Stop();
-  properties_changed_debounce_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kDebounceTimeoutMilliseconds), this,
-      &MprisServiceImpl::EmitPropertiesChangedSignal);
-}
-
-void MprisServiceImpl::EmitPropertiesChangedSignal() {
-  // If we're still trying to start the service, delay emitting.
-  if (!service_ready_ && !service_failed_to_start_) {
-    EmitPropertiesChangedSignalDebounced();
-    return;
-  }
-
-  if (!bus_ || !exported_object_ || !service_ready_)
-    return;
-
-  PropertyMap changed_property_map;
-  for (std::string property_name : changed_properties_) {
-    changed_property_map[property_name] =
-        media_player2_player_properties_[property_name].Clone();
-  }
-  changed_properties_.clear();
-
-  // |signal| follows the PropertiesChanged API:
-  // org.freedesktop.DBus.Properties.PropertiesChanged(
-  //     STRING interface_name,
-  //     DICT<STRING,VARIANT> changed_properties,
-  //     ARRAY<STRING> invalidated_properties);
-  dbus::Signal signal(dbus::kPropertiesInterface, dbus::kPropertiesChanged);
-  dbus::MessageWriter writer(&signal);
-  writer.AppendString(kMprisAPIPlayerInterfaceName);
-
-  AddPropertiesToWriter(&writer, changed_property_map);
-
-  std::vector<std::string> empty_invalidated_properties;
-  writer.AppendArrayOfStrings(empty_invalidated_properties);
-
-  exported_object_->SendSignal(&signal);
+    DbusVariant&& new_value) {
+  DbusVariant* dictionary_variant =
+      properties_->GetProperty(kMprisAPIPlayerInterfaceName, "Metadata");
+  DCHECK(dictionary_variant);
+  DbusDictionary* dictionary = dictionary_variant->GetAs<DbusDictionary>();
+  DCHECK(dictionary);
+  if (dictionary->Put(property_name, std::move(new_value)))
+    properties_->PropertyUpdated(kMprisAPIPlayerInterfaceName, "Metadata");
 }
 
 }  // namespace mpris

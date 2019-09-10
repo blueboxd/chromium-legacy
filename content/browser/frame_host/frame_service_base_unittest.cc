@@ -12,6 +12,8 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/test/echo.mojom.h"
 #include "content/test/test_render_frame_host.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "url/gurl.h"
 
 // Unit test for FrameServiceBase in content/public/browser.
@@ -27,9 +29,9 @@ const char kBarOrigin[] = "https://bar.com";
 class EchoImpl final : public FrameServiceBase<mojom::Echo> {
  public:
   EchoImpl(RenderFrameHost* render_frame_host,
-           mojo::InterfaceRequest<mojom::Echo> request,
+           mojo::PendingReceiver<mojom::Echo> receiver,
            base::OnceClosure destruction_cb)
-      : FrameServiceBase(render_frame_host, std::move(request)),
+      : FrameServiceBase(render_frame_host, std::move(receiver)),
         destruction_cb_(std::move(destruction_cb)) {}
   ~EchoImpl() final { std::move(destruction_cb_).Run(); }
 
@@ -79,7 +81,7 @@ class FrameServiceBaseTest : public RenderViewHostTestHarness {
 
   void CreateEchoImpl(RenderFrameHost* rfh) {
     DCHECK(!is_echo_impl_alive_);
-    new EchoImpl(rfh, mojo::MakeRequest(&echo_ptr_),
+    new EchoImpl(rfh, echo_remote_.BindNewPipeAndPassReceiver(),
                  base::BindOnce(&FrameServiceBaseTest::OnEchoImplDestructed,
                                 base::Unretained(this)));
     is_echo_impl_alive_ = true;
@@ -91,12 +93,12 @@ class FrameServiceBaseTest : public RenderViewHostTestHarness {
   }
 
   void ResetConnection() {
-    echo_ptr_.reset();
+    echo_remote_.reset();
     base::RunLoop().RunUntilIdle();
   }
 
   RenderFrameHost* main_rfh_ = nullptr;
-  mojom::EchoPtr echo_ptr_;
+  mojo::Remote<mojom::Echo> echo_remote_;
   bool is_echo_impl_alive_ = false;
 };
 

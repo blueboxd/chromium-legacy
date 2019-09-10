@@ -20,8 +20,7 @@ namespace remote_cocoa {
 
 RenderWidgetHostNSViewBridge::RenderWidgetHostNSViewBridge(
     mojom::RenderWidgetHostNSViewHost* host,
-    RenderWidgetHostNSViewHostHelper* host_helper)
-    : binding_(this) {
+    RenderWidgetHostNSViewHostHelper* host_helper) {
   display::Screen::GetScreen()->AddObserver(this);
 
   cocoa_view_.reset([[RenderWidgetHostViewCocoa alloc]
@@ -49,10 +48,11 @@ RenderWidgetHostNSViewBridge::~RenderWidgetHostNSViewBridge() {
   popup_window_.reset();
 }
 
-void RenderWidgetHostNSViewBridge::BindRequest(
-    mojom::RenderWidgetHostNSViewAssociatedRequest bridge_request) {
-  binding_.Bind(std::move(bridge_request),
-                ui::WindowResizeHelperMac::Get()->task_runner());
+void RenderWidgetHostNSViewBridge::BindReceiver(
+    mojo::PendingAssociatedReceiver<mojom::RenderWidgetHostNSView>
+        bridge_receiver) {
+  receiver_.Bind(std::move(bridge_receiver),
+                 ui::WindowResizeHelperMac::Get()->task_runner());
 }
 
 RenderWidgetHostViewCocoa* RenderWidgetHostNSViewBridge::GetNSView() {

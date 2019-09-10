@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "components/dbus/menu/types.h"
+#include "components/dbus/properties/types.h"
 
 using MenuPropertyList = std::vector<std::string>;
 using MenuItemProperties = std::map<std::string, DbusVariant>;

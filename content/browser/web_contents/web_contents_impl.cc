@@ -4837,8 +4837,7 @@ void WebContentsImpl::OnDidFinishLoad(RenderFrameHostImpl* source,
 
 void WebContentsImpl::OnGoToEntryAtOffset(RenderFrameHostImpl* source,
                                           int offset,
-                                          bool has_user_gesture,
-                                          bool from_script) {
+                                          bool has_user_gesture) {
   // Non-user initiated navigations coming from the renderer should be ignored
   // if there is an ongoing browser-initiated navigation.
   // See https://crbug.com/879965.
@@ -4856,11 +4855,7 @@ void WebContentsImpl::OnGoToEntryAtOffset(RenderFrameHostImpl* source,
 
   // All frames are allowed to navigate the global history.
   if (!delegate_ || delegate_->OnGoToEntryOffset(offset)) {
-    // We only check sandboxed navigation permissions on navigations originating
-    // from scripts, and not mouse back buttons (from_script == false), which
-    // also use this path.
-    if (from_script &&
-        source->IsSandboxed(blink::WebSandboxFlags::kTopNavigation)) {
+    if (source->IsSandboxed(blink::WebSandboxFlags::kTopNavigation)) {
       // Keep track of whether this is a session history from a sandboxed iframe
       // with top level navigation disallowed.
       controller_.GoToOffsetInSandboxedFrame(offset,

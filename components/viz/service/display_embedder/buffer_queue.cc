@@ -12,11 +12,8 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
-#include "third_party/skia/include/core/SkRect.h"
-#include "third_party/skia/include/core/SkRegion.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/gfx/gpu_memory_buffer.h"
-#include "ui/gfx/skia_util.h"
 
 namespace viz {
 
@@ -52,21 +49,6 @@ unsigned BufferQueue::GetCurrentBuffer(unsigned* stencil) {
   return 0u;
 }
 
-void BufferQueue::CopyBufferDamage(unsigned texture,
-                                   unsigned source_texture,
-                                   const gfx::Rect& new_damage,
-                                   const gfx::Rect& old_damage) {
-  SkRegion region(gfx::RectToSkIRect(old_damage));
-  if (!region.op(gfx::RectToSkIRect(new_damage), SkRegion::kDifference_Op))
-    return;
-  for (SkRegion::Iterator it(region); !it.done(); it.next()) {
-    const SkIRect& rect = it.rect();
-    gl_->CopySubTextureCHROMIUM(
-        source_texture, 0, texture_target_, texture, 0, rect.x(), rect.y(),
-        rect.x(), rect.y(), rect.width(), rect.height(), false, false, false);
-  }
-}
-
 void BufferQueue::UpdateBufferDamage(const gfx::Rect& damage) {
   if (displayed_surface_)
     displayed_surface_->damage.Union(damage);
@@ -78,40 +60,15 @@ void BufferQueue::UpdateBufferDamage(const gfx::Rect& damage) {
   }
 }
 
-void BufferQueue::CopyDamageForCurrentSurface(const gfx::Rect& damage) {
-  if (!current_surface_)
-    return;
-
-  if (damage != gfx::Rect(size_)) {
-    // Copy damage from the most recently swapped buffer. In the event that
-    // the buffer was destroyed and failed to recreate, pick from the most
-    // recently available buffer.
-    unsigned texture_id = 0;
-    for (auto& surface : base::Reversed(in_flight_surfaces_)) {
-      if (surface) {
-        texture_id = surface->texture;
-        break;
-      }
-    }
-    if (!texture_id && displayed_surface_)
-      texture_id = displayed_surface_->texture;
-
-    if (texture_id) {
-      CopyBufferDamage(current_surface_->texture, texture_id, damage,
-                       current_surface_->damage);
-    }
-  }
-  current_surface_->damage = gfx::Rect();
+gfx::Rect BufferQueue::CurrentBufferDamage() const {
+  DCHECK(current_surface_);
+  return current_surface_->damage;
 }
 
 void BufferQueue::SwapBuffers(const gfx::Rect& damage) {
-  if (damage.IsEmpty()) {
-    in_flight_surfaces_.push_back(std::move(current_surface_));
-    return;
-  }
-
-  DCHECK(!current_surface_ || current_surface_->damage.IsEmpty());
   UpdateBufferDamage(damage);
+  if (current_surface_)
+    current_surface_->damage = gfx::Rect();
   in_flight_surfaces_.push_back(std::move(current_surface_));
 }
 

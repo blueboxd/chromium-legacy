@@ -12,7 +12,6 @@ import "services/network/public/mojom/url_loader_factory.mojom";
 import "third_party/blink/public/mojom/background_fetch/background_fetch.mojom";
 import "third_party/blink/public/mojom/devtools/console_message.mojom";
 import "third_party/blink/public/mojom/fetch/fetch_api_response.mojom";
-import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
 import "third_party/blink/public/mojom/messaging/transferable_message.mojom";
 import "third_party/blink/public/mojom/notifications/notification.mojom";
 import "third_party/blink/public/mojom/payments/payment_app.mojom";
@@ -285,23 +284,4 @@ interface ServiceWorker {
 
   // Adds a message to DevTools console which is associated with this worker.
   AddMessageToConsole(ConsoleMessageLevel level, string message);
-};
-
-// This is another interface for talking to a running service worker in
-// addition to the ServiceWorker interface defined above. The reason we have two
-// interfaces is that implementations of these two interfaces live in different
-// places (one in blink and the other in content). Ideally these two interfaces
-// should be merged but we separate them to avoid cumbersome type conversions
-// between blink and content.
-// TODO(nhiroki): Rename this to SubresourceLoaderUpdater, and move it to the
-// loader mojom directory as this is also used for dedicated workers.
-interface ServiceWorkerSubresourceLoaderUpdater {
-  // Provides the worker an updated |subresource_loader_factories|.
-  //
-  // Pushes updated set of subresource URL loader factories to the worker
-  // (for example, after DevTools network interception has been enabled).
-  // Note this does not affect the script loader factory, whose
-  // implementation lives in the browser and may be updated there.
-  UpdateSubresourceLoaderFactories(
-      URLLoaderFactoryBundle subresource_loader_factories);
 };

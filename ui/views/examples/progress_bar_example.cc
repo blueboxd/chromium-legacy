@@ -6,21 +6,12 @@
 
 #include <algorithm>
 
+#include "base/numerics/ranges.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/view.h"
-
-namespace {
-
-const double kStepSize = 0.1;
-
-double SetToMax(double percent) {
-  return std::min(std::max(percent, 0.0), 1.0);
-}
-
-}  // namespace
 
 namespace views {
 namespace examples {
@@ -66,11 +57,9 @@ void ProgressBarExample::CreateExampleView(View* container) {
 }
 
 void ProgressBarExample::ButtonPressed(Button* sender, const ui::Event& event) {
-  if (sender == minus_button_)
-    current_percent_ = SetToMax(current_percent_ - kStepSize);
-  else if (sender == plus_button_)
-    current_percent_ = SetToMax(current_percent_ + kStepSize);
-
+  constexpr double kStepSize = 0.1;
+  const double step = (sender == minus_button_) ? -kStepSize : kStepSize;
+  current_percent_ = base::ClampToRange(current_percent_ + step, 0.0, 1.0);
   progress_bar_->SetValue(current_percent_);
 }
 

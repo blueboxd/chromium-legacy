@@ -10,6 +10,7 @@
 #include "base/containers/adapters.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
+#include "base/numerics/ranges.h"
 #include "build/build_config.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -1052,7 +1053,7 @@ void TreeView::IncrementSelection(IncrementType type) {
   int depth = 0;
   int delta = type == INCREMENT_PREVIOUS ? -1 : 1;
   int row = GetRowForInternalNode(selected_node_, &depth);
-  int new_row = std::min(GetRowCount() - 1, std::max(0, row + delta));
+  int new_row = base::ClampToRange(row + delta, 0, GetRowCount() - 1);
   if (new_row == row)
     return;  // At the end/beginning.
   SetSelectedNode(GetNodeByRow(new_row, &depth)->model_node());

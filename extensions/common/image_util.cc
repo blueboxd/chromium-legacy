@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/ranges.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -160,10 +161,10 @@ bool ParseHslColorString(const std::string& color_string, SkColor* result) {
   color_utils::HSL hsl;
   // Normalize the value between 0.0 and 1.0.
   hsl.h = (((static_cast<int>(hue) % 360) + 360) % 360) / 360.0;
-  hsl.s = std::max(0.0, std::min(100.0, saturation)) / 100.0;
-  hsl.l = std::max(0.0, std::min(100.0, lightness)) / 100.0;
+  hsl.s = base::ClampToRange(saturation, 0.0, 100.0) / 100.0;
+  hsl.l = base::ClampToRange(lightness, 0.0, 100.0) / 100.0;
 
-  SkAlpha sk_alpha = std::max(0.0, std::min(1.0, alpha)) * 255;
+  SkAlpha sk_alpha = base::ClampToRange(alpha, 0.0, 1.0) * 255;
 
   *result = color_utils::HSLToSkColor(hsl, sk_alpha);
   return true;

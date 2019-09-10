@@ -6,6 +6,7 @@
 
 #include "base/i18n/break_iterator.h"
 #include "base/lazy_instance.h"
+#include "base/numerics/ranges.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -1243,22 +1244,22 @@ bool BrowserAccessibilityAndroid::Scroll(int direction) const {
     case UP:
       if (y_initial == y_min)
         return false;
-      y = std::min(std::max(y_initial - page_y, y_min), y_max);
+      y = base::ClampToRange(y_initial - page_y, y_min, y_max);
       break;
     case DOWN:
       if (y_initial == y_max)
         return false;
-      y = std::min(std::max(y_initial + page_y, y_min), y_max);
+      y = base::ClampToRange(y_initial + page_y, y_min, y_max);
       break;
     case LEFT:
       if (x_initial == x_min)
         return false;
-      x = std::min(std::max(x_initial - page_x, x_min), x_max);
+      x = base::ClampToRange(x_initial - page_x, x_min, x_max);
       break;
     case RIGHT:
       if (x_initial == x_max)
         return false;
-      x = std::min(std::max(x_initial + page_x, x_min), x_max);
+      x = base::ClampToRange(x_initial + page_x, x_min, x_max);
       break;
     default:
       NOTREACHED();

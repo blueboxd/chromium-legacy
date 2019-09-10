@@ -106,7 +106,7 @@ bool CollectDriverInfoD3D(GPUInfo* gpu_info) {
   TRACE_EVENT0("gpu", "CollectDriverInfoD3D");
 
   Microsoft::WRL::ComPtr<IDXGIFactory> dxgi_factory;
-  const HRESULT hr = ::CreateDXGIFactory(IID_PPV_ARGS(&dxgi_factory));
+  HRESULT hr = ::CreateDXGIFactory(IID_PPV_ARGS(&dxgi_factory));
   if (FAILED(hr))
     return false;
 
@@ -125,8 +125,8 @@ bool CollectDriverInfoD3D(GPUInfo* gpu_info) {
     device.device_id = desc.DeviceId;
 
     LARGE_INTEGER umd_version;
-    const HRESULT hr = dxgi_adapter->CheckInterfaceSupport(
-        __uuidof(IDXGIDevice), &umd_version);
+    hr = dxgi_adapter->CheckInterfaceSupport(__uuidof(IDXGIDevice),
+                                             &umd_version);
     if (SUCCEEDED(hr)) {
       device.driver_version = base::StringPrintf(
           "%d.%d.%d.%d", HIWORD(umd_version.HighPart),

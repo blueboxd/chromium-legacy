@@ -161,6 +161,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       webrtc::VideoCodecType video_coded_type) override;
   bool IsWebRtcHWEncodingEnabled() override;
   bool IsWebRtcHWDecodingEnabled() override;
+  bool AllowsLoopbackInPeerConnection() override;
 
   blink::WebVideoCaptureImplManager* GetVideoCaptureImplManager() override;
 

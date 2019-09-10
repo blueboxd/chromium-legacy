@@ -330,6 +330,12 @@ void LocalCardMigrationManager::OnDidMigrateLocalCards(
         NOTREACHED();
       }
     }
+
+    // If at least one card was migrated, notifies the |personal_data_manager_|.
+    // PDM uses this information to update the avatar button UI.
+    if (!migrated_cards.empty())
+      personal_data_manager_->OnCreditCardSaved();
+
     // Remove cards that were successfully migrated from local storage.
     personal_data_manager_->DeleteLocalCreditCards(migrated_cards);
   }

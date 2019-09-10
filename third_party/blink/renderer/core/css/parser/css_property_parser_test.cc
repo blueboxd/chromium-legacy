@@ -714,4 +714,15 @@ TEST(CSSPropertyParserTest, UAInternalLightDarkColor) {
   }
 }
 
+TEST(CSSPropertyParserTest, UAInternalLightDarkColorSerialization) {
+  auto* ua_context = MakeGarbageCollected<CSSParserContext>(
+      kUASheetMode, SecureContextMode::kInsecureContext);
+  const CSSValue* value = CSSParser::ParseSingleValue(
+      CSSPropertyID::kColor, "-internal-light-dark-color(red,#aaa)",
+      ua_context);
+  ASSERT_TRUE(value);
+  EXPECT_EQ("-internal-light-dark-color(red, rgb(170, 170, 170))",
+            value->CssText());
+}
+
 }  // namespace blink

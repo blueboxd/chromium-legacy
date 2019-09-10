@@ -18,6 +18,7 @@
 #include "base/debug/leak_annotations.h"
 #include "base/memory/protected_memory_cfi.h"
 #include "base/no_destructor.h"
+#include "base/numerics/ranges.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -869,8 +870,7 @@ gchar* GetText(AtkText* atk_text, gint start_offset, gint end_offset) {
     end_offset = text.size();
   } else {
     end_offset = obj->UnicodeToUTF16OffsetInText(end_offset);
-    end_offset = std::max(start_offset,
-                          std::min(end_offset, static_cast<int>(text.size())));
+    end_offset = base::ClampToRange(int{text.size()}, start_offset, end_offset);
   }
 
   DCHECK_GE(start_offset, 0);
@@ -900,7 +900,7 @@ gunichar GetCharacterAtOffset(AtkText* atk_text, int offset) {
   int32_t text_length = text.length();
 
   offset = obj->UnicodeToUTF16OffsetInText(offset);
-  int32_t limited_offset = std::max(0, std::min(text_length, offset));
+  int32_t limited_offset = base::ClampToRange(offset, 0, text_length);
 
   uint32_t code_point;
   base::ReadUnicodeCharacter(text.c_str(), text_length + 1, &limited_offset,

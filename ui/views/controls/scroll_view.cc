@@ -371,7 +371,7 @@ int ScrollView::GetHeightForWidth(int width) const {
   gfx::Insets insets = GetInsets();
   width = std::max(0, width - insets.width());
   int height = contents_->GetHeightForWidth(width) + insets.height();
-  return std::min(std::max(height, min_height_), max_height_);
+  return base::ClampToRange(height, min_height_, max_height_);
 }
 
 void ScrollView::Layout() {
@@ -733,9 +733,8 @@ void ScrollView::ScrollContentsRegionToBeVisible(const gfx::Rect& rect) {
   const int contents_max_y =
       std::max(contents_viewport_->height(), contents_->height());
 
-  // Make sure x and y are within the bounds of [0,contents_max_*].
-  int x = std::max(0, std::min(contents_max_x, rect.x()));
-  int y = std::max(0, std::min(contents_max_y, rect.y()));
+  int x = base::ClampToRange(rect.x(), 0, contents_max_x);
+  int y = base::ClampToRange(rect.y(), 0, contents_max_y);
 
   // Figure out how far and down the rectangle will go taking width
   // and height into account.  This will be "clipped" by the viewport.

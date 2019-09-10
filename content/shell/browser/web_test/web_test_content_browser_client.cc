@@ -344,10 +344,10 @@ std::unique_ptr<LoginDelegate> WebTestContentBrowserClient::CreateLoginDelegate(
 
 // private
 void WebTestContentBrowserClient::CreateFakeBluetoothChooserFactory(
-    mojom::FakeBluetoothChooserFactoryRequest request) {
+    mojo::PendingReceiver<mojom::FakeBluetoothChooserFactory> receiver) {
   DCHECK(!fake_bluetooth_chooser_factory_);
   fake_bluetooth_chooser_factory_ =
-      FakeBluetoothChooserFactory::Create(std::move(request));
+      FakeBluetoothChooserFactory::Create(std::move(receiver));
 }
 
 }  // namespace content

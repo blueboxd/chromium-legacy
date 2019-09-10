@@ -83,8 +83,6 @@ jumbo_component("browser") {
     "fileapi/file_system_backend.h",
     "fileapi/file_system_context.cc",
     "fileapi/file_system_context.h",
-    "fileapi/file_system_features.cc",
-    "fileapi/file_system_features.h",
     "fileapi/file_system_file_stream_reader.cc",
     "fileapi/file_system_file_stream_reader.h",
     "fileapi/file_system_file_util.cc",

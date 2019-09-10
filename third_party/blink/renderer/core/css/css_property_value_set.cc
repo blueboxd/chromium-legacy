@@ -652,7 +652,7 @@ unsigned CSSPropertyValueSet::AverageSizeInBytes() {
 }
 
 // See the function above if you need to update this.
-struct SameSizeAsCSSPropertyValueSet
+struct SameSizeAsCSSPropertyValueSet final
     : public GarbageCollectedFinalized<SameSizeAsCSSPropertyValueSet> {
   unsigned bitfield;
 };

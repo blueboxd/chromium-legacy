@@ -268,7 +268,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   AXObject* CreateFromInlineTextBox(AbstractInlineTextBox*);
 
  private:
-  struct AXEventParams : public GarbageCollectedFinalized<AXEventParams> {
+  struct AXEventParams final : public GarbageCollectedFinalized<AXEventParams> {
     AXEventParams(AXObject* target,
                   ax::mojom::Event event_type,
                   ax::mojom::EventFrom event_from)
@@ -280,7 +280,8 @@ class MODULES_EXPORT AXObjectCacheImpl
     void Trace(Visitor* visitor) { visitor->Trace(target); }
   };
 
-  struct TreeUpdateParams : public GarbageCollectedFinalized<TreeUpdateParams> {
+  struct TreeUpdateParams final
+      : public GarbageCollectedFinalized<TreeUpdateParams> {
     TreeUpdateParams(Node* node, base::OnceClosure callback)
         : node(node), callback(std::move(callback)) {}
     WeakMember<Node> node;

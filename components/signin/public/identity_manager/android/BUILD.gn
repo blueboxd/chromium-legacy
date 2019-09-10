@@ -9,6 +9,9 @@ android_library("java") {
     "//third_party/android_deps:com_android_support_support_annotations_java",
   ]
 
+  srcjar_deps =
+      [ "//components/signin/public/base:signin_metrics_enum_javagen" ]
+
   java_files = [
     "java/src/org/chromium/components/signin/identitymanager/IdentityManager.java",
     "java/src/org/chromium/components/signin/identitymanager/CoreAccountId.java",

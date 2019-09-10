@@ -32,7 +32,7 @@ ServiceWorkerFetchContextImpl::ServiceWorkerFetchContextImpl(
         websocket_handshake_throttle_provider,
     mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
         preference_watcher_receiver,
-    mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+    mojo::PendingReceiver<blink::mojom::SubresourceLoaderUpdater>
         pending_subresource_loader_updater)
     : renderer_preferences_(renderer_preferences),
       worker_script_url_(worker_script_url),

@@ -8,6 +8,7 @@ Runs the script on a sample library and verifies that it still works.
 """
 
 import os
+import pathlib
 import subprocess
 import tempfile
 import unittest
@@ -18,11 +19,8 @@ OPENER_CC_NAME = 'library_opener.cc'
 SCRIPT_PATH = '../compress_section.py'
 
 # src/third_party/llvm-build/Release+Asserts/bin/clang++
-LLVM_CLANG_PATH = os.path.abspath(
-    os.path.join(
-        os.path.dirname(__file__), os.path.pardir, os.path.pardir,
-        os.path.pardir, os.path.pardir, 'third_party', 'llvm-build',
-        'Release+Asserts', 'bin', 'clang++'))
+LLVM_CLANG_PATH = pathlib.Path(__file__).resolve().parents[4].joinpath(
+    'third_party/llvm-build/Release+Asserts/bin/clang++')
 
 # The array that we are trying to cut out of the file have those bytes at
 # its start and end. This is done to simplify the test code to not perform
@@ -54,7 +52,7 @@ class CompressionScriptTest(unittest.TestCase):
     with open(library_path, 'rb') as f:
       data = f.read()
     l = data.find(MAGIC_BEGIN)
-    r = data.find(MAGIC_END) + len(MAGIC_END) - 1
+    r = data.find(MAGIC_END) + len(MAGIC_END)
     return l, r
 
   def _BuildLibrary(self):
@@ -118,7 +116,7 @@ class CompressionScriptTest(unittest.TestCase):
 
     patched_library_path = self._RunScript(library_path)
     opener_output = self._RunOpener(opener_path, patched_library_path)
-    self.assertEqual(opener_output, '55\n')
+    self.assertEqual(opener_output, '1046506\n')
 
 
 if __name__ == '__main__':

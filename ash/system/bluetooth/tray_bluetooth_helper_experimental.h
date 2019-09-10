@@ -11,6 +11,7 @@
 #include "ash/system/bluetooth/tray_bluetooth_helper.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/bluetooth_system.mojom.h"
 
 namespace service_manager {
@@ -47,7 +48,7 @@ class TrayBluetoothHelperExperimental
  private:
   service_manager::Connector* connector_;
 
-  device::mojom::BluetoothSystemPtr bluetooth_system_ptr_;
+  mojo::Remote<device::mojom::BluetoothSystem> bluetooth_system_;
   mojo::Binding<device::mojom::BluetoothSystemClient>
       bluetooth_system_client_binding_{this};
 

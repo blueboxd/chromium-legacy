@@ -59,6 +59,10 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     /** The status of the third party terms & conditions. */
     public static final WritableIntPropertyKey TERMS_STATUS = new WritableIntPropertyKey();
 
+    /** The email address of the preferred profile. */
+    public static final WritableObjectPropertyKey<String> DEFAULT_EMAIL =
+            new WritableObjectPropertyKey<>();
+
     public static final WritableBooleanPropertyKey REQUEST_NAME = new WritableBooleanPropertyKey();
     public static final WritableBooleanPropertyKey REQUEST_EMAIL = new WritableBooleanPropertyKey();
     public static final WritableBooleanPropertyKey REQUEST_PHONE = new WritableBooleanPropertyKey();
@@ -102,8 +106,8 @@ public class AssistantCollectUserDataModel extends PropertyModel {
 
     public AssistantCollectUserDataModel() {
         super(DELEGATE, WEB_CONTENTS, VISIBLE, SHIPPING_ADDRESS, PAYMENT_METHOD, CONTACT_DETAILS,
-                LOGIN_SECTION_TITLE, SELECTED_LOGIN, TERMS_STATUS, REQUEST_NAME, REQUEST_EMAIL,
-                REQUEST_PHONE, REQUEST_SHIPPING_ADDRESS, REQUEST_PAYMENT,
+                LOGIN_SECTION_TITLE, SELECTED_LOGIN, TERMS_STATUS, DEFAULT_EMAIL, REQUEST_NAME,
+                REQUEST_EMAIL, REQUEST_PHONE, REQUEST_SHIPPING_ADDRESS, REQUEST_PAYMENT,
                 ACCEPT_TERMS_AND_CONDITIONS_TEXT, SHOW_TERMS_AS_CHECKBOX, REQUEST_LOGIN_CHOICE,
                 AVAILABLE_PROFILES, AVAILABLE_AUTOFILL_PAYMENT_METHODS,
                 SUPPORTED_BASIC_CARD_NETWORKS, SUPPORTED_PAYMENT_METHODS, AVAILABLE_LOGINS,
@@ -122,6 +126,7 @@ public class AssistantCollectUserDataModel extends PropertyModel {
         set(REQUEST_SHIPPING_ADDRESS, false);
         set(REQUEST_LOGIN_CHOICE, false);
         set(REQUIRE_BILLING_POSTAL_CODE, false);
+        set(DEFAULT_EMAIL, "");
     }
 
     @CalledByNative

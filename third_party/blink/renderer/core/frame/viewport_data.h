@@ -15,7 +15,7 @@ namespace blink {
 
 class Document;
 
-class ViewportData : public GarbageCollectedFinalized<ViewportData> {
+class ViewportData final : public GarbageCollectedFinalized<ViewportData> {
  public:
   ViewportData(Document& document);
   void Trace(Visitor* visitor);

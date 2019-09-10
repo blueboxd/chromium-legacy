@@ -194,7 +194,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
                            DownloadCrossOriginRedirects) = 0;
   virtual void LoadErrorPage(int reason) = 0;
 
-  virtual bool NavigateBackForward(int offset, bool from_script) const = 0;
+  virtual bool NavigateBackForward(int offset) const = 0;
 
   // Another page has accessed the initial empty document of this frame. It is
   // no longer safe to display a provisional URL, since a URL spoof is now

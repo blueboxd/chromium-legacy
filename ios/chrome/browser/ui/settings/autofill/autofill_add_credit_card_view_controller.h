@@ -10,6 +10,10 @@
 #import "ios/chrome/browser/ui/settings/autofill/autofill_edit_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_consumer.h"
 
+extern NSString* const kAddCreditCardViewID;
+extern NSString* const kSettingsAddCreditCardButtonID;
+extern NSString* const kSettingsAddCreditCardCancelButtonID;
+
 @protocol AddCreditCardViewControllerDelegate;
 
 // The view controller for adding new credit card.

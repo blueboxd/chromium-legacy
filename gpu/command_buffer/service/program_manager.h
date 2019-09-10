@@ -35,6 +35,39 @@ class ProgressReporter;
 class Shader;
 class ShaderManager;
 
+enum class UniformApiType : uint32_t {
+  kUniformNone = 0,
+  kUniform1i = 1 << 0,
+  kUniform2i = 1 << 1,
+  kUniform3i = 1 << 2,
+  kUniform4i = 1 << 3,
+  kUniform1f = 1 << 4,
+  kUniform2f = 1 << 5,
+  kUniform3f = 1 << 6,
+  kUniform4f = 1 << 7,
+  kUniformMatrix2f = 1 << 8,
+  kUniformMatrix3f = 1 << 9,
+  kUniformMatrix4f = 1 << 10,
+  kUniform1ui = 1 << 11,
+  kUniform2ui = 1 << 12,
+  kUniform3ui = 1 << 13,
+  kUniform4ui = 1 << 14,
+  kUniformMatrix2x3f = 1 << 15,
+  kUniformMatrix2x4f = 1 << 16,
+  kUniformMatrix3x2f = 1 << 17,
+  kUniformMatrix3x4f = 1 << 18,
+  kUniformMatrix4x2f = 1 << 19,
+  kUniformMatrix4x3f = 1 << 20,
+};
+
+inline constexpr UniformApiType operator|(UniformApiType a, UniformApiType b) {
+  return static_cast<UniformApiType>(uint32_t(a) | uint32_t(b));
+}
+
+inline constexpr UniformApiType operator&(UniformApiType a, UniformApiType b) {
+  return static_cast<UniformApiType>(uint32_t(a) & uint32_t(b));
+}
+
 // This is used to track which attributes a particular program needs
 // so we can verify at glDrawXXX time that every attribute is either disabled
 // or if enabled that it points to a valid source.
@@ -42,35 +75,8 @@ class GPU_GLES2_EXPORT Program : public base::RefCounted<Program> {
  public:
   static const int kMaxAttachedShaders = 2;
 
-  enum VaryingsPackingOption {
-    kCountOnlyStaticallyUsed,
-    kCountAll
-  };
+  enum VaryingsPackingOption { kCountOnlyStaticallyUsed, kCountAll };
 
-  enum UniformApiType {
-    kUniformNone = 0,
-    kUniform1i = 1 << 0,
-    kUniform2i = 1 << 1,
-    kUniform3i = 1 << 2,
-    kUniform4i = 1 << 3,
-    kUniform1f = 1 << 4,
-    kUniform2f = 1 << 5,
-    kUniform3f = 1 << 6,
-    kUniform4f = 1 << 7,
-    kUniformMatrix2f = 1 << 8,
-    kUniformMatrix3f = 1 << 9,
-    kUniformMatrix4f = 1 << 10,
-    kUniform1ui = 1 << 11,
-    kUniform2ui = 1 << 12,
-    kUniform3ui = 1 << 13,
-    kUniform4ui = 1 << 14,
-    kUniformMatrix2x3f = 1 << 15,
-    kUniformMatrix2x4f = 1 << 16,
-    kUniformMatrix3x2f = 1 << 17,
-    kUniformMatrix3x4f = 1 << 18,
-    kUniformMatrix4x2f = 1 << 19,
-    kUniformMatrix4x3f = 1 << 20,
-  };
   struct FragmentInputInfo {
     FragmentInputInfo(GLenum _type, GLuint _location)
         : type(_type), location(_location) {}
@@ -125,7 +131,7 @@ class GPU_GLES2_EXPORT Program : public base::RefCounted<Program> {
 
     GLsizei size;
     GLenum type;
-    uint32_t accepts_api_type;
+    UniformApiType accepts_api_type;
     GLint fake_location_base;
     bool is_array;
     std::string name;

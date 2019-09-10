@@ -25,7 +25,7 @@ class SyncJsControllerTest : public testing::Test {
   void PumpLoop() { base::RunLoop().RunUntilIdle(); }
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
 TEST_F(SyncJsControllerTest, Events) {

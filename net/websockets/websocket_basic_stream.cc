@@ -74,6 +74,7 @@ const uint64_t kMaxControlFramePayload = 125;
 #if defined(OS_ANDROID)
 const int kReadBufferSize = 32 * 1024;
 #else
+// |2^n - delta| is better than 2^n on Linux. See crrev.com/c/1792208.
 const int kReadBufferSize = 131000;
 #endif
 

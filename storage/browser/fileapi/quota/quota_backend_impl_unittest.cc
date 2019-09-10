@@ -16,7 +16,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "storage/browser/fileapi/file_system_features.h"
 #include "storage/browser/fileapi/file_system_usage_cache.h"
 #include "storage/browser/fileapi/obfuscated_file_util.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
@@ -101,12 +100,7 @@ class QuotaBackendImplTest : public testing::Test,
  public:
   QuotaBackendImplTest()
       : file_system_usage_cache_(is_incognito()),
-        quota_manager_proxy_(new MockQuotaManagerProxy) {
-    if (is_incognito()) {
-      feature_list_.InitAndEnableFeature(
-          storage::features::kEnableFilesystemInIncognito);
-    }
-  }
+        quota_manager_proxy_(new MockQuotaManagerProxy) {}
 
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());

@@ -556,10 +556,6 @@ const char kEnableSaveDataDescription[] =
     "Enables save data feature. May cause user's traffic to be proxied via "
     "Google's data reduction proxy.";
 
-const char kEnableFilesystemInIncognitoName[] = "Filesystem API in Incognito";
-const char kEnableFilesystemInIncognitoDescription[] =
-    "Enable Filesystem API in incognito mode.";
-
 const char kEnableNoScriptPreviewsName[] = "NoScript previews";
 
 const char kEnableNoScriptPreviewsDescription[] =

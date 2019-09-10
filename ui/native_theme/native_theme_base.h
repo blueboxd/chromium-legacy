@@ -198,9 +198,6 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
   void DrawBox(cc::PaintCanvas* canvas,
                const gfx::Rect& rect,
                const cc::PaintFlags& flags) const;
-  SkScalar Clamp(SkScalar value,
-                 SkScalar min,
-                 SkScalar max) const;
   SkColor OutlineColor(SkScalar* hsv1, SkScalar* hsv2) const;
 
   // Paint the common parts of the checkboxes and radio buttons.

@@ -240,7 +240,7 @@ public class ContactsPickerDialogTest
     }
 
     private void dismissDialog() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> mDialog.dismiss());
+        TestThreadUtils.runOnUiThreadBlocking(() -> mDialog.cancel());
     }
 
     private TopView getTopView() throws Exception {
@@ -514,6 +514,19 @@ public class ContactsPickerDialogTest
         Assert.assertTrue(mDialog.isShowing());
 
         clickSearchButton();
+        dismissDialog();
+    }
+
+    @Test
+    @LargeTest
+    public void testEmptyContactListCrash() throws Throwable {
+        PickerAdapter.setTestContacts(new ArrayList<ContactDetails>());
+
+        createDialog(/* multiselect = */ true, /* includeNames = */ true,
+                /* includeEmails = */ true,
+                /* includeTel = */ true);
+        Assert.assertTrue(mDialog.isShowing());
+
         dismissDialog();
     }
 }

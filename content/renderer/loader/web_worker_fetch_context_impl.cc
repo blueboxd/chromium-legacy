@@ -154,7 +154,7 @@ scoped_refptr<WebWorkerFetchContextImpl> WebWorkerFetchContextImpl::Create(
         watcher_receiver,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory_info,
-    mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+    mojo::PendingReceiver<blink::mojom::SubresourceLoaderUpdater>
         pending_subresource_loader_updater) {
   mojo::PendingReceiver<blink::mojom::ServiceWorkerWorkerClient>
       service_worker_client_receiver;
@@ -216,7 +216,7 @@ WebWorkerFetchContextImpl::WebWorkerFetchContextImpl(
         service_worker_container_host,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory_info,
-    mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+    mojo::PendingReceiver<blink::mojom::SubresourceLoaderUpdater>
         pending_subresource_loader_updater,
     std::unique_ptr<URLLoaderThrottleProvider> throttle_provider,
     std::unique_ptr<WebSocketHandshakeThrottleProvider>
@@ -298,7 +298,7 @@ WebWorkerFetchContextImpl::CloneForNestedWorker(
     ServiceWorkerProviderContext* service_worker_provider_context,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory_info,
-    mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+    mojo::PendingReceiver<blink::mojom::SubresourceLoaderUpdater>
         pending_subresource_loader_updater,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
@@ -566,7 +566,7 @@ WebWorkerFetchContextImpl::CloneForNestedWorkerInternal(
         service_worker_container_host,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory_info,
-    mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+    mojo::PendingReceiver<blink::mojom::SubresourceLoaderUpdater>
         pending_subresource_loader_updater,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher>

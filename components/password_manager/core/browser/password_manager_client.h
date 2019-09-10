@@ -67,7 +67,8 @@ class PasswordStore;
 enum SyncState {
   NOT_SYNCING,
   SYNCING_NORMAL_ENCRYPTION,
-  SYNCING_WITH_CUSTOM_PASSPHRASE
+  SYNCING_WITH_CUSTOM_PASSPHRASE,
+  ACCOUNT_PASSWORDS_ACTIVE_NORMAL_ENCRYPTION
 };
 
 // An abstraction of operations that depend on the embedders (e.g. Chrome)

@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/numerics/ranges.h"
 #include "content/browser/renderer_host/overscroll_controller_delegate.h"
 #include "content/public/browser/overscroll_configuration.h"
 #include "content/public/common/content_features.h"
@@ -45,7 +46,7 @@ bool IsGestureScrollUpdateInertialEvent(const blink::WebInputEvent& event) {
 
 float ClampAbsoluteValue(float value, float max_abs) {
   DCHECK_LT(0.f, max_abs);
-  return std::max(-max_abs, std::min(value, max_abs));
+  return base::ClampToRange(value, -max_abs, max_abs);
 }
 
 }  // namespace

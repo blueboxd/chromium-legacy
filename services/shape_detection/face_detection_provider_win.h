@@ -34,12 +34,12 @@ class FaceDetectionProviderWin
   }
 
   void CreateFaceDetection(
-      shape_detection::mojom::FaceDetectionRequest request,
+      mojo::PendingReceiver<shape_detection::mojom::FaceDetection> receiver,
       shape_detection::mojom::FaceDetectorOptionsPtr options) override;
 
  private:
   void OnFaceDetectorCreated(
-      shape_detection::mojom::FaceDetectionRequest request,
+      mojo::PendingReceiver<shape_detection::mojom::FaceDetection> receiver,
       ABI::Windows::Graphics::Imaging::BitmapPixelFormat pixel_format,
       Microsoft::WRL::ComPtr<ABI::Windows::Media::FaceAnalysis::IFaceDetector>
           face_detector);

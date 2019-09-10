@@ -10,6 +10,7 @@ import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
 import "third_party/blink/public/mojom/devtools/console_message.mojom";
 import "third_party/blink/public/mojom/devtools/devtools_agent.mojom";
+import "third_party/blink/public/mojom/worker/subresource_loader_updater.mojom";
 import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
 import "third_party/blink/public/mojom/renderer_preference_watcher.mojom";
 import "third_party/blink/public/mojom/renderer_preferences.mojom";
@@ -110,11 +111,8 @@ struct EmbeddedWorkerStartParams {
   // loader factory can't load.
   URLLoaderFactoryBundle subresource_loader_factories;
 
-  // Another interface to talk to the service worker from the browser process
-  // to update WorkerFetchContext. See the comment of
-  // ServiceWorkerSubresourceLoaderUpdater why there are two interfaces.
-  pending_receiver<ServiceWorkerSubresourceLoaderUpdater>
-      subresource_loader_updater;
+  // Used for updating subresource loaders after NetworkService crash etc.
+  pending_receiver<SubresourceLoaderUpdater> subresource_loader_updater;
 };
 
 // Holds timing information about the start worker sequence for UMA.

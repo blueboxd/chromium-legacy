@@ -19,11 +19,11 @@
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event.h"
 #include "content/renderer/p2p/host_address_request.h"
-#include "content/renderer/p2p/socket_client_delegate.h"
 #include "content/renderer/p2p/socket_client_impl.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "jingle/glue/utils.h"
 #include "net/base/ip_address.h"
+#include "third_party/blink/public/platform/modules/p2p/socket_client_delegate.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/webrtc/rtc_base/async_packet_socket.h"
 
@@ -72,7 +72,7 @@ const size_t kMaximumInFlightBytes = 64 * 1024;  // 64 KB
 // using P2PSocketClient that works over IPC-channel. It must be used
 // on the thread it was created.
 class IpcPacketSocket : public rtc::AsyncPacketSocket,
-                        public P2PSocketClientDelegate {
+                        public blink::P2PSocketClientDelegate {
  public:
   IpcPacketSocket();
   ~IpcPacketSocket() override;
@@ -120,7 +120,7 @@ class IpcPacketSocket : public rtc::AsyncPacketSocket,
               const net::IPEndPoint& remote_address) override;
   void OnIncomingTcpConnection(
       const net::IPEndPoint& address,
-      std::unique_ptr<P2PSocketClient> client) override;
+      std::unique_ptr<blink::P2PSocketClient> client) override;
   void OnSendComplete(
       const network::P2PSendPacketMetrics& send_metrics) override;
   void OnError() override;
@@ -146,7 +146,7 @@ class IpcPacketSocket : public rtc::AsyncPacketSocket,
   // |in_flight_packet_records_|.
   void TraceSendThrottlingState() const;
 
-  void InitAcceptedTcp(std::unique_ptr<P2PSocketClient> client,
+  void InitAcceptedTcp(std::unique_ptr<blink::P2PSocketClient> client,
                        const rtc::SocketAddress& local_address,
                        const rtc::SocketAddress& remote_address);
 
@@ -158,7 +158,7 @@ class IpcPacketSocket : public rtc::AsyncPacketSocket,
   base::ThreadChecker thread_checker_;
 
   // Corresponding P2P socket client.
-  std::unique_ptr<P2PSocketClient> client_;
+  std::unique_ptr<blink::P2PSocketClient> client_;
 
   // Local address is allocated by the browser process, and the
   // renderer side doesn't know the address until it receives OnOpen()
@@ -325,7 +325,7 @@ bool IpcPacketSocket::Init(network::P2PSocketType type,
 }
 
 void IpcPacketSocket::InitAcceptedTcp(
-    std::unique_ptr<P2PSocketClient> client,
+    std::unique_ptr<blink::P2PSocketClient> client,
     const rtc::SocketAddress& local_address,
     const rtc::SocketAddress& remote_address) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -567,7 +567,7 @@ void IpcPacketSocket::OnOpen(const net::IPEndPoint& local_address,
 
 void IpcPacketSocket::OnIncomingTcpConnection(
     const net::IPEndPoint& address,
-    std::unique_ptr<P2PSocketClient> client) {
+    std::unique_ptr<blink::P2PSocketClient> client) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   std::unique_ptr<IpcPacketSocket> socket(new IpcPacketSocket());

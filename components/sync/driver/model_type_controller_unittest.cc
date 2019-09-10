@@ -224,7 +224,7 @@ class ModelTypeControllerTest : public testing::Test {
   TestModelTypeController* controller() { return &controller_; }
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   NiceMock<MockDelegate> mock_delegate_;
   TestModelTypeConfigurer configurer_;
   TestModelTypeProcessor processor_;
@@ -558,7 +558,7 @@ TEST_F(ModelTypeControllerTest, StopAndReportErrorWhileStarting) {
 // Tests that StorageOption is honored when the controller has been constructed
 // with two delegates.
 TEST(ModelTypeControllerWithMultiDelegateTest, ToggleStorageOption) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   NiceMock<MockDelegate> delegate_on_disk;
   NiceMock<MockDelegate> delegate_in_memory;
 

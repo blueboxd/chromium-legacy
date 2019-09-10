@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "base/i18n/char_iterator.h"
+#include "base/numerics/ranges.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/ime/composition_text.h"
@@ -40,7 +41,7 @@ void ExtractCompositionTextFromGtkPreedit(const char* utf8_text,
   char16_offsets.push_back(length);
 
   size_t cursor_offset =
-      char16_offsets[std::max(0, std::min(char_length, cursor_position))];
+      char16_offsets[base::ClampToRange(cursor_position, 0, char_length)];
 
   composition->selection = gfx::Range(cursor_offset);
 

@@ -108,7 +108,7 @@ public class AssistantContactDetailsSection
      * set of profiles, while keeping the selected item if possible.
      */
     void onProfilesChanged(List<AutofillProfile> profiles, boolean requestPayerEmail,
-            boolean requestPayerName, boolean requestPayerPhone) {
+            boolean requestPayerName, boolean requestPayerPhone, String defaultEmail) {
         if (mIgnoreProfileChangeNotifications) {
             return;
         }
@@ -138,6 +138,17 @@ public class AssistantContactDetailsSection
                     && TextUtils.equals(
                             contact.getIdentifier(), previouslySelectedContact.getIdentifier())) {
                 selectedContactIndex = i;
+            }
+        }
+
+        // Default selection: select most complete profile with the default email, if possible.
+        if (selectedContactIndex == -1 && !defaultEmail.isEmpty()) {
+            // Note: contacts are already sorted by completeness.
+            for (int i = 0; i < contacts.size(); i++) {
+                if (TextUtils.equals(contacts.get(i).getPayerEmail(), defaultEmail)) {
+                    selectedContactIndex = i;
+                    break;
+                }
             }
         }
 

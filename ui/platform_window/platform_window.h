@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #include "ui/base/class_property.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
 namespace gfx {
@@ -25,9 +26,13 @@ namespace ui {
 // underlying platform windowing system (i.e. X11/Win/OSX).
 class PlatformWindow : public PropertyHandler {
  public:
-  ~PlatformWindow() override = default;
+  PlatformWindow();
+  ~PlatformWindow() override;
 
-  virtual void Show() = 0;
+  // PlatformWindow maybe called with the |inactive| set to true in some cases.
+  // That means that the Window Manager must not activate the window when it is
+  // shown. Most of PlatformWindow may ignore this value if not supported.
+  virtual void Show(bool inactive = false) = 0;
   virtual void Hide() = 0;
   virtual void Close() = 0;
 
@@ -74,6 +79,12 @@ class PlatformWindow : public PropertyHandler {
   // Sets and gets the restored bounds of the platform-window.
   virtual void SetRestoredBoundsInPixels(const gfx::Rect& bounds) = 0;
   virtual gfx::Rect GetRestoredBoundsInPixels() const = 0;
+
+  // Sets and gets ZOrderLevel of the PlatformWindow. Such platforms that do not
+  // support ordering, should not implement these methods as the default
+  // implementation always returns ZOrderLevel::kNormal value.
+  virtual void SetZOrderLevel(ZOrderLevel order);
+  virtual ZOrderLevel GetZOrderLevel() const;
 };
 
 }  // namespace ui

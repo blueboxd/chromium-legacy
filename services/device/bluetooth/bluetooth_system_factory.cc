@@ -23,9 +23,9 @@ BluetoothSystemFactory::BluetoothSystemFactory() = default;
 BluetoothSystemFactory::~BluetoothSystemFactory() = default;
 
 void BluetoothSystemFactory::Create(
-    mojom::BluetoothSystemRequest system_request,
+    mojo::PendingReceiver<mojom::BluetoothSystem> system_receiver,
     mojom::BluetoothSystemClientPtr system_client) {
-  BluetoothSystem::Create(std::move(system_request), std::move(system_client));
+  BluetoothSystem::Create(std::move(system_receiver), std::move(system_client));
 }
 
 }  // namespace device

@@ -27,7 +27,7 @@ class MediaStreamVideoTrack;
 // requests. Only one applyConstraints() request can be processed at a time.
 // ApplyConstraintsProcessor must be created, called and destroyed on the main
 // render thread. There should be only one ApplyConstraintsProcessor per frame.
-class MODULES_EXPORT ApplyConstraintsProcessor
+class MODULES_EXPORT ApplyConstraintsProcessor final
     : public GarbageCollectedFinalized<ApplyConstraintsProcessor> {
  public:
   using MediaDevicesDispatcherCallback = base::RepeatingCallback<

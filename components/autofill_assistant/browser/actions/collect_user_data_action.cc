@@ -403,6 +403,9 @@ CollectUserDataAction::CreateOptionsFromProto() {
     }
   }
 
+  collect_user_data_options->default_email =
+      delegate_->GetAccountEmailAddress();
+
   return collect_user_data_options;
 }
 

@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_test_helpers.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
@@ -533,6 +534,55 @@ TEST(ComputedStyleTest, ApplyColorSchemeLightOnDark) {
 
   To<Longhand>(ref.GetProperty()).ApplyValue(state, *light_value);
   EXPECT_EQ(WebColorScheme::kLight, style->UsedColorScheme());
+}
+
+TEST(ComputedStyleTest, ApplyInternalLightDarkColor) {
+  ScopedCSSColorSchemeForTest scoped_property_enabled(true);
+
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_ =
+      std::make_unique<DummyPageHolder>(IntSize(0, 0), nullptr);
+  const ComputedStyle* initial = &ComputedStyle::InitialStyle();
+
+  auto* ua_context = MakeGarbageCollected<CSSParserContext>(
+      kUASheetMode, SecureContextMode::kInsecureContext);
+  const CSSValue* internal_light_dark = CSSParser::ParseSingleValue(
+      CSSPropertyID::kColor, "-internal-light-dark-color(black, white)",
+      ua_context);
+
+  dummy_page_holder_->GetDocument().GetSettings()->SetPreferredColorScheme(
+      PreferredColorScheme::kDark);
+  StyleResolverState state(dummy_page_holder_->GetDocument(),
+                           *dummy_page_holder_->GetDocument().documentElement(),
+                           initial, initial);
+
+  StyleResolver& resolver =
+      dummy_page_holder_->GetDocument().EnsureStyleResolver();
+
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+  state.SetStyle(style);
+
+  CSSValueList* dark_value = CSSValueList::CreateSpaceSeparated();
+  dark_value->Append(*CSSIdentifierValue::Create(CSSValueID::kDark));
+
+  CSSValueList* light_value = CSSValueList::CreateSpaceSeparated();
+  light_value->Append(*CSSIdentifierValue::Create(CSSValueID::kLight));
+
+  CSSPropertyRef scheme_property("color-scheme", state.GetDocument());
+  CSSPropertyRef color_property("color", state.GetDocument());
+
+  To<Longhand>(color_property.GetProperty())
+      .ApplyValue(state, *internal_light_dark);
+  To<Longhand>(scheme_property.GetProperty()).ApplyValue(state, *dark_value);
+  if (!RuntimeEnabledFeatures::CSSCascadeEnabled())
+    resolver.ApplyCascadedColorValue(state);
+  EXPECT_EQ(Color::kWhite, style->VisitedDependentColor(GetCSSPropertyColor()));
+
+  To<Longhand>(color_property.GetProperty())
+      .ApplyValue(state, *internal_light_dark);
+  To<Longhand>(scheme_property.GetProperty()).ApplyValue(state, *light_value);
+  if (!RuntimeEnabledFeatures::CSSCascadeEnabled())
+    resolver.ApplyCascadedColorValue(state);
+  EXPECT_EQ(Color::kBlack, style->VisitedDependentColor(GetCSSPropertyColor()));
 }
 
 }  // namespace blink

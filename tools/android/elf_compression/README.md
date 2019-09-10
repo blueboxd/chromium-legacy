@@ -37,6 +37,5 @@ unusual (but legal) changes made to the library.
 ## Testing
 To run tests:
 
-    test/compression_script_test.py
+    test/run_tests.py
 
-The test simply verifies that the sample library is not broken after applying the script.

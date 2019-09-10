@@ -12,6 +12,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
 #include "base/test/task_environment.h"
+#include "build/build_config.h"
 #include "components/signin/public/base/list_accounts_test_utils.h"
 #include "components/signin/public/base/test_signin_client.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
@@ -53,6 +54,7 @@ enum class AccountsCookiesMutatorAction {
   kSetAccountsInCookie,
   kTriggerCookieJarUpdateNoAccounts,
   kTriggerCookieJarUpdateOneAccount,
+  kTriggerOnCookieChangeNoAccounts,
 };
 
 }  // namespace
@@ -118,6 +120,9 @@ class AccountsCookieMutatorTest : public testing::Test {
       case AccountsCookiesMutatorAction::kTriggerCookieJarUpdateOneAccount:
         SetListAccountsResponseOneAccount(kTestAccountEmail, kTestAccountGaiaId,
                                           GetTestURLLoaderFactory());
+        break;
+      case AccountsCookiesMutatorAction::kTriggerOnCookieChangeNoAccounts:
+        SetListAccountsResponseNoAccounts(GetTestURLLoaderFactory());
         break;
     }
   }
@@ -400,6 +405,22 @@ TEST_F(AccountsCookieMutatorTest, TriggerCookieJarUpdate_OneListedAccounts) {
                 .state(),
             GoogleServiceAuthError::NONE);
 }
+
+#if defined(OS_IOS)
+TEST_F(AccountsCookieMutatorTest, ForceTriggerOnCookieChange) {
+  PrepareURLLoaderResponsesForAction(
+      AccountsCookiesMutatorAction::kTriggerOnCookieChangeNoAccounts);
+
+  base::RunLoop run_loop;
+  identity_manager_observer()->SetOnAccountsInCookieUpdatedCallback(
+      run_loop.QuitClosure());
+
+  // Forces the processing of OnCookieChange and it calls
+  // OnGaiaAccountsInCookieUpdated.
+  accounts_cookie_mutator()->ForceTriggerOnCookieChange();
+  run_loop.Run();
+}
+#endif
 
 // Test that trying to log out all sessions generates the right network request.
 TEST_F(AccountsCookieMutatorTest, LogOutAllAccounts) {

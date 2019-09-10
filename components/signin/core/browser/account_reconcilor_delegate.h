@@ -108,6 +108,9 @@ class AccountReconcilorDelegate {
   // invalidated unless it has to be kept for critical Sync operations.
   virtual bool ShouldRevokeTokensOnCookieDeleted();
 
+  // Returns whether tokens should be revoked when the primary account is empty
+  virtual bool ShouldRevokeTokensIfNoPrimaryAccount() const;
+
   // Called when reconcile is finished.
   // |OnReconcileFinished| is always called at the end of reconciliation,
   // even when there is an error (except in cases where reconciliation times

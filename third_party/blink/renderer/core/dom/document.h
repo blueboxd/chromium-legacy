@@ -104,7 +104,6 @@ class DOMWindow;
 class DocumentFragment;
 class DocumentInit;
 class DocumentLoader;
-class DocumentLoadTiming;
 class DocumentMarkerController;
 class DocumentNameCollection;
 class DocumentOutliveTimeReporter;
@@ -657,10 +656,15 @@ class CORE_EXPORT Document : public ContainerNode,
                                  bool is_reload,
                                  bool& did_allow_navigation);
 
+  struct UnloadEventTiming {
+    base::TimeTicks unload_event_start;
+    base::TimeTicks unload_event_end;
+  };
   // Dispatches "pagehide", "visibilitychange" and "unload" events, if not
-  // dispatched already. Fills unload timing in the next document's load timing
-  // if present.
-  void DispatchUnloadEvents(DocumentLoadTiming*);
+  // dispatched already. Fills unload timing if present and |committing_origin|
+  // has access to the unload timing of the document.
+  void DispatchUnloadEvents(SecurityOrigin* committing_origin,
+                            base::Optional<Document::UnloadEventTiming>*);
 
   void DispatchFreezeEvent();
 

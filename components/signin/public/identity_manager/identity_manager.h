@@ -425,16 +425,6 @@ class IdentityManager : public KeyedService,
   // state of IdentityManager.
   DiagnosticsProvider* GetDiagnosticsProvider();
 
-#if defined(OS_IOS)
-  // Forces the processing of GaiaCookieManagerService::OnCookieChange. On
-  // iOS, it's necessary to force-trigger the processing of cookie changes
-  // from the client as the normal mechanism for internally observing them
-  // is not wired up.
-  // TODO(https://crbug.com/930582) : Remove the need to expose this method
-  // or move it to the network::CookieManager.
-  void ForceTriggerOnCookieChange();
-#endif
-
 #if defined(OS_ANDROID)
   // Reloads the accounts in the token service from the system accounts. This
   // API calls ProfileOAuth2TokenServiceDelegate::ReloadAccountsFromSystem and
@@ -458,8 +448,7 @@ class IdentityManager : public KeyedService,
   base::android::ScopedJavaLocalRef<jobject>
   LegacyGetOAuth2TokenServiceJavaObject();
 
-  // Get the reference on the java IdentityManager, InitializeJavaObject must
-  // be called before hand.
+  // Get the reference on the java IdentityManager.
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
   // This method has the contractual assumption that the account is a known

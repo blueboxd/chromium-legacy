@@ -262,6 +262,10 @@ class ActionDelegate {
   // Get associated web contents.
   virtual content::WebContents* GetWebContents() = 0;
 
+  // Returns the e-mail address that corresponds to the access token or an empty
+  // string.
+  virtual std::string GetAccountEmailAddress() = 0;
+
   // Sets or updates contextual information.
   // Passing nullptr clears the contextual information.
   virtual void SetDetails(std::unique_ptr<Details> details) = 0;

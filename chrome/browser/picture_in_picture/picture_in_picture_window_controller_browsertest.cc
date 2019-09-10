@@ -2996,8 +2996,14 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   ExpectLeavePictureInPicture(active_web_contents);
 }
 
+// TODO(crbug.com/1002489): Test is flaky on Linux.
+#if defined(OS_LINUX)
+#define MAYBE_UpdateMaxSize DISABLED_UpdateMaxSize
+#else
+#define MAYBE_UpdateMaxSize UpdateMaxSize
+#endif
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
-                       UpdateMaxSize) {
+                       MAYBE_UpdateMaxSize) {
   LoadTabAndEnterPictureInPicture(
       browser(), base::FilePath(kPictureInPictureWindowSizePage));
 

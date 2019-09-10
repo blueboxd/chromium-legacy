@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/presentation/presentation_receiver.h"
 
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -27,16 +28,14 @@ PresentationReceiver::PresentationReceiver(LocalFrame* frame)
     : ContextLifecycleObserver(frame->GetDocument()),
       connection_list_(MakeGarbageCollected<PresentationConnectionList>(
           frame->GetDocument())) {
-  auto* interface_provider = GetFrame()->Client()->GetInterfaceProvider();
-  interface_provider->GetInterface(
+  frame->GetBrowserInterfaceBroker().GetInterface(
       presentation_service_remote_.BindNewPipeAndPassReceiver());
-
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       frame->GetTaskRunner(TaskType::kPresentation);
 
   // Set the mojo::Remote<T> that remote implementation of PresentationService
-  // will use to interact with the associated PresentationReceiver, in order to
-  // receive updates on new connections becoming available.
+  // will use to interact with the associated PresentationReceiver, in order
+  // to receive updates on new connections becoming available.
   presentation_service_remote_->SetReceiver(
       presentation_receiver_receiver_.BindNewPipeAndPassRemote(task_runner));
 }

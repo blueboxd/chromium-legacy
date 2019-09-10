@@ -53,10 +53,16 @@ class VIZ_SERVICE_EXPORT BufferQueue {
   // current buffer and one could not be created.
   unsigned GetCurrentBuffer(unsigned* stencil);
 
+  // Returns a rectangle whose contents may have changed since the current
+  // buffer was last submitted and needs to be redrawn. For partial swap,
+  // only the contents outside this rectangle can be considered valid and do not
+  // need to be redrawn.
+  gfx::Rect CurrentBufferDamage() const;
+
   // Called by the user of this object to indicate that the buffer currently
-  // marked for drawing should be moved to the list of in-flight buffers. If
-  // |damage| is not empty, the damage rectangle for all buffers except the
-  // one currently marked for drawing is unioned with |damage|.
+  // marked for drawing should be moved to the list of in-flight buffers.
+  // |damage| represents the rectangle containing the damaged area since the
+  // last SwapBuffers.
   void SwapBuffers(const gfx::Rect& damage);
 
   // Called by the user of this object to indicate that a previous request to
@@ -77,10 +83,6 @@ class VIZ_SERVICE_EXPORT BufferQueue {
                float scale_factor,
                const gfx::ColorSpace& color_space,
                bool use_stencil);
-
-  // Copies the damage from the most recently swapped available buffer into the
-  // current buffer.
-  void CopyDamageForCurrentSurface(const gfx::Rect& damage);
 
   uint32_t internal_format() const { return internal_format_; }
   gfx::BufferFormat buffer_format() const { return format_; }
@@ -107,13 +109,6 @@ class VIZ_SERVICE_EXPORT BufferQueue {
   };
 
   void FreeSurfaceResources(AllocatedSurface* surface);
-
-  // Copy everything that is in |copy_rect|, except for what is in
-  // |exclude_rect| from |source_texture| to |texture|.
-  virtual void CopyBufferDamage(unsigned texture,
-                                unsigned source_texture,
-                                const gfx::Rect& new_damage,
-                                const gfx::Rect& old_damage);
 
   void UpdateBufferDamage(const gfx::Rect& damage);
 

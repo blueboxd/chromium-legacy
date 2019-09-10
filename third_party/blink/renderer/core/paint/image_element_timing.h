@@ -79,7 +79,7 @@ class CORE_EXPORT ImageElementTiming final
                                 base::TimeTicks timestamp);
 
   // Class containing information about image element timing.
-  class ElementTimingInfo
+  class ElementTimingInfo final
       : public GarbageCollectedFinalized<ElementTimingInfo> {
    public:
     ElementTimingInfo(const String& url,

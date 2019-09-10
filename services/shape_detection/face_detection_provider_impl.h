@@ -22,7 +22,7 @@ class FaceDetectionProviderImpl
   }
 
   void CreateFaceDetection(
-      shape_detection::mojom::FaceDetectionRequest request,
+      mojo::PendingReceiver<shape_detection::mojom::FaceDetection> receiver,
       shape_detection::mojom::FaceDetectorOptionsPtr options) override;
 };
 

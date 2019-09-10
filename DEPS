@@ -162,7 +162,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '8cae1e95a23b8781459efd6f56ef9fb724d28b81',
+  'skia_revision': 'a47836e01af99b1ace19fdc35d7f0df47718d7d6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -174,7 +174,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '46c88567d52f1487c3e8a2388eae39651f3b0f86',
+  'angle_revision': '79ad0411911b2fc84834c3705f55707be9e4b498',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -281,7 +281,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spv_tools_revision': '76261e2a7df1fda011a5edd7a894c42b4fa6af95',
+  'spv_tools_revision': '7f7236f1eba0afae2669ea777896f0435be4c96d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -301,7 +301,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': '43652ca1735ad8b913dd37de2ae0f5d69789c116',
+  'quiche_revision': 'fa2746c4a1fdda8b938eebe5b6dc6e821a9158ef',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -316,7 +316,7 @@ vars = {
   # revisions.
 
   # GN CIPD package version.
-  'gn_version': 'git_revision:152c5144ceed9592c20f0c8fd55769646077569b',
+  'gn_version': 'git_revision:ad9e442d92dcd9ee73a557428cfc336b55cbd533',
 
   # Also, if you change these, update buildtools/DEPS too. Also update the
   # libc++ svn_revision in //buildtools/deps_revisions.gni.
@@ -1414,7 +1414,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'abaae129d9a0c6e1e092067e0b105475df43352e',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '487f9a17e426fd14bb06b13e861071b3f15d119b',
+    Var('webrtc_git') + '/src.git' + '@' + 'f7b1aa440dc0f2f36b671339381461683a5b34e1',
 
   'src/third_party/xdg-utils': {
       'url': Var('chromium_git') + '/chromium/deps/xdg-utils.git' + '@' + 'd80274d5869b17b8c9067a1022e4416ee7ed5e0d',
@@ -1455,7 +1455,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@5aec10b3bcd4b16bb0ff85d427bc2c91a762b354',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@9d28be075d5f12780d310eba7757a5c8c48aa5d0',
     'condition': 'checkout_src_internal',
   },
 

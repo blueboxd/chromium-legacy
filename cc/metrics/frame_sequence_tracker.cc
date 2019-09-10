@@ -17,16 +17,9 @@
 
 namespace cc {
 
-constexpr const char* FrameSequenceTracker::kFrameSequenceTrackerTypeNames[] = {
-    [FrameSequenceTrackerType::kCompositorAnimation] = "CompositorAnimation",
-    [FrameSequenceTrackerType::kMainThreadAnimation] = "MainThreadAnimation",
-    [FrameSequenceTrackerType::kPinchZoom] = "PinchZoom",
-    [FrameSequenceTrackerType::kRAF] = "RAF",
-    [FrameSequenceTrackerType::kTouchScroll] = "TouchScroll",
-    [FrameSequenceTrackerType::kVideo] = "Video",
-    [FrameSequenceTrackerType::kWheelScroll] = "WheelScroll",
-    [FrameSequenceTrackerType::kMaxType] = "",
-};
+const char* const FrameSequenceTracker::kFrameSequenceTrackerTypeNames[] = {
+    "CompositorAnimation", "MainThreadAnimation", "PinchZoom", "RAF",
+    "TouchScroll",         "WheelScroll",         ""};
 
 namespace {
 

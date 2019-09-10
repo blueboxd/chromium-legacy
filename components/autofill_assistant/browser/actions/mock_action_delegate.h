@@ -200,6 +200,7 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD0(GetPersonalDataManager, autofill::PersonalDataManager*());
   MOCK_METHOD0(GetWebsiteLoginFetcher, WebsiteLoginFetcher*());
   MOCK_METHOD0(GetWebContents, content::WebContents*());
+  MOCK_METHOD0(GetAccountEmailAddress, std::string());
   MOCK_METHOD1(SetDetails, void(std::unique_ptr<Details> details));
   MOCK_METHOD1(SetInfoBox, void(const InfoBox& info_box));
   MOCK_METHOD0(ClearInfoBox, void());

@@ -32,36 +32,38 @@
 #include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
-#include "content/renderer/p2p/network_list_manager.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
 #include "net/base/ip_address.h"
 #include "net/base/network_interfaces.h"
 #include "services/network/public/cpp/p2p_socket_type.h"
 #include "services/network/public/mojom/p2p.mojom.h"
+#include "third_party/blink/public/platform/modules/p2p/network_list_manager.h"
 
 namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
 
-namespace content {
-
+namespace blink {
 class NetworkListObserver;
+}
+
+namespace content {
 
 // This class is created on the main thread, but is used primarily on the
 // WebRTC worker threads.
 class CONTENT_EXPORT P2PSocketDispatcher
     : public base::RefCountedThreadSafe<P2PSocketDispatcher>,
-      public NetworkListManager,
+      public blink::NetworkListManager,
       public network::mojom::P2PNetworkNotificationClient {
  public:
   P2PSocketDispatcher();
 
-  // NetworkListManager interface:
+  // blink::NetworkListManager interface:
   void AddNetworkListObserver(
-      NetworkListObserver* network_list_observer) override;
+      blink::NetworkListObserver* network_list_observer) override;
   void RemoveNetworkListObserver(
-      NetworkListObserver* network_list_observer) override;
+      blink::NetworkListObserver* network_list_observer) override;
 
   scoped_refptr<network::mojom::ThreadSafeP2PSocketManagerPtr>
   GetP2PSocketManager();
@@ -84,7 +86,7 @@ class CONTENT_EXPORT P2PSocketDispatcher
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
-  scoped_refptr<base::ObserverListThreadSafe<NetworkListObserver>>
+  scoped_refptr<base::ObserverListThreadSafe<blink::NetworkListObserver>>
       network_list_observers_;
 
   network::mojom::P2PSocketManagerRequest p2p_socket_manager_request_;

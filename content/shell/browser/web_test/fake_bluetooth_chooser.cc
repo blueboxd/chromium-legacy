@@ -14,10 +14,9 @@
 namespace content {
 
 FakeBluetoothChooser::FakeBluetoothChooser(
-    mojom::FakeBluetoothChooserRequest request,
-    mojom::FakeBluetoothChooserClientAssociatedPtrInfo client_ptr_info)
-    : binding_(this, std::move(request)),
-      client_ptr_(std::move(client_ptr_info)) {
+    mojo::PendingReceiver<mojom::FakeBluetoothChooser> receiver,
+    mojo::PendingAssociatedRemote<mojom::FakeBluetoothChooserClient> client)
+    : receiver_(this, std::move(receiver)), client_(std::move(client)) {
   SetTestBluetoothScanDuration(BluetoothTestScanDurationSetting::kNeverTimeout);
 }
 
@@ -25,7 +24,7 @@ FakeBluetoothChooser::~FakeBluetoothChooser() {
   SetTestBluetoothScanDuration(
       BluetoothTestScanDurationSetting::kImmediateTimeout);
 
-  client_ptr_->OnEvent(mojom::FakeBluetoothChooserEvent::New(
+  client_->OnEvent(mojom::FakeBluetoothChooserEvent::New(
       mojom::ChooserEventType::CHOOSER_CLOSED, /*origin=*/base::nullopt,
       /*peripheral_address=*/base::nullopt));
 }
@@ -34,7 +33,7 @@ void FakeBluetoothChooser::OnRunBluetoothChooser(
     const EventHandler& event_handler,
     const url::Origin& origin) {
   event_handler_ = event_handler;
-  client_ptr_->OnEvent(mojom::FakeBluetoothChooserEvent::New(
+  client_->OnEvent(mojom::FakeBluetoothChooserEvent::New(
       mojom::ChooserEventType::CHOOSER_OPENED, origin,
       /*peripheral_address=*/base::nullopt));
 }
@@ -49,7 +48,7 @@ void FakeBluetoothChooser::SelectPeripheral(
 void FakeBluetoothChooser::Cancel() {
   DCHECK(event_handler_);
   event_handler_.Run(BluetoothChooser::Event::CANCELLED, std::string());
-  client_ptr_->OnEvent(mojom::FakeBluetoothChooserEvent::New(
+  client_->OnEvent(mojom::FakeBluetoothChooserEvent::New(
       mojom::ChooserEventType::CHOOSER_CLOSED, /*origin=*/base::nullopt,
       /*peripheral_address=*/base::nullopt));
 }
@@ -57,7 +56,7 @@ void FakeBluetoothChooser::Cancel() {
 void FakeBluetoothChooser::Rescan() {
   DCHECK(event_handler_);
   event_handler_.Run(BluetoothChooser::Event::RESCAN, std::string());
-  client_ptr_->OnEvent(mojom::FakeBluetoothChooserEvent::New(
+  client_->OnEvent(mojom::FakeBluetoothChooserEvent::New(
       mojom::ChooserEventType::DISCOVERING, /*origin=*/base::nullopt,
       /*peripheral_address=*/base::nullopt));
 }
@@ -78,7 +77,7 @@ void FakeBluetoothChooser::SetAdapterPresence(AdapterPresence presence) {
       event_ptr->type = mojom::ChooserEventType::ADAPTER_ENABLED;
       break;
   }
-  client_ptr_->OnEvent(std::move(event_ptr));
+  client_->OnEvent(std::move(event_ptr));
 }
 
 void FakeBluetoothChooser::ShowDiscoveryState(DiscoveryState state) {
@@ -95,7 +94,7 @@ void FakeBluetoothChooser::ShowDiscoveryState(DiscoveryState state) {
       event_ptr->type = mojom::ChooserEventType::DISCOVERY_IDLE;
       break;
   }
-  client_ptr_->OnEvent(std::move(event_ptr));
+  client_->OnEvent(std::move(event_ptr));
 }
 
 void FakeBluetoothChooser::AddOrUpdateDevice(const std::string& device_id,
@@ -104,7 +103,7 @@ void FakeBluetoothChooser::AddOrUpdateDevice(const std::string& device_id,
                                              bool is_gatt_connected,
                                              bool is_paired,
                                              int signal_strength_level) {
-  client_ptr_->OnEvent(mojom::FakeBluetoothChooserEvent::New(
+  client_->OnEvent(mojom::FakeBluetoothChooserEvent::New(
       mojom::ChooserEventType::ADD_OR_UPDATE_DEVICE,
       /*origin=*/base::nullopt, /*peripheral_address=*/device_id));
 }

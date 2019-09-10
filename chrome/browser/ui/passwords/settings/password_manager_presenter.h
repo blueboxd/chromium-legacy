@@ -146,7 +146,7 @@ class PasswordManagerPresenter
   void SetPasswordExceptionList();
 
   // Returns the password store associated with the currently active profile.
-  password_manager::PasswordStore* GetPasswordStore();
+  password_manager::PasswordStore* GetPasswordStore(bool use_account_store);
 
   PasswordFormMap password_map_;
   PasswordFormMap exception_map_;

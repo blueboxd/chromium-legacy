@@ -11,7 +11,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
-#include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/gpu/linux/platform_video_frame_pool.h"
@@ -56,8 +55,9 @@ class PlatformVideoFramePoolTest
   PlatformVideoFramePoolTest()
       : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
     pool_.reset(new PlatformVideoFramePool(
-        base::BindRepeating(&CreateDmabufVideoFrame), &test_clock_));
+        base::BindRepeating(&CreateDmabufVideoFrame)));
     pool_->set_parent_task_runner(base::ThreadTaskRunnerHandle::Get());
+    pool_->SetMaxNumFrames(10);
   }
 
   void SetFrameFormat(VideoPixelFormat format) {
@@ -90,7 +90,6 @@ class PlatformVideoFramePoolTest
 
  protected:
   base::test::TaskEnvironment task_environment_;
-  base::SimpleTestTickClock test_clock_;
   std::unique_ptr<PlatformVideoFramePool,
                   std::default_delete<DmabufVideoFramePool>>
       pool_;
@@ -161,28 +160,6 @@ TEST_F(PlatformVideoFramePoolTest, FormatChange) {
   SetFrameFormat(PIXEL_FORMAT_I420A);
   scoped_refptr<VideoFrame> new_frame = GetFrame(10);
   CheckPoolSize(0u);
-}
-
-TEST_F(PlatformVideoFramePoolTest, StaleFramesAreExpired) {
-  SetFrameFormat(PIXEL_FORMAT_I420);
-  scoped_refptr<VideoFrame> frame_1 = GetFrame(10);
-  scoped_refptr<VideoFrame> frame_2 = GetFrame(10);
-  EXPECT_NE(frame_1.get(), frame_2.get());
-  CheckPoolSize(0u);
-
-  // Drop frame and verify that resources are still available for reuse.
-  frame_1 = nullptr;
-  task_environment_.RunUntilIdle();
-  CheckPoolSize(1u);
-
-  // Advance clock far enough to hit stale timer; ensure only frame_1 has its
-  // resources released.
-  base::TimeDelta time_forward = base::TimeDelta::FromMinutes(1);
-  test_clock_.Advance(time_forward);
-  task_environment_.FastForwardBy(time_forward);
-  frame_2 = nullptr;
-  task_environment_.RunUntilIdle();
-  CheckPoolSize(1u);
 }
 
 TEST_F(PlatformVideoFramePoolTest, UnwrapVideoFrame) {

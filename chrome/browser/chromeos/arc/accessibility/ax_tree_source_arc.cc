@@ -189,7 +189,12 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
 
   event_bundle.events.emplace_back();
   ui::AXEvent& event = event_bundle.events.back();
-  event.event_type = ToAXEvent(event_data->event_type);
+  // When the focused node exists, give it as a hint to decide a Chrome
+  // automation event type.
+  AXNodeInfoData* opt_focused_node = nullptr;
+  if (tree_map_.find(focused_id_) != tree_map_.end())
+    opt_focused_node = tree_map_[focused_id_]->GetNode();
+  event.event_type = ToAXEvent(event_data->event_type, opt_focused_node);
   event.id = event_data->source_id;
 
   event_bundle.updates.emplace_back();
@@ -200,22 +205,18 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
   current_tree_serializer_->SerializeChanges(GetFromId(event_data->source_id),
                                              &event_bundle.updates.back());
 
-  extensions::AutomationEventRouter* router =
-      extensions::AutomationEventRouter::GetInstance();
-  router->DispatchAccessibilityEvents(event_bundle);
+  GetAutomationEventRouter()->DispatchAccessibilityEvents(event_bundle);
 }
 
 void AXTreeSourceArc::NotifyActionResult(const ui::AXActionData& data,
                                          bool result) {
-  extensions::AutomationEventRouter::GetInstance()->DispatchActionResult(
-      data, result);
+  GetAutomationEventRouter()->DispatchActionResult(data, result);
 }
 
 void AXTreeSourceArc::NotifyGetTextLocationDataResult(
     const ui::AXActionData& data,
     const base::Optional<gfx::Rect>& rect) {
-  extensions::AutomationEventRouter::GetInstance()
-      ->DispatchGetTextLocationDataResult(data, rect);
+  GetAutomationEventRouter()->DispatchGetTextLocationDataResult(data, rect);
 }
 
 bool AXTreeSourceArc::GetTreeData(ui::AXTreeData* data) const {
@@ -443,12 +444,17 @@ void AXTreeSourceArc::Reset() {
   current_tree_serializer_.reset(new AXTreeArcSerializer(this));
   root_id_ = -1;
   focused_id_ = -1;
-  extensions::AutomationEventRouter* router =
-      extensions::AutomationEventRouter::GetInstance();
+  extensions::AutomationEventRouterInterface* router =
+      GetAutomationEventRouter();
   if (!router)
     return;
 
   router->DispatchTreeDestroyedEvent(ax_tree_id(), nullptr);
+}
+
+extensions::AutomationEventRouterInterface*
+AXTreeSourceArc::GetAutomationEventRouter() const {
+  return extensions::AutomationEventRouter::GetInstance();
 }
 
 }  // namespace arc

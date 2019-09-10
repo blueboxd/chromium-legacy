@@ -43,7 +43,7 @@ class LocalFrame;
 class SpellCheckRequester;
 class WebTextCheckClient;
 
-class CORE_EXPORT SpellCheckRequest
+class CORE_EXPORT SpellCheckRequest final
     : public GarbageCollectedFinalized<SpellCheckRequest> {
  public:
   static const int kUnrequestedTextCheckingSequence = -1;

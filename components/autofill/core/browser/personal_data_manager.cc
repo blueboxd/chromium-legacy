@@ -47,6 +47,7 @@
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
@@ -1799,6 +1800,10 @@ std::string PersonalDataManager::SaveImportedCreditCard(
     credit_cards.push_back(imported_card);
 
   SetCreditCards(&credit_cards);
+
+  // After a card is saved locally, notifies the observers.
+  OnCreditCardSaved();
+
   return guid;
 }
 
@@ -2031,6 +2036,15 @@ void PersonalDataManager::NotifyPersonalDataObserver() {
       observer.OnPersonalDataFinishedProfileTasks();
     }
   }
+}
+
+void PersonalDataManager::OnCreditCardSaved() {
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillCreditCardUploadFeedback)) {
+    return;
+  }
+  for (PersonalDataManagerObserver& observer : observers_)
+    observer.OnCreditCardSaved();
 }
 
 std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(

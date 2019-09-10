@@ -88,8 +88,8 @@ TabRankerResult TabScorePredictor::ScoreTab(const TabFeatures& tab,
     result = ScoreTabWithMRUScorer(tab, score);
   } else if (type_ == kMLScorer) {
     result = ScoreTabWithMLScorer(tab, score);
-  } else if (type_ == KPairwiseScorer) {
-    result = ScoreTabsWithPairwiseScorer(tab, TabFeatures(), score);
+  } else if (type_ == kPairwiseScorer) {
+    result = ScoreTabsPairs(tab, TabFeatures(), score);
   } else if (type_ == kFrecencyScorer) {
     result = ScoreTabWithFrecencyScorer(tab, score);
   } else {
@@ -108,17 +108,21 @@ TabRankerResult TabScorePredictor::ScoreTab(const TabFeatures& tab,
 
 std::map<int32_t, float> TabScorePredictor::ScoreTabs(
     const std::map<int32_t, base::Optional<TabFeatures>>& tabs) {
-  std::map<int32_t, float> reactivation_scores;
-  for (const auto& pair : tabs) {
-    float score = 0.0f;
-    if (pair.second &&
-        (ScoreTab(pair.second.value(), &score) == TabRankerResult::kSuccess)) {
-      reactivation_scores[pair.first] = score;
-    } else {
-      reactivation_scores[pair.first] = std::numeric_limits<float>::max();
+  if (type_ != kPairwiseScorer) {
+    std::map<int32_t, float> reactivation_scores;
+    for (const auto& pair : tabs) {
+      float score = 0.0f;
+      if (pair.second && (ScoreTab(pair.second.value(), &score) ==
+                          TabRankerResult::kSuccess)) {
+        reactivation_scores[pair.first] = score;
+      } else {
+        reactivation_scores[pair.first] = std::numeric_limits<float>::max();
+      }
     }
+    return reactivation_scores;
+  } else {
+    return ScoreTabsWithPairwiseScorer(tabs);
   }
-  return reactivation_scores;
 }
 
 TabRankerResult TabScorePredictor::ScoreTabWithMLScorer(const TabFeatures& tab,
@@ -159,7 +163,7 @@ TabRankerResult TabScorePredictor::PredictWithPreprocess(
   if (type_ == kMLScorer)
     tfnative_model::Inference(vectorized_features.data(), score,
                               tfnative_alloc_.get());
-  if (type_ == KPairwiseScorer)
+  if (type_ == kPairwiseScorer)
     pairwise_model::Inference(vectorized_features.data(), score,
                               pairwise_alloc_.get());
 
@@ -179,32 +183,121 @@ TabRankerResult TabScorePredictor::ScoreTabWithMRUScorer(const TabFeatures& tab,
   return TabRankerResult::kSuccess;
 }
 
-TabRankerResult TabScorePredictor::ScoreTabsWithPairwiseScorer(
-    const TabFeatures& tab1,
-    const TabFeatures& tab2,
-    float* score) {
-  // Lazy-load the preprocessor config.
-  LazyInitialize();
-  if (!preprocessor_config_ || !pairwise_alloc_) {
-    return TabRankerResult::kPreprocessorInitializationFailed;
+TabRankerResult TabScorePredictor::ScoreTabsPairs(const TabFeatures& tab1,
+                                                  const TabFeatures& tab2,
+                                                  float* score) {
+  if (type_ == kPairwiseScorer) {
+    // Lazy-load the preprocessor config.
+    LazyInitialize();
+    if (!preprocessor_config_ || !pairwise_alloc_) {
+      return TabRankerResult::kPreprocessorInitializationFailed;
+    }
+
+    // Build the RankerExamples using the tab's features.
+    assist_ranker::RankerExample example1, example2;
+    PopulateTabFeaturesToRankerExample(tab1, &example1);
+    PopulateTabFeaturesToRankerExample(tab2, &example2);
+
+    // Merge features from example2 to example1.
+    auto& features = *example1.mutable_features();
+    for (const auto& feature : example2.features()) {
+      const std::string new_name = base::StrCat({feature.first, "_1"});
+      features[new_name] = feature.second;
+    }
+
+    // Inference on example1.
+    return PredictWithPreprocess(&example1, score);
+  } else {
+    // For non-pairwise scorer, we simply calculate the score of each tab and
+    // return the difference.
+    float score1, score2;
+    const TabRankerResult result1 = ScoreTab(tab1, &score1);
+    const TabRankerResult result2 = ScoreTab(tab2, &score2);
+    *score = score1 - score2;
+    return std::max(result1, result2);
   }
-
-  // Build the RankerExamples using the tab's features.
-  assist_ranker::RankerExample example1, example2;
-  PopulateTabFeaturesToRankerExample(tab1, &example1);
-  PopulateTabFeaturesToRankerExample(tab2, &example2);
-
-  // Merge features from example2 to example1.
-  auto& features = *example1.mutable_features();
-  for (const auto& feature : example2.features()) {
-    const std::string new_name = base::StrCat({feature.first, "_1"});
-    features[new_name] = feature.second;
-  }
-
-  // Inference on example1.
-  return PredictWithPreprocess(&example1, score);
 }
 
+std::map<int32_t, float> TabScorePredictor::ScoreTabsWithPairwiseScorer(
+    const std::map<int32_t, base::Optional<TabFeatures>>& tabs) {
+  const int N = tabs.size();
+
+  std::vector<int32_t> ids;
+  for (const auto& pair : tabs) {
+    ids.push_back(pair.first);
+  }
+
+  // Sort ids by MRU first.
+  // Put the tabs without TabFeatures in front so that they won't be discarded
+  // mistakenly (including current Foregrounded tab).
+  std::sort(ids.begin(), ids.end(),
+            [&tabs](const int32_t id1, const int32_t id2) {
+              const auto& tab1 = tabs.at(id1);
+              const auto& tab2 = tabs.at(id2);
+              if (!tab1)
+                return true;
+              if (!tab2)
+                return false;
+              return tab1->mru_index < tab2->mru_index;
+            });
+
+  std::map<int32_t, float> reactivation_scores;
+
+  // start_index is the first one that has tab_features.
+  int start_index = 0;
+  for (int i = 0; i < N; ++i) {
+    if (!tabs.at(ids[i])) {
+      reactivation_scores[ids[i]] = N - i;
+      start_index = i + 1;
+    } else {
+      break;
+    }
+  }
+
+  // winning_indices records what's the best tab to be put at pos i.
+  std::vector<int> winning_indices;
+  for (int i = 0; i < N; ++i)
+    winning_indices.push_back(i);
+
+  int winning_index = N - 1;
+  int swapped_index = N - 1;
+  for (int j = start_index; j < N; ++j) {
+    // Find the best candidate at j.
+
+    // swapped_index < N - 1 means that one element has
+    // just been swapped to swapped_index, we should re-calculate
+    // winning_indices from swapped_index to j;
+    if (swapped_index < N - 1) {
+      // Set winning_index as the winning_indices at swapped_index + 1, since
+      // ids from ids.back() to ids[swapped_index + 1] are not
+      // changed.
+      winning_index = winning_indices[swapped_index + 1];
+    }
+
+    for (int i = swapped_index; i >= j; --i) {
+      // Compare ids[i] with ids[winning_index]; inference score > 0 means
+      // that ids[i] is more likely to be reactivated, so we should prefer
+      // ids[i] as new winning_index.
+      float score = 0.0f;
+      const TabRankerResult result = ScoreTabsPairs(
+          tabs.at(ids[i]).value(), tabs.at(ids[winning_index]).value(), &score);
+      if (result == TabRankerResult::kSuccess && score > 0.0f) {
+        winning_index = i;
+      }
+
+      // Always update winning_indices.
+      winning_indices[i] = winning_index;
+    }
+
+    // swap winning_index with j;
+    std::swap(ids[winning_index], ids[j]);
+    swapped_index = winning_index;
+
+    // Find the best candidate for position j, set the score for ids[j].
+    reactivation_scores[ids[j]] = N - j;
+  }
+  return reactivation_scores;
+}
 void TabScorePredictor::LazyInitialize() {
   // Load correct config and alloc based on type_.
   if (type_ == kMLScorer) {
@@ -218,7 +311,7 @@ void TabScorePredictor::LazyInitialize() {
               static_cast<std::size_t>(tfnative_model::FEATURES_SIZE));
   }
 
-  if (type_ == KPairwiseScorer) {
+  if (type_ == kPairwiseScorer) {
     if (!preprocessor_config_)
       preprocessor_config_ = LoadExamplePreprocessorConfig(
           IDR_TAB_RANKER_PAIRWISE_EXAMPLE_PREPROCESSOR_CONFIG_PB);

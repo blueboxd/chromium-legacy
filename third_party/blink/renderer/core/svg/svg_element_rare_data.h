@@ -31,7 +31,7 @@ namespace blink {
 
 class SVGResourceClient;
 
-class SVGElementRareData
+class SVGElementRareData final
     : public GarbageCollectedFinalized<SVGElementRareData> {
  public:
   SVGElementRareData()

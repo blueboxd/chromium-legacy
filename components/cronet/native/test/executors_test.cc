@@ -24,8 +24,7 @@ class ExecutorsTest : public ::testing::Test {
 
   // Provide a task environment for use by TestExecutor instances. Do not
   // initialize the ThreadPool as this is done by the Cronet_Engine
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY};
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
  private:
   void set_runnable_called(bool value) { runnable_called_ = value; }

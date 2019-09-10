@@ -24,7 +24,7 @@ class MouseEventManager;
 
 // This class takes care of dispatching all pointer events and keeps track of
 // properties of active pointer events.
-class CORE_EXPORT PointerEventManager
+class CORE_EXPORT PointerEventManager final
     : public GarbageCollectedFinalized<PointerEventManager> {
  public:
   PointerEventManager(LocalFrame&, MouseEventManager&);

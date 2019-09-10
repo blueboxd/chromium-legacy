@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_WINDOW_TREE_HOST_PLATFORM_H_
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_WINDOW_TREE_HOST_PLATFORM_H_
 
+#include <vector>
+
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "ui/aura/window_tree_host_platform.h"
@@ -92,6 +94,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
 
   // WindowTreeHost:
   gfx::Transform GetRootTransform() const override;
+  void ShowImpl() override;
 
   // PlatformWindowDelegateBase:
   void DispatchEvent(ui::Event* event) override;
@@ -129,6 +132,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   Widget* GetWidget();
   const Widget* GetWidget() const;
 
+  // Set visibility and fire OnNativeWidgetVisibilityChanged() if it changed.
+  void SetVisible(bool visible);
+
   // There are platform specific properties that Linux may want to add.
   virtual void AddAdditionalInitProperties(
       const Widget::InitParams& params,
@@ -150,6 +156,14 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   // A handler for events intended for non client area.
   std::unique_ptr<WindowEventFilter> non_client_window_event_filter_;
 #endif
+
+  // Keep track of PlatformWindow state so that we would react correctly and set
+  // visibility only if the window was minimized or was unminimized from the
+  // normal state.
+  ui::PlatformWindowState old_state_ = ui::PlatformWindowState::kUnknown;
+
+  // Cached value for SetVisible.  Not the same as the IsVisible public API.
+  bool is_compositor_set_visible_ = false;
 
   base::WeakPtrFactory<DesktopWindowTreeHostPlatform> close_widget_factory_{
       this};

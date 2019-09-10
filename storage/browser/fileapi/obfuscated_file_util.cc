@@ -24,7 +24,6 @@
 #include "base/time/time.h"
 #include "storage/browser/fileapi/file_observers.h"
 #include "storage/browser/fileapi/file_system_context.h"
-#include "storage/browser/fileapi/file_system_features.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/fileapi/obfuscated_file_util_disk_delegate.h"
 #include "storage/browser/fileapi/obfuscated_file_util_memory_delegate.h"
@@ -280,8 +279,7 @@ ObfuscatedFileUtil::ObfuscatedFileUtil(
   DCHECK(!is_incognito_ ||
          (env_override && leveldb_chrome::IsMemEnv(env_override)));
 
-  if (is_incognito_ &&
-      base::FeatureList::IsEnabled(features::kEnableFilesystemInIncognito)) {
+  if (is_incognito_) {
     delegate_ = std::make_unique<ObfuscatedFileUtilMemoryDelegate>(
         file_system_directory_);
   } else {
@@ -955,8 +953,7 @@ ObfuscatedFileUtil::CreateOriginEnumerator() {
 
   InitOriginDatabase(GURL(), false);
   base::WeakPtr<ObfuscatedFileUtilMemoryDelegate> file_util_delegate;
-  if (is_incognito() &&
-      base::FeatureList::IsEnabled(features::kEnableFilesystemInIncognito)) {
+  if (is_incognito()) {
     file_util_delegate =
         static_cast<ObfuscatedFileUtilMemoryDelegate*>(delegate())
             ->GetWeakPtr();

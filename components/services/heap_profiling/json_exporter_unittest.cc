@@ -421,4 +421,43 @@ TEST(ProfilingJsonExporterTest, Context) {
   ASSERT_TRUE(found_no_context);
 }
 
+#if defined(ARCH_CPU_64_BITS)
+TEST(ProfilingJsonExporterTest, LargeAllocation) {
+  std::vector<Address> stack1{Address(0x5678), Address(0x1234)};
+  AllocationMap allocs;
+  InsertAllocation(&allocs, AllocatorType::kMalloc,
+                   static_cast<size_t>(0x9876543210ul), stack1, 0);
+
+  ExportParams params;
+  params.allocs = std::move(allocs);
+  std::string json = ExportMemoryMapsAndV2StackTraceToJSON(&params);
+
+  // JSON should parse.
+  base::JSONReader json_reader(base::JSON_PARSE_RFC);
+  base::Optional<base::Value> result = json_reader.ReadToValue(json);
+  ASSERT_TRUE(result.has_value()) << json_reader.GetErrorMessage();
+
+  // Validate the allocators summary.
+  const base::Value* malloc_summary =
+      result.value().FindPath({"allocators", "malloc"});
+  ASSERT_TRUE(malloc_summary);
+  const base::Value* malloc_size =
+      malloc_summary->FindPath({"attrs", "size", "value"});
+  ASSERT_TRUE(malloc_size);
+  EXPECT_EQ("9876543210", malloc_size->GetString());
+  const base::Value* malloc_virtual_size =
+      malloc_summary->FindPath({"attrs", "virtual_size", "value"});
+  ASSERT_TRUE(malloc_virtual_size);
+  EXPECT_EQ("9876543210", malloc_virtual_size->GetString());
+
+  // Validate allocators details.
+  // heaps_v2.allocators.malloc.sizes.reduce((a,s)=>a+s,0).
+  const base::Value* malloc =
+      result.value().FindPath({"heaps_v2", "allocators", "malloc"});
+  const base::Value* malloc_sizes = malloc->FindKey("sizes");
+  EXPECT_EQ(1u, malloc_sizes->GetList().size());
+  EXPECT_EQ(0x9876543210ul, malloc_sizes->GetList()[0].GetDouble());
+}
+#endif
+
 }  // namespace heap_profiling

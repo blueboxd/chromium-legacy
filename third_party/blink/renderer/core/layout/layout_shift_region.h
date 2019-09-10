@@ -12,8 +12,7 @@
 
 namespace blink {
 
-// Represents a per-frame layout shift region for LayoutShiftTracker. Only used
-// when the JankTrackingSweepLine feature is enabled.
+// Represents a per-frame layout shift region for LayoutShiftTracker.
 //
 // This class uses a sweep line algorithm to compute the area in O(n log n) time
 // where n is the number of rects recorded by AddRect. For complex layout shift

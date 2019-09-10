@@ -20,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/password_manager/account_storage/account_password_store_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -165,15 +166,21 @@ PasswordManagerPresenter::PasswordManagerPresenter(
 }
 
 PasswordManagerPresenter::~PasswordManagerPresenter() {
-  PasswordStore* store = GetPasswordStore();
-  if (store)
-    store->RemoveObserver(this);
+  for (bool use_account_store : {false, true}) {
+    PasswordStore* store = GetPasswordStore(use_account_store);
+    if (store) {
+      store->RemoveObserver(this);
+    }
+  }
 }
 
 void PasswordManagerPresenter::Initialize() {
-  PasswordStore* store = GetPasswordStore();
-  if (store)
-    store->AddObserver(this);
+  for (bool use_account_store : {false, true}) {
+    PasswordStore* store = GetPasswordStore(use_account_store);
+    if (store) {
+      store->AddObserver(this);
+    }
+  }
 }
 
 void PasswordManagerPresenter::OnLoginsChanged(
@@ -187,12 +194,16 @@ void PasswordManagerPresenter::UpdatePasswordLists() {
   password_map_.clear();
   exception_map_.clear();
 
-  PasswordStore* store = GetPasswordStore();
-  if (!store)
-    return;
-
   CancelAllRequests();
-  store->GetAllLoginsWithAffiliationAndBrandingInformation(this);
+
+  // Request an update from both stores (if they exist). This will send out two
+  // updates to |password_view_| as the two result sets come in.
+  for (bool use_account_store : {false, true}) {
+    PasswordStore* store = GetPasswordStore(use_account_store);
+    if (store) {
+      store->GetAllLoginsWithAffiliationAndBrandingInformation(this);
+    }
+  }
 }
 
 const autofill::PasswordForm* PasswordManagerPresenter::GetPassword(
@@ -307,7 +318,7 @@ void PasswordManagerPresenter::RequestShowPassword(
 #endif
 
 void PasswordManagerPresenter::AddLogin(const autofill::PasswordForm& form) {
-  PasswordStore* store = GetPasswordStore();
+  PasswordStore* store = GetPasswordStore(form.IsUsingAccountStore());
   if (!store)
     return;
 
@@ -317,7 +328,7 @@ void PasswordManagerPresenter::AddLogin(const autofill::PasswordForm& form) {
 }
 
 void PasswordManagerPresenter::RemoveLogin(const autofill::PasswordForm& form) {
-  PasswordStore* store = GetPasswordStore();
+  PasswordStore* store = GetPasswordStore(form.IsUsingAccountStore());
   if (!store)
     return;
 
@@ -356,14 +367,14 @@ void PasswordManagerPresenter::ChangeSavedPasswords(
     }
   }
 
-  PasswordStore* store = GetPasswordStore();
-  if (!store)
-    return;
-
   // An updated username implies a change in the primary key, thus we need to
   // make sure to call the right API. Update every entry in the equivalence
   // class.
   for (const auto& old_form : old_forms) {
+    PasswordStore* store = GetPasswordStore(old_form->IsUsingAccountStore());
+    if (!store)
+      continue;
+
     autofill::PasswordForm new_form = *old_form;
     new_form.username_value = new_username;
     if (new_password)
@@ -400,17 +411,31 @@ bool PasswordManagerPresenter::TryRemovePasswordEntries(
 bool PasswordManagerPresenter::TryRemovePasswordEntries(
     PasswordFormMap* form_map,
     PasswordFormMap::const_iterator forms_iter) {
-  PasswordStore* store = GetPasswordStore();
-  if (!store)
-    return false;
-
   const FormVector& forms = forms_iter->second;
   DCHECK(!forms.empty());
 
+  bool use_account_store = forms[0]->IsUsingAccountStore();
+  PasswordStore* store = GetPasswordStore(use_account_store);
+  if (!store)
+    return false;
+
+  // Note: All entries in |forms| have the same SortKey, i.e. effectively the
+  // same origin, username and password. Given our legacy unique key in the
+  // underlying password store it is possible that we have several entries with
+  // the same origin, username and password, but different username_elements and
+  // password_elements. For the user all of these credentials are the same,
+  // which is why we have this SortKey deduplication logic when presenting them
+  // to the user.
+  // This also means that restoring |forms[0]| is enough here, as all other
+  // forms would have the same origin, username and password anyway.
   undo_manager_.AddUndoOperation(
       std::make_unique<RemovePasswordOperation>(this, *forms[0]));
-  for (const auto& form : forms)
+  for (const auto& form : forms) {
+    // PasswordFormMap is indexed by sort key, which includes the store
+    // (profile / account), so all forms here must come from the same store.
+    DCHECK_EQ(use_account_store, form->IsUsingAccountStore());
     store->RemoveLogin(*form);
+  }
 
   form_map->erase(forms_iter);
   return true;
@@ -440,7 +465,13 @@ void PasswordManagerPresenter::SetPasswordExceptionList() {
   password_view_->SetPasswordExceptionList(GetEntryList(exception_map_));
 }
 
-PasswordStore* PasswordManagerPresenter::GetPasswordStore() {
+PasswordStore* PasswordManagerPresenter::GetPasswordStore(
+    bool use_account_store) {
+  if (use_account_store) {
+    return AccountPasswordStoreFactory::GetForProfile(
+               password_view_->GetProfile(), ServiceAccessType::EXPLICIT_ACCESS)
+        .get();
+  }
   return PasswordStoreFactory::GetForProfile(password_view_->GetProfile(),
                                              ServiceAccessType::EXPLICIT_ACCESS)
       .get();

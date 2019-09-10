@@ -22,7 +22,7 @@ class FaceDetectionProviderMac
   // mojom::FaceDetectionProvider.
   static void Create(mojom::FaceDetectionProviderRequest request);
 
-  void CreateFaceDetection(mojom::FaceDetectionRequest request,
+  void CreateFaceDetection(mojo::PendingReceiver<mojom::FaceDetection> receiver,
                            mojom::FaceDetectorOptionsPtr options) override;
 
  private:

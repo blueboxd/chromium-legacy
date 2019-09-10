@@ -52,6 +52,14 @@ static_library("base") {
   }
 }
 
+if (is_android) {
+  java_cpp_enum("signin_metrics_enum_javagen") {
+    sources = [
+      "signin_metrics.h",
+    ]
+  }
+}
+
 static_library("test_support") {
   testonly = true
   sources = [

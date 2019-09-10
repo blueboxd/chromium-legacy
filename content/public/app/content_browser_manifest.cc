@@ -244,7 +244,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.PictureInPictureService",
                   "blink.mojom.Portal",
                   "blink.mojom.PrefetchURLLoaderService",
-                  "blink.mojom.PresentationService",
                   "blink.mojom.QuotaDispatcherHost",
                   "blink.mojom.SerialService",
                   "blink.mojom.SharedWorkerConnector",

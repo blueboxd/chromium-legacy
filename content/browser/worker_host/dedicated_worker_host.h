@@ -15,11 +15,11 @@
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom-forward.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom-forward.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom-forward.h"
 #include "third_party/blink/public/mojom/websockets/websocket_connector.mojom-forward.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host.mojom.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom.h"
+#include "third_party/blink/public/mojom/worker/subresource_loader_updater.mojom.h"
 
 namespace url {
 class Origin;
@@ -185,7 +185,7 @@ class DedicatedWorkerHost final
   // For observing Network Service connection errors only.
   network::mojom::URLLoaderFactoryPtr
       network_service_connection_error_handler_holder_;
-  mojo::Remote<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+  mojo::Remote<blink::mojom::SubresourceLoaderUpdater>
       subresource_loader_updater_;
 
   base::WeakPtrFactory<DedicatedWorkerHost> weak_factory_{this};

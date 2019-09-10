@@ -323,6 +323,8 @@ class CORE_EXPORT StyleResolver final
   bool print_media_type_ = false;
   bool was_viewport_resized_ = false;
   DISALLOW_COPY_AND_ASSIGN(StyleResolver);
+
+  FRIEND_TEST_ALL_PREFIXES(ComputedStyleTest, ApplyInternalLightDarkColor);
 };
 
 }  // namespace blink

@@ -42,6 +42,24 @@ std::unique_ptr<std::vector<gfx::Rect>> GetHitTestShapeRects(Surface* surface) {
   return rects;
 }
 
+class SurfaceObserverForTest : public SurfaceObserver {
+ public:
+  SurfaceObserverForTest() = default;
+
+  void OnSurfaceDestroying(Surface* surface) override {}
+
+  void OnWindowOcclusionChanged(Surface* surface) override {
+    num_occlusion_changes_++;
+  }
+
+  int num_occlusion_changes() const { return num_occlusion_changes_; }
+
+ private:
+  int num_occlusion_changes_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(SurfaceObserverForTest);
+};
+
 class SurfaceTest : public test::ExoTestBase,
                     public ::testing::WithParamInterface<float> {
  public:
@@ -943,6 +961,37 @@ TEST_P(SurfaceTest, AcquireFence) {
   EXPECT_TRUE(surface->HasPendingAcquireFence());
   surface->Commit();
   EXPECT_FALSE(surface->HasPendingAcquireFence());
+}
+
+TEST_P(SurfaceTest, UpdatesOcclusionOnDestroyingSubsurface) {
+  gfx::Size buffer_size(256, 512);
+  auto buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  gfx::Size child_buffer_size(64, 128);
+  auto child_buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(child_buffer_size));
+  auto child_surface = std::make_unique<Surface>();
+  auto sub_surface =
+      std::make_unique<SubSurface>(child_surface.get(), surface.get());
+  child_surface->Attach(child_buffer.get());
+  child_surface->Commit();
+  surface->Commit();
+
+  // Turn on occlusion tracking.
+  child_surface->SetOcclusionTracking(true);
+  SurfaceObserverForTest observer;
+  ScopedSurface scoped_child_surface(child_surface.get(), &observer);
+
+  // Destroy the subsurface and expect to get an occlusion update.
+  sub_surface.reset();
+  EXPECT_EQ(1, observer.num_occlusion_changes());
+  EXPECT_EQ(aura::Window::OcclusionState::HIDDEN,
+            child_surface->window()->occlusion_state());
 }
 
 }  // namespace

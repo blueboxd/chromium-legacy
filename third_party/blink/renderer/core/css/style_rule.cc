@@ -40,7 +40,7 @@
 
 namespace blink {
 
-struct SameSizeAsStyleRuleBase
+struct SameSizeAsStyleRuleBase final
     : public GarbageCollectedFinalized<SameSizeAsStyleRuleBase> {
   unsigned bitfields;
 };

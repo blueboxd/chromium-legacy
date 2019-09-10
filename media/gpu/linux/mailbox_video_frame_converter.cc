@@ -9,7 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/task/post_task.h"
-#include "media/gpu/format_utils.h"
+#include "media/base/format_utils.h"
 #include "media/gpu/linux/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
 #include "ui/gfx/gpu_memory_buffer.h"

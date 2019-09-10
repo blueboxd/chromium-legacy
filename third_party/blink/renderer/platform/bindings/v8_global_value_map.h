@@ -98,17 +98,16 @@ class V8GlobalValueMapTraits {
  * A map for safely storing persistent V8 values, based on
  * v8::GlobalValueMap.
  */
-template <typename KeyType,
-          typename ValueType,
-          v8::PersistentContainerCallbackType type>
-class V8GlobalValueMap : public v8::GlobalValueMap<
-                             KeyType,
-                             ValueType,
-                             V8GlobalValueMapTraits<KeyType, ValueType, type>> {
+template <typename KeyType, typename ValueType>
+class V8GlobalValueMap
+    : public v8::GlobalValueMap<
+          KeyType,
+          ValueType,
+          V8GlobalValueMapTraits<KeyType, ValueType, v8::kNotWeak>> {
   DISALLOW_NEW();
 
  public:
-  typedef V8GlobalValueMapTraits<KeyType, ValueType, type> Traits;
+  typedef V8GlobalValueMapTraits<KeyType, ValueType, v8::kNotWeak> Traits;
   explicit V8GlobalValueMap(v8::Isolate* isolate)
       : v8::GlobalValueMap<KeyType, ValueType, Traits>(isolate) {}
   V8GlobalValueMap(v8::Isolate* isolate, const char* label)

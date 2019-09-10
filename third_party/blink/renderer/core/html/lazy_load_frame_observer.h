@@ -20,7 +20,7 @@ class HTMLFrameOwnerElement;
 class ResourceRequest;
 class Visitor;
 
-class LazyLoadFrameObserver
+class LazyLoadFrameObserver final
     : public GarbageCollectedFinalized<LazyLoadFrameObserver> {
  public:
   // This enum is logged to histograms, so values should not be reordered or

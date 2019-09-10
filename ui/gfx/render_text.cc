@@ -1589,7 +1589,7 @@ int RenderText::DetermineBaselineCenteringText(const int display_height,
   const int space =
       display_height - ((internal_leading != 0) ? cap_height : font_height);
   const int baseline_shift = space / 2 - internal_leading;
-  return baseline + std::max(min_shift, std::min(max_shift, baseline_shift));
+  return baseline + base::ClampToRange(baseline_shift, min_shift, max_shift);
 }
 
 // static

@@ -7,9 +7,32 @@
 
 #import <UIKit/UIKit.h>
 
+// Describes the possible scene states.
+// This is an iOS 12 compatible version of UISceneActivationState enum.
+typedef NS_ENUM(NSUInteger, SceneActivationLevel) {
+  // The scene is not connected and has no window.
+  SceneActivationLevelUnattached = 0,
+  // The scene is connected, and has a window associated with it. The window is
+  // not visible to the user, except possibly in the app switcher.
+  SceneActivationLevelBackground,
+  // The scene is connected, and its window is on screen, but it's not active
+  // for user input. For example, keyboard events would not be sent to this
+  // window.
+  SceneActivationLevelForegroundInactive,
+  // The scene is connected, has a window, and receives user events.
+  SceneActivationLevelForegroundActive
+};
+
 // An object containing the state of a UIWindowScene. One state object
 // corresponds to one scene.
 @interface SceneState : NSObject
+
+// The current activation level.
+@property(nonatomic, assign) SceneActivationLevel activationLevel;
+
+// Window for the associated scene, if any.
+@property(nonatomic, weak) UIWindow* window;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_MAIN_SCENE_STATE_H_

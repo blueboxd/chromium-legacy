@@ -148,6 +148,10 @@ bool PasswordForm::IsSingleUsername() const {
          !HasNewPasswordElement();
 }
 
+bool PasswordForm::IsUsingAccountStore() const {
+  return from_store == Store::kAccountStore;
+}
+
 bool PasswordForm::operator==(const PasswordForm& form) const {
   return scheme == form.scheme && signon_realm == form.signon_realm &&
          origin == form.origin && action == form.action &&

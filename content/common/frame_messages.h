@@ -1504,10 +1504,9 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_RenderFallbackContentInParentProcess)
 // Used to go to the session history entry at the given offset (ie, -1 will
 // return the "back" item). This message affects a view and not just a frame,
 // but is sent on the frame channel for attribution purposes.
-IPC_MESSAGE_ROUTED3(FrameHostMsg_GoToEntryAtOffset,
+IPC_MESSAGE_ROUTED2(FrameHostMsg_GoToEntryAtOffset,
                     int /* offset (from current) of history item to get */,
-                    bool /* has_user_gesture */,
-                    bool /* from_script */)
+                    bool /* has_user_gesture */)
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 

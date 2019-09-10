@@ -11,6 +11,7 @@ include_rules = [
     "+base/sampling_heap_profiler/poisson_allocation_sampler.h",
     "+base/synchronization/lock.h",
     "+base/task_runner.h",
+    "+base/template_util.h",
 
     "+third_party/blink/renderer/platform/bindings",
     "+third_party/blink/renderer/platform/instrumentation/histogram.h",

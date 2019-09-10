@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/presentation/presentation_controller.h"
 
 #include <memory>
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -153,14 +154,11 @@ PresentationController::FindExistingConnection(
 
 mojo::Remote<mojom::blink::PresentationService>&
 PresentationController::GetPresentationService() {
-  if (!presentation_service_remote_ && GetFrame() && GetFrame()->Client()) {
-    auto* interface_provider = GetFrame()->Client()->GetInterfaceProvider();
-
+  if (!presentation_service_remote_ && GetFrame()) {
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
         GetFrame()->GetTaskRunner(TaskType::kPresentation);
-    interface_provider->GetInterface(
+    GetFrame()->GetBrowserInterfaceBroker().GetInterface(
         presentation_service_remote_.BindNewPipeAndPassReceiver(task_runner));
-
     presentation_service_remote_->SetController(
         presentation_controller_receiver_.BindNewPipeAndPassRemote(
             task_runner));

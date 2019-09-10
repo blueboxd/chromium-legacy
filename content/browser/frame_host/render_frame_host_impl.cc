@@ -4312,16 +4312,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       base::BindRepeating(&PermissionServiceContext::CreateService,
                           base::Unretained(permission_service_context_.get())));
 
-  registry_->AddInterface(base::BindRepeating(
-      [](RenderFrameHostImpl* frame,
-         mojo::PendingReceiver<blink::mojom::PresentationService> receiver) {
-        if (!frame->presentation_service_)
-          frame->presentation_service_ = PresentationServiceImpl::Create(frame);
-
-        frame->presentation_service_->Bind(std::move(receiver));
-      },
-      base::Unretained(this)));
-
   registry_->AddInterface(
       base::Bind(&MediaSessionServiceImpl::Create, base::Unretained(this)));
 
@@ -6343,6 +6333,13 @@ void RenderFrameHostImpl::GetIdleManager(
   static_cast<StoragePartitionImpl*>(GetProcess()->GetStoragePartition())
       ->GetIdleManager()
       ->CreateService(std::move(receiver));
+}
+
+void RenderFrameHostImpl::GetPresentationService(
+    mojo::PendingReceiver<blink::mojom::PresentationService> receiver) {
+  if (!presentation_service_)
+    presentation_service_ = PresentationServiceImpl::Create(this);
+  presentation_service_->Bind(std::move(receiver));
 }
 
 void RenderFrameHostImpl::GetSpeechSynthesis(

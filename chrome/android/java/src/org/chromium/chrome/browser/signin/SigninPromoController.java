@@ -21,6 +21,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.metrics.ImpressionTracker;
 import org.chromium.chrome.browser.metrics.OneShotImpressionListener;
 import org.chromium.chrome.browser.signin.SigninActivity.AccessPoint;
+import org.chromium.components.signin.metrics.SigninAccessPoint;
 
 /**
  * A controller for configuring the sign in promo. It sets up the sign in promo depending on the

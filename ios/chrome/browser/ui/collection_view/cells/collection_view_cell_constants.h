@@ -10,17 +10,14 @@
 // The amount of padding at the top and bottom of UIKit-style cells.
 const CGFloat kUIKitVerticalPadding = 16;
 
-// The font size and color to use for main text in UIKit-style cells.
-const int kUIKitMainTextColor = 0x000000;
+// The font size to use for main text in UIKit-style cells.
 const CGFloat kUIKitMainFontSize = 17;
 
-// The font size and color to use for detail text that is on the trailing edge
+// The font size to use for detail text that is on the trailing edge
 // of the top line.
-const int kUIKitDetailTextColor = 0x767676;
 const CGFloat kUIKitDetailFontSize = 17;
 
-// The font size and color to use for detail text that is on its own line.
-const int kUIKitMultilineDetailTextColor = 0x767676;
+// The font size to use for detail text that is on its own line.
 const CGFloat kUIKitMultilineDetailFontSize = 12;
 
 // The font size and color to use for footer text in UIKit-style cells.

@@ -135,7 +135,11 @@ ErrorRetryCommand ErrorRetryStateMachine::DidFinishNavigation(
   switch (state_) {
     case ErrorRetryState::kLoadingPlaceholder:
       // (1) Placeholder load for initial failure succeeded.
-      DCHECK_EQ(web_view_url, CreatePlaceholderUrlForUrl(url_));
+      if (@available(iOS 13, *)) {
+        // This DCHECK is hit on iOS 12 when navigating to restricted URL. See
+        // crbug.com/1000366 for more details.
+        DCHECK_EQ(web_view_url, CreatePlaceholderUrlForUrl(url_));
+      }
       state_ = ErrorRetryState::kReadyToDisplayError;
       return ErrorRetryCommand::kLoadError;
 

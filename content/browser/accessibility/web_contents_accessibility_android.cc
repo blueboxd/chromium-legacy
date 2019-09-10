@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/ranges.h"
 #include "content/browser/accessibility/browser_accessibility_android.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
@@ -932,7 +933,7 @@ jboolean WebContentsAccessibilityAndroid::AdjustSlider(
   // Slider does not move if the delta value is less than 1.
   delta = ((delta < 1) ? 1 : delta);
   value += (increment ? delta : -delta);
-  value = std::max(std::min(value, max), min);
+  value = base::ClampToRange(value, min, max);
   if (value != original_value) {
     node->manager()->SetValue(*node, base::NumberToString(value));
     return true;

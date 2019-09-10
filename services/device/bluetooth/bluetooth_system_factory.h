@@ -20,7 +20,7 @@ class BluetoothSystemFactory : public mojom::BluetoothSystemFactory {
   ~BluetoothSystemFactory() override;
 
   // mojom::BluetoothSystemFactory
-  void Create(mojom::BluetoothSystemRequest system_request,
+  void Create(mojo::PendingReceiver<mojom::BluetoothSystem> system_receiver,
               mojom::BluetoothSystemClientPtr system_client) override;
 
  private:

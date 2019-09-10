@@ -93,7 +93,7 @@ class SyncBackendRegistrarTest : public testing::Test {
     }
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   base::Thread db_thread_;
   base::Thread sync_thread_;
 

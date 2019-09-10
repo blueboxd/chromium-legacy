@@ -49,10 +49,6 @@ QUIC_FLAG(double, FLAGS_quic_bbr_rtt_variation_weight, 0.0f)
 // Congestion window gain for QUIC BBR during PROBE_BW phase.
 QUIC_FLAG(double, FLAGS_quic_bbr_cwnd_gain, 2.0f)
 
-// Simplify QUIC\'s adaptive time loss detection to measure the necessary
-// reordering window for every spurious retransmit.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_adaptive_time_loss, false)
-
 // If true, adjust congestion window when doing bandwidth resumption in BBR.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_fix_bbr_cwnd_in_bandwidth_resumption,
@@ -125,13 +121,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_pcc3, false)
 // When true, ensure BBR allows at least one MSS to be sent in response to an
 // ACK in packet conservation.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_one_mss_conservation, false)
-
-// When true, the LOSS connection option allows for 1/8 RTT of reording instead
-// of the current 1/8th threshold which has been found to be too large for fast
-// loss recovery.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_eighth_rtt_loss_detection,
-          false)
 
 // Enables the BBQ5 connection option, which forces saved aggregation values to
 // expire when the bandwidth increases more than 25% in QUIC BBR STARTUP.
@@ -216,19 +205,11 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_ignore_tlpr_if_no_pending_stream_data,
           true)
 
-// When true, QuicDispatcher will drop packets that have an initial destination
-// connection ID that is too short, instead of responding with a Version
-// Negotiation packet to reject it.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_drop_invalid_small_initial_connection_id,
-    true)
-
 // When true, QUIC Version Negotiation packets will randomly include fake
 // versions.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_version_negotiation_grease,
-          true)
+          false)
 
 // If true, use predictable version negotiation versions.
 QUIC_FLAG(bool, FLAGS_quic_disable_version_negotiation_grease_randomness, false)
@@ -311,7 +292,7 @@ QUIC_FLAG(
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_negotiate_ack_delay_time, false)
 
 // When true, QuicDispatcher will always use QuicFramer::ParsePublicHeader
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_parse_public_header, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_parse_public_header, true)
 
 // If true, QuicFramer::WriteClientVersionNegotiationProbePacket uses
 // length-prefixed connection IDs.
@@ -328,13 +309,13 @@ QUIC_FLAG(bool,
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_add_upper_limit_of_buffered_control_frames,
-    true)
+    false)
 
 // If true, static streams should never be closed before QuicSession
 // destruction.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_active_streams_never_negative,
-          true)
+          false)
 
 // If true and FIFO connection option is received, write_blocked_streams uses
 // FIFO(stream with smallest ID has highest priority) write scheduler.
@@ -363,33 +344,33 @@ QUIC_FLAG(
 // closed streams whose highest byte offset is not received yet.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_aggressive_connection_aliveness,
-          true)
+          false)
 
 // If true, QuicStreamSequencer will not take in new data if the stream is
 // reset.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_no_stream_data_after_reset,
-          true)
+          false)
 
 // When true, QuicDispatcher::MaybeDispatchPacket will use
 // packet_info.use_length_prefix instead of an incorrect local computation.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_use_length_prefix_from_packet_info,
-          false)
+          true)
 
 // If true, enable IETF style probe timeout.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_pto, true)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_pto, false)
 
 // When true, QuicFramer will use QueueUndecryptablePacket on all QUIC versions.
 QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_framer_uses_undecryptable_upcall,
-          false)
+          true)
 
 // When true, QuicUtils::GenerateStatelessResetToken will hash connection IDs
 // instead of XORing the bytes
 QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_use_hashed_stateless_reset_tokens,
-          false)
+          true)
 
 // This flag enables a temporary workaround which makes us reply to a specific
 // invalid packet that is sent by an Android UDP network conformance test.

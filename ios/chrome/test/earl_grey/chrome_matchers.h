@@ -163,9 +163,20 @@ id<GREYMatcher> SyncSettingsConfirmButton();
 // Returns matcher for the "Payment Methods" button in the settings menu.
 id<GREYMatcher> PaymentMethodsButton();
 
+// Returns matcher for the "Add Credit Card" view in the Settings menu.
+id<GREYMatcher> AddCreditCardView();
+
 // Returns matcher for the "Add Payment Method" button in the Settings Payment
 // Methods view.
 id<GREYMatcher> AddPaymentMethodButton();
+
+// Returns matcher for the "Add" credit card button in the Payment
+// Methods add credit card view.
+id<GREYMatcher> AddCreditCardButton();
+
+// Returns matcher for the "Cancel" button in the Payment Methods add credit
+// card view.
+id<GREYMatcher> AddCreditCardCancelButton();
 
 // Returns matcher for the tools menu table view.
 id<GREYMatcher> ToolsMenuView();

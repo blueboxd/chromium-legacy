@@ -107,7 +107,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
         preference_watcher_receiver,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders,
-    mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+    mojo::PendingReceiver<blink::mojom::SubresourceLoaderUpdater>
         subresource_loader_updater,
     const GURL& script_url_to_skip_throttling,
     scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner)

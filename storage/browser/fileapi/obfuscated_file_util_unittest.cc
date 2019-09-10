@@ -29,7 +29,6 @@
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/browser/fileapi/file_system_backend.h"
 #include "storage/browser/fileapi/file_system_context.h"
-#include "storage/browser/fileapi/file_system_features.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/fileapi/file_system_usage_cache.h"
 #include "storage/browser/fileapi/obfuscated_file_util.h"
@@ -71,7 +70,7 @@ namespace content {
 
 namespace {
 
-enum TestMode { kRegular, kIncognitoDisabled, kIncognitoEnabled };
+enum TestMode { kRegular, kIncognito };
 
 bool FileExists(const base::FilePath& path) {
   return base::PathExists(path) && !base::DirectoryExists(path);
@@ -174,22 +173,9 @@ class ObfuscatedFileUtilTest : public testing::Test,
         type_(storage::kFileSystemTypeTemporary),
         sandbox_file_system_(origin_, type_),
         quota_status_(blink::mojom::QuotaStatusCode::kUnknown),
-        usage_(-1) {
-    if (GetParam() == TestMode::kRegular) {
-      is_incognito_ = false;
-      return;
-    }
-    is_incognito_ = true;
-    if (GetParam() == TestMode::kIncognitoDisabled) {
-      feature_list_.InitAndDisableFeature(
-          storage::features::kEnableFilesystemInIncognito);
-    } else {
-      feature_list_.InitAndEnableFeature(
-          storage::features::kEnableFilesystemInIncognito);
-    }
-  }
+        usage_(-1) {}
 
-  bool in_memory_test() { return GetParam() == TestMode::kIncognitoEnabled; }
+  bool is_incognito() { return GetParam() == TestMode::kIncognito; }
 
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
@@ -197,7 +183,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
     storage_policy_ = new MockSpecialStoragePolicy();
 
     quota_manager_ = new storage::QuotaManager(
-        is_incognito_, data_dir_.GetPath(),
+        is_incognito(), data_dir_.GetPath(),
         base::ThreadTaskRunnerHandle::Get().get(), storage_policy_.get(),
         storage::GetQuotaSettingsFunc());
     storage::QuotaSettings settings;
@@ -212,24 +198,24 @@ class ObfuscatedFileUtilTest : public testing::Test,
     // another sandbox_backend, and another OFU.
     // We need to pass in the context to skip all that.
     file_system_context_ =
-        in_memory_test() ? CreateIncognitoFileSystemContextForTesting(
-                               base::ThreadTaskRunnerHandle::Get(),
-                               base::ThreadTaskRunnerHandle::Get(),
-                               quota_manager_->proxy(), data_dir_.GetPath())
-                         : CreateFileSystemContextForTesting(
-                               quota_manager_->proxy(), data_dir_.GetPath());
+        is_incognito() ? CreateIncognitoFileSystemContextForTesting(
+                             base::ThreadTaskRunnerHandle::Get(),
+                             base::ThreadTaskRunnerHandle::Get(),
+                             quota_manager_->proxy(), data_dir_.GetPath())
+                       : CreateFileSystemContextForTesting(
+                             quota_manager_->proxy(), data_dir_.GetPath());
 
     sandbox_file_system_.SetUp(file_system_context_.get());
 
     change_observers_ =
         storage::MockFileChangeObserver::CreateList(&change_observer_);
 
-    if (is_incognito_)
+    if (is_incognito())
       incognito_leveldb_environment_ = leveldb_chrome::NewMemEnv("FileSystem");
   }
 
   void TearDown() override {
-    if (in_memory_test())
+    if (is_incognito())
       ASSERT_TRUE(IsDirectoryEmpty(data_dir_.GetPath()));
 
     quota_manager_ = nullptr;
@@ -289,8 +275,8 @@ class ObfuscatedFileUtilTest : public testing::Test,
     return std::unique_ptr<ObfuscatedFileUtil>(
         ObfuscatedFileUtil::CreateForTesting(
             storage_policy, data_dir_path(),
-            is_incognito_ ? incognito_leveldb_environment_.get() : nullptr,
-            is_incognito_));
+            is_incognito() ? incognito_leveldb_environment_.get() : nullptr,
+            is_incognito()));
   }
 
   ObfuscatedFileUtil* ofu() {
@@ -390,14 +376,14 @@ class ObfuscatedFileUtilTest : public testing::Test,
     EXPECT_EQ(base::File::FILE_OK,
               ofu()->GetFileInfo(context.get(), url, &file_info0, &data_path));
     EXPECT_EQ(data_path, local_path);
-    EXPECT_EQ(!in_memory_test(), FileExists(data_path));
+    EXPECT_EQ(!is_incognito(), FileExists(data_path));
 
     const char data[] = "test data";
     const int length = base::size(data) - 1;
 
     base::File file = ofu()->CreateOrOpen(
         context.get(), url, base::File::FLAG_WRITE | base::File::FLAG_OPEN);
-    if (in_memory_test()) {
+    if (is_incognito()) {
       ASSERT_FALSE(file.IsValid());
       auto* memory_delegate =
           static_cast<storage::ObfuscatedFileUtilMemoryDelegate*>(
@@ -414,7 +400,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
     }
 
     base::File::Info file_info1;
-    if (!in_memory_test())
+    if (!is_incognito())
       EXPECT_EQ(length, GetLocalFileSize(data_path));
     EXPECT_EQ(length, GetPathSize(url));
     context.reset(NewContext(nullptr));
@@ -825,13 +811,12 @@ class ObfuscatedFileUtilTest : public testing::Test,
   void CheckFileSize(FileSystemURL& url,
                      base::FilePath& local_path,
                      int64_t expected_size) {
-    if (!in_memory_test())
+    if (!is_incognito())
       EXPECT_EQ(expected_size, GetLocalFileSize(local_path));
     EXPECT_EQ(expected_size, GetPathSize(url));
   }
 
  protected:
-  bool is_incognito_;
   base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<leveldb::Env> incognito_leveldb_environment_;
   base::test::TaskEnvironment task_environment_;
@@ -855,8 +840,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
 INSTANTIATE_TEST_SUITE_P(,
                          ObfuscatedFileUtilTest,
                          testing::Values(TestMode::kRegular,
-                                         TestMode::kIncognitoDisabled,
-                                         TestMode::kIncognitoEnabled));
+                                         TestMode::kIncognito));
 
 TEST_P(ObfuscatedFileUtilTest, TestCreateAndDeleteFile) {
   FileSystemURL url = CreateURLFromUTF8("fake/file");
@@ -897,7 +881,7 @@ TEST_P(ObfuscatedFileUtilTest, TestCreateAndDeleteFile) {
   base::FilePath local_path;
   EXPECT_EQ(base::File::FILE_OK,
             ofu()->GetLocalFilePath(context.get(), url, &local_path));
-  EXPECT_EQ(!in_memory_test(), base::PathExists(local_path));
+  EXPECT_NE(is_incognito(), base::PathExists(local_path));
   EXPECT_TRUE(PathExists(url));
 
   // Verify that deleting a file isn't stopped by zero quota, and that it frees
@@ -934,7 +918,7 @@ TEST_P(ObfuscatedFileUtilTest, TestCreateAndDeleteFile) {
   context.reset(NewContext(nullptr));
   EXPECT_EQ(base::File::FILE_OK,
             ofu()->GetLocalFilePath(context.get(), url, &local_path));
-  EXPECT_EQ(!in_memory_test(), base::PathExists(local_path));
+  EXPECT_NE(is_incognito(), base::PathExists(local_path));
   EXPECT_TRUE(PathExists(url));
 
   context.reset(NewContext(nullptr));
@@ -1025,7 +1009,7 @@ TEST_P(ObfuscatedFileUtilTest, MAYBE_TestQuotaOnTruncation) {
     ASSERT_EQ(1019, ComputeTotalFileSize());
   }
 
-  if (!in_memory_test()) {
+  if (!is_incognito()) {
     // Delete backing file to make following truncation fail.
     base::FilePath local_path;
     ASSERT_EQ(
@@ -2395,7 +2379,7 @@ TEST_P(ObfuscatedFileUtilTest, TestQuotaOnOpen) {
   // TODO(https://crbug.com/936722): After CreateOrOpen is modified to return
   // file error instead of file, the in-memory test can proceed through the next
   // steps.
-  if (in_memory_test())
+  if (is_incognito())
     return;
 
   // Opening it with CREATE_ALWAYS flag, which should truncate the file size.

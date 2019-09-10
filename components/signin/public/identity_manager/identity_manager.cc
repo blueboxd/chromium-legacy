@@ -402,12 +402,6 @@ DiagnosticsProvider* IdentityManager::GetDiagnosticsProvider() {
   return diagnostics_provider_.get();
 }
 
-#if defined(OS_IOS)
-void IdentityManager::ForceTriggerOnCookieChange() {
-  gaia_cookie_manager_service_->ForceOnCookieChangeProcessing();
-}
-#endif
-
 #if defined(OS_ANDROID)
 void IdentityManager::LegacyReloadAccountsFromSystem() {
   token_service_->GetDelegate()->ReloadAccountsFromSystem(

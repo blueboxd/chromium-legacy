@@ -36,9 +36,8 @@ class Element;
 class RuleSet;
 class StyleSheetContents;
 
-class CSSDefaultStyleSheets
+class CSSDefaultStyleSheets final
     : public GarbageCollectedFinalized<CSSDefaultStyleSheets> {
-
  public:
   CORE_EXPORT static CSSDefaultStyleSheets& Instance();
 

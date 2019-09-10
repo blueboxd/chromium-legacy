@@ -22,6 +22,12 @@
 #error "This file requires ARC support."
 #endif
 
+NSString* const kAddCreditCardViewID = @"kAddCreditCardViewID";
+NSString* const kSettingsAddCreditCardButtonID =
+    @"kSettingsAddCreditCardButtonID";
+NSString* const kSettingsAddCreditCardCancelButtonID =
+    @"kSettingsAddCreditCardCancelButtonID";
+
 namespace {
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
@@ -83,6 +89,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [super viewDidLoad];
 
   self.view.backgroundColor = UIColor.cr_systemGroupedBackgroundColor;
+  self.tableView.accessibilityIdentifier = kAddCreditCardViewID;
 
   self.navigationItem.title = l10n_util::GetNSString(
       IDS_IOS_CREDIT_CARD_SETTINGS_ADD_PAYMENT_METHOD_TITLE);
@@ -93,6 +100,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
               style:UIBarButtonItemStylePlain
              target:self
              action:@selector(handleCancelButton:)];
+  self.navigationItem.leftBarButtonItem.accessibilityIdentifier =
+      kSettingsAddCreditCardCancelButtonID;
 
   self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]
       initWithTitle:l10n_util::GetNSString(IDS_IOS_NAVIGATION_BAR_ADD_BUTTON)
@@ -100,6 +109,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
              target:self
              action:@selector(didTapAddButton:)];
   self.navigationItem.rightBarButtonItem.enabled = NO;
+  self.navigationItem.rightBarButtonItem.accessibilityIdentifier =
+      kSettingsAddCreditCardButtonID;
 
   [self loadModel];
 }
@@ -178,6 +189,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   cameraButtonItem.text = l10n_util::GetNSString(
       IDS_IOS_AUTOFILL_ADD_CREDIT_CARD_OPEN_CAMERA_BUTTON_LABEL);
   cameraButtonItem.textAlignment = NSTextAlignmentCenter;
+  cameraButtonItem.accessibilityTraits |= UIAccessibilityTraitButton;
   if (base::FeatureList::IsEnabled(kCreditCardScanner)) {
     if (@available(iOS 13, *)) {
       [model addSectionWithIdentifier:SectionIdentifierCameraButton];

@@ -16,7 +16,6 @@
 #include "base/rand_util.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/fileapi/file_system_url_loader_factory.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -34,7 +33,6 @@
 #include "services/network/test/test_url_loader_client.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/browser/fileapi/file_system_context.h"
-#include "storage/browser/fileapi/file_system_features.h"
 #include "storage/browser/fileapi/file_system_file_util.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
@@ -58,7 +56,7 @@ using storage::FileSystemURL;
 namespace content {
 namespace {
 
-enum class TestMode { kRegular, kIncognito, kRegularWithIncognitoEnabled };
+enum class TestMode { kRegular, kIncognito };
 
 // We always use the TEMPORARY FileSystem in these tests.
 const char kFileSystemURLPrefix[] = "filesystem:http://remote/temporary/";
@@ -161,20 +159,8 @@ class FileSystemURLLoaderFactoryTest
     : public ContentBrowserTest,
       public ::testing::WithParamInterface<TestMode> {
  protected:
-  FileSystemURLLoaderFactoryTest() : file_util_(nullptr) {
-    std::vector<base::Feature> features;
-    if (GetParam() == TestMode::kIncognito ||
-        GetParam() == TestMode::kRegularWithIncognitoEnabled) {
-      features.push_back(storage::features::kEnableFilesystemInIncognito);
-    }
-    feature_list_.InitWithFeatures(features, std::vector<base::Feature>());
-  }
+  FileSystemURLLoaderFactoryTest() : file_util_(nullptr) {}
   ~FileSystemURLLoaderFactoryTest() override = default;
-
-  bool IsInMemoryFileSystemEnabled() {
-    return base::FeatureList::IsEnabled(
-        storage::features::kEnableFilesystemInIncognito);
-  }
 
   bool IsIncognito() { return GetParam() == TestMode::kIncognito; }
 
@@ -483,7 +469,6 @@ class FileSystemURLLoaderFactoryTest
     return client;
   }
 
-  base::test::ScopedFeatureList feature_list_;
   scoped_refptr<MockSpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
@@ -494,12 +479,10 @@ class FileSystemURLLoaderFactoryTest
   DISALLOW_COPY_AND_ASSIGN(FileSystemURLLoaderFactoryTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(
-    ,
-    FileSystemURLLoaderFactoryTest,
-    testing::Values(TestMode::kRegular,
-                    TestMode::kIncognito,
-                    TestMode::kRegularWithIncognitoEnabled));
+INSTANTIATE_TEST_SUITE_P(,
+                         FileSystemURLLoaderFactoryTest,
+                         testing::Values(TestMode::kRegular,
+                                         TestMode::kIncognito));
 
 IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest, DirectoryListing) {
   base::ScopedAllowBlockingForTesting allow_blocking;
@@ -592,30 +575,11 @@ IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest, Incognito) {
 
   auto client =
       TestLoadWithContext(CreateFileSystemURL("/"), file_system_context.get());
-  if (IsInMemoryFileSystemEnabled()) {
-    // When in-memory file system is enabled, the request fails as the requested
-    // directory does not exist in in-memory obfuscated file system.
-    ASSERT_FALSE(client->has_received_response());
-    ASSERT_TRUE(client->has_received_completion());
-    EXPECT_EQ(net::ERR_FILE_NOT_FOUND, client->completion_status().error_code);
-  } else {
-    ASSERT_TRUE(client->has_received_response());
-    ASSERT_TRUE(client->has_received_completion());
-
-    std::string response_text = ReadDataPipe(client->response_body_release());
-    EXPECT_GT(response_text.size(), 0ul);
-
-    std::istringstream in(response_text);
-
-    int num_entries = 0;
-    std::string line;
-    while (!!std::getline(in, line)) {
-      if (IsDirectoryListingLine(line))
-        num_entries++;
-    }
-
-    EXPECT_EQ(0, num_entries);
-  }
+  // The request fails as the requested directory does not exist in in-memory
+  // obfuscated file system.
+  ASSERT_FALSE(client->has_received_response());
+  ASSERT_TRUE(client->has_received_completion());
+  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, client->completion_status().error_code);
 
   client = TestLoadWithContext(CreateFileSystemURL("foo"),
                                file_system_context.get());

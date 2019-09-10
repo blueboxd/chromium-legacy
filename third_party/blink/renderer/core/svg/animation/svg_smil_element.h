@@ -81,7 +81,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   SMILTime Elapsed() const;
 
   SMILTime IntervalBegin() const { return interval_.begin; }
-  SMILTime PreviousIntervalBegin() const { return previous_interval_begin_; }
+  SMILTime PreviousIntervalBegin() const { return previous_interval_.begin; }
   SMILTime SimpleDuration() const;
 
   bool NeedsToProgress(double elapsed);
@@ -189,6 +189,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   SMILTime ResolveActiveEnd(SMILTime resolved_begin,
                             SMILTime resolved_end) const;
   SMILTime RepeatingDuration() const;
+  const SMILInterval& GetActiveInterval(double elapsed) const;
 
   base::Optional<SMILInterval> CheckForNewRestartInterval(double elapsed);
   void BeginListChanged(SMILTime event_time);
@@ -278,8 +279,9 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
   // This is the upcoming or current interval
   SMILInterval interval_;
-
-  SMILTime previous_interval_begin_;
+  // This is the previous interval. It should always be non-overlapping and
+  // "before" |interval_|.
+  SMILInterval previous_interval_;
 
   unsigned active_state_ : 2;
   unsigned restart_ : 2;

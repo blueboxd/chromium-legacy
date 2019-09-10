@@ -322,6 +322,12 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // bookmarks can not be cleared.
 - (void)clearBookmarks;
 
+#pragma mark - URL Utilities (EG2)
+
+// Returns the title string to be used for a page with |URL| if that page
+// doesn't specify a title.
+- (NSString*)displayTitleForURL:(const GURL&)URL;
+
 #pragma mark - JavaScript Utilities (EG2)
 
 // Executes JavaScript on current WebState, and waits for either the completion

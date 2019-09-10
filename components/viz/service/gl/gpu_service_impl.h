@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_VIZ_SERVICE_GL_GPU_SERVICE_IMPL_H_
 #define COMPONENTS_VIZ_SERVICE_GL_GPU_SERVICE_IMPL_H_
 
+#include <memory>
+#include <string>
+
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_refptr.h"
@@ -225,6 +228,8 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   }
   gpu::Scheduler* scheduler() { return scheduler_.get(); }
 
+  base::TaskRunner* main_runner() { return main_runner_.get(); }
+
   gpu::GpuWatchdogThread* watchdog_thread() { return watchdog_thread_.get(); }
 
   const gpu::GpuFeatureInfo& gpu_feature_info() const {
@@ -340,6 +345,12 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   // Used to track the task to bind a GpuServiceRequest on the io thread.
   base::CancelableTaskTracker bind_task_tracker_;
   std::unique_ptr<mojo::BindingSet<mojom::GpuService>> bindings_;
+
+#if defined(OS_WIN)
+  // Used to track if the Dx Diag task on a different thread is still running.
+  // The status is checked before exiting the unsandboxed GPU process.
+  bool long_dx_task_different_thread_in_progress_ = false;
+#endif
 
 #if defined(OS_CHROMEOS)
   scoped_refptr<arc::ProtectedBufferManager> protected_buffer_manager_;

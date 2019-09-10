@@ -91,8 +91,8 @@ void UDPSocketPerfTest::WritePacketsToSocket(UDPClientSocket* socket,
 }
 
 void UDPSocketPerfTest::WriteBenchmark(bool use_nonblocking_io) {
-  base::test::TaskEnvironment task_environment(
-      base::test::TaskEnvironment::MainThreadType::IO);
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO);
   const uint16_t kPort = 9999;
 
   // Setup the server to listen.

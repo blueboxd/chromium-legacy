@@ -5,6 +5,7 @@
 #include "components/exo/shell_surface_util.h"
 
 #include "base/trace_event/trace_event.h"
+#include "components/exo/shell_surface_base.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
 #include "ui/aura/client/capture_client.h"
@@ -61,6 +62,16 @@ void SetShellMainSurface(aura::Window* window, Surface* surface) {
 
 Surface* GetShellMainSurface(const aura::Window* window) {
   return window->GetProperty(kMainSurfaceKey);
+}
+
+ShellSurfaceBase* GetShellSurfaceBaseForWindow(aura::Window* window) {
+  // Only windows with a surface can have a shell surface.
+  if (!GetShellMainSurface(window))
+    return nullptr;
+  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
+  if (!widget)
+    return nullptr;
+  return static_cast<ShellSurfaceBase*>(widget->widget_delegate());
 }
 
 Surface* GetTargetSurfaceForLocatedEvent(ui::LocatedEvent* event) {

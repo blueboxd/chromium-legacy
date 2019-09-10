@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/numerics/ranges.h"
 #include "cc/animation/timing_function.h"
 #include "cc/base/time_util.h"
 #include "ui/gfx/animation/tween.h"
@@ -46,7 +47,7 @@ static float MaximumDimension(const gfx::Vector2dF& delta) {
 static std::unique_ptr<TimingFunction> EaseOutWithInitialVelocity(
     double velocity) {
   // Clamp velocity to a sane value.
-  velocity = std::min(std::max(velocity, -1000.0), 1000.0);
+  velocity = base::ClampToRange(velocity, -1000.0, 1000.0);
 
   // Based on CubicBezierTimingFunction::EaseType::EASE_IN_OUT preset
   // with first control point scaled.
@@ -92,15 +93,14 @@ base::TimeDelta ScrollOffsetAnimationCurve::SegmentDuration(
         break;
       case DurationBehavior::DELTA_BASED:
         duration =
-            std::min(double(std::sqrt(std::abs(MaximumDimension(delta)))),
-                     kDeltaBasedMaxDuration);
+            std::min<double>(std::sqrt(std::abs(MaximumDimension(delta))),
+                             kDeltaBasedMaxDuration);
         break;
       case DurationBehavior::INVERSE_DELTA:
-        duration = std::min(
-            std::max(kInverseDeltaOffset +
-                         std::abs(MaximumDimension(delta)) * kInverseDeltaSlope,
-                     kInverseDeltaMinDuration),
-            kInverseDeltaMaxDuration);
+        duration = kInverseDeltaOffset +
+                   std::abs(MaximumDimension(delta)) * kInverseDeltaSlope;
+        duration = base::ClampToRange(duration, kInverseDeltaMinDuration,
+                                      kInverseDeltaMaxDuration);
         break;
       case DurationBehavior::CONSTANT_VELOCITY:
         duration =

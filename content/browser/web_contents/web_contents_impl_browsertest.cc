@@ -17,6 +17,7 @@
 #include "base/strings/pattern.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -3904,6 +3905,112 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   // What should have happened is the speculative RenderFrameHost deletes the
   // provisional RenderFrame. The |watcher| verifies that this happened.
   EXPECT_THAT(deleted_routing_ids, testing::Contains(frame_routing_id));
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, MouseButtonsNavigate) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  GURL url_a = embedded_test_server()->GetURL("a.com", "/title1.html");
+  GURL url_b = embedded_test_server()->GetURL("b.com", "/title1.html");
+
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+
+  {
+    TestNavigationObserver back_observer(web_contents);
+    web_contents->GetRenderWidgetHostWithPageFocus()->ForwardMouseEvent(
+        blink::WebMouseEvent(
+            blink::WebInputEvent::kMouseUp, blink::WebFloatPoint(51, 50),
+            blink::WebFloatPoint(51, 50),
+            blink::WebPointerProperties::Button::kBack, 0,
+            blink::WebInputEvent::kNoModifiers, base::TimeTicks::Now()));
+    back_observer.Wait();
+    ASSERT_EQ(url_a, web_contents->GetLastCommittedURL());
+  }
+
+  {
+    TestNavigationObserver forward_observer(web_contents);
+    web_contents->GetRenderWidgetHostWithPageFocus()->ForwardMouseEvent(
+        blink::WebMouseEvent(
+            blink::WebInputEvent::kMouseUp, blink::WebFloatPoint(51, 50),
+            blink::WebFloatPoint(51, 50),
+            blink::WebPointerProperties::Button::kForward, 0,
+            blink::WebInputEvent::kNoModifiers, base::TimeTicks::Now()));
+    forward_observer.Wait();
+    ASSERT_EQ(url_b, web_contents->GetLastCommittedURL());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, MouseButtonsDontNavigate) {
+  // This test injects mouse event listeners in javascript that will
+  // preventDefault the action causing the default navigation action not to be
+  // taken.
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  GURL url_a = embedded_test_server()->GetURL("a.com", "/title1.html");
+  GURL url_b = embedded_test_server()->GetURL("b.com", "/title1.html");
+
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+
+  // Prevent default the action.
+  EXPECT_TRUE(content::ExecuteScript(shell(),
+                                     "document.addEventListener('mouseup', "
+                                     "event => event.preventDefault());"));
+
+  RenderWidgetHostImpl* render_widget_host =
+      web_contents->GetRenderWidgetHostWithPageFocus();
+  render_widget_host->ForwardMouseEvent(blink::WebMouseEvent(
+      blink::WebInputEvent::kMouseUp, blink::WebFloatPoint(51, 50),
+      blink::WebFloatPoint(51, 50), blink::WebPointerProperties::Button::kBack,
+      0, blink::WebInputEvent::kNoModifiers, base::TimeTicks::Now()));
+  RunUntilInputProcessed(render_widget_host);
+
+  // Wait an action timeout and assert the URL is correct.
+  {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::action_timeout());
+    run_loop.Run();
+  }
+  ASSERT_EQ(url_b, web_contents->GetLastCommittedURL());
+
+  // Move back so we have a forward entry in the history stack so we
+  // can test forward getting canceled.
+  {
+    TestNavigationObserver back_observer(web_contents);
+    web_contents->GetController().GoBack();
+    back_observer.Wait();
+    ASSERT_EQ(url_a, web_contents->GetLastCommittedURL());
+  }
+
+  // Now test the forward button by going back, and injecting the prevention
+  // script.
+  // Prevent default the action.
+  EXPECT_TRUE(content::ExecuteScript(shell(),
+                                     "document.addEventListener('mouseup', "
+                                     "event => event.preventDefault());"));
+
+  render_widget_host = web_contents->GetRenderWidgetHostWithPageFocus();
+  render_widget_host->ForwardMouseEvent(blink::WebMouseEvent(
+      blink::WebInputEvent::kMouseUp, blink::WebFloatPoint(51, 50),
+      blink::WebFloatPoint(51, 50),
+      blink::WebPointerProperties::Button::kForward, 0,
+      blink::WebInputEvent::kNoModifiers, base::TimeTicks::Now()));
+  RunUntilInputProcessed(render_widget_host);
+  // Wait an action timeout and assert the URL is correct.
+  {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::action_timeout());
+    run_loop.Run();
+  }
+  ASSERT_EQ(url_a, web_contents->GetLastCommittedURL());
 }
 
 }  // namespace content

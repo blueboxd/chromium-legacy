@@ -3,7 +3,6 @@
 <translationbundle lang="fr">
 <translation id="1036550831858290950">Enregistrer l'onglet actif dans les favoris</translation>
 <translation id="104962181688258143">Ouvrir l'application Fichiers</translation>
-<translation id="1098295134904615027">Activez le bureau virtuel à droite</translation>
 <translation id="1122869341872663659">Afficher <ph name="N" /> résultats de recherche pour <ph name="QUERY" /></translation>
 <translation id="1195667586424773550">Faites glisser le lien vers la barre d'adresse de l'onglet</translation>
 <translation id="1204450209689312104">Ouvrir une nouvelle fenêtre en mode navigation privée</translation>
@@ -25,7 +24,6 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">Ajouter "www." et ".com" à votre saisie dans la barre d'adresse et ouvrir la page</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, puis <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> ou <ph name="LEFT" /></translation>
-<translation id="1929866390202038233">Activez le bureau virtuel à gauche</translation>
 <translation id="1996162290124031907">Accéder à l'onglet suivant</translation>
 <translation id="2010818616644390445">Accéder au dernier onglet dans la fenêtre</translation>
 <translation id="2040706009561734834">Ouvrir ou fermer le lanceur d'applications</translation>
@@ -64,7 +62,6 @@
 <translation id="3105917916468784889">Faire une capture d'écran</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Activer la barre d'adresse</translation>
-<translation id="3165428420335997629">Créez un bureau virtuel</translation>
 <translation id="3256109297135787951">Supprimer la mise en surbrillance d'un élément sur l'étagère</translation>
 <translation id="3288816184963444640">Fermer la fenêtre active</translation>
 <translation id="3407560819924487926">Ouvrir le gestionnaire de tâches</translation>
@@ -181,7 +178,6 @@
 <translation id="8234414138295101081">Faire pivoter l'écran de 90 degrés</translation>
 <translation id="8241665785394195545">crochet droit</translation>
 <translation id="8264941229485248811">Afficher ou masquer l'inspecteur des Outils pour les développeurs</translation>
-<translation id="8355937569537581904">Supprimez le bureau virtuel actuel</translation>
 <translation id="836869401750819675">Ouvrir la page "Téléchargements"</translation>
 <translation id="8388247778047144397">Faites glisser le lien vers une zone vierge de la barre d'onglets</translation>
 <translation id="8389638407792712197">Ouvrir une nouvelle fenêtre</translation>

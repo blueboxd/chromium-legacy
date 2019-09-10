@@ -11,10 +11,10 @@
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/window_factory.h"
@@ -146,7 +146,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   UpdateDisplay("600x600,300x300");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
-  int bottom_inset = 300 - ShelfConstants::shelf_size();
+  int bottom_inset = 300 - ShelfConfig::Get()->shelf_size();
   views::Widget* normal = CreateTestWidget(gfx::Rect(650, 10, 100, 100));
   EXPECT_EQ(root_windows[1], normal->GetNativeView()->GetRootWindow());
   EXPECT_EQ("650,10 100x100", normal->GetWindowBoundsInScreen().ToString());
@@ -210,7 +210,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   EXPECT_EQ("100,20 100x100",
             normal->GetNativeView()->GetBoundsInRootWindow().ToString());
 
-  bottom_inset = 600 - ShelfConstants::shelf_size();
+  bottom_inset = 600 - ShelfConfig::Get()->shelf_size();
 
   // First clear fullscreen status, since both fullscreen and maximized windows
   // share the same desktop workspace, which cancels the shelf status.

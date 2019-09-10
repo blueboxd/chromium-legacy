@@ -9,6 +9,7 @@
 #include "base/json/json_reader.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #import "base/strings/sys_string_conversions.h"
 #include "base/test/ios/wait_util.h"
 #include "base/values.h"
@@ -39,8 +40,10 @@ std::unique_ptr<SymmetricKey> CreateKey() {
 }
 
 struct RouteMessageParameters {
-  NSString* encoded_function_json = nil;
-  NSString* encoded_iv = nil;
+  NSString* encoded_message_payload = nil;
+  NSString* encoded_message_iv = nil;
+  NSString* encoded_function_payload = nil;
+  NSString* encoded_function_iv = nil;
   NSString* frame_id = nil;
 };
 
@@ -48,25 +51,36 @@ RouteMessageParameters ParametersFromFunctionCallString(
     NSString* function_call) {
   NSRange parameters_start = [function_call rangeOfString:@"("];
   NSRange parameters_end = [function_call rangeOfString:@")"];
-  NSString* parameter_string = [function_call
+  NSMutableString* parameter_string = [[function_call
       substringWithRange:NSMakeRange(parameters_start.location + 1,
                                      parameters_end.location -
-                                         parameters_start.location - 1)];
-  NSArray* parameters = [parameter_string componentsSeparatedByString:@","];
+                                         parameters_start.location - 1)]
+      mutableCopy];
+  // Create array string and replace single quotes with double quotes in
+  // preparation for JSON serialization.
+  [parameter_string insertString:@"[" atIndex:0];
+  [parameter_string appendString:@"]"];
+  NSString* final_string =
+      [parameter_string stringByReplacingOccurrencesOfString:@"'"
+                                                  withString:@"\""];
+
+  NSData* data = [final_string dataUsingEncoding:NSUTF8StringEncoding];
+  NSError* error = nil;
+  NSArray* jsonArray =
+      [NSJSONSerialization JSONObjectWithData:data
+                                      options:NSJSONReadingMutableContainers |
+                                              NSJSONReadingMutableLeaves
+                                        error:&error];
 
   RouteMessageParameters parsed_params;
-  if (parameters.count == 3) {
-    NSMutableCharacterSet* trim_characters_set =
-        [NSMutableCharacterSet whitespaceCharacterSet];
-    [trim_characters_set addCharactersInString:@"'"];
-
-    parsed_params.encoded_function_json =
-        [parameters[0] stringByTrimmingCharactersInSet:trim_characters_set];
-    parsed_params.encoded_iv =
-        [parameters[1] stringByTrimmingCharactersInSet:trim_characters_set];
-    parsed_params.frame_id =
-        [parameters[2] stringByTrimmingCharactersInSet:trim_characters_set];
+  if (jsonArray.count == 3 && !error) {
+    parsed_params.encoded_message_iv = jsonArray[0][@"iv"];
+    parsed_params.encoded_message_payload = jsonArray[0][@"payload"];
+    parsed_params.encoded_function_iv = jsonArray[1][@"iv"];
+    parsed_params.encoded_function_payload = jsonArray[1][@"payload"];
+    parsed_params.frame_id = jsonArray[2];
   }
+
   return parsed_params;
 }
 
@@ -160,21 +174,33 @@ TEST_F(WebFrameImplTest, CallJavaScriptFunction) {
 
   RouteMessageParameters params = ParametersFromFunctionCallString(last_script);
 
-  // Verify that the message is a properly base64 encoded string.
-  std::string decoded_message;
+  // Verify that the message and function payload are properly base64 encoded
+  // strings.
+  std::string decoded_function_payload;
   EXPECT_TRUE(base::Base64Decode(
-      base::SysNSStringToUTF8(params.encoded_function_json), &decoded_message));
-  // Verify the message does not contain the plaintext function name or
+      base::SysNSStringToUTF8(params.encoded_function_payload),
+      &decoded_function_payload));
+  std::string decoded_message_payload;
+  EXPECT_TRUE(base::Base64Decode(
+      base::SysNSStringToUTF8(params.encoded_message_payload),
+      &decoded_message_payload));
+  // Verify the function does not contain the plaintext function name or
   // parameters.
-  EXPECT_FALSE([base::SysUTF8ToNSString(decoded_message)
+  EXPECT_FALSE([base::SysUTF8ToNSString(decoded_function_payload)
       containsString:@"functionName"]);
-  EXPECT_FALSE([base::SysUTF8ToNSString(decoded_message)
+  EXPECT_FALSE([base::SysUTF8ToNSString(decoded_function_payload)
       containsString:@"plaintextParam"]);
 
-  std::string iv_string = base::SysNSStringToUTF8(params.encoded_iv);
-  std::string decoded_iv;
-  // Verify that the initialization vector is a properly base64 encoded string.
-  EXPECT_TRUE(base::Base64Decode(iv_string, &decoded_iv));
+  // Verify that the initialization vector is a properly base64 encoded string
+  // for both payloads.
+  std::string function_iv_string =
+      base::SysNSStringToUTF8(params.encoded_function_iv);
+  std::string decoded_function_iv;
+  EXPECT_TRUE(base::Base64Decode(function_iv_string, &decoded_function_iv));
+  std::string message_iv_string =
+      base::SysNSStringToUTF8(params.encoded_message_iv);
+  std::string decoded_message_iv;
+  EXPECT_TRUE(base::Base64Decode(message_iv_string, &decoded_message_iv));
 
   // Ensure the frame ID matches.
   EXPECT_NSEQ(base::SysUTF8ToNSString(kFrameId), params.frame_id);
@@ -208,8 +234,9 @@ TEST_F(WebFrameImplTest, CallJavaScriptFunctionUniqueInitializationVector) {
   RouteMessageParameters params2 =
       ParametersFromFunctionCallString(last_script2);
 
-  EXPECT_NSNE(params1.encoded_function_json, params2.encoded_function_json);
-  EXPECT_NSNE(params1.encoded_iv, params2.encoded_iv);
+  EXPECT_NSNE(params1.encoded_function_payload,
+              params2.encoded_function_payload);
+  EXPECT_NSNE(params1.encoded_function_iv, params2.encoded_function_iv);
 }
 
 // Tests that the WebFrame properly encodes and encrypts all parameters for
@@ -238,47 +265,67 @@ TEST_F(WebFrameImplTest, CallJavaScriptFunctionMessageProperlyEncoded) {
       base::SysUTF16ToNSString(test_web_state.GetLastExecutedJavascript());
   RouteMessageParameters params = ParametersFromFunctionCallString(last_script);
 
-  std::string decoded_ciphertext;
-  EXPECT_TRUE(
-      base::Base64Decode(base::SysNSStringToUTF8(params.encoded_function_json),
-                         &decoded_ciphertext));
+  std::string decoded_function_ciphertext;
+  EXPECT_TRUE(base::Base64Decode(
+      base::SysNSStringToUTF8(params.encoded_function_payload),
+      &decoded_function_ciphertext));
 
-  std::string decoded_iv;
-  EXPECT_TRUE(base::Base64Decode(base::SysNSStringToUTF8(params.encoded_iv),
-                                 &decoded_iv));
+  std::string decoded_function_iv;
+  EXPECT_TRUE(
+      base::Base64Decode(base::SysNSStringToUTF8(params.encoded_function_iv),
+                         &decoded_function_iv));
+
+  std::string decoded_message_ciphertext;
+  EXPECT_TRUE(base::Base64Decode(
+      base::SysNSStringToUTF8(params.encoded_message_payload),
+      &decoded_message_ciphertext));
+
+  std::string decoded_message_iv;
+  EXPECT_TRUE(base::Base64Decode(
+      base::SysNSStringToUTF8(params.encoded_message_iv), &decoded_message_iv));
 
   // Decrypt message
   crypto::Aead aead(crypto::Aead::AES_256_GCM);
   aead.Init(&key_string);
-  std::string plaintext;
-  EXPECT_TRUE(aead.Open(decoded_ciphertext, decoded_iv,
-                        /*additional_data=*/nullptr, &plaintext));
+  std::string function_plaintext;
+  EXPECT_TRUE(aead.Open(decoded_function_ciphertext, decoded_function_iv,
+                        base::NumberToString(initial_message_id),
+                        &function_plaintext));
+  std::string message_plaintext;
+  EXPECT_TRUE(aead.Open(decoded_message_ciphertext, decoded_message_iv,
+                        /*additional_data=*/nullptr, &message_plaintext));
 
-  base::Optional<base::Value> parsed_result =
-      base::JSONReader::Read(plaintext, false);
-  EXPECT_TRUE(parsed_result.has_value());
-  ASSERT_TRUE(parsed_result.value().is_dict());
+  base::Optional<base::Value> parsed_function_result =
+      base::JSONReader::Read(function_plaintext, false);
+  EXPECT_TRUE(parsed_function_result.has_value());
+  ASSERT_TRUE(parsed_function_result.value().is_dict());
+
+  const std::string* decrypted_function_name =
+      parsed_function_result.value().FindStringKey("functionName");
+  ASSERT_TRUE(decrypted_function_name);
+  EXPECT_EQ("functionName", *decrypted_function_name);
+
+  base::Value* decrypted_parameters =
+      parsed_function_result.value().FindKeyOfType("parameters",
+                                                   base::Value::Type::LIST);
+  ASSERT_TRUE(decrypted_parameters);
+  ASSERT_EQ(function_params.size(), decrypted_parameters->GetList().size());
+  EXPECT_EQ(plaintext_param, decrypted_parameters->GetList()[0].GetString());
+
+  base::Optional<base::Value> parsed_message_result =
+      base::JSONReader::Read(message_plaintext, false);
+  EXPECT_TRUE(parsed_message_result.has_value());
+  ASSERT_TRUE(parsed_message_result.value().is_dict());
 
   base::Optional<int> decrypted_message_id =
-      parsed_result.value().FindIntKey("messageId");
+      parsed_message_result.value().FindIntKey("messageId");
   ASSERT_TRUE(decrypted_message_id.has_value());
   EXPECT_EQ(decrypted_message_id.value(), initial_message_id);
 
   base::Optional<bool> decrypted_respond_with_result =
-      parsed_result.value().FindBoolKey("replyWithResult");
+      parsed_message_result.value().FindBoolKey("replyWithResult");
   ASSERT_TRUE(decrypted_respond_with_result.has_value());
   EXPECT_FALSE(decrypted_respond_with_result.value());
-
-  const std::string* decrypted_function_name =
-      parsed_result.value().FindStringKey("functionName");
-  ASSERT_TRUE(decrypted_function_name);
-  EXPECT_EQ("functionName", *decrypted_function_name);
-
-  base::Value* decrypted_parameters = parsed_result.value().FindKeyOfType(
-      "parameters", base::Value::Type::LIST);
-  ASSERT_TRUE(decrypted_parameters);
-  ASSERT_EQ(function_params.size(), decrypted_parameters->GetList().size());
-  EXPECT_EQ(plaintext_param, decrypted_parameters->GetList()[0].GetString());
 }
 
 // Tests that the WebFrame properly encodes and encrypts the respondWithResult
@@ -310,24 +357,24 @@ TEST_F(WebFrameImplTest, CallJavaScriptFunctionRespondWithResult) {
       base::SysUTF16ToNSString(test_web_state.GetLastExecutedJavascript());
   RouteMessageParameters params = ParametersFromFunctionCallString(last_script);
 
-  std::string decoded_ciphertext;
-  EXPECT_TRUE(
-      base::Base64Decode(base::SysNSStringToUTF8(params.encoded_function_json),
-                         &decoded_ciphertext));
+  std::string decoded_message_ciphertext;
+  EXPECT_TRUE(base::Base64Decode(
+      base::SysNSStringToUTF8(params.encoded_message_payload),
+      &decoded_message_ciphertext));
 
-  std::string decoded_iv;
-  EXPECT_TRUE(base::Base64Decode(base::SysNSStringToUTF8(params.encoded_iv),
-                                 &decoded_iv));
+  std::string decoded_message_iv;
+  EXPECT_TRUE(base::Base64Decode(
+      base::SysNSStringToUTF8(params.encoded_message_iv), &decoded_message_iv));
 
   // Decrypt message
   crypto::Aead aead(crypto::Aead::AES_256_GCM);
   aead.Init(&key_string);
-  std::string plaintext;
-  EXPECT_TRUE(aead.Open(decoded_ciphertext, decoded_iv,
-                        /*additional_data=*/nullptr, &plaintext));
+  std::string message_plaintext;
+  EXPECT_TRUE(aead.Open(decoded_message_ciphertext, decoded_message_iv,
+                        /*additional_data=*/nullptr, &message_plaintext));
 
   base::Optional<base::Value> parsed_result =
-      base::JSONReader::Read(plaintext, false);
+      base::JSONReader::Read(message_plaintext, false);
   EXPECT_TRUE(parsed_result.has_value());
   ASSERT_TRUE(parsed_result.value().is_dict());
 

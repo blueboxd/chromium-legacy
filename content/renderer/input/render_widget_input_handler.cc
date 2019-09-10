@@ -376,6 +376,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
   }
 
   bool prevent_default = false;
+  bool show_virtual_keyboard_for_mouse = false;
   if (WebInputEvent::IsMouseEventType(input_event.GetType())) {
     const WebMouseEvent& mouse_event =
         static_cast<const WebMouseEvent&>(input_event);
@@ -388,6 +389,11 @@ void RenderWidgetInputHandler::HandleInputEvent(
     // time that the mouse enters we always set the cursor accordingly.
     if (mouse_event.GetType() == WebInputEvent::kMouseLeave)
       current_cursor_.reset();
+
+    if (mouse_event.button == WebPointerProperties::Button::kLeft &&
+        mouse_event.GetType() == WebInputEvent::kMouseUp) {
+      show_virtual_keyboard_for_mouse = true;
+    }
   }
 
   if (WebInputEvent::IsKeyboardEventType(input_event.GetType())) {
@@ -494,9 +500,9 @@ void RenderWidgetInputHandler::HandleInputEvent(
 
   // Show the virtual keyboard if enabled and a user gesture triggers a focus
   // change.
-  if (processed != WebInputEventResult::kNotHandled &&
-      (input_event.GetType() == WebInputEvent::kTouchEnd ||
-       input_event.GetType() == WebInputEvent::kMouseUp)) {
+  if ((processed != WebInputEventResult::kNotHandled &&
+       input_event.GetType() == WebInputEvent::kTouchEnd) ||
+      show_virtual_keyboard_for_mouse) {
     delegate_->ShowVirtualKeyboard();
   }
 

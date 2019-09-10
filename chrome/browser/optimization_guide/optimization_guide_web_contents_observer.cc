@@ -20,8 +20,7 @@ namespace {
 // Records if the host for the current navigation was successfully
 // covered by a HintsFetch. HintsFetching must be enabled and only HTTPS
 // navigations are logged.
-void MaybeRecordHintsFetcherCoverage(
-    content::NavigationHandle* navigation_handle) {
+void RecordHintsFetcherCoverage(content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->GetURL().SchemeIs(url::kHttpsScheme))
     return;
   if (!optimization_guide::features::IsHintsFetchingEnabled())
@@ -77,7 +76,7 @@ void OptimizationGuideWebContentsObserver::DidStartNavigation(
 
   // Record the HintsFetcher coverage for the navigation, regardless if the
   // keyed service is active or not.
-  MaybeRecordHintsFetcherCoverage(navigation_handle);
+  RecordHintsFetcherCoverage(navigation_handle);
 
   if (!optimization_guide_keyed_service_)
     return;
@@ -95,7 +94,7 @@ void OptimizationGuideWebContentsObserver::DidRedirectNavigation(
 
   // Record the HintsFetcher coverage for the navigation, regardless if the
   // keyed service is active or not.
-  MaybeRecordHintsFetcherCoverage(navigation_handle);
+  RecordHintsFetcherCoverage(navigation_handle);
 
   if (!optimization_guide_keyed_service_)
     return;

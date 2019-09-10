@@ -4,8 +4,8 @@
 
 #include "ash/shelf/window_preview.h"
 
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/wm/window_preview_view.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
@@ -87,12 +87,13 @@ void WindowPreview::Layout() {
   float preview_ratio = static_cast<float>(mirror_size.width()) /
                         static_cast<float>(mirror_size.height());
 
-  int preview_height = kShelfTooltipPreviewHeight;
+  int preview_height = ShelfConfig::Get()->shelf_tooltip_preview_height();
   int preview_width = preview_height * preview_ratio;
-  if (preview_ratio > kShelfTooltipPreviewMaxRatio) {
+  if (preview_ratio > ShelfConfig::Get()->shelf_tooltip_preview_max_ratio()) {
     // Very wide window.
-    preview_width = kShelfTooltipPreviewMaxWidth;
-    preview_height = kShelfTooltipPreviewMaxWidth / preview_ratio;
+    preview_width = ShelfConfig::Get()->shelf_tooltip_preview_max_width();
+    preview_height =
+        ShelfConfig::Get()->shelf_tooltip_preview_max_width() / preview_ratio;
   }
 
   // Center the actual preview over the container, horizontally and vertically.
@@ -170,9 +171,11 @@ void WindowPreview::SetStyling(const ui::NativeTheme* theme) {
 
 gfx::Size WindowPreview::GetPreviewContainerSize() const {
   return gfx::Size(
-      std::min(delegate_->GetMaxPreviewRatio() * kShelfTooltipPreviewHeight,
-               static_cast<float>(kShelfTooltipPreviewMaxWidth)),
-      kShelfTooltipPreviewHeight);
+      std::min(delegate_->GetMaxPreviewRatio() *
+                   ShelfConfig::Get()->shelf_tooltip_preview_height(),
+               static_cast<float>(
+                   ShelfConfig::Get()->shelf_tooltip_preview_max_width())),
+      ShelfConfig::Get()->shelf_tooltip_preview_height());
 }
 
 }  // namespace ash

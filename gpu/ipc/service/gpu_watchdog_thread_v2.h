@@ -55,13 +55,13 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   void Arm();
   void Disarm();
   void InProgress();
+  bool IsArmed();
   void OnWatchdogTimeout();
 
   // Do not change the function name. It is used for [GPU HANG] carsh reports.
   void DeliberatelyTerminateToRecoverFromHang();
 
-  // This counter is only written on the gpu thread, and read on the watchdog
-  // thread.
+  // This counter is only written on the gpu thread, and read on both threads.
   base::subtle::Atomic32 arm_disarm_counter_ = 0;
   // The counter number read in the last OnWatchdogTimeout() on the watchdog
   // thread.
@@ -91,6 +91,9 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
 
   // The system has entered the power suspension mode.
   bool in_power_suspension_ = false;
+
+  // The GPU process has started tearing down. Accessed only in the gpu process.
+  bool in_gpu_process_teardown_ = false;
 
   // OnWatchdogTimeout() is called for the first time after power resume.
   bool is_first_timeout_after_power_resume = false;

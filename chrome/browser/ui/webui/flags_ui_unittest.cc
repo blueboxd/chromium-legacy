@@ -16,7 +16,7 @@ class FlagsUITest : public testing::Test {
   FlagsUITest() = default;
 
  private:
-  content::TestBrowserThreadBundle bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(FlagsUITest, IsDeprecatedUrl) {

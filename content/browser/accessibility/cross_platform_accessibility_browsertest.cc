@@ -676,7 +676,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   TestLocalizedLandmarkType(1, ax::mojom::Role::kComplementary, "aside",
                             base::ASCIIToUTF16("complementary"));
   TestLocalizedLandmarkType(2, ax::mojom::Role::kFooter, "footer",
-                            base::ASCIIToUTF16("content info"));
+                            base::ASCIIToUTF16("content information"));
   TestLocalizedLandmarkType(3, ax::mojom::Role::kForm, "form");
   TestLocalizedLandmarkType(4, ax::mojom::Role::kMain, "main");
   TestLocalizedLandmarkType(5, ax::mojom::Role::kNavigation, "nav");
@@ -689,7 +689,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   TestLocalizedLandmarkType(9, ax::mojom::Role::kComplementary, "complementary",
                             base::ASCIIToUTF16("complementary"));
   TestLocalizedLandmarkType(10, ax::mojom::Role::kContentInfo, "contentinfo",
-                            base::ASCIIToUTF16("content info"));
+                            base::ASCIIToUTF16("content information"));
   TestLocalizedLandmarkType(11, ax::mojom::Role::kForm, "role_form");
   TestLocalizedLandmarkType(12, ax::mojom::Role::kMain, "role_main");
   TestLocalizedLandmarkType(13, ax::mojom::Role::kNavigation, "role_nav");
@@ -720,14 +720,15 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
       "<input type='week'>"
       "<meter></meter>"
       "<output></output>"
-      "<time></time>");
+      "<time></time>"
+      "<div role='contentinfo' aria-label='contentinfo'></div>");
 
   NavigateToURL(shell(), url);
   waiter.WaitForNotification();
 
   BrowserAccessibility* root = GetManager()->GetRoot();
   ASSERT_NE(nullptr, root);
-  ASSERT_EQ(15u, root->PlatformChildCount());
+  ASSERT_EQ(16u, root->PlatformChildCount());
 
   auto TestLocalizedRoleDescription =
       [root](int child_index,
@@ -756,6 +757,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   TestLocalizedRoleDescription(12, base::ASCIIToUTF16("meter"));
   TestLocalizedRoleDescription(13, base::ASCIIToUTF16("output"));
   TestLocalizedRoleDescription(14, base::ASCIIToUTF16("time"));
+  TestLocalizedRoleDescription(15, base::ASCIIToUTF16("content information"));
 }
 
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,

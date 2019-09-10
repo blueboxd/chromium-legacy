@@ -8,6 +8,7 @@
 #include "base/strings/strcat.h"
 #include "base/test/gtest_util.h"
 #include "base/test/task_environment.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "net/reporting/reporting_policy.h"
@@ -46,7 +47,8 @@ class OriginPolicyManagerTest : public testing::Test {
     context_params->initial_proxy_config =
         net::ProxyConfigWithAnnotation::CreateDirect();
     network_context_ = std::make_unique<NetworkContext>(
-        network_service_.get(), mojo::MakeRequest(&network_context_ptr_),
+        network_service_.get(),
+        network_context_remote_.BindNewPipeAndPassReceiver(),
         std::move(context_params));
     manager_ = std::make_unique<OriginPolicyManager>(network_context_.get());
 
@@ -119,7 +121,7 @@ class OriginPolicyManagerTest : public testing::Test {
 
   std::unique_ptr<NetworkService> network_service_;
   std::unique_ptr<NetworkContext> network_context_;
-  mojom::NetworkContextPtr network_context_ptr_;
+  mojo::Remote<mojom::NetworkContext> network_context_remote_;
   std::unique_ptr<OriginPolicyManager> manager_;
   base::RunLoop response_run_loop;
   net::test_server::EmbeddedTestServer test_server_;

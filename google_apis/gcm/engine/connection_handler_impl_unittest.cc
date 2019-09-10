@@ -25,6 +25,7 @@
 #include "google_apis/gcm/base/mcs_util.h"
 #include "google_apis/gcm/base/socket_stream.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/ip_address.h"
 #include "net/base/test_completion_callback.h"
 #include "net/log/net_log_source.h"
@@ -194,7 +195,7 @@ class GCMConnectionHandlerImplTest : public testing::Test {
   std::unique_ptr<base::RunLoop> run_loop_;
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   std::unique_ptr<network::NetworkService> network_service_;
-  network::mojom::NetworkContextPtr network_context_ptr_;
+  mojo::Remote<network::mojom::NetworkContext> network_context_remote_;
   net::MockClientSocketFactory socket_factory_;
   net::TestURLRequestContext url_request_context_;
   std::unique_ptr<network::NetworkContext> network_context_;
@@ -216,7 +217,8 @@ GCMConnectionHandlerImplTest::GCMConnectionHandlerImplTest()
   url_request_context_.Init();
 
   network_context_ = std::make_unique<network::NetworkContext>(
-      network_service_.get(), mojo::MakeRequest(&network_context_ptr_),
+      network_service_.get(),
+      network_context_remote_.BindNewPipeAndPassReceiver(),
       &url_request_context_,
       /*cors_exempt_header_list=*/std::vector<std::string>());
 }

@@ -1665,8 +1665,11 @@ bool BrowserAccessibilityAndroid::IsIframe() const {
 
 bool BrowserAccessibilityAndroid::ShouldExposeValueAsName() const {
   switch (GetRole()) {
+    case ax::mojom::Role::kDate:
+    case ax::mojom::Role::kDateTime:
     case ax::mojom::Role::kTextField:
     case ax::mojom::Role::kTextFieldWithComboBox:
+    case ax::mojom::Role::kTime:
       return true;
     default:
       break;

@@ -1240,6 +1240,8 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_MoveOrResizeStarted, OnMoveOrResizeStarted)
     IPC_MESSAGE_HANDLER(ViewMsg_EnablePreferredSizeChangedMode,
                         OnEnablePreferredSizeChangedMode)
+    IPC_MESSAGE_HANDLER(ViewMsg_UpdateLocalMainFrameVisualProperties,
+                        OnUpdateLocalMainFramePageVisualProperties)
     IPC_MESSAGE_HANDLER(ViewMsg_SetRendererPrefs, OnSetRendererPrefs)
     IPC_MESSAGE_HANDLER(ViewMsg_PluginActionAt, OnPluginActionAt)
     IPC_MESSAGE_HANDLER(ViewMsg_AnimateDoubleTapZoom,
@@ -2003,8 +2005,21 @@ void RenderViewImpl::OnUpdateScreenInfo(const ScreenInfo& screen_info) {
     GetWidget()->set_screen_info(screen_info);
 }
 
+void RenderViewImpl::OnUpdateLocalMainFramePageVisualProperties(
+    const VisualProperties& visual_properties) {
+  // TODO(https://crbug.com/998273): We should not forward visual properties to
+  // frozen render widgets.
+  // If the main frame is detached while the IPC is in flight, then
+  // render_widget_ may be nullptr when we get here [once we get rid of frozen
+  // RenderWidgets]. In that case, don't forward anything.
+  if (render_widget_) {
+    render_widget_->OnSynchronizeVisualProperties(visual_properties);
+  }
+}
+
 void RenderViewImpl::OnUpdatePageVisualProperties(
     const gfx::Size& viewport_size) {
+  // TODO(https://crbug.com/998273): Handle visual_properties appropriately.
   // Using this pathway to update the visual viewport should only happen for
   // remote main frames. Local main frames will update the viewport size by
   // RenderWidget calling RenderViewImpl::ResizeVisualViewport() directly.
@@ -2026,9 +2041,9 @@ void RenderViewImpl::ResizeVisualViewportForWidget(
     const gfx::Size& scaled_viewport_size) {
   // This function is currently only called for local main frames. Once remote
   // main frames no longer have a RenderWidget, they may also route through
-  // here via RenderViewImpl::OnUpdatePageVisualProperties(). In that case,
-  // WebViewImpl will need to implement its Size() function based on something
-  // other than the widget size.
+  // here via RenderViewImpl::OnUpdateLocalMainFramePageVisualProperties(). In
+  // that case, WebViewImpl will need to implement its Size() function based on
+  // something other than the widget size.
   webview()->ResizeVisualViewport(scaled_viewport_size);
 }
 

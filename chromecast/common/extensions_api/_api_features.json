@@ -15,6 +15,10 @@
     "dependencies": ["permission:brailleDisplayPrivate"],
     "contexts": ["blessed_extension"]
   },
+  "commandLinePrivate": {
+    "dependencies": ["permission:commandLinePrivate"],
+    "contexts": ["blessed_extension"]
+  },
   "i18n": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],

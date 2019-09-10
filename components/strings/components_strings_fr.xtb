@@ -298,7 +298,6 @@
 <translation id="2479410451996844060">URL de recherche incorrecte</translation>
 <translation id="2482878487686419369">Notifications</translation>
 <translation id="248348093745724435">Règles associées à la machine</translation>
-<translation id="2485387744899240041">Noms d'utilisateur pour votre appareil et votre navigateur</translation>
 <translation id="2491120439723279231">Le certificat du serveur contient des erreurs.</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">Analyse de fichiers JSON</translation>
@@ -864,7 +863,6 @@
 <translation id="5565735124758917034">Actif</translation>
 <translation id="5570825185877910964">Protéger le compte</translation>
 <translation id="5571083550517324815">Enlèvement impossible à cette adresse. Sélectionnez-en une autre.</translation>
-<translation id="5571347317547569613">({NUM_COOKIES,plural, =1{1 en cours d'utilisation}one{# en cours d'utilisation}other{# en cours d'utilisation}})</translation>
 <translation id="5580958916614886209">Veuillez vérifier le mois d'expiration, puis réessayer</translation>
 <translation id="5586446728396275693">Aucune adresse enregistrée</translation>
 <translation id="5595485650161345191">Modifier l'adresse</translation>

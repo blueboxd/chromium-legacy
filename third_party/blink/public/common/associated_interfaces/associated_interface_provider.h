@@ -15,6 +15,7 @@
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/mojom/associated_interfaces/associated_interfaces.mojom.h"
@@ -41,7 +42,7 @@ class BLINK_COMMON_EXPORT AssociatedInterfaceProvider {
   // |task_runner| must belong to the same thread. It will be used to dispatch
   // all callbacks and connection error notification.
   explicit AssociatedInterfaceProvider(
-      mojom::AssociatedInterfaceProviderAssociatedPtr proxy,
+      mojo::PendingAssociatedRemote<mojom::AssociatedInterfaceProvider> proxy,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner = nullptr);
 
   // Constructs a local provider with no remote interfaces. This is useful in
@@ -93,7 +94,7 @@ class BLINK_COMMON_EXPORT AssociatedInterfaceProvider {
  private:
   class LocalProvider;
 
-  mojom::AssociatedInterfaceProviderAssociatedPtr proxy_;
+  mojo::AssociatedRemote<mojom::AssociatedInterfaceProvider> proxy_;
 
   std::unique_ptr<LocalProvider> local_provider_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

@@ -27,17 +27,16 @@ class DownloadItemRequest : public BinaryUploadService::Request,
   DownloadItemRequest& operator=(DownloadItemRequest&&) = delete;
 
   // BinaryUploadService::Request implementation.
-  void GetFileContents(
-      base::OnceCallback<void(const std::string&)> callback) override;
-  size_t GetFileSize() override;
+  void GetRequestData(DataCallback callback) override;
 
   // download::DownloadItem::Observer implementation.
   void OnDownloadDestroyed(download::DownloadItem* download) override;
   void OnDownloadUpdated(download::DownloadItem* download) override;
 
  private:
-  void OnGotFileContents(base::OnceCallback<void(const std::string&)> callback,
-                         const std::string& contents);
+  void ReadFile();
+
+  void OnGotFileContents(std::string contents);
 
   // Calls to GetFileContents can be deferred if the download item is not yet
   // renamed to its final location. When ready, this method runs those
@@ -48,11 +47,15 @@ class DownloadItemRequest : public BinaryUploadService::Request,
   // thread. Unowned.
   download::DownloadItem* item_;
 
-  // Whether the download item has been renamed to its final destination yet.
-  bool download_item_renamed_;
+  // The file's data.
+  Data data_;
+
+  // Is the |data_| member valid?  It becomes valid once the file has been
+  // read successfully.
+  bool is_data_valid_ = false;
 
   // All pending callbacks to GetFileContents before the download item is ready.
-  std::vector<base::OnceCallback<void(const std::string&)>> pending_callbacks_;
+  std::vector<DataCallback> pending_callbacks_;
 
   base::WeakPtrFactory<DownloadItemRequest> weakptr_factory_;
 };

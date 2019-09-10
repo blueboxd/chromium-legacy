@@ -33,6 +33,7 @@
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "storage/browser/test/mock_quota_manager.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
@@ -45,8 +46,6 @@
 using blink::IndexedDBDatabaseMetadata;
 using blink::IndexedDBIndexKeys;
 using blink::IndexedDBKey;
-using blink::mojom::IDBFactory;
-using blink::mojom::IDBFactoryPtr;
 using blink::mojom::IDBValue;
 using blink::mojom::IDBValuePtr;
 using testing::_;
@@ -117,7 +116,7 @@ struct TestDatabaseConnection {
       default;
   ~TestDatabaseConnection() {}
 
-  void Open(IDBFactory* factory) {
+  void Open(blink::mojom::IDBFactory* factory) {
     factory->Open(
         open_callbacks->CreateInterfacePtrAndBind(),
         connection_callbacks->CreateInterfacePtrAndBind(), db_name, version,
@@ -201,7 +200,7 @@ class IndexedDBDispatcherHostTest : public testing::Test {
     base::RunLoop loop;
     context_impl_->TaskRunner()->PostTask(FROM_HERE,
                                           base::BindLambdaForTesting([&]() {
-                                            idb_mojo_factory_ = nullptr;
+                                            idb_mojo_factory_.reset();
                                             loop.Quit();
                                           }));
     loop.Run();
@@ -217,8 +216,8 @@ class IndexedDBDispatcherHostTest : public testing::Test {
     base::RunLoop loop;
     context_impl_->TaskRunner()->PostTask(
         FROM_HERE, base::BindLambdaForTesting([&]() {
-          host_->AddBinding(::mojo::MakeRequest(&idb_mojo_factory_),
-                            {url::Origin::Create(GURL(kOrigin))});
+          host_->AddReceiver(idb_mojo_factory_.BindNewPipeAndPassReceiver(),
+                             {url::Origin::Create(GURL(kOrigin))});
           loop.Quit();
         }));
     loop.Run();
@@ -233,7 +232,7 @@ class IndexedDBDispatcherHostTest : public testing::Test {
   scoped_refptr<MockQuotaManager> quota_manager_;
   scoped_refptr<IndexedDBContextImpl> context_impl_;
   std::unique_ptr<IndexedDBDispatcherHost, base::OnTaskRunnerDeleter> host_;
-  IDBFactoryPtr idb_mojo_factory_;
+  mojo::Remote<blink::mojom::IDBFactory> idb_mojo_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBDispatcherHostTest);
 };

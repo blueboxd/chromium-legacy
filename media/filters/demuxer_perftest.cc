@@ -24,7 +24,7 @@
 #include "media/filters/file_data_source.h"
 #include "media/media_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
 
 namespace media {
 
@@ -207,9 +207,9 @@ static void RunDemuxerBenchmark(const std::string& filename) {
     base::RunLoop().RunUntilIdle();
   }
 
-  perf_test::PrintResult("demuxer_bench", "", filename,
-                         kBenchmarkIterations / total_time.InSecondsF(),
-                         "runs/s", true);
+  perf_test::PerfResultReporter reporter("demuxer_bench", filename);
+  reporter.RegisterImportantMetric("", "runs/s");
+  reporter.AddResult("", kBenchmarkIterations / total_time.InSecondsF());
 }
 
 class DemuxerPerfTest : public testing::TestWithParam<const char*> {};

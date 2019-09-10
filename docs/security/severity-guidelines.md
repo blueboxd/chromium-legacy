@@ -37,7 +37,7 @@ if there is evidence of active exploitation.
 
 Example bugs:
 
-* Memory corruption in the browser process ([564501](https://crbug.com/564501)).
+* Memory corruption in the browser process ([319125](https://crbug.com/319125#c10)).
 * Exploit chains made up of multiple bugs that can lead to code execution
   outside of the sandbox ([416449](https://crbug.com/416449)).
 * A bug that enables web content to read local files

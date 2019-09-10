@@ -100,6 +100,7 @@
         <include name="IDR_PDF_INDEX_CSS" file="pdf/index.css" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_PDF_MAIN_JS" file="pdf/main.js" type="BINDATA" />
         <include name="IDR_PDF_PDF_VIEWER_JS" file="pdf/pdf_viewer.js" type="BINDATA" />
+        <include name="IDR_PDF_CONTROLLER_JS" file="pdf/controller.js" type="BINDATA" />
         <include name="IDR_PDF_TOOLBAR_MANAGER_JS" file="pdf/toolbar_manager.js" type="BINDATA" />
         <include name="IDR_PDF_PDF_FITTING_TYPE_JS" file="pdf/pdf_fitting_type.js" type="BINDATA" />
         <include name="IDR_PDF_VIEWPORT_JS" file="pdf/viewport.js" type="BINDATA" />

@@ -10,6 +10,7 @@
 #include <memory>
 #include <random>
 
+#include "base/auto_reset.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "ui/events/events_export.h"
@@ -29,6 +30,7 @@ namespace ui {
 class X11HotplugEventHandler;
 class XScopedEventSelector;
 class PlatformEventDispatcher;
+class ScopedXEventDispatcher;
 
 // The XEventDispatcher interface is used in two different ways: the first is
 // when classes want to receive XEvent directly and second is to say if classes,
@@ -61,6 +63,20 @@ class EVENTS_EXPORT XEventDispatcher {
   virtual ~XEventDispatcher() {}
 };
 
+// XEventObserver can be installed on a X11EventSource, and it
+// receives all events that are dispatched to the dispatchers.
+class EVENTS_EXPORT XEventObserver {
+ public:
+  // Called before the dispatchers receive the event.
+  virtual void WillProcessXEvent(XEvent* event) = 0;
+
+  // Called after the event has been dispatched.
+  virtual void DidProcessXEvent(XEvent* event) = 0;
+
+ protected:
+  virtual ~XEventObserver() {}
+};
+
 // Responsible for notifying X11EventSource when new XEvents are available and
 // processing/dispatching XEvents. Implementations will likely be a
 // PlatformEventSource.
@@ -73,13 +89,38 @@ class X11EventSourceDelegate {
   virtual void ProcessXEvent(XEvent* xevent) = 0;
 
   // TODO(crbug.com/965991): Use ui::Event in Aura/X11
-#if !defined(USE_X11)
+#if defined(USE_OZONE)
   virtual void AddXEventDispatcher(XEventDispatcher* dispatcher) = 0;
   virtual void RemoveXEventDispatcher(XEventDispatcher* dispatcher) = 0;
+  virtual void AddXEventObserver(XEventObserver* observer) = 0;
+  virtual void RemoveXEventObserver(XEventObserver* observer) = 0;
+  virtual std::unique_ptr<ScopedXEventDispatcher> OverrideXEventDispatcher(
+      XEventDispatcher* dispatcher) = 0;
+  virtual void RestoreOverridenXEventDispatcher() = 0;
 #endif
 
  private:
   DISALLOW_COPY_AND_ASSIGN(X11EventSourceDelegate);
+};
+
+// A temporary XEventDispatcher can be installed on a X11EventSource that
+// overrides all installed event dispatchers, and always gets a chance to
+// dispatch the event first, similar to what PlatformEventSource does with
+// ScopedEventDispatcher. When this object is destroyed, it removes the
+// override-dispatcher, and restores the previous override-dispatcher.
+class EVENTS_EXPORT ScopedXEventDispatcher {
+ public:
+  ScopedXEventDispatcher(XEventDispatcher** scoped_dispatcher,
+                         XEventDispatcher* new_dispatcher);
+  ~ScopedXEventDispatcher();
+
+  operator XEventDispatcher*() const { return original_; }
+
+ private:
+  XEventDispatcher* original_;
+  base::AutoReset<XEventDispatcher*> restore_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedXEventDispatcher);
 };
 
 // Receives X11 events and sends them to X11EventSourceDelegate. Handles
@@ -120,7 +161,7 @@ class EVENTS_EXPORT X11EventSource {
   Time GetCurrentServerTime();
 
 // TODO(crbug.com/965991): Use ui::Event in Aura/X11
-#if !defined(USE_X11)
+#if defined(USE_OZONE)
   // Adds a XEvent dispatcher to the XEvent dispatcher list.
   // Also calls XEventDispatcher::GetPlatformEventDispatcher
   // to explicitly add this |dispatcher| to a list of PlatformEventDispatchers
@@ -136,6 +177,18 @@ class EVENTS_EXPORT X11EventSource {
   // Also explicitly removes an XEventDispatcher from a PlatformEventDispatcher
   // list if the XEventDispatcher has a PlatformEventDispatcher.
   void RemoveXEventDispatcher(XEventDispatcher* dispatcher);
+
+  void AddXEventObserver(XEventObserver* observer);
+  void RemoveXEventObserver(XEventObserver* observer);
+
+  // Installs a XEventDispatcher that receives all the events. The dispatcher
+  // can process the event, or request that the default dispatchers be invoked
+  // by returning false from its DispatchXEvent() override. The returned
+  // ScopedXEventDispatcher object is a handler for the overridden dispatcher.
+  // When this handler is destroyed, it removes the overridden dispatcher, and
+  // restores the previous override-dispatcher (or null if there wasn't any).
+  std::unique_ptr<ScopedXEventDispatcher> OverrideXEventDispatcher(
+      XEventDispatcher* dispatcher);
 #endif
 
  protected:
@@ -148,6 +201,10 @@ class EVENTS_EXPORT X11EventSource {
   void PostDispatchEvent(XEvent* xevent);
 
  private:
+  friend class ScopedXEventDispatcher;
+
+  void RestoreOverridenXEventDispatcher();
+
   static X11EventSource* instance_;
 
   X11EventSourceDelegate* delegate_;

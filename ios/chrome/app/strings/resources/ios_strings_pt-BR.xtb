@@ -315,6 +315,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 A "Transição" também deve ser ativada na seção "Geral" das configurações. Seus dispositivos devem usar a mesma conta do iCloud.</translation>
 <translation id="5551897871312988470">Oferecer para traduzir</translation>
 <translation id="5556459405103347317">Recarregar</translation>
+<translation id="5592679540098330836">Ativar sincronização de <ph name="NAME" /></translation>
 <translation id="5614553682702429503">Salvar senha?</translation>
 <translation id="5626245204502895507">Não foi possível fazer download do arquivo neste momento.</translation>
 <translation id="5631164295104953411">Adicionar forma de pagamento.</translation>

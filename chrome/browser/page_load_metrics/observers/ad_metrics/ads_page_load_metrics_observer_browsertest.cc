@@ -886,7 +886,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   // navigate the frame.
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  content::TestNavigationObserver same_tab_observer(web_contents, 2);
+  content::TestNavigationObserver error_observer(web_contents,
+                                                 net::ERR_BLOCKED_BY_CLIENT);
 
   auto waiter = CreateAdsPageLoadMetricsTestWaiter();
   GURL url = embedded_test_server()->GetURL(
@@ -906,12 +907,10 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
                                       FrameData::HeavyAdStatus::kNetwork, 1);
 
   // Wait for the intervention page navigation to finish on the frame.
-  same_tab_observer.Wait();
+  error_observer.WaitForNavigationFinished();
 
   // Check that the ad frame was navigated to the intervention page.
-  EXPECT_FALSE(same_tab_observer.last_navigation_succeeded());
-  EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT,
-            same_tab_observer.last_net_error_code());
+  EXPECT_FALSE(error_observer.last_navigation_succeeded());
 }
 
 // Check that when the heavy ad feature is disabled we don't navigate
@@ -1000,7 +999,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   // navigate the frame.
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  content::TestNavigationObserver first_frame_observer(web_contents, 3);
+  content::TestNavigationObserver error_observer(web_contents,
+                                                 net::ERR_BLOCKED_BY_CLIENT);
 
   auto waiter = CreateAdsPageLoadMetricsTestWaiter();
 
@@ -1023,12 +1023,10 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
                                       FrameData::HeavyAdStatus::kNetwork, 1);
 
   // Wait for the intervention page navigation to finish on the frame.
-  first_frame_observer.Wait();
+  error_observer.WaitForNavigationFinished();
 
   // Check that the ad frame was navigated to the intervention page.
-  EXPECT_FALSE(first_frame_observer.last_navigation_succeeded());
-  EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT,
-            first_frame_observer.last_net_error_code());
+  EXPECT_FALSE(error_observer.last_navigation_succeeded());
 
   EXPECT_TRUE(ExecJs(
       web_contents,

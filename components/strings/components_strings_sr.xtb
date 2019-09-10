@@ -306,7 +306,6 @@
 <translation id="2479410451996844060">Неважећа URL адреса претраге.</translation>
 <translation id="2482878487686419369">Обавештења</translation>
 <translation id="248348093745724435">Смернице за уређаје</translation>
-<translation id="2485387744899240041">Корисничка имена за уређај и прегледач</translation>
 <translation id="2491120439723279231">Сертификат сервера садржи грешке.</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">Рашчлањивач JSON датотека</translation>
@@ -875,7 +874,6 @@
 <translation id="5565735124758917034">Активно</translation>
 <translation id="5570825185877910964">Заштити налог</translation>
 <translation id="5571083550517324815">Преузимање са ове адресе није могуће. Изаберите другу адресу.</translation>
-<translation id="5571347317547569613">({NUM_COOKIES,plural, =1{Користи се 1}one{Користи се #}few{Користе се #}other{Користи се #}})</translation>
 <translation id="5580958916614886209">Проверите месец истека и пробајте поново</translation>
 <translation id="5586446728396275693">Нема сачуваних адреса</translation>
 <translation id="5595485650161345191">Измена адресе</translation>

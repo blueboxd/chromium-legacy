@@ -63,8 +63,9 @@ std::string ToString(const scoped_refptr<IOBufferWithSize>& buffer) {
 }
 
 std::string ToString(const WebSocketFrame* frame) {
-  return frame->data ? std::string(frame->data, frame->header.payload_length)
-                     : "";
+  return frame->payload
+             ? std::string(frame->payload, frame->header.payload_length)
+             : "";
 }
 
 std::string ToString(const std::unique_ptr<WebSocketFrame>& frame) {
@@ -249,7 +250,7 @@ class WebSocketDeflateStreamTest : public ::testing::Test {
     frame->header.reserved1 = (flag & kReserved1);
     auto buffer = std::make_unique<char[]>(data.size());
     memcpy(buffer.get(), data.c_str(), data.size());
-    frame->data = buffer.get();
+    frame->payload = buffer.get();
     data_buffers.push_back(std::move(buffer));
     frame->header.payload_length = data.size();
     frames->push_back(std::move(frame));
@@ -1202,8 +1203,9 @@ TEST_F(WebSocketDeflateStreamTest, LargeDeflatedFramesShouldBeSplit) {
     ASSERT_THAT(deflate_stream_->WriteFrames(&frames, CompletionOnceCallback()),
                 IsOk());
     for (auto& frame : *stub.frames()) {
-      buffers.push_back(std::string(frame->data, frame->header.payload_length));
-      frame->data = (buffers.end() - 1)->data();
+      buffers.push_back(
+          std::string(frame->payload, frame->header.payload_length));
+      frame->payload = (buffers.end() - 1)->data();
     }
     total_compressed_frames.insert(
         total_compressed_frames.end(),

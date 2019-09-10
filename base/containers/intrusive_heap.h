@@ -131,6 +131,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <limits>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -149,7 +150,7 @@ namespace base {
 // in place.
 class BASE_EXPORT HeapHandle {
  public:
-  enum : size_t { kInvalidIndex = -1 };
+  enum : size_t { kInvalidIndex = std::numeric_limits<size_t>::max() };
 
   constexpr HeapHandle() = default;
   constexpr HeapHandle(const HeapHandle& other) = default;

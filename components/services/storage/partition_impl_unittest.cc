@@ -38,7 +38,7 @@ class StorageServicePartitionImplTest : public testing::Test {
   PartitionImpl* test_partition_impl() { return test_partition_impl_; }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   mojo::Remote<mojom::StorageService> remote_service_;
   StorageServiceImpl service_{remote_service_.BindNewPipeAndPassReceiver()};
   mojo::Remote<mojom::Partition> remote_test_partition_;

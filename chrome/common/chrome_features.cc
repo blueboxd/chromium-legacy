@@ -202,6 +202,10 @@ const base::Feature kCrostiniAnsibleInfrastructure{
 const base::Feature kCrostiniAnsibleSoftwareManagement{
     "CrostiniAnsibleSoftwareManagement", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables custom UI for forcibly closing unresponsive windows.
+const base::Feature kCrostiniForceClose{"CrostiniForceClose",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables the UI overhaul for Cups Printers in settings page.
 const base::Feature kCupsPrintersUiOverhaul{"CupsPrintersUiOverhaul",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
@@ -764,10 +768,6 @@ const base::Feature kUseSameCacheForMedia{"UseSameCacheForMedia",
 // Enables support of libcups APIs from ARC
 const base::Feature kArcCupsApi{"ArcCupsApi",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables or disables serving printing requests from VMs on ChromeOS.
-const base::Feature kCrosVmCupsProxy{"CrosVmCupsProxy",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables pin quick unlock.
 // TODO(https://crbug.com/935613): Remove this & the backing code.

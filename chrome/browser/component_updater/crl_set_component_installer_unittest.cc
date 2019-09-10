@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "content/public/test/browser_task_environment.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/test_data_directory.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -87,7 +88,7 @@ class CRLSetComponentInstallerTest : public PlatformTest {
   std::unique_ptr<CRLSetPolicy> policy_;
   std::unique_ptr<network::TestURLLoaderClient> client_;
   std::unique_ptr<network::NetworkService> network_service_;
-  network::mojom::NetworkContextPtr network_context_;
+  mojo::Remote<network::mojom::NetworkContext> network_context_;
   network::mojom::URLLoaderPtr loader_;
   base::ScopedTempDir temp_dir_;
 
@@ -97,7 +98,7 @@ class CRLSetComponentInstallerTest : public PlatformTest {
 
 TEST_F(CRLSetComponentInstallerTest, ConfiguresOnInstall) {
   network_service_->CreateNetworkContext(
-      mojo::MakeRequest(&network_context_),
+      network_context_.BindNewPipeAndPassReceiver(),
       network::mojom::NetworkContextParams::New());
 
   // Ensure the test server can load by default.
@@ -119,7 +120,7 @@ TEST_F(CRLSetComponentInstallerTest, ConfiguresOnInstall) {
 
 TEST_F(CRLSetComponentInstallerTest, ReconfiguresAfterRestartWithCRLSet) {
   network_service_->CreateNetworkContext(
-      mojo::MakeRequest(&network_context_),
+      network_context_.BindNewPipeAndPassReceiver(),
       network::mojom::NetworkContextParams::New());
 
   // Ensure the test server can load by default.
@@ -143,8 +144,9 @@ TEST_F(CRLSetComponentInstallerTest, ReconfiguresAfterRestartWithCRLSet) {
   CRLSetPolicy::ReconfigureAfterNetworkRestart();
   task_environment_.RunUntilIdle();
 
+  network_context_.reset();
   network_service_->CreateNetworkContext(
-      mojo::MakeRequest(&network_context_),
+      network_context_.BindNewPipeAndPassReceiver(),
       network::mojom::NetworkContextParams::New());
 
   // Ensure the test server is still blocked even with a new context and
@@ -159,7 +161,7 @@ TEST_F(CRLSetComponentInstallerTest, ReconfiguresAfterRestartWithCRLSet) {
 
 TEST_F(CRLSetComponentInstallerTest, ReconfiguresAfterRestartWithNoCRLSet) {
   network_service_->CreateNetworkContext(
-      mojo::MakeRequest(&network_context_),
+      network_context_.BindNewPipeAndPassReceiver(),
       network::mojom::NetworkContextParams::New());
 
   // Ensure the test server can load by default.
@@ -171,8 +173,9 @@ TEST_F(CRLSetComponentInstallerTest, ReconfiguresAfterRestartWithNoCRLSet) {
   CRLSetPolicy::ReconfigureAfterNetworkRestart();
   task_environment_.RunUntilIdle();
 
+  network_context_.reset();
   network_service_->CreateNetworkContext(
-      mojo::MakeRequest(&network_context_),
+      network_context_.BindNewPipeAndPassReceiver(),
       network::mojom::NetworkContextParams::New());
 
   // Ensure the test server can still load.

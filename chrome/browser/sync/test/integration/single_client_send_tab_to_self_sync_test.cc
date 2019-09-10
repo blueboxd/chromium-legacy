@@ -15,7 +15,6 @@
 #include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 
@@ -25,9 +24,7 @@ class SingleClientSendTabToSelfSyncTest : public SyncTest {
  public:
   SingleClientSendTabToSelfSyncTest() : SyncTest(SINGLE_CLIENT) {
     scoped_list_.InitWithFeatures(
-        {switches::kSyncSendTabToSelf,
-         send_tab_to_self::kSendTabToSelfShowSendingUI},
-        {});
+        {send_tab_to_self::kSendTabToSelfShowSendingUI}, {});
   }
 
   ~SingleClientSendTabToSelfSyncTest() override {}
@@ -78,12 +75,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientSendTabToSelfSyncTest,
   ASSERT_TRUE(SetupSync());
 
   EXPECT_FALSE(send_tab_to_self::HasValidTargetDevice(GetProfile(0)));
-}
-
-IN_PROC_BROWSER_TEST_F(SingleClientSendTabToSelfSyncTest, IsFlagEnabled) {
-  ASSERT_TRUE(SetupSync());
-
-  EXPECT_TRUE(send_tab_to_self::IsReceivingEnabled());
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientSendTabToSelfSyncTest, ShouldOfferFeature) {

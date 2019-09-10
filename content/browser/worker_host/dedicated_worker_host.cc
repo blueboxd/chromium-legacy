@@ -22,6 +22,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/service_worker_context.h"
+#include "content/public/common/network_service_util.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -200,6 +201,14 @@ void DedicatedWorkerHost::StartScriptLoad(
         appcache_handle->appcache_host_id());
   }
 
+  // Set if the subresource loader factories support file URLs so that we can
+  // recreate the factories after Network Service crashes.
+  // TODO(nhiroki): Currently this flag is calculated based on the request
+  // initiator origin to keep consistency with WorkerScriptFetchInitiator, but
+  // probably this should be calculated based on the worker origin as the
+  // factories be used for subresource loading on the worker.
+  file_url_support_ = request_initiator_origin.scheme() == url::kFileScheme;
+
   service_worker_handle_ = std::make_unique<ServiceWorkerNavigationHandle>(
       storage_partition_impl->GetServiceWorkerContext());
 
@@ -261,6 +270,12 @@ void DedicatedWorkerHost::DidStartScriptLoad(
     return;
   }
 
+  // Start observing Network Service crash when it's running out-of-process.
+  if (IsOutOfProcessNetworkService()) {
+    ObserveNetworkServiceCrash(static_cast<StoragePartitionImpl*>(
+        worker_process_host->GetStoragePartition()));
+  }
+
   // Set up the default network loader factory.
   bool bypass_redirect_checks = false;
   subresource_loader_factories->pending_default_factory() =
@@ -282,10 +297,12 @@ void DedicatedWorkerHost::DidStartScriptLoad(
     service_worker_state = controller->object_info->state;
   }
 
-  client_->OnScriptLoadStarted(service_worker_handle_->TakeProviderInfo(),
-                               std::move(main_script_load_params),
-                               std::move(subresource_loader_factories),
-                               std::move(controller));
+  client_->OnScriptLoadStarted(
+      service_worker_handle_->TakeProviderInfo(),
+      std::move(main_script_load_params),
+      std::move(subresource_loader_factories),
+      subresource_loader_updater_.BindNewPipeAndPassReceiver(),
+      std::move(controller));
 
   // |service_worker_remote_object| is an associated remote, so calls can't be
   // made on it until its receiver is sent. Now that the receiver was sent, it
@@ -409,6 +426,67 @@ void DedicatedWorkerHost::CreateIdleManager(
       ->CreateService(std::move(receiver));
 }
 
+void DedicatedWorkerHost::ObserveNetworkServiceCrash(
+    StoragePartitionImpl* storage_partition_impl) {
+  auto params = network::mojom::URLLoaderFactoryParams::New();
+  params->process_id = worker_process_id_;
+  storage_partition_impl->GetNetworkContext()->CreateURLLoaderFactory(
+      mojo::MakeRequest(&network_service_connection_error_handler_holder_),
+      std::move(params));
+  network_service_connection_error_handler_holder_.set_connection_error_handler(
+      base::BindOnce(&DedicatedWorkerHost::UpdateSubresourceLoaderFactories,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void DedicatedWorkerHost::UpdateSubresourceLoaderFactories() {
+  DCHECK(IsOutOfProcessNetworkService());
+  DCHECK(subresource_loader_updater_.is_bound());
+  DCHECK(network_service_connection_error_handler_holder_);
+  DCHECK(network_service_connection_error_handler_holder_.encountered_error());
+
+  // Get a storage partition.
+  auto* worker_process_host = RenderProcessHost::FromID(worker_process_id_);
+  if (!worker_process_host)
+    return;
+  auto* storage_partition_impl = static_cast<StoragePartitionImpl*>(
+      worker_process_host->GetStoragePartition());
+
+  // Get a storage domain.
+  if (!GetAncestorRenderFrameHost() ||
+      !GetAncestorRenderFrameHost()->GetSiteInstance())
+    return;
+  std::string storage_domain;
+  std::string partition_name;
+  bool in_memory;
+  GetContentClient()->browser()->GetStoragePartitionConfigForSite(
+      storage_partition_impl->browser_context(),
+      GetAncestorRenderFrameHost()->GetSiteInstance()->GetSiteURL(),
+      /*can_be_default=*/true, &storage_domain, &partition_name, &in_memory);
+
+  // Start observing Network Service crash again.
+  ObserveNetworkServiceCrash(storage_partition_impl);
+
+  // Recreate the default URLLoaderFactory. This doesn't support
+  // AppCache-specific factory.
+  std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+      subresource_loader_factories =
+          WorkerScriptFetchInitiator::CreateFactoryBundle(
+              worker_process_id_, storage_partition_impl, storage_domain,
+              file_url_support_, /*filesystem_url_support=*/true);
+
+  bool bypass_redirect_checks = false;
+  subresource_loader_factories->pending_default_factory() =
+      CreateNetworkFactoryForSubresources(worker_process_host,
+                                          GetAncestorRenderFrameHost(),
+                                          &bypass_redirect_checks);
+  subresource_loader_factories->set_bypass_redirect_checks(
+      bypass_redirect_checks);
+
+  subresource_loader_updater_->UpdateSubresourceLoaderFactories(
+      std::move(subresource_loader_factories));
+}
+
+// May return a nullptr.
 RenderFrameHostImpl* DedicatedWorkerHost::GetAncestorRenderFrameHost() {
   // Use |worker_process_id_| as the ancestor render frame's process ID as the
   // frame surely lives in the same process for dedicated workers.

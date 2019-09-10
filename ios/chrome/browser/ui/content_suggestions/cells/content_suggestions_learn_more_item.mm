@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -21,7 +22,6 @@ namespace {
 const CGFloat kLabelLineSpacing = 4;
 const CGFloat kTopLabelMargin = 24;
 const CGFloat kBottomLabelMargin = 8;
-const int kLinkColorRGB = 0x5595FE;
 }
 
 #pragma mark - ContentSuggestionsLearnMoreItem
@@ -122,7 +122,7 @@ const int kLinkColorRGB = 0x5595FE;
       [[NSMutableAttributedString alloc] initWithString:strippedText];
 
   // Sets the styling to mimic a link.
-  UIColor* linkColor = UIColorFromRGB(kLinkColorRGB, 1.0);
+  UIColor* linkColor = [UIColor colorNamed:kBlueColor];
   [attributedText addAttribute:NSForegroundColorAttributeName
                          value:linkColor
                          range:linkRange];

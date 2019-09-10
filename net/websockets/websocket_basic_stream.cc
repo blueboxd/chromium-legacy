@@ -180,7 +180,7 @@ int WebSocketBasicStream::WriteFrames(
              static_cast<uint64_t>(remaining_size));
     const int frame_size = static_cast<int>(frame->header.payload_length);
     if (frame_size > 0) {
-      const char* const frame_data = frame->data;
+      const char* const frame_data = frame->payload;
       std::copy(frame_data, frame_data + frame_size, dest);
       MaskWebSocketFramePayload(mask, 0, dest, frame_size);
       dest += frame_size;
@@ -360,7 +360,7 @@ int WebSocketBasicStream::ConvertChunkToFrame(
   }
   DCHECK(current_frame_header_) << "Unexpected header-less chunk received "
                                 << "(final_chunk = " << chunk->final_chunk
-                                << ", data size = " << chunk->data.size()
+                                << ", payload size = " << chunk->payload.size()
                                 << ") (bug in WebSocketFrameParser?)";
   const bool is_final_chunk = chunk->final_chunk;
   const WebSocketFrameHeader::OpCode opcode = current_frame_header_->opcode;
@@ -384,13 +384,13 @@ int WebSocketBasicStream::ConvertChunkToFrame(
 
     if (!is_final_chunk) {
       DVLOG(2) << "Encountered a split control frame, opcode " << opcode;
-      AddToIncompleteControlFrameBody(chunk->data);
+      AddToIncompleteControlFrameBody(chunk->payload);
       return OK;
     }
 
     if (!incomplete_control_frame_body_.empty()) {
       DVLOG(2) << "Rejoining a split control frame, opcode " << opcode;
-      AddToIncompleteControlFrameBody(chunk->data);
+      AddToIncompleteControlFrameBody(chunk->payload);
       DCHECK(is_final_chunk);
       DCHECK(complete_control_frame_body_.empty());
       complete_control_frame_body_ = std::move(incomplete_control_frame_body_);
@@ -403,13 +403,13 @@ int WebSocketBasicStream::ConvertChunkToFrame(
   // header. A check for exact equality can only be used when the whole frame
   // arrives in one chunk.
   DCHECK_GE(current_frame_header_->payload_length,
-            base::checked_cast<uint64_t>(chunk->data.size()));
+            base::checked_cast<uint64_t>(chunk->payload.size()));
   DCHECK(!is_first_chunk || !is_final_chunk ||
          current_frame_header_->payload_length ==
-             base::checked_cast<uint64_t>(chunk->data.size()));
+             base::checked_cast<uint64_t>(chunk->payload.size()));
 
   // Convert the chunk to a complete frame.
-  *frame = CreateFrame(is_final_chunk, chunk->data);
+  *frame = CreateFrame(is_final_chunk, chunk->payload);
   return OK;
 }
 
@@ -429,7 +429,7 @@ std::unique_ptr<WebSocketFrame> WebSocketBasicStream::CreateFrame(
     result_frame->header.CopyFrom(*current_frame_header_);
     result_frame->header.final = is_final_chunk_in_message;
     result_frame->header.payload_length = data.size();
-    result_frame->data = data.data();
+    result_frame->payload = data.data();
     // Ensure that opcodes Text and Binary are only used for the first frame in
     // the message. Also clear the reserved bits.
     // TODO(ricea): If a future extension requires the reserved bits to be

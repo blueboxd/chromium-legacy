@@ -171,7 +171,7 @@ void ResourceLoadObserverForFrame::DidReceiveResponse(
       frame, &frame_or_imported_document_->GetDocument(),
       resource_loading_policy, PreloadHelper::kLoadAll,
       base::nullopt /* viewport_description */,
-      std::move(alternate_resource_info));
+      std::move(alternate_resource_info), response.RecursivePrefetchToken());
 
   if (response.HasMajorCertificateErrors()) {
     MixedContentChecker::HandleCertificateError(&frame, response,

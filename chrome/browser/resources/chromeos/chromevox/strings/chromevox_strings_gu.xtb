@@ -20,7 +20,7 @@
 <translation id="1087788677726983142">ઇવેન્ટ સ્ટ્રીમ ફિલ્ટર છુપાવો</translation>
 <translation id="1088219014394087294">કોઇ મથાળું નથી.</translation>
 <translation id="1106741348836243114">સાઉન્ડ પ્રતિસાદ (ઇઅરકોન્સ) ચાલુ અથવા બંધ કરો.</translation>
-<translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
+<translation id="1120743664840974483">{"a": "આલ્ફા", "b": "બ્રાવો", "c": "ચાર્લી", "d": "ડેલ્ટા", "e": "ઇકો", "f": "ફોક્સટ્રોટ", "g": "ગોલ્ફ", "h": "હોટલ", "i": "ઇન્ડિયા", "j": "જુલિયેટ","k": "કિલો", "l": "લીમા", "m": "માઇક", "n": "નવેમ્બર", "o": "ઑસ્કાર","p": "પાપા", "q": "ક્વેબેક", "r": "રોમિયો", "s": "સિયેરા", "t": "ટેંગો", "u": "યુનિફોર્મ", "v": "વિક્ટર", "w": "વ્હિસ્કી","x": "એક્સરે", "y": "યેંકી", "z": "ઝુલુ"}</translation>
 <translation id="1120938014254001895">બે આંગળી ઉપરની બાજુ સ્વાઇપ કરો</translation>
 <translation id="1124771028211010580">વર્તમાન ડિસ્પ્લે શૈલી "સાથેસાથે" છે.</translation>
 <translation id="1126928665165112660">ઇટાલિક નથી</translation>
@@ -207,7 +207,6 @@
 <translation id="257674075312929031">જૂથ</translation>
 <translation id="2582407057977008361">એક તરફ</translation>
 <translation id="2592212930811759050">ફેરફાર શરૂ કરવા માટે બે વાર ટૅપ કરો</translation>
-<translation id="2606210917827248971">આ સાથેની {COUNT,plural, =1{# આઇટમ}one{# આઇટમ}other{# આઇટમ}}</translation>
 <translation id="2614981083756825552">ગણિત ML લેઆઉટ</translation>
 <translation id="2624431853467395961">જાણો મોડ ખોલો</translation>
 <translation id="2626530649491650971">ક્લિક કરી શકાય તેવા</translation>
@@ -391,7 +390,6 @@
 <translation id="3781428340399460090">ચળકતો ગુલાબી</translation>
 <translation id="3783725005098956899">લૉગ બતાવો</translation>
 <translation id="3793710123303304873">સંવાદમાંથી બહાર થયા.</translation>
-<translation id="3795836767122514678">+{COUNT,plural, =1{#}one{#}other{#}}</translation>
 <translation id="3801735343383419236">સ્વતઃપૂર્ણ સૂચિ</translation>
 <translation id="3810838688059735925">વીડિયો</translation>
 <translation id="3813387282697781382">આછો લાલ</translation>

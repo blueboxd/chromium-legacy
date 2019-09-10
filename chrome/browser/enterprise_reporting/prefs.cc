@@ -14,9 +14,6 @@ const char kLastUploadTimestamp[] =
     "enterprise_reporting.last_upload_timestamp";
 
 void RegisterPrefs(PrefRegistrySimple* registry) {
-  if (!base::FeatureList::IsEnabled(features::kEnterpriseReportingInBrowser))
-    return;
-
   // This is also registered as a Profile pref which will be removed after
   // the migration.
   registry->RegisterBooleanPref(prefs::kCloudReportingEnabled, false);

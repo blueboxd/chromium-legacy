@@ -190,7 +190,7 @@ class TextRendererTest : public testing::Test {
   MOCK_METHOD0(OnPause, void());
   MOCK_METHOD0(OnFlush, void());
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   typedef std::vector<std::unique_ptr<FakeTextTrackStream>> TextTrackStreams;
   TextTrackStreams text_track_streams_;

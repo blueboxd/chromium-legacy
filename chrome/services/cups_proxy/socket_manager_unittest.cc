@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -178,14 +179,14 @@ class SocketManagerTest : public testing::Test {
     std::unique_ptr<FakeSocket> socket = std::make_unique<FakeSocket>();
     socket_ = socket.get();
 
-    manager_ = SocketManager::CreateForTesting(std::move(socket),
-                                               delegate_->GetWeakPtr());
+    manager_ =
+        SocketManager::CreateForTesting(std::move(socket), delegate_.get());
   }
 
-  base::Optional<std::vector<uint8_t>> ProxyToCups(std::string request) {
+  std::unique_ptr<std::vector<uint8_t>> ProxyToCups(std::string request) {
     std::vector<uint8_t> request_as_bytes =
         ipp_converter::ConvertToByteBuffer(request);
-    base::Optional<std::vector<uint8_t>> response;
+    std::unique_ptr<std::vector<uint8_t>> response;
 
     base::RunLoop run_loop;
     manager_->ProxyToCups(std::move(request_as_bytes),
@@ -201,8 +202,8 @@ class SocketManagerTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
 
   void OnProxyToCups(base::OnceClosure finish_cb,
-                     base::Optional<std::vector<uint8_t>>* ret,
-                     base::Optional<std::vector<uint8_t>> result) {
+                     std::unique_ptr<std::vector<uint8_t>>* ret,
+                     std::unique_ptr<std::vector<uint8_t>> result) {
     *ret = std::move(result);
     std::move(finish_cb).Run();
   }

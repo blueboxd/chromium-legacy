@@ -45,7 +45,7 @@ const base::Feature kNtpRealbox{"NtpRealbox",
 
 bool IsNtpRealboxEnabled() {
   return base::FeatureList::IsEnabled(kNtpRealbox) ||
-         base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTP);
+         base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTPRealbox);
 }
 
 }  // namespace features

@@ -14,6 +14,7 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/numerics/ranges.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
@@ -53,7 +54,7 @@ class Mixer::Group {
         // We cannot rely on providers to give relevance scores in the range
         // [0.0, 1.0]. Clamp to that range.
         const double relevance =
-            std::min(std::max(result->relevance(), 0.0), 1.0);
+            base::ClampToRange(result->relevance(), 0.0, 1.0);
         double boost = boost_;
         results_.emplace_back(result.get(), relevance * multiplier_ + boost);
       }

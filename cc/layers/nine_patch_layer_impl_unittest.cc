@@ -56,7 +56,7 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
       NinePatchLayerImpl::Create(host_impl.active_tree(), 1);
   layer->draw_properties().visible_layer_rect = visible_layer_rect;
   layer->SetBounds(layer_size);
-  layer->test_properties()->force_render_surface = true;
+  SetupRootProperties(layer.get());
 
   UIResourceId uid = 1;
   bool is_opaque = false;
@@ -67,7 +67,7 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
   layer->SetImageBounds(bitmap_size);
   layer->SetLayout(aperture_rect, border, gfx::Rect(), fill_center, false);
   host_impl.active_tree()->SetRootLayerForTesting(std::move(layer));
-  host_impl.active_tree()->BuildPropertyTreesForTesting();
+  UpdateDrawProperties(host_impl.active_tree());
 
   AppendQuadsData data;
   host_impl.active_tree()->root_layer_for_testing()->AppendQuads(
@@ -169,7 +169,7 @@ void NinePatchLayerLayoutTestWithOcclusion(const gfx::Size& bitmap_size,
       NinePatchLayerImpl::Create(host_impl.active_tree(), 1);
   layer->draw_properties().visible_layer_rect = visible_layer_rect;
   layer->SetBounds(layer_size);
-  layer->test_properties()->force_render_surface = true;
+  SetupRootProperties(layer.get());
 
   UIResourceId uid = 1;
   bool is_opaque = false;
@@ -180,7 +180,7 @@ void NinePatchLayerLayoutTestWithOcclusion(const gfx::Size& bitmap_size,
   layer->SetImageBounds(bitmap_size);
   layer->SetLayout(aperture_rect, border, occlusion, false, false);
   host_impl.active_tree()->SetRootLayerForTesting(std::move(layer));
-  host_impl.active_tree()->BuildPropertyTreesForTesting();
+  UpdateDrawProperties(host_impl.active_tree());
 
   AppendQuadsData data;
   host_impl.active_tree()->root_layer_for_testing()->AppendQuads(
@@ -360,11 +360,12 @@ TEST(NinePatchLayerImplTest, Occlusion) {
   impl.host_impl()->CreateUIResource(uid, bitmap);
 
   NinePatchLayerImpl* nine_patch_layer_impl =
-      impl.AddChildToRoot<NinePatchLayerImpl>();
+      impl.AddLayer<NinePatchLayerImpl>();
   nine_patch_layer_impl->SetBounds(layer_size);
   nine_patch_layer_impl->SetDrawsContent(true);
   nine_patch_layer_impl->SetUIResourceId(uid);
   nine_patch_layer_impl->SetImageBounds(gfx::Size(10, 10));
+  CopyProperties(impl.root_layer(), nine_patch_layer_impl);
 
   gfx::Rect aperture = gfx::Rect(3, 3, 4, 4);
   gfx::Rect border = gfx::Rect(300, 300, 400, 400);
@@ -431,10 +432,11 @@ TEST(NinePatchLayerImplTest, OpaqueRect) {
 
   impl.host_impl()->CreateUIResource(uid_alpha, bitmap_alpha);
 
-  NinePatchLayerImpl *nine_patch_layer_impl =
-      impl.AddChildToRoot<NinePatchLayerImpl>();
+  NinePatchLayerImpl* nine_patch_layer_impl =
+      impl.AddLayer<NinePatchLayerImpl>();
   nine_patch_layer_impl->SetBounds(layer_size);
   nine_patch_layer_impl->SetDrawsContent(true);
+  CopyProperties(impl.root_layer(), nine_patch_layer_impl);
 
   impl.CalcDrawProps(viewport_size);
 

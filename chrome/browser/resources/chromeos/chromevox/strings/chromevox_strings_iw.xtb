@@ -207,7 +207,6 @@
 <translation id="257674075312929031">קבוצה</translation>
 <translation id="2582407057977008361">בצד</translation>
 <translation id="2592212930811759050">לחיצה פעמיים מפעילה עריכה</translation>
-<translation id="2606210917827248971">עם {COUNT,plural, =1{פריט אחד}two{שני פריטים}many{# פריטים}other{# פריטים}}</translation>
 <translation id="2614981083756825552">‏פריסת Math ML</translation>
 <translation id="2624431853467395961">פתח מצב למידה</translation>
 <translation id="2626530649491650971">clickable</translation>
@@ -391,7 +390,6 @@
 <translation id="3781428340399460090">ורוד בוהק</translation>
 <translation id="3783725005098956899">הצגת היומן</translation>
 <translation id="3793710123303304873">יצאת מתיבת דו-שיח.</translation>
-<translation id="3795836767122514678">+{COUNT,plural, =1{#}two{#}many{#}other{#}}</translation>
 <translation id="3801735343383419236">רשימת השלמה אוטומטית</translation>
 <translation id="3810838688059735925">וידאו</translation>
 <translation id="3813387282697781382">אלמוג בהיר</translation>

@@ -16,7 +16,7 @@ namespace cc {
 FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(
     TaskRunnerProvider* task_runner_provider,
     TaskGraphRunner* task_graph_runner)
-    : FakeLayerTreeHostImpl(LayerTreeSettings(),
+    : FakeLayerTreeHostImpl(LayerListSettings(),
                             task_runner_provider,
                             task_graph_runner) {}
 
@@ -87,16 +87,6 @@ void FakeLayerTreeHostImpl::AdvanceToNextFrame(base::TimeDelta advance_by) {
   next_begin_frame_args.frame_time += advance_by;
   DidFinishImplFrame();
   WillBeginImplFrame(next_begin_frame_args);
-}
-
-void FakeLayerTreeHostImpl::UpdateNumChildrenAndDrawPropertiesForActiveTree() {
-  UpdateNumChildrenAndDrawProperties(active_tree());
-}
-
-void FakeLayerTreeHostImpl::UpdateNumChildrenAndDrawProperties(
-    LayerTreeImpl* layerTree) {
-  layerTree->BuildLayerListAndPropertyTreesForTesting();
-  layerTree->UpdateDrawProperties();
 }
 
 AnimationHost* FakeLayerTreeHostImpl::animation_host() const {

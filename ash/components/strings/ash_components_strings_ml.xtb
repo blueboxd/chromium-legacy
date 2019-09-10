@@ -3,7 +3,6 @@
 <translationbundle lang="ml">
 <translation id="1036550831858290950">നിങ്ങളുടെ നിലവിലെ ടാബ് ഒരു ബുക്ക്‌മാർക്ക് ആയി സംരക്ഷിക്കുക</translation>
 <translation id="104962181688258143">'ഫയലുകൾ' ആപ്പ് തുറക്കുക</translation>
-<translation id="1098295134904615027">വലതുവശത്ത് വെർച്വൽ ഡെസ്‌ക് സജീവമാക്കുക</translation>
 <translation id="1122869341872663659"><ph name="QUERY" /> എന്നതിനായി <ph name="N" /> തിരയൽ ഫലങ്ങൾ കാണിക്കുന്നു</translation>
 <translation id="1195667586424773550">ടാബിന്റെ വിലാസ ബാറിലേക്ക് ലിങ്ക് വലിച്ചിടുക</translation>
 <translation id="1204450209689312104">അദൃശ്യ മോഡിൽ പുതിയൊരു വിൻഡോ തുറക്കുക</translation>
@@ -25,7 +24,6 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">വിലാസ ബാറിലെ നിങ്ങളുടെ ഇന്‍‌പുട്ടിൽ www., .com എന്നിവ ചേർത്ത ശേഷം പേജ് തുറക്കുക</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, തുടർന്ന് <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> അല്ലെങ്കിൽ <ph name="LEFT" /></translation>
-<translation id="1929866390202038233">ഇടതുവശത്ത് വെർച്വൽ ഡെസ്‌ക് സജീവമാക്കുക</translation>
 <translation id="1996162290124031907">അടുത്ത ടാബിലേക്ക് പോവുക</translation>
 <translation id="2010818616644390445">വിൻഡോയിലെ അവസാന ടാബിലേക്ക് പോവുക</translation>
 <translation id="2040706009561734834">ലോഞ്ചർ തുറക്കുക/അടയ്ക്കുക</translation>
@@ -64,7 +62,6 @@
 <translation id="3105917916468784889">സ്ക്രീന്‍ഷോട്ട് എടുക്കുക</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">വിലാസ ബാര്‍ ഫോക്കസ് ചെയ്യുക</translation>
-<translation id="3165428420335997629">പുതിയ വെർച്വൽ ഡെസ്‌ക് സൃഷ്‌ടിക്കുക</translation>
 <translation id="3256109297135787951">നിങ്ങളുടെ ഷെൽഫിലെ ഒരു ഇനത്തിൽ നിന്ന് ഹൈലൈറ്റ് നീക്കം ചെയ്യുക</translation>
 <translation id="3288816184963444640">നിലവിലെ വിൻഡോ അടയ്‌ക്കുക</translation>
 <translation id="3407560819924487926">ടാസ്‌ക് മാനേജർ ഉപയോഗപ്പെടുത്തുക</translation>
@@ -181,7 +178,6 @@
 <translation id="8234414138295101081">സ്‌ക്രീൻ 90 ഡിഗ്രി തിരിക്കുക</translation>
 <translation id="8241665785394195545">വലത് ബ്രാക്കറ്റ്</translation>
 <translation id="8264941229485248811">ഡെവലപ്പര്‍ ടൂൾസ് ഇൻസ്‌പെക്‌ടർ കാണിക്കുക അല്ലെങ്കിൽ അദൃശ്യമാക്കുക</translation>
-<translation id="8355937569537581904">നിലവിലെ വെർച്വൽ ഡെസ്‌ക് നീക്കം ചെയ്യുക</translation>
 <translation id="836869401750819675">ഡൗൺലോഡുകളുടെ പേജ് തുറക്കുക</translation>
 <translation id="8388247778047144397">ടാബ് സ്‌ട്രിപ്പിലെ ശൂന്യമായ ഏരിയയിലേക്ക് ലിങ്ക് വലിച്ചിടുക</translation>
 <translation id="8389638407792712197">പുതിയ വിൻഡോ തുറക്കുക</translation>

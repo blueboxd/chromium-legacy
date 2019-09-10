@@ -285,18 +285,24 @@ bool OverviewController::StartOverview(
   if (InOverviewSession())
     return true;
 
-  return ToggleOverview(type);
+  if (!CanEnterOverview())
+    return false;
+
+  ToggleOverview(type);
+  return true;
 }
 
-// TODO(flackr): Make OverviewController observe the activation of
-// windows, so we can remove OverviewDelegate.
 bool OverviewController::EndOverview(
     OverviewSession::EnterExitOverviewType type) {
   // No need to end overview if overview is already ended.
   if (!InOverviewSession())
     return true;
 
-  return ToggleOverview(type);
+  if (!CanEndOverview(type))
+    return false;
+
+  ToggleOverview(type);
+  return true;
 }
 
 bool OverviewController::InOverviewSession() const {
@@ -530,16 +536,12 @@ OverviewController::GetItemWindowListInOverviewGridsForTest() {
   return windows;
 }
 
-bool OverviewController::ToggleOverview(
+void OverviewController::ToggleOverview(
     OverviewSession::EnterExitOverviewType type) {
   // Hide the virtual keyboard as it obstructs the overview mode.
   // Don't need to hide if it's the a11y keyboard, as overview mode
   // can accept text input and it resizes correctly with the a11y keyboard.
   keyboard::KeyboardUIController::Get()->HideKeyboardImplicitlyByUser();
-
-  // Prevent toggling overview during the split view divider snap animation.
-  if (Shell::Get()->split_view_controller()->IsDividerAnimating())
-    return true;
 
   auto windows =
       Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
@@ -558,18 +560,7 @@ bool OverviewController::ToggleOverview(
   window_util::RemoveTransientDescendants(&windows);
 
   if (InOverviewSession()) {
-    // Do not allow ending overview if we're in single split mode unless swiping
-    // up from the shelf in tablet mode, or ending overview immediately without
-    // animations.
-    if (windows.empty() &&
-        Shell::Get()->split_view_controller()->InTabletSplitViewMode() &&
-        Shell::Get()->split_view_controller()->state() !=
-            SplitViewState::kBothSnapped &&
-        type != OverviewSession::EnterExitOverviewType::kSwipeFromShelf &&
-        type != OverviewSession::EnterExitOverviewType::kImmediateExit) {
-      return true;
-    }
-
+    DCHECK(CanEndOverview(type));
     TRACE_EVENT_ASYNC_BEGIN0("ui", "OverviewController::ExitOverview", this);
 
     // Suspend occlusion tracker until the exit animation is complete.
@@ -630,10 +621,7 @@ bool OverviewController::ToggleOverview(
     if (delayed_animations_.empty())
       OnEndingAnimationComplete(/*canceled=*/false);
   } else {
-    // Don't start overview if it is not allowed.
-    if (!CanEnterOverview())
-      return false;
-
+    DCHECK(CanEnterOverview());
     TRACE_EVENT_ASYNC_BEGIN0("ui", "OverviewController::EnterOverview", this);
 
     // Clear any animations that may be running from last overview end.
@@ -694,7 +682,6 @@ bool OverviewController::ToggleOverview(
                                base::Time::Now() - last_overview_session_time_);
     }
   }
-  return true;
 }
 
 // static
@@ -703,6 +690,10 @@ void OverviewController::SetDoNotChangeWallpaperForTests() {
 }
 
 bool OverviewController::CanEnterOverview() {
+  // Prevent toggling overview during the split view divider snap animation.
+  if (Shell::Get()->split_view_controller()->IsDividerAnimating())
+    return false;
+
   // Don't allow a window overview if the user session is not active (e.g.
   // locked or in user-adding screen) or a modal dialog is open or running in
   // kiosk app session.
@@ -713,6 +704,28 @@ bool OverviewController::CanEnterOverview() {
          !Shell::IsSystemModalWindowOpen() &&
          !Shell::Get()->screen_pinning_controller()->IsPinned() &&
          !session_controller->IsRunningInAppMode();
+}
+
+bool OverviewController::CanEndOverview(
+    OverviewSession::EnterExitOverviewType type) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  // Prevent toggling overview during the split view divider snap animation.
+  if (split_view_controller->IsDividerAnimating())
+    return false;
+
+  // Do not allow ending overview if we're in single split mode unless swiping
+  // up from the shelf in tablet mode, or ending overview immediately without
+  // animations.
+  if (split_view_controller->InTabletSplitViewMode() &&
+      split_view_controller->state() != SplitViewState::kBothSnapped &&
+      InOverviewSession() && overview_session_->IsEmpty() &&
+      type != OverviewSession::EnterExitOverviewType::kSwipeFromShelf &&
+      type != OverviewSession::EnterExitOverviewType::kImmediateExit) {
+    return false;
+  }
+
+  return true;
 }
 
 void OverviewController::OnStartingAnimationComplete(bool canceled) {

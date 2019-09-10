@@ -6,8 +6,8 @@
 
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/ash_constants.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/test/shell_test_api.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -587,7 +587,7 @@ class TestWindowStateDelegate : public WindowStateDelegate {
 // Tests dragging to resize two snapped windows.
 TEST_F(MultiWindowResizeControllerTest, TwoSnappedWindows) {
   UpdateDisplay("400x300");
-  const int bottom_inset = 300 - ShelfConstants::shelf_size();
+  const int bottom_inset = 300 - ShelfConfig::Get()->shelf_size();
   // Create two snapped windows, one left snapped, one right snapped.
   aura::test::TestWindowDelegate delegate1;
   std::unique_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(

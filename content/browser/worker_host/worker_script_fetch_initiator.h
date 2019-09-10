@@ -77,7 +77,6 @@ class WorkerScriptFetchInitiator {
       const std::string& storage_domain,
       CompletionCallback callback);
 
- private:
   // Creates a loader factory bundle. Must be called on the UI thread.
   static std::unique_ptr<blink::URLLoaderFactoryBundleInfo> CreateFactoryBundle(
       int worker_process_id,
@@ -86,6 +85,7 @@ class WorkerScriptFetchInitiator {
       bool file_support,
       bool filesystem_url_support);
 
+ private:
   // Adds additional request headers to |resource_request|. Must be called on
   // the UI thread.
   static void AddAdditionalRequestHeaders(

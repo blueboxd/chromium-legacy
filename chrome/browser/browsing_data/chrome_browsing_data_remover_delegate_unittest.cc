@@ -1130,7 +1130,7 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
 
     auto network_context = std::make_unique<network::NetworkContext>(
         network::NetworkService::GetNetworkServiceForTesting(),
-        mojo::MakeRequest(&network_context_ptr_),
+        network_context_remote_.BindNewPipeAndPassReceiver(),
         network::mojom::NetworkContextParams::New());
     network_context_ = network_context.get();
     profile_->SetNetworkContext(std::move(network_context));
@@ -1233,7 +1233,7 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
   content::BrowsingDataRemover* remover_;
 
   content::BrowserTaskEnvironment task_environment_;
-  network::mojom::NetworkContextPtr network_context_ptr_;
+  mojo::Remote<network::mojom::NetworkContext> network_context_remote_;
   network::NetworkContext* network_context_;
   std::unique_ptr<TestingProfile> profile_;
 

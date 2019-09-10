@@ -6,8 +6,8 @@
 
 #include <string>
 
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/scoped_root_window_for_new_windows.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/shell/toplevel_window.h"
 #include "ash/test/ash_test_base.h"
@@ -51,7 +51,7 @@ TEST_F(WindowPositionerTest, OpenDefaultWindowOnSecondDisplay) {
 // its restore bounds.
 TEST_F(WindowPositionerTest, SecondMaximizedWindowHasProperRestoreSize) {
   UpdateDisplay("1400x900");
-  const int bottom_inset = 900 - ShelfConstants::shelf_size();
+  const int bottom_inset = 900 - ShelfConfig::Get()->shelf_size();
   shell::ToplevelWindow::CreateParams params;
   params.can_resize = true;
   params.can_maximize = true;

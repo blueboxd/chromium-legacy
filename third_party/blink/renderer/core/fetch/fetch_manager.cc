@@ -568,8 +568,16 @@ void FetchManager::Loader::Start(ExceptionState& exception_state) {
   // "- |request|'s url's scheme is 'about'"
   // Note we don't support to call this method with |CORS flag|
   // "- |request|'s mode is |navigate|".
-  if ((SecurityOrigin::Create(fetch_request_data_->Url())
-           ->IsSameSchemeHostPort(fetch_request_data_->Origin().get())) ||
+  bool is_target_same_origin_as_initiator =
+      SecurityOrigin::Create(fetch_request_data_->Url())
+          ->IsSameSchemeHostPort(fetch_request_data_->Origin().get());
+  bool is_target_same_origin_as_isolated_world =
+      fetch_request_data_->IsolatedWorldOrigin() &&
+      SecurityOrigin::Create(fetch_request_data_->Url())
+          ->IsSameSchemeHostPort(
+              fetch_request_data_->IsolatedWorldOrigin().get());
+  if (is_target_same_origin_as_initiator ||
+      is_target_same_origin_as_isolated_world ||
       (fetch_request_data_->Url().ProtocolIsData() &&
        fetch_request_data_->SameOriginDataURLFlag()) ||
       network::IsNavigationRequestMode(fetch_request_data_->Mode())) {
@@ -695,6 +703,7 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
   // FIXME: Support body.
   ResourceRequest request(fetch_request_data_->Url());
   request.SetRequestorOrigin(fetch_request_data_->Origin());
+  request.SetIsolatedWorldOrigin(fetch_request_data_->IsolatedWorldOrigin());
   request.SetRequestContext(fetch_request_data_->Context());
   request.SetHttpMethod(fetch_request_data_->Method());
   request.SetFetchWindowId(fetch_request_data_->WindowId());

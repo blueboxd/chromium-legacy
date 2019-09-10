@@ -172,7 +172,7 @@ test("media_unittests") {
     deps += [
       # The test needs the java dependencies to add the java classes for their
       # native counterparts to the test apk.
-      "//gpu/ipc/common:android_texture_owner_unittests",
+      "//gpu/command_buffer/service:android_texture_owner_unittests",
       "//media/base/android:media_java",
       "//media/base/android:unit_tests",
       "//media/gpu:android_video_decode_accelerator_unittests",

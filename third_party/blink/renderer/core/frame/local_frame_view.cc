@@ -2621,12 +2621,12 @@ static void CollectLinkHighlightLayersForLayerListRecursively(
     CollectLinkHighlightLayersForLayerListRecursively(context, child);
 }
 
-static void PaintGraphicsLayerRecursively(GraphicsLayer* layer) {
-  layer->PaintRecursively();
-
+static bool PaintGraphicsLayerRecursively(GraphicsLayer* layer) {
+  bool painted = layer->PaintRecursively();
 #if DCHECK_IS_ON()
   VerboseLogGraphicsLayerTree(layer);
 #endif
+  return painted;
 }
 
 void LocalFrameView::PaintTree() {
@@ -2689,7 +2689,13 @@ void LocalFrameView::PaintTree() {
     // the host page and will be painted during painting of the host page.
     if (GraphicsLayer* root_graphics_layer =
             layout_view->Compositor()->PaintRootGraphicsLayer()) {
-      PaintGraphicsLayerRecursively(root_graphics_layer);
+      bool painted = PaintGraphicsLayerRecursively(root_graphics_layer);
+      if (painted) {
+        // If the painted result changed, the painted hit test display items may
+        // have changed which will affect the mapped hit test geometry.
+        if (GetScrollingCoordinator())
+          GetScrollingCoordinator()->NotifyGeometryChanged(this);
+      }
     }
 
     // This uses an invalidation approach based on graphics layer raster

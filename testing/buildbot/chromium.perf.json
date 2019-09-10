@@ -1517,7 +1517,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "os": "Ubuntu-14.04",
+              "os": "Ubuntu",
               "pool": "chrome.tests.perf"
             }
           ],
@@ -1554,7 +1554,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "os": "Ubuntu-14.04",
+              "os": "Ubuntu",
               "pool": "chrome.tests.perf"
             }
           ],
@@ -1591,7 +1591,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "os": "Ubuntu-14.04",
+              "os": "Ubuntu",
               "pool": "chrome.tests.perf"
             }
           ],
@@ -1628,7 +1628,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "os": "Ubuntu-14.04",
+              "os": "Ubuntu",
               "pool": "chrome.tests.perf"
             }
           ],
@@ -1665,7 +1665,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "os": "Ubuntu-14.04",
+              "os": "Ubuntu",
               "pool": "chrome.tests.perf"
             }
           ],
@@ -1702,7 +1702,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "os": "Ubuntu-14.04",
+              "os": "Ubuntu",
               "pool": "chrome.tests.perf"
             }
           ],
@@ -1743,7 +1743,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "os": "Ubuntu-14.04",
+              "os": "Ubuntu",
               "pool": "chrome.tests.perf"
             }
           ],

@@ -15,6 +15,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/numerics/ranges.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -98,7 +99,7 @@ float HidePositionStartValue() {
 // animations to the expected range so that gfx::Tween::CalculateValue() can be
 // used.
 double CapAnimationValue(double value) {
-  return std::min(1.0, std::max(0.0, value));
+  return base::ClampToRange(value, 0.0, 1.0);
 }
 
 // Returns a |views::BoxLayout| layout manager with the settings needed by

@@ -81,9 +81,9 @@ network::mojom::URLLoaderFactory* URLLoaderFactoryBundle::GetFactory(
   if (it != scheme_specific_factories_.end())
     return it->second.get();
 
-  if (request.request_initiator.has_value()) {
-    auto it2 =
-        initiator_specific_factories_.find(request.request_initiator.value());
+  if (request.isolated_world_origin.has_value()) {
+    auto it2 = initiator_specific_factories_.find(
+        request.isolated_world_origin.value());
     if (it2 != initiator_specific_factories_.end())
       return it2->second.get();
   }

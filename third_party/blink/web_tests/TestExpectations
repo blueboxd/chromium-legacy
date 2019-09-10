@@ -686,9 +686,6 @@ crbug.com/591099 external/wpt/css/css-text/boundary-shaping/boundary-shaping-009
 crbug.com/591099 external/wpt/css/css-text/hyphens/shy-styling-001.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-text/line-breaking/line-breaking-018.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-text/line-breaking/line-breaking-019.html [ Failure ]
-crbug.com/591099 external/wpt/css/css-text/line-breaking/line-breaking-atomic-001.html [ Failure ]
-crbug.com/591099 external/wpt/css/css-text/line-breaking/line-breaking-atomic-002.html [ Failure ]
-crbug.com/591099 external/wpt/css/css-text/line-breaking/line-breaking-replaced-001.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-text/shaping/shaping-009.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-text/shaping/shaping-010.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-text/shaping/shaping-011.html [ Failure ]
@@ -3218,7 +3215,6 @@ crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-under
 crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-vertical-002.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 [ Mac10.13 ] external/wpt/css/css-masking/clip-path/clip-path-inline-001.html [ Failure ]
 crbug.com/626703 [ Win7 ] virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] virtual/omt-worker-fetch/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/omt-worker-fetch/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Timeout ]
@@ -3823,17 +3819,12 @@ crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-border-box-border-radius-011.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-border-box-border-radius-006.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-inset-023.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-polygon-023.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-polygon-021.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-polygon-025.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-inset-027.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-ellipse-046.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-circle-049.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-circle-051.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-circle-043.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-border-box-border-radius-008.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-inset-022.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-inset-025.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-border-box-border-radius-007.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-border-box-border-radius-005.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-ellipse-049.html [ Failure ]
@@ -4003,7 +3994,6 @@ crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/626703 external/wpt/css/mediaqueries/viewport-script-dynamic.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/available-size-014.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/available-size-013.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-writing-modes/available-size-016.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-ui/text-overflow-028.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-ui/text-overflow-028.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/astral-bidi/adlam-anti-ref.html [ Failure Pass ]
@@ -4011,7 +4001,6 @@ crbug.com/626703 external/wpt/css/css-writing-modes/astral-bidi/cypriot-anti-ref
 crbug.com/626703 external/wpt/css/css-fill-stroke/paint-order-001.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/available-size-005.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/available-size-003.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-writing-modes/available-size-009.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-writing-modes/mongolian-orientation-002.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-writing-modes/mongolian-orientation-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/mongolian-orientation-001.html [ Failure ]
@@ -4413,10 +4402,6 @@ crbug.com/888470 external/wpt/referrer-policy/css-integration/child-css/internal
 crbug.com/888470 external/wpt/referrer-policy/css-integration/child-css/processing-instruction.html [ Failure ]
 crbug.com/888470 virtual/omt-worker-fetch/external/wpt/referrer-policy/css-integration/child-css/internal-import-stylesheet.html [ Failure ]
 crbug.com/888470 virtual/omt-worker-fetch/external/wpt/referrer-policy/css-integration/child-css/processing-instruction.html [ Failure ]
-
-# This behavior (popups during unload) is being reverted on trunk; this test is
-# expected to fail when this change is merged back to earlier branches.
-crbug.com/936080 external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/no_window_open_when_term_nesting_level_nonzero.window.html [ Failure ]
 
 crbug.com/805756 external/wpt/html/semantics/tabular-data/processing-model-1/span-limits.html [ Pass Timeout ]
 
@@ -6126,6 +6111,10 @@ crbug.com/991243 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/semanti
 # BlinkSchedulerDisableAntiStarvationForPriorities feature.
 crbug.com/979017 wpt_internal/scheduler/task_order.html [ Failure ]
 
+# Expected failures for forced colors mode tests when the corresponding flags
+# are not enabled.
+crbug.com/970285 external/wpt/forced-colors-mode [ Failure ]
+
 # Sheriff 2019-08-14
 crbug.com/993671 [ Win ] http/tests/media/video-frame-size-change.html [ Pass Failure ]
 crbug.com/993671 [ Win ] virtual/audio-service/http/tests/media/video-frame-size-change.html [ Pass Failure ]
@@ -6228,4 +6217,4 @@ crbug.com/998399 [ Linux ] virtual/omt-worker-fetch/external/wpt/service-workers
 crbug.com/1001817 external/wpt/css/css-ui/text-overflow-016.html [ Pass Failure ]
 crbug.com/1001816 external/wpt/css/css-masking/clip-path/clip-path-inline-003.html [ Pass Failure ]
 crbug.com/1001814 external/wpt/css/css-masking/clip-path/clip-path-inline-002.html [ Pass Failure ]
-crbug.com/1001936 [ Linux Win ] external/wpt/css/css-masking/clip-path/clip-path-inline-001.html [ Pass Failure ]
+crbug.com/1001936 external/wpt/css/css-masking/clip-path/clip-path-inline-001.html [ Pass Failure ]

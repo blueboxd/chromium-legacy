@@ -8,7 +8,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/renderer/p2p/network_manager_uma.h"
+#include "third_party/blink/public/platform/modules/p2p/network_manager_uma.h"
 
 namespace content {
 
@@ -56,7 +56,7 @@ void EmptyNetworkManager::OnNetworksChanged() {
     return;
 
   if (!sent_first_update_)
-    ReportIPPermissionStatus(PERMISSION_NOT_REQUESTED);
+    blink::ReportIPPermissionStatus(blink::PERMISSION_NOT_REQUESTED);
 
   sent_first_update_ = true;
   SignalNetworksChanged();

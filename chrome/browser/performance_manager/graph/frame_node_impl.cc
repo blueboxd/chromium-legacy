@@ -10,7 +10,6 @@
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/graph/worker_node_impl.h"
-#include "chrome/browser/performance_manager/performance_manager_clock.h"
 #include "chrome/browser/performance_manager/public/frame_priority/frame_priority.h"
 
 namespace performance_manager {

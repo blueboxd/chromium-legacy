@@ -94,6 +94,7 @@
 <translation id="4201051445878709314">Mostra el mes anterior</translation>
 <translation id="421884353938374759">selector de color</translation>
 <translation id="4248100235867064564">barra de menús</translation>
+<translation id="4254339807215791271">informació sobre el contingut</translation>
 <translation id="4360991593054037559">Introduïu un valor vàlid. Els valors vàlids més propers són <ph name="VALID_VALUE_LOW" /> i <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Preguntes</translation>
 <translation id="4413860115965805769">botó de menú</translation>
@@ -234,7 +235,7 @@
 <translation id="8541249477527128034">control de mitjans</translation>
 <translation id="8550857728288566671">símbol gràfic</translation>
 <translation id="8583702881314752957">llista de definicions</translation>
-<translation id="8597182159515967513">Encapçalament</translation>
+<translation id="8597182159515967513">capçalera</translation>
 <translation id="8603553056539299761">dreta i esquerra per avançar i retrocedir</translation>
 <translation id="860475260694818407">taula de continguts</translation>
 <translation id="8613126697340063924">reproducció amb comandament</translation>

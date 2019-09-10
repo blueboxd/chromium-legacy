@@ -12,10 +12,10 @@
 #include "ash/multi_user/multi_user_window_manager_impl.h"
 #include "ash/multi_user/user_switch_animator.h"
 #include "ash/public/cpp/multi_user_window_manager.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test_shell_delegate.h"
@@ -1558,7 +1558,7 @@ TEST_F(MultiProfileSupportTest, WindowBoundsAfterTabletMode) {
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   // Tests that bounds of both windows are maximized.
   const gfx::Rect maximized_bounds(0, 0, 400,
-                                   200 - ShelfConstants::shelf_size());
+                                   200 - ShelfConfig::Get()->shelf_size());
   EXPECT_EQ(maximized_bounds, window(0)->bounds());
   EXPECT_EQ(maximized_bounds, window(1)->bounds());
 

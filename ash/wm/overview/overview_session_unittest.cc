@@ -20,10 +20,10 @@
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/fps_counter.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -808,7 +808,7 @@ TEST_F(OverviewSessionTest, FullscreenWindowTabletMode) {
   EXPECT_EQ(fullscreen_window_bounds, window2->GetTargetBounds());
 
   const gfx::Rect fullscreen(800, 600);
-  const int shelf_inset = 600 - ShelfConstants::shelf_size();
+  const int shelf_inset = 600 - ShelfConfig::Get()->shelf_size();
   const gfx::Rect normal_work_area(800, shelf_inset);
   display::Screen* screen = display::Screen::GetScreen();
   EXPECT_EQ(gfx::Rect(800, 600),
@@ -1600,7 +1600,7 @@ TEST_F(OverviewSessionTest, NoWindowsIndicatorPosition) {
 
   // Verify that originally the label is in the center of the workspace.
   // Midpoint of height minus shelf.
-  int expected_y = (300 - ShelfConstants::shelf_size()) / 2;
+  int expected_y = (300 - ShelfConfig::Get()->shelf_size()) / 2;
   EXPECT_EQ(gfx::Point(200, expected_y),
             no_windows_widget->GetWindowBoundsInScreen().CenterPoint());
 
@@ -1611,8 +1611,8 @@ TEST_F(OverviewSessionTest, NoWindowsIndicatorPosition) {
   display_manager()->SetDisplayRotation(
       display.id(), display::Display::ROTATE_90,
       display::Display::RotationSource::ACTIVE);
-  expected_y = (400 - ShelfConstants::shelf_size()) / 2;
-  EXPECT_EQ(gfx::Point(150, (400 - ShelfConstants::shelf_size()) / 2),
+  expected_y = (400 - ShelfConfig::Get()->shelf_size()) / 2;
+  EXPECT_EQ(gfx::Point(150, (400 - ShelfConfig::Get()->shelf_size()) / 2),
             no_windows_widget->GetWindowBoundsInScreen().CenterPoint());
 }
 
@@ -1638,7 +1638,7 @@ TEST_F(OverviewSessionTest, NoWindowsIndicatorPositionSplitview) {
   // account.
   const int bounds_left = 200 + 4;
   int expected_x = bounds_left + (400 - (bounds_left)) / 2;
-  const int expected_y = (300 - ShelfConstants::shelf_size()) / 2;
+  const int expected_y = (300 - ShelfConfig::Get()->shelf_size()) / 2;
   EXPECT_EQ(gfx::Point(expected_x, expected_y),
             no_windows_widget->GetWindowBoundsInScreen().CenterPoint());
 
@@ -1676,7 +1676,7 @@ TEST_F(OverviewSessionTest, NoWindowsIndicatorPositionMultiDisplay) {
   ASSERT_TRUE(overview_session());
   RoundedLabelWidget* no_windows_widget =
       overview_session()->no_windows_widget_for_testing();
-  const int expected_y = (400 - ShelfConstants::shelf_size()) / 2;
+  const int expected_y = (400 - ShelfConfig::Get()->shelf_size()) / 2;
   EXPECT_EQ(gfx::Point(200, expected_y),
             no_windows_widget->GetWindowBoundsInScreen().CenterPoint());
 }
@@ -2730,7 +2730,7 @@ TEST_F(OverviewSessionTest, GridBounds) {
 
   // Test that with the bottom shelf, the grid should take up the entire display
   // minus the shelf area on the bottom regardless of auto hide behavior.
-  const int shelf_size = ShelfConstants::shelf_size();
+  const int shelf_size = ShelfConfig::Get()->shelf_size();
   ToggleOverview();
   EXPECT_EQ(gfx::Rect(0, 0, 600, 600 - shelf_size), GetGridBounds());
   ToggleOverview();

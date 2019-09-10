@@ -299,7 +299,6 @@
 <translation id="2479410451996844060">Nederīgs meklēšanas URL.</translation>
 <translation id="2482878487686419369">Paziņojumi</translation>
 <translation id="248348093745724435">Ierīces politikas</translation>
-<translation id="2485387744899240041">Lietotājvārdi jūsu ierīcei un pārlūkam</translation>
 <translation id="2491120439723279231">Servera sertifikātā ir kļūdas.</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">JSON parsētājs</translation>
@@ -864,7 +863,6 @@
 <translation id="5565735124758917034">Aktīvs</translation>
 <translation id="5570825185877910964">Aizsargāt kontu</translation>
 <translation id="5571083550517324815">Nevar saņemt sūtījumu šajā adresē. Atlasiet citu adresi.</translation>
-<translation id="5571347317547569613">({NUM_COOKIES,plural, =1{1 tiek lietots}zero{# tiek lietoti}one{# tiek lietots}other{# tiek lietoti}})</translation>
 <translation id="5580958916614886209">Pārbaudiet derīguma termiņa mēnesi un mēģiniet vēlreiz.</translation>
 <translation id="5586446728396275693">Nav saglabātu adrešu.</translation>
 <translation id="5595485650161345191">Rediģēt adresi</translation>

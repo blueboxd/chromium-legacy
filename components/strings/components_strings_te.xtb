@@ -300,7 +300,6 @@
 <translation id="2479410451996844060">శోధన URL చెల్లదు.</translation>
 <translation id="2482878487686419369">ప్రకటనలు</translation>
 <translation id="248348093745724435">మెషీన్ విధానాలు</translation>
-<translation id="2485387744899240041">మీ పరికరం, బ్రౌజర్‌ల వినియోగదారు పేర్లు</translation>
 <translation id="2491120439723279231">సర్వర్ యొక్క ప్రమాణపత్రంలో లోపాలు ఉన్నాయి.</translation>
 <translation id="2493640343870896922">లెటర్-ప్లస్</translation>
 <translation id="2495083838625180221">JSON పార్సర్</translation>
@@ -866,7 +865,6 @@
 <translation id="5565735124758917034">సక్రియం</translation>
 <translation id="5570825185877910964">ఖాతాను సంరక్షించు</translation>
 <translation id="5571083550517324815">ఈ చిరునామా నుండి పికప్ చేసుకోవడం సాధ్యం కాదు. వేరే చిరునామాని ఎంచుకోండి.</translation>
-<translation id="5571347317547569613">({NUM_COOKIES,plural, =1{1 వినియోగంలో ఉంది}other{# వినియోగంలో ఉన్నాయి}})</translation>
 <translation id="5580958916614886209">మీ గడువు ముగింపు నెలను తనిఖీ చేసి, మళ్లీ ప్రయత్నించండి</translation>
 <translation id="5586446728396275693">సేవ్ చేయబడిన చిరునామాలు లేవు</translation>
 <translation id="5595485650161345191">చిరునామాను సవరించు</translation>

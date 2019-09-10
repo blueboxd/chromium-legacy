@@ -75,7 +75,7 @@ class CONTENT_EXPORT BundledExchangesReader final {
   // SharedFileDataSource instances.
   class SharedFile final : public base::RefCountedThreadSafe<SharedFile> {
    public:
-    explicit SharedFile(const base::FilePath& file_path);
+    explicit SharedFile(const BundledExchangesSource& source);
     void DuplicateFile(base::OnceCallback<void(base::File)> callback);
     base::File* operator->();
 

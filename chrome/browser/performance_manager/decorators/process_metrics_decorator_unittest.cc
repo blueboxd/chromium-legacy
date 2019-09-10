@@ -11,7 +11,6 @@
 #include "chrome/browser/performance_manager/graph/graph_test_harness.h"
 #include "chrome/browser/performance_manager/graph/mock_graphs.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "chrome/browser/performance_manager/performance_manager_clock.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/global_memory_dump.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -107,8 +106,6 @@ class ProcessMetricsDecoratorTest : public GraphTestHarness {
   ~ProcessMetricsDecoratorTest() override = default;
 
   void SetUp() override {
-    PerformanceManagerClock::SetClockForTesting(task_env().GetMockTickClock());
-
     std::unique_ptr<TestProcessMetricsDecorator> decorator =
         std::make_unique<TestProcessMetricsDecorator>();
     decorator_raw_ = decorator.get();
@@ -118,8 +115,6 @@ class ProcessMetricsDecoratorTest : public GraphTestHarness {
     graph()->PassToGraph(std::move(decorator));
     EXPECT_TRUE(decorator_raw_->IsTimerRunningForTesting());
   }
-
-  void TearDown() override { PerformanceManagerClock::ResetClockForTesting(); }
 
   TestProcessMetricsDecorator* decorator() const { return decorator_raw_; }
 

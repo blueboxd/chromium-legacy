@@ -6,6 +6,26 @@
  * @fileoverview
  * 'settings-basic-page' is the settings page containing the actual settings.
  */
+(function() {
+'use strict';
+
+// <if expr="chromeos">
+const OS_BANNER_INTERACTION_METRIC_NAME =
+    'ChromeOS.Settings.OsBannerInteraction';
+
+/**
+ * These values are persisted to logs and should not be renumbered or re-used.
+ * See tools/metrics/histograms/enums.xml.
+ * @enum {number}
+ */
+const CrosSettingsOsBannerInteraction = {
+  NotShown: 0,
+  Shown: 1,
+  Clicked: 2,
+  Closed: 3,
+};
+// </if>
+
 Polymer({
   is: 'settings-basic-page',
 
@@ -116,6 +136,11 @@ Polymer({
    * @private {boolean}
    */
   advancedTogglingInProgress_: false,
+
+  // <if expr="chromeos">
+  /** @private {boolean} */
+  osBannerShowMetricRecorded_: false,
+  // </if>
 
   /** @override */
   attached: function() {
@@ -246,12 +271,37 @@ Polymer({
 
     // Banner only shows on the main page because direct navigations to a
     // sub-page are unlikely to be due to a user looking for an OS setting.
-    return showPref && !this.currentRoute_.isSubpage();
+    const show = showPref && !this.currentRoute_.isSubpage();
+
+    // Record the show metric once. We can't record the metric in attached()
+    // because prefs might not be ready yet.
+    if (!this.osBannerShowMetricRecorded_) {
+      chrome.metricsPrivate.recordEnumerationValue(
+          OS_BANNER_INTERACTION_METRIC_NAME,
+          show ? CrosSettingsOsBannerInteraction.Shown :
+                 CrosSettingsOsBannerInteraction.NotShown,
+          Object.keys(CrosSettingsOsBannerInteraction).length);
+      this.osBannerShowMetricRecorded_ = true;
+    }
+    return show;
+  },
+
+  /** @private */
+  onOSSettingsBannerClick_: function() {
+    // The label has a link that opens the page, so just record the metric.
+    chrome.metricsPrivate.recordEnumerationValue(
+        OS_BANNER_INTERACTION_METRIC_NAME,
+        CrosSettingsOsBannerInteraction.Clicked,
+        Object.keys(CrosSettingsOsBannerInteraction).length);
   },
 
   /** @private */
   onOSSettingsBannerClosed_: function() {
     this.setPrefValue('settings.cros.show_os_banner', false);
+    chrome.metricsPrivate.recordEnumerationValue(
+        OS_BANNER_INTERACTION_METRIC_NAME,
+        CrosSettingsOsBannerInteraction.Closed,
+        Object.keys(CrosSettingsOsBannerInteraction).length);
   },
   // </if>
 
@@ -403,3 +453,4 @@ Polymer({
     return bool.toString();
   },
 });
+})();

@@ -25,8 +25,7 @@ std::unique_ptr<DamageTracker> DamageTracker::Create() {
   return base::WrapUnique(new DamageTracker());
 }
 
-DamageTracker::DamageTracker() : mailboxId_(0) {}
-
+DamageTracker::DamageTracker() = default;
 DamageTracker::~DamageTracker() = default;
 
 void DamageTracker::UpdateDamageTracking(

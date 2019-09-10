@@ -129,7 +129,7 @@ class SerialRunnerTest : public ::testing::Test {
     runner_.reset();
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   SerialRunner::Queue bound_fns_;
   std::unique_ptr<SerialRunner> runner_;
 

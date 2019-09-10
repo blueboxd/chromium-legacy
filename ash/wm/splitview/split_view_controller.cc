@@ -34,6 +34,7 @@
 #include "ash/wm/wm_event.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/numerics/ranges.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/system/sys_info.h"
@@ -97,10 +98,10 @@ constexpr char kSplitViewResizeWithOverviewMaxLatencyHistogram[] =
 gfx::Point GetBoundedPosition(const gfx::Point& location_in_screen,
                               const gfx::Rect& bounds_in_screen) {
   return gfx::Point(
-      std::max(std::min(location_in_screen.x(), bounds_in_screen.right() - 1),
-               bounds_in_screen.x()),
-      std::max(std::min(location_in_screen.y(), bounds_in_screen.bottom() - 1),
-               bounds_in_screen.y()));
+      base::ClampToRange(location_in_screen.x(), bounds_in_screen.x(),
+                         bounds_in_screen.right() - 1),
+      base::ClampToRange(location_in_screen.y(), bounds_in_screen.y(),
+                         bounds_in_screen.bottom() - 1));
 }
 
 WindowStateType GetStateTypeFromSnapPosition(

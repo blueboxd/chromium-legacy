@@ -4,8 +4,8 @@
 
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/test/shell_test_api.h"
-#include "ash/shelf/shelf_constants.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -72,7 +72,7 @@ IN_PROC_BROWSER_TEST_P(LauncherDragTest, Open) {
   gfx::Rect display_bounds = GetDisplayBounds(browser_window);
   gfx::Point start_point = gfx::Point(
       display_bounds.width() / 4,
-      display_bounds.bottom() - ash::ShelfConstants::shelf_size() / 2);
+      display_bounds.bottom() - ash::ShelfConfig::Get()->shelf_size() / 2);
   gfx::Point end_point(start_point);
   end_point.set_y(10);
   ui_test_utils::DragEventGenerator generator(
@@ -102,7 +102,7 @@ IN_PROC_BROWSER_TEST_P(LauncherDragTest, Close) {
   gfx::Point start_point = gfx::Point(display_bounds.width() / 4, 10);
   gfx::Point end_point(start_point);
   end_point.set_y(display_bounds.bottom() -
-                  ash::ShelfConstants::shelf_size() / 2);
+                  ash::ShelfConfig::Get()->shelf_size() / 2);
   ui_test_utils::DragEventGenerator generator(
       std::make_unique<ui_test_utils::InterpolatedProducer>(
           start_point, end_point, base::TimeDelta::FromMilliseconds(1000)),

@@ -23,16 +23,14 @@
 
 namespace content {
 
-BundledExchangesReader::SharedFile::SharedFile(const base::FilePath& file_path)
-    : file_path_(file_path) {
+BundledExchangesReader::SharedFile::SharedFile(
+    const BundledExchangesSource& source) {
   base::PostTaskAndReplyWithResult(
       FROM_HERE, {base::ThreadPool(), base::MayBlock()},
       base::BindOnce(
-          [](const base::FilePath& file_path) -> std::unique_ptr<base::File> {
-            return std::make_unique<base::File>(
-                file_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
-          },
-          file_path_),
+          [](std::unique_ptr<BundledExchangesSource> source)
+              -> std::unique_ptr<base::File> { return source->OpenFile(); },
+          source.Clone()),
       base::BindOnce(&SharedFile::SetFile, base::RetainedRef(this)));
 }
 
@@ -142,7 +140,7 @@ BundledExchangesReader::BundledExchangesReader(
     : parser_(ServiceManagerConnection::GetForProcess()
                   ? ServiceManagerConnection::GetForProcess()->GetConnector()
                   : nullptr),
-      file_(base::MakeRefCounted<SharedFile>(source.file_path())) {}
+      file_(base::MakeRefCounted<SharedFile>(source)) {}
 
 BundledExchangesReader::~BundledExchangesReader() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

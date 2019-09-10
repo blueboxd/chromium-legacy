@@ -148,10 +148,10 @@ class CC_EXPORT DamageTracker {
   SortedRectMapForLayers rect_history_for_layers_;
   SortedRectMapForSurfaces rect_history_for_surfaces_;
 
-  unsigned int mailboxId_;
+  unsigned int mailboxId_ = 0;
   DamageAccumulator current_damage_;
   // Damage from contributing render surface and layer
-  bool has_damage_from_contributing_content_;
+  bool has_damage_from_contributing_content_ = false;
 
   // Damage accumulated since the last call to PrepareForUpdate().
   DamageAccumulator damage_for_this_update_;

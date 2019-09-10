@@ -30,6 +30,7 @@ source_set("cups_proxy") {
     "//base",
     "//chrome/services/cups_proxy/public/cpp",
     "//chrome/services/cups_proxy/public/mojom",
+    "//chrome/services/ipp_parser",
     "//chromeos/dbus",
     "//net",
   ]

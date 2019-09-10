@@ -173,7 +173,7 @@
 #include "media/mojo/services/media_interface_provider.h"
 #include "media/mojo/services/media_metrics_provider.h"
 #include "media/mojo/services/video_decode_perf_history.h"
-#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
@@ -1378,21 +1378,23 @@ service_manager::InterfaceProvider* RenderFrameHostImpl::GetRemoteInterfaces() {
 blink::AssociatedInterfaceProvider*
 RenderFrameHostImpl::GetRemoteAssociatedInterfaces() {
   if (!remote_associated_interfaces_) {
-    blink::mojom::AssociatedInterfaceProviderAssociatedPtr remote_interfaces;
+    mojo::AssociatedRemote<blink::mojom::AssociatedInterfaceProvider>
+        remote_interfaces;
     IPC::ChannelProxy* channel = GetProcess()->GetChannel();
     if (channel) {
       RenderProcessHostImpl* process =
           static_cast<RenderProcessHostImpl*>(GetProcess());
       process->GetRemoteRouteProvider()->GetRoute(
-          GetRoutingID(), mojo::MakeRequest(&remote_interfaces));
+          GetRoutingID(), remote_interfaces.BindNewEndpointAndPassReceiver());
     } else {
       // The channel may not be initialized in some tests environments. In this
       // case we set up a dummy interface provider.
-      mojo::MakeRequestAssociatedWithDedicatedPipe(&remote_interfaces);
+      ignore_result(remote_interfaces
+                        .BindNewEndpointAndPassDedicatedReceiverForTesting());
     }
     remote_associated_interfaces_ =
         std::make_unique<blink::AssociatedInterfaceProvider>(
-            std::move(remote_interfaces));
+            remote_interfaces.Unbind());
   }
   return remote_associated_interfaces_.get();
 }
@@ -7030,6 +7032,11 @@ void RenderFrameHostImpl::SendCommitNavigation(
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token) {
+  // TODO(lfg): Temporary to debug https://crbug.com/996337.
+  if (common_params->url.SchemeIsCryptographic() &&
+      response_head.ssl_info.has_value() && !response_head.ssl_info->cert) {
+    base::debug::DumpWithoutCrashing();
+  }
   if (navigation_client) {
     navigation_client->CommitNavigation(
         std::move(common_params), std::move(commit_params), response_head,

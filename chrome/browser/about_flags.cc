@@ -2910,6 +2910,11 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop | kOsAndroid,
      FEATURE_VALUE_TYPE(omnibox::kZeroSuggestionsOnNTP)},
 
+    {"omnibox-zero-suggestions-on-ntp-realbox",
+     flag_descriptions::kOmniboxZeroSuggestionsOnNTPRealboxName,
+     flag_descriptions::kOmniboxZeroSuggestionsOnNTPRealboxDescription,
+     kOsDesktop, FEATURE_VALUE_TYPE(omnibox::kZeroSuggestionsOnNTPRealbox)},
+
     {"omnibox-material-design-weather-icons",
      flag_descriptions::kOmniboxMaterialDesignWeatherIconsName,
      flag_descriptions::kOmniboxMaterialDesignWeatherIconsDescription,
@@ -3488,9 +3493,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-arc-cups-api", flag_descriptions::kArcCupsApiName,
      flag_descriptions::kArcCupsApiDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kArcCupsApi)},
-    {"enable-cros-vm-cups-proxy", flag_descriptions::kCrosVmCupsProxyName,
-     flag_descriptions::kCrosVmCupsProxyDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kCrosVmCupsProxy)},
 #endif  // OS_CHROMEOS
 
 #if defined(OS_CHROMEOS)
@@ -3751,10 +3753,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableFilesystemInIncognitoName,
      flag_descriptions::kEnableFilesystemInIncognitoDescription, kOsAll,
      FEATURE_VALUE_TYPE(storage::features::kEnableFilesystemInIncognito)},
-
-    {"enable-send-tab-to-self", flag_descriptions::kSendTabToSelfName,
-     flag_descriptions::kSendTabToSelfDescription, kOsAll,
-     FEATURE_VALUE_TYPE(switches::kSyncSendTabToSelf)},
 
     {"enable-send-tab-to-self-show-sending-ui",
      flag_descriptions::kSendTabToSelfShowSendingUIName,

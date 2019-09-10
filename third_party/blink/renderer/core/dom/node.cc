@@ -2850,21 +2850,6 @@ void Node::DefaultEventHandler(Event& event) {
           frame->GetEventHandler().StartMiddleClickAutoscroll(layout_object);
       }
     }
-  } else if (event_type == event_type_names::kMouseup && event.IsMouseEvent()) {
-    auto& mouse_event = ToMouseEvent(event);
-    if (mouse_event.button() ==
-        static_cast<int16_t>(WebPointerProperties::Button::kBack)) {
-      if (LocalFrame* frame = GetDocument().GetFrame()) {
-        if (frame->Client()->NavigateBackForward(-1, false))
-          event.SetDefaultHandled();
-      }
-    } else if (mouse_event.button() ==
-               static_cast<int16_t>(WebPointerProperties::Button::kForward)) {
-      if (LocalFrame* frame = GetDocument().GetFrame()) {
-        if (frame->Client()->NavigateBackForward(1, false))
-          event.SetDefaultHandled();
-      }
-    }
   }
 }
 

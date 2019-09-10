@@ -225,7 +225,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &safe_browsing::kSendOnFocusPing,
     &signin::kMiceFeature,
     &switches::kSyncManualStartAndroid,
-    &switches::kSyncSendTabToSelf,
     &unified_consent::kUnifiedConsent,
     &subresource_filter::kSafeBrowsingSubresourceFilter,
 };

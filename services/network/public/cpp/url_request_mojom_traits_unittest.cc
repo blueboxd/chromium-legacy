@@ -53,6 +53,8 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   original.attach_same_site_cookies = true;
   original.update_first_party_url_on_redirect = false;
   original.request_initiator = url::Origin::Create(original.url);
+  original.isolated_world_origin =
+      url::Origin::Create(GURL("chrome-extension://blah"));
   original.referrer = GURL("https://referrer.com/");
   original.referrer_policy =
       net::URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN;

@@ -70,6 +70,15 @@ class BaseSystemTrustStore : public SystemTrustStore {
   TrustStoreInMemory additional_trust_store_;
 };
 
+class DummySystemTrustStore : public BaseSystemTrustStore {
+ public:
+  bool UsesSystemTrustStore() const override { return false; }
+
+  bool IsKnownRoot(const ParsedCertificate* trust_anchor) const override {
+    return false;
+  }
+};
+
 }  // namespace
 
 #if defined(USE_NSS_CERTS)
@@ -242,19 +251,14 @@ std::unique_ptr<SystemTrustStore> CreateSslSystemTrustStore() {
 
 #else
 
-class DummySystemTrustStore : public BaseSystemTrustStore {
- public:
-  bool UsesSystemTrustStore() const override { return false; }
-
-  bool IsKnownRoot(const ParsedCertificate* trust_anchor) const override {
-    return false;
-  }
-};
-
 std::unique_ptr<SystemTrustStore> CreateSslSystemTrustStore() {
   return std::make_unique<DummySystemTrustStore>();
 }
 
 #endif
+
+std::unique_ptr<SystemTrustStore> CreateEmptySystemTrustStore() {
+  return std::make_unique<DummySystemTrustStore>();
+}
 
 }  // namespace net

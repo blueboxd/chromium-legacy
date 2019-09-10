@@ -12,11 +12,11 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/desks/desk.h"
@@ -87,7 +87,7 @@ gfx::Rect GetGridBoundsInScreen(aura::Window* root_window,
   // shown, but we want to place the thumbnails as if the shelf was shown, so
   // manually update the work area.
   if (Shelf::ForWindow(root_window)->GetVisibilityState() == SHELF_AUTO_HIDE) {
-    const int inset = ShelfConstants::shelf_size();
+    const int inset = ShelfConfig::Get()->shelf_size();
     switch (Shelf::ForWindow(root_window)->alignment()) {
       case SHELF_ALIGNMENT_BOTTOM:
       case SHELF_ALIGNMENT_BOTTOM_LOCKED:

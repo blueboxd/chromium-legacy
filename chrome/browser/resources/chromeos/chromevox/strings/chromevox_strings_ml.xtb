@@ -20,7 +20,7 @@
 <translation id="1087788677726983142">ഇവന്റ് സ്‌ട്രീം ഫിൽട്ടറുകൾ അദൃശ്യമാക്കുക</translation>
 <translation id="1088219014394087294">ശീർഷകങ്ങളൊന്നുമില്ല.</translation>
 <translation id="1106741348836243114">ശബ്‌ദ ഫീഡ്‌ബാക്ക് (ഇയർകോൺസ്) ഓണാക്കുക അല്ലെങ്കിൽ ഓഫാക്കുക.</translation>
-<translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
+<translation id="1120743664840974483">{"a": "ആൽഫ", "b": "ബ്രാവോ", "c": "ചാർലി", "d": "ഡെൽറ്റ", "e": "എക്കോ", "f": "ഫോക്സ്ട്രോറ്റ്", "g": "ഗോൾഫ്", "h": "ഹോട്ടൽ", "i": "ഇന്ത്യ", "j": "ജൂലിയറ്റ്","k": "കിലോ", "l": "ലിമ", "m": "മൈക്ക്", "n": "നവംബർ", "o": "ഓസ്കാർ","p": "പപ്പ", "q": "ക്വബാക്", "r": "റോമിയോ", "s": "സീറ", "t": "ടാങ്കോ", "u": "യൂണിഫോം", "v": "വിക്ടർ", "w": "വിസ്കി","x": "എക്സ്റേ", "y": "യാങ്കി", "z": "സുളു"}</translation>
 <translation id="1120938014254001895">രണ്ട് വിരലുകൾ ഉപയോഗിച്ച് മുകളിലോട്ട് സ്വൈപ്പ് ചെയ്യുക</translation>
 <translation id="1124771028211010580">നിലവിലുള്ള ഡിസ്‌പ്ലേ ശൈലി വശങ്ങളിൽ കാണിക്കുന്ന തരത്തിലാണ്.</translation>
 <translation id="1126928665165112660">ഇറ്റാലിക്ക് അല്ല</translation>
@@ -206,7 +206,6 @@
 <translation id="257674075312929031">ഗ്രൂപ്പ്</translation>
 <translation id="2582407057977008361">അരികിൽ</translation>
 <translation id="2592212930811759050">എഡിറ്റിംഗ് ആരംഭിക്കാൻ രണ്ടുതവണ ടാപ്പ് ചെയ്യുക</translation>
-<translation id="2606210917827248971">ഇവ ഉൾപ്പെടുന്നു {COUNT,plural, =1{# ഇനം}other{# ഇനങ്ങൾ}}</translation>
 <translation id="2614981083756825552">മാത്ത് ML ലേഔട്ട്</translation>
 <translation id="2624431853467395961">"അറിയുക" മോഡ് തുറക്കുക</translation>
 <translation id="2626530649491650971">ക്ലിക്കുചെയ്യാവുന്നത്</translation>
@@ -390,7 +389,6 @@
 <translation id="3781428340399460090">ഹോട്ട് പിങ്ക്</translation>
 <translation id="3783725005098956899">ലോഗ് കാണിക്കുക</translation>
 <translation id="3793710123303304873">ഡയലോഗിൽ നിന്ന് പുറത്തുകടന്നു.</translation>
-<translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">യാന്ത്രികപൂർത്തീകരണം ലിസ്റ്റ്</translation>
 <translation id="3810838688059735925">വീഡിയോ</translation>
 <translation id="3813387282697781382">ഇളം കോറൽ</translation>

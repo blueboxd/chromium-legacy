@@ -3,7 +3,6 @@
 <translationbundle lang="tr">
 <translation id="1036550831858290950">Geçerli sekmenizi yer işareti olarak kaydeder</translation>
 <translation id="104962181688258143">Dosyalar uygulamasını açar</translation>
-<translation id="1098295134904615027">Sağdaki sanal masayı etkinleştir</translation>
 <translation id="1122869341872663659"><ph name="QUERY" /> için <ph name="N" /> arama sonucu gösteriliyor</translation>
 <translation id="1195667586424773550">Bağlantıyı sekmenin adres çubuğuna sürükleyin</translation>
 <translation id="1204450209689312104">Gizli modda yeni bir pencere açar</translation>
@@ -25,7 +24,6 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">Adres çubuğuna yazdığınız metnin başına www. ve sonuna .com ifadelerini ekleyip sayfayı açar</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, daha sonra <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> veya <ph name="LEFT" /></translation>
-<translation id="1929866390202038233">Soldaki sanal masayı etkinleştir</translation>
 <translation id="1996162290124031907">Sonraki sekmeye gider</translation>
 <translation id="2010818616644390445">Penceredeki son sekmeye gider</translation>
 <translation id="2040706009561734834">Başlatıcıyı açar/kapatır</translation>
@@ -64,7 +62,6 @@
 <translation id="3105917916468784889">Ekran görüntüsü al</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Adres çubuğuna odaklan</translation>
-<translation id="3165428420335997629">Yeni bir sanal masa oluştur</translation>
 <translation id="3256109297135787951">Rafınızdaki bir öğenin vurgusunu kaldırır</translation>
 <translation id="3288816184963444640">Geçerli pencereyi kapatır</translation>
 <translation id="3407560819924487926">Görev yöneticisini açar</translation>
@@ -181,7 +178,6 @@
 <translation id="8234414138295101081">Ekranı 90 derece döndürür</translation>
 <translation id="8241665785394195545">sağ parantez</translation>
 <translation id="8264941229485248811">Geliştirici Araçları denetleyicisini gösterir veya gizler</translation>
-<translation id="8355937569537581904">Mevcut sanal masayı kaldır</translation>
 <translation id="836869401750819675">İndirilenler sayfasını açar</translation>
 <translation id="8388247778047144397">Bağlantıyı sekme şeridindeki boş bir alana sürükleyin</translation>
 <translation id="8389638407792712197">Yeni pencere açar</translation>

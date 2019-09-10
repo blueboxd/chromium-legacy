@@ -18,7 +18,7 @@ namespace chromeos {
 
 CupsProxyServiceManager::CupsProxyServiceManager() {
   // Don't wait for the daemon if the feature is turned off anyway.
-  if (base::FeatureList::IsEnabled(features::kCrosVmCupsProxy)) {
+  if (base::FeatureList::IsEnabled(features::kPluginVm)) {
     CupsProxyClient::Get()->WaitForServiceToBeAvailable(
         base::BindOnce(&CupsProxyServiceManager::OnDaemonAvailable,
                        weak_factory_.GetWeakPtr()));

@@ -14,4 +14,8 @@ bool WebViewPasswordFeatureManager::IsGenerationEnabled() const {
   return false;
 }
 
+bool WebViewPasswordFeatureManager::ShouldCheckReuseOnLeakDetection() const {
+  return false;
+}
+
 }  // namespace ios_web_view

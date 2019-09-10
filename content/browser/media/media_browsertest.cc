@@ -13,6 +13,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/common/shell_switches.h"
 #include "media/base/media_switches.h"
 #include "media/base/test_data_util.h"
 #include "media/media_buildflags.h"
@@ -30,6 +31,8 @@ void MediaBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
   command_line->AppendSwitchASCII(
       switches::kAutoplayPolicy,
       switches::autoplay::kNoUserGestureRequiredPolicy);
+  command_line->AppendSwitch(switches::kExposeInternalsForTesting);
+
   // Disable fallback after decode error to avoid unexpected test pass on the
   // fallback path.
   scoped_feature_list_.InitAndDisableFeature(media::kFallbackAfterDecodeError);

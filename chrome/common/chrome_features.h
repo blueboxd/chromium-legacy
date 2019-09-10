@@ -127,6 +127,8 @@ extern const base::Feature kCrostiniAnsibleInfrastructure;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kCrostiniAnsibleSoftwareManagement;
 COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kCrostiniForceClose;
+COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kCupsPrintersUiOverhaul;
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kPluginVm;
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -482,8 +484,6 @@ extern const base::Feature kUseSameCacheForMedia;
 
 #if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kArcCupsApi;
-
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kCrosVmCupsProxy;
 
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kQuickUnlockPin;
 

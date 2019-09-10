@@ -1184,7 +1184,7 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
 <translation id="3016255526521614822">Auf dem <ph name="PRODUCT_OS_NAME" />-Sperrbildschirm zulässige Notizen-Apps auf die weiße Liste setzen</translation>
 <translation id="3021562480854470924">Rollback bei erreichter Anzahl von Meilensteinen ist erlaubt</translation>
 <translation id="3023572080620427845">URL einer XML-Datei, die URLs enthält, mit denen ein alternativer Browser geladen werden kann.</translation>
-<translation id="3026740867910702435">Mit dieser Richtlinie kann die Bedienungshilfe für den großen Cursor auf der Anmeldeseite aktiviert werden.
+<translation id="3026740867910702435">Mit dieser Richtlinie kann die Bedienungshilfe "großer Cursor" auf der Anmeldeseite aktiviert werden.
 
           Wird die Richtlinie auf "true" gesetzt, ist der große Cursor auf dem Anmeldebildschirm immer aktiviert.
 
@@ -1488,7 +1488,7 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
 <translation id="3631099945620529777">Wenn diese Richtlinie auf "false" gesetzt ist, ist die Schaltfläche "Prozess beenden" im Task-Manager deaktiviert.
 
       Ist sie auf "true" gesetzt oder nicht konfiguriert, kann der Nutzer Prozesse im Task-Manager beenden.</translation>
-<translation id="3639444551396586995">Google unsichere Ereignisse in Chrome melden</translation>
+<translation id="3639444551396586995">Unsichere Ereignisse in Chrome an Google melden</translation>
 <translation id="3643284063603988867">Funktion zum Speichern des Passworts aktivieren</translation>
 <translation id="3646859102161347133">Lupentyp festlegen</translation>
 <translation id="3653237928288822292">Symbol der Standardsuchmaschine</translation>
@@ -1904,7 +1904,7 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
           Der Richtlinienwert sollte in Millisekunden angegeben werden. Werte müssen kleiner oder gleich dem Wert für die Inaktivitätsverzögerung sein.
 
           Die Warnung wird nur eingeblendet, wenn infolge der Inaktivität der Nutzer abgemeldet oder das Gerät heruntergefahren wird.</translation>
-<translation id="4344356660952451291">Liste der Domains, für die heruntergeladene Inhalte auf Compliance geprüft werden müssen.</translation>
+<translation id="4344356660952451291">Liste der Domains, für die heruntergeladene Inhalte auf Regeleinhaltung geprüft werden müssen</translation>
 <translation id="4346674324214534449">Hiermit kann festgelegt werden, ob die Werbung auf Websites mit aufdringlichen Werbeanzeigen blockiert wird.
 
       Wenn diese Richtlinie auf "2" gesetzt wird, wird die Werbung auf Websites mit aufdringlichen Werbeanzeigen blockiert.
@@ -2362,15 +2362,15 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 <translation id="5323128137188992869">Hiermit wird das Streamen von Inhalten an das Gerät über <ph name="PRODUCT_NAME" /> erlaubt.
 
           Wird diese Richtlinie auf "false" gesetzt, ist es Nutzern nicht möglich, Inhalte auf ihr Gerät zu streamen. Wird diese Richtlinie auf "true" gesetzt, können Nutzer Inhalte streamen. Ist diese Richtlinie nicht definiert, so können Nutzer zwar keine Inhalte an angemeldete Chrome OS-Geräte streamen, aber an andere Geräte.</translation>
-<translation id="5325625566921364045">Mit dieser Richtlinie legen Sie fest, wie Daten, die hochgeladen, heruntergeladen oder aus der Zwischenablage bzw. per Drag-and-drop eingefügt werden, in <ph name="PRODUCT_NAME" /> mit Enterprise Rules auf Compliance geprüft werden.
+<translation id="5325625566921364045">Mit dieser Richtlinie legen Sie fest, wie Daten, die hochgeladen, heruntergeladen oder aus der Zwischenablage bzw. per Drag-and-drop eingefügt werden, in <ph name="PRODUCT_NAME" /> auf Einhaltung von Unternehmensregeln geprüft werden.
 
-      Wenn diese Richtlinie nicht konfiguriert oder auf "None" (Keine) gesetzt ist, werden Daten in <ph name="PRODUCT_NAME" /> nicht auf Compliance geprüft.
+      Wenn diese Richtlinie nicht konfiguriert oder auf "Nicht auf Inhaltscompliance prüfen" gesetzt ist, werden Daten in <ph name="PRODUCT_NAME" /> nicht auf Regeleinhaltung geprüft.
 
-      Ist sie auf "Check downloads" (Downloads prüfen) gesetzt und der Nutzer versucht, eine Datei von einer URL herunterzuladen, die in der Richtlinie "<ph name="DOMAINS_TO_CHECK_COMPLIANCE_OF_DOWNLOADED_CONTENT_POLICTY_NAME" />" enthalten ist, werden die Daten in <ph name="PRODUCT_NAME" /> mit Enterprise Rules auf Compliance geprüft.
+      Ist sie auf "Inhaltscompliance von Downloads prüfen" gesetzt und der Nutzer versucht, eine Datei von einer URL herunterzuladen, die in der Richtlinie "<ph name="DOMAINS_TO_CHECK_COMPLIANCE_OF_DOWNLOADED_CONTENT_POLICTY_NAME" />" enthalten ist, werden die Daten in <ph name="PRODUCT_NAME" /> auf Einhaltung von Unternehmensregeln geprüft.
 
-      Wenn die Richtlinie auf "Check uploads" (Uploads prüfen) gesetzt ist und der Nutzer versucht, eine Datei in eine Domain hochzuladen, die nicht in der Richtlinie "<ph name="DOMAINS_TO_NOT_CHECK_COMPLIANCE_OF_UPLOADED_CONTENT_POLICY_NAME" />" enthalten ist, werden die hochgeladene Datei oder die Daten, die aus der Zwischenablage bzw. per Drag-and-drop eingefügt wurden, in <ph name="PRODUCT_NAME" /> mit Enterprise Rules auf Compliance geprüft.
+      Wenn die Richtlinie auf "Inhaltscompliance von Uploads prüfen" gesetzt ist und der Nutzer versucht, eine Datei auf eine Domain hochzuladen, die nicht in der Richtlinie "<ph name="DOMAINS_TO_NOT_CHECK_COMPLIANCE_OF_UPLOADED_CONTENT_POLICY_NAME" />" enthalten ist, werden die hochgeladene Datei oder die Daten, die aus der Zwischenablage bzw. per Drag-and-drop eingefügt wurden, in <ph name="PRODUCT_NAME" /> auf Einhaltung von Unternehmensregeln geprüft.
 
-      Ist sie auf "Check uploads and downloads" (Uploads und Downloads prüfen) gesetzt, werden in <ph name="PRODUCT_NAME" /> die Regeln verwendet, die unter "Check downloads" und "Check uploads" beschrieben sind.
+      Ist sie auf "Inhaltscompliance von Uploads und Downloads prüfen" gesetzt, werden in <ph name="PRODUCT_NAME" /> die Regeln verwendet, die unter "Inhaltscompliance von Downloads prüfen" und "Inhaltscompliance von Uploads prüfen" beschrieben sind.
       </translation>
 <translation id="532848608876725157">DoH-Modus mit unsicherem Fallback-Verhalten aktivieren</translation>
 <translation id="5329007337159326804">Achtung: Die Richtlinie zur TLS-Höchstversion wird voraussichtlich in Version 75 (etwa im Juni 2019) vollständig aus <ph name="PRODUCT_NAME" /> entfernt.
@@ -2393,7 +2393,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 <translation id="5369937289900051171">Nur Farbdruck</translation>
 <translation id="5370279767682621504">HTTP/0.9-Unterstützung für nicht standardmäßige Ports aktivieren</translation>
 <translation id="5378985487213287085">Ermöglicht Ihnen festzulegen, ob Websites Desktop-Benachrichtigungen anzeigen dürfen. Das Anzeigen von Desktop-Benachrichtigungen kann entweder standardmäßig gestattet oder nicht gestattet werden oder auf Anfrage beim Nutzer geschehen. Wenn diese Richtlinie nicht konfiguriert ist, so kommt "AskNotifications" zum Einsatz, wobei dies vom Nutzer geändert werden kann.</translation>
-<translation id="5380329473151894945">Hiermit wird der Standardstatus der Bedienungshilfe für den großen Cursor auf der Anmeldeseite festgelegt.
+<translation id="5380329473151894945">Hiermit wird der Standardstatus der Bedienungshilfe "großer Cursor" auf der Anmeldeseite festgelegt.
 
           Ist diese Richtlinie auf "true" gesetzt, ist der große Cursor aktiviert, wenn die Anmeldeseite angezeigt wird.
 
@@ -2401,7 +2401,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 
           Wenn Sie diese Richtlinie konfigurieren, können Nutzer sie vorübergehend überschreiben, indem sie den großen Cursor aktivieren oder deaktivieren. Die Nutzerauswahl wird jedoch nicht beibehalten und die Standardeinstellung wird wiederhergestellt, sobald die Anmeldeseite neu angezeigt wird oder der Nutzer auf der Anmeldeseite eine Minute lang inaktiv ist.
 
-          Falls diese Richtlinie nicht konfiguriert wird, ist der große Cursor deaktiviert, wenn die Anmeldeseite das erste Mal angezeigt wird. Die Nutzer können den großen Cursor jederzeit aktivieren oder deaktivieren und dieser Status bleibt auf der Anmeldeseite erhalten.
+          Wenn diese Richtlinie nicht konfiguriert wird, ist der große Cursor deaktiviert, wenn die Anmeldeseite das erste Mal angezeigt wird. Die Nutzer können den großen Cursor jederzeit aktivieren oder deaktivieren und dieser Status bleibt auf der Anmeldeseite erhalten.
 
           Hinweis: Sofern konfiguriert, überschreibt "<ph name="DEVICE_LOGIN_SCREEN_LARGE_CURSOR_ENABLED" />" diese Richtlinie.</translation>
 <translation id="538108065117008131">Verarbeitung der folgenden Inhaltstypen durch <ph name="PRODUCT_FRAME_NAME" /> zulassen</translation>
@@ -2789,7 +2789,7 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="6034341625190551415">Legt die Typen für öffentliche Sitzungen und Kiosk-Konten fest.</translation>
 <translation id="6034603289689965535">Erlaubt einer Seite, während des Unloads Pop-ups einzublenden</translation>
 <translation id="6036523166753287175">Firewallausnahme über Host für Remotezugriff aktivieren</translation>
-<translation id="6038407313189625985">Ist diese Richtlinie aktiviert oder nicht konfiguriert, ist Renderer Code Integrity aktiviert. Sie sollte nur deaktiviert werden, wenn Kompatibilitätsprobleme mit Drittanbieter-Software auftreten, die innerhalb der Rendererprozesse von Chrome ausgeführt werden muss.
+<translation id="6038407313189625985">Wenn diese Richtlinie aktiviert oder nicht konfiguriert ist, ist Renderer-Codeintegrität aktiviert. Sie sollte nur deaktiviert werden, wenn Kompatibilitätsprobleme mit Drittanbieter-Software auftreten, die innerhalb der Rendererprozesse von Chrome ausgeführt werden muss.
 
       Eine Deaktivierung hat negative Auswirkungen auf die Sicherheit und Stabilität von Chrome, da dann unbekannter und potenziell schädlicher Code in den Rendererprozessen von Chrome geladen werden kann. Weitere Informationen finden Sie unter: https://chromium.googlesource.com/chromium/src/+/master/docs/design/sandbox.md#Process-mitigation-policies.</translation>
 <translation id="605475635122964053">Hiermit wird der PIN-Druckmodus eingeschränkt. Wenn die Richtlinie nicht konfiguriert ist, gelten keine Einschränkungen. Ist der Modus nicht verfügbar, wird diese Richtlinie ignoriert. Der PIN-Druckmodus wird nur für Drucker angewendet, die das IPPS- oder USB-Protokoll bzw. IPP über USB verwenden. </translation>
@@ -2835,9 +2835,9 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="6141402445226505817">Immer die grobe Erkennung der Zeitzone verwenden</translation>
 <translation id="6145799962557135888">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen die Ausführung von JavaScript gestattet ist. Wenn diese Richtlinie nicht konfiguriert ist, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultJavaScriptSetting", falls konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.</translation>
 <translation id="614662973812186053">Diese Richtlinie steuert zudem die Erfassung von Nutzungs- und Diagnosedaten in Android.</translation>
-<translation id="6150961766041720393">Die Liste der Domains, für die hochgeladene Inhalte oder Daten, die aus der Zwischenablage bzw. per Drag-and-drop eingefügt wurden, nicht auf Compliance geprüft werden müssen.  Diese Richtlinie wird nur verwendet, wenn "<ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" />" aktiviert ist.
+<translation id="6150961766041720393">Die Liste der Domains, für die hochgeladene Inhalte oder Daten, die aus der Zwischenablage bzw. per Drag-and-drop eingefügt wurden, nicht auf Regeleinhaltung geprüft werden müssen.  Diese Richtlinie wird nur verwendet, wenn "<ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" />" aktiviert ist.
 
-      Wenn diese Richtlinie nicht konfiguriert oder eine leere Liste festgelegt ist, werden alle Inhalte auf Compliance geprüft.
+      Wenn diese Richtlinie nicht konfiguriert oder eine leere Liste festgelegt ist, werden alle Inhalte auf Regeleinhaltung geprüft.
       </translation>
 <translation id="6153048425064249648">Mit dieser Richtlinie wird festgelegt, ob Cloud-Berichte für <ph name="PRODUCT_NAME" /> erstellt werden. Dabei werden Daten zum Betrieb des Browsers an die Google Admin-Konsole gesendet.
 
@@ -2913,15 +2913,15 @@ Für diese Richtlinie wird die Installation von <ph name="CHROME_REPORTING_EXTEN
 <translation id="6281043242780654992">Konfiguriert Richtlinien für das native Messaging. Hosts für natives Messaging auf der schwarzen Liste können nur geladen werden, wenn sie auch auf der weißen Liste stehen.</translation>
 <translation id="6282799760374509080">Audioaufzeichnung gestatten oder ablehnen</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6305895953906663275">Mit dieser Richtlinie wird festgelegt, was in <ph name="PRODUCT_NAME" /> passiert, wenn ein Nutzer versucht, Dateien hoch- oder herunterzuladen, die aufgrund ihrer Größe nicht zum Scannen auf Malware oder Inhaltscompliance gesendet werden können (50 MB oder größer).  Die Beschränkung gilt nur für Dateien, die gemäß den folgenden Richtlinien gescannt werden müssen: "<ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />", "<ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" />" und die Richtlinien, über die die Listen der Domains gesteuert werden, für die Überprüfungen aktiviert sind.
+<translation id="6305895953906663275">Mit dieser Richtlinie wird festgelegt, was in <ph name="PRODUCT_NAME" /> passiert, wenn ein Nutzer versucht, Dateien hoch- oder herunterzuladen, die aufgrund ihrer Größe nicht auf Malware oder Inhaltscompliance gescannt werden können (50 MB oder größer).  Die Beschränkung gilt nur für Dateien, die gemäß den folgenden Richtlinien gescannt werden müssen: "<ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />", "<ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" />" und die Richtlinien, über die die Listen der Domains gesteuert werden, für die Überprüfungen aktiviert sind.
 
-      Wenn diese Richtlinie nicht konfiguriert oder auf "None" (Keine) gesetzt ist, gibt es in <ph name="PRODUCT_NAME" /> keine Größenbeschränkung für den Up- oder Download von Dateien.
+      Wenn diese Richtlinie nicht konfiguriert oder auf "Große Dateien nicht blockieren" gesetzt ist, gibt es in <ph name="PRODUCT_NAME" /> keine Größenbeschränkung für den Up- oder Download von Dateien.
 
-      Ist sie auf "Block large downloads" (Große Downloads blockieren) gesetzt, werden Dateien, die aufgrund ihrer Größe nicht gescannt werden können, gelöscht.  Die Größe lässt sich nicht immer vor dem Download ermitteln. Aus diesem Grund werden Dateien eventuell in <ph name="PRODUCT_NAME" /> heruntergeladen, bevor erkannt wird, dass sie zu groß sind.
+      Ist sie auf "Große Dateidownloads blockieren" gesetzt, werden Dateien, die aufgrund ihrer Größe nicht gescannt werden können, gelöscht.  Die Größe lässt sich nicht immer vor dem Download ermitteln. Aus diesem Grund werden Dateien eventuell in <ph name="PRODUCT_NAME" /> heruntergeladen, bevor erkannt wird, dass sie zu groß sind.
 
-      Ist diese Richtlinie auf "Block large uploads" (Große Uploads blockieren) gesetzt, lassen sich Dateien, die aufgrund ihrer Größe nicht gescannt werden können, nicht zum Hochladen auswählen.
+      Ist diese Richtlinie auf "Große Dateiuploads blockieren" gesetzt, lassen sich Dateien, die aufgrund ihrer Größe nicht gescannt werden können, nicht zum Hochladen auswählen.
 
-      Wenn sie auf "Block large file uploads and downloads" (Große Uploads und Downloads blockieren) gesetzt ist, werden in <ph name="PRODUCT_NAME" /> die Regeln angewendet, die unter "Block large downloads" und "Block large uploads" beschrieben sind.
+      Wenn sie auf "Große Dateiuploads und -downloads blockieren" gesetzt ist, werden in <ph name="PRODUCT_NAME" /> die Regeln angewendet, die unter "Große Dateidownloads blockieren" und "Große Dateiuploads blockieren" beschrieben sind.
       </translation>
 <translation id="6310223829319187614">Automatische Vervollständigung des Domainnamens während der Nutzeranmeldung aktivieren</translation>
 <translation id="6315673513957120120">Chrome zeigt eine Seite mit einer Warnmeldung an, wenn Nutzer Websites aufrufen, die SSL-Fehler aufweisen. Standardmäßig oder bei Festlegung von "true" für diese Richtlinie ist es Nutzern gestattet, durch diese Seiten mit Warnmeldung zu klicken.
@@ -3146,7 +3146,7 @@ Wenn diese Richtlinie auf "false" gesetzt ist, ist die Anmeldung in einem andere
 
 Ist sie nicht konfiguriert oder auf "true" gesetzt, wird das Standardverhalten verwendet: Die Anmeldung in einem anderen Google-Konto aus dem Inhaltsbereich eines Browsers und in Android-Apps ist dann erlaubt; hiervon ausgenommen sind jedoch Konten für Kinder, bei denen die Anmeldung für den Inhaltsbereich eines Browsers, der nicht im Inkognitomodus ist, blockiert wird.
 
-Falls die Anmeldung in einem anderen Konto über den Inkognitomodus nicht erlaubt ist, können Sie diesen Modus mithilfe der Richtlinie "IncognitoModeAvailability" blockieren.
+Falls die Anmeldung in einem anderen Konto über den Inkognitomodus nicht erlaubt sein soll, können Sie diesen Modus mithilfe der Richtlinie "IncognitoModeAvailability" blockieren.
 
 Hinweis: Nutzer können Cookies blockieren und so auf Google-Dienste zugreifen, die nicht authentifiziert sind.</translation>
 <translation id="6837480141980366278">Legt fest, ob der integrierte DNS-Client von  <ph name="PRODUCT_NAME" /> verwendet werden soll.
@@ -3362,7 +3362,7 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 
       Wenn die Richtlinie nicht festgelegt ist, kann der Nutzer selbst wählen.</translation>
 <translation id="7145335384492396213">Standardmodus PIN-Druck</translation>
-<translation id="7152605873936173525">Über diese Richtlinie wird der Modus des DoH-Resolvers gesteuert. Bei dieser Richtlinie wird der Standardmodus nur auf Anfrageebene festgelegt. Für bestimmte Anfragetypen kann der Modus überschrieben werden, etwa bei Anfragen zum Auflösen des Hostnamens eines DoH-Servers.
+<translation id="7152605873936173525">Über diese Richtlinie wird der Modus des DoH-Resolvers gesteuert. Bei dieser Richtlinie wird nur der Standardmodus auf Anfrageebene festgelegt. Für bestimmte Anfragetypen kann der Modus überschrieben werden, etwa bei Anfragen zum Auflösen des Hostnamens eines DoH-Servers.
 
       Durch den Modus "<ph name="SECURE_DNS_MODE_OFF" />" wird DoH (DNS over HTTPS) deaktiviert.
 
@@ -3370,9 +3370,9 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 
       Im Modus "<ph name="SECURE_DNS_MODE_SECURE" />" werden nur DoH-Anfragen gesendet. Im Fehlerfall ist keine Auflösung möglich.
 
-      Ab <ph name="ANDROID_VERSION" />: Ist DNS-over-TLS aktiviert, werden in <ph name="PRODUCT_NAME" /> keine unsicheren DNS-Anfragen gesendet.
+      Ab <ph name="ANDROID_VERSION" />: Ist DNS over TLS aktiviert, werden in <ph name="PRODUCT_NAME" /> keine unsicheren DNS-Anfragen gesendet.
 
-      Wenn diese Richtlinie nicht konfiguriert ist, sendet der Browser eventuell DoH-Anfragen an einen Resolver, der dem konfigurierten System-Resolver des Nutzers zugewiesen ist.</translation>
+      Wenn diese Richtlinie nicht konfiguriert ist, sendet der Browser eventuell DoH-Anfragen an einen Resolver, der dem vom Nutzer auf Systemebene konfigurierten Resolver zugewiesen ist.</translation>
 <translation id="7158064522994309072">Mit dieser Richtlinie wird festgelegt, welcher Befehl zum Öffnen von URLs in einem alternativen Browser verwendet werden soll.
 
       Wenn die Richtlinie nicht festgelegt ist, wird eine plattformspezifische Standardeinstellung verwendet: Bei Windows wird der Internet Explorer geöffnet und bei Mac OS X Safari. Unter Linux wird kein alternativer Browser geöffnet, wenn die Richtlinie nicht festgelegt ist.
@@ -3531,15 +3531,15 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
 <translation id="7359307926583593395">
       Diese Richtlinie gilt für die Anmeldeseite. Sehen Sie sich auch die Richtlinie "<ph name="SITE_PER_PROCESS_POLICY_NAME" />" für die eigentliche Nutzersitzung an. Es wird empfohlen, für beide Richtlinien denselben Wert festzulegen. Wenn die Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, weil der von der Nutzerrichtlinie angegebene Wert erst angewendet werden muss.
       </translation>
-<translation id="7360181094056034924">Mit dieser Richtlinie wird festgelegt, was in <ph name="PRODUCT_NAME" /> mit hochgeladenen und heruntergeladenen Daten passiert, die gescannt werden müssen.  Wird die Bereitstellung hinausgezögert, kann der Nutzer in <ph name="PRODUCT_NAME" /> nicht auf eine heruntergeladene Datei zugreifen, keine Datei zum Upload auswählen und keine Daten aus der Zwischenablage oder per Drag-and-drop einfügen, bis sie gescannt wurden und die Ergebnisse des Scans vorliegen.  Die Beschränkung gilt nur für Dateien oder Daten, die gemäß den folgenden Richtlinien gescannt werden müssen: "<ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />", "<ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" />" und die Richtlinien, über die die Listen der Domains gesteuert werden, für die Überprüfungen aktiviert sind.
+<translation id="7360181094056034924">Mit dieser Richtlinie wird festgelegt, was in <ph name="PRODUCT_NAME" /> mit hochgeladenen und heruntergeladenen Daten passiert, die gescannt werden müssen.  Wird die Bereitstellung hinausgezögert, kann der Nutzer in <ph name="PRODUCT_NAME" /> nicht auf eine heruntergeladene Datei zugreifen, Dateien zum Upload nicht auswählen und Daten aus der Zwischenablage oder per Drag-and-drop nicht einfügen, bis sie gescannt wurden und die Ergebnisse des Scans vorliegen.  Die Beschränkung gilt nur für Dateien oder Daten, die gemäß den folgenden Richtlinien gescannt werden müssen: "<ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />", "<ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" />" und die Richtlinien, über die die Listen der Domains gesteuert werden, für die Überprüfungen aktiviert sind.
 
-      Wenn diese Richtlinie nicht konfiguriert oder auf "None" (Keine) gesetzt ist, gibt es in <ph name="PRODUCT_NAME" /> keine Verzögerungen für Dateien zum Upload, den Zugriff auf heruntergeladene Dateien oder Daten, die aus der Zwischenablage oder per Drag-and-drop eingefügt werden sollen.  Der Scan wird im Hintergrund ausgeführt.
+      Wenn diese Richtlinie nicht konfiguriert oder auf "Bereitstellungen nicht hinauszögern" gesetzt ist, gibt es in <ph name="PRODUCT_NAME" /> keine Verzögerungen für Dateien zum Upload, den Zugriff auf heruntergeladene Dateien oder Daten, die aus der Zwischenablage oder per Drag-and-drop eingefügt werden sollen.  Der Scan wird im Hintergrund ausgeführt.
 
-      Ist die Richtlinie auf "Delay downloads" (Downloads hinauszögern) gesetzt, können Nutzer erst auf heruntergeladene Dateien zugreifen, wenn diese gescannt wurden und die Ergebnisse des Scans vorliegen.
+      Ist die Richtlinie auf "Downloads hinauszögern, bis Scanergebnisse vorliegen" gesetzt, können Nutzer erst auf heruntergeladene Dateien zugreifen, wenn diese gescannt wurden und die Ergebnisse des Scans vorliegen.
 
-      Wenn die Richtlinie auf "Delay uploads" (Uploads hinauszögern) gesetzt ist und der Nutzer versucht, eine Datei hochzuladen oder Daten aus der Zwischenablage bzw. per Drag-and-drop einzufügen, wird der Vorgang erst fortgesetzt, wenn die Daten gescannt wurden und die Ergebnisse des Scans vorliegen.
+      Wenn die Richtlinie auf "Uploads hinauszögern, bis Scanergebnisse vorliegen" gesetzt ist und der Nutzer versucht, eine Datei hochzuladen oder Daten aus der Zwischenablage bzw. per Drag-and-drop einzufügen, wird der Vorgang erst fortgesetzt, wenn die Daten gescannt wurden und die Ergebnisse des Scans vorliegen.
 
-      Wenn "Delay both uploads and downloads" (Uploads und Downloads hinauszögern) festgelegt ist, werden in <ph name="PRODUCT_NAME" /> die Regeln verwendet, die unter "Delay downloads" und "Delay uploads" beschrieben sind.
+      Wenn "Uploads und Downloads hinauszögern, bis Scanergebnisse vorliegen" festgelegt ist, werden in <ph name="PRODUCT_NAME" /> die Regeln verwendet, die unter "Downloads hinauszögern, bis Scanergebnisse vorliegen" und "Uploads hinauszögern, bis Scanergebnisse vorliegen" beschrieben sind.
       </translation>
 <translation id="7372831798009983116">Bedienungshilfe "Automatisch klicken" aktivieren</translation>
 <translation id="737655323154569539">Dadurch wird die Druckseitengröße eingeschränkt. Ist die Richtlinie nicht konfiguriert, wird keine Einschränkung angewendet.</translation>
@@ -3703,9 +3703,9 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
 <translation id="7713608076604149344">Download-Einschränkungen</translation>
 <translation id="7715711044277116530">Prozentsatz für die Skalierung der Spanne für die Bildschirmabdunkelung im Präsentationsmodus</translation>
 <translation id="7717938661004793600">Hiermit konfigurieren Sie die Zugänglichkeitsfunktionen für <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7744220323108979821">Hiermit wird die Liste der Domains angegeben, für die heruntergeladene Inhalte auf Compliance geprüft werden müssen, bevor sie lokal gespeichert werden.  Diese Richtlinie wird nur verwendet, wenn "<ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" />" aktiviert ist.
+<translation id="7744220323108979821">Hiermit wird die Liste der Domains angegeben, für die heruntergeladene Inhalte auf Regeleinhaltung geprüft werden müssen, bevor sie lokal gespeichert werden.  Diese Richtlinie wird nur verwendet, wenn "<ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" />" aktiviert ist.
 
-      Wenn diese Richtlinie nicht konfiguriert oder eine leere Liste festgelegt ist, werden heruntergeladene Inhalte nicht auf Compliance geprüft.
+      Wenn diese Richtlinie nicht konfiguriert oder eine leere Liste festgelegt ist, werden heruntergeladene Inhalte nicht auf Regeleinhaltung geprüft.
       </translation>
 <translation id="7747447585227954402">Geräten erlauben, <ph name="PLUGIN_VM_NAME" /> auf <ph name="PRODUCT_OS_NAME" /> zu verwenden</translation>
 <translation id="7749402620209366169">Aktiviert die Zwei-Faktor-Authentifizierung für Remotezugriff-Hosts anstelle einer vom Nutzer angegebenen PIN.
@@ -3976,11 +3976,11 @@ Unter Windows ist es empfehlenswert, Richtlinien über Gruppenrichtlinienobjekte
 
       Wird die Richtlinie auf "false" gesetzt, werden keine Statistiken gemeldet.
       Wird die Richtlinie auf "true" gesetzt oder nicht konfiguriert, werden Statistiken gemeldet.</translation>
-<translation id="829337533107201925">Ist diese Richtlinie aktiviert, werden Richtlinien aus atomischen Gruppen, die eine andere Quelle als die höchste Priorität der entsprechenden Gruppe haben, ignoriert.
+<translation id="829337533107201925">Ist diese Richtlinie aktiviert, werden Richtlinien aus atomischen Gruppen, die eine andere Quelle als die Quelle mit der höchsten Priorität der entsprechenden Gruppe haben, ignoriert.
 
       Wenn die Richtlinie deaktiviert ist, werden Richtlinien nicht aufgrund ihrer Quelle ignoriert. Sie werden dann nur ignoriert, wenn ein Konflikt besteht und sie nicht die höchste Priorität haben.
 
-      Wird diese Richtlinie von einer cloudbasierten Quelle konfiguriert, kann sie nicht auf einen bestimmten Nutzer ausgerichtet werden.</translation>
+      Wird diese Richtlinie von einer cloudbasierten Quelle konfiguriert, kann sie nicht auf bestimmte einzelne Nutzer ausgerichtet werden.</translation>
 <translation id="8294750666104911727">Normalerweise werden Seiten, bei denen das Metatag "X-UA-Compatible" auf "chrome=1" gesetzt ist, unabhängig von der Richtlinie "ChromeFrameRendererSettings" in <ph name="PRODUCT_FRAME_NAME" /> gerendert.
 
           Bei aktivierter Einstellung werden die Seiten nicht nach Metatags durchsucht.
@@ -4081,7 +4081,7 @@ Die Richtlinie wird in M75 entfernt.</translation>
           Beispielmuster finden Sie unter https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Speichern des Browserverlaufs deaktivieren</translation>
-<translation id="8495279065011513838">Inhaltscompliance prüfen</translation>
+<translation id="8495279065011513838">Inhalte auf Regeleinhaltung prüfen</translation>
 <translation id="8499172469244085141">Standardeinstellungen (können vom Nutzer überschrieben werden)</translation>
 <translation id="849962487677588458">Diese Richtlinie ist veraltet und soll in Chrome 78 ersatzlos entfernt werden.
 
@@ -4172,7 +4172,7 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 <translation id="8685024486845674965">Die Passwortschutzwarnung wird durch die Wiederverwendung eines Passworts ausgelöst</translation>
 <translation id="8693243869659262736">Integrierten DNS-Client verwenden</translation>
 <translation id="8698286761337647563">Gibt an, wie viele Tage SAML-Nutzer vorab benachrichtigt werden, wenn ihr Passwort bald abläuft</translation>
-<translation id="870193046368370542">Die Liste der Domains, für die hochgeladene Inhalte nicht auf Compliance geprüft werden müssen</translation>
+<translation id="870193046368370542">Liste der Domains, für die hochgeladene Inhalte nicht auf Regeleinhaltung geprüft werden müssen</translation>
 <translation id="8703488928438047864">Boardstatus melden</translation>
 <translation id="8704831857353097849">Liste der deaktivierten Plug-ins</translation>
 <translation id="8711086062295757690">Gibt das Suchkürzel an, das als die Verknüpfung fungiert, die in der Omnibox als Auslöser der Suche für diesen Anbieter verwendet wird. Diese Richtlinie ist optional. Wenn sie nicht konfiguriert ist, so wird der Suchanbieter von keinem Suchkürzel aktiviert. Diese Richtlinie wird nur umgesetzt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
@@ -4241,7 +4241,7 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
           Wenn Sie diese Einstellung aktivieren, werden alle Proxyoptionen, die über die Befehlszeile eingegeben werden, von <ph name="PRODUCT_NAME" /> und ARC-Apps ignoriert.
 
           Wird die Richtlinie nicht konfiguriert, so können Nutzer ihre eigenen Proxyeinstellungen vornehmen.</translation>
-<translation id="8852579753940989645">Renderer Code Integrity aktivieren</translation>
+<translation id="8852579753940989645">Renderer-Codeintegrität aktivieren</translation>
 <translation id="8858642179038618439">YouTube-Sicherheitsmodus erzwingen</translation>
 <translation id="8860342862142842017">Erzwingung der Zertifikatstransparenz für eine Liste mit subjectPublicKeyInfo-Hashes deaktivieren</translation>
 <translation id="8864975621965365890">Unterdrückung des Hinweises auf Einstellung des Frames, der beim Rendern einer Website durch <ph name="PRODUCT_FRAME_NAME" /> erscheint</translation>
@@ -4350,7 +4350,7 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
       Der Wert sollte in Sekunden angegeben werden.</translation>
 <translation id="9035086760683255833">Mit dieser Richtlinie wird die Bedienungshilfe "Objekt mit Tastaturfokus hervorheben" aktiviert.
 
-          Dabei wird das Objekt im Fokus der Tastatur hervorgehoben.
+          Dabei wird das Objekt hervorgehoben, das mit der Tastatur ausgewählt wurde.
 
           Wenn diese Richtlinie aktiviert ist, ist die Funktion immer aktiviert.
 

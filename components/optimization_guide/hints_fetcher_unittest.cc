@@ -270,7 +270,7 @@ TEST_F(HintsFetcherTest, HintsFetcherHostsCovered) {
   SimulateNavigation(hosts[0]);
   SimulateNavigation(hosts[1]);
   histogram_tester.ExpectBucketCount(
-      "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch", true, 2);
+      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", true, 2);
 }
 
 TEST_F(HintsFetcherTest, HintsFetcherCoveredHostExpired) {
@@ -294,7 +294,7 @@ TEST_F(HintsFetcherTest, HintsFetcherCoveredHostExpired) {
   SimulateNavigation(hosts[0]);
   SimulateNavigation(hosts[1]);
   histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch", false, 2);
+      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", false, 2);
 
   // The first pair of hosts should be removed from the dictionary
   // pref as they have expired.
@@ -307,7 +307,7 @@ TEST_F(HintsFetcherTest, HintsFetcherCoveredHostExpired) {
   SimulateNavigation(hosts_valid[0]);
   SimulateNavigation(hosts_valid[1]);
   histogram_tester.ExpectBucketCount(
-      "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch", true, 2);
+      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", true, 2);
 }
 
 TEST_F(HintsFetcherTest, HintsFetcherHostNotCovered) {
@@ -325,9 +325,9 @@ TEST_F(HintsFetcherTest, HintsFetcherHostNotCovered) {
   SimulateNavigation(hosts[1]);
   SimulateNavigation("newhost.com");
   histogram_tester.ExpectBucketCount(
-      "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch", true, 2);
+      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", true, 2);
   histogram_tester.ExpectBucketCount(
-      "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch", false, 1);
+      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", false, 1);
 }
 
 TEST_F(HintsFetcherTest, HintsFetcherRemoveExpiredOnSuccessfullyFetched) {
@@ -355,12 +355,12 @@ TEST_F(HintsFetcherTest, HintsFetcherRemoveExpiredOnSuccessfullyFetched) {
   SimulateNavigation(hosts_expired[0]);
   SimulateNavigation(hosts_expired[1]);
   histogram_tester.ExpectBucketCount(
-      "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch", false, 2);
+      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", false, 2);
 
   SimulateNavigation(hosts_valid[0]);
   SimulateNavigation(hosts_valid[1]);
   histogram_tester.ExpectBucketCount(
-      "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch", true, 2);
+      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", true, 2);
 }
 
 TEST_F(HintsFetcherTest, HintsFetcherSuccessfullyFetchedHostsFull) {
@@ -392,7 +392,7 @@ TEST_F(HintsFetcherTest, HintsFetcherSuccessfullyFetchedHostsFull) {
   SimulateNavigation(extra_hosts[0]);
   SimulateNavigation(extra_hosts[1]);
   histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch", true, 2);
+      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", true, 2);
 }
 
 }  // namespace optimization_guide

@@ -14,7 +14,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/texture_manager.h"
-#include "gpu/ipc/common/android/texture_owner.h"
+#include "gpu/command_buffer/service/texture_owner.h"
 #include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "gpu/ipc/service/command_buffer_stub.h"
 #include "media/base/video_frame.h"

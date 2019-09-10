@@ -1567,7 +1567,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   // Ask web client if this cert error should be allowed.
   web::GetWebClient()->AllowCertificateError(
       self.webStateImpl, net::MapCertStatusToNetError(info.cert_status), info,
-      net::GURLWithNSURL(requestURL), recoverable,
+      net::GURLWithNSURL(requestURL), recoverable, context->GetNavigationId(),
       base::BindRepeating(^(bool proceed) {
         if (proceed) {
           DCHECK(recoverable);

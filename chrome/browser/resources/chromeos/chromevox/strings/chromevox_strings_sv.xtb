@@ -207,7 +207,6 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="257674075312929031">Grupp</translation>
 <translation id="2582407057977008361">Sidopanel</translation>
 <translation id="2592212930811759050">Börja redigera genom att trycka snabbt två gånger</translation>
-<translation id="2606210917827248971">med {COUNT,plural, =1{# objekt}other{# objekt}}</translation>
 <translation id="2614981083756825552">Math ML-layout</translation>
 <translation id="2624431853467395961">Öppna inlärningsläge</translation>
 <translation id="2626530649491650971">klickbart</translation>
@@ -391,7 +390,6 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="3781428340399460090">Cerise</translation>
 <translation id="3783725005098956899">Visa logg</translation>
 <translation id="3793710123303304873">Dialogrutan stängdes.</translation>
-<translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">Autoslutför med lista</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3813387282697781382">Ljust korallröd</translation>

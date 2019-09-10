@@ -74,6 +74,7 @@
 <translation id="1951012854035635156">Assistant</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1957958912175573503">Itakda ang iyong wika</translation>
+<translation id="1962969542251276847">Screen ng Lock</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1978498689038657292">Pag-input ng text</translation>
 <translation id="1993072747612765854">Matuto pa tungkol sa pinakabagong update sa <ph name="SYSTEM_APP_NAME" /></translation>
@@ -477,7 +478,7 @@
 <translation id="813913629614996137">Sinisimulan...</translation>
 <translation id="8142441511840089262">I-double click</translation>
 <translation id="8142699993796781067">Pribadong network</translation>
-<translation id="8152092012181020186">Pindutin ang Ctrl + W para isara.</translation>
+<translation id="8152092012181020186">Pindutin ang Ctrl + W para isara ito.</translation>
 <translation id="8167567890448493835">Gamit ang <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">I-customize ang mga wika at input...</translation>
 <translation id="8192202700944119416">Nakatago ang mga notification.</translation>

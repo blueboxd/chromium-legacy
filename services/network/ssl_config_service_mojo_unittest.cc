@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "crypto/sha2.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/cert_verifier.h"
@@ -158,8 +159,10 @@ class NetworkServiceSSLConfigServiceTest : public testing::Test {
       mojom::NetworkContextParamsPtr network_context_params) {
     network_context_params->ssl_config_client_request =
         mojo::MakeRequest(&ssl_config_client_);
+    network_context_remote_.reset();
     network_context_ = std::make_unique<NetworkContext>(
-        network_service_.get(), mojo::MakeRequest(&network_context_ptr_),
+        network_service_.get(),
+        network_context_remote_.BindNewPipeAndPassReceiver(),
         std::move(network_context_params));
   }
 
@@ -262,7 +265,7 @@ class NetworkServiceSSLConfigServiceTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<NetworkService> network_service_;
   mojom::SSLConfigClientPtr ssl_config_client_;
-  mojom::NetworkContextPtr network_context_ptr_;
+  mojo::Remote<mojom::NetworkContext> network_context_remote_;
   std::unique_ptr<NetworkContext> network_context_;
 };
 

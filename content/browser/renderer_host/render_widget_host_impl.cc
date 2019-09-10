@@ -891,36 +891,28 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
       old_visual_properties_->visible_viewport_size !=
           visual_properties->visible_viewport_size;
 
-  // TODO(jonross): Enable on ChromeOS once blocking mus bugs are fixed:
-  // https://crbug.com/920642 https://crbug.com/920006
-  // TODO(jonross): Enable on Android once root cause of crash is found and
-  // fixed: https://crbug.com/923742
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-  // When the size has changed, we must ensure that there is a new, updated
-  // viz::LocalSurfaceId. Otherwise we encounter Surface Invariants Violation at
-  // the time of frame submission. Check for this violation here in order to
-  // detect the source of the bug.
-  if (old_visual_properties_ &&
-      old_visual_properties_->new_size != visual_properties->new_size &&
-      old_visual_properties_->local_surface_id_allocation &&
-      visual_properties->local_surface_id_allocation) {
-    // We suspect that we may not be updating viz::LocalSurfaceIds correctly
-    // when auto-resize is enabled. Logging this additional information to
-    // confirm if that is the case. https://crbug.com/900948
-    CHECK_NE(old_visual_properties_->local_surface_id_allocation.value(),
-             visual_properties->local_surface_id_allocation.value())
-        << "Invalid Surface Id State: size changed without a change in "
-           "LocalSurfaceId: auto_resize_enabled "
-        << visual_properties->auto_resize_enabled << " old "
-        << old_visual_properties_->local_surface_id_allocation->ToString()
-        << " new "
-        << visual_properties->local_surface_id_allocation->ToString();
-  }
-#endif
-
   bool sent_visual_properties = false;
-  if (Send(new WidgetMsg_SynchronizeVisualProperties(routing_id_,
-                                                     *visual_properties))) {
+
+  // If the RenderWidget is associated with a RenderView, then we send the
+  // visual properties to the RenderView instead of the RenderWidget. The
+  // RenderView will pass along the relevant properties to the RenderWidget,
+  // which will send back an ACK.
+  if (owner_delegate_) {
+    owner_delegate_->UpdatePageVisualProperties(*visual_properties);
+
+    // TODO(erikchen): Remove sent_visual_properties. It's unused and doesn't
+    // even make sense, since we're potentially sending multiple IPC messages.
+    sent_visual_properties = true;
+  } else {
+    sent_visual_properties = Send(new WidgetMsg_SynchronizeVisualProperties(
+        routing_id_, *visual_properties));
+  }
+  if (delegate() && visible_viewport_size_changed) {
+    delegate()->NotifyVisibleViewportSizeChanged(
+        visual_properties->visible_viewport_size);
+  }
+
+  if (sent_visual_properties) {
     TRACE_EVENT_WITH_FLOW2(
         TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
         "RenderWidgetHostImpl::SynchronizeVisualProperties send message",
@@ -932,12 +924,7 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
             .ToString());
     visual_properties_ack_pending_ =
         DoesVisualPropertiesNeedAck(old_visual_properties_, *visual_properties);
-    if (delegate() && visible_viewport_size_changed) {
-      delegate()->NotifyVisibleViewportSizeChanged(
-          visual_properties->visible_viewport_size);
-    }
     old_visual_properties_.swap(visual_properties);
-    sent_visual_properties = true;
   }
 
   if (delegate_)
@@ -1972,6 +1959,11 @@ void RenderWidgetHostImpl::OnMouseEventAck(
   for (auto& input_event_observer : input_event_observers_)
     input_event_observer.OnInputEventAck(ack_source, ack_result,
                                          mouse_event.event);
+
+  // Give the delegate the ability to handle a mouse event that wasn't consumed
+  // by the renderer. eg. Back/Forward mouse buttons.
+  if (delegate_ && ack_result != INPUT_EVENT_ACK_STATE_CONSUMED && !is_hidden())
+    delegate_->HandleMouseEvent(mouse_event.event);
 }
 
 bool RenderWidgetHostImpl::IsMouseLocked() const {

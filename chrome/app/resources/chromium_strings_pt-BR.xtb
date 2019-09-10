@@ -188,6 +188,7 @@
 <translation id="753534427205733210">{0,plural, =1{O Chromium será reiniciado em 1 minuto}one{O Chromium será reiniciado em # minuto}other{O Chromium será reiniciado em # minutos}}</translation>
 <translation id="7549178288319965365">Sobre o Chromium OS</translation>
 <translation id="7561906087460245826">Limpar também os dados do Chromium (<ph name="URL" />)</translation>
+<translation id="7585853947355360626">Se uma configuração não for exibida nesta página, verifique as <ph name="LINK_BEGIN" />configurações do Chromium OS<ph name="LINK_END" /></translation>
 <translation id="761356813943268536">O Chromium está usando sua câmera e seu microfone.</translation>
 <translation id="7617377681829253106">O Chromium ficou ainda melhor</translation>
 <translation id="7686590090926151193">O Chromium não é seu navegador padrão</translation>
@@ -221,6 +222,7 @@
 <translation id="8619360774459241877">Iniciando o Chromium…</translation>
 <translation id="8621669128220841554">Falha na instalação devido a um erro não especificado. Faça o download do Chromium novamente.</translation>
 <translation id="8667808506758191620">Seu dispositivo <ph name="DEVICE_TYPE" /> está atualizado.</translation>
+<translation id="8682540261359803721">Se uma configuração não for exibida nesta página, verifique as <ph name="LINK_BEGIN" />configurações de navegador do Chromium<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">Controla também qual página deve ser exibida quando você inicia o Chromium ou faz uma pesquisa na Omnibox.</translation>
 <translation id="8704119203788522458">Este é seu Chromium</translation>
 <translation id="8739167630197873875">Você limpa os cookies ao sair do Chromium. Para retomar a sincronização, altere as <ph name="COOKIE_SETTINGS_LINK" />.</translation>

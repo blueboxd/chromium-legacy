@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.view.View;
+import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
@@ -80,6 +81,9 @@ public class SharedClipboardShareActivity
         mListView.setOnItemClickListener(this);
         mListView.setEmptyView(findViewById(android.R.id.empty));
 
+        View content = findViewById(R.id.device_picker_content);
+        content.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_in_up));
+
         onInitialLayoutInflationComplete();
     }
 
@@ -108,12 +112,5 @@ public class SharedClipboardShareActivity
         SharedClipboardMessageHandler.showSendingNotification(
                 device.guid, device.clientName, getIntent().getStringExtra(Intent.EXTRA_TEXT));
         finish();
-    }
-
-    @Override
-    public void finish() {
-        super.finish();
-        // TODO(alexchau): Handle animations.
-        overridePendingTransition(R.anim.no_anim, R.anim.no_anim);
     }
 }

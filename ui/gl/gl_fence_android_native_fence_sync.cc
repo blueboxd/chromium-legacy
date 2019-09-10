@@ -97,6 +97,9 @@ GLFenceAndroidNativeFenceSync::GetStatusChangeTimeForFence(
   }
 
   const bool signaled = info->status == 1;
+  if (!signaled)
+    return Status::kNotSignaled;
+
   struct sync_pt_info* pt_info = nullptr;
   uint64_t timestamp_ns = 0u;
   while ((pt_info = sync_pt_info(info.get(), pt_info)))
@@ -108,7 +111,7 @@ GLFenceAndroidNativeFenceSync::GetStatusChangeTimeForFence(
   }
 
   *time = base::TimeTicks() + base::TimeDelta::FromNanoseconds(timestamp_ns);
-  return signaled ? Status::kSignaled : Status::kNotSignaled;
+  return Status::kSignaled;
 }
 
 }  // namespace gl

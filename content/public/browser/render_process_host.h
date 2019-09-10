@@ -489,11 +489,12 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver) = 0;
 
-  // Binds |request| to the IndexedDBDispatcherHost instance. The binding is
-  // sent to the IO thread. This is for internal use only, and is only exposed
-  // here to support MockRenderProcessHost usage in tests.
-  virtual void BindIndexedDB(blink::mojom::IDBFactoryRequest request,
-                             const url::Origin& origin) = 0;
+  // Binds |receiver| to the IndexedDBDispatcherHost instance. The
+  // receiver is sent to the IO thread. This is for internal use only, and is
+  // only exposed here to support MockRenderProcessHost usage in tests.
+  virtual void BindIndexedDB(
+      mojo::PendingReceiver<blink::mojom::IDBFactory> receiver,
+      const url::Origin& origin) = 0;
 
   // Returns the current number of active views in this process.  Excludes
   // any RenderViewHosts that are swapped out.

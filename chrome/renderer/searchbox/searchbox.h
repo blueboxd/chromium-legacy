@@ -193,6 +193,10 @@ class SearchBox : public content::RenderFrameObserver,
   // search term. Handled by |QueryAutocompleteResult|.
   void QueryAutocomplete(const std::string& input);
 
+  // Cancels the current autocomplete query. Clears the result set if
+  // |clear_result| is true.
+  void StopAutocomplete(bool clear_result);
+
   bool is_focused() const { return is_focused_; }
   bool is_input_in_progress() const { return is_input_in_progress_; }
   bool is_key_capture_enabled() const { return is_key_capture_enabled_; }

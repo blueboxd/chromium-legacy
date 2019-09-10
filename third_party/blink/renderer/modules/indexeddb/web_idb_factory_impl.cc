@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_factory_impl.h"
 
 #include "base/memory/ptr_util.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_database_callbacks_impl.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks_impl.h"
@@ -13,10 +14,10 @@
 namespace blink {
 
 WebIDBFactoryImpl::WebIDBFactoryImpl(
-    mojom::blink::IDBFactoryPtrInfo factory_info,
+    mojo::PendingRemote<mojom::blink::IDBFactory> pending_factory,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : task_runner_(std::move(task_runner)) {
-  factory_.Bind(std::move(factory_info), task_runner_);
+  factory_.Bind(std::move(pending_factory), task_runner_);
 }
 
 WebIDBFactoryImpl::~WebIDBFactoryImpl() = default;

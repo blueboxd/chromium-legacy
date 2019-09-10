@@ -438,6 +438,10 @@ void SearchBox::QueryAutocomplete(const std::string& input) {
                             weak_ptr_factory_.GetWeakPtr()));
 }
 
+void SearchBox::StopAutocomplete(bool clear_result) {
+  embedded_search_service_->StopAutocomplete(clear_result);
+}
+
 void SearchBox::QueryAutocompleteResult(
     std::vector<chrome::mojom::AutocompleteMatchPtr> results) {
   if (can_run_js_in_renderframe_) {

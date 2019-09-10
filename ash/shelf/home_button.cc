@@ -7,9 +7,9 @@
 #include <math.h>  // std::ceil
 
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -136,7 +136,7 @@ void HomeButton::PaintButtonContents(gfx::Canvas* canvas) {
     cc::PaintFlags fg_flags;
     fg_flags.setAntiAlias(true);
     fg_flags.setStyle(cc::PaintFlags::kStroke_Style);
-    fg_flags.setColor(kShelfIconColor);
+    fg_flags.setColor(ShelfConfig::Get()->shelf_icon_color());
 
     if (controller_.IsVoiceInteractionAvailable()) {
       // active: 100% alpha, inactive: 54% alpha
@@ -168,8 +168,9 @@ bool HomeButton::DoesIntersectRect(const views::View* target,
   // Increase clickable area for the button from
   // (kShelfControlSize x kShelfButtonSize) to
   // (kShelfButtonSize x kShelfButtonSize).
-  int left_offset = button_bounds.width() - ShelfConstants::button_size();
-  int bottom_offset = button_bounds.height() - ShelfConstants::button_size();
+  int left_offset = button_bounds.width() - ShelfConfig::Get()->button_size();
+  int bottom_offset =
+      button_bounds.height() - ShelfConfig::Get()->button_size();
   button_bounds.Inset(gfx::Insets(0, left_offset, bottom_offset, 0));
   return button_bounds.Intersects(rect);
 }

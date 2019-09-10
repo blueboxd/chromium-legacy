@@ -20,7 +20,7 @@
 <translation id="1087788677726983142">Skritje filtrov toka dogodkov</translation>
 <translation id="1088219014394087294">Ni naslovov.</translation>
 <translation id="1106741348836243114">Vklop/izklop zvočnih povratnih informacij (zvočnih ikon).</translation>
-<translation id="1120743664840974483">{"a": "alfa", "b": "bravo", "c": "celje", "d": "delta", "e": "eho", "f": "fokstrot", "g": "golf", "h": "hotel", "i": "indija", "j": "julija","k": "kilo", "l": "lima", "m": "maribor", "n": "november", "o": "oskar","p": "postojna", "q": "quebec", "r": "romeo", "s": "sežana", "t": "tango", "u": "uniforma", "v": "viktor", "w": "wroclaw","x": "xenia", "y": "yukon", "z": "zulu"}</translation>
+<translation id="1120743664840974483">{"a": "alfa", "b": "bravo", "c": "celje", "č": "časopis", "d": "delta", "e": "eho", "f": "fokstrot", "g": "golf", "h": "hotel", "i": "indija", "j": "julija", "k": "kilo", "l": "lima", "m": "maribor", "n": "november", "o": "oskar", "p": "postojna", "q": "quebec", "r": "romeo", "s": "sežana", "š": "štajerska", "t": "tango", "u": "uniforma", "v": "viktor", "w": "washington", "x": "iks", "y": "youtube", "z": "zulu", "ž": "žaba"}</translation>
 <translation id="1120938014254001895">Z dvema prstoma povlecite gor</translation>
 <translation id="1124771028211010580">Trenutno je izbran vzporedni slog prikaza.</translation>
 <translation id="1126928665165112660">Ni ležeče</translation>
@@ -207,7 +207,6 @@
 <translation id="257674075312929031">Skupina</translation>
 <translation id="2582407057977008361">Razen</translation>
 <translation id="2592212930811759050">Dvakrat se dotaknite, če želite začeti urejati</translation>
-<translation id="2606210917827248971">s/z {COUNT,plural, =1{# elementom}one{# elementom}two{# elementoma}few{# elementi}other{# elementi}}</translation>
 <translation id="2614981083756825552">Postavitev Math ML</translation>
 <translation id="2624431853467395961">Odpiranje načina za učenje</translation>
 <translation id="2626530649491650971">omogoča klikanje</translation>
@@ -391,7 +390,6 @@
 <translation id="3781428340399460090">Živo rožnata</translation>
 <translation id="3783725005098956899">Prikaz dnevnika</translation>
 <translation id="3793710123303304873">Izhod iz pogovornega okna.</translation>
-<translation id="3795836767122514678">+{COUNT,plural, =1{#}one{#}two{#}few{#}other{#}}</translation>
 <translation id="3801735343383419236">Samodokončanje seznama</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3813387282697781382">Svetlo koralna</translation>

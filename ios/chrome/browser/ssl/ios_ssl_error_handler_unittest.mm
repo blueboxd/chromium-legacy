@@ -92,12 +92,14 @@ TEST_F(IOSSSLErrorHandlerTest, NonOverridable) {
   ssl_info.cert = cert();
   GURL url(kTestHostName);
   __block bool do_not_proceed_callback_called = false;
+  base::OnceCallback<void(NSString*)> null_callback;
   IOSSSLErrorHandler::HandleSSLError(
-      web_state(), net::ERR_CERT_AUTHORITY_INVALID, ssl_info, url, false,
+      web_state(), net::ERR_CERT_AUTHORITY_INVALID, ssl_info, url, false, 0,
       base::BindRepeating(^(bool proceed) {
         EXPECT_FALSE(proceed);
         do_not_proceed_callback_called = true;
-      }));
+      }),
+      std::move(null_callback));
 
   EXPECT_TRUE(WaitForInterstitialDisplayed());
   web::WebInterstitial* interstitial = web_state()->GetWebInterstitial();
@@ -115,12 +117,14 @@ TEST_F(IOSSSLErrorHandlerTest, DISABLED_OverridableProceed) {
   ssl_info.cert = cert();
   GURL url(kTestHostName);
   __block bool proceed_callback_called = false;
+  base::OnceCallback<void(NSString*)> null_callback;
   IOSSSLErrorHandler::HandleSSLError(
-      web_state(), net::ERR_CERT_AUTHORITY_INVALID, ssl_info, url, true,
+      web_state(), net::ERR_CERT_AUTHORITY_INVALID, ssl_info, url, true, 0,
       base::BindRepeating(^(bool proceed) {
         EXPECT_TRUE(proceed);
         proceed_callback_called = true;
-      }));
+      }),
+      std::move(null_callback));
 
   EXPECT_TRUE(WaitForInterstitialDisplayed());
   web::WebInterstitial* interstitial = web_state()->GetWebInterstitial();
@@ -137,12 +141,14 @@ TEST_F(IOSSSLErrorHandlerTest, OverridableDontProceed) {
   ssl_info.cert = cert();
   GURL url(kTestHostName);
   __block bool do_not_proceed_callback_called = false;
+  base::OnceCallback<void(NSString*)> null_callback;
   IOSSSLErrorHandler::HandleSSLError(
-      web_state(), net::ERR_CERT_AUTHORITY_INVALID, ssl_info, url, true,
+      web_state(), net::ERR_CERT_AUTHORITY_INVALID, ssl_info, url, true, 0,
       base::BindRepeating(^(bool proceed) {
         EXPECT_FALSE(proceed);
         do_not_proceed_callback_called = true;
-      }));
+      }),
+      std::move(null_callback));
 
   EXPECT_TRUE(WaitForInterstitialDisplayed());
   web::WebInterstitial* interstitial = web_state()->GetWebInterstitial();
@@ -151,4 +157,24 @@ TEST_F(IOSSSLErrorHandlerTest, OverridableDontProceed) {
   // Make sure callback is called on dismissal.
   interstitial->DontProceed();
   EXPECT_TRUE(do_not_proceed_callback_called);
+}
+
+// Tests that error HTML is returned instead of calling the usual show
+// interstitial logic when passed a non-null |blocking_page_callback|.
+TEST_F(IOSSSLErrorHandlerTest, CommittedInterstitialErrorHtml) {
+  net::SSLInfo ssl_info;
+  ssl_info.cert = cert();
+  GURL url(kTestHostName);
+  __block bool blocking_page_callback_called = false;
+  base::OnceCallback<void(bool)> null_callback;
+  base::OnceCallback<void(NSString*)> blocking_page_callback =
+      base::BindOnce(^(NSString* blocking_page_html) {
+        EXPECT_NE(blocking_page_html, nil);
+        blocking_page_callback_called = true;
+      });
+  IOSSSLErrorHandler::HandleSSLError(
+      web_state(), net::ERR_CERT_AUTHORITY_INVALID, ssl_info, url, true, 0,
+      std::move(null_callback), std::move(blocking_page_callback));
+  EXPECT_FALSE(WaitForInterstitialDisplayed());
+  EXPECT_TRUE(blocking_page_callback_called);
 }

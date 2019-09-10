@@ -142,6 +142,8 @@ source_set("ipc_common_sources") {
 
   if (is_android) {
     sources += [
+      "android/scoped_surface_request_conduit.cc",
+      "android/scoped_surface_request_conduit.h",
       "gpu_surface_lookup.cc",
       "gpu_surface_lookup.h",
       "gpu_surface_tracker.cc",
@@ -169,78 +171,6 @@ if (is_android) {
     visibility = [
       "//gpu/*",
       "//media/gpu:gpu",
-    ]
-  }
-}
-
-if (is_android) {
-  component("android_texture_owner") {
-    sources = [
-      "android/image_reader_gl_owner.cc",
-      "android/image_reader_gl_owner.h",
-      "android/scoped_surface_request_conduit.cc",
-      "android/scoped_surface_request_conduit.h",
-      "android/surface_texture_gl_owner.cc",
-      "android/surface_texture_gl_owner.h",
-      "android/texture_owner.cc",
-      "android/texture_owner.h",
-    ]
-    configs += [ "//gpu:gpu_implementation" ]
-    deps = [
-      ":android_image_reader_utils",
-      "//base",
-      "//gpu/command_buffer/service:gles2_sources",
-      "//gpu/command_buffer/service:service_sources",
-      "//ui/gl",
-    ]
-    libs = [ "android" ]
-    visibility = [
-      "//gpu/*",
-      "//media/gpu:gpu",
-      "//content/browser:browser",
-    ]
-  }
-}
-
-if (is_android) {
-  jumbo_static_library("android_texture_owner_test_support") {
-    testonly = true
-    sources = [
-      "android/mock_abstract_texture.cc",
-      "android/mock_abstract_texture.h",
-      "android/mock_texture_owner.cc",
-      "android/mock_texture_owner.h",
-    ]
-    deps = [
-      ":android_texture_owner",
-      "//base/test:test_support",
-      "//gpu:test_support",
-      "//testing/gmock",
-      "//testing/gtest",
-      "//ui/gl",
-      "//ui/gl/init",
-    ]
-  }
-}
-
-if (is_android) {
-  source_set("android_texture_owner_unittests") {
-    testonly = true
-    sources = [
-      "android/image_reader_gl_owner_unittest.cc",
-      "android/surface_texture_gl_owner_unittest.cc",
-    ]
-
-    deps = [
-      ":android_texture_owner",
-      ":android_texture_owner_test_support",
-      "//base/test:test_support",
-      "//gpu:test_support",
-      "//media/base:base",
-      "//testing/gmock",
-      "//testing/gtest",
-      "//ui/gl",
-      "//ui/gl/init",
     ]
   }
 }

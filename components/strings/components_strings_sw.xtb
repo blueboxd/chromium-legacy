@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sw">
-<translation id="1008557486741366299">Sio Sasa</translation>
+<translation id="1008557486741366299">Si Sasa</translation>
 <translation id="1010200102790553230">Pakia ukurasa baadaye</translation>
 <translation id="1015730422737071372">Toa maelezo ya ziada</translation>
 <translation id="1021110881106174305">Kadi zinazokubaliwa</translation>
@@ -306,7 +306,6 @@
 <translation id="2479410451996844060">URL batili ya utafutaji.</translation>
 <translation id="2482878487686419369">Arifa</translation>
 <translation id="248348093745724435">Sera za mashine</translation>
-<translation id="2485387744899240041">Majina ya watumiaji kwenye kivinjari na kifaa chako</translation>
 <translation id="2491120439723279231">Cheti cha seva kina hitilafu.</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">Kichanganuzi cha JSON</translation>
@@ -488,7 +487,7 @@
 <translation id="3462200631372590220">Ficha mahiri</translation>
 <translation id="3467763166455606212">Jina la mwenye kadi linahitajika</translation>
 <translation id="3468054117417088249"><ph name="TAB_SWITCH_SUFFIX" />, kwa sasa kimefunguka, bonyeza Kichupo kisha Enter ili uende kwenye kichupo ambacho kimefunguliwa</translation>
-<translation id="3479552764303398839">Sio sasa</translation>
+<translation id="3479552764303398839">Si sasa</translation>
 <translation id="3484560055331845446">Unaweza kupoteza uwezo wa kufikia Akaunti yako ya Google. Chrome inapendekeza ubadilishe nenosiri lako sasa. Utaombwa uingie katika akaunti.</translation>
 <translation id="3495081129428749620">Pata katika ukurasa wa
     <ph name="PAGE_TITLE" /></translation>
@@ -875,7 +874,6 @@
 <translation id="5565735124758917034">Inatumika</translation>
 <translation id="5570825185877910964">Linda akaunti</translation>
 <translation id="5571083550517324815">Haiwezi kuchukua kutoka kwenye anwani hii. Chagua anwani tofauti.</translation>
-<translation id="5571347317547569613">({NUM_COOKIES,plural, =1{1 kinatumika}other{ # vinatumika}})</translation>
 <translation id="5580958916614886209">Angalia mwezi kuisha kwa muda wa matumizi halafu ujajibu tena</translation>
 <translation id="5586446728396275693">Hakuna anwani zilizohifadhiwa</translation>
 <translation id="5595485650161345191">Badilisha anwani</translation>

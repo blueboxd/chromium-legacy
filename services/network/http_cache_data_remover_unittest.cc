@@ -14,7 +14,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/cache_type.h"
 #include "net/base/features.h"
 #include "net/base/net_errors.h"
@@ -150,9 +150,10 @@ class HttpCacheDataRemoverTest : public testing::Test {
   void InitNetworkContext() {
     mojom::NetworkContextParamsPtr context_params = CreateContextParams();
     context_params->http_cache_enabled = true;
-
+    network_context_remote_.reset();
     network_context_ = std::make_unique<NetworkContext>(
-        network_service_.get(), mojo::MakeRequest(&network_context_ptr_),
+        network_service_.get(),
+        network_context_remote_.BindNewPipeAndPassReceiver(),
         std::move(context_params));
   }
 
@@ -160,8 +161,9 @@ class HttpCacheDataRemoverTest : public testing::Test {
   std::unique_ptr<NetworkService> network_service_;
   std::unique_ptr<NetworkContext> network_context_;
 
-  // Stores the NetworkContextPtr of the most recently created NetworkContext.
-  mojom::NetworkContextPtr network_context_ptr_;
+  // Stores the mojo::Remote<NetworkContext> of the most recently created
+  // NetworkContext.
+  mojo::Remote<mojom::NetworkContext> network_context_remote_;
   disk_cache::Backend* backend_ = nullptr;
 
  private:

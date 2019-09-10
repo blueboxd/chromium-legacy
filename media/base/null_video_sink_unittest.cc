@@ -62,7 +62,7 @@ class NullVideoSinkTest : public testing::Test,
   MOCK_METHOD1(FrameReceived, void(scoped_refptr<VideoFrame>));
 
  protected:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   base::SimpleTestTickClock tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(NullVideoSinkTest);

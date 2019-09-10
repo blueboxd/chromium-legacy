@@ -435,6 +435,8 @@ class MockRenderWidgetHostOwnerDelegate
     : public StubRenderWidgetHostOwnerDelegate {
  public:
   MOCK_METHOD1(SetBackgroundOpaque, void(bool opaque));
+  MOCK_METHOD1(UpdatePageVisualProperties,
+               void(const VisualProperties& visual_properties));
 };
 
 // RenderWidgetHostTest --------------------------------------------------------
@@ -732,30 +734,28 @@ class RenderWidgetHostWithSourceTest
 
 TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
   // The initial zoom is 0 so host should not send a sync message
+  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(0);
   delegate_->SetZoomLevel(0);
   EXPECT_FALSE(host_->SynchronizeVisualProperties());
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
-  EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
+  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
 
   // The zoom has changed so host should send out a sync message
-  process_->sink().ClearMessages();
+  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(1);
   double new_zoom_level = content::ZoomFactorToZoomLevel(0.25);
   delegate_->SetZoomLevel(new_zoom_level);
   EXPECT_TRUE(host_->SynchronizeVisualProperties());
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_NEAR(new_zoom_level, host_->old_visual_properties_->zoom_level, 0.01);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
+  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
 
   // The initial bounds is the empty rect, so setting it to the same thing
   // shouldn't send the resize message.
-  process_->sink().ClearMessages();
+  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(0);
   view_->SetBounds(gfx::Rect());
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
-  EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
+  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
 
   // No visual properties ACK if the physical backing gets set, but the view
   // bounds are zero.
@@ -765,32 +765,29 @@ TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
 
   // Setting the view bounds to nonzero should send out the notification.
   // but should not expect ack for empty physical backing size.
+  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(1);
   gfx::Rect original_size(0, 0, 100, 100);
-  process_->sink().ClearMessages();
   view_->SetBounds(original_size);
   view_->SetMockCompositorViewportPixelSize(gfx::Size());
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(original_size.size(), host_->old_visual_properties_->new_size);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
+  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
 
   // Setting the bounds and physical backing size to nonzero should send out
   // the notification and expect an ack.
-  process_->sink().ClearMessages();
+  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(1);
   view_->ClearMockCompositorViewportPixelSize();
   host_->SynchronizeVisualProperties();
   EXPECT_TRUE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(original_size.size(), host_->old_visual_properties_->new_size);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
   cc::RenderFrameMetadata metadata;
   metadata.viewport_size_in_pixels = original_size.size();
   metadata.local_surface_id_allocation = base::nullopt;
   host_->DidUpdateVisualProperties(metadata);
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
 
-  process_->sink().ClearMessages();
   gfx::Rect second_size(0, 0, 110, 110);
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   view_->SetBounds(second_size);
@@ -799,83 +796,77 @@ TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
 
   // Sending out a new notification should NOT send out a new IPC message since
   // a visual properties ACK is pending.
+  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(0);
   gfx::Rect third_size(0, 0, 120, 120);
   process_->sink().ClearMessages();
   view_->SetBounds(third_size);
   EXPECT_FALSE(host_->SynchronizeVisualProperties());
   EXPECT_TRUE(host_->visual_properties_ack_pending_);
-  EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
+  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
 
   // Send a update that's a visual properties ACK, but for the original_size we
   // sent. Since this isn't the second_size, the message handler should
   // immediately send a new resize message for the new size to the renderer.
-  process_->sink().ClearMessages();
+  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(1);
   metadata.viewport_size_in_pixels = original_size.size();
   metadata.local_surface_id_allocation = base::nullopt;
   host_->DidUpdateVisualProperties(metadata);
   EXPECT_TRUE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(third_size.size(), host_->old_visual_properties_->new_size);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
+  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
 
   // Send the visual properties ACK for the latest size.
-  process_->sink().ClearMessages();
+  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(0);
   metadata.viewport_size_in_pixels = third_size.size();
   metadata.local_surface_id_allocation = base::nullopt;
   host_->DidUpdateVisualProperties(metadata);
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(third_size.size(), host_->old_visual_properties_->new_size);
-  EXPECT_FALSE(process_->sink().GetFirstMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
+  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
 
   // Now clearing the bounds should send out a notification but we shouldn't
   // expect a visual properties ACK (since the renderer won't ack empty sizes).
   // The message should contain the new size (0x0) and not the previous one that
   // we skipped.
-  process_->sink().ClearMessages();
+  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(1);
   view_->SetBounds(gfx::Rect());
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(gfx::Size(), host_->old_visual_properties_->new_size);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
+  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
 
   // Send a rect that has no area but has either width or height set.
-  process_->sink().ClearMessages();
+  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(1);
   view_->SetBounds(gfx::Rect(0, 0, 0, 30));
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(gfx::Size(0, 30), host_->old_visual_properties_->new_size);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
+  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
 
   // Set the same size again. It should not be sent again.
-  process_->sink().ClearMessages();
+  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(0);
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(gfx::Size(0, 30), host_->old_visual_properties_->new_size);
-  EXPECT_FALSE(process_->sink().GetFirstMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
+  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
 
   // A different size should be sent again, however.
+  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(1);
   view_->SetBounds(gfx::Rect(0, 0, 0, 31));
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(gfx::Size(0, 31), host_->old_visual_properties_->new_size);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
+  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
 
   // An invalid LocalSurfaceId should result in no change to the
   // |visual_properties_ack_pending_| bit.
-  process_->sink().ClearMessages();
+  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(1);
   view_->SetBounds(gfx::Rect(25, 25));
   view_->InvalidateLocalSurfaceId();
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(gfx::Size(25, 25), host_->old_visual_properties_->new_size);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
+  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
 }
 
 // Test that a resize event is sent if SynchronizeVisualProperties() is called
@@ -888,55 +879,49 @@ TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
   screen_info.orientation_angle = 0;
   screen_info.orientation_type = SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
 
+  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(1);
   view_->SetScreenInfo(screen_info);
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
-  process_->sink().ClearMessages();
+  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
 
   screen_info.orientation_angle = 180;
   screen_info.orientation_type = SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY;
 
+  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(1);
   view_->SetScreenInfo(screen_info);
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
-  process_->sink().ClearMessages();
+  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
 
   screen_info.device_scale_factor = 2.f;
 
+  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(1);
   view_->SetScreenInfo(screen_info);
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
-  process_->sink().ClearMessages();
+  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
 
   // No screen change.
+  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(0);
   view_->SetScreenInfo(screen_info);
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
-  EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
+  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
 }
 
 // Test for crbug.com/25097. If a renderer crashes between a resize and the
 // corresponding update message, we must be sure to clear the visual properties
 // ACK logic.
 TEST_F(RenderWidgetHostTest, ResizeThenCrash) {
-  // Clear the first Resize message that carried screen info.
-  process_->sink().ClearMessages();
-
   // Setting the bounds to a "real" rect should send out the notification.
+  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(1);
   gfx::Rect original_size(0, 0, 100, 100);
   view_->SetBounds(original_size);
   host_->SynchronizeVisualProperties();
   EXPECT_TRUE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(original_size.size(), host_->old_visual_properties_->new_size);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
+  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
 
   // Simulate a renderer crash before the update message. Ensure all the visual
   // properties ACK logic is cleared. Must clear the view first so it doesn't
@@ -1625,9 +1610,8 @@ TEST_F(RenderWidgetHostInitialSizeTest, InitialSize) {
   // with the reqiest to new up the RenderView and so subsequent
   // SynchronizeVisualProperties calls should not result in new IPC (unless the
   // size has actually changed).
+  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(0);
   EXPECT_FALSE(host_->SynchronizeVisualProperties());
-  EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
   EXPECT_EQ(initial_size_, host_->old_visual_properties_->new_size);
   EXPECT_TRUE(host_->visual_properties_ack_pending_);
 }
@@ -1635,10 +1619,8 @@ TEST_F(RenderWidgetHostInitialSizeTest, InitialSize) {
 TEST_F(RenderWidgetHostTest, HideUnthrottlesResize) {
   gfx::Size original_size(100, 100);
   view_->SetBounds(gfx::Rect(original_size));
-  process_->sink().ClearMessages();
+  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(1);
   EXPECT_TRUE(host_->SynchronizeVisualProperties());
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
   EXPECT_EQ(original_size, host_->old_visual_properties_->new_size);
   EXPECT_TRUE(host_->visual_properties_ack_pending_);
 

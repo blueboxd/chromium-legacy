@@ -1684,10 +1684,16 @@ TEST_F(VideoDecodeAcceleratorTest, TestDecodeTimeMedian) {
     OutputLogFile(g_output_log, output_string);
 }
 
+#if defined(OS_WIN)
+// See https://crbug.com/1002269.
+#define MAYBE_NoCrash DISABLED_NoCrash
+#else
+#define MAYBE_NoCrash NoCrash
+#endif
 // This test passes as long as there is no crash. If VDA notifies an error, it
 // is not considered as a failure because the input may be unsupported or
 // corrupted videos.
-TEST_F(VideoDecodeAcceleratorTest, NoCrash) {
+TEST_F(VideoDecodeAcceleratorTest, MAYBE_NoCrash) {
   notes_.push_back(
       std::make_unique<media::test::ClientStateNotification<ClientState>>());
 

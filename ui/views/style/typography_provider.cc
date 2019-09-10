@@ -120,7 +120,10 @@ SkColor TypographyProvider::GetColor(const views::View& view,
         break;
     }
   } else if (context == style::CONTEXT_TOUCH_MENU) {
-    color_id = ui::NativeTheme::kColorId_TouchableMenuItemLabelColor;
+    color_id =
+        style == views::style::STYLE_HIGHLIGHTED
+            ? ui::NativeTheme::kColorId_HighlightedMenuItemForegroundColor
+            : ui::NativeTheme::kColorId_TouchableMenuItemLabelColor;
   } else if (style == style::STYLE_DISABLED) {
     color_id = ui::NativeTheme::kColorId_LabelDisabledColor;
   }

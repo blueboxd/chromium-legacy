@@ -1462,6 +1462,11 @@ const char kOmniboxZeroSuggestionsOnNTPName[] =
 const char kOmniboxZeroSuggestionsOnNTPDescription[] =
     "Offer suggestions when URL bar (omnibox) is focused.";
 
+const char kOmniboxZeroSuggestionsOnNTPRealboxName[] =
+    "Zero Suggestions in real search box on New Tab Page";
+const char kOmniboxZeroSuggestionsOnNTPRealboxDescription[] =
+    "Offer suggestions when the real search box on New Tab Page is focused.";
+
 const char kOnlyNewPasswordFormParsingName[] =
     "Use only new password form parsing";
 const char kOnlyNewPasswordFormParsingDescription[] =
@@ -3207,10 +3212,6 @@ const char kCrostiniUsbAllowUnsupportedDescription[] =
 const char kCrostiniWebUIInstallerName[] = "Crostini WebUI Installer";
 const char kCrostiniWebUIInstallerDescription[] =
     "Enable the new WebUI Crostini Installer.";
-
-const char kCrosVmCupsProxyName[] = "Chrome OS CUPS Proxy";
-const char kCrosVmCupsProxyDescription[] =
-    "Supports printing from VMs on Chrome OS.";
 
 const char kCryptAuthV2EnrollmentName[] = "CryptAuth v2 Enrollment";
 const char kCryptAuthV2EnrollmentDescription[] =

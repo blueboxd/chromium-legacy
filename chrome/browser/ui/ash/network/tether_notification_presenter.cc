@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/ranges.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -82,7 +83,7 @@ const gfx::ImageSkia GetImageForSignalStrength(int signal_strength) {
   // Convert the [0, 100] range to [0, 4], since there are 5 distinct signal
   // strength icons (0 bars to 4 bars).
   int normalized_signal_strength =
-      std::min(std::max(signal_strength / 25, 0), 4);
+      base::ClampToRange(signal_strength / 25, 0, 4);
 
   return gfx::CanvasImageSource::MakeImageSkia<
       ash::network_icon::SignalStrengthImageSource>(

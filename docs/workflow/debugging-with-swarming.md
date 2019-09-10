@@ -93,8 +93,8 @@ The `isolate.py` tool will emit something like this:
 e625130b712096e3908266252c8cd779d7f442f1  unit_tests
 ```
 
-Do not ctrl-c it after it does this, even if it seems to be hanging for a minute
-- just let it finish.
+Do not ctrl-c it after it does this, even if it seems to be hanging for a
+minute - just let it finish.
 
 ## Running an isolate
 
@@ -128,6 +128,10 @@ other dimensions include:
 The [swarming bot list] allows you to see all the dimensions and the values they
 can take on.
 
+If you need to pass additional arguments to the test, simply add
+`-- $extra_args` to the end of the `swarming.py trigger` command line - anything
+after the `--` will be passed directly to the test.
+
 When you invoke `swarming.py trigger`, it will emit two pieces of information: a
 URL for the task it created, and a command you can run to collect the results of
 that task. For example:
@@ -154,6 +158,22 @@ $ tools/run-swarmed.py $outdir $target
 ```
 
 See the `--help` option of `run-swarmed.py` for more details about that script.
+
+## mb.py run
+
+Similar to `tools/run_swarmed.py`, `mb.py run` bundles much of the logic into a
+single command line. Unlike `tools/run_swarmed.py`, `mb.py run` allows the user
+to specify extra arguments to pass to the test, but has a messier command line.
+
+To use it, run:
+```
+$ tools/mb/mb.py run \
+    -s --no-default-dimensions \
+    -d pool $pool \
+    $criteria \
+    $outdir $target \
+    -- $extra_args
+```
 
 ## Other notes
 

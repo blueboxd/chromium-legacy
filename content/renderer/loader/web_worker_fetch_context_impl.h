@@ -23,6 +23,7 @@
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
@@ -50,6 +51,7 @@ struct NavigationResponseOverrideParameters;
 // service workers, ServiceWorkerFetchContextImpl class is used instead.
 class CONTENT_EXPORT WebWorkerFetchContextImpl
     : public blink::WebWorkerFetchContext,
+      public blink::mojom::ServiceWorkerSubresourceLoaderUpdater,
       public blink::mojom::ServiceWorkerWorkerClient,
       public blink::mojom::RendererPreferenceWatcher {
  public:
@@ -78,7 +80,9 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
           watcher_receiver,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          fallback_factory_info);
+          fallback_factory_info,
+      mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+          pending_subresource_loader_updater);
 
   // Clones this fetch context for a nested worker.
   // For non-PlzDedicatedWorker. This will be removed once PlzDedicatedWorker is
@@ -93,6 +97,8 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
       std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           fallback_factory_info,
+      mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+          pending_subresource_loader_updater,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // blink::WebWorkerFetchContext implementation:
@@ -188,6 +194,8 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
       std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           fallback_factory_info,
+      mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+          pending_subresource_loader_updater,
       std::unique_ptr<URLLoaderThrottleProvider> throttle_provider,
       std::unique_ptr<WebSocketHandshakeThrottleProvider>
           websocket_handshake_throttle_provider,
@@ -206,6 +214,8 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
       std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           fallback_factory_info,
+      mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+          pending_subresource_loader_updater,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   bool Send(IPC::Message* message);
@@ -215,6 +225,11 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // controller service worker. Sets nullptr if the worker context is not
   // controlled by a service worker.
   void ResetServiceWorkerURLLoaderFactory();
+
+  // Implements blink::mojom::ServiceWorkerSubresourceLoaderUpdater.
+  void UpdateSubresourceLoaderFactories(
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+          subresource_loader_factories) override;
 
   // Implements blink::mojom::RendererPreferenceWatcher.
   void NotifyUpdate(blink::mojom::RendererPreferencesPtr new_prefs) override;
@@ -268,6 +283,18 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // If the worker is controlled by a service worker, it passes this factory to
   // ServiceWorkerSubresourceLoaderFactory to use for network fallback.
   scoped_refptr<network::SharedURLLoaderFactory> fallback_factory_;
+
+  // Initialized on the worker thread when InitializeOnWorkerThread() is called.
+  // Used to reconnect to the Network Service after the Network Service crash.
+  // This is only used for dedicated workers when PlzDedicatedWorker is enabled.
+  // When PlzDedicatedWorker is disabled, the ancestor render frame updates the
+  // loaders via Host/TrackedChildURLLoaderFactoryBundle. For shared workers,
+  // the renderer process detects the crash, and terminates the worker instead
+  // of recovery.
+  mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+      pending_subresource_loader_updater_;
+  mojo::Receiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+      subresource_loader_updater_{this};
 
   // Initialized on the worker thread when InitializeOnWorkerThread() is called.
   scoped_refptr<base::RefCountedData<mojo::Remote<blink::mojom::BlobRegistry>>>

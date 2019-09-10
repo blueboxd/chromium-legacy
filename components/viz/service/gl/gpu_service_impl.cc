@@ -534,8 +534,10 @@ void GpuServiceImpl::GetGpuSupportedRuntimeVersion(
       &gpu_info_.dx12_vulkan_version_info);
   std::move(callback).Run(gpu_info_.dx12_vulkan_version_info);
 
-  // The unsandboxed GPU process fulfilled its duty. Bye bye.
-  MaybeExit(false);
+  // The unsandboxed GPU process fulfilled its duty and Dxdiag task is not
+  // running. Bye bye.
+  if (!long_dx_task_different_thread_in_progress_)
+    MaybeExit(false);
 }
 
 void GpuServiceImpl::RequestCompleteGpuInfo(
@@ -556,6 +558,7 @@ void GpuServiceImpl::RequestCompleteGpuInfo(
              RequestCompleteGpuInfoCallback callback) {
             std::move(callback).Run(gpu_service->gpu_info_.dx_diagnostics);
             // The unsandboxed GPU process fulfilled its duty. Bye bye.
+            gpu_service->long_dx_task_different_thread_in_progress_ = false;
             gpu_service->MaybeExit(false);
           },
           this, std::move(callback))));
@@ -591,6 +594,7 @@ void GpuServiceImpl::UpdateGpuInfoPlatform(
 
   // We can continue on shutdown here because we're not writing any critical
   // state in this task.
+  long_dx_task_different_thread_in_progress_ = true;
   base::PostTaskAndReplyWithResult(
       base::CreateCOMSTATaskRunner(
           {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
@@ -843,15 +847,7 @@ void GpuServiceImpl::Crash() {
 
 void GpuServiceImpl::Hang() {
   DCHECK(io_runner_->BelongsToCurrentThread());
-
-  main_runner_->PostTask(FROM_HERE, base::BindOnce([] {
-                           DVLOG(1) << "GPU: Simulating GPU hang";
-                           for (;;) {
-                             // Do not sleep here. The GPU watchdog timer tracks
-                             // the amount of user time this thread is using and
-                             // it doesn't use much while calling Sleep.
-                           }
-                         }));
+  main_runner_->PostTask(FROM_HERE, base::BindOnce(&gl::Hang));
 }
 
 void GpuServiceImpl::ThrowJavaException() {

@@ -125,6 +125,18 @@
         <item name="android:windowIsTranslucent">true</item>
     </style>
 
+    <style name="Theme.Chromium.Activity.TranslucentNoAnimations" parent="Theme.Chromium.Activity.Translucent">
+        <!-- Transparent status bar -->
+        <item name="android:statusBarColor" tools:targetApi="21">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <!-- Dim background -->
+        <item name="android:backgroundDimEnabled">true</item>
+        <!-- Disable default animations -->
+        <item name="android:windowEnterAnimation">@null</item>
+        <item name="android:windowExitAnimation">@null</item>
+        <item name="android:windowAnimationStyle">@null</item>
+    </style>
+
     <style name="Base.Theme.Chromium.Preferences" parent="Theme.Chromium.WithActionBar">
         <item name="android:spinnerItemStyle">@style/PreferenceSpinnerItem</item>
         <item name="floatLabelTextAppearance">@style/TextAppearance.BlackCaption</item>

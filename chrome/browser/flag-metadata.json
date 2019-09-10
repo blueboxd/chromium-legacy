@@ -1082,11 +1082,6 @@
     "expiry_milestone": 77
   },
   {
-    "name": "enable-cros-vm-cups-proxy",
-    "owners": [ "//chrome/services/cups_proxy/OWNERS" ],
-    "expiry_milestone": 78
-  },
-  {
     "name": "enable-cups-printers-ui-overhaul",
     "owners": [ "jimmyxgong" ],
     "expiry_milestone": 79
@@ -2712,6 +2707,11 @@
     "name": "omnibox-zero-suggestions-on-ntp",
     "owners": [ "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 81
+  },
+  {
+    "name": "omnibox-zero-suggestions-on-ntp-realbox",
+    "owners": [ "dbeam", "mahmadi" ],
+    "expiry_milestone": 85
   },
   {
     "name": "on-the-fly-mhtml-hash-computation",

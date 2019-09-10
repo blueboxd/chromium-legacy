@@ -13,6 +13,7 @@ import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
 import "third_party/blink/public/mojom/worker/dedicated_worker_host.mojom";
 import "third_party/blink/public/mojom/worker/worker_main_script_load_params.mojom";
 import "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom";
+import "third_party/blink/public/mojom/service_worker/service_worker.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
@@ -55,6 +56,10 @@ interface DedicatedWorkerHostFactoryClient {
       // Used for loading subresources. This also supports non-network URLs like
       // chrome-extension:// URLs.
       URLLoaderFactoryBundle subresource_loader_factories,
+
+      // Used for updating subresource loaders after NetworkService crash.
+      pending_receiver<ServiceWorkerSubresourceLoaderUpdater>
+          subresource_loader_updater,
 
       // Used to make fetches from the worker go through the controller service
       // worker. This is null when there're no controller service worker.

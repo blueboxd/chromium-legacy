@@ -37,12 +37,12 @@ window.addEventListener('message', function(message) {
     __gCrWeb.message['getExistingFrames']();
   } else if (payload.hasOwnProperty('type') &&
       payload.type == 'org.chromium.encryptedMessage') {
-    if (payload.hasOwnProperty('payload') &&
-        payload.hasOwnProperty('iv') &&
+    if (payload.hasOwnProperty('message_payload') &&
+        payload.hasOwnProperty('function_payload') &&
         payload.hasOwnProperty('target_frame_id')) {
       __gCrWeb.message['routeMessage'](
-        payload['payload'],
-        payload['iv'],
+        payload['message_payload'],
+        payload['function_payload'],
         payload['target_frame_id']
       );
     }

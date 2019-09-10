@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/common/chrome_features.h"
 #include "components/arc/arc_util.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/user_manager/user_manager.h"
@@ -208,6 +209,10 @@ void CrostiniAppWindowShelfController::OnWindowVisibilityChanging(
   if (shelf_app_id.empty())
     return;
 
+  // At this point, all remaining windows are Crostini windows. Firstly, we add
+  // support for forcibly closing it.
+  RegisterCrostiniWindowForForceClose(window);
+
   // Failed to uniquely identify the Crostini app that this window is for.
   // The spinners on the shelf have internal app IDs which are valid
   // extensions IDs. If the ID here starts with "crostini:" then it implies
@@ -319,6 +324,16 @@ void CrostiniAppWindowShelfController::UnregisterAppWindow(
   if (controller)
     controller->RemoveWindow(app_window);
   app_window->SetController(nullptr);
+}
+
+void CrostiniAppWindowShelfController::RegisterCrostiniWindowForForceClose(
+    aura::Window* window) {
+  if (!base::FeatureList::IsEnabled(features::kCrostiniForceClose))
+    return;
+  exo::ShellSurfaceBase* surface = exo::GetShellSurfaceBaseForWindow(window);
+  if (!surface)
+    return;
+  // TODO(hollingum): force close stuff goes here.
 }
 
 void CrostiniAppWindowShelfController::OnItemDelegateDiscarded(

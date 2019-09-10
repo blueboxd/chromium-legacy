@@ -301,10 +301,10 @@ crbug.com/591099 http/tests/devtools/elements/highlight/highlight-node-vertical-
 crbug.com/591099 inspector-protocol/layout-fonts/languages-emoji-rare-glyphs.js [ Failure ]
 
 # Newline painting difference with LayoutNG disabled.
-crbug.com/591099 fast/css/forced-colors-mode/forced-colors-mode-14.html [ Failure ]
-crbug.com/591099 fast/css/forced-colors-mode/forced-colors-mode-15.html [ Failure ]
-crbug.com/591099 virtual/forced-colors/fast/css/forced-colors-mode/forced-colors-mode-14.html [ Failure ]
-crbug.com/591099 virtual/forced-colors/fast/css/forced-colors-mode/forced-colors-mode-15.html [ Failure ]
+crbug.com/591099 external/wpt/forced-colors-mode/forced-colors-mode-14.html [ Failure ]
+crbug.com/591099 external/wpt/forced-colors-mode/forced-colors-mode-15.html [ Failure ]
+crbug.com/591099 virtual/forced-colors/external/wpt/forced-colors-mode/forced-colors-mode-14.html [ Failure ]
+crbug.com/591099 virtual/forced-colors/external/wpt/forced-colors-mode/forced-colors-mode-15.html [ Failure ]
 
 ### http/tests/credentialmanager/
 crbug.com/874695 http/tests/credentialmanager/credentialscontainer-create-with-virtual-authenticator.html [ Failure ]

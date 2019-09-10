@@ -22,6 +22,11 @@ bool RenderWidgetHostDelegate::PreHandleMouseEvent(
   return false;
 }
 
+bool RenderWidgetHostDelegate::HandleMouseEvent(
+    const blink::WebMouseEvent& event) {
+  return false;
+}
+
 bool RenderWidgetHostDelegate::HandleWheelEvent(
     const blink::WebMouseWheelEvent& event) {
   return false;

@@ -1132,26 +1132,20 @@ void MenuItemView::PaintMinorIconAndText(
 }
 
 SkColor MenuItemView::GetTextColor(bool minor, bool render_selection) const {
-  style::TextContext context = style::CONTEXT_MENU;
-  style::TextStyle text_style =
-      minor ? text_style = style::STYLE_SECONDARY : style::STYLE_PRIMARY;
+  style::TextContext context =
+      GetMenuController() && GetMenuController()->use_touchable_layout()
+          ? style::CONTEXT_TOUCH_MENU
+          : style::CONTEXT_MENU;
 
-  if (GetEnabled()) {
-    if (render_selection)
-      text_style = style::STYLE_SELECTED;
-  } else {
-    text_style = style::STYLE_DISABLED;
-  }
-
-  if (GetMenuController() && GetMenuController()->use_touchable_layout()) {
-    context = style::CONTEXT_TOUCH_MENU;
-    text_style = style::STYLE_PRIMARY;
-  }
-
-  if (type_ == HIGHLIGHTED) {
-    context = style::CONTEXT_MENU;
+  style::TextStyle text_style = style::STYLE_PRIMARY;
+  if (type_ == HIGHLIGHTED)
     text_style = style::STYLE_HIGHLIGHTED;
-  }
+  else if (!GetEnabled())
+    text_style = style::STYLE_DISABLED;
+  else if (render_selection)
+    text_style = style::STYLE_SELECTED;
+  else if (minor)
+    text_style = style::STYLE_SECONDARY;
 
   return style::GetColor(*this, context, text_style);
 }

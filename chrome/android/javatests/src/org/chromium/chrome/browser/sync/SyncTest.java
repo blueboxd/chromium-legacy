@@ -81,10 +81,10 @@ public class SyncTest {
     public void testStopAndClear() {
         mSyncTestRule.setUpTestAccountAndSignIn();
         CriteriaHelper.pollUiThread(
-                new Criteria("Timed out checking that isSignedInOnNative() == true") {
+                new Criteria("Timed out checking that hasPrimaryAccount() == true") {
                     @Override
                     public boolean isSatisfied() {
-                        return IdentityServicesProvider.getSigninManager().isSignedInOnNative();
+                        return IdentityServicesProvider.getIdentityManager().hasPrimaryAccount();
                     }
                 },
                 SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
@@ -95,10 +95,10 @@ public class SyncTest {
         Assert.assertNull(SigninTestUtil.getCurrentAccount());
         Assert.assertFalse(SyncTestUtil.isSyncRequested());
         CriteriaHelper.pollUiThread(
-                new Criteria("Timed out checking that isSignedInOnNative() == false") {
+                new Criteria("Timed out checking that hasPrimaryAccount() == false") {
                     @Override
                     public boolean isSatisfied() {
-                        return !IdentityServicesProvider.getSigninManager().isSignedInOnNative();
+                        return !IdentityServicesProvider.getIdentityManager().hasPrimaryAccount();
                     }
                 },
                 SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);

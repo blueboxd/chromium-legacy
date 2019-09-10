@@ -173,16 +173,6 @@ TEST_P(SkiaOutputSurfaceImplTest, SubmitPaint) {
   gpu::SyncToken sync_token =
       output_surface_->SubmitPaint(std::move(on_finished));
   EXPECT_TRUE(sync_token.HasData());
-  base::OnceClosure closure =
-      base::BindOnce(&SkiaOutputSurfaceImplTest::CheckSyncTokenOnGpuThread,
-                     base::Unretained(this), sync_token);
-
-  std::vector<gpu::SyncToken> resource_sync_tokens;
-  resource_sync_tokens.push_back(sync_token);
-  output_surface_->ScheduleGpuTaskForTesting(std::move(closure),
-                                             std::move(resource_sync_tokens));
-  BlockMainThread();
-  EXPECT_TRUE(on_finished_called);
 
   // Copy the output
   const gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
@@ -212,6 +202,18 @@ TEST_P(SkiaOutputSurfaceImplTest, SubmitPaint) {
   }
   output_surface_->CopyOutput(0, geometry, color_space, std::move(request));
   BlockMainThread();
+
+  // SubmitPaint draw is deferred until CopyOutput.
+  base::OnceClosure closure =
+      base::BindOnce(&SkiaOutputSurfaceImplTest::CheckSyncTokenOnGpuThread,
+                     base::Unretained(this), sync_token);
+
+  std::vector<gpu::SyncToken> resource_sync_tokens;
+  resource_sync_tokens.push_back(sync_token);
+  output_surface_->ScheduleGpuTaskForTesting(std::move(closure),
+                                             std::move(resource_sync_tokens));
+  BlockMainThread();
+  EXPECT_TRUE(on_finished_called);
 }
 
 }  // namespace viz

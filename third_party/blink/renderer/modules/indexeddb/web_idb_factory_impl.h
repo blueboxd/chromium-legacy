@@ -7,6 +7,8 @@
 
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_database_callbacks_impl.h"
@@ -23,7 +25,7 @@ namespace blink {
 class WebIDBFactoryImpl : public WebIDBFactory {
  public:
   explicit WebIDBFactoryImpl(
-      mojom::blink::IDBFactoryPtrInfo factory_info,
+      mojo::PendingRemote<mojom::blink::IDBFactory> pending_factory,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~WebIDBFactoryImpl() override;
 
@@ -49,7 +51,7 @@ class WebIDBFactoryImpl : public WebIDBFactory {
   GetDatabaseCallbacksProxy(
       std::unique_ptr<IndexedDBDatabaseCallbacksImpl> callbacks);
 
-  mojom::blink::IDBFactoryPtr factory_;
+  mojo::Remote<mojom::blink::IDBFactory> factory_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shell.h"
@@ -63,7 +63,7 @@ void OpenBrowserUsingContextMenuOnRootWindow(aura::Window* root) {
   // Move the cursor up to the "New window" menu option - assumes menu content.
   const int offset =
       // Top half of the button we just clicked on.
-      ash::ShelfConstants::button_size() / 2 +
+      ash::ShelfConfig::Get()->button_size() / 2 +
       // Space between shelf top and menu bottom. Here we get this menu with
       // a right-click but long-pressing yields the same result. All menus
       // here use a touchable layout.

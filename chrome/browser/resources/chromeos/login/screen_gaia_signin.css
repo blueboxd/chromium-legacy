@@ -35,14 +35,18 @@
   transition: opacity 500ms ease-out;
 }
 
+#signin-frame,
+#signin-frame-container {
+  height: 100%;
+  width: 100%;
+}
+
 #signin-frame {
   border-top-left-radius: 4px;
   border-top-right-radius: 4px;
   display: block;
-  height: 560px;
   overflow: hidden;
   position: static;
-  width: 768px;
 }
 
 :host .step-contents {

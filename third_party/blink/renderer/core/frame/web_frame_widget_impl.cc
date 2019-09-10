@@ -755,9 +755,11 @@ void WebFrameWidgetImpl::MouseContextMenu(const WebMouseEvent& event) {
   // implementation...
 }
 
-void WebFrameWidgetImpl::HandleMouseUp(LocalFrame& main_frame,
-                                       const WebMouseEvent& event) {
-  PageWidgetEventHandler::HandleMouseUp(main_frame, event);
+WebInputEventResult WebFrameWidgetImpl::HandleMouseUp(
+    LocalFrame& main_frame,
+    const WebMouseEvent& event) {
+  WebInputEventResult result =
+      PageWidgetEventHandler::HandleMouseUp(main_frame, event);
 
   if (GetPage()->GetSettings().GetShowContextMenuOnMouseUp()) {
     // Dispatch the contextmenu event regardless of if the click was swallowed.
@@ -765,6 +767,7 @@ void WebFrameWidgetImpl::HandleMouseUp(LocalFrame& main_frame,
     if (event.button == WebMouseEvent::Button::kRight)
       MouseContextMenu(event);
   }
+  return result;
 }
 
 WebInputEventResult WebFrameWidgetImpl::HandleMouseWheel(

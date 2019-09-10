@@ -2372,6 +2372,25 @@ KeyboardEventProcessingResult WebContentsImpl::PreHandleKeyboardEvent(
                    : KeyboardEventProcessingResult::NOT_HANDLED;
 }
 
+bool WebContentsImpl::HandleMouseEvent(const blink::WebMouseEvent& event) {
+  // Handle mouse button back/forward in the browser process after the render
+  // process is done with the event. This ensures all renderer-initiated history
+  // navigations can be treated consistently.
+  if (event.GetType() == blink::WebInputEvent::Type::kMouseUp) {
+    WebContentsImpl* outermost = GetOutermostWebContents();
+    if (event.button == blink::WebPointerProperties::Button::kBack &&
+        outermost->controller_.CanGoBack()) {
+      outermost->controller_.GoBack();
+      return true;
+    } else if (event.button == blink::WebPointerProperties::Button::kForward &&
+               outermost->controller_.CanGoForward()) {
+      outermost->controller_.GoForward();
+      return true;
+    }
+  }
+  return false;
+}
+
 bool WebContentsImpl::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   if (browser_plugin_embedder_ &&
       browser_plugin_embedder_->HandleKeyboardEvent(event)) {

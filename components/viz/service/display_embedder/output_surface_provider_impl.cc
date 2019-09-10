@@ -243,7 +243,10 @@ OutputSurfaceProviderImpl::CreateSoftwareOutputDeviceForPlatform(
   return std::make_unique<SoftwareOutputDeviceOzone>(
       std::move(platform_window_surface), std::move(surface_ozone));
 #elif defined(USE_X11)
-  return std::make_unique<SoftwareOutputDeviceX11>(surface_handle);
+  return std::make_unique<SoftwareOutputDeviceX11>(
+      surface_handle, gpu_service_impl_->in_host_process()
+                          ? nullptr
+                          : gpu_service_impl_->main_runner());
 #endif
 }
 

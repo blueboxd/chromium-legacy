@@ -12,7 +12,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.StrictMode;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -178,18 +177,7 @@ public class WebappLauncherActivity extends Activity {
 
     private static void launchWebapp(Activity launchingActivity, Intent intent,
             @NonNull WebappInfo webappInfo, long createTimestamp) {
-        String webappUrl = webappInfo.url();
-        int webappSource = webappInfo.source();
-
-        // Retrieves the source of the WebAPK from WebappDataStorage if it is unknown. The
-        // {@link webappSource} is only known in the cases of an external intent or a
-        // notification that launches a WebAPK. Otherwise, it's not trustworthy and we must read
-        // the SharedPreference to get the installation source.
-        if (webappInfo.isForWebApk() && webappSource == ShortcutSource.UNKNOWN) {
-            webappSource = getWebApkSource(webappInfo);
-        }
-        LaunchMetrics.recordHomeScreenLaunchIntoStandaloneActivity(
-                webappUrl, webappSource, webappInfo.displayMode());
+        LaunchMetrics.recordHomeScreenLaunchIntoStandaloneActivity(webappInfo);
 
         // Add all information needed to launch WebappActivity without {@link
         // WebappActivity#sWebappInfoMap} to launch intent. When the Android OS has killed a
@@ -205,27 +193,6 @@ public class WebappLauncherActivity extends Activity {
             launchingActivity.finish();
             launchingActivity.overridePendingTransition(0, R.anim.no_anim);
         }
-    }
-
-    // Gets the source of a WebAPK from the WebappDataStorage if the source has been stored before.
-    private static int getWebApkSource(WebappInfo webappInfo) {
-        WebappDataStorage storage = null;
-
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        try {
-            WebappRegistry.warmUpSharedPrefsForId(webappInfo.id());
-            storage = WebappRegistry.getInstance().getWebappDataStorage(webappInfo.id());
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
-        }
-
-        if (storage != null) {
-            int source = storage.getSource();
-            if (source != ShortcutSource.UNKNOWN) {
-                return source;
-            }
-        }
-        return ShortcutSource.WEBAPK_UNKNOWN;
     }
 
     /**

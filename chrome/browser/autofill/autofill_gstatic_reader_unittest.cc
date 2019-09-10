@@ -19,7 +19,7 @@ class AutofillGstaticReaderTest : public ::testing::Test {
   AutofillGstaticReaderTest() {}
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
 };
 

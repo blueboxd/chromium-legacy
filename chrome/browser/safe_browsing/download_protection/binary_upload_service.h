@@ -23,6 +23,9 @@ namespace safe_browsing {
 // and asynchronously retrieving a verdict.
 class BinaryUploadService {
  public:
+  // The maximum size of data that can be uploaded via this service.
+  constexpr static size_t kMaxUploadSizeBytes = 50 * 1024 * 1024;  // 50 MB
+
   BinaryUploadService(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       Profile* profile);
@@ -72,16 +75,22 @@ class BinaryUploadService {
     Request(Request&&) = delete;
     Request& operator=(Request&&) = delete;
 
-    // Asynchronously returns the file contents to upload.
-    // TODO(drubery): This could allocate up to 50MB of memory for a large file
-    // upload. We should see how often that causes errors, and possibly
-    // implement some sort of streaming interface so we don't use so much
-    // memory.
-    virtual void GetFileContents(
-        base::OnceCallback<void(const std::string&)> callback) = 0;
+    // Structure of data returned in the callback to GetRequestData().
+    struct Data {
+      Data();
+      std::string contents;
+    };
 
-    // Returns the content size.
-    virtual size_t GetFileSize() = 0;
+    // Asynchronously returns the file contents to upload.
+    // TODO(drubery): This could allocate up to kMaxUploadSizeBytes of memory
+    // for a large file upload. We should see how often that causes errors,
+    // and possibly implement some sort of streaming interface so we don't use
+    // so much memory.
+    //
+    // |result| is set to SUCCESS if getting the request data succeeded or
+    // some value describing the error.
+    using DataCallback = base::OnceCallback<void(Result, const Data&)>;
+    virtual void GetRequestData(DataCallback callback) = 0;
 
     // Returns the metadata to upload, as a DeepScanningClientRequest.
     const DeepScanningClientRequest& deep_scanning_request() const {
@@ -119,7 +128,9 @@ class BinaryUploadService {
 
   void OnGetInstanceID(Request* request, const std::string& token);
 
-  void OnGetFileContents(Request* request, const std::string& file_contents);
+  void OnGetRequestData(Request* request,
+                        Result result,
+                        const Request::Data& data);
 
   void OnUploadComplete(Request* request,
                         bool success,

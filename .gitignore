@@ -33,7 +33,6 @@
 .*.sw?
 .DS_Store
 .cipd
-.clang-coverage
 .classpath
 .code-coverage
 .cproject

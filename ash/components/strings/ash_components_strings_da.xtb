@@ -3,7 +3,6 @@
 <translationbundle lang="da">
 <translation id="1036550831858290950">Gem den aktuelle fane som et bogmærke</translation>
 <translation id="104962181688258143">Åbn appen Filer</translation>
-<translation id="1098295134904615027">Aktivér det virtuelle skrivebord til højre</translation>
 <translation id="1122869341872663659">Viser <ph name="N" /> søgeresultater for <ph name="QUERY" /></translation>
 <translation id="1195667586424773550">Træk linket til adresselinjen på fanen</translation>
 <translation id="1204450209689312104">Åbn et nyt vindue i inkognitotilstand</translation>
@@ -25,7 +24,6 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">Føj www. og .com til dit input i adresselinjen, og åbn siden</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> og derefter <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> eller <ph name="LEFT" /></translation>
-<translation id="1929866390202038233">Aktivér det virtuelle skrivebord til venstre</translation>
 <translation id="1996162290124031907">Gå til næste fane</translation>
 <translation id="2010818616644390445">Gå til den sidste fane i vinduet</translation>
 <translation id="2040706009561734834">Åbn/luk applisten</translation>
@@ -64,7 +62,6 @@
 <translation id="3105917916468784889">Tag screenshot</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Fokuser på adresselinje</translation>
-<translation id="3165428420335997629">Opret et nyt virtuelt skrivebord</translation>
 <translation id="3256109297135787951">Fjern fremhævningen af et element på din hylde</translation>
 <translation id="3288816184963444640">Luk det aktuelle vindue</translation>
 <translation id="3407560819924487926">Se Jobliste</translation>
@@ -181,7 +178,6 @@
 <translation id="8234414138295101081">Roter skærmen 90 grader</translation>
 <translation id="8241665785394195545">højre vinkelparentes</translation>
 <translation id="8264941229485248811">Vis eller skjul kontrolløren i Udviklerværktøjer</translation>
-<translation id="8355937569537581904">Fjern det aktuelle virtuelle skrivebord</translation>
 <translation id="836869401750819675">Åbn siden Downloads</translation>
 <translation id="8388247778047144397">Træk linket til et tomt område på fanelinjen</translation>
 <translation id="8389638407792712197">Åbn et nyt vindue</translation>

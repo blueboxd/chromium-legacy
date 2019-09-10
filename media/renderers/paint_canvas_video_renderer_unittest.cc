@@ -384,7 +384,7 @@ class PaintCanvasVideoRendererTest : public testing::Test {
 
   SkBitmap bitmap_;
   cc::SkiaPaintCanvas target_canvas_;
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintCanvasVideoRendererTest);
 };

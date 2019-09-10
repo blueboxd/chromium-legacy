@@ -11,3 +11,14 @@
 ++++++++++[text] name=' '
 ++++++++++[spin button] name='AM/PM' xml-roles:spinbutton current=1.000000 minimum=1.000000 maximum=2.000000
 ++++++++++++[text] name='AM'
+++++[dateeditor] name='Breakfast'
+++++++[section]
+++++++++[section]
+++++++++++[spin button] name='Hours Breakfast' xml-roles:spinbutton current=12.000000 minimum=1.000000 maximum=12.000000
+++++++++++++[text] name='12'
+++++++++++[text] name=':'
+++++++++++[spin button] name='Minutes Breakfast' xml-roles:spinbutton current=0.000000 minimum=0.000000 maximum=59.000000
+++++++++++++[text] name='00'
+++++++++++[text] name=' '
+++++++++++[spin button] name='AM/PM Breakfast' xml-roles:spinbutton current=1.000000 minimum=1.000000 maximum=2.000000
+++++++++++++[text] name='AM'

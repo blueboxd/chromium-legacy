@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/numerics/ranges.h"
 #include "chrome/browser/vr/service/vr_service_impl.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -97,9 +98,9 @@ device::mojom::VREyeParametersPtr ValidateEyeParameters(
   // release builds to ensure valid state.
   DCHECK(eye->render_width < kMaxSize);
   DCHECK(eye->render_height < kMaxSize);
-  ret->render_width = std::max(std::min(kMaxSize, eye->render_width), kMinSize);
+  ret->render_width = base::ClampToRange(eye->render_width, kMinSize, kMaxSize);
   ret->render_height =
-      std::max(std::min(kMaxSize, eye->render_height), kMinSize);
+      base::ClampToRange(eye->render_height, kMinSize, kMaxSize);
   return ret;
 }
 

@@ -9,7 +9,6 @@
 #include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/send_tab_to_self/test_send_tab_to_self_model.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #import "testing/gtest_mac.h"
@@ -83,38 +82,16 @@ TEST_F(SendTabToSelfUtilTest, HasValidTargetDevice) {
 
 TEST_F(SendTabToSelfUtilTest, AreFlagsEnabled) {
   task_environment_.RunUntilIdle();
-  scoped_feature_list_.InitWithFeatures(
-      {switches::kSyncSendTabToSelf, kSendTabToSelfShowSendingUI}, {});
+  scoped_feature_list_.InitWithFeatures({kSendTabToSelfShowSendingUI}, {});
 
   EXPECT_TRUE(IsSendingEnabled());
-  EXPECT_TRUE(IsReceivingEnabled());
 }
 
 TEST_F(SendTabToSelfUtilTest, AreFlagsDisabled) {
   task_environment_.RunUntilIdle();
-  scoped_feature_list_.InitWithFeatures(
-      {}, {switches::kSyncSendTabToSelf, kSendTabToSelfShowSendingUI});
+  scoped_feature_list_.InitWithFeatures({}, {kSendTabToSelfShowSendingUI});
 
   EXPECT_FALSE(IsSendingEnabled());
-  EXPECT_FALSE(IsReceivingEnabled());
-}
-
-TEST_F(SendTabToSelfUtilTest, IsReceivingEnabled) {
-  task_environment_.RunUntilIdle();
-  scoped_feature_list_.InitWithFeatures({switches::kSyncSendTabToSelf},
-                                        {kSendTabToSelfShowSendingUI});
-
-  EXPECT_FALSE(IsSendingEnabled());
-  EXPECT_TRUE(IsReceivingEnabled());
-}
-
-TEST_F(SendTabToSelfUtilTest, IsOnlySendingEnabled) {
-  task_environment_.RunUntilIdle();
-  scoped_feature_list_.InitWithFeatures({kSendTabToSelfShowSendingUI},
-                                        {switches::kSyncSendTabToSelf});
-
-  EXPECT_FALSE(IsSendingEnabled());
-  EXPECT_FALSE(IsReceivingEnabled());
 }
 
 TEST_F(SendTabToSelfUtilTest, NotHTTPOrHTTPS) {

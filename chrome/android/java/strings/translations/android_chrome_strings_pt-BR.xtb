@@ -42,6 +42,7 @@
 <translation id="1258753120186372309">Doodle do Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Pesquisar e explorar</translation>
 <translation id="1264974993859112054">Esportes</translation>
+<translation id="1266864766717917324">Falha no compartilhamento de <ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">Parar</translation>
 <translation id="1283039547216852943">Toque para expandir</translation>
 <translation id="1285320974508926690">Nunca traduzir este site</translation>
@@ -71,6 +72,7 @@
 <translation id="1430915738399379752">Imprimir</translation>
 <translation id="1445680696957526815">Os componentes do Chrome são incompatíveis entre si. O Chrome pode estar fazendo um upgrade. Tente novamente em alguns minutos. Se o problema persistir, tente desinstalar e reinstalar o Chrome.</translation>
 <translation id="1446450296470737166">Permitir controle total de dispositivos MIDI</translation>
+<translation id="1450753235335490080">Falha no compartilhamento de <ph name="CONTENT_TYPE" /></translation>
 <translation id="145097072038377568">Desativada nas configurações do Android</translation>
 <translation id="1477626028522505441">Falha no download do arquivo <ph name="FILE_NAME" /> devido a problemas de servidor.</translation>
 <translation id="1501480321619201731">Excluir grupo</translation>
@@ -153,6 +155,7 @@
 <translation id="2049961518639794558">Alterar a extensão do arquivo pode causar um comportamento inesperado e danificar seu dispositivo.</translation>
 <translation id="2056878612599315956">Site pausado</translation>
 <translation id="2063713494490388661">Tocar para pesquisar</translation>
+<translation id="2067805253194386918">texto</translation>
 <translation id="2079545284768500474">Desfazer</translation>
 <translation id="2082238445998314030">Resultado <ph name="RESULT_NUMBER" /> de <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Som</translation>
@@ -324,6 +327,7 @@
 <translation id="3384347053049321195">Compartilhar imagem</translation>
 <translation id="3386292677130313581">Perguntar antes de permitir que sites saibam seu local (recomendado)</translation>
 <translation id="3387650086002190359">Falha no download de <ph name="FILE_NAME" /> devido a erros do sistema de arquivos.</translation>
+<translation id="3389286852084373014">O texto está grande demais</translation>
 <translation id="3398320232533725830">Abrir o gerenciador de favoritos</translation>
 <translation id="3414952576877147120">Tamanho:</translation>
 <translation id="3443221991560634068">Atualizar a página atual</translation>
@@ -348,6 +352,7 @@
 <translation id="3599863153486145794">Limpa o histórico de todos os dispositivos conectados. Sua Conta do Google pode ter outras formas de histórico de navegação em <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Silenciar sites com áudio</translation>
 <translation id="3616113530831147358">Áudio</translation>
+<translation id="3631987586758005671">Compartilhando com <ph name="DEVICE_NAME" /></translation>
 <translation id="3632295766818638029">Reautenticar para ver senha</translation>
 <translation id="363596933471559332">Faça login automaticamente nos websites usando as credenciais armazenadas. Se o recurso estiver desativado, será preciso fazer a verificação sempre antes de fazer login em um website.</translation>
 <translation id="3658159451045945436">A redefinição limpa o histórico da economia de dados, incluindo a lista de sites visitados.</translation>
@@ -579,6 +584,7 @@ Verifique se você confia neste site antes de entrar na RV.</translation>
 <translation id="5324858694974489420">Configurações dos pais</translation>
 <translation id="5327248766486351172">Nome</translation>
 <translation id="5335288049665977812">Permitir que sites executem o JavaScript (recomendado)</translation>
+<translation id="5342314432463739672">Solicitações de permissão</translation>
 <translation id="5357811892247919462">Guia recebida</translation>
 <translation id="5363230136052241468">Toque no botão home para carregar a nova guia</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> guia aberta, toque para alternar}one{<ph name="OPEN_TABS_MANY" /> guia aberta, toque para alternar}other{<ph name="OPEN_TABS_MANY" /> guias abertas, toque para alternar}}</translation>
@@ -749,6 +755,7 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="6532866250404780454">Os sites que você visita no Chrome não serão exibidos. Todos os timers do site serão excluídos.</translation>
 <translation id="6534565668554028783">O Google demorou muito para responder</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB transferido(s) por download</translation>
+<translation id="6539092367496845964">Algo deu errado. Tente novamente mais tarde.</translation>
 <translation id="654446541061731451">Selecione uma guia para transferir</translation>
 <translation id="6545017243486555795">Limpar todos os dados</translation>
 <translation id="6545864417968258051">Verificação de Bluetooth</translation>
@@ -880,6 +887,7 @@ O site NÃO terá acesso à câmera. As imagens da câmera são visíveis apenas
 <translation id="7493994139787901920"><ph name="VERSION" /> (atualizada <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">de dados economizados</translation>
 <translation id="7498271377022651285">Aguarde...</translation>
+<translation id="7510943789645525906">Avisa se uma senha que você usa for parte de uma violação de dados</translation>
 <translation id="7514365320538308">Fazer o download</translation>
 <translation id="751961395872307827">Não foi possível se conectar ao site</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -896,6 +904,7 @@ O site NÃO terá acesso à câmera. As imagens da câmera são visíveis apenas
 <translation id="7605594153474022051">A sincronização não está funcionando</translation>
 <translation id="7606077192958116810">Modo Lite ativado. Gerencie-o nas configurações.</translation>
 <translation id="7612619742409846846">Conectado ao Google como</translation>
+<translation id="7618708364256705849">Nenhum dispositivo disponível.</translation>
 <translation id="7619072057915878432">Falha no download do arquivo <ph name="FILE_NAME" /> devido a falhas na rede.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Receber ajuda<ph name="END_LINK1" /> ou <ph name="BEGIN_LINK2" />verificar novamente<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Bem-vindo ao Google Chrome</translation>

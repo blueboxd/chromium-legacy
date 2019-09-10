@@ -463,7 +463,7 @@ class VideoDecoderStreamTest
     SatisfyPendingCallback(DECODER_REINIT);
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   StrictMock<MockMediaLog> media_log_;
   std::unique_ptr<VideoDecoderStream> video_decoder_stream_;

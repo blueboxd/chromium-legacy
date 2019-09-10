@@ -120,7 +120,7 @@
 <translation id="1521655867290435174">Google 스프레드시트</translation>
 <translation id="1527263332363067270">연결 대기 중...</translation>
 <translation id="1529521330346880926">10x15(봉투)</translation>
-<translation id="1530707389502320859">방문하려고 한 사이트가 허위 사이트로 보입니다. 일부 공격자는 사이트의 URL을 알아보기 어려울 정도로 약간 변경하여 다른 사이트를 모방합니다.</translation>
+<translation id="1530707389502320859">방문하려고 한 사이트가 허위 사이트로 보입니다. 일부 공격자는 사이트의 URL을 알아채기 어려울 정도로 약간 변경하여 다른 사이트를 모방합니다.</translation>
 <translation id="1531205177818805254">Exec</translation>
 <translation id="1532118530259321453">이 페이지 내용:</translation>
 <translation id="153384715582417236">새 콘텐츠 없음</translation>
@@ -306,7 +306,6 @@
 <translation id="2479410451996844060">검색 URL이 잘못됨</translation>
 <translation id="2482878487686419369">알림</translation>
 <translation id="248348093745724435">컴퓨터 정책</translation>
-<translation id="2485387744899240041">기기 및 브라우저에서 사용 중인 사용자 이름</translation>
 <translation id="2491120439723279231">서버 인증서에 오류가 있습니다.</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">JSON 파서</translation>
@@ -849,7 +848,7 @@
 <translation id="5457113250005438886">잘못된 데이터</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> 외 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />개}other{<ph name="CONTACT_PREVIEW" /> 외 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />개}}</translation>
 <translation id="5470861586879999274">수정 다시 실행(&amp;R)</translation>
-<translation id="5473728911100096288">이 기능을 사용 설정하면 향후 버전에서 정리될 지원 중단 기능을 사용하게 됩니다.</translation>
+<translation id="5473728911100096288">이 기능을 사용 설정하면 향후 버전에서 제외될 지원 중단 기능을 사용하게 됩니다.</translation>
 <translation id="5478437291406423475">B6/C4(봉투)</translation>
 <translation id="5481076368049295676">이 콘텐츠는 사용자의 정보를 도용하거나 삭제하는 위험한 소프트웨어를 기기에 설치하려 할 수도 있습니다. <ph name="BEGIN_LINK" />표시하기<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">유효한 주소 추가</translation>
@@ -872,7 +871,6 @@
 <translation id="5565735124758917034">활성</translation>
 <translation id="5570825185877910964">계정 보호</translation>
 <translation id="5571083550517324815">이 주소에서 수령할 수 없습니다. 다른 주소를 선택하세요.</translation>
-<translation id="5571347317547569613">({NUM_COOKIES,plural, =1{1개 사용 중}other{#개 사용 중}})</translation>
 <translation id="5580958916614886209">유효기간 월을 확인한 후 다시 시도해 주세요.</translation>
 <translation id="5586446728396275693">저장된 주소 없음</translation>
 <translation id="5595485650161345191">주소 수정</translation>

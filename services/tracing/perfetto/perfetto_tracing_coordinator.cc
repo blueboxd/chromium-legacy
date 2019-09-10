@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/numerics/ranges.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_log.h"
@@ -188,7 +189,7 @@ class PerfettoTracingCoordinator::TracingSession : public perfetto::Consumer {
         buf_stats.padding_bytes_cleared();
     double percent_full =
         bytes_in_buffer / static_cast<double>(buf_stats.buffer_size());
-    percent_full = std::min(std::max(0.0, percent_full), 1.0);
+    percent_full = base::ClampToRange(percent_full, 0.0, 1.0);
     // We know the size of data in the buffer, but not the number of events.
     std::move(request_buffer_usage_callback_)
         .Run(true, percent_full, 0 /*approx_event_count*/);

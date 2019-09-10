@@ -222,7 +222,7 @@ class FakeVideoDecoderTest
     DCHECK(!is_reset_pending_);
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   VideoDecoderConfig current_config_;
 
   std::unique_ptr<FakeVideoDecoder> decoder_;

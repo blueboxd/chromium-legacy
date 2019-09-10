@@ -67,6 +67,7 @@ component("web_engine_core") {
     ":web_engine_pak",
     "//base",
     "//base:base_static",
+    "//components/cdm/renderer",
     "//components/version_info",
     "//content/public/app:both",
     "//content/public/browser",

@@ -306,7 +306,6 @@
 <translation id="2479410451996844060">Geçersiz arama URL'si.</translation>
 <translation id="2482878487686419369">Bildirimler</translation>
 <translation id="248348093745724435">Makine politikaları</translation>
-<translation id="2485387744899240041">Cihazınız ve tarayıcınız için kullanıcı adları</translation>
 <translation id="2491120439723279231">Sunucu sertifikası hatalar içeriyor.</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">JSON Ayrıştırıcı</translation>
@@ -873,7 +872,6 @@
 <translation id="5565735124758917034">Etkin</translation>
 <translation id="5570825185877910964">Hesabı koru</translation>
 <translation id="5571083550517324815">Bu adresten alım yapılamıyor. Farklı bir adres seçin.</translation>
-<translation id="5571347317547569613">({NUM_COOKIES,plural, =1{1 çerez kullanımda}other{# çerez kullanımda}})</translation>
 <translation id="5580958916614886209">Son kullanma tarihinin ayını kontrol edip tekrar deneyin</translation>
 <translation id="5586446728396275693">Kaydedilmiş adres yok</translation>
 <translation id="5595485650161345191">Adresi düzenle</translation>

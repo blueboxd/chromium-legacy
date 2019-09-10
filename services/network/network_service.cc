@@ -18,6 +18,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
+#include "base/numerics/ranges.h"
 #include "base/task/post_task.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
@@ -533,7 +534,7 @@ void NetworkService::SetMaxConnectionsPerProxy(int32_t max_connections) {
   int max_limit = 99;
   int min_limit = net::ClientSocketPoolManager::max_sockets_per_group(
       net::HttpNetworkSession::NORMAL_SOCKET_POOL);
-  new_limit = std::max(std::min(new_limit, max_limit), min_limit);
+  new_limit = base::ClampToRange(new_limit, min_limit, max_limit);
 
   // Assign the global limit.
   net::ClientSocketPoolManager::set_max_sockets_per_proxy_server(

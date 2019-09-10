@@ -2,10 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {assert} from 'chrome://resources/js/assert.m.js'
+// #import {isIOS} from 'chrome://resources/js/cr.m.js'
+// clang-format on
+
 cr.define('cr.ui', function() {
-  if (cr.ui.focusWithoutInk) {
-    return;
-  }
+  /* #ignore */ if (cr.ui.focusWithoutInk) {
+    /* #ignore */ return;
+  /* #ignore */ }
 
   let hideInk = false;
 
@@ -26,7 +31,7 @@ cr.define('cr.ui', function() {
    * helpful to show focus ripples in that case. This is Polymer-specific.
    * @param {!Element} toFocus
    */
-  const focusWithoutInk = function(toFocus) {
+  /* #export */ const focusWithoutInk = function(toFocus) {
     // |toFocus| does not have a 'noink' property, so it's unclear whether the
     // element has "ink" and/or whether it can be suppressed. Just focus().
     if (!('noink' in toFocus) || !hideInk) {
@@ -42,5 +47,6 @@ cr.define('cr.ui', function() {
     toFocus.noink = noink;
   };
 
+  // #cr_define_end
   return {focusWithoutInk: focusWithoutInk};
 });

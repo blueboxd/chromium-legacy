@@ -2021,7 +2021,7 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 <translation id="4604931264910482931">Konfigurasikan daftar hitam perpesanan asli</translation>
 <translation id="4617338332148204752">Lewati pemeriksaan tag meta pada <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Mengonfigurasi daftar putih pemasangan ekstensi</translation>
-<translation id="4632261735235986857">Melarang pemindaian file</translation>
+<translation id="4632261735235986857">Larang pemindaian file</translation>
 <translation id="4632343302005518762">Izinkan <ph name="PRODUCT_FRAME_NAME" /> menangani jenis konten yang tercantum</translation>
 <translation id="4632566332417930481">Larang penggunaan Developer Tools pada ekstensi yang diinstal oleh kebijakan perusahaan, izinkan penggunaan Developer Tools dalam konteks lainnya</translation>
 <translation id="4633786464238689684">Mengubah perilaku default tombol baris teratas ke tombol fungsi.
@@ -2238,7 +2238,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="5148753489738115745">Memungkinkan Anda menentukan parameter tambahan yang digunakan saat <ph name="PRODUCT_FRAME_NAME" /> meluncurkan <ph name="PRODUCT_NAME" />.
 
           Jika kebijakan ini tidak disetel, baris perintah default akan digunakan.</translation>
-<translation id="5150323673529584553">Tidak memindai file</translation>
+<translation id="5150323673529584553">Jangan pindai file</translation>
 <translation id="5152787786897382519">Chromium dan Google Chrome memiliki beberapa grup kebijakan yang saling bergantung satu sama lain untuk memberikan kontrol terhadap fitur. Kumpulan ini ditunjukkan oleh grup kebijakan berikut. Karena kebijakan dapat memiliki beberapa sumber, hanya nilai yang berasal dari sumber dengan prioritas tertinggi yang akan diterapkan. Nilai yang berasal dari sumber dengan prioritas lebih rendah di grup yang sama akan diabaikan. Urutan prioritas ditentukan di <ph name="POLICY_PRIORITY_DOC_URL" />.</translation>
 <translation id="5159469559091666409">Frekuensi pengiriman paket jaringan pemantauan, dalam milidetik.
 
@@ -4110,7 +4110,7 @@ Kebijakan akan dihapus pada M75.</translation>
 
       Jika kebijakan ini ditetapkan ke false atau tidak dikonfigurasi, pengguna dapat menggunakan browser tanpa harus login ke <ph name="PRODUCT_NAME" />.</translation>
 <translation id="858309738002328421">Blokir upload file berukuran besar</translation>
-<translation id="8585558195682146109">Mengirimkan download pengguna untuk pemindaian</translation>
+<translation id="8585558195682146109">Kirimkan download pengguna untuk pemindaian</translation>
 <translation id="8586528890725660268">Menentukan printer yang tidak dapat digunakan pengguna.
 
       Kebijakan ini hanya digunakan jika <ph name="PRINTERS_BLACKLIST" /> dipilih untuk <ph name="BULK_PRINTERS_ACCESS_MODE" />.

@@ -17,13 +17,13 @@
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/hotseat_widget.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_widget.h"
@@ -48,6 +48,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/layer.h"
@@ -317,7 +318,7 @@ bool ShelfLayoutManager::IsVisible() const {
 }
 
 gfx::Rect ShelfLayoutManager::GetIdealBounds() const {
-  const int shelf_size = ShelfConstants::shelf_size();
+  const int shelf_size = ShelfConfig::Get()->shelf_size();
   aura::Window* shelf_window = shelf_widget_->GetNativeWindow();
   gfx::Rect rect(screen_util::GetDisplayBoundsInParent(shelf_window));
   return SelectValueForShelfAlignment(
@@ -1116,14 +1117,17 @@ void ShelfLayoutManager::StopAnimating() {
 void ShelfLayoutManager::CalculateTargetBounds(
     const State& state,
     TargetBounds* target_bounds) const {
-  const int shelf_size = ShelfConstants::shelf_size();
+  const int shelf_size = ShelfConfig::Get()->shelf_size();
+  const int home_button_edge_spacing =
+      ShelfConfig::Get()->home_button_edge_spacing();
   // By default, show the whole shelf on the screen.
   int shelf_in_screen_portion = shelf_size;
   const WorkAreaInsets* const work_area =
       WorkAreaInsets::ForWindow(shelf_widget_->GetNativeWindow());
 
   if (state.IsShelfAutoHidden()) {
-    shelf_in_screen_portion = kHiddenShelfInScreenPortion;
+    shelf_in_screen_portion =
+        ShelfConfig::Get()->hidden_shelf_in_screen_portion();
   } else if (state.visibility_state == SHELF_HIDDEN ||
              work_area->IsKeyboardShown()) {
     shelf_in_screen_portion = 0;
@@ -1165,8 +1169,7 @@ void ShelfLayoutManager::CalculateTargetBounds(
   target_bounds->status_bounds_in_shelf = gfx::Rect(status_origin, status_size);
 
   gfx::Point nav_origin =
-      gfx::Point(ShelfConstants::home_button_edge_spacing(),
-                 ShelfConstants::home_button_edge_spacing());
+      gfx::Point(home_button_edge_spacing, home_button_edge_spacing);
   const gfx::Size nav_size = shelf_widget_->navigation_widget()->GetIdealSize();
   if (shelf_->IsHorizontalAlignment() && base::i18n::IsRTL())
     nav_origin.set_x(shelf_width - nav_size.width() - nav_origin.x());
@@ -1176,27 +1179,25 @@ void ShelfLayoutManager::CalculateTargetBounds(
   int hotseat_width;
   int hotseat_height;
   if (shelf_->IsHorizontalAlignment()) {
-    hotseat_width = shelf_width -
-                    target_bounds->nav_bounds_in_shelf.size().width() -
-                    ShelfConstants::home_button_edge_spacing() -
-                    kAppIconGroupMargin - status_size.width();
+    hotseat_width =
+        shelf_width - target_bounds->nav_bounds_in_shelf.size().width() -
+        home_button_edge_spacing - ShelfConfig::Get()->app_icon_group_margin() -
+        status_size.width();
     int start_x = base::i18n::IsRTL()
                       ? target_bounds->nav_bounds_in_shelf.x() -
-                            ShelfConstants::home_button_edge_spacing() -
-                            hotseat_width
+                            home_button_edge_spacing - hotseat_width
                       : target_bounds->nav_bounds_in_shelf.right() +
-                            ShelfConstants::home_button_edge_spacing();
+                            home_button_edge_spacing;
     hotseat_origin = gfx::Point(start_x, 0);
     hotseat_height = shelf_height;
   } else {
-    hotseat_origin =
-        gfx::Point(0, target_bounds->nav_bounds_in_shelf.bottom() +
-                          ShelfConstants::home_button_edge_spacing());
+    hotseat_origin = gfx::Point(0, target_bounds->nav_bounds_in_shelf.bottom() +
+                                       home_button_edge_spacing);
     hotseat_width = shelf_width;
-    hotseat_height = shelf_height -
-                     target_bounds->nav_bounds_in_shelf.size().height() -
-                     ShelfConstants::home_button_edge_spacing() -
-                     kAppIconGroupMargin - status_size.height();
+    hotseat_height =
+        shelf_height - target_bounds->nav_bounds_in_shelf.size().height() -
+        home_button_edge_spacing - ShelfConfig::Get()->app_icon_group_margin() -
+        status_size.height();
   }
   target_bounds->hotseat_bounds_in_shelf =
       gfx::Rect(hotseat_origin, gfx::Size(hotseat_width, hotseat_height));
@@ -1218,18 +1219,18 @@ void ShelfLayoutManager::CalculateTargetBounds(
         gfx::Rect(target_bounds->nav_bounds_in_shelf.right(), 0,
                   shelf_width - status_size.width() -
                       target_bounds->nav_bounds_in_shelf.width() -
-                      ShelfConstants::home_button_edge_spacing(),
+                      home_button_edge_spacing,
                   target_bounds->shelf_bounds.height()),
         gfx::Rect(0, target_bounds->nav_bounds_in_shelf.height(),
                   target_bounds->shelf_bounds.width(),
                   shelf_height - status_size.height() -
                       target_bounds->nav_bounds_in_shelf.height() -
-                      ShelfConstants::home_button_edge_spacing()),
+                      home_button_edge_spacing),
         gfx::Rect(0, target_bounds->nav_bounds_in_shelf.height(),
                   target_bounds->shelf_bounds.width(),
                   shelf_height - status_size.height() -
                       target_bounds->nav_bounds_in_shelf.height() -
-                      ShelfConstants::home_button_edge_spacing()));
+                      home_button_edge_spacing));
   } else {
     target_bounds->shelf_bounds_in_shelf = SelectValueForShelfAlignment(
         gfx::Rect(0, 0, shelf_width - status_size.width(),
@@ -1253,7 +1254,7 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     TargetBounds* target_bounds) const {
   CHECK_EQ(kDragInProgress, drag_status_);
   const bool horizontal = shelf_->IsHorizontalAlignment();
-  const int shelf_size = ShelfConstants::shelf_size();
+  const int shelf_size = ShelfConfig::Get()->shelf_size();
   gfx::Rect available_bounds =
       screen_util::GetDisplayBoundsWithShelf(shelf_widget_->GetNativeWindow());
   int resistance_free_region = 0;
@@ -1266,7 +1267,8 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     // changed since then, e.g. because the tray-menu was shown because of the
     // drag), then allow the drag some resistance-free region at first to make
     // sure the shelf sticks with the finger until the shelf is visible.
-    resistance_free_region = shelf_size - kHiddenShelfInScreenPortion;
+    resistance_free_region =
+        shelf_size - ShelfConfig::Get()->hidden_shelf_in_screen_portion();
     hidden_at_start = true;
   }
 
@@ -1293,12 +1295,14 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
       available_bounds.right() - (hidden_at_start ? 0 : shelf_size));
   if (horizontal) {
     target_bounds->shelf_bounds.set_y(baseline + translate);
-    target_bounds->nav_bounds_in_shelf.set_y(ShelfConstants::button_spacing());
+    target_bounds->nav_bounds_in_shelf.set_y(
+        ShelfConfig::Get()->button_spacing());
     target_bounds->hotseat_bounds_in_shelf.set_y(0);
     target_bounds->status_bounds_in_shelf.set_y(0);
   } else {
     target_bounds->shelf_bounds.set_x(baseline + translate);
-    target_bounds->nav_bounds_in_shelf.set_x(ShelfConstants::button_spacing());
+    target_bounds->nav_bounds_in_shelf.set_x(
+        ShelfConfig::Get()->button_spacing());
     target_bounds->hotseat_bounds_in_shelf.set_x(0);
     target_bounds->status_bounds_in_shelf.set_x(0);
   }
@@ -1829,7 +1833,7 @@ float ShelfLayoutManager::GetAppListBackgroundOpacityOnShelfOpacity() {
   float opacity = shelf_widget_->GetBackgroundAlphaValue(
                       shelf_background_type_before_drag_) /
                   static_cast<float>(ShelfBackgroundAnimator::kMaxAlpha);
-  const int shelf_size = ShelfConstants::shelf_size();
+  const int shelf_size = ShelfConfig::Get()->shelf_size();
   if (launcher_above_shelf_bottom_amount_ < shelf_size)
     return opacity;
   float launcher_above_shelf_amount =

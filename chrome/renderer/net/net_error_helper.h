@@ -27,7 +27,9 @@
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "content/public/renderer/render_thread_observer.h"
-#include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "net/base/net_errors.h"
 
 class GURL;
@@ -165,9 +167,11 @@ class NetErrorHelper
   void OnTrackingRequestComplete(std::unique_ptr<std::string> response_body);
 
   void OnNetworkDiagnosticsClientRequest(
-      chrome::mojom::NetworkDiagnosticsClientAssociatedRequest request);
+      mojo::PendingAssociatedReceiver<chrome::mojom::NetworkDiagnosticsClient>
+          receiver);
   void OnNavigationCorrectorRequest(
-      chrome::mojom::NavigationCorrectorAssociatedRequest request);
+      mojo::PendingAssociatedReceiver<chrome::mojom::NavigationCorrector>
+          receiver);
 
   // chrome::mojom::NetworkDiagnosticsClient:
   void SetCanShowNetworkDiagnosticsDialog(bool can_show) override;
@@ -185,14 +189,16 @@ class NetErrorHelper
 
   std::unique_ptr<NetErrorHelperCore> core_;
 
-  mojo::AssociatedBindingSet<chrome::mojom::NetworkDiagnosticsClient>
-      network_diagnostics_client_bindings_;
-  chrome::mojom::NetworkDiagnosticsAssociatedPtr remote_network_diagnostics_;
-  mojo::AssociatedBindingSet<chrome::mojom::NavigationCorrector>
-      navigation_corrector_bindings_;
-  chrome::mojom::NetworkEasterEggAssociatedPtr remote_network_easter_egg_;
+  mojo::AssociatedReceiverSet<chrome::mojom::NetworkDiagnosticsClient>
+      network_diagnostics_client_receivers_;
+  mojo::AssociatedRemote<chrome::mojom::NetworkDiagnostics>
+      remote_network_diagnostics_;
+  mojo::AssociatedReceiverSet<chrome::mojom::NavigationCorrector>
+      navigation_corrector_receivers_;
+  mojo::AssociatedRemote<chrome::mojom::NetworkEasterEgg>
+      remote_network_easter_egg_;
 
-  supervised_user::mojom::SupervisedUserCommandsAssociatedPtr
+  mojo::AssociatedRemote<supervised_user::mojom::SupervisedUserCommands>
       supervised_user_interface_;
 
   // Weak factories for vending weak pointers to PageControllers. Weak

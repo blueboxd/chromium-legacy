@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-[inline_doc] dictionary IDBTransactionOptions {
+dictionary IDBTransactionOptions {
     // If relaxedDurability is true, then the transaction will not be flushed
     // to disk.  This is more performant at the cost of durability.
     boolean relaxedDurability = false;

@@ -1860,6 +1860,9 @@ base::string16 BrowserAccessibility::GetLocalizedStringForRoleDescription()
     case ax::mojom::Role::kColorWell:
       return content_client->GetLocalizedString(IDS_AX_ROLE_COLOR_WELL);
 
+    case ax::mojom::Role::kContentInfo:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_CONTENT_INFO);
+
     case ax::mojom::Role::kDate:
       return content_client->GetLocalizedString(IDS_AX_ROLE_DATE);
 

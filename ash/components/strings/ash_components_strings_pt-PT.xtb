@@ -3,7 +3,6 @@
 <translationbundle lang="pt-PT">
 <translation id="1036550831858290950">Guarde o separador atual como um marcador</translation>
 <translation id="104962181688258143">Abrir a aplicação Ficheiros</translation>
-<translation id="1098295134904615027">Ative o espaço de trabalho virtual à direita.</translation>
 <translation id="1122869341872663659">A apresentar <ph name="N" /> resultados da pesquisa para <ph name="QUERY" />.</translation>
 <translation id="1195667586424773550">Arraste o link para a barra de endereço do separador.</translation>
 <translation id="1204450209689312104">Abrir uma nova janela em modo de navegação anónima</translation>
@@ -25,7 +24,6 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">Adicionar www. e .com à informação introduzida na barra de endereço e, em seguida, abrir a página</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> e, em seguida, <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> ou <ph name="LEFT" />.</translation>
-<translation id="1929866390202038233">Ative o espaço de trabalho virtual à esquerda.</translation>
 <translation id="1996162290124031907">Aceder ao separador seguinte</translation>
 <translation id="2010818616644390445">Ir para o último separador na janela</translation>
 <translation id="2040706009561734834">Abrir/fechar o iniciador</translation>
@@ -64,7 +62,6 @@
 <translation id="3105917916468784889">Criar captura de ecrã</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Focar barra de endereço</translation>
-<translation id="3165428420335997629">Crie um novo espaço de trabalho virtual.</translation>
 <translation id="3256109297135787951">Remover o realce de um item na prateleira</translation>
 <translation id="3288816184963444640">Fechar a janela atual</translation>
 <translation id="3407560819924487926">Abrir o Gestor de tarefas</translation>
@@ -181,7 +178,6 @@
 <translation id="8234414138295101081">Rodar o ecrã 90 graus</translation>
 <translation id="8241665785394195545">parêntese reto direito</translation>
 <translation id="8264941229485248811">Mostrar ou ocultar o inspetor das Ferramentas do programador</translation>
-<translation id="8355937569537581904">Remova o espaço de trabalho virtual atual.</translation>
 <translation id="836869401750819675">Abrir a página Transferências</translation>
 <translation id="8388247778047144397">Arraste o link para uma área em branco na Faixa de separadores.</translation>
 <translation id="8389638407792712197">Abrir nova janela</translation>

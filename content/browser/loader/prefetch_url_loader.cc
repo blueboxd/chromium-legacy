@@ -13,6 +13,7 @@
 #include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/common/content_features.h"
+#include "net/base/load_flags.h"
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -43,7 +44,8 @@ PrefetchURLLoader::PrefetchURLLoader(
     scoped_refptr<PrefetchedSignedExchangeCache>
         prefetched_signed_exchange_cache,
     base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
-    const std::string& accept_langs)
+    const std::string& accept_langs,
+    RecursivePrefetchTokenGenerator recursive_prefetch_token_generator)
     : frame_tree_node_id_getter_(frame_tree_node_id_getter),
       resource_request_(resource_request),
       network_loader_factory_(std::move(network_loader_factory)),
@@ -53,7 +55,9 @@ PrefetchURLLoader::PrefetchURLLoader(
       browser_context_(browser_context),
       signed_exchange_prefetch_metric_recorder_(
           std::move(signed_exchange_prefetch_metric_recorder)),
-      accept_langs_(accept_langs) {
+      accept_langs_(accept_langs),
+      recursive_prefetch_token_generator_(
+          std::move(recursive_prefetch_token_generator)) {
   DCHECK(network_loader_factory_);
   RecordPrefetchRedirectHistogram(PrefetchRedirect::kPrefetchMade);
 
@@ -161,6 +165,22 @@ void PrefetchURLLoader::OnReceiveResponse(
             signed_exchange_prefetch_metric_recorder_, accept_langs_);
     return;
   }
+
+  // If the response is marked as a restricted cross-origin prefetch, we
+  // populate the response's |recursive_prefetch_token| member with a unique
+  // token. The renderer will propagate this token to recursive prefetches
+  // coming from this response, in the form of preload headers. This token is
+  // later used by the PrefetchURLLoaderService to recover the correct
+  // NetworkIsolationKey to use when fetching the request. In the Signed
+  // Exchange case, we do this after redirects from the outer response, because
+  // we redirect back here for the inner response.
+  if (resource_request_.load_flags & net::LOAD_RESTRICTED_PREFETCH) {
+    DCHECK(!recursive_prefetch_token_generator_.is_null());
+    base::UnguessableToken recursive_prefetch_token =
+        std::move(recursive_prefetch_token_generator_).Run(resource_request_);
+    response->recursive_prefetch_token = recursive_prefetch_token;
+  }
+
   if (prefetched_signed_exchange_cache_adapter_ &&
       signed_exchange_prefetch_handler_) {
     prefetched_signed_exchange_cache_adapter_->OnReceiveInnerResponse(response);

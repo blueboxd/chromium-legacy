@@ -29,6 +29,11 @@ struct NATIVE_THEME_EXPORT CaptionStyle {
   // Returns a CaptionStyle populated from the System's Settings.
   static base::Optional<CaptionStyle> FromSystemSettings();
 
+  // Some or all of these property strings can be empty.
+  // For example, on Win10 in Settings when a property is set to Default, the
+  // corresponding string here stays empty. This allows the author styling on
+  // the webpage to be applied. As the user hasn't specified a preferred style,
+  // we pass along an empty string from here.
   std::string text_color;
   std::string background_color;
   // Holds text size percentage as a css string.

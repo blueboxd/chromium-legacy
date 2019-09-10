@@ -8,7 +8,7 @@
 <translation id="1006873397406093306">Kiendelezi hiki kinaweza kusoma na kubadilisha data yako kwenye tovuti. Unaweza kudhibiti tovuti ambazo kiendelezi kinaweza kufikia.</translation>
 <translation id="1007408791287232274">Haikuweza kupakia vifaa.</translation>
 <translation id="1008186147501209563">Hamisha alamisho</translation>
-<translation id="1008557486741366299">Sio Sasa</translation>
+<translation id="1008557486741366299">Si Sasa</translation>
 <translation id="1010498023906173788">Kichupo hiki kimeunganishwa kwenye mlango wa kuingiza vifaa.</translation>
 <translation id="1010833424573920260">{NUM_PAGES,plural, =1{Ukurasa Umekwama}other{Kurasa Zimekwama}}</translation>
 <translation id="1012794136286421601">Faili zako za Hati, Majedwali, Slaidi, na Michoro zinasawazishwa. Fungua programu ya Hifadhi ya Google ili uzifikie mtandaoni ama nje ya mtandao.</translation>
@@ -527,6 +527,7 @@
 <translation id="1769104665586091481">Fungua Kiungo katika &amp;Dirisha Jipya</translation>
 <translation id="1773212559869067373">Cheti cha uthibitishaji kimekataliwa kindani</translation>
 <translation id="177336675152937177">Data ya programu iliyopangishwa</translation>
+<translation id="1776712937009046120">Ongeza mtumiaji</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
 <translation id="1779652936965200207">Tafadhali weka nenosiri hili kwenye "<ph name="DEVICE_NAME" />":</translation>
 <translation id="1781291988450150470">PIN ya sasa</translation>
@@ -1661,7 +1662,7 @@ Unaweza kudhibiti mipangilio ya akaunti hii kwa kusakinisha programu ya Family L
 <translation id="347785443197175480">Endelea kuruhusu <ph name="HOST" /> kufikia kamera na maikrofoni yako</translation>
 <translation id="3478685642445675458">Tafadhali fungua wasifu wako kabla ya kumwondoa mtumiaji.</translation>
 <translation id="3479539252931486093">Je, hukutarajia tukio hili? <ph name="BEGIN_LINK" />Tujulishe<ph name="END_LINK" /></translation>
-<translation id="3479552764303398839">Sio sasa</translation>
+<translation id="3479552764303398839">Si sasa</translation>
 <translation id="3481268647794498892">Inafungua katika <ph name="ALTERNATIVE_BROWSER_NAME" /> baada ya sekunde <ph name="COUNTDOWN_SECONDS" /></translation>
 <translation id="3484273680291419129">Inaondoa programu hatari...</translation>
 <translation id="3484869148456018791">Pata cheti kipya</translation>

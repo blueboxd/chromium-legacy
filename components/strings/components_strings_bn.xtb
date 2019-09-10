@@ -307,7 +307,6 @@
 <translation id="2479410451996844060">ভুল সার্চের ইউআরএল৷</translation>
 <translation id="2482878487686419369">বিজ্ঞপ্তিগুলি</translation>
 <translation id="248348093745724435">মেশিনের নীতি</translation>
-<translation id="2485387744899240041">আপনার ডিভাইস এবং ব্রাউজারের জন্য ইউজারনেম</translation>
 <translation id="2491120439723279231">সার্ভারের সার্টিফিকেটে ত্রুটি আছে৷</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">JSON বিশ্লেষক</translation>
@@ -876,7 +875,6 @@
 <translation id="5565735124758917034">সক্রিয়</translation>
 <translation id="5570825185877910964">অ্যাকাউন্ট সুরক্ষিত রাখুন</translation>
 <translation id="5571083550517324815">এই ঠিকানা থেকে পিক-আপ করা যাবে না। অন্য ঠিকানা বেছে নিন।</translation>
-<translation id="5571347317547569613">({NUM_COOKIES,plural, =1{১টি ব্যবহৃত হচ্ছে}one{#টি ব্যবহৃত হচ্ছে}other{#টি ব্যবহৃত হচ্ছে}})</translation>
 <translation id="5580958916614886209">আপনার মেয়াদ শেষের মাস পরীক্ষা করে আবার চেষ্টা করুন</translation>
 <translation id="5586446728396275693">কোনও ঠিকানা সংরক্ষণ করা নেই</translation>
 <translation id="5595485650161345191">ঠিকানা সম্পাদনা করুন</translation>

@@ -29,15 +29,11 @@ constexpr BlinkGC::StackState ToBlinkGCStackState(
 
 UnifiedHeapController::UnifiedHeapController(ThreadState* thread_state)
     : thread_state_(thread_state) {
-  if (base::FeatureList::IsEnabled(
-          blink::features::kBlinkHeapUnifiedGCScheduling))
-    thread_state->Heap().stats_collector()->RegisterObserver(this);
+  thread_state->Heap().stats_collector()->RegisterObserver(this);
 }
 
 UnifiedHeapController::~UnifiedHeapController() {
-  if (base::FeatureList::IsEnabled(
-          blink::features::kBlinkHeapUnifiedGCScheduling))
-    thread_state_->Heap().stats_collector()->UnregisterObserver(this);
+  thread_state_->Heap().stats_collector()->UnregisterObserver(this);
 }
 
 void UnifiedHeapController::TracePrologue(
@@ -85,14 +81,11 @@ void UnifiedHeapController::TraceEpilogue(
     thread_state_->AtomicPauseSweepAndCompact(
         BlinkGC::kIncrementalMarking, BlinkGC::kConcurrentAndLazySweeping);
 
-    if (base::FeatureList::IsEnabled(
-            blink::features::kBlinkHeapUnifiedGCScheduling)) {
-      ThreadHeapStatsCollector* const stats_collector =
-          thread_state_->Heap().stats_collector();
-      summary->allocated_size =
-          static_cast<size_t>(stats_collector->marked_bytes());
-      summary->time = stats_collector->marking_time_so_far().InMillisecondsF();
-    }
+    ThreadHeapStatsCollector* const stats_collector =
+        thread_state_->Heap().stats_collector();
+    summary->allocated_size =
+        static_cast<size_t>(stats_collector->marked_bytes());
+    summary->time = stats_collector->marking_time_so_far().InMillisecondsF();
     buffered_allocated_size_ = 0;
   }
   thread_state_->AtomicPauseEpilogue();
@@ -188,8 +181,6 @@ bool UnifiedHeapController::IsRootForNonTracingGC(
 }
 
 void UnifiedHeapController::ReportBufferedAllocatedSizeIfPossible() {
-  DCHECK(base::FeatureList::IsEnabled(
-      blink::features::kBlinkHeapUnifiedGCScheduling));
   // Reported from a recursive sweeping call.
   if (thread_state()->IsSweepingInProgress() &&
       thread_state()->SweepForbidden()) {

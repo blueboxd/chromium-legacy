@@ -5,7 +5,9 @@
 #include "weblayer/browser/browser_controller_impl.h"
 
 #include "base/logging.h"
+#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/browser_controls_state.h"
 #include "weblayer/browser/navigation_controller_impl.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/public/browser_observer.h"
@@ -17,6 +19,7 @@
 #if defined(OS_ANDROID)
 #include "base/android/jni_string.h"
 #include "weblayer/browser/java/jni/BrowserControllerImpl_jni.h"
+#include "weblayer/browser/top_controls_container_view.h"
 #endif
 
 namespace weblayer {
@@ -80,6 +83,15 @@ BrowserControllerImpl::GetWebContents(
     const base::android::JavaParamRef<jobject>& obj) {
   return web_contents_->GetJavaWebContents();
 }
+
+void BrowserControllerImpl::SetTopControlsContainerView(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& caller,
+    jlong native_top_controls_container_view) {
+  top_controls_container_view_ = reinterpret_cast<TopControlsContainerView*>(
+      native_top_controls_container_view);
+}
+
 #endif
 
 void BrowserControllerImpl::LoadingStateChanged(content::WebContents* source,
@@ -95,9 +107,34 @@ void BrowserControllerImpl::DidNavigateMainFramePostCommit(
     observer.DisplayedURLChanged(web_contents->GetVisibleURL());
 }
 
+int BrowserControllerImpl::GetTopControlsHeight() {
+#if defined(OS_ANDROID)
+  return top_controls_container_view_->GetTopControlsHeight();
+#else
+  return 0;
+#endif
+}
+
 void BrowserControllerImpl::DidFirstVisuallyNonEmptyPaint() {
   for (auto& observer : observers_)
     observer.FirstContentfulPaint();
+}
+
+void BrowserControllerImpl::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+#if defined(OS_ANDROID)
+  web_contents_->GetMainFrame()->UpdateBrowserControlsState(
+      content::BROWSER_CONTROLS_STATE_BOTH,
+      content::BROWSER_CONTROLS_STATE_SHOWN, false);
+
+  if (web_contents_->ShowingInterstitialPage()) {
+    web_contents_->GetInterstitialPage()
+        ->GetMainFrame()
+        ->UpdateBrowserControlsState(content::BROWSER_CONTROLS_STATE_SHOWN,
+                                     content::BROWSER_CONTROLS_STATE_SHOWN,
+                                     false);
+  }
+#endif
 }
 
 std::unique_ptr<BrowserController> BrowserController::Create(

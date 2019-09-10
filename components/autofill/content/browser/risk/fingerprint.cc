@@ -296,7 +296,7 @@ FingerprintDataLoader::FingerprintDataLoader(
   if (gpu_data_manager_->GpuAccessAllowed(nullptr) &&
       !gpu_data_manager_->IsEssentialGpuInfoAvailable()) {
     gpu_observer_.Add(gpu_data_manager_);
-    gpu_data_manager_->RequestCompleteGpuInfoIfNeeded();
+    OnGpuInfoUpdate();
   }
 
 #if BUILDFLAG(ENABLE_PLUGINS)

@@ -106,8 +106,6 @@ if (widevine_cdm_manifest_and_license_files != []) {
     ]
   }
 } else {
-  assert(!enable_widevine_cdm_component,
-         "Widevine as a component requires a manifest.")
   group("widevine_cdm_manifest_and_license") {
     # NOP
   }

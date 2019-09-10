@@ -110,7 +110,7 @@ class AppListControllerDelegate {
   static std::string AppListSourceToString(AppListSource source);
 
   // True if the user has permission to modify the given app's settings.
-  bool UserMayModifySettings(Profile* profile, const std::string& app_id);
+  bool UninstallAllowed(Profile* profile, const std::string& app_id);
 
   // Uninstall the app identified by |app_id| from |profile|.
   void UninstallApp(Profile* profile, const std::string& app_id);

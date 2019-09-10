@@ -117,6 +117,34 @@ void SetFilter(const LayerType* layer, const FilterOperations& filters) {
   GetPropertyTrees(layer)->effect_tree.set_needs_update(true);
 }
 
+// This will affect all layers associated with this layer's effect node.
+template <typename LayerType>
+void SetRenderSurfaceReason(const LayerType* layer,
+                            RenderSurfaceReason reason) {
+  auto* effect_node = GetEffectNode(layer);
+  effect_node->render_surface_reason = reason;
+  effect_node->effect_changed = true;
+  GetPropertyTrees(layer)->effect_tree.set_needs_update(true);
+}
+
+// This will affect all layers associated with this layer's effect node.
+template <typename LayerType>
+void SetBackdropFilter(const LayerType* layer,
+                       const FilterOperations& filters) {
+  auto* effect_node = GetEffectNode(layer);
+  effect_node->backdrop_filters = filters;
+  effect_node->effect_changed = true;
+  GetPropertyTrees(layer)->effect_tree.set_needs_update(true);
+}
+
+// This will affect all layers associated with this layer's clip node.
+template <typename LayerType>
+void SetClipRect(const LayerType* layer, const gfx::RectF& clip) {
+  auto* clip_node = GetClipNode(layer);
+  clip_node->clip = clip;
+  GetPropertyTrees(layer)->clip_tree.set_needs_update(true);
+}
+
 // Creates viewport layers and (in layer list mode) paint properties.
 // Convenient overload of the method below that creates a scrolling layer as
 // the outer viewport scroll layer. The inner viewport size will be

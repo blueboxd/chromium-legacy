@@ -91,6 +91,10 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
       const network::ResourceRequest& request) {
     return request.request_initiator;
   }
+  static const base::Optional<url::Origin>& isolated_world_origin(
+      const network::ResourceRequest& request) {
+    return request.isolated_world_origin;
+  }
   static const GURL& referrer(const network::ResourceRequest& request) {
     return request.referrer;
   }
@@ -237,6 +241,10 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static const base::Optional<network::ResourceRequest::TrustedParams>&
   trusted_params(const network::ResourceRequest& request) {
     return request.trusted_params;
+  }
+  static const base::Optional<base::UnguessableToken>& recursive_prefetch_token(
+      const network::ResourceRequest& request) {
+    return request.recursive_prefetch_token;
   }
 
   static bool Read(network::mojom::URLRequestDataView data,

@@ -11,6 +11,7 @@
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
@@ -22,7 +23,6 @@
 #include "ash/shelf/overflow_bubble_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_background_animator_observer.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_view.h"
@@ -213,7 +213,7 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
   // when dragged away.
   // To achieve this, we extend the layer in the same direction where the shelf
   // is aligned (downwards for a bottom shelf, etc.).
-  const int radius = ShelfConstants::shelf_size() / 2;
+  const int radius = ShelfConfig::Get()->shelf_size() / 2;
   // We can easily round only 2 corners out of 4 which means we don't need as
   // much extra shelf height.
   const int safety_margin = kShelfMaxOvershootHeight;
@@ -287,9 +287,7 @@ bool ShelfWidget::GetHitTestRects(aura::Window* target,
 
 ShelfWidget::ShelfWidget(Shelf* shelf)
     : shelf_(shelf),
-      background_animator_(SHELF_BACKGROUND_DEFAULT,
-                           shelf_,
-                           Shell::Get()->wallpaper_controller()),
+      background_animator_(shelf_, Shell::Get()->wallpaper_controller()),
       shelf_layout_manager_(new ShelfLayoutManager(this, shelf)),
       delegate_view_(new DelegateView(this)),
       scoped_session_observer_(this) {
@@ -328,6 +326,7 @@ void ShelfWidget::Initialize(aura::Window* shelf_container) {
   shelf_layout_manager_->AddObserver(this);
   shelf_container->SetLayoutManager(shelf_layout_manager_);
   shelf_layout_manager_->InitObservers();
+  background_animator_.Init(SHELF_BACKGROUND_DEFAULT);
   background_animator_.PaintBackground(
       shelf_layout_manager_->GetShelfBackgroundType(),
       AnimationChangeType::IMMEDIATE);

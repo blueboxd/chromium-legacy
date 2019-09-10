@@ -150,16 +150,33 @@ bool EncodedDataHelper::LookForSPS(size_t* skipped_fragments_count) {
 
 std::string EncodedDataHelper::GetBytesForNextFrame() {
   // Helpful description: http://wiki.multimedia.cx/index.php?title=IVF
+  constexpr size_t kIVFHeaderSize = 32;
+  constexpr size_t kIVFFrameHeaderSize = 12;
+
   size_t pos = next_pos_to_decode_;
   std::string bytes;
-  if (pos == 0)
-    pos = 32;  // Skip IVF header.
 
+  // Only IVF video files are supported. The first 4bytes of an IVF video file's
+  // header should be "DKIF".
+  if (pos == 0) {
+    if ((data_.size() < kIVFHeaderSize) || strncmp(&data_[0], "DKIF", 4) != 0) {
+      LOG(ERROR) << "Unexpected data encountered while parsing IVF header";
+      return bytes;
+    }
+    pos = kIVFHeaderSize;  // Skip IVF header.
+  }
+
+  // Read VP8/9 frame size from IVF header.
+  if (pos + kIVFFrameHeaderSize > data_.size()) {
+    LOG(ERROR) << "Unexpected data encountered while parsing IVF frame header";
+    return bytes;
+  }
   uint32_t frame_size = *reinterpret_cast<uint32_t*>(&data_[pos]);
-  pos += 12;  // Skip frame header.
+  pos += kIVFFrameHeaderSize;  // Skip IVF frame header.
+
   // Make sure we are not reading out of bounds.
   if (pos + frame_size > data_.size()) {
-    LOG(ERROR) << "Unexpected data encountered while parsing frame";
+    LOG(ERROR) << "Unexpected data encountered while parsing IVF frame header";
     next_pos_to_decode_ = data_.size();
     return bytes;
   }

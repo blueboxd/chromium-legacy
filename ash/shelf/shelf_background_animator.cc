@@ -9,10 +9,11 @@
 
 #include "ash/animation/animation_change_type.h"
 #include "ash/public/cpp/login_constants.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/wallpaper_types.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_background_animator_observer.h"
-#include "ash/shelf/shelf_constants.h"
+#include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/color_analysis.h"
@@ -55,10 +56,20 @@ bool ShelfBackgroundAnimator::AnimationValues::InitialValuesEqualTargetValuesOf(
 }
 
 ShelfBackgroundAnimator::ShelfBackgroundAnimator(
-    ShelfBackgroundType background_type,
     Shelf* shelf,
     WallpaperControllerImpl* wallpaper_controller)
-    : shelf_(shelf), wallpaper_controller_(wallpaper_controller) {
+    : shelf_(shelf),
+      wallpaper_controller_(wallpaper_controller),
+      shelf_config_(Shell::HasInstance() ? ShelfConfig::Get() : nullptr) {}
+
+ShelfBackgroundAnimator::~ShelfBackgroundAnimator() {
+  if (wallpaper_controller_)
+    wallpaper_controller_->RemoveObserver(this);
+  if (shelf_)
+    shelf_->RemoveObserver(this);
+}
+
+void ShelfBackgroundAnimator::Init(ShelfBackgroundType background_type) {
   if (wallpaper_controller_)
     wallpaper_controller_->AddObserver(this);
   if (shelf_)
@@ -67,13 +78,6 @@ ShelfBackgroundAnimator::ShelfBackgroundAnimator(
   // Initialize animators so that adding observers get notified with consistent
   // values.
   AnimateBackground(background_type, AnimationChangeType::IMMEDIATE);
-}
-
-ShelfBackgroundAnimator::~ShelfBackgroundAnimator() {
-  if (wallpaper_controller_)
-    wallpaper_controller_->RemoveObserver(this);
-  if (shelf_)
-    shelf_->RemoveObserver(this);
 }
 
 void ShelfBackgroundAnimator::AddObserver(
@@ -122,12 +126,12 @@ int ShelfBackgroundAnimator::GetBackgroundAlphaValue(
   switch (background_type) {
     case SHELF_BACKGROUND_DEFAULT:
     case SHELF_BACKGROUND_OVERVIEW:
-      return kShelfTranslucentAlpha;
+      return shelf_config_->shelf_translucent_alpha();
     case SHELF_BACKGROUND_MAXIMIZED:
-      return kShelfTranslucentMaximizedWindow;
+      return shelf_config_->shelf_translucent_maximized_window();
     case SHELF_BACKGROUND_APP_LIST:
     case SHELF_BACKGROUND_MAXIMIZED_WITH_APP_LIST:
-      return kShelfTranslucentOverAppList;
+      return shelf_config_->shelf_translucent_over_app_list();
     case SHELF_BACKGROUND_OOBE:
       return SK_AlphaTRANSPARENT;
     case SHELF_BACKGROUND_LOGIN:
@@ -136,6 +140,10 @@ int ShelfBackgroundAnimator::GetBackgroundAlphaValue(
       return login_constants::kNonBlurredWallpaperBackgroundAlpha;
   }
   return SK_AlphaTRANSPARENT;
+}
+
+void ShelfBackgroundAnimator::SetShelfConfigForTest(ShelfConfig* shelf_config) {
+  shelf_config_ = shelf_config;
 }
 
 void ShelfBackgroundAnimator::OnWallpaperColorsChanged() {
@@ -233,25 +241,28 @@ void ShelfBackgroundAnimator::GetTargetValues(
   // Fetches wallpaper color and darkens it.
   auto darken_wallpaper = [&](int darkening_alpha) {
     if (!wallpaper_controller_)
-      return kShelfDefaultBaseColor;
+      return shelf_config_->shelf_default_base_color();
     SkColor target_color =
         wallpaper_controller_->GetProminentColor(GetShelfColorProfile());
     if (target_color == kInvalidWallpaperColor)
-      return kShelfDefaultBaseColor;
+      return shelf_config_->shelf_default_base_color();
     return color_utils::GetResultingPaintColor(
-        SkColorSetA(kShelfDefaultBaseColor, darkening_alpha), target_color);
+        SkColorSetA(shelf_config_->shelf_default_base_color(), darkening_alpha),
+        target_color);
   };
 
-  SkColor shelf_target_color = kShelfDefaultBaseColor;
+  SkColor shelf_target_color = shelf_config_->shelf_default_base_color();
   switch (background_type) {
     case SHELF_BACKGROUND_DEFAULT:
     case SHELF_BACKGROUND_APP_LIST:
     case SHELF_BACKGROUND_MAXIMIZED_WITH_APP_LIST:
     case SHELF_BACKGROUND_OVERVIEW:
-      shelf_target_color = darken_wallpaper(kShelfTranslucentColorDarkenAlpha);
+      shelf_target_color = darken_wallpaper(
+          shelf_config_->shelf_translucent_color_darken_alpha());
       break;
     case SHELF_BACKGROUND_MAXIMIZED:
-      shelf_target_color = darken_wallpaper(kShelfOpaqueColorDarkenAlpha);
+      shelf_target_color =
+          darken_wallpaper(shelf_config_->shelf_opaque_color_darken_alpha());
       break;
     case SHELF_BACKGROUND_OOBE:
       shelf_target_color = SK_ColorTRANSPARENT;

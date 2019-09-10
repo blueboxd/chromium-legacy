@@ -76,6 +76,8 @@ class DedicatedWorkerHostFactoryClient final
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           subresource_loader_factory_bundle_info,
+      mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+          subresource_loader_updater,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info) override;
   void OnScriptLoadStartFailed() override;
 
@@ -83,6 +85,9 @@ class DedicatedWorkerHostFactoryClient final
   blink::WebDedicatedWorker* worker_;
 
   scoped_refptr<ChildURLLoaderFactoryBundle> subresource_loader_factory_bundle_;
+  mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+      pending_subresource_loader_updater_;
+
   scoped_refptr<ServiceWorkerProviderContext> service_worker_provider_context_;
   std::unique_ptr<NavigationResponseOverrideParameters>
       response_override_for_main_script_;

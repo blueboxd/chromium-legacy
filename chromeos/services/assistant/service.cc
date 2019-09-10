@@ -419,16 +419,16 @@ void Service::FinalizeAssistantManagerService() {
     if (features::IsTimerNotificationEnabled()) {
       // Bind to the AssistantAlarmTimerController in ash.
       client_->RequestAssistantAlarmTimerController(
-          mojo::MakeRequest(&assistant_alarm_timer_controller_));
+          assistant_alarm_timer_controller_.BindNewPipeAndPassReceiver());
     }
 
     // Bind to the AssistantNotificationController in ash.
     client_->RequestAssistantNotificationController(
-        mojo::MakeRequest(&assistant_notification_controller_));
+        assistant_notification_controller_.BindNewPipeAndPassReceiver());
 
     // Bind to the AssistantScreenContextController in ash.
     client_->RequestAssistantScreenContextController(
-        mojo::MakeRequest(&assistant_screen_context_controller_));
+        assistant_screen_context_controller_.BindNewPipeAndPassReceiver());
 
     AddAshSessionObserver();
   }

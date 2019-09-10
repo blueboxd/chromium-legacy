@@ -17,6 +17,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/cache_type.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -180,7 +181,8 @@ class HttpCacheDataCounterTest : public testing::Test {
     context_params->http_cache_path = cache_dir_.GetPath();
 
     network_context_ = std::make_unique<NetworkContext>(
-        network_service_.get(), mojo::MakeRequest(&network_context_ptr_),
+        network_service_.get(),
+        network_context_remote_.BindNewPipeAndPassReceiver(),
         std::move(context_params));
   }
 
@@ -189,8 +191,9 @@ class HttpCacheDataCounterTest : public testing::Test {
   std::unique_ptr<NetworkService> network_service_;
   std::unique_ptr<NetworkContext> network_context_;
 
-  // Stores the NetworkContextPtr of the most recently created NetworkContext.
-  mojom::NetworkContextPtr network_context_ptr_;
+  // Stores the mojo::Remote<mojom::NetworkContext> of the most recently created
+  // NetworkContext.
+  mojo::Remote<mojom::NetworkContext> network_context_remote_;
   disk_cache::Backend* backend_ = nullptr;
 };
 
@@ -221,13 +224,14 @@ TEST(HttpCacheDataCounterTestNoCache, BeSensible) {
   std::unique_ptr<NetworkService> network_service(
       NetworkService::CreateForTesting());
   std::unique_ptr<NetworkContext> network_context;
-  mojom::NetworkContextPtr network_context_ptr;
+  mojo::Remote<mojom::NetworkContext> network_context_remote;
 
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
   context_params->http_cache_enabled = false;
 
   network_context = std::make_unique<NetworkContext>(
-      network_service.get(), mojo::MakeRequest(&network_context_ptr),
+      network_service.get(),
+      network_context_remote.BindNewPipeAndPassReceiver(),
       std::move(context_params));
   auto result = HttpCacheDataCounterTest::CountBetween(
       network_context.get(), base::Time(), base::Time::Max());

@@ -119,7 +119,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kBlinkHeapConcurrentSweeping;
 BLINK_COMMON_EXPORT extern const base::Feature kBlinkHeapIncrementalMarking;
 BLINK_COMMON_EXPORT extern const base::Feature
     kBlinkHeapIncrementalMarkingStress;
-BLINK_COMMON_EXPORT extern const base::Feature kBlinkHeapUnifiedGCScheduling;
 
 BLINK_COMMON_EXPORT extern const base::Feature kBufferingBytesConsumerDelay;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>

@@ -8,9 +8,9 @@
 
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/event_rewriter_controller.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/mojom/constants.mojom.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -45,6 +45,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_constants.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/login/base_screen_handler_utils.h"
 #include "components/login/localized_values_builder.h"
@@ -184,6 +185,7 @@ void CoreOobeHandler::GetAdditionalParameters(base::DictionaryValue* dict) {
                base::Value(DemoSetupController::IsDemoModeAllowed()));
   dict->SetKey("showTechnologyBadge",
                base::Value(!ash::features::IsSeparateNetworkIconsEnabled()));
+  dict->SetKey("adaptiveOobe", base::Value(features::IsAdaptiveOobeEnabled()));
 }
 
 void CoreOobeHandler::RegisterMessages() {
@@ -551,7 +553,7 @@ void CoreOobeHandler::UpdateClientAreaSize() {
   const gfx::Size size =
       display::Screen::GetScreen()->GetPrimaryDisplay().size();
   SetClientAreaSize(size.width(), size.height());
-  SetShelfHeight(ash::ShelfConstants::shelf_size());
+  SetShelfHeight(ash::ShelfConfig::Get()->shelf_size());
 }
 
 void CoreOobeHandler::OnOobeConfigurationChanged() {

@@ -659,6 +659,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       resource_request->request_initiator = request.RequestorOrigin();
     }
   }
+  if (!request.IsolatedWorldOrigin().IsNull())
+    resource_request->isolated_world_origin = request.IsolatedWorldOrigin();
   resource_request->referrer = referrer_url;
 
   resource_request->referrer_policy =
@@ -699,6 +701,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   }
 
   resource_request->load_flags = request.GetLoadFlagsForWebUrlRequest();
+
+  resource_request->recursive_prefetch_token = request.RecursivePrefetchToken();
 
   if (resource_request->resource_type ==
           static_cast<int>(ResourceType::kPrefetch) ||
@@ -1082,6 +1086,7 @@ void WebURLLoaderImpl::PopulateURLResponse(
   response->SetIsSignedExchangeInnerResponse(
       info.is_signed_exchange_inner_response);
   response->SetWasInPrefetchCache(info.was_in_prefetch_cache);
+  response->SetRecursivePrefetchToken(info.recursive_prefetch_token);
 
   SetSecurityStyleAndDetails(url, info, response, report_security_info);
 

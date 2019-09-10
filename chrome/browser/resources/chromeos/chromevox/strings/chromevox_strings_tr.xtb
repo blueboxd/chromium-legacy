@@ -20,7 +20,7 @@
 <translation id="1087788677726983142">Etkinlik akış filtrelerini gizle</translation>
 <translation id="1088219014394087294">Başlık yok.</translation>
 <translation id="1106741348836243114">Sesli geri bildirimi (ses sinyalleri) aç veya kapat.</translation>
-<translation id="1120743664840974483">{"a": "adana", "b": "bolu", "c": "ceyhan", "ç": "çanakkale", "d": "denizli", "e": "edirne", "f": "fatsa", "g": "giresun", "ğ": "yumuşak ge", "h": "hatay", "ı": "ısparta", "i": "izmir", "j": "jandarma", "k": "kayseri", "l": "lüleburgaz", "m": "muş", "n": "niğde", "o": "ordu","p": "polatlı", "r": "rize", "s": "sinop", "ş": "şırnak", "t": "tokat", "u": "uşak", "ü": "ünye", "v": "van", "y": "yozgat", "z": "zonguldak"}</translation>
+<translation id="1120743664840974483">{"a": "adana", "b": "bolu", "c": "ceyhan", "ç": "çanakkale", "d": "denizli", "e": "edirne", "f": "fatsa", "g": "giresun", "ğ": "yumuşak ge", "h": "hatay", "ı": "ısparta", "i": "izmir", "j": "jandarma", "k": "kars", "l": "lüleburgaz", "m": "muş", "n": "niğde", "o": "ordu", "ö": "ödemiş", "p": "polatlı", "r": "rize", "s": "sinop", "ş": "şırnak", "t": "tokat", "u": "uşak", "ü": "ünye", "v": "van", "y": "yozgat", "z": "zonguldak"}</translation>
 <translation id="1120938014254001895">İki parmağınızı yukarı kaydırın</translation>
 <translation id="1124771028211010580">Mevcut görüntüleme stili yan yanadır.</translation>
 <translation id="1126928665165112660">İtalik değil</translation>
@@ -206,7 +206,6 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="257674075312929031">Grup</translation>
 <translation id="2582407057977008361">Kenar</translation>
 <translation id="2592212930811759050">Düzenlemeye başlamak için iki kez dokunun</translation>
-<translation id="2606210917827248971">{COUNT,plural, =1{# öğeyle}other{# öğeyle}}</translation>
 <translation id="2614981083756825552">Matematik ML Düzeni</translation>
 <translation id="2624431853467395961">Öğrenme modunu açar</translation>
 <translation id="2626530649491650971">tıklanabilir</translation>
@@ -390,7 +389,6 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="3781428340399460090">Canlı Pembe</translation>
 <translation id="3783725005098956899">Günlüğü Göster</translation>
 <translation id="3793710123303304873">İletişim kutusundan çıkıldı.</translation>
-<translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">Otomatik tamamlama listesi</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3813387282697781382">Açık Mercan</translation>

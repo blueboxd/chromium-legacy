@@ -16,12 +16,12 @@
 #include "ash/lock_screen_action/lock_screen_action_background_controller_stub.h"
 #include "ash/lock_screen_action/test_lock_screen_action_background_controller.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/mojom/tray_action.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/session/test_session_controller_client.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -237,7 +237,7 @@ TEST_F(LockActionHandlerLayoutManagerTest, MaximizedWindowBounds) {
   gfx::Rect target_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
   target_bounds.Inset(0 /* left */, 0 /* top */, 0 /* right */,
-                      ShelfConstants::shelf_size() /* bottom */);
+                      ShelfConfig::Get()->shelf_size() /* bottom */);
   EXPECT_EQ(target_bounds.ToString(), window->GetBoundsInScreen().ToString());
 }
 
@@ -261,7 +261,7 @@ TEST_F(LockActionHandlerLayoutManagerTest, FullscreenWindowBounds) {
   gfx::Rect target_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
   target_bounds.Inset(0 /* left */, 0 /* top */, 0 /* right */,
-                      ShelfConstants::shelf_size() /* bottom */);
+                      ShelfConfig::Get()->shelf_size() /* bottom */);
   EXPECT_EQ(target_bounds.ToString(), window->GetBoundsInScreen().ToString());
 }
 
@@ -280,7 +280,7 @@ TEST_F(LockActionHandlerLayoutManagerTest, MaximizeResizableWindow) {
   gfx::Rect target_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
   target_bounds.Inset(0 /* left */, 0 /* top */, 0 /* right */,
-                      ShelfConstants::shelf_size() /* bottom */);
+                      ShelfConfig::Get()->shelf_size() /* bottom */);
   EXPECT_EQ(target_bounds.ToString(), window->GetBoundsInScreen().ToString());
 }
 
@@ -288,7 +288,7 @@ TEST_F(LockActionHandlerLayoutManagerTest, KeyboardBounds) {
   gfx::Rect initial_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
   initial_bounds.Inset(0 /* left */, 0 /* top */, 0 /* right */,
-                       ShelfConstants::shelf_size() /* bottom */);
+                       ShelfConfig::Get()->shelf_size() /* bottom */);
 
   SetUpTrayActionClientAndLockSession(mojom::TrayActionState::kActive);
 
@@ -450,7 +450,7 @@ TEST_F(LockActionHandlerLayoutManagerTest, MultipleMonitors) {
   gfx::Rect target_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
   target_bounds.Inset(0 /* left */, 0 /* top */, 0 /* right */,
-                      ShelfConstants::shelf_size() /* bottom */);
+                      ShelfConfig::Get()->shelf_size() /* bottom */);
   EXPECT_EQ(target_bounds.ToString(), window->GetBoundsInScreen().ToString());
 
   EXPECT_EQ(root_windows[0], window->GetRootWindow());
@@ -464,7 +464,7 @@ TEST_F(LockActionHandlerLayoutManagerTest, MultipleMonitors) {
   EXPECT_EQ(root_windows[0], window->GetRootWindow());
   target_bounds = gfx::Rect(300, 400);
   target_bounds.Inset(0 /* left */, 0 /* top */, 0 /* right */,
-                      ShelfConstants::shelf_size() /* bottom */);
+                      ShelfConfig::Get()->shelf_size() /* bottom */);
   EXPECT_EQ(target_bounds.ToString(), window->GetBoundsInScreen().ToString());
 
   window_state->Restore();
@@ -712,7 +712,7 @@ TEST_F(LockActionHandlerLayoutManagerTestWithTestBackgroundController,
   gfx::Rect target_app_window_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
   target_app_window_bounds.Inset(0 /* left */, 0 /* top */, 0 /* right */,
-                                 ShelfConstants::shelf_size() /* bottom */);
+                                 ShelfConfig::Get()->shelf_size() /* bottom */);
   EXPECT_EQ(target_app_window_bounds, window->GetBoundsInScreen());
 
   EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().bounds(),

@@ -73,7 +73,7 @@ import java.util.HashSet;
  */
 class ManualFillingMediator extends EmptyTabObserver
         implements KeyboardAccessoryCoordinator.VisibilityDelegate, View.OnLayoutChangeListener {
-    static private final int MINIMAL_AVAILABLE_VERTICAL_SPACE = 80; // in DP.
+    static private final int MINIMAL_AVAILABLE_VERTICAL_SPACE = 128; // in DP.
     static private final int MINIMAL_AVAILABLE_HORIZONTAL_SPACE = 180; // in DP.
 
     private PropertyModel mModel = ManualFillingProperties.createFillingModel();
@@ -582,16 +582,9 @@ class ManualFillingMediator extends EmptyTabObserver
         int maxHeight = mKeyboardExtensionViewResizer.getHeight();
         maxHeight += Math.round(density * webContents.getHeight());
         maxHeight -= Math.round(density * MINIMAL_AVAILABLE_VERTICAL_SPACE);
-        maxHeight -= calculateAccessoryBarHeight();
         if (mAccessorySheet.getHeight() <= maxHeight) return; // Sheet height needs no adjustment!
         mAccessorySheet.setHeight(maxHeight);
         changeBottomControlSpaceForState(mModel.get(KEYBOARD_EXTENSION_STATE));
-    }
-
-    private @Px int calculateAccessoryBarHeight() {
-        if (!mKeyboardAccessory.isShown()) return 0;
-        return mActivity.getResources().getDimensionPixelSize(
-                R.dimen.keyboard_accessory_suggestion_height);
     }
 
     private void refreshTabs() {

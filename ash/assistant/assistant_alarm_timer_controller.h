@@ -5,6 +5,9 @@
 #ifndef ASH_ASSISTANT_ASSISTANT_ALARM_TIMER_CONTROLLER_H_
 #define ASH_ASSISTANT_ASSISTANT_ALARM_TIMER_CONTROLLER_H_
 
+#include <map>
+#include <string>
+
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/model/assistant_alarm_timer_model.h"
 #include "ash/assistant/model/assistant_alarm_timer_model_observer.h"
@@ -13,7 +16,8 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace ash {
 
@@ -37,7 +41,8 @@ class AssistantAlarmTimerController
       AssistantController* assistant_controller);
   ~AssistantAlarmTimerController() override;
 
-  void BindRequest(mojom::AssistantAlarmTimerControllerRequest request);
+  void BindReceiver(
+      mojo::PendingReceiver<mojom::AssistantAlarmTimerController> receiver);
 
   // Returns the underlying model.
   const AssistantAlarmTimerModel* model() const { return &model_; }
@@ -84,7 +89,7 @@ class AssistantAlarmTimerController
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
 
-  mojo::Binding<mojom::AssistantAlarmTimerController> binding_;
+  mojo::Receiver<mojom::AssistantAlarmTimerController> receiver_{this};
 
   AssistantAlarmTimerModel model_;
 

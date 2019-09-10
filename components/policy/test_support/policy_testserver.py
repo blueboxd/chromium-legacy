@@ -1004,7 +1004,12 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       # policy config file.
       for field in group_message.DESCRIPTOR.fields:
         field_value = None
-        if field.name in policies:
+        full_name = '{}.{}'.format(group.name, field.name)
+        if full_name in policies:
+          got_fields = True
+          field_value = policies[full_name]
+          self.SetProtobufMessageField(group_message, field, field_value)
+        elif field.name in policies:
           got_fields = True
           field_value = policies[field.name]
           self.SetProtobufMessageField(group_message, field, field_value)

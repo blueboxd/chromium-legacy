@@ -131,6 +131,7 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
   request->SetFromOriginDirtyStyleSheet(IsFromOriginDirtyStyleSheet());
   request->SetSignedExchangePrefetchCacheEnabled(
       IsSignedExchangePrefetchCacheEnabled());
+  request->SetRecursivePrefetchToken(RecursivePrefetchToken());
 
   return request;
 }
@@ -351,6 +352,16 @@ bool ResourceRequest::IsConditional() const {
 
 void ResourceRequest::SetHasUserGesture(bool has_user_gesture) {
   has_user_gesture_ |= has_user_gesture;
+}
+
+bool ResourceRequest::CanDisplay(const KURL& url) const {
+  if (RequestorOrigin()->CanDisplay(url))
+    return true;
+
+  if (IsolatedWorldOrigin() && IsolatedWorldOrigin()->CanDisplay(url))
+    return true;
+
+  return false;
 }
 
 const CacheControlHeader& ResourceRequest::GetCacheControlHeader() const {

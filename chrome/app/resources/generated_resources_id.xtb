@@ -530,6 +530,7 @@
 <translation id="1769104665586091481">Buka Tautan di &amp;Jendela Baru</translation>
 <translation id="1773212559869067373">Sertifikat autentikasi ditolak secara lokal</translation>
 <translation id="177336675152937177">Data aplikasi yang dihosting</translation>
+<translation id="1776712937009046120">Tambahkan pengguna</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
 <translation id="1779652936965200207">Masukkan kunci sandi ini di "<ph name="DEVICE_NAME" />":</translation>
 <translation id="1781291988450150470">PIN Saat Ini</translation>
@@ -3459,7 +3460,7 @@ Pastikan Anda memercayai situs ini sebelum masuk ke VR.</translation>
 <translation id="615436196126345398">Protokol</translation>
 <translation id="6154697846084421647">Saat ini telah masuk</translation>
 <translation id="6155141482566063812">Tab background membagikan layar Anda</translation>
-<translation id="6156323911414505561">Tampilkan kolom bookmark.</translation>
+<translation id="6156323911414505561">Tampilkan kolom bookmark</translation>
 <translation id="6156863943908443225">Cache skrip</translation>
 <translation id="6156960295318603523">Setelan Bahasa</translation>
 <translation id="6160625263637492097">Berikan sertifikat untuk autentikasi</translation>

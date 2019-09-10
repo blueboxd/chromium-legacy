@@ -180,7 +180,7 @@ class FakeDemuxerStreamTest : public testing::Test {
     ReadAllBuffers(num_configs, num_buffers_in_one_config);
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<FakeDemuxerStream> stream_;
 
   DemuxerStream::Status status_;

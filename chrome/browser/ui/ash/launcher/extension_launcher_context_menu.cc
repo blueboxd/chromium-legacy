@@ -92,6 +92,8 @@ bool ExtensionLauncherContextMenu::IsCommandIdChecked(int command_id) const {
 
 bool ExtensionLauncherContextMenu::IsCommandIdEnabled(int command_id) const {
   switch (command_id) {
+    case ash::UNINSTALL:
+      return controller()->UninstallAllowed(item().id.app_id);
     case ash::MENU_NEW_WINDOW:
       // "Normal" windows are not allowed when incognito is enforced.
       return IncognitoModePrefs::GetAvailability(

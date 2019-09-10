@@ -124,7 +124,8 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
       base::Optional<gfx::Rect> draw_rectangle);
   void ScheduleOutputSurfaceAsOverlay(
       const OverlayProcessor::OutputSurfaceOverlayPlane& output_surface_plane);
-  void SwapBuffers(OutputSurfaceFrame frame);
+  void SwapBuffers(OutputSurfaceFrame frame,
+                   base::OnceClosure deferred_framebuffer_draw_closure);
   void EnsureBackbuffer() { output_device_->EnsureBackbuffer(); }
   void DiscardBackbuffer() { output_device_->DiscardBackbuffer(); }
   void FinishPaintRenderPass(RenderPassId id,
@@ -137,7 +138,8 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   void CopyOutput(RenderPassId id,
                   const copy_output::RenderPassGeometry& geometry,
                   const gfx::ColorSpace& color_space,
-                  std::unique_ptr<CopyOutputRequest> request);
+                  std::unique_ptr<CopyOutputRequest> request,
+                  base::OnceClosure deferred_framebuffer_draw_closure);
 
   void BeginAccessImages(const std::vector<ImageContextImpl*>& image_contexts,
                          std::vector<GrBackendSemaphore>* begin_semaphores,

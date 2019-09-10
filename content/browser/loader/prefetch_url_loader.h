@@ -48,6 +48,9 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
  public:
   using URLLoaderThrottlesGetter = base::RepeatingCallback<
       std::vector<std::unique_ptr<blink::URLLoaderThrottle>>()>;
+  using RecursivePrefetchTokenGenerator =
+      base::OnceCallback<base::UnguessableToken(
+          const network::ResourceRequest&)>;
 
   // |url_loader_throttles_getter| may be used when a prefetch handler needs to
   // additionally create a request (e.g. for fetching certificate if the
@@ -70,7 +73,8 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
       scoped_refptr<PrefetchedSignedExchangeCache>
           prefetched_signed_exchange_cache,
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
-      const std::string& accept_langs);
+      const std::string& accept_langs,
+      RecursivePrefetchTokenGenerator recursive_prefetch_token_generator);
   ~PrefetchURLLoader() override;
 
   // Sends an empty response's body to |forwarding_client_|. If failed to create
@@ -154,6 +158,8 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
       prefetched_signed_exchange_cache_adapter_;
 
   const std::string accept_langs_;
+
+  RecursivePrefetchTokenGenerator recursive_prefetch_token_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchURLLoader);
 };

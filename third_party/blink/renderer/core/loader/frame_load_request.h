@@ -41,6 +41,7 @@
 namespace blink {
 
 class HTMLFormElement;
+class KURL;
 
 struct CORE_EXPORT FrameLoadRequest {
   STACK_ALLOCATED();
@@ -138,6 +139,10 @@ struct CORE_EXPORT FrameLoadRequest {
     resource_request_.ClearHTTPReferrer();
     resource_request_.ClearHTTPOrigin();
   }
+
+  // Whether either OriginDocument, RequestorOrigin or IsolatedWorldOrigin can
+  // display the |url|,
+  bool CanDisplay(const KURL&) const;
 
  private:
   Member<Document> origin_document_;

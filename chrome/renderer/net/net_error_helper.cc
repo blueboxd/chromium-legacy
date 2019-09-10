@@ -211,7 +211,8 @@ content::RenderFrame* NetErrorHelper::GetRenderFrame() {
 
 void NetErrorHelper::SendCommand(
     security_interstitials::SecurityInterstitialCommand command) {
-  security_interstitials::mojom::InterstitialCommandsAssociatedPtr interface;
+  mojo::AssociatedRemote<security_interstitials::mojom::InterstitialCommands>
+      interface;
   render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(&interface);
   switch (command) {
     case security_interstitials::CMD_DONT_PROCEED: {
@@ -437,8 +438,10 @@ void NetErrorHelper::EnablePageHelperFunctions() {
   NetErrorPageController::Install(
       render_frame(), weak_controller_delegate_factory_.GetWeakPtr());
 
-  render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
-      &supervised_user_interface_);
+  if (!supervised_user_interface_) {
+    render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
+        &supervised_user_interface_);
+  }
   SupervisedUserErrorPageController::Install(
       render_frame(),
       weak_supervised_user_error_controller_delegate_factory_.GetWeakPtr());
@@ -634,13 +637,15 @@ void NetErrorHelper::OnTrackingRequestComplete(
 }
 
 void NetErrorHelper::OnNetworkDiagnosticsClientRequest(
-    chrome::mojom::NetworkDiagnosticsClientAssociatedRequest request) {
-  network_diagnostics_client_bindings_.AddBinding(this, std::move(request));
+    mojo::PendingAssociatedReceiver<chrome::mojom::NetworkDiagnosticsClient>
+        receiver) {
+  network_diagnostics_client_receivers_.Add(this, std::move(receiver));
 }
 
 void NetErrorHelper::OnNavigationCorrectorRequest(
-    chrome::mojom::NavigationCorrectorAssociatedRequest request) {
-  navigation_corrector_bindings_.AddBinding(this, std::move(request));
+    mojo::PendingAssociatedReceiver<chrome::mojom::NavigationCorrector>
+        receiver) {
+  navigation_corrector_receivers_.Add(this, std::move(receiver));
 }
 
 void NetErrorHelper::SetCanShowNetworkDiagnosticsDialog(bool can_show) {

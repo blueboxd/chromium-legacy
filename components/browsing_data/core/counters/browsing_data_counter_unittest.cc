@@ -104,7 +104,7 @@ class BrowsingDataCounterTest : public testing::Test {
  private:
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   std::unique_ptr<MockBrowsingDataCounter> counter_;
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
 TEST_F(BrowsingDataCounterTest, NoResponse) {

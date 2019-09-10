@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/numerics/ranges.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_checker.h"
@@ -600,25 +601,24 @@ void FakePhotoDevice::SetPhotoOptions(
 
   if (settings->has_pan) {
     device_state_write_access->pan =
-        std::max(kMinPan, std::min(settings->pan, kMaxPan));
+        base::ClampToRange(settings->pan, kMinPan, kMaxPan);
   }
   if (settings->has_tilt) {
     device_state_write_access->tilt =
-        std::max(kMinTilt, std::min(settings->tilt, kMaxTilt));
+        base::ClampToRange(settings->tilt, kMinTilt, kMaxTilt);
   }
   if (settings->has_zoom) {
     device_state_write_access->zoom =
-        std::max(kMinZoom, std::min(settings->zoom, kMaxZoom));
+        base::ClampToRange(settings->zoom, kMinZoom, kMaxZoom);
   }
   if (settings->has_exposure_time) {
-    device_state_write_access->exposure_time = std::max(
-        kMinExposureTime, std::min(settings->exposure_time, kMaxExposureTime));
+    device_state_write_access->exposure_time = base::ClampToRange(
+        settings->exposure_time, kMinExposureTime, kMaxExposureTime);
   }
 
   if (settings->has_focus_distance) {
-    device_state_write_access->focus_distance =
-        std::max(kMinFocusDistance,
-                 std::min(settings->focus_distance, kMaxFocusDistance));
+    device_state_write_access->focus_distance = base::ClampToRange(
+        settings->focus_distance, kMinFocusDistance, kMaxFocusDistance);
   }
 
   std::move(callback).Run(true);

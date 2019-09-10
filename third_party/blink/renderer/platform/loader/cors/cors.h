@@ -85,6 +85,7 @@ PLATFORM_EXPORT network::mojom::FetchResponseType CalculateResponseTainting(
     const KURL& url,
     network::mojom::RequestMode request_mode,
     const SecurityOrigin* origin,
+    const SecurityOrigin* isolated_world_origin,
     CorsFlag cors_flag);
 
 PLATFORM_EXPORT bool CalculateCredentialsFlag(
@@ -119,7 +120,8 @@ PLATFORM_EXPORT bool IsOkStatus(int status);
 // This function will be removed when out-of-renderer CORS is enabled.
 PLATFORM_EXPORT bool CalculateCorsFlag(
     const KURL& url,
-    const SecurityOrigin* origin,
+    const SecurityOrigin* initiator_origin,
+    const SecurityOrigin* isolated_world_origin,
     network::mojom::RequestMode request_mode);
 
 PLATFORM_EXPORT WebHTTPHeaderSet

@@ -3,7 +3,6 @@
 <translationbundle lang="sr">
 <translation id="1036550831858290950">Сачувајте тренутну картицу као обележивач</translation>
 <translation id="104962181688258143">Отворите апликацију Датотеке</translation>
-<translation id="1098295134904615027">Активирајте виртуелну радну површину на десној страни</translation>
 <translation id="1122869341872663659">Приказује резултате претраге (<ph name="N" />) за упит <ph name="QUERY" /></translation>
 <translation id="1195667586424773550">Превуците линк у траку за адресу картице</translation>
 <translation id="1204450209689312104">Отворите нови прозор у режиму без архивирања</translation>
@@ -25,7 +24,6 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">Додајте елементе www. и .com уносу у траци за адресу, па отворите страницу</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, па <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> или <ph name="LEFT" /></translation>
-<translation id="1929866390202038233">Активирајте виртуелну радну површину на левој страни</translation>
 <translation id="1996162290124031907">Идите на следећу картицу</translation>
 <translation id="2010818616644390445">Идите на последњу картицу у прозору</translation>
 <translation id="2040706009561734834">Отворите/затворите покретач</translation>
@@ -64,7 +62,6 @@
 <translation id="3105917916468784889">Сними екран</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Фокусирање траке за адресу</translation>
-<translation id="3165428420335997629">Направите нову вуртуелну радну површину</translation>
 <translation id="3256109297135787951">Уклоните истицање са ставке на полици</translation>
 <translation id="3288816184963444640">Затворите тренутно отворени прозор</translation>
 <translation id="3407560819924487926">Покрените менаџер задатка</translation>
@@ -181,7 +178,6 @@
 <translation id="8234414138295101081">Ротирајте екран за 90 степени</translation>
 <translation id="8241665785394195545">десна заграда</translation>
 <translation id="8264941229485248811">Прикажите или сакријте инспектор Алатке за програмере</translation>
-<translation id="8355937569537581904">Уклоните актуелну виртуелну радну површину</translation>
 <translation id="836869401750819675">Отворите страницу Преузимања</translation>
 <translation id="8388247778047144397">Превуците линк у празну област на траци са картицама</translation>
 <translation id="8389638407792712197">Отворите нови прозор</translation>

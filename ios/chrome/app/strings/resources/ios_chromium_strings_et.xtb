@@ -20,10 +20,8 @@
 <translation id="2730884209570016437">Chromium ei saa kaamerat kasutada, kuna seda kasutab muu rakendus</translation>
 <translation id="2915596697727466327">Chromium kasutab paroolide volitatud juurdepääsu kontrollimiseks Face ID-d.</translation>
 <translation id="3256316712990552818">Kopeeritud Chromiumi</translation>
-<translation id="3413120535237193088">Kõikidesse seadmetesse järjehoidjate hankimiseks logige Chromiumisse sisse.</translation>
 <translation id="3605252743693911722">Logige Chromiumi sisse, et kõikides oma seadmetes kasutada järjehoidjaid, paroole ja muud.</translation>
 <translation id="3805899903892079518">Chromiumil pole juurdepääsu fotodele ega videotele. Lubage iOS-is juurdepääs valikutega Seaded &gt; Privaatsus &gt; Fotod.</translation>
-<translation id="4024541897090868497">Kõikidesse seadmetesse vahelehtede hankimiseks logige Chromiumi sisse.</translation>
 <translation id="4157467675761413638">Chromiumi nõuanne. Vahelehtede muude valikute vaatamiseks hoidke all ekraani üla- või alaosas tööriistaribal olevat nuppu Kuva vahelehed.</translation>
 <translation id="4241912885070669028">Logite välja kontolt, mida haldab <ph name="SIGNOUT_MANAGED_DOMAIN" />. Selle tulemusel kustutatakse seadmes olevad Chromiumi andmed, kuid need jäävad alles teie Google'i kontole.</translation>
 <translation id="4555020257205549924">Kui see funktsioon on sisse lülitatud, pakub Chromium võimalust tõlkida teistes keeltes kirjutatud lehti Google'i tõlke abil. <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>

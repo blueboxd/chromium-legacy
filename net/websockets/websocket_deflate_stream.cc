@@ -137,9 +137,10 @@ int WebSocketDeflateStream::Deflate(
       frames_to_write.push_back(std::move(frame));
       current_writing_opcode_ = WebSocketFrameHeader::kOpCodeContinuation;
     } else {
-      if (frame->data &&
+      if (frame->payload &&
           !deflater_.AddBytes(
-              frame->data, static_cast<size_t>(frame->header.payload_length))) {
+              frame->payload,
+              static_cast<size_t>(frame->header.payload_length))) {
         DVLOG(1) << "WebSocket protocol error. "
                  << "deflater_.AddBytes() returns an error.";
         return ERR_WS_PROTOCOL_ERROR;
@@ -221,7 +222,7 @@ int WebSocketDeflateStream::AppendCompressedFrame(
   compressed->header.final = header.final;
   compressed->header.reserved1 =
       (opcode != WebSocketFrameHeader::kOpCodeContinuation);
-  compressed->data = compressed_payload->data();
+  compressed->payload = compressed_payload->data();
   compressed->header.payload_length = compressed_payload->size();
 
   current_writing_opcode_ = WebSocketFrameHeader::kOpCodeContinuation;
@@ -272,7 +273,7 @@ int WebSocketDeflateStream::AppendPossiblyCompressedMessage(
   compressed->header.opcode = opcode;
   compressed->header.final = true;
   compressed->header.reserved1 = true;
-  compressed->data = compressed_payload->data();
+  compressed->payload = compressed_payload->data();
   compressed->header.payload_length = compressed_payload->size();
 
   predictor_->RecordWrittenDataFrame(compressed.get());
@@ -319,9 +320,10 @@ int WebSocketDeflateStream::Inflate(
       frames_to_output.push_back(std::move(frame));
     } else {
       DCHECK_EQ(reading_state_, READING_COMPRESSED_MESSAGE);
-      if (frame->data &&
+      if (frame->payload &&
           !inflater_.AddBytes(
-              frame->data, static_cast<size_t>(frame->header.payload_length))) {
+              frame->payload,
+              static_cast<size_t>(frame->header.payload_length))) {
         DVLOG(1) << "WebSocket protocol error. "
                  << "inflater_.AddBytes() returns an error.";
         return ERR_WS_PROTOCOL_ERROR;
@@ -354,7 +356,7 @@ int WebSocketDeflateStream::Inflate(
         inflated->header.opcode = current_reading_opcode_;
         inflated->header.final = is_final;
         inflated->header.reserved1 = false;
-        inflated->data = data->data();
+        inflated->payload = data->data();
         inflated->header.payload_length = data->size();
         DVLOG(3) << "Inflated frame: opcode=" << inflated->header.opcode
                  << " final=" << inflated->header.final

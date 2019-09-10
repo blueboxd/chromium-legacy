@@ -3,7 +3,6 @@
 <translationbundle lang="nl">
 <translation id="1036550831858290950">Het huidige tabblad als bladwijzer opslaan</translation>
 <translation id="104962181688258143">De app Bestanden openen</translation>
-<translation id="1098295134904615027">Het virtuele bureau aan de rechterkant activeren</translation>
 <translation id="1122869341872663659">Er worden <ph name="N" /> zoekresultaten voor <ph name="QUERY" /> getoond</translation>
 <translation id="1195667586424773550">Sleep de link naar de adresbalk van het tabblad</translation>
 <translation id="1204450209689312104">Een nieuw venster openen in de incognitomodus</translation>
@@ -25,7 +24,6 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">www. en .com toevoegen aan je invoer in de adresbalk en de pagina vervolgens openen</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, en dan <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> of <ph name="LEFT" /></translation>
-<translation id="1929866390202038233">Het virtuele bureaublad aan de linkerkant activeren</translation>
 <translation id="1996162290124031907">Naar het volgende tabblad gaan</translation>
 <translation id="2010818616644390445">Naar het laatste tabblad in het venster gaan</translation>
 <translation id="2040706009561734834">De launcher openen/sluiten</translation>
@@ -64,7 +62,6 @@
 <translation id="3105917916468784889">Screenshot maken</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Adresbalk activeren</translation>
-<translation id="3165428420335997629">Een nieuw virtueel bureau maken</translation>
 <translation id="3256109297135787951">De markering voor een item op je plank verwijderen</translation>
 <translation id="3288816184963444640">Het huidige venster sluiten</translation>
 <translation id="3407560819924487926">Taakbeheer weergeven</translation>
@@ -181,7 +178,6 @@
 <translation id="8234414138295101081">Scherm 90 graden draaien</translation>
 <translation id="8241665785394195545">rechte haak rechts</translation>
 <translation id="8264941229485248811">De Developer Tools-inspector weergeven of verbergen</translation>
-<translation id="8355937569537581904">Het huidige virtuele bureaublad verwijderen</translation>
 <translation id="836869401750819675">De pagina Downloads openen</translation>
 <translation id="8388247778047144397">Sleep de link naar een blanco gedeelte van de tabbladstrook</translation>
 <translation id="8389638407792712197">Nieuw venster openen</translation>

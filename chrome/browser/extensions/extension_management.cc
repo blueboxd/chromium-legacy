@@ -25,6 +25,7 @@
 #include "chrome/browser/extensions/standard_management_policy_provider.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/crx_file/id_util.h"
@@ -581,6 +582,8 @@ void ExtensionManagement::UpdateForcedCloudReportingExtension() {
 
 bool ExtensionManagement::IsCloudReportingPolicyEnabled() const {
 #if !defined(OS_CHROMEOS)
+  if (base::FeatureList::IsEnabled(features::kEnterpriseReportingInBrowser))
+    return false;
   const base::Value* policy_value =
       LoadPreference(prefs::kCloudReportingEnabled,
                      /* force_managed = */ true, base::Value::Type::BOOLEAN);

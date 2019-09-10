@@ -361,8 +361,7 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
             CreateForwardingControllerDelegate(syncer::USER_EVENTS)));
   }
 
-  if (!disabled_types.Has(syncer::SEND_TAB_TO_SELF) &&
-      base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf)) {
+  if (!disabled_types.Has(syncer::SEND_TAB_TO_SELF)) {
     controllers.push_back(
         std::make_unique<send_tab_to_self::SendTabToSelfModelTypeController>(
             sync_service,

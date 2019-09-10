@@ -7,9 +7,9 @@
 #include <memory>
 
 #include "ash/display/display_util.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -711,8 +711,8 @@ TEST_F(WindowTreeHostManagerTest, SwapPrimaryById) {
       Shell::Get()->window_tree_host_manager();
 
   UpdateDisplay("200x200,300x300");
-  const int shelf_inset_first = 200 - ShelfConstants::shelf_size();
-  const int shelf_inset_second = 300 - ShelfConstants::shelf_size();
+  const int shelf_inset_first = 200 - ShelfConfig::Get()->shelf_size();
+  const int shelf_inset_second = 300 - ShelfConfig::Get()->shelf_size();
   display::Display primary_display =
       display::Screen::GetScreen()->GetPrimaryDisplay();
   display::Display secondary_display = display_manager()->GetSecondaryDisplay();

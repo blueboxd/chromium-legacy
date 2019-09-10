@@ -20,6 +20,10 @@ namespace network {
 class SharedURLLoaderFactory;
 }
 
+namespace enterprise_reporting {
+class ReportScheduler;
+}
+
 namespace policy {
 class ConfigurationPolicyProvider;
 class MachineLevelUserCloudPolicyManager;
@@ -89,6 +93,10 @@ class MachineLevelUserCloudPolicyController {
       const std::string& dm_token,
       const std::string& client_id);
 
+  void CreateReportSchedulerAsync(
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
+  void CreateReportScheduler();
+
   base::ObserverList<Observer, true>::Unchecked observers_;
 
   std::unique_ptr<MachineLevelUserCloudPolicyRegistrar> policy_registrar_;
@@ -100,6 +108,8 @@ class MachineLevelUserCloudPolicyController {
 
   // Time at which the enrollment process was started.  Used to log UMA metric.
   base::Time enrollment_start_time_;
+
+  std::unique_ptr<enterprise_reporting::ReportScheduler> report_scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(MachineLevelUserCloudPolicyController);
 };

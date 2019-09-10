@@ -1685,17 +1685,19 @@ TEST_P(ScrollingCoordinatorTest, UpdateUMAMetricUpdated) {
   ForceFullCompositingUpdate();
   histogram_tester.ExpectTotalCount("Blink.ScrollingCoordinator.UpdateTime", 1);
 
-  // A change to background color should not cause a scrolling update.
+  // A change to background color does not need to cause a scrolling update but,
+  // because hit test display items paint, we also cause a scrolling coordinator
+  // update when the background paints.
   auto* background = GetFrame()->GetDocument()->getElementById("bg");
   background->removeAttribute(html_names::kStyleAttr);
   ForceFullCompositingUpdate();
-  histogram_tester.ExpectTotalCount("Blink.ScrollingCoordinator.UpdateTime", 1);
+  histogram_tester.ExpectTotalCount("Blink.ScrollingCoordinator.UpdateTime", 2);
 
   // Removing a scrollable area should cause a scrolling update.
   auto* scroller = GetFrame()->GetDocument()->getElementById("scroller");
   scroller->removeAttribute(html_names::kStyleAttr);
   ForceFullCompositingUpdate();
-  histogram_tester.ExpectTotalCount("Blink.ScrollingCoordinator.UpdateTime", 2);
+  histogram_tester.ExpectTotalCount("Blink.ScrollingCoordinator.UpdateTime", 3);
 }
 
 // TODO(pdr): Replace this with ScrollingCoordinatorTest when
@@ -1806,6 +1808,55 @@ TEST_P(PaintNonFastScrollableRegionsScrollingCoordinatorTest,
   auto region =
       scroll_corner_graphics_layer->CcLayer()->non_fast_scrollable_region();
   EXPECT_EQ(region.bounds(), gfx::Rect(-7, -7, 14, 14));
+}
+
+TEST_P(ScrollingCoordinatorTest, TouchActionUpdatesOutsideInterestRect) {
+  LoadHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      #scroller {
+        will-change: transform;
+        width: 200px;
+        height: 200px;
+        overflow-y: scroll;
+      }
+      .spacer {
+        height: 1000px;
+      }
+      #touchaction {
+        height: 100px;
+        background: yellow;
+      }
+    </style>
+    <div id="scroller">
+      <div class="spacer"></div>
+      <div class="spacer"></div>
+      <div class="spacer"></div>
+      <div class="spacer"></div>
+      <div class="spacer"></div>
+      <div id="touchaction">This should not scroll via touch.</div>
+    </div>
+  )HTML");
+
+  ForceFullCompositingUpdate();
+
+  auto* touch_action = GetFrame()->GetDocument()->getElementById("touchaction");
+  touch_action->setAttribute(html_names::kStyleAttr, "touch-action: none;");
+
+  ForceFullCompositingUpdate();
+
+  auto* scroller = GetFrame()->GetDocument()->getElementById("scroller");
+  scroller->GetScrollableArea()->SetScrollOffset(ScrollOffset(0, 5100),
+                                                 kProgrammaticScroll);
+
+  ForceFullCompositingUpdate();
+
+  auto* scroller_box = ToLayoutBox(scroller->GetLayoutObject());
+  auto* mapping = scroller_box->Layer()->GetCompositedLayerMapping();
+  auto* cc_layer = mapping->ScrollingContentsLayer()->CcLayer();
+  cc::Region region = cc_layer->touch_action_region().GetRegionForTouchAction(
+      TouchAction::kTouchActionNone);
+  EXPECT_EQ(region.bounds(), gfx::Rect(0, 5000, 200, 100));
 }
 
 class ScrollingCoordinatorTestWithAcceleratedContext

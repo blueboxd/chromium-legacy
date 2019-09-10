@@ -45,6 +45,7 @@ _CMAKE_FILE = 'CMakeLists.txt'
 _MODULE_ALL = '_all'
 _SRC_INTERNAL = os.path.join(
     os.path.dirname(host_paths.DIR_SOURCE_ROOT), 'src-internal')
+_INSTRUMENTATION_TARGET_SUFFIX = '_test_apk__test_apk__apk'
 
 _DEFAULT_TARGETS = [
     '//android_webview/test/embedded_test_server:aw_net_test_support_apk',
@@ -733,8 +734,8 @@ def _CombineTestEntries(entries):
   android_test_entries = collections.defaultdict(list)
   for entry in entries:
     target_name = entry.GnTarget()
-    if (target_name.endswith('_test_apk__apk') and
-        'apk_under_test' in entry.Gradle()):
+    if (target_name.endswith(_INSTRUMENTATION_TARGET_SUFFIX)
+        and 'apk_under_test' in entry.Gradle()):
       apk_name = entry.Gradle()['apk_under_test']
       android_test_entries[apk_name].append(entry)
     else:
@@ -848,8 +849,10 @@ def main():
     targets = _QueryForAllGnTargets(output_dir)
   else:
     assert not args.native_targets, 'Native editing requires --all.'
-    targets = [re.sub(r'_test_apk$', '_test_apk__apk', t)
-               for t in targets_from_args]
+    targets = [
+        re.sub(r'_test_apk$', _INSTRUMENTATION_TARGET_SUFFIX, t)
+        for t in targets_from_args
+    ]
     # Necessary after "gn clean"
     if not os.path.exists(os.path.join(output_dir, 'build_vars.txt')):
       _RunGnGen(output_dir)
@@ -884,7 +887,7 @@ def main():
     main_entries = [
         e for e in main_entries
         if (e.GetType() in BASE_TYPES or e.GnTarget() in targets_from_args
-            or e.GnTarget().endswith('_test_apk__apk'))
+            or e.GnTarget().endswith(_INSTRUMENTATION_TARGET_SUFFIX))
     ]
 
   if args.split_projects:

@@ -698,14 +698,14 @@ TEST_F(ScheduledNotificationManagerTest, DisplayNotificationWithIconsFailed) {
                           IconStore::LoadIconsCallback callback) {
         std::move(callback).Run(false, {});
       }));
-
+  EXPECT_CALL(*notification_store(), Delete(kGuid, _));
+  EXPECT_CALL(*icon_store(), DeleteIcons(_, _));
   DisplayNotification(kGuid, nullptr /*expected_entry*/);
 
   // Verify in-memory data.
   ScheduledNotificationManager::Notifications notifications;
   manager()->GetAllNotifications(&notifications);
-  // TODO(hesen): need to delete notification entry if icons failed to load.
-  EXPECT_EQ(notifications.size(), 1u);
+  EXPECT_TRUE(notifications.empty());
 }
 
 }  // namespace

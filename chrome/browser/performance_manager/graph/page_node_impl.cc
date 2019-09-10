@@ -13,7 +13,6 @@
 #include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/graph/graph_impl_operations.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "chrome/browser/performance_manager/performance_manager_clock.h"
 
 namespace performance_manager {
 
@@ -24,7 +23,7 @@ PageNodeImpl::PageNodeImpl(GraphImpl* graph,
                            bool is_audible)
     : TypedNodeBase(graph),
       contents_proxy_(contents_proxy),
-      visibility_change_time_(PerformanceManagerClock::NowTicks()),
+      visibility_change_time_(base::TimeTicks::Now()),
       browser_context_id_(browser_context_id),
       is_visible_(is_visible),
       is_audible_(is_audible) {
@@ -73,7 +72,7 @@ void PageNodeImpl::SetIsVisible(bool is_visible) {
     // use this to determine time passed since the *previous* visibility state
     // change. They can infer the current state change time themselves via
     // NowTicks.
-    visibility_change_time_ = PerformanceManagerClock::NowTicks();
+    visibility_change_time_ = base::TimeTicks::Now();
   }
 }
 
@@ -129,12 +128,12 @@ base::TimeDelta PageNodeImpl::TimeSinceLastNavigation() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (navigation_committed_time_.is_null())
     return base::TimeDelta();
-  return PerformanceManagerClock::NowTicks() - navigation_committed_time_;
+  return base::TimeTicks::Now() - navigation_committed_time_;
 }
 
 base::TimeDelta PageNodeImpl::TimeSinceLastVisibilityChange() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return PerformanceManagerClock::NowTicks() - visibility_change_time_;
+  return base::TimeTicks::Now() - visibility_change_time_;
 }
 
 FrameNodeImpl* PageNodeImpl::GetMainFrameNodeImpl() const {

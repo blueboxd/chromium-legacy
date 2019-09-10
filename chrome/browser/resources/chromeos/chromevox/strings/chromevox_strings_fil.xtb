@@ -207,7 +207,6 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="257674075312929031">Pangkat</translation>
 <translation id="2582407057977008361">Kaugnay</translation>
 <translation id="2592212930811759050">I-double tap para simulan ang pag-edit</translation>
-<translation id="2606210917827248971">may {COUNT,plural, =1{# item}one{# item}other{# na item}}</translation>
 <translation id="2614981083756825552">Math ML Layout</translation>
 <translation id="2624431853467395961">Buksan ang learn mode</translation>
 <translation id="2626530649491650971">naki-click</translation>
@@ -391,7 +390,6 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="3781428340399460090">Hot Pink</translation>
 <translation id="3783725005098956899">Ipakita ang Log</translation>
 <translation id="3793710123303304873">Lumabas sa dialog.</translation>
-<translation id="3795836767122514678">+{COUNT,plural, =1{#}one{#}other{#}}</translation>
 <translation id="3801735343383419236">Listahan ng autocompletion</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3813387282697781382">Light Coral</translation>
@@ -484,7 +482,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="4372705107434148843">Ihinto ang speech</translation>
 <translation id="4373197658375206385">Walang nakaraang item na hindi isang link.</translation>
 <translation id="4376316291247992553">Tingnan ang Graphic Bilang Braille</translation>
-<translation id="437809255587011096">Ianunsyo ang pag-istilo ng text</translation>
+<translation id="437809255587011096">Ianunsyo ang istilo ng text</translation>
 <translation id="4378308539633073595">Mag-scroll pasulong</translation>
 <translation id="4384583879834880242">Q&amp;A</translation>
 <translation id="4391478986194775161">cntntinfo</translation>

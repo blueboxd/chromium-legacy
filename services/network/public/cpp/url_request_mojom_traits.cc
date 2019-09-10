@@ -170,6 +170,7 @@ bool StructTraits<
       !data.ReadTopFrameOrigin(&out->top_frame_origin) ||
       !data.ReadTrustedParams(&out->trusted_params) ||
       !data.ReadRequestInitiator(&out->request_initiator) ||
+      !data.ReadIsolatedWorldOrigin(&out->isolated_world_origin) ||
       !data.ReadReferrer(&out->referrer) ||
       !data.ReadReferrerPolicy(&out->referrer_policy) ||
       !data.ReadHeaders(&out->headers) ||
@@ -187,7 +188,8 @@ bool StructTraits<
       !data.ReadCustomProxyPostCacheHeaders(
           &out->custom_proxy_post_cache_headers) ||
       !data.ReadFetchWindowId(&out->fetch_window_id) ||
-      !data.ReadDevtoolsRequestId(&out->devtools_request_id)) {
+      !data.ReadDevtoolsRequestId(&out->devtools_request_id) ||
+      !data.ReadRecursivePrefetchToken(&out->recursive_prefetch_token)) {
     return false;
   }
 

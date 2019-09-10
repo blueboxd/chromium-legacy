@@ -15,7 +15,6 @@
 #include <bitset>
 #include <list>
 #include <map>
-#include <memory>
 #include <utility>
 #include <vector>
 
@@ -287,8 +286,21 @@ bool QueryRenderSupport(Display* dpy) {
   // We don't care about the version of Xrender since all the features which
   // we use are included in every version.
   static bool render_supported = XRenderQueryExtension(dpy, &dummy, &dummy);
-
   return render_supported;
+}
+
+bool QueryShmSupport() {
+  int major;
+  int minor;
+  x11::Bool pixmaps;
+  static bool supported =
+      XShmQueryVersion(gfx::GetXDisplay(), &major, &minor, &pixmaps);
+  return supported;
+}
+
+int ShmEventBase() {
+  static int event_base = XShmGetEventBase(gfx::GetXDisplay());
+  return event_base;
 }
 
 ::Cursor CreateReffedCustomXCursor(XcursorImage* image) {
@@ -1308,6 +1320,10 @@ void XScopedCursor::reset(::Cursor cursor) {
   if (cursor_)
     XFreeCursor(display_, cursor_);
   cursor_ = cursor;
+}
+
+void XImageDeleter::operator()(XImage* image) const {
+  XDestroyImage(image);
 }
 
 namespace test {

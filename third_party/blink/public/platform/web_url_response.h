@@ -294,6 +294,8 @@ class WebURLResponse {
 
   BLINK_PLATFORM_EXPORT void SetIsSignedExchangeInnerResponse(bool);
   BLINK_PLATFORM_EXPORT void SetWasInPrefetchCache(bool);
+  BLINK_PLATFORM_EXPORT void SetRecursivePrefetchToken(
+      const base::Optional<base::UnguessableToken>&);
 
   // Whether this resource is from a MHTML archive.
   BLINK_PLATFORM_EXPORT bool FromArchive() const;

@@ -74,13 +74,13 @@ std::string AppListControllerDelegate::AppListSourceToString(
   }
 }
 
-bool AppListControllerDelegate::UserMayModifySettings(
-    Profile* profile,
-    const std::string& app_id) {
+bool AppListControllerDelegate::UninstallAllowed(Profile* profile,
+                                                 const std::string& app_id) {
   const extensions::Extension* extension = GetExtension(profile, app_id);
   const extensions::ManagementPolicy* policy =
       extensions::ExtensionSystem::Get(profile)->management_policy();
-  return extension && policy->UserMayModifySettings(extension, NULL);
+  return extension && policy->UserMayModifySettings(extension, nullptr) &&
+         !policy->MustRemainInstalled(extension, nullptr);
 }
 
 bool AppListControllerDelegate::CanDoShowAppInfoFlow() {

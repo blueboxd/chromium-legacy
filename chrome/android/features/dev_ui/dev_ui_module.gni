@@ -5,7 +5,7 @@
 declare_args() {
   # Whether Developer UI (chrome:// pages) should be split into a separate
   # Dynamic Feature Module (DFM: //docs/android_dynamic_feature_modules.md).
-  dfmify_dev_ui = false
+  dfmify_dev_ui = true
 }
 
 dev_ui_module_desc = {

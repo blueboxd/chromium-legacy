@@ -20,7 +20,7 @@
 <translation id="1087788677726983142">Skjul filtre for aktivitetsstrømmer</translation>
 <translation id="1088219014394087294">Det fins ingen overskrifter.</translation>
 <translation id="1106741348836243114">Slå tilbakemelding via lydsignaler av eller på.</translation>
-<translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu", "æ": "ærlig", "ø": "østen", "å": "Åse"}</translation>
+<translation id="1120743664840974483">{"a": "Anna", "b": "Bernhard", "c": "Cæsar", "d": "David", "e": "Edith", "f": "Fredrik", "g": "Gustav", "h": "Harald", "i": "Ivar", "j": "Johan","k": "Karin", "l": "Ludvig", "m": "Martin", "n": "Nils", "o": "Olivia","p": "Petter", "q": "Quintus", "r": "Rikard", "s": "Sigrid", "t": "Teodor", "u": "Ulrik", "v": "enkelt-v", "w": "dobbelt-v","x": "Xerxes", "y": "yngling", "z": "Zakarias", "æ": "ærlig", "ø": "østen", "å": "Åse"}</translation>
 <translation id="1120938014254001895">Sveip to fingre opp</translation>
 <translation id="1124771028211010580">Nåværende visningsstil er side om side.</translation>
 <translation id="1126928665165112660">Ikke kursivert</translation>
@@ -207,7 +207,6 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="257674075312929031">Gruppe</translation>
 <translation id="2582407057977008361">Aside-tag</translation>
 <translation id="2592212930811759050">Dobbelttrykk for å begynne å redigere</translation>
-<translation id="2606210917827248971">med {COUNT,plural, =1{# element}other{# elementer}}</translation>
 <translation id="2614981083756825552">MathML-utforming</translation>
 <translation id="2624431853467395961">Åpne læremodus</translation>
 <translation id="2626530649491650971">klikkbart</translation>
@@ -391,7 +390,6 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="3781428340399460090">Knallrosa</translation>
 <translation id="3783725005098956899">Vis logg</translation>
 <translation id="3793710123303304873">Lukket dialogen.</translation>
-<translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">Autofullføringsliste</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3813387282697781382">Lys korallrød</translation>

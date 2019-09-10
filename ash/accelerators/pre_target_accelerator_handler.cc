@@ -33,6 +33,7 @@ bool IsSystemKey(ui::KeyboardCode key_code) {
     case ui::VKEY_VOLUME_DOWN:
     case ui::VKEY_VOLUME_UP:
     case ui::VKEY_POWER:
+    case ui::VKEY_SLEEP:
       return true;
     case ui::VKEY_MEDIA_NEXT_TRACK:
     case ui::VKEY_MEDIA_PLAY_PAUSE:

@@ -36,6 +36,7 @@ public class WebLayerShellActivity extends FragmentActivity {
     private Profile mProfile;
     private BrowserController mBrowserController;
     private EditText mUrlView;
+    private View mMainView;
 
     public static class ShellFragment extends Fragment {
         private BrowserController mBrowserController;
@@ -61,12 +62,16 @@ public class WebLayerShellActivity extends FragmentActivity {
         LinearLayout mainView = new LinearLayout(this);
         int viewId = View.generateViewId();
         mainView.setId(viewId);
+        mMainView = mainView;
         setContentView(mainView);
 
         mUrlView = new EditText(this);
         mUrlView.setSelectAllOnFocus(true);
         mUrlView.setInputType(InputType.TYPE_TEXT_VARIATION_URI);
         mUrlView.setImeOptions(EditorInfo.IME_ACTION_GO);
+        // The background of the top-view must be opaque, otherwise it bleeds through to the
+        // cc::Layer that mirrors the contents of the top-view.
+        mUrlView.setBackgroundColor(0xFFa9a9a9);
         mUrlView.setOnEditorActionListener(new OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -111,6 +116,7 @@ public class WebLayerShellActivity extends FragmentActivity {
 
     private void loadUrl(String url) {
         mBrowserController.getNavigationController().navigate(Uri.parse(sanitizeUrl(url)));
+        mUrlView.clearFocus();
     }
 
     /**

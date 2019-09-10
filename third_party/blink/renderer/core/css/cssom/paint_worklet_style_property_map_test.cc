@@ -47,57 +47,6 @@ class PaintWorkletStylePropertyMapTest : public PageTestBase {
     waitable_event.Wait();
   }
 
-  void CheckCustomProperties(const PaintWorkletStylePropertyMap* map,
-                             DummyExceptionStateForTesting& exception_state) {
-    const CSSStyleValue* foo = map->get(nullptr, "--foo", exception_state);
-    ASSERT_NE(nullptr, foo);
-    ASSERT_EQ(CSSStyleValue::kUnknownType, foo->GetType());
-    EXPECT_FALSE(exception_state.HadException());
-
-    EXPECT_EQ(true, map->has(nullptr, "--foo", exception_state));
-    EXPECT_FALSE(exception_state.HadException());
-
-    CSSStyleValueVector fooAll = map->getAll(nullptr, "--foo", exception_state);
-    EXPECT_EQ(1U, fooAll.size());
-    ASSERT_NE(nullptr, fooAll[0]);
-    ASSERT_EQ(CSSStyleValue::kUnknownType, fooAll[0]->GetType());
-    EXPECT_FALSE(exception_state.HadException());
-
-    EXPECT_EQ(nullptr, map->get(nullptr, "--quix", exception_state));
-    EXPECT_FALSE(exception_state.HadException());
-
-    EXPECT_EQ(false, map->has(nullptr, "--quix", exception_state));
-    EXPECT_FALSE(exception_state.HadException());
-
-    EXPECT_EQ(CSSStyleValueVector(),
-              map->getAll(nullptr, "--quix", exception_state));
-    EXPECT_FALSE(exception_state.HadException());
-  }
-
-  void CheckNativeProperties(const PaintWorkletStylePropertyMap* map,
-                             DummyExceptionStateForTesting& exception_state) {
-    map->get(nullptr, "color", exception_state);
-    EXPECT_FALSE(exception_state.HadException());
-
-    map->has(nullptr, "color", exception_state);
-    EXPECT_FALSE(exception_state.HadException());
-
-    map->getAll(nullptr, "color", exception_state);
-    EXPECT_FALSE(exception_state.HadException());
-
-    map->get(nullptr, "align-contents", exception_state);
-    EXPECT_TRUE(exception_state.HadException());
-    exception_state.ClearException();
-
-    map->has(nullptr, "align-contents", exception_state);
-    EXPECT_TRUE(exception_state.HadException());
-    exception_state.ClearException();
-
-    map->getAll(nullptr, "align-contents", exception_state);
-    EXPECT_TRUE(exception_state.HadException());
-    exception_state.ClearException();
-  }
-
   void CheckCrossThreadData(base::WaitableEvent* waitable_event,
                             scoped_refptr<PaintWorkletInput> input) {
     DCHECK(!IsMainThread());

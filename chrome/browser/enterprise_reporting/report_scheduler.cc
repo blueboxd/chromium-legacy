@@ -69,6 +69,10 @@ void ReportScheduler::SetReportUploaderForTesting(
   report_uploader_ = std::move(uploader);
 }
 
+void ReportScheduler::OnDMTokenUpdated() {
+  OnReportEnabledPerfChanged();
+}
+
 void ReportScheduler::RegisterPerfObserver() {
   pref_change_registrar_.Init(g_browser_process->local_state());
   pref_change_registrar_.Add(

@@ -16,7 +16,6 @@
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/send_tab_to_self/target_device_info.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/device_info_sync_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -26,9 +25,7 @@ class TwoClientSendTabToSelfSyncTest : public SyncTest {
  public:
   TwoClientSendTabToSelfSyncTest() : SyncTest(TWO_CLIENT) {
     scoped_list_.InitWithFeatures(
-        {switches::kSyncSendTabToSelf,
-         send_tab_to_self::kSendTabToSelfShowSendingUI},
-        {});
+        {send_tab_to_self::kSendTabToSelfShowSendingUI}, {});
   }
 
   ~TwoClientSendTabToSelfSyncTest() override {}

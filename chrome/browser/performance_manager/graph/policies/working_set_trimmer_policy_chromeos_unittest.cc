@@ -5,7 +5,6 @@
 #include "chrome/browser/performance_manager/graph/policies/working_set_trimmer_policy_chromeos.h"
 
 #include "base/memory/memory_pressure_listener.h"
-#include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/performance_manager/graph/graph_impl_operations.h"
 #include "chrome/browser/performance_manager/graph/graph_test_harness.h"
 #include "chrome/browser/performance_manager/graph/mock_graphs.h"

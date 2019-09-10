@@ -15,6 +15,18 @@
 
 using base::android::JavaParamRef;
 
+namespace {
+
+// Converts Java string to GURL. Returns an empty GURL if the Java string is
+// null.
+GURL ConvertNullableJavaStringToGURL(JNIEnv* env,
+                                     const JavaParamRef<jstring>& java_url) {
+  return java_url ? GURL(base::android::ConvertJavaStringToUTF8(env, java_url))
+                  : GURL();
+}
+
+}  // namespace
+
 // static
 void WebApkUkmRecorder::RecordInstall(const GURL& manifest_url,
                                       int version_code) {
@@ -52,6 +64,25 @@ void WebApkUkmRecorder::RecordSessionDuration(const GURL& manifest_url,
       .Record(ukm_recorder);
 }
 
+// static
+void WebApkUkmRecorder::RecordVisit(const GURL& manifest_url,
+                                    int64_t distributor,
+                                    int64_t version_code,
+                                    int source) {
+  if (!manifest_url.is_valid())
+    return;
+
+  ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
+  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
+  ukm_recorder->UpdateSourceURL(source_id, manifest_url);
+  ukm::builders::WebAPK_Visit(source_id)
+      .SetDistributor(distributor)
+      .SetAppVersion(version_code)
+      .SetLaunchSource(source)
+      .SetLaunch(true)
+      .Record(ukm_recorder);
+}
+
 // Called by the Java counterpart to record the Session Duration UKM metric.
 void JNI_WebApkUkmRecorder_RecordSessionDuration(
     JNIEnv* env,
@@ -59,10 +90,19 @@ void JNI_WebApkUkmRecorder_RecordSessionDuration(
     jint distributor,
     jint version_code,
     jlong duration) {
-  if (!manifest_url)
-    return;
-
   WebApkUkmRecorder::RecordSessionDuration(
-      GURL(base::android::ConvertJavaStringToUTF8(env, manifest_url)),
-      distributor, version_code, duration);
+      ConvertNullableJavaStringToGURL(env, manifest_url), distributor,
+      version_code, duration);
+}
+
+// Called by the Java counterpart to record the Visit UKM metric.
+void JNI_WebApkUkmRecorder_RecordVisit(
+    JNIEnv* env,
+    const JavaParamRef<jstring>& manifest_url,
+    jint distributor,
+    jint version_code,
+    jint source) {
+  WebApkUkmRecorder::RecordVisit(
+      ConvertNullableJavaStringToGURL(env, manifest_url), distributor,
+      version_code, source);
 }

@@ -17,6 +17,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
+#include "chrome/browser/previews/previews_service.h"
+#include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -32,6 +36,7 @@
 #include "components/optimization_guide/optimization_guide_switches.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/test_hints_component_creator.h"
+#include "components/optimization_guide/top_host_provider.h"
 #include "components/prefs/pref_service.h"
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_features.h"
@@ -96,8 +101,9 @@ class HintsFetcherDisabledBrowserTest
   ~HintsFetcherDisabledBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
-    content::NetworkConnectionChangeSimulator().SetConnectionType(
-        network::mojom::ConnectionType::CONNECTION_2G);
+    g_browser_process->network_quality_tracker()
+        ->ReportEffectiveConnectionTypeForTesting(
+            net::EFFECTIVE_CONNECTION_TYPE_2G);
 
     InProcessBrowserTest::SetUpOnMainThread();
   }
@@ -227,6 +233,41 @@ class HintsFetcherDisabledBrowserTest
     RetryForHistogramUntilCountReached(
         &histogram_tester, optimization_guide::kLoadedHintLocalHistogramString,
         1);
+  }
+
+  // Returns the count of top hosts that are blacklisted by reading the relevant
+  // pref.
+  size_t GetTopHostBlacklistSize() const {
+    PrefService* pref_service = browser()->profile()->GetPrefs();
+    const base::DictionaryValue* top_host_blacklist =
+        pref_service->GetDictionary(
+            optimization_guide::prefs::kHintsFetcherDataSaverTopHostBlacklist);
+    return top_host_blacklist->size();
+  }
+
+  // Adds |host_count| HTTPS origins to site engagement service.
+  void AddHostsToSiteEngagementService(size_t host_count) {
+    SiteEngagementService* service = SiteEngagementService::Get(
+        Profile::FromBrowserContext(browser()
+                                        ->tab_strip_model()
+                                        ->GetActiveWebContents()
+                                        ->GetBrowserContext()));
+    for (size_t i = 0; i < host_count; ++i) {
+      GURL https_url("https://myfavoritesite" + base::NumberToString(i) +
+                     ".com/");
+      service->AddPointsForTesting(https_url, 15);
+    }
+  }
+
+  // Returns the number of hosts known to the site engagement service. The value
+  // is obtained by querying the site engagement service.
+  size_t GetCountHostsKnownToSiteEngagementService() const {
+    SiteEngagementService* service = SiteEngagementService::Get(
+        Profile::FromBrowserContext(browser()
+                                        ->tab_strip_model()
+                                        ->GetActiveWebContents()
+                                        ->GetBrowserContext()));
+    return service->GetAllDetails().size();
   }
 
   const GURL& https_url() const { return https_url_; }
@@ -425,6 +466,8 @@ IN_PROC_BROWSER_TEST_P(
   // Only the 2 HTTPS hosts should be requested hints for.
   histogram_tester->ExpectBucketCount(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 2, 1);
+
+  EXPECT_EQ(0u, GetTopHostBlacklistSize());
 }
 
 IN_PROC_BROWSER_TEST_P(
@@ -774,11 +817,11 @@ IN_PROC_BROWSER_TEST_P(HintsFetcherBrowserTest,
   ui_test_utils::NavigateToURL(browser(), GURL("https://example1.com"));
 
   RetryForHistogramUntilCountReached(
-      histogram_tester, "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch",
-      1);
+      histogram_tester,
+      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", 1);
 
   histogram_tester->ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch", true, 1);
+      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", true, 1);
 }
 
 IN_PROC_BROWSER_TEST_P(
@@ -814,11 +857,11 @@ IN_PROC_BROWSER_TEST_P(
   ui_test_utils::NavigateToURL(browser(), GURL("https://unSeenHost.com"));
 
   RetryForHistogramUntilCountReached(
-      histogram_tester, "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch",
-      1);
+      histogram_tester,
+      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", 1);
 
   histogram_tester->ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch", false, 1);
+      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", false, 1);
 }
 
 IN_PROC_BROWSER_TEST_P(
@@ -854,5 +897,131 @@ IN_PROC_BROWSER_TEST_P(
   ui_test_utils::NavigateToURL(browser(), GURL("http://example1.com"));
 
   histogram_tester->ExpectTotalCount(
-      "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch", 0);
+      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", 0);
+}
+
+class HintsFetcherChangeDefaultBlacklistSizeBrowserTest
+    : public HintsFetcherBrowserTest {
+ public:
+  HintsFetcherChangeDefaultBlacklistSizeBrowserTest() = default;
+
+  ~HintsFetcherChangeDefaultBlacklistSizeBrowserTest() override = default;
+
+  void SetUp() override {
+    base::FieldTrialParams optimization_hints_fetching_params;
+    optimization_hints_fetching_params["top_host_blacklist_size_multiplier"] =
+        "5";
+
+    if (GetParam()) {
+      scoped_feature_list_.InitWithFeaturesAndParameters(
+          {
+              /* vector of enabled features along with params */
+              {optimization_guide::features::kOptimizationHintsFetching,
+               {optimization_hints_fetching_params}},
+              {optimization_guide::features::kOptimizationHints, {}},
+              {optimization_guide::features::kOptimizationGuideKeyedService,
+               {}},
+              {previews::features::kPreviews, {}},
+              {previews::features::kNoScriptPreviews, {}},
+              {previews::features::kResourceLoadingHints, {}},
+              {data_reduction_proxy::features::
+                   kDataReductionProxyEnabledWithNetworkService,
+               {}},
+              {optimization_guide::features::kOptimizationGuideKeyedService,
+               {}},
+          },
+          {/* disabled_features */});
+    } else {
+      scoped_feature_list_.InitWithFeaturesAndParameters(
+          {
+              /* vector of enabled features along with params */
+              {optimization_guide::features::kOptimizationHintsFetching,
+               {optimization_hints_fetching_params}},
+              {optimization_guide::features::kOptimizationHints, {}},
+              {optimization_guide::features::kOptimizationGuideKeyedService,
+               {}},
+              {previews::features::kPreviews, {}},
+              {previews::features::kNoScriptPreviews, {}},
+              {previews::features::kResourceLoadingHints, {}},
+              {data_reduction_proxy::features::
+                   kDataReductionProxyEnabledWithNetworkService,
+               {}},
+          },
+          {optimization_guide::features::kOptimizationGuideKeyedService, {}});
+    }
+
+    // Call to inherited class to match same set up with feature flags added.
+    HintsFetcherDisabledBrowserTest::SetUp();
+  }
+
+  void SetUpCommandLine(base::CommandLine* cmd) override {
+    cmd->AppendSwitch("enable-spdy-proxy-auth");
+
+    // Due to race conditions, it's possible that blacklist data is not loaded
+    // at the time of first navigation. That may prevent Preview from
+    // triggering, and causing the test to flake.
+    cmd->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
+    cmd->AppendSwitch("purge_hint_cache_store");
+
+    // Set up OptimizationGuideServiceURL, this does not enable HintsFetching,
+    // only provides the URL.
+    cmd->AppendSwitchASCII(
+        optimization_guide::switches::kOptimizationGuideServiceURL,
+        hints_server_->base_url().spec());
+
+    cmd->AppendSwitch(previews::switches::kDoNotRequireLitePageRedirectInfoBar);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(HintsFetcherChangeDefaultBlacklistSizeBrowserTest);
+};
+
+// True if testing using the OptimizationGuideKeyedService implementation.
+INSTANTIATE_TEST_SUITE_P(OptimizationGuideKeyedServiceImplementation,
+                         HintsFetcherChangeDefaultBlacklistSizeBrowserTest,
+                         testing::Bool());
+
+// Changes the default size of the top host blacklist using finch. Also, sets
+// the count of hosts previously engaged to a large number and verifies that the
+// top host blacklist is correctly populated.
+IN_PROC_BROWSER_TEST_P(HintsFetcherChangeDefaultBlacklistSizeBrowserTest,
+                       ChangeDefaultBlacklistSize) {
+  AddHostsToSiteEngagementService(120u);
+  const size_t engaged_hosts = GetCountHostsKnownToSiteEngagementService();
+  EXPECT_EQ(120u, engaged_hosts);
+
+  // Ensure everything within the site engagement service fits within the top
+  // host blacklist size.
+  ASSERT_LE(
+      engaged_hosts,
+      optimization_guide::features::MaxHintsFetcherTopHostBlacklistSize());
+
+  if (GetParam()) {
+    SetTopHostBlacklistState(
+        optimization_guide::prefs::HintsFetcherTopHostBlacklistState::
+            kNotInitialized);
+  }
+
+  optimization_guide::TopHostProvider* top_host_provider = nullptr;
+  if (GetParam()) {
+    OptimizationGuideKeyedService* keyed_service =
+        OptimizationGuideKeyedServiceFactory::GetForProfile(
+            browser()->profile());
+    top_host_provider = keyed_service->GetTopHostProvider();
+  } else {
+    auto* previews_service =
+        PreviewsServiceFactory::GetForProfile(browser()->profile());
+    top_host_provider = previews_service->GetTopHostProviderForTesting();
+  }
+  ASSERT_TRUE(top_host_provider);
+
+  std::vector<std::string> top_hosts = top_host_provider->GetTopHosts(1);
+  EXPECT_EQ(0u, top_hosts.size());
+
+  top_hosts = top_host_provider->GetTopHosts(1000);
+  EXPECT_EQ(0u, top_hosts.size());
+
+  // Everything HTTPS origin within the site engagement service should now be in
+  // the blacklist.
+  EXPECT_EQ(engaged_hosts, GetTopHostBlacklistSize());
 }

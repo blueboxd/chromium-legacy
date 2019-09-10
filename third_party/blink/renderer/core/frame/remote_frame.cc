@@ -71,8 +71,7 @@ void RemoteFrame::Navigate(const FrameLoadRequest& passed_request,
                     : network::mojom::RequestContextFrameType::kNested);
 
   const KURL& url = frame_request.GetResourceRequest().Url();
-  if (frame_request.OriginDocument() &&
-      !frame_request.OriginDocument()->GetSecurityOrigin()->CanDisplay(url)) {
+  if (!frame_request.CanDisplay(url)) {
     frame_request.OriginDocument()->AddConsoleMessage(ConsoleMessage::Create(
         mojom::ConsoleMessageSource::kSecurity,
         mojom::ConsoleMessageLevel::kError,

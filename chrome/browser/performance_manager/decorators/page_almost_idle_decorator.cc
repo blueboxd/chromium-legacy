@@ -11,7 +11,6 @@
 #include "chrome/browser/performance_manager/graph/node_attached_data_impl.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "chrome/browser/performance_manager/performance_manager_clock.h"
 
 namespace performance_manager {
 
@@ -143,7 +142,7 @@ void PageAlmostIdleDecorator::UpdateLoadIdleStatePage(PageNodeImpl* page_node) {
 
   // Cancel any ongoing timers. A new timer will be set if necessary.
   data->idling_timer_.Stop();
-  const base::TimeTicks now = PerformanceManagerClock::NowTicks();
+  const base::TimeTicks now = base::TimeTicks::Now();
 
   // Determine if the overall timeout has fired.
   if ((data->load_idle_state_ == LoadIdleState::kLoadedNotIdling ||

@@ -207,7 +207,6 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="257674075312929031">Grupė</translation>
 <translation id="2582407057977008361">Šalia</translation>
 <translation id="2592212930811759050">Norėdami pradėti redaguoti palieskite dukart</translation>
-<translation id="2606210917827248971">su {COUNT,plural, =1{# elementu}one{# elementu}few{# elementais}many{# elemento}other{# elementų}}</translation>
 <translation id="2614981083756825552">Matematikos žymėjimo kalbos išdėstymas</translation>
 <translation id="2624431853467395961">Atidarykite mokomąjį režimą</translation>
 <translation id="2626530649491650971">spustelėjamas</translation>
@@ -391,7 +390,6 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="3781428340399460090">Ryškiai rausva</translation>
 <translation id="3783725005098956899">Rodyti žurnalą</translation>
 <translation id="3793710123303304873">Išeita iš dialogo lango.</translation>
-<translation id="3795836767122514678">+{COUNT,plural, =1{#}one{#}few{#}many{#}other{#}}</translation>
 <translation id="3801735343383419236">Sąrašo automatinis užbaigimas</translation>
 <translation id="3810838688059735925">Vaizdo</translation>
 <translation id="3813387282697781382">Šviesi koralų spalva</translation>

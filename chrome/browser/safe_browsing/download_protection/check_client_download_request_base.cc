@@ -506,8 +506,6 @@ void CheckClientDownloadRequestBase::SendRequest() {
       "SBClientDownload."
       "DownloadFileHasDmgSignature",
       disk_image_signature_ != nullptr);
-  UMA_HISTOGRAM_BOOLEAN("SBClientDownload.DownloadFileHasDetachedSignatures",
-                        !detached_code_signatures_.empty());
 
   if (disk_image_signature_) {
     request->set_udif_code_signature(disk_image_signature_->data(),

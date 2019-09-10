@@ -346,7 +346,7 @@ class RendererImplTest : public ::testing::Test {
   }
 
   // Fixture members.
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   StrictMock<CallbackHelper> callbacks_;
   base::SimpleTestTickClock test_tick_clock_;
 

@@ -8,6 +8,7 @@
 #include <numeric>
 
 #include "base/macros.h"
+#include "base/numerics/ranges.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -299,7 +300,7 @@ void TrayBubbleView::SetBottomPadding(int padding) {
 }
 
 void TrayBubbleView::SetWidth(int width) {
-  width = std::max(std::min(width, params_.max_width), params_.min_width);
+  width = base::ClampToRange(width, params_.min_width, params_.max_width);
   if (preferred_width_ == width)
     return;
   preferred_width_ = width;

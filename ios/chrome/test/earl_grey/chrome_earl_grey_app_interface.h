@@ -190,6 +190,12 @@
 // operation failed, otherwise nil.
 + (NSError*)clearBookmarks;
 
+#pragma mark - URL Utilities (EG2)
+
+// Returns the title string to be used for a page with |URL| if that page
+// doesn't specify a title.
++ (NSString*)displayTitleForURL:(NSString*)URL;
+
 #pragma mark - Sync Utilities (EG2)
 
 // Clears fake sync server data.

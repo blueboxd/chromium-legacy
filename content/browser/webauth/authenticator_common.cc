@@ -601,7 +601,8 @@ void AuthenticatorCommon::StartGetAssertionRequest() {
 
   std::vector<device::CableDiscoveryData> cable_extension;
   if (ctap_get_assertion_request_->cable_extension &&
-      request_delegate_->ShouldPermitCableExtension(caller_origin_)) {
+      request_delegate_->ShouldPermitCableExtension(caller_origin_) &&
+      IsFocused()) {
     cable_extension = *ctap_get_assertion_request_->cable_extension;
   }
 

@@ -529,6 +529,7 @@ class OncMojo {
           networkTechnology: '',
           roaming: false,
           signalStrength: 0,
+          simLocked: false,
         };
         break;
       case mojom.NetworkType.kEthernet:

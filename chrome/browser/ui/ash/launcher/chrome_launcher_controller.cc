@@ -88,6 +88,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/browser/management_policy.h"
 #include "extensions/common/extension.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/client/aura_constants.h"
@@ -430,6 +432,16 @@ bool ChromeLauncherController::IsPlatformApp(const ash::ShelfID& id) {
   // An extension can be synced / updated at any time and therefore not be
   // available.
   return extension ? extension->is_platform_app() : false;
+}
+
+bool ChromeLauncherController::UninstallAllowed(const std::string& app_id) {
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(profile())->GetInstalledExtension(
+          app_id);
+  const extensions::ManagementPolicy* policy =
+      extensions::ExtensionSystem::Get(profile())->management_policy();
+  return extension && policy->UserMayModifySettings(extension, nullptr) &&
+         !policy->MustRemainInstalled(extension, nullptr);
 }
 
 void ChromeLauncherController::LaunchApp(const ash::ShelfID& id,

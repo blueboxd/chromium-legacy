@@ -36,6 +36,7 @@ class ShellWebClient : public WebClient {
       const net::SSLInfo& ssl_info,
       const GURL& request_url,
       bool overridable,
+      int64_t navigation_id,
       const base::Callback<void(bool)>& callback) override;
 
   ShellBrowserState* browser_state() const;

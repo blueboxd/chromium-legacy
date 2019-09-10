@@ -8,9 +8,13 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <memory>
+#include <utility>
+
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
+#include "ui/base/x/x11_shm_image_pool.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
 #include "ui/gfx/x/x11.h"
@@ -20,6 +24,8 @@
 namespace viz {
 
 namespace {
+
+constexpr int kMaxFramesPending = 2;
 
 class ScopedPixmap {
  public:
@@ -39,24 +45,21 @@ class ScopedPixmap {
   DISALLOW_COPY_AND_ASSIGN(ScopedPixmap);
 };
 
-struct XImageDeleter {
-  void operator()(XImage* image) const { XDestroyImage(image); }
-};
+}  // namespace
 
-// Draw |data| over |widget|'s parent-relative background, and write the
-// resulting image to |widget|.  Returns true on success.
-bool CompositeBitmap(XDisplay* display,
-                     XID widget,
-                     int x,
-                     int y,
-                     int width,
-                     int height,
-                     int depth,
-                     GC gc,
-                     const void* data) {
+// static
+bool SoftwareOutputDeviceX11::CompositeBitmap(XDisplay* display,
+                                              XID widget,
+                                              int x,
+                                              int y,
+                                              int width,
+                                              int height,
+                                              int depth,
+                                              GC gc,
+                                              const void* data) {
   XClearArea(display, widget, x, y, width, height, false);
 
-  std::unique_ptr<XImage, XImageDeleter> bg;
+  ui::XScopedImage bg;
   {
     gfx::X11ErrorTracker ignore_x_errors;
     bg.reset(
@@ -111,9 +114,8 @@ bool CompositeBitmap(XDisplay* display,
   return true;
 }
 
-}  // namespace
-
-SoftwareOutputDeviceX11::SoftwareOutputDeviceX11(gfx::AcceleratedWidget widget)
+SoftwareOutputDeviceX11::SoftwareOutputDeviceX11(gfx::AcceleratedWidget widget,
+                                                 base::TaskRunner* task_runner)
     : widget_(widget), display_(gfx::GetXDisplay()), gc_(nullptr) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -122,6 +124,14 @@ SoftwareOutputDeviceX11::SoftwareOutputDeviceX11(gfx::AcceleratedWidget widget)
     LOG(ERROR) << "XGetWindowAttributes failed for window " << widget_;
     return;
   }
+
+  shm_pool_ = base::MakeRefCounted<ui::XShmImagePool>(
+      task_runner_.get(), task_runner, display_, widget_, attributes_.visual,
+      attributes_.depth, kMaxFramesPending);
+  shm_pool_->Initialize();
+
+  // TODO(thomasanderson): Avoid going through the X11 server to plumb this
+  // property in.
   ui::GetIntProperty(widget_, "CHROMIUM_COMPOSITE_WINDOW", &composite_);
 }
 
@@ -129,19 +139,58 @@ SoftwareOutputDeviceX11::~SoftwareOutputDeviceX11() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   XFreeGC(display_, gc_);
+
+  shm_pool_->Teardown();
+}
+
+void SoftwareOutputDeviceX11::Resize(const gfx::Size& pixel_size,
+                                     float scale_factor) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // Fallback to the non-shm codepath when |composite_| is true, which only
+  // happens for status icon windows that are typically 16x16px.  It's possible
+  // to add a shm codepath, but it wouldn't be buying much since it would only
+  // affect windows that are tiny and infrequently updated.
+  if (!composite_ && shm_pool_->Resize(pixel_size)) {
+    needs_swap_ = false;
+    viewport_pixel_size_ = pixel_size;
+    return;
+  }
+
+  SoftwareOutputDevice::Resize(pixel_size, scale_factor);
+}
+
+SkCanvas* SoftwareOutputDeviceX11::BeginPaint(const gfx::Rect& damage_rect) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  damage_rect_ = damage_rect;
+
+  if (shm_pool_->Ready())
+    return new SkCanvas(shm_pool_->CurrentBitmap());
+
+  return SoftwareOutputDevice::BeginPaint(damage_rect);
 }
 
 void SoftwareOutputDeviceX11::EndPaint() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
   SoftwareOutputDevice::EndPaint();
-
-  if (!surface_)
-    return;
 
   gfx::Rect rect = damage_rect_;
   rect.Intersect(gfx::Rect(viewport_pixel_size_));
   if (rect.IsEmpty())
+    return;
+
+  if (shm_pool_->Ready()) {
+    // TODO(thomasanderson): Investigate direct rendering with DRI3 to avoid any
+    // unnecessary X11 IPC or buffer copying.
+    if (XShmPutImage(display_, widget_, gc_, shm_pool_->CurrentImage(),
+                     rect.x(), rect.y(), rect.x(), rect.y(), rect.width(),
+                     rect.height(), x11::True)) {
+      needs_swap_ = true;
+      XFlush(display_);
+    }
+  }
+
+  if (!surface_)
     return;
 
   if (composite_) {
@@ -208,7 +257,6 @@ void SoftwareOutputDeviceX11::EndPaint() {
     XRenderFreePicture(display_, dest_picture);
     XFreePixmap(display_, pixmap);
   } else {
-    // TODO(jbauman): Switch to XShmPutImage since it's async.
     SkPixmap pixmap;
     surface_->peekPixels(&pixmap);
     gfx::PutARGBImage(display_, attributes_.visual, attributes_.depth, widget_,
@@ -223,6 +271,24 @@ void SoftwareOutputDeviceX11::EndPaint() {
   // However, this code can run on a different thread and would have to wait for
   // the TYPE_UI thread to no longer be idle before a flush happens.
   XFlush(display_);
+}
+
+void SoftwareOutputDeviceX11::OnSwapBuffers(
+    SwapBuffersCallback swap_ack_callback) {
+  if (shm_pool_->Ready()) {
+    if (needs_swap_)
+      shm_pool_->SwapBuffers(std::move(swap_ack_callback));
+    else
+      std::move(swap_ack_callback).Run(viewport_pixel_size_);
+    needs_swap_ = false;
+    return;
+  }
+
+  return SoftwareOutputDevice::OnSwapBuffers(std::move(swap_ack_callback));
+}
+
+int SoftwareOutputDeviceX11::MaxFramesPending() const {
+  return kMaxFramesPending;
 }
 
 }  // namespace viz

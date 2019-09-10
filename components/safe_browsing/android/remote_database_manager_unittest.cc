@@ -27,6 +27,7 @@ class TestSafeBrowsingApiHandler : public SafeBrowsingApiHandler {
   void StartURLCheck(std::unique_ptr<URLCheckCallbackMeta> callback,
                      const GURL& url,
                      const SBThreatTypeSet& threat_types) override {}
+  bool StartCSDAllowlistCheck(const GURL& url) override { return false; }
 };
 
 }  // namespace

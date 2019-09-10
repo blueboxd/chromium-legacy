@@ -8,8 +8,6 @@
 
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/simple_test_tick_clock.h"
-#include "chrome/browser/performance_manager/performance_manager_clock.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_factory.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_inspector.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_impl.h"
@@ -48,21 +46,18 @@ class SiteDataCacheImplTest : public ::testing::Test {
  protected:
   SiteDataCacheImplTest()
       : data_cache_factory_(std::make_unique<SiteDataCacheFactory>()) {
-    PerformanceManagerClock::SetClockForTesting(&test_clock_);
     data_cache_ = std::make_unique<SiteDataCacheImpl>(profile_.UniqueId(),
                                                       profile_.GetPath());
     mock_db_ = new ::testing::StrictMock<MockSiteCache>();
     data_cache_->SetDataStoreForTesting(base::WrapUnique(mock_db_));
-    test_clock_.SetNowTicks(base::TimeTicks::UnixEpoch());
-    test_clock_.Advance(base::TimeDelta::FromHours(1));
     WaitForAsyncOperationsToComplete();
   }
 
-  ~SiteDataCacheImplTest() override {
-    PerformanceManagerClock::ResetClockForTesting();
-  }
-
   void TearDown() override { WaitForAsyncOperationsToComplete(); }
+
+  void AdvanceClock(base::TimeDelta delta) {
+    task_environment_.FastForwardBy(delta);
+  }
 
   void WaitForAsyncOperationsToComplete() { task_environment_.RunUntilIdle(); }
 
@@ -92,7 +87,7 @@ class SiteDataCacheImplTest : public ::testing::Test {
     writer_->NotifyUpdatesTitleInBackground();
     EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
               reader_->UpdatesTitleInBackground());
-    test_clock_.Advance(kDelay);
+    AdvanceClock(kDelay);
 
     // Load a second origin, make use of a feature on it too.
     ASSERT_FALSE(reader2_);
@@ -115,11 +110,11 @@ class SiteDataCacheImplTest : public ::testing::Test {
     writer2_->NotifyUpdatesFaviconInBackground();
     EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
               reader2_->UpdatesFaviconInBackground());
-    test_clock_.Advance(kDelay);
+    AdvanceClock(kDelay);
   }
 
-  base::SimpleTestTickClock test_clock_;
-  content::BrowserTaskEnvironment task_environment_;
+  content::BrowserTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   base::test::ScopedFeatureList scoped_feature_list_;
   TestingProfile profile_;
 
@@ -194,8 +189,9 @@ TEST_F(SiteDataCacheImplTest, ClearSiteDataForOrigins) {
 
   // The information for the first site should have been cleared. The last
   // loaded time should be equal to the current time.
-  EXPECT_EQ(data_->last_loaded_time_for_testing(),
-            test_clock_.NowTicks() - base::TimeTicks::UnixEpoch());
+  EXPECT_EQ(
+      data_->last_loaded_time_for_testing().InSeconds(),
+      (base::TimeTicks::Now() - base::TimeTicks::UnixEpoch()).InSeconds());
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
             reader_->UpdatesTitleInBackground());
   // The second site shouldn't have been cleared.
@@ -217,12 +213,14 @@ TEST_F(SiteDataCacheImplTest, ClearAllSiteData) {
   ::testing::Mock::VerifyAndClear(mock_db_);
 
   // The information for both sites should have been cleared.
-  EXPECT_EQ(data_->last_loaded_time_for_testing(),
-            test_clock_.NowTicks() - base::TimeTicks::UnixEpoch());
+  EXPECT_EQ(
+      data_->last_loaded_time_for_testing().InSeconds(),
+      (base::TimeTicks::Now() - base::TimeTicks::UnixEpoch()).InSeconds());
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
             reader_->UpdatesTitleInBackground());
-  EXPECT_EQ(data2_->last_loaded_time_for_testing(),
-            test_clock_.NowTicks() - base::TimeTicks::UnixEpoch());
+  EXPECT_EQ(
+      data2_->last_loaded_time_for_testing().InSeconds(),
+      (base::TimeTicks::Now() - base::TimeTicks::UnixEpoch()).InSeconds());
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
             reader2_->UpdatesFaviconInBackground());
 

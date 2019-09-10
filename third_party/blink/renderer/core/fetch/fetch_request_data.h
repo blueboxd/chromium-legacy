@@ -51,9 +51,16 @@ class CORE_EXPORT FetchRequestData final
   const KURL& Url() const { return url_; }
   mojom::RequestContextType Context() const { return context_; }
   void SetContext(mojom::RequestContextType context) { context_ = context; }
-  scoped_refptr<const SecurityOrigin> Origin() { return origin_; }
+  scoped_refptr<const SecurityOrigin> Origin() const { return origin_; }
   void SetOrigin(scoped_refptr<const SecurityOrigin> origin) {
     origin_ = std::move(origin);
+  }
+  scoped_refptr<const SecurityOrigin> IsolatedWorldOrigin() const {
+    return isolated_world_origin_;
+  }
+  void SetIsolatedWorldOrigin(
+      scoped_refptr<const SecurityOrigin> isolated_world_origin) {
+    isolated_world_origin_ = std::move(isolated_world_origin);
   }
   bool SameOriginDataURLFlag() { return same_origin_data_url_flag_; }
   void SetSameOriginDataURLFlag(bool flag) {
@@ -130,6 +137,7 @@ class CORE_EXPORT FetchRequestData final
   // FIXME: Support m_skipServiceWorkerFlag;
   mojom::RequestContextType context_;
   scoped_refptr<const SecurityOrigin> origin_;
+  scoped_refptr<const SecurityOrigin> isolated_world_origin_;
   // FIXME: Support m_forceOriginHeaderFlag;
   bool same_origin_data_url_flag_;
   AtomicString referrer_string_;

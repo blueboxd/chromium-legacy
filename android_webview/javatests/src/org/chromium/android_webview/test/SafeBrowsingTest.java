@@ -51,7 +51,6 @@ import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.InMemorySharedPreferences;
 import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
 import org.chromium.components.safe_browsing.SafeBrowsingApiHandler;
-import org.chromium.components.safe_browsing.SafeBrowsingApiHandler.Observer;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -193,6 +192,11 @@ public class SafeBrowsingTest {
                     (Runnable) () -> mObserver.onUrlCheckDone(
                         callbackId, SafeBrowsingResult.SUCCESS, metadata, CHECK_DELTA_US));
             // clang-format on
+        }
+
+        @Override
+        public boolean startAllowlistLookup(final String uri, int[] threatsOfInterest) {
+            return false;
         }
     }
 

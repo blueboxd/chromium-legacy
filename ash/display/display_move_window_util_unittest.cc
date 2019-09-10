@@ -7,9 +7,9 @@
 #include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -244,7 +244,7 @@ TEST_F(DisplayMoveWindowUtilTest, KeepWindowBoundsIfNotChangedByUser) {
   //     |   |
   //     +---+
   UpdateDisplay("400x300,400x600");
-  const int shelf_inset = 300 - ShelfConstants::shelf_size();
+  const int shelf_inset = 300 - ShelfConfig::Get()->shelf_size();
   // Create and activate window on display [1].
   aura::Window* window =
       CreateTestWindowInShellWithBounds(gfx::Rect(410, 20, 200, 400));
@@ -436,11 +436,11 @@ TEST_F(DisplayMoveWindowUtilTest, RestoreMaximizedWindowAfterMovement) {
 
   WindowState* window_state = WindowState::Get(w);
   window_state->Maximize();
-  EXPECT_EQ(gfx::Rect(0, 0, 400, 300 - ShelfConstants::shelf_size()),
+  EXPECT_EQ(gfx::Rect(0, 0, 400, 300 - ShelfConfig::Get()->shelf_size()),
             w->GetBoundsInScreen());
 
   PerformMoveWindowAccel();
-  EXPECT_EQ(gfx::Rect(400, 0, 400, 300 - ShelfConstants::shelf_size()),
+  EXPECT_EQ(gfx::Rect(400, 0, 400, 300 - ShelfConfig::Get()->shelf_size()),
             w->GetBoundsInScreen());
   window_state->Restore();
   EXPECT_EQ(gfx::Rect(410, 20, 200, 100), w->GetBoundsInScreen());

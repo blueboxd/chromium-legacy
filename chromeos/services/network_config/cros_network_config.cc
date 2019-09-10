@@ -205,7 +205,14 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
     // is not connectable.
     const DeviceState* device =
         network_state_handler->GetDeviceState(network->device_path());
-    DCHECK(device) << "Device path not found: " << network->device_path();
+    if (!device) {
+      // When a device is removed (e.g. cellular modem unplugged) it's possible
+      // for the device object to disappear before networks on that device
+      // are cleaned up.  This fixes crbug/1001687.
+      NET_LOG(DEBUG) << "Cellular is not available.";
+      return nullptr;
+    }
+
     if (device->IsSimLocked() || device->scanning())
       result->connectable = false;
   }
@@ -251,6 +258,11 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
                                                 onc::kNetworkTechnologyTable);
       cellular->roaming = network->IndicateRoaming();
       cellular->signal_strength = network->signal_strength();
+
+      const DeviceState* cellular_device =
+          network_state_handler->GetDeviceState(network->device_path());
+      cellular->sim_locked = !cellular_device->IsSimAbsent() &&
+                             cellular_device->sim_lock_enabled();
       result->cellular = std::move(cellular);
       break;
     }

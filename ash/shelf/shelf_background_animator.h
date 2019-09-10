@@ -25,6 +25,7 @@ namespace ash {
 
 enum class AnimationChangeType;
 class Shelf;
+class ShelfConfig;
 class ShelfBackgroundAnimatorObserver;
 class ShelfBackgroundAnimatorTestApi;
 class WallpaperControllerImpl;
@@ -46,13 +47,14 @@ class ASH_EXPORT ShelfBackgroundAnimator : public ShelfObserver,
   // The maximum alpha value that can be used.
   static const int kMaxAlpha = SK_AlphaOPAQUE;
 
+  ShelfBackgroundAnimator(Shelf* shelf,
+                          WallpaperControllerImpl* wallpaper_controller);
+  ~ShelfBackgroundAnimator() override;
+
   // Initializes this with the given |background_type|. This will observe the
   // |shelf| for background type changes and the |wallpaper_controller| for
   // wallpaper changes if not null.
-  ShelfBackgroundAnimator(ShelfBackgroundType background_type,
-                          Shelf* shelf,
-                          WallpaperControllerImpl* wallpaper_controller);
-  ~ShelfBackgroundAnimator() override;
+  void Init(ShelfBackgroundType background_type);
 
   ShelfBackgroundType target_background_type() const {
     return target_background_type_;
@@ -84,6 +86,9 @@ class ASH_EXPORT ShelfBackgroundAnimator : public ShelfObserver,
 
   // Gets the alpha value of |background_type|.
   int GetBackgroundAlphaValue(ShelfBackgroundType background_type) const;
+
+  // Set the shelf_config to use for tests when there is no Shell instance.
+  void SetShelfConfigForTest(ShelfConfig* shelf_config);
 
  protected:
   // ShelfObserver:
@@ -175,6 +180,9 @@ class ASH_EXPORT ShelfBackgroundAnimator : public ShelfObserver,
 
   // Tracks the item background animation values.
   AnimationValues item_background_values_;
+
+  // The shelf config to access the needed shelf constants.
+  ShelfConfig* shelf_config_ = nullptr;
 
   base::ObserverList<ShelfBackgroundAnimatorObserver>::Unchecked observers_;
 

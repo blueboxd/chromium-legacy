@@ -53,10 +53,6 @@ const base::Feature kSyncAllowWalletDataInTransportModeWithCustomPassphrase{
 const base::Feature kStopSyncInPausedState{"StopSyncInPausedState",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether a user can receive tabs from their synced devices
-const base::Feature kSyncSendTabToSelf{"SyncSendTabToSelf",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable USS implementation of Bookmarks datatype.
 const base::Feature kSyncUSSBookmarks{"SyncUSSBookmarks",
                                       base::FEATURE_ENABLED_BY_DEFAULT};

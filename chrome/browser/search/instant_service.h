@@ -282,6 +282,10 @@ class InstantService : public KeyedService,
   // Requests a new background image if it hasn't been updated in >24 hours.
   void RefreshBackgroundIfNeeded();
 
+  // Sets NTP elements theme info that are overridden when custom
+  // background is used.
+  void SetNtpElementsThemeInfo();
+
   Profile* const profile_;
 
   // The process ids associated with Instant processes.

@@ -384,12 +384,16 @@ source_set("eg2_tests") {
     "http_auth_egtest.mm",
     "js_print_egtest.mm",
     "navigation_egtest.mm",
+    "visible_url_egtest.mm",
   ]
 
   deps = [
     "//components/content_settings/core/common",
     "//components/strings",
+    "//components/version_info:version_info",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser:chrome_url_constants",
+    "//ios/chrome/test:eg_test_support+eg2",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/net:test_support",
     "//ios/testing:embedded_test_server_support",

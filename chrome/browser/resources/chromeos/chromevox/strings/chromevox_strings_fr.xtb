@@ -20,7 +20,7 @@
 <translation id="1087788677726983142">Masquer les filtres de flux d'événements</translation>
 <translation id="1088219014394087294">Aucun titre</translation>
 <translation id="1106741348836243114">Activer ou désactiver les commentaires audio (icônes audio)</translation>
-<translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
+<translation id="1120743664840974483">{"a": "alfa", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliett","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "x-ray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">Balayer l'écran vers le haut avec deux doigts</translation>
 <translation id="1124771028211010580">Le style d'affichage actuel est "côte à côte".</translation>
 <translation id="1126928665165112660">Pas en italique</translation>
@@ -207,7 +207,6 @@ Une fois le tutoriel terminé, utilisez ChromeVox pour accéder au bouton de fer
 <translation id="257674075312929031">Groupe</translation>
 <translation id="2582407057977008361">Contenu relatif</translation>
 <translation id="2592212930811759050">Appuyer deux fois pour commencer la modification</translation>
-<translation id="2606210917827248971">avec {COUNT,plural, =1{1 élément}one{# élément}other{# éléments}}</translation>
 <translation id="2614981083756825552">Mise en page MathML</translation>
 <translation id="2624431853467395961">Ouvrir le mode d'apprentissage</translation>
 <translation id="2626530649491650971">cliquable</translation>
@@ -391,7 +390,6 @@ Une fois le tutoriel terminé, utilisez ChromeVox pour accéder au bouton de fer
 <translation id="3781428340399460090">Rose foncé</translation>
 <translation id="3783725005098956899">Afficher le journal</translation>
 <translation id="3793710123303304873">Vous avez quitté la boîte de dialogue.</translation>
-<translation id="3795836767122514678">et{COUNT,plural, =1{# autre}one{# autre}other{# autres}}</translation>
 <translation id="3801735343383419236">Saisie semi-automatique sous forme de liste</translation>
 <translation id="3810838688059735925">Vidéo</translation>
 <translation id="3813387282697781382">Corail clair</translation>

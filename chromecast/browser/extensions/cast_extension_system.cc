@@ -115,7 +115,7 @@ const Extension* CastExtensionSystem::LoadExtension(
   int load_flags = Extension::FOLLOW_SYMLINKS_ANYWHERE;
   std::string load_error;
   scoped_refptr<Extension> extension = file_util::LoadExtension(
-      extension_dir, Manifest::COMMAND_LINE, load_flags, &load_error);
+      extension_dir, Manifest::COMPONENT, load_flags, &load_error);
   if (!extension.get()) {
     LOG(ERROR) << "Loading extension at " << extension_dir.value()
                << " failed with: " << load_error;

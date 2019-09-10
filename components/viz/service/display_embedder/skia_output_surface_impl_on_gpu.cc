@@ -800,16 +800,23 @@ void SkiaOutputSurfaceImplOnGpu::ScheduleOutputSurfaceAsOverlay(
   }
 }
 
-void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
+void SkiaOutputSurfaceImplOnGpu::SwapBuffers(
+    OutputSurfaceFrame frame,
+    base::OnceClosure deferred_framebuffer_draw_closure) {
   TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::SwapBuffers");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  if (deferred_framebuffer_draw_closure) {
+    std::move(deferred_framebuffer_draw_closure).Run();
+    DCHECK(context_state_->IsCurrent(nullptr /* surface */));
+  } else {
+    if (!MakeCurrent(!dependency_->IsOffscreen() /* need_fbo0 */))
+      return;
+  }
   DCHECK(scoped_output_device_paint_);
   DCHECK(output_device_);
 
   scoped_output_device_paint_.reset();
-
-  if (!MakeCurrent(!dependency_->IsOffscreen() /* need_fbo0 */))
-    return;
 
   if (frame.sub_buffer_rect && frame.sub_buffer_rect->IsEmpty()) {
     // TODO(https://crbug.com/898680): Maybe do something for overlays here.
@@ -908,15 +915,22 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
     RenderPassId id,
     const copy_output::RenderPassGeometry& geometry,
     const gfx::ColorSpace& color_space,
-    std::unique_ptr<CopyOutputRequest> request) {
+    std::unique_ptr<CopyOutputRequest> request,
+    base::OnceClosure deferred_framebuffer_draw_closure) {
   TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::CopyOutput");
   // TODO(crbug.com/898595): Do this on the GPU instead of CPU with Vulkan.
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  if (deferred_framebuffer_draw_closure) {
+    std::move(deferred_framebuffer_draw_closure).Run();
+    DCHECK(context_state_->IsCurrent(nullptr /* surface */));
+  } else {
+    if (!MakeCurrent(true /* need_fbo0 */))
+      return;
+  }
+
   bool from_fbo0 = !id;
   DCHECK(scoped_output_device_paint_ || !from_fbo0);
-
-  if (!MakeCurrent(true /* need_fbo0 */))
-    return;
 
   DCHECK(from_fbo0 ||
          offscreen_surfaces_.find(id) != offscreen_surfaces_.end());

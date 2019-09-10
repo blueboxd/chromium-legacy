@@ -12,6 +12,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/test_storage_partition.h"
 #include "extensions/browser/api/socket/tls_socket.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -89,10 +90,10 @@ class TLSSocketTestBase : public extensions::ExtensionServiceTestBase {
   void Initialize() {
     url_request_context_.Init();
     network_context_ = std::make_unique<network::NetworkContext>(
-        nullptr, mojo::MakeRequest(&network_context_ptr_),
+        nullptr, network_context_remote_.BindNewPipeAndPassReceiver(),
         &url_request_context_,
         /*cors_exempt_header_list=*/std::vector<std::string>());
-    partition_.set_network_context(network_context_ptr_.get());
+    partition_.set_network_context(network_context_remote_.get());
   }
 
   net::TestURLRequestContext url_request_context_;
@@ -102,7 +103,7 @@ class TLSSocketTestBase : public extensions::ExtensionServiceTestBase {
   TestingProfile profile_;
   content::TestStoragePartition partition_;
   std::unique_ptr<network::NetworkContext> network_context_;
-  network::mojom::NetworkContextPtr network_context_ptr_;
+  mojo::Remote<network::mojom::NetworkContext> network_context_remote_;
 };
 
 }  // namespace

@@ -306,7 +306,6 @@
 <translation id="2479410451996844060">Μη έγκυρη διεύθυνση URL αναζήτησης.</translation>
 <translation id="2482878487686419369">Ειδοποιήσεις</translation>
 <translation id="248348093745724435">Πολιτικές συσκευής</translation>
-<translation id="2485387744899240041">Τα ονόματα χρήστη για τη συσκευή και το πρόγραμμα περιήγησής σας</translation>
 <translation id="2491120439723279231">Το πιστοποιητικό του διακομιστή περιέχει σφάλματα.</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">Συντακτικός αναλυτής JSON</translation>
@@ -876,7 +875,6 @@
 <translation id="5565735124758917034">Ενεργό</translation>
 <translation id="5570825185877910964">Προστασία λογαριασμού</translation>
 <translation id="5571083550517324815">Δεν είναι δυνατή η παραλαβή από αυτήν τη διεύθυνση. Επιλέξτε μια άλλη διεύθυνση.</translation>
-<translation id="5571347317547569613">({NUM_COOKIES,plural, =1{1 σε χρήση}other{# σε χρήση}})</translation>
 <translation id="5580958916614886209">Ελέγξτε τον μήνα λήξης σας και δοκιμάστε ξανά</translation>
 <translation id="5586446728396275693">Δεν υπάρχουν αποθηκευμένες διευθύνσεις</translation>
 <translation id="5595485650161345191">Επεξεργασία διεύθυνσης</translation>

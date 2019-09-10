@@ -1867,19 +1867,19 @@ void RenderProcessHostImpl::BindCacheStorage(
 }
 
 void RenderProcessHostImpl::BindIndexedDB(
-    blink::mojom::IDBFactoryRequest request,
+    mojo::PendingReceiver<blink::mojom::IDBFactory> receiver,
     const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (origin.opaque()) {
     // Opaque origins aren't valid for IndexedDB access, so we won't bind
-    // |request| to |indexed_db_factory_|.  Return early here which will cause
-    // |request| to be freed.  When |request| is freed, we expect the pipe on
-    // the client will be closed.
+    // |receiver| to |indexed_db_factory_|.  Return early here which
+    // will cause |receiver| to be freed.  When |receiver| is
+    // freed, we expect the pipe on the client will be closed.
     return;
   }
 
-  // Send the binding to IDB sequenced task runner to let IndexedDB handle Mojo
+  // Send the receiver to IDB sequenced task runner to let IndexedDB handle Mojo
   // IPC there.  |indexed_db_factory_| is being invoked on the IDB task runner,
   // and |this| owns |indexed_db_factory_| via a unique_ptr with an IDB task
   // runner deleter, so if |this| is destroyed immediately after this call,
@@ -1887,9 +1887,9 @@ void RenderProcessHostImpl::BindIndexedDB(
   // guaranteeing that the usage of base::Unretained(indexed_db_factory_.get())
   // here is safe.
   indexed_db_factory_->context()->TaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&IndexedDBDispatcherHost::AddBinding,
+      FROM_HERE, base::BindOnce(&IndexedDBDispatcherHost::AddReceiver,
                                 base::Unretained(indexed_db_factory_.get()),
-                                std::move(request), origin));
+                                std::move(receiver), origin));
 }
 
 void RenderProcessHostImpl::ForceCrash() {
@@ -2193,20 +2193,22 @@ void RenderProcessHostImpl::BindRouteProvider(
 
 void RenderProcessHostImpl::GetRoute(
     int32_t routing_id,
-    blink::mojom::AssociatedInterfaceProviderAssociatedRequest request) {
-  DCHECK(request.is_pending());
-  associated_interface_provider_bindings_.AddBinding(
-      this, std::move(request), routing_id);
+    mojo::PendingAssociatedReceiver<blink::mojom::AssociatedInterfaceProvider>
+        receiver) {
+  DCHECK(receiver.is_valid());
+  associated_interface_provider_receivers_.Add(this, std::move(receiver),
+                                               routing_id);
 }
 
 void RenderProcessHostImpl::GetAssociatedInterface(
     const std::string& name,
-    blink::mojom::AssociatedInterfaceAssociatedRequest request) {
+    mojo::PendingAssociatedReceiver<blink::mojom::AssociatedInterface>
+        receiver) {
   int32_t routing_id =
-      associated_interface_provider_bindings_.dispatch_context();
+      associated_interface_provider_receivers_.current_context();
   IPC::Listener* listener = listeners_.Lookup(routing_id);
   if (listener)
-    listener->OnAssociatedInterfaceRequest(name, request.PassHandle());
+    listener->OnAssociatedInterfaceRequest(name, receiver.PassHandle());
 }
 
 void RenderProcessHostImpl::CreateEmbeddedFrameSinkProvider(
@@ -4151,8 +4153,9 @@ void RenderProcessHostImpl::ProcessDied(
 void RenderProcessHostImpl::ResetIPC() {
   if (renderer_host_binding_.is_bound())
     renderer_host_binding_.Unbind();
+
   route_provider_receiver_.reset();
-  associated_interface_provider_bindings_.CloseAllBindings();
+  associated_interface_provider_receivers_.Clear();
   associated_interfaces_.reset();
 
   // Destroy all embedded CompositorFrameSinks.

@@ -20,7 +20,7 @@
 <translation id="1087788677726983142">Ascunde filtrele pentru fluxul de evenimente</translation>
 <translation id="1088219014394087294">Nu există titluri.</translation>
 <translation id="1106741348836243114">Activați/dezactivați feedbackul sonor (semnalele audio).</translation>
-<translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
+<translation id="1120743664840974483">{„a”: „alfa”, „ă”: „ăla”, „â”: „â din a”, „b”: „bravo”, „c”: „Charlie”, „d”: „delta”, „e”: „ecou”, „f”: „foxtrot”, „g”: „golf”, „h”: „hotel”, „i”: „India”, „î”: „început”, „j”: „Julieta”, „k”: „kilogram”, „l”: „Lima”, „m”: „Mike”, „n”: „noiembrie”, „o”: „Oscar”, „p”: „papa”, „q”: „Quebec”, „r”: „Romeo”, „s”: „sierra”, „ș”: „șarpe”, „t”: „tango”, „ț”: „țară”, „u”: „uniformă”, „v”: „Victor”, „w”: „whisky”, „x”: „xilofon”, „y”: „yankeu”, „z”: „zulu”}</translation>
 <translation id="1120938014254001895">Glisează cu două degete în sus</translation>
 <translation id="1124771028211010580">Stilul de afișare actual este alăturat.</translation>
 <translation id="1126928665165112660">Fără cursiv</translation>
@@ -207,7 +207,6 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="257674075312929031">Grup</translation>
 <translation id="2582407057977008361">Separat</translation>
 <translation id="2592212930811759050">Atinge de două ori pentru a începe editarea</translation>
-<translation id="2606210917827248971">cu {COUNT,plural, =1{# element}few{# elemente}other{# de elemente}}</translation>
 <translation id="2614981083756825552">Aspect Math ML</translation>
 <translation id="2624431853467395961">Deschide modul de învățare</translation>
 <translation id="2626530649491650971">pe care se poate da clic</translation>
@@ -391,7 +390,6 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="3781428340399460090">Roz aprins</translation>
 <translation id="3783725005098956899">Afișează jurnalul</translation>
 <translation id="3793710123303304873">S-a ieșit din caseta de dialog.</translation>
-<translation id="3795836767122514678">+{COUNT,plural, =1{#}few{#}other{#}}</translation>
 <translation id="3801735343383419236">Completare automată listă</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3813387282697781382">Corai deschis</translation>

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/optional.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -19,8 +20,20 @@
 #include "content/shell/browser/shell.h"
 #include "net/base/filename_util.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/content_uri_utils.h"
+#endif  // OS_ANDROID
+
 namespace content {
 namespace {
+
+base::FilePath GetDefaultTestDataPath() {
+  base::FilePath test_data_dir;
+  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
+  return test_data_dir.Append(
+      base::FilePath(FILE_PATH_LITERAL("content/test/data/bundled_exchanges/"
+                                       "bundled_exchanges_browsertest.wbn")));
+}
 
 class TestBrowserClient : public ContentBrowserClient {
  public:
@@ -54,13 +67,12 @@ class FinishNavigationObserver : public WebContentsObserver {
 
 }  // namespace
 
-class BundledExchangesTrustableFileBrowserTest : public ContentBrowserTest {
+class BundledExchangesTrustableFileBrowserTestBase : public ContentBrowserTest {
  protected:
-  BundledExchangesTrustableFileBrowserTest() {}
-  ~BundledExchangesTrustableFileBrowserTest() override = default;
+  BundledExchangesTrustableFileBrowserTestBase() = default;
+  ~BundledExchangesTrustableFileBrowserTestBase() override = default;
 
   void SetUp() override {
-    test_data_path_ = GetTestDataPath();
     ContentBrowserTest::SetUp();
   }
 
@@ -80,9 +92,8 @@ class BundledExchangesTrustableFileBrowserTest : public ContentBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(
-        switches::kTrustableBundledExchangesFileUrl,
-        net::FilePathToFileURL(test_data_path()).spec());
+    command_line->AppendSwitchASCII(switches::kTrustableBundledExchangesFileUrl,
+                                    test_data_url().spec());
   }
 
   void TearDownOnMainThread() override {
@@ -94,8 +105,7 @@ class BundledExchangesTrustableFileBrowserTest : public ContentBrowserTest {
   void NavigateToBundleAndWaitForReady() {
     base::string16 expected_title = base::ASCIIToUTF16("Ready");
     TitleWatcher title_watcher(shell()->web_contents(), expected_title);
-    EXPECT_TRUE(NavigateToURL(shell()->web_contents(),
-                              net::FilePathToFileURL(test_data_path()),
+    EXPECT_TRUE(NavigateToURL(shell()->web_contents(), test_data_url(),
                               GURL("https://test.example.org/")));
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
   }
@@ -110,28 +120,54 @@ class BundledExchangesTrustableFileBrowserTest : public ContentBrowserTest {
     EXPECT_EQ(ok, title_watcher.WaitAndGetTitle());
   }
 
-  virtual base::FilePath GetTestDataPath() const {
-    base::FilePath test_data_dir;
-    CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
-    return test_data_dir.AppendASCII("content")
-        .AppendASCII("test")
-        .AppendASCII("data")
-        .AppendASCII("bundled_exchanges")
-        .AppendASCII("bundled_exchanges_browsertest.wbn");
-  }
-
-  const base::FilePath& test_data_path() const { return test_data_path_; }
+  const GURL& test_data_url() const { return test_data_url_; }
 
   ContentBrowserClient* original_client_ = nullptr;
+  GURL test_data_url_;
 
  private:
   TestBrowserClient browser_client_;
-  base::FilePath test_data_path_;
 
+  DISALLOW_COPY_AND_ASSIGN(BundledExchangesTrustableFileBrowserTestBase);
+};
+
+enum class TestFilePathMode {
+  kNormalFilePath,
+#if defined(OS_ANDROID)
+  kContentURI,
+#endif  // OS_ANDROID
+};
+
+class BundledExchangesTrustableFileBrowserTest
+    : public testing::WithParamInterface<TestFilePathMode>,
+      public BundledExchangesTrustableFileBrowserTestBase {
+ protected:
+  BundledExchangesTrustableFileBrowserTest() {
+    if (GetParam() == TestFilePathMode::kNormalFilePath) {
+      test_data_url_ = net::FilePathToFileURL(GetDefaultTestDataPath());
+      return;
+    }
+#if defined(OS_ANDROID)
+    DCHECK_EQ(TestFilePathMode::kContentURI, GetParam());
+    base::FilePath tmp_dir;
+    CHECK(base::GetTempDir(&tmp_dir));
+    // The directory name "bundled_exchanges" must be kept in sync with
+    // content/shell/android/browsertests_apk/res/xml/file_paths.xml
+    base::FilePath tmp_wbn_dir = tmp_dir.AppendASCII("bundled_exchanges");
+    CHECK(base::CreateDirectoryAndGetError(tmp_wbn_dir, nullptr));
+    base::FilePath temp_file;
+    CHECK(base::CreateTemporaryFileInDir(tmp_wbn_dir, &temp_file));
+    CHECK(base::CopyFile(GetDefaultTestDataPath(), temp_file));
+    test_data_url_ = GURL(base::GetContentUriFromFilePath(temp_file).value());
+#endif  // OS_ANDROID
+  }
+  ~BundledExchangesTrustableFileBrowserTest() override = default;
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(BundledExchangesTrustableFileBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(BundledExchangesTrustableFileBrowserTest,
+IN_PROC_BROWSER_TEST_P(BundledExchangesTrustableFileBrowserTest,
                        TrustableBundledExchangesFile) {
   // Don't run the test if we couldn't override BrowserClient. It happens only
   // on Android Kitkat or older systems.
@@ -140,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(BundledExchangesTrustableFileBrowserTest,
   NavigateToBundleAndWaitForReady();
 }
 
-IN_PROC_BROWSER_TEST_F(BundledExchangesTrustableFileBrowserTest, RangeRequest) {
+IN_PROC_BROWSER_TEST_P(BundledExchangesTrustableFileBrowserTest, RangeRequest) {
   // Don't run the test if we couldn't override BrowserClient. It happens only
   // on Android Kitkat or older systems.
   if (!original_client_)
@@ -150,17 +186,25 @@ IN_PROC_BROWSER_TEST_F(BundledExchangesTrustableFileBrowserTest, RangeRequest) {
   RunTestScript("test-range-request.js");
 }
 
-class BundledExchangesTrustableFileNotFoundBrowserTest
-    : public BundledExchangesTrustableFileBrowserTest {
- protected:
-  BundledExchangesTrustableFileNotFoundBrowserTest() = default;
-  ~BundledExchangesTrustableFileNotFoundBrowserTest() override = default;
+INSTANTIATE_TEST_SUITE_P(BundledExchangesTrustableFileBrowserTests,
+                         BundledExchangesTrustableFileBrowserTest,
+                         testing::Values(TestFilePathMode::kNormalFilePath
+#if defined(OS_ANDROID)
+                                         ,
+                                         TestFilePathMode::kContentURI
+#endif  // OS_ANDROID
+                                         ));
 
-  base::FilePath GetTestDataPath() const override {
+class BundledExchangesTrustableFileNotFoundBrowserTest
+    : public BundledExchangesTrustableFileBrowserTestBase {
+ protected:
+  BundledExchangesTrustableFileNotFoundBrowserTest() {
     base::FilePath test_data_dir;
     CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
-    return test_data_dir.AppendASCII("not_found");
+    test_data_url_ =
+        net::FilePathToFileURL(test_data_dir.AppendASCII("not_found"));
   }
+  ~BundledExchangesTrustableFileNotFoundBrowserTest() override = default;
 };
 
 IN_PROC_BROWSER_TEST_F(BundledExchangesTrustableFileNotFoundBrowserTest,
@@ -173,8 +217,7 @@ IN_PROC_BROWSER_TEST_F(BundledExchangesTrustableFileNotFoundBrowserTest,
   base::RunLoop run_loop;
   FinishNavigationObserver finish_navigation_observer(shell()->web_contents(),
                                                       run_loop.QuitClosure());
-  EXPECT_FALSE(NavigateToURL(shell()->web_contents(),
-                             net::FilePathToFileURL(test_data_path()),
+  EXPECT_FALSE(NavigateToURL(shell()->web_contents(), test_data_url(),
                              GURL("https://test.example.org/")));
   run_loop.Run();
   ASSERT_TRUE(finish_navigation_observer.error_code());

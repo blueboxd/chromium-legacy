@@ -84,15 +84,16 @@ enum class ConnectionMigrationMode {
   FULL_MIGRATION_V2
 };
 
-// Cause of connection migration.
-enum ConnectionMigrationCause {
+// Cause of a migration.
+enum MigrationCause {
   UNKNOWN_CAUSE,
   ON_NETWORK_CONNECTED,                // No probing.
   ON_NETWORK_DISCONNECTED,             // No probing.
   ON_WRITE_ERROR,                      // No probing.
   ON_NETWORK_MADE_DEFAULT,             // With probing.
   ON_MIGRATE_BACK_TO_DEFAULT_NETWORK,  // With probing.
-  ON_PATH_DEGRADING,                   // With probing.
+  CHANGE_NETWORK_ON_PATH_DEGRADING,    // With probing.
+  CHANGE_PORT_ON_PATH_DEGRADING,       // With probing.
   MIGRATION_CAUSE_MAX
 };
 
@@ -740,9 +741,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   void ResetNonMigratableStreams();
   void LogMetricsOnNetworkDisconnected();
   void LogMetricsOnNetworkMadeDefault();
-  void LogConnectionMigrationResultToHistogram(
-      QuicConnectionMigrationStatus status);
-  void LogHandshakeStatusOnConnectionMigrationSignal() const;
+  void LogMigrationResultToHistogram(QuicConnectionMigrationStatus status);
+  void LogHandshakeStatusOnMigrationSignal() const;
   void HistogramAndLogMigrationFailure(const NetLogWithSource& net_log,
                                        QuicConnectionMigrationStatus status,
                                        quic::QuicConnectionId connection_id,
@@ -835,7 +835,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   QuicConnectivityProbingManager probing_manager_;
   int retry_migrate_back_count_;
   base::OneShotTimer migrate_back_to_default_timer_;
-  ConnectionMigrationCause current_connection_migration_cause_;
+  MigrationCause current_migration_cause_;
   // True if a packet needs to be sent when packet writer is unblocked to
   // complete connection migration. The packet can be a cached packet if
   // |packet_| is set, a queued packet, or a PING packet.

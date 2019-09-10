@@ -899,7 +899,7 @@ public class CustomTabActivityTest {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             assertEquals(expectedColor,
                     mCustomTabActivityTestRule.getActivity().getWindow().getStatusBarColor());
-        } else if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             assertEquals(ColorUtils.getDarkenedColorForStatusBar(expectedColor),
                     mCustomTabActivityTestRule.getActivity().getWindow().getStatusBarColor());
         }

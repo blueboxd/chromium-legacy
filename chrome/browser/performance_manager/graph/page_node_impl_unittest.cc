@@ -5,13 +5,11 @@
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 
 #include "base/stl_util.h"
-#include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/graph_impl_operations.h"
 #include "chrome/browser/performance_manager/graph/graph_test_harness.h"
 #include "chrome/browser/performance_manager/graph/mock_graphs.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "chrome/browser/performance_manager/performance_manager_clock.h"
 #include "chrome/browser/performance_manager/public/graph/page_node.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,26 +18,7 @@ namespace performance_manager {
 
 namespace {
 
-class PageNodeImplTest : public GraphTestHarness {
- public:
-  void SetUp() override {
-    PerformanceManagerClock::SetClockForTesting(&clock_);
-
-    // Sets a valid starting time.
-    clock_.SetNowTicks(base::TimeTicks::Now());
-  }
-
-  void TearDown() override {
-    PerformanceManagerClock::ResetClockForTesting();
-    GraphTestHarness::TearDown();
-  }
-
- protected:
-  void AdvanceClock(base::TimeDelta delta) { clock_.Advance(delta); }
-
- private:
-  base::SimpleTestTickClock clock_;
-};
+using PageNodeImplTest = GraphTestHarness;
 
 }  // namespace
 
@@ -144,8 +123,8 @@ TEST_F(PageNodeImplTest, TimeSinceLastNavigation) {
 
   // 1st navigation.
   GURL url("http://www.example.org");
-  mock_graph.page->OnMainFrameNavigationCommitted(
-      PerformanceManagerClock::NowTicks(), 10u, url);
+  mock_graph.page->OnMainFrameNavigationCommitted(base::TimeTicks::Now(), 10u,
+                                                  url);
   EXPECT_EQ(url, mock_graph.page->main_frame_url());
   EXPECT_EQ(10u, mock_graph.page->navigation_id());
   AdvanceClock(base::TimeDelta::FromSeconds(11));
@@ -154,8 +133,8 @@ TEST_F(PageNodeImplTest, TimeSinceLastNavigation) {
 
   // 2nd navigation.
   url = GURL("http://www.example.org/bobcat");
-  mock_graph.page->OnMainFrameNavigationCommitted(
-      PerformanceManagerClock::NowTicks(), 20u, url);
+  mock_graph.page->OnMainFrameNavigationCommitted(base::TimeTicks::Now(), 20u,
+                                                  url);
   EXPECT_EQ(url, mock_graph.page->main_frame_url());
   EXPECT_EQ(20u, mock_graph.page->navigation_id());
   AdvanceClock(base::TimeDelta::FromSeconds(17));

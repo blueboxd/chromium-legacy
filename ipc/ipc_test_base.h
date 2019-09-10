@@ -75,8 +75,8 @@ class IpcChannelMojoTestClient {
   IPC::Channel* channel() const { return channel_.get(); }
 
  private:
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   mojo::ScopedMessagePipeHandle handle_;
   std::unique_ptr<IPC::Channel> channel_;
 };

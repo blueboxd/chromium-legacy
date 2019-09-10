@@ -350,12 +350,6 @@ class TaskEnvironment {
   DISALLOW_COPY_AND_ASSIGN(TaskEnvironment);
 };
 
-// TODO(gab): Mass migrate users and remove this.
-class ScopedTaskEnvironment : public TaskEnvironment {
- public:
-  using TaskEnvironment::TaskEnvironment;
-};
-
 // SingleThreadTaskEnvironment takes the same traits as TaskEnvironment and is
 // used the exact same way. It's a short-form for
 //   TaskEnvironment{TaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY, ...};

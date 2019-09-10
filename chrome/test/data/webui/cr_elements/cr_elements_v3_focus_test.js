@@ -41,6 +41,18 @@ TEST_F('CrElementsCheckboxV3Test', 'All', function() {
 });
 
 // eslint-disable-next-line no-var
+var CrElementsExpandButtonV3FocusTest = class extends CrElementsV3FocusTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test?module=cr_elements/cr_expand_button_focus_tests.m.js';
+  }
+};
+
+TEST_F('CrElementsExpandButtonV3FocusTest', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
 var CrElementsIconButtonV3FocusTest = class extends CrElementsV3FocusTest {
   /** @override */
   get browsePreload() {

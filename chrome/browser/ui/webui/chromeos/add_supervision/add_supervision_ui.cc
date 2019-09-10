@@ -119,29 +119,16 @@ void AddSupervisionDialog::GetDialogSize(gfx::Size* size) const {
   size->SetSize(kDialogWidthPx, kDialogHeightPx);
 }
 
-bool AddSupervisionDialog::OnDialogCloseRequested() {
+bool AddSupervisionDialog::CanCloseDialog() const {
   bool showing_confirm_dialog = MaybeShowConfirmSignoutDialog();
   return !showing_confirm_dialog;
 }
 
-void AddSupervisionDialog::OnCloseContents(content::WebContents* source,
-                                           bool* out_close_dialog) {
-  // This code gets called by a different path than OnDialogCloseRequested(),
-  // and actually masks the call to OnDialogCloseRequested() the first time the
-  // user clicks on the [x].  Because the first [x] click comes here, we need to
-  // show the confirmation dialog here and signal the caller to possibly close
-  // the dialog.  Subsequent clicks on [x] during the lifetime of the dialog
-  // will result in direct calls to OnDialogCloseRequested(), skipping this
-  // method.
-  *out_close_dialog = OnDialogCloseRequested();
-  // If |out_close_dialog|, then we are before the point of no return prior to
-  // completing enrollment, and that's the only time we want to record kClosed.
-  if (*out_close_dialog) {
-    // Record UMA metric that user has closed the Add Supervision dialog.
-    AddSupervisionMetricsRecorder::GetInstance()
-        ->RecordAddSupervisionEnrollment(
-            AddSupervisionMetricsRecorder::EnrollmentState::kClosed);
-  }
+bool AddSupervisionDialog::OnDialogCloseRequested() {
+  // Record UMA metric that user has closed the Add Supervision dialog.
+  AddSupervisionMetricsRecorder::GetInstance()->RecordAddSupervisionEnrollment(
+      AddSupervisionMetricsRecorder::EnrollmentState::kClosed);
+  return true;
 }
 
 AddSupervisionDialog::AddSupervisionDialog()

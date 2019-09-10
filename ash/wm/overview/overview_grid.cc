@@ -19,7 +19,6 @@
 #include "ash/rotator/screen_rotation_animator.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/desks/desk_mini_view.h"

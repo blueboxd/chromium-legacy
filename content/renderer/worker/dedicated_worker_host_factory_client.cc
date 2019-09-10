@@ -85,11 +85,13 @@ DedicatedWorkerHostFactoryClient::CloneWorkerFetchContext(
   if (base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker)) {
     worker_fetch_context =
         static_cast<WebWorkerFetchContextImpl*>(web_worker_fetch_context)
-            ->CloneForNestedWorker(service_worker_provider_context_.get(),
-                                   subresource_loader_factory_bundle_->Clone(),
-                                   subresource_loader_factory_bundle_
-                                       ->CloneWithoutAppCacheFactory(),
-                                   std::move(task_runner));
+            ->CloneForNestedWorker(
+                service_worker_provider_context_.get(),
+                subresource_loader_factory_bundle_->Clone(),
+                subresource_loader_factory_bundle_
+                    ->CloneWithoutAppCacheFactory(),
+                std::move(pending_subresource_loader_updater_),
+                std::move(task_runner));
     worker_fetch_context->SetResponseOverrideForMainScript(
         std::move(response_override_for_main_script_));
   } else {
@@ -118,7 +120,8 @@ DedicatedWorkerHostFactoryClient::CreateWorkerFetchContext(
           service_worker_provider_context_.get(),
           std::move(renderer_preference), std::move(watcher_receiver),
           subresource_loader_factory_bundle_->Clone(),
-          subresource_loader_factory_bundle_->CloneWithoutAppCacheFactory());
+          subresource_loader_factory_bundle_->CloneWithoutAppCacheFactory(),
+          std::move(pending_subresource_loader_updater_));
   worker_fetch_context->SetResponseOverrideForMainScript(
       std::move(response_override_for_main_script_));
   return worker_fetch_context;
@@ -138,6 +141,8 @@ void DedicatedWorkerHostFactoryClient::OnScriptLoadStarted(
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factory_bundle_info,
+    mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+        subresource_loader_updater,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info) {
   DCHECK(base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
   DCHECK(main_script_load_params);
@@ -149,6 +154,9 @@ void DedicatedWorkerHostFactoryClient::OnScriptLoadStarted(
       base::MakeRefCounted<ChildURLLoaderFactoryBundle>(
           std::make_unique<ChildURLLoaderFactoryBundleInfo>(
               std::move(subresource_loader_factory_bundle_info)));
+
+  DCHECK(!pending_subresource_loader_updater_);
+  pending_subresource_loader_updater_ = std::move(subresource_loader_updater);
 
   DCHECK(!service_worker_provider_context_);
   if (service_worker_provider_info) {

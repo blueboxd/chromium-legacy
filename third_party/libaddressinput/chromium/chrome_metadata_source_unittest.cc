@@ -64,7 +64,7 @@ class ChromeMetadataSourceTest : public testing::Test {
     data_.reset(data);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   GURL url_;

@@ -456,30 +456,31 @@ mojom::XRGamepadDataPtr MixedRealityRenderLoop::GetNextGamepadData() {
                                             timestamp_.get());
 }
 
-struct EyeToWorldDecomposed {
-  gfx::Quaternion world_to_eye_rotation;
+struct EyeFromWorldDecomposed {
+  gfx::Quaternion eye_from_world_rotation;
   gfx::Point3F eye_in_world_space;
 };
 
-EyeToWorldDecomposed DecomposeViewMatrix(
+EyeFromWorldDecomposed DecomposeViewMatrix(
     const ABI::Windows::Foundation::Numerics::Matrix4x4& view) {
-  gfx::Transform world_to_view = ConvertToGfxTransform(view);
+  gfx::Transform view_from_world = ConvertToGfxTransform(view);
 
-  gfx::Transform view_to_world;
-  bool invertable = world_to_view.GetInverse(&view_to_world);
+  gfx::Transform world_from_view;
+  bool invertable = view_from_world.GetInverse(&world_from_view);
   DCHECK(invertable);
 
-  gfx::Point3F eye_in_world_space(view_to_world.matrix().get(0, 3),
-                                  view_to_world.matrix().get(1, 3),
-                                  view_to_world.matrix().get(2, 3));
+  gfx::Point3F eye_in_world_space(world_from_view.matrix().get(0, 3),
+                                  world_from_view.matrix().get(1, 3),
+                                  world_from_view.matrix().get(2, 3));
 
-  gfx::DecomposedTransform world_to_view_decomposed;
+  gfx::DecomposedTransform view_from_world_decomposed;
   bool decomposable =
-      gfx::DecomposeTransform(&world_to_view_decomposed, world_to_view);
+      gfx::DecomposeTransform(&view_from_world_decomposed, view_from_world);
   DCHECK(decomposable);
 
-  gfx::Quaternion world_to_eye_rotation = world_to_view_decomposed.quaternion;
-  return {world_to_eye_rotation.inverse(), eye_in_world_space};
+  gfx::Quaternion eye_from_world_rotation =
+      view_from_world_decomposed.quaternion;
+  return {eye_from_world_rotation.inverse(), eye_in_world_space};
 }
 
 mojom::VRPosePtr GetMonoViewData(const HolographicStereoTransform& view) {
@@ -488,12 +489,10 @@ mojom::VRPosePtr GetMonoViewData(const HolographicStereoTransform& view) {
   auto pose = mojom::VRPose::New();
 
   // World to device orientation.
-  pose->orientation = eye.world_to_eye_rotation;
+  pose->orientation = eye.eye_from_world_rotation;
 
   // Position in world space.
-  pose->position =
-      gfx::Point3F(eye.eye_in_world_space.x(), eye.eye_in_world_space.y(),
-                   eye.eye_in_world_space.z());
+  pose->position = eye.eye_in_world_space;
 
   return pose;
 }
@@ -514,32 +513,30 @@ PoseAndEyeTransform GetStereoViewData(const HolographicStereoTransform& view) {
 
   // We calculate the overal headset pose to be the slerp of per-eye poses as
   // calculated by the view transform's decompositions.
-  gfx::Quaternion world_to_view_rotation = left_eye.world_to_eye_rotation;
-  world_to_view_rotation.Slerp(right_eye.world_to_eye_rotation, 0.5f);
+  gfx::Quaternion view_from_world_rotation =
+      left_eye.eye_from_world_rotation.Slerp(right_eye.eye_from_world_rotation,
+                                             0.5f);
 
   // Calculate new eye offsets.
   PoseAndEyeTransform ret;
   gfx::Vector3dF left_offset = left_eye.eye_in_world_space - center;
   gfx::Vector3dF right_offset = right_eye.eye_in_world_space - center;
 
-  gfx::Transform transform(world_to_view_rotation);  // World to view.
-  transform.Transpose();                             // Now it is view to world.
-
-  // TODO(crbug.com/980791): Get the actual eye-to-head transforms instead of
-  // building them from just the translation components so that angled screens
-  // are handled properly.
-  transform.TransformVector(&left_offset);  // Offset is now in view space
-  transform.TransformVector(&right_offset);
-  ret.head_from_left_eye = vr_utils::MakeTranslationTransform(left_offset);
-  ret.head_from_right_eye = vr_utils::MakeTranslationTransform(right_offset);
+  // Calculate head-from-eye transforms. Translation is applied before rotation.
+  ret.head_from_left_eye =
+      gfx::Transform(left_eye.eye_from_world_rotation.inverse());
+  ret.head_from_right_eye =
+      gfx::Transform(right_eye.eye_from_world_rotation.inverse());
+  ret.head_from_left_eye.Translate3d(left_offset);
+  ret.head_from_right_eye.Translate3d(right_offset);
 
   ret.pose = mojom::VRPose::New();
 
   // World to device orientation.
-  ret.pose->orientation = world_to_view_rotation;
+  ret.pose->orientation = view_from_world_rotation;
 
   // Position in world space.
-  ret.pose->position = gfx::Point3F(center.x(), center.y(), center.z());
+  ret.pose->position = center;
 
   return ret;
 }

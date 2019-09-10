@@ -207,7 +207,6 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="257674075312929031">Kumpulan</translation>
 <translation id="2582407057977008361">Ke sebelah</translation>
 <translation id="2592212930811759050">Ketik dua kali untuk mula mengedit</translation>
-<translation id="2606210917827248971">dengan {COUNT,plural, =1{# item}other{# item}}</translation>
 <translation id="2614981083756825552">Reka Letak ML Matematik</translation>
 <translation id="2624431853467395961">Buka mod belajar</translation>
 <translation id="2626530649491650971">boleh klik</translation>
@@ -391,7 +390,6 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="3781428340399460090">Merah Jambu Hangat</translation>
 <translation id="3783725005098956899">Tunjukkan Log</translation>
 <translation id="3793710123303304873">Keluar dari dialog.</translation>
-<translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">Senarai autolengkap</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3813387282697781382">Batu Karang Cerah</translation>

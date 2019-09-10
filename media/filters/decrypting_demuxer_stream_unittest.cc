@@ -264,7 +264,7 @@ class DecryptingDemuxerStreamTest : public testing::Test {
                void(DemuxerStream::Status, scoped_refptr<DecoderBuffer>));
   MOCK_METHOD1(OnWaiting, void(WaitingReason));
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   StrictMock<MockMediaLog> media_log_;
   std::unique_ptr<DecryptingDemuxerStream> demuxer_stream_;
   std::unique_ptr<StrictMock<MockCdmContext>> cdm_context_;

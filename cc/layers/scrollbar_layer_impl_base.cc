@@ -5,6 +5,8 @@
 #include "cc/layers/scrollbar_layer_impl_base.h"
 
 #include <algorithm>
+
+#include "base/numerics/ranges.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/scroll_node.h"
@@ -213,7 +215,7 @@ gfx::Rect ScrollbarLayerImplBase::ComputeThumbQuadRectWithThumbThicknessScale(
   float maximum = scroll_layer_length() - clip_layer_length();
 
   // With the length known, we can compute the thumb's position.
-  float clamped_current_pos = std::min(std::max(current_pos(), 0.f), maximum);
+  float clamped_current_pos = base::ClampToRange(current_pos(), 0.0f, maximum);
 
   int thumb_offset = TrackStart();
   if (maximum > 0) {

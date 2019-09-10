@@ -230,7 +230,7 @@ IntRect GraphicsLayer::InterestRect() {
   return previous_interest_rect_;
 }
 
-void GraphicsLayer::PaintRecursively() {
+bool GraphicsLayer::PaintRecursively() {
   Vector<GraphicsLayer*> repainted_layers;
   PaintRecursivelyInternal(repainted_layers);
 
@@ -243,6 +243,7 @@ void GraphicsLayer::PaintRecursively() {
 #endif
     layer->GetPaintController().FinishCycle();
   }
+  return !repainted_layers.IsEmpty();
 }
 
 void GraphicsLayer::PaintRecursivelyInternal(

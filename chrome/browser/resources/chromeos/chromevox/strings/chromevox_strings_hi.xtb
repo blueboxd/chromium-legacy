@@ -20,7 +20,7 @@
 <translation id="1087788677726983142">इवेंट स्ट्रीम फ़िल्टर छिपाएं</translation>
 <translation id="1088219014394087294">कोई शीर्षक नहीं.</translation>
 <translation id="1106741348836243114">ध्वनि फ़ीडबैक (ईयरकॉन) चालू या बंद करें.</translation>
-<translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
+<translation id="1120743664840974483">{"a": "अल्फ़ा", "b": "ब्रावो", "c": "चार्ली", "d": "डेल्टा", "e": "एको", "f": "फ़ॉक्सट्रॉट", "g": "गोल्फ़", "h": "होटल", "i": "इंडिया", "j": "जूलिएट","k": "किलो", "l": "लीमा", "m": "माइक", "n": "नवंबर", "o": "ऑस्कर","p": "पापा", "q": "क्वेबेक", "r": "रोमियो", "s": "सिएरा", "t": "टैंगो", "u": "यूनिफ़ॉर्म", "v": "विक्टर", "w": "व्हिस्की","x": "एक्सरे", "y": "येंकी", "z": "ज़ुलु"}</translation>
 <translation id="1120938014254001895">दो उंगलियों से ऊपर स्वाइप करें</translation>
 <translation id="1124771028211010580">मौजूदा डिसप्ले शैली आमने-सामने है.</translation>
 <translation id="1126928665165112660">इटैलिक नहीं है</translation>
@@ -207,7 +207,6 @@
 <translation id="257674075312929031">समूह</translation>
 <translation id="2582407057977008361">अलग</translation>
 <translation id="2592212930811759050">बदलाव शुरू करने के लिए दो बार टैप करें</translation>
-<translation id="2606210917827248971">इनके साथ {COUNT,plural, =1{# आइटम}one{# आइटम}other{# आइटम}}</translation>
 <translation id="2614981083756825552">गणित ML लेआउट</translation>
 <translation id="2624431853467395961">जानें मोड खोलें</translation>
 <translation id="2626530649491650971">क्‍लिक करने योग्‍य</translation>
@@ -391,7 +390,6 @@
 <translation id="3781428340399460090">चमकीला गुलाबी</translation>
 <translation id="3783725005098956899">लॉग दिखाएं</translation>
 <translation id="3793710123303304873">डॉयलॉग से बाहर हो गए हैं.</translation>
-<translation id="3795836767122514678">+{COUNT,plural, =1{#}one{#}other{#}}</translation>
 <translation id="3801735343383419236">अपने आप पूरा होने वालों की सूची</translation>
 <translation id="3810838688059735925">वीडियो</translation>
 <translation id="3813387282697781382">हल्के मूंगे जैसा रंग</translation>

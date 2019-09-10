@@ -69,7 +69,9 @@ void GetFontFamilyString(ClosedCaptionStyle closed_caption_style,
       *css_font_variant = "small-caps";
       break;
     case ClosedCaptionStyle_Default:
-      *css_font_family = "";
+      // We shouldn't override with OS Styling for Default case.
+      NOTREACHED();
+      *css_font_family = std::string();
       break;
   }
 }
@@ -93,7 +95,9 @@ std::string GetEdgeEffectString(ClosedCaptionEdgeEffect edge_effect) {
     case ClosedCaptionEdgeEffect_DropShadow:
       return "3px 3px 3px 2px black";
     case ClosedCaptionEdgeEffect_Default:
-      return "";
+      // We shouldn't override with OS Styling for Default case.
+      NOTREACHED();
+      return std::string();
   }
 }
 
@@ -110,7 +114,9 @@ std::string GetCaptionSizeString(ClosedCaptionSize caption_size) {
     case ClosedCaptionSize_TwoHundredPercent:
       return "200%";
     case ClosedCaptionSize_Default:
-      return "";
+      // We shouldn't override with OS Styling for Default case.
+      NOTREACHED();
+      return std::string();
   }
 }
 
@@ -135,7 +141,9 @@ std::string GetCssColor(ClosedCaptionColor caption_color) {
     case ClosedCaptionColor_White:
       return "white";
     case ClosedCaptionColor_Default:
-      return "";
+      // We shouldn't override with OS Styling for Default case.
+      NOTREACHED();
+      return std::string();
   }
 }
 
@@ -216,15 +224,28 @@ base::Optional<CaptionStyle> InitializeFromSystemSettings() {
   }
 
   CaptionStyle caption_style;
-  GetFontFamilyString(font_family, &(caption_style.font_family),
-                      &(caption_style.font_variant));
-  caption_style.font_family = AddCSSImportant(caption_style.font_family);
-  caption_style.font_variant = AddCSSImportant(caption_style.font_variant);
-  caption_style.text_size = AddCSSImportant(GetCaptionSizeString(font_size));
-  caption_style.text_shadow = AddCSSImportant(GetEdgeEffectString(edge_effect));
-  caption_style.text_color = AddCSSImportant(GetCssColor(font_color));
-  caption_style.background_color =
-      AddCSSImportant(GetCssColor(background_color));
+  if (font_family != ClosedCaptionStyle_Default) {
+    GetFontFamilyString(font_family, &(caption_style.font_family),
+                        &(caption_style.font_variant));
+    caption_style.font_family = AddCSSImportant(caption_style.font_family);
+    caption_style.font_variant = AddCSSImportant(caption_style.font_variant);
+  }
+
+  if (font_size != ClosedCaptionSize_Default)
+    caption_style.text_size = AddCSSImportant(GetCaptionSizeString(font_size));
+
+  if (edge_effect != ClosedCaptionEdgeEffect_Default) {
+    caption_style.text_shadow =
+        AddCSSImportant(GetEdgeEffectString(edge_effect));
+  }
+
+  if (font_color != ClosedCaptionColor_Default)
+    caption_style.text_color = AddCSSImportant(GetCssColor(font_color));
+
+  if (background_color != ClosedCaptionColor_Default) {
+    caption_style.background_color =
+        AddCSSImportant(GetCssColor(background_color));
+  }
 
   return caption_style;
 }

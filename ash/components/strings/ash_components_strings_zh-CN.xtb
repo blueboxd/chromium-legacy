@@ -3,7 +3,6 @@
 <translationbundle lang="zh-CN">
 <translation id="1036550831858290950">将当前标签页保存为书签</translation>
 <translation id="104962181688258143">打开“文件”应用</translation>
-<translation id="1098295134904615027">启用右侧的虚拟桌面</translation>
 <translation id="1122869341872663659">目前显示的是与“<ph name="QUERY" />”相符的 <ph name="N" /> 条搜索结果</translation>
 <translation id="1195667586424773550">将链接拖到标签页的地址栏中</translation>
 <translation id="1204450209689312104">在无痕模式下打开新窗口</translation>
@@ -25,7 +24,6 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">将 www. 和 .com 添加到您在搜索栏内输入的内容中，然后打开相应网页</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />，然后按 <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> 或<ph name="LEFT" />键</translation>
-<translation id="1929866390202038233">启用左侧的虚拟桌面</translation>
 <translation id="1996162290124031907">转到下一个标签页</translation>
 <translation id="2010818616644390445">转到窗口中的最后一个标签页</translation>
 <translation id="2040706009561734834">打开/关闭启动器</translation>
@@ -64,7 +62,6 @@
 <translation id="3105917916468784889">生成屏幕截图</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">将地址栏设为焦点</translation>
-<translation id="3165428420335997629">创建新的虚拟桌面</translation>
 <translation id="3256109297135787951">取消任务栏中某项内容的突出显示状态</translation>
 <translation id="3288816184963444640">关闭当前窗口</translation>
 <translation id="3407560819924487926">启动任务管理器</translation>
@@ -181,7 +178,6 @@
 <translation id="8234414138295101081">将屏幕旋转 90 度</translation>
 <translation id="8241665785394195545">右中括号</translation>
 <translation id="8264941229485248811">显示或隐藏开发者工具检查器</translation>
-<translation id="8355937569537581904">移除当前的虚拟桌面</translation>
 <translation id="836869401750819675">打开“下载内容”页面</translation>
 <translation id="8388247778047144397">将链接拖到标签栏的空白区域中</translation>
 <translation id="8389638407792712197">打开新窗口</translation>

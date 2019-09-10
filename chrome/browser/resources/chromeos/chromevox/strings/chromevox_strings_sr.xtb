@@ -20,7 +20,7 @@
 <translation id="1087788677726983142">Сакриј филтере стрима догађаја</translation>
 <translation id="1088219014394087294">Нема заглавља.</translation>
 <translation id="1106741348836243114">Укључивање или искључивање звучних повратних информација (звучна обавештења).</translation>
-<translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
+<translation id="1120743664840974483">{"а": "авала", "б": "београд", "ц": "цетиње", "д": "дрина", "е": "европа", "ф": "футог", "г": "голија", "х": "херој", "и": "игало", "ј": "јадран", "к": "косово", "л": "ловћен", "м": "морава", "н": "ниш", "о": "обилић", "п": "пирот", "q": "кворум", "р": "рума", "с": "сава", "т": "тимок", "у": "ужице", "в": "ваљево", "w": "дупло ве", "x": "ксилофон", "y": "ипсилон", "з": "земун", "ћ": "ћуприја", "ч": "чачак", "џ": "џеп", "ђ": "ђаковица", "љ": "љубовија", "њ": "његош", "ш": "шабац", "ж": "жабљак"}</translation>
 <translation id="1120938014254001895">Превлачите нагоре помоћу два прста</translation>
 <translation id="1124771028211010580">Актуелни стил приказа је „упоредо“.</translation>
 <translation id="1126928665165112660">Није курзив</translation>
@@ -207,7 +207,6 @@
 <translation id="257674075312929031">Група</translation>
 <translation id="2582407057977008361">Додатно</translation>
 <translation id="2592212930811759050">Двапут додирните да бисте почели да мењате</translation>
-<translation id="2606210917827248971">са {COUNT,plural, =1{# ставком}one{# ставком}few{# ставке}other{# ставки}}</translation>
 <translation id="2614981083756825552">Math ML распоред</translation>
 <translation id="2624431853467395961">Отвара режим за учење</translation>
 <translation id="2626530649491650971">елемент на који може да се кликне</translation>
@@ -391,7 +390,6 @@
 <translation id="3781428340399460090">Јаркорозе</translation>
 <translation id="3783725005098956899">Прикажи евиденцију</translation>
 <translation id="3793710123303304873">Изашли сте из дијалога.</translation>
-<translation id="3795836767122514678">+{COUNT,plural, =1{#}one{#}few{#}other{#}}</translation>
 <translation id="3801735343383419236">Аутоматско довршавање листе</translation>
 <translation id="3810838688059735925">Видео</translation>
 <translation id="3813387282697781382">Светлоцрвена</translation>

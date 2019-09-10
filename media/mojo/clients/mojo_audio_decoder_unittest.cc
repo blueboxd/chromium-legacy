@@ -219,7 +219,7 @@ class MojoAudioDecoderTest : public ::testing::Test {
     RunLoop();
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
   // The MojoAudioDecoder that we are testing.

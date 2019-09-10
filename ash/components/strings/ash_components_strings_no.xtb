@@ -3,7 +3,6 @@
 <translationbundle lang="no">
 <translation id="1036550831858290950">Lagre den aktive fanen som bokmerke</translation>
 <translation id="104962181688258143">Åpne Filer-appen</translation>
-<translation id="1098295134904615027">Aktivér det virtuelle skrivebordet til høyre</translation>
 <translation id="1122869341872663659">Viser <ph name="N" /> søkeresultater for <ph name="QUERY" /></translation>
 <translation id="1195667586424773550">Dra linken til adressefeltet i fanen</translation>
 <translation id="1204450209689312104">Åpne et nytt vindu i inkognitomodus</translation>
@@ -25,7 +24,6 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">Legg til www. og .com i det du har skrevet i adressefeltet, og åpne siden</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> og så <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> eller <ph name="LEFT" /></translation>
-<translation id="1929866390202038233">Aktivér det virtuelle skrivebordet til venstre</translation>
 <translation id="1996162290124031907">Gå til neste fane</translation>
 <translation id="2010818616644390445">Gå til den siste fanen i vinduet</translation>
 <translation id="2040706009561734834">Åpne/lukk appoversikten</translation>
@@ -64,7 +62,6 @@
 <translation id="3105917916468784889">Ta skjermdump</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Fokuser adressefelt</translation>
-<translation id="3165428420335997629">Opprett et nytt virtuelt skrivebord</translation>
 <translation id="3256109297135787951">Fjern fremhevingen av et element på hyllen</translation>
 <translation id="3288816184963444640">Lukk det aktive vinduet</translation>
 <translation id="3407560819924487926">Hent frem oppgavebehandlingen</translation>
@@ -181,7 +178,6 @@
 <translation id="8234414138295101081">Rotér skjermen 90 grader</translation>
 <translation id="8241665785394195545">høyre hakeparentes</translation>
 <translation id="8264941229485248811">Vis eller skjul inspektøren for utviklerverktøy</translation>
-<translation id="8355937569537581904">Fjern det gjeldende virtuelle skrivebordet</translation>
 <translation id="836869401750819675">Åpne nedlastingssiden</translation>
 <translation id="8388247778047144397">Dra linken til et tomt område på faneraden.</translation>
 <translation id="8389638407792712197">Åpne et nytt vindu</translation>

@@ -99,7 +99,9 @@ void GpuWatchdogThreadImplV2::OnInitComplete() {
 void GpuWatchdogThreadImplV2::OnGpuProcessTearDown() {
   DCHECK(watched_gpu_task_runner_->BelongsToCurrentThread());
 
-  Arm();
+  in_gpu_process_teardown_ = true;
+  if (!IsArmed())
+    Arm();
 }
 
 // Running on the watchdog thread.
@@ -138,13 +140,24 @@ void GpuWatchdogThreadImplV2::ReportProgress() {
 void GpuWatchdogThreadImplV2::WillProcessTask(
     const base::PendingTask& pending_task) {
   DCHECK(watched_gpu_task_runner_->BelongsToCurrentThread());
-  Arm();
+
+  // The watchdog is armed at the beginning of the gpu process teardown.
+  // Do not call Arm() during teardown.
+  if (in_gpu_process_teardown_)
+    DCHECK(IsArmed());
+  else
+    Arm();
 }
 
 void GpuWatchdogThreadImplV2::DidProcessTask(
     const base::PendingTask& pending_task) {
   DCHECK(watched_gpu_task_runner_->BelongsToCurrentThread());
-  Disarm();
+
+  // Keep the watchdog armed during tear down.
+  if (in_gpu_process_teardown_)
+    InProgress();
+  else
+    Disarm();
 }
 
 // Running on the watchdog thread.
@@ -219,7 +232,7 @@ void GpuWatchdogThreadImplV2::Arm() {
   base::subtle::NoBarrier_AtomicIncrement(&arm_disarm_counter_, 1);
 
   // Arm/Disarm are always called in sequence. Now it's an odd number.
-  DCHECK(base::subtle::NoBarrier_Load(&arm_disarm_counter_) & 1);
+  DCHECK(IsArmed());
 }
 
 void GpuWatchdogThreadImplV2::Disarm() {
@@ -228,7 +241,7 @@ void GpuWatchdogThreadImplV2::Disarm() {
   base::subtle::NoBarrier_AtomicIncrement(&arm_disarm_counter_, 1);
 
   // Arm/Disarm are always called in sequence. Now it's an even number.
-  DCHECK(base::subtle::NoBarrier_Load(&arm_disarm_counter_) % 2 == 0);
+  DCHECK(!IsArmed());
 }
 
 void GpuWatchdogThreadImplV2::InProgress() {
@@ -238,7 +251,12 @@ void GpuWatchdogThreadImplV2::InProgress() {
   base::subtle::NoBarrier_AtomicIncrement(&arm_disarm_counter_, 2);
 
   // Now it's an odd number.
-  DCHECK(base::subtle::NoBarrier_Load(&arm_disarm_counter_) & 1);
+  DCHECK(IsArmed());
+}
+
+bool GpuWatchdogThreadImplV2::IsArmed() {
+  // It's an odd number.
+  return base::subtle::NoBarrier_Load(&arm_disarm_counter_) & 1;
 }
 
 // Running on the watchdog thread.
@@ -294,6 +312,7 @@ void GpuWatchdogThreadImplV2::DeliberatelyTerminateToRecoverFromHang() {
   base::debug::Alias(&backgrounded_timeticks_);
   base::debug::Alias(&foregrounded_timeticks_);
   base::debug::Alias(&in_power_suspension_);
+  base::debug::Alias(&in_gpu_process_teardown_);
   base::debug::Alias(&is_backgrounded_);
   base::debug::Alias(&is_add_power_observer_called_);
   base::debug::Alias(&is_power_observer_added_);

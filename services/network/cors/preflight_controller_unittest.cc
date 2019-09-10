@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -229,14 +230,14 @@ class PreflightControllerTest : public testing::Test {
         std::move(network_service_request), nullptr /* net_log */);
 
     network_service_ptr->CreateNetworkContext(
-        mojo::MakeRequest(&network_context_ptr_),
+        network_context_remote_.BindNewPipeAndPassReceiver(),
         mojom::NetworkContextParams::New());
 
     network::mojom::URLLoaderFactoryParamsPtr params =
         network::mojom::URLLoaderFactoryParams::New();
     params->process_id = mojom::kBrowserProcessId;
     params->is_corb_enabled = false;
-    network_context_ptr_->CreateURLLoaderFactory(
+    network_context_remote_->CreateURLLoaderFactory(
         mojo::MakeRequest(&url_loader_factory_ptr_), std::move(params));
   }
 
@@ -311,7 +312,7 @@ class PreflightControllerTest : public testing::Test {
   std::unique_ptr<base::RunLoop> run_loop_;
 
   std::unique_ptr<mojom::NetworkService> network_service_;
-  mojom::NetworkContextPtr network_context_ptr_;
+  mojo::Remote<mojom::NetworkContext> network_context_remote_;
   mojom::URLLoaderFactoryPtr url_loader_factory_ptr_;
 
   net::test_server::EmbeddedTestServer test_server_;

@@ -1682,6 +1682,7 @@ void LayerTreeHostImpl::ResetTreesForTesting() {
                                       active_tree()->top_controls_shown_ratio(),
                                       active_tree()->elastic_overscroll());
   active_tree_->property_trees()->is_active = true;
+  active_tree_->property_trees()->clear();
   if (pending_tree_)
     pending_tree_->DetachLayers();
   pending_tree_ = nullptr;

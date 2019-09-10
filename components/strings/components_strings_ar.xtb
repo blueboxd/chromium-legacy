@@ -306,7 +306,6 @@
 <translation id="2479410451996844060">‏عنوان URL للبحث غير صالح.</translation>
 <translation id="2482878487686419369">الإشعارات</translation>
 <translation id="248348093745724435">سياسات الأجهزة</translation>
-<translation id="2485387744899240041">أسماء المستخدمين لجهازك ومتصفِّحك</translation>
 <translation id="2491120439723279231">تحتوي شهادة الخادم على أخطاء.</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">‏محلل JSON اللغوي</translation>
@@ -874,7 +873,6 @@
 <translation id="5565735124758917034">نشط</translation>
 <translation id="5570825185877910964">حماية الحساب</translation>
 <translation id="5571083550517324815">لا يمكن الاستلام من هذا العنوان. حدِّد عنوانًا آخر.</translation>
-<translation id="5571347317547569613">({NUM_COOKIES,plural, =1{1 قيد الاستخدام}zero{# قيد الاستخدام}two{# قيد الاستخدام}few{# قيد الاستخدام}many{# قيد الاستخدام}other{# قيد الاستخدام}})</translation>
 <translation id="5580958916614886209">تحقق من شهر انتهاء الصلاحية وأعِد المحاولة مرة أخرى</translation>
 <translation id="5586446728396275693">لا توجد عناوين محفوظة</translation>
 <translation id="5595485650161345191">تعديل العنوان</translation>

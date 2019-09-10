@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/ranges.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/utils.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -85,7 +86,7 @@ void BrightnessMonitorImpl::ScreenBrightnessChanged(
     // instead of throwing it away.
     LogDataError(DataError::kBrightnessPercent);
     brightness_percent_received =
-        std::max(0.0, std::min(100.0, brightness_percent_received));
+        base::ClampToRange(brightness_percent_received, 0.0, 100.0);
   }
 
   if (change.cause() ==

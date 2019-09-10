@@ -16,6 +16,7 @@
 #include "fuchsia/base/fit_adapter.h"
 #include "fuchsia/base/result_receiver.h"
 #include "fuchsia/engine/browser/cookie_manager_impl.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/network_service.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -58,9 +59,9 @@ class CookieManagerImplTest : public testing::Test {
   network::mojom::NetworkContext* GetNetworkContext() {
     if (!network_context_.is_bound()) {
       network_service_->CreateNetworkContext(
-          mojo::MakeRequest(&network_context_),
+          network_context_.BindNewPipeAndPassReceiver(),
           network::mojom::NetworkContextParams::New());
-      network_context_.set_connection_error_handler(
+      network_context_.set_disconnect_handler(
           base::BindLambdaForTesting([&]() { network_context_.reset(); }));
     }
     return network_context_.get();
@@ -126,7 +127,7 @@ class CookieManagerImplTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<network::NetworkService> network_service_;
-  network::mojom::NetworkContextPtr network_context_;
+  mojo::Remote<network::mojom::NetworkContext> network_context_;
   mojo::Remote<network::mojom::CookieManager> mojo_cookie_manager_;
 
   CookieManagerImpl cookie_manager_;

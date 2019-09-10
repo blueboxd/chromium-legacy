@@ -85,6 +85,7 @@ import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.CategoryInfoBuilder;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.modelutil.RecyclerViewAdapter;
 
@@ -120,6 +121,8 @@ public class NewTabPageAdapterTest {
 
     private FakeSuggestionsSource mSource;
     private NewTabPageAdapter mAdapter;
+    @Mock
+    private IdentityManager mMockIdentityManager;
     @Mock
     private SigninManager mMockSigninManager;
     @Mock
@@ -316,7 +319,8 @@ public class NewTabPageAdapterTest {
         // Set up test account and initialize the sign in state. We will be signed in by default
         // in the tests.
         NewTabPageTestUtils.setUpTestAccount();
-        when(mMockSigninManager.isSignedInOnNative()).thenReturn(true);
+        when(mMockSigninManager.getIdentityManager()).thenReturn(mMockIdentityManager);
+        when(mMockIdentityManager.hasPrimaryAccount()).thenReturn(true);
         when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
 
         mSource = new FakeSuggestionsSource();
@@ -958,7 +962,7 @@ public class NewTabPageAdapterTest {
         useArticleCategory();
 
         when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
-        when(mMockSigninManager.isSignedInOnNative()).thenReturn(false);
+        when(mMockIdentityManager.hasPrimaryAccount()).thenReturn(false);
         resetUiDelegate();
         reloadNtp();
 
@@ -997,7 +1001,7 @@ public class NewTabPageAdapterTest {
     @Feature({"Ntp"})
     public void testSigninPromoSuppressionActive() {
         when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
-        when(mMockSigninManager.isSignedInOnNative()).thenReturn(false);
+        when(mMockIdentityManager.hasPrimaryAccount()).thenReturn(false);
         useArticleCategory();
 
         // Suppress promo.
@@ -1013,7 +1017,7 @@ public class NewTabPageAdapterTest {
     @Feature({"Ntp"})
     public void testSigninPromoSuppressionExpired() {
         when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
-        when(mMockSigninManager.isSignedInOnNative()).thenReturn(false);
+        when(mMockIdentityManager.hasPrimaryAccount()).thenReturn(false);
         useArticleCategory();
 
         // Suppress promo.
@@ -1039,7 +1043,7 @@ public class NewTabPageAdapterTest {
                 .thenReturn(signInPromoText);
 
         when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
-        when(mMockSigninManager.isSignedInOnNative()).thenReturn(false);
+        when(mMockIdentityManager.hasPrimaryAccount()).thenReturn(false);
         ChromePreferenceManager.getInstance().writeBoolean(
                 ChromePreferenceManager.NTP_SIGNIN_PROMO_DISMISSED, false);
         useArticleCategory();
@@ -1064,7 +1068,7 @@ public class NewTabPageAdapterTest {
     public void testSigninPromoAccountsNotReady() {
         useArticleCategory();
         when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
-        when(mMockSigninManager.isSignedInOnNative()).thenReturn(false);
+        when(mMockIdentityManager.hasPrimaryAccount()).thenReturn(false);
         resetUiDelegate();
         reloadNtp();
         assertFalse(isSignInPromoVisible());
@@ -1087,7 +1091,7 @@ public class NewTabPageAdapterTest {
         Callback<String> itemDismissedCallback = mock(Callback.class);
 
         // On signed out, the promo should be shown.
-        when(mMockSigninManager.isSignedInOnNative()).thenReturn(false);
+        when(mMockIdentityManager.hasPrimaryAccount()).thenReturn(false);
         signinObserver.onSignedOut();
 
         // By default, there is no All Dismissed item.

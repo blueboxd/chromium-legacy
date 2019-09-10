@@ -207,7 +207,6 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="257674075312929031">Grupo</translation>
 <translation id="2582407057977008361">Lateral</translation>
 <translation id="2592212930811759050">Presiona dos veces para comenzar a editar</translation>
-<translation id="2606210917827248971">con {COUNT,plural, =1{# elemento}other{# elementos}}</translation>
 <translation id="2614981083756825552">Diseño de MathML</translation>
 <translation id="2624431853467395961">Abrir el modo de aprendizaje</translation>
 <translation id="2626530649491650971">elemento en el que se puede hacer clic</translation>
@@ -391,7 +390,6 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="3781428340399460090">Fucsia</translation>
 <translation id="3783725005098956899">Mostrar registro</translation>
 <translation id="3793710123303304873">Saliste del cuadro de diálogo.</translation>
-<translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">Lista de autocompletados</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3813387282697781382">Coral claro</translation>

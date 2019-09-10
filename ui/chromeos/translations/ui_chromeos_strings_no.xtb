@@ -267,7 +267,6 @@
 <translation id="421017592316736757">Du må ha internettilkobling for å få tilgang til denne filen.</translation>
 <translation id="4212740939091998969">Det finnes allerede en mappe som heter «<ph name="FOLDER_NAME" />». Velg et annet navn.</translation>
 <translation id="4215448920900139318">Sikkerhetskopierer <ph name="FILE_COUNT" /></translation>
-<translation id="4242533952199664413">Åpne innstillingene</translation>
 <translation id="426015154560005552">Arabisk tastatur</translation>
 <translation id="4261901459838235729">Google-presentasjon</translation>
 <translation id="4290535918735525311">1 mappe er delt med Linux</translation>
@@ -423,7 +422,6 @@
 <translation id="5818003990515275822">Koreansk</translation>
 <translation id="5819442873484330149">Hangul 3-sett (endelig)</translation>
 <translation id="5833610766403489739">Denne filen har vandret av gårde. Sjekk innstillingen din for nedlastingsplassering, og prøv på nytt.</translation>
-<translation id="5838051104334203064">Play Butikk-apper har ikke tilgang til denne enheten</translation>
 <translation id="5838451609423551646">Fjernet alle oppføringene fra utvalget.</translation>
 <translation id="5838825566232597749">Internasjonalt Workman (USA)</translation>
 <translation id="5850516540536751549">Denne filtypen støttes ikke. Gå til <ph name="BEGIN_LINK" />Chrome Nettmarked<ph name="END_LINK" /> for å finne en app som kan åpne denne filtypen.

@@ -70,6 +70,7 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_prefs.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -977,6 +978,7 @@ void Shell::Init(
 
   accelerator_controller_ = std::make_unique<AcceleratorControllerImpl>();
 
+  shelf_config_ = std::make_unique<ShelfConfig>();
   shelf_controller_ = std::make_unique<ShelfController>();
 
   magnifier_key_scroll_handler_ = MagnifierKeyScroller::CreateHandler();

@@ -244,7 +244,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
 
   MOCK_METHOD1(OnWaiting, void(WaitingReason));
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   NullMediaLog media_log_;
   std::unique_ptr<DecryptingAudioDecoder> decoder_;
   std::unique_ptr<StrictMock<MockCdmContext>> cdm_context_;

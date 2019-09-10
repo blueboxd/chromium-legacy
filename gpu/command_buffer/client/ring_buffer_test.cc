@@ -85,7 +85,7 @@ class BaseRingBufferTest : public testing::Test {
 
   std::unique_ptr<int8_t[]> buffer_;
   int8_t* buffer_start_;
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
 #ifndef _MSC_VER

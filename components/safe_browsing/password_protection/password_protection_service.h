@@ -128,20 +128,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // Records a Chrome Sync event that sync password reuse was detected.
   virtual void MaybeLogPasswordReuseDetectedEvent(
       content::WebContents* web_contents) = 0;
-#endif
 
-  scoped_refptr<SafeBrowsingDatabaseManager> database_manager();
-
-  // Safe Browsing backend cannot get a reliable reputation of a URL if
-  // (1) URL is not valid
-  // (2) URL doesn't have http or https scheme
-  // (3) It maps to a local host.
-  // (4) Its hostname is an IP Address in an IANA-reserved range.
-  // (5) Its hostname is a not-yet-assigned by ICANN gTLD.
-  // (6) Its hostname is a dotless domain.
-  static bool CanGetReputationOfURL(const GURL& url);
-
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // If we want to show password reuse modal warning.
   bool ShouldShowModalWarning(
       LoginReputationClientRequest::TriggerType trigger_type,
@@ -160,11 +147,33 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // Shows chrome://reset-password interstitial.
   virtual void ShowInterstitial(content::WebContents* web_contens,
                                 ReusedPasswordAccountType password_type) = 0;
-#endif
+
+  // Triggers the safeBrowsingPrivate.OnPolicySpecifiedPasswordReuseDetected.
+  virtual void MaybeReportPasswordReuseDetected(
+      content::WebContents* web_contents,
+      const std::string& username,
+      PasswordType password_type,
+      bool is_phishing_url) = 0;
+
+  // Called when a protected password change is detected. Must be called on
+  // UI thread.
+  virtual void ReportPasswordChanged() = 0;
 
   virtual void UpdateSecurityState(safe_browsing::SBThreatType threat_type,
                                    ReusedPasswordAccountType password_type,
                                    content::WebContents* web_contents) = 0;
+#endif
+
+  scoped_refptr<SafeBrowsingDatabaseManager> database_manager();
+
+  // Safe Browsing backend cannot get a reliable reputation of a URL if
+  // (1) URL is not valid
+  // (2) URL doesn't have http or https scheme
+  // (3) It maps to a local host.
+  // (4) Its hostname is an IP Address in an IANA-reserved range.
+  // (5) Its hostname is a not-yet-assigned by ICANN gTLD.
+  // (6) Its hostname is a dotless domain.
+  static bool CanGetReputationOfURL(const GURL& url);
 
   // If user has clicked through any Safe Browsing interstitial on this given
   // |web_contents|.
@@ -191,18 +200,6 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       const GURL& url,
       RequestOutcome* reason) const = 0;
 
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
-  // Triggers the safeBrowsingPrivate.OnPolicySpecifiedPasswordReuseDetected.
-  virtual void MaybeReportPasswordReuseDetected(
-      content::WebContents* web_contents,
-      const std::string& username,
-      PasswordType password_type,
-      bool is_phishing_url) = 0;
-
-  // Called when a protected password change is detected. Must be called on
-  // UI thread.
-  virtual void ReportPasswordChanged() = 0;
-#endif
   // Converts from password::metrics_util::PasswordType to
   // LoginReputationClientRequest::PasswordReuseEvent::ReusedPasswordType.
   static ReusedPasswordType GetPasswordProtectionReusedPasswordType(
@@ -341,11 +338,6 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   virtual bool IsUnderAdvancedProtection() = 0;
 #endif
 
-  // Gets the type of sync account associated with current profile or
-  // |NOT_SIGNED_IN|.
-  virtual LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
-  GetSyncAccountType() const = 0;
-
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // Records a Chrome Sync event for the result of the URL reputation lookup
   // if the user enters their sync password on a website.
@@ -354,11 +346,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       RequestOutcome,
       PasswordType password_type,
       const LoginReputationClientResponse*) = 0;
-#endif
 
-  void CheckCsdWhitelistOnIOThread(const GURL& url, bool* check_result);
-
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   void RemoveWarningRequestsByWebContents(content::WebContents* web_contents);
 
   bool IsModalWarningShowingInWebContents(content::WebContents* web_contents);
@@ -370,6 +358,13 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
                                    ReusedPasswordAccountType password_type,
                                    const GURL& main_frame_url) = 0;
 #endif
+
+  void CheckCsdWhitelistOnIOThread(const GURL& url, bool* check_result);
+
+  // Gets the type of sync account associated with current profile or
+  // |NOT_SIGNED_IN|.
+  virtual LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
+  GetSyncAccountType() const = 0;
 
  private:
   friend class PasswordProtectionServiceTest;

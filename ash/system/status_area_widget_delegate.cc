@@ -5,9 +5,9 @@
 #include "ash/system/status_area_widget_delegate.h"
 
 #include "ash/focus_cycler.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
@@ -194,7 +194,7 @@ void StatusAreaWidgetDelegate::UpdateWidgetSize() {
 void StatusAreaWidgetDelegate::SetBorderOnChild(views::View* child,
                                                 bool is_child_on_edge) {
   const int vertical_padding =
-      (ShelfConstants::shelf_size() - kTrayItemSize) / 2;
+      (ShelfConfig::Get()->shelf_size() - kTrayItemSize) / 2;
 
   // Edges for horizontal alignment (right-to-left, default).
   int top_edge = vertical_padding;
@@ -203,6 +203,9 @@ void StatusAreaWidgetDelegate::SetBorderOnChild(views::View* child,
   // Add some extra space so that borders don't overlap. This padding between
   // items also takes care of padding at the edge of the shelf.
   int right_edge = kPaddingBetweenWidgetsNewUi;
+
+  // TODO: ensure that this is set in tablet mode, only when dense shelf
+  // threshold is met. (just make this variable a member of ShelfConfig)
   if (is_child_on_edge && chromeos::switches::ShouldShowShelfDenseClamshell())
     right_edge = kPaddingBetweenWidgetAndRightScreenEdge;
 

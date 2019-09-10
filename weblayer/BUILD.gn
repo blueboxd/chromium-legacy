@@ -130,7 +130,6 @@ jumbo_static_library("weblayer_lib") {
 
   if (is_android) {
     deps += [
-      "//components/embedder_support/android:view",
       "//ui/android",
       "//weblayer/browser/java:jni",
     ]
@@ -139,6 +138,10 @@ jumbo_static_library("weblayer_lib") {
       "app/jni_onload.h",
       "browser/browser_observer_proxy.cc",
       "browser/browser_observer_proxy.h",
+      "browser/content_view_render_view.cc",
+      "browser/content_view_render_view.h",
+      "browser/top_controls_container_view.cc",
+      "browser/top_controls_container_view.h",
     ]
   }
 

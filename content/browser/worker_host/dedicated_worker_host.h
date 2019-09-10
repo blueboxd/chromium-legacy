@@ -15,6 +15,7 @@
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom-forward.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom-forward.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom-forward.h"
 #include "third_party/blink/public/mojom/websockets/websocket_connector.mojom-forward.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host.mojom.h"
@@ -28,6 +29,7 @@ namespace content {
 
 class ServiceWorkerNavigationHandle;
 class ServiceWorkerObjectHost;
+class StoragePartitionImpl;
 
 // Creates a host factory for a dedicated worker. This must be called on the UI
 // thread.
@@ -115,6 +117,9 @@ class DedicatedWorkerHost final
           controller_service_worker_object_host,
       bool success);
 
+  // Sets up the observer of network service crash.
+  void ObserveNetworkServiceCrash(StoragePartitionImpl* storage_partition_impl);
+
   // Creates a network factory for subresource requests from this worker. The
   // network factory is meant to be passed to the renderer.
   mojo::PendingRemote<network::mojom::URLLoaderFactory>
@@ -130,6 +135,10 @@ class DedicatedWorkerHost final
 
   void CreateNestedDedicatedWorker(
       mojo::PendingReceiver<blink::mojom::DedicatedWorkerHostFactory> receiver);
+
+  // Updates subresource loader factories. This is supposed to be called when
+  // out-of-process Network Service crashes.
+  void UpdateSubresourceLoaderFactories();
 
   // May return a nullptr.
   RenderFrameHostImpl* GetAncestorRenderFrameHost();
@@ -167,8 +176,17 @@ class DedicatedWorkerHost final
       &broker_};
   mojo::Receiver<blink::mojom::DedicatedWorkerHost> host_receiver_;
 
+  // Indicates if subresource loaders of this worker support file URLs.
+  bool file_url_support_ = false;
+
   // The liveness state of the dedicated worker in the renderer.
   bool is_frozen_ = false;
+
+  // For observing Network Service connection errors only.
+  network::mojom::URLLoaderFactoryPtr
+      network_service_connection_error_handler_holder_;
+  mojo::Remote<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+      subresource_loader_updater_;
 
   base::WeakPtrFactory<DedicatedWorkerHost> weak_factory_{this};
 

@@ -256,8 +256,6 @@ int LayerTreeHostCommon::CalculateLayerJitter(LayerImpl* layer) {
   return jitter;
 }
 
-enum PropertyTreeOption { BUILD_PROPERTY_TREES, DONT_BUILD_PROPERTY_TREES };
-
 static void AddSurfaceToRenderSurfaceList(
     RenderSurfaceImpl* render_surface,
     RenderSurfaceList* render_surface_list,
@@ -516,70 +514,48 @@ static void RecordRenderSurfaceReasonsForTracing(
 
 static void CalculateDrawPropertiesInternal(
     LayerTreeHostCommon::CalcDrawPropsImplInputs* inputs,
-    PropertyTreeOption property_tree_option,
     LayerImplList* output_update_layer_list) {
   inputs->render_surface_list->clear();
 
   LayerImplList visible_layer_list;
-  switch (property_tree_option) {
-    case BUILD_PROPERTY_TREES: {
-      // The translation from layer to property trees is an intermediate
-      // state. We will eventually get these data passed directly to the
-      // compositor.
-      PropertyTreeBuilder::BuildPropertyTrees(
-          inputs->root_layer, inputs->page_scale_layer,
-          inputs->inner_viewport_scroll_layer,
-          inputs->outer_viewport_scroll_layer,
-          inputs->elastic_overscroll_element_id, inputs->elastic_overscroll,
-          inputs->page_scale_factor, inputs->device_scale_factor,
-          inputs->device_viewport_rect, inputs->device_transform,
-          inputs->property_trees);
-      draw_property_utils::UpdatePropertyTreesAndRenderSurfaces(
-          inputs->root_layer, inputs->property_trees);
-      break;
-    }
-    case DONT_BUILD_PROPERTY_TREES: {
-      // Since page scale and elastic overscroll are SyncedProperties, changes
-      // on the active tree immediately affect the pending tree, so instead of
-      // trying to update property trees whenever these values change, we
-      // update property trees before using them.
+  // Since page scale and elastic overscroll are SyncedProperties, changes
+  // on the active tree immediately affect the pending tree, so instead of
+  // trying to update property trees whenever these values change, we
+  // update property trees before using them.
 
-      // We should never be setting a non-unit page scale factor on an oopif
-      // subframe ... if we attempt this log it and fail.
-      // TODO(wjmaclean): Remove as part of conditions for closing the bug.
-      // https://crbug.com/845097
-      if (inputs->page_scale_factor !=
-              inputs->property_trees->transform_tree.page_scale_factor() &&
-          !inputs->page_scale_transform_node) {
-        LOG(ERROR) << "Setting PageScale on subframe: new psf = "
-                   << inputs->page_scale_factor << ", old psf = "
-                   << inputs->property_trees->transform_tree.page_scale_factor()
-                   << ", in_oopif = "
-                   << inputs->root_layer->layer_tree_impl()
-                          ->settings()
-                          .is_layer_tree_for_subframe;
-        NOTREACHED();
-      }
-
-      DCHECK_NE(inputs->page_scale_layer, inputs->root_layer);
-      draw_property_utils::UpdatePageScaleFactor(
-          inputs->property_trees, inputs->page_scale_transform_node,
-          inputs->page_scale_factor);
-      draw_property_utils::UpdateElasticOverscroll(
-          inputs->property_trees, inputs->elastic_overscroll_element_id,
-          inputs->elastic_overscroll);
-      // Similarly, the device viewport and device transform are shared
-      // by both trees.
-      PropertyTrees* property_trees = inputs->property_trees;
-      property_trees->clip_tree.SetViewportClip(
-          gfx::RectF(inputs->device_viewport_rect));
-      property_trees->transform_tree.SetRootScaleAndTransform(
-          inputs->device_scale_factor, inputs->device_transform);
-      draw_property_utils::UpdatePropertyTreesAndRenderSurfaces(
-          inputs->root_layer, inputs->property_trees);
-      break;
-    }
+  // We should never be setting a non-unit page scale factor on an oopif
+  // subframe ... if we attempt this log it and fail.
+  // TODO(wjmaclean): Remove as part of conditions for closing the bug.
+  // https://crbug.com/845097
+  if (inputs->page_scale_factor !=
+          inputs->property_trees->transform_tree.page_scale_factor() &&
+      !inputs->page_scale_transform_node) {
+    LOG(ERROR) << "Setting PageScale on subframe: new psf = "
+               << inputs->page_scale_factor << ", old psf = "
+               << inputs->property_trees->transform_tree.page_scale_factor()
+               << ", in_oopif = "
+               << inputs->root_layer->layer_tree_impl()
+                      ->settings()
+                      .is_layer_tree_for_subframe;
+    NOTREACHED();
   }
+
+  DCHECK_NE(inputs->page_scale_layer, inputs->root_layer);
+  draw_property_utils::UpdatePageScaleFactor(inputs->property_trees,
+                                             inputs->page_scale_transform_node,
+                                             inputs->page_scale_factor);
+  draw_property_utils::UpdateElasticOverscroll(
+      inputs->property_trees, inputs->elastic_overscroll_element_id,
+      inputs->elastic_overscroll);
+  // Similarly, the device viewport and device transform are shared
+  // by both trees.
+  PropertyTrees* property_trees = inputs->property_trees;
+  property_trees->clip_tree.SetViewportClip(
+      gfx::RectF(inputs->device_viewport_rect));
+  property_trees->transform_tree.SetRootScaleAndTransform(
+      inputs->device_scale_factor, inputs->device_transform);
+  draw_property_utils::UpdatePropertyTreesAndRenderSurfaces(
+      inputs->root_layer, inputs->property_trees);
 
   {
     TRACE_EVENT0("cc", "draw_property_utils::FindLayersThatNeedUpdates");
@@ -644,7 +620,7 @@ void LayerTreeHostCommon::CalculateDrawPropertiesForTesting(
 
 void LayerTreeHostCommon::CalculateDrawProperties(
     CalcDrawPropsImplInputs* inputs) {
-  CalculateDrawPropertiesInternal(inputs, DONT_BUILD_PROPERTY_TREES, nullptr);
+  CalculateDrawPropertiesInternal(inputs, nullptr);
 }
 
 void LayerTreeHostCommon::PrepareForUpdateDrawPropertiesForTesting(
@@ -672,11 +648,7 @@ void LayerTreeHostCommon::CalculateDrawPropertiesForTesting(
     CalcDrawPropsImplInputsForTesting* inputs) {
   PrepareForUpdateDrawPropertiesForTesting(
       inputs->root_layer->layer_tree_impl());
-  CalculateDrawPropertiesInternal(inputs,
-                                  inputs->property_trees->needs_rebuild
-                                      ? BUILD_PROPERTY_TREES
-                                      : DONT_BUILD_PROPERTY_TREES,
-                                  inputs->update_layer_list);
+  CalculateDrawPropertiesInternal(inputs, inputs->update_layer_list);
 }
 
 PropertyTrees* GetPropertyTrees(const Layer* layer) {

@@ -4,7 +4,7 @@
 
 #include "ash/shelf/shelf_tooltip_preview_bubble.h"
 
-#include "ash/shelf/shelf_constants.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/wm/collision_detection/collision_detection_utils.h"
 #include "ash/wm/window_preview_view.h"
@@ -109,14 +109,15 @@ bool ShelfTooltipPreviewBubble::ShouldCloseOnMouseExit() {
 }
 
 float ShelfTooltipPreviewBubble::GetMaxPreviewRatio() const {
-  float max_ratio = kShelfTooltipPreviewMinRatio;
+  float max_ratio = ShelfConfig::Get()->shelf_tooltip_preview_min_ratio();
   for (WindowPreview* window : previews_) {
     gfx::Size mirror_size = window->preview_view()->CalculatePreferredSize();
     float ratio = static_cast<float>(mirror_size.width()) /
                   static_cast<float>(mirror_size.height());
     max_ratio = std::max(max_ratio, ratio);
   }
-  return std::min(max_ratio, kShelfTooltipPreviewMaxRatio);
+  return std::min(max_ratio,
+                  ShelfConfig::Get()->shelf_tooltip_preview_max_ratio());
 }
 
 void ShelfTooltipPreviewBubble::DismissAfterDelay() {

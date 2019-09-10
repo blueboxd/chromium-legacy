@@ -267,7 +267,6 @@
 <translation id="421017592316736757">Heu d'estar en línia per accedir a aquest fitxer.</translation>
 <translation id="4212740939091998969">Ja hi ha una carpeta anomenada "<ph name="FOLDER_NAME" />". Tria un altre nom.</translation>
 <translation id="4215448920900139318">S'estan afegint <ph name="FILE_COUNT" /> a la còpia de seguretat</translation>
-<translation id="4242533952199664413">Obre la configuració</translation>
 <translation id="426015154560005552">Teclat àrab</translation>
 <translation id="4261901459838235729">Presentació de Google</translation>
 <translation id="4290535918735525311">S'ha compartit 1 carpeta amb Linux</translation>
@@ -423,7 +422,6 @@
 <translation id="5818003990515275822">Coreà</translation>
 <translation id="5819442873484330149">Configuració 3 de hangul (final)</translation>
 <translation id="5833610766403489739">Aquest fitxer s'ha extraviat en algun lloc. Comproveu el paràmetre d'ubicació de les baixades i torneu-ho a provar.</translation>
-<translation id="5838051104334203064">Les aplicacions de Play Store no poden accedir a aquest dispositiu</translation>
 <translation id="5838451609423551646">S'han suprimit totes les entrades de la selecció.</translation>
 <translation id="5838825566232597749">Workman nord-americà internacional</translation>
 <translation id="5850516540536751549">Aquest tipus de fitxer no és compatible. Visiteu <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" /> per trobar una aplicació que pugui obrir aquest tipus de fitxer.

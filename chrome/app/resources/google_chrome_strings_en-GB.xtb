@@ -47,6 +47,8 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1873233029667955273">Google Chrome isn't your default browser</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome is out of date</translation>
+<translation id="1900795423379050516">If a setting doesn't show on this page, look in your <ph name="LINK_BEGIN" />
+      Chrome browser settings<ph name="LINK_END" /></translation>
 <translation id="1915828456209461693">A new update for Chrome is available and will be applied as soon as you relaunch.</translation>
 <translation id="1919130412786645364">Allow Chrome sign-in</translation>
 <translation id="2063848847527508675">Chrome OS needs to be restarted to apply the update.</translation>
@@ -164,6 +166,8 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="5543953544073077331">Other copies of Chrome are running. To update, close them.</translation>
 <translation id="556024056938947818">Google Chrome is trying to show passwords.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
+<translation id="5657226924540934362">If a setting doesn't show on this page, look in your <ph name="LINK_BEGIN" />
+      Chrome OS settings<ph name="LINK_END" /></translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> may be dangerous, so Chrome has blocked it.</translation>
 <translation id="5686916850681061684">Customise and control Google Chrome. Something needs your attention – click for details.</translation>
 <translation id="5690427481109656848">Google LLC</translation>

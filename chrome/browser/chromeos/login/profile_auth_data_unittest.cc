@@ -22,6 +22,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/http/http_auth.h"
@@ -60,7 +61,7 @@ class TestingProfileWithNetworkContext : public TestingProfile {
   explicit TestingProfileWithNetworkContext(
       network::NetworkService* network_service) {
     auto network_context = std::make_unique<network::NetworkContext>(
-        network_service, mojo::MakeRequest(&network_context_ptr_),
+        network_service, network_context_remote_.BindNewPipeAndPassReceiver(),
         network::mojom::NetworkContextParams::New());
     network_context_ = network_context.get();
     SetNetworkContext(std::move(network_context));
@@ -69,7 +70,7 @@ class TestingProfileWithNetworkContext : public TestingProfile {
   network::NetworkContext* network_context() { return network_context_; }
 
  private:
-  network::mojom::NetworkContextPtr network_context_ptr_;
+  mojo::Remote<network::mojom::NetworkContext> network_context_remote_;
   network::NetworkContext* network_context_;
 };
 

@@ -120,7 +120,7 @@ class MojoVideoEncodeAcceleratorServiceTest : public ::testing::Test {
   }
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   mojo::StrongBindingPtr<mojom::VideoEncodeAcceleratorClient> mojo_vea_binding_;
 

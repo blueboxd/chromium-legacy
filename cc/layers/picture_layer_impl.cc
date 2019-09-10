@@ -14,6 +14,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
+#include "base/numerics/ranges.h"
 #include "base/time/time.h"
 #include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
@@ -1125,7 +1126,7 @@ void PictureLayerImpl::RecalculateRasterScales() {
     float min_scale = MinimumContentsScale();
     float max_scale = std::max(1.f, MinimumContentsScale());
     float clamped_ideal_source_scale_ =
-        std::max(min_scale, std::min(ideal_source_scale_, max_scale));
+        base::ClampToRange(ideal_source_scale_, min_scale, max_scale);
 
     while (raster_source_scale_ < clamped_ideal_source_scale_)
       raster_source_scale_ *= 2.f;
@@ -1133,7 +1134,7 @@ void PictureLayerImpl::RecalculateRasterScales() {
       raster_source_scale_ /= 2.f;
 
     raster_source_scale_ =
-        std::max(min_scale, std::min(raster_source_scale_, max_scale));
+        base::ClampToRange(raster_source_scale_, min_scale, max_scale);
 
     raster_page_scale_ = 1.f;
     raster_device_scale_ = 1.f;
@@ -1450,9 +1451,8 @@ void PictureLayerImpl::UpdateIdealScales() {
     ideal_contents_scale_ =
         GetIdealContentsScale() * external_page_scale_factor;
   }
-  ideal_contents_scale_ =
-      std::min(kMaxIdealContentsScale,
-               std::max(ideal_contents_scale_, min_contents_scale));
+  ideal_contents_scale_ = base::ClampToRange(
+      ideal_contents_scale_, min_contents_scale, kMaxIdealContentsScale);
   ideal_source_scale_ =
       ideal_contents_scale_ / ideal_page_scale_ / ideal_device_scale_;
 }

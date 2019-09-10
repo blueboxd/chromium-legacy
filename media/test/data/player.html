@@ -43,6 +43,10 @@ function getVideoStatus(video) {
   if (video.error) {
     result.push(`error: {${video.error.code},${video.error.message}}`);
   }
+  if (window.internals) {
+    result.push(`suspended: ${internals.isMediaElementSuspended(video) ?
+      'true' : 'false'}`);
+  }
   return result.join(', ');
 }
 

@@ -3,7 +3,6 @@
 <translationbundle lang="hi">
 <translation id="1036550831858290950">अपना मौजूदा टैब बुकमार्क के रूप में सेव करें</translation>
 <translation id="104962181688258143">Files ऐप्लिकेशन खोलें</translation>
-<translation id="1098295134904615027">दाईं ओर मौजूद वर्चुअल डेस्क चालू करें</translation>
 <translation id="1122869341872663659"><ph name="QUERY" /> के लिए <ph name="N" /> खोज नतीजे दिखाए जा रहे हैं</translation>
 <translation id="1195667586424773550">लिंक को टैब के पता बार में खींचें और छोड़ें</translation>
 <translation id="1204450209689312104">गुप्त मोड में नई विंडो खोलें</translation>
@@ -25,7 +24,6 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">पता बार में अपने इनपुट में www. और .com जोड़ें, फिर पेज खोलें</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, फिर <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> या <ph name="LEFT" /></translation>
-<translation id="1929866390202038233">बाईं ओर मौजूद वर्चुअल डेस्क चालू करें</translation>
 <translation id="1996162290124031907">अगले टैब पर जाएं</translation>
 <translation id="2010818616644390445">विंडो में आखिरी टैब पर जाएंं</translation>
 <translation id="2040706009561734834">लॉन्चर खोलें/बंद करें</translation>
@@ -64,7 +62,6 @@
 <translation id="3105917916468784889">स्क्रीनशॉट लें</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">पता बार को फ़ोकस करें</translation>
-<translation id="3165428420335997629">नया वर्चुअल डेस्क बनाएं</translation>
 <translation id="3256109297135787951">अपने शेल्फ़ पर मौजूद किसी आइटम से हाइलाइट हटाएं</translation>
 <translation id="3288816184963444640">अभी वाली विंडो बंद करें</translation>
 <translation id="3407560819924487926">काम का प्रबंधक सामने लाएं</translation>
@@ -181,7 +178,6 @@
 <translation id="8234414138295101081">स्‍क्रीन को 90 डिग्री पर घुमाएं</translation>
 <translation id="8241665785394195545">दायां ब्रैकेट</translation>
 <translation id="8264941229485248811">डेवलपर टूल इंस्पेक्टर दिखाएं या छिपाएं</translation>
-<translation id="8355937569537581904">मौजूदा वर्चुअल डेस्क हटाएं</translation>
 <translation id="836869401750819675">डाउनलोड पेज खोलें</translation>
 <translation id="8388247778047144397">लिंक को टैब स्‍ट्रिप पर खाली जगह में खींचें और छोड़ें</translation>
 <translation id="8389638407792712197">नई विंडो खोलें</translation>

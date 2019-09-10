@@ -2458,7 +2458,7 @@
 
           Als je dit beleid instelt, kunnen gebruikers dit tijdelijk overschrijven door de grote muisaanwijzer in of uit te schakelen. De keuze van de gebruiker is echter niet permanent en de standaardinstelling wordt hersteld als het inlogscherm opnieuw wordt weergegeven of de gebruiker gedurende een minuut niet actief is op het inlogscherm.
 
-          Als dit beleid niet is ingesteld, wordt de grote muisaanwijzer uitgeschakeld wanneer het inlogscherm voor de eerste keer wordt weergegeven. Gebruikers kunnen de grote muisaanwijzer op elk gewenst moment in- of uitschakelen en de status op het inlogscherm is van toepassing op alle gebruikers.
+          Als dit beleid niet is ingesteld, wordt de grote muisaanwijzer uitgeschakeld wanneer het inlogscherm voor de eerste keer wordt weergegeven. Gebruikers kunnen de grote muisaanwijzer op elk gewenst moment in- of uitschakelen. De status op het inlogscherm is van toepassing op alle gebruikers.
 
           Opmerking: <ph name="DEVICE_LOGIN_SCREEN_LARGE_CURSOR_ENABLED" /> overschrijft dit beleid als het is opgegeven.</translation>
 <translation id="538108065117008131"><ph name="PRODUCT_FRAME_NAME" /> toestaan de volgende soorten content te verwerken.</translation>
@@ -4233,7 +4233,7 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
 
       Als dit beleid is ingesteld op 'False' of niet is geconfigureerd, kan de gebruiker de browser gebruiken zonder in te loggen bij <ph name="PRODUCT_NAME" />.</translation>
 <translation id="858309738002328421">Grote bestandsuploads blokkeren</translation>
-<translation id="8585558195682146109">Gebruikersdownloads verzenden voor scannen</translation>
+<translation id="8585558195682146109">Gebruikersdownloads sturen om te laten scannen</translation>
 <translation id="8586528890725660268">Hiermee worden de printers gespecificeerd die een gebruiker niet kan gebruiken.
 
       Dit beleid wordt alleen gebruikt als <ph name="PRINTERS_BLACKLIST" /> is gekozen voor <ph name="BULK_PRINTERS_ACCESS_MODE" />.

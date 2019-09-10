@@ -300,7 +300,6 @@
 <translation id="2479410451996844060">ልክ ያልሆነ የፍለጋ ዩአርኤል።</translation>
 <translation id="2482878487686419369">ማስታወቂያዎች</translation>
 <translation id="248348093745724435">የማሽን መመሪያዎች</translation>
-<translation id="2485387744899240041">የእርስዎ መሣሪያ እና አሳሽ የተጠቃሚ ስሞች</translation>
 <translation id="2491120439723279231">የአገልጋይ እውቅና ማረጋገጫ ስህተቶችን ይዟል።</translation>
 <translation id="2493640343870896922">ደብዳቤ-ፕላስ</translation>
 <translation id="2495083838625180221">JSON ተንታኝ</translation>
@@ -865,7 +864,6 @@
 <translation id="5565735124758917034">ገባሪ</translation>
 <translation id="5570825185877910964">መለያን ጠብቅ</translation>
 <translation id="5571083550517324815">ከዚህ አድራሻ ላይ መውሰድ አይቻልም። የተለየ አድራሻ ይምረጡ።</translation>
-<translation id="5571347317547569613">({NUM_COOKIES,plural, =1{1 ጥቅም ላይ ያለ}one{# ጥቅም ላይ ያለ}other{# ጥቅም ላይ}})</translation>
 <translation id="5580958916614886209">የእርስዎን የአገልግሎት ማብቂያ ወር ይመልከቱ እና እንደገና ይሞክሩ</translation>
 <translation id="5586446728396275693">ምንም የተቀመጡ አድራሻዎች የሉም</translation>
 <translation id="5595485650161345191">አድራሻ አርትዕ</translation>

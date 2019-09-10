@@ -56,6 +56,47 @@ void CrostiniShelfContextMenu::GetMenuModel(GetMenuModelCallback callback) {
   std::move(callback).Run(std::move(menu_model));
 }
 
+bool CrostiniShelfContextMenu::IsCommandIdEnabled(int command_id) const {
+  if (command_id == ash::UNINSTALL)
+    return IsUninstallable();
+  if (command_id == ash::STOP_APP &&
+      item().id.app_id == crostini::kCrostiniTerminalId) {
+    return crostini::IsCrostiniRunning(controller()->profile());
+  }
+  return LauncherContextMenu::IsCommandIdEnabled(command_id);
+}
+
+void CrostiniShelfContextMenu::ExecuteCommand(int command_id, int event_flags) {
+  if (ExecuteCommonCommand(command_id, event_flags))
+    return;
+
+  switch (command_id) {
+    case ash::STOP_APP:
+      if (item().id.app_id == crostini::kCrostiniTerminalId) {
+        crostini::CrostiniManager::GetForProfile(controller()->profile())
+            ->StopVm(crostini::kCrostiniDefaultVmName, base::DoNothing());
+      }
+      return;
+    case ash::MENU_NEW_WINDOW:
+      crostini::LaunchCrostiniApp(controller()->profile(), item().id.app_id,
+                                  display_id());
+      return;
+    case ash::CROSTINI_USE_LOW_DENSITY:
+    case ash::CROSTINI_USE_HIGH_DENSITY: {
+      crostini::CrostiniRegistryService* registry_service =
+          crostini::CrostiniRegistryServiceFactory::GetForProfile(
+              controller()->profile());
+      const bool scaled = command_id == ash::CROSTINI_USE_LOW_DENSITY;
+      registry_service->SetAppScaled(item().id.app_id, scaled);
+      if (controller()->IsOpen(item().id))
+        CrostiniAppRestartView::Show(item().id, display_id());
+      return;
+    }
+    default:
+      NOTREACHED();
+  }
+}
+
 bool CrostiniShelfContextMenu::IsUninstallable() const {
   return crostini::IsUninstallable(controller()->profile(), item().id.app_id);
 }
@@ -108,35 +149,4 @@ void CrostiniShelfContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
                            IDS_CROSTINI_USE_LOW_DENSITY);
     }
   }
-}
-
-void CrostiniShelfContextMenu::ExecuteCommand(int command_id, int event_flags) {
-  if (ExecuteCommonCommand(command_id, event_flags))
-    return;
-
-  if (command_id == ash::STOP_APP) {
-    if (item().id.app_id == crostini::kCrostiniTerminalId) {
-      crostini::CrostiniManager::GetForProfile(controller()->profile())
-          ->StopVm(crostini::kCrostiniDefaultVmName, base::DoNothing());
-    }
-    return;
-  }
-
-  if (command_id == ash::MENU_NEW_WINDOW) {
-    crostini::LaunchCrostiniApp(controller()->profile(), item().id.app_id,
-                                display_id());
-    return;
-  }
-  if (command_id == ash::CROSTINI_USE_LOW_DENSITY ||
-      command_id == ash::CROSTINI_USE_HIGH_DENSITY) {
-    crostini::CrostiniRegistryService* registry_service =
-        crostini::CrostiniRegistryServiceFactory::GetForProfile(
-            controller()->profile());
-    bool scaled = command_id == ash::CROSTINI_USE_LOW_DENSITY;
-    registry_service->SetAppScaled(item().id.app_id, scaled);
-    if (controller()->IsOpen(item().id))
-      CrostiniAppRestartView::Show(item().id, display_id());
-    return;
-  }
-  NOTREACHED();
 }

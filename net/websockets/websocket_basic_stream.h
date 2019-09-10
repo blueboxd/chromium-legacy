@@ -146,9 +146,7 @@ class NET_EXPORT_PRIVATE WebSocketBasicStream : public WebSocketStream {
   // bounds checks.
   void AddToIncompleteControlFrameBody(base::span<const char> data);
 
-  // Storage for pending reads. All active WebSockets spend all the time with a
-  // call to ReadFrames() pending, so there is no benefit in trying to share
-  // this between sockets.
+  // Storage for pending reads.
   scoped_refptr<IOBufferWithSize> read_buffer_;
 
   // The connection, wrapped in a ClientSocketHandle so that we can prevent it
@@ -164,7 +162,7 @@ class NET_EXPORT_PRIVATE WebSocketBasicStream : public WebSocketStream {
 
   // Although it should rarely happen in practice, a control frame can arrive
   // broken into chunks. This variable provides storage for a partial control
-  // frame until the rest arrives. It will be NULL the rest of the time.
+  // frame until the rest arrives. It will be empty the rest of the time.
   std::vector<char> incomplete_control_frame_body_;
   // Storage for payload of combined (see |incomplete_control_frame_body_|)
   // control frame.

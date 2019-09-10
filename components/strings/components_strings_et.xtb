@@ -306,7 +306,6 @@
 <translation id="2479410451996844060">Kehtetu otsingu URL.</translation>
 <translation id="2482878487686419369">Märguanded</translation>
 <translation id="248348093745724435">Seadme reeglid</translation>
-<translation id="2485387744899240041">Teie seadme ja brauseri kasutajanimed</translation>
 <translation id="2491120439723279231">Serveri sertifikaat sisaldab vigu.</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">JSON-i parser</translation>
@@ -875,7 +874,6 @@
 <translation id="5565735124758917034">Aktiivne</translation>
 <translation id="5570825185877910964">Kaitse kontot</translation>
 <translation id="5571083550517324815">Sellelt aadressilt ei saa kaupa kätte. Valige mõni teine aadress.</translation>
-<translation id="5571347317547569613">({NUM_COOKIES,plural, =1{kasutusel on 1}other{kasutusel on #}})</translation>
 <translation id="5580958916614886209">Kontrollige aegumiskuud ja proovige uuesti</translation>
 <translation id="5586446728396275693">Salvestatud aadresse pole</translation>
 <translation id="5595485650161345191">Muuda aadressi</translation>

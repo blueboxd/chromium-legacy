@@ -20,7 +20,7 @@
 <translation id="1087788677726983142">إخفاء فلاتر بث الحدث</translation>
 <translation id="1088219014394087294">ليست هناك عناوين.</translation>
 <translation id="1106741348836243114">‏تشغيل التعليقات الصوتية (earcons) أو إيقافها.</translation>
-<translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
+<translation id="1120743664840974483">{"أ": "أرنب"، "ب": "بيت"، "ت": "تفاحة"، "ث": "ثعلب"، "ج": "جزر"، "ح": "حصان"، "خ": "خوخ"، "د": "دراجة"، "ذ": "ذهب"، "ر": "ريشة"، "ز": "زرافة"، "س": "سمكة"، "ش": "شمس"، "ص": "صوص"، "ض"، "ضوء"، "ط": "طائرة"، "ظ": "ظرف"، "ع": "عصفور"، "غ": "غيمة"، "ف": "فراشة"، "ق": "قمر"، "ك": "كرة"، "ل": "ليمون"، "م": "موز"، "ن": "نجمة"، "ه": "هدية"، "و": "وردة"، "ي": "يد"}</translation>
 <translation id="1120938014254001895">التمرير السريع بإصبعين إلى الأعلى</translation>
 <translation id="1124771028211010580">نمط العرض الحالي هو جنبًا إلى جنب.</translation>
 <translation id="1126928665165112660">غير مائل</translation>
@@ -207,7 +207,6 @@
 <translation id="257674075312929031">مجموعة</translation>
 <translation id="2582407057977008361">جانبًا</translation>
 <translation id="2592212930811759050">انقر مرّتين لبدء التعديل</translation>
-<translation id="2606210917827248971">مع {COUNT,plural, =1{عنصر واحد (#)}zero{# عنصر}two{عنصران (#)}few{# عناصر}many{# عنصرًا}other{# عنصر}}</translation>
 <translation id="2614981083756825552">تخطيط لغة التوصيف الرياضية</translation>
 <translation id="2624431853467395961">فتح وضع التعلّم</translation>
 <translation id="2626530649491650971">قابل للنقر</translation>
@@ -391,7 +390,6 @@
 <translation id="3781428340399460090">وردي برّاق</translation>
 <translation id="3783725005098956899">عرض السجلّ</translation>
 <translation id="3793710123303304873">تم إنهاء مربع الحوار.</translation>
-<translation id="3795836767122514678">+{COUNT,plural, =1{#}zero{#}two{#}few{#}many{#}other{#}}</translation>
 <translation id="3801735343383419236">إكمال تلقائي على هيئة قائمة</translation>
 <translation id="3810838688059735925">الفيديوهات</translation>
 <translation id="3813387282697781382">مرجاني فاتح</translation>

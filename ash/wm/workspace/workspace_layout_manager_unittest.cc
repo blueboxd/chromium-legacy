@@ -18,6 +18,7 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/window_properties.h"
@@ -26,7 +27,6 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
@@ -267,7 +267,7 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeInDisplayToBeRestored) {
   window_state->Maximize();
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
   EXPECT_EQ(
-      gfx::Rect(300, 0, 400, 500 - ShelfConstants::shelf_size()).ToString(),
+      gfx::Rect(300, 0, 400, 500 - ShelfConfig::Get()->shelf_size()).ToString(),
       window->GetBoundsInScreen().ToString());
 
   window_state->Restore();
@@ -280,7 +280,7 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeInDisplayToBeRestored) {
   window_state->Maximize();
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
   EXPECT_EQ(
-      gfx::Rect(300, 0, 400, 500 - ShelfConstants::shelf_size()).ToString(),
+      gfx::Rect(300, 0, 400, 500 - ShelfConfig::Get()->shelf_size()).ToString(),
       window->GetBoundsInScreen().ToString());
 
   window_state->Restore();
@@ -299,7 +299,7 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeInDisplayToBeRestored) {
   EXPECT_TRUE(w1->IsMaximized());
   EXPECT_EQ(root_windows[1], w1->GetNativeWindow()->GetRootWindow());
   EXPECT_EQ(
-      gfx::Rect(300, 0, 400, 500 - ShelfConstants::shelf_size()).ToString(),
+      gfx::Rect(300, 0, 400, 500 - ShelfConfig::Get()->shelf_size()).ToString(),
       w1->GetWindowBoundsInScreen().ToString());
   w1->Restore();
   EXPECT_EQ(root_windows[1], w1->GetNativeWindow()->GetRootWindow());

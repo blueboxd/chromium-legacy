@@ -140,6 +140,9 @@ class ThemeProperties {
     // These colors don't have constant default values. They are derived from
     // the runtime value of other colors.
     COLOR_NTP_TEXT_LIGHT,
+    COLOR_NTP_LOGO,
+    // Color for the background of the most visited/custom link tile.
+    COLOR_NTP_SHORTCUT,
 
 #if defined(OS_WIN)
     // The color of the 1px border around the window on Windows 10.

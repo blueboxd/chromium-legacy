@@ -89,4 +89,15 @@ ClientRedirectPolicy FrameLoadRequest::ClientRedirect() const {
   return ClientRedirectPolicy::kClientRedirect;
 }
 
+bool FrameLoadRequest::CanDisplay(const KURL& url) const {
+  if (OriginDocument() &&
+      OriginDocument()->GetSecurityOrigin()->CanDisplay(url))
+    return true;
+
+  if (resource_request_.CanDisplay(url))
+    return true;
+
+  return false;
+}
+
 }  // namespace blink

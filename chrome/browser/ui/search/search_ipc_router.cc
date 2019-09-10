@@ -451,6 +451,14 @@ void SearchIPCRouter::QueryAutocomplete(
   delegate_->QueryAutocomplete(input, std::move(callback));
 }
 
+void SearchIPCRouter::StopAutocomplete(bool clear_result) {
+  if (!policy_->ShouldProcessStopAutocomplete(is_active_tab_)) {
+    return;
+  }
+
+  delegate_->StopAutocomplete(clear_result);
+}
+
 void SearchIPCRouter::set_delegate_for_testing(Delegate* delegate) {
   DCHECK(delegate);
   delegate_ = delegate;

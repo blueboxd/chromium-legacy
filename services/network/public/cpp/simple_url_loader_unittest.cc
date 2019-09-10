@@ -581,7 +581,8 @@ class SimpleURLLoaderTestBase {
     network::mojom::NetworkContextParamsPtr context_params =
         network::mojom::NetworkContextParams::New();
     network_service_ptr->CreateNetworkContext(
-        mojo::MakeRequest(&network_context_), std::move(context_params));
+        network_context_.BindNewPipeAndPassReceiver(),
+        std::move(context_params));
 
     network::mojom::NetworkServiceClientPtr network_service_client_ptr;
     network_service_client_ = std::make_unique<TestNetworkServiceClient>(
@@ -641,7 +642,7 @@ class SimpleURLLoaderTestBase {
   std::unique_ptr<network::mojom::NetworkService> network_service_;
   std::unique_ptr<network::mojom::NetworkServiceClient> network_service_client_;
   std::unique_ptr<network::mojom::NetworkContextClient> network_context_client_;
-  network::mojom::NetworkContextPtr network_context_;
+  mojo::Remote<network::mojom::NetworkContext> network_context_;
   network::mojom::URLLoaderFactoryPtr url_loader_factory_;
 
   net::test_server::EmbeddedTestServer test_server_;

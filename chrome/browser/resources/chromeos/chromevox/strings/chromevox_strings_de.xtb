@@ -20,7 +20,7 @@
 <translation id="1087788677726983142">Filter für Ereignisstreams ausblenden</translation>
 <translation id="1088219014394087294">Keine Überschriften</translation>
 <translation id="1106741348836243114">Akustisches Feedback (Earcons) aktivieren bzw. deaktivieren</translation>
-<translation id="1120743664840974483">{"a": "Anton", "b": "Berta", "c": "Cäsar", "d": "Dora", "e": "Emil", "f": "Friedrich", "g": "Gustav", "h": "Heinrich", "i": "Ida", "j": "Julius","k": "Kaufmann", "l": "Ludwig", "m": "Martha", "n": "Nordpol", "o": "Otto","p": "Paula", "q": "Quelle", "r": "Richard", "s": "Samuel", "t": "Theodor", "u": "Ulrich", "v": "Viktor", "w": "Wilhelm","x": "Xanthippe", "y": "Ypsilon", "z": "Zacharias"}</translation>
+<translation id="1120743664840974483">{"a": "Anton", "ä": "Ärger", "b": "Berta", "c": "Cäsar", "d": "Dora", "e": "Emil", "f": "Friedrich", "g": "Gustav", "h": "Heinrich", "i": "Ida", "j": "Julius", "k": "Kaufmann", "l": "Ludwig", "m": "Martha", "n": "Nordpol", "o": "Otto", "ö": "Ökonom", "p": "Paula", "q": "Quelle", "r": "Richard", "s": "Samuel", "ß": "Eszett", "t": "Theodor", "u": "Ulrich", "ü": "Übermut", "v": "Viktor", "w": "Wilhelm", "x": "Xanthippe", "y": "Ypsilon", "z": "Zacharias"}</translation>
 <translation id="1120938014254001895">Mit zwei Fingern nach oben wischen</translation>
 <translation id="1124771028211010580">Die aktuelle Displaydarstellung ist "Nebeneinander".</translation>
 <translation id="1126928665165112660">Nicht kursiv</translation>
@@ -206,7 +206,6 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="257674075312929031">Gruppe</translation>
 <translation id="2582407057977008361">Aside-Element</translation>
 <translation id="2592212930811759050">Zum Bearbeiten doppeltippen</translation>
-<translation id="2606210917827248971">mit {COUNT,plural, =1{# Eintrag}other{# Einträgen}}</translation>
 <translation id="2614981083756825552">MathML-Layout</translation>
 <translation id="2624431853467395961">Lernmodus öffnen</translation>
 <translation id="2626530649491650971">anklickbar</translation>
@@ -390,7 +389,6 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="3781428340399460090">Dunkelrosa</translation>
 <translation id="3783725005098956899">Protokoll anzeigen</translation>
 <translation id="3793710123303304873">Dialogfeld geschlossen</translation>
-<translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">Liste der Autovervollständigungen</translation>
 <translation id="3810838688059735925">Videos</translation>
 <translation id="3813387282697781382">Helles Korallenrot</translation>

@@ -552,7 +552,8 @@ void SearchTabHelper::QueryAutocomplete(
                     AutocompleteProvider::TYPE_BUILTIN |
                     AutocompleteProvider::TYPE_HISTORY_QUICK |
                     AutocompleteProvider::TYPE_HISTORY_URL |
-                    AutocompleteProvider::TYPE_SEARCH;
+                    AutocompleteProvider::TYPE_SEARCH |
+                    AutocompleteProvider::TYPE_ZERO_SUGGEST;
     autocomplete_controller_ = std::make_unique<AutocompleteController>(
         std::make_unique<ChromeAutocompleteProviderClient>(profile()), this,
         providers);
@@ -560,9 +561,19 @@ void SearchTabHelper::QueryAutocomplete(
 
   query_autocomplete_callback_ = std::move(callback);
 
-  autocomplete_controller_->Start(AutocompleteInput(
+  AutocompleteInput autocomplete_input(
       base::UTF8ToUTF16(input), metrics::OmniboxEventProto::NTP_REALBOX,
-      ChromeAutocompleteSchemeClassifier(profile())));
+      ChromeAutocompleteSchemeClassifier(profile()));
+  autocomplete_input.set_from_omnibox_focus(input.empty());
+  autocomplete_controller_->Start(autocomplete_input);
+}
+
+void SearchTabHelper::StopAutocomplete(bool clear_result) {
+  if (!autocomplete_controller_) {
+    return;
+  }
+
+  autocomplete_controller_->Stop(clear_result);
 }
 
 OmniboxView* SearchTabHelper::GetOmniboxView() {

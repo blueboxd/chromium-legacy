@@ -12,12 +12,15 @@
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/public/mojom/assistant_controller.mojom.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -160,7 +163,7 @@ std::unique_ptr<ui::LayerTreeOwner> CreateLayerForAssistantSnapshot(
 
 AssistantScreenContextController::AssistantScreenContextController(
     AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller), binding_(this) {
+    : assistant_controller_(assistant_controller) {
   assistant_controller_->AddObserver(this);
 }
 
@@ -168,9 +171,9 @@ AssistantScreenContextController::~AssistantScreenContextController() {
   assistant_controller_->RemoveObserver(this);
 }
 
-void AssistantScreenContextController::BindRequest(
-    mojom::AssistantScreenContextControllerRequest request) {
-  binding_.Bind(std::move(request));
+void AssistantScreenContextController::BindReceiver(
+    mojo::PendingReceiver<mojom::AssistantScreenContextController> receiver) {
+  receiver_.Bind(std::move(receiver));
 }
 
 void AssistantScreenContextController::SetAssistant(

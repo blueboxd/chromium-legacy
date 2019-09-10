@@ -158,7 +158,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   // PageWidgetEventHandler functions
   void HandleMouseLeave(LocalFrame&, const WebMouseEvent&) override;
   void HandleMouseDown(LocalFrame&, const WebMouseEvent&) override;
-  void HandleMouseUp(LocalFrame&, const WebMouseEvent&) override;
+  WebInputEventResult HandleMouseUp(LocalFrame&, const WebMouseEvent&) override;
   WebInputEventResult HandleMouseWheel(LocalFrame&,
                                        const WebMouseWheelEvent&) override;
   WebInputEventResult HandleGestureEvent(const WebGestureEvent&) override;

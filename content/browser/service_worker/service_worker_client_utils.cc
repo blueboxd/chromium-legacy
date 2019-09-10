@@ -367,7 +367,6 @@ void OnGetWindowClientsOnUI(
     const std::vector<std::tuple<int, int, base::TimeTicks, std::string>>&
         clients_info,
     const GURL& script_url,
-    blink::mojom::ServiceWorkerClientLifecycleStateQuery lifecycle_state,
     ClientsCallback callback,
     std::unique_ptr<ServiceWorkerClientPtrs> out_clients) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -388,19 +387,6 @@ void OnGetWindowClientsOnUI(
     // different URL than expected. In such case, we should make sure to not
     // expose cross-origin WindowClient.
     if (info->url.GetOrigin() != script_url.GetOrigin())
-      continue;
-
-    // Skip frozen clients if asked to be excluded.
-    if (lifecycle_state !=
-            blink::mojom::ServiceWorkerClientLifecycleStateQuery::kAll &&
-        ((lifecycle_state ==
-              blink::mojom::ServiceWorkerClientLifecycleStateQuery::kActive &&
-          info->lifecycle_state !=
-              blink::mojom::ServiceWorkerClientLifecycleState::kActive) ||
-         (lifecycle_state ==
-              blink::mojom::ServiceWorkerClientLifecycleStateQuery::kFrozen &&
-          info->lifecycle_state !=
-              blink::mojom::ServiceWorkerClientLifecycleState::kFrozen)))
       continue;
 
     out_clients->push_back(std::move(info));
@@ -506,12 +492,10 @@ void GetWindowClients(const base::WeakPtr<ServiceWorkerVersion>& controller,
     return;
   }
 
-  blink::mojom::ServiceWorkerClientLifecycleStateQuery lifecycle_state =
-      options->lifecycle_state;
   RunOrPostTaskOnThread(
       FROM_HERE, BrowserThread::UI,
       base::BindOnce(&OnGetWindowClientsOnUI, clients_info,
-                     controller->script_url(), lifecycle_state,
+                     controller->script_url(),
                      base::BindOnce(&DidGetWindowClients, controller,
                                     std::move(options), std::move(callback)),
                      std::move(clients)));

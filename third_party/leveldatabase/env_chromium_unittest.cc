@@ -270,8 +270,7 @@ TEST(ChromiumEnvTest, TestOpenOnRead) {
 class ChromiumEnvDBTrackerTest : public ::testing::Test {
  protected:
   ChromiumEnvDBTrackerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
   void SetUp() override {
     testing::Test::SetUp();
     ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
@@ -306,7 +305,7 @@ class ChromiumEnvDBTrackerTest : public ::testing::Test {
 
  private:
   base::ScopedTempDir scoped_temp_dir_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(ChromiumEnvDBTrackerTest, OpenDatabase) {

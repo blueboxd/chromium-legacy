@@ -72,6 +72,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/ranges.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -347,8 +348,8 @@ class RootWindowTargeter : public aura::WindowTargeter {
 
   gfx::Point FitPointToBounds(const gfx::Point p, const gfx::Rect& bounds) {
     return gfx::Point(
-        std::min(std::max(bounds.x(), p.x()), bounds.right() - 1),
-        std::min(std::max(bounds.y(), p.y()), bounds.bottom() - 1));
+        base::ClampToRange(p.x(), bounds.x(), bounds.right() - 1),
+        base::ClampToRange(p.y(), bounds.y(), bounds.bottom() - 1));
   }
 
   ui::EventType last_mouse_event_type_ = ui::ET_UNKNOWN;

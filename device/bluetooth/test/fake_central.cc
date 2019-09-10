@@ -39,8 +39,8 @@ device::BluetoothDevice::ManufacturerDataMap ToManufacturerDataMap(
 }  // namespace
 
 FakeCentral::FakeCentral(mojom::CentralState state,
-                         mojom::FakeCentralRequest request)
-    : state_(state), binding_(this, std::move(request)) {}
+                         mojo::PendingReceiver<mojom::FakeCentral> receiver)
+    : state_(state), receiver_(this, std::move(receiver)) {}
 
 void FakeCentral::SimulatePreconnectedPeripheral(
     const std::string& address,

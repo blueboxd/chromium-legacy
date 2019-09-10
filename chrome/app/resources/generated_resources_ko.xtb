@@ -530,6 +530,7 @@
 <translation id="1769104665586091481">새 창에서 링크 열기(&amp;W)</translation>
 <translation id="1773212559869067373">인증서가 로컬로 거부됨</translation>
 <translation id="177336675152937177">호스팅된 앱 데이터</translation>
+<translation id="1776712937009046120">사용자 추가</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
 <translation id="1779652936965200207">다음 패스키를 '<ph name="DEVICE_NAME" />'에 입력하세요.</translation>
 <translation id="1781291988450150470">현재 PIN</translation>
@@ -2489,7 +2490,7 @@
 <translation id="4722920479021006856"><ph name="APP_NAME" />에서 내 화면을 공유하는 중입니다.</translation>
 <translation id="4724450788351008910">제휴가 변경됨</translation>
 <translation id="4725511304875193254">웰시 코기</translation>
-<translation id="4725851834065990915">사용하는 사이트 또는 앱의 정보 유출로 인해 비밀번호가 노출되었습니다. 지금 저장된 비밀번호를 변경하는 것이 좋습니다.</translation>
+<translation id="4725851834065990915">사용하는 사이트 또는 앱의 정보 유출로 인해 비밀번호가 노출되었습니다. 지금 저장된 비밀번호를 확인하는 것이 좋습니다.</translation>
 <translation id="4726710629007580002">확장 프로그램을 설치하는 중에 다음과 같은 경고가 표시되었습니다.</translation>
 <translation id="4727847987444062305">관리되는 게스트 세션</translation>
 <translation id="4728558894243024398">플랫폼</translation>

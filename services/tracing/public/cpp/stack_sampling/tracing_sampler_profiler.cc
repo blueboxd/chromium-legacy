@@ -547,19 +547,19 @@ void TracingSamplerProfiler::StartTracing(
       sampled_thread_id_, std::move(trace_writer), should_enable_filtering);
   profile_builder_ = profile_builder.get();
   // Create and start the stack sampling profiler.
-#if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
-    defined(OFFICIAL_BUILD)
+#if defined(OS_ANDROID)
+#if BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && defined(OFFICIAL_BUILD)
   auto* module_cache = profile_builder->GetModuleCache();
   profiler_ = std::make_unique<base::StackSamplingProfiler>(
       sampled_thread_id_, params, std::move(profile_builder),
       std::make_unique<StackSamplerAndroid>(sampled_thread_id_, module_cache));
-
-#else
+  profiler_->Start();
+#endif  // BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && defined(OFFICIAL_BUILD)
+#else   // defined(OS_ANDROID)
   profiler_ = std::make_unique<base::StackSamplingProfiler>(
       sampled_thread_id_, params, std::move(profile_builder));
-#endif
-
   profiler_->Start();
+#endif  // defined(OS_ANDROID)
 }
 
 void TracingSamplerProfiler::StopTracing() {

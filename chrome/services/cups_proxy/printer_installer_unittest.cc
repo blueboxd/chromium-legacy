@@ -83,8 +83,7 @@ class PrinterInstallerTest : public testing::Test {
  public:
   PrinterInstallerTest() : weak_factory_(this) {
     delegate_ = std::make_unique<FakeServiceDelegate>();
-    printer_installer_ =
-        std::make_unique<PrinterInstaller>(delegate_->GetWeakPtr());
+    printer_installer_ = std::make_unique<PrinterInstaller>(delegate_.get());
   }
 
   ~PrinterInstallerTest() override = default;

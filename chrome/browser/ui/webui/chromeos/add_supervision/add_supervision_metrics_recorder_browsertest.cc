@@ -42,11 +42,9 @@ class AddSupervisionMetricsRecorderTest : public InProcessBrowserTest {
   }
 
   void CloseAddSupervisionDialog() {
-    content::WebContents* web_contents = test_web_ui_.GetWebContents();
-    bool out_close_dialog;
-    AddSupervisionDialog::GetInstance()->OnCloseContents(web_contents,
-                                                         &out_close_dialog);
-    ASSERT_TRUE(out_close_dialog);
+    bool out_close_dialog =
+        AddSupervisionDialog::GetInstance()->OnDialogCloseRequested();
+    EXPECT_TRUE(out_close_dialog);
     AddSupervisionDialog::Close();
   }
 

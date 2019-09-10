@@ -159,7 +159,7 @@ class ArcNetHostImpl : public KeyedService,
 
   std::string cached_service_path_;
   std::string cached_guid_;
-
+  std::string default_network_path_;
   std::string arc_vpn_service_path_;
   // Owned by the user profile whose context was used to initialize |this|.
   PrefService* pref_service_ = nullptr;

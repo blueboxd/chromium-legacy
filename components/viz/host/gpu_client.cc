@@ -211,8 +211,8 @@ void GpuClient::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
 }
 
 void GpuClient::CreateGpuMemoryBufferFactory(
-    mojom::GpuMemoryBufferFactoryRequest request) {
-  gpu_memory_buffer_factory_bindings_.AddBinding(this, std::move(request));
+    mojo::PendingReceiver<mojom::GpuMemoryBufferFactory> receiver) {
+  gpu_memory_buffer_factory_receivers_.Add(this, std::move(receiver));
 }
 
 }  // namespace viz

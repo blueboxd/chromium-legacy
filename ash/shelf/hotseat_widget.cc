@@ -8,7 +8,6 @@
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/shelf/scrollable_shelf_view.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"

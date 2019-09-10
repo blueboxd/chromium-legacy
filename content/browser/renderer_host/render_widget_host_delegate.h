@@ -108,6 +108,11 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
 
   // Callback to inform the browser that the renderer did not process the
   // specified events. This gives an opportunity to the browser to process the
+  // back/forward mouse buttons.
+  virtual bool HandleMouseEvent(const blink::WebMouseEvent& event);
+
+  // Callback to inform the browser that the renderer did not process the
+  // specified events. This gives an opportunity to the browser to process the
   // event (used for keyboard shortcuts).
   virtual bool HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
 

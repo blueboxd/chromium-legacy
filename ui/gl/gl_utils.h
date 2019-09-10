@@ -17,6 +17,7 @@
 
 namespace gl {
 GL_EXPORT void Crash();
+GL_EXPORT void Hang();
 
 #if defined(OS_ANDROID)
 GL_EXPORT base::ScopedFD MergeFDs(base::ScopedFD a, base::ScopedFD b);

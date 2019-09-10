@@ -11,11 +11,14 @@
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_notification_controller.h"
 #include "ash/assistant/util/deep_link_util.h"
+#include "ash/public/mojom/assistant_controller.mojom.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/i18n/message_formatter.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
@@ -137,7 +140,7 @@ chromeos::assistant::mojom::AssistantNotificationPtr CreateTimerNotification(
 
 AssistantAlarmTimerController::AssistantAlarmTimerController(
     AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller), binding_(this) {
+    : assistant_controller_(assistant_controller) {
   AddModelObserver(this);
   assistant_controller_->AddObserver(this);
 }
@@ -147,10 +150,10 @@ AssistantAlarmTimerController::~AssistantAlarmTimerController() {
   RemoveModelObserver(this);
 }
 
-void AssistantAlarmTimerController::BindRequest(
-    mojom::AssistantAlarmTimerControllerRequest request) {
+void AssistantAlarmTimerController::BindReceiver(
+    mojo::PendingReceiver<mojom::AssistantAlarmTimerController> receiver) {
   DCHECK(chromeos::assistant::features::IsTimerNotificationEnabled());
-  binding_.Bind(std::move(request));
+  receiver_.Bind(std::move(receiver));
 }
 
 void AssistantAlarmTimerController::AddModelObserver(

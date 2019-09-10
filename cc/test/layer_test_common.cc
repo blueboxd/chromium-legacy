@@ -118,11 +118,11 @@ void LayerTestCommon::VerifyQuadsAreOccluded(const viz::QuadList& quads,
 }
 
 LayerTestCommon::LayerImplTest::LayerImplTest()
-    : LayerImplTest(LayerTreeSettings()) {}
+    : LayerImplTest(LayerListSettings()) {}
 
 LayerTestCommon::LayerImplTest::LayerImplTest(
     std::unique_ptr<LayerTreeFrameSink> layer_tree_frame_sink)
-    : LayerImplTest(LayerTreeSettings(), std::move(layer_tree_frame_sink)) {}
+    : LayerImplTest(LayerListSettings(), std::move(layer_tree_frame_sink)) {}
 
 LayerTestCommon::LayerImplTest::LayerImplTest(const LayerTreeSettings& settings)
     : LayerImplTest(settings, FakeLayerTreeFrameSink::Create3d()) {}
@@ -140,6 +140,9 @@ LayerTestCommon::LayerImplTest::LayerImplTest(
       layer_impl_id_(2) {
   std::unique_ptr<LayerImpl> root =
       LayerImpl::Create(host_impl()->active_tree(), 1);
+  root->SetBounds(gfx::Size(1, 1));
+  if (settings.use_layer_lists)
+    SetupRootProperties(root.get());
   host_impl()->active_tree()->SetRootLayerForTesting(std::move(root));
   host_impl()->SetVisible(true);
   EXPECT_TRUE(host_impl()->InitializeFrameSink(layer_tree_frame_sink_.get()));
@@ -160,17 +163,22 @@ LayerTestCommon::LayerImplTest::~LayerImplTest() {
 
 LayerImpl* LayerTestCommon::LayerImplTest::EnsureRootLayerInPendingTree() {
   LayerTreeImpl* pending_tree = host_impl()->pending_tree();
-  if (LayerImpl* root = pending_tree->root_layer_for_testing())
+  auto* root = pending_tree->root_layer_for_testing();
+  if (root)
     return root;
   pending_tree->SetRootLayerForTesting(LayerImpl::Create(pending_tree, 1));
-  return pending_tree->root_layer_for_testing();
+  root = pending_tree->root_layer_for_testing();
+  root->SetBounds(gfx::Size(1, 1));
+  if (host()->IsUsingLayerLists())
+    SetupRootProperties(root);
+  return root;
 }
 
 void LayerTestCommon::LayerImplTest::CalcDrawProps(
     const gfx::Size& viewport_size) {
   RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root_layer_for_testing(), gfx::Rect(viewport_size), &render_surface_list);
+      root_layer(), gfx::Rect(viewport_size), &render_surface_list);
   inputs.update_layer_list = &update_layer_impl_list_;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 }
@@ -226,7 +234,7 @@ void LayerTestCommon::LayerImplTest::AppendSurfaceQuadsWithOcclusion(
 }
 
 void LayerTestCommon::LayerImplTest::RequestCopyOfOutput() {
-  root_layer_for_testing()->test_properties()->copy_requests.push_back(
+  root_layer()->test_properties()->copy_requests.push_back(
       viz::CopyOutputRequest::CreateStubForTesting());
 }
 
@@ -286,8 +294,7 @@ void LayerTestCommon::LayerImplTest::
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 }
 
-void LayerTestCommon::LayerImplTest::UpdateDrawProperties(
-    LayerTreeImpl* layer_tree_impl) {
+void UpdateDrawProperties(LayerTreeImpl* layer_tree_impl) {
   LayerTreeHostCommon::PrepareForUpdateDrawPropertiesForTesting(
       layer_tree_impl);
   layer_tree_impl->UpdateDrawProperties();

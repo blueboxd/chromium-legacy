@@ -176,7 +176,7 @@ class MockRenderProcessHost : public RenderProcessHost {
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver)
       override {}
-  void BindIndexedDB(blink::mojom::IDBFactoryRequest request,
+  void BindIndexedDB(mojo::PendingReceiver<blink::mojom::IDBFactory> receiver,
                      const url::Origin& origin) override;
   void CleanupCorbExceptionForPluginUponDestruction() override;
 
@@ -253,7 +253,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool is_renderer_locked_to_site_ = false;
   network::mojom::URLLoaderFactory* url_loader_factory_;
   mojo::PendingReceiver<blink::mojom::CacheStorage> cache_storage_receiver_;
-  blink::mojom::IDBFactoryRequest idb_factory_request_;
+  mojo::PendingReceiver<blink::mojom::IDBFactory> idb_factory_receiver_;
   base::WeakPtrFactory<MockRenderProcessHost> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHost);

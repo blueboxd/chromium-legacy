@@ -267,7 +267,6 @@
 <translation id="421017592316736757">Для доступа к файлу необходимо подключение к Интернету.</translation>
 <translation id="4212740939091998969">Папка "<ph name="FOLDER_NAME" />" уже существует. Укажите другое название.</translation>
 <translation id="4215448920900139318">Сохранение файлов (<ph name="FILE_COUNT" />)…</translation>
-<translation id="4242533952199664413">Открыть настройки</translation>
 <translation id="426015154560005552">Арабская раскладка</translation>
 <translation id="4261901459838235729">Презентация Google</translation>
 <translation id="4290535918735525311">Linux предоставлен доступ к 1 папке</translation>
@@ -423,7 +422,6 @@
 <translation id="5818003990515275822">Корейский</translation>
 <translation id="5819442873484330149">Корейская раскладка (Sebeolsik Final)</translation>
 <translation id="5833610766403489739">Файл не найден. Проверьте параметр места для скачивания и повторите попытку.</translation>
-<translation id="5838051104334203064">Приложениям из Play Маркета закрыт доступ к этому устройству.</translation>
 <translation id="5838451609423551646">Выбор отменен.</translation>
 <translation id="5838825566232597749">США (Workman, международная)</translation>
 <translation id="5850516540536751549">Файлы этого типа не поддерживаются. Попробуйте найти приложение, с помощью которого их можно открыть, в <ph name="BEGIN_LINK" />Интернет-магазине Chrome<ph name="END_LINK" />.

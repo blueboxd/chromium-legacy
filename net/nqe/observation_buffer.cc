@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/numerics/ranges.h"
 #include "base/stl_util.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
@@ -226,8 +227,7 @@ void ObservationBuffer::ComputeWeightedObservations(
     }
 
     double weight = time_weight * signal_strength_weight;
-
-    weight = std::max(DBL_MIN, std::min(1.0, weight));
+    weight = base::ClampToRange(weight, DBL_MIN, 1.0);
 
     weighted_observations->push_back(
         WeightedObservation(observation.value(), weight));

@@ -18,6 +18,8 @@ class WebViewPasswordFeatureManager
 
   bool IsGenerationEnabled() const override;
 
+  bool ShouldCheckReuseOnLeakDetection() const override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WebViewPasswordFeatureManager);
 };

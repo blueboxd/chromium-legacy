@@ -87,6 +87,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
       const GURL& url,
       mojom::RequestMode request_mode,
       const base::Optional<url::Origin>& origin,
+      const base::Optional<url::Origin>& isolated_world_origin,
       bool cors_flag,
       bool tainted_origin,
       const OriginAccessList* origin_access_list);

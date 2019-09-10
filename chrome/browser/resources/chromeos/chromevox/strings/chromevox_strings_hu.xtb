@@ -207,7 +207,6 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="257674075312929031">Csoport</translation>
 <translation id="2582407057977008361">Oldaltartalom</translation>
 <translation id="2592212930811759050">Koppintson duplán a szerkesztés megkezdéséhez</translation>
-<translation id="2606210917827248971">{COUNT,plural, =1{# elemmel}other{# elemmel}}</translation>
 <translation id="2614981083756825552">Matematikai „ML” elrendezés</translation>
 <translation id="2624431853467395961">Tanuló mód megnyitása</translation>
 <translation id="2626530649491650971">rákattintható</translation>
@@ -391,7 +390,6 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="3781428340399460090">Élénk rózsaszín</translation>
 <translation id="3783725005098956899">Napló megjelenítése</translation>
 <translation id="3793710123303304873">Kilépett a párbeszédpanelből.</translation>
-<translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">Automatikus kiegészítés listaként</translation>
 <translation id="3810838688059735925">Videó</translation>
 <translation id="3813387282697781382">Világos korallpiros</translation>

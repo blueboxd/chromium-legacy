@@ -1026,7 +1026,6 @@ html[dir=rtl] .menu-option {
   margin-inline-start: 40px;
   position: relative;
   width: 568px;
-  z-index: 1;
 }
 
 .menu-panel {

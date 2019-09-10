@@ -8,12 +8,12 @@
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/stylus_utils.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
@@ -552,7 +552,7 @@ void PaletteTray::UpdateTrayIcon() {
   icon_->SetImage(CreateVectorIcon(
       palette_tool_manager_->GetActiveTrayIcon(
           palette_tool_manager_->GetActiveTool(PaletteGroup::MODE)),
-      kTrayIconSize, kShelfIconColor));
+      kTrayIconSize, ShelfConfig::Get()->shelf_icon_color()));
 }
 
 void PaletteTray::OnPaletteEnabledPrefChanged() {

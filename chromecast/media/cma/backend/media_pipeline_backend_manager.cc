@@ -35,12 +35,8 @@ namespace media {
 
 namespace {
 
-#if BUILDFLAG(IS_CAST_AUDIO_ONLY) || BUILDFLAG(ENABLE_ASSISTANT)
 constexpr int kAudioDecoderLimit = std::numeric_limits<int>::max();
-#else
-constexpr int kAudioDecoderLimit = 1;
-#endif
-
+constexpr int kVideoDecoderLimit = 1;
 constexpr base::TimeDelta kPowerSaveWaitTime = base::TimeDelta::FromSeconds(5);
 
 }  // namespace
@@ -113,7 +109,8 @@ void MediaPipelineBackendManager::BackendUseVideoDecoder(
 bool MediaPipelineBackendManager::IncrementDecoderCount(DecoderType type) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(type < NUM_DECODER_TYPES);
-  const int limit = (type == AUDIO_DECODER) ? kAudioDecoderLimit : 1;
+  const int limit =
+      (type == VIDEO_DECODER) ? kVideoDecoderLimit : kAudioDecoderLimit;
   if (decoder_count_[type] >= limit) {
     LOG(WARNING) << "Decoder limit reached for type " << type;
     return false;

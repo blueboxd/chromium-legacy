@@ -84,6 +84,8 @@ public class ContactsDialogHost implements ContactsPickerListener {
     @Override
     public void onContactsPickerUserAction(@ContactsPickerAction int action, List<Contact> contacts,
             int percentageShared, int propertiesRequested) {
+        if (mNativeContactsProviderAndroid == 0) return;
+
         switch (action) {
             case ContactsPickerAction.CANCEL:
                 ContactsDialogHostJni.get().endContactsList(

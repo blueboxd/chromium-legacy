@@ -4094,6 +4094,25 @@
             ]
         }
     ],
+    "PasswordLeakDetection": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PasswordLeakDetection"
+                    ]
+                }
+            ]
+        }
+    ],
     "PasswordProtectionForEnterprise": [
         {
             "platforms": [
@@ -5233,6 +5252,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SecurityInterstitialsDarkMode"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ServiceGroupImportance": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ServiceGroupImportance"
                     ]
                 }
             ]
@@ -6827,6 +6861,23 @@
             "experiments": [
                 {
                     "name": "Enabled"
+                }
+            ]
+        }
+    ],
+    "WebRTC-VP8ConferenceTemporalLayers": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux",
+                "ios",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "2_V1"
                 }
             ]
         }

@@ -39,6 +39,8 @@ const NetworkUI = (function() {
     networkListItemInitializing:
         loadTimeData.getString('networkListItemInitializing'),
     networkListItemScanning: loadTimeData.getString('networkListItemScanning'),
+    networkListItemSimCardLocked:
+        loadTimeData.getString('networkListItemSimCardLocked'),
     networkListItemNotConnected:
         loadTimeData.getString('networkListItemNotConnected'),
     networkListItemNoNetwork:

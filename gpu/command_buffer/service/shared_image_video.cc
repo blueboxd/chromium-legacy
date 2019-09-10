@@ -20,7 +20,7 @@
 #include "gpu/command_buffer/service/shared_image_representation_skia_gl.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/command_buffer/service/texture_manager.h"
-#include "gpu/ipc/common/android/texture_owner.h"
+#include "gpu/command_buffer/service/texture_owner.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"

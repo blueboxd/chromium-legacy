@@ -328,7 +328,7 @@ class PipelineImplTest : public ::testing::Test {
   // Fixture members.
   StrictMock<CallbackHelper> callbacks_;
   base::SimpleTestTickClock test_tick_clock_;
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   NullMediaLog media_log_;
   std::unique_ptr<PipelineImpl> pipeline_;
 
@@ -717,9 +717,10 @@ TEST_F(PipelineImplTest, ErrorDuringSeek) {
 
 // Invoked function OnError. This asserts that the pipeline does not enqueue
 // non-teardown related tasks while tearing down.
-static void TestNoCallsAfterError(PipelineImpl* pipeline,
-                                  base::test::TaskEnvironment* task_environment,
-                                  PipelineStatus /* status */) {
+static void TestNoCallsAfterError(
+    PipelineImpl* pipeline,
+    base::test::SingleThreadTaskEnvironment* task_environment,
+    PipelineStatus /* status */) {
   CHECK(pipeline);
   CHECK(task_environment);
 

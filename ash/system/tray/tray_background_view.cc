@@ -10,9 +10,9 @@
 #include "ash/focus_cycler.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/public/cpp/ash_constants.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/login_shelf_view.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
@@ -128,8 +128,9 @@ class TrayBackground : public views::Background {
     cc::PaintFlags background_flags;
     background_flags.setAntiAlias(true);
     int border_radius = kTrayRoundedBorderRadius;
-    background_flags.setColor(kShelfControlPermanentHighlightBackground);
-    border_radius = ShelfConstants::control_border_radius();
+    background_flags.setColor(
+        ShelfConfig::Get()->shelf_control_permanent_highlight_background());
+    border_radius = ShelfConfig::Get()->control_border_radius();
 
     gfx::Rect bounds = tray_background_view_->GetBackgroundBounds();
     const float dsf = canvas->UndoDeviceScaleFactor();
@@ -159,13 +160,14 @@ TrayBackgroundView::TrayBackgroundView(Shelf* shelf)
       widget_observer_(new TrayWidgetObserver(this)) {
   DCHECK(shelf_);
   set_notify_enter_exit_on_child(true);
-  set_ink_drop_base_color(kShelfInkDropBaseColor);
-  set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
+  set_ink_drop_base_color(ShelfConfig::Get()->shelf_ink_drop_base_color());
+  set_ink_drop_visible_opacity(
+      ShelfConfig::Get()->shelf_ink_drop_visible_opacity());
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetBackground(std::unique_ptr<views::Background>(background_));
   SetInstallFocusRingOnFocus(true);
-  focus_ring()->SetColor(kShelfFocusBorderColor);
+  focus_ring()->SetColor(ShelfConfig::Get()->shelf_focus_border_color());
   SetFocusPainter(nullptr);
 
   AddChildView(tray_container_);
@@ -438,7 +440,7 @@ gfx::Rect TrayBackgroundView::GetBackgroundBounds() const {
 }
 
 void TrayBackgroundView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  const int border_radius = ShelfConstants::control_border_radius();
+  const int border_radius = ShelfConfig::Get()->control_border_radius();
   auto path = std::make_unique<SkPath>();
   path->addRoundRect(gfx::RectToSkRect(GetBackgroundBounds()), border_radius,
                      border_radius);

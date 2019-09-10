@@ -43,7 +43,7 @@ extern const base::Feature kCommittedSBInterstitials;
 
 // Controls whether the user has forcibly enabled AP download protection. This
 // flag will enable AP downloads protections even for users not enrolled in
-// APP. See also |kUseAPDownloadProtection|.
+// APP.
 extern const base::Feature kForceUseAPDownloadProtection;
 
 // Enable GAIA password protection for signed-in users.
@@ -80,10 +80,6 @@ extern const base::Feature kThreatDomDetailsTagAndAttributeFeature;
 // Having a single shared feature makes it impossible to run multiple trigger
 // trials simultaneously.
 extern const base::Feature kTriggerThrottlerDailyQuotaFeature;
-
-// Controls whether we use AP download protection. This flag only has any effect
-// for users enrolled in APP. See also |kForceUseAPDownloadProtection|.
-extern const base::Feature kUseAPDownloadProtection;
 
 // Controls whether Chrome on Android uses locally cached blacklists.
 extern const base::Feature kUseLocalBlacklistsV2;

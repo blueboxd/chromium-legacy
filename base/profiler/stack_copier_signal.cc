@@ -11,7 +11,9 @@
 
 namespace base {
 
-StackCopierSignal::StackCopierSignal() = default;
+StackCopierSignal::StackCopierSignal(
+    std::unique_ptr<ThreadDelegate> thread_delegate)
+    : thread_delegate_(std::move(thread_delegate)) {}
 
 StackCopierSignal::~StackCopierSignal() = default;
 

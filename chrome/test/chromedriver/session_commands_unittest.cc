@@ -16,8 +16,10 @@
 #include "base/system/sys_info.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
+#include "chrome/test/chromedriver/capabilities.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/stub_chrome.h"
+#include "chrome/test/chromedriver/chrome/stub_web_view.h"
 #include "chrome/test/chromedriver/commands.h"
 #include "chrome/test/chromedriver/session.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -421,4 +423,117 @@ TEST(SessionCommandsTest, QuitFails) {
   base::DictionaryValue params;
   std::unique_ptr<base::Value> value;
   ASSERT_EQ(kUnknownError, ExecuteQuit(false, &session, params, &value).code());
+}
+
+namespace {
+
+class MockChrome : public StubChrome {
+ public:
+  explicit MockChrome(BrowserInfo& binfo) : web_view_("1") {
+    browser_info_ = binfo;
+  }
+  ~MockChrome() override {}
+
+  const BrowserInfo* GetBrowserInfo() const override { return &browser_info_; }
+
+  Status GetWebViewById(const std::string& id, WebView** web_view) override {
+    *web_view = &web_view_;
+    return Status(kOk);
+  }
+
+ private:
+  BrowserInfo browser_info_;
+  StubWebView web_view_;
+};
+
+}  // namespace
+
+TEST(SessionCommandsTest, ConfigureHeadlessSession_dotNotation) {
+  Capabilities capabilities;
+  base::DictionaryValue caps;
+  base::Value::ListStorage args;
+  args.emplace_back("headless");
+  caps.SetPath({"goog:chromeOptions", "args"}, base::Value(args));
+
+  base::DictionaryValue prefs;
+  prefs.SetKey("download.default_directory",
+               base::Value("/examples/python/downloads"));
+  caps.SetPath({"goog:chromeOptions", "prefs"}, prefs.Clone());
+
+  Status status = capabilities.Parse(caps);
+  BrowserInfo binfo;
+  binfo.is_headless = true;
+  MockChrome* chrome = new MockChrome(binfo);
+  Session session("id", std::unique_ptr<Chrome>(chrome));
+
+  status = internal::ConfigureHeadlessSession(&session, capabilities);
+  ASSERT_EQ(kOk, status.code()) << status.message();
+  ASSERT_TRUE(session.chrome->GetBrowserInfo()->is_headless);
+  ASSERT_STREQ("/examples/python/downloads",
+               session.headless_download_directory->c_str());
+}
+
+TEST(SessionCommandsTest, ConfigureHeadlessSession_nestedMap) {
+  Capabilities capabilities;
+  base::DictionaryValue caps;
+  base::Value::ListStorage args;
+  args.emplace_back("headless");
+  caps.SetPath({"goog:chromeOptions", "args"}, base::Value(args));
+
+  base::DictionaryValue prefs;
+  std::unique_ptr<base::DictionaryValue> download(new base::DictionaryValue());
+  download->SetStringPath("default_directory", "/examples/python/downloads");
+  prefs.SetDictionary("download", std::move(download));
+  caps.SetPath({"goog:chromeOptions", "prefs"}, prefs.Clone());
+
+  Status status = capabilities.Parse(caps);
+  BrowserInfo binfo;
+  binfo.is_headless = true;
+  MockChrome* chrome = new MockChrome(binfo);
+  Session session("id", std::unique_ptr<Chrome>(chrome));
+
+  status = internal::ConfigureHeadlessSession(&session, capabilities);
+  ASSERT_EQ(kOk, status.code()) << status.message();
+  ASSERT_TRUE(session.chrome->GetBrowserInfo()->is_headless);
+  ASSERT_STREQ("/examples/python/downloads",
+               session.headless_download_directory->c_str());
+}
+
+TEST(SessionCommandsTest, ConfigureHeadlessSession_noDownloadDir) {
+  Capabilities capabilities;
+  base::DictionaryValue caps;
+  base::Value::ListStorage args;
+  args.emplace_back("headless");
+  caps.SetPath({"goog:chromeOptions", "args"}, base::Value(args));
+
+  Status status = capabilities.Parse(caps);
+  BrowserInfo binfo;
+  binfo.is_headless = true;
+  MockChrome* chrome = new MockChrome(binfo);
+  Session session("id", std::unique_ptr<Chrome>(chrome));
+
+  status = internal::ConfigureHeadlessSession(&session, capabilities);
+  ASSERT_EQ(kOk, status.code()) << status.message();
+  ASSERT_TRUE(session.chrome->GetBrowserInfo()->is_headless);
+  ASSERT_STREQ(".", session.headless_download_directory->c_str());
+}
+
+TEST(SessionCommandsTest, ConfigureHeadlessSession_notHeadless) {
+  Capabilities capabilities;
+  base::DictionaryValue caps;
+  base::DictionaryValue prefs;
+  std::unique_ptr<base::DictionaryValue> download(new base::DictionaryValue());
+  download->SetStringPath("default_directory", "/examples/python/downloads");
+  prefs.SetDictionary("download", std::move(download));
+  caps.SetPath({"goog:chromeOptions", "prefs"}, prefs.Clone());
+
+  Status status = capabilities.Parse(caps);
+  BrowserInfo binfo;
+  MockChrome* chrome = new MockChrome(binfo);
+  Session session("id", std::unique_ptr<Chrome>(chrome));
+
+  status = internal::ConfigureHeadlessSession(&session, capabilities);
+  ASSERT_EQ(kOk, status.code()) << status.message();
+  ASSERT_FALSE(session.chrome->GetBrowserInfo()->is_headless);
+  ASSERT_FALSE(session.headless_download_directory);
 }

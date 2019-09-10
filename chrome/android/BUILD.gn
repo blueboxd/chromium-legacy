@@ -853,6 +853,7 @@ android_library("chrome_test_java") {
     "//components/signin/core/browser/android:java",
     "//components/signin/core/browser/android:signin_java_test_support",
     "//components/signin/core/browser/android:signin_javatests",
+    "//components/signin/public/identity_manager/android:java",
     "//components/sync:sync_java_test_support",
     "//components/sync/android:sync_java",
     "//components/sync/android:sync_javatests",

@@ -206,7 +206,6 @@
 <translation id="257674075312929031">ቡድን</translation>
 <translation id="2582407057977008361">ከጎን</translation>
 <translation id="2592212930811759050">ማርትዕ ለመጀመር ሁለቴ መታ ያድርጉ</translation>
-<translation id="2606210917827248971">ከ {COUNT,plural, =1{# ንጥል}one{# ንጥሎች}other{# ንጥሎች}}</translation>
 <translation id="2614981083756825552">የMath ML አቀማመጥ</translation>
 <translation id="2624431853467395961">የመማር ሁነታን ይክፈቱ</translation>
 <translation id="2626530649491650971">ጠቅ ሊደረግ የሚችል</translation>
@@ -390,7 +389,6 @@
 <translation id="3781428340399460090">ደመቅ ያለ ሮዝ</translation>
 <translation id="3783725005098956899">ምዝግብን አሳይ</translation>
 <translation id="3793710123303304873">ከመገናኛ ወጥተዋል።</translation>
-<translation id="3795836767122514678">+{COUNT,plural, =1{#}one{#}other{#}}</translation>
 <translation id="3801735343383419236">የራስ-አጠናቅቅ ዝርዝር</translation>
 <translation id="3810838688059735925">ቪዲዮ</translation>
 <translation id="3813387282697781382">ፈዛዛ አረንጓዴ</translation>

@@ -25,14 +25,6 @@ enum ServiceWorkerClientLifecycleState {
   kFrozen,
 };
 
-// Indicates the query mode for service worker lifecycle state.
-// https://wicg.github.io/page-lifecycle/#serviceworker-clients-dfn
-enum ServiceWorkerClientLifecycleStateQuery {
-  kActive,
-  kFrozen,
-  kAll,
-};
-
 // Indicates the options for the service worker clients matching operation.
 // https://w3c.github.io/ServiceWorker/#dictdef-clientqueryoptions.
 struct ServiceWorkerClientQueryOptions {
@@ -41,9 +33,6 @@ struct ServiceWorkerClientQueryOptions {
 
   // ClientQueryOptions#type
   ServiceWorkerClientType client_type = ServiceWorkerClientType.kWindow;
-
-  // ClientQueryOptions#lifecycleState
-  ServiceWorkerClientLifecycleStateQuery lifecycle_state = ServiceWorkerClientLifecycleStateQuery.kActive;
 };
 
 // Holds the information related to a service worker client.

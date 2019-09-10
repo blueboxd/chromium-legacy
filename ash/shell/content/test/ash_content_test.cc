@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/shell/content/client/shell_browser_main_parts.h"
 #include "ash/shell/content/embedded_browser.h"

@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_pump_for_ui.h"
+#include "base/observer_list.h"
 #include "ui/events/events_export.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/events/platform/x11/x11_event_source.h"
@@ -31,6 +32,11 @@ class EVENTS_EXPORT X11EventSourceDefault
   void ProcessXEvent(XEvent* xevent) override;
   void AddXEventDispatcher(XEventDispatcher* dispatcher) override;
   void RemoveXEventDispatcher(XEventDispatcher* dispatcher) override;
+  void AddXEventObserver(XEventObserver* observer) override;
+  void RemoveXEventObserver(XEventObserver* observer) override;
+  std::unique_ptr<ScopedXEventDispatcher> OverrideXEventDispatcher(
+      XEventDispatcher* dispatcher) override;
+  void RestoreOverridenXEventDispatcher() override;
 
  private:
   // Registers event watcher with Libevent.
@@ -60,6 +66,11 @@ class EVENTS_EXPORT X11EventSourceDefault
 
   base::MessagePumpForUI::FdWatchController watcher_controller_;
   bool initialized_ = false;
+
+  base::ObserverList<XEventObserver>::Unchecked observers_;
+
+  XEventDispatcher* overridden_dispatcher_ = nullptr;
+  bool overridden_dispatcher_restored_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(X11EventSourceDefault);
 };

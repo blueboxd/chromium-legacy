@@ -81,6 +81,18 @@ public final class SafeBrowsingApiBridge {
         }
     }
 
+    /**
+     * TODO(crbug.com/995926): Make this call async
+     * Starts a Safe Browsing Allowlist check.
+     *
+     * If the uri is in the allowlist, return true. Otherwise, return false.
+     */
+    @CalledByNative
+    private static boolean startAllowlistLookup(
+            SafeBrowsingApiHandler handler, String uri, int[] threatsOfInterest) {
+        return handler.startAllowlistLookup(uri, threatsOfInterest);
+    }
+
     private static native boolean nativeAreLocalBlacklistsEnabled();
     private static native void nativeOnUrlCheckDone(
             long callbackId, int resultStatus, String metadata, long checkDelta);

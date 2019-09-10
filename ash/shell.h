@@ -163,6 +163,7 @@ class ScreenPinningController;
 class ScreenPositionController;
 class ScreenSwitchCheckController;
 class SessionControllerImpl;
+class ShelfConfig;
 class ShelfController;
 class ShelfWindowWatcher;
 class ShellDelegate;
@@ -450,6 +451,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   ::wm::ShadowController* shadow_controller() {
     return shadow_controller_.get();
   }
+  ShelfConfig* shelf_config() { return shelf_config_.get(); }
   ShelfController* shelf_controller() { return shelf_controller_.get(); }
   ShellDelegate* shell_delegate() { return shell_delegate_.get(); }
   ShellState* shell_state() { return shell_state_.get(); }
@@ -672,6 +674,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<NightLightControllerImpl> night_light_controller_;
   std::unique_ptr<PolicyRecommendationRestorer> policy_recommendation_restorer_;
   std::unique_ptr<ScreenSwitchCheckController> screen_switch_check_controller_;
+  std::unique_ptr<ShelfConfig> shelf_config_;
   std::unique_ptr<ShelfController> shelf_controller_;
   std::unique_ptr<ShelfWindowWatcher> shelf_window_watcher_;
   std::unique_ptr<ShellDelegate> shell_delegate_;

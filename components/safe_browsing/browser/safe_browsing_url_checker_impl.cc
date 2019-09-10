@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_macros_local.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "components/safe_browsing/browser/url_checker_delegate.h"
@@ -170,8 +171,11 @@ void SafeBrowsingUrlCheckerImpl::OnUrlResult(const GURL& url,
       url_checker_delegate_->MaybeDestroyPrerenderContents(
           web_contents_getter_);
     }
-    UMA_HISTOGRAM_ENUMERATION("SB2.ResourceTypes2.UnsafePrefetchCanceled",
-                              resource_type_);
+    // Record the result of canceled unsafe prefetch. This is used as a signal
+    // for testing.
+    LOCAL_HISTOGRAM_ENUMERATION("SB2Test.ResourceTypes2.UnsafePrefetchCanceled",
+                                resource_type_);
+
     BlockAndProcessUrls(false);
     return;
   }

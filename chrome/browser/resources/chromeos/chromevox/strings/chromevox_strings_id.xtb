@@ -20,7 +20,7 @@
 <translation id="1087788677726983142">Sembunyikan filter streaming acara</translation>
 <translation id="1088219014394087294">Tanpa judul.</translation>
 <translation id="1106741348836243114">Mengaktifkan atau menonaktifkan masukan suara (earcons).</translation>
-<translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
+<translation id="1120743664840974483">{"a": "alfa", "b": "bravo", "c": "charlie", "d": "delta", "e": "eko", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oskar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "yuniform", "v": "viktor", "w": "wiski","x": "eksray", "y": "yangki", "z": "zulu"}</translation>
 <translation id="1120938014254001895">Geser dua jari ke atas</translation>
 <translation id="1124771028211010580">Gaya tampilan saat ini adalah berdampingan.</translation>
 <translation id="1126928665165112660">Tidak miring</translation>
@@ -207,7 +207,6 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="257674075312929031">Grup</translation>
 <translation id="2582407057977008361">Pinggir</translation>
 <translation id="2592212930811759050">Ketuk dua kali untuk mulai mengedit</translation>
-<translation id="2606210917827248971">dengan {COUNT,plural, =1{# item}other{# item}}</translation>
 <translation id="2614981083756825552">Tata Letak Math ML</translation>
 <translation id="2624431853467395961">Buka mode pembelajaran</translation>
 <translation id="2626530649491650971">dapat diklik</translation>
@@ -391,7 +390,6 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="3781428340399460090">Merah Muda Terang</translation>
 <translation id="3783725005098956899">Tampilkan Log</translation>
 <translation id="3793710123303304873">Keluar dari dialog.</translation>
-<translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">Pelengkapan otomatis daftar</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3813387282697781382">Light Coral</translation>

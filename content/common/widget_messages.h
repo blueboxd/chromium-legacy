@@ -10,6 +10,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "cc/input/touch_action.h"
+#include "content/common/common_param_traits_macros.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/common/tab_switch_time_recorder.h"
@@ -22,7 +23,6 @@
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
-#include "third_party/blink/public/web/web_device_emulation_params.h"
 #include "third_party/blink/public/web/web_text_direction.h"
 #include "ui/base/ime/text_input_action.h"
 #include "ui/base/ime/text_input_mode.h"
@@ -34,41 +34,6 @@
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
 #define IPC_MESSAGE_START WidgetMsgStart
-
-// Traits for VisualProperties.
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebDeviceEmulationParams::ScreenPosition,
-                          blink::WebDeviceEmulationParams::kScreenPositionLast)
-
-IPC_ENUM_TRAITS_MAX_VALUE(content::ScreenOrientationValues,
-                          content::SCREEN_ORIENTATION_VALUES_LAST)
-
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScreenOrientationType,
-                              blink::kWebScreenOrientationUndefined,
-                              blink::WebScreenOrientationTypeLast)
-
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebDisplayMode,
-                          blink::WebDisplayMode::kWebDisplayModeLast)
-
-IPC_STRUCT_TRAITS_BEGIN(content::VisualProperties)
-  IPC_STRUCT_TRAITS_MEMBER(screen_info)
-  IPC_STRUCT_TRAITS_MEMBER(auto_resize_enabled)
-  IPC_STRUCT_TRAITS_MEMBER(min_size_for_auto_resize)
-  IPC_STRUCT_TRAITS_MEMBER(max_size_for_auto_resize)
-  IPC_STRUCT_TRAITS_MEMBER(new_size)
-  IPC_STRUCT_TRAITS_MEMBER(compositor_viewport_pixel_rect)
-  IPC_STRUCT_TRAITS_MEMBER(browser_controls_shrink_blink_size)
-  IPC_STRUCT_TRAITS_MEMBER(scroll_focused_node_into_view)
-  IPC_STRUCT_TRAITS_MEMBER(top_controls_height)
-  IPC_STRUCT_TRAITS_MEMBER(bottom_controls_height)
-  IPC_STRUCT_TRAITS_MEMBER(local_surface_id_allocation)
-  IPC_STRUCT_TRAITS_MEMBER(visible_viewport_size)
-  IPC_STRUCT_TRAITS_MEMBER(is_fullscreen_granted)
-  IPC_STRUCT_TRAITS_MEMBER(display_mode)
-  IPC_STRUCT_TRAITS_MEMBER(capture_sequence_number)
-  IPC_STRUCT_TRAITS_MEMBER(zoom_level)
-  IPC_STRUCT_TRAITS_MEMBER(page_scale_factor)
-  IPC_STRUCT_TRAITS_MEMBER(is_pinch_gesture_active)
-IPC_STRUCT_TRAITS_END()
 
 // Traits for WebDeviceEmulationParams.
 IPC_STRUCT_TRAITS_BEGIN(blink::WebFloatPoint)

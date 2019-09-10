@@ -39,6 +39,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_base.h"
 #include "content/public/test/browser_test_utils.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/filename_util.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator.h"
@@ -193,7 +194,7 @@ IN_PROC_BROWSER_TEST_F(NetworkQualityEstimatorPrefsBrowserTest,
   base::HistogramTester histogram_tester2;
 
   // Create network context with JSON pref store pointing to the temp file.
-  network::mojom::NetworkContextPtr network_context;
+  mojo::PendingRemote<network::mojom::NetworkContext> network_context;
   network::mojom::NetworkContextParamsPtr context_params =
       network::mojom::NetworkContextParams::New();
   context_params->http_server_properties_path =
@@ -217,7 +218,8 @@ IN_PROC_BROWSER_TEST_F(NetworkQualityEstimatorPrefsBrowserTest,
   loop.Run();
 
   content::GetNetworkService()->CreateNetworkContext(
-      mojo::MakeRequest(&network_context), std::move(context_params));
+      network_context.InitWithNewPipeAndPassReceiver(),
+      std::move(context_params));
 
   RetryForHistogramUntilCountReached(&histogram_tester2, "NQE.Prefs.ReadSize",
                                      1);

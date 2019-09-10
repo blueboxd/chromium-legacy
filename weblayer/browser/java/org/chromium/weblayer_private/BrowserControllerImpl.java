@@ -5,15 +5,15 @@
 package org.chromium.weblayer_private;
 
 import android.content.Context;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
-import android.widget.LinearLayout;
+import android.widget.FrameLayout;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.components.embedder_support.view.ContentView;
-import org.chromium.components.embedder_support.view.ContentViewRenderView;
 import org.chromium.content_public.browser.ViewEventSink;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ActivityWindowAndroid;
@@ -29,17 +29,16 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
     private long mNativeBrowserController;
 
     private ActivityWindowAndroid mWindowAndroid;
-    // This is set as the content view of the activity. It contains mContentViewRenderView.
-    private LinearLayout mLinearLayout;
-    // This is parented to mLinearLayout.
+    // This view is the main view (returned from OnCreateView()).
     private ContentViewRenderView mContentViewRenderView;
     // One of these is needed per WebContents.
     private ContentView mContentView;
+    // Child of mContentViewRenderView, holds top-view from client.
+    private TopControlsContainerView mTopControlsContainerView;
     private ProfileImpl mProfile;
     private WebContents mWebContents;
     private BrowserObserverProxy mBrowserObserverProxy;
     private NavigationControllerImpl mNavigationController;
-    private View mTopView;
 
     private static class InternalAccessDelegateImpl
             implements ViewEventSink.InternalAccessDelegate {
@@ -65,9 +64,6 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
     public BrowserControllerImpl(Context context, ProfileImpl profile) {
         mProfile = profile;
 
-        mLinearLayout = new LinearLayout(context);
-        mLinearLayout.setOrientation(LinearLayout.VERTICAL);
-
         mWindowAndroid = new ActivityWindowAndroid(context);
         mContentViewRenderView = new ContentViewRenderView(context);
         mWindowAndroid.setAnimationPlaceholderView(mContentViewRenderView.getSurfaceView());
@@ -76,21 +72,33 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
 
         mNativeBrowserController = nativeCreateBrowserController(profile.getNativeProfile());
         mWebContents = nativeGetWebContents(mNativeBrowserController);
-        mWebContents.initialize("", ViewAndroidDelegate.createBasicDelegate(mContentViewRenderView),
-                new InternalAccessDelegateImpl(), mWindowAndroid,
-                WebContents.createDefaultInternalsHolder());
+        mContentView = ContentView.createContentView(context, mWebContents);
+        ViewAndroidDelegate viewAndroidDelegate = new ViewAndroidDelegate(mContentViewRenderView) {
+            @Override
+            public void onTopControlsChanged(int topControlsOffsetY, int topContentOffsetY) {
+                mTopControlsContainerView.onTopControlsChanged(
+                        topControlsOffsetY, topContentOffsetY);
+            }
+        };
+        mWebContents.initialize("", viewAndroidDelegate, new InternalAccessDelegateImpl(),
+                mWindowAndroid, WebContents.createDefaultInternalsHolder());
 
         mContentViewRenderView.setCurrentWebContents(mWebContents);
-        mLinearLayout.addView(mContentViewRenderView,
-                new LinearLayout.LayoutParams(
-                        LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, 1f));
 
-        mContentView = ContentView.createContentView(context, mWebContents);
         mContentViewRenderView.addView(mContentView,
-                new LinearLayout.LayoutParams(
-                        LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT, 1f));
+                new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT,
+                        FrameLayout.LayoutParams.UNSPECIFIED_GRAVITY));
+
+        mTopControlsContainerView =
+                new TopControlsContainerView(context, mWebContents, mContentViewRenderView);
+        nativeSetTopControlsContainerView(
+                mNativeBrowserController, mTopControlsContainerView.getNativeHandle());
+        mContentView.addView(mTopControlsContainerView,
+                new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT,
+                        Gravity.FILL_HORIZONTAL | Gravity.TOP));
 
         mWebContents.onShow();
+        mContentView.requestFocus();
     }
 
     long getNativeBrowserController() {
@@ -112,6 +120,9 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
 
     @Override
     public void destroy() {
+        nativeSetTopControlsContainerView(mNativeBrowserController, 0);
+        mContentViewRenderView.destroy();
+        mTopControlsContainerView.destroy();
         if (mBrowserObserverProxy != null) mBrowserObserverProxy.destroy();
         mBrowserObserverProxy = null;
         mNavigationController = null;
@@ -122,22 +133,17 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
     @Override
     public void setTopView(IObjectWrapper viewWrapper) {
         View view = ObjectWrapper.unwrap(viewWrapper, View.class);
-        if (mTopView == view) return;
-        if (mTopView != null) mLinearLayout.removeView(mTopView);
-        mTopView = view;
-        if (mTopView != null) {
-            mLinearLayout.addView(mTopView, 0,
-                    new LinearLayout.LayoutParams(
-                            LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, 0f));
-        }
+        mTopControlsContainerView.setView(view);
     }
 
     @Override
     public IObjectWrapper onCreateView() {
-        return ObjectWrapper.wrap(mLinearLayout);
+        return ObjectWrapper.wrap(mContentViewRenderView);
     }
 
     private static native long nativeCreateBrowserController(long profile);
+    private native void nativeSetTopControlsContainerView(
+            long nativeBrowserControllerImpl, long nativeTopControlsContainerView);
     private static native void nativeDeleteBrowserController(long browserController);
     private native WebContents nativeGetWebContents(long nativeBrowserControllerImpl);
 }

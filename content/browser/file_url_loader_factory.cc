@@ -798,8 +798,7 @@ void FileURLLoaderFactory::CreateLoaderAndStart(
     DCHECK(shared_cors_origin_access_list_);
     cors_flag =
         shared_cors_origin_access_list_->GetOriginAccessList().CheckAccessState(
-            *request.request_initiator, request.url) !=
-        network::cors::OriginAccessList::AccessState::kAllowed;
+            request) != network::cors::OriginAccessList::AccessState::kAllowed;
   }
 
   CreateLoaderAndStartInternal(request, std::move(loader), std::move(client),

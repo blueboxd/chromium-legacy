@@ -29,11 +29,6 @@ crbug.com/498149 [ lion debug ] ContextLost_WebGLContextLostFromSelectElement [ 
 crbug.com/923134 [ mac ] ContextLost_WebGL2Blocked [ Skip ]
 crbug.com/923134 [ android ] ContextLost_WebGL2Blocked [ Skip ]
 
-# 'Browser must support tab control' raised on Android
-crbug.com/609629 [ android ] GpuCrash_GPUProcessCrashesExactlyOncePerVisitToAboutGpuCrash [ Skip ]
-crbug.com/609629 [ android ] ContextLost_WebGLContextLostFromGPUProcessExit [ Skip ]
-crbug.com/609629 [ android ] ContextLost_WebGLContextLostInHiddenTab [ Skip ]
-
 # Flaking on Nexus 5X
 crbug.com/965268 [ android qualcomm-adreno-(tm)-418 ] ContextLost_WebGLBlockedAfterJSNavigation [ Skip ]
 crbug.com/965268 [ android qualcomm-adreno-(tm)-418 ] ContextLost_WebGLUnblockedAfterUserInitiatedReload [ Skip ]

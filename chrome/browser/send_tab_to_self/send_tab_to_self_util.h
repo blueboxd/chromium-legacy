@@ -14,9 +14,6 @@ class WebContents;
 
 namespace send_tab_to_self {
 
-// Returns true if the 'send tab to self' flag is enabled.
-bool IsReceivingEnabled();
-
 // Returns true if the send-tab-to-self' and 'send-tab-to-self-show-sending-ui'
 // flags are enabled.
 bool IsSendingEnabled();

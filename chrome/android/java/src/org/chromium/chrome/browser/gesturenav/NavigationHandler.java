@@ -225,7 +225,8 @@ public class NavigationHandler {
     public void pull(float delta) {
         if (mState == GestureState.DRAGGED && mSideSlideLayout != null) {
             mSideSlideLayout.pull(delta);
-            mNavigationSheet.onScroll(delta, mSideSlideLayout.getOverscroll());
+            mNavigationSheet.onScroll(
+                    delta, mSideSlideLayout.getOverscroll(), mSideSlideLayout.willNavigate());
 
             mSideSlideLayout.fadeArrow(!mNavigationSheet.isHidden(), /* animate= */ true);
             if (mNavigationSheet.isExpanded()) {

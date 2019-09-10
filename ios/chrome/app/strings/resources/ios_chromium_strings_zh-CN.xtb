@@ -20,10 +20,8 @@
 <translation id="2730884209570016437">由于另一个应用正在使用您的相机，因此 Chromium 无法使用。</translation>
 <translation id="2915596697727466327">Chromium 会使用 Face ID 来确保对您密码的访问均已获授权。</translation>
 <translation id="3256316712990552818">已复制到 Chromium</translation>
-<translation id="3413120535237193088">要将您的书签同步到您所有的设备上，请登录 Chromium。</translation>
 <translation id="3605252743693911722">登录 Chromium 即可将您的书签、密码等同步到您的所有设备上。</translation>
 <translation id="3805899903892079518">Chromium 无权访问您的照片或视频。请依次点按 iOS 中的“设置”&gt;“隐私”&gt;“照片”，授予其访问权限。</translation>
-<translation id="4024541897090868497">要将您的标签页同步到您的所有设备上，请登录 Chromium。</translation>
 <translation id="4157467675761413638">Chromium 提示。要查看更多标签页选项，请按住工具栏（位于屏幕底部或顶部）中的“显示标签页”按钮。</translation>
 <translation id="4241912885070669028">您正要退出由 <ph name="SIGNOUT_MANAGED_DOMAIN" /> 管理的帐号。退出后，您的 Chromium 数据将从这台设备上删除，但仍会保留在您的 Google 帐号中。</translation>
 <translation id="4555020257205549924">启用此功能后，Chromium 将使用 Google 翻译对其他语言的网页进行翻译。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>

@@ -293,6 +293,8 @@ interface ServiceWorker {
 // places (one in blink and the other in content). Ideally these two interfaces
 // should be merged but we separate them to avoid cumbersome type conversions
 // between blink and content.
+// TODO(nhiroki): Rename this to SubresourceLoaderUpdater, and move it to the
+// loader mojom directory as this is also used for dedicated workers.
 interface ServiceWorkerSubresourceLoaderUpdater {
   // Provides the worker an updated |subresource_loader_factories|.
   //

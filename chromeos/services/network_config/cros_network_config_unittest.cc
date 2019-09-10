@@ -119,6 +119,9 @@ class CrosNetworkConfigTest : public testing::Test {
     helper().device_test()->SetDeviceProperty(
         kCellularDevicePath, shill::kSIMLockStatusProperty, sim_value,
         /*notify_changed=*/false);
+    helper().device_test()->SetDeviceProperty(
+        kCellularDevicePath, shill::kSIMPresentProperty, base::Value(true),
+        /*notify_changed=*/false);
 
     // Note: These are Shill dictionaries, not ONC.
     helper().ConfigureService(
@@ -417,6 +420,7 @@ TEST_F(CrosNetworkConfigTest, GetNetworkState) {
   EXPECT_EQ(mojom::ActivationStateType::kActivated,
             network->cellular->activation_state);
   EXPECT_EQ(mojom::OncSource::kNone, network->source);
+  EXPECT_TRUE(network->cellular->sim_locked);
 
   network = GetNetworkState("vpn_guid");
   ASSERT_TRUE(network);

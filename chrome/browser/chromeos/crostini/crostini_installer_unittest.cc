@@ -153,7 +153,7 @@ class CrostiniInstallerTest : public testing::Test {
  protected:
   MountPathWaiter mount_path_waiter_;
   MockCallbacks mock_callbacks_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::HistogramTester histogram_tester_;
 
   // Owned by DiskMountManager
@@ -195,7 +195,7 @@ TEST_F(CrostiniInstallerTest, InstallFlow) {
       chromeos::MountError::MOUNT_ERROR_NONE,
       *mount_path_waiter_.get_mount_point_info());
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   histogram_tester_.ExpectUniqueSample(
       "Crostini.SetupResult",
       static_cast<base::HistogramBase::Sample>(
@@ -234,11 +234,11 @@ TEST_F(CrostiniInstallerTest, CancelAfterStart) {
 
   // This will stop just before mount disk finishes because we don't fake the
   // mount event.
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   check.Call("calling Cancel()");
   Cancel();
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   histogram_tester_.ExpectUniqueSample(
       "Crostini.SetupResult",
@@ -257,7 +257,7 @@ TEST_F(CrostiniInstallerTest, CancelAfterStartBeforeCheckDisk) {
   crostini_installer_->Install(base::DoNothing(), base::DoNothing());
   Cancel();  // Cancel immediately
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   histogram_tester_.ExpectUniqueSample(
       "Crostini.SetupResult",

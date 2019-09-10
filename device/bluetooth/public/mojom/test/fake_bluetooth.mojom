@@ -81,7 +81,8 @@ interface FakeBluetooth {
   SetLESupported(bool available) => ();
 
   // Initializes a fake Central with |state| as the initial state.
-  SimulateCentral(CentralState state) => (FakeCentral fake_central);
+  SimulateCentral(CentralState state) =>
+      (pending_remote<FakeCentral> fake_central);
 
   // Evaluates whether all responses set by this API have been consumed by this
   // central or otherwise.  This includes responses set by:

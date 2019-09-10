@@ -149,6 +149,9 @@ void SharedContextState::InitializeGrContext(
     // in GetCapabilities and ensuring these are also used by the
     // PaintOpBufferSerializer.
     GrContextOptions options;
+    if (GrContextIsMetal()) {
+      options.fRuntimeProgramCacheSize = 1024;
+    }
     options.fDriverBugWorkarounds =
         GrDriverBugWorkarounds(workarounds.ToIntSet());
     options.fDisableCoverageCountingPaths = true;

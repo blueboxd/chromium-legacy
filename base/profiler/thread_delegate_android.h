@@ -7,6 +7,7 @@
 
 #include "base/base_export.h"
 #include "base/profiler/thread_delegate.h"
+#include "base/threading/platform_thread.h"
 
 namespace base {
 
@@ -16,7 +17,7 @@ namespace base {
 // TODO(https://crbug.com/988579): Implement this class.
 class BASE_EXPORT ThreadDelegateAndroid : public ThreadDelegate {
  public:
-  ThreadDelegateAndroid() = default;
+  ThreadDelegateAndroid(PlatformThreadId thread_id);
 
   ThreadDelegateAndroid(const ThreadDelegateAndroid&) = delete;
   ThreadDelegateAndroid& operator=(const ThreadDelegateAndroid&) = delete;
@@ -25,6 +26,9 @@ class BASE_EXPORT ThreadDelegateAndroid : public ThreadDelegate {
   uintptr_t GetStackBaseAddress() const override;
   std::vector<uintptr_t*> GetRegistersToRewrite(
       RegisterContext* thread_context) override;
+
+ private:
+  const uintptr_t thread_stack_base_address_;
 };
 
 }  // namespace base

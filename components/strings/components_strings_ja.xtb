@@ -298,7 +298,6 @@
 <translation id="2479410451996844060">検索 URL が無効です。</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="248348093745724435">マシンポリシー</translation>
-<translation id="2485387744899240041">デバイスとブラウザのユーザー名</translation>
 <translation id="2491120439723279231">サーバーの証明書にエラーがあります。</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">JSON パーサー</translation>
@@ -864,7 +863,6 @@
 <translation id="5565735124758917034">有効</translation>
 <translation id="5570825185877910964">アカウントを保護</translation>
 <translation id="5571083550517324815">この住所での受け取りはできません。別の住所を選択してください。</translation>
-<translation id="5571347317547569613">（{NUM_COOKIES,plural, =1{1 個が使用中}other{# 個が使用中}}）</translation>
 <translation id="5580958916614886209">有効期限の「月」を確認してもう一度お試しください</translation>
 <translation id="5586446728396275693">保存されている住所がありません</translation>
 <translation id="5595485650161345191">住所の編集</translation>

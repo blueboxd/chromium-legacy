@@ -4,11 +4,11 @@
 
 #include "ash/system/message_center/ash_popup_alignment_delegate.h"
 
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/wm/work_area_insets.h"
@@ -60,7 +60,7 @@ void AshPopupAlignmentDelegate::SetTrayBubbleHeight(int height) {
   // should be reduced by the height of shelf's shown height.
   if (shelf_->GetVisibilityState() == SHELF_AUTO_HIDE &&
       shelf_->GetAutoHideState() == SHELF_AUTO_HIDE_SHOWN) {
-    tray_bubble_height_ -= ShelfConstants::shelf_size();
+    tray_bubble_height_ -= ShelfConfig::Get()->shelf_size();
   }
 
   if (tray_bubble_height_ > 0)

@@ -58,6 +58,7 @@
 <translation id="2509394361235492552">Connected to <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">NOTE: To ensure that all keyboard shortcuts are available, you can configure Chrome Remote Desktop to ‘Open as window’.</translation>
 <translation id="2540992418118313681">Would you like to share this computer for another user to see and control?</translation>
+<translation id="254771646005658629">Allow remote users to control this Mac</translation>
 <translation id="2579271889603567289">Host crashed or failed to start.</translation>
 <translation id="2599300881200251572">This service enables incoming connections from Chrome Remote Desktop clients.</translation>
 <translation id="2647232381348739934">Chromoting Service</translation>
@@ -182,6 +183,11 @@
 <translation id="5419185025274123272">Could not reset the application. You can still send a bug report.</translation>
 <translation id="5419418238395129586">Last online: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Host has shut down.</translation>
+<translation id="5463789431147491241">To use <ph name="PRODUCT_NAME" /> on this Mac, follow these steps:
+
+Select '<ph name="BUTTON_NAME" />' below. In your Security and Privacy preferences, tick the box next to '<ph name="SERVICE_SCRIPT_NAME" />'.
+
+If '<ph name="SERVICE_SCRIPT_NAME" />' is already ticked, untick it and then tick it again.</translation>
 <translation id="5510035215749041527">Disconnect now</translation>
 <translation id="5593560073513909978">The service is temporarily unavailable. Please try again later.</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -298,12 +304,14 @@
 <translation id="837021510621780684">From this computer</translation>
 <translation id="8383794970363966105">To use Chromoting, you'll need to add a Google Account to your device.</translation>
 <translation id="8386846956409881180">Host is configured with invalid OAuth credentials.</translation>
+<translation id="8406498562923498210">Select a session to launch within your Chrome Remote Desktop environment. (Note that some session types may not support running within Chrome Remote Desktop and on the local console simultaneously.)</translation>
 <translation id="8428213095426709021">Settings</translation>
 <translation id="8445362773033888690">View in Google Play Store</translation>
 <translation id="8509907436388546015">Desktop Integration Process</translation>
 <translation id="8513093439376855948">Native messaging host for remoting host management</translation>
 <translation id="8525306231823319788">Full screen</translation>
 <translation id="8548209692293300397">You have previously signed in as <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). To access your computers in that account, <ph name="LINK_BEGIN" />sign in to Google Chrome<ph name="LINK_END" /> with that account and re-install Chrome Remote Desktop.</translation>
+<translation id="858006550102277544">Comment</translation>
 <translation id="8642984861538780905">Fair</translation>
 <translation id="8712909229180978490">I can't see my saved files online in Google Drive.</translation>
 <translation id="8743328882720071828">Would you like to allow <ph name="CLIENT_USERNAME" /> to see and control your computer?</translation>
@@ -321,6 +329,7 @@
 <translation id="9126115402994542723">Don't ask for a PIN again when connecting to this host from this device.</translation>
 <translation id="9149580767411232853">Keep whole remote desktop visible</translation>
 <translation id="9149992051684092333">To begin sharing your desktop, give the access code below to the person who will be assisting you.</translation>
+<translation id="916856682307586697">Launch the default XSession</translation>
 <translation id="9188433529406846933">Authorise</translation>
 <translation id="9213184081240281106">Invalid host configuration.</translation>
 <translation id="951991426597076286">Decline</translation>

@@ -31,7 +31,7 @@ bool FieldIsInBlacklist(const char* current_value, std::string blacklist_str) {
 #if defined(OS_ANDROID)
 // Use android AImageReader when playing videos with MediaPlayer.
 const base::Feature kAImageReaderMediaPlayer{"AImageReaderMediaPlayer",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Use android SurfaceControl API for managing display compositor's buffer queue
 // and using overlays on Android.

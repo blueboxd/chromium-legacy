@@ -304,7 +304,14 @@ void FidoCableDiscovery::OnStartDiscoverySessionWithFilter(
     std::unique_ptr<BluetoothDiscoverySession> session) {
   SetDiscoverySession(std::move(session));
   FIDO_LOG(DEBUG) << "Discovery session started.";
-  StartAdvertisement();
+  // Advertising is delayed by 500ms to ensure that any UI has a chance to
+  // appear as we don't want to start broadcasting without the user being
+  // aware.
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&FidoCableDiscovery::StartAdvertisement,
+                     weak_factory_.GetWeakPtr()),
+      base::TimeDelta::FromMilliseconds(500));
 }
 
 void FidoCableDiscovery::StartAdvertisement() {

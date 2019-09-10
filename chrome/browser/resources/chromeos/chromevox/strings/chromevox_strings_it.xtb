@@ -206,7 +206,6 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="257674075312929031">Gruppo</translation>
 <translation id="2582407057977008361">Di lato</translation>
 <translation id="2592212930811759050">Tocca due volte per iniziare la modifica</translation>
-<translation id="2606210917827248971">con {COUNT,plural, =1{# voce}other{# voci}}</translation>
 <translation id="2614981083756825552">Layout MathML</translation>
 <translation id="2624431853467395961">Apri la modalità di apprendimento</translation>
 <translation id="2626530649491650971">selezionabile</translation>
@@ -390,7 +389,6 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="3781428340399460090">Fucsia</translation>
 <translation id="3783725005098956899">Mostra log</translation>
 <translation id="3793710123303304873">Finestra di dialogo chiusa.</translation>
-<translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">Elenco di completamento automatico</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3813387282697781382">Corallo chiaro</translation>

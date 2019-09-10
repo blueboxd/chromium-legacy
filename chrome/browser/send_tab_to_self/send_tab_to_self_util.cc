@@ -24,13 +24,8 @@
 
 namespace send_tab_to_self {
 
-bool IsReceivingEnabled() {
-  return base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf);
-}
-
 bool IsSendingEnabled() {
-  return IsReceivingEnabled() &&
-         base::FeatureList::IsEnabled(kSendTabToSelfShowSendingUI);
+  return base::FeatureList::IsEnabled(kSendTabToSelfShowSendingUI);
 }
 
 bool IsUserSyncTypeActive(Profile* profile) {

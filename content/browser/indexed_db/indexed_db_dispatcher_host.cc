@@ -79,12 +79,12 @@ IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void IndexedDBDispatcherHost::AddBinding(
-    blink::mojom::IDBFactoryRequest request,
+void IndexedDBDispatcherHost::AddReceiver(
+    mojo::PendingReceiver<blink::mojom::IDBFactory> pending_receiver,
     const url::Origin& origin) {
   DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  bindings_.AddBinding(this, std::move(request), {origin});
+  receivers_.Add(this, std::move(pending_receiver), {origin});
 }
 
 void IndexedDBDispatcherHost::AddDatabaseBinding(
@@ -143,7 +143,7 @@ void IndexedDBDispatcherHost::GetDatabaseInfo(
         pending_callbacks) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const auto& context = bindings_.dispatch_context();
+  const auto& context = receivers_.current_context();
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(this->AsWeakPtr(), context.origin,
                              std::move(pending_callbacks), IDBTaskRunner()));
@@ -157,7 +157,7 @@ void IndexedDBDispatcherHost::GetDatabaseNames(
         pending_callbacks) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const auto& context = bindings_.dispatch_context();
+  const auto& context = receivers_.current_context();
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(this->AsWeakPtr(), context.origin,
                              std::move(pending_callbacks), IDBTaskRunner()));
@@ -177,7 +177,7 @@ void IndexedDBDispatcherHost::Open(
     int64_t transaction_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const auto& context = bindings_.dispatch_context();
+  const auto& context = receivers_.current_context();
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(this->AsWeakPtr(), context.origin,
                              std::move(pending_callbacks), IDBTaskRunner()));
@@ -206,7 +206,7 @@ void IndexedDBDispatcherHost::DeleteDatabase(
     bool force_close) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const auto& context = bindings_.dispatch_context();
+  const auto& context = receivers_.current_context();
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(this->AsWeakPtr(), context.origin,
                              std::move(pending_callbacks), IDBTaskRunner()));
@@ -219,7 +219,7 @@ void IndexedDBDispatcherHost::AbortTransactionsAndCompactDatabase(
     AbortTransactionsAndCompactDatabaseCallback mojo_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const auto& context = bindings_.dispatch_context();
+  const auto& context = receivers_.current_context();
   base::OnceCallback<void(leveldb::Status)> callback_on_io = base::BindOnce(
       &CallCompactionStatusCallbackOnIDBThread, std::move(mojo_callback));
   indexed_db_context_->GetIDBFactory()->AbortTransactionsAndCompactDatabase(
@@ -230,7 +230,7 @@ void IndexedDBDispatcherHost::AbortTransactionsForDatabase(
     AbortTransactionsForDatabaseCallback mojo_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const auto& context = bindings_.dispatch_context();
+  const auto& context = receivers_.current_context();
   base::OnceCallback<void(leveldb::Status)> callback_on_io = base::BindOnce(
       &CallAbortStatusCallbackOnIDBThread, std::move(mojo_callback));
   indexed_db_context_->GetIDBFactory()->AbortTransactionsForDatabase(

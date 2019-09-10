@@ -6,6 +6,8 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SOFTWARE_OUTPUT_SURFACE_H_
 
 #include <memory>
+#include <queue>
+#include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "components/viz/common/display/update_vsync_parameters_callback.h"
@@ -64,7 +66,7 @@ class VIZ_SERVICE_EXPORT SoftwareOutputSurface : public OutputSurface {
   base::TimeTicks refresh_timebase_;
   base::TimeDelta refresh_interval_ = BeginFrameArgs::DefaultInterval();
 
-  std::vector<ui::LatencyInfo> stored_latency_info_;
+  std::queue<std::vector<ui::LatencyInfo>> stored_latency_info_;
   ui::LatencyTracker latency_tracker_;
 
 #if defined(USE_X11)

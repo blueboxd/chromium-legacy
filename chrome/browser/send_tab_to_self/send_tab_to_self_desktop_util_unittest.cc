@@ -16,7 +16,6 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/send_tab_to_self/test_send_tab_to_self_model.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "content/public/browser/navigation_entry.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -72,14 +71,11 @@ class SendTabToSelfDesktopUtilTest : public BrowserWithTestWindowTest {
 
   // Set up all test conditions to let ShouldOfferFeature() return true
   void SetUpAllTrueEnv() {
-    scoped_feature_list_.InitAndEnableFeature(switches::kSyncSendTabToSelf);
-
     AddTab(browser(), url_);
     NavigateAndCommitActiveTabWithTitle(browser(), url_, title_);
   }
 
  protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
   GURL url_;
   base::string16 title_;
 };

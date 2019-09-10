@@ -196,6 +196,8 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="753534427205733210">{0,plural, =1{Chromium will relaunch in 1 minute}other{Chromium will relaunch in # minutes}}</translation>
 <translation id="7549178288319965365">About Chromium OS</translation>
 <translation id="7561906087460245826">Also clear data from Chromium (<ph name="URL" />)</translation>
+<translation id="7585853947355360626">If a setting doesn't show on this page, look in your <ph name="LINK_BEGIN" />
+      Chromium OS settings<ph name="LINK_END" /></translation>
 <translation id="761356813943268536">Chromium is using your camera and microphone.</translation>
 <translation id="7617377681829253106">Chromium just got better</translation>
 <translation id="7686590090926151193">Chromium isn't your default browser</translation>
@@ -229,6 +231,8 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="8619360774459241877">Launching Chromium...</translation>
 <translation id="8621669128220841554">Installation failed due to unspecified error. Please download Chromium again.</translation>
 <translation id="8667808506758191620">Your <ph name="DEVICE_TYPE" /> is up to date.</translation>
+<translation id="8682540261359803721">If a setting doesn't show on this page, look in your <ph name="LINK_BEGIN" />
+      Chromium browser settings<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">It also controls what page is shown when you start Chromium or search from the Omnibox.</translation>
 <translation id="8704119203788522458">This is your Chromium</translation>
 <translation id="8739167630197873875">You clear cookies when you quit Chromium. To keep syncing, change this <ph name="COOKIE_SETTINGS_LINK" />.</translation>

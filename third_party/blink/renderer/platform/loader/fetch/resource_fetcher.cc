@@ -915,14 +915,17 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
     const scoped_refptr<const SecurityOrigin> origin =
         resource_request.RequestorOrigin();
     DCHECK(!options.cors_flag);
-    params.MutableOptions().cors_flag = cors::CalculateCorsFlag(
-        params.Url(), origin.get(), resource_request.GetMode());
+    params.MutableOptions().cors_flag =
+        cors::CalculateCorsFlag(params.Url(), origin.get(),
+                                resource_request.IsolatedWorldOrigin().get(),
+                                resource_request.GetMode());
     // TODO(yhirano): Reject requests for non CORS-enabled schemes.
     // See https://crrev.com/c/1298828.
     resource_request.SetAllowStoredCredentials(cors::CalculateCredentialsFlag(
         resource_request.GetCredentialsMode(),
         cors::CalculateResponseTainting(
             params.Url(), resource_request.GetMode(), origin.get(),
+            resource_request.IsolatedWorldOrigin().get(),
             params.Options().cors_flag ? CorsFlag::Set : CorsFlag::Unset)));
   }
 

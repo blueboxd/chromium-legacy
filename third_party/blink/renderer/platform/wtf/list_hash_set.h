@@ -25,6 +25,7 @@
 
 #include <memory>
 #include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
+#include "third_party/blink/renderer/platform/wtf/conditional_destructor.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace WTF {
@@ -76,7 +77,10 @@ template <typename ValueArg,
           typename HashArg = typename DefaultHash<ValueArg>::Hash,
           typename AllocatorArg =
               ListHashSetAllocator<ValueArg, inlineCapacity>>
-class ListHashSet {
+class ListHashSet
+    : public ConditionalDestructor<
+          ListHashSet<ValueArg, inlineCapacity, HashArg, AllocatorArg>,
+          AllocatorArg::kIsGarbageCollected> {
   typedef AllocatorArg Allocator;
   USE_ALLOCATOR(ListHashSet, Allocator);
 
@@ -148,7 +152,7 @@ class ListHashSet {
   ListHashSet(ListHashSet&&) noexcept;
   ListHashSet& operator=(const ListHashSet&);
   ListHashSet& operator=(ListHashSet&&) noexcept;
-  ~ListHashSet();
+  void Finalize();
 
   void Swap(ListHashSet&);
 
@@ -805,14 +809,10 @@ inline void ListHashSet<T, inlineCapacity, U, V>::Swap(ListHashSet& other) {
   allocator_provider_.Swap(other.allocator_provider_);
 }
 
-// For design of the destructor, please refer to
-// [here](https://docs.google.com/document/d/1AoGTvb3tNLx2tD1hNqAfLRLmyM59GM0O-7rCHTT_7_U/)
 template <typename T, size_t inlineCapacity, typename U, typename V>
-inline ListHashSet<T, inlineCapacity, U, V>::~ListHashSet() {
-  // If this is called during GC sweeping, it must not touch other heap objects
-  // such as the ListHashSetNodes that is touching in DeleteAllNodes().
-  if (Allocator::IsSweepForbidden())
-    return;
+inline void ListHashSet<T, inlineCapacity, U, V>::Finalize() {
+  static_assert(!Allocator::kIsGarbageCollected,
+                "GCed collections can't be finalized");
   DeleteAllNodes();
   allocator_provider_.ReleaseAllocator();
 }

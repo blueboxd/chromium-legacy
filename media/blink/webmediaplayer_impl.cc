@@ -2957,15 +2957,16 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_flinging,
   // errors.
   bool has_error = IsNetworkStateError(network_state_);
 
-  // After kReadyStateHaveMetadata, Blink will call play() if the state is not
-  // paused; prior to this point |paused_| is not accurate.
-  bool have_metadata =
-      highest_ready_state_ >= WebMediaPlayer::kReadyStateHaveMetadata;
+  // Note: Even though we get play/pause signals at kReadyStateHaveMetadata, we
+  // must attempt to preroll until kReadyStateHaveFutureData so that the
+  // canplaythrough event will be fired to the page (which may be waiting).
+  bool have_future_data =
+      highest_ready_state_ >= WebMediaPlayer::kReadyStateHaveFutureData;
 
   // Background suspend is only enabled for paused players.
   // In the case of players with audio the session should be kept.
   bool background_suspended =
-      can_auto_suspend && is_backgrounded && paused_ && have_metadata;
+      can_auto_suspend && is_backgrounded && paused_ && have_future_data;
 
   // Idle suspension is allowed prior to kReadyStateHaveMetadata since there
   // exist mechanisms to exit the idle state when the player is capable of
@@ -2980,7 +2981,7 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_flinging,
   // to kReadyStateHaveMetadata, we require |is_stale| to remain suspended.
   // |is_stale| will be cleared when we receive data which may take us to
   // kReadyStateHaveMetadata.
-  bool can_stay_suspended = (is_stale || have_metadata) && is_suspended &&
+  bool can_stay_suspended = (is_stale || have_future_data) && is_suspended &&
                             paused_ && !seeking_ && !needs_first_frame_;
 
   // Combined suspend state.
@@ -2991,7 +2992,8 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_flinging,
            << ", idle_suspended=" << idle_suspended
            << ", background_suspended=" << background_suspended
            << ", can_stay_suspended=" << can_stay_suspended
-           << ", is_stale=" << is_stale << ", have_metadata=" << have_metadata
+           << ", is_stale=" << is_stale
+           << ", have_future_data=" << have_future_data
            << ", paused_=" << paused_ << ", seeking_=" << seeking_;
 
   // We do not treat |playback_rate_| == 0 as paused. For the media session,

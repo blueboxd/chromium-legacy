@@ -44,7 +44,6 @@
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/occlusion_tracker.h"
 #include "cc/trees/property_tree.h"
-#include "cc/trees/property_tree_builder.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
 #include "components/viz/common/traced_value.h"
@@ -1512,24 +1511,6 @@ void LayerTreeImpl::UpdateCanUseLCDText() {
     tile_priorities_updated |= layer->UpdateCanUseLCDTextAfterCommit();
   if (tile_priorities_updated)
     DidModifyTilePriorities();
-}
-
-void LayerTreeImpl::BuildLayerListAndPropertyTreesForTesting() {
-  BuildLayerListForTesting();
-  BuildPropertyTreesForTesting();
-}
-
-void LayerTreeImpl::BuildPropertyTreesForTesting() {
-  SetElementIdsForTesting();
-  property_trees_.needs_rebuild = true;
-  PropertyTreeBuilder::BuildPropertyTrees(
-      layer_list_[0], PageScaleLayer(), InnerViewportScrollLayer(),
-      OuterViewportScrollLayer(), OverscrollElasticityElementId(),
-      elastic_overscroll()->Current(IsActiveTree()),
-      current_page_scale_factor(), device_scale_factor(),
-      gfx::Rect(GetDeviceViewport().size()), host_impl_->DrawTransform(),
-      &property_trees_);
-  host_impl_->UpdateElements(GetElementTypeForAnimation());
 }
 
 const RenderSurfaceList& LayerTreeImpl::GetRenderSurfaceList() const {

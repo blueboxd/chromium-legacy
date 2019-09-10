@@ -207,7 +207,6 @@
 <translation id="257674075312929031">குழு</translation>
 <translation id="2582407057977008361">Aside</translation>
 <translation id="2592212930811759050">திருத்துவதற்கு, இருமுறை தட்டவும்</translation>
-<translation id="2606210917827248971">பட்டியலில் {COUNT,plural, =1{# உருப்படி}other{# உருப்படிகள்}}</translation>
 <translation id="2614981083756825552">கணித ML தளவமைப்பு</translation>
 <translation id="2624431853467395961">கற்றல் பயன்முறையைத் திறக்கவும்</translation>
 <translation id="2626530649491650971">கிளிக் செய்யத்தக்கது</translation>
@@ -391,7 +390,6 @@
 <translation id="3781428340399460090">ஹாட் பிங்க்</translation>
 <translation id="3783725005098956899">பதிவைக் காட்டு</translation>
 <translation id="3793710123303304873">செய்தியில் இருந்து வெளியேறினார்.</translation>
-<translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">தானே நிரப்புதல் பட்டியல்</translation>
 <translation id="3810838688059735925">வீடியோ</translation>
 <translation id="3813387282697781382">லைட் கோரல்</translation>

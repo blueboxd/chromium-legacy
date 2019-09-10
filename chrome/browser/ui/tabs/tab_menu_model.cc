@@ -109,7 +109,7 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
     } else {
       send_tab_to_self_sub_menu_model_ =
           std::make_unique<send_tab_to_self::SendTabToSelfSubMenuModel>(
-              tab_strip->GetActiveWebContents(),
+              tab_strip->GetWebContentsAt(index),
               send_tab_to_self::SendTabToSelfMenuType::kTab);
 #if defined(OS_MACOSX)
       AddSubMenuWithStringId(TabStripModel::CommandSendTabToSelf,

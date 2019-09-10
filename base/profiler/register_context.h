@@ -17,6 +17,8 @@
 #include <windows.h>
 #elif defined(OS_MACOSX)
 #include <mach/machine/thread_status.h>
+#elif defined(OS_ANDROID) && !defined(ARCH_CPU_64_BITS)
+#include <sys/ucontext.h>
 #endif
 
 namespace base {
@@ -81,6 +83,23 @@ inline uintptr_t& RegisterContextFramePointer(x86_thread_state64_t* context) {
 inline uintptr_t& RegisterContextInstructionPointer(
     x86_thread_state64_t* context) {
   return AsUintPtr(&context->__rip);
+}
+
+#elif defined(OS_ANDROID) && defined(ARCH_CPU_ARM_FAMILY) && \
+    defined(ARCH_CPU_32_BITS)  // #if defined(OS_WIN)
+
+using RegisterContext = mcontext_t;
+
+inline uintptr_t& RegisterContextStackPointer(mcontext_t* context) {
+  return AsUintPtr(&context->arm_sp);
+}
+
+inline uintptr_t& RegisterContextFramePointer(mcontext_t* context) {
+  return AsUintPtr(&context->arm_fp);
+}
+
+inline uintptr_t& RegisterContextInstructionPointer(mcontext_t* context) {
+  return AsUintPtr(&context->arm_ip);
 }
 
 #else  // #if defined(OS_WIN)

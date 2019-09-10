@@ -315,6 +315,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 Handoff must also be enabled in the General section of Settings, and your devices must use the same iCloud account.</translation>
 <translation id="5551897871312988470">Offer to translate</translation>
 <translation id="5556459405103347317">Reload</translation>
+<translation id="5592679540098330836">Turn on sync for <ph name="NAME" /></translation>
 <translation id="5614553682702429503">Save password?</translation>
 <translation id="5626245204502895507">The file could not be downloaded at this time.</translation>
 <translation id="5631164295104953411">Add payment method</translation>

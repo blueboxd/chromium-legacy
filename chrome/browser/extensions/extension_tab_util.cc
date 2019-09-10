@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/no_destructor.h"
+#include "base/numerics/ranges.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -285,10 +286,7 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(ExtensionFunction* function,
   int index = -1;
   if (params.index.get())
     index = *params.index;
-
-  TabStripModel* tab_strip = browser->tab_strip_model();
-
-  index = std::min(std::max(index, -1), tab_strip->count());
+  index = base::ClampToRange(index, -1, browser->tab_strip_model()->count());
 
   int add_types = active ? TabStripModel::ADD_ACTIVE : TabStripModel::ADD_NONE;
   add_types |= TabStripModel::ADD_FORCE_INDEX;
@@ -304,7 +302,7 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(ExtensionFunction* function,
 
   // The tab may have been created in a different window, so make sure we look
   // at the right tab strip.
-  tab_strip = navigate_params.browser->tab_strip_model();
+  TabStripModel* tab_strip = navigate_params.browser->tab_strip_model();
   int new_index = tab_strip->GetIndexOfWebContents(
       navigate_params.navigated_or_inserted_contents);
   if (opener) {

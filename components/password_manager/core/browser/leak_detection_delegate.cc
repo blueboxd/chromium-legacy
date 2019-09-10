@@ -11,6 +11,7 @@
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory_impl.h"
 #include "components/password_manager/core/browser/leak_detection_delegate_helper.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
+#include "components/password_manager/core/browser/password_feature_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -58,9 +59,11 @@ void LeakDetectionDelegate::OnLeakDetectionDone(bool is_leaked,
     logger.LogBoolean(Logger::STRING_LEAK_DETECTION_FINISHED, is_leaked);
   }
   if (is_leaked) {
-    if (client_->GetPasswordSyncState() != SYNCING_NORMAL_ENCRYPTION) {
-      // If the credentials are not synced, the |CredentialLeakType| needed to
-      // show the correct notification is already determined.
+    if (!client_->GetPasswordFeatureManager()
+             ->ShouldCheckReuseOnLeakDetection()) {
+      // If we should not check leaked password reuse, then the
+      // |CredentialLeakType| needed to show the correct notification is already
+      // determined.
       OnShowLeakDetectionNotification(
           CreateLeakType(IsSaved(false), IsReused(false), IsSyncing(false)),
           std::move(url), std::move(username));

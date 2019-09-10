@@ -11,6 +11,7 @@
 #include <xmmintrin.h>
 #endif
 
+#include "base/numerics/ranges.h"
 #include "base/trace_event/traced_value.h"
 #include "base/values.h"
 #include "ui/gfx/geometry/angle_conversions.h"
@@ -613,7 +614,7 @@ float MathUtil::SmallestAngleBetweenVectors(const gfx::Vector2dF& v1,
                                             const gfx::Vector2dF& v2) {
   double dot_product = gfx::DotProduct(v1, v2) / v1.Length() / v2.Length();
   // Clamp to compensate for rounding errors.
-  dot_product = std::max(-1.0, std::min(1.0, dot_product));
+  dot_product = base::ClampToRange(dot_product, -1.0, 1.0);
   return static_cast<float>(gfx::RadToDeg(std::acos(dot_product)));
 }
 

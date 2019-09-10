@@ -55,6 +55,7 @@ import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
+import org.chromium.chrome.test.util.WaitForFocusHelper;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
@@ -567,11 +568,12 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
      * TODO(yolandyan): split this into the seperate test rule, this only applies to tabbed mode
      */
     public void typeInOmnibox(String text, boolean oneCharAtATime) throws InterruptedException {
-        final UrlBar urlBar = (UrlBar) getActivity().findViewById(R.id.url_bar);
+        final UrlBar urlBar = getActivity().findViewById(R.id.url_bar);
         Assert.assertNotNull(urlBar);
 
+        WaitForFocusHelper.acquireFocusForView(urlBar);
+
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            urlBar.requestFocus();
             if (!oneCharAtATime) {
                 urlBar.setText(text);
             }

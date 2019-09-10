@@ -55,7 +55,7 @@ class PriorityQueueWithSequencesTest : public testing::Test {
   }
 
   test::TaskEnvironment task_environment{
-      test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+      test::TaskEnvironment::TimeSource::MOCK_TIME};
 
   scoped_refptr<TaskSource> sequence_a = MakeSequenceWithTraitsAndTask(
       TaskTraits(ThreadPool(), TaskPriority::USER_VISIBLE));

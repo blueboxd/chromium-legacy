@@ -175,6 +175,10 @@ bool LauncherContextMenu::ExecuteCommonCommand(int command_id,
 void LauncherContextMenu::AddContextMenuOption(ui::SimpleMenuModel* menu_model,
                                                ash::CommandId type,
                                                int string_id) {
+  // Do not include disabled items.
+  if (!IsCommandIdEnabled(type))
+    return;
+
   const gfx::VectorIcon& icon = GetCommandIdVectorIcon(type, string_id);
   if (!icon.is_empty()) {
     menu_model->AddItemWithStringIdAndIcon(type, string_id, icon);

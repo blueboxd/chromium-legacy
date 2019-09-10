@@ -23,6 +23,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/web_contents_tester.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
@@ -80,7 +81,7 @@ class SigninPartitionManagerTest : public ChromeRenderViewHostTestHarness {
 
     auto network_context = std::make_unique<network::NetworkContext>(
         network::NetworkService::GetNetworkServiceForTesting(),
-        mojo::MakeRequest(&signin_network_context_ptr_),
+        signin_network_context_remote_.BindNewPipeAndPassReceiver(),
         network::mojom::NetworkContextParams::New());
     signin_network_context_ = network_context.get();
     TestingProfile::Builder()
@@ -92,7 +93,7 @@ class SigninPartitionManagerTest : public ChromeRenderViewHostTestHarness {
 
     system_network_context_ = std::make_unique<network::NetworkContext>(
         network::NetworkService::GetNetworkServiceForTesting(),
-        mojo::MakeRequest(&system_network_context_ptr_),
+        system_network_context_remote_.BindNewPipeAndPassReceiver(),
         network::mojom::NetworkContextParams::New());
 
     GURL url(kEmbedderUrl);
@@ -175,11 +176,11 @@ class SigninPartitionManagerTest : public ChromeRenderViewHostTestHarness {
     pending_clear_tasks_.push_back({partition, std::move(clear_done_closure)});
   }
 
-  network::mojom::NetworkContextPtr system_network_context_ptr_;
+  mojo::Remote<network::mojom::NetworkContext> system_network_context_remote_;
   std::unique_ptr<network::NetworkContext> system_network_context_;
 
   std::unique_ptr<TestingProfile> signin_browser_context_;
-  network::mojom::NetworkContextPtr signin_network_context_ptr_;
+  mojo::Remote<network::mojom::NetworkContext> signin_network_context_remote_;
   network::NetworkContext* signin_network_context_;
 
   // Web contents of the sign-in UI, embedder of the signin-frame webview.

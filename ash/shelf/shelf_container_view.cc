@@ -4,7 +4,7 @@
 
 #include "ash/shelf/shelf_container_view.h"
 
-#include "ash/shelf/shelf_constants.h"
+#include "ash/public/cpp/shelf_config.h"
 
 namespace ash {
 
@@ -28,7 +28,7 @@ gfx::Size ShelfContainerView::CalculatePreferredSize() const {
       ShelfView::GetSizeOfAppIcons(shelf_view_->last_visible_index() -
                                        shelf_view_->first_visible_index() + 1,
                                    false);
-  const int height = ShelfConstants::button_size();
+  const int height = ShelfConfig::Get()->button_size();
   return shelf_view_->shelf()->IsHorizontalAlignment()
              ? gfx::Size(width, height)
              : gfx::Size(height, width);

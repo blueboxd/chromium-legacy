@@ -8,8 +8,8 @@
 
 #include "ash/metrics/pip_uma.h"
 #include "ash/public/cpp/app_types.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state_util.h"
 #include "ash/wm/window_util.h"
@@ -518,8 +518,8 @@ TEST_F(WindowStateTest, RestoredWindowBoundsShrink) {
 }
 
 TEST_F(WindowStateTest, DoNotResizeMaximizedWindowInFullscreen) {
-  const int shelf_inset_first = 600 - ShelfConstants::shelf_size();
-  const int shelf_inset_second = 700 - ShelfConstants::shelf_size();
+  const int shelf_inset_first = 600 - ShelfConfig::Get()->shelf_size();
+  const int shelf_inset_second = 700 - ShelfConfig::Get()->shelf_size();
   std::unique_ptr<aura::Window> maximized(CreateTestWindowInShellWithId(0));
   std::unique_ptr<aura::Window> fullscreen(CreateTestWindowInShellWithId(1));
   WindowState* maximized_state = WindowState::Get(maximized.get());

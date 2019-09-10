@@ -1530,6 +1530,9 @@ This file contains the strings for ash.
       </message>
 
       <!-- Login screen strings -->
+      <message name="IDS_ASH_LOGIN_SCREEN_ACCESSIBLE_NAME" desc="Text that is spoken when requesting the login screen name.">
+        Login Screen
+      </message>
       <message name="IDS_ASH_LOGIN_POD_PASSWORD_PLACEHOLDER" desc="Text to display as placeholder in the password field when password is the only auth method.">
         Password
       </message>
@@ -2005,6 +2008,9 @@ This file contains the strings for ash.
       </message>
 
         <!-- Lock Screen Media Controls -->
+      <message name="IDS_ASH_LOCK_SCREEN_ACCESSIBLE_NAME" desc="Text that is spoken when requesting the lock screen name.">
+        Lock Screen
+      </message>
       <message name="IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_PREVIOUS_TRACK" desc="The button to trigger media playback to go to the previous track.">
         Previous Track
       </message>

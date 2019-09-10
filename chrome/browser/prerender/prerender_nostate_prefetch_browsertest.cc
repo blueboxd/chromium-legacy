@@ -1058,7 +1058,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
       url, safe_browsing::SB_THREAT_TYPE_URL_MALWARE);
 
   constexpr char kPrefetchCanceledHistogram[] =
-      "SB2.ResourceTypes2.UnsafePrefetchCanceled";
+      "SB2Test.ResourceTypes2.UnsafePrefetchCanceled";
 
   base::RunLoop run_loop;
   bool prefetch_canceled_histogram_added = false;

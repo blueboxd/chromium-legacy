@@ -14,6 +14,7 @@
 
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/numerics/ranges.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -2014,11 +2015,14 @@ void OutOfProcessInstance::UserMetricsRecordAction(const std::string& action) {
 
 pp::FloatPoint OutOfProcessInstance::BoundScrollOffsetToDocument(
     const pp::FloatPoint& scroll_offset) {
-  float max_x = document_size_.width() * zoom_ - plugin_dip_size_.width();
-  float x = std::max(std::min(scroll_offset.x(), max_x), 0.0f);
+  float max_x = std::max(
+      document_size_.width() * float{zoom_} - plugin_dip_size_.width(), 0.0f);
+  float x = base::ClampToRange(scroll_offset.x(), 0.0f, max_x);
   float min_y = -top_toolbar_height_in_viewport_coords_;
-  float max_y = document_size_.height() * zoom_ - plugin_dip_size_.height();
-  float y = std::max(std::min(scroll_offset.y(), max_y), min_y);
+  float max_y = std::max(
+      document_size_.height() * float{zoom_} - plugin_dip_size_.height(),
+      min_y);
+  float y = base::ClampToRange(scroll_offset.y(), min_y, max_y);
   return pp::FloatPoint(x, y);
 }
 

@@ -3,7 +3,6 @@
 <translationbundle lang="ta">
 <translation id="1036550831858290950">தற்போதைய தாவலை புக்மார்க்காகச் சேமிக்கும்</translation>
 <translation id="104962181688258143">கோப்புகள் பயன்பாட்டைத் திறக்கும்</translation>
-<translation id="1098295134904615027">விர்ச்சுவல் டெஸ்க்கை வலதுபுறத்தில் இயக்கும்</translation>
 <translation id="1122869341872663659"><ph name="QUERY" />க்கான <ph name="N" /> தேடல் முடிவுகளைக் காட்டுகிறது</translation>
 <translation id="1195667586424773550">தாவலின் முகவரிப் பட்டிக்கு இணைப்பை இழுக்கவும்</translation>
 <translation id="1204450209689312104">புதிய சாளரத்தை மறைநிலையில் திறக்கும்</translation>
@@ -25,7 +24,6 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">முகவரிப் பட்டியில் உங்கள் உள்ளீட்டில் www., .com ஆகியவற்றைச் சேர்த்து, பின்னர் பக்கத்தைத் திறக்கும்</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, பின்னர் <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> அல்லது <ph name="LEFT" />ஐ அழுத்தவும்</translation>
-<translation id="1929866390202038233">விர்ச்சுவல் டெஸ்க்கை இடதுபுறத்தில் இயக்கும்</translation>
 <translation id="1996162290124031907">அடுத்த தாவலுக்குச் செல்லும்</translation>
 <translation id="2010818616644390445">சாளரத்தில் கடைசித் தாவலுக்குச் செல்லும்</translation>
 <translation id="2040706009561734834">தொடக்கியைத் திறக்கும்/மூடும்</translation>
@@ -64,7 +62,6 @@
 <translation id="3105917916468784889">ஸ்கிரீன் ஷாட்டை எடுக்கும்</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">முகவரிப் பட்டியைக் கவனித்திடுங்கள்</translation>
-<translation id="3165428420335997629">புதிய விர்ச்சுவல் டெஸ்க்கை உருவாக்கும்</translation>
 <translation id="3256109297135787951">உங்கள் ஷெல்ஃபில் உருப்படியைத் தனிப்படுத்தியதை அகற்றும்</translation>
 <translation id="3288816184963444640">தற்போதைய சாளரத்தை மூடும்</translation>
 <translation id="3407560819924487926">செயல் நிர்வாகியைத் திறக்கும்</translation>
@@ -181,7 +178,6 @@
 <translation id="8234414138295101081">திரையை 90 டிகிரிக்குச் சுழற்றும்</translation>
 <translation id="8241665785394195545">வலது அடைப்புக்குறி</translation>
 <translation id="8264941229485248811">டெவெலப்பர் கருவிகள் கண்காணிப்பானைக் காட்டும் அல்லது மறைக்கும்</translation>
-<translation id="8355937569537581904">தற்போதைய விர்ச்சுவல் டெஸ்க்கை அகற்றும்</translation>
 <translation id="836869401750819675">பதிவிறக்கங்கள் பக்கத்தைத் திறக்கும்</translation>
 <translation id="8388247778047144397">தாவல் பட்டையில் உள்ள வெற்றுப் பகுதியில் இணைப்பை இழுக்கவும்</translation>
 <translation id="8389638407792712197">புதிய சாளரத்தைத் திறக்கும்</translation>

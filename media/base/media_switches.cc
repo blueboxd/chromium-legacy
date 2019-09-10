@@ -437,7 +437,7 @@ const base::Feature kMediaDrmPreprovisioningAtStartup{
 
 // Enables the Android Image Reader path for Video decoding(for AVDA and MCVD)
 const base::Feature kAImageReaderVideoOutput{"AImageReaderVideoOutput",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Prevents using SurfaceLayer for videos. This is meant to be used by embedders
 // that cannot support SurfaceLayer at the moment.

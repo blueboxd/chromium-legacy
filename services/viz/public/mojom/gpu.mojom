@@ -30,7 +30,8 @@ interface GpuMemoryBufferFactory {
 interface Gpu {
   // Note: The bound-to GpuMemoryBufferFactory instance is only guaranteed to
   // stay alive for as long as the invoked Gpu instance.
-  CreateGpuMemoryBufferFactory(GpuMemoryBufferFactory& request);
+  CreateGpuMemoryBufferFactory(
+      pending_receiver<GpuMemoryBufferFactory> receiver);
 
   // Tells the GPU service to create a new channel for communication with a
   // client. The GPU service responds with client ID, IPC handle and

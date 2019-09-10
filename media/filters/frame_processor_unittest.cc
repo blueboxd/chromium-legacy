@@ -298,7 +298,7 @@ class FrameProcessorTest : public ::testing::TestWithParam<bool> {
     stream->StartReturningData();
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   StrictMock<MockMediaLog> media_log_;
   StrictMock<FrameProcessorTestCallbackHelper> callbacks_;
 

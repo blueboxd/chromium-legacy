@@ -13,6 +13,7 @@
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/ash_constants.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
@@ -23,7 +24,6 @@
 #include "ash/shelf/shelf_app_button.h"
 #include "ash/shelf/shelf_application_menu_model.h"
 #include "ash/shelf/shelf_button.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_context_menu_model.h"
 #include "ash/shelf/shelf_controller.h"
 #include "ash/shelf/shelf_focus_cycler.h"
@@ -42,6 +42,7 @@
 #include "base/bind.h"
 #include "base/containers/adapters.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/ranges.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -327,14 +328,15 @@ ShelfView::~ShelfView() {
 }
 
 int ShelfView::GetSizeOfAppIcons(int count, bool with_overflow) {
-  const int control_size = ShelfConstants::control_size();
-  const int button_spacing = ShelfConstants::button_spacing();
-  const int overflow_button_margin = ShelfConstants::overflow_button_margin();
+  const int control_size = ShelfConfig::Get()->control_size();
+  const int button_spacing = ShelfConfig::Get()->button_spacing();
+  const int overflow_button_margin =
+      ShelfConfig::Get()->overflow_button_margin();
 
   if (count == 0)
     return with_overflow ? control_size + 2 * overflow_button_margin : 0;
 
-  const int app_size = count * ShelfConstants::button_size();
+  const int app_size = count * ShelfConfig::Get()->button_size();
   int overflow_size = 0;
   int total_padding = button_spacing * (count - 1);
   if (with_overflow) {
@@ -474,8 +476,8 @@ gfx::Size ShelfView::CalculatePreferredSize() const {
   if (model_->item_count() == 0) {
     // There are no apps.
     return shelf_->IsHorizontalAlignment()
-               ? gfx::Size(0, ShelfConstants::shelf_size())
-               : gfx::Size(ShelfConstants::shelf_size(), 0);
+               ? gfx::Size(0, ShelfConfig::Get()->shelf_size())
+               : gfx::Size(ShelfConfig::Get()->shelf_size(), 0);
   }
 
   int last_button_index = last_visible_index_;
@@ -494,13 +496,15 @@ gfx::Size ShelfView::CalculatePreferredSize() const {
   const gfx::Rect last_button_bounds =
       last_button_index >= first_visible_index_
           ? view_model_->ideal_bounds(last_button_index)
-          : gfx::Rect(gfx::Size(ShelfConstants::shelf_size(),
-                                ShelfConstants::shelf_size()));
+          : gfx::Rect(gfx::Size(ShelfConfig::Get()->shelf_size(),
+                                ShelfConfig::Get()->shelf_size()));
 
   if (shelf_->IsHorizontalAlignment())
-    return gfx::Size(last_button_bounds.right(), ShelfConstants::shelf_size());
+    return gfx::Size(last_button_bounds.right(),
+                     ShelfConfig::Get()->shelf_size());
 
-  return gfx::Size(ShelfConstants::shelf_size(), last_button_bounds.bottom());
+  return gfx::Size(ShelfConfig::Get()->shelf_size(),
+                   last_button_bounds.bottom());
 }
 
 void ShelfView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
@@ -925,7 +929,7 @@ void ShelfView::ConfigureChildView(views::View* view) {
 void ShelfView::CalculateIdealBounds() {
   DCHECK(model()->item_count() == view_model()->view_size());
 
-  const int button_spacing = ShelfConstants::button_spacing();
+  const int button_spacing = ShelfConfig::Get()->button_spacing();
   const int separator_index = GetSeparatorIndex();
   const AppCenteringStrategy app_centering_strategy =
       CalculateAppCenteringStrategy();
@@ -984,7 +988,7 @@ void ShelfView::CalculateIdealBounds() {
       continue;
     }
 
-    const int button_size = ShelfConstants::button_size();
+    const int button_size = ShelfConfig::Get()->button_size();
 
     view_model()->set_ideal_bounds(i,
                                    gfx::Rect(x, y, button_size, button_size));
@@ -997,7 +1001,7 @@ void ShelfView::CalculateIdealBounds() {
       // vertically centered.
       int half_space = button_spacing / 2;
       int secondary_offset =
-          (ShelfConstants::shelf_size() - kSeparatorSize) / 2;
+          (ShelfConfig::Get()->shelf_size() - kSeparatorSize) / 2;
       x -= shelf()->PrimaryAxisValue(half_space, 0);
       y -= shelf()->PrimaryAxisValue(0, half_space);
       separator_->SetBounds(
@@ -1120,7 +1124,8 @@ ShelfView::AppCenteringStrategy ShelfView::CalculateAppCenteringStrategy() {
   // side (the status widget is always bigger than the home button plus
   // the back button if applicable) and see if the apps can fit in the middle.
   int available_space_for_screen_centering =
-      screen_size - 2 * (status_widget_size + kAppIconGroupMargin);
+      screen_size -
+      2 * (status_widget_size + ShelfConfig::Get()->app_icon_group_margin());
 
   if (GetSizeOfAppIcons(view_model()->view_size(), false) <
       available_space_for_screen_centering) {
@@ -1388,7 +1393,7 @@ void ShelfView::LayoutOverflowButton() const {
   int x = 0;
   int y = 0;
   if (last_visible_index_ != -1) {
-    const int offset = ShelfConstants::overflow_button_margin();
+    const int offset = ShelfConfig::Get()->overflow_button_margin();
     x = shelf_->PrimaryAxisValue(
         offset + view_model_->ideal_bounds(last_visible_index_).right(),
         offset + view_model_->ideal_bounds(last_visible_index_).x());
@@ -1398,12 +1403,13 @@ void ShelfView::LayoutOverflowButton() const {
 
     // Add button spacing to correctly position overflow button next to app
     // buttons.
-    x = shelf_->PrimaryAxisValue(x + ShelfConstants::button_spacing(), x);
-    y = shelf_->PrimaryAxisValue(y, y + ShelfConstants::button_spacing());
+    x = shelf_->PrimaryAxisValue(x + ShelfConfig::Get()->button_spacing(), x);
+    y = shelf_->PrimaryAxisValue(y, y + ShelfConfig::Get()->button_spacing());
   }
 
-  overflow_button_->SetBoundsRect(gfx::Rect(
-      x, y, ShelfConstants::control_size(), ShelfConstants::control_size()));
+  overflow_button_->SetBoundsRect(
+      gfx::Rect(x, y, ShelfConfig::Get()->control_size(),
+                ShelfConfig::Get()->control_size()));
 }
 
 void ShelfView::AnimateToIdealBounds() {
@@ -1571,7 +1577,7 @@ void ShelfView::MoveDragViewTo(int primary_axis_coordinate) {
       *view_model_, drag_view_, shelf_->IsHorizontalAlignment(),
       drag_view_->x(), drag_view_->y());
   target_index =
-      std::min(indices.second, std::max(target_index, indices.first));
+      base::ClampToRange(target_index, indices.first, indices.second);
 
   if (target_index == current_index)
     return;
@@ -1946,11 +1952,11 @@ gfx::Rect ShelfView::GetBoundsForDragInsertInScreen() {
     }
 
     if (shelf_->IsHorizontalAlignment()) {
-      preferred_size =
-          gfx::Size(last_button_bounds.right(), ShelfConstants::shelf_size());
+      preferred_size = gfx::Size(last_button_bounds.right(),
+                                 ShelfConfig::Get()->shelf_size());
     } else {
-      preferred_size =
-          gfx::Size(ShelfConstants::shelf_size(), last_button_bounds.bottom());
+      preferred_size = gfx::Size(ShelfConfig::Get()->shelf_size(),
+                                 last_button_bounds.bottom());
     }
   }
   gfx::Point origin(GetMirroredXWithWidthInView(0, preferred_size.width()), 0);

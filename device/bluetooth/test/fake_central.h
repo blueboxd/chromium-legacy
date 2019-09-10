@@ -11,7 +11,8 @@
 #include "base/compiler_specific.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/public/mojom/test/fake_bluetooth.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace bluetooth {
 
@@ -28,7 +29,8 @@ class FakeRemoteGattService;
 // Not intended for direct use by clients.  See README.md.
 class FakeCentral : public mojom::FakeCentral, public device::BluetoothAdapter {
  public:
-  FakeCentral(mojom::CentralState state, mojom::FakeCentralRequest request);
+  FakeCentral(mojom::CentralState state,
+              mojo::PendingReceiver<mojom::FakeCentral> receiver);
 
   // FakeCentral overrides:
   void SimulatePreconnectedPeripheral(
@@ -211,7 +213,7 @@ class FakeCentral : public mojom::FakeCentral, public device::BluetoothAdapter {
       const std::string& descriptor_id) const;
 
   mojom::CentralState state_;
-  mojo::Binding<mojom::FakeCentral> binding_;
+  mojo::Receiver<mojom::FakeCentral> receiver_;
 };
 
 }  // namespace bluetooth

@@ -1381,8 +1381,14 @@ class PrimaryUserPoliciesProxiedTest : public LoginPolicyTestBase {
   DISALLOW_COPY_AND_ASSIGN(PrimaryUserPoliciesProxiedTest);
 };
 
+// TODO(crbug.com/1002066): Test is flaky on ChromeOS.
+#if defined(OS_CHROMEOS)
+#define MAYBE_AvailableInLocalStateEarly DISABLED_AvailableInLocalStateEarly
+#else
+#define MAYBE_AvailableInLocalStateEarly AvailableInLocalStateEarly
+#endif
 IN_PROC_BROWSER_TEST_F(PrimaryUserPoliciesProxiedTest,
-                       AvailableInLocalStateEarly) {
+                       MAYBE_AvailableInLocalStateEarly) {
   PolicyService* const device_wide_policy_service =
       g_browser_process->platform_part()
           ->browser_policy_connector_chromeos()

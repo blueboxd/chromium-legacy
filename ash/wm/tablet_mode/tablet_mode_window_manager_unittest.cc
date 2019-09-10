@@ -10,6 +10,7 @@
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_prefs.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/window_properties.h"
@@ -19,7 +20,6 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -2022,7 +2022,7 @@ TEST_F(TabletModeWindowManagerWithClamshellSplitViewTest,
   const WMEvent left_snap_event(WM_EVENT_SNAP_LEFT);
   WindowState::Get(window.get())->OnWMEvent(&left_snap_event);
   const gfx::Rect left_snapped_bounds =
-      gfx::Rect(1200 / 2, 800 - ShelfConstants::shelf_size());
+      gfx::Rect(1200 / 2, 800 - ShelfConfig::Get()->shelf_size());
   EXPECT_EQ(window->bounds().width(), left_snapped_bounds.width());
   // Change its bounds horizontally a bit and then enter tablet mode.
   window->SetBounds(gfx::Rect(400, left_snapped_bounds.height()));

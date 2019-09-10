@@ -9,7 +9,6 @@
 #include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/sync_device_info/device_info.h"
@@ -36,13 +35,8 @@
 
 namespace send_tab_to_self {
 
-bool IsReceivingEnabled() {
-  return base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf);
-}
-
 bool IsSendingEnabled() {
-  return IsReceivingEnabled() &&
-         base::FeatureList::IsEnabled(kSendTabToSelfShowSendingUI);
+  return base::FeatureList::IsEnabled(kSendTabToSelfShowSendingUI);
 }
 
 bool IsUserSyncTypeActive(ios::ChromeBrowserState* browser_state) {

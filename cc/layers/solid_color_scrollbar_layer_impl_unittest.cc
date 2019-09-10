@@ -25,19 +25,17 @@ TEST(SolidColorScrollbarLayerImplTest, Occlusion) {
   bool is_overlay = false;
 
   SolidColorScrollbarLayerImpl* scrollbar_layer_impl =
-      impl.AddChildToRoot<SolidColorScrollbarLayerImpl>(
-          orientation,
-          thumb_thickness,
-          track_start,
-          is_left_side_vertical_scrollbar,
-          is_overlay);
+      impl.AddLayer<SolidColorScrollbarLayerImpl>(
+          orientation, thumb_thickness, track_start,
+          is_left_side_vertical_scrollbar, is_overlay);
   scrollbar_layer_impl->SetBounds(layer_size);
   scrollbar_layer_impl->SetDrawsContent(true);
   scrollbar_layer_impl->SetCurrentPos(25.f);
   scrollbar_layer_impl->SetClipLayerLength(100.f);
   scrollbar_layer_impl->SetScrollLayerLength(200.f);
   // SolidColorScrollbarLayers construct with opacity = 0.f, so override.
-  scrollbar_layer_impl->test_properties()->opacity = 1.f;
+  CopyProperties(impl.root_layer(), scrollbar_layer_impl);
+  CreateEffectNode(scrollbar_layer_impl).opacity = 1.f;
 
   impl.CalcDrawProps(viewport_size);
 

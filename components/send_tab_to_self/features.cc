@@ -6,7 +6,6 @@
 
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/base/user_selectable_type.h"
-#include "components/sync/driver/sync_driver_switches.h"
 
 namespace send_tab_to_self {
 
@@ -21,13 +20,11 @@ const base::Feature kSendTabToSelfWhenSignedIn{
 
 bool IsReceivingEnabledByUserOnThisDevice(PrefService* prefs) {
   syncer::SyncPrefs sync_prefs(prefs);
-  return base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf) &&
-         sync_prefs.GetSelectedTypes().Has(syncer::UserSelectableType::kTabs);
+  return sync_prefs.GetSelectedTypes().Has(syncer::UserSelectableType::kTabs);
 }
 
 bool EnabledOnSignIn() {
-  return base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf) &&
-         base::FeatureList::IsEnabled(kSendTabToSelfWhenSignedIn);
+  return base::FeatureList::IsEnabled(kSendTabToSelfWhenSignedIn);
 }
 
 }  // namespace send_tab_to_self

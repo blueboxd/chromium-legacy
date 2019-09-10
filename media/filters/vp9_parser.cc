@@ -16,6 +16,7 @@
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
 #include "base/logging.h"
+#include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/sys_byteorder.h"
@@ -147,8 +148,8 @@ size_t ClampQ(int64_t q) {
 }
 
 int ClampLf(int lf) {
-  const int kMaxLoopFilterLevel = 63;
-  return std::min(std::max(0, lf), kMaxLoopFilterLevel);
+  constexpr int kMaxLoopFilterLevel = 63;
+  return base::ClampToRange(lf, 0, kMaxLoopFilterLevel);
 }
 
 std::string IncrementIV(const std::string& iv, uint32_t by) {

@@ -287,6 +287,7 @@ network::mojom::FetchResponseType CalculateResponseTainting(
     const KURL& url,
     network::mojom::RequestMode request_mode,
     const SecurityOrigin* origin,
+    const SecurityOrigin* isolated_world_origin,
     CorsFlag cors_flag) {
   if (url.ProtocolIsData())
     return network::mojom::FetchResponseType::kBasic;
@@ -302,9 +303,12 @@ network::mojom::FetchResponseType CalculateResponseTainting(
     return network::mojom::FetchResponseType::kBasic;
   }
 
-  if (request_mode == network::mojom::RequestMode::kNoCors &&
-      !origin->CanRequest(url)) {
-    return network::mojom::FetchResponseType::kOpaque;
+  if (request_mode == network::mojom::RequestMode::kNoCors) {
+    bool can_request = origin->CanRequest(url);
+    if (!can_request && isolated_world_origin)
+      can_request = isolated_world_origin->CanRequest(url);
+    if (!can_request)
+      return network::mojom::FetchResponseType::kOpaque;
   }
   return network::mojom::FetchResponseType::kBasic;
 }
@@ -384,16 +388,25 @@ bool IsOkStatus(int status) {
 }
 
 bool CalculateCorsFlag(const KURL& url,
-                       const SecurityOrigin* origin,
+                       const SecurityOrigin* initiator_origin,
+                       const SecurityOrigin* isolated_world_origin,
                        network::mojom::RequestMode request_mode) {
   if (network::IsNavigationRequestMode(request_mode) ||
       request_mode == network::mojom::RequestMode::kNoCors) {
     return false;
   }
+
   // CORS needs a proper origin (including a unique opaque origin). If the
-  // request doesn't have one, CORS should not work.
-  DCHECK(origin);
-  return !origin->CanReadContent(url);
+  // request doesn't have one, CORS will not work.
+  DCHECK(initiator_origin);
+
+  if (initiator_origin->CanReadContent(url))
+    return false;
+
+  if (isolated_world_origin && isolated_world_origin->CanReadContent(url))
+    return false;
+
+  return true;
 }
 
 WebHTTPHeaderSet ExtractCorsExposedHeaderNamesList(

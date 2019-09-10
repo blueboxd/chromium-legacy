@@ -83,9 +83,9 @@ class MockAppInstallEventLogUploaderDelegate
 class AppInstallEventLogUploaderTest : public testing::Test {
  protected:
   AppInstallEventLogUploaderTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME,
-            base::test::ScopedTaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY),
+      : task_environment_(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME,
+            base::test::TaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY),
         value_report_(base::Value::Type::DICTIONARY) {}
 
   void TearDown() override {
@@ -163,7 +163,7 @@ class AppInstallEventLogUploaderTest : public testing::Test {
     CaptureUpload(callback);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   em::AppInstallReportRequest log_;
   base::Value value_report_;
 
@@ -292,11 +292,11 @@ TEST_F(AppInstallEventLogUploaderTest, Retry) {
   int max_delay_count = 0;
   while (max_delay_count < 2) {
     EXPECT_EQ(expected_delay,
-              scoped_task_environment_.NextMainThreadPendingTaskDelay());
+              task_environment_.NextMainThreadPendingTaskDelay());
 
     CompleteSerializeAndUpload(false /* success */);
     EXPECT_CALL(delegate_, OnUploadSuccess()).Times(0);
-    scoped_task_environment_.FastForwardBy(expected_delay);
+    task_environment_.FastForwardBy(expected_delay);
     Mock::VerifyAndClearExpectations(&delegate_);
     Mock::VerifyAndClearExpectations(&client_);
 
@@ -306,13 +306,12 @@ TEST_F(AppInstallEventLogUploaderTest, Retry) {
     expected_delay = std::min(expected_delay * 2, max_delay);
   }
 
-  EXPECT_EQ(expected_delay,
-            scoped_task_environment_.NextMainThreadPendingTaskDelay());
+  EXPECT_EQ(expected_delay, task_environment_.NextMainThreadPendingTaskDelay());
 
   log_.add_app_install_reports()->set_package(kPackageName);
   CompleteSerializeAndUpload(true /* success */);
   EXPECT_CALL(delegate_, OnUploadSuccess());
-  scoped_task_environment_.FastForwardBy(expected_delay);
+  task_environment_.FastForwardBy(expected_delay);
   Mock::VerifyAndClearExpectations(&delegate_);
   Mock::VerifyAndClearExpectations(&client_);
 
@@ -320,8 +319,7 @@ TEST_F(AppInstallEventLogUploaderTest, Retry) {
   EXPECT_CALL(delegate_, OnUploadSuccess()).Times(0);
   uploader_->RequestUpload();
 
-  EXPECT_EQ(min_delay,
-            scoped_task_environment_.NextMainThreadPendingTaskDelay());
+  EXPECT_EQ(min_delay, task_environment_.NextMainThreadPendingTaskDelay());
 }
 
 // Create the uploader using a client that is not registered with the server

@@ -4,6 +4,7 @@
 
 #include "services/network/public/cpp/cors/origin_access_list.h"
 
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/cors_origin_pattern.mojom.h"
 
 namespace network {
@@ -92,6 +93,29 @@ OriginAccessList::AccessState OriginAccessList::CheckAccessState(
 
   return (allow_list_priority > block_list_priority) ? AccessState::kAllowed
                                                      : AccessState::kBlocked;
+}
+
+OriginAccessList::AccessState OriginAccessList::CheckAccessState(
+    const ResourceRequest& request) const {
+  // OriginAccessList is in practice used to disable CORS for Chrome Extensions.
+  // The extension origin can be found in either:
+  // 1) |request.isolated_world_origin| (if this is a request from a content
+  //    script;  in this case there is no point looking at (2) below.
+  // 2) |request.request_initiator| (if this is a request from an extension
+  //    background page or from other extension frames).
+  //
+  // Note that similar code is also in CorsURLLoader::CalculateResponseTainting.
+  //
+  // TODO(lukasza): https://crbug.com/936310 and https://crbug.com/920638:
+  // Once 1) there is no global OriginAccessList and 2) per-factory
+  // OriginAccessList is only populated for URLLoaderFactory used by allowlisted
+  // content scripts, then 3) there should no longer be a need to use origins as
+  // a key in an OriginAccessList.
+  DCHECK(request.request_initiator.has_value());
+  const url::Origin& source_origin =
+      request.isolated_world_origin.value_or(*request.request_initiator);
+
+  return CheckAccessState(source_origin, request.url);
 }
 
 std::vector<mojo::StructPtr<mojom::CorsOriginAccessPatterns>>

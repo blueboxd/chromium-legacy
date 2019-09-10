@@ -24,6 +24,10 @@ namespace weblayer {
 class NavigationControllerImpl;
 class ProfileImpl;
 
+#if defined(OS_ANDROID)
+class TopControlsContainerView;
+#endif
+
 class BrowserControllerImpl : public BrowserController,
                               public content::WebContentsDelegate,
                               public content::WebContentsObserver {
@@ -37,6 +41,10 @@ class BrowserControllerImpl : public BrowserController,
   base::android::ScopedJavaLocalRef<jobject> GetWebContents(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
+  void SetTopControlsContainerView(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& caller,
+      jlong native_top_controls_container_view);
 #endif
 
  private:
@@ -53,15 +61,20 @@ class BrowserControllerImpl : public BrowserController,
                            bool to_different_document) override;
   void DidNavigateMainFramePostCommit(
       content::WebContents* web_contents) override;
+  int GetTopControlsHeight() override;
 
   // content::WebContentsObserver implementation:
   void DidFirstVisuallyNonEmptyPaint() override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
- private:
   ProfileImpl* profile_;
   std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<NavigationControllerImpl> navigation_controller_;
   base::ObserverList<BrowserObserver>::Unchecked observers_;
+#if defined(OS_ANDROID)
+  TopControlsContainerView* top_controls_container_view_ = nullptr;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(BrowserControllerImpl);
 };

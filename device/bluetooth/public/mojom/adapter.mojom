@@ -66,11 +66,11 @@ interface Adapter {
   GetInfo() => (AdapterInfo info);
 
   // Sets the client that listens for the adapter's events.
-  SetClient(AdapterClient client);
+  SetClient(pending_remote<AdapterClient> client);
 
   // Requests the adapter to start a new discovery session. Returns null if
   // session not created successfully.
-  StartDiscoverySession() => (DiscoverySession? session);
+  StartDiscoverySession() => (pending_remote<DiscoverySession>? session);
 };
 
 interface AdapterClient {

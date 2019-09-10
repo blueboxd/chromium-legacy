@@ -214,7 +214,7 @@ class ZipReaderTest : public PlatformTest {
 
   base::ScopedTempDir temp_dir_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(ZipReaderTest, Open_ValidZipFile) {

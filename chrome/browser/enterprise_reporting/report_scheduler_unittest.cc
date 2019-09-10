@@ -109,7 +109,6 @@ class ReportSchedulerTest : public ::testing::Test {
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(
         features::kEnterpriseReportingInBrowser);
-    RegisterPrefs(local_state_.Get()->registry());
     client_ptr_ = std::make_unique<policy::MockCloudPolicyClient>();
     client_ = client_ptr_.get();
     timer_ptr_ = std::make_unique<FakeRequestTimer>();

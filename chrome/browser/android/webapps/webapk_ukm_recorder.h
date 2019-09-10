@@ -26,6 +26,11 @@ class WebApkUkmRecorder {
                                     int64_t version_code,
                                     int64_t duration);
 
+  static void RecordVisit(const GURL& manifest_url,
+                          int64_t distributor,
+                          int64_t version_code,
+                          int source);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebApkUkmRecorder);
 };

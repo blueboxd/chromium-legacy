@@ -37,7 +37,7 @@ class TestGpuImpl : public mojom::Gpu {
 
   // mojom::Gpu overrides:
   void CreateGpuMemoryBufferFactory(
-      mojom::GpuMemoryBufferFactoryRequest request) override {}
+      mojo::PendingReceiver<mojom::GpuMemoryBufferFactory> receiver) override {}
 
   void EstablishGpuChannel(EstablishGpuChannelCallback callback) override {
     if (close_binding_on_request_) {

@@ -854,6 +854,9 @@ void NativeWidgetNSWindowBridge::OnFullscreenTransitionComplete(
     bool actual_fullscreen_state) {
   in_fullscreen_transition_ = false;
 
+  // Add any children that were skipped during the fullscreen transition.
+  OrderChildren();
+
   if (has_deferred_window_close_) {
     [ns_window() close];
     return;

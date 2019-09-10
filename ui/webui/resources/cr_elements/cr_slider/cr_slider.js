@@ -6,9 +6,6 @@
  * @fileoverview 'cr-slider' is a slider component used to select a number from
  * a continuous or discrete range of numbers.
  */
-
-
-
 cr.define('cr_slider', function() {
   /**
    * The |value| is the corresponding value that the current slider tick is
@@ -189,7 +186,6 @@ cr.define('cr_slider', function() {
 
     /** @private {Map<string, number>} */
     deltaKeyMap_: null,
-
 
     /** @private {EventTracker} */
     draggingEventTracker_: null,

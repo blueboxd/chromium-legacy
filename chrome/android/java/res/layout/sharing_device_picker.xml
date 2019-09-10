@@ -13,41 +13,45 @@
       android:layout_width="match_parent"
       android:layout_height="0dp"
       android:layout_weight="1"
-      android:alpha="0.5"
-      android:background="@android:color/black" />
+      android:background="@android:color/transparent" />
 
-  <TextView
-      android:id="@+id/device_picker_toolbar"
-      android:layout_width="match_parent"
-      android:layout_height="@dimen/min_touch_target_size"
-      android:gravity="center_vertical"
-      android:paddingStart="30dp"
-      android:paddingEnd="30dp"
-      android:paddingTop="16dp"
-      android:paddingBottom="8dp"
-      android:ellipsize="end"
-      android:textAppearance="@style/TextAppearance.BlackHint1"
-      android:background="@android:color/white" />
-
-  <ListView
-      android:id="@+id/device_picker_list"
+  <LinearLayout
+      android:id="@+id/device_picker_content"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:divider="@null"
-      android:background="@android:color/white"/>
+      android:orientation="vertical"
+      android:background="@color/sheet_bg_color">
+    <TextView
+        android:id="@+id/device_picker_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/min_touch_target_size"
+        android:gravity="center_vertical"
+        android:paddingStart="30dp"
+        android:paddingEnd="30dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="8dp"
+        android:ellipsize="end"
+        android:textAppearance="@style/TextAppearance.BlackHint1" />
 
-  <TextView
-      android:id="@android:id/empty"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:gravity="center_vertical"
-      android:paddingStart="30dp"
-      android:paddingEnd="30dp"
-      android:paddingTop="16dp"
-      android:paddingBottom="8dp"
-      android:ellipsize="end"
-      android:textAppearance="@style/TextAppearance.BlackHint1"
-      android:background="@android:color/white"
-      android:text="@string/sharing_device_list_empty"/>
+    <ListView
+        android:id="@+id/device_picker_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:divider="@null"/>
+
+    <TextView
+        android:id="@android:id/empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:paddingStart="30dp"
+        android:paddingEnd="30dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="8dp"
+        android:ellipsize="end"
+        android:textAppearance="@style/TextAppearance.BlackHint1"
+        android:text="@string/sharing_device_list_empty"/>
+
+  </LinearLayout>
 
 </LinearLayout>

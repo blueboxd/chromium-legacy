@@ -10,6 +10,7 @@
 #include "base/i18n/encoding_detection.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/logging.h"
+#include "base/numerics/ranges.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "ppapi/cpp/instance.h"
@@ -32,7 +33,7 @@ PP_BrowserFont_Trusted_Weight WeightToBrowserFontTrustedWeight(int weight) {
   constexpr int kMinimumWeight = 100;
   constexpr int kMaximumWeight = 900;
   int normalized_weight =
-      std::min(std::max(weight, kMinimumWeight), kMaximumWeight);
+      base::ClampToRange(weight, kMinimumWeight, kMaximumWeight);
   normalized_weight = (normalized_weight / 100) - 1;
   return static_cast<PP_BrowserFont_Trusted_Weight>(normalized_weight);
 }

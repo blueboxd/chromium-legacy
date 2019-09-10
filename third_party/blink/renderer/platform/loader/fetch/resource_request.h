@@ -41,6 +41,7 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 #include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/network/http_header_map.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
@@ -124,6 +125,15 @@ class PLATFORM_EXPORT ResourceRequest final {
   }
   void SetRequestorOrigin(scoped_refptr<const SecurityOrigin> origin) {
     requestor_origin_ = std::move(origin);
+  }
+
+  // The origin of the isolated world - set if this is a fetch/XHR initiated by
+  // an isolated world.
+  const scoped_refptr<const SecurityOrigin>& IsolatedWorldOrigin() const {
+    return isolated_world_origin_;
+  }
+  void SetIsolatedWorldOrigin(scoped_refptr<const SecurityOrigin> origin) {
+    isolated_world_origin_ = std::move(origin);
   }
 
   const AtomicString& HttpMethod() const;
@@ -408,6 +418,14 @@ class PLATFORM_EXPORT ResourceRequest final {
     return fetch_window_id_;
   }
 
+  void SetRecursivePrefetchToken(
+      const base::Optional<base::UnguessableToken>& token) {
+    recursive_prefetch_token_ = token;
+  }
+  const base::Optional<base::UnguessableToken>& RecursivePrefetchToken() const {
+    return recursive_prefetch_token_;
+  }
+
   void SetInspectorId(uint64_t inspector_id) { inspector_id_ = inspector_id; }
   uint64_t InspectorId() const { return inspector_id_; }
 
@@ -439,6 +457,10 @@ class PLATFORM_EXPORT ResourceRequest final {
         prefetch_maybe_for_top_level_navigation;
   }
 
+  // Whether either RequestorOrigin or IsolatedWorldOrigin can display the
+  // |url|,
+  bool CanDisplay(const KURL&) const;
+
  private:
   using SharableExtraData =
       base::RefCountedData<std::unique_ptr<WebURLRequest::ExtraData>>;
@@ -458,6 +480,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   scoped_refptr<const SecurityOrigin> top_frame_origin_;
 
   scoped_refptr<const SecurityOrigin> requestor_origin_;
+  scoped_refptr<const SecurityOrigin> isolated_world_origin_;
 
   AtomicString http_method_;
   HTTPHeaderMap http_header_fields_;
@@ -530,6 +553,11 @@ class PLATFORM_EXPORT ResourceRequest final {
   // the request under the cross-origin's partition. Furthermore, its reuse from
   // the prefetch cache will be restricted to top-level-navigations.
   bool prefetch_maybe_for_top_level_navigation_ = false;
+
+  // This is used when fetching preload header requests from cross-origin
+  // prefetch responses. The browser process uses this token to ensure the
+  // request is cached correctly.
+  base::Optional<base::UnguessableToken> recursive_prefetch_token_;
 };
 
 }  // namespace blink

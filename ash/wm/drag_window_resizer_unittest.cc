@@ -5,9 +5,9 @@
 #include "ash/wm/drag_window_resizer.h"
 
 #include "ash/display/mouse_cursor_event_filter.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -246,7 +246,7 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
   // will shrink to fit to the work area.
   window_->SetBoundsInScreen(gfx::Rect(0, 0, 700, 500),
                              display::Screen::GetScreen()->GetPrimaryDisplay());
-  const int shelf_inset = 300 - ShelfConstants::shelf_size();
+  const int shelf_inset = 300 - ShelfConfig::Get()->shelf_size();
   EXPECT_EQ(root_windows[0], window_->GetRootWindow());
   {
     // Grab the top-right edge of the window and move the pointer to (0, 10)

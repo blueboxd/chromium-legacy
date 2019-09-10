@@ -59,75 +59,6 @@
 #include "url/url_constants.h"
 #include "v8/include/v8.h"
 
-namespace internal {  // for testing.
-
-// Whether NTP background should be considered dark, so the colors of various
-// UI elements can be adjusted. Light text implies dark theme.
-bool IsNtpBackgroundDark(SkColor ntp_text) {
-  return !color_utils::IsDark(ntp_text);
-}
-
-// Calculate contrasting color for given |bg_color|. Returns lighter color if
-// the color is very dark and returns darker color otherwise.
-SkColor GetContrastingColorForBackground(SkColor bg_color,
-                                         float luminosity_change) {
-  color_utils::HSL hsl;
-  SkColorToHSL(bg_color, &hsl);
-
-  // If luminosity is 0, it means |bg_color| is black. Use white for black
-  // backgrounds.
-  if (hsl.l == 0)
-    return SK_ColorWHITE;
-
-  // Decrease luminosity, unless color is already dark.
-  if (hsl.l > 0.15)
-    luminosity_change *= -1;
-
-  hsl.l *= 1 + luminosity_change;
-  if (hsl.l >= 0.0f && hsl.l <= 1.0f)
-    return HSLToSkColor(hsl, 255);
-  return bg_color;
-}
-
-// Use dark icon when in dark mode and no background. Otherwise, use
-// light icon for NTPs with images, and themed icon for NTPs with solid color.
-SkColor GetIconColor(const ThemeBackgroundInfo& theme_info) {
-  bool has_background_image = theme_info.has_theme_image ||
-                              !theme_info.custom_background_url.is_empty();
-  if (has_background_image)
-    return kNTPLightIconColor;
-
-  if (theme_info.using_dark_colors && theme_info.using_default_theme)
-    return kNTPDarkIconColor;
-
-  SkColor bg_color = theme_info.background_color;
-  SkColor icon_color = kNTPLightIconColor;
-  if (!theme_info.using_default_theme && bg_color != SK_ColorWHITE) {
-    icon_color =
-        GetContrastingColorForBackground(bg_color, /*luminosity_change=*/0.2f);
-  }
-
-  return icon_color;
-}
-
-// For themes that use alternate logo and no NTP background image is present,
-// set logo color in the same hue as NTP background.
-SkColor GetLogoColor(const ThemeBackgroundInfo& theme_info) {
-  SkColor logo_color = kNTPLightLogoColor;
-  bool has_background_image = theme_info.has_theme_image ||
-                              !theme_info.custom_background_url.is_empty();
-  if (theme_info.logo_alternate && !has_background_image) {
-    if (color_utils::IsDark(theme_info.background_color))
-      logo_color = SK_ColorWHITE;
-    else
-      logo_color = GetContrastingColorForBackground(theme_info.background_color,
-                                                    /*luminosity_change=*/0.3f);
-  }
-
-  return logo_color;
-}
-}  // namespace internal
-
 namespace {
 
 const char kCSSBackgroundImageFormat[] = "-webkit-image-set("
@@ -309,8 +240,6 @@ bool ArrayToSkColor(v8::Isolate* isolate,
   return true;
 }
 
-// TODO(gayane): Move all non-trival logic to |instant_service| and do only
-// mapping here. crbug.com/983717.
 v8::Local<v8::Object> GenerateThemeBackgroundInfo(
     v8::Isolate* isolate,
     const ThemeBackgroundInfo& theme_info) {
@@ -326,12 +255,16 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
   builder.Set("backgroundColorRgba",
               SkColorToArray(isolate, theme_info.background_color));
 
+  // Theme color for text as an array with the RGBA components in order.
+  // Value is always valid.
+  builder.Set("textColorRgba", SkColorToArray(isolate, theme_info.text_color));
+
   // Theme color for light text as an array with the RGBA components in order.
   // Value is always valid.
   builder.Set("textColorLightRgba",
               SkColorToArray(isolate, theme_info.text_color_light));
 
-  // The theme alternate logo value indicates a white logo when TRUE and a
+  // The theme alternate logo value indicates same color when TRUE and a
   // colorful one when FALSE.
   builder.Set("alternateLogo", theme_info.logo_alternate);
 
@@ -406,17 +339,12 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
   builder.Set("themeId", theme_info.theme_id);
   builder.Set("themeName", theme_info.theme_name);
 
-  // Assume that a custom background has not been configured and then
-  // override based on the condition below.
-  builder.Set("customBackgroundConfigured", false);
-  SkColor ntp_text = theme_info.text_color;
+  builder.Set("customBackgroundConfigured",
+              !theme_info.custom_background_url.is_empty());
 
   // If a custom background has been set provide the relevant information to the
   // page.
   if (!theme_info.custom_background_url.is_empty()) {
-    ntp_text = SkColorSetARGB(255, 248, 249, 250);  // GG050
-    builder.Set("alternateLogo", true);
-    builder.Set("customBackgroundConfigured", true);
     builder.Set("imageUrl", theme_info.custom_background_url.spec());
     builder.Set("attributionActionUrl",
                 theme_info.custom_background_attribution_action_url.spec());
@@ -430,20 +358,18 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
     builder.Set("attributionUrl", std::string());
   }
 
-  // Theme color for text as an array with the RGBA components in order.
-  // Value is always valid.
-  builder.Set("textColorRgba", SkColorToArray(isolate, ntp_text));
-
-  // Generate fields for themeing NTP elements.
-  builder.Set("isNtpBackgroundDark", internal::IsNtpBackgroundDark(ntp_text));
+  // Set fields for themeing NTP elements.
+  builder.Set("isNtpBackgroundDark",
+              !color_utils::IsDark(theme_info.text_color));
   builder.Set("useTitleContainer", theme_info.has_theme_image);
 
-  SkColor icon_color = internal::GetIconColor(theme_info);
-  builder.Set("iconBackgroundColor", SkColorToArray(isolate, icon_color));
-  builder.Set("useWhiteAddIcon", color_utils::IsDark(icon_color));
+  // TODO(gayane): Rename icon color to shortcut color in JS for consitancy.
+  builder.Set("iconBackgroundColor",
+              SkColorToArray(isolate, theme_info.shortcut_color));
+  builder.Set("useWhiteAddIcon",
+              color_utils::IsDark(theme_info.shortcut_color));
 
-  builder.Set("logoColor",
-              SkColorToArray(isolate, internal::GetLogoColor(theme_info)));
+  builder.Set("logoColor", SkColorToArray(isolate, theme_info.logo_color));
 
   builder.Set("colorId", theme_info.color_id);
   if (theme_info.color_id != -1) {
@@ -620,6 +546,7 @@ class SearchBoxBindings : public gin::Wrappable<SearchBoxBindings> {
   // Handlers for JS functions.
   static void Paste(const std::string& text);
   static void QueryAutocomplete(const std::string& input);
+  static void StopAutocomplete(bool clear_result);
   static void StartCapturingKeyStrokes();
   static void StopCapturingKeyStrokes();
 
@@ -641,6 +568,7 @@ gin::ObjectTemplateBuilder SearchBoxBindings::GetObjectTemplateBuilder(
                    &SearchBoxBindings::IsKeyCaptureEnabled)
       .SetMethod("paste", &SearchBoxBindings::Paste)
       .SetMethod("queryAutocomplete", &SearchBoxBindings::QueryAutocomplete)
+      .SetMethod("stopAutocomplete", &SearchBoxBindings::StopAutocomplete)
       .SetMethod("startCapturingKeyStrokes",
                  &SearchBoxBindings::StartCapturingKeyStrokes)
       .SetMethod("stopCapturingKeyStrokes",
@@ -681,6 +609,14 @@ void SearchBoxBindings::QueryAutocomplete(const std::string& input) {
   if (!search_box)
     return;
   search_box->QueryAutocomplete(input);
+}
+
+// static
+void SearchBoxBindings::StopAutocomplete(bool clear_result) {
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
+  if (!search_box)
+    return;
+  search_box->StopAutocomplete(clear_result);
 }
 
 // static

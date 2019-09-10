@@ -3,7 +3,6 @@
 <translationbundle lang="fa">
 <translation id="1036550831858290950">ذخیره برگه کنونی به‌عنوان نشانک</translation>
 <translation id="104962181688258143">‏باز کردن برنامه Files</translation>
-<translation id="1098295134904615027">میز مجازی در سمت چپ فعال شود</translation>
 <translation id="1122869341872663659">درحال نمایش <ph name="N" /> نتیجه جستجو برای <ph name="QUERY" /></translation>
 <translation id="1195667586424773550">کشیدن پیوند به نوار نشانی برگه</translation>
 <translation id="1204450209689312104">باز کردن پنجره جدید در حالت ناشناس</translation>
@@ -25,7 +24,6 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">‏افزودن www.‎ و ‎.com به ورودی‌تان در نوار نشانی و سپس باز کردن صفحه</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> و سپس <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> یا <ph name="LEFT" /></translation>
-<translation id="1929866390202038233">میز مجازی در سمت راست فعال شود</translation>
 <translation id="1996162290124031907">رفتن به برگه بعدی</translation>
 <translation id="2010818616644390445">رفتن به آخرین برگه در پنجره</translation>
 <translation id="2040706009561734834">باز کردن/بستن راه‌انداز</translation>
@@ -64,7 +62,6 @@
 <translation id="3105917916468784889">گرفتن عکس صفحه‌نمایش</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">فوکوس نوار آدرس</translation>
-<translation id="3165428420335997629">میز مجازی جدیدی ایجاد شود</translation>
 <translation id="3256109297135787951">حذف برجسته‌سازی از مورد روی قفسه</translation>
 <translation id="3288816184963444640">بستن پنجره فعلی</translation>
 <translation id="3407560819924487926">باز کردن مدیر فعالیت‌ها</translation>
@@ -181,7 +178,6 @@
 <translation id="8234414138295101081">چرخاندن ۹۰ درجه‌ای صفحه</translation>
 <translation id="8241665785394195545">کمانک راست</translation>
 <translation id="8264941229485248811">نمایش یا پنهان کردن بازرس «ابزارهای برنامه‌نویس»</translation>
-<translation id="8355937569537581904">میز مجازی کنونی حذف شود</translation>
 <translation id="836869401750819675">باز کردن صفحه بارگیری</translation>
 <translation id="8388247778047144397">کشیدن پیوند به قسمتی خالی در نوار برگه</translation>
 <translation id="8389638407792712197">باز کردن پنجره جدید</translation>

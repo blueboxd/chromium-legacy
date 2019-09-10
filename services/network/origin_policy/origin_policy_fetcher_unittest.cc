@@ -8,6 +8,7 @@
 #include "base/strings/strcat.h"
 #include "base/test/gtest_util.h"
 #include "base/test/task_environment.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -42,7 +43,8 @@ class OriginPolicyFetcherTest : public testing::Test {
     context_params->initial_proxy_config =
         net::ProxyConfigWithAnnotation::CreateDirect();
     network_context_ = std::make_unique<NetworkContext>(
-        network_service_.get(), mojo::MakeRequest(&network_context_ptr_),
+        network_service_.get(),
+        network_context_remote_.BindNewPipeAndPassReceiver(),
         std::move(context_params));
 
     mojom::URLLoaderFactoryParamsPtr params =
@@ -131,7 +133,7 @@ class OriginPolicyFetcherTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<NetworkService> network_service_;
   std::unique_ptr<NetworkContext> network_context_;
-  mojom::NetworkContextPtr network_context_ptr_;
+  mojo::Remote<mojom::NetworkContext> network_context_remote_;
   network::mojom::URLLoaderFactoryPtr url_loader_factory_;
 
   net::test_server::EmbeddedTestServer test_server_;

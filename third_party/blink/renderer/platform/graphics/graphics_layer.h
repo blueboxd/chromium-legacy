@@ -240,7 +240,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   static void UnregisterContentsLayer(cc::Layer*);
 
   IntRect InterestRect();
-  void PaintRecursively();
+  bool PaintRecursively();
   // Returns true if this layer is repainted.
   bool Paint(GraphicsContext::DisabledMode = GraphicsContext::kNothingDisabled);
 

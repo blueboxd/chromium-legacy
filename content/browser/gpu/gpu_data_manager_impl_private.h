@@ -44,8 +44,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   gpu::GPUInfo GetGPUInfoForHardwareGpu() const;
   bool GpuAccessAllowed(std::string* reason) const;
   bool GpuProcessStartAllowed() const;
-  void RequestCompleteGpuInfoIfNeeded();
-  void RequestGpuSupportedRuntimeVersion(bool delayed);
+  void RequestCompleteGpuInfoIfNeeded(GpuInfoRequest request, bool delayed);
   bool IsEssentialGpuInfoAvailable() const;
   bool IsDx12VulkanVersionAvailable() const;
   bool IsGpuFeatureInfoAvailable() const;
@@ -66,6 +65,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   void UpdateDx12VulkanInfo(
       const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info);
   void UpdateDx12VulkanRequestStatus(bool request_continues);
+  void UpdateDxDiagNodeRequestStatus(bool request_continues);
 #endif
   void UpdateGpuFeatureInfo(const gpu::GpuFeatureInfo& gpu_feature_info,
                             const base::Optional<gpu::GpuFeatureInfo>&
@@ -177,21 +177,19 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
                                            base::Time at_time) const;
   int64_t GetBlockAllDomainsDurationInMs() const;
 
-  // This is platform specific. At the moment:
-  //   1) on Windows, if DxDiagnostics are missing, this returns true;
-  //   2) all other platforms, this returns false.
-  bool NeedsCompleteGpuInfoCollection() const;
-
   // Notify all observers whenever there is a GPU info update.
   void NotifyGpuInfoUpdate();
 
-  GpuDataManagerImpl* const owner_;
+  void RequestDxDiagNodeData();
+  void RequestGpuSupportedRuntimeVersion(bool delayed);
 
-  bool complete_gpu_info_already_requested_ = false;
+  GpuDataManagerImpl* const owner_;
 
   gpu::GpuFeatureInfo gpu_feature_info_;
   gpu::GPUInfo gpu_info_;
 #if defined(OS_WIN)
+  bool gpu_info_dx_diag_requested_ = false;
+  bool gpu_info_dx_diag_request_failed_ = false;
   bool gpu_info_dx12_vulkan_valid_ = false;
   bool gpu_info_dx12_vulkan_requested_ = false;
   bool gpu_info_dx12_vulkan_request_failed_ = false;

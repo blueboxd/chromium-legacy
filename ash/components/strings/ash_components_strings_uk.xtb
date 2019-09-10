@@ -3,7 +3,6 @@
 <translationbundle lang="uk">
 <translation id="1036550831858290950">Зробити закладку для поточної вкладки</translation>
 <translation id="104962181688258143">Відкрити додаток Файли</translation>
-<translation id="1098295134904615027">Активувати віртуальний робочий стіл праворуч</translation>
 <translation id="1122869341872663659">Показано результати пошуку (<ph name="N" />) за запитом "<ph name="QUERY" />"</translation>
 <translation id="1195667586424773550">Перетягніть посилання в адресний рядок вкладки</translation>
 <translation id="1204450209689312104">Відкрити нове вікно в режимі анонімного перегляду</translation>
@@ -25,7 +24,6 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">Додати www. та .com до тексту в адресному рядку й відкрити сторінку</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, а тоді <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> або <ph name="LEFT" /></translation>
-<translation id="1929866390202038233">Активувати віртуальний робочий стіл ліворуч</translation>
 <translation id="1996162290124031907">Перейти на наступну вкладку</translation>
 <translation id="2010818616644390445">Перейти на останню вкладку у вікні</translation>
 <translation id="2040706009561734834">Відкрити чи закрити панель запуску</translation>
@@ -64,7 +62,6 @@
 <translation id="3105917916468784889">Зробити знімок екрана</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Активувати адресний рядок</translation>
-<translation id="3165428420335997629">Створити новий віртуальний робочий стіл</translation>
 <translation id="3256109297135787951">Скасувати виділення елемента на полиці</translation>
 <translation id="3288816184963444640">Закрити поточне вікно</translation>
 <translation id="3407560819924487926">Відкрити Диспетчер завдань</translation>
@@ -181,7 +178,6 @@
 <translation id="8234414138295101081">Обернути екран на 90 градусів</translation>
 <translation id="8241665785394195545">права квадратна дужка</translation>
 <translation id="8264941229485248811">Показати чи сховати інспектор Інструментів розробника</translation>
-<translation id="8355937569537581904">Видалити поточний віртуальний робочий стіл</translation>
 <translation id="836869401750819675">Відкрити сторінку завантажень</translation>
 <translation id="8388247778047144397">Перетягніть посилання на порожнє місце на панелі вкладок</translation>
 <translation id="8389638407792712197">Відкрити нове вікно</translation>

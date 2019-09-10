@@ -15,6 +15,9 @@ class WebEngineContentRendererClient : public content::ContentRendererClient {
 
   // content::ContentRendererClient overrides.
   void RenderFrameCreated(content::RenderFrame* render_frame) override;
+  void AddSupportedKeySystems(
+      std::vector<std::unique_ptr<media::KeySystemProperties>>* key_systems)
+      override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebEngineContentRendererClient);

@@ -132,13 +132,11 @@ bool VerifyUsingPathBuilder(
     const std::vector<CertInput>& root_der_certs,
     const base::Time at_time,
     const base::FilePath& dump_prefix_path,
-    scoped_refptr<net::CertNetFetcher> cert_net_fetcher) {
+    scoped_refptr<net::CertNetFetcher> cert_net_fetcher,
+    std::unique_ptr<net::SystemTrustStore> ssl_trust_store) {
   base::Time::Exploded exploded_time;
   at_time.UTCExplode(&exploded_time);
   net::der::GeneralizedTime time = ConvertExplodedTime(exploded_time);
-
-  std::unique_ptr<net::SystemTrustStore> ssl_trust_store =
-      net::CreateSslSystemTrustStore();
 
   for (const auto& der_cert : root_der_certs) {
     scoped_refptr<net::ParsedCertificate> cert = ParseCertificate(der_cert);

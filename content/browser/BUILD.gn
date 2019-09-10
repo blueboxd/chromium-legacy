@@ -1994,7 +1994,7 @@ jumbo_source_set("browser") {
     ]
   }
 
-  if (is_chromeos || is_android || is_chromecast) {
+  if (is_chromeos || is_android || is_chromecast || is_fuchsia) {
     defines += [ "ENABLE_PROTECTED_MEDIA_IDENTIFIER_PERMISSION" ]
   }
 
@@ -2415,7 +2415,7 @@ jumbo_source_set("browser") {
       "//build/config/freetype",
       "//content/public/android:jni",
       "//device/gamepad/public/mojom",
-      "//gpu/ipc/common:android_texture_owner",
+      "//gpu/command_buffer/service:gles2",
       "//media",
       "//media/capture/content/android",
       "//media/capture/video/android",

@@ -29,14 +29,14 @@ size_t GetNDEFMessageSize(const device::mojom::blink::NDEFMessage& message) {
 }
 
 bool SetNDEFMessageURL(const String& origin,
-                       device::mojom::blink::NDEFMessage& message) {
+                       device::mojom::blink::NDEFMessage* message) {
   KURL origin_url(origin);
 
-  if (!message.url.IsEmpty() && origin_url.CanSetPathname()) {
-    origin_url.SetPath(message.url);
+  if (!message->url.IsEmpty() && origin_url.CanSetPathname()) {
+    origin_url.SetPath(message->url);
   }
 
-  message.url = origin_url;
+  message->url = origin_url;
   return origin_url.IsValid();
 }
 

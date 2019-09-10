@@ -120,9 +120,7 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
     datatypes.push_back(syncer::TYPED_URLS);
     datatypes.push_back(syncer::USER_EVENTS);
     datatypes.push_back(syncer::USER_CONSENTS);
-    if (base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf)) {
-      datatypes.push_back(syncer::SEND_TAB_TO_SELF);
-    }
+    datatypes.push_back(syncer::SEND_TAB_TO_SELF);
     return datatypes;
   }
 

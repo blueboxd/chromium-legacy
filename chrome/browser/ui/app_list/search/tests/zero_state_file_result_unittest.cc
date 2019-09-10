@@ -23,7 +23,7 @@ class ZeroStateFileResultTest : public testing::Test {
 
   ~ZeroStateFileResultTest() override = default;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<Profile> profile_;
 };
 

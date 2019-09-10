@@ -306,7 +306,6 @@
 <translation id="2479410451996844060">Virheellinen hakukoneen URL-osoite.</translation>
 <translation id="2482878487686419369">Ilmoitukset</translation>
 <translation id="248348093745724435">Laitteen käytännöt</translation>
-<translation id="2485387744899240041">Laitteen ja selaimen käyttäjänimet</translation>
 <translation id="2491120439723279231">Palvelimen varmenteessa on virheitä.</translation>
 <translation id="2493640343870896922">Kirje-plus</translation>
 <translation id="2495083838625180221">JSON-jäsentäjä</translation>
@@ -876,7 +875,6 @@
 <translation id="5565735124758917034">Aktiivinen</translation>
 <translation id="5570825185877910964">Suojaa tili</translation>
 <translation id="5571083550517324815">Nouto tästä osoitteesta ei onnistu. Valitse eri osoite.</translation>
-<translation id="5571347317547569613">({NUM_COOKIES,plural, =1{1 käytössä}other{# käytössä}})</translation>
 <translation id="5580958916614886209">Tarkista vanhentumiskuukausi ja yritä uudelleen.</translation>
 <translation id="5586446728396275693">Ei tallennettuja osoitteita</translation>
 <translation id="5595485650161345191">Osoitteen muokkaus</translation>

@@ -206,7 +206,6 @@
 <translation id="257674075312929031">群组</translation>
 <translation id="2582407057977008361">边栏内容</translation>
 <translation id="2592212930811759050">点按两次即可开始修改</translation>
-<translation id="2606210917827248971">包含 {COUNT,plural, =1{# 项内容}other{# 项内容}}</translation>
 <translation id="2614981083756825552">数学标记语言布局</translation>
 <translation id="2624431853467395961">打开学习模式</translation>
 <translation id="2626530649491650971">可点击</translation>
@@ -390,7 +389,6 @@
 <translation id="3781428340399460090">艳粉色</translation>
 <translation id="3783725005098956899">显示日志</translation>
 <translation id="3793710123303304873">已退出对话框。</translation>
-<translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">自动填充列表</translation>
 <translation id="3810838688059735925">视频</translation>
 <translation id="3813387282697781382">浅珊瑚色</translation>

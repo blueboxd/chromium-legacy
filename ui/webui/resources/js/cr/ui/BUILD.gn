@@ -8,6 +8,7 @@ import("../../../tools/js_modulizer.gni")
 group("closure_compile") {
   deps = [
     ":ui_resources",
+    ":ui_resources_modules",
     "page_manager:closure_compile",
   ]
 }
@@ -266,12 +267,33 @@ js_library("tree") {
 }
 
 js_modulizer("modulize") {
-  input_files = [ "focus_outline_manager.js" ]
+  input_files = [
+    "focus_outline_manager.js",
+    "focus_without_ink.js",
+  ]
+}
+
+js_type_check("ui_resources_modules") {
+  deps = [
+    ":focus_outline_manager.m",
+    ":focus_without_ink.m",
+  ]
 }
 
 js_library("focus_outline_manager.m") {
   sources = [
     "$root_gen_dir/ui/webui/resources/js/cr/ui/focus_outline_manager.m.js",
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("focus_without_ink.m") {
+  deps = [
+    "../..:assert.m",
+    "../..:cr.m",
+  ]
+  sources = [
+    "$root_gen_dir/ui/webui/resources/js/cr/ui/focus_without_ink.m.js",
   ]
   extra_deps = [ ":modulize" ]
 }

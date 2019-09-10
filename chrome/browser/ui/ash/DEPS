@@ -14,7 +14,6 @@ specific_include_rules = {
    "+ash/components/strings/grit/ash_components_strings.h",
    "+ash/keyboard/ui",
    "+ash/public",
-   "+ash/shelf/shelf_constants.h",
   ],
   # AshShellInit supports classic (non-mash) mode so allow ash/ includes.
   "ash_shell_init\.cc": [

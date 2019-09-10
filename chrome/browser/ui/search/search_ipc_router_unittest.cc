@@ -107,6 +107,7 @@ class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
       QueryAutocomplete,
       void(const std::string& input,
            chrome::mojom::EmbeddedSearch::QueryAutocompleteCallback callback));
+  MOCK_METHOD1(StopAutocomplete, void(bool clear_result));
 };
 
 class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
@@ -142,6 +143,7 @@ class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
   MOCK_METHOD0(ShouldSendLocalBackgroundSelected, bool());
   MOCK_METHOD0(ShouldProcessThemeChangeMessages, bool());
   MOCK_METHOD1(ShouldProcessQueryAutocomplete, bool(bool));
+  MOCK_METHOD1(ShouldProcessStopAutocomplete, bool(bool));
 };
 
 class MockEmbeddedSearchClientFactory

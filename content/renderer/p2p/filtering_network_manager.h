@@ -10,7 +10,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "content/renderer/p2p/network_manager_uma.h"
+#include "third_party/blink/public/platform/modules/p2p/network_manager_uma.h"
 #include "third_party/webrtc/rtc_base/network.h"
 #include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
 #include "url/gurl.h"
@@ -77,7 +77,7 @@ class FilteringNetworkManager : public rtc::NetworkManagerBase,
   // A tri-state permission checking status. It starts with UNKNOWN and will
   // change to GRANTED if one of permissions is granted. Otherwise, DENIED will
   // be returned.
-  IPPermissionStatus GetIPPermissionStatus() const;
+  blink::IPPermissionStatus GetIPPermissionStatus() const;
 
   void FireEventIfStarted();
 

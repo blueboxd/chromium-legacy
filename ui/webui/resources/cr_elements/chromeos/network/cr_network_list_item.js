@@ -139,11 +139,13 @@ Polymer({
       return '';
     }
     const connectionState = this.networkState.connectionState;
-    if (this.networkState.type == mojom.NetworkType.kCellular &&
-        this.networkState.cellular.scanning) {
-      // TODO(khorimoto): Add and sim locked and possibly initializing states to
-      // CellularStateProperties.
-      return CrOncStrings.networkListItemScanning;
+    if (this.networkState.type == mojom.NetworkType.kCellular) {
+      if (this.networkState.cellular.scanning) {
+        return CrOncStrings.networkListItemScanning;
+      }
+      if (this.networkState.cellular.simLocked) {
+        return CrOncStrings.networkListItemSimCardLocked;
+      }
     }
     if (OncMojo.connectionStateIsConnected(connectionState)) {
       // TODO(khorimoto): Consider differentiating between Portal, Connected,

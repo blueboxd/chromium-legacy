@@ -134,7 +134,6 @@ SigninManagerAndroid::SigninManagerAndroid(
   DCHECK(identity_manager_);
   DCHECK(user_cloud_policy_manager_);
   DCHECK(user_policy_signin_service_);
-  identity_manager_->AddObserver(this);
 
   signin_allowed_.Init(
       prefs::kSigninAllowed, profile_->GetPrefs(),
@@ -146,7 +145,8 @@ SigninManagerAndroid::SigninManagerAndroid(
 
   java_signin_manager_ = Java_SigninManager_create(
       base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this),
-      identity_manager_->LegacyGetAccountTrackerServiceJavaObject());
+      identity_manager_->LegacyGetAccountTrackerServiceJavaObject(),
+      identity_manager_->GetJavaObject());
 }
 
 base::android::ScopedJavaLocalRef<jobject>
@@ -157,7 +157,6 @@ SigninManagerAndroid::GetJavaObject() {
 SigninManagerAndroid::~SigninManagerAndroid() {}
 
 void SigninManagerAndroid::Shutdown() {
-  identity_manager_->RemoveObserver(this);
   Java_SigninManager_destroy(base::android::AttachCurrentThread(),
                              java_signin_manager_);
 }
@@ -212,17 +211,6 @@ jboolean SigninManagerAndroid::IsSigninAllowedByPolicy(JNIEnv* env) const {
 
 jboolean SigninManagerAndroid::IsForceSigninEnabled(JNIEnv* env) {
   return force_browser_signin_.GetValue();
-}
-
-jboolean SigninManagerAndroid::IsSignedInOnNative(JNIEnv* env) {
-  return identity_manager_->HasPrimaryAccount();
-}
-
-void SigninManagerAndroid::OnPrimaryAccountCleared(
-    const CoreAccountInfo& previous_primary_account_info) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  Java_SigninManager_onNativeSignOut(base::android::AttachCurrentThread(),
-                                     java_signin_manager_);
 }
 
 void SigninManagerAndroid::OnSigninAllowedPrefChanged() const {

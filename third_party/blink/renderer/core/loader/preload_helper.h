@@ -42,7 +42,8 @@ class PreloadHelper final {
       CanLoadResources,
       MediaPreloadPolicy,
       const base::Optional<ViewportDescription>&,
-      std::unique_ptr<AlternateSignedExchangeResourceInfo>);
+      std::unique_ptr<AlternateSignedExchangeResourceInfo>,
+      base::Optional<base::UnguessableToken>);
   static Resource* StartPreload(ResourceType,
                                 FetchParameters&,
                                 ResourceFetcher*);

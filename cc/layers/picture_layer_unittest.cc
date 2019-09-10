@@ -19,6 +19,7 @@
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_proxy.h"
 #include "cc/test/fake_recording_source.h"
+#include "cc/test/layer_test_common.h"
 #include "cc/test/skia_common.h"
 #include "cc/test/stub_layer_tree_host_single_thread_client.h"
 #include "cc/test/test_task_graph_runner.h"
@@ -183,19 +184,18 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
 
   std::unique_ptr<LayerTreeFrameSink> layer_tree_frame_sink(
       FakeLayerTreeFrameSink::Create3d());
-  LayerTreeSettings layer_tree_settings = LayerTreeSettings();
   FakeLayerTreeHostImpl host_impl(
-      layer_tree_settings, &impl_task_runner_provider, &task_graph_runner);
+      LayerListSettings(), &impl_task_runner_provider, &task_graph_runner);
   host_impl.SetVisible(true);
   EXPECT_TRUE(host_impl.InitializeFrameSink(layer_tree_frame_sink.get()));
 
   host_impl.CreatePendingTree();
   host_impl.pending_tree()->SetRootLayerForTesting(
       FakePictureLayerImpl::Create(host_impl.pending_tree(), 1));
-  host_impl.pending_tree()->BuildLayerListAndPropertyTreesForTesting();
-
   FakePictureLayerImpl* layer_impl = static_cast<FakePictureLayerImpl*>(
       host_impl.pending_tree()->root_layer_for_testing());
+  SetupRootProperties(layer_impl);
+  UpdateDrawProperties(host_impl.pending_tree());
 
   layer->PushPropertiesTo(layer_impl);
 
@@ -206,8 +206,7 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
 
   // By updating the draw proprties on the active tree, we will set the viewport
   // rect for tile priorities to something non-empty.
-  host_impl.active_tree()->BuildPropertyTreesForTesting();
-  host_impl.active_tree()->UpdateDrawProperties();
+  UpdateDrawProperties(host_impl.active_tree());
 
   layer->SetBounds(gfx::Size(11, 11));
 
@@ -218,7 +217,7 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
   // We should now have invalid contents and should therefore clear the
   // recording source.
   layer->PushPropertiesTo(layer_impl);
-  host_impl.pending_tree()->BuildPropertyTreesForTesting();
+  UpdateDrawProperties(host_impl.pending_tree());
 
   host_impl.ActivateSyncTree();
 

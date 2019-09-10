@@ -2335,11 +2335,7 @@ WebInputEventResult EventHandler::PassMouseMoveEventToSubframe(
 WebInputEventResult EventHandler::PassMouseReleaseEventToSubframe(
     MouseEventWithHitTestResults& mev,
     LocalFrame* subframe) {
-  WebInputEventResult result =
-      subframe->GetEventHandler().HandleMouseReleaseEvent(mev.Event());
-  if (result != WebInputEventResult::kNotHandled)
-    return result;
-  return WebInputEventResult::kHandledSystem;
+  return subframe->GetEventHandler().HandleMouseReleaseEvent(mev.Event());
 }
 
 void EventHandler::CaptureMouseEventsToWidget(bool capture) {

@@ -8,10 +8,10 @@
 #include <memory>
 
 #include "ash/public/cpp/ash_constants.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button_delegate.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_view.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
@@ -351,7 +351,7 @@ void ShelfAppButton::SetImage(const gfx::ImageSkia& image) {
     return;
   }
 
-  const int icon_size = ShelfConstants::button_icon_size();
+  const int icon_size = ShelfConfig::Get()->button_icon_size();
 
   // Resize the image maintaining our aspect ratio.
   float aspect_ratio =
@@ -555,12 +555,13 @@ bool ShelfAppButton::OnMouseDragged(const ui::MouseEvent& event) {
 void ShelfAppButton::Layout() {
   // TODO: Find out why there is an extra pixel of padding between each item
   // and the inner side of the shelf.
-  int icon_padding =
-      (ShelfConstants::shelf_size() - ShelfConstants::button_icon_size()) / 2 -
-      1;
-  const int icon_size = ShelfConstants::button_icon_size();
+  // clang-format off
+  int icon_padding = (ShelfConfig::Get()->shelf_size() -
+                      ShelfConfig::Get()->button_icon_size()) / 2 - 1;
+  // clang-format on
+  const int icon_size = ShelfConfig::Get()->button_icon_size();
   const int status_indicator_offet_from_shelf_edge =
-      ShelfConstants::status_indicator_offset_from_edge();
+      ShelfConfig::Get()->status_indicator_offset_from_shelf_edge();
 
   const gfx::Rect button_bounds(GetContentsBounds());
   Shelf* shelf = shelf_view_->shelf();
@@ -715,7 +716,7 @@ void ShelfAppButton::OnGestureEvent(ui::GestureEvent* event) {
 
 std::unique_ptr<views::InkDropRipple> ShelfAppButton::CreateInkDropRipple()
     const {
-  const int ink_drop_small_size = ash::ShelfConstants::shelf_size();
+  const int ink_drop_small_size = ash::ShelfConfig::Get()->shelf_size();
   return std::make_unique<views::SquareInkDropRipple>(
       gfx::Size(kInkDropLargeSize, kInkDropLargeSize),
       ink_drop_large_corner_radius(),

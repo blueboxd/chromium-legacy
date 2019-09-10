@@ -61,6 +61,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   bool attach_same_site_cookies = false;
   bool update_first_party_url_on_redirect = false;
   base::Optional<url::Origin> request_initiator;
+  base::Optional<url::Origin> isolated_world_origin;
   GURL referrer;
   net::URLRequest::ReferrerPolicy referrer_policy =
       net::URLRequest::NEVER_CLEAR_REFERRER;
@@ -104,6 +105,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   base::Optional<std::string> devtools_request_id;
   bool is_signed_exchange_prefetch_cache_enabled = false;
   bool obey_origin_policy = false;
+  base::Optional<base::UnguessableToken> recursive_prefetch_token;
 
   base::Optional<TrustedParams> trusted_params;
 };

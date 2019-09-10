@@ -30,16 +30,16 @@ class Gpu::GpuPtrIO {
   GpuPtrIO() { DETACH_FROM_THREAD(thread_checker_); }
   ~GpuPtrIO() { DCHECK_CALLED_ON_VALID_THREAD(thread_checker_); }
 
-  void Initialize(
-      mojom::GpuPtrInfo ptr_info,
-      mojom::GpuMemoryBufferFactoryRequest memory_buffer_factory_request) {
+  void Initialize(mojom::GpuPtrInfo ptr_info,
+                  mojo::PendingReceiver<mojom::GpuMemoryBufferFactory>
+                      memory_buffer_factory_receiver) {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
     gpu_ptr_.Bind(std::move(ptr_info));
     gpu_ptr_.set_connection_error_handler(
         base::BindOnce(&GpuPtrIO::ConnectionError, base::Unretained(this)));
     gpu_ptr_->CreateGpuMemoryBufferFactory(
-        std::move(memory_buffer_factory_request));
+        std::move(memory_buffer_factory_receiver));
   }
 
   void EstablishGpuChannel(scoped_refptr<EstablishRequest> establish_request) {

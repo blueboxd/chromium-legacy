@@ -25,7 +25,9 @@ TEST(RenderSurfaceLayerImplTest, Occlusion) {
   LayerImpl* owning_layer_impl = impl.AddChildToRoot<LayerImpl>();
   owning_layer_impl->SetBounds(layer_size);
   owning_layer_impl->SetDrawsContent(true);
-  owning_layer_impl->test_properties()->force_render_surface = true;
+  CopyProperties(impl.root_layer(), owning_layer_impl);
+  CreateEffectNode(owning_layer_impl).render_surface_reason =
+      RenderSurfaceReason::kTest;
 
   impl.CalcDrawProps(viewport_size);
 
@@ -75,47 +77,35 @@ static std::unique_ptr<viz::RenderPass> DoAppendQuadsWithScaledMask(
   scoped_refptr<FakeRasterSource> raster_source =
       FakeRasterSource::CreateFilledSolidColor(layer_size);
 
-  LayerTreeSettings settings;
-  LayerTestCommon::LayerImplTest impl(settings);
-  std::unique_ptr<LayerImpl> root =
-      LayerImpl::Create(impl.host_impl()->active_tree(), 2);
-  std::unique_ptr<LayerImpl> surface =
-      LayerImpl::Create(impl.host_impl()->active_tree(), 3);
-  surface->SetBounds(layer_size);
-  surface->test_properties()->force_render_surface = true;
+  LayerTestCommon::LayerImplTest impl;
+  auto* root = impl.root_layer();
 
+  auto* surface = impl.AddLayer<LayerImpl>();
+  surface->SetBounds(layer_size);
   gfx::Transform scale;
   scale.Scale(scale_factor, scale_factor);
-  surface->test_properties()->transform = scale;
+  CopyProperties(root, surface);
+  CreateTransformNode(surface).local = scale;
+  CreateEffectNode(surface).render_surface_reason = RenderSurfaceReason::kTest;
 
-  std::unique_ptr<FakeMaskLayerImpl> mask_layer = FakeMaskLayerImpl::Create(
-      impl.host_impl()->active_tree(), 4, raster_source, mask_type);
+  auto* mask_layer =
+      impl.AddMaskLayer<FakeMaskLayerImpl>(surface, raster_source, mask_type);
   mask_layer->set_resource_size(
       gfx::ScaleToCeiledSize(layer_size, scale_factor));
   mask_layer->SetDrawsContent(true);
   mask_layer->SetBounds(layer_size);
-  surface->test_properties()->SetMaskLayer(std::move(mask_layer));
 
-  std::unique_ptr<LayerImpl> child =
-      LayerImpl::Create(impl.host_impl()->active_tree(), 5);
+  auto* child = impl.AddLayer<LayerImpl>();
   child->SetDrawsContent(true);
   child->SetBounds(layer_size);
+  CopyProperties(surface, child);
 
-  surface->test_properties()->AddChild(std::move(child));
-  root->test_properties()->AddChild(std::move(surface));
-  impl.host_impl()->active_tree()->SetRootLayerForTesting(std::move(root));
+  LayerTreeImpl* active_tree = impl.host_impl()->active_tree();
+  active_tree->SetDeviceScaleFactor(device_scale_factor);
+  active_tree->SetDeviceViewportRect(viewport_rect);
+  UpdateDrawProperties(active_tree);
 
-  impl.host_impl()->active_tree()->SetDeviceScaleFactor(device_scale_factor);
-  impl.host_impl()->active_tree()->SetDeviceViewportRect(viewport_rect);
-  impl.host_impl()->active_tree()->BuildLayerListAndPropertyTreesForTesting();
-  impl.host_impl()->active_tree()->UpdateDrawProperties();
-
-  LayerImpl* surface_raw = impl.host_impl()
-                               ->active_tree()
-                               ->root_layer_for_testing()
-                               ->test_properties()
-                               ->children[0];
-  RenderSurfaceImpl* render_surface_impl = GetRenderSurface(surface_raw);
+  RenderSurfaceImpl* render_surface_impl = GetRenderSurface(surface);
   std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
   AppendQuadsData append_quads_data;
   render_surface_impl->AppendQuads(draw_mode, render_pass.get(),

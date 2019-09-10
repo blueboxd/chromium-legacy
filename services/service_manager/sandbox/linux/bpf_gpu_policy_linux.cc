@@ -23,11 +23,11 @@
 #include "services/service_manager/sandbox/linux/sandbox_linux.h"
 #include "services/service_manager/sandbox/linux/sandbox_seccomp_bpf_linux.h"
 
+using sandbox::SyscallSets;
 using sandbox::bpf_dsl::Allow;
 using sandbox::bpf_dsl::ResultExpr;
 using sandbox::bpf_dsl::Trap;
 using sandbox::syscall_broker::BrokerProcess;
-using sandbox::SyscallSets;
 
 namespace service_manager {
 
@@ -64,6 +64,11 @@ ResultExpr GpuProcessPolicy::EvaluateSyscall(int sysno) const {
     default:
       if (SyscallSets::IsEventFd(sysno))
         return Allow();
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_X11)
+      if (SyscallSets::IsSystemVSharedMemory(sysno))
+        return Allow();
+#endif
 
       auto* broker_process = SandboxLinux::GetInstance()->broker_process();
       if (broker_process->IsSyscallAllowed(sysno)) {

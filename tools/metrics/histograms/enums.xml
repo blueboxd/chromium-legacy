@@ -11607,6 +11607,13 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Closed"/>
 </enum>
 
+<enum name="CrosSettingsOsBannerInteraction">
+  <int value="0" label="Not shown"/>
+  <int value="1" label="Shown"/>
+  <int value="2" label="Clicked"/>
+  <int value="3" label="Closed"/>
+</enum>
+
 <enum name="CrosShelfClickTarget">
   <obsolete>
     Deprecated as of 12/2013. Default pinned apps trial is finished.
@@ -35198,6 +35205,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1302859198" label="enable-stylus-virtual-keyboard:disabled"/>
   <int value="-1297079591" label="EnableRemovingAllThirdPartyCookies:disabled"/>
   <int value="-1294050129" label="ContentFullscreen:disabled"/>
+  <int value="-1293987566" label="OmniboxZeroSuggestionsOnNTPRealbox:disabled"/>
   <int value="-1292615467"
       label="OmniboxSuggestionTransparencyOptions:disabled"/>
   <int value="-1290471006"
@@ -37041,6 +37049,7 @@ from previous Chrome versions.
   <int value="1235800887" label="V8Ignition:enabled"/>
   <int value="1235940786" label="ChromeHomePersistentIph:enabled"/>
   <int value="1237297772" label="no-pings"/>
+  <int value="1239720601" label="OmniboxZeroSuggestionsOnNTPRealbox:enabled"/>
   <int value="1240073971" label="ash-disable-smooth-screen-rotation"/>
   <int value="1242100010" label="AutofillProfileClientValidation:disabled"/>
   <int value="1242632259" label="ContentSuggestionsCategoryOrder:disabled"/>

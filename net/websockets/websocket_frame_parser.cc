@@ -191,7 +191,7 @@ std::unique_ptr<WebSocketFrameChunk> WebSocketFrameParser::DecodeFramePayload(
   }
   frame_chunk->final_chunk = false;
   if (chunk_data_size > 0) {
-    frame_chunk->data = data->subspan(0, chunk_data_size);
+    frame_chunk->payload = data->subspan(0, chunk_data_size);
     *data = data->subspan(chunk_data_size);
     frame_offset_ += chunk_data_size;
   }

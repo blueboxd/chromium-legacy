@@ -88,6 +88,7 @@ ResourceResponseHead::ResourceResponseHead(
   request_start = url_response_head->request_start;
   response_start = url_response_head->response_start;
   origin_policy = url_response_head->origin_policy;
+  recursive_prefetch_token = url_response_head->recursive_prefetch_token;
 }
 
 scoped_refptr<ResourceResponse> ResourceResponse::DeepCopy() const {
@@ -150,6 +151,7 @@ scoped_refptr<ResourceResponse> ResourceResponse::DeepCopy() const {
   new_response->head.is_legacy_tls_version = head.is_legacy_tls_version;
   new_response->head.auth_challenge_info = head.auth_challenge_info;
   new_response->head.origin_policy = head.origin_policy;
+  new_response->head.recursive_prefetch_token = head.recursive_prefetch_token;
   return new_response;
 }
 
@@ -189,7 +191,7 @@ ResourceResponseHead::operator mojom::URLResponseHeadPtr() const {
       async_revalidation_requested, did_mime_sniff,
       is_signed_exchange_inner_response, was_in_prefetch_cache,
       intercepted_by_plugin, is_legacy_tls_version, auth_challenge_info,
-      request_start, response_start, origin_policy);
+      request_start, response_start, origin_policy, recursive_prefetch_token);
 }
 
 }  // namespace network

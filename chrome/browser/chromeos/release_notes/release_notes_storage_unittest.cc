@@ -38,7 +38,7 @@ class ReleaseNotesStorageTest : public testing::Test {
 
   FakeChromeUserManager* user_manager_;
   user_manager::ScopedUserManager scoped_user_manager_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(ReleaseNotesStorageTest);
 };

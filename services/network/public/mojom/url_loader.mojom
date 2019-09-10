@@ -145,6 +145,10 @@ struct URLRequest {
   // for cookie checks like 'First-Party-Only'.
   url.mojom.Origin? request_initiator;
 
+  // The origin of the isolated world - set if this is a fetch/XHR initiated by
+  // an isolated world.
+  url.mojom.Origin? isolated_world_origin;
+
   // The referrer to use (may be empty).
   url.mojom.Url referrer;
 
@@ -356,6 +360,12 @@ struct URLRequest {
 
   // Setting these from an untrusted URLLoader will cause the request to fail.
   TrustedUrlRequestParams? trusted_params;
+
+  // Set for recursive prefetch requests originating from cross-origin
+  // prefetches. These requests take the form of `Link: rel=preload` HTTP
+  // response headers. For more information on these requests see
+  // https://github.com/w3c/resource-hints/issues/77.
+  mojo_base.mojom.UnguessableToken? recursive_prefetch_token;
 };
 
 // URLRequestBody represents body (i.e. upload data) of a HTTP request.

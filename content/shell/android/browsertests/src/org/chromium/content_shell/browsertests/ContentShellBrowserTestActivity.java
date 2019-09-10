@@ -4,9 +4,14 @@
 
 package org.chromium.content_shell.browsertests;
 
+import android.content.Context;
+import android.net.Uri;
+import android.support.v4.content.FileProvider;
 import android.view.Window;
 import android.view.WindowManager;
 
+import org.chromium.base.ContentUriUtils;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.library_loader.LibraryLoader;
@@ -20,6 +25,8 @@ import org.chromium.native_test.NativeBrowserTestActivity;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.WindowAndroid;
 
+import java.io.File;
+
 /** An Activity base class for running browser tests against ContentShell. */
 public abstract class ContentShellBrowserTestActivity extends NativeBrowserTestActivity {
 
@@ -28,6 +35,17 @@ public abstract class ContentShellBrowserTestActivity extends NativeBrowserTestA
     private ShellManager mShellManager;
     private WindowAndroid mWindowAndroid;
 
+    private static class FileProviderHelper implements ContentUriUtils.FileProviderUtil {
+        // Keep this variable in sync with the value defined in file_paths.xml.
+        private static final String API_AUTHORITY_SUFFIX = ".FileProvider";
+
+        @Override
+        public Uri getContentUriFromFile(File file) {
+            Context appContext = ContextUtils.getApplicationContext();
+            return FileProvider.getUriForFile(
+                    appContext, appContext.getPackageName() + API_AUTHORITY_SUFFIX, file);
+        }
+    }
     /**
      * Initializes the browser process.
      *
@@ -43,6 +61,7 @@ public abstract class ContentShellBrowserTestActivity extends NativeBrowserTestA
             System.exit(-1);
         }
 
+        ContentUriUtils.setFileProviderUtil(new FileProviderHelper());
         setContentView(getTestActivityViewId());
         mShellManager = (ShellManager) findViewById(getShellManagerViewId());
         mWindowAndroid = new ActivityWindowAndroid(this);

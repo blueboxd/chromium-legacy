@@ -98,8 +98,6 @@ uint8_t ThreadState::main_thread_state_storage_[sizeof(ThreadState)];
 
 namespace {
 
-const size_t kDefaultAllocatedObjectSizeThreshold = 100 * 1024;
-
 // Duration of one incremental marking step. Should be short enough that it
 // doesn't cause jank even though it is scheduled as a normal task.
 constexpr base::TimeDelta kDefaultIncrementalMarkingStepDuration =
@@ -143,21 +141,6 @@ ThreadState::ThreadState()
   heap_ = std::make_unique<ThreadHeap>(this);
 }
 
-// Implementation for RAILModeObserver
-void ThreadState::OnRAILModeChanged(RAILMode new_mode) {
-  should_optimize_for_load_time_ = new_mode == RAILMode::kLoad;
-  // When switching RAIL mode to load we try to avoid incremental marking as
-  // the write barrier cost is noticeable on throughput and garbage
-  // accumulated during loading is likely to be alive during that phase. The
-  // same argument holds for unified heap garbage collections with the
-  // difference that these collections are triggered by V8 and should thus be
-  // avoided on that end.
-  if (should_optimize_for_load_time_ && IsIncrementalMarking() &&
-      !IsUnifiedGCMarkingInProgress() &&
-      GetGCState() == GCState::kIncrementalMarkingStepScheduled)
-    ScheduleIncrementalMarkingFinalize();
-}
-
 ThreadState::~ThreadState() {
   DCHECK(CheckThread());
   if (IsMainThread())
@@ -170,8 +153,6 @@ ThreadState::~ThreadState() {
 void ThreadState::AttachMainThread() {
   thread_specific_ = new WTF::ThreadSpecific<ThreadState*>();
   new (main_thread_state_storage_) ThreadState();
-
-  ThreadScheduler::Current()->AddRAILModeObserver(MainThreadState());
 }
 
 void ThreadState::AttachCurrentThread() {
@@ -366,154 +347,6 @@ ThreadState::GCSnapshotInfo::GCSnapshotInfo(wtf_size_t num_object_types)
       live_size(Vector<size_t>(num_object_types)),
       dead_size(Vector<size_t>(num_object_types)) {}
 
-size_t ThreadState::TotalMemorySize() {
-  return heap_->stats_collector()->object_size_in_bytes() +
-         WTF::Partitions::TotalSizeOfCommittedPages();
-}
-
-size_t ThreadState::EstimatedLiveSize(size_t estimation_base_size,
-                                      size_t size_at_last_gc) {
-  const ThreadHeapStatsCollector& stats_collector = *heap_->stats_collector();
-  const ThreadHeapStatsCollector::Event& prev = stats_collector.previous();
-
-  if (prev.wrapper_count_before_sweeping == 0)
-    return estimation_base_size;
-
-  // (estimated size) = (estimation base size) - (heap size at the last GC) /
-  //   (# of persistent handles at the last GC) *
-  //     (# of persistent handles collected since the last GC)
-  size_t size_retained_by_collected_persistents = static_cast<size_t>(
-      1.0 * size_at_last_gc / prev.wrapper_count_before_sweeping *
-      stats_collector.collected_wrapper_count());
-  if (estimation_base_size < size_retained_by_collected_persistents)
-    return 0;
-  return estimation_base_size - size_retained_by_collected_persistents;
-}
-
-double ThreadState::HeapGrowingRate() {
-  const size_t current_size = heap_->stats_collector()->object_size_in_bytes();
-  // TODO(mlippautz): Clarify those two parameters below.
-  const size_t estimated_size =
-      EstimatedLiveSize(heap_->stats_collector()->previous().marked_bytes,
-                        heap_->stats_collector()->previous().marked_bytes);
-
-  // If the estimatedSize is 0, we set a high growing rate to trigger a GC.
-  double growing_rate =
-      estimated_size > 0 ? 1.0 * current_size / estimated_size : 100;
-  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
-                 "ThreadState::heapEstimatedSizeKB",
-                 CappedSizeInKB(estimated_size));
-  TRACE_COUNTER1(
-      TRACE_DISABLED_BY_DEFAULT("blink_gc"), "ThreadState::heapGrowingRate",
-      base::saturated_cast<base::Histogram::Sample>(100 * growing_rate));
-  return growing_rate;
-}
-
-double ThreadState::PartitionAllocGrowingRate() {
-  size_t current_size = WTF::Partitions::TotalSizeOfCommittedPages();
-  size_t estimated_size = EstimatedLiveSize(
-      current_size, heap_->stats_collector()
-                        ->previous()
-                        .partition_alloc_bytes_before_sweeping);
-
-  // If the estimatedSize is 0, we set a high growing rate to trigger a GC.
-  double growing_rate =
-      estimated_size > 0 ? 1.0 * current_size / estimated_size : 100;
-  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
-                 "ThreadState::partitionAllocEstimatedSizeKB",
-                 CappedSizeInKB(estimated_size));
-  TRACE_COUNTER1(
-      TRACE_DISABLED_BY_DEFAULT("blink_gc"),
-      "ThreadState::partitionAllocGrowingRate",
-      base::saturated_cast<base::Histogram::Sample>(100 * growing_rate));
-  return growing_rate;
-}
-
-// TODO(haraken): We should improve the GC heuristics. The heuristics affect
-// performance significantly.
-bool ThreadState::JudgeGCThreshold(size_t allocated_object_size_threshold,
-                                   size_t total_memory_size_threshold,
-                                   double heap_growing_rate_threshold) {
-  // If the allocated object size or the total memory size is small, don't
-  // trigger a GC.
-  if (heap_->stats_collector()->allocated_bytes_since_prev_gc() <
-          static_cast<int64_t>(allocated_object_size_threshold) ||
-      TotalMemorySize() < total_memory_size_threshold)
-    return false;
-
-  VLOG(2) << "[state:" << this << "] JudgeGCThreshold:"
-          << " heapGrowingRate=" << std::setprecision(1) << HeapGrowingRate()
-          << " partitionAllocGrowingRate=" << std::setprecision(1)
-          << PartitionAllocGrowingRate();
-  // If the growing rate of Oilpan's heap or PartitionAlloc is high enough,
-  // trigger a GC.
-  return HeapGrowingRate() >= heap_growing_rate_threshold ||
-         PartitionAllocGrowingRate() >= heap_growing_rate_threshold;
-}
-
-bool ThreadState::ShouldScheduleV8FollowupGC() {
-  if (base::FeatureList::IsEnabled(
-          blink::features::kBlinkHeapUnifiedGCScheduling))
-    return false;
-
-  return JudgeGCThreshold(kDefaultAllocatedObjectSizeThreshold,
-                          32 * 1024 * 1024, 1.5);
-}
-
-bool ThreadState::ShouldForceConservativeGC() {
-  if (base::FeatureList::IsEnabled(
-          blink::features::kBlinkHeapUnifiedGCScheduling))
-    return false;
-
-  // TODO(haraken): 400% is too large. Lower the heap growing factor.
-  return JudgeGCThreshold(kDefaultAllocatedObjectSizeThreshold,
-                          32 * 1024 * 1024, 5.0);
-}
-
-// If we're consuming too much memory, trigger a conservative GC
-// aggressively. This is a safe guard to avoid OOM.
-bool ThreadState::ShouldForceMemoryPressureGC() {
-  if (base::FeatureList::IsEnabled(
-          blink::features::kBlinkHeapUnifiedGCScheduling))
-    return false;
-
-  if (TotalMemorySize() < 300 * 1024 * 1024)
-    return false;
-  return JudgeGCThreshold(0, 0, 1.5);
-}
-
-void ThreadState::ScheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType gc_type) {
-  VLOG(2) << "[state:" << this << "] ScheduleV8FollowupGCIfNeeded: v8_gc_type="
-          << ((gc_type == BlinkGC::kV8MajorGC) ? "MajorGC" : "MinorGC");
-  DCHECK(CheckThread());
-
-  if (IsGCForbidden())
-    return;
-
-  if (gc_type == BlinkGC::kV8MajorGC) {
-    // In case of unified heap garbage collections a V8 major GC also collects
-    // the Blink heap.
-    return;
-  }
-
-  if (ShouldScheduleV8FollowupGC()) {
-    // When we want to optimize for load time, we should prioritize throughput
-    // over latency and not do incremental marking.
-    if (base::FeatureList::IsEnabled(
-            blink::features::kBlinkHeapIncrementalMarking) &&
-        !should_optimize_for_load_time_) {
-      VLOG(2) << "[state:" << this << "] "
-              << "ScheduleV8FollowupGCIfNeeded: Scheduled incremental v8 "
-                 "followup GC";
-      ScheduleIncrementalGC(BlinkGC::GCReason::kIncrementalV8FollowupGC);
-    } else {
-      VLOG(2) << "[state:" << this << "] "
-              << "ScheduleV8FollowupGCIfNeeded: Scheduled precise GC";
-      SchedulePreciseGC();
-    }
-  }
-}
-
 void ThreadState::WillStartV8GC(BlinkGC::V8GCType gc_type) {
   // Finish Oilpan's complete sweeping before running a V8 major GC.
   // This will let the GC collect more V8 objects.
@@ -547,32 +380,6 @@ void ThreadState::ScheduleGCIfNeeded() {
   // barriers may be avoided when constructing an object as it is white.
   if (IsUnifiedGCMarkingInProgress())
     return;
-
-  ReportMemoryToV8();
-
-  if (ShouldForceMemoryPressureGC()) {
-    CompleteSweep();
-    if (ShouldForceMemoryPressureGC()) {
-      VLOG(2) << "[state:" << this << "] "
-              << "ScheduleGCIfNeeded: Scheduled memory pressure GC";
-      CollectGarbage(BlinkGC::kHeapPointersOnStack, BlinkGC::kAtomicMarking,
-                     BlinkGC::kConcurrentAndLazySweeping,
-                     BlinkGC::GCReason::kMemoryPressureGC);
-      return;
-    }
-  }
-
-  if (ShouldForceConservativeGC()) {
-    CompleteSweep();
-    if (ShouldForceConservativeGC()) {
-      VLOG(2) << "[state:" << this << "] "
-              << "ScheduleGCIfNeeded: Scheduled conservative GC";
-      CollectGarbage(BlinkGC::kHeapPointersOnStack, BlinkGC::kAtomicMarking,
-                     BlinkGC::kConcurrentAndLazySweeping,
-                     BlinkGC::GCReason::kConservativeGC);
-      return;
-    }
-  }
 
   if (GetGCState() == kNoGCScheduled &&
       base::FeatureList::IsEnabled(
@@ -1149,19 +956,6 @@ void ThreadState::RemoveObserver(BlinkGCObserver* observer) {
   DCHECK(observer);
   DCHECK(observers_.Contains(observer));
   observers_.erase(observer);
-}
-
-void ThreadState::ReportMemoryToV8() {
-  if (!isolate_ || base::FeatureList::IsEnabled(
-                       blink::features::kBlinkHeapUnifiedGCScheduling))
-    return;
-
-  const size_t current_heap_size =
-      heap_->stats_collector()->object_size_in_bytes();
-  int64_t diff = static_cast<int64_t>(current_heap_size) -
-                 static_cast<int64_t>(reported_memory_to_v8_);
-  isolate_->AdjustAmountOfExternalAllocatedMemory(diff);
-  reported_memory_to_v8_ = current_heap_size;
 }
 
 void ThreadState::EnterStaticReferenceRegistrationDisabledScope() {

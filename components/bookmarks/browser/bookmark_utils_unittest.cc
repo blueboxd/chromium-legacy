@@ -72,7 +72,7 @@ class BookmarkUtilsTest : public testing::Test,
     ++grouped_changes_ended_count_;
   }
 
-  // Clipboard requires a message loop.
+  // Clipboard requires a full TaskEnvironment.
   base::test::TaskEnvironment task_environment_;
 
   int grouped_changes_beginning_count_;

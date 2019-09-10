@@ -250,6 +250,7 @@ void ThreadableLoader::Start(const ResourceRequest& request) {
     SECURITY_CHECK(cors::IsNoCorsAllowedContext(request_context_));
   }
   cors_flag_ = cors::CalculateCorsFlag(request.Url(), GetSecurityOrigin(),
+                                       request.IsolatedWorldOrigin().get(),
                                        request.GetMode());
 
   // The CORS flag variable is not yet used at the step in the spec that
@@ -613,12 +614,15 @@ bool ThreadableLoader::RedirectReceived(
 
     // Allow same origin requests to continue after allowing clients to audit
     // the redirect.
-    if (!(cors_flag_ || cors::CalculateCorsFlag(new_url, GetSecurityOrigin(),
-                                                new_request.GetMode()))) {
+    if (!(cors_flag_ ||
+          cors::CalculateCorsFlag(new_url, GetSecurityOrigin(),
+                                  new_request.IsolatedWorldOrigin().get(),
+                                  new_request.GetMode()))) {
       bool follow =
           client_->WillFollowRedirect(new_url, redirect_response_to_pass);
       response_tainting_ = cors::CalculateResponseTainting(
-          new_url, new_request.GetMode(), GetSecurityOrigin(), CorsFlag::Unset);
+          new_url, new_request.GetMode(), GetSecurityOrigin(),
+          new_request.IsolatedWorldOrigin().get(), CorsFlag::Unset);
       return follow;
     }
 
@@ -1024,6 +1028,7 @@ void ThreadableLoader::LoadRequest(
     if (actual_request_.IsNull()) {
       response_tainting_ = cors::CalculateResponseTainting(
           request.Url(), request.GetMode(), GetSecurityOrigin(),
+          request.IsolatedWorldOrigin().get(),
           cors_flag_ ? CorsFlag::Set : CorsFlag::Unset);
       request.SetAllowStoredCredentials(cors::CalculateCredentialsFlag(
           request.GetCredentialsMode(), response_tainting_));

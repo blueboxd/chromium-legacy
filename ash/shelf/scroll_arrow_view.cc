@@ -4,9 +4,9 @@
 
 #include "ash/shelf/scroll_arrow_view.h"
 
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shelf/shelf_button_delegate.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -69,8 +69,9 @@ std::unique_ptr<views::InkDropRipple> ScrollArrowView::CreateInkDropRipple()
   gfx::Rect bounds = gfx::Rect(size());
   return std::make_unique<views::FloodFillInkDropRipple>(
       size(), GetLocalBounds().InsetsFrom(bounds),
-      GetInkDropCenterBasedOnLastEvent(), kShelfInkDropBaseColor,
-      kShelfInkDropVisibleOpacity);
+      GetInkDropCenterBasedOnLastEvent(),
+      ShelfConfig::Get()->shelf_ink_drop_base_color(),
+      ShelfConfig::Get()->shelf_ink_drop_visible_opacity());
 }
 
 }  // namespace ash

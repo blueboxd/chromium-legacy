@@ -14,9 +14,9 @@
 #include "ash/magnifier/magnifier_test_utils.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
@@ -241,7 +241,7 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreas) {
   const gfx::Rect disp_1_bounds(0, 0, 800, 600);
   EXPECT_EQ(disp_1_bounds, display_1.bounds());
   gfx::Rect disp_1_workarea_no_magnifier = disp_1_bounds;
-  disp_1_workarea_no_magnifier.Inset(0, 0, 0, ShelfConstants::shelf_size());
+  disp_1_workarea_no_magnifier.Inset(0, 0, 0, ShelfConfig::Get()->shelf_size());
   EXPECT_EQ(disp_1_workarea_no_magnifier, display_1.work_area());
   // At this point, normal mouse cursor confinement should be used.
   AshWindowTreeHost* host1 =
@@ -255,7 +255,7 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreas) {
   const gfx::Rect disp_2_bounds(800, 0, 400, 300);
   EXPECT_EQ(disp_2_bounds, display_2.bounds());
   gfx::Rect disp_2_workarea_no_magnifier = disp_2_bounds;
-  disp_2_workarea_no_magnifier.Inset(0, 0, 0, ShelfConstants::shelf_size());
+  disp_2_workarea_no_magnifier.Inset(0, 0, 0, ShelfConfig::Get()->shelf_size());
   EXPECT_EQ(disp_2_workarea_no_magnifier, display_2.work_area());
   AshWindowTreeHost* host2 =
       Shell::Get()
@@ -356,7 +356,7 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreasOverviewMode) {
   const display::Display& display = display_manager()->GetDisplayAt(0);
   gfx::Rect workarea = display.bounds();
   const int magnifier_height = GetMagnifierHeight(display.bounds().height());
-  workarea.Inset(0, magnifier_height, 0, ShelfConstants::shelf_size());
+  workarea.Inset(0, magnifier_height, 0, ShelfConfig::Get()->shelf_size());
   EXPECT_EQ(workarea, display.work_area());
   EXPECT_EQ(workarea, window->bounds());
   EXPECT_TRUE(WindowState::Get(window.get())->IsMaximized());
@@ -398,7 +398,7 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreasSingleSplitView) {
   const display::Display& display = display_manager()->GetDisplayAt(0);
   const int magnifier_height = GetMagnifierHeight(display.bounds().height());
   gfx::Rect work_area = display.bounds();
-  work_area.Inset(0, magnifier_height, 0, ShelfConstants::shelf_size());
+  work_area.Inset(0, magnifier_height, 0, ShelfConfig::Get()->shelf_size());
   EXPECT_EQ(work_area, display.work_area());
   EXPECT_EQ(work_area, window->bounds());
   EXPECT_TRUE(WindowState::Get(window.get())->IsMaximized());
@@ -440,7 +440,7 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreasDoubleSplitView) {
   const display::Display& display = display_manager()->GetDisplayAt(0);
   const int magnifier_height = GetMagnifierHeight(display.bounds().height());
   gfx::Rect work_area = display.bounds();
-  work_area.Inset(0, magnifier_height, 0, ShelfConstants::shelf_size());
+  work_area.Inset(0, magnifier_height, 0, ShelfConfig::Get()->shelf_size());
   EXPECT_EQ(work_area, display.work_area());
   EXPECT_EQ(work_area.height(), window1->bounds().height());
   EXPECT_EQ(work_area.height(), window2->bounds().height());

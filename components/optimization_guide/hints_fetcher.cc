@@ -75,14 +75,15 @@ void HintsFetcher::RecordHintsFetcherCoverage(PrefService* pref_service,
       hosts_fetched->FindDoubleKey(HashHostForDictionary(host));
   if (!value) {
     UMA_HISTOGRAM_BOOLEAN(
-        "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch", false);
+        "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", false);
     return;
   }
 
   base::Time host_valid_time = base::Time::FromDeltaSinceWindowsEpoch(
       base::TimeDelta::FromSecondsD(*value));
-  UMA_HISTOGRAM_BOOLEAN("OptimizationGuide.HintsFetcher.WasHostCoveredByFetch",
-                        host_valid_time > base::Time::Now());
+  UMA_HISTOGRAM_BOOLEAN(
+      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch",
+      host_valid_time > base::Time::Now());
 }
 
 bool HintsFetcher::FetchOptimizationGuideServiceHints(

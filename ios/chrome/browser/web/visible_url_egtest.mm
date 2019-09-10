@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
-
 #include <memory>
 
 #include "base/compiler_specific.h"
@@ -12,18 +10,15 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
-#import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
-#import "ios/web/public/navigation/navigation_manager.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 #include "ios/web/public/test/http_server/html_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
-#include "ios/web/public/test/url_test_util.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -31,7 +26,6 @@
 #endif
 
 using chrome_test_util::OmniboxText;
-using chrome_test_util::PurgeCachedWebViewPages;
 
 namespace {
 
@@ -163,7 +157,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
-  GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
+  [ChromeEarlGrey purgeCachedWebViewPages];
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage2];
   {
     // Pauses response server and disables EG synchronization.
@@ -189,7 +183,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
-  GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
+  [ChromeEarlGrey purgeCachedWebViewPages];
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage1];
   {
     // Pauses response server and disables EG synchronization.
@@ -223,7 +217,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
-  GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
+  [ChromeEarlGrey purgeCachedWebViewPages];
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage2];
 
   // Pauses response server and disables EG synchronization.
@@ -237,8 +231,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
   // though URL1 is a pending URL.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
       performAction:grey_longPress()];
-  NSString* URL1Title =
-      base::SysUTF16ToNSString(web::GetDisplayTitleForUrl(_testURL1));
+  NSString* URL1Title = [ChromeEarlGrey displayTitleForURL:_testURL1];
   [[EarlGrey selectElementWithMatcher:grey_text(URL1Title)]
       performAction:grey_tap()];
 
@@ -268,7 +261,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
-  GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
+  [ChromeEarlGrey purgeCachedWebViewPages];
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage2];
   {
     std::unique_ptr<ScopedSynchronizationDisabler> disabler =
@@ -308,7 +301,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
-  GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
+  [ChromeEarlGrey purgeCachedWebViewPages];
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage2];
   {
     // Pauses response server and disables EG synchronization.
@@ -334,7 +327,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
-  GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
+  [ChromeEarlGrey purgeCachedWebViewPages];
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage1];
   {
     // Pauses response server and disables EG synchronization.
@@ -368,7 +361,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
-  GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
+  [ChromeEarlGrey purgeCachedWebViewPages];
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage2];
   {
     // Pauses response server and disables EG synchronization.
@@ -394,7 +387,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
-  GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
+  [ChromeEarlGrey purgeCachedWebViewPages];
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage1];
   {
     // Pauses response server and disables EG synchronization.
@@ -428,7 +421,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
-  GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
+  [ChromeEarlGrey purgeCachedWebViewPages];
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage2];
   {
     std::unique_ptr<ScopedSynchronizationDisabler> disabler =
@@ -480,7 +473,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
-  GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
+  [ChromeEarlGrey purgeCachedWebViewPages];
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage2];
   {
     // Pauses response server and disables EG synchronization.
@@ -520,7 +513,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
-  GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
+  [ChromeEarlGrey purgeCachedWebViewPages];
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage2];
   {
     // Pauses response server and disables EG synchronization.
@@ -563,7 +556,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
-  GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
+  [ChromeEarlGrey purgeCachedWebViewPages];
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage3];
   {
     // Pauses response server and disables EG synchronization.
@@ -610,14 +603,15 @@ class PausableResponseProvider : public HtmlResponseProvider {
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage1];
 
   // Quickly navigate forward twice and wait for kChromeUIVersionURL to load.
-  [chrome_test_util::BrowserCommandDispatcherForMainBVC() goForward];
-  [chrome_test_util::BrowserCommandDispatcherForMainBVC() goForward];
+  [ChromeEarlGrey goForward];
+  [ChromeEarlGrey goForward];
 
   const std::string version = version_info::GetVersionNumber();
   [ChromeEarlGrey waitForWebStateContainingText:version];
 
   // Make sure that kChromeUIVersionURL URL is displayed in the omnibox.
-  std::string expectedText = base::UTF16ToUTF8(web::GetDisplayTitleForUrl(URL));
+  std::string expectedText =
+      base::SysNSStringToUTF8([ChromeEarlGrey displayTitleForURL:URL]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(expectedText)]
       assertWithMatcher:grey_notNil()];
 }
@@ -634,7 +628,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
-  GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
+  [ChromeEarlGrey purgeCachedWebViewPages];
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage3];
   {
     // Pauses response server and disables EG synchronization.

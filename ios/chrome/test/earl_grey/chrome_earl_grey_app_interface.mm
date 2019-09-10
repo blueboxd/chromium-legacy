@@ -28,6 +28,7 @@
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/test/earl_grey/js_test_util.h"
 #import "ios/web/public/test/element_selector.h"
+#include "ios/web/public/test/url_test_util.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
 #import "ios/web/public/web_client.h"
@@ -323,6 +324,15 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   return nil;
 }
 
+#pragma mark - URL Utilities (EG2)
+
++ (NSString*)displayTitleForURL:(NSString*)URL {
+  return base::SysUTF16ToNSString(
+      web::GetDisplayTitleForUrl(GURL(base::SysNSStringToUTF8(URL))));
+}
+
+#pragma mark - Sync Utilities (EG2)
+
 + (int)numberOfSyncEntitiesWithType:(syncer::ModelType)type {
   return chrome_test_util::GetNumberOfSyncEntities(type);
 }
@@ -362,8 +372,6 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   chrome_test_util::DeleteAutofillProfileOnFakeSyncServer(
       base::SysNSStringToUTF8(GUID));
 }
-
-#pragma mark - Sync Utilities (EG2)
 
 + (void)clearSyncServerData {
   chrome_test_util::ClearSyncServerData();

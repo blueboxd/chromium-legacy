@@ -10,10 +10,14 @@
 #include "base/path_service.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/search/background/ntp_background_service.h"
 #include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/search/instant_unittest_base.h"
 #include "chrome/browser/search/ntp_features.h"
+#include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/search/instant_types.h"
@@ -22,6 +26,7 @@
 #include "components/ntp_tiles/ntp_tile.h"
 #include "components/ntp_tiles/section_type.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/native_theme/test_native_theme.h"
@@ -771,4 +776,50 @@ TEST_F(InstantServiceTest, RefreshesBackgroundAfter24Hours) {
   EXPECT_EQ(kValidId, theme_info->collection_id);
   EXPECT_EQ(kImageUrl2, theme_info->custom_background_url);
   EXPECT_TRUE(instant_service_->IsCustomBackgroundSet());
+}
+
+TEST_F(InstantServiceTest, SetNTPElementsThemeInfo) {
+  ThemeBackgroundInfo* theme_info = instant_service_->GetInitializedThemeInfo();
+  SkColor default_text_color =
+      ThemeProperties::GetDefaultColor(ThemeProperties::COLOR_NTP_TEXT, false);
+  SkColor default_logo_color =
+      ThemeProperties::GetDefaultColor(ThemeProperties::COLOR_NTP_LOGO, false);
+  SkColor default_shortcut_color = ThemeProperties::GetDefaultColor(
+      ThemeProperties::COLOR_NTP_SHORTCUT, false);
+
+  ASSERT_FALSE(instant_service_->IsCustomBackgroundSet());
+
+  // Check defaults when no theme and no custom backgrounds is set.
+  EXPECT_EQ(default_text_color, theme_info->text_color);
+  EXPECT_FALSE(theme_info->logo_alternate);
+  EXPECT_EQ(default_logo_color, theme_info->logo_color);
+  EXPECT_EQ(default_shortcut_color, theme_info->shortcut_color);
+
+  // Install colors, theme update should trigger |SetNTPElementsThemeInfo| and
+  // update NTP themed elements info.
+  ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile());
+  content::WindowedNotificationObserver theme_change_observer(
+      chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
+      content::Source<ThemeService>(theme_service));
+  theme_service->BuildFromColor(SK_ColorRED);
+  theme_change_observer.Wait();
+
+  theme_info = instant_service_->GetInitializedThemeInfo();
+  EXPECT_NE(default_text_color, theme_info->text_color);
+  EXPECT_TRUE(theme_info->logo_alternate);
+  EXPECT_NE(default_logo_color, theme_info->logo_color);
+  EXPECT_NE(default_shortcut_color, theme_info->shortcut_color);
+
+  // Setting a custom backgrounds should call |SetNTPElementsThemeInfo| and
+  // update NTP themed elements info.
+  const GURL kUrl("https://www.foo.com");
+  instant_service_->AddValidBackdropUrlForTesting(kUrl);
+  instant_service_->SetCustomBackgroundInfo(kUrl, "", "", GURL(), "");
+  ASSERT_TRUE(instant_service_->IsCustomBackgroundSet());
+
+  theme_info = instant_service_->GetInitializedThemeInfo();
+  EXPECT_NE(default_text_color, theme_info->text_color);
+  EXPECT_TRUE(theme_info->logo_alternate);
+  EXPECT_EQ(default_logo_color, theme_info->logo_color);
+  EXPECT_EQ(default_shortcut_color, theme_info->shortcut_color);
 }

@@ -72,9 +72,6 @@ const base::Feature kTriggerThrottlerDailyQuotaFeature{
     "SafeBrowsingTriggerThrottlerDailyQuota",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kUseAPDownloadProtection{"UseAPDownloadProtection",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kUseLocalBlacklistsV2{"SafeBrowsingUseLocalBlacklistsV2",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -111,7 +108,6 @@ constexpr struct {
     {&kThreatDomDetailsTagAndAttributeFeature, false},
     {&kTriggerThrottlerDailyQuotaFeature, false},
     {&kUseLocalBlacklistsV2, true},
-    {&kUseAPDownloadProtection, true},
 };
 
 // Adds the name and the enabled/disabled status of a given feature.

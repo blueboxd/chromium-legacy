@@ -20,7 +20,7 @@
 <translation id="1087788677726983142">Ocultar filtros de stream de eventos</translation>
 <translation id="1088219014394087294">Nenhum cabeçalho.</translation>
 <translation id="1106741348836243114">Ativa ou desativa o feedback sonoro (earcons).</translation>
-<translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
+<translation id="1120743664840974483">{"a": "alfa", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "x-ray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">Deslize para cima usando dois dedos</translation>
 <translation id="1124771028211010580">O estilo de exibição atual está definido como lado a lado.</translation>
 <translation id="1126928665165112660">Sem itálico</translation>
@@ -207,7 +207,6 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="257674075312929031">Grupo</translation>
 <translation id="2582407057977008361">Lateral</translation>
 <translation id="2592212930811759050">Toque duas vezes para começar a editar</translation>
-<translation id="2606210917827248971">com {COUNT,plural, =1{# item}one{# itens}other{# itens}}</translation>
 <translation id="2614981083756825552">Layout Math ML</translation>
 <translation id="2624431853467395961">Abre o modo de aprendizado</translation>
 <translation id="2626530649491650971">clicável</translation>
@@ -391,7 +390,6 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="3781428340399460090">Rosa-escuro</translation>
 <translation id="3783725005098956899">Mostrar registro</translation>
 <translation id="3793710123303304873">Caixa de diálogo fechada.</translation>
-<translation id="3795836767122514678">+{COUNT,plural, =1{#}one{#}other{#}}</translation>
 <translation id="3801735343383419236">Lista de preenchimento automático</translation>
 <translation id="3810838688059735925">Vídeo</translation>
 <translation id="3813387282697781382">Coral-claro</translation>

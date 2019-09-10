@@ -3073,4 +3073,42 @@ TEST_F(SurfaceSynchronizationTest,
   EXPECT_EQ(parent_id2, parent_support().last_activated_surface_id());
 }
 
+// Check that if two different SurfaceIds with the same embed token are
+// embedded, viz doesn't crash. https://crbug.com/1001143
+TEST_F(SurfaceSynchronizationTest,
+       DuplicateAllocationGroupInActivationDependencies) {
+  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId child1_id1 = MakeSurfaceId(kChildFrameSink1, 1);
+  const SurfaceId child1_id2 = MakeSurfaceId(kChildFrameSink1, 2);
+  const SurfaceId child2_id1 = MakeSurfaceId(kChildFrameSink2, 1);
+
+  // Submit a CompositorFrame to |child1_id1| embedding |child2_id1|.
+  CompositorFrame child1_frame =
+      CompositorFrameBuilder()
+          .AddDefaultRenderPass()
+          .SetActivationDependencies({child2_id1})
+          .SetReferencedSurfaces({SurfaceRange(base::nullopt, child2_id1)})
+          .Build();
+  child_support1().SubmitCompositorFrame(child1_id1.local_surface_id(),
+                                         std::move(child1_frame));
+
+  // Submit a CompositorFrame to |parent_id| embedding both |child1_id1| and
+  // |child1_id2|.
+  CompositorFrame parent_frame =
+      CompositorFrameBuilder()
+          .AddDefaultRenderPass()
+          .SetActivationDependencies({child1_id1, child1_id2})
+          .SetReferencedSurfaces({SurfaceRange(base::nullopt, child1_id1),
+                                  SurfaceRange(base::nullopt, child1_id2)})
+          .Build();
+  // This shouldn't crash.
+  parent_support().SubmitCompositorFrame(parent_id.local_surface_id(),
+                                         std::move(parent_frame));
+
+  // When multiple dependencies have the same embed token, only the first one
+  // should be taken into account.
+  EXPECT_EQ(1u, parent_surface()->activation_dependencies().size());
+  EXPECT_EQ(child1_id1, *parent_surface()->activation_dependencies().begin());
+}
+
 }  // namespace viz

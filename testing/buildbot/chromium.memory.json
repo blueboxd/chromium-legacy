@@ -11992,6 +11992,37 @@
       },
       {
         "args": [
+          "--enable-gpu",
+          "--test-launcher-bot-mode",
+          "--test-launcher-jobs=1",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/vulkan.content_browsertests.filter",
+          "--enable-features=VizDisplayCompositor,UseSkiaRenderer,UiGpuRasterization",
+          "--use-vulkan=swiftshader",
+          "--enable-oop-rasterization",
+          "--enable-gpu-rasterization",
+          "--force-gpu-rasterization",
+          "--disable-software-compositing-fallback",
+          "--disable-vulkan-fallback-to-gl-for-testing",
+          "--disable-headless-mode",
+          "--test-launcher-print-test-stdio=always"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "vulkan_swiftshader_content_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ]
+        },
+        "test": "content_browsertests"
+      },
+      {
+        "args": [
           "--test-launcher-print-test-stdio=always"
         ],
         "merge": {

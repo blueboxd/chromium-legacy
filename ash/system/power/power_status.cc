@@ -15,6 +15,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/numerics/ranges.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/dbus/power/power_manager_client.h"
@@ -97,8 +98,8 @@ class BatteryImageSource : public gfx::CanvasImageSource {
     float charge_level =
         std::floor(info_.charge_percent / 100.0 * icon_bounds.height());
     const float min_charge_level = dsf * kMinVisualChargeLevel;
-    charge_level = std::max(std::min(charge_level, icon_bounds.height()),
-                            min_charge_level);
+    charge_level = base::ClampToRange(charge_level, min_charge_level,
+                                      icon_bounds.height());
 
     const float charge_y = icon_bounds.bottom() - charge_level;
     gfx::RectF clip_rect(0, charge_y, size().width() * dsf,

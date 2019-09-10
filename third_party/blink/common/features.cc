@@ -379,10 +379,6 @@ const base::Feature kBlinkHeapIncrementalMarking{
 // also adds additional verification passes.
 const base::Feature kBlinkHeapIncrementalMarkingStress{
     "BlinkHeapIncrementalMarkingStress", base::FEATURE_DISABLED_BY_DEFAULT};
-// Enables unified heap garbage collection scheduling where scheduling is
-// delegated to V8's heap controller.
-const base::Feature kBlinkHeapUnifiedGCScheduling{
-    "BlinkHeapUnifiedGCScheduling", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables a delay before BufferingBytesConsumer begins reading from its
 // underlying consumer when instantiated with CreateWithDelay().

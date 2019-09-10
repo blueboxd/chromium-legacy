@@ -166,6 +166,16 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
   // Called when the visual feature extraction is complete.
   void OnVisualFeatureCollectionDone(
       std::unique_ptr<VisualFeatures> visual_features);
+
+  // Called when the DOM feature extraction is complete.
+  void OnGetDomFeatures(const std::string& verdict);
+
+  // Called when the DOM feature extraction times out.
+  void OnGetDomFeatureTimeout();
+
+  // If appropriate, collects visual features, otherwise continues on to sending
+  // the request.
+  void MaybeCollectVisualFeatures();
 #endif
 
   // Initiates network request to Safe Browsing backend.
@@ -177,18 +187,6 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
   // |this| will be destroyed after calling this function.
   void Finish(RequestOutcome outcome,
               std::unique_ptr<LoginReputationClientResponse> response);
-
-#if BUILDFLAG(FULL_SAFE_BROWSING)
-  // Called when the DOM feature extraction is complete.
-  void OnGetDomFeatures(const std::string& verdict);
-
-  // Called when the DOM feature extraction times out.
-  void OnGetDomFeatureTimeout();
-
-  // If appropriate, collects visual features, otherwise continues on to sending
-  // the request.
-  void MaybeCollectVisualFeatures();
-#endif
 
   // WebContents of the password protection event.
   content::WebContents* web_contents_;

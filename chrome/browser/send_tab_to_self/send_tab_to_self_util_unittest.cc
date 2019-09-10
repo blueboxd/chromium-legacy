@@ -74,35 +74,15 @@ class SendTabToSelfUtilTest : public BrowserWithTestWindowTest {
 };
 
 TEST_F(SendTabToSelfUtilTest, AreFlagsEnabled_True) {
-  scoped_feature_list_.InitWithFeatures(
-      {switches::kSyncSendTabToSelf, kSendTabToSelfShowSendingUI}, {});
+  scoped_feature_list_.InitWithFeatures({kSendTabToSelfShowSendingUI}, {});
 
   EXPECT_TRUE(IsSendingEnabled());
-  EXPECT_TRUE(IsReceivingEnabled());
 }
 
 TEST_F(SendTabToSelfUtilTest, AreFlagsEnabled_False) {
-  scoped_feature_list_.InitWithFeatures(
-      {}, {switches::kSyncSendTabToSelf, kSendTabToSelfShowSendingUI});
+  scoped_feature_list_.InitWithFeatures({}, {kSendTabToSelfShowSendingUI});
 
   EXPECT_FALSE(IsSendingEnabled());
-  EXPECT_FALSE(IsReceivingEnabled());
-}
-
-TEST_F(SendTabToSelfUtilTest, IsReceivingEnabled_True) {
-  scoped_feature_list_.InitWithFeatures({switches::kSyncSendTabToSelf},
-                                        {kSendTabToSelfShowSendingUI});
-
-  EXPECT_FALSE(IsSendingEnabled());
-  EXPECT_TRUE(IsReceivingEnabled());
-}
-
-TEST_F(SendTabToSelfUtilTest, IsOnlySendingEnabled_False) {
-  scoped_feature_list_.InitWithFeatures({kSendTabToSelfShowSendingUI},
-                                        {switches::kSyncSendTabToSelf});
-
-  EXPECT_FALSE(IsSendingEnabled());
-  EXPECT_FALSE(IsReceivingEnabled());
 }
 
 TEST_F(SendTabToSelfUtilTest, HasValidTargetDevice) {
@@ -135,10 +115,7 @@ TEST_F(SendTabToSelfUtilTest, IncognitoMode) {
 TEST_F(SendTabToSelfUtilTest, ShouldOfferFeatureForTelephoneLink) {
   url_ = GURL("tel:07387252578");
 
-  // Set the IsSendingEnable, IsUserSyncTypeActive and
-  // HasValidTargetDevice to true
-  scoped_feature_list_.InitWithFeatures(
-      {switches::kSyncSendTabToSelf, kSendTabToSelfShowSendingUI}, {});
+  scoped_feature_list_.InitWithFeatures({kSendTabToSelfShowSendingUI}, {});
   AddTab(browser(), url_);
   SendTabToSelfSyncServiceFactory::GetInstance()->SetTestingFactory(
       profile(), base::BindRepeating(&BuildTestSendTabToSelfSyncService));
@@ -151,10 +128,7 @@ TEST_F(SendTabToSelfUtilTest, ShouldOfferFeatureForTelephoneLink) {
 }
 
 TEST_F(SendTabToSelfUtilTest, ShouldOfferFeatureForGoogleLink) {
-  // Set the IsSendingEnable, IsUserSyncTypeActive and
-  // HasValidTargetDevice to true
-  scoped_feature_list_.InitWithFeatures(
-      {switches::kSyncSendTabToSelf, kSendTabToSelfShowSendingUI}, {});
+  scoped_feature_list_.InitWithFeatures({kSendTabToSelfShowSendingUI}, {});
   AddTab(browser(), url_);
   SendTabToSelfSyncServiceFactory::GetInstance()->SetTestingFactory(
       profile(), base::BindRepeating(&BuildTestSendTabToSelfSyncService));

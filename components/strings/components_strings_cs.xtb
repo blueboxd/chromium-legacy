@@ -298,7 +298,6 @@
 <translation id="2479410451996844060">Neplatná adresa URL vyhledávání.</translation>
 <translation id="2482878487686419369">Oznámení</translation>
 <translation id="248348093745724435">Zásady zařízení</translation>
-<translation id="2485387744899240041">Uživatelská jména pro zařízení a prohlížeč</translation>
 <translation id="2491120439723279231">Certifikát serveru obsahuje chyby.</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">Analyzátor souborů JSON</translation>
@@ -860,7 +859,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="5565735124758917034">Aktivní</translation>
 <translation id="5570825185877910964">Ochránit účet</translation>
 <translation id="5571083550517324815">Vyzvednutí na této adrese není možné. Vyberte jinou adresu.</translation>
-<translation id="5571347317547569613">({NUM_COOKIES,plural, =1{používá se 1}few{používají se #}many{používá se #}other{používá se #}})</translation>
 <translation id="5580958916614886209">Zkontrolujte měsíc vypršení platnosti a zkuste to znovu.</translation>
 <translation id="5586446728396275693">Žádné uložené adresy</translation>
 <translation id="5595485650161345191">Upravit adresu</translation>

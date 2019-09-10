@@ -69,9 +69,9 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
     @Override
     public void onPostInflationStartup() {
         // Before the verification completes, we optimistically expect it to be successful and apply
-        // the trusted web activity mode to UI. So hide the toolbar as soon as possible.
+        // the trusted web activity mode to UI.
         if (mVerifier.getState() == null) {
-            mToolbarCoordinator.setToolbarHidden(true);
+            updateUi(true);
         }
     }
 
@@ -93,20 +93,16 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
         boolean inTwaMode = state == null || state.status != VerificationStatus.FAILURE;
         if (inTwaMode == mInTwaMode) return;
         mInTwaMode = inTwaMode;
-        updateToolbar();
-        updateStatusBar();
+        updateUi(mInTwaMode);
     }
 
-    private void updateToolbar() {
-        mToolbarCoordinator.setToolbarHidden(mInTwaMode);
+    private void updateUi(boolean inTwaMode) {
+        mToolbarCoordinator.setToolbarHidden(inTwaMode);
+        mStatusBarColorProvider.setUseTabThemeColor(inTwaMode);
 
-        if (!mInTwaMode) {
+        if (!inTwaMode) {
             // Force showing the controls for a bit when leaving Trusted Web Activity mode.
             mToolbarCoordinator.showToolbarTemporarily();
         }
-    }
-
-    private void updateStatusBar() {
-        mStatusBarColorProvider.setUseTabThemeColor(mInTwaMode);
     }
 }

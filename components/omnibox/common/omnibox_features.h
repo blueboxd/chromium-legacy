@@ -57,6 +57,7 @@ extern const base::Feature kOmniboxPreserveDefaultMatchAgainstAsyncUpdate;
 // On-Focus Suggestions a.k.a. ZeroSuggest.
 extern const base::Feature kOnFocusSuggestions;
 extern const base::Feature kZeroSuggestionsOnNTP;
+extern const base::Feature kZeroSuggestionsOnNTPRealbox;
 
 }  // namespace omnibox
 

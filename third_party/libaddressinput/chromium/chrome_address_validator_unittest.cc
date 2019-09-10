@@ -922,7 +922,7 @@ class FailingAddressValidatorTest : public testing::Test, LoadRulesListener {
     load_rules_success_ = success;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(FailingAddressValidatorTest);
 };

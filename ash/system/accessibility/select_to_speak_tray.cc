@@ -7,7 +7,6 @@
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_constants.h"

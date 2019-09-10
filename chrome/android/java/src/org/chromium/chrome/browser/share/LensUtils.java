@@ -37,6 +37,7 @@ public class LensUtils {
             PackageManager pm = context.getPackageManager();
             Intent lensIntent = getShareWithGoogleLensIntent(Uri.EMPTY);
             ComponentName lensActivity = lensIntent.resolveActivity(pm);
+            if (lensActivity == null) return "";
             PackageInfo packageInfo = pm.getPackageInfo(lensActivity.getPackageName(), 0);
             if (packageInfo == null) {
                 return "";

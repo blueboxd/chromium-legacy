@@ -5,7 +5,7 @@
 #include "ash/login/ui/login_user_menu_view.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/login/ui/views_utils.h"
-#include "ash/shelf/shelf_constants.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -65,7 +65,7 @@ class RemoveUserButton : public views::Button {
         gfx::Insets(kUserMenuMarginAroundRemoveUserButtonDp,
                     kUserMenuMarginAroundRemoveUserButtonDp)));
     SetInstallFocusRingOnFocus(true);
-    focus_ring()->SetColor(kShelfFocusBorderColor);
+    focus_ring()->SetColor(ShelfConfig::Get()->shelf_focus_border_color());
   }
 
   ~RemoveUserButton() override = default;

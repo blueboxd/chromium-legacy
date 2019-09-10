@@ -587,10 +587,6 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, WithPreload) {
 }
 
 IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, CrossOriginWithPreload) {
-  // TODO(domfarolino): Remove this early-return when preloads-on-prefetch
-  // requests are working when SplitCache is enabled. See crbug.com/939317.
-  if (split_cache_enabled_)
-    return;
   const char* target_path = "/target.html";
   const char* preload_path = "/preload.js";
   RegisterResponse(
@@ -620,10 +616,11 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, CrossOriginWithPreload) {
   const GURL cross_origin_target_url =
       cross_origin_server_->GetURL(target_path);
   const char* prefetch_path = "/prefetch.html";
-  RegisterResponse(prefetch_path, ResponseEntry(base::StringPrintf(
-                                      "<body><link rel='prefetch' href='%s' "
-                                      "crossorigin=\"anonymous\"></body>",
-                                      cross_origin_target_url.spec().c_str())));
+  RegisterResponse(prefetch_path,
+                   ResponseEntry(base::StringPrintf(
+                       "<body><link rel='prefetch' href='%s' as='document' "
+                       "crossorigin='anonymous'></body>",
+                       cross_origin_target_url.spec().c_str())));
   RegisterRequestHandler(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
   EXPECT_EQ(0, GetPrefetchURLLoaderCallCount());
@@ -635,7 +632,7 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, CrossOriginWithPreload) {
   preload_waiter.Run();
   EXPECT_EQ(1, target_request_counter->GetRequestCount());
   EXPECT_EQ(1, preload_request_counter->GetRequestCount());
-  EXPECT_EQ(1, GetPrefetchURLLoaderCallCount());
+  EXPECT_EQ(split_cache_enabled_ ? 2 : 1, GetPrefetchURLLoaderCallCount());
 
   GURL cross_origin_preload_url = cross_origin_server_->GetURL(preload_path);
   WaitUntilLoaded(cross_origin_preload_url);
@@ -759,10 +756,6 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, SignedExchangeWithPreload) {
 
 IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest,
                        CrossOriginSignedExchangeWithPreload) {
-  // TODO(domfarolino): Remove this early-return when preloads-on-prefetch
-  // requests are working when SplitCache is enabled. See crbug.com/939317.
-  if (split_cache_enabled_)
-    return;
   const char* prefetch_path = "/prefetch.html";
   const char* target_sxg_path = "/target.sxg";
   const char* target_path = "/target.html";
@@ -793,10 +786,11 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest,
   const GURL preload_url_in_sxg =
       cross_origin_server_->GetURL(preload_path_in_sxg);
 
-  RegisterResponse(prefetch_path,
-                   ResponseEntry(base::StringPrintf(
-                       "<body><link rel='prefetch' href='%s'></body>",
-                       target_sxg_url.spec().c_str())));
+  RegisterResponse(
+      prefetch_path,
+      ResponseEntry(base::StringPrintf(
+          "<body><link rel='prefetch' as='document' href='%s'></body>",
+          target_sxg_url.spec().c_str())));
   RegisterRequestHandler(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
   EXPECT_EQ(0, GetPrefetchURLLoaderCallCount());
@@ -824,7 +818,7 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest,
   preload_waiter.Run();
   EXPECT_EQ(1, preload_request_counter->GetRequestCount());
 
-  EXPECT_EQ(1, GetPrefetchURLLoaderCallCount());
+  EXPECT_EQ(split_cache_enabled_ ? 2 : 1, GetPrefetchURLLoaderCallCount());
 
   WaitUntilLoaded(preload_url_in_sxg);
 

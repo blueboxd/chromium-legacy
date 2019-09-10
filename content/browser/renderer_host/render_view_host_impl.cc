@@ -432,6 +432,12 @@ FrameTreeNode* RenderViewHostImpl::GetFocusedFrame() {
   return GetDelegate()->GetFrameTree()->GetFocusedFrame();
 }
 
+void RenderViewHostImpl::UpdatePageVisualProperties(
+    const VisualProperties& visual_properties) {
+  Send(new ViewMsg_UpdateLocalMainFrameVisualProperties(GetRoutingID(),
+                                                        visual_properties));
+}
+
 void RenderViewHostImpl::ShowContextMenu(RenderFrameHost* render_frame_host,
                                          const ContextMenuParams& params) {
   GetDelegate()->GetDelegateView()->ShowContextMenu(render_frame_host, params);

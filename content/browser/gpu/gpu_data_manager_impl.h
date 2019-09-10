@@ -49,7 +49,8 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   void BlacklistWebGLForTesting() override;
   gpu::GPUInfo GetGPUInfo() override;
   bool GpuAccessAllowed(std::string* reason) override;
-  void RequestCompleteGpuInfoIfNeeded() override;
+  void RequestCompleteGpuInfoIfNeeded(GpuInfoRequest request,
+                                      bool delayed) override;
   bool IsEssentialGpuInfoAvailable() override;
   void RequestVideoMemoryUsageStatsUpdate(
       VideoMemoryUsageStatsCallback callback) override;
@@ -65,7 +66,6 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   void AppendGpuCommandLine(base::CommandLine* command_line,
                             GpuProcessKind kind) override;
 
-  void RequestGpuSupportedRuntimeVersion(bool delayed) const;
   bool GpuProcessStartAllowed() const;
 
   bool IsDx12VulkanVersionAvailable() const;
@@ -76,9 +76,10 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
       const gpu::GPUInfo& gpu_info,
       const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu);
 #if defined(OS_WIN)
+  void UpdateDxDiagNode(const gpu::DxDiagNode& dx_diagnostics);
   void UpdateDx12VulkanInfo(
       const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info);
-  void UpdateDxDiagNode(const gpu::DxDiagNode& dx_diagnostics);
+  void UpdateDxDiagNodeRequestStatus(bool request_continues);
   void UpdateDx12VulkanRequestStatus(bool request_continues);
 #endif
   // Update the GPU feature info. This updates the blacklist and enabled status

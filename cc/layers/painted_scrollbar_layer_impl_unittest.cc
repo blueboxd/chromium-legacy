@@ -41,7 +41,7 @@ TEST(PaintedScrollbarLayerImplTest, Occlusion) {
   ScrollbarOrientation orientation = VERTICAL;
 
   PaintedScrollbarLayerImpl* scrollbar_layer_impl =
-      impl.AddChildToRoot<PaintedScrollbarLayerImpl>(orientation, false, false);
+      impl.AddLayer<PaintedScrollbarLayerImpl>(orientation, false, false);
   scrollbar_layer_impl->SetBounds(layer_size);
   scrollbar_layer_impl->SetContentsOpaque(true);
   scrollbar_layer_impl->set_internal_contents_scale_and_bounds(
@@ -56,6 +56,7 @@ TEST(PaintedScrollbarLayerImplTest, Occlusion) {
   scrollbar_layer_impl->set_track_ui_resource_id(track_uid);
   scrollbar_layer_impl->set_thumb_ui_resource_id(thumb_uid);
   scrollbar_layer_impl->set_thumb_opacity(thumb_opacity);
+  CopyProperties(impl.root_layer(), scrollbar_layer_impl);
 
   impl.CalcDrawProps(viewport_size);
 

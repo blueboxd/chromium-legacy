@@ -3,7 +3,6 @@
 <translationbundle lang="it">
 <translation id="1036550831858290950">Salva la scheda corrente nei preferiti</translation>
 <translation id="104962181688258143">Apre l'app File</translation>
-<translation id="1098295134904615027">Attiva il desktop virtuale a destra</translation>
 <translation id="1122869341872663659">Sono visualizzati <ph name="N" /> risultati di ricerca relativi a <ph name="QUERY" /></translation>
 <translation id="1195667586424773550">Trascina il link nella barra degli indirizzi della scheda</translation>
 <translation id="1204450209689312104">Apre una nuova finestra in modalità di navigazione in incognito</translation>
@@ -25,7 +24,6 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">Aggiunge www. e .com all'indirizzo inserito nella barra degli indirizzi, quindi apre la pagina</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, quindi <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> o <ph name="LEFT" /></translation>
-<translation id="1929866390202038233">Attiva il desktop virtuale a sinistra</translation>
 <translation id="1996162290124031907">Passa alla scheda successiva</translation>
 <translation id="2010818616644390445">Passa all'ultima scheda della finestra</translation>
 <translation id="2040706009561734834">Consente di aprire/chiudere Avvio app</translation>
@@ -64,7 +62,6 @@
 <translation id="3105917916468784889">Acquisisce uno screenshot</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Area attiva nella barra degli indirizzi</translation>
-<translation id="3165428420335997629">Crea un nuovo desktop virtuale</translation>
 <translation id="3256109297135787951">Consente di rimuovere l'evidenziazione da un elemento sulla shelf</translation>
 <translation id="3288816184963444640">Chiude la finestra corrente</translation>
 <translation id="3407560819924487926">Apre il Task Manager</translation>
@@ -181,7 +178,6 @@
 <translation id="8234414138295101081">Ruota lo schermo di 90 gradi</translation>
 <translation id="8241665785394195545">parentesi quadra chiusa</translation>
 <translation id="8264941229485248811">Consente di mostrare o nascondere il controllo Strumenti per sviluppatori</translation>
-<translation id="8355937569537581904">Rimuovi l'attuale desktop virtuale</translation>
 <translation id="836869401750819675">Apre la pagina Download</translation>
 <translation id="8388247778047144397">Trascina il link in un'area vuota della tabstrip</translation>
 <translation id="8389638407792712197">Apre una nuova finestra</translation>

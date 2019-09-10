@@ -83,58 +83,6 @@ bool PasswordProtectionService::CanGetReputationOfURL(const GURL& url) {
          hostname.find('.') != std::string::npos;
 }
 
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
-bool PasswordProtectionService::ShouldShowModalWarning(
-    LoginReputationClientRequest::TriggerType trigger_type,
-    ReusedPasswordAccountType password_type,
-    LoginReputationClientResponse::VerdictType verdict_type) {
-  if (trigger_type != LoginReputationClientRequest::PASSWORD_REUSE_EVENT ||
-      !IsSupportedPasswordTypeForModalWarning(password_type)) {
-    return false;
-  }
-
-  return (verdict_type == LoginReputationClientResponse::PHISHING ||
-          verdict_type == LoginReputationClientResponse::LOW_REPUTATION) &&
-         IsWarningEnabled(password_type);
-}
-#endif
-
-LoginReputationClientResponse::VerdictType
-PasswordProtectionService::GetCachedVerdict(
-    const GURL& url,
-    LoginReputationClientRequest::TriggerType trigger_type,
-    ReusedPasswordAccountType password_type,
-    LoginReputationClientResponse* out_response) {
-  return LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED;
-}
-
-void PasswordProtectionService::CacheVerdict(
-    const GURL& url,
-    LoginReputationClientRequest::TriggerType trigger_type,
-    ReusedPasswordAccountType password_type,
-    const LoginReputationClientResponse& verdict,
-    const base::Time& receive_time) {}
-
-void PasswordProtectionService::StartRequest(
-    WebContents* web_contents,
-    const GURL& main_frame_url,
-    const GURL& password_form_action,
-    const GURL& password_form_frame_url,
-    const std::string& username,
-    PasswordType password_type,
-    const std::vector<std::string>& matching_domains,
-    LoginReputationClientRequest::TriggerType trigger_type,
-    bool password_field_exists) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  scoped_refptr<PasswordProtectionRequest> request(
-      new PasswordProtectionRequest(
-          web_contents, main_frame_url, password_form_action,
-          password_form_frame_url, username, password_type, matching_domains,
-          trigger_type, password_field_exists, this, GetRequestTimeoutInMS()));
-  request->Start();
-  pending_requests_.insert(std::move(request));
-}
-
 #if defined(ON_FOCUS_PING_ENABLED)
 void PasswordProtectionService::MaybeStartPasswordFieldOnFocusRequest(
     WebContents* web_contents,
@@ -204,7 +152,76 @@ void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
     ShowInterstitial(web_contents, reused_password_account_type);
   }
 }
+
+bool PasswordProtectionService::ShouldShowModalWarning(
+    LoginReputationClientRequest::TriggerType trigger_type,
+    ReusedPasswordAccountType password_type,
+    LoginReputationClientResponse::VerdictType verdict_type) {
+  if (trigger_type != LoginReputationClientRequest::PASSWORD_REUSE_EVENT ||
+      !IsSupportedPasswordTypeForModalWarning(password_type)) {
+    return false;
+  }
+
+  return (verdict_type == LoginReputationClientResponse::PHISHING ||
+          verdict_type == LoginReputationClientResponse::LOW_REPUTATION) &&
+         IsWarningEnabled(password_type);
+}
+
+void PasswordProtectionService::RemoveWarningRequestsByWebContents(
+    content::WebContents* web_contents) {
+  for (auto it = warning_requests_.begin(); it != warning_requests_.end();) {
+    if (it->get()->web_contents() == web_contents)
+      it = warning_requests_.erase(it);
+    else
+      ++it;
+  }
+}
+
+bool PasswordProtectionService::IsModalWarningShowingInWebContents(
+    content::WebContents* web_contents) {
+  for (const auto& request : warning_requests_) {
+    if (request->web_contents() == web_contents)
+      return true;
+  }
+  return false;
+}
 #endif
+
+LoginReputationClientResponse::VerdictType
+PasswordProtectionService::GetCachedVerdict(
+    const GURL& url,
+    LoginReputationClientRequest::TriggerType trigger_type,
+    ReusedPasswordAccountType password_type,
+    LoginReputationClientResponse* out_response) {
+  return LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED;
+}
+
+void PasswordProtectionService::CacheVerdict(
+    const GURL& url,
+    LoginReputationClientRequest::TriggerType trigger_type,
+    ReusedPasswordAccountType password_type,
+    const LoginReputationClientResponse& verdict,
+    const base::Time& receive_time) {}
+
+void PasswordProtectionService::StartRequest(
+    WebContents* web_contents,
+    const GURL& main_frame_url,
+    const GURL& password_form_action,
+    const GURL& password_form_frame_url,
+    const std::string& username,
+    PasswordType password_type,
+    const std::vector<std::string>& matching_domains,
+    LoginReputationClientRequest::TriggerType trigger_type,
+    bool password_field_exists) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  scoped_refptr<PasswordProtectionRequest> request(
+      new PasswordProtectionRequest(
+          web_contents, main_frame_url, password_form_action,
+          password_form_frame_url, username, password_type, matching_domains,
+          trigger_type, password_field_exists, this, GetRequestTimeoutInMS()));
+  request->Start();
+  pending_requests_.insert(std::move(request));
+}
 
 bool PasswordProtectionService::CanSendPing(
     LoginReputationClientRequest::TriggerType trigger_type,
@@ -396,27 +413,6 @@ PasswordProtectionService::MaybeCreateNavigationThrottle(
   }
   return nullptr;
 }
-
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
-void PasswordProtectionService::RemoveWarningRequestsByWebContents(
-    content::WebContents* web_contents) {
-  for (auto it = warning_requests_.begin(); it != warning_requests_.end();) {
-    if (it->get()->web_contents() == web_contents)
-      it = warning_requests_.erase(it);
-    else
-      ++it;
-  }
-}
-
-bool PasswordProtectionService::IsModalWarningShowingInWebContents(
-    content::WebContents* web_contents) {
-  for (const auto& request : warning_requests_) {
-    if (request->web_contents() == web_contents)
-      return true;
-  }
-  return false;
-}
-#endif
 
 bool PasswordProtectionService::IsWarningEnabled(
     ReusedPasswordAccountType password_type) {

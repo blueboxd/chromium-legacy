@@ -231,13 +231,30 @@ X11EventSource::GetRootCursorLocationFromCurrentEvent() const {
 }
 
 // TODO(crbug.com/965991): Use ui::Event in Aura/X11
-#if !defined(USE_X11)
+#if defined(USE_OZONE)
 void X11EventSource::RemoveXEventDispatcher(XEventDispatcher* dispatcher) {
   delegate_->RemoveXEventDispatcher(dispatcher);
 }
 
 void X11EventSource::AddXEventDispatcher(XEventDispatcher* dispatcher) {
   delegate_->AddXEventDispatcher(dispatcher);
+}
+
+void X11EventSource::AddXEventObserver(XEventObserver* observer) {
+  delegate_->AddXEventObserver(observer);
+}
+
+void X11EventSource::RemoveXEventObserver(XEventObserver* observer) {
+  delegate_->RemoveXEventObserver(observer);
+}
+
+std::unique_ptr<ScopedXEventDispatcher>
+X11EventSource::OverrideXEventDispatcher(XEventDispatcher* dispatcher) {
+  return delegate_->OverrideXEventDispatcher(dispatcher);
+}
+
+void X11EventSource::RestoreOverridenXEventDispatcher() {
+  delegate_->RestoreOverridenXEventDispatcher();
 }
 #endif
 
@@ -304,6 +321,20 @@ void X11EventSource::OnDispatcherListChanged() {
     // Force the initial device query to have an update list of active devices.
     hotplug_event_handler_->OnHotplugEvent();
   }
+}
+
+// ScopedXEventDispatcher implementation
+ScopedXEventDispatcher::ScopedXEventDispatcher(
+    XEventDispatcher** scoped_dispatcher,
+    XEventDispatcher* new_dispatcher)
+    : original_(*scoped_dispatcher),
+      restore_(scoped_dispatcher, new_dispatcher) {}
+
+ScopedXEventDispatcher::~ScopedXEventDispatcher() {
+  DCHECK(X11EventSource::HasInstance());
+#if defined(USE_OZONE)
+  X11EventSource::GetInstance()->RestoreOverridenXEventDispatcher();
+#endif
 }
 
 }  // namespace ui

@@ -5,9 +5,9 @@
 #include "ash/system/overview/overview_button_tray.h"
 
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_constants.h"
@@ -37,8 +37,8 @@ OverviewButtonTray::OverviewButtonTray(Shelf* shelf)
       scoped_session_observer_(this) {
   SetInkDropMode(InkDropMode::ON);
 
-  gfx::ImageSkia image =
-      gfx::CreateVectorIcon(kShelfOverviewIcon, kShelfIconColor);
+  gfx::ImageSkia image = gfx::CreateVectorIcon(
+      kShelfOverviewIcon, ShelfConfig::Get()->shelf_icon_color());
   icon_->SetImage(image);
   const int vertical_padding = (kTrayItemSize - image.height()) / 2;
   const int horizontal_padding = (kTrayItemSize - image.width()) / 2;
@@ -135,17 +135,19 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
           : base::make_optional(event.time_stamp());
 
   OverviewController* controller = Shell::Get()->overview_controller();
-  // Note: Toggling overview mode will fail if there is no window to show, the
-  // screen is locked, a modal dialog is open or is running in kiosk app
-  // session.
-  bool performed;
   if (controller->InOverviewSession())
-    performed = controller->EndOverview();
+    controller->EndOverview();
   else
-    performed = controller->StartOverview();
+    controller->StartOverview();
   Shell::Get()->metrics()->RecordUserMetricsAction(UMA_TRAY_OVERVIEW);
-  return performed;
+
+  // The return value doesn't matter here. OnOverviewModeStarting() and
+  // OnOverviewModeEnded() will do the right thing to set the button state.
+  return true;
 }
+
+void OverviewButtonTray::HandlePerformActionResult(bool action_performed,
+                                                   const ui::Event& event) {}
 
 void OverviewButtonTray::OnSessionStateChanged(
     session_manager::SessionState state) {

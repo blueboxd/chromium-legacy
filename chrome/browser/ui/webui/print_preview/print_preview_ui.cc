@@ -343,6 +343,7 @@ void SetupPrintPreviewPlugin(content::WebUIDataSource* source) {
     int id;
   } kPdfResources[] = {
     {"pdf/browser_api.js", IDR_PDF_BROWSER_API_JS},
+    {"pdf/controller.js", IDR_PDF_CONTROLLER_JS},
     {"pdf/elements/icons.html", IDR_PDF_ICONS_HTML},
     {"pdf/elements/shared-vars.html", IDR_PDF_SHARED_VARS_HTML},
     {"pdf/elements/viewer-bookmark/viewer-bookmark.html",

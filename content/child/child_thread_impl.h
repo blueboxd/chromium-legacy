@@ -28,10 +28,11 @@
 #include "ipc/ipc_buildflags.h"  // For BUILDFLAG(IPC_MESSAGE_LOG_ENABLED).
 #include "ipc/ipc_platform_file.h"
 #include "ipc/message_router.h"
-#include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "third_party/blink/public/mojom/associated_interfaces/associated_interfaces.mojom.h"
@@ -204,14 +205,16 @@ class CONTENT_EXPORT ChildThreadImpl
   void EnsureConnected();
 
   // mojom::RouteProvider:
-  void GetRoute(int32_t routing_id,
-                blink::mojom::AssociatedInterfaceProviderAssociatedRequest
-                    request) override;
+  void GetRoute(
+      int32_t routing_id,
+      mojo::PendingAssociatedReceiver<blink::mojom::AssociatedInterfaceProvider>
+          receiver) override;
 
   // blink::mojom::AssociatedInterfaceProvider:
   void GetAssociatedInterface(
       const std::string& name,
-      blink::mojom::AssociatedInterfaceAssociatedRequest request) override;
+      mojo::PendingAssociatedReceiver<blink::mojom::AssociatedInterface>
+          receiver) override;
 
 #if defined(OS_WIN)
   mojom::FontCacheWin* GetFontCacheWin();
@@ -221,8 +224,9 @@ class CONTENT_EXPORT ChildThreadImpl
   std::unique_ptr<ServiceManagerConnection> service_manager_connection_;
 
   mojo::AssociatedReceiver<mojom::RouteProvider> route_provider_receiver_{this};
-  mojo::AssociatedBindingSet<blink::mojom::AssociatedInterfaceProvider, int32_t>
-      associated_interface_provider_bindings_;
+  mojo::AssociatedReceiverSet<blink::mojom::AssociatedInterfaceProvider,
+                              int32_t>
+      associated_interface_provider_receivers_;
   mojo::AssociatedRemote<mojom::RouteProvider> remote_route_provider_;
 #if defined(OS_WIN)
   mojom::FontCacheWinPtr font_cache_win_ptr_;

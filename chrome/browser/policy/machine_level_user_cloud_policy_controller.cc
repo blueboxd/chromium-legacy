@@ -17,11 +17,16 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/enterprise_reporting/report_generator.h"
+#include "chrome/browser/enterprise_reporting/report_scheduler.h"
+#include "chrome/browser/enterprise_reporting/request_timer.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/cloud/machine_level_user_cloud_policy_helper.h"
 #include "chrome/browser/policy/machine_level_user_cloud_policy_register_watcher.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
@@ -153,6 +158,14 @@ void MachineLevelUserCloudPolicyController::Init(
 
   if (!IsMachineLevelUserCloudPolicyEnabled())
     return;
+
+  base::PostTask(
+      FROM_HERE,
+      {base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN, base::ThreadPool()},
+      base::BindOnce(
+          &MachineLevelUserCloudPolicyController::CreateReportSchedulerAsync,
+          base::Unretained(this), base::ThreadTaskRunnerHandle::Get()));
 
   MachineLevelUserCloudPolicyManager* policy_manager =
       g_browser_process->browser_policy_connector()
@@ -317,7 +330,40 @@ void MachineLevelUserCloudPolicyController::
   // Start fetching policies.
   VLOG(1) << "Fetch policy after enrollment.";
   policy_fetcher_->SetupRegistrationAndFetchPolicy(dm_token, client_id);
+  if (report_scheduler_) {
+    report_scheduler_->OnDMTokenUpdated();
+  }
+
   NotifyPolicyRegisterFinished(true);
+}
+
+void MachineLevelUserCloudPolicyController::CreateReportSchedulerAsync(
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+  task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &MachineLevelUserCloudPolicyController::CreateReportScheduler,
+          base::Unretained(this)));
+}
+
+void MachineLevelUserCloudPolicyController::CreateReportScheduler() {
+  if (!base::FeatureList::IsEnabled(features::kEnterpriseReportingInBrowser))
+    return;
+
+  auto policy_client = std::make_unique<CloudPolicyClient>(
+      std::string() /* machine_id */, std::string() /* machine_model */,
+      std::string() /* brand_code */, std::string() /* ethernet_mac_address */,
+      std::string() /* dock_mac_address */,
+      std::string() /* manufacture_date */,
+      g_browser_process->browser_policy_connector()
+          ->device_management_service(),
+      g_browser_process->system_network_context_manager()
+          ->GetSharedURLLoaderFactory(),
+      nullptr, CloudPolicyClient::DeviceDMTokenCallback());
+  auto timer = std::make_unique<enterprise_reporting::RequestTimer>();
+  auto generator = std::make_unique<enterprise_reporting::ReportGenerator>();
+  report_scheduler_ = std::make_unique<enterprise_reporting::ReportScheduler>(
+      std::move(policy_client), std::move(timer), std::move(generator));
 }
 
 }  // namespace policy

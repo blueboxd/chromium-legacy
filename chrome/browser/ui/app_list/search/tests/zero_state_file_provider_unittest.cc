@@ -54,9 +54,9 @@ class ZeroStateFileProviderTest : public testing::Test {
     return e;
   }
 
-  void Wait() { thread_bundle_.RunUntilIdle(); }
+  void Wait() { task_environment_.RunUntilIdle(); }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<Profile> profile_;
   std::unique_ptr<ZeroStateFileProvider> provider_;

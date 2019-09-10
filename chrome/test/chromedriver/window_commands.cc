@@ -1286,6 +1286,22 @@ Status ExecutePerformActions(Session* session,
   }
 
   for (size_t i = 0; i < longest_action_list_size; i++) {
+    // Find the last pointer action, and it has to be sent synchronously by
+    // default.
+    size_t last_action = 0;
+    for (size_t j = 0; j < actions_list.size(); j++) {
+      if (actions_list[j].size() > i) {
+        const base::DictionaryValue* action = actions_list[j][i].get();
+        std::string type;
+        std::string action_type;
+        action->GetString("type", &type);
+        action->GetString("subtype", &action_type);
+        if (type != "none" && action_type != "pause") {
+          last_action = j;
+        }
+      }
+    }
+
     // Implements "compute the tick duration" algorithm from W3C spec
     // (https://w3c.github.io/webdriver/#dfn-computing-the-tick-duration).
     // This is the duration for actions in one tick.
@@ -1334,8 +1350,11 @@ Status ExecutePerformActions(Session* session,
           GetOptionalInt(action, "duration", &duration);
           tick_duration = std::max(tick_duration, duration);
         } else {
-          bool async_dispatch_event = false;
-          GetOptionalBool(action, "asyncDispatch", &async_dispatch_event);
+          bool async_dispatch_event = true;
+          if (j == last_action) {
+            async_dispatch_event = false;
+            GetOptionalBool(action, "asyncDispatch", &async_dispatch_event);
+          }
 
           if (type == "key") {
             std::list<KeyEvent> dispatch_key_events;

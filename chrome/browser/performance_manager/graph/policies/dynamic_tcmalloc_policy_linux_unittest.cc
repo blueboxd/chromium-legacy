@@ -7,7 +7,6 @@
 #include "base/allocator/buildflags.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/performance_manager/graph/graph_impl_operations.h"
 #include "chrome/browser/performance_manager/graph/graph_test_harness.h"
 #include "chrome/browser/performance_manager/graph/mock_graphs.h"

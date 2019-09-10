@@ -102,6 +102,7 @@ void WebViewWebClient::AllowCertificateError(
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
     bool overridable,
+    int64_t navigation_id,
     const base::RepeatingCallback<void(bool)>& callback) {
   CWVWebView* web_view = [CWVWebView webViewForWebState:web_state];
   base::RepeatingCallback<void(bool)> callback_copy = callback;

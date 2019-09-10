@@ -267,7 +267,6 @@
 <translation id="421017592316736757">Morate biti na mreži da biste pristupili toj datoteci.</translation>
 <translation id="4212740939091998969">Mapa s nazivom "<ph name="FOLDER_NAME" />" već postoji. Odaberite drugi naziv.</translation>
 <translation id="4215448920900139318">Sigurnosno kopiranje datoteka (ukupno <ph name="FILE_COUNT" />)</translation>
-<translation id="4242533952199664413">Otvori postavke</translation>
 <translation id="426015154560005552">arapska tipkovnica</translation>
 <translation id="4261901459838235729">Googleova prezentacija</translation>
 <translation id="4290535918735525311">Jedna mapa podijeljena s Linuxom</translation>
@@ -423,7 +422,6 @@
 <translation id="5818003990515275822">Korejski</translation>
 <translation id="5819442873484330149">hangul 3 set (završni)</translation>
 <translation id="5833610766403489739">Datoteka nije pronađena. Provjerite postavku lokacije preuzimanja i pokušajte ponovo.</translation>
-<translation id="5838051104334203064">Aplikacije iz Trgovine Play ne mogu pristupiti ovom uređaju</translation>
 <translation id="5838451609423551646">Uklonjeni su svi unosi iz odabira.</translation>
 <translation id="5838825566232597749">Američka međunarodna Workman</translation>
 <translation id="5850516540536751549">Ta vrsta datoteke nije podržana. Posjetite <ph name="BEGIN_LINK" />Chrome web-trgovinu<ph name="END_LINK" /> da biste pronašli aplikaciju koja može otvoriti tu vrstu datoteke.

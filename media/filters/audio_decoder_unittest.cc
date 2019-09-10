@@ -393,7 +393,7 @@ class AudioDecoderTest
   // that the decoder can be reinitialized with different parameters.
   TestParams params_;
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   NullMediaLog media_log_;
   scoped_refptr<DecoderBuffer> data_;

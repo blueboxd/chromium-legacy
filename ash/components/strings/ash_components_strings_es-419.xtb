@@ -3,7 +3,6 @@
 <translationbundle lang="es-419">
 <translation id="1036550831858290950">Guarda la pestaña actual en Favoritos</translation>
 <translation id="104962181688258143">Abrir la app de Archivos</translation>
-<translation id="1098295134904615027">Activa el escritorio virtual de la derecha</translation>
 <translation id="1122869341872663659">Se muestran <ph name="N" /> resultados de búsqueda para <ph name="QUERY" /></translation>
 <translation id="1195667586424773550">Arrastrar el vínculo a la barra de direcciones de la pestaña</translation>
 <translation id="1204450209689312104">Abrir una ventana nueva en modo de navegación incógnito</translation>
@@ -25,7 +24,6 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">Agregar www. y .com a la entrada en la barra de direcciones y, luego, abrir la página</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, luego <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> o <ph name="LEFT" /></translation>
-<translation id="1929866390202038233">Activa el escritorio virtual de la izquierda</translation>
 <translation id="1996162290124031907">Ir a la pestaña siguiente</translation>
 <translation id="2010818616644390445">Ir a la última pestaña de la ventana</translation>
 <translation id="2040706009561734834">Abrir y cerrar el selector</translation>
@@ -64,7 +62,6 @@
 <translation id="3105917916468784889">Tomar captura de pantalla</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Enfoque en la barra de direcciones</translation>
-<translation id="3165428420335997629">Crea un nuevo escritorio virtual</translation>
 <translation id="3256109297135787951">Dejar de destacar un elemento en la biblioteca</translation>
 <translation id="3288816184963444640">Cerrar la ventana actual</translation>
 <translation id="3407560819924487926">Mostrar el Administrador de tareas</translation>
@@ -181,7 +178,6 @@
 <translation id="8234414138295101081">Rotar la pantalla 90 grados</translation>
 <translation id="8241665785394195545">corchete de cierre</translation>
 <translation id="8264941229485248811">Mostrar u ocultar el inspector de Herramientas para desarrolladores</translation>
-<translation id="8355937569537581904">Quita el escritorio virtual actual</translation>
 <translation id="836869401750819675">Abrir la página de descargas</translation>
 <translation id="8388247778047144397">Arrastra el vínculo al área en blanco de la barra de pestañas</translation>
 <translation id="8389638407792712197">Abrir una ventana nueva</translation>

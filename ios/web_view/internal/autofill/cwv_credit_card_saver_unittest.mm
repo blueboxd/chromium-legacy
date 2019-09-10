@@ -33,7 +33,7 @@ class CWVCreditCardSaverTest : public TestWithLocaleAndResources {
  protected:
   CWVCreditCardSaverTest() {}
 
-  web::TestWebThreadBundle web_thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
 };
 
 // Tests CWVCreditCardSaver properly initializes.

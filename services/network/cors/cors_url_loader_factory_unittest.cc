@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -59,7 +60,8 @@ class CorsURLLoaderFactoryTest : public testing::Test {
     context_params->initial_proxy_config =
         net::ProxyConfigWithAnnotation::CreateDirect();
     network_context_ = std::make_unique<NetworkContext>(
-        network_service_.get(), mojo::MakeRequest(&network_context_ptr_),
+        network_service_.get(),
+        network_context_remote_.BindNewPipeAndPassReceiver(),
         std::move(context_params));
 
     auto factory_params = network::mojom::URLLoaderFactoryParams::New();
@@ -95,7 +97,7 @@ class CorsURLLoaderFactoryTest : public testing::Test {
   ResourceScheduler resource_scheduler_;
   std::unique_ptr<NetworkService> network_service_;
   std::unique_ptr<NetworkContext> network_context_;
-  mojom::NetworkContextPtr network_context_ptr_;
+  mojo::Remote<mojom::NetworkContext> network_context_remote_;
 
   // CorsURLLoaderFactory instance under tests.
   std::unique_ptr<mojom::URLLoaderFactory> cors_url_loader_factory_;

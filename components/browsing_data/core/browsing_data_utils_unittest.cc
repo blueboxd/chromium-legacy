@@ -50,7 +50,7 @@ class BrowsingDataUtilsTest : public testing::Test {
   PrefService* prefs() { return &prefs_; }
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable prefs_;
 };
 

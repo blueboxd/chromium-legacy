@@ -645,12 +645,12 @@ public class ManualFillingControllerTest {
         when(mMockKeyboard.isSoftKeyboardShowing(any(), any())).thenReturn(true);
         when(mMockKeyboardAccessory.empty()).thenReturn(false);
 
-        // Show the accessory bar for the default dimensions (300x80@2.f).
+        // Show the accessory bar for the default dimensions (300x128@2.f).
         mController.showWhenKeyboardIsVisible();
         verify(mMockKeyboardAccessory).show();
 
         // The accessory is shown and the content area plus bar size don't exceed the threshold.
-        simulateLayoutSizeChange(3.f, 180, 80);
+        simulateLayoutSizeChange(3.f, 180, 128);
 
         verify(mMockKeyboardAccessory, never()).dismiss();
     }
@@ -673,7 +673,7 @@ public class ManualFillingControllerTest {
         assertThat(mModel.get(KEYBOARD_EXTENSION_STATE), not(is(HIDDEN)));
 
         // Rotating the screen causes a relayout:
-        setContentAreaDimensions(2.f, 320, 80, Surface.ROTATION_90);
+        setContentAreaDimensions(2.f, 320, 128, Surface.ROTATION_90);
         mMediator.onLayoutChange(mMockContentView, 0, 0, 160, 640, 0, 0, 540, 360);
         assertThat(mModel.get(KEYBOARD_EXTENSION_STATE), is(HIDDEN));
     }
@@ -688,18 +688,18 @@ public class ManualFillingControllerTest {
         when(mMockKeyboard.isSoftKeyboardShowing(eq(mMockActivity), any())).thenReturn(true);
         when(mMockKeyboardAccessory.empty()).thenReturn(false);
 
-        // Show the accessory bar for the dimensions exactly at the threshold: 300x80@2.f.
-        simulateLayoutSizeChange(2.0f, 300, 80);
+        // Show the accessory bar for the dimensions exactly at the threshold: 300x128@2.f.
+        simulateLayoutSizeChange(2.0f, 300, 128);
         mController.showWhenKeyboardIsVisible();
         assertThat(mModel.get(KEYBOARD_EXTENSION_STATE), not(is(HIDDEN)));
         verify(mMockKeyboardAccessory).show();
 
         // The height is now reduced by the 48dp high accessory -- it should remain visible.
-        simulateLayoutSizeChange(2.0f, 300, 32);
+        simulateLayoutSizeChange(2.0f, 300, 80);
         assertThat(mModel.get(KEYBOARD_EXTENSION_STATE), not(is(HIDDEN)));
 
         // Use a height that is too small but with a valid width (e.g. resized multi-window window).
-        simulateLayoutSizeChange(2.0f, 300, 31);
+        simulateLayoutSizeChange(2.0f, 300, 79);
         assertThat(mModel.get(KEYBOARD_EXTENSION_STATE), is(HIDDEN));
     }
 
@@ -714,22 +714,22 @@ public class ManualFillingControllerTest {
         when(mMockKeyboard.isSoftKeyboardShowing(eq(mMockActivity), any())).thenReturn(true);
         when(mMockKeyboardAccessory.empty()).thenReturn(false);
 
-        // Show the accessory bar for the dimensions exactly at the threshold: 180x100@2.f.
-        simulateLayoutSizeChange(2.0f, 180, 100);
+        // Show the accessory bar for the dimensions exactly at the threshold: 180x128@2.f.
+        simulateLayoutSizeChange(2.0f, 180, 128);
         mController.showWhenKeyboardIsVisible();
         assertThat(mModel.get(KEYBOARD_EXTENSION_STATE), not(is(HIDDEN)));
 
         // Use a width that is too small but with a valid height (e.g. resized multi-window window).
-        simulateLayoutSizeChange(2.0f, 179, 100);
+        simulateLayoutSizeChange(2.0f, 179, 128);
         assertThat(mModel.get(KEYBOARD_EXTENSION_STATE), is(HIDDEN));
     }
 
     @Test
     public void testRestrictsSheetSizeIfVerticalSpaceChanges() {
         addBrowserTab(mMediator, 1234, null);
-        // Resize the screen from 300x80@2.f to 300x200@2.f.
+        // Resize the screen from 300x128@2.f to 300x200@2.f.
         setContentAreaDimensions(2.f, 200, 300);
-        mMediator.onLayoutChange(mMockContentView, 0, 0, 400, 600, 0, 0, 160, 600);
+        mMediator.onLayoutChange(mMockContentView, 0, 0, 400, 600, 0, 0, 256, 600);
 
         when(mMockKeyboardAccessory.empty()).thenReturn(false);
         when(mMockKeyboardAccessory.isShown()).thenReturn(true);
@@ -748,8 +748,8 @@ public class ManualFillingControllerTest {
 
         // Set layout as if it was rotated: 200x300@2f minus the 100dp+48dp high filling ui.
         setContentAreaDimensions(2.f, 300, 52);
-        mMediator.onLayoutChange(mMockContentView, 0, 0, 600, 102, 0, 0, 320, 600);
-        verify(mMockAccessorySheet).setHeight(144); // == 2f * (200dp - (80dp - 48dp))
+        mMediator.onLayoutChange(mMockContentView, 0, 0, 600, 104, 0, 0, 400, 600);
+        verify(mMockAccessorySheet).setHeight(144); // == 2f * (200dp - 128dp)
     }
 
     @Test
@@ -1067,7 +1067,7 @@ public class ManualFillingControllerTest {
         mediator.getTabModelObserverForTesting().didAddTab(tab, FROM_BROWSER_ACTIONS);
         mediator.getTabObserverForTesting().onShown(tab, FROM_NEW);
         mediator.getTabModelObserverForTesting().didSelectTab(tab, FROM_NEW, lastId);
-        setContentAreaDimensions(2.f, 300, 80);
+        setContentAreaDimensions(2.f, 300, 128);
         return tab;
     }
 

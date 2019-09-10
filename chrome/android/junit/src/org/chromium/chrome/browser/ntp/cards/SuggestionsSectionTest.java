@@ -69,6 +69,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.offlinepages.FakeOfflinePageBridge;
 import org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.CategoryInfoBuilder;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.ui.modelutil.ListObservable;
 import org.chromium.ui.modelutil.ListObservable.ListObserver;
 
@@ -110,6 +111,8 @@ public class SuggestionsSectionTest {
     private PrefServiceBridge mPrefServiceBridge;
     @Mock
     private SigninManager mSigninManager;
+    @Mock
+    private IdentityManager mIdentityManager;
 
     private FakeSuggestionsSource mSuggestionsSource;
     private FakeOfflinePageBridge mBridge;
@@ -139,7 +142,8 @@ public class SuggestionsSectionTest {
 
         // Set up a test account and initialize to the signed in state.
         NewTabPageTestUtils.setUpTestAccount();
-        when(mSigninManager.isSignedInOnNative()).thenReturn(false);
+        when(mSigninManager.getIdentityManager()).thenReturn(mIdentityManager);
+        when(mIdentityManager.hasPrimaryAccount()).thenReturn(false);
         when(mSigninManager.isSignInAllowed()).thenReturn(true);
     }
 

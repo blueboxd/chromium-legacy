@@ -47,7 +47,7 @@ interface NavigationSheet {
         public void start(boolean forward, boolean showCloseIndicator) {}
 
         @Override
-        public void onScroll(float delta, float overscroll) {}
+        public void onScroll(float delta, float overscroll, boolean willNavigate) {}
 
         @Override
         public void release() {}
@@ -75,8 +75,9 @@ interface NavigationSheet {
      * Process swipe gesture and update the navigation sheet state.
      * @param delta Scroll delta from the previous scroll.
      * @param overscroll Total amount of scroll since the dragging started.
+     * @param willNavigate {@code true} if navgation will be triggered upon release.
      */
-    void onScroll(float delta, float overscroll);
+    void onScroll(float delta, float overscroll, boolean willNavigate);
 
     /**
      * Process release events.

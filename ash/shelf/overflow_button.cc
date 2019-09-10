@@ -6,10 +6,10 @@
 
 #include <memory>
 
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button_delegate.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -30,7 +30,8 @@ OverflowButton::OverflowButton(ShelfView* shelf_view)
 
   horizontal_dots_image_view_ = new views::ImageView();
   horizontal_dots_image_view_->SetImage(
-      gfx::CreateVectorIcon(kShelfOverflowHorizontalDotsIcon, kShelfIconColor));
+      gfx::CreateVectorIcon(kShelfOverflowHorizontalDotsIcon,
+                            ShelfConfig::Get()->shelf_icon_color()));
   SetLayoutManager(std::make_unique<views::FillLayout>());
   AddChildView(horizontal_dots_image_view_);
 }

@@ -784,7 +784,7 @@ bool ExternalVkImageBacking::WritePixels(size_t data_size,
   }
 
   auto command_buffer = command_pool_->CreatePrimaryCommandBuffer();
-  CHECK(command_buffer->Initialize());
+  CHECK(command_buffer);
   {
     ScopedSingleUseCommandBufferRecorder recorder(*command_buffer);
     GrVkImageInfo image_info;

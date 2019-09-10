@@ -125,7 +125,7 @@ void FilteringNetworkManager::OnPermissionStatus(bool granted) {
   DCHECK_GT(pending_permission_checks_, 0);
   VLOG(1) << "FilteringNetworkManager received permission status: "
           << (granted ? "granted" : "denied");
-  IPPermissionStatus old_status = GetIPPermissionStatus();
+  blink::IPPermissionStatus old_status = GetIPPermissionStatus();
 
   --pending_permission_checks_;
 
@@ -166,31 +166,32 @@ void FilteringNetworkManager::OnNetworksChanged() {
   // We wait until our permission status is known before firing a network
   // change signal, so that the listener(s) don't miss out on receiving a
   // full network list.
-  if (changed && GetIPPermissionStatus() != PERMISSION_UNKNOWN)
+  if (changed && GetIPPermissionStatus() != blink::PERMISSION_UNKNOWN)
     FireEventIfStarted();
 }
 
 void FilteringNetworkManager::ReportMetrics(bool report_start_latency) {
   if (report_start_latency) {
-    ReportTimeToUpdateNetworkList(base::TimeTicks::Now() -
-                                  start_updating_time_);
+    blink::ReportTimeToUpdateNetworkList(base::TimeTicks::Now() -
+                                         start_updating_time_);
   }
 
   ReportIPPermissionStatus(GetIPPermissionStatus());
 }
 
-IPPermissionStatus FilteringNetworkManager::GetIPPermissionStatus() const {
+blink::IPPermissionStatus FilteringNetworkManager::GetIPPermissionStatus()
+    const {
   if (enumeration_permission() == ENUMERATION_ALLOWED) {
-    return media_permission_ ? PERMISSION_GRANTED_WITH_CHECKING
-                             : PERMISSION_GRANTED_WITHOUT_CHECKING;
+    return media_permission_ ? blink::PERMISSION_GRANTED_WITH_CHECKING
+                             : blink::PERMISSION_GRANTED_WITHOUT_CHECKING;
   }
 
   if (!pending_permission_checks_ &&
       enumeration_permission() == ENUMERATION_BLOCKED) {
-    return PERMISSION_DENIED;
+    return blink::PERMISSION_DENIED;
   }
 
-  return PERMISSION_UNKNOWN;
+  return blink::PERMISSION_UNKNOWN;
 }
 
 void FilteringNetworkManager::FireEventIfStarted() {

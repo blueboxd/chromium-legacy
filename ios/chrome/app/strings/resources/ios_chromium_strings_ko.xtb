@@ -20,10 +20,8 @@
 <translation id="2730884209570016437">다른 애플리케이션에서 카메라를 사용하고 있으므로 Chromium에서 카메라를 사용할 수 없습니다.</translation>
 <translation id="2915596697727466327">Chromium은 얼굴 ID를 사용하여 승인된 사용자만 비밀번호에 액세스할 수 있도록 합니다.</translation>
 <translation id="3256316712990552818">Chromium에 복사됨</translation>
-<translation id="3413120535237193088">어느 기기에서나 내 북마크를 사용하려면 Chromium에 로그인하세요.</translation>
 <translation id="3605252743693911722">Chromium에 로그인하여 모든 기기에서 내 북마크, 비밀번호 등을 사용하세요.</translation>
 <translation id="3805899903892079518">Chromium에서 사진 또는 동영상에 액세스할 수 없습니다. 'iOS 설정 &gt; 개인정보 보호 &gt; 사진'에서 액세스를 허용하세요.</translation>
-<translation id="4024541897090868497">어느 기기에서나 내 탭을 사용하려면 Chromium에 로그인하세요.</translation>
 <translation id="4157467675761413638">Chromium 도움말. 더 많은 탭 옵션을 보려면 화면 하단이나 상단에 있는 툴바에서 탭 표시 버튼을 길게 누릅니다.</translation>
 <translation id="4241912885070669028"><ph name="SIGNOUT_MANAGED_DOMAIN" />에서 관리하는 계정에서 로그아웃합니다. 이렇게 하면 내 Chromium 데이터가 이 기기에서 삭제되지만 Google 계정에는 그대로 유지됩니다.</translation>
 <translation id="4555020257205549924">이 기능을 사용하면 Chromium에서 Google 번역을 사용하여 외국어로 작성된 페이지를 번역합니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>

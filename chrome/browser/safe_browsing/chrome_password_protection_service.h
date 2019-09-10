@@ -69,7 +69,6 @@ void ShowPasswordReuseModalWarningDialog(
 std::unique_ptr<PasswordProtectionNavigationThrottle>
 MaybeCreateNavigationThrottle(content::NavigationHandle* navigation_handle);
 
-// TODO(xinghuilu@): Rearrange this file to reduce number of #ifs
 // ChromePasswordProtectionService extends PasswordProtectionService by adding
 // access to SafeBrowsingNaivigationObserverManager and Profile.
 class ChromePasswordProtectionService : public PasswordProtectionService {
@@ -158,41 +157,14 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // specifies whether the account is syncing or not syncing (content area).
   void OnGaiaPasswordChanged(const std::string& username,
                              bool is_other_gaia_password);
-#endif
 
-  // If user has clicked through any Safe Browsing interstitial on this given
-  // |web_contents|.
-  bool UserClickedThroughSBInterstitial(
-      content::WebContents* web_contents) override;
-
-  // If |prefs::kPasswordProtectionWarningTrigger| is not managed by enterprise
-  // policy, this function should always return PHISHING_REUSE. Otherwise,
-  // returns the specified pref value adjusted for the given username's account
-  // type.
-  PasswordProtectionTrigger GetPasswordProtectionWarningTriggerPref(
-      ReusedPasswordAccountType password_type) const override;
-
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // Gets the enterprise change password URL if specified in policy,
   // otherwise gets the default GAIA change password URL.
   GURL GetEnterpriseChangePasswordURL() const;
 
   // Gets the GAIA change password URL based on |account_info_|.
   GURL GetDefaultChangePasswordURL() const;
-#endif
 
-  // If |url| matches Safe Browsing whitelist domains, password protection
-  // change password URL, or password protection login URLs in the enterprise
-  // policy.
-  bool IsURLWhitelistedForPasswordEntry(const GURL& url,
-                                        RequestOutcome* reason) const override;
-
-  // Gets the type of sync account associated with current profile or
-  // |NOT_SIGNED_IN|.
-  LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
-  GetSyncAccountType() const override;
-
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // Gets the detailed warning text that should show in the modal warning dialog
   // and page info bubble.
   base::string16 GetWarningDetailText(
@@ -223,6 +195,29 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   bool HasUnhandledEnterprisePasswordReuse(
       content::WebContents* web_contents) const;
 #endif
+
+  // If user has clicked through any Safe Browsing interstitial on this given
+  // |web_contents|.
+  bool UserClickedThroughSBInterstitial(
+      content::WebContents* web_contents) override;
+
+  // If |prefs::kPasswordProtectionWarningTrigger| is not managed by enterprise
+  // policy, this function should always return PHISHING_REUSE. Otherwise,
+  // returns the specified pref value adjusted for the given username's account
+  // type.
+  PasswordProtectionTrigger GetPasswordProtectionWarningTriggerPref(
+      ReusedPasswordAccountType password_type) const override;
+
+  // If |url| matches Safe Browsing whitelist domains, password protection
+  // change password URL, or password protection login URLs in the enterprise
+  // policy.
+  bool IsURLWhitelistedForPasswordEntry(const GURL& url,
+                                        RequestOutcome* reason) const override;
+
+  // Gets the type of sync account associated with current profile or
+  // |NOT_SIGNED_IN|.
+  LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
+  GetSyncAccountType() const override;
 
 // TODO(crbug.com/995926): Enable caching on Android
 // Note: Before enable verdict cache manager on Android,
@@ -310,19 +305,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       RequestOutcome outcome,
       PasswordType password_type,
       const LoginReputationClientResponse* response) override;
-#endif
-  // Updates security state for the current |web_contents| based on
-  // |threat_type| and reused |password_type|, such that page info bubble will
-  // show appropriate status when user clicks on the security chip.
-  void UpdateSecurityState(SBThreatType threat_type,
-                           ReusedPasswordAccountType password_type,
-                           content::WebContents* web_contents) override;
 
-  void RemoveUnhandledSyncPasswordReuseOnURLsDeleted(
-      bool all_history,
-      const history::URLRows& deleted_rows) override;
-
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   void HandleUserActionOnModalWarning(
       content::WebContents* web_contents,
       ReusedPasswordAccountType password_type,
@@ -341,22 +324,32 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   void HandleResetPasswordOnInterstitial(content::WebContents* web_contents,
                                          WarningAction action);
-#endif
-  // Returns base-10 string representation of the uint64t hash.
-  std::string GetSyncPasswordHashFromPrefs();
 
-  void SetGaiaPasswordHashForTesting(const std::string& new_password_hash) {
-    sync_password_hash_ = new_password_hash;
-  }
-
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // Determines if we should show chrome://reset-password interstitial based on
   // previous request outcome, the reused |password_type| and the
   // |main_frame_url|.
   bool CanShowInterstitial(RequestOutcome reason,
                            ReusedPasswordAccountType password_type,
                            const GURL& main_frame_url) override;
+
+  // Updates security state for the current |web_contents| based on
+  // |threat_type| and reused |password_type|, such that page info bubble will
+  // show appropriate status when user clicks on the security chip.
+  void UpdateSecurityState(SBThreatType threat_type,
+                           ReusedPasswordAccountType password_type,
+                           content::WebContents* web_contents) override;
 #endif
+
+  void RemoveUnhandledSyncPasswordReuseOnURLsDeleted(
+      bool all_history,
+      const history::URLRows& deleted_rows) override;
+  // Returns base-10 string representation of the uint64t hash.
+
+  std::string GetSyncPasswordHashFromPrefs();
+
+  void SetGaiaPasswordHashForTesting(const std::string& new_password_hash) {
+    sync_password_hash_ = new_password_hash;
+  }
 
   // Unit tests
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
@@ -440,14 +433,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       int64_t navigation_id,
       sync_pb::GaiaPasswordReuse::PasswordReuseDialogInteraction::
           InteractionResult interaction_result);
-#endif
 
-  // Log that we captured the password, either due to log-in or by timer.
-  // This also sets the reoccuring timer.
-  void MaybeLogPasswordCapture(bool did_log_in);
-  void SetLogPasswordCaptureTimer(const base::TimeDelta& delay);
-
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   void OnModalWarningShownForGaiaPassword(
       content::WebContents* web_contents,
       ReusedPasswordAccountType password_type,
@@ -457,6 +443,24 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       content::WebContents* web_contents,
       ReusedPasswordAccountType password_type,
       const std::string& verdict_token);
+
+  // If enterprise admin turns off password protection, removes all captured
+  // enterprise password hashes.
+  void OnWarningTriggerChanged();
+
+  // Informs PasswordReuseDetector that enterprise password URLs (login URL or
+  // change password URL) have been changed.
+  void OnEnterprisePasswordUrlChanged();
+
+  // Log that we captured the password, either due to log-in or by timer.
+  // This also sets the reoccuring timer.
+  void MaybeLogPasswordCapture(bool did_log_in);
+  void SetLogPasswordCaptureTimer(const base::TimeDelta& delay);
+#endif
+
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+  // Get the content area size of current browsing window.
+  gfx::Size GetCurrentContentAreaSize() const override;
 #endif
 
   // Constructor used for tests only.
@@ -468,21 +472,6 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   // Code shared by both ctors.
   void Init();
-
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
-  // If enterprise admin turns off password protection, removes all captured
-  // enterprise password hashes.
-  void OnWarningTriggerChanged();
-
-  // Informs PasswordReuseDetector that enterprise password URLs (login URL or
-  // change password URL) have been changed.
-  void OnEnterprisePasswordUrlChanged();
-#endif
-
-#if BUILDFLAG(FULL_SAFE_BROWSING)
-  // Get the content area size of current browsing window.
-  gfx::Size GetCurrentContentAreaSize() const override;
-#endif
 
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;
   TriggerManager* trigger_manager_;

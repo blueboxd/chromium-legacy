@@ -17,6 +17,7 @@ schema_sources = [
   "accessibility_private.json",
   "bookmarks.json",
   "braille_display_private.idl",
+  "command_line_private.json",
   "history.json",
   "identity.idl",
   "i18n.json",

@@ -22,20 +22,18 @@ namespace {
 class LayerTreeImplTest : public LayerTestCommon::LayerImplTest,
                           public testing::Test {
  public:
-  explicit LayerTreeImplTest(
-      const LayerTreeSettings& settings = LayerListSettings())
+  LayerTreeImplTest() = default;
+  explicit LayerTreeImplTest(const LayerTreeSettings& settings)
       : LayerImplTest(settings) {}
 
   void SetUp() override {
     root_layer()->SetBounds(gfx::Size(100, 100));
-    SetupRootProperties(root_layer());
     UpdateDrawProperties(host_impl().active_tree());
   }
 
   FakeLayerTreeHostImpl& host_impl() const {
     return *LayerImplTest::host_impl();
   }
-  LayerImpl* root_layer() { return root_layer_for_testing(); }
 
   const RenderSurfaceList& GetRenderSurfaceList() const {
     return host_impl().active_tree()->GetRenderSurfaceList();
@@ -108,14 +106,6 @@ class LayerTreeImplTest : public LayerTestCommon::LayerImplTest,
   LayerImpl* top_ = nullptr;
   LayerImpl* left_child_ = nullptr;
   LayerImpl* right_child_ = nullptr;
-
- private:
-  RenderSurfaceList render_surface_list_impl_;
-};
-
-class LayerTreeImplTestWithLayerLists : public LayerTreeImplTest {
- public:
-  LayerTreeImplTestWithLayerLists() : LayerTreeImplTest(LayerListSettings()) {}
 };
 
 TEST_F(LayerTreeImplTest, HitTestingForSingleLayer) {
@@ -973,7 +963,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayersAtVaryingDepths) {
   EXPECT_EQ(grand_child1, result_layer);
 }
 
-TEST_F(LayerTreeImplTestWithLayerLists, HitTestingRespectsClipParents) {
+TEST_F(LayerTreeImplTest, HitTestingRespectsClipParents) {
   LayerImpl* root = root_layer();
   root->SetBounds(gfx::Size(100, 100));
   root->SetDrawsContent(true);
@@ -2294,7 +2284,6 @@ TEST_F(LayerTreeImplTest, TrackPictureLayersWithPaintWorklets) {
 
   auto* root = EnsureRootLayerInPendingTree();
   root->SetBounds(gfx::Size(100, 100));
-  SetupRootProperties(root);
 
   // Add three layers; two with PaintWorklets and one without.
   auto* child1 =
@@ -2395,7 +2384,6 @@ TEST_F(CommitToPendingTreeLayerTreeImplTest,
   LayerImpl* child = AddLayerInPendingTree<LayerImpl>();
   pending_tree->SetElementIdsForTesting();
 
-  SetupRootProperties(pending_root);
   // A scale transform forces a TransformNode.
   gfx::Transform scale3d;
   scale3d.Scale3d(1, 1, 0.5);

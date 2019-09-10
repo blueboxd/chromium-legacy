@@ -1001,7 +1001,11 @@ float LayerImpl::GetIdealContentsScale() const {
 
   gfx::Vector2dF transform_scales =
       MathUtil::ComputeTransform2dScaleComponents(transform, default_scale);
-  return std::max(transform_scales.x(), transform_scales.y());
+
+  constexpr float kMaxScaleRatio = 5.f;
+  float lower_scale = std::min(transform_scales.x(), transform_scales.y());
+  float higher_scale = std::max(transform_scales.x(), transform_scales.y());
+  return std::min(kMaxScaleRatio * lower_scale, higher_scale);
 }
 
 PropertyTrees* LayerImpl::GetPropertyTrees() const {

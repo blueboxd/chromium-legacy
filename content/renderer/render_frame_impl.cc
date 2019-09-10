@@ -146,6 +146,7 @@
 #include "content/renderer/web_ui_extension_data.h"
 #include "content/renderer/worker/dedicated_worker_host_factory_client.h"
 #include "crypto/sha2.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/data_url.h"
 #include "net/base/load_flags.h"
@@ -3206,9 +3207,10 @@ RenderFrameImpl::GetRemoteAssociatedInterfaces() {
   if (!remote_associated_interfaces_) {
     ChildThreadImpl* thread = ChildThreadImpl::current();
     if (thread) {
-      blink::mojom::AssociatedInterfaceProviderAssociatedPtr remote_interfaces;
+      mojo::PendingAssociatedRemote<blink::mojom::AssociatedInterfaceProvider>
+          remote_interfaces;
       thread->GetRemoteRouteProvider()->GetRoute(
-          routing_id_, mojo::MakeRequest(&remote_interfaces));
+          routing_id_, remote_interfaces.InitWithNewEndpointAndPassReceiver());
       remote_associated_interfaces_ =
           std::make_unique<blink::AssociatedInterfaceProvider>(
               std::move(remote_interfaces),
@@ -4208,11 +4210,14 @@ RenderFrameImpl::CreateWorkerFetchContext() {
       watcher_receiver = watcher.InitWithNewPipeAndPassReceiver();
   render_view()->RegisterRendererPreferenceWatcher(std::move(watcher));
 
+  // |pending_subresource_loader_updater| is not used for non-PlzDedicatedWorker
+  // and worklets.
   scoped_refptr<WebWorkerFetchContextImpl> worker_fetch_context =
       WebWorkerFetchContextImpl::Create(
           provider->context(), render_view_->renderer_preferences(),
           std::move(watcher_receiver), GetLoaderFactoryBundle()->Clone(),
-          GetLoaderFactoryBundle()->CloneWithoutAppCacheFactory());
+          GetLoaderFactoryBundle()->CloneWithoutAppCacheFactory(),
+          /*pending_subresource_loader_updater=*/mojo::NullReceiver());
 
   worker_fetch_context->set_ancestor_frame_id(routing_id_);
   worker_fetch_context->set_frame_request_blocker(frame_request_blocker_);

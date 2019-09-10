@@ -338,7 +338,8 @@ void DocumentLoader::DispatchLinkHeaderPreloads(
       GetResponse().HttpHeaderField(http_names::kLink),
       GetResponse().CurrentRequestUrl(), *frame_, frame_->GetDocument(),
       PreloadHelper::kOnlyLoadResources, media_policy, viewport,
-      nullptr /* alternate_resource_info */);
+      nullptr /* alternate_resource_info */,
+      base::nullopt /* recursive_prefetch_token */);
 }
 
 void DocumentLoader::DidChangePerformanceTiming() {
@@ -1221,7 +1222,8 @@ void DocumentLoader::StartLoadingInternal() {
       response_.CurrentRequestUrl(), *GetFrame(), nullptr,
       PreloadHelper::kDoNotLoadResources, PreloadHelper::kLoadAll,
       base::nullopt /* viewport_description */,
-      nullptr /* alternate_resource_info */);
+      nullptr /* alternate_resource_info */,
+      base::nullopt /* recursive_prefetch_token */);
   if (!frame_->IsMainFrame() && response_.HasMajorCertificateErrors()) {
     MixedContentChecker::HandleCertificateError(
         GetFrame(), response_, mojom::RequestContextType::HYPERLINK);

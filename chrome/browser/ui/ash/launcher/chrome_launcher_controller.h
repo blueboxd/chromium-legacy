@@ -121,6 +121,9 @@ class ChromeLauncherController
   // Returns true if the specified item is for a platform app.
   bool IsPlatformApp(const ash::ShelfID& id);
 
+  // Whether the user has permission to modify the given app's settings.
+  bool UninstallAllowed(const std::string& app_id);
+
   // Opens a new instance of the application identified by the ShelfID.
   // Used by the app-list, and by pinned-app shelf items. |display_id| is id of
   // the display from which the app is launched.

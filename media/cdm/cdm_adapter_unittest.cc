@@ -185,7 +185,7 @@ class CdmAdapterTestBase : public testing::Test,
   // Keep track of the loaded CDM.
   scoped_refptr<ContentDecryptionModule> cdm_;
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CdmAdapterTestBase);

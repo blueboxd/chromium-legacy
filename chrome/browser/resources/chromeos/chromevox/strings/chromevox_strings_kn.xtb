@@ -20,7 +20,7 @@
 <translation id="1087788677726983142">ಈವೆಂಟ್ ಸ್ಟ್ರೀಮ್ ಫಿಲ್ಟರ್‌ಗಳನ್ನು ಮರೆಮಾಡಿ</translation>
 <translation id="1088219014394087294">ಯಾವುದೇ ಶೀರ್ಷಿಕೆಗಳಿಲ್ಲ.</translation>
 <translation id="1106741348836243114">ಧ್ವನಿ ಪ್ರತಿಕ್ರಿಯೆ (earcons) ಆನ್ ಅಥವಾ ಆಫ್ ಮಾಡಿ.</translation>
-<translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
+<translation id="1120743664840974483">{"a": "ಆಲ್ಫಾ", "b": "ಬ್ರಾವೋ", "c": "ಚಾರ್ಲಿ", "d": "ಡೆಲ್ಟಾ", "e": "ಇಕೋ", "f": "ಫಾಕ್ಸ್‌ಟ್ರಾಟ್", "g": "ಗಾಲ್ಫ್", "h": "ಹೋಟೆಲ್", "i": "ಇಂಡಿಯಾ", "j": "ಜೂಲಿಯೆಟ್","k": "ಕಿಲೋ", "l": "ಲಿಮಾ", "m": "ಮೈಕ್", "n": "ನವೆಂಬರ್", "o": "ಆಸ್ಕರ್","p": "ಪಾಪಾ", "q": "ಕ್ವಿಬೆಕ್", "r": "ರೋಮಿಯೋ", "s": "ಸಿಯೆರಾ", "t": "ಟ್ಯಾಂಗೋ", "u": "ಯುನಿಫಾರ್ಮ್", "v": "ವಿಕ್ಟರ್", "w": "ವಿಸ್ಕಿ","x": "ಎಕ್ಸ್‌ರೇ", "y": "ಯಾಂಕೀ", "z": "ಜುಲು"}</translation>
 <translation id="1120938014254001895">ಎರಡು ಬೆರಳುಗಳಿಂದ ಮೇಲಕ್ಕೆ ಸ್ವೈಪ್ ಮಾಡಿ</translation>
 <translation id="1124771028211010580">ಪ್ರಸ್ತುತ ಡಿಸ್‌ಪ್ಲೇ ಶೈಲಿ ಅಕ್ಕ ಪಕ್ಕ ಆಗಿದೆ.</translation>
 <translation id="1126928665165112660">ಇಟಾಲಿಕ್ ಅಲ್ಲ</translation>
@@ -207,7 +207,6 @@
 <translation id="257674075312929031">ಗುಂಪು</translation>
 <translation id="2582407057977008361">ಹೊರತಾಗಿ</translation>
 <translation id="2592212930811759050">ಎಡಿಟಿಂಗ್ ಪ್ರಾರಂಭಿಸಲು ಡಬಲ್ ಟ್ಯಾಪ್ ಮಾಡಿ</translation>
-<translation id="2606210917827248971">ಜೊತೆ {COUNT,plural, =1{# ಐಟಂ}one{# ಐಟಂಗಳು}other{# ಐಟಂಗಳು}}</translation>
 <translation id="2614981083756825552">ಗಣಿತ ML ಲೇಔಟ್</translation>
 <translation id="2624431853467395961">ಕಲಿಕೆ ಮೋಡ್‌ ತೆರೆಯಿರಿ</translation>
 <translation id="2626530649491650971">ಕ್ಲಿಕ್ ಮಾಡಬಹುದಾದ</translation>
@@ -391,7 +390,6 @@
 <translation id="3781428340399460090">ಗಾಢ ಗುಲಾಬಿ</translation>
 <translation id="3783725005098956899">ಲಾಗ್ ತೋರಿಸಿ</translation>
 <translation id="3793710123303304873">ನಿರ್ಗಮಿಸಲಾದ ಸಂವಾದ.</translation>
-<translation id="3795836767122514678">+{COUNT,plural, =1{#}one{#}other{#}}</translation>
 <translation id="3801735343383419236">ಸ್ವಯಂಪೂರ್ಣಗೊಳಿಸುವಿಕೆ ಪಟ್ಟಿ</translation>
 <translation id="3810838688059735925">ವೀಡಿಯೊ</translation>
 <translation id="3813387282697781382">ತಿಳಿ ಹವಳದ ಬಣ್ಣ</translation>

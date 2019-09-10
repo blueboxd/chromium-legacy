@@ -163,7 +163,7 @@ bool ExtensionAppContextMenu::IsCommandIdEnabled(int command_id) const {
   if (command_id == ash::OPTIONS) {
     return controller()->HasOptionsPage(profile(), app_id());
   } else if (command_id == ash::UNINSTALL) {
-    return controller()->UserMayModifySettings(profile(), app_id());
+    return controller()->UninstallAllowed(profile(), app_id());
   } else if (extensions::ContextMenuMatcher::IsExtensionsCustomCommandId(
                  command_id)) {
     return extension_menu_items_->IsCommandIdEnabled(command_id);

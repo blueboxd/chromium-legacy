@@ -3,7 +3,6 @@
 <translationbundle lang="sl">
 <translation id="1036550831858290950">Shranjevanje trenutnega zavihka kot zaznamka</translation>
 <translation id="104962181688258143">Odpiranje aplikacije Datoteke</translation>
-<translation id="1098295134904615027">Aktiviranje navideznega namizja na desni</translation>
 <translation id="1122869341872663659">Prikaz toliko rezultatov iskanja za poizvedbo <ph name="QUERY" />: <ph name="N" /></translation>
 <translation id="1195667586424773550">Povlecite povezavo v naslovno vrstico zavihka</translation>
 <translation id="1204450209689312104">Odpiranje novega okna v načinu brez beleženja zgodovine</translation>
@@ -25,7 +24,6 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /> <ph name="SEPARATOR1" /> <ph name="MODIFIER2" /> <ph name="SEPARATOR2" /> <ph name="KEY" /></translation>
 <translation id="1733525068429116555">Dodajanje www. in .com vnosu v naslovni vrstici, nato pa odpiranje strani</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /> <ph name="SEPARATOR1" /> <ph name="ALT" /> <ph name="SEPARATOR2" /> <ph name="L" />, nato <ph name="SHIFT2" /> <ph name="SEPARATOR3" /> <ph name="TAB" /> ali <ph name="LEFT" /></translation>
-<translation id="1929866390202038233">Aktiviranje navideznega namizja na levi</translation>
 <translation id="1996162290124031907">Premik na naslednji zavihek</translation>
 <translation id="2010818616644390445">Premik na zadnji zavihek v oknu</translation>
 <translation id="2040706009561734834">Odpiranje/zapiranje zaganjalnika</translation>
@@ -64,7 +62,6 @@
 <translation id="3105917916468784889">Izdelava posnetka zaslona</translation>
 <translation id="3126026824346185272">CTRL</translation>
 <translation id="3140353188828248647">Preklopi na naslovno vrstico</translation>
-<translation id="3165428420335997629">Ustvarjanje novega navideznega namizja</translation>
 <translation id="3256109297135787951">Opustitev označevanja elementa na polici</translation>
 <translation id="3288816184963444640">Zapiranje trenutnega okna</translation>
 <translation id="3407560819924487926">Prikazovanje upravitelja opravil</translation>
@@ -181,7 +178,6 @@
 <translation id="8234414138295101081">Sukanje zaslona za 90 stopinj</translation>
 <translation id="8241665785394195545">zaklepaj</translation>
 <translation id="8264941229485248811">Prikaz ali skrivanje nadzornika orodij za razvijalce</translation>
-<translation id="8355937569537581904">Odstranitev trenutnega navideznega namizja</translation>
 <translation id="836869401750819675">Odpiranje strani s prenosi</translation>
 <translation id="8388247778047144397">Povlecite povezavo na prazno območje na traku z zavihki</translation>
 <translation id="8389638407792712197">Odpiranje novega okna</translation>

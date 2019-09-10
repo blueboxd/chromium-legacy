@@ -399,6 +399,11 @@ void WebURLResponse::SetWasInPrefetchCache(bool was_in_prefetch_cache) {
   resource_response_->SetWasInPrefetchCache(was_in_prefetch_cache);
 }
 
+void WebURLResponse::SetRecursivePrefetchToken(
+    const base::Optional<base::UnguessableToken>& token) {
+  resource_response_->SetRecursivePrefetchToken(token);
+}
+
 WebString WebURLResponse::AlpnNegotiatedProtocol() const {
   return resource_response_->AlpnNegotiatedProtocol();
 }

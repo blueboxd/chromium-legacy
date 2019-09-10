@@ -306,7 +306,6 @@
 <translation id="2479410451996844060">URL tìm kiếm hợp lệ.</translation>
 <translation id="2482878487686419369">Thông báo</translation>
 <translation id="248348093745724435">Chính sách về máy</translation>
-<translation id="2485387744899240041">Tên người dùng dành cho thiết bị và trình duyệt của bạn</translation>
 <translation id="2491120439723279231">Chứng chỉ của máy chủ có lỗi.</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">Trình phân tích cú pháp JSON</translation>
@@ -875,7 +874,6 @@
 <translation id="5565735124758917034">Đang hoạt động</translation>
 <translation id="5570825185877910964">Bảo vệ tài khoản</translation>
 <translation id="5571083550517324815">Không thể nhận hàng từ địa chỉ này. Chọn một địa chỉ khác.</translation>
-<translation id="5571347317547569613">({NUM_COOKIES,plural, =1{Đang sử dụng 1 cookie}other{Đang sử dụng # cookie}})</translation>
 <translation id="5580958916614886209">Kiểm tra tháng hết hạn của bạn và thử lại</translation>
 <translation id="5586446728396275693">Không có địa chỉ nào được lưu</translation>
 <translation id="5595485650161345191">Chỉnh sửa địa chỉ</translation>

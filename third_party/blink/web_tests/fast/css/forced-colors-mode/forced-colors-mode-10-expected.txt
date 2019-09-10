@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Checks that styles defined inside/outside forced-colors are preserved in forced colors mode if forced-color-ajust is none. assert_equals: expected "rgb(0, 0, 255)" but got "rgb(0, 128, 0)"
-Harness: the test ran to completion.
-

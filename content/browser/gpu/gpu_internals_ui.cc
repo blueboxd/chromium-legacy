@@ -643,7 +643,8 @@ void GpuMessageHandler::OnBrowserBridgeInitialized(
 
   // Tell GpuDataManager it should have full GpuInfo. If the
   // Gpu process has not run yet, this will trigger its launch.
-  GpuDataManagerImpl::GetInstance()->RequestCompleteGpuInfoIfNeeded();
+  GpuDataManagerImpl::GetInstance()->RequestCompleteGpuInfoIfNeeded(
+      kGpuInfoRequestAll, /*delayed*/ false);
 
   // Run callback immediately in case the info is ready and no update in the
   // future.
@@ -726,8 +727,13 @@ void GpuMessageHandler::OnGpuInfoUpdate() {
                                          *(gpu_info_val.get()));
 }
 
+// TODO(magchen): RequestCompleteGpuInfoIfNeeded(), which collects Dxdiag and
+// Dx12/Vulkan info, only runs once. If this same information is not needed,
+// GPU switch observer should be deleted. If more information is needed, it
+// should be fixed.
 void GpuMessageHandler::OnGpuSwitched() {
-  GpuDataManagerImpl::GetInstance()->RequestCompleteGpuInfoIfNeeded();
+  GpuDataManagerImpl::GetInstance()->RequestCompleteGpuInfoIfNeeded(
+      kGpuInfoRequestDxDiag, /*delayed*/ false);
 }
 
 }  // namespace

@@ -298,7 +298,6 @@
 <translation id="2479410451996844060">搜索网址无效。</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="248348093745724435">设备政策</translation>
-<translation id="2485387744899240041">您的设备和浏览器的用户名</translation>
 <translation id="2491120439723279231">服务器证书中包含错误。</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">JSON 解析器</translation>
@@ -860,7 +859,6 @@
 <translation id="5565735124758917034">主动</translation>
 <translation id="5570825185877910964">保护帐号</translation>
 <translation id="5571083550517324815">无法从此地址取货。请另选一个地址。</translation>
-<translation id="5571347317547569613">（{NUM_COOKIES,plural, =1{目前使用了 1 个}other{目前使用了 # 个}}）</translation>
 <translation id="5580958916614886209">请检查您的信用卡到期月份，然后重试</translation>
 <translation id="5586446728396275693">没有已保存的地址</translation>
 <translation id="5595485650161345191">修改地址</translation>

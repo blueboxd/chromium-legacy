@@ -280,7 +280,8 @@ class AutocompleteController : public AutocompleteProviderListener,
   bool done_;
 
   // Are we in Start()? This is used to avoid updating |result_| and sending
-  // notifications until Start() has been invoked on all providers.
+  // notifications until Start() has been invoked on all providers. When this
+  // boolean is true, we are definitely within the synchronous pass.
   bool in_start_;
 
   // Indicate whether it is the first query since startup.

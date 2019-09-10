@@ -191,6 +191,8 @@ class GraphTestHarness : public ::testing::Test {
   void TearDown() override;
 
  protected:
+  void AdvanceClock(base::TimeDelta delta) { task_env_.FastForwardBy(delta); }
+
   base::test::TaskEnvironment& task_env() { return task_env_; }
   GraphImpl* graph() { return &graph_; }
 

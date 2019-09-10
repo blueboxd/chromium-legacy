@@ -9,8 +9,8 @@
 #include "ash/login/ui/login_button.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/login_constants.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -108,7 +108,7 @@ class BasePinButton : public views::InkDropHostView {
     SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
 
     focus_ring_ = views::FocusRing::Install(this);
-    focus_ring_->SetColor(kShelfFocusBorderColor);
+    focus_ring_->SetColor(ShelfConfig::Get()->shelf_focus_border_color());
   }
 
   ~BasePinButton() override = default;

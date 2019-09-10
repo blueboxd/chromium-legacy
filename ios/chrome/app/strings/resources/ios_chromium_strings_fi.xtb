@@ -20,10 +20,8 @@
 <translation id="2730884209570016437">Chromium ei voi käyttää kameraa, koska se on toisen sovelluksen käytössä.</translation>
 <translation id="2915596697727466327">Chromium varmistaa Face ID:llä, että sinulla on lupa käyttää salasanoja.</translation>
 <translation id="3256316712990552818">Kopioitiin Chromiumiin.</translation>
-<translation id="3413120535237193088">Kirjaudu sisään Chromiumiin, niin voit käyttää kirjanmerkkejäsi kaikilla laitteilla.</translation>
 <translation id="3605252743693911722">Kirjaudu sisään Chromiumiin, jotta voit käyttää kirjanmerkkejäsi, salasanojasi ja muita asetuksiasi kaikilla laitteillasi.</translation>
 <translation id="3805899903892079518">Chromium ei voi käyttää kuviasi tai videoitasi. Anna käyttöoikeus kohdassa iOS-asetukset &gt; Tietosuoja &gt; Kuvat.</translation>
-<translation id="4024541897090868497">Kirjaudu sisään Chromiumiin, niin voit käyttää välilehtiäsi kaikilla laitteilla.</translation>
 <translation id="4157467675761413638">Chromium-vinkki: Voit avata välilehtien lisäasetukset painamalla ylä- tai alapalkissa olevaa Näytä välilehdet ‑painiketta pitkään.</translation>
 <translation id="4241912885070669028">Olet kirjautumassa ulos verkkotunnuksen <ph name="SIGNOUT_MANAGED_DOMAIN" /> hallitsemalta tililtä. Chromium-tietosi poistetaan tältä laitteelta, mutta tietosi säilyvät Google-tililläsi.</translation>
 <translation id="4555020257205549924">Kun tämä ominaisuus on käytössä, Chromium tarjoaa vierailla kielillä kirjoitettujen sivujen käännöksiä Google Kääntäjän kautta. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>

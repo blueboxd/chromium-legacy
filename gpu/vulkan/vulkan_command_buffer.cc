@@ -114,6 +114,7 @@ bool VulkanCommandBuffer::Initialize() {
       .commandBufferCount = 1,
   };
 
+  DCHECK_EQ(static_cast<VkCommandBuffer>(VK_NULL_HANDLE), command_buffer_);
   result =
       vkAllocateCommandBuffers(device, &command_buffer_info, &command_buffer_);
   if (VK_SUCCESS != result) {

@@ -331,7 +331,10 @@ public class SideSlideLayout extends ViewGroup {
         startHidingAnimation(mNavigateListener);
     }
 
-    private boolean willNavigate() {
+    /**
+     * @return {@code true} if swiped long enough to trigger navigation upon release.
+     */
+    boolean willNavigate() {
         return getOverscroll() > mTotalDragDistance * THRESHOLD_MULTIPLIER;
     }
 

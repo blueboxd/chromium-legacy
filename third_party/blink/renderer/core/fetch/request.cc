@@ -54,14 +54,12 @@ FetchRequestData* CreateCopyOfFetchRequestDataForFetch(
   request->SetURL(original->Url());
   request->SetMethod(original->Method());
   request->SetHeaderList(original->HeaderList()->Clone());
+  request->SetOrigin(ExecutionContext::From(script_state)->GetSecurityOrigin());
   // FIXME: Set client.
   DOMWrapperWorld& world = script_state->World();
   if (world.IsIsolatedWorld()) {
-    request->SetOrigin(world.IsolatedWorldSecurityOrigin());
+    request->SetIsolatedWorldOrigin(world.IsolatedWorldSecurityOrigin());
     request->SetShouldAlsoUseFactoryBoundOriginForCors(true);
-  } else {
-    request->SetOrigin(
-        ExecutionContext::From(script_state)->GetSecurityOrigin());
   }
   // FIXME: Set ForceOriginHeaderFlag.
   request->SetSameOriginDataURLFlag(true);

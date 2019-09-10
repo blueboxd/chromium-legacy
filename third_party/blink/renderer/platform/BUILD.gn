@@ -1227,6 +1227,7 @@ jumbo_component("platform") {
     "mojo/revocable_strong_binding.h",
     "mojo/string16_mojom_traits.cc",
     "mojo/string16_mojom_traits.h",
+    "p2p/network_manager_uma.cc",
     "peerconnection/audio_codec_factory.cc",
     "peerconnection/rtc_answer_options_platform.h",
     "peerconnection/rtc_dtmf_sender_handler.cc",

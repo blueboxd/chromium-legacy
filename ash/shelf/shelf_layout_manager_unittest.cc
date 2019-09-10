@@ -22,6 +22,7 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/test/shell_test_api.h"
@@ -32,7 +33,6 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_controller.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_navigation_widget.h"
@@ -245,39 +245,45 @@ class ShelfDragCallback {
           // Tests that the shelf sticks with the touch point during the drag
           // until the shelf is completely visible.
           if (SHELF_ALIGNMENT_BOTTOM == shelf->alignment()) {
-            EXPECT_NEAR(shelf_bounds.y(),
-                        auto_hidden_shelf_bounds_.y() +
-                            kHiddenShelfInScreenPortion -
-                            std::abs(scroll_delta),
-                        kEpsilon);
+            EXPECT_NEAR(
+                shelf_bounds.y(),
+                auto_hidden_shelf_bounds_.y() +
+                    ShelfConfig::Get()->hidden_shelf_in_screen_portion() -
+                    std::abs(scroll_delta),
+                kEpsilon);
           } else if (SHELF_ALIGNMENT_LEFT == shelf->alignment()) {
-            EXPECT_NEAR(shelf_bounds.x(),
-                        auto_hidden_shelf_bounds_.x() -
-                            kHiddenShelfInScreenPortion +
-                            std::abs(scroll_delta),
-                        kEpsilon);
+            EXPECT_NEAR(
+                shelf_bounds.x(),
+                auto_hidden_shelf_bounds_.x() -
+                    ShelfConfig::Get()->hidden_shelf_in_screen_portion() +
+                    std::abs(scroll_delta),
+                kEpsilon);
           } else if (SHELF_ALIGNMENT_RIGHT == shelf->alignment()) {
-            EXPECT_NEAR(shelf_bounds.x(),
-                        auto_hidden_shelf_bounds_.x() +
-                            kHiddenShelfInScreenPortion -
-                            std::abs(scroll_delta),
-                        kEpsilon);
+            EXPECT_NEAR(
+                shelf_bounds.x(),
+                auto_hidden_shelf_bounds_.x() +
+                    ShelfConfig::Get()->hidden_shelf_in_screen_portion() -
+                    std::abs(scroll_delta),
+                kEpsilon);
           }
         } else {
           // Tests that after the shelf is completely visible, the shelf starts
           // resisting the drag.
           if (SHELF_ALIGNMENT_BOTTOM == shelf->alignment()) {
-            EXPECT_GT(shelf_bounds.y(), auto_hidden_shelf_bounds_.y() +
-                                            kHiddenShelfInScreenPortion -
-                                            std::abs(scroll_delta));
+            EXPECT_GT(shelf_bounds.y(),
+                      auto_hidden_shelf_bounds_.y() +
+                          ShelfConfig::Get()->hidden_shelf_in_screen_portion() -
+                          std::abs(scroll_delta));
           } else if (SHELF_ALIGNMENT_LEFT == shelf->alignment()) {
-            EXPECT_LT(shelf_bounds.x(), auto_hidden_shelf_bounds_.x() -
-                                            kHiddenShelfInScreenPortion +
-                                            std::abs(scroll_delta));
+            EXPECT_LT(shelf_bounds.x(),
+                      auto_hidden_shelf_bounds_.x() -
+                          ShelfConfig::Get()->hidden_shelf_in_screen_portion() +
+                          std::abs(scroll_delta));
           } else if (SHELF_ALIGNMENT_RIGHT == shelf->alignment()) {
-            EXPECT_GT(shelf_bounds.x(), auto_hidden_shelf_bounds_.x() +
-                                            kHiddenShelfInScreenPortion -
-                                            std::abs(scroll_delta));
+            EXPECT_GT(shelf_bounds.x(),
+                      auto_hidden_shelf_bounds_.x() +
+                          ShelfConfig::Get()->hidden_shelf_in_screen_portion() -
+                          std::abs(scroll_delta));
           }
         }
       }
@@ -1069,8 +1075,8 @@ TEST_F(ShelfLayoutManagerTest, ShelfUpdatedWhenStatusAreaChangesSize) {
       shelf_widget->navigation_widget()->GetWindowBoundsInScreen().width();
   const int hotseat_width =
       GetPrimaryShelf()->GetShelfViewForTesting()->width();
-  const int margins =
-      ShelfConstants::home_button_edge_spacing() + kAppIconGroupMargin;
+  const int margins = ShelfConfig::Get()->home_button_edge_spacing() +
+                      ShelfConfig::Get()->app_icon_group_margin();
   EXPECT_EQ(200, total_width - nav_width - hotseat_width - margins);
 }
 
@@ -1096,8 +1102,9 @@ TEST_F(ShelfLayoutManagerTest, AutoHide) {
   layout_manager->LayoutShelf();
 
   const int display_bottom = display.bounds().bottom();
-  EXPECT_EQ(display_bottom - kHiddenShelfInScreenPortion,
-            GetShelfWidget()->GetWindowBoundsInScreen().y());
+  EXPECT_EQ(
+      display_bottom - ShelfConfig::Get()->hidden_shelf_in_screen_portion(),
+      GetShelfWidget()->GetWindowBoundsInScreen().y());
   EXPECT_EQ(display_bottom, display.work_area().bottom());
   EXPECT_EQ(stable_work_area,
             GetPrimaryWorkAreaInsets()->ComputeStableWorkArea());
@@ -1126,8 +1133,9 @@ TEST_F(ShelfLayoutManagerTest, AutoHide) {
   SetState(layout_manager, SHELF_AUTO_HIDE);
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
   layout_manager->LayoutShelf();
-  EXPECT_EQ(display_bottom - kHiddenShelfInScreenPortion,
-            GetShelfWidget()->GetWindowBoundsInScreen().y());
+  EXPECT_EQ(
+      display_bottom - ShelfConfig::Get()->hidden_shelf_in_screen_portion(),
+      GetShelfWidget()->GetWindowBoundsInScreen().y());
   EXPECT_EQ(stable_work_area,
             GetPrimaryWorkAreaInsets()->ComputeStableWorkArea());
 
@@ -1304,7 +1312,8 @@ TEST_F(ShelfLayoutManagerTest, VisibleWhenLockScreenShowing) {
   // shelf should go off the screen.
   layout_manager->LayoutShelf();
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
-  EXPECT_EQ(display.bounds().bottom() - kHiddenShelfInScreenPortion,
+  EXPECT_EQ(display.bounds().bottom() -
+                ShelfConfig::Get()->hidden_shelf_in_screen_portion(),
             GetShelfWidget()->GetWindowBoundsInScreen().y());
 
   std::unique_ptr<views::Widget> lock_widget(AshTestBase::CreateTestWidget(
@@ -1338,7 +1347,8 @@ TEST_F(ShelfLayoutManagerTest, VisibleInOverview) {
   // shelf should go off the screen.
   GetShelfLayoutManager()->LayoutShelf();
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
-  EXPECT_EQ(display.bounds().bottom() - kHiddenShelfInScreenPortion,
+  EXPECT_EQ(display.bounds().bottom() -
+                ShelfConfig::Get()->hidden_shelf_in_screen_portion(),
             GetShelfWidget()->GetWindowBoundsInScreen().y());
 
   OverviewController* overview_controller = Shell::Get()->overview_controller();
@@ -1358,7 +1368,8 @@ TEST_F(ShelfLayoutManagerTest, VisibleInOverview) {
 
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
-  EXPECT_EQ(display.bounds().bottom() - kHiddenShelfInScreenPortion,
+  EXPECT_EQ(display.bounds().bottom() -
+                ShelfConfig::Get()->hidden_shelf_in_screen_portion(),
             GetShelfWidget()->GetNativeWindow()->GetTargetBounds().y());
 }
 
@@ -2643,7 +2654,7 @@ TEST_F(ShelfLayoutManagerTest, PressAppListBtnWhenAutoHideShelfBeingDragged) {
 
   // Ensure that Shelf is higher than the default height, required by the bug
   // reproduction procedures.
-  delta_y = -ShelfConstants::shelf_size() - 1;
+  delta_y = -ShelfConfig::Get()->shelf_size() - 1;
 
   timestamp += base::TimeDelta::FromMilliseconds(200);
   ui::GestureEvent update_event = ui::GestureEvent(
@@ -2678,7 +2689,8 @@ TEST_F(ShelfLayoutManagerTest, PressAppListBtnWhenAutoHideShelfBeingDragged) {
   PressHomeButton();
   EXPECT_EQ(
       GetScreenAvailableBounds().bottom_left() +
-          gfx::Point(0, -kHiddenShelfInScreenPortion).OffsetFromOrigin(),
+          gfx::Point(0, -ShelfConfig::Get()->hidden_shelf_in_screen_portion())
+              .OffsetFromOrigin(),
       GetPrimaryShelf()->shelf_widget()->GetWindowBoundsInScreen().origin());
   EXPECT_FALSE(GetPrimaryShelf()->IsVisible());
 }
@@ -2724,7 +2736,7 @@ TEST_F(ShelfLayoutManagerTest, MousePressAppListBtnWhenShelfBeingDragged) {
   // Verify that the shelf has expected bounds.
   EXPECT_EQ(
       GetScreenAvailableBounds().bottom_left() +
-          gfx::Point(0, -ShelfConstants::shelf_size()).OffsetFromOrigin(),
+          gfx::Point(0, -ShelfConfig::Get()->shelf_size()).OffsetFromOrigin(),
       GetPrimaryShelf()->shelf_widget()->GetWindowBoundsInScreen().origin());
 }
 
@@ -3352,6 +3364,82 @@ TEST_F(ShelfLayoutManagerTest, ShelfRemainsCenteredOnSecondDisplay) {
   // The app icon should be at the horizontal center of each display.
   EXPECT_EQ(display_1.bounds().CenterPoint().x(), app_center_1.x());
   EXPECT_EQ(display_2.bounds().CenterPoint().x(), app_center_2.x());
+}
+
+// Tests that pinned app icons are visible on non-primary displays.
+TEST_F(ShelfLayoutManagerTest, ShelfShowsPinnedAppsOnOtherDisplays) {
+  // Create three displays.
+  UpdateDisplay("600x400,1000x700,800x900");
+  const unsigned int display_count = 3U;
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  EXPECT_EQ(display_count, root_windows.size());
+
+  auto add_app = []() {
+    ShelfController* controller = Shell::Get()->shelf_controller();
+    int n_apps = controller->model()->item_count();
+    const std::string app_id("app_id_" + base::NumberToString(n_apps));
+    ShelfItem item;
+    item.type = TYPE_PINNED_APP;
+    item.id = ShelfID(app_id);
+    controller->model()->Add(item);
+  };
+
+  // Keep this low so that all apps fit at the center of the screen on all
+  // displays.
+  const int max_app_count = 4;
+  for (int app_count = 1; app_count <= max_app_count; ++app_count) {
+    add_app();
+
+    // Wait for everything to settle down.
+    for (unsigned int display_index = 0; display_index < display_count;
+         ++display_index) {
+      Shelf* shelf = Shelf::ForWindow(root_windows[display_index]);
+      ShelfView* shelf_view = shelf->GetShelfViewForTesting();
+      ShelfViewTestAPI(shelf_view).RunMessageLoopUntilAnimationsDone();
+    }
+
+    // If everything is as expected, the middle app (if applicable) should be
+    // exactly at the center of the screen, on all displays. Also, the
+    // distance between the first app and the left edge of the display should be
+    // the same as the distance between the third app and the right edge of the
+    // display.
+    for (unsigned int display_index = 0; display_index < display_count;
+         ++display_index) {
+      const display::Display display =
+          display::Screen::GetScreen()->GetDisplayNearestWindow(
+              root_windows[display_index]);
+      Shelf* shelf = Shelf::ForWindow(root_windows[display_index]);
+      ShelfView* shelf_view = shelf->GetShelfViewForTesting();
+
+      EXPECT_EQ(app_count, shelf_view->number_of_visible_apps());
+
+      // Only check the middle app if we have an odd number of apps.
+      if (app_count % 2 == 1) {
+        const gfx::Point center = ShelfViewTestAPI(shelf_view)
+                                      .GetViewAt(app_count / 2)
+                                      ->GetBoundsInScreen()
+                                      .CenterPoint();
+        EXPECT_EQ(display.bounds().CenterPoint().x(), center.x())
+            << "App at index " << (app_count / 2) << " should be at "
+            << "the center of display " << display_index << " with "
+            << app_count << " apps";
+      }
+
+      const gfx::Point left = ShelfViewTestAPI(shelf_view)
+                                  .GetViewAt(0)
+                                  ->GetBoundsInScreen()
+                                  .left_center();
+      const gfx::Point right = ShelfViewTestAPI(shelf_view)
+                                   .GetViewAt(app_count - 1)
+                                   ->GetBoundsInScreen()
+                                   .right_center();
+      EXPECT_EQ(left.x() - display.bounds().x(),
+                display.bounds().right() - right.x())
+          << "Apps on either end should be at the same distance from the "
+          << "screen edge on display " << display_index << " with " << app_count
+          << " apps";
+    }
+  }
 }
 
 }  // namespace ash

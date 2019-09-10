@@ -753,7 +753,13 @@ source_set("common") {
   ]
 }
 
-android_library("android_webview_java") {
+java_group("android_webview_java") {
+  deps = [
+    ":browser_java",
+  ]
+}
+
+android_library("browser_java") {
   java_files = [
     "java/src/org/chromium/android_webview/AndroidProtocolHandler.java",
     "java/src/org/chromium/android_webview/AutofillActionModeCallback.java",

@@ -813,12 +813,14 @@ static_library("test_runner_support") {
 if (is_android) {
   import("//build/config/android/rules.gni")
 
+  content_browsertests_manifest =
+      "${target_gen_dir}/content_browsertests_manifest/AndroidManifest.xml"
+
   jinja_template("content_browsertests_manifest") {
     testonly = true
     input =
         "//content/shell/android/browsertests_apk/AndroidManifest.xml.jinja2"
-    output =
-        "${target_gen_dir}/content_browsertests_manifest/AndroidManifest.xml"
+    output = content_browsertests_manifest
   }
 
   android_library("content_browsertests_java") {
@@ -828,6 +830,7 @@ if (is_android) {
       "../shell/android/browsertests_apk/src/org/chromium/content_browsertests_apk/ContentBrowserTestsApplication.java",
     ]
     deps = [
+      ":content_browsertests_manifest",
       ":content_browsertests_resources",
       "//base:base_java",
       "//base:base_java_test_support",
@@ -839,6 +842,7 @@ if (is_android) {
       "//testing/android/native_test:native_test_java",
       "//ui/android:ui_java",
     ]
+    android_manifest_for_lint = content_browsertests_manifest
   }
 
   android_resources("content_browsertests_resources") {
@@ -2270,7 +2274,7 @@ test("content_unittests") {
       "//build/config/freetype",
       "//components/download/internal/common:internal_java",
       "//content/public/android:content_java",
-      "//gpu/ipc/common:android_texture_owner_test_support",
+      "//gpu/command_buffer/service:android_texture_owner_test_support",
       "//media/capture/content/android",
       "//media/capture/content/android:screen_capture_java",
       "//third_party/blink/public/common",

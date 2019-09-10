@@ -202,12 +202,6 @@ class BrowserTaskEnvironment : public base::test::TaskEnvironment {
   DISALLOW_COPY_AND_ASSIGN(BrowserTaskEnvironment);
 };
 
-// TODO(gab): Mass migrate users and remove this.
-class TestBrowserThreadBundle : public BrowserTaskEnvironment {
- public:
-  using BrowserTaskEnvironment::BrowserTaskEnvironment;
-};
-
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_TEST_BROWSER_TASK_ENVIRONMENT_H_

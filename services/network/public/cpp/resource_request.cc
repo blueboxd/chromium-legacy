@@ -30,6 +30,7 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
          update_first_party_url_on_redirect ==
              request.update_first_party_url_on_redirect &&
          request_initiator == request.request_initiator &&
+         isolated_world_origin == request.isolated_world_origin &&
          referrer == request.referrer &&
          referrer_policy == request.referrer_policy &&
          headers.ToString() == request.headers.ToString() &&
@@ -77,7 +78,8 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
          is_signed_exchange_prefetch_cache_enabled ==
              request.is_signed_exchange_prefetch_cache_enabled &&
          obey_origin_policy == request.obey_origin_policy &&
-         trusted_params == trusted_params;
+         trusted_params == trusted_params &&
+         recursive_prefetch_token == request.recursive_prefetch_token;
 }
 
 bool ResourceRequest::SendsCookies() const {

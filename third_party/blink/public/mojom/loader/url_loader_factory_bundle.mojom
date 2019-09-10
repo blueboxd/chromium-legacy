@@ -25,7 +25,11 @@ struct URLLoaderFactoryBundle {
   // A mapping from URL scheme to factory interface.
   map<string, network.mojom.URLLoaderFactory> scheme_specific_factories;
 
-  // A mapping from request-initiator-origin to factory interface.
+  // A mapping from isolated world's origin to factory interface.
+  //
+  // TODO(lukasza): https://crbug.com/940068: Rename to
+  // |isolated_world_factories| (here and in other places referring to
+  // "initiator-specific factories).
   map<url.mojom.Origin, network.mojom.URLLoaderFactory>
       initiator_specific_factories;
 

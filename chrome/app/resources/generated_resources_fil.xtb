@@ -530,6 +530,7 @@
 <translation id="1769104665586091481">Buksan ang Link sa Bagong &amp;Window</translation>
 <translation id="1773212559869067373">Lokal na tinanggihan ang certificate ng pagpapatunay</translation>
 <translation id="177336675152937177">Naka-host na data ng app</translation>
+<translation id="1776712937009046120">Magdagdag ng user</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
 <translation id="1779652936965200207">Pakilagay ang passkey na ito sa "<ph name="DEVICE_NAME" />":</translation>
 <translation id="1781291988450150470">Kasalukuyang PIN</translation>
@@ -2922,7 +2923,7 @@ Tiyaking pinagkakatiwalaan mo ang site na ito bago ka pumasok sa VR.</translatio
 <translation id="5390100381392048184">Payagan ang mga site na mag-play ng tunog</translation>
 <translation id="5390677308841849479">Dark red at orange</translation>
 <translation id="5390743329570580756">Magpadala para sa</translation>
-<translation id="5397361543868847016">{COUNT,plural, =0{Hindi gumagamit ang site na ito ng cookies para sa cross-site na pagsubaybay}=1{Bina-block ng Chrome ang cookies mula sa 1 site}one{Bina-block ng Chrome ang cookies mula sa # site}other{Bina-block ng Chrome ang cookies mula sa # na mga site}}</translation>
+<translation id="5397361543868847016">{COUNT,plural, =0{Hindi gumagamit ang site na ito ng cookies para sa cross-site na pagsubaybay}=1{Bina-block ng Chrome ang cookies mula sa 1 site}one{Bina-block ng Chrome ang cookies mula sa # site}other{Bina-block ng Chrome ang cookies mula sa # na site}}</translation>
 <translation id="5397794290049113714">Ikaw</translation>
 <translation id="5398572795982417028">Lampas sa hangganan ang tinukoy na page, ang limitasyon ay <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">Na-block ang mga ad</translation>
@@ -3028,7 +3029,7 @@ Tiyaking pinagkakatiwalaan mo ang site na ito bago ka pumasok sa VR.</translatio
   -   iyong mga pisikal na katangian, gaya ng tangkad
   -   layout ng kwarto mo
 
-Tiyaking pinagkakatiwalaan mo ang site na ito bago pumasok sa VR.</translation>
+Tiyaking pinagkakatiwalaan mo ang site na ito bago ka pumasok sa VR.</translation>
 <translation id="5535941515421698170">Alisin din ang iyong kasalukuyang data sa device na ito</translation>
 <translation id="5539221284352502426">Tinanggihan ng server ang password na inilagay mo. Kabilang sa mga posibleng dahilan: Masyadong maikli ang password. Dapat may mga numero o simbolo ang password. Dapat naiiba ang password sa mga nakaraang password.</translation>
 <translation id="5541694225089836610">Na-disable ng iyong administrator ang pagkilos na ito</translation>
@@ -4027,7 +4028,7 @@ Tiyaking pinagkakatiwalaan mo ang site na ito bago pumasok sa VR.</translation>
 <translation id="7025190659207909717">Pamamahala sa serbisyo ng data ng mobile</translation>
 <translation id="7027891519253193555">Hindi <ph name="LANGUAGE" /> ang page ?</translation>
 <translation id="7029809446516969842">Mga Password</translation>
-<translation id="703001695939087067">Pumasok ka sa overview mode ng window Pindutin ang tab para mag-navigate.</translation>
+<translation id="703001695939087067">Pumasok sa overview mode ng window. Pindutin ang tab para mag-navigate.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> - Nakakonekta ang serial port</translation>
 <translation id="7031962166228839643">Ang TPM ay ihinahanda, mangyaring maghintay (maaaring tumagal ito nang ilang minuto)...</translation>
 <translation id="7037509989619051237">Text na ipi-preview</translation>
@@ -4066,7 +4067,7 @@ Tiyaking pinagkakatiwalaan mo ang site na ito bago pumasok sa VR.</translation>
 <translation id="708060913198414444">K&amp;opyahin ang address ng audio</translation>
 <translation id="7081952801286122383">Incognito ka</translation>
 <translation id="708278670402572152">Idiskonekta upang i-enable ang pag-scan</translation>
-<translation id="70850504851191913">Naiulat ang paglabag sa data</translation>
+<translation id="70850504851191913">May naiulat na paglabag sa data</translation>
 <translation id="7085389578340536476">Payagan ang Chrome na mag-record ng audio?</translation>
 <translation id="7088434364990739311">Nabigong magsimula ang pagsusuri ng update (code ng error na <ph name="ERROR" />).</translation>
 <translation id="7088561041432335295">Zip Archiver - Buksan at i-pack ang mga ZIP file sa app na Mga File.</translation>
@@ -4459,7 +4460,7 @@ Tiyaking pinagkakatiwalaan mo ang site na ito bago pumasok sa VR.</translation>
 <translation id="7684559058815332124">Bisitahin ang page ng login ng captive portal</translation>
 <translation id="7685049629764448582">Memorya sa JavaScript</translation>
 <translation id="7685087414635069102">Kailangan ng PIN</translation>
-<translation id="7685301384041462804">Tiyaking pinagkakatiwalaan mo ang site na ito bago pumasok sa VR.</translation>
+<translation id="7685301384041462804">Tiyaking pinagkakatiwalaan mo ang site na ito bago ka pumasok sa VR.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Kumpirmahin ang bagong password</translation>
 <translation id="7690378713476594306">Pumili sa listahan</translation>
@@ -4925,7 +4926,7 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="830868413617744215">Beta</translation>
 <translation id="8309458809024885768">Mayroon na ng certificate</translation>
 <translation id="8314381333424235892">Nawawala o hindi naka-install ang extension</translation>
-<translation id="831440797644402910">Hindi mabuksan ang folder</translation>
+<translation id="831440797644402910">Hindi mabuksan ang folder na ito</translation>
 <translation id="8316618172731049784">Ipadala sa <ph name="DEVICE_NAME" /></translation>
 <translation id="8317671367883557781">Idagdag ang koneksyon sa network</translation>
 <translation id="8319414634934645341">Extended na Paggamit ng Key</translation>
@@ -4957,10 +4958,10 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8371695176452482769">Magsalita ngayon</translation>
 <translation id="8371925839118813971">{NUM_TABS,plural, =1{I-mute ang Site}one{I-mute ang Mga Site}other{I-mute ang Mga Site}}</translation>
 <translation id="8372369524088641025">Mahinang WEP key</translation>
-<translation id="8372477600026034341">Karagdagang host</translation>
+<translation id="8372477600026034341">Mga karagdagang host</translation>
 <translation id="8378714024927312812">Pinapamahalaan ng iyong organisasyon</translation>
 <translation id="8379878387931047019">Hindi sinusuportahan ng device na ito ang uri ng security key na hiniling ng website na ito</translation>
-<translation id="8379991678458444070">Bumalik dito nang mabilis sa pamamagitan ng pag-bookmark sa tab na ito</translation>
+<translation id="8379991678458444070">Makabalik kaagad dito sa pamamagitan ng pag-bookmark sa tab na ito</translation>
 <translation id="8382913212082956454">Kopyahin ang &amp;email address</translation>
 <translation id="8386091599636877289">Hindi nakita ang patakaran.</translation>
 <translation id="8386903983509584791">Nakumpleto ang pag-scan</translation>

@@ -16,7 +16,9 @@ int main(int argc, char** argv) {
 
   constexpr fuchsia::web::ContextFeatureFlags kCastRunnerFeatures =
       fuchsia::web::ContextFeatureFlags::NETWORK |
-      fuchsia::web::ContextFeatureFlags::AUDIO;
+      fuchsia::web::ContextFeatureFlags::AUDIO |
+      fuchsia::web::ContextFeatureFlags::VULKAN |
+      fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER;
 
   CastRunner runner(
       base::fuchsia::ComponentContextForCurrentProcess()->outgoing().get(),

@@ -65,7 +65,9 @@ public class SignInPromo extends OptionalLeaf {
     protected SignInPromo(SigninManager signinManager) {
         Context context = ContextUtils.getApplicationContext();
 
-        mCanSignIn = signinManager.isSignInAllowed() && !signinManager.isSignedInOnNative();
+        // TODO(bsazonov): Signin manager should check for native status in isSignInAllowed
+        mCanSignIn = signinManager.isSignInAllowed()
+                && !signinManager.getIdentityManager().hasPrimaryAccount();
         mAccountsReady = AccountManagerFacade.get().isCachePopulated();
         updateVisibility();
 

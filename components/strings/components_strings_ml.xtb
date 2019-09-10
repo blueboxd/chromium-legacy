@@ -298,7 +298,6 @@
 <translation id="2479410451996844060">തിരയൽ URL അസാധുവാണ്.</translation>
 <translation id="2482878487686419369">വിജ്ഞാപനങ്ങള്‍‌</translation>
 <translation id="248348093745724435">മെഷീന്‍ നയങ്ങള്‍</translation>
-<translation id="2485387744899240041">നിങ്ങളുടെ ഉപകരണത്തിനും ബ്രൗസറിനുമുള്ള ഉപയോക്തൃനാമങ്ങൾ</translation>
 <translation id="2491120439723279231">സെർവറിന്റെ സർട്ടിഫിക്കറ്റിൽ പിശകുകൾ ഉണ്ട്.</translation>
 <translation id="2493640343870896922">ലെറ്റർ-പ്ലസ്</translation>
 <translation id="2495083838625180221">JSON പാർസർ</translation>
@@ -863,7 +862,6 @@
 <translation id="5565735124758917034">സജീവമാണ്</translation>
 <translation id="5570825185877910964">അക്കൗണ്ട് പരിരക്ഷിക്കുക</translation>
 <translation id="5571083550517324815">ഈ വിലാസത്തിൽ നിന്ന് പിക്ക്അപ്പ് ചെയ്യാൻ കഴിയില്ല. മറ്റൊരു വിലാസം തിരഞ്ഞെടുക്കുക.</translation>
-<translation id="5571347317547569613">({NUM_COOKIES,plural, =1{ഒരെണ്ണം ഉപയോഗത്തിലുണ്ട്}other{# എണ്ണം ഉപയോഗത്തിലുണ്ട്}})</translation>
 <translation id="5580958916614886209">കാലാവധി തീരുന്ന മാസം പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക</translation>
 <translation id="5586446728396275693">സംരക്ഷിച്ച വിലാസങ്ങളൊന്നുമില്ല</translation>
 <translation id="5595485650161345191">വിലാസം എഡിറ്റുചെയ്യുക</translation>

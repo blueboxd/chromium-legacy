@@ -35,9 +35,10 @@ bool GpuDataManagerImpl::GpuAccessAllowed(std::string* reason) {
   return private_->GpuAccessAllowed(reason);
 }
 
-void GpuDataManagerImpl::RequestCompleteGpuInfoIfNeeded() {
+void GpuDataManagerImpl::RequestCompleteGpuInfoIfNeeded(GpuInfoRequest request,
+                                                        bool delayed) {
   base::AutoLock auto_lock(lock_);
-  private_->RequestCompleteGpuInfoIfNeeded();
+  private_->RequestCompleteGpuInfoIfNeeded(request, delayed);
 }
 
 bool GpuDataManagerImpl::IsEssentialGpuInfoAvailable() {
@@ -95,11 +96,6 @@ void GpuDataManagerImpl::AppendGpuCommandLine(base::CommandLine* command_line,
   private_->AppendGpuCommandLine(command_line, kind);
 }
 
-void GpuDataManagerImpl::RequestGpuSupportedRuntimeVersion(bool delayed) const {
-  base::AutoLock auto_lock(lock_);
-  private_->RequestGpuSupportedRuntimeVersion(delayed);
-}
-
 bool GpuDataManagerImpl::GpuProcessStartAllowed() const {
   base::AutoLock auto_lock(lock_);
   return private_->GpuProcessStartAllowed();
@@ -123,6 +119,11 @@ void GpuDataManagerImpl::UpdateDx12VulkanInfo(
     const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info) {
   base::AutoLock auto_lock(lock_);
   private_->UpdateDx12VulkanInfo(dx12_vulkan_version_info);
+}
+
+void GpuDataManagerImpl::UpdateDxDiagNodeRequestStatus(bool request_continues) {
+  base::AutoLock auto_lock(lock_);
+  private_->UpdateDxDiagNodeRequestStatus(request_continues);
 }
 
 void GpuDataManagerImpl::UpdateDx12VulkanRequestStatus(bool request_continues) {

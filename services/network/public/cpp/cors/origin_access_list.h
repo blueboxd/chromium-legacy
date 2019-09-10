@@ -18,6 +18,8 @@
 
 namespace network {
 
+struct ResourceRequest;
+
 namespace mojom {
 class CorsOriginPattern;
 class CorsOriginAccessPatterns;
@@ -87,6 +89,14 @@ class COMPONENT_EXPORT(NETWORK_CPP) OriginAccessList {
   // Returns |destination|'s AccessState in the list for |source_origin|.
   AccessState CheckAccessState(const url::Origin& source_origin,
                                const GURL& destination) const;
+
+  // Returns |request.url|'s AccessState in |this| list for the origin
+  // calculated based on |request.request_initiator| and
+  // |request.isolated_world_origin|.
+  //
+  // Note: This helper might not do the right thing when processing redirects
+  // (because |request.url| might not be updated yet).
+  AccessState CheckAccessState(const ResourceRequest& request) const;
 
   // Creates mojom::CorsPriginAccessPatterns instance vector that represents
   // |this| OriginAccessList instance.

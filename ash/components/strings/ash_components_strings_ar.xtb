@@ -3,7 +3,6 @@
 <translationbundle lang="ar">
 <translation id="1036550831858290950">حفظ علامة التبويب الحالية كإشارة مرجعية</translation>
 <translation id="104962181688258143">فتح تطبيق الملفات</translation>
-<translation id="1098295134904615027">تفعيل سطح المكتب الافتراضي الأيسر</translation>
 <translation id="1122869341872663659">الاطّلاع <ph name="N" /> على نتائج بحث <ph name="QUERY" /></translation>
 <translation id="1195667586424773550">اسحب الرابط إلى شريط عناوين علامة التبويب</translation>
 <translation id="1204450209689312104">فتح نافذة جديدة في وضع التصفح المتخفي</translation>
@@ -25,7 +24,6 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">‏إضافة .www وcom. إلى الإدخال في شريط العناوين، ثم فتح الصفحة</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />، ثم <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> أو <ph name="LEFT" /></translation>
-<translation id="1929866390202038233">تفعيل سطح المكتب الافتراضي الأيمن</translation>
 <translation id="1996162290124031907">الانتقال إلى علامة التبويب التالية</translation>
 <translation id="2010818616644390445">الانتقال إلى علامة التبويب الأخيرة في النافذة</translation>
 <translation id="2040706009561734834">فتح مشغِّل التطبيقات أو إغلاقه</translation>
@@ -64,7 +62,6 @@
 <translation id="3105917916468784889">أخذ لقطة شاشة</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">تركيز شريط العناوين</translation>
-<translation id="3165428420335997629">إنشاء سطح مكتب افتراضي جديد</translation>
 <translation id="3256109297135787951">إزالة التحديد عن عنصر على الرف</translation>
 <translation id="3288816184963444640">إغلاق النافذة الحالية</translation>
 <translation id="3407560819924487926">استدعاء إدارة المهام</translation>
@@ -181,7 +178,6 @@
 <translation id="8234414138295101081">تدوير الشاشة بزاوية 90 درجة</translation>
 <translation id="8241665785394195545">القوس الأيمن</translation>
 <translation id="8264941229485248811">إظهار مراقب "أدوات المطوِّرين" أو إخفاؤه</translation>
-<translation id="8355937569537581904">إزالة سطح المكتب الافتراضي الحالي</translation>
 <translation id="836869401750819675">فتح صفحة "التنزيلات"</translation>
 <translation id="8388247778047144397">اسحب الرابط إلى منطقة فارغة على شريط علامات التبويب</translation>
 <translation id="8389638407792712197">فتح نافذة جديدة</translation>

@@ -1220,7 +1220,8 @@ Output.prototype = {
             }
           }
           options.annotation.push(token);
-          if (selectedText && !this.formatOptions_.braille) {
+          if (selectedText && !this.formatOptions_.braille &&
+              node.state[StateType.FOCUSED]) {
             this.append_(buff, selectedText, options);
             this.append_(buff, Msgs.getMsg('selected'));
             ruleStr.writeTokenWithValue(token, selectedText);

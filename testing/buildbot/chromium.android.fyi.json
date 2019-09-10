@@ -413,9 +413,6 @@
     ]
   },
   "android-marshmallow-x86-fyi-rel": {
-    "additional_compile_targets": [
-      "monochrome_static_initializers"
-    ],
     "gtest_tests": [
       {
         "args": [

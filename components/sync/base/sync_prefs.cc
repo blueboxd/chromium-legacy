@@ -83,8 +83,7 @@ std::vector<std::string> GetObsoleteUserTypePrefs() {
           prefs::kSyncArcPackage,
           prefs::kSyncUserEvents,
           prefs::kSyncMountainShares,
-          prefs::kSyncUserConsents,
-          prefs::kSyncSendTabToSelf};
+          prefs::kSyncUserConsents};
 }
 
 void RegisterObsoleteUserTypePrefs(user_prefs::PrefRegistrySyncable* registry) {

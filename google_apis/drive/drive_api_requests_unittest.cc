@@ -27,6 +27,7 @@
 #include "google_apis/drive/dummy_auth_service.h"
 #include "google_apis/drive/request_sender.h"
 #include "google_apis/drive/test_util.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -132,7 +133,8 @@ class DriveApiRequestsTest : public testing::Test {
     network::mojom::NetworkContextParamsPtr context_params =
         network::mojom::NetworkContextParams::New();
     network_service_ptr->CreateNetworkContext(
-        mojo::MakeRequest(&network_context_), std::move(context_params));
+        network_context_.BindNewPipeAndPassReceiver(),
+        std::move(context_params));
 
     network::mojom::NetworkServiceClientPtr network_service_client_ptr;
     network_service_client_ =
@@ -228,7 +230,7 @@ class DriveApiRequestsTest : public testing::Test {
   std::unique_ptr<network::mojom::NetworkService> network_service_;
   std::unique_ptr<network::mojom::NetworkServiceClient> network_service_client_;
   std::unique_ptr<network::mojom::NetworkContextClient> network_context_client_;
-  network::mojom::NetworkContextPtr network_context_;
+  mojo::Remote<network::mojom::NetworkContext> network_context_;
   network::mojom::URLLoaderFactoryPtr url_loader_factory_;
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
       test_shared_loader_factory_;

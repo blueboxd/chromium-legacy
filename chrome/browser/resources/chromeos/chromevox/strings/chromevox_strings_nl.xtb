@@ -20,7 +20,7 @@
 <translation id="1087788677726983142">Filters voor gebeurtenisstream verbergen</translation>
 <translation id="1088219014394087294">Geen koppen.</translation>
 <translation id="1106741348836243114">Geluidsfeedback (earcons) in- of uitschakelen.</translation>
-<translation id="1120743664840974483">{"a": "alfa", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliett","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
+<translation id="1120743664840974483">{"a": "anna", "b": "bernard", "c": "cornelis", "d": "dirk", "e": "eduard", "f": "ferdinand", "g": "gerard", "h": "hendrik", "i": "izaak", "j": "johannes", "k": "karel", "l": "lodewijk", "m": "maria", "n": "nico", "o": "otto","p": "pieter", "q": "quirinus", "r": "rudolf", "s": "simon", "t": "tinus", "u": "utrecht", "v": "victor", "w": "willem","x": "xantippe", "y": "ypsilon", "z": "zaandam"}</translation>
 <translation id="1120938014254001895">Veeg met twee vingers omhoog</translation>
 <translation id="1124771028211010580">De huidige weergavestijl is naast elkaar.</translation>
 <translation id="1126928665165112660">Niet cursief</translation>
@@ -206,7 +206,6 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="257674075312929031">Groep</translation>
 <translation id="2582407057977008361">Terzijde</translation>
 <translation id="2592212930811759050">Dubbeltik om te beginnen met bewerken</translation>
-<translation id="2606210917827248971">met {COUNT,plural, =1{# item}other{# items}}</translation>
 <translation id="2614981083756825552">MathML-indeling</translation>
 <translation id="2624431853467395961">Leermodus openen</translation>
 <translation id="2626530649491650971">klikbaar</translation>
@@ -390,7 +389,6 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="3781428340399460090">Felroze</translation>
 <translation id="3783725005098956899">Logbestand weergeven</translation>
 <translation id="3793710123303304873">Dialoogvenster afgesloten.</translation>
-<translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">Automatisch lijst aanvullen</translation>
 <translation id="3810838688059735925">Videobestanden</translation>
 <translation id="3813387282697781382">Lichtkoraal</translation>

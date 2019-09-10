@@ -11,6 +11,7 @@
 #include <string.h>
 
 #include "base/logging.h"
+#include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "media/gpu/macros.h"
@@ -206,7 +207,7 @@ size_t FillJpegHeader(const gfx::Size& input_size,
     for (size_t j = 0; j < kDctSize; ++j) {
       uint32_t scaled_quant_value =
           (quant_table.value[kZigZag8x8[j]] * quality_normalized) / 100;
-      scaled_quant_value = std::min(255u, std::max(1u, scaled_quant_value));
+      scaled_quant_value = base::ClampToRange(scaled_quant_value, 1u, 255u);
       header[idx++] = static_cast<uint8_t>(scaled_quant_value);
     }
   }

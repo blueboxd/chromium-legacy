@@ -29,9 +29,9 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   OverviewController();
   ~OverviewController() override;
 
-  // Starts/Ends overview with |type|. Returns true if successful (showing
-  // overview would be unsuccessful if there are no windows to show). Depending
-  // on |type| the enter/exit animation will look different.
+  // Starts/Ends overview with |type|. Returns true if enter or exit overview
+  // successful. Depending on |type| the enter/exit animation will look
+  // different.
   bool StartOverview(OverviewSession::EnterExitOverviewType type =
                          OverviewSession::EnterExitOverviewType::kNormal);
   bool EndOverview(OverviewSession::EnterExitOverviewType type =
@@ -115,18 +115,19 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   FRIEND_TEST_ALL_PREFIXES(TabletModeControllerTest,
                            DisplayDisconnectionDuringOverview);
 
-  // Attempts to toggle overview mode and returns true if successful (showing
-  // overview would be unsuccessful if there are no windows to show). Depending
-  // on |type| the enter/exit animation will look different.
-  bool ToggleOverview(OverviewSession::EnterExitOverviewType type =
+  // Toggle overview mode. Depending on |type| the enter/exit animation will
+  // look different.
+  void ToggleOverview(OverviewSession::EnterExitOverviewType type =
                           OverviewSession::EnterExitOverviewType::kNormal);
 
   // There is no need to blur or dim the wallpaper for tests.
   static void SetDoNotChangeWallpaperForTests();
 
-  // Returns true if selecting windows in an overview is enabled. This is false
-  // at certain times, such as when the lock screen is visible.
+  // Returns true if it's possible to enter or exit overview mode in the current
+  // configuration. This can be false at certain times, such as when the lock
+  // screen is visible we can't overview mode.
   bool CanEnterOverview();
+  bool CanEndOverview(OverviewSession::EnterExitOverviewType type);
 
   void OnStartingAnimationComplete(bool canceled);
   void OnEndingAnimationComplete(bool canceled);

@@ -42,6 +42,7 @@
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Search and explore</translation>
 <translation id="1264974993859112054">Sports</translation>
+<translation id="1266864766717917324">Couldn't share <ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1283039547216852943">Tap to expand</translation>
 <translation id="1285320974508926690">Never translate this site</translation>
@@ -71,6 +72,7 @@
 <translation id="1430915738399379752">Print</translation>
 <translation id="1445680696957526815">Chrome’s components are incompatible with one another. Chrome may be upgrading, please try again in a few minutes. If the problem continues, try uninstalling and re-installing Chrome.</translation>
 <translation id="1446450296470737166">Allow full control of MIDI devices</translation>
+<translation id="1450753235335490080">Can't share <ph name="CONTENT_TYPE" /></translation>
 <translation id="145097072038377568">Turned off in Android Settings</translation>
 <translation id="1477626028522505441"><ph name="FILE_NAME" /> download failed due to server issues.</translation>
 <translation id="1501480321619201731">Delete group</translation>
@@ -153,6 +155,7 @@
 <translation id="2049961518639794558">Changing the file extension may result in unexpected behaviour and be harmful to your device.</translation>
 <translation id="2056878612599315956">Site paused</translation>
 <translation id="2063713494490388661">Tap to Search</translation>
+<translation id="2067805253194386918">text</translation>
 <translation id="2079545284768500474">Undo</translation>
 <translation id="2082238445998314030">Result <ph name="RESULT_NUMBER" /> of <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Sound</translation>
@@ -324,6 +327,7 @@
 <translation id="3384347053049321195">Share image</translation>
 <translation id="3386292677130313581">Ask before allowing sites to know your location (recommended)</translation>
 <translation id="3387650086002190359"><ph name="FILE_NAME" /> download failed due to file system errors.</translation>
+<translation id="3389286852084373014">Text is too large</translation>
 <translation id="3398320232533725830">Open the bookmarks manager</translation>
 <translation id="3414952576877147120">Size:</translation>
 <translation id="3443221991560634068">Reload the current page</translation>
@@ -348,6 +352,7 @@
 <translation id="3599863153486145794">Clears history from all signed-in devices. Your Google Account may have other forms of browsing history at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Mute sites that play sound</translation>
 <translation id="3616113530831147358">Audio</translation>
+<translation id="3631987586758005671">Sharing to <ph name="DEVICE_NAME" /></translation>
 <translation id="3632295766818638029">Unmask password</translation>
 <translation id="363596933471559332">Automatically sign in to websites using stored credentials. When the feature is off, you’ll be asked for verification every time before signing in to a website.</translation>
 <translation id="3658159451045945436">Resetting wipes your history of data savings, including the list of visited sites.</translation>
@@ -578,6 +583,7 @@ Make sure that you trust this site before entering VR.</translation>
 <translation id="5324858694974489420">Parental Settings</translation>
 <translation id="5327248766486351172">Name</translation>
 <translation id="5335288049665977812">Allow sites to run JavaScript (recommended)</translation>
+<translation id="5342314432463739672">Permission requests</translation>
 <translation id="5357811892247919462">Tab received</translation>
 <translation id="5363230136052241468">Tap the home button to load the new tab page</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> open tab, tap to switch tabs}other{<ph name="OPEN_TABS_MANY" /> open tabs, tap to switch tabs}}</translation>
@@ -748,6 +754,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6532866250404780454">Sites that you visit in Chrome won't show. All site timers will be deleted.</translation>
 <translation id="6534565668554028783">Google took too long to respond</translation>
 <translation id="6538442820324228105">Downloaded <ph name="GBS" /> GB</translation>
+<translation id="6539092367496845964">Something went wrong. Try again later.</translation>
 <translation id="654446541061731451">Select a tab to beam</translation>
 <translation id="6545017243486555795">Clear All Data</translation>
 <translation id="6545864417968258051">Bluetooth scanning</translation>
@@ -879,6 +886,7 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="7493994139787901920"><ph name="VERSION" /> (Updated <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">data saved</translation>
 <translation id="7498271377022651285">Please wait…</translation>
+<translation id="7510943789645525906">Warns you if a password that you used was part of a data breach</translation>
 <translation id="7514365320538308">Download</translation>
 <translation id="751961395872307827">Can't connect to the site</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -895,6 +903,7 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="7605594153474022051">Sync isn't working</translation>
 <translation id="7606077192958116810">Lite mode is on. Manage it in Settings.</translation>
 <translation id="7612619742409846846">Signed in to Google as</translation>
+<translation id="7618708364256705849">No devices available.</translation>
 <translation id="7619072057915878432"><ph name="FILE_NAME" /> download failed due to network failures.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Get help<ph name="END_LINK1" /> or <ph name="BEGIN_LINK2" />re-scan<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Welcome to Chrome</translation>

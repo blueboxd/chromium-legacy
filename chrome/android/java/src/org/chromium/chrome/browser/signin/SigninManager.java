@@ -31,6 +31,8 @@ import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountTrackerService;
 import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.signin.identitymanager.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
@@ -47,7 +49,8 @@ import java.util.List;
  * <p/>
  * See chrome/browser/signin/signin_manager_android.h for more details.
  */
-public class SigninManager implements AccountTrackerService.OnSystemAccountsSeededListener {
+public class SigninManager
+        implements AccountTrackerService.OnSystemAccountsSeededListener, IdentityManager.Observer {
     private static final String TAG = "SigninManager";
 
     /**
@@ -184,6 +187,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     private long mNativeSigninManagerAndroid;
     private final Context mContext;
     private final AccountTrackerService mAccountTrackerService;
+    private final IdentityManager mIdentityManager;
     private final AndroidSyncSettings mAndroidSyncSettings;
     private final ObserverList<SignInStateObserver> mSignInStateObservers = new ObserverList<>();
     private final ObserverList<SignInAllowedObserver> mSignInAllowedObservers =
@@ -218,29 +222,33 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
      * @return
      */
     @CalledByNative
-    private static SigninManager create(
-            long nativeSigninManagerAndroid, AccountTrackerService accountTrackerService) {
+    private static SigninManager create(long nativeSigninManagerAndroid,
+            AccountTrackerService accountTrackerService, IdentityManager identityManager) {
         assert nativeSigninManagerAndroid != 0;
         assert accountTrackerService != null;
+        assert identityManager != null;
         return new SigninManager(ContextUtils.getApplicationContext(), nativeSigninManagerAndroid,
-                accountTrackerService, AndroidSyncSettings.get());
+                accountTrackerService, identityManager, AndroidSyncSettings.get());
     }
 
     @VisibleForTesting
     SigninManager(Context context, long nativeSigninManagerAndroid,
-            AccountTrackerService accountTrackerService, AndroidSyncSettings androidSyncSettings) {
+            AccountTrackerService accountTrackerService, IdentityManager identityManager,
+            AndroidSyncSettings androidSyncSettings) {
         ThreadUtils.assertOnUiThread();
         assert context != null;
         assert androidSyncSettings != null;
         mContext = context;
         mNativeSigninManagerAndroid = nativeSigninManagerAndroid;
         mAccountTrackerService = accountTrackerService;
+        mIdentityManager = identityManager;
         mAndroidSyncSettings = androidSyncSettings;
 
         mSigninAllowedByPolicy =
                 SigninManagerJni.get().isSigninAllowedByPolicy(mNativeSigninManagerAndroid);
 
         mAccountTrackerService.addSystemAccountsSeededListener(this);
+        mIdentityManager.addObserver(this);
     }
 
     /**
@@ -249,6 +257,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
      */
     @CalledByNative
     public void destroy() {
+        mIdentityManager.removeObserver(this);
         mAccountTrackerService.removeSystemAccountsSeededListener(this);
         mNativeSigninManagerAndroid = 0;
     }
@@ -267,6 +276,13 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         RecordHistogram.recordEnumeratedHistogram(
                 "Signin.SigninCompletedAccessPoint", sSignInAccessPoint, SigninAccessPoint.MAX);
         sSignInAccessPoint = SigninAccessPoint.UNKNOWN;
+    }
+
+    /**
+     * Returns the IdentityManager used by SigninManager.
+     */
+    public IdentityManager getIdentityManager() {
+        return mIdentityManager;
     }
 
     /**
@@ -502,6 +518,18 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     }
 
     /**
+     * Implements {@link IdentityManager.Observer}: take action when primary account is set.
+     * Simply verify that the request is ongoing (mSignInState != null), as only SigninManager
+     * should update IdentityManager. This is triggered by the call to
+     * SigninManagerJni.get().setPrimaryAccount.
+     */
+    @VisibleForTesting
+    @Override
+    public void onPrimaryAccountSet(CoreAccountInfo account) {
+        assert mSignInState != null;
+    }
+
+    /**
      * Returns true if a sign-in or sign-out operation is in progress. See also
      * {@link #runAfterOperationInProgress}.
      */
@@ -583,7 +611,8 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
                 callback, wipeDataHooks, forceWipeUserData || managementDomain != null);
         Log.d(TAG, "Signing out, management domain: " + managementDomain);
 
-        // User data will be wiped in disableSyncAndWipeData(), called from onNativeSignOut().
+        // User data will be wiped in disableSyncAndWipeData(), called from
+        // onPrimaryAccountcleared().
         SigninManagerJni.get().signOut(mNativeSigninManagerAndroid, signoutSource);
     }
 
@@ -625,9 +654,8 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         notifySignInAllowedChanged();
     }
 
-    @VisibleForTesting
-    @CalledByNative
-    void onNativeSignOut() {
+    @Override
+    public void onPrimaryAccountCleared(CoreAccountInfo account) {
         if (mSignOutState == null) {
             // mSignOutState can only be null when the sign out is triggered by
             // native (since otherwise SigninManager.signOut would have created
@@ -668,13 +696,6 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         for (SignInStateObserver observer : mSignInStateObservers) {
             observer.onSignedOut();
         }
-    }
-
-    /**
-     * @return Whether there is a signed in account on the native side.
-     */
-    public boolean isSignedInOnNative() {
-        return SigninManagerJni.get().isSignedInOnNative(mNativeSigninManagerAndroid);
     }
 
     @CalledByNative
@@ -751,8 +772,6 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         void clearLastSignedInUser(long nativeSigninManagerAndroid);
 
         void logInSignedInUser(long nativeSigninManagerAndroid);
-
-        boolean isSignedInOnNative(long nativeSigninManagerAndroid);
 
         String extractDomainName(String email);
 

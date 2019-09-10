@@ -463,6 +463,8 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void OnPageWasHidden();
   void OnPageWasShown();
   void OnUpdateScreenInfo(const ScreenInfo& screen_info);
+  void OnUpdateLocalMainFramePageVisualProperties(
+      const VisualProperties& visual_properties);
   void OnUpdatePageVisualProperties(const gfx::Size& visible_viewport_size);
   void SetPageFrozen(bool frozen);
   void PutPageIntoBackForwardCache();

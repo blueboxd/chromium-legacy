@@ -388,6 +388,8 @@ window.chrome.embeddedSearch.searchBox.startCapturingKeyStrokes;
 window.chrome.embeddedSearch.searchBox.stopCapturingKeyStrokes;
 /** @param {string} input */
 window.chrome.embeddedSearch.searchBox.queryAutocomplete;
+/** @param {boolean} clearResult */
+window.chrome.embeddedSearch.searchBox.stopAutocomplete;
 
 /** @typedef {{offset: number, style: number}} */
 let ACMatchClassification;

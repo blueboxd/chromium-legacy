@@ -51,8 +51,8 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_platform_file.h"
 #include "media/media_buildflags.h"
-#include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
@@ -243,7 +243,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void BindCacheStorage(
       mojo::PendingReceiver<blink::mojom::CacheStorage> receiver,
       const url::Origin& origin) override;
-  void BindIndexedDB(blink::mojom::IDBFactoryRequest request,
+  void BindIndexedDB(mojo::PendingReceiver<blink::mojom::IDBFactory> receiver,
                      const url::Origin& origin) override;
   void ForceCrash() override;
   void CleanupCorbExceptionForPluginUponDestruction() override;
@@ -559,14 +559,16 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void RegisterMojoInterfaces();
 
   // mojom::RouteProvider:
-  void GetRoute(int32_t routing_id,
-                blink::mojom::AssociatedInterfaceProviderAssociatedRequest
-                    request) override;
+  void GetRoute(
+      int32_t routing_id,
+      mojo::PendingAssociatedReceiver<blink::mojom::AssociatedInterfaceProvider>
+          receiver) override;
 
   // blink::mojom::AssociatedInterfaceProvider:
   void GetAssociatedInterface(
       const std::string& name,
-      blink::mojom::AssociatedInterfaceAssociatedRequest request) override;
+      mojo::PendingAssociatedReceiver<blink::mojom::AssociatedInterface>
+          receiver) override;
 
   // mojom::RendererHost
   using BrowserHistogramCallback =
@@ -766,8 +768,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   std::unique_ptr<blink::AssociatedInterfaceRegistry> associated_interfaces_;
 
   mojo::AssociatedReceiver<mojom::RouteProvider> route_provider_receiver_{this};
-  mojo::AssociatedBindingSet<blink::mojom::AssociatedInterfaceProvider, int32_t>
-      associated_interface_provider_bindings_;
+  mojo::AssociatedReceiverSet<blink::mojom::AssociatedInterfaceProvider,
+                              int32_t>
+      associated_interface_provider_receivers_;
 
   // These fields are cached values that are updated in
   // UpdateProcessPriorityInputs, and are used to compute priority sent to

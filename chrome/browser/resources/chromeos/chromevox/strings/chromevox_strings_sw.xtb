@@ -206,7 +206,6 @@
 <translation id="257674075312929031">Kikundi</translation>
 <translation id="2582407057977008361">Kando</translation>
 <translation id="2592212930811759050">Gusa mara mbili ili uanze kubadilisha</translation>
-<translation id="2606210917827248971">ina {COUNT,plural, =1{Kipengee #}other{Vipengee #}}</translation>
 <translation id="2614981083756825552">Mpangilio wa Hisabati ML</translation>
 <translation id="2624431853467395961">Fungua hali ya kujifunza</translation>
 <translation id="2626530649491650971">kinabofyeka</translation>
@@ -390,7 +389,6 @@
 <translation id="3781428340399460090">Waridi Inayong'aa</translation>
 <translation id="3783725005098956899">Onyesha Kumbukumbu</translation>
 <translation id="3793710123303304873">Umeondoka kwenye kidirisha.</translation>
-<translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">Orodha inayojijaza kiotomatiki</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3813387282697781382">Waridi Inayofifia</translation>

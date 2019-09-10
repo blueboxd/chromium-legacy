@@ -8,14 +8,17 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 m}other{# m}}</translation>
 <translation id="1181037720776840403">Remove</translation>
 <translation id="1243314992276662751">Upload</translation>
+<translation id="1266864766717917324">Couldn't share <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1290982764014248209">Move <ph name="DRAGGED_APP" /> to folder <ph name="FOLDER_NAME" />.</translation>
+<translation id="1291104554099683393">Try sharing the text in smaller chunks.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">RECOMMENDED APPS</translation>
 <translation id="1368832886055348810">Left to Right</translation>
 <translation id="1383876407941801731">Search</translation>
 <translation id="1398853756734560583">Maximise</translation>
 <translation id="1409544243779336081">App recommendation</translation>
+<translation id="1450753235335490080">Can't share <ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">You searched for this before. Deleting '<ph name="QUERY" />' from your history will permanently remove it from your account across all your devices.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minute and }other{# minutes and }}</translation>
 <translation id="1643823602425662293">Notification</translation>
@@ -35,6 +38,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Select &amp;all</translation>
 <translation id="1938451708255335766">To adjust the window display density, restart the app.</translation>
+<translation id="2006524834898217237">Make sure that this device is connected to the Internet.</translation>
 <translation id="208586643495776849">Please try again</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1d}other{#d}}</translation>
 <translation id="2148716181193084225">Today</translation>
@@ -76,6 +80,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 day}other{# days}}</translation>
 <translation id="3295886253693811851">Make a call from</translation>
 <translation id="335581015389089642">Speech</translation>
+<translation id="3389286852084373014">Text is too large</translation>
 <translation id="3443810440409579745">Tab received.</translation>
 <translation id="3479552764303398839">Not now</translation>
 <translation id="348799646910989694">Shelf auto hidden</translation>
@@ -151,11 +156,13 @@
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 sec ago}other{# secs ago}}</translation>
 <translation id="6430678249303439055">Block all notifications from this app</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 second ago}other{# seconds ago}}</translation>
+<translation id="6539092367496845964">Something went wrong. Try again later.</translation>
 <translation id="654149438358937226">Block all notifications</translation>
 <translation id="6567071839949112727">click ancestor</translation>
 <translation id="6578407462441924264">Unnamed</translation>
 <translation id="6612467943526193239">To exit calibration press Esc.</translation>
 <translation id="6620110761915583480">Save File</translation>
+<translation id="6656912866303152668">Make sure that <ph name="TARGET_DEVICE_NAME" /> has sync turned on in Chrome, and then try sending again.</translation>
 <translation id="6699343763173986273">Media Next Track</translation>
 <translation id="673773751041746814">Deletion</translation>
 <translation id="6779314412797872738">To send a number from here to your Android phone, <ph name="TROUBLESHOOT_LINK" /> for both devices in settings.</translation>
@@ -221,6 +228,7 @@
 <translation id="8876215549894133151">Format:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8926951137623668982">Shelf always hidden</translation>
+<translation id="8996630695507351249">Make sure that <ph name="TARGET_DEVICE_NAME" /> is connected to the Internet.</translation>
 <translation id="9002566407876343676">open</translation>
 <translation id="9039076430527029379">Move to Page <ph name="PAGE_NUMBER" />, row <ph name="ROW_NUMBER" />, column <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 sec}other{# secs}}</translation>

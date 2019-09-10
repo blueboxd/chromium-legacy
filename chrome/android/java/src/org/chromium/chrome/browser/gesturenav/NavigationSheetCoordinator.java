@@ -39,16 +39,24 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
     static final int NAVIGATION_LIST_ITEM_TYPE_ID = 0;
 
     // Amount of time to hold the finger still to trigger navigation bottom sheet.
-    // This ensures fling gestures from edge won't invoke the  sheet.
-    private final static int PEEK_HOLD_DELAY_MS = 50;
+    // with a long swipe. This ensures fling gestures from edge won't invoke the  sheet.
+    private final static int LONG_SWIPE_HOLD_DELAY_MS = 50;
 
-    // Navigation sheet is triggered into peek state if swiped by this much or more from an edge.
+    // Amount of time to hold the finger still to trigger navigation bottom sheet
+    // with a short swipe.
+    private final static int SHORT_SWIPE_HOLD_DELAY_MS = 400;
+
+    // Amount of distance to trigger navigation sheet with a long swipe.
     // Actual amount is capped so it is at most half the screen width.
-    private static final int PEEK_THRESHOLD_DP = 224;
+    private static final int LONG_SWIPE_PEEK_THRESHOLD_DP = 224;
 
     // The history item count in the navigation sheet. If the count is equal or smaller,
     // the sheet skips peek state and fully expands right away.
     private static final int SKIP_PEEK_COUNT = 3;
+
+    // Delta for touch events that can happen even when users doesn't intend to move
+    // his finger. Any delta smaller than (or equal to) than this are ignored.
+    private static final float DELTA_IGNORE = 2.f;
 
     private final NavigationSheetView mContentView;
     private final View mToolbarView;
@@ -65,7 +73,7 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
 
     private final Handler mHandler = new Handler();
     private final Runnable mOpenSheetRunnable;
-    private final float mPeekSheetThreshold;
+    private final float mLongSwipePeekThreshold;
 
     private final ModelList mModelList = new ModelList();
     private final ModelListAdapter mModelAdapter = new ModelListAdapter(mModelList);
@@ -121,9 +129,9 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
         mOpenSheetRunnable = () -> {
             if (isHidden()) openSheet();
         };
-        mPeekSheetThreshold =
-                Math.min(context.getResources().getDisplayMetrics().density * PEEK_THRESHOLD_DP,
-                        parent.getWidth() / 2);
+        mLongSwipePeekThreshold = Math.min(
+                context.getResources().getDisplayMetrics().density * LONG_SWIPE_PEEK_THRESHOLD_DP,
+                parent.getWidth() / 2);
     }
 
     // Transition to either peeked or expanded state.
@@ -152,16 +160,24 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
     }
 
     @Override
-    public void onScroll(float delta, float overscroll) {
+    public void onScroll(float delta, float overscroll, boolean willNavigate) {
         if (mBottomSheetController.get() == null) return;
         if (mShowCloseIndicator) return;
-        if (overscroll > mPeekSheetThreshold) {
-            if (isHidden() && Math.abs(delta) > 2.f) {
-                mHandler.removeCallbacks(mOpenSheetRunnable);
-                mHandler.postDelayed(mOpenSheetRunnable, PEEK_HOLD_DELAY_MS);
-            }
+        if (overscroll > mLongSwipePeekThreshold) {
+            triggerSheetWithSwipeAndHold(delta, LONG_SWIPE_HOLD_DELAY_MS);
+        } else if (willNavigate) {
+            triggerSheetWithSwipeAndHold(delta, SHORT_SWIPE_HOLD_DELAY_MS);
         } else if (isPeeked()) {
             close(true);
+        } else {
+            mHandler.removeCallbacks(mOpenSheetRunnable);
+        }
+    }
+
+    private void triggerSheetWithSwipeAndHold(float delta, long delay) {
+        if (isHidden() && Math.abs(delta) > DELTA_IGNORE) {
+            mHandler.removeCallbacks(mOpenSheetRunnable);
+            mHandler.postDelayed(mOpenSheetRunnable, delay);
         }
     }
 

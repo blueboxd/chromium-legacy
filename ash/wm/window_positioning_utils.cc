@@ -15,6 +15,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
+#include "base/numerics/ranges.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -40,7 +41,7 @@ int GetDefaultSnappedWindowWidth(aura::Window* window) {
       window->delegate() ? window->delegate()->GetMinimumSize().width() : 0;
   int ideal_width =
       static_cast<int>(work_area_width * kSnappedWidthWorkspaceRatio);
-  return std::min(work_area_width, std::max(ideal_width, min_width));
+  return base::ClampToRange(ideal_width, min_width, work_area_width);
 }
 
 // Return true if the window or one of its ancestor returns true from

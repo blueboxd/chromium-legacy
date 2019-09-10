@@ -309,10 +309,14 @@ scoped_refptr<const ShapeResultView> ShapingLineBreaker::ShapeLine(
       DCHECK_LE(start, break_opportunity.offset);
       last_safe =
           result_->CachedPreviousSafeToBreakOffset(break_opportunity.offset);
-      DCHECK_LE(last_safe, break_opportunity.offset);
       // No need to reshape the line end because this opportunity is safe.
       if (last_safe == break_opportunity.offset)
         break;
+      if (UNLIKELY(last_safe > break_opportunity.offset)) {
+        // TODO(crbug.com/1787026): This should not happen, but we see crashes.
+        NOTREACHED();
+        break;
+      }
 
       // Moved the opportunity back enough to require reshaping the whole line.
       if (UNLIKELY(last_safe < first_safe)) {

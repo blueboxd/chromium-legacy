@@ -21,6 +21,7 @@
 #include "cc/test/fake_tile_manager.h"
 #include "cc/test/fake_tile_manager_client.h"
 #include "cc/test/fake_tile_task_manager.h"
+#include "cc/test/layer_test_common.h"
 #include "cc/test/test_layer_tree_host_base.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/test/test_tile_priorities.h"
@@ -207,12 +208,12 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
 
     // Adjust the width and height to account for the fact that tiles
     // are bigger than 1x1.
-    LayerTreeSettings settings;
+    LayerListSettings settings;
     width *= settings.default_tile_size.width();
     height *= settings.default_tile_size.height();
 
     // Ensure that we start with blank trees and no tiles.
-    host_impl()->ResetTreesForTesting();
+    ResetTrees();
 
     gfx::Size layer_bounds(width, height);
     gfx::Rect viewport(width / 5, height / 5);
@@ -224,26 +225,22 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
 
     // Pending layer counts as one layer.
     layers.push_back(pending_layer());
-    int next_id = layer_id() + 1;
 
     // Create the rest of the layers as children of the root layer.
     scoped_refptr<FakeRasterSource> raster_source =
         FakeRasterSource::CreateFilledWithImages(layer_bounds);
     while (static_cast<int>(layers.size()) < layer_count) {
-      std::unique_ptr<FakePictureLayerImpl> child_layer =
-          FakePictureLayerImpl::CreateWithRasterSource(
-              host_impl()->pending_tree(), next_id, raster_source);
+      auto* child_layer = AddLayer<FakePictureLayerImplWithRasterSource>(
+          host_impl()->pending_tree(), raster_source);
       child_layer->SetBounds(layer_bounds);
       child_layer->SetDrawsContent(true);
-      layers.push_back(child_layer.get());
-      pending_layer()->test_properties()->AddChild(std::move(child_layer));
-      ++next_id;
+      layers.push_back(child_layer);
+      CopyProperties(pending_layer(), child_layer);
     }
 
     // Property trees need to be rebuilt because layers were added above.
-    host_impl()->pending_tree()->property_trees()->needs_rebuild = true;
-    host_impl()->pending_tree()->BuildLayerListAndPropertyTreesForTesting();
-    host_impl()->pending_tree()->UpdateDrawProperties();
+    host_impl()->pending_tree()->set_needs_update_draw_properties();
+    UpdateDrawProperties(host_impl()->pending_tree());
     for (FakePictureLayerImpl* layer : layers)
       layer->CreateAllTiles();
 

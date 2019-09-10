@@ -351,7 +351,7 @@ class BrowserSwitcherCore {
   }
 
   // Like GetNextLine(char*), but gets the next line instead of the first one.
-  char* GetNextLine() { return GetNextLine(nullptr); }
+  char* GetNextLine() { return GetFirstLine(nullptr); }
 
   // Read a line that contains a number, and then read that number of lines into
   // a vector (one element for each line).

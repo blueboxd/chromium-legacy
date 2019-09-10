@@ -16,7 +16,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_view_test_api.h"
@@ -167,6 +166,7 @@ TEST_F(HomeButtonTest, ButtonPositionInTabletMode) {
           ->shelf_widget()
           ->navigation_widget()
           ->get_bounds_animator_for_testing());
+
   // Visual space around the home button is set at the widget level.
   EXPECT_EQ(0, home_button()->bounds().x());
 }

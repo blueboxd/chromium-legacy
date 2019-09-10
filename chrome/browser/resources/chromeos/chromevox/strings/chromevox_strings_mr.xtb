@@ -20,7 +20,7 @@
 <translation id="1087788677726983142">इव्हेंट स्ट्रीम फिल्टर लपवा</translation>
 <translation id="1088219014394087294">कोणतेही मथळे नाहीत.</translation>
 <translation id="1106741348836243114">ध्वनी अभिप्राय (इअरकॉन) चालू किंवा बंद करा.</translation>
-<translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
+<translation id="1120743664840974483">{"a": "अल्फा", "b": "ब्रेव्हो", "c": "चार्ली", "d": "डेल्टा", "e": "इको", "f": "फॉक्सट्रॉट", "g": "गोल्फ", "h": "हॉटेल", "i": "इंडिया", "j": "जुलिएट","k": "किलो", "l": "लिमा", "m": "माइक", "n": "नोव्हेंबर", "o": "ऑस्कर","p": "पापा", "q": "क्वेबेक", "r": "रोमिओ", "s": "सीएरा", "t": "टँगो", "u": "युनिफॉर्म", "v": "व्हिक्टर", "w": "व्हिस्की","x": "एक्सरे", "y": "यंकी", "z": "झुलू"}</translation>
 <translation id="1120938014254001895">दोन बोटांनी वरच्या दिशेला स्वाइप करा</translation>
 <translation id="1124771028211010580">वर्तमान डिस्प्ले आकार शेजारी-शेजारी आहे.</translation>
 <translation id="1126928665165112660">तिर्यक नाही</translation>
@@ -206,7 +206,6 @@
 <translation id="257674075312929031">गट</translation>
 <translation id="2582407057977008361">बाजूचा</translation>
 <translation id="2592212930811759050">संपादन सुरू करण्यासाठी दोनदा टॅप करा</translation>
-<translation id="2606210917827248971">यासह {COUNT,plural, =1{# आयटम}other{# आयटम}}</translation>
 <translation id="2614981083756825552">Math ML लेआउट</translation>
 <translation id="2624431853467395961">जाणून घ्या मोड उघडा</translation>
 <translation id="2626530649491650971">क्लिक करण्‍यायोग्य</translation>
@@ -390,7 +389,6 @@
 <translation id="3781428340399460090">गडद गुलाबी</translation>
 <translation id="3783725005098956899">लॉग दाखवा</translation>
 <translation id="3793710123303304873">डायलॉगच्या बाहेर पडले.</translation>
-<translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">अॉटोकंप्लीशन सूची</translation>
 <translation id="3810838688059735925">व्हिडिओ</translation>
 <translation id="3813387282697781382">फिकट लाल</translation>

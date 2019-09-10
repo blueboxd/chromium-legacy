@@ -213,7 +213,7 @@ GpuProcessTransportFactory::CreateSoftwareOutputDevice(
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kHeadless))
-    return base::WrapUnique(new viz::SoftwareOutputDevice);
+    return std::make_unique<viz::SoftwareOutputDevice>();
 
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if defined(USE_OZONE)
@@ -227,10 +227,11 @@ GpuProcessTransportFactory::CreateSoftwareOutputDevice(
   return std::make_unique<viz::SoftwareOutputDeviceOzone>(
       std::move(platform_window_surface), std::move(surface_ozone));
 #elif defined(USE_X11)
-  return std::make_unique<viz::SoftwareOutputDeviceX11>(widget);
+  return std::make_unique<viz::SoftwareOutputDeviceX11>(
+      widget, base::ThreadTaskRunnerHandle::Get().get());
 #else
   NOTREACHED();
-  return std::unique_ptr<viz::SoftwareOutputDevice>();
+  return nullptr;
 #endif
 }
 

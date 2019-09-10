@@ -15,6 +15,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/numerics/ranges.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -76,8 +77,8 @@ void ParseMouseMoveEvent(const MouseEvent& event, std::vector<INPUT>* output) {
     int width = GetSystemMetrics(SM_CXVIRTUALSCREEN);
     int height = GetSystemMetrics(SM_CYVIRTUALSCREEN);
     if (width > 1 && height > 1) {
-      int x = std::max(0, std::min(width, event.x()));
-      int y = std::max(0, std::min(height, event.y()));
+      int x = base::ClampToRange(event.x(), 0, width);
+      int y = base::ClampToRange(event.y(), 0, height);
       input.mi.dx = static_cast<int>((x * 65535) / (width - 1));
       input.mi.dy = static_cast<int>((y * 65535) / (height - 1));
       input.mi.dwFlags =

@@ -334,6 +334,12 @@ bool AXNodeObject::ComputeAccessibilityIsIgnored(
   // it's been initialized.
   DCHECK(initialized_);
 #endif
+
+  // All nodes must have an unignored parent within their tree under
+  // kRootWebArea, so force kRootWebArea to always be unignored.
+  if (role_ == ax::mojom::Role::kRootWebArea)
+    return false;
+
   if (GetLayoutObject()) {
     if (role_ == ax::mojom::Role::kUnknown) {
       if (ignored_reasons)

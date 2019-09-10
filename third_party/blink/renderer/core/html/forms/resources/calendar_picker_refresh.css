@@ -115,4 +115,32 @@ body {
   width: auto;
 }
 
+.year-list-view {
+  border: 0;
+}
 
+.scrubby-scroll-bar {
+  border: 0;
+}
+
+.scrubby-scroll-thumb {
+  width: 4px;
+}
+
+.year-list-cell {
+  border: 0;
+}
+
+.year-list-cell .label {
+  background-color: #EFEFEF;
+  border-color: #CECECE;
+}
+
+.month-button {
+  border-radius: 2px;
+  color: #101010;
+}
+
+.month-button.highlighted {
+  background-color: #F3F3F3;
+}

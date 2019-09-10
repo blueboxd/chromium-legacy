@@ -175,13 +175,15 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext() {
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory =
       subresource_loader_factory_bundle_->CloneWithoutAppCacheFactory();
 
+  // |pending_subresource_loader_updater| is not used for shared workers.
   scoped_refptr<WebWorkerFetchContextImpl> worker_fetch_context =
       WebWorkerFetchContextImpl::Create(
           service_worker_provider_context_.get(),
           std::move(renderer_preferences_),
           std::move(preference_watcher_receiver_),
           subresource_loader_factory_bundle_->Clone(),
-          std::move(fallback_factory));
+          std::move(fallback_factory),
+          /*pending_subresource_loader_updater*/ mojo::NullReceiver());
 
   // TODO(horo): To get the correct first_party_to_cookies for the shared
   // worker, we need to check the all documents bounded by the shared worker.

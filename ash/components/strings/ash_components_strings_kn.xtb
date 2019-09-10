@@ -3,7 +3,6 @@
 <translationbundle lang="kn">
 <translation id="1036550831858290950">ನಿಮ್ಮ ಪ್ರಸ್ತುತ ಟ್ಯಾಬ್ ಅನ್ನು ಬುಕ್‌ಮಾರ್ಕ್‌ ಆಗಿ ಉಳಿಸಿ</translation>
 <translation id="104962181688258143">ಫೈಲ್‌ಗಳ ಅಪ್ಲಿಕೇಶನ್ ತೆರೆಯಿರಿ</translation>
-<translation id="1098295134904615027">ಬಲಬದಿಯಲ್ಲಿರುವ ವರ್ಚುವಲ್ ಡೆಸ್ಕ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="1122869341872663659"><ph name="QUERY" /> ಗಾಗಿ <ph name="N" /> ಹುಡುಕಾಟ ಫಲಿತಾಂಶಗಳನ್ನು ಪ್ರದರ್ಶಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="1195667586424773550">ಟ್ಯಾಬ್‌ನ ವಿಳಾಸ ಪಟ್ಟಿಗೆ ಲಿಂಕ್‌ ಅನ್ನು ಡ್ರ್ಯಾಗ್ ಮಾಡಿ</translation>
 <translation id="1204450209689312104">ಅಜ್ಞಾತ ಮೋಡ್‌ನಲ್ಲಿ ಹೊಸ ವಿಂಡೋ ತೆರೆಯಿರಿ</translation>
@@ -25,7 +24,6 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">ವಿಳಾಸ ಪಟ್ಟಿಯಲ್ಲಿ ನಿಮ್ಮ ಇನ್‌ಪುಟ್‌ಗೆ www. ಮತ್ತು .com ಅನ್ನು ಸೇರಿಸಿ, ನಂತರ ಪುಟವನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, ನಂತರ <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> ಅಥವಾ <ph name="LEFT" /></translation>
-<translation id="1929866390202038233">ಎಡಬದಿಯಲ್ಲಿರುವ ವರ್ಚುವಲ್ ಡೆಸ್ಕ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="1996162290124031907">ಮುಂದಿನ ಟ್ಯಾಬ್‌ಗೆ ಹೋಗಿ</translation>
 <translation id="2010818616644390445">ವಿಂಡೋದಲ್ಲಿ ಕೊನೆಯ ಟ್ಯಾಬ್‌ಗೆ ಹೋಗಿ</translation>
 <translation id="2040706009561734834">ಲಾಂಚರ್ ಅನ್ನು ತೆರೆಯಿರಿ/ಮುಚ್ಚಿ</translation>
@@ -64,7 +62,6 @@
 <translation id="3105917916468784889">ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಅನ್ನು ತೆಗೆದುಕೊಳ್ಳಿ</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">ವಿಳಾಸ ಪಟ್ಟಿಯನ್ನು ಗಮನಿಸಿ</translation>
-<translation id="3165428420335997629">ಹೊಸ ವರ್ಚುವಲ್ ಡೆಸ್ಕ್ ಅನ್ನು ರಚಿಸಿ</translation>
 <translation id="3256109297135787951">ನಿಮ್ಮ ಶೆಲ್ಫ್‌ನಲ್ಲಿರುವ ಐಟಂನಿಂದ ಹೈಲೈಟ್ ಅನ್ನು ತೆಗೆದುಹಾಕಿ</translation>
 <translation id="3288816184963444640">ಪ್ರಸ್ತುತ ವಿಂಡೋ ಮುಚ್ಚಿ</translation>
 <translation id="3407560819924487926">ಹೊಸ ಕಾರ್ಯ ನಿರ್ವಾಹಕವನ್ನು ತೆರೆಯುತ್ತದೆ</translation>
@@ -181,7 +178,6 @@
 <translation id="8234414138295101081">ಪರದೆಯನ್ನು 90 ಡಿಗ್ರಿಗಳಲ್ಲಿ ತಿರುಗಿಸಿ</translation>
 <translation id="8241665785394195545">ಬಲ ಆವರಣ</translation>
 <translation id="8264941229485248811">ಡೆವಲಪರ್ ಪರಿಕರಗಳ ಪರೀಕ್ಷಕವನ್ನು ತೋರಿಸಿ ಅಥವಾ ಮರೆಮಾಡಿ</translation>
-<translation id="8355937569537581904">ಪ್ರಸ್ತುತ ವರ್ಚುವಲ್ ಡೆಸ್ಕ್ ಅನ್ನು ತೆಗೆದುಹಾಕಿ</translation>
 <translation id="836869401750819675">ಡೌನ್‌ಲೋಡ್‌ಗಳ ಪುಟ ತೆರೆಯಿರಿ</translation>
 <translation id="8388247778047144397">ಟ್ಯಾಬ್ ಪಟ್ಟಿಯಲ್ಲಿನ ಖಾಲಿ ವಲಯಕ್ಕೆ ಲಿಂಕ್ ಎಳೆಯಿರಿ</translation>
 <translation id="8389638407792712197">ಹೊಸ ವಿಂಡೋವನ್ನು ತೆರೆಯಿರಿ</translation>

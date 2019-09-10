@@ -80,7 +80,6 @@ _READELF_SIZES_METRICS = {
         '.dynsym', '.dynstr', '.dynamic', '.shstrtab', '.got', '.plt',
         '.got.plt', '.hash', '.gnu.hash'
     ],
-    'bss': ['.bss', '.bss.rel.ro'],
     'other': [
         '.init_array', '.preinit_array', '.ctors', '.fini_array', '.comment',
         '.note.gnu.gold-version', '.note.crashpad.info', '.note.android.ident',
@@ -104,11 +103,16 @@ def _RunReadelf(so_path, options, tool_prefix=''):
 def _ExtractLibSectionSizesFromApk(apk_path, lib_path, tool_prefix):
   with Unzip(apk_path, filename=lib_path) as extracted_lib_path:
     grouped_section_sizes = collections.defaultdict(int)
-    section_sizes = _CreateSectionNameSizeMap(extracted_lib_path, tool_prefix)
+    no_bits_section_sizes, section_sizes = _CreateSectionNameSizeMap(
+        extracted_lib_path, tool_prefix)
     for group_name, section_names in _READELF_SIZES_METRICS.iteritems():
       for section_name in section_names:
         if section_name in section_sizes:
           grouped_section_sizes[group_name] += section_sizes.pop(section_name)
+
+    # Consider all NOBITS sections as .bss.
+    grouped_section_sizes['bss'] = sum(
+        v for v in no_bits_section_sizes.itervalues())
 
     # Group any unknown section headers into the "other" group.
     for section_header, section_size in section_sizes.iteritems():
@@ -121,12 +125,14 @@ def _ExtractLibSectionSizesFromApk(apk_path, lib_path, tool_prefix):
 def _CreateSectionNameSizeMap(so_path, tool_prefix):
   stdout = _RunReadelf(so_path, ['-S', '--wide'], tool_prefix)
   section_sizes = {}
+  no_bits_section_sizes = {}
   # Matches  [ 2] .hash HASH 00000000006681f0 0001f0 003154 04   A  3   0  8
   for match in re.finditer(r'\[[\s\d]+\] (\..*)$', stdout, re.MULTILINE):
     items = match.group(1).split()
-    section_sizes[items[0]] = int(items[4], 16)
+    target = no_bits_section_sizes if items[1] == 'NOBITS' else section_sizes
+    target[items[0]] = int(items[4], 16)
 
-  return section_sizes
+  return no_bits_section_sizes, section_sizes
 
 
 def _ParseManifestAttributes(apk_path):
@@ -439,7 +445,11 @@ def _DoApkAnalysis(apk_filename, apks_path, tool_prefix, out_dir, report_func):
   # As of now, padding_fraction ~= .007
   padding_fraction = -_PercentageDifference(
       native_code.ComputeUncompressedSize(), native_code_unaligned_size)
-  assert 0 <= padding_fraction < .02, 'Padding was: {}'.format(padding_fraction)
+  assert 0 <= padding_fraction < .02, (
+      'Padding was: {} (file_size={}, sections_sum={})'.format(
+          padding_fraction, native_code.ComputeUncompressedSize(),
+          native_code_unaligned_size))
+
   # Normalized dex size: size within the zip + size on disk for Android Go
   # devices (which ~= uncompressed dex size).
   normalized_apk_size += java_code.ComputeUncompressedSize()

@@ -56,7 +56,7 @@ class IppValidatorTest : public testing::Test {
  public:
   IppValidatorTest() {
     delegate_ = std::make_unique<FakeServiceDelegate>();
-    ipp_validator_ = std::make_unique<IppValidator>(delegate_->GetWeakPtr());
+    ipp_validator_ = std::make_unique<IppValidator>(delegate_.get());
   }
 
   ~IppValidatorTest() override = default;

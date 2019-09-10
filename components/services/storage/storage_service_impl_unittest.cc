@@ -26,7 +26,7 @@ class StorageServiceImplTest : public testing::Test {
   StorageServiceImpl& service_impl() { return service_; }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   mojo::Remote<mojom::StorageService> remote_service_;
   StorageServiceImpl service_{remote_service_.BindNewPipeAndPassReceiver()};
 

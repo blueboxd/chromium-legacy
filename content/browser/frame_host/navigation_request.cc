@@ -1918,7 +1918,8 @@ void NavigationRequest::OnStartChecksComplete(
 
   // Initialize the BundledExchangesHandle.
   if (GetContentClient()->browser()->CanAcceptUntrustedExchangesIfNeeded() &&
-      common_params_->url.SchemeIsFile() &&
+      (common_params_->url.SchemeIsFile() ||
+       common_params_->url.SchemeIs(url::kContentScheme)) &&
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kTrustableBundledExchangesFileUrl)) {
     // Fast path for testing navigation to a trustable BundledExchanges source.

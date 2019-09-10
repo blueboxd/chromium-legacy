@@ -73,16 +73,6 @@ class TestWithTaskEnvironment : public ::testing::Test,
   DISALLOW_COPY_AND_ASSIGN(TestWithTaskEnvironment);
 };
 
-// TODO(gab): Migrate callers off the old names and remove these.
-class WithScopedTaskEnvironment : public WithTaskEnvironment {
- protected:
-  using WithTaskEnvironment::WithTaskEnvironment;
-};
-class TestWithScopedTaskEnvironment : public TestWithTaskEnvironment {
- protected:
-  using TestWithTaskEnvironment::TestWithTaskEnvironment;
-};
-
 }  // namespace net
 
 #endif  // NET_TEST_TEST_WITH_TASK_ENVIRONMENT_H_

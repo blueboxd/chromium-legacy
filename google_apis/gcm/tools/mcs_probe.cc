@@ -42,6 +42,7 @@
 #include "google_apis/gcm/engine/mcs_client.h"
 #include "google_apis/gcm/monitoring/fake_gcm_stats_recorder.h"
 #include "mojo/core/embedder/embedder.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/cert/cert_verifier.h"
 #include "net/dns/host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -225,7 +226,7 @@ class MCSProbe {
   base::Thread file_thread_;
 
   std::unique_ptr<network::NetworkContext> network_context_;
-  network::mojom::NetworkContextPtr network_context_pipe_;
+  mojo::Remote<network::mojom::NetworkContext> network_context_remote_;
   network::mojom::URLLoaderFactoryPtr url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
 
@@ -356,7 +357,8 @@ void MCSProbe::InitializeNetworkState() {
 
   // Wrap it up with network service APIs.
   network_context_ = std::make_unique<network::NetworkContext>(
-      nullptr /* network_service */, mojo::MakeRequest(&network_context_pipe_),
+      nullptr /* network_service */,
+      network_context_remote_.BindNewPipeAndPassReceiver(),
       url_request_context_.get(),
       /*cors_exempt_header_list=*/std::vector<std::string>());
   auto url_loader_factory_params =

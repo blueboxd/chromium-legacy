@@ -52,7 +52,9 @@ class DequeConstIterator;
 template <typename T,
           wtf_size_t inlineCapacity = 0,
           typename Allocator = PartitionAllocator>
-class Deque {
+class Deque : public ConditionalDestructor<Deque<T, INLINE_CAPACITY, Allocator>,
+                                           (INLINE_CAPACITY == 0) &&
+                                               Allocator::kIsGarbageCollected> {
   USE_ALLOCATOR(Deque, Allocator);
 
  public:
@@ -66,9 +68,8 @@ class Deque {
   Deque& operator=(const Deque&);
   Deque(Deque&&) noexcept;
   Deque& operator=(Deque&&) noexcept;
-  ~Deque();
 
-  void FinalizeGarbageCollectedObject() { NOTREACHED(); }
+  void Finalize();
 
   void Swap(Deque&);
 
@@ -374,16 +375,18 @@ inline void Deque<T, inlineCapacity, Allocator>::DestroyAll() {
 // For design of the destructor, please refer to
 // [here](https://docs.google.com/document/d/1AoGTvb3tNLx2tD1hNqAfLRLmyM59GM0O-7rCHTT_7_U/)
 template <typename T, wtf_size_t inlineCapacity, typename Allocator>
-inline Deque<T, inlineCapacity, Allocator>::~Deque() {
+inline void Deque<T, inlineCapacity, Allocator>::Finalize() {
+  static_assert(!Allocator::kIsGarbageCollected || INLINE_CAPACITY,
+                "GarbageCollected collections without inline capacity cannot "
+                "be finalized.");
   if ((!INLINE_CAPACITY && !buffer_.Buffer()))
     return;
   if (!IsEmpty() &&
       !(Allocator::kIsGarbageCollected && buffer_.HasOutOfLineBuffer()))
     DestroyAll();
 
-  // If this is called during sweeping, it must not touch the OutOfLineBuffer.
-  if (Allocator::IsSweepForbidden())
-    return;
+  // For garbage collected deque HeapAllocator::BackingFree() will bail out
+  // during sweeping.
   buffer_.Destruct();
 }
 

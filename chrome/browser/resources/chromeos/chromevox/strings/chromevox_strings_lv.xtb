@@ -207,7 +207,6 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="257674075312929031">Grupa</translation>
 <translation id="2582407057977008361">malā novietots saturs</translation>
 <translation id="2592212930811759050">Veiciet dubultskārienu, lai sāktu rediģēšanu</translation>
-<translation id="2606210917827248971">ar {COUNT,plural, =1{# vienumu}zero{# vienumiem}one{# vienumu}other{# vienumiem}}</translation>
 <translation id="2614981083756825552">MathML izkārtojums</translation>
 <translation id="2624431853467395961">Atvērt mācību režīmu</translation>
 <translation id="2626530649491650971">klikšķināms</translation>
@@ -391,7 +390,6 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="3781428340399460090">Spilgti rozā</translation>
 <translation id="3783725005098956899">Rādīt žurnālu</translation>
 <translation id="3793710123303304873">Tika aizvērts dialoglodziņš.</translation>
-<translation id="3795836767122514678">+{COUNT,plural, =1{#}zero{#}one{#}other{#}}</translation>
 <translation id="3801735343383419236">Automātiskā pabeigšana: saraksts</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3813387282697781382">Gaiša koraļļu</translation>

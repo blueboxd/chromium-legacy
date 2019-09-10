@@ -3,7 +3,6 @@
 <translationbundle lang="en-GB">
 <translation id="1036550831858290950">Save your current tab as a bookmark</translation>
 <translation id="104962181688258143">Open the Files app</translation>
-<translation id="1098295134904615027">Activate the virtual desk on the right</translation>
 <translation id="1122869341872663659">Displaying <ph name="N" /> search results for <ph name="QUERY" /></translation>
 <translation id="1195667586424773550">Drag the link to the tab's address bar</translation>
 <translation id="1204450209689312104">Open a new window in incognito mode</translation>
@@ -25,7 +24,6 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">Add www. and .com to your input in the address bar, then open the page</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, then <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> or <ph name="LEFT" /></translation>
-<translation id="1929866390202038233">Activate the virtual desk on the left</translation>
 <translation id="1996162290124031907">Go to next tab</translation>
 <translation id="2010818616644390445">Go to the last tab in the window</translation>
 <translation id="2040706009561734834">Open/close the launcher</translation>
@@ -64,7 +62,6 @@
 <translation id="3105917916468784889">Take screenshot</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Focus address bar</translation>
-<translation id="3165428420335997629">Create a new virtual desk</translation>
 <translation id="3256109297135787951">Remove the highlight from an item on your shelf</translation>
 <translation id="3288816184963444640">Close the current window</translation>
 <translation id="3407560819924487926">Bring up task manager</translation>
@@ -181,7 +178,6 @@
 <translation id="8234414138295101081">Rotate screen 90 degrees</translation>
 <translation id="8241665785394195545">bracket right</translation>
 <translation id="8264941229485248811">Show or hide the Developer Tools inspector</translation>
-<translation id="8355937569537581904">Remove the current virtual desk</translation>
 <translation id="836869401750819675">Open the Downloads page</translation>
 <translation id="8388247778047144397">Drag the link to a blank area on the tab strip</translation>
 <translation id="8389638407792712197">Open new window</translation>

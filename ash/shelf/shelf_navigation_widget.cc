@@ -5,10 +5,10 @@
 #include "ash/shelf/shelf_navigation_widget.h"
 
 #include "ash/focus_cycler.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/shelf/back_button.h"
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -35,8 +35,8 @@ bool IsTabletMode() {
 // Returns the bounds for the first button shown in this view (the back
 // button in tablet mode, the home button otherwise).
 gfx::Rect GetFirstButtonBounds() {
-  return gfx::Rect(0, 0, ShelfConstants::control_size(),
-                   ShelfConstants::control_size());
+  return gfx::Rect(0, 0, ShelfConfig::Get()->control_size(),
+                   ShelfConfig::Get()->control_size());
 }
 
 // Returns the bounds for the second button shown in this view (which is
@@ -44,8 +44,9 @@ gfx::Rect GetFirstButtonBounds() {
 // shelf).
 gfx::Rect GetSecondButtonBounds() {
   return gfx::Rect(
-      ShelfConstants::control_size() + ShelfConstants::button_spacing(), 0,
-      ShelfConstants::control_size(), ShelfConstants::control_size());
+      ShelfConfig::Get()->control_size() + ShelfConfig::Get()->button_spacing(),
+      0, ShelfConfig::Get()->control_size(),
+      ShelfConfig::Get()->control_size());
 }
 
 }  // namespace
@@ -88,7 +89,7 @@ class ShelfNavigationWidget::Delegate : public views::AccessiblePaneView,
 ShelfNavigationWidget::Delegate::Delegate(Shelf* shelf, ShelfView* shelf_view) {
   set_allow_deactivate_on_esc(true);
 
-  const int control_size = ShelfConstants::control_size();
+  const int control_size = ShelfConfig::Get()->control_size();
   std::unique_ptr<BackButton> back_button_ptr =
       std::make_unique<BackButton>(shelf);
   back_button_ = AddChildView(std::move(back_button_ptr));
@@ -105,8 +106,8 @@ ShelfNavigationWidget::Delegate::Delegate(Shelf* shelf, ShelfView* shelf_view) {
   GetViewAccessibility().OverridePreviousFocus(shelf->GetStatusAreaWidget());
 
   SetBackground(views::CreateRoundedRectBackground(
-      kShelfControlPermanentHighlightBackground,
-      ShelfConstants::control_border_radius()));
+      ShelfConfig::Get()->shelf_control_permanent_highlight_background(),
+      ShelfConfig::Get()->control_border_radius()));
 }
 
 ShelfNavigationWidget::Delegate::~Delegate() = default;
@@ -170,13 +171,13 @@ void ShelfNavigationWidget::Initialize(aura::Window* container) {
 }
 
 gfx::Size ShelfNavigationWidget::GetIdealSize() const {
-  const int control_size = ShelfConstants::control_size();
+  const int control_size = ShelfConfig::Get()->control_size();
   if (!shelf_->IsHorizontalAlignment())
     return gfx::Size(control_size, control_size);
-  return gfx::Size(IsTabletMode()
-                       ? (2 * control_size + ShelfConstants::button_spacing())
-                       : control_size,
-                   control_size);
+  return gfx::Size(
+      IsTabletMode() ? (2 * control_size + ShelfConfig::Get()->button_spacing())
+                     : control_size,
+      control_size);
 }
 
 bool ShelfNavigationWidget::OnNativeWidgetActivationChanged(bool active) {

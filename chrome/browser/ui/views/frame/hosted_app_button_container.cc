@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/ranges.h"
 #include "base/task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/ui/browser_command_controller.h"
@@ -324,7 +325,7 @@ int HostedAppButtonContainer::LayoutInContainer(int leading_x,
 
   gfx::Size preferred_size = GetPreferredSize();
   const int width =
-      std::min(preferred_size.width(), std::max(0, trailing_x - leading_x));
+      base::ClampToRange(trailing_x - leading_x, 0, preferred_size.width());
   const int height = preferred_size.height();
   DCHECK_LE(height, available_height);
   SetBounds(trailing_x - width, y + (available_height - height) / 2, width,

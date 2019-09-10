@@ -12,12 +12,12 @@
 #include "device/bluetooth/device.h"
 #include "device/bluetooth/discovery_session.h"
 #include "device/bluetooth/public/mojom/connect_result_type_converter.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace bluetooth {
 
 Adapter::Adapter(scoped_refptr<device::BluetoothAdapter> adapter)
-    : adapter_(std::move(adapter)), client_(nullptr) {
+    : adapter_(std::move(adapter)) {
   adapter_->AddObserver(this);
 }
 
@@ -68,8 +68,8 @@ void Adapter::GetInfo(GetInfoCallback callback) {
   std::move(callback).Run(std::move(adapter_info));
 }
 
-void Adapter::SetClient(mojom::AdapterClientPtr client) {
-  client_ = std::move(client);
+void Adapter::SetClient(mojo::PendingRemote<mojom::AdapterClient> client) {
+  client_.Bind(std::move(client));
 }
 
 void Adapter::StartDiscoverySession(StartDiscoverySessionCallback callback) {
@@ -148,15 +148,15 @@ void Adapter::OnConnectError(
 void Adapter::OnStartDiscoverySession(
     StartDiscoverySessionCallback callback,
     std::unique_ptr<device::BluetoothDiscoverySession> session) {
-  mojom::DiscoverySessionPtr session_ptr;
-  mojo::MakeStrongBinding(
+  mojo::PendingRemote<mojom::DiscoverySession> pending_session;
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<DiscoverySession>(std::move(session)),
-      mojo::MakeRequest(&session_ptr));
-  std::move(callback).Run(std::move(session_ptr));
+      pending_session.InitWithNewPipeAndPassReceiver());
+  std::move(callback).Run(std::move(pending_session));
 }
 
 void Adapter::OnDiscoverySessionError(StartDiscoverySessionCallback callback) {
-  std::move(callback).Run(nullptr /* session */);
+  std::move(callback).Run(mojo::NullRemote() /* session */);
 }
 
 }  // namespace bluetooth

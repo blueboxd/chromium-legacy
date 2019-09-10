@@ -306,7 +306,6 @@
 <translation id="2479410451996844060">無效的搜尋網址。</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="248348093745724435">裝置政策</translation>
-<translation id="2485387744899240041">你在裝置和瀏覽器中的使用者名稱</translation>
 <translation id="2491120439723279231">伺服器憑證含有錯誤。</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">JSON 剖析器</translation>
@@ -872,7 +871,6 @@
 <translation id="5565735124758917034">管理中</translation>
 <translation id="5570825185877910964">保護帳戶</translation>
 <translation id="5571083550517324815">無法在這個地址取件，請改用其他地址。</translation>
-<translation id="5571347317547569613">({NUM_COOKIES,plural, =1{目前使用 1 個 Cookie}other{目前使用 # 個 Cookie}})</translation>
 <translation id="5580958916614886209">請檢查信用卡到期月份，然後再試一次</translation>
 <translation id="5586446728396275693">沒有已儲存的地址</translation>
 <translation id="5595485650161345191">編輯地址</translation>

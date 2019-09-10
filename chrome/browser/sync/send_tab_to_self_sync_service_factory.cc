@@ -8,7 +8,6 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/model_type_store_service_factory.h"
 #include "chrome/common/channel_info.h"
@@ -43,8 +42,6 @@ SendTabToSelfSyncServiceFactory::~SendTabToSelfSyncServiceFactory() {}
 
 KeyedService* SendTabToSelfSyncServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  DCHECK(send_tab_to_self::IsReceivingEnabled());
-
   Profile* profile = Profile::FromBrowserContext(context);
 
   syncer::OnceModelTypeStoreFactory store_factory =

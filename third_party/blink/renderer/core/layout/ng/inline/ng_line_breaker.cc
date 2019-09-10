@@ -445,7 +445,8 @@ void NGLineBreaker::BreakLine(
     }
 
     if (item.Type() == NGInlineItem::kOutOfFlowPositioned) {
-      AddItem(item, line_info);
+      NGInlineItemResult* item_result = AddItem(item, line_info);
+      ComputeCanBreakAfter(item_result, auto_wrap_, break_iterator_);
       MoveToNextOf(item);
     } else if (item.Length()) {
       NOTREACHED();
@@ -481,6 +482,41 @@ void NGLineBreaker::ComputeLineLocation(NGLineInfo* line_info) const {
       {line_opportunity_.line_left_offset, line_opportunity_.bfc_block_offset});
   if (mode_ == NGLineBreakerMode::kContent)
     line_info->UpdateTextAlign();
+}
+
+// For Web-compatibility, allow break between an atomic inline and any adjacent
+// U+00A0 NO-BREAK SPACE character.
+// https://www.w3.org/TR/css-text-3/#line-break-details
+bool NGLineBreaker::IsAtomicInlineBeforeNoBreakSpace(
+    const NGInlineItemResult& item_result) const {
+  DCHECK_EQ(item_result.item->Type(), NGInlineItem::kAtomicInline);
+  const String& text = Text();
+  DCHECK_GE(text.length(), item_result.end_offset);
+  return text.length() > item_result.end_offset &&
+         text[item_result.end_offset] == kNoBreakSpaceCharacter;
+}
+
+bool NGLineBreaker::IsAtomicInlineAfterNoBreakSpace(
+    const NGInlineItemResult& item_result) const {
+  DCHECK_EQ(item_result.item->Type(), NGInlineItem::kText);
+  const String& text = Text();
+  DCHECK_GE(text.length(), item_result.end_offset);
+  if (text[item_result.end_offset - 1] != kNoBreakSpaceCharacter ||
+      text.length() <= item_result.end_offset ||
+      text[item_result.end_offset] != kObjectReplacementCharacter)
+    return false;
+  // This kObjectReplacementCharacter can be any objects, such as a floating or
+  // an OOF object. Check if it's really an atomic inline.
+  const Vector<NGInlineItem>& items = Items();
+  for (const NGInlineItem* item = std::next(item_result.item);
+       item != items.end(); ++item) {
+    DCHECK_EQ(item->StartOffset(), item_result.end_offset);
+    if (item->Type() == NGInlineItem::kAtomicInline)
+      return true;
+    if (item->EndOffset() > item_result.end_offset)
+      break;
+  }
+  return false;
 }
 
 void NGLineBreaker::HandleText(const NGInlineItem& item,
@@ -711,6 +747,9 @@ NGLineBreaker::BreakResult NGLineBreaker::BreakText(
     DCHECK_EQ(item_result->end_offset, item.EndOffset());
     item_result->can_break_after =
         break_iterator_.IsBreakable(item_result->end_offset);
+    if (!item_result->can_break_after && item.Type() == NGInlineItem::kText &&
+        IsAtomicInlineAfterNoBreakSpace(*item_result))
+      item_result->can_break_after = true;
     trailing_whitespace_ = WhitespaceState::kUnknown;
   }
   return inline_size <= available_width ? kSuccess : kOverflow;
@@ -1252,6 +1291,9 @@ bool NGLineBreaker::HandleAtomicInline(
   trailing_whitespace_ = WhitespaceState::kNone;
   position_ += item_result->inline_size;
   ComputeCanBreakAfter(item_result, auto_wrap_, break_iterator_);
+  if (!item_result->can_break_after &&
+      IsAtomicInlineBeforeNoBreakSpace(*item_result))
+    item_result->can_break_after = true;
 
   if (UNLIKELY(is_sticky_image)) {
     const auto& items = Items();
@@ -1483,16 +1525,19 @@ void NGLineBreaker::HandleCloseTag(const NGInlineItem& item,
   MoveToNextOf(item);
 
   // If the line can break after the previous item, prohibit it and allow break
-  // after this close tag instead.
-  if (was_auto_wrap) {
-    const NGInlineItemResults& item_results = line_info->Results();
-    if (item_results.size() >= 2) {
-      NGInlineItemResult* last = std::prev(item_result);
+  // after this close tag instead. Even when the close tag has "nowrap", break
+  // after it is allowed if the line is breakable after the previous item.
+  const NGInlineItemResults& item_results = line_info->Results();
+  if (item_results.size() >= 2) {
+    NGInlineItemResult* last = std::prev(item_result);
+    if (was_auto_wrap || last->can_break_after) {
       item_result->can_break_after = last->can_break_after;
       last->can_break_after = false;
+      return;
     }
-    return;
   }
+  if (was_auto_wrap)
+    return;
 
   DCHECK(!item_result->can_break_after);
   if (!auto_wrap_)

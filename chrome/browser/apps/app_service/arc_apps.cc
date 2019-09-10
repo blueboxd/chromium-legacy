@@ -293,7 +293,7 @@ void ArcApps::Uninstall(const std::string& app_id) {
   if (!profile_) {
     return;
   }
-  arc::ShowArcAppUninstallDialog(profile_, app_id);
+  arc::ShowArcAppUninstallDialog(profile_, nullptr /* controller */, app_id);
 }
 
 void ArcApps::OpenNativeSettings(const std::string& app_id) {

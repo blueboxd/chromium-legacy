@@ -76,7 +76,7 @@ class SessionStateChangedEventDispatcherUnittest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::TestServiceManagerContext service_manager_context_;
   TestingProfile* testing_profile_;
   std::unique_ptr<session_manager::SessionManager> session_manager_;

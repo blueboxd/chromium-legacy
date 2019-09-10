@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/numerics/ranges.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -445,7 +446,7 @@ void ConsumerHost::TracingSession::OnTraceStats(
                            buf_stats.padding_bytes_cleared();
   double percent_full =
       bytes_in_buffer / static_cast<double>(buf_stats.buffer_size());
-  percent_full = std::min(std::max(0.0, percent_full), 1.0);
+  percent_full = base::ClampToRange(percent_full, 0.0, 1.0);
   bool data_loss = buf_stats.chunks_overwritten() > 0 ||
                    buf_stats.chunks_discarded() > 0 ||
                    buf_stats.abi_violations() > 0 ||

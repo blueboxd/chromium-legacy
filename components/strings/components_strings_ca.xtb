@@ -298,7 +298,6 @@
 <translation id="2479410451996844060">URL de cerca no vàlid.</translation>
 <translation id="2482878487686419369">Notificacions</translation>
 <translation id="248348093745724435">Polítiques de l'ordinador</translation>
-<translation id="2485387744899240041">Noms d'usuari del dispositiu i del navegador</translation>
 <translation id="2491120439723279231">El certificat del servidor conté errors.</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">Analitzador JSON</translation>
@@ -864,7 +863,6 @@
 <translation id="5565735124758917034">Actiu</translation>
 <translation id="5570825185877910964">Protegeix el compte</translation>
 <translation id="5571083550517324815">No es pot fer la recollida en aquesta adreça. Selecciona'n una altra.</translation>
-<translation id="5571347317547569613">({NUM_COOKIES,plural, =1{1 en ús}other{# en ús}})</translation>
 <translation id="5580958916614886209">Comprova el mes de caducitat i torna-ho a provar</translation>
 <translation id="5586446728396275693">No hi ha cap adreça desada</translation>
 <translation id="5595485650161345191">Edita l'adreça</translation>

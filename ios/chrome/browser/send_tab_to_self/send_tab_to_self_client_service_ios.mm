@@ -14,7 +14,6 @@
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
@@ -60,11 +59,6 @@ void SendTabToSelfClientServiceIOS::SendTabToSelfModelLoaded() {
 
 void SendTabToSelfClientServiceIOS::EntriesAddedRemotely(
     const std::vector<const SendTabToSelfEntry*>& new_entries) {
-  // TODO(crbug.com/953513): Use utils file instead.
-  if (!base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf)) {
-    return;
-  }
-
   if (new_entries.empty()) {
     return;
   }
@@ -115,9 +109,6 @@ void SendTabToSelfClientServiceIOS::EntriesAddedRemotely(
 
 void SendTabToSelfClientServiceIOS::EntriesRemovedRemotely(
     const std::vector<std::string>& guids) {
-  if (!base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf)) {
-    return;
-  }
   NOTIMPLEMENTED();
 }
 

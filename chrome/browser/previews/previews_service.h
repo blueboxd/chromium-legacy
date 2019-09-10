@@ -14,9 +14,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
+#include "chrome/browser/data_saver/data_saver_top_host_provider.h"
 #include "chrome/browser/previews/previews_lite_page_decider.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/optimization_guide/top_host_provider.h"
 #include "third_party/re2/src/re2/re2.h"
 
 namespace base {
@@ -112,6 +114,10 @@ class PreviewsService : public KeyedService {
   // Returns true if |url| patially matches any of the regular expressions for
   // which DeferAllScript preview can't be shown.
   bool MatchesDeferAllScriptDenyListRegexp(const GURL& url) const;
+
+  optimization_guide::TopHostProvider* GetTopHostProviderForTesting() const {
+    return top_host_provider_.get();
+  }
 
  private:
   // The top site provider for use with the Previews Optimization Guide's Hints

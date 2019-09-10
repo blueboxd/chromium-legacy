@@ -3370,11 +3370,11 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
       Si la política no se configura, el usuario puede tomar su propia decisión.</translation>
 <translation id="7145335384492396213">Modo de impresión con PIN predeterminado</translation>
-<translation id="7152605873936173525">Controla el modo del agente de resolución DNS sobre HTTPS. Ten en cuenta que esta política solo establecerá el modo predeterminado para cada consulta. Se puede anular el modo en tipos de solicitudes especiales, como las que se usan para resolver el nombre de host de un servidor con el protocolo DNS sobre HTTPS.
+<translation id="7152605873936173525">Controla el modo del agente de resolución de DNS sobre HTTPS. Ten en cuenta que esta política solo establecerá el modo predeterminado para cada consulta. Se puede anular el modo en tipos de solicitudes especiales, como las que se usan para resolver el nombre de host de un servidor con el protocolo DNS sobre HTTPS.
 
       El modo <ph name="SECURE_DNS_MODE_OFF" /> inhabilitará DNS sobre HTTPS.
 
-      El modo <ph name="SECURE_DNS_MODE_AUTOMATIC" /> primero enviará consultas DNS sobre HTTPS si hay un servidor de este tipo disponible. En caso de error, es posible que recurra a solicitudes inseguras.
+      El modo <ph name="SECURE_DNS_MODE_AUTOMATIC" /> primero enviará consultas de DNS sobre HTTPS si hay un servidor de este tipo disponible. En caso de error, es posible que recurra a solicitudes inseguras.
 
       El modo <ph name="SECURE_DNS_MODE_SECURE" /> solo enviará solicitudes de DNS sobre HTTPS. En caso de error, no se resolverá el nombre.
 

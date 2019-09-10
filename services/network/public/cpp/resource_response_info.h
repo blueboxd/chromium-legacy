@@ -210,6 +210,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP) ResourceResponseInfo {
   // recorded here.
   base::Optional<net::AuthChallengeInfo> auth_challenge_info;
 
+  // See URLResponseHead mojo documentation.
+  base::Optional<base::UnguessableToken> recursive_prefetch_token;
+
   // NOTE: When adding or changing fields here, also update
   // ResourceResponse::DeepCopy in resource_response.cc.
 };

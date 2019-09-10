@@ -5,9 +5,9 @@
 #include "ash/wm/window_animations.h"
 
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_animation_types.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state.h"
@@ -379,7 +379,7 @@ TEST_F(WindowAnimationsTest, ResetAnimationAfterDismissingArcPip) {
   WindowState::Get(window.get())->Maximize();
   EXPECT_EQ(1.0f, window->layer()->GetTargetOpacity());
   EXPECT_TRUE(window->layer()->visible());
-  EXPECT_EQ(gfx::Rect(0, 0, 800, 600 - ShelfConstants::shelf_size()),
+  EXPECT_EQ(gfx::Rect(0, 0, 800, 600 - ShelfConfig::Get()->shelf_size()),
             window->layer()->GetTargetBounds());
 
   // Ensure the window is not slided out.
@@ -387,7 +387,7 @@ TEST_F(WindowAnimationsTest, ResetAnimationAfterDismissingArcPip) {
   EXPECT_EQ(0.0f, window->layer()->GetTargetOpacity());
   EXPECT_FALSE(window->layer()->GetTargetVisibility());
   EXPECT_FALSE(window->layer()->visible());
-  EXPECT_EQ(gfx::Rect(0, 0, 800, 600 - ShelfConstants::shelf_size()),
+  EXPECT_EQ(gfx::Rect(0, 0, 800, 600 - ShelfConfig::Get()->shelf_size()),
             window->layer()->GetTargetBounds());
 }
 

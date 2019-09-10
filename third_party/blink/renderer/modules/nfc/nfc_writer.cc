@@ -84,7 +84,7 @@ ScriptPromise NFCWriter::push(ScriptState* script_state,
   DCHECK(message);
 
   if (!SetNDEFMessageURL(execution_context->GetSecurityOrigin()->ToString(),
-                         *message)) {
+                         message.get())) {
     return ScriptPromise::RejectWithDOMException(
         script_state, MakeGarbageCollected<DOMException>(
                           DOMExceptionCode::kSyntaxError, kNfcSetIdError));

@@ -132,6 +132,7 @@ FetchRequestData* FetchRequestData::CloneExceptBody() {
   request->method_ = method_;
   request->header_list_ = header_list_->Clone();
   request->origin_ = origin_;
+  request->isolated_world_origin_ = isolated_world_origin_;
   request->same_origin_data_url_flag_ = same_origin_data_url_flag_;
   request->context_ = context_;
   request->referrer_string_ = referrer_string_;

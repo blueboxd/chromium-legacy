@@ -4,10 +4,10 @@
 
 #include "ash/system/toast/toast_manager_impl.h"
 
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/work_area_insets.h"
@@ -234,7 +234,8 @@ TEST_F(ToastManagerImplTest, PositionWithAutoHiddenBottomShelf) {
   EXPECT_TRUE(toast_bounds.Intersects(
       GetPrimaryWorkAreaInsets()->user_work_area_bounds()));
   EXPECT_NEAR(root_bounds.CenterPoint().x(), toast_bounds.CenterPoint().x(), 1);
-  EXPECT_EQ(root_bounds.bottom() - kHiddenShelfInScreenPortion -
+  EXPECT_EQ(root_bounds.bottom() -
+                ShelfConfig::Get()->hidden_shelf_in_screen_portion() -
                 ToastOverlay::kOffset,
             toast_bounds.bottom());
 }

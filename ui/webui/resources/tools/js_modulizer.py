@@ -42,6 +42,7 @@ _CWD = os.getcwd()
 
 IMPORT_LINE_REGEX = '// #import'
 EXPORT_LINE_REGEX = '/* #export */'
+IGNORE_LINE_REGEX = '\s+/\* #ignore \*/(\S|\s)*'
 
 # Ignore lines that contain <include> tags, (for example see util.js).
 INCLUDE_LINE_REGEX = '^// <include '
@@ -78,6 +79,10 @@ def ProcessFile(filename, out_folder, namespace_rewrites):
         continue
 
       if re.match(INCLUDE_LINE_REGEX, line):
+        indices_to_remove.append(i)
+        continue
+
+      if re.match(IGNORE_LINE_REGEX, line):
         indices_to_remove.append(i)
         continue
 

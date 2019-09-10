@@ -1248,7 +1248,7 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
     }
 
     case CommandSendTabToSelfSingleTarget: {
-      send_tab_to_self::ShareToSingleTarget(GetActiveWebContents());
+      send_tab_to_self::ShareToSingleTarget(GetWebContentsAt(context_index));
       send_tab_to_self::RecordSendTabToSelfClickResult(
           send_tab_to_self::kTabMenu, SendTabToSelfClickResult::kClickItem);
       break;
@@ -1420,8 +1420,8 @@ bool TabStripModel::ShouldRunUnloadListenerBeforeClosing(
 
 int TabStripModel::ConstrainInsertionIndex(int index, bool pinned_tab) {
   return pinned_tab
-             ? std::min(std::max(0, index), IndexOfFirstNonPinnedTab())
-             : std::min(count(), std::max(index, IndexOfFirstNonPinnedTab()));
+             ? base::ClampToRange(index, 0, IndexOfFirstNonPinnedTab())
+             : base::ClampToRange(index, IndexOfFirstNonPinnedTab(), count());
 }
 
 std::vector<int> TabStripModel::GetIndicesForCommand(int index) const {

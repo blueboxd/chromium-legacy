@@ -28,6 +28,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/identity/public/mojom/identity_accessor.mojom.h"
 
 class GoogleServiceAuthError;
@@ -205,11 +206,11 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
 
   mojom::AssistantControllerPtr assistant_controller_;
 
-  ash::mojom::AssistantAlarmTimerControllerPtr
+  mojo::Remote<ash::mojom::AssistantAlarmTimerController>
       assistant_alarm_timer_controller_;
-  ash::mojom::AssistantNotificationControllerPtr
+  mojo::Remote<ash::mojom::AssistantNotificationController>
       assistant_notification_controller_;
-  ash::mojom::AssistantScreenContextControllerPtr
+  mojo::Remote<ash::mojom::AssistantScreenContextController>
       assistant_screen_context_controller_;
   AssistantStateProxy assistant_state_;
 

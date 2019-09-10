@@ -72,9 +72,9 @@ std::ostream& operator<<(std::ostream& os, const WebSocketFrameHeader& header) {
 
 std::ostream& operator<<(std::ostream& os, const WebSocketFrame& frame) {
   os << "{" << frame.header << ", ";
-  if (frame.data) {
+  if (frame.payload) {
     return os << "\""
-              << base::StringPiece(frame.data, frame.header.payload_length)
+              << base::StringPiece(frame.payload, frame.header.payload_length)
               << "\"}";
   }
   return os << "NULL}";
@@ -362,7 +362,7 @@ std::vector<std::unique_ptr<WebSocketFrame>> CreateFrameVector(
       auto buffer = base::MakeRefCounted<IOBuffer>(frame_length);
       result_frame_data->push_back(buffer);
       memcpy(buffer->data(), source_frame.data, frame_length);
-      result_frame->data = buffer->data();
+      result_frame->payload = buffer->data();
     }
     result_frames.push_back(std::move(result_frame));
   }
@@ -424,7 +424,7 @@ class EqualsFramesMatcher : public ::testing::MatcherInterface<
         return false;
       }
       if (expected_length != 0 &&
-          memcmp(actual_frame.data, expected_frame.data,
+          memcmp(actual_frame.payload, expected_frame.data,
                  actual_frame.header.payload_length) != 0) {
         *listener << "the data content differs";
         return false;
@@ -595,8 +595,8 @@ class EchoeyFakeWebSocketStream : public FakeWebSocketStream {
     for (const auto& frame : *frames) {
       auto buffer = base::MakeRefCounted<IOBuffer>(
           static_cast<size_t>(frame->header.payload_length));
-      memcpy(buffer->data(), frame->data, frame->header.payload_length);
-      frame->data = buffer->data();
+      memcpy(buffer->data(), frame->payload, frame->header.payload_length);
+      frame->payload = buffer->data();
       buffers_.push_back(buffer);
     }
     stored_frames_.insert(stored_frames_.end(),
@@ -2349,8 +2349,8 @@ TEST_F(WebSocketChannelStreamTest, WrittenBinaryFramesAre8BitClean) {
   ASSERT_EQ(1U, frames->size());
   const WebSocketFrame* out_frame = (*frames)[0].get();
   EXPECT_EQ(kBinaryBlobSize, out_frame->header.payload_length);
-  ASSERT_TRUE(out_frame->data);
-  EXPECT_EQ(0, memcmp(kBinaryBlob, out_frame->data, kBinaryBlobSize));
+  ASSERT_TRUE(out_frame->payload);
+  EXPECT_EQ(0, memcmp(kBinaryBlob, out_frame->payload, kBinaryBlobSize));
 }
 
 // Test the read path for 8-bit cleanliness as well.
@@ -2362,7 +2362,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, ReadBinaryFramesAre8BitClean) {
   frame_header.payload_length = kBinaryBlobSize;
   auto buffer = base::MakeRefCounted<IOBuffer>(kBinaryBlobSize);
   memcpy(buffer->data(), kBinaryBlob, kBinaryBlobSize);
-  frame->data = buffer->data();
+  frame->payload = buffer->data();
   std::vector<std::unique_ptr<WebSocketFrame>> frames;
   frames.push_back(std::move(frame));
   auto stream = std::make_unique<ReadableFakeWebSocketStream>();

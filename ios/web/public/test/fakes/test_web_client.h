@@ -44,6 +44,7 @@ class TestWebClient : public web::WebClient {
                              const net::SSLInfo&,
                              const GURL&,
                              bool overridable,
+                             int64_t navigation_id,
                              const base::Callback<void(bool)>&) override;
   void PrepareErrorPage(WebState* web_state,
                         const GURL& url,

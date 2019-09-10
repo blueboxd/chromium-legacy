@@ -18,26 +18,6 @@ CrostiniAppContextMenu::CrostiniAppContextMenu(
 
 CrostiniAppContextMenu::~CrostiniAppContextMenu() = default;
 
-bool CrostiniAppContextMenu::IsUninstallable() const {
-  return crostini::IsUninstallable(profile(), app_id());
-}
-
-// TODO(timloh): Add support for "App Info" and possibly actions defined in
-// .desktop files.
-void CrostiniAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
-  app_list::AppContextMenu::BuildMenu(menu_model);
-
-  if (IsUninstallable()) {
-    AddContextMenuOption(menu_model, ash::UNINSTALL,
-                         IDS_APP_LIST_UNINSTALL_ITEM);
-  }
-
-  if (app_id() == crostini::kCrostiniTerminalId) {
-    AddContextMenuOption(menu_model, ash::STOP_APP,
-                         IDS_CROSTINI_SHUT_DOWN_LINUX_MENU_ITEM);
-  }
-}
-
 bool CrostiniAppContextMenu::IsCommandIdEnabled(int command_id) const {
   if (command_id == ash::UNINSTALL) {
     return IsUninstallable();
@@ -69,4 +49,24 @@ void CrostiniAppContextMenu::ExecuteCommand(int command_id, int event_flags) {
       break;
   }
   app_list::AppContextMenu::ExecuteCommand(command_id, event_flags);
+}
+
+// TODO(timloh): Add support for "App Info" and possibly actions defined in
+// .desktop files.
+void CrostiniAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
+  app_list::AppContextMenu::BuildMenu(menu_model);
+
+  if (IsUninstallable()) {
+    AddContextMenuOption(menu_model, ash::UNINSTALL,
+                         IDS_APP_LIST_UNINSTALL_ITEM);
+  }
+
+  if (app_id() == crostini::kCrostiniTerminalId) {
+    AddContextMenuOption(menu_model, ash::STOP_APP,
+                         IDS_CROSTINI_SHUT_DOWN_LINUX_MENU_ITEM);
+  }
+}
+
+bool CrostiniAppContextMenu::IsUninstallable() const {
+  return crostini::IsUninstallable(profile(), app_id());
 }

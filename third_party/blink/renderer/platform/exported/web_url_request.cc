@@ -120,6 +120,10 @@ WebSecurityOrigin WebURLRequest::RequestorOrigin() const {
   return resource_request_->RequestorOrigin();
 }
 
+WebSecurityOrigin WebURLRequest::IsolatedWorldOrigin() const {
+  return resource_request_->IsolatedWorldOrigin();
+}
+
 void WebURLRequest::SetRequestorOrigin(
     const WebSecurityOrigin& requestor_origin) {
   resource_request_->SetRequestorOrigin(requestor_origin);
@@ -494,6 +498,11 @@ bool WebURLRequest::IsFromOriginDirtyStyleSheet() const {
 
 bool WebURLRequest::IsSignedExchangePrefetchCacheEnabled() const {
   return resource_request_->IsSignedExchangePrefetchCacheEnabled();
+}
+
+base::Optional<base::UnguessableToken> WebURLRequest::RecursivePrefetchToken()
+    const {
+  return resource_request_->RecursivePrefetchToken();
 }
 
 WebURLRequest::WebURLRequest(ResourceRequest& r) : resource_request_(&r) {}

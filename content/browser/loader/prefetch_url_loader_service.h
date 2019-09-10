@@ -90,6 +90,10 @@ class CONTENT_EXPORT PrefetchURLLoaderService final
   bool IsValidCrossOriginPrefetch(
       const network::ResourceRequest& resource_request);
 
+  base::UnguessableToken GenerateRecursivePrefetchToken(
+      base::WeakPtr<BindContext> bind_context,
+      const network::ResourceRequest& request);
+
   // blink::mojom::RendererPreferenceWatcher.
   void NotifyUpdate(blink::mojom::RendererPreferencesPtr new_prefs) override;
 

@@ -352,7 +352,7 @@ IN_PROC_BROWSER_TEST_F(MouseLatencyBrowserTest,
       GetWidgetHost(), blink::WebInputEvent::kMouseUp);
   StartTracing();
   DoSyncClick(gfx::PointF(100, 100));
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_CONSUMED,
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
             filter->GetAckStateWaitIfNecessary());
   const base::Value& trace_data = StopTracing();
 

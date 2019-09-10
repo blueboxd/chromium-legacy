@@ -207,7 +207,6 @@
 <translation id="257674075312929031">গ্রুপ</translation>
 <translation id="2582407057977008361">একপাশে</translation>
 <translation id="2592212930811759050">এডিট শুরু করতে ডবল-ট্যাপ করুন</translation>
-<translation id="2606210917827248971">সাথে আছে {COUNT,plural, =1{#টি আইটেম}one{#টি আইটেম}other{#টি আইটেম}}</translation>
 <translation id="2614981083756825552">গাণিতিক ML লেআউট</translation>
 <translation id="2624431853467395961">শিখন মোড খুলুন</translation>
 <translation id="2626530649491650971">ক্লিক যোগ্য</translation>
@@ -391,7 +390,6 @@
 <translation id="3781428340399460090">হট গোলাপী</translation>
 <translation id="3783725005098956899">লগ দেখুন</translation>
 <translation id="3793710123303304873">ডায়ালগ থেকে প্রস্থান করা হয়ছে৷</translation>
-<translation id="3795836767122514678">+{COUNT,plural, =1{#}one{#}other{#}}</translation>
 <translation id="3801735343383419236">স্বতসম্পূর্ণ তালিকা</translation>
 <translation id="3810838688059735925">ভিডিও</translation>
 <translation id="3813387282697781382">হালকা প্রবাল</translation>

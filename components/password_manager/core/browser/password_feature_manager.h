@@ -17,6 +17,11 @@ class PasswordFeatureManager {
 
   virtual bool IsGenerationEnabled() const = 0;
 
+  // Whether we should, upon the detection of a leaked password, check if the
+  // same password is reused on other website. That's used only for the UI
+  // string.
+  virtual bool ShouldCheckReuseOnLeakDetection() const = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordFeatureManager);
 };

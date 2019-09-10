@@ -179,16 +179,6 @@ void FileAnalyzer::OnZipAnalysisFinished(
   for (const auto& file_name : archive_results.archived_archive_filenames)
     RecordArchivedArchiveFileExtensionType(file_name);
 
-  int64_t uma_file_type =
-      FileTypePolicies::GetInstance()->UmaValueForFile(target_path_);
-  if (archive_results.success) {
-    base::UmaHistogramSparse("SBClientDownload.ZipFileSuccessByType",
-                             uma_file_type);
-  } else {
-    base::UmaHistogramSparse("SBClientDownload.ZipFileFailureByType",
-                             uma_file_type);
-  }
-
   if (!results_.archived_executable) {
     if (archive_results.has_archive) {
       results_.type = ClientDownloadRequest::ZIPPED_ARCHIVE;

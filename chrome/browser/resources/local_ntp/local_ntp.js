@@ -99,6 +99,11 @@ const CLASSES = {
   USE_NOTIFIER: 'use-notifier',
 };
 
+const SEARCH_HISTORY_MATCH_TYPES = [
+  'search-history',
+  'search-suggest-personalized',
+];
+
 /**
  * Background color for Chrome dark mode. Used to determine if it is possible to
  * display a Google Doodle, or if the notifier should be used instead.
@@ -1028,8 +1033,8 @@ function onQueryAutocompleteDone(matches) {
 
     let iconClass;
     if (match.isSearchType) {
-      const isHistory = match.type === 'search-history';
-      const useClock = isHistory && configData.realboxUseClockIcon;
+      const isSearchHistory = SEARCH_HISTORY_MATCH_TYPES.includes(match.type);
+      const useClock = isSearchHistory && configData.realboxUseClockIcon;
       iconClass = useClock ? CLASSES.CLOCK_ICON : CLASSES.SEARCH_ICON;
     } else {
       // TODO(crbug.com/997229): use chrome://favicon/<url> when perms allow.
@@ -1205,15 +1210,16 @@ function onRealboxInput() {
 
 /** @param {Event} e */
 function onRealboxWrapperFocusIn(e) {
-  if (!e.target.matches(`#${IDS.REALBOX_MATCHES} a`)) {
-    return;
+  if (e.target.matches(`#${IDS.REALBOX}`) && !$(IDS.REALBOX).value) {
+    window.chrome.embeddedSearch.searchBox.queryAutocomplete('');
+  } else if (e.target.matches(`#${IDS.REALBOX_MATCHES} a`)) {
+    const selectedIndex = selectMatchEl(e.target);
+    // It doesn't really make sense to use fillFromMatch() here as the focus
+    // change drops the selection (and is probably just noisy to
+    // screenreaders).
+    const newFill = autocompleteMatches[selectedIndex].fillIntoEdit;
+    updateRealboxOutput({moveCursorToEnd: true, inline: '', text: newFill});
   }
-  const selectedIndex = selectMatchEl(e.target);
-  // It doesn't really make sense to use fillFromMatch() here as the focus
-  // change drops the selection (and is probably just noisy to
-  // screenreaders).
-  const newFill = autocompleteMatches[selectedIndex].fillIntoEdit;
-  updateRealboxOutput({moveCursorToEnd: true, inline: '', text: newFill});
 }
 
 /** @param {Event} e */
@@ -1221,6 +1227,8 @@ function onRealboxWrapperFocusOut(e) {
   const relatedTarget = /** @type {Element} */ (e.relatedTarget);
   if (!$(IDS.REALBOX_INPUT_WRAPPER).contains(relatedTarget)) {
     hideRealboxMatches();  // Hide but don't clear input.
+    window.chrome.embeddedSearch.searchBox.stopAutocomplete(
+        /*clearResult=*/ true);
   }
 }
 

@@ -99,10 +99,14 @@ struct NET_EXPORT_PRIVATE WebSocketFrame {
   // |header| is always present.
   WebSocketFrameHeader header;
 
-  // |data| is always unmasked even if the frame is masked. The size of |data|
-  // is given by |header.payload_length|.
-  // TODO(yoichio): Rename this to "payload".
-  const char* data = nullptr;
+  // |payload| is always unmasked even if the frame is masked. The size of
+  // |payload| is given by |header.payload_length|.
+  // The lifetime of |payload| is not defined by WebSocketFrameChunk. It is the
+  // responsibility of the creator to ensure it remains valid for the lifetime
+  // of this object. This should be documented in the code that creates this
+  // object.
+  // TODO(yoicho): Find more better way to clarify the life cycle.
+  const char* payload = nullptr;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebSocketFrame);
@@ -136,10 +140,14 @@ struct NET_EXPORT WebSocketFrameChunk {
   // Indicates this part is the last chunk of a frame.
   bool final_chunk;
 
-  // |data| is always unmasked even if the frame is masked. |data| might be
-  // empty in the first chunk.
-  // TODO(yoichio): Rename this to "payload".
-  base::span<const char> data;
+  // |payload| is always unmasked even if the frame is masked. |payload| might
+  // be empty in the first chunk.
+  // The lifetime of |payload| is not defined by WebSocketFrameChunk. It is the
+  // responsibility of the creator to ensure it remains valid for the lifetime
+  // of this object. This should be documented in the code that creates this
+  // object.
+  // TODO(yoicho): Find more better way to clarify the life cycle.
+  base::span<const char> payload;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebSocketFrameChunk);

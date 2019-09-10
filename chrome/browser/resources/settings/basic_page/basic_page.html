@@ -112,7 +112,7 @@
 <if expr="chromeos">
         <template is="dom-if" if="[[showOSSettingsBanner_]]">
           <div id="osSettingsBanner" class="settings-box">
-            <div class="start">
+            <div class="start" on-click="onOSSettingsBannerClick_">
               $i18nRaw{osSettingsBannerText}
             </div>
             <cr-icon-button class="icon-clear"

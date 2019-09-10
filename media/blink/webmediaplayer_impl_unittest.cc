@@ -1275,6 +1275,19 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_Ended) {
   EXPECT_FALSE(state.is_memory_reporting_enabled);
 }
 
+TEST_F(WebMediaPlayerImplTest, ComputePlayState_DoesNotStaySuspended) {
+  InitializeWebMediaPlayerImpl();
+  SetMetadata(true, true);
+  SetReadyState(blink::WebMediaPlayer::kReadyStateHaveMetadata);
+
+  // Should stay suspended even though not stale or backgrounded.
+  WebMediaPlayerImpl::PlayState state = ComputePlayState_Suspended();
+  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::GONE, state.delegate_state);
+  EXPECT_TRUE(state.is_idle);
+  EXPECT_FALSE(state.is_suspended);
+  EXPECT_FALSE(state.is_memory_reporting_enabled);
+}
+
 TEST_F(WebMediaPlayerImplTest, ComputePlayState_StaysSuspended) {
   InitializeWebMediaPlayerImpl();
   SetMetadata(true, true);

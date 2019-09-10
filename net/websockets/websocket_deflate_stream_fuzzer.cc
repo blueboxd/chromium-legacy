@@ -88,7 +88,7 @@ class WebSocketFuzzedStream final : public WebSocketStream {
     auto buffer = base::MakeRefCounted<IOBufferWithSize>(payload.size());
     memcpy(buffer->data(), payload.data(), payload.size());
     buffers_.push_back(buffer);
-    frame->data = buffer->data();
+    frame->payload = buffer->data();
     frame->header.payload_length = payload.size();
     return frame;
   }

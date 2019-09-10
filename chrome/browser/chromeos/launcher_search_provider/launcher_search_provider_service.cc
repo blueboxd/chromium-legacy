@@ -10,6 +10,7 @@
 
 #include "ash/public/cpp/app_list/tokenized_string.h"
 #include "ash/public/cpp/app_list/tokenized_string_match.h"
+#include "base/numerics/ranges.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/launcher_search_provider/launcher_search_provider_service_factory.h"
 #include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_provider.h"
@@ -125,7 +126,7 @@ void Service::SetSearchResults(
   std::vector<std::unique_ptr<app_list::LauncherSearchResult>> search_results;
   for (const auto& result : results) {
     const int relevance =
-        std::min(kMaxSearchResultScore, std::max(result.relevance, 0));
+        base::ClampToRange(result.relevance, 0, kMaxSearchResultScore);
     const GURL icon_url =
         result.icon_url ? GURL(*result.icon_url.get()) : GURL();
 

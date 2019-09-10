@@ -306,7 +306,6 @@
 <translation id="2479410451996844060">Невалиден URL адрес за търсене.</translation>
 <translation id="2482878487686419369">Известия</translation>
 <translation id="248348093745724435">Правила за компютъра</translation>
-<translation id="2485387744899240041">Потребителските имена за устройството и браузъра ви</translation>
 <translation id="2491120439723279231">Сертификатът на сървъра съдържа грешки.</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">Синтактичен анализ на JSON</translation>
@@ -872,7 +871,6 @@
 <translation id="5565735124758917034">Активно</translation>
 <translation id="5570825185877910964">Защита на профила</translation>
 <translation id="5571083550517324815">Този адрес за вземане не се поддържа. Изберете друг.</translation>
-<translation id="5571347317547569613">({NUM_COOKIES,plural, =1{използва се 1}other{използват се #}})</translation>
 <translation id="5580958916614886209">Проверете месеца на валидност и опитайте отново</translation>
 <translation id="5586446728396275693">Няма запазени адреси</translation>
 <translation id="5595485650161345191">Редактиране на адреса</translation>

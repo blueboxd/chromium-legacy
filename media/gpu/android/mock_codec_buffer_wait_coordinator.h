@@ -5,7 +5,7 @@
 #ifndef MEDIA_GPU_ANDROID_MOCK_CODEC_BUFFER_WAIT_COORDINATOR_H_
 #define MEDIA_GPU_ANDROID_MOCK_CODEC_BUFFER_WAIT_COORDINATOR_H_
 
-#include "gpu/ipc/common/android/mock_texture_owner.h"
+#include "gpu/command_buffer/service/mock_texture_owner.h"
 #include "media/gpu/android/codec_buffer_wait_coordinator.h"
 
 namespace media {

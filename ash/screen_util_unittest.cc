@@ -7,9 +7,9 @@
 #include <memory>
 
 #include "ash/magnifier/docked_magnifier_controller_impl.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/desks/desks_util.h"
@@ -38,8 +38,8 @@ TEST_F(ScreenUtilTest, Bounds) {
   secondary->Show();
 
   // Maximized bounds.
-  const int bottom_inset_first = 600 - ShelfConstants::shelf_size();
-  const int bottom_inset_second = 500 - ShelfConstants::shelf_size();
+  const int bottom_inset_first = 600 - ShelfConfig::Get()->shelf_size();
+  const int bottom_inset_second = 500 - ShelfConfig::Get()->shelf_size();
   EXPECT_EQ(
       gfx::Rect(0, 0, 600, bottom_inset_first).ToString(),
       screen_util::GetMaximizedWindowBoundsInParent(primary->GetNativeView())

@@ -69,12 +69,6 @@ class WebTaskEnvironment : public base::test::TaskEnvironment {
   DISALLOW_COPY_AND_ASSIGN(WebTaskEnvironment);
 };
 
-// TODO(crbug.com/992483): Mass migrate users and remove this.
-class TestWebThreadBundle : public WebTaskEnvironment {
- public:
-  using WebTaskEnvironment::WebTaskEnvironment;
-};
-
 }  // namespace web
 
 #endif  // IOS_WEB_PUBLIC_TEST_WEB_TASK_ENVIRONMENT_H_

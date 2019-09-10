@@ -23,6 +23,8 @@ class PasswordFeatureManagerImpl : public PasswordFeatureManager {
 
   bool IsGenerationEnabled() const override;
 
+  bool ShouldCheckReuseOnLeakDetection() const override;
+
  private:
   const syncer::SyncService* const sync_service_;
   DISALLOW_COPY_AND_ASSIGN(PasswordFeatureManagerImpl);

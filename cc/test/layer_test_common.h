@@ -47,10 +47,8 @@ class LayerImpl;
 class LayerTreeFrameSink;
 class RenderSurfaceImpl;
 
-class LayerListSettings : public LayerTreeSettings {
- public:
-  LayerListSettings() { use_layer_lists = true; }
-};
+// Updates draw properties after prepared for testing.
+void UpdateDrawProperties(LayerTreeImpl*);
 
 class LayerTestCommon {
  public:
@@ -106,12 +104,23 @@ class LayerTestCommon {
       return ptr;
     }
 
-    template <typename T>
-    T* AddMaskLayer(LayerImpl* origin) {
+    template <typename T, typename... Args>
+    T* AddMaskLayer(LayerImpl* origin, Args&&... args) {
       std::unique_ptr<T> layer =
-          T::Create(host_impl()->active_tree(), layer_impl_id_++);
+          T::Create(host_impl()->active_tree(), layer_impl_id_++,
+                    std::forward<Args>(args)...);
+      layer->SetBounds(origin->bounds());
       T* ptr = layer.get();
       origin->test_properties()->SetMaskLayer(std::move(layer));
+      if (host_impl()->active_tree()->settings().use_layer_lists) {
+        auto* origin_effect = GetEffectNode(origin);
+        origin_effect->render_surface_reason = RenderSurfaceReason::kMask;
+        origin_effect->is_masked = true;
+        origin_effect->mask_layer_id = ptr->id();
+        origin_effect->unscaled_mask_target_size = origin->bounds();
+        ptr->SetOffsetToTransformParent(origin->offset_to_transform_parent());
+        CopyProperties(origin, ptr);
+      }
       return ptr;
     }
 
@@ -132,7 +141,7 @@ class LayerTestCommon {
     viz::ClientResourceProvider* resource_provider() const {
       return host_impl()->resource_provider();
     }
-    LayerImpl* root_layer_for_testing() const {
+    LayerImpl* root_layer() const {
       return host_impl()->active_tree()->root_layer_for_testing();
     }
     FakeLayerTreeHost* host() { return host_.get(); }
@@ -143,10 +152,6 @@ class LayerTestCommon {
     const viz::QuadList& quad_list() const { return render_pass_->quad_list; }
     scoped_refptr<AnimationTimeline> timeline() { return timeline_; }
     scoped_refptr<AnimationTimeline> timeline_impl() { return timeline_impl_; }
-
-    void BuildPropertyTreesForTesting() {
-      host_impl()->active_tree()->BuildPropertyTreesForTesting();
-    }
 
     void SetElementIdsForTesting() {
       host_impl()->active_tree()->SetElementIdsForTesting();
@@ -166,9 +171,6 @@ class LayerTestCommon {
 
     void ExecuteCalculateDrawPropertiesWithoutAdjustingRasterScales(
         LayerImpl* root_layer);
-
-    // This function updates draw properties through LayerTreeImpl API.
-    void UpdateDrawProperties(LayerTreeImpl*);
 
     const RenderSurfaceList* render_surface_list_impl() const {
       return render_surface_list_impl_.get();

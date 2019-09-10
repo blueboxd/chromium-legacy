@@ -4,8 +4,8 @@
 
 #include "ash/wm/client_controlled_state.h"
 
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/desks/desks_util.h"
@@ -384,7 +384,7 @@ TEST_F(ClientControlledStateTest, SnapInSecondaryDisplay) {
   window_state()->OnWMEvent(&snap_left_event);
 
   EXPECT_EQ(second_display_id, delegate()->display_id());
-  EXPECT_EQ(gfx::Rect(0, 0, 300, 500 - ShelfConstants::shelf_size()),
+  EXPECT_EQ(gfx::Rect(0, 0, 300, 500 - ShelfConfig::Get()->shelf_size()),
             delegate()->requested_bounds());
 
   state()->EnterNextState(window_state(), delegate()->new_state());
@@ -395,7 +395,7 @@ TEST_F(ClientControlledStateTest, SnapInSecondaryDisplay) {
   window()->SetBoundsInScreen(delegate()->requested_bounds(), first_display);
   state()->set_bounds_locally(false);
   EXPECT_EQ(first_display.id(), delegate()->display_id());
-  EXPECT_EQ(gfx::Rect(0, 0, 400, 600 - ShelfConstants::shelf_size()),
+  EXPECT_EQ(gfx::Rect(0, 0, 400, 600 - ShelfConfig::Get()->shelf_size()),
             delegate()->requested_bounds());
 }
 

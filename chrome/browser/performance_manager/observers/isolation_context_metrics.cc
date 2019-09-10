@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/performance_manager/performance_manager_clock.h"
 #include "chrome/browser/performance_manager/public/graph/node_attached_data.h"
 
 namespace performance_manager {
@@ -188,7 +187,7 @@ void IsolationContextMetrics::OnIsVisibleChanged(const PageNode* page_node) {
     // Report the state change. Flush all other related data so as not to
     // introduce bias into the metrics when only a partial reporting cycle
     // occurs.
-    const auto now = PerformanceManagerClock::NowTicks();
+    const auto now = base::TimeTicks::Now();
     ReportBrowsingInstanceData(data, old_page_count, old_state, now);
     ReportAllBrowsingInstanceData(now);
   }
@@ -316,7 +315,7 @@ void IsolationContextMetrics::ChangeFrameCount(const FrameNode* frame_node,
 
   // Report the state change. Flush all other related data so as not to
   // introduce bias into the metrics when only a partial reporting cycle occurs.
-  const auto now = PerformanceManagerClock::NowTicks();
+  const auto now = base::TimeTicks::Now();
   ReportProcessData(data, old_state, now);
   ReportAllProcessData(now);
 }
@@ -399,7 +398,7 @@ void IsolationContextMetrics::ChangePageCount(const PageNode* page_node,
     // Report the state change. Flush all other related data so as not to
     // introduce bias into the metrics when only a partial reporting cycle
     // occurs.
-    const auto now = PerformanceManagerClock::NowTicks();
+    const auto now = base::TimeTicks::Now();
     ReportBrowsingInstanceData(data, old_page_count, old_state, now);
     ReportAllBrowsingInstanceData(now);
   }
@@ -411,13 +410,13 @@ void IsolationContextMetrics::ChangePageCount(const PageNode* page_node,
 }
 
 void IsolationContextMetrics::OnReportingTimerFired() {
-  const auto now = PerformanceManagerClock::NowTicks();
+  const auto now = base::TimeTicks::Now();
   ReportAllProcessData(now);
   ReportAllBrowsingInstanceData(now);
 }
 
 IsolationContextMetrics::ProcessData::ProcessData()
-    : last_reported(PerformanceManagerClock::NowTicks()) {}
+    : last_reported(base::TimeTicks::Now()) {}
 
 IsolationContextMetrics::ProcessData::~ProcessData() = default;
 
@@ -439,7 +438,7 @@ IsolationContextMetrics::ProcessData::GetOrCreate(
 }
 
 IsolationContextMetrics::BrowsingInstanceData::BrowsingInstanceData()
-    : last_reported(PerformanceManagerClock::NowTicks()) {}
+    : last_reported(base::TimeTicks::Now()) {}
 
 IsolationContextMetrics::BrowsingInstanceData::~BrowsingInstanceData() =
     default;

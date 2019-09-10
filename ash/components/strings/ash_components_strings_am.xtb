@@ -3,7 +3,6 @@
 <translationbundle lang="am">
 <translation id="1036550831858290950">የአሁኑን ትርዎን እንደ እልባት ያስቀምጡ</translation>
 <translation id="104962181688258143">የፋይሎች መተግበሪያን ይክፈቱ</translation>
-<translation id="1098295134904615027">በቀኝ በኩል ምናባዊውን ዴስክ አግብር</translation>
 <translation id="1122869341872663659"><ph name="N" /> ፍለጋ ውጤቶችን ለ<ph name="QUERY" /> በማሳየት ላይ</translation>
 <translation id="1195667586424773550">አገናኙን ወደ የትሩ አድራሻ አሞሌ ይጎትቱት</translation>
 <translation id="1204450209689312104">አዲስ ትር ማንነት በማያሳውቅ ሁነታ ውስጥ ይክፈቱ</translation>
@@ -25,7 +24,6 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">በአድራሻ አሞሌው ላይ ወዳለው ግቤትዎ www. እና .com ያክሉ፣ ከዚያ ገጹን ይክፈቱ</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />፣ ከዚያ <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> ወይም <ph name="LEFT" /></translation>
-<translation id="1929866390202038233">በግራ በኩል ምናባዊውን ዴስክ አግብር</translation>
 <translation id="1996162290124031907">ወደ የሚቀጥለው ትር ይሂዱ</translation>
 <translation id="2010818616644390445">በመስኮቱ ውስጥ ያለው የመጨረሻ ትር ይሂዱ</translation>
 <translation id="2040706009561734834">አስጀማሪውን ይክፈቱ/ይዝጉ</translation>
@@ -64,7 +62,6 @@
 <translation id="3105917916468784889">ቅጽበታዊ ገጽ እይታን ያነሳል</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">የአድራሻ አሞሌ ላይ አተኩር</translation>
-<translation id="3165428420335997629">አዲስ ምናባዊ ዴስክ ፍጠር</translation>
 <translation id="3256109297135787951">በእርስዎ መደርደሪያ ላይ በንጥሉ ላይ ያለውን ማድመቂያ ያስወግዱ</translation>
 <translation id="3288816184963444640">የአሁኑን መስኮት ይዝጉ</translation>
 <translation id="3407560819924487926">የተግባር አስተዳዳሪን ያምጡት</translation>
@@ -181,7 +178,6 @@
 <translation id="8234414138295101081">ማያ ገጽን 90 ዲግሪ አሽከርክር</translation>
 <translation id="8241665785394195545">ቅንፍ ቀኝ</translation>
 <translation id="8264941229485248811">የገንቢ መሣሪያዎች መርማሪን አሳይ ወይም ደብቅ</translation>
-<translation id="8355937569537581904">አሁን ያለውን ምናባዊ ዴክክ አስወግድ</translation>
 <translation id="836869401750819675">የውርዶች ገጽን ይክፈቱ</translation>
 <translation id="8388247778047144397">አገናኙን በትሩ ድርድር ላይ ወዳለ ባዶ ቦታ ይጎትቱት</translation>
 <translation id="8389638407792712197">አዲስ መስኮት ይክፈቱ</translation>

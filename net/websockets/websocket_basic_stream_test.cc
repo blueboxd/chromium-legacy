@@ -257,7 +257,7 @@ class WebSocketBasicStreamSocketWriteTest
     frame_buffers_.push_back(buffer);
     memcpy(buffer->data(), kWriteFrame + kWriteFrameSize - payload_size,
            payload_size);
-    frame->data = buffer->data();
+    frame->payload = buffer->data();
     WebSocketFrameHeader& header = frame->header;
     header.final = true;
     header.masked = true;
@@ -356,7 +356,7 @@ TEST_F(WebSocketBasicStreamSocketSingleReadTest, HeaderOnlyChunk) {
 
   EXPECT_THAT(stream_->ReadFrames(&frames_, cb_.callback()), IsOk());
   ASSERT_EQ(1U, frames_.size());
-  EXPECT_EQ(nullptr, frames_[0]->data);
+  EXPECT_EQ(nullptr, frames_[0]->payload);
   EXPECT_EQ(0U, frames_[0]->header.payload_length);
   EXPECT_EQ(WebSocketFrameHeader::kOpCodeText, frames_[0]->header.opcode);
 }
@@ -372,7 +372,7 @@ TEST_F(WebSocketBasicStreamSocketTest, HeaderBodySeparated) {
   CreateStream(reads, base::span<MockWrite>());
   EXPECT_THAT(stream_->ReadFrames(&frames_, cb_.callback()), IsOk());
   ASSERT_EQ(1U, frames_.size());
-  EXPECT_EQ(nullptr, frames_[0]->data);
+  EXPECT_EQ(nullptr, frames_[0]->payload);
   EXPECT_EQ(WebSocketFrameHeader::kOpCodeText, frames_[0]->header.opcode);
   frames_.clear();
   EXPECT_THAT(stream_->ReadFrames(&frames_, cb_.callback()),
@@ -580,7 +580,7 @@ TEST_F(WebSocketBasicStreamSocketSingleReadTest, EmptyFirstFrame) {
 
   EXPECT_THAT(stream_->ReadFrames(&frames_, cb_.callback()), IsOk());
   ASSERT_EQ(1U, frames_.size());
-  EXPECT_EQ(nullptr, frames_[0]->data);
+  EXPECT_EQ(nullptr, frames_[0]->payload);
   EXPECT_EQ(0U, frames_[0]->header.payload_length);
 }
 
@@ -627,7 +627,7 @@ TEST_F(WebSocketBasicStreamSocketSingleReadTest, EmptyFinalFrame) {
 
   EXPECT_THAT(stream_->ReadFrames(&frames_, cb_.callback()), IsOk());
   ASSERT_EQ(1U, frames_.size());
-  EXPECT_EQ(nullptr, frames_[0]->data);
+  EXPECT_EQ(nullptr, frames_[0]->payload);
   EXPECT_EQ(0U, frames_[0]->header.payload_length);
 }
 
@@ -658,7 +658,7 @@ TEST_F(WebSocketBasicStreamSocketTest, HttpReadBufferIsUsed) {
 
   EXPECT_THAT(stream_->ReadFrames(&frames_, cb_.callback()), IsOk());
   ASSERT_EQ(1U, frames_.size());
-  ASSERT_TRUE(frames_[0]->data);
+  ASSERT_TRUE(frames_[0]->payload);
   EXPECT_EQ(UINT64_C(6), frames_[0]->header.payload_length);
 }
 
@@ -673,7 +673,7 @@ TEST_F(WebSocketBasicStreamSocketSingleReadTest,
               IsError(ERR_IO_PENDING));
   EXPECT_THAT(cb_.WaitForResult(), IsOk());
   ASSERT_EQ(1U, frames_.size());
-  ASSERT_TRUE(frames_[0]->data);
+  ASSERT_TRUE(frames_[0]->payload);
   EXPECT_EQ(UINT64_C(6), frames_[0]->header.payload_length);
   EXPECT_EQ(WebSocketFrameHeader::kOpCodeText, frames_[0]->header.opcode);
 }
@@ -694,7 +694,7 @@ TEST_F(WebSocketBasicStreamSocketSingleReadTest,
   ASSERT_EQ(1U, frames_.size());
   EXPECT_EQ(WebSocketFrameHeader::kOpCodeClose, frames_[0]->header.opcode);
   EXPECT_EQ(kCloseFrameSize - 2, frames_[0]->header.payload_length);
-  EXPECT_EQ(std::string(frames_[0]->data, kCloseFrameSize - 2),
+  EXPECT_EQ(std::string(frames_[0]->payload, kCloseFrameSize - 2),
             std::string(kCloseFrame + 2, kCloseFrameSize - 2));
 }
 
@@ -946,7 +946,7 @@ TEST_F(WebSocketBasicStreamSocketTest, WriteNonNulMask) {
   const size_t payload_size = unmasked_payload.size();
   auto buffer = base::MakeRefCounted<IOBuffer>(payload_size);
   memcpy(buffer->data(), unmasked_payload.data(), payload_size);
-  frame->data = buffer->data();
+  frame->payload = buffer->data();
   WebSocketFrameHeader& header = frame->header;
   header.final = true;
   header.masked = true;

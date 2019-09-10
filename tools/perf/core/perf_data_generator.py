@@ -756,7 +756,7 @@ BUILDERS = {
     'platform': 'linux',
     'dimension': {
       'gpu': '10de:1cb3',
-      'os': 'Ubuntu-14.04',
+      'os': 'Ubuntu',
       'pool': 'chrome.tests.perf',
     },
   },

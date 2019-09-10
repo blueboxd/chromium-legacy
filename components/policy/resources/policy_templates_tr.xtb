@@ -2066,7 +2066,7 @@ politikayı geçersiz kılamaz.
 <translation id="4604931264910482931">Yerel mesajlaşma kara listesini yapılandır</translation>
 <translation id="4617338332148204752"><ph name="PRODUCT_FRAME_NAME" /> cihazında meta etiket kontrolünü atla</translation>
 <translation id="4625915093043961294">Uzantı yükleme beyaz listesini yapılandır</translation>
-<translation id="4632261735235986857">Dosyaları taramayı yasakla</translation>
+<translation id="4632261735235986857">Dosyaların taranmasını yasakla</translation>
 <translation id="4632343302005518762"><ph name="PRODUCT_FRAME_NAME" /> için listelenen içerik türlerini işlemeye izin ver</translation>
 <translation id="4632566332417930481">Kurumsal politika tarafından yüklenen uzantılarda Geliştirici Araçları kullanımına izin verme, diğer bağlamlarda Geliştirici Araçları kullanımına izin ver</translation>
 <translation id="4633786464238689684">Üst sıra tuşlarının varsayılan davranışını işlev tuşları olarak değiştirir.
@@ -2448,15 +2448,15 @@ Bu politika ayarlanmadan bırakılırsa kullanıcı sistemde yüklü herhangi bi
 <translation id="5378985487213287085">Web sitelerinin masaüstü bildirimleri görüntülemesine izin verilip verilmeyeceğini ayarlamanıza olanak tanır. Varsayılan olarak masaüstü bildirimlerinin görüntülenmesine izin verilebilir, varsayılan olarak bu reddedilebilir veya bir web sitesi her masaüstü bildirimi gösterme isteğinde bulunduğunda kullanıcıya sorulabilir.
 
           Bu politika ayarlanmadan bırakılırsa, 'AskNotifications' kullanılır ve kullanıcı ayarı değiştirebilir.</translation>
-<translation id="5380329473151894945">Giriş ekranında büyük imleç kullanılan erişilebilirlik özelliğinin durumunu ayarlayın.
+<translation id="5380329473151894945">Giriş ekranında büyük imleç erişilebilirlik özelliğinin durumunu ayarlayın.
 
           Bu politika true (doğru) değerine ayarlanırsa giriş ekranı gösterildiğinde büyük imleç etkinleştirilir.
 
           Bu politika false (yanlış) değerine ayarlanırsa giriş ekranı gösterildiğinde büyük imleç devre dışı bırakılır.
 
-          Bu politikayı ayarlarsanız kullanıcılar büyük imleci etkinleştirerek veya devre dışı bırakarak geçici olarak geçersiz kılabilirler. Bununla birlikte, kullanıcının yaptığı seçim kalıcı olmaz ve giriş ekranı yeniden gösterildiğinde veya kullanıcı giriş ekranında bir dakika süreyle işlem yapmazsa varsayılan ayar geri yüklenir.
+          Bu politikayı ayarlarsanız kullanıcılar büyük imleci etkinleştirerek veya devre dışı bırakarak geçici olarak geçersiz kılabilirler. Bununla birlikte, kullanıcının yaptığı seçim kalıcı değildir. Giriş ekranı yeniden gösterildiğinde veya kullanıcı giriş ekranında bir dakika süreyle işlem yapmazsa varsayılan ayar geri yüklenir.
 
-          Bu politika ayarlanmadan bırakılırsa, giriş ekranı ilk kez gösterildiğinde büyük imleç devre dışı bırakılır. Kullanıcılar istedikleri zaman büyük imleci etkinleştirebilir veya devre dışı bırakabilirler ve bu durum kullanıcı değiştiğinde de giriş ekranında kalmaya devam eder.
+          Bu politika ayarlanmadan bırakılırsa giriş ekranı ilk kez gösterildiğinde büyük imleç devre dışı bırakılır. Kullanıcılar istedikleri zaman büyük imleci etkinleştirebilir veya devre dışı bırakabilirler. İmlecin durumu kullanıcı değiştiğinde de aynı kalır.
 
           Not: <ph name="DEVICE_LOGIN_SCREEN_LARGE_CURSOR_ENABLED" /> belirtilmişse bu politikayı geçersiz kılar.</translation>
 <translation id="538108065117008131"><ph name="PRODUCT_FRAME_NAME" /> için aşağıdaki içerik türlerini işlemeye izin ver.</translation>

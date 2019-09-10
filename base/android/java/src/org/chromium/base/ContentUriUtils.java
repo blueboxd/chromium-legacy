@@ -15,7 +15,6 @@ import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
-import android.util.Log;
 import android.webkit.MimeTypeMap;
 
 import org.chromium.base.annotations.CalledByNative;
@@ -62,6 +61,8 @@ public abstract class ContentUriUtils {
      *
      * @param file image capture file.
      * @return URI for |file|.
+     * @throws IllegalArgumentException when the given File is outside the paths supported by the
+     *         provider.
      */
     public static Uri getContentUriFromFile(File file) {
         synchronized (sLock) {
@@ -305,5 +306,25 @@ public abstract class ContentUriUtils {
         Uri parsedUri = Uri.parse(uriString);
         ContentResolver resolver = ContextUtils.getApplicationContext().getContentResolver();
         return resolver.delete(parsedUri, null, null) > 0;
+    }
+
+    /**
+     * Retrieve the content URI from the file path.
+     *
+     * @param filePathString the file path.
+     * @return content URI or null if the input params are invalid.
+     */
+    @CalledByNative
+    public static String getContentUriFromFilePath(String filePathString) {
+        try {
+            Uri contentUri = getContentUriFromFile(new File(filePathString));
+            if (contentUri != null) {
+                return contentUri.toString();
+            }
+        } catch (IllegalArgumentException e) {
+            // This happens when the given File is outside the paths supported by the provider.
+            Log.e(TAG, "Cannot retrieve content uri from file: " + filePathString, e);
+        }
+        return null;
     }
 }

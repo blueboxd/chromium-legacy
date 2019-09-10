@@ -342,13 +342,13 @@ void AssistantController::BindController(
 
 void AssistantController::BindAlarmTimerController(
     mojo::PendingReceiver<mojom::AssistantAlarmTimerController> receiver) {
-  Shell::Get()->assistant_controller()->alarm_timer_controller()->BindRequest(
+  Shell::Get()->assistant_controller()->alarm_timer_controller()->BindReceiver(
       std::move(receiver));
 }
 
 void AssistantController::BindNotificationController(
     mojo::PendingReceiver<mojom::AssistantNotificationController> receiver) {
-  Shell::Get()->assistant_controller()->notification_controller()->BindRequest(
+  Shell::Get()->assistant_controller()->notification_controller()->BindReceiver(
       std::move(receiver));
 }
 
@@ -357,7 +357,7 @@ void AssistantController::BindScreenContextController(
   Shell::Get()
       ->assistant_controller()
       ->screen_context_controller()
-      ->BindRequest(std::move(receiver));
+      ->BindReceiver(std::move(receiver));
 }
 
 void AssistantController::BindStateController(

@@ -286,7 +286,7 @@ void WebSocket::OnReadDuringOpen(const char* data, int len) {
       current_masking_key_ = header->masking_key;
     }
 
-    auto& buffer = frame_chunks[i]->data;
+    auto& buffer = frame_chunks[i]->payload;
     std::vector<char> payload(buffer.begin(), buffer.end());
     if (is_current_frame_masked_) {
       MaskWebSocketFramePayload(current_masking_key_, current_frame_offset_,

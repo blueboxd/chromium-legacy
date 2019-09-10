@@ -217,14 +217,19 @@ SkColor ChromeTypographyProvider::GetColor(const views::View& view,
     }
   }
 
+  if (context == views::style::CONTEXT_MENU &&
+      style == views::style::STYLE_DISABLED &&
+      native_theme->ShouldUseDarkColors()) {
+    return gfx::kGoogleGrey600;
+  }
+
   switch (style) {
     case views::style::STYLE_DIALOG_BUTTON_DEFAULT:
       return SK_ColorWHITE;
     case views::style::STYLE_DISABLED:
-      if (!native_theme->ShouldUseDarkColors())
-        return SkColorSetRGB(0x9e, 0x9e, 0x9e);
-      return context == views::style::CONTEXT_MENU ? gfx::kGoogleGrey600
-                                                   : gfx::kGoogleGrey800;
+      return native_theme->ShouldUseDarkColors()
+                 ? gfx::kGoogleGrey800
+                 : SkColorSetRGB(0x9e, 0x9e, 0x9e);
     case views::style::STYLE_LINK:
       return gfx::kGoogleBlue700;
     case views::style::STYLE_SECONDARY:

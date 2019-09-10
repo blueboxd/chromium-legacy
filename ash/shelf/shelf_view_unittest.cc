@@ -16,6 +16,7 @@
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/focus_cycler.h"
 #include "ash/ime/ime_controller.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_prefs.h"
@@ -32,7 +33,6 @@
 #include "ash/shelf/overflow_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_app_button.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_observer.h"
@@ -598,8 +598,8 @@ class ShelfViewTest : public AshTestBase {
     // should be used. If |drop_index| is the last item, a larger x-axis
     // value of |drop_point| should be used.
     int drop_point_x_shift = main_to_overflow
-                                 ? ShelfConstants::button_size() / 4
-                                 : -ShelfConstants::button_size() / 4;
+                                 ? ShelfConfig::Get()->button_size() / 4
+                                 : -ShelfConfig::Get()->button_size() / 4;
     gfx::Point modified_drop_point(drop_point.x() + drop_point_x_shift,
                                    drop_point.y());
     generator->MoveMouseTo(modified_drop_point);
@@ -1192,7 +1192,7 @@ TEST_F(ShelfViewTest, ShelfRipOff) {
   generator->set_current_screen_location(first_app_location);
   generator->PressLeftButton();
   // Drag the mouse to just off the shelf.
-  generator->MoveMouseBy(0, -ShelfConstants::shelf_size() / 2 - 1);
+  generator->MoveMouseBy(0, -ShelfConfig::Get()->shelf_size() / 2 - 1);
   EXPECT_FALSE(test_api_->IsRippedOffFromShelf());
   // Drag the mouse past the rip off threshold.
   generator->MoveMouseBy(0, -kRipOffDistance);
@@ -1257,7 +1257,7 @@ TEST_F(ShelfViewTest, DragAndDropPinnedRunningApp) {
   gfx::Point app_location = GetButtonCenter(GetButtonByID(id));
   generator->set_current_screen_location(app_location);
   generator->PressLeftButton();
-  generator->MoveMouseBy(0, -ShelfConstants::shelf_size() / 2 - 1);
+  generator->MoveMouseBy(0, -ShelfConfig::Get()->shelf_size() / 2 - 1);
   EXPECT_FALSE(test_api_->IsRippedOffFromShelf());
   generator->MoveMouseBy(0, -kRipOffDistance);
   EXPECT_TRUE(test_api_->IsRippedOffFromShelf());
@@ -1549,7 +1549,7 @@ TEST_F(ShelfViewTest, ResizeDuringOverflowAddAnimation) {
 
   // Resize shelf view with that animation running and stay overflown.
   gfx::Rect bounds = shelf_view_->bounds();
-  bounds.set_width(bounds.width() - ShelfConstants::shelf_size());
+  bounds.set_width(bounds.width() - ShelfConfig::Get()->shelf_size());
   shelf_view_->SetBoundsRect(bounds);
   ASSERT_TRUE(shelf_view_->GetOverflowButton()->GetVisible());
 
@@ -1583,7 +1583,7 @@ TEST_F(ShelfViewTest, OverflowBubbleSize) {
   int ripped_index = overflow_shelf_view->last_visible_index();
   gfx::Size bubble_size = overflow_shelf_view->GetPreferredSize();
   int item_width =
-      ShelfConstants::button_size() + ShelfConstants::button_spacing();
+      ShelfConfig::Get()->button_size() + ShelfConfig::Get()->button_spacing();
 
   ui::test::EventGenerator* generator = GetEventGenerator();
   ShelfAppButton* button = test_for_overflow_view.GetButton(ripped_index);
@@ -1643,7 +1643,7 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsOfScrolledOverflowBubble) {
   ASSERT_TRUE(shelf_view_->IsShowingOverflowBubble());
 
   int item_width =
-      ShelfConstants::button_size() + ShelfConstants::button_spacing();
+      ShelfConfig::Get()->button_size() + ShelfConfig::Get()->button_spacing();
   OverflowBubbleView* bubble_view = test_api_->overflow_bubble()->bubble_view();
   OverflowBubbleViewTestAPI bubble_view_api(bubble_view);
 
@@ -1714,7 +1714,8 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsWithMultiMonitor) {
       secondary_shelf->GetShelfViewForTesting();
 
   // The bounds should be big enough for 4 buttons + overflow chevron.
-  shelf_view_for_secondary->SetBounds(0, 0, 500, ShelfConstants::shelf_size());
+  shelf_view_for_secondary->SetBounds(0, 0, 500,
+                                      ShelfConfig::Get()->shelf_size());
 
   ShelfViewTestAPI test_api_for_secondary(shelf_view_for_secondary);
   // Speeds up animation for test.
@@ -2405,7 +2406,7 @@ TEST_F(ShelfViewTest, IconCenteringTest) {
                                                     .right(),
       status_area_->GetBoundsInScreen().x() -
           (shelf_view_->GetOverflowButton()->GetBoundsInScreen().right() +
-           ShelfConstants::overflow_button_margin()));
+           ShelfConfig::Get()->overflow_button_margin()));
 }
 
 TEST_F(ShelfViewTest, FirstAndLastVisibleIndex) {
@@ -2501,17 +2502,17 @@ class OverflowBubbleViewTest : public ShelfViewTest {
         GetPrimaryDisplay().work_area().width() - 2 * bubble_view_min_margin_ -
         2 * end_padding_;
 
-    return std::ceil(available_width_for_shortcuts / unit_);
+    return std::ceil(available_width_for_shortcuts / unit());
   }
 
  protected:
-  const gfx::Size shelf_icon_size_ =
-      gfx::Size(kShelfButtonSize, kShelfButtonSize);
-  const int arrow_button_size_ = OverflowBubbleView::GetArrowButtonSize();
+  static int unit() {
+    return ShelfConfig::Get()->button_size() +
+           ShelfConfig::Get()->button_spacing();
+  }
+
   const int bubble_view_min_margin_ = OverflowBubbleView::kMinimumMargin;
   const int end_padding_ = OverflowBubbleView::kEndPadding;
-  const int unit_ =
-      ShelfConstants::button_size() + ShelfConstants::button_spacing();
   const int fading_zone_ = OverflowBubbleView::kFadingZone;
 
  private:
@@ -2521,6 +2522,10 @@ class OverflowBubbleViewTest : public ShelfViewTest {
 // Verifies that the arrow buttons of OverflowBubbleView work as expected.
 TEST_F(OverflowBubbleViewTest, CheckOverflowBubbleViewArrowButton) {
   OverflowBubbleView* bubble_view = test_api_->overflow_bubble()->bubble_view();
+
+  const int button_size = ShelfConfig::Get()->button_size();
+  const gfx::Size shelf_icon_size(button_size, button_size);
+  const int arrow_button_size = OverflowBubbleView::GetArrowButtonSize();
 
   // Add sufficient app icons to ensure that it needs to press the right arrow
   // buttons twice to reach the end.
@@ -2549,10 +2554,10 @@ TEST_F(OverflowBubbleViewTest, CheckOverflowBubbleViewArrowButton) {
       GetPrimaryDisplay().bounds().right() - overflow_bubble_bounds.right());
   const int available_width_for_bubble =
       GetPrimaryDisplay().bounds().width() - 2 * bubble_view_min_margin_;
-  const int remainder = available_width_for_bubble % unit_;
+  const int remainder = available_width_for_bubble % unit();
   EXPECT_EQ(remainder / 2 + bubble_view_min_margin_,
             overflow_bubble_bounds.origin().x());
-  EXPECT_EQ(0, overflow_bubble_bounds.width() % unit_);
+  EXPECT_EQ(0, overflow_bubble_bounds.width() % unit());
 
   // Verifies the following things right after showing the overflow bubble view:
   // (1) The layout strategy is SHOW_RIGHT_ARROW_BUTTON.
@@ -2564,7 +2569,7 @@ TEST_F(OverflowBubbleViewTest, CheckOverflowBubbleViewArrowButton) {
   EXPECT_TRUE(right_arrow_button->GetVisible());
   EXPECT_FALSE(left_arrow_button->GetVisible());
   gfx::Rect expected_first_icon_bounds(overflow_bubble_bounds.origin(),
-                                       shelf_icon_size_);
+                                       shelf_icon_size);
   expected_first_icon_bounds.Offset(end_padding_, 0);
   EXPECT_EQ(expected_first_icon_bounds,
             test_for_overflow_view
@@ -2582,23 +2587,23 @@ TEST_F(OverflowBubbleViewTest, CheckOverflowBubbleViewArrowButton) {
   // Verifies that the right button shows in the expected bounds.
   EXPECT_TRUE(right_arrow_button->GetVisible());
   gfx::Rect expected_right_arrow_bounds =
-      gfx::Rect(overflow_bubble_bounds.width() - kShelfButtonSize, 0,
-                kShelfButtonSize, kShelfButtonSize);
+      gfx::Rect(overflow_bubble_bounds.width() - button_size, 0, button_size,
+                button_size);
   expected_right_arrow_bounds.ClampToCenteredSize(
-      gfx::Size(arrow_button_size_, arrow_button_size_));
+      gfx::Size(arrow_button_size, arrow_button_size));
   EXPECT_EQ(expected_right_arrow_bounds, right_arrow_button->bounds());
 
   // Verifies that the left button shows in the expected bounds.
   EXPECT_TRUE(left_arrow_button->GetVisible());
   gfx::Rect expected_left_arrow_bounds =
-      gfx::Rect(0, 0, kShelfButtonSize, kShelfButtonSize);
+      gfx::Rect(0, 0, button_size, button_size);
   expected_left_arrow_bounds.ClampToCenteredSize(
-      gfx::Size(arrow_button_size_, arrow_button_size_));
+      gfx::Size(arrow_button_size, arrow_button_size));
   EXPECT_EQ(expected_left_arrow_bounds, left_arrow_button->bounds());
 
   // Verifies that the scroll offset of the overflow bubble should be expected.
   const int expected_scroll_distance =
-      overflow_bubble_bounds.width() - 2 * unit_;
+      overflow_bubble_bounds.width() - 2 * unit();
   EXPECT_EQ(expected_scroll_distance, bubble_view->scroll_offset().x());
 
   // Tap at the right arrow button. Then check the following things:
@@ -2612,8 +2617,8 @@ TEST_F(OverflowBubbleViewTest, CheckOverflowBubbleViewArrowButton) {
   EXPECT_FALSE(right_arrow_button->GetVisible());
   EXPECT_TRUE(left_arrow_button->GetVisible());
   gfx::Rect expected_last_icon_bounds(overflow_bubble_bounds.top_right(),
-                                      shelf_icon_size_);
-  expected_last_icon_bounds.Offset(-kShelfButtonSize - end_padding_, 0);
+                                      shelf_icon_size);
+  expected_last_icon_bounds.Offset(-button_size - end_padding_, 0);
   EXPECT_EQ(expected_last_icon_bounds,
             test_for_overflow_view
                 .GetButton(bubble_view->shelf_view()->last_visible_index())
@@ -2652,7 +2657,7 @@ TEST_F(OverflowBubbleViewTest, CheckGestureDraggingOverflowBubbleView) {
   ASSERT_EQ(OverflowBubbleView::NOT_SHOW_ARROW_BUTTONS,
             bubble_view->layout_strategy());
   gfx::Point gesture_end_point = gesture_drag_point;
-  gesture_end_point.Offset(-kShelfButtonSize, 0);
+  gesture_end_point.Offset(-ShelfConfig::Get()->button_size(), 0);
   GetEventGenerator()->GestureScrollSequence(
       gesture_drag_point, gesture_end_point,
       base::TimeDelta::FromMilliseconds(100), 5);
@@ -2678,11 +2683,11 @@ TEST_F(OverflowBubbleViewTest, CheckGestureDraggingOverflowBubbleView) {
   // Verifies that the large gesture offset will scroll the overflow bubble. The
   // scroll offset is adjusted to fully show all of shelf icons.
   gesture_end_point = gesture_drag_point;
-  gesture_end_point.Offset(-kShelfButtonSize, 0);
+  gesture_end_point.Offset(-ShelfConfig::Get()->button_size(), 0);
   GetEventGenerator()->GestureScrollSequence(
       gesture_drag_point, gesture_end_point,
       base::TimeDelta::FromMilliseconds(100), 1);
-  EXPECT_EQ(unit_, bubble_view->scroll_offset().x());
+  EXPECT_EQ(unit(), bubble_view->scroll_offset().x());
 }
 
 // Verifies that the leftmost/rightmost shelf icon has correct fading in/out

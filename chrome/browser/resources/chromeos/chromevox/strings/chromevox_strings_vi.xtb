@@ -207,7 +207,6 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="257674075312929031">Nhóm</translation>
 <translation id="2582407057977008361">Loại trừ</translation>
 <translation id="2592212930811759050">Nhấn đúp để bắt đầu chỉnh sửa</translation>
-<translation id="2606210917827248971">với {COUNT,plural, =1{# mục}other{# mục}}</translation>
 <translation id="2614981083756825552">Bố cục toán học ML</translation>
 <translation id="2624431853467395961">Mở chế độ học</translation>
 <translation id="2626530649491650971">có thể nhấp được</translation>
@@ -391,7 +390,6 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="3781428340399460090">Hồng đậm</translation>
 <translation id="3783725005098956899">Hiển thị nhật ký</translation>
 <translation id="3793710123303304873">Đã thoát khỏi hộp thoại.</translation>
-<translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">Tự động hoàn thành danh sách</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3813387282697781382">Màu san hô nhạt</translation>

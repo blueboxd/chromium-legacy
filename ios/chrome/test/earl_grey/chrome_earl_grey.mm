@@ -578,6 +578,13 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return result;
 }
 
+#pragma mark - URL Utilities (EG2)
+
+- (NSString*)displayTitleForURL:(const GURL&)URL {
+  NSString* spec = base::SysUTF8ToNSString(URL.spec());
+  return [ChromeEarlGreyAppInterface displayTitleForURL:spec];
+}
+
 #pragma mark - Accessibility Utilities (EG2)
 
 - (void)verifyAccessibilityForCurrentScreen {

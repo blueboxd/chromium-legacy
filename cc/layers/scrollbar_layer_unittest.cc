@@ -807,7 +807,7 @@ TEST_F(ScrollbarLayerTest, SubPixelCanScrollOrientation) {
 
   LayerTestCommon::LayerImplTest impl;
 
-  LayerImpl* scroll_layer = impl.AddChildToRoot<LayerImpl>();
+  LayerImpl* scroll_layer = impl.AddLayer<LayerImpl>();
   scroll_layer->SetElementId(LayerIdToElementIdForTesting(scroll_layer->id()));
 
   const int kTrackStart = 0;
@@ -824,21 +824,24 @@ TEST_F(ScrollbarLayerTest, SubPixelCanScrollOrientation) {
   scroll_layer->SetScrollable(gfx::Size(980, 980));
   scroll_layer->SetBounds(gfx::Size(980, 980));
 
-  impl.host_impl()->active_tree()->BuildPropertyTreesForTesting();
+  CopyProperties(impl.root_layer(), scroll_layer);
+  CreateTransformNode(scroll_layer);
+  CreateScrollNode(scroll_layer);
+  CopyProperties(scroll_layer, scrollbar_layer);
+
   DCHECK(impl.host_impl()->active_tree()->ScrollbarGeometriesNeedUpdate());
   impl.host_impl()->active_tree()->UpdateScrollbarGeometries();
-
   impl.CalcDrawProps(viewport_size);
 
   // Fake clip layer length to scrollbar to mock rounding error.
   scrollbar_layer->SetClipLayerLength(979.999939f);
-  impl.host_impl()->active_tree()->BuildPropertyTreesForTesting();
+  impl.CalcDrawProps(viewport_size);
 
   EXPECT_FALSE(scrollbar_layer->CanScrollOrientation());
 
   // Fake clip layer length to scrollable.
   scrollbar_layer->SetClipLayerLength(979.0f);
-  impl.host_impl()->active_tree()->BuildPropertyTreesForTesting();
+  impl.CalcDrawProps(viewport_size);
 
   EXPECT_TRUE(scrollbar_layer->CanScrollOrientation());
 }

@@ -409,6 +409,14 @@ class PLATFORM_EXPORT ResourceResponse final {
   int64_t DecodedBodyLength() const { return decoded_body_length_; }
   void SetDecodedBodyLength(int64_t value);
 
+  const base::Optional<base::UnguessableToken>& RecursivePrefetchToken() const {
+    return recursive_prefetch_token_;
+  }
+  void SetRecursivePrefetchToken(
+      const base::Optional<base::UnguessableToken>& token) {
+    recursive_prefetch_token_ = token;
+  }
+
   unsigned MemoryUsage() const {
     // average size, mostly due to URL and Header Map strings
     return 1280;
@@ -588,6 +596,11 @@ class PLATFORM_EXPORT ResourceResponse final {
   // Sizes of the response body in bytes after any content-encoding is
   // removed.
   int64_t decoded_body_length_ = 0;
+
+  // This is propagated from the browser process's PrefetchURLLoader on
+  // cross-origin prefetch responses. It is used to pass the token along to
+  // preload header requests from these responses.
+  base::Optional<base::UnguessableToken> recursive_prefetch_token_;
 };
 
 }  // namespace blink

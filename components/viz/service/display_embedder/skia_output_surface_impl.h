@@ -216,6 +216,10 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
 
   base::Optional<gfx::Rect> draw_rectangle_;
 
+  // We defer the draw to the framebuffer until SwapBuffers or CopyOutput
+  // to avoid the expense of posting a task and calling MakeCurrent.
+  base::OnceClosure deferred_framebuffer_draw_closure_;
+
   base::WeakPtr<SkiaOutputSurfaceImpl> weak_ptr_;
   base::WeakPtrFactory<SkiaOutputSurfaceImpl> weak_ptr_factory_{this};
 

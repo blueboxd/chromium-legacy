@@ -266,7 +266,7 @@ const base::Feature kOmniboxPopupShortcutIconsInZeroState{
 // Feature to use material design weather icons in the omnibox when displaying
 // weather answers.
 const base::Feature kOmniboxMaterialDesignWeatherIcons{
-    "OmniboxMaterialDesignWeatherIcons", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OmniboxMaterialDesignWeatherIcons", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Returns whether IsInstantExtendedAPIEnabled should be ignored when deciding
 // the number of Google-provided search suggestions.
@@ -307,6 +307,11 @@ const base::Feature kOnFocusSuggestions{"OmniboxOnFocusSuggestions",
 // URL bar (the omnibox).
 const base::Feature kZeroSuggestionsOnNTP{"OmniboxZeroSuggestionsOnNTP",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Allow suggestions to be shown to the user on the New Tab Page upon focusing
+// the real search box.
+const base::Feature kZeroSuggestionsOnNTPRealbox{
+    "OmniboxZeroSuggestionsOnNTPRealbox", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Feature to provide non personalized head search suggestion from a compact
 // on device model.

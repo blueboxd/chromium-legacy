@@ -3,7 +3,6 @@
 <translationbundle lang="ca">
 <translation id="1036550831858290950">Desa la pestanya actual a les adreces d'interès</translation>
 <translation id="104962181688258143">Obre l'aplicació Fitxers</translation>
-<translation id="1098295134904615027">Activa l'escriptori virtual de la dreta</translation>
 <translation id="1122869341872663659">Es mostren <ph name="N" /> resultats de cerca per a <ph name="QUERY" /></translation>
 <translation id="1195667586424773550">Arrossega l'enllaç a la barra d'adreces de la pestanya</translation>
 <translation id="1204450209689312104">Obre una finestra nova en mode d'incògnit</translation>
@@ -25,7 +24,6 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">Afegeix www. i .com al text de la barra d'adreces i obre la pàgina</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> i després <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> o <ph name="LEFT" /></translation>
-<translation id="1929866390202038233">Activa l'escriptori virtual de l'esquerra</translation>
 <translation id="1996162290124031907">Ves a la pestanya següent</translation>
 <translation id="2010818616644390445">Ves a l'última pestanya de la finestra</translation>
 <translation id="2040706009561734834">Obre/tanca el menú d'aplicacions</translation>
@@ -64,7 +62,6 @@
 <translation id="3105917916468784889">Fes una captura de pantalla</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Mou el focus a la barra d'adreces</translation>
-<translation id="3165428420335997629">Crea un escriptori virtual nou</translation>
 <translation id="3256109297135787951">Deixa de destacar un element del prestatge</translation>
 <translation id="3288816184963444640">Tanca la finestra actual</translation>
 <translation id="3407560819924487926">Obre el gestor de tasques</translation>
@@ -181,7 +178,6 @@
 <translation id="8234414138295101081">Gira la pantalla 90 graus</translation>
 <translation id="8241665785394195545">claudàtor de tancament</translation>
 <translation id="8264941229485248811">Mostra o amaga l'inspector d'eines per a desenvolupadors</translation>
-<translation id="8355937569537581904">Suprimeix l'escriptori virtual actual</translation>
 <translation id="836869401750819675">Obre la pàgina Baixades</translation>
 <translation id="8388247778047144397">Arrossega l'enllaç a una àrea buida de la barra de pestanyes</translation>
 <translation id="8389638407792712197">Obre una finestra nova</translation>

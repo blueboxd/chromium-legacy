@@ -17,6 +17,7 @@ class Time;
 
 namespace net {
 class CertNetFetcher;
+class SystemTrustStore;
 }
 
 struct CertInput;
@@ -31,6 +32,7 @@ bool VerifyUsingPathBuilder(
     const std::vector<CertInput>& root_der_certs,
     const base::Time at_time,
     const base::FilePath& dump_prefix_path,
-    scoped_refptr<net::CertNetFetcher> cert_net_fetcher);
+    scoped_refptr<net::CertNetFetcher> cert_net_fetcher,
+    std::unique_ptr<net::SystemTrustStore> ssl_trust_store);
 
 #endif  // NET_TOOLS_CERT_VERIFY_TOOL_VERIFY_USING_PATH_BUILDER_H_

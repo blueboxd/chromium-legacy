@@ -16,6 +16,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/numerics/ranges.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
@@ -204,7 +205,7 @@ gfx::ImageSkia* ConnectingWirelessImage(ImageType image_type,
   static gfx::ImageSkia* s_arcs_images_dark[kImageCount];
   static gfx::ImageSkia* s_arcs_images_light[kImageCount];
   int index = animation * nextafter(static_cast<float>(kImageCount), 0);
-  index = std::max(std::min(index, kImageCount - 1), 0);
+  index = base::ClampToRange(index, 0, kImageCount - 1);
   gfx::ImageSkia** images;
   bool dark = IconTypeIsDark(icon_type);
   if (image_type == BARS)

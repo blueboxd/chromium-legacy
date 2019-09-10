@@ -47,7 +47,9 @@ struct PrefetchURLLoaderService::BindContext {
         render_frame_host(other->render_frame_host),
         cross_origin_factory(other->cross_origin_factory),
         prefetched_signed_exchange_cache(
-            other->prefetched_signed_exchange_cache) {}
+            other->prefetched_signed_exchange_cache),
+        prefetch_network_isolation_keys(
+            other->prefetch_network_isolation_keys) {}
 
   ~BindContext() = default;
 
@@ -57,7 +59,17 @@ struct PrefetchURLLoaderService::BindContext {
 
   // This member is lazily initialized by EnsureCrossOriginFactory().
   scoped_refptr<network::SharedURLLoaderFactory> cross_origin_factory;
+
   scoped_refptr<PrefetchedSignedExchangeCache> prefetched_signed_exchange_cache;
+
+  // This maps recursive prefetch tokens to NetworkIsolationKeys that they
+  // should be fetched with.
+  std::map<base::UnguessableToken, net::NetworkIsolationKey>
+      prefetch_network_isolation_keys;
+
+  // This must be the last member.
+  base::WeakPtrFactory<PrefetchURLLoaderService::BindContext> weak_ptr_factory{
+      this};
 };
 
 PrefetchURLLoaderService::PrefetchURLLoaderService(
@@ -108,7 +120,7 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
 
   DCHECK_EQ(static_cast<int>(ResourceType::kPrefetch),
             resource_request.resource_type);
-  const auto& current_context = *loader_factory_receivers_.current_context();
+  auto& current_context = *loader_factory_receivers_.current_context();
 
   if (!current_context.render_frame_host) {
     client->OnComplete(network::URLLoaderCompletionStatus(net::ERR_ABORTED));
@@ -143,6 +155,32 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
         net::NetworkIsolationKey(destination_origin, destination_origin);
   }
 
+  // Recursive prefetch from a cross-origin main resource prefetch.
+  if (resource_request.recursive_prefetch_token) {
+    // A request's |recursive_prefetch_token| is only provided if the request is
+    // a recursive prefetch. This means it is expected that the current
+    // context's |cross_origin_factory| was already created.
+    DCHECK(current_context.cross_origin_factory);
+
+    // Resurrect the request's NetworkIsolationKey from the current context's
+    // map, and use it for this request.
+    auto nik_iterator = current_context.prefetch_network_isolation_keys.find(
+        resource_request.recursive_prefetch_token.value());
+
+    // An unexpected token could indicate a compromised renderer trying to fetch
+    // a request in a special way. We'll cancel the request.
+    if (nik_iterator == current_context.prefetch_network_isolation_keys.end()) {
+      client->OnComplete(
+          network::URLLoaderCompletionStatus(net::ERR_INVALID_ARGUMENT));
+      return;
+    }
+
+    resource_request.trusted_params = network::ResourceRequest::TrustedParams();
+    resource_request.trusted_params->network_isolation_key =
+        nik_iterator->second;
+    network_loader_factory_to_use = current_context.cross_origin_factory;
+  }
+
   if (prefetch_load_callback_for_testing_)
     prefetch_load_callback_for_testing_.Run();
 
@@ -170,7 +208,10 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
               resource_request, frame_tree_node_id_getter),
           browser_context_, signed_exchange_prefetch_metric_recorder_,
           std::move(prefetched_signed_exchange_cache), blob_storage_context_,
-          accept_langs_),
+          accept_langs_,
+          base::BindOnce(
+              &PrefetchURLLoaderService::GenerateRecursivePrefetchToken, this,
+              current_context.weak_ptr_factory.GetWeakPtr())),
       std::move(request));
 }
 
@@ -243,6 +284,31 @@ void PrefetchURLLoaderService::Clone(
 void PrefetchURLLoaderService::NotifyUpdate(
     blink::mojom::RendererPreferencesPtr new_prefs) {
   SetAcceptLanguages(new_prefs->accept_languages);
+}
+
+base::UnguessableToken PrefetchURLLoaderService::GenerateRecursivePrefetchToken(
+    base::WeakPtr<BindContext> current_context,
+    const network::ResourceRequest& request) {
+  // If the relevant frame has gone away before this method is called
+  // asynchronously, we cannot generate and store a
+  // {token, NetworkIsolationKey} pair in the frame's
+  // |prefetch_network_isolation_keys| map, so we'll create and return a dummy
+  // token that will not get used.
+  if (!current_context)
+    return base::UnguessableToken::Create();
+
+  // Create NetworkIsolationKey.
+  url::Origin destination_origin = url::Origin::Create(request.url);
+  net::NetworkIsolationKey preload_nik =
+      net::NetworkIsolationKey(destination_origin, destination_origin);
+
+  // Generate token.
+  base::UnguessableToken return_token = base::UnguessableToken::Create();
+
+  // Associate the two, and return the token.
+  current_context->prefetch_network_isolation_keys.insert(
+      {return_token, preload_nik});
+  return return_token;
 }
 
 std::vector<std::unique_ptr<blink::URLLoaderThrottle>>

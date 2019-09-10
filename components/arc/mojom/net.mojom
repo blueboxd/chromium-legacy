@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 11
+// Next MinVersion: 12
 
 // This file defines the mojo interface between the ARC networking stack and
 // Chrome OS. There are three different groups of interactions:
@@ -207,6 +207,9 @@ struct NetworkConfiguration {
 
   // The network interface associated with this network service.
   [MinVersion=10] string? network_interface;
+
+  // True if this network is the host default network.
+  [MinVersion=11] bool is_default_network;
 };
 
 // Describes a Wifi network configuration that ARC has requested the host to

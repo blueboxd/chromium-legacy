@@ -545,7 +545,7 @@ bool FrameLoader::AllowRequestForThisFrame(const FrameLoadRequest& request) {
       return false;
   }
 
-  if (!request.OriginDocument()->GetSecurityOrigin()->CanDisplay(url)) {
+  if (!request.CanDisplay(url)) {
     request.OriginDocument()->AddConsoleMessage(ConsoleMessage::Create(
         mojom::ConsoleMessageSource::kSecurity,
         mojom::ConsoleMessageLevel::kError,

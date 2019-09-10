@@ -89,6 +89,7 @@ void ShellWebClient::AllowCertificateError(
     const net::SSLInfo&,
     const GURL&,
     bool overridable,
+    int64_t /*navigation_id*/,
     const base::Callback<void(bool)>& callback) {
   base::Callback<void(bool)> block_callback(callback);
   UIAlertController* alert = [UIAlertController

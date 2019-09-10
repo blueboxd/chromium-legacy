@@ -6,11 +6,11 @@ import("//build/config/chrome_build.gni")
 import("//media/media_options.gni")
 
 declare_args() {
-  # Enables Widevine key system support. Enabled by default in Google Chrome and
-  # on Android.
+  # Enables Widevine key system support. Enabled by default in Google Chrome,
+  # on Android and Fuchsia platforms.
   # Can be optionally enabled in Chromium on non-Android platforms. Please see
   # //src/third_party/widevine/LICENSE file for details.
-  enable_widevine = is_chrome_branded || is_android
+  enable_widevine = is_chrome_branded || is_android || is_fuchsia
 }
 
 # Widevine CDM is available as a library CDM on the following platforms and

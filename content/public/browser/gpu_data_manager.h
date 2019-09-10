@@ -28,6 +28,12 @@ enum GpuProcessKind {
   GPU_PROCESS_KIND_COUNT
 };
 
+enum GpuInfoRequest {
+  kGpuInfoRequestDxDiag = 1 << 0,
+  kGpuInfoRequestDx12Vulkan = 1 << 1,
+  kGpuInfoRequestAll = kGpuInfoRequestDxDiag | kGpuInfoRequestDx12Vulkan,
+};
+
 class GpuDataManagerObserver;
 
 // This class is fully thread-safe.
@@ -54,7 +60,8 @@ class GpuDataManager {
   virtual bool GpuAccessAllowed(std::string* reason) = 0;
 
   // Requests complete GPU info if it has not already been requested
-  virtual void RequestCompleteGpuInfoIfNeeded() = 0;
+  virtual void RequestCompleteGpuInfoIfNeeded(GpuInfoRequest request,
+                                              bool delayed) = 0;
 
   // Check if basic and context GPU info have been collected.
   virtual bool IsEssentialGpuInfoAvailable() = 0;

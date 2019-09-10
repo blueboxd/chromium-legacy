@@ -28,10 +28,11 @@ TEST(TextureLayerImplTest, VisibleOpaqueRegion) {
 
   LayerTestCommon::LayerImplTest impl;
 
-  TextureLayerImpl* layer = impl.AddChildToRoot<TextureLayerImpl>();
+  TextureLayerImpl* layer = impl.AddLayer<TextureLayerImpl>();
   layer->SetBounds(layer_bounds);
   layer->draw_properties().visible_layer_rect = layer_rect;
   layer->SetBlendBackgroundColor(true);
+  CopyProperties(impl.root_layer(), layer);
 
   // Verify initial conditions.
   EXPECT_FALSE(layer->contents_opaque());
@@ -59,13 +60,13 @@ TEST(TextureLayerImplTest, Occlusion) {
                      gpu::CommandBufferId::FromUnsafeValue(0x234), 0x456),
       layer_size, false /* is_overlay_candidate */);
 
-  TextureLayerImpl* texture_layer_impl =
-      impl.AddChildToRoot<TextureLayerImpl>();
+  TextureLayerImpl* texture_layer_impl = impl.AddLayer<TextureLayerImpl>();
   texture_layer_impl->SetBounds(layer_size);
   texture_layer_impl->SetDrawsContent(true);
   texture_layer_impl->SetTransferableResource(
       resource,
       viz::SingleReleaseCallback::Create(base::BindOnce(&IgnoreCallback)));
+  CopyProperties(impl.root_layer(), texture_layer_impl);
 
   impl.CalcDrawProps(viewport_size);
 
@@ -119,8 +120,7 @@ TEST(TextureLayerImplTest, ResourceNotFreedOnGpuRasterToggle) {
                      gpu::CommandBufferId::FromUnsafeValue(0x234), 0x456);
   resource.mailbox_holder.texture_target = GL_TEXTURE_2D;
 
-  TextureLayerImpl* texture_layer_impl =
-      impl.AddChildToRoot<TextureLayerImpl>();
+  TextureLayerImpl* texture_layer_impl = impl.AddLayer<TextureLayerImpl>();
   texture_layer_impl->SetBounds(layer_size);
   texture_layer_impl->SetDrawsContent(true);
   texture_layer_impl->SetTransferableResource(
@@ -128,6 +128,7 @@ TEST(TextureLayerImplTest, ResourceNotFreedOnGpuRasterToggle) {
                     [](bool* released, const gpu::SyncToken& sync_token,
                        bool lost) { *released = true; },
                     base::Unretained(&released))));
+  CopyProperties(impl.root_layer(), texture_layer_impl);
 
   impl.CalcDrawProps(viewport_size);
 

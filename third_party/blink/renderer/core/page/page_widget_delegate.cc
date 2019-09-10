@@ -142,8 +142,8 @@ WebInputEventResult PageWidgetDelegate::HandleInputEvent(
     case WebInputEvent::kMouseUp:
       if (!root || !root->View())
         return WebInputEventResult::kHandledSuppressed;
-      handler.HandleMouseUp(*root, static_cast<const WebMouseEvent&>(event));
-      return WebInputEventResult::kHandledSystem;
+      return handler.HandleMouseUp(*root,
+                                   static_cast<const WebMouseEvent&>(event));
     case WebInputEvent::kMouseWheel:
       if (!root || !root->View())
         return WebInputEventResult::kNotHandled;
@@ -239,11 +239,13 @@ void PageWidgetEventHandler::HandleMouseDown(LocalFrame& main_frame,
   main_frame.GetEventHandler().HandleMousePressEvent(transformed_event);
 }
 
-void PageWidgetEventHandler::HandleMouseUp(LocalFrame& main_frame,
-                                           const WebMouseEvent& event) {
+WebInputEventResult PageWidgetEventHandler::HandleMouseUp(
+    LocalFrame& main_frame,
+    const WebMouseEvent& event) {
   WebMouseEvent transformed_event =
       TransformWebMouseEvent(main_frame.View(), event);
-  main_frame.GetEventHandler().HandleMouseReleaseEvent(transformed_event);
+  return main_frame.GetEventHandler().HandleMouseReleaseEvent(
+      transformed_event);
 }
 
 WebInputEventResult PageWidgetEventHandler::HandleMouseWheel(

@@ -474,6 +474,7 @@ void ResourceLoader::Start() {
     const auto origin = resource_->GetOrigin();
     response_tainting_ = cors::CalculateResponseTainting(
         request.Url(), request.GetMode(), origin.get(),
+        request.IsolatedWorldOrigin().get(),
         GetCorsFlag() ? CorsFlag::Set : CorsFlag::Unset);
   }
 
@@ -855,8 +856,9 @@ bool ResourceLoader::WillFollowRedirect(
   if (ShouldCheckCorsInResourceLoader()) {
     bool new_cors_flag =
         GetCorsFlag() ||
-        cors::CalculateCorsFlag(new_request->Url(),
-                                resource_->GetOrigin().get(), request_mode);
+        cors::CalculateCorsFlag(
+            new_request->Url(), resource_->GetOrigin().get(),
+            new_request->IsolatedWorldOrigin().get(), request_mode);
     resource_->MutableOptions().cors_flag = new_cors_flag;
     // Cross-origin requests are only allowed certain registered schemes.
     if (GetCorsFlag() && !SchemeRegistry::ShouldTreatURLSchemeAsCorsEnabled(
@@ -869,6 +871,7 @@ bool ResourceLoader::WillFollowRedirect(
     }
     response_tainting_ = cors::CalculateResponseTainting(
         new_request->Url(), request_mode, resource_->GetOrigin().get(),
+        new_request->IsolatedWorldOrigin().get(),
         GetCorsFlag() ? CorsFlag::Set : CorsFlag::Unset);
   }
 

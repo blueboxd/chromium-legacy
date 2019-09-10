@@ -15,11 +15,11 @@
 #include "ash/login/ui/lock_screen.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/login_constants.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -153,12 +153,13 @@ class LoginShelfButton : public views::LabelButton {
                                    login_constants::kButtonDisabledAlpha)));
     SetFocusBehavior(FocusBehavior::ALWAYS);
     SetInstallFocusRingOnFocus(true);
-    focus_ring()->SetColor(kShelfFocusBorderColor);
+    focus_ring()->SetColor(ShelfConfig::Get()->shelf_focus_border_color());
     SetFocusPainter(nullptr);
     SetInkDropMode(InkDropMode::ON);
     set_has_ink_drop_action_on_click(true);
-    set_ink_drop_base_color(kShelfInkDropBaseColor);
-    set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
+    set_ink_drop_base_color(ShelfConfig::Get()->shelf_ink_drop_base_color());
+    set_ink_drop_visible_opacity(
+        ShelfConfig::Get()->shelf_ink_drop_visible_opacity());
 
     // Layer rendering is required when the shelf background is visible, which
     // happens when the wallpaper is not blurred.
@@ -268,12 +269,13 @@ class KioskAppsButton : public views::MenuButton,
         ui::SimpleMenuModel(this) {
     SetFocusBehavior(FocusBehavior::ALWAYS);
     SetInstallFocusRingOnFocus(true);
-    focus_ring()->SetColor(kShelfFocusBorderColor);
+    focus_ring()->SetColor(ShelfConfig::Get()->shelf_focus_border_color());
     SetFocusPainter(nullptr);
     SetInkDropMode(InkDropMode::ON);
     set_has_ink_drop_action_on_click(true);
-    set_ink_drop_base_color(kShelfInkDropBaseColor);
-    set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
+    set_ink_drop_base_color(ShelfConfig::Get()->shelf_ink_drop_base_color());
+    set_ink_drop_visible_opacity(
+        ShelfConfig::Get()->shelf_ink_drop_visible_opacity());
 
     // Layer rendering is required when the shelf background is visible, which
     // happens when the wallpaper is not blurred.

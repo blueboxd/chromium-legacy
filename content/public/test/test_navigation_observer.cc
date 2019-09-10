@@ -69,7 +69,8 @@ TestNavigationObserver::TestNavigationObserver(
     MessageLoopRunner::QuitMode quit_mode)
     : TestNavigationObserver(web_contents,
                              number_of_navigations,
-                             GURL(),
+                             GURL() /* target_url */,
+                             net::OK /* target_error */,
                              quit_mode) {}
 
 TestNavigationObserver::TestNavigationObserver(
@@ -83,6 +84,17 @@ TestNavigationObserver::TestNavigationObserver(
     : TestNavigationObserver(nullptr,
                              -1 /* num_of_navigations */,
                              target_url,
+                             net::OK /* target_error */,
+                             quit_mode) {}
+
+TestNavigationObserver::TestNavigationObserver(
+    WebContents* web_contents,
+    net::Error target_error,
+    MessageLoopRunner::QuitMode quit_mode)
+    : TestNavigationObserver(web_contents,
+                             -1 /* num_of_navigations */,
+                             GURL(),
+                             target_error,
                              quit_mode) {}
 
 TestNavigationObserver::~TestNavigationObserver() {
@@ -122,12 +134,14 @@ TestNavigationObserver::TestNavigationObserver(
     WebContents* web_contents,
     int number_of_navigations,
     const GURL& target_url,
+    net::Error target_error,
     MessageLoopRunner::QuitMode quit_mode)
     : wait_event_(WaitEvent::kLoadStopped),
       navigation_started_(false),
       navigations_completed_(0),
       number_of_navigations_(number_of_navigations),
       target_url_(target_url),
+      target_error_(target_error),
       last_navigation_succeeded_(false),
       last_net_error_code_(net::OK),
       last_navigation_type_(NAVIGATION_TYPE_UNKNOWN),
@@ -203,14 +217,18 @@ void TestNavigationObserver::OnDidFinishNavigation(
 }
 
 void TestNavigationObserver::EventTriggered() {
-  if (target_url_ == GURL()) {
+  if (target_url_ == GURL() && target_error_ == net::OK) {
     DCHECK_GE(navigations_completed_, 0);
 
     ++navigations_completed_;
     if (navigations_completed_ != number_of_navigations_) {
       return;
     }
-  } else if (target_url_ != last_navigation_url_) {
+  } else if (target_url_ != GURL()) {
+    if (target_url_ != last_navigation_url_) {
+      return;
+    }
+  } else if (target_error_ != last_net_error_code_) {
     return;
   }
 

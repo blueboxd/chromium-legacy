@@ -360,40 +360,48 @@ bool GpuDataManagerImplPrivate::GpuProcessStartAllowed() const {
   return false;
 }
 
-void GpuDataManagerImplPrivate::RequestCompleteGpuInfoIfNeeded() {
-  if (complete_gpu_info_already_requested_)
-    return;
-  if (!NeedsCompleteGpuInfoCollection())
+void GpuDataManagerImplPrivate::RequestCompleteGpuInfoIfNeeded(
+    GpuInfoRequest request,
+    bool delayed) {
+  if (request & kGpuInfoRequestDxDiag) {
+    // Delay is not supported in DxDiag request
+    DCHECK(!delayed);
+    RequestDxDiagNodeData();
+  }
+
+  if (request & kGpuInfoRequestDx12Vulkan)
+    RequestGpuSupportedRuntimeVersion(delayed);
+}
+
+void GpuDataManagerImplPrivate::RequestDxDiagNodeData() {
+#if defined(OS_WIN)
+  if (gpu_info_dx_diag_requested_)
     return;
 
-#if defined(OS_WIN)
-  complete_gpu_info_already_requested_ = true;
-  GpuProcessHost::CallOnIO(GPU_PROCESS_KIND_UNSANDBOXED_NO_GL,
-                           true /* force_create */,
-                           base::BindOnce([](GpuProcessHost* host) {
-                             if (!host)
-                               return;
-                             host->gpu_service()->RequestCompleteGpuInfo(
-                                 base::BindOnce(
-                                     [](const gpu::DxDiagNode& dx_diagnostics) {
-                                       GpuDataManagerImpl::GetInstance()
-                                           ->UpdateDxDiagNode(dx_diagnostics);
-                                     }));
-                           }));
-#else
-  // NeedsCompleteGpuInfoCollection() always returns false on platforms other
-  // than Windows.
-  NOTREACHED();
+  gpu_info_dx_diag_requested_ = true;
+  GpuProcessHost::CallOnIO(
+      GPU_PROCESS_KIND_UNSANDBOXED_NO_GL, true /* force_create */,
+      base::BindOnce([](GpuProcessHost* host) {
+        if (!host) {
+          GpuDataManagerImpl::GetInstance()->UpdateDxDiagNodeRequestStatus(
+              false);
+          return;
+        }
+        GpuDataManagerImpl::GetInstance()->UpdateDxDiagNodeRequestStatus(true);
+        host->gpu_service()->RequestCompleteGpuInfo(
+            base::BindOnce([](const gpu::DxDiagNode& dx_diagnostics) {
+              GpuDataManagerImpl::GetInstance()->UpdateDxDiagNode(
+                  dx_diagnostics);
+            }));
+      }));
 #endif
 }
 
 void GpuDataManagerImplPrivate::RequestGpuSupportedRuntimeVersion(
     bool delayed) {
 #if defined(OS_WIN)
-  if (gpu_info_dx12_vulkan_valid_) {
-    NotifyGpuInfoUpdate();
+  if (gpu_info_dx12_vulkan_requested_)
     return;
-  }
 
   base::OnceClosure task = base::BindOnce([]() {
     GpuProcessHost* host = GpuProcessHost::Get(
@@ -417,9 +425,6 @@ void GpuDataManagerImplPrivate::RequestGpuSupportedRuntimeVersion(
     gpu_info_dx12_vulkan_request_failed_ = false;
     base::PostTask(FROM_HERE, {BrowserThread::IO}, std::move(task));
   }
-
-#else
-  NOTREACHED();
 #endif
 }
 
@@ -533,8 +538,6 @@ void GpuDataManagerImplPrivate::UpdateGpuInfo(
 void GpuDataManagerImplPrivate::UpdateDxDiagNode(
     const gpu::DxDiagNode& dx_diagnostics) {
   gpu_info_.dx_diagnostics = dx_diagnostics;
-  if (complete_gpu_info_already_requested_)
-    complete_gpu_info_already_requested_ = false;
   // No need to call GetContentClient()->SetGpuInfo().
   NotifyGpuInfoUpdate();
 }
@@ -546,6 +549,14 @@ void GpuDataManagerImplPrivate::UpdateDx12VulkanInfo(
 
   // No need to call GetContentClient()->SetGpuInfo().
   NotifyGpuInfoUpdate();
+}
+
+void GpuDataManagerImplPrivate::UpdateDxDiagNodeRequestStatus(
+    bool request_continues) {
+  gpu_info_dx_diag_request_failed_ = !request_continues;
+
+  if (gpu_info_dx_diag_request_failed_)
+    NotifyGpuInfoUpdate();
 }
 
 void GpuDataManagerImplPrivate::UpdateDx12VulkanRequestStatus(
@@ -926,14 +937,6 @@ GpuDataManagerImplPrivate::Are3DAPIsBlockedAtTime(const GURL& url,
 
 int64_t GpuDataManagerImplPrivate::GetBlockAllDomainsDurationInMs() const {
   return kBlockAllDomainsMs;
-}
-
-bool GpuDataManagerImplPrivate::NeedsCompleteGpuInfoCollection() const {
-#if defined(OS_WIN)
-  return gpu_info_.dx_diagnostics.IsEmpty();
-#else
-  return false;
-#endif
 }
 
 gpu::GpuMode GpuDataManagerImplPrivate::GetGpuMode() const {

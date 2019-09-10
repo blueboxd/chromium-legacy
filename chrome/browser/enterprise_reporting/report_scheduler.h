@@ -34,6 +34,8 @@ class ReportScheduler {
 
   void SetReportUploaderForTesting(std::unique_ptr<ReportUploader> uploader);
 
+  void OnDMTokenUpdated();
+
  private:
   // Observes CloudReportingEnabled policy.
   void RegisterPerfObserver();

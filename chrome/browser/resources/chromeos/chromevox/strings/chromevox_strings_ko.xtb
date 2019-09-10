@@ -207,7 +207,6 @@
 <translation id="257674075312929031">그룹</translation>
 <translation id="2582407057977008361">사이드 바</translation>
 <translation id="2592212930811759050">수정하려면 두 번 탭하세요.</translation>
-<translation id="2606210917827248971">에{COUNT,plural, =1{항목 #개 포함}other{항목 #개 포함}}</translation>
 <translation id="2614981083756825552">Math ML 레이아웃</translation>
 <translation id="2624431853467395961">학습 모드 열기</translation>
 <translation id="2626530649491650971">clickable</translation>
@@ -391,7 +390,6 @@
 <translation id="3781428340399460090">진한 분홍색</translation>
 <translation id="3783725005098956899">로그 표시</translation>
 <translation id="3793710123303304873">대화상자를 종료했습니다.</translation>
-<translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">자동완성 목록</translation>
 <translation id="3810838688059735925">동영상</translation>
 <translation id="3813387282697781382">라이트 코럴</translation>

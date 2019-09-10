@@ -18,6 +18,16 @@ public class WebApkUkmRecorder {
         nativeRecordSessionDuration(manifestUrl, distributor, versionCode, duration);
     }
 
+    /**
+     * Records that WebAPK was launched and the reason for the launch.
+     */
+    public static void recordWebApkLaunch(
+            String manifestUrl, @WebApkDistributor int distributor, int versionCode, int source) {
+        nativeRecordVisit(manifestUrl, distributor, versionCode, source);
+    }
+
     private static native void nativeRecordSessionDuration(
             String manifestUrl, int distributor, int versionCode, long duration);
+    private static native void nativeRecordVisit(
+            String manifestUrl, int distributor, int versionCode, int source);
 }

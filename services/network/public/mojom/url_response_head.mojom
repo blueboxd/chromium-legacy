@@ -5,6 +5,7 @@
 module network.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/network/public/mojom/fetch_api.mojom";
 import "services/network/public/mojom/http_raw_request_response_info.mojom";
 import "services/network/public/mojom/ip_endpoint.mojom";
@@ -201,4 +202,9 @@ struct URLResponseHead {
   // Origin Policy associated with this response or nullptr if not applicable.
   // Spec: https://wicg.github.io/origin-policy/
   OriginPolicy? origin_policy;
+
+  // Set by the browser process on cross-origin prefetch responses. This token
+  // is propagated to the renderer and set on recursive prefetch requests
+  // (see corresponding documentation in url_loader.mojom).
+  mojo_base.mojom.UnguessableToken? recursive_prefetch_token;
 };

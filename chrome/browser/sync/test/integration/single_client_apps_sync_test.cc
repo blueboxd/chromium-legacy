@@ -77,7 +77,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, InstallSomeLegacyApps) {
   ASSERT_TRUE(AllProfilesHaveSameApps());
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, InstallSomePlatformApps) {
+IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest,
+                       MAYBE_InstallSomePlatformApps) {
   ASSERT_TRUE(SetupSync());
 
   const int kNumApps = 5;
@@ -90,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, InstallSomePlatformApps) {
   ASSERT_TRUE(AllProfilesHaveSameApps());
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, InstallSomeApps) {
+IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, MAYBE_InstallSomeApps) {
   ASSERT_TRUE(SetupSync());
 
   int i = 0;

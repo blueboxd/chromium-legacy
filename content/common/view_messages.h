@@ -23,6 +23,7 @@
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/resources/shared_bitmap.h"
+#include "content/common/common_param_traits_macros.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/frame_replication_state.h"
@@ -198,6 +199,13 @@ IPC_MESSAGE_ROUTED2(ViewMsg_PpapiBrokerChannelCreated,
 IPC_MESSAGE_ROUTED1(ViewMsg_PpapiBrokerPermissionResult,
                     bool /* result */)
 #endif
+
+// Sent to the renderer hosting the local main frame when view visual properties
+// are updated. Currently also carries state for main widget visual properties.
+// Eventually we want this to be used for all page visual updates, not just
+// local main frame view visual updates.
+IPC_MESSAGE_ROUTED1(ViewMsg_UpdateLocalMainFrameVisualProperties,
+                    content::VisualProperties /* visual_properties */)
 
 // Sent to the main-frame's view to request performing a page scale animation
 // based on the point/rect provided.

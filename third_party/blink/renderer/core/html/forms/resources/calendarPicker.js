@@ -2083,7 +2083,7 @@ ScrubbyScrollBar.prototype.onScrollTimer = function() {
 function YearListCell(shortMonthLabels) {
   ListCell.call(this);
   this.element.classList.add(YearListCell.ClassNameYearListCell);
-  this.element.style.height = YearListCell.Height + 'px';
+  this.element.style.height = YearListCell.GetHeight() + 'px';
 
   /**
    * @type {!Element}
@@ -2091,8 +2091,8 @@ function YearListCell(shortMonthLabels) {
    */
   this.label = createElement('div', YearListCell.ClassNameLabel, '----');
   this.element.appendChild(this.label);
-  this.label.style.height = (YearListCell.Height - YearListCell.BorderBottomWidth) + 'px';
-  this.label.style.lineHeight = (YearListCell.Height - YearListCell.BorderBottomWidth) + 'px';
+  this.label.style.height = (YearListCell.GetHeight() - YearListCell.BorderBottomWidth) + 'px';
+  this.label.style.lineHeight = (YearListCell.GetHeight() - YearListCell.BorderBottomWidth) + 'px';
 
   /**
    * @type {!Array} Array of the 12 month button elements.
@@ -2129,11 +2129,25 @@ function YearListCell(shortMonthLabels) {
 
 YearListCell.prototype = Object.create(ListCell.prototype);
 
-YearListCell.Height = hasInaccuratePointingDevice() ? 31 : 25;
+YearListCell._Height = hasInaccuratePointingDevice() ? 31 : 25;
+YearListCell._HeightRefresh = 25;
+YearListCell.GetHeight = function() {
+  if (global.params.isFormControlsRefreshEnabled) {
+    return YearListCell._HeightRefresh;
+  }
+  return YearListCell._Height;
+}
 YearListCell.BorderBottomWidth = 1;
 YearListCell.ButtonRows = 3;
 YearListCell.ButtonColumns = 4;
-YearListCell.SelectedHeight = hasInaccuratePointingDevice() ? 127 : 121;
+YearListCell._SelectedHeight = hasInaccuratePointingDevice() ? 127 : 121;
+YearListCell._SelectedHeightRefresh = 121;
+YearListCell.GetSelectedHeight = function() {
+  if (global.params.isFormControlsRefreshEnabled) {
+    return YearListCell._SelectedHeightRefresh;
+  }
+  return YearListCell._SelectedHeight;
+}
 YearListCell.ClassNameYearListCell = 'year-list-cell';
 YearListCell.ClassNameLabel = 'label';
 YearListCell.ClassNameMonthChooser = 'month-chooser';
@@ -2207,9 +2221,9 @@ function YearListView(minimumMonth, maximumMonth) {
    */
   this._maximumMonth = maximumMonth;
 
-  this.scrollView.minimumContentOffset = (this._minimumMonth.year - 1) * YearListCell.Height;
+  this.scrollView.minimumContentOffset = (this._minimumMonth.year - 1) * YearListCell.GetHeight();
   this.scrollView.maximumContentOffset =
-      (this._maximumMonth.year - 1) * YearListCell.Height + YearListCell.SelectedHeight;
+      (this._maximumMonth.year - 1) * YearListCell.GetHeight() + YearListCell.GetSelectedHeight();
 
   /**
    * @type {!Object}
@@ -2244,7 +2258,15 @@ function YearListView(minimumMonth, maximumMonth) {
 
 YearListView.prototype = Object.create(ListView.prototype);
 
-YearListView.Height = YearListCell.SelectedHeight - 1;
+YearListView._Height = YearListCell._SelectedHeight - 1;
+YearListView._VisibleYearsRefresh = 3;
+YearListView._HeightRefresh = YearListCell._SelectedHeightRefresh - 1 + YearListView._VisibleYearsRefresh * YearListCell._HeightRefresh;
+YearListView.GetHeight = function() {
+  if (global.params.isFormControlsRefreshEnabled) {
+    return YearListView._HeightRefresh;
+  }
+  return YearListView._Height;
+}
 YearListView.EventTypeYearListViewDidHide = 'yearListViewDidHide';
 YearListView.EventTypeYearListViewDidSelectMonth = 'yearListViewDidSelectMonth';
 
@@ -2318,7 +2340,7 @@ YearListView.RowAnimationDirection = {
  */
 YearListView.prototype._animateRow = function(row, direction) {
   var fromValue =
-      direction === YearListView.RowAnimationDirection.Closing ? YearListCell.SelectedHeight : YearListCell.Height;
+      direction === YearListView.RowAnimationDirection.Closing ? YearListCell.GetSelectedHeight() : YearListCell.GetHeight();
   var oldAnimator = this._runningAnimators[row];
   if (oldAnimator) {
     oldAnimator.stop();
@@ -2329,7 +2351,7 @@ YearListView.prototype._animateRow = function(row, direction) {
   animator.step = this.onCellHeightAnimatorStep;
   animator.setFrom(fromValue);
   animator.setTo(
-      direction === YearListView.RowAnimationDirection.Opening ? YearListCell.SelectedHeight : YearListCell.Height);
+      direction === YearListView.RowAnimationDirection.Opening ? YearListCell.GetSelectedHeight() : YearListCell.GetHeight());
   animator.timingFunction = AnimationTimingFunction.EaseInOut;
   animator.duration = 300;
   animator.row = row;
@@ -2369,7 +2391,7 @@ YearListView.prototype.onClick = function(event) {
   if (this.selectedRow !== oldSelectedRow) {
     var month = this.highlightedMonth ? this.highlightedMonth.month : 0;
     this.dispatchEvent(YearListView.EventTypeYearListViewDidSelectMonth, this, new Month(year, month));
-    this.scrollView.scrollTo(this.selectedRow * YearListCell.Height, true);
+    this.scrollView.scrollTo(this.selectedRow * YearListCell.GetHeight(), true);
   } else {
     var monthButton = enclosingNodeOrSelfWithClass(event.target, YearListCell.ClassNameMonthButton);
     if (!monthButton || monthButton.getAttribute('aria-disabled') == 'true')
@@ -2396,17 +2418,17 @@ YearListView.prototype.rowAtScrollOffset = function(scrollOffset) {
   for (var i = 0; i < rowsWithIrregularHeight.length; ++i) {
     var row = rowsWithIrregularHeight[i];
     var animator = this._runningAnimators[row];
-    var rowHeight = animator ? animator.currentValue : YearListCell.SelectedHeight;
-    if (remainingOffset <= (row - lastAnimatingRow) * YearListCell.Height) {
-      return lastAnimatingRow + Math.floor(remainingOffset / YearListCell.Height);
+    var rowHeight = animator ? animator.currentValue : YearListCell.GetSelectedHeight();
+    if (remainingOffset <= (row - lastAnimatingRow) * YearListCell.GetHeight()) {
+      return lastAnimatingRow + Math.floor(remainingOffset / YearListCell.GetHeight());
     }
-    remainingOffset -= (row - lastAnimatingRow) * YearListCell.Height;
-    if (remainingOffset <= (rowHeight - YearListCell.Height))
+    remainingOffset -= (row - lastAnimatingRow) * YearListCell.GetHeight();
+    if (remainingOffset <= (rowHeight - YearListCell.GetHeight()))
       return row;
-    remainingOffset -= rowHeight - YearListCell.Height;
+    remainingOffset -= rowHeight - YearListCell.GetHeight();
     lastAnimatingRow = row;
   }
-  return lastAnimatingRow + Math.floor(remainingOffset / YearListCell.Height);
+  return lastAnimatingRow + Math.floor(remainingOffset / YearListCell.GetHeight());
 };
 
 /**
@@ -2415,16 +2437,16 @@ YearListView.prototype.rowAtScrollOffset = function(scrollOffset) {
  * @override
  */
 YearListView.prototype.scrollOffsetForRow = function(row) {
-  var scrollOffset = row * YearListCell.Height;
+  var scrollOffset = row * YearListCell.GetHeight();
   for (var i = 0; i < this._animatingRows.length; ++i) {
     var animatingRow = this._animatingRows[i];
     if (animatingRow >= row)
       break;
     var animator = this._runningAnimators[animatingRow];
-    scrollOffset += animator.currentValue - YearListCell.Height;
+    scrollOffset += animator.currentValue - YearListCell.GetHeight();
   }
   if (this.selectedRow > -1 && this.selectedRow < row && !this._runningAnimators[this.selectedRow]) {
-    scrollOffset += YearListCell.SelectedHeight - YearListCell.Height;
+    scrollOffset += YearListCell.GetSelectedHeight() - YearListCell.GetHeight();
   }
   return scrollOffset;
 };
@@ -2459,9 +2481,9 @@ YearListView.prototype.prepareNewCell = function(row) {
   if (animator)
     cell.setHeight(animator.currentValue);
   else if (row === this.selectedRow)
-    cell.setHeight(YearListCell.SelectedHeight);
+    cell.setHeight(YearListCell.GetSelectedHeight());
   else
-    cell.setHeight(YearListCell.Height);
+    cell.setHeight(YearListCell.GetHeight());
   return cell;
 };
 
@@ -2507,7 +2529,7 @@ YearListView.prototype.deselectWithoutAnimating = function() {
   var selectedCell = this._cells[this.selectedRow];
   if (selectedCell) {
     selectedCell.setSelected(false);
-    selectedCell.setHeight(YearListCell.Height);
+    selectedCell.setHeight(YearListCell.GetHeight());
   }
   this.selectedRow = ListView.NoSelection;
   this.setNeedsUpdateCells(true);
@@ -2549,7 +2571,7 @@ YearListView.prototype.selectWithoutAnimating = function(row) {
     var selectedCell = this._cells[this.selectedRow];
     if (selectedCell) {
       selectedCell.setSelected(true);
-      selectedCell.setHeight(YearListCell.SelectedHeight);
+      selectedCell.setHeight(YearListCell.GetSelectedHeight());
     }
     var month = this.highlightedMonth ? this.highlightedMonth.month : 0;
     this.highlightMonth(new Month(this.selectedRow + 1, month));
@@ -2622,7 +2644,7 @@ YearListView.prototype._moveHighlightTo = function(month) {
   this.select(this.highlightedMonth.year - 1);
 
   this.dispatchEvent(YearListView.EventTypeYearListViewDidSelectMonth, this, month);
-  this.scrollView.scrollTo(this.selectedRow * YearListCell.Height, true);
+  this.scrollView.scrollTo(this.selectedRow * YearListCell.GetHeight(), true);
   return true;
 };
 
@@ -2653,10 +2675,10 @@ YearListView.prototype.onKeyDown = function(event) {
       eventHandled = true;
     }
   } else if (key == 'ArrowUp') {
-    this.scrollView.scrollBy(-YearListCell.Height, true);
+    this.scrollView.scrollBy(-YearListCell.GetHeight(), true);
     eventHandled = true;
   } else if (key == 'ArrowDown') {
-    this.scrollView.scrollBy(YearListCell.Height, true);
+    this.scrollView.scrollBy(YearListCell.GetHeight(), true);
     eventHandled = true;
   } else if (key == 'PageUp') {
     this.scrollView.scrollBy(-this.scrollView.height(), true);
@@ -2704,7 +2726,7 @@ MonthPopupView.prototype.show = function(initialMonth, calendarTableRect) {
   this.isVisible = true;
   document.body.appendChild(this.element);
   this.yearListView.setWidth(calendarTableRect.width - 2);
-  this.yearListView.setHeight(YearListView.Height);
+  this.yearListView.setHeight(YearListView.GetHeight());
   if (global.params.isLocaleRTL)
     this.yearListView.element.style.right = calendarTableRect.x + 'px';
   else
@@ -3913,7 +3935,7 @@ CalendarPicker.prototype.adjustHeight = function() {
   var numberOfRows = global.params.isFormControlsRefreshEnabled ? CalendarPicker.VisibleRowsRefresh : rowForLastDayInMonth - rowForFirstDayInMonth + 1;
   var calendarTableViewHeight =
       CalendarTableHeaderView.GetHeight() + numberOfRows * DayCell.GetHeight() + CalendarTableView.GetBorderWidth() * 2 + CalendarTableView.GetTodayButtonHeight();
-  var height = (this.monthPopupView.isVisible ? YearListView.Height : calendarTableViewHeight) +
+  var height = (this.monthPopupView.isVisible ? YearListView.GetHeight() : calendarTableViewHeight) +
       CalendarHeaderView.Height + CalendarHeaderView.BottomMargin + CalendarPicker.Padding * 2 +
       CalendarPicker.BorderWidth * 2;
   this.setHeight(height);

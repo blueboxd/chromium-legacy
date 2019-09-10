@@ -15,6 +15,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/numerics/ranges.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -449,7 +450,7 @@ int InternalAuthVerification::get_verification_window_ticks() {
   if (verification_window_seconds_ > 0)
     candidate = verification_window_seconds_ *
         base::Time::kMicrosecondsPerSecond / kTickUs;
-  return std::max(1, std::min(candidate, kVerificationWindowTicks));
+  return base::ClampToRange(candidate, 1, kVerificationWindowTicks);
 }
 
 int InternalAuthVerification::verification_window_seconds_ = 0;

@@ -70,7 +70,7 @@ class PermissionRequestNotificationAndroidTest : public testing::Test {
         std::make_unique<NotificationDisplayServiceTester>(profile_);
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile* profile_;
   TestingProfileManager profile_manager_;
   content::TestWebContentsFactory test_web_contents_factory_;

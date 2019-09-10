@@ -35,6 +35,7 @@
 #include "content/renderer/render_widget.h"
 #include "content/renderer/resource_timing_info_conversions.h"
 #include "ipc/ipc_message_macros.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "printing/buildflags/buildflags.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
@@ -946,9 +947,10 @@ blink::AssociatedInterfaceProvider*
 RenderFrameProxy::GetRemoteAssociatedInterfaces() {
   if (!remote_associated_interfaces_) {
     ChildThreadImpl* thread = ChildThreadImpl::current();
-    blink::mojom::AssociatedInterfaceProviderAssociatedPtr remote_interfaces;
+    mojo::PendingAssociatedRemote<blink::mojom::AssociatedInterfaceProvider>
+        remote_interfaces;
     thread->GetRemoteRouteProvider()->GetRoute(
-        routing_id_, mojo::MakeRequest(&remote_interfaces));
+        routing_id_, remote_interfaces.InitWithNewEndpointAndPassReceiver());
     remote_associated_interfaces_ =
         std::make_unique<blink::AssociatedInterfaceProvider>(
             std::move(remote_interfaces));

@@ -295,6 +295,10 @@ void ClipboardProvider::ConstructImageMatchCallback(
 
   match.transition = ui::PAGE_TRANSITION_GENERATED;
 
+  field_trial_triggered_ = true;
+  field_trial_triggered_in_session_ = true;
+  done_ = true;
+
   // Some users may be in a counterfactual study arm in which we perform all
   // necessary work but do not forward the autocomplete matches.
   bool in_counterfactual_group = base::GetFieldTrialParamByFeatureAsBool(
@@ -304,9 +308,6 @@ void ClipboardProvider::ConstructImageMatchCallback(
     AddCreatedMatchWithTracking(input, match, clipboard_contents_age);
     listener_->OnProviderUpdate(true);
   }
-  field_trial_triggered_ = true;
-  field_trial_triggered_in_session_ = true;
-  done_ = true;
 }
 
 void ClipboardProvider::AddProviderInfo(ProvidersInfo* provider_info) const {

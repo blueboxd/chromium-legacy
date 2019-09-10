@@ -334,8 +334,9 @@ void SkiaOutputSurfaceImpl::SkiaSwapBuffers(OutputSurfaceFrame frame) {
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
   auto callback =
       base::BindOnce(&SkiaOutputSurfaceImplOnGpu::SwapBuffers,
-                     base::Unretained(impl_on_gpu_.get()), std::move(frame));
-  ScheduleGpuTask(std::move(callback), std::vector<gpu::SyncToken>());
+                     base::Unretained(impl_on_gpu_.get()), std::move(frame),
+                     std::move(deferred_framebuffer_draw_closure_));
+  ScheduleGpuTask(std::move(callback), std::move(resource_sync_tokens_));
 }
 
 void SkiaOutputSurfaceImpl::ScheduleOutputSurfaceAsOverlay(
@@ -373,7 +374,7 @@ gpu::SyncToken SkiaOutputSurfaceImpl::SubmitPaint(
     base::OnceClosure on_finished) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(recorder_);
-
+  DCHECK(!deferred_framebuffer_draw_closure_);
   // If current_render_pass_id_ is not 0, we are painting a render pass.
   // Otherwise we are painting a frame.
   bool painting_render_pass = current_render_pass_id_ != 0;
@@ -397,7 +398,6 @@ gpu::SyncToken SkiaOutputSurfaceImpl::SubmitPaint(
 
   // impl_on_gpu_ is released on the GPU thread by a posted task from
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
-  base::OnceCallback<void()> callback;
   if (painting_render_pass) {
     auto it = render_pass_image_cache_.find(current_render_pass_id_);
     if (it != render_pass_image_cache_.end()) {
@@ -407,13 +407,14 @@ gpu::SyncToken SkiaOutputSurfaceImpl::SubmitPaint(
       it->second->clear_image();
     }
     DCHECK(!on_finished);
-    callback = base::BindOnce(
+    auto closure = base::BindOnce(
         &SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass,
         base::Unretained(impl_on_gpu_.get()), current_render_pass_id_,
         std::move(ddl), std::move(images_in_current_paint_),
         resource_sync_tokens_, sync_fence_release_);
+    ScheduleGpuTask(std::move(closure), std::move(resource_sync_tokens_));
   } else {
-    callback = base::BindOnce(
+    deferred_framebuffer_draw_closure_ = base::BindOnce(
         &SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame,
         base::Unretained(impl_on_gpu_.get()), std::move(ddl),
         std::move(overdraw_ddl), std::move(images_in_current_paint_),
@@ -422,7 +423,6 @@ gpu::SyncToken SkiaOutputSurfaceImpl::SubmitPaint(
     draw_rectangle_.reset();
   }
   images_in_current_paint_.clear();
-  ScheduleGpuTask(std::move(callback), std::move(resource_sync_tokens_));
   current_render_pass_id_ = 0;
   return sync_token;
 }
@@ -499,8 +499,9 @@ void SkiaOutputSurfaceImpl::CopyOutput(
 
   auto callback = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::CopyOutput,
                                  base::Unretained(impl_on_gpu_.get()), id,
-                                 geometry, color_space, std::move(request));
-  ScheduleGpuTask(std::move(callback), std::vector<gpu::SyncToken>());
+                                 geometry, color_space, std::move(request),
+                                 std::move(deferred_framebuffer_draw_closure_));
+  ScheduleGpuTask(std::move(callback), std::move(resource_sync_tokens_));
 }
 
 void SkiaOutputSurfaceImpl::SetCapabilitiesForTesting(

@@ -32,6 +32,8 @@ class SafeBrowsingApiHandlerBridge : public SafeBrowsingApiHandler {
                      const GURL& url,
                      const SBThreatTypeSet& threat_types) override;
 
+  bool StartCSDAllowlistCheck(const GURL& url) override;
+
  private:
   // Creates the |j_api_handler_| if it hasn't been already.  If the API is not
   // supported, this will return false and j_api_handler_ will remain nullptr.

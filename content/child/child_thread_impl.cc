@@ -912,19 +912,21 @@ void ChildThreadImpl::EnsureConnected() {
 
 void ChildThreadImpl::GetRoute(
     int32_t routing_id,
-    blink::mojom::AssociatedInterfaceProviderAssociatedRequest request) {
-  associated_interface_provider_bindings_.AddBinding(
-      this, std::move(request), routing_id);
+    mojo::PendingAssociatedReceiver<blink::mojom::AssociatedInterfaceProvider>
+        receiver) {
+  associated_interface_provider_receivers_.Add(this, std::move(receiver),
+                                               routing_id);
 }
 
 void ChildThreadImpl::GetAssociatedInterface(
     const std::string& name,
-    blink::mojom::AssociatedInterfaceAssociatedRequest request) {
+    mojo::PendingAssociatedReceiver<blink::mojom::AssociatedInterface>
+        receiver) {
   int32_t routing_id =
-      associated_interface_provider_bindings_.dispatch_context();
+      associated_interface_provider_receivers_.current_context();
   Listener* route = router_.GetRoute(routing_id);
   if (route)
-    route->OnAssociatedInterfaceRequest(name, request.PassHandle());
+    route->OnAssociatedInterfaceRequest(name, receiver.PassHandle());
 }
 
 bool ChildThreadImpl::IsInBrowserProcess() const {

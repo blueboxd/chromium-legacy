@@ -20,7 +20,7 @@
 <translation id="1087788677726983142">Απόκρυψη φίλτρων ροής συμβάντων</translation>
 <translation id="1088219014394087294">Δεν υπάρχουν επικεφαλίδες.</translation>
 <translation id="1106741348836243114">Ενεργοποίηση ή απενεργοποίηση των ηχητικών σχολίων (ηχητικά μηνύματα).</translation>
-<translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
+<translation id="1120743664840974483">{"α": "Αστέρι", "β": "Βάτραχος", "γ": "Γάτα", "δ": "Δέντρο", "ε": "Ελέφαντας", "ζ": "Ζάρι", "η": "Ήλιος", "θ": "Θησαυρός", "ι": "Ιππότης", "κ": "Κότα","λ": "Λαγός", "μ": "Μήλο", "ν": "Νάνος", "ξ": "Ξιφίας", "ο": "Ομπρέλα","π": "Πάπια", "ρ": "Ρόδι", "σ": "Σαλιγκάρι", "τ": "Τρένο", "υ": "Υποβρύχιο", "φ": "Φεγγάρι", "χ": "Χελιδόνι", "ψ": "Ψάρι","ω": "Ώρα"}</translation>
 <translation id="1120938014254001895">Σύρετε δύο δάκτυλα προς τα πάνω</translation>
 <translation id="1124771028211010580">Το τρέχον στυλ προβολής είναι η παράθεση.</translation>
 <translation id="1126928665165112660">Δεν είναι πλάγια γραφή</translation>
@@ -207,7 +207,6 @@
 <translation id="257674075312929031">Ομάδα</translation>
 <translation id="2582407057977008361">Ετικέτα "εκτός" (aside)</translation>
 <translation id="2592212930811759050">Πατήστε δύο φορές για να ξεκινήσετε την επεξεργασία</translation>
-<translation id="2606210917827248971">με {COUNT,plural, =1{# στοιχείο}other{# στοιχεία}}</translation>
 <translation id="2614981083756825552">Διάταξη Math ML</translation>
 <translation id="2624431853467395961">Άνοιγμα λειτουργίας εκμάθησης</translation>
 <translation id="2626530649491650971">με δυνατότητα κλικ</translation>
@@ -391,7 +390,6 @@
 <translation id="3781428340399460090">Έντονο ροζ</translation>
 <translation id="3783725005098956899">Εμφάνιση αρχείου καταγραφής</translation>
 <translation id="3793710123303304873">Έξοδος από το παράθυρο διαλόγου.</translation>
-<translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">Λίστα αυτόματης συμπλήρωσης</translation>
 <translation id="3810838688059735925">Βίντεο</translation>
 <translation id="3813387282697781382">Ανοιχτό κοραλλί</translation>

@@ -11,6 +11,7 @@
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/ranges.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -23,14 +24,6 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
-
-namespace {
-
-inline float Clamp(float value, float low, float high) {
-  return std::min(high, std::max(value, low));
-}
-
-}  // namespace
 
 // static
 TabScrubber* TabScrubber::GetInstance() {
@@ -289,8 +282,9 @@ void TabScrubber::UpdateSwipeX(float x_offset) {
   // Each added tab introduces a reduction of 2% in |x_offset|, with a value of
   // one fourth of |x_offset| as the minimum (i.e. we need 38 tabs to reach
   // that minimum reduction).
-  swipe_x_ += Clamp(x_offset - (tab_strip_->tab_count() * 0.02f * x_offset),
-                    0.25f * x_offset, x_offset);
+  swipe_x_ += base::ClampToRange(
+      x_offset - (tab_strip_->tab_count() * 0.02f * x_offset), 0.25f * x_offset,
+      x_offset);
 
   // In an RTL layout, everything is mirrored, i.e. the index of the first tab
   // (with the smallest X mirrored co-ordinates) is actually the index of the

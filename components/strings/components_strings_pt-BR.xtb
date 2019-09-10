@@ -306,7 +306,6 @@
 <translation id="2479410451996844060">URL de pesquisa inválido.</translation>
 <translation id="2482878487686419369">Notificações</translation>
 <translation id="248348093745724435">Políticas do computador</translation>
-<translation id="2485387744899240041">Nomes de usuário para seu dispositivo e navegador</translation>
 <translation id="2491120439723279231">O certificado do servidor contém erros.</translation>
 <translation id="2493640343870896922">Letter Plus</translation>
 <translation id="2495083838625180221">Analisador JSON</translation>
@@ -589,6 +588,7 @@
 <translation id="4103249731201008433">O número de série do dispositivo é inválido</translation>
 <translation id="410351446219883937">Reprodução automática</translation>
 <translation id="4103763322291513355">Visite &lt;strong&gt;chrome://policy&lt;/strong&gt; para ver a lista de URLs adicionados à lista de proibições e outras políticas aplicadas pelo administrador do seu sistema.</translation>
+<translation id="4108231218301530806">Usar impressão digital para verificar o cartão na próxima vez.</translation>
 <translation id="4110652170750985508">Analisar seu pagamento</translation>
 <translation id="4112140312785995938">Retroceder</translation>
 <translation id="4116663294526079822">Sempre permitir neste site</translation>
@@ -872,7 +872,6 @@
 <translation id="5565735124758917034">Ativo</translation>
 <translation id="5570825185877910964">Proteger conta</translation>
 <translation id="5571083550517324815">Não é possível fazer a retirada nesse endereço. Tente um endereço diferente.</translation>
-<translation id="5571347317547569613">({NUM_COOKIES,plural, =1{1 em uso}one{# em uso}other{# em uso}})</translation>
 <translation id="5580958916614886209">Verifique o mês de validade e tente novamente</translation>
 <translation id="5586446728396275693">Nenhum endereço salvo</translation>
 <translation id="5595485650161345191">Editar endereço</translation>

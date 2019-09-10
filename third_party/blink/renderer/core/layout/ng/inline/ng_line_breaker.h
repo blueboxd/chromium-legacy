@@ -163,6 +163,10 @@ class CORE_EXPORT NGLineBreaker {
       const NGInlineItem&,
       LayoutUnit percentage_resolution_block_size_for_min_max,
       NGLineInfo*);
+  bool IsAtomicInlineAfterNoBreakSpace(
+      const NGInlineItemResult& item_result) const;
+  bool IsAtomicInlineBeforeNoBreakSpace(
+      const NGInlineItemResult& item_result) const;
   void HandleFloat(const NGInlineItem&,
                    Vector<LayoutObject*>* out_floats_for_min_max,
                    NGLineInfo*);

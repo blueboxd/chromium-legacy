@@ -3,7 +3,6 @@
 <translationbundle lang="bg">
 <translation id="1036550831858290950">Запазване на текущия раздел като отметка</translation>
 <translation id="104962181688258143">Отваряне на приложението Файлове</translation>
-<translation id="1098295134904615027">Активиране на виртуалния работен кът отдясно</translation>
 <translation id="1122869341872663659">Показват се <ph name="N" /> резултата от търсенето на „<ph name="QUERY" />“</translation>
 <translation id="1195667586424773550">Преместете с плъзгане връзката в адресната лента на раздела</translation>
 <translation id="1204450209689312104">Отваряне на нов прозорец в режим „инкогнито“</translation>
@@ -25,7 +24,6 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">Добавяне на www. и .com към въведеното в адресната лента и отваряне на съответната страница</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> и след това <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> или <ph name="LEFT" /></translation>
-<translation id="1929866390202038233">Активиране на виртуалния работен кът отляво</translation>
 <translation id="1996162290124031907">Към следващия раздел</translation>
 <translation id="2010818616644390445">Преминаване към последния раздел в прозореца</translation>
 <translation id="2040706009561734834">Отваряне/затваряне на стартовия панел</translation>
@@ -64,7 +62,6 @@
 <translation id="3105917916468784889">Създаване на екранна снимка</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Преместване на фокуса върху адресната лента</translation>
-<translation id="3165428420335997629">Създаване на нов виртуален работен кът</translation>
 <translation id="3256109297135787951">Премахване на фокуса от елемент в лавицата</translation>
 <translation id="3288816184963444640">Затваряне на текущия прозорец</translation>
 <translation id="3407560819924487926">Показване на диспечера на задачите</translation>
@@ -181,7 +178,6 @@
 <translation id="8234414138295101081">Завъртане на екрана на 90 градуса</translation>
 <translation id="8241665785394195545">дясна квадратна скоба</translation>
 <translation id="8264941229485248811">Показване или скриване на панела за проверка в инструментите за програмисти</translation>
-<translation id="8355937569537581904">Премахване на текущия виртуален работен кът</translation>
 <translation id="836869401750819675">Отваряне на страницата „Изтегляния“</translation>
 <translation id="8388247778047144397">Преместете с плъзгане връзката до празен участък на лентата с раздели</translation>
 <translation id="8389638407792712197">Отваряне на нов прозорец</translation>

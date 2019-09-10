@@ -73,6 +73,8 @@ class VIZ_SERVICE_EXPORT SoftwareOutputDevice {
   // completes.
   virtual void OnSwapBuffers(SwapBuffersCallback swap_ack_callback);
 
+  virtual int MaxFramesPending() const;
+
  protected:
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   SoftwareOutputDeviceClient* client_ = nullptr;

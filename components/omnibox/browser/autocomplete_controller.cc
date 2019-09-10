@@ -369,8 +369,11 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
         name, 1, 1000, 50, base::Histogram::kUmaTargetedHistogramFlag);
     counter->Add(static_cast<int>((end_time - start_time).InMilliseconds()));
   }
-  in_start_ = false;
+
+  // This will usually set |done_| to false, unless all of the providers are
+  // are finished after the synchronous pass we just completed.
   CheckIfDone();
+
   // The second true forces saying the default match has changed.
   // This triggers the edit model to update things such as the inline
   // autocomplete state.  In particular, if the user has typed a key
@@ -385,6 +388,8 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
   // cleared or changed.  Even if the default match hasn't changed, we
   // need the edit model to update the display.
   UpdateResult(false, true);
+
+  in_start_ = false;
 
   // Omnibox has dependencies that may be lazily initialized. This metric will
   // help tracking regression on the first use.
@@ -464,10 +469,20 @@ void AutocompleteController::ExpireCopiedEntries() {
 }
 
 void AutocompleteController::OnProviderUpdate(bool updated_matches) {
+  // Providers should only call this method during the asynchronous pass.
+  // There's no reason to call this during the synchronous pass, since we
+  // perform these operations anyways after all providers are started.
+  //
+  // This is not a DCHECK, because in the unusual case that a provider calls an
+  // asynchronous method, and that method early exits by calling the callback
+  // immediately, it's not necessarily a programmer error. We should just no-op.
+  if (in_start_)
+    return;
+
   CheckIfDone();
   // Multiple providers may provide synchronous results, so we only update the
   // results if we're not in Start().
-  if (!in_start_ && (updated_matches || done_))
+  if (updated_matches || done_)
     UpdateResult(false, false);
 }
 

@@ -88,7 +88,7 @@ class InputInjectorEvdevTest : public testing::Test {
 
   InputInjectorEvdev injector_;
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   base::RunLoop run_loop_;
 
  private:

@@ -18,7 +18,7 @@ enum LogLevel {
 // ones in libc (mostly from string.h).
 namespace util {
 
-constexpr LogLevel kLogLevel = DEBUG;
+constexpr LogLevel kLogLevel = INFO;
 
 extern const char* kLogPrefixes[];
 

@@ -238,11 +238,17 @@ var callGCrWebFunction_ = function(functionPath, parameters) {
 }
 
 /**
- * Decrypts and executes the function specified in |payload|.
- * @param {!string} payload The encrypted message payload.
- * @param {!string} iv The initialization vector used to encrypt the |payload|.
+ * Decrypts and executes the function specified in |functionPayload|.
+ * @param {Object} encryptedMessageDetails JSON containing encrypted
+ * information about the message and the initialization vector to decrypt
+ * the information.
+ * @param {!Object} encryptedFunctionDetails JSON containing encrypted
+ * information about the function and its parameters and the initialization
+ * vector to decrypt the information. If null, won't execute any call, but
+ * will respond to the native call if specified in |encryptedMessageDetails|.
  */
-var executeMessage_ = function(payload, iv) {
+var executeMessage_ = function(encryptedMessageDetails,
+  encryptedFunctionDetails) {
   if (!frameSymmetricKey_) {
     // Payload cannot be decrypted without a key. This message could be spam or
     // sent by the native application by mistake.
@@ -250,43 +256,84 @@ var executeMessage_ = function(payload, iv) {
   }
 
   // Decode the base64 payload.
-  var encryptedFunctionArray =
-      new Uint8Array(Array.from(atob(payload)).map(function(a) {
+  var encryptedMessageArray = new Uint8Array(Array.from(
+      atob(encryptedMessageDetails['payload'])).map(function(a) {
     return a.charCodeAt(0);
   }));
 
   // Decode the base64 initialization buffer.
-  var ivbuf = new Uint8Array(Array.from(atob(iv)).map(function(a) {
+  var messageIvbuf = new Uint8Array(Array.from(
+    atob(encryptedMessageDetails['iv'])).map(function(a) {
     return a.charCodeAt(0);
   }));
-
-  var algorithm = {'name': 'AES-GCM', iv: ivbuf};
+  var messageAlgorithm = {'name': 'AES-GCM', iv: messageIvbuf};
   getFrameSymmetricKey_(function(frameKey) {
-    window.crypto.subtle.decrypt(algorithm, frameKey, encryptedFunctionArray)
-        .then(function(decrypted) {
-      var callJSON = new TextDecoder().decode(new Uint8Array(decrypted));
-      var callDict = JSON.parse(callJSON);
+    window.crypto.subtle.decrypt(
+      messageAlgorithm, frameKey, encryptedMessageArray)
+      .then(function(decryptedMessagePayload) {
+      var messageJSONString = new TextDecoder().decode(
+        new Uint8Array(decryptedMessagePayload));
+      var messageDict = JSON.parse(messageJSONString);
 
       // Verify that message id is valid.
-      if (!Number.isInteger(callDict['messageId']) ||
-          callDict['messageId'] <= lastReceivedMessageId_) {
+      if (!Number.isInteger(messageDict['messageId']) ||
+          messageDict['messageId'] <= lastReceivedMessageId_) {
         return;
       }
 
-      // Check that a function name and parameters are specified.
-      if (typeof callDict['functionName'] !== 'string' ||
-          callDict['functionName'].length < 1 ||
-          !Array.isArray(callDict['parameters'])) {
+      lastReceivedMessageId_ = messageDict['messageId'];
+
+      // Return early if the function payload was dropped.
+      if (!encryptedFunctionDetails) {
+        if (typeof messageDict['replyWithResult'] === 'boolean' &&
+          messageDict['replyWithResult']) {
+          replyWithResult_(messageDict['messageId'], null);
+        }
         return;
       }
 
-      lastReceivedMessageId_ = callDict['messageId'];
-      var result =
-          callGCrWebFunction_(callDict['functionName'], callDict['parameters']);
-      if (typeof callDict['replyWithResult'] === 'boolean' &&
-          callDict['replyWithResult']) {
-        replyWithResult_(callDict['messageId'], result);
-      }
+      // Decode the base64 payload.
+      var encryptedFunctionArray = new Uint8Array(Array.from(
+        atob(encryptedFunctionDetails['payload'])).map(
+        function(a) {
+          return a.charCodeAt(0);
+      }));
+
+      // Decode the base64 initialization buffer.
+      var functionIvbuf = new Uint8Array(Array.from(
+        atob(encryptedFunctionDetails['iv'])).map(
+        function(a) {
+          return a.charCodeAt(0);
+      }));
+
+      var additionalData = new Uint8Array(Array.from(
+        messageDict['messageId'].toString()).map(
+        function(a) {
+          return a.charCodeAt(0);
+      }));
+      var functionAlgorithm = {'name': 'AES-GCM',
+       iv: functionIvbuf,
+       additionalData: additionalData};
+      window.crypto.subtle.decrypt(
+        functionAlgorithm, frameKey, encryptedFunctionArray)
+        .then(function(decryptedFunctionPayload) {
+        var functionJSONPayload = new TextDecoder().decode(
+          new Uint8Array(decryptedFunctionPayload));
+        var functionDict = JSON.parse(functionJSONPayload);
+
+        let functionName = functionDict['functionName'];
+        let parameters = functionDict['parameters'];
+
+        var result = null;
+        if (typeof functionName === 'string' && functionName.length >= 1
+         && Array.isArray(parameters)) {
+            result = callGCrWebFunction_(functionName, parameters);
+        }
+        if (typeof messageDict['replyWithResult'] === 'boolean'
+         && messageDict['replyWithResult']) {
+          replyWithResult_(messageDict['messageId'], result);
+        }
+      });
     });
   });
 };
@@ -316,19 +363,24 @@ __gCrWeb.message['getFrameId'] = function() {
  * Routes an encrypted message to the targeted frame. Once the target frame is
  * found, the |payload| will be decrypted and executed. This function is called
  * by the native code.
- * @param {!string} payload The encrypted message payload.
- * @param {!string} iv The initialization vector used to encrypt the |payload|.
+ * @param {!Object} encryptedMessageDetails  JSON representing a dictionary
+ * containing encrypted information about the message and the initialization
+ * vector to decrypt the information.
+ * @param {!Object} encryptedFunctionDetails JSON representing a dictionary
+ * containing encrypted information about the function to call and the
+ * parameters to pass and the initialization vector to decrypt the information.
  * @param {!string} target_frame_id The |frameId_| of the frame which should
  *                  process the |payload|.
  */
-__gCrWeb.message['routeMessage'] = function(payload, iv, target_frame_id) {
+__gCrWeb.message['routeMessage'] = function(encryptedMessageDetails,
+  encryptedFunctionDetails, target_frame_id) {
   if (!isFrameMessagingSupported_()) {
     // API is unsupported.
     return;
   }
 
   if (target_frame_id === __gCrWeb.message['getFrameId']()) {
-    executeMessage_(payload, iv);
+    executeMessage_(encryptedMessageDetails, encryptedFunctionDetails);
     return;
   }
 
@@ -337,8 +389,8 @@ __gCrWeb.message['routeMessage'] = function(payload, iv, target_frame_id) {
     window.frames[i].postMessage(
       {
         type: 'org.chromium.encryptedMessage',
-        payload: payload,
-        iv: iv,
+        message_payload: encryptedMessageDetails,
+        function_payload: encryptedFunctionDetails,
         target_frame_id: target_frame_id
       },
       '*'

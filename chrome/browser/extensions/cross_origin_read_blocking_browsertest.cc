@@ -1245,11 +1245,8 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
   subresource_request.WaitForRequest();
   const char* expected_sec_fetch_site = "same-origin";
   if (IsExtensionAllowlisted()) {
-    expected_sec_fetch_site = "cross-site";
-  } else {
-    // TODO(lukasza): https://crbug.com/998247: Once the default factory uses
-    // request_initiator=website, we should get the desired behavior below -
-    // 'same-origin'.
+    // TODO(lukasza): https://crbug.com/998247: Even allowlisted extensions
+    // should correctly indicate `Sec-Fetch-Site: same-origin`.
     expected_sec_fetch_site = "cross-site";
   }
   EXPECT_THAT(subresource_request.http_request()->headers,

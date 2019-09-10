@@ -10,6 +10,7 @@
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_picture_layer_impl.h"
+#include "cc/test/property_tree_test_utils.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/tiles/tile_priority.h"
 #include "cc/trees/layer_tree_frame_sink.h"
@@ -41,7 +42,7 @@ class TestLayerTreeHostBase : public testing::Test {
   void SetupDefaultTrees(const gfx::Size& layer_bounds);
   void SetupTrees(scoped_refptr<RasterSource> pending_raster_source,
                   scoped_refptr<RasterSource> active_raster_source);
-  void SetupPendingTree(scoped_refptr<RasterSource> raster_source);
+  void SetupPendingTree(scoped_refptr<RasterSource> raster_source = nullptr);
   void SetupPendingTree(
       scoped_refptr<RasterSource> raster_source,
       const gfx::Size& tile_size,
@@ -49,7 +50,6 @@ class TestLayerTreeHostBase : public testing::Test {
       Layer::LayerMaskType mask_type = Layer::LayerMaskType::NOT_MASK);
   void ActivateTree();
   void PerformImplSideInvalidation();
-  void RebuildPropertyTreesOnPendingTree();
 
   FakeLayerTreeHostImpl* host_impl() const { return host_impl_.get(); }
   TaskGraphRunner* task_graph_runner() const {
@@ -61,7 +61,38 @@ class TestLayerTreeHostBase : public testing::Test {
   FakePictureLayerImpl* pending_layer() const { return pending_layer_; }
   FakePictureLayerImpl* active_layer() const { return active_layer_; }
   FakePictureLayerImpl* old_pending_layer() const { return old_pending_layer_; }
-  int layer_id() const { return id_; }
+
+  // Clear all layer trees and property trees for repeated testing.
+  void ResetTrees();
+
+  template <typename T, typename... Args>
+  T* AddLayer(LayerTreeImpl* layer_tree_impl, Args&&... args) {
+    std::unique_ptr<T> layer = T::Create(layer_tree_impl, next_layer_id_++,
+                                         std::forward<Args>(args)...);
+    T* result = layer.get();
+    layer_tree_impl->root_layer_for_testing()->test_properties()->AddChild(
+        std::move(layer));
+    return result;
+  }
+
+  template <typename T, typename... Args>
+  T* AddMaskLayer(LayerTreeImpl* layer_tree_impl,
+                  LayerImpl* masked_layer,
+                  Args&&... args) {
+    std::unique_ptr<T> mask = T::Create(layer_tree_impl, next_layer_id_++,
+                                        std::forward<Args>(args)...);
+    T* result = mask.get();
+    masked_layer->test_properties()->SetMaskLayer(std::move(mask));
+    CopyProperties(masked_layer, result);
+    auto* masked_effect = GetEffectNode(masked_layer);
+    masked_effect->render_surface_reason = RenderSurfaceReason::kMask;
+    masked_effect->mask_layer_id = result->id();
+    masked_effect->is_masked = true;
+    GetPropertyTrees(masked_layer)->effect_tree.AddMaskLayerId(result->id());
+    return result;
+  }
+
+  int root_id() const { return root_id_; }
 
  private:
   void SetInitialTreePriority();
@@ -75,8 +106,7 @@ class TestLayerTreeHostBase : public testing::Test {
   FakePictureLayerImpl* active_layer_;
   FakePictureLayerImpl* old_pending_layer_;
   const int root_id_;
-  const int page_scale_id_;
-  const int id_;
+  int next_layer_id_;
 };
 
 }  // namespace cc

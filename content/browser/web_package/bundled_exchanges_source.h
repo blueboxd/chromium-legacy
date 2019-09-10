@@ -5,10 +5,16 @@
 #ifndef CONTENT_BROWSER_WEB_PACKAGE_BUNDLED_EXCHANGES_SOURCE_H_
 #define CONTENT_BROWSER_WEB_PACKAGE_BUNDLED_EXCHANGES_SOURCE_H_
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
+
+namespace base {
+class File;
+}  // namespace base
 
 namespace content {
 
@@ -18,9 +24,11 @@ class CONTENT_EXPORT BundledExchangesSource {
   static std::unique_ptr<BundledExchangesSource> CreateFromTrustedFileUrl(
       const GURL& url);
 
+  ~BundledExchangesSource() = default;
+
   std::unique_ptr<BundledExchangesSource> Clone() const;
 
-  ~BundledExchangesSource() = default;
+  std::unique_ptr<base::File> OpenFile() const;
 
   // A flag to represent if this source can be trusted, i.e. using the URL in
   // the BundledExchanges as the origin for the content. Otherwise, we will use

@@ -120,7 +120,7 @@
 <translation id="1521655867290435174">Google Sheets</translation>
 <translation id="1527263332363067270">Naghihintay ng koneksyon…</translation>
 <translation id="1529521330346880926">10x15 (Envelope)</translation>
-<translation id="1530707389502320859">Mukhang peke ang site na sinubukan mong bisitahin. Kung minsan, ginagaya ng mga nang-aatake ang mga site sa pamamagitan ng paggawa ng maliliit at mahirap makitang pagbabago sa URL.</translation>
+<translation id="1530707389502320859">Mukhang peke ang site na sinubukan mong bisitahin. Kung minsan, ginagaya ng mga nang-aatake ang mga site sa pamamagitan ng paggawa ng mga pagbabago sa URL na maliit at mahirap makita.</translation>
 <translation id="1531205177818805254">Exec</translation>
 <translation id="1532118530259321453">Isinasaad ng page na ito na</translation>
 <translation id="153384715582417236">'Yan na muna sa ngayon</translation>
@@ -306,7 +306,6 @@
 <translation id="2479410451996844060">Di-wastong URL ng paghahanap.</translation>
 <translation id="2482878487686419369">Mga Abiso</translation>
 <translation id="248348093745724435">Mga patakaran sa machine</translation>
-<translation id="2485387744899240041">Mga username para sa iyong device at browser</translation>
 <translation id="2491120439723279231">Naglalaman ng mga error ang certificate ng server.</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">Pang-parse ng JSON</translation>
@@ -355,7 +354,9 @@
 <translation id="2721148159707890343">Matagumpay ang kahilingan</translation>
 <translation id="2728127805433021124">Nilagdaan ang certificate ng server gamit ang mahinang algorithm ng lagda.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Magpatakbo ng Connectivity Diagnostics<ph name="END_LINK" /></translation>
-<translation id="2734544361860335147">Sa pamamagitan ng pag-enable sa mga feature na ito, puwedeng mawala ang iyong data mula sa pag-browse o makompromiso ang seguridad o privacy mo. Nalalapat ang mga naka-enable na feature sa lahat ng user ng browser na ito.</translation>
+<translation id="2734544361860335147">Sa pamamagitan ng pag-enable sa mga feature na ito, puwedeng mawala ang data sa iyong browser o
+    makompromiso ang seguridad o privacy mo. Nalalapat ang mga naka-enable na feature sa lahat
+    ng user ng browser na ito.</translation>
 <translation id="2735043616039983645">Mayroong higit sa isang pinagmulan na may magkakasalungat na value para sa patakarang ito!</translation>
 <translation id="2738330467931008676">Pumili ng Address sa Pag-pick up</translation>
 <translation id="2740531572673183784">Ok</translation>
@@ -522,7 +523,7 @@
 <translation id="3678529606614285348">Buksan ang page sa bagong Incognito window (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">Nakuha ang ulat ng pag-crash noong <ph name="CRASH_TIME" />, na-upload noong <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Impormasyon sa certificate</translation>
-<translation id="3701427423622901115">Kinilala ang pag-reset.</translation>
+<translation id="3701427423622901115">Tinanggap ang pag-reset.</translation>
 <translation id="3704162925118123524">Ang network na ginagamit mo ay maaaring humiling sa iyo na bisitahin ang page ng pag-login nito.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Naglo-load...</translation>
@@ -812,7 +813,7 @@
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5252000469029418751">C7 (Envelope)</translation>
 <translation id="5254958791078852567">E1</translation>
-<translation id="5269999699920406580">Ang mga feature na nalalapat sa buong system ay maitatakda lang ng may-ari: <ph name="OWNER_EMAIL" /></translation>
+<translation id="5269999699920406580">Ang makakapagtakda lang ng mga feature na nalalapat sa buong system ay ang may-ari: <ph name="OWNER_EMAIL" /></translation>
 <translation id="5273658854610202413">Babala: Hindi na-merge ang patakarang ito bilang tinukoy sa patakarang PolicyDictionaryMultipleSourceMergeList dahil hindi ito bahagi ng mga patakaran ng diksyunaryo na puwedeng i-merge.</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="528468243742722775">Tapusin</translation>
@@ -849,7 +850,8 @@
 <translation id="5457113250005438886">Di-wasto</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> at <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> pa}one{<ph name="CONTACT_PREVIEW" /> at <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> pa}other{<ph name="CONTACT_PREVIEW" /> at <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> pa}}</translation>
 <translation id="5470861586879999274">&amp;Gawing muli ang pag-e-edit</translation>
-<translation id="5473728911100096288">Sa pamamagitan ng pag-enable sa mga feature na ito, gagamit ka ng mga hindi na ginagamit na feature na mawawala sa mga bersyon sa hinaharap.</translation>
+<translation id="5473728911100096288">Sa pamamagitan ng pag-enable sa mga feature na ito, gagamit ka ng mga hindi na ginagamit na feature
+    na mawawala sa mga bersyon sa hinaharap.</translation>
 <translation id="5478437291406423475">B6/C4 (Envelope)</translation>
 <translation id="5481076368049295676">Maaaring subukan ng content na ito na mag-install ng mapanganib na software sa iyong device na magnanakaw o magde-delete ng impormasyon mo. <ph name="BEGIN_LINK" />Ipakita pa rin<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Magdagdag ng wastong address</translation>
@@ -872,7 +874,6 @@
 <translation id="5565735124758917034">Aktibo</translation>
 <translation id="5570825185877910964">Protektahan ang account</translation>
 <translation id="5571083550517324815">Hindi maaaring mag-pick up mula sa address na ito. Pumili ng ibang address.</translation>
-<translation id="5571347317547569613">({NUM_COOKIES,plural, =1{1 ang ginagamit}one{# ang ginagamit}other{# ang ginagamit}})</translation>
 <translation id="5580958916614886209">Tingnan ang iyong buwan ng pag-expire at subukang muli</translation>
 <translation id="5586446728396275693">Walang naka-save na address</translation>
 <translation id="5595485650161345191">Mag-edit ng address</translation>

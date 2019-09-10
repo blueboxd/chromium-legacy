@@ -18,6 +18,7 @@ class DictionaryValue;
 class Value;
 }
 
+struct Capabilities;
 class DeviceManager;
 struct Session;
 class Status;
@@ -163,5 +164,10 @@ Status ExecuteUnimplementedCommand(Session* session,
 Status ExecuteGenerateTestReport(Session* session,
                                  const base::DictionaryValue& params,
                                  std::unique_ptr<base::Value>* value);
+
+namespace internal {
+Status ConfigureHeadlessSession(Session* session,
+                                const Capabilities& capabilities);
+}  // namespace internal
 
 #endif  // CHROME_TEST_CHROMEDRIVER_SESSION_COMMANDS_H_

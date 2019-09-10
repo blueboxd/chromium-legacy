@@ -120,7 +120,7 @@
 <translation id="1521655867290435174">Google Sheets</translation>
 <translation id="1527263332363067270">Venter på forbindelse…</translation>
 <translation id="1529521330346880926">10x15 (Envelope)</translation>
-<translation id="1530707389502320859">Det website, du netop forsøgte at gå til, ser falsk ud. Svindlere efterligner nogle gange websites ved at lave små ændringer af webadressen, som er svære at se.</translation>
+<translation id="1530707389502320859">Det website, du netop forsøgte at gå til, ser ud til at være falsk. Svindlere efterligner nogle gange websites ved at lave små ændringer af webadressen, som er svære at se.</translation>
 <translation id="1531205177818805254">Exec</translation>
 <translation id="1532118530259321453">Denne side siger</translation>
 <translation id="153384715582417236">Det var det hele indtil videre</translation>
@@ -306,7 +306,6 @@
 <translation id="2479410451996844060">Ugyldig søgewebadresse.</translation>
 <translation id="2482878487686419369">Notifikationer</translation>
 <translation id="248348093745724435">Maskinpolitikker</translation>
-<translation id="2485387744899240041">Brugernavne for din enhed og browser</translation>
 <translation id="2491120439723279231">Serverens certifikat indeholder fejl.</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">Værktøj til parsing af JSON-filer</translation>
@@ -875,7 +874,6 @@
 <translation id="5565735124758917034">Aktiv</translation>
 <translation id="5570825185877910964">Beskyt konto</translation>
 <translation id="5571083550517324815">Der kan ikke afhentes på denne adresse. Vælg en anden adresse.</translation>
-<translation id="5571347317547569613">({NUM_COOKIES,plural, =1{1 i brug}one{# i brug}other{# i brug}})</translation>
 <translation id="5580958916614886209">Kontrollér, om udløbsmåneden er korrekt, og prøv igen.</translation>
 <translation id="5586446728396275693">Der er ikke nogen gemte adresser</translation>
 <translation id="5595485650161345191">Rediger adresse</translation>

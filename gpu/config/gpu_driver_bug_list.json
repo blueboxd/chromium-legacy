@@ -3332,6 +3332,19 @@
       "features": [
           "disable_vp_scaling"
       ]
+    },
+    {
+      "id": 310,
+      "description": "Context lost recovery often fails on Mali on CrOS.",
+      "cr_bugs": [992286],
+      "os": {
+        "type": "chromeos"
+      },
+      "gl_vendor": "ARM.*",
+      "gl_renderer": ".*Mali-.*",
+      "features": [
+        "exit_on_context_lost"
+      ]
     }
   ]
 }

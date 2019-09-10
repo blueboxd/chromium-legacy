@@ -469,9 +469,9 @@ void MockRenderProcessHost::BindCacheStorage(
 }
 
 void MockRenderProcessHost::BindIndexedDB(
-    blink::mojom::IDBFactoryRequest request,
+    mojo::PendingReceiver<blink::mojom::IDBFactory> receiver,
     const url::Origin& origin) {
-  idb_factory_request_ = std::move(request);
+  idb_factory_receiver_ = std::move(receiver);
 }
 
 void MockRenderProcessHost::CleanupCorbExceptionForPluginUponDestruction() {}

@@ -27,13 +27,13 @@ TEST(SurfaceLayerImplTest, Occlusion) {
 
   LayerTestCommon::LayerImplTest impl;
 
-  SurfaceLayerImpl* surface_layer_impl =
-      impl.AddChildToRoot<SurfaceLayerImpl>();
+  SurfaceLayerImpl* surface_layer_impl = impl.AddLayer<SurfaceLayerImpl>();
   surface_layer_impl->SetBounds(layer_size);
   surface_layer_impl->SetDrawsContent(true);
   viz::SurfaceId surface_id(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId);
   surface_layer_impl->SetRange(viz::SurfaceRange(base::nullopt, surface_id),
                                base::nullopt);
+  CopyProperties(impl.root_layer(), surface_layer_impl);
 
   impl.CalcDrawProps(viewport_size);
 
@@ -77,8 +77,7 @@ TEST(SurfaceLayerImplTest, Occlusion) {
 // are populated correctly if primary and fallback surfaces differ.
 TEST(SurfaceLayerImplTest, SurfaceLayerImplWithTwoDifferentSurfaces) {
   LayerTestCommon::LayerImplTest impl;
-  SurfaceLayerImpl* surface_layer_impl =
-      impl.AddChildToRoot<SurfaceLayerImpl>();
+  SurfaceLayerImpl* surface_layer_impl = impl.AddLayer<SurfaceLayerImpl>();
 
   // Populate the primary viz::SurfaceInfo.
   const viz::LocalSurfaceId kArbitraryLocalSurfaceId1(
@@ -98,6 +97,7 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplWithTwoDifferentSurfaces) {
   surface_layer_impl->SetDrawsContent(true);
   surface_layer_impl->SetRange(viz::SurfaceRange(surface_id2, surface_id1), 2u);
   surface_layer_impl->SetBackgroundColor(SK_ColorBLUE);
+  CopyProperties(impl.root_layer(), surface_layer_impl);
 
   gfx::Size viewport_size(1000, 1000);
   impl.CalcDrawProps(viewport_size);
@@ -175,11 +175,11 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplWithTwoDifferentSurfaces) {
 // correctly.
 TEST(SurfaceLayerImplTest, SurfaceLayerImplsWithDeadlines) {
   LayerTestCommon::LayerImplTest impl;
-  SurfaceLayerImpl* surface_layer_impl =
-      impl.AddChildToRoot<SurfaceLayerImpl>();
+  SurfaceLayerImpl* surface_layer_impl = impl.AddLayer<SurfaceLayerImpl>();
+  CopyProperties(impl.root_layer(), surface_layer_impl);
 
-  SurfaceLayerImpl* surface_layer_impl2 =
-      impl.AddChildToRoot<SurfaceLayerImpl>();
+  SurfaceLayerImpl* surface_layer_impl2 = impl.AddLayer<SurfaceLayerImpl>();
+  CopyProperties(impl.root_layer(), surface_layer_impl2);
 
   const viz::LocalSurfaceId kArbitraryLocalSurfaceId1(
       1, base::UnguessableToken::Create());
@@ -219,8 +219,7 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplsWithDeadlines) {
 // and fallback viz::SurfaceInfo.
 TEST(SurfaceLayerImplTest, SurfaceLayerImplWithMatchingPrimaryAndFallback) {
   LayerTestCommon::LayerImplTest impl;
-  SurfaceLayerImpl* surface_layer_impl =
-      impl.AddChildToRoot<SurfaceLayerImpl>();
+  SurfaceLayerImpl* surface_layer_impl = impl.AddLayer<SurfaceLayerImpl>();
 
   // Populate the primary viz::SurfaceId.
   const viz::LocalSurfaceId kArbitraryLocalSurfaceId1(
@@ -236,6 +235,7 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplWithMatchingPrimaryAndFallback) {
   surface_layer_impl->SetRange(viz::SurfaceRange(surface_id1), 1u);
   surface_layer_impl->SetRange(viz::SurfaceRange(surface_id1), 2u);
   surface_layer_impl->SetBackgroundColor(SK_ColorBLUE);
+  CopyProperties(impl.root_layer(), surface_layer_impl);
 
   gfx::Size viewport_size(1000, 1000);
   impl.CalcDrawProps(viewport_size);
@@ -260,10 +260,10 @@ TEST(SurfaceLayerImplTest, GetEnclosingRectInTargetSpace) {
   gfx::Size layer_size(902, 1000);
   gfx::Size viewport_size(902, 1000);
   LayerTestCommon::LayerImplTest impl;
-  SurfaceLayerImpl* surface_layer_impl =
-      impl.AddChildToRoot<SurfaceLayerImpl>();
+  SurfaceLayerImpl* surface_layer_impl = impl.AddLayer<SurfaceLayerImpl>();
   surface_layer_impl->SetBounds(layer_size);
   surface_layer_impl->SetDrawsContent(true);
+  CopyProperties(impl.root_layer(), surface_layer_impl);
 
   // A device scale of 1.33 and transform of 1.5 were chosen as they produce
   // different results when rounding at each stage, vs applying a single

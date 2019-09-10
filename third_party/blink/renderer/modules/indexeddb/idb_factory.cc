@@ -213,15 +213,15 @@ static bool IsContextValid(ExecutionContext* context) {
 
 WebIDBFactory* IDBFactory::GetFactory(ExecutionContext* execution_context) {
   if (!web_idb_factory_) {
-    mojom::blink::IDBFactoryPtrInfo web_idb_factory_host_info;
+    mojo::PendingRemote<mojom::blink::IDBFactory> web_idb_factory_host_remote;
     service_manager::InterfaceProvider* interface_provider =
         execution_context->GetInterfaceProvider();
     if (!interface_provider)
       return nullptr;
     interface_provider->GetInterface(
-        mojo::MakeRequest(&web_idb_factory_host_info));
+        web_idb_factory_host_remote.InitWithNewPipeAndPassReceiver());
     web_idb_factory_ = std::make_unique<WebIDBFactoryImpl>(
-        std::move(web_idb_factory_host_info),
+        std::move(web_idb_factory_host_remote),
         execution_context->GetTaskRunner(TaskType::kDatabaseAccess));
   }
   return web_idb_factory_.get();

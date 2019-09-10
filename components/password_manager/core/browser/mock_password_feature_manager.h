@@ -16,6 +16,7 @@ class MockPasswordFeatureManager : public PasswordFeatureManager {
   ~MockPasswordFeatureManager() override;
 
   MOCK_CONST_METHOD0(IsGenerationEnabled, bool());
+  MOCK_CONST_METHOD0(ShouldCheckReuseOnLeakDetection, bool());
 };
 
 }  // namespace password_manager

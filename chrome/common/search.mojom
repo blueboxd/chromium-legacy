@@ -165,6 +165,10 @@ interface EmbeddedSearch {
 
   // Gets autocomplete matches from the browser.
   QueryAutocomplete(string input) => (array<AutocompleteMatch> matches);
+
+  // Cancels the current autocomplete query. Clears the result set if
+  // |clear_result| is true.
+  StopAutocomplete(bool clear_result);
 };
 
 [Native]

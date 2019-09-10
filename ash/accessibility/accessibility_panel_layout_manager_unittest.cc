@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/shelf/shelf_constants.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/display/display.h"
@@ -130,7 +130,7 @@ TEST_F(AccessibilityPanelLayoutManagerTest, DisplayBoundsChange) {
 
   gfx::Rect expected_work_area = screen->GetPrimaryDisplay().bounds();
   expected_work_area.Inset(0, kDefaultPanelHeight, 0,
-                           ShelfConstants::shelf_size());
+                           ShelfConfig::Get()->shelf_size());
   EXPECT_EQ(screen->GetPrimaryDisplay().work_area(), expected_work_area);
 }
 

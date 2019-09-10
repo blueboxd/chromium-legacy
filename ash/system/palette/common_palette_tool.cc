@@ -5,7 +5,6 @@
 #include "ash/system/palette/common_palette_tool.h"
 
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/system/palette/palette_ids.h"
 #include "ash/system/palette/palette_tool_manager.h"
 #include "ash/system/tray/hover_highlight_view.h"
@@ -16,6 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/label.h"
 

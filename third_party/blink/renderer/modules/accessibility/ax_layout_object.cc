@@ -627,6 +627,11 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   DCHECK(initialized_);
 #endif
 
+  // All nodes must have an unignored parent within their tree under
+  // kRootWebArea, so force kRootWebArea to always be unignored.
+  if (role_ == ax::mojom::Role::kRootWebArea)
+    return false;
+
   if (!layout_object_) {
     if (ignored_reasons)
       ignored_reasons->push_back(IgnoredReason(kAXNotRendered));

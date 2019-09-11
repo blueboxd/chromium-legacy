@@ -146,6 +146,10 @@ void AudioThreadHangMonitor::CheckIfAudioThreadIsAlive() {
     // this object.
     if (-recent_ping_state_ >= kMaxFailedPingsCount &&
         NeverLoggedThreadHung()) {
+      LOG(ERROR)
+          << "Audio thread hang has been detected. You may need to restart "
+             "your browser. Please file a bug at https://crbug.com/new";
+
       audio_thread_status_ = ThreadStatus::kHung;
       LogHistogramThreadStatus();
 
@@ -182,6 +186,7 @@ void AudioThreadHangMonitor::SetHangActionCallbacksForTesting(
 }
 
 void AudioThreadHangMonitor::DumpWithoutCrashing() {
+  LOG(ERROR) << "Creating non-crash dump for audio thread hang.";
   if (!dump_callback_.is_null())
     dump_callback_.Run();
   else
@@ -189,6 +194,7 @@ void AudioThreadHangMonitor::DumpWithoutCrashing() {
 }
 
 void AudioThreadHangMonitor::TerminateCurrentProcess() {
+  LOG(ERROR) << "Terminating process for audio thread hang.";
   if (!terminate_process_callback_.is_null())
     terminate_process_callback_.Run();
   else

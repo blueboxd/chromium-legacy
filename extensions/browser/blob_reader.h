@@ -12,7 +12,9 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "url/gurl.h"
@@ -36,7 +38,8 @@ class BlobReader : public blink::mojom::BlobReaderClient,
   BlobReader(content::BrowserContext* browser_context,
              const std::string& blob_uuid,
              BlobReadCallback callback);
-  BlobReader(blink::mojom::BlobPtr blob, BlobReadCallback callback);
+  BlobReader(mojo::PendingRemote<blink::mojom::Blob> blob,
+             BlobReadCallback callback);
   ~BlobReader() override;
 
   void SetByteRange(int64_t offset, int64_t length);
@@ -57,7 +60,7 @@ class BlobReader : public blink::mojom::BlobReaderClient,
   void Succeeded();
 
   BlobReadCallback callback_;
-  blink::mojom::BlobPtr blob_;
+  mojo::Remote<blink::mojom::Blob> blob_;
   struct Range {
     uint64_t offset;
     uint64_t length;

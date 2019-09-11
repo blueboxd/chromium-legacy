@@ -11,6 +11,7 @@ import android.support.annotation.MainThread;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
@@ -51,7 +52,7 @@ public class NotificationSchedulerTask extends NativeBackgroundTask {
         @SchedulerTaskTime
         int taskStartTime = taskParameters.getExtras().getInt(
                 EXTRA_SCHEDULER_TASK_TIME, NO_EXTRA_SCHEDULER_TASK_TIME);
-        nativeOnStartTask(
+        NotificationSchedulerTaskJni.get().onStartTask(NotificationSchedulerTask.this,
                 Profile.getLastUsedProfile().getOriginalProfile(), taskStartTime, taskCallback);
     }
 
@@ -67,7 +68,8 @@ public class NotificationSchedulerTask extends NativeBackgroundTask {
         @SchedulerTaskTime
         int taskStartTime = taskParameters.getExtras().getInt(
                 EXTRA_SCHEDULER_TASK_TIME, NO_EXTRA_SCHEDULER_TASK_TIME);
-        return nativeOnStopTask(Profile.getLastUsedProfile().getOriginalProfile(), taskStartTime);
+        return NotificationSchedulerTaskJni.get().onStopTask(NotificationSchedulerTask.this,
+                Profile.getLastUsedProfile().getOriginalProfile(), taskStartTime);
     }
 
     /**
@@ -105,8 +107,11 @@ public class NotificationSchedulerTask extends NativeBackgroundTask {
                 ContextUtils.getApplicationContext(), TaskIds.NOTIFICATION_SCHEDULER_JOB_ID);
     }
 
-    private native void nativeOnStartTask(
-            Profile profile, @SchedulerTaskTime int schedulerTaskTime, Callback<Boolean> callback);
-    private native boolean nativeOnStopTask(
-            Profile profile, @SchedulerTaskTime int schedulerTaskTime);
+    @NativeMethods
+    interface Natives {
+        void onStartTask(NotificationSchedulerTask caller, Profile profile,
+                @SchedulerTaskTime int schedulerTaskTime, Callback<Boolean> callback);
+        boolean onStopTask(NotificationSchedulerTask caller, Profile profile,
+                @SchedulerTaskTime int schedulerTaskTime);
+    }
 }

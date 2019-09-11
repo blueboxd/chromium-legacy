@@ -1188,16 +1188,13 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
   SetupPendingTree(valid_raster_source);
 
   CreateEffectNode(pending_layer());
-  auto* mask = AddMaskLayer<FakePictureLayerImplWithRasterSourceAsMask>(
+  auto* pending_mask = AddMaskLayer<FakePictureLayerImplWithRasterSourceAsMask>(
       host_impl()->pending_tree(), pending_layer(), valid_raster_source);
-  mask->SetBounds(layer_bounds);
-  mask->SetDrawsContent(true);
+  pending_mask->SetBounds(layer_bounds);
+  pending_mask->SetDrawsContent(true);
 
   host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
   UpdateDrawProperties(host_impl()->pending_tree());
-
-  FakePictureLayerImpl* pending_mask = static_cast<FakePictureLayerImpl*>(
-      pending_layer()->test_properties()->mask_layer);
 
   EXPECT_EQ(1.f, pending_mask->HighResTiling()->contents_scale_key());
   EXPECT_EQ(1u, pending_mask->num_tilings());
@@ -1318,16 +1315,13 @@ TEST_F(PictureLayerImplTest, ScaledMaskLayer) {
   SetupPendingTree(valid_raster_source);
 
   CreateEffectNode(pending_layer());
-  auto* mask = AddMaskLayer<FakePictureLayerImplWithRasterSourceAsMask>(
+  auto* pending_mask = AddMaskLayer<FakePictureLayerImplWithRasterSourceAsMask>(
       host_impl()->pending_tree(), pending_layer(), valid_raster_source);
-  mask->SetBounds(layer_bounds);
-  mask->SetDrawsContent(true);
+  pending_mask->SetBounds(layer_bounds);
+  pending_mask->SetDrawsContent(true);
 
   host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
   UpdateDrawProperties(host_impl()->pending_tree());
-
-  FakePictureLayerImpl* pending_mask = static_cast<FakePictureLayerImpl*>(
-      pending_layer()->test_properties()->mask_layer);
 
   // Masks are scaled, and do not have a low res tiling.
   EXPECT_EQ(1.3f, pending_mask->HighResTiling()->contents_scale_key());

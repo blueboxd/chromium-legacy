@@ -38,19 +38,32 @@
       supportedOverlayRequestCoordinatorClasses:supportedCoordinatorClasses];
 }
 
+- (BOOL)coordinatorForRequestUsesChildViewController:(OverlayRequest*)request {
+  return [[self coordinatorClassForRequest:request]
+      showsOverlayUsingChildViewController];
+}
+
 - (OverlayRequestCoordinator*)
     newCoordinatorForRequest:(OverlayRequest*)request
                     delegate:(OverlayRequestCoordinatorDelegate*)delegate
           baseViewController:(UIViewController*)baseViewController {
+  return [[[self coordinatorClassForRequest:request] alloc]
+      initWithBaseViewController:baseViewController
+                         browser:self.browser
+                         request:request
+                        delegate:delegate];
+}
+
+#pragma mark - Helpers
+
+// Returns the OverlayRequestCoordinator subclass responsible for showing
+// |request|'s overlay UI.
+- (Class)coordinatorClassForRequest:(OverlayRequest*)request {
   NSArray<Class>* supportedClasses =
       self.supportedOverlayRequestCoordinatorClasses;
   for (Class coordinatorClass in supportedClasses) {
     if ([coordinatorClass supportsRequest:request]) {
-      return [[coordinatorClass alloc]
-          initWithBaseViewController:baseViewController
-                             browser:self.browser
-                             request:request
-                            delegate:delegate];
+      return coordinatorClass;
     }
   }
   NOTREACHED() << "Received unsupported request type.";

@@ -73,8 +73,7 @@ class ASH_EXPORT AshPopupAlignmentDelegate
   void UpdateWorkArea();
 
   // ShelfObserver:
-  void WillChangeVisibilityState(ShelfVisibilityState new_state) override;
-  void OnAutoHideStateChanged(ShelfAutoHideState new_state) override;
+  void OnShelfWorkAreaInsetsChanged() override;
 
   // Overridden from display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,

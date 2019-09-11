@@ -34,9 +34,6 @@ namespace ntp_tiles {
 
 namespace {
 
-const base::Feature kDisplaySuggestionsServiceTiles{
-    "DisplaySuggestionsServiceTiles", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // URL host prefixes. Hosts with these prefixes often redirect to each other, or
 // have the same content.
 // Popular sites are excluded if the user has visited a page whose host only

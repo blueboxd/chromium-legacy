@@ -38,11 +38,6 @@ namespace {
 // When hidden, Assistant will automatically close after |kAutoCloseThreshold|.
 constexpr base::TimeDelta kAutoCloseThreshold = base::TimeDelta::FromMinutes(5);
 
-// When shown, the proactive suggestions widget will automatically close if the
-// user doesn't interact with it within a fixed interval.
-constexpr base::TimeDelta kAutoCloseProactiveSuggestionsThreshold =
-    base::TimeDelta::FromSeconds(15);
-
 // Toast -----------------------------------------------------------------------
 
 constexpr int kToastDurationMs = 2500;
@@ -213,7 +208,9 @@ void AssistantUiController::OnProactiveSuggestionsChanged(
     // The proactive suggestions widget will automatically be closed if the user
     // doesn't interact with it within a fixed interval.
     auto_close_proactive_suggestions_timer_.Start(
-        FROM_HERE, kAutoCloseProactiveSuggestionsThreshold,
+        FROM_HERE,
+        chromeos::assistant::features::
+            GetProactiveSuggestionsTimeoutThreshold(),
         base::BindRepeating(
             &AssistantUiController::ResetProactiveSuggestionsView,
             weak_factory_.GetWeakPtr(), proactive_suggestions->category(),
@@ -403,8 +400,8 @@ void AssistantUiController::OnUiVisibilityChanged(
     base::Optional<AssistantExitPoint> exit_point) {
   AssistantState::Get()->NotifyStatusChanged(
       new_visibility == AssistantVisibility::kVisible
-          ? mojom::VoiceInteractionState::RUNNING
-          : mojom::VoiceInteractionState::STOPPED);
+          ? mojom::AssistantState::VISIBLE
+          : mojom::AssistantState::READY);
 
   switch (new_visibility) {
     case AssistantVisibility::kClosed:
@@ -490,8 +487,7 @@ void AssistantUiController::ShowUi(AssistantEntryPoint entry_point) {
   }
 
   // TODO(dmblack): Show a more helpful message to the user.
-  if (assistant_state->voice_interaction_state() ==
-      mojom::VoiceInteractionState::NOT_READY) {
+  if (assistant_state->assistant_state() == mojom::AssistantState::NOT_READY) {
     ShowToast(kUnboundServiceToastId, IDS_ASH_ASSISTANT_ERROR_GENERIC);
     return;
   }

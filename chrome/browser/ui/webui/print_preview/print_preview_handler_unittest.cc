@@ -109,10 +109,10 @@ std::unique_ptr<base::ListValue> ConstructPreviewArgs(
     base::StringPiece callback_id,
     const base::Value& print_ticket) {
   base::Value args(base::Value::Type::LIST);
-  args.GetList().emplace_back(callback_id);
+  args.Append(callback_id);
   std::string json;
   base::JSONWriter::Write(print_ticket, &json);
-  args.GetList().emplace_back(json);
+  args.Append(json);
   return base::ListValue::From(base::Value::ToUniquePtrValue(std::move(args)));
 }
 
@@ -292,7 +292,7 @@ class PrintPreviewHandlerTest : public testing::Test {
     // Sending this message will enable javascript, so it must always be called
     // before any other messages are sent.
     base::Value args(base::Value::Type::LIST);
-    args.GetList().emplace_back("test-callback-id-0");
+    args.Append("test-callback-id-0");
     std::unique_ptr<base::ListValue> list_args =
         base::ListValue::From(base::Value::ToUniquePtrValue(std::move(args)));
 
@@ -512,8 +512,8 @@ TEST_F(PrintPreviewHandlerTest, GetPrinters) {
     base::Value args(base::Value::Type::LIST);
     std::string callback_id_in =
         "test-callback-id-" + base::NumberToString(i + 1);
-    args.GetList().emplace_back(callback_id_in);
-    args.GetList().emplace_back(type);
+    args.Append(callback_id_in);
+    args.Append(type);
     std::unique_ptr<base::ListValue> list_args =
         base::ListValue::From(base::Value::ToUniquePtrValue(std::move(args)));
     handler()->HandleGetPrinters(list_args.get());
@@ -558,9 +558,9 @@ TEST_F(PrintPreviewHandlerTest, GetPrinterCapabilities) {
     base::Value args(base::Value::Type::LIST);
     std::string callback_id_in =
         "test-callback-id-" + base::NumberToString(i + 1);
-    args.GetList().emplace_back(callback_id_in);
-    args.GetList().emplace_back(kDummyPrinterName);
-    args.GetList().emplace_back(type);
+    args.Append(callback_id_in);
+    args.Append(kDummyPrinterName);
+    args.Append(type);
     std::unique_ptr<base::ListValue> list_args =
         base::ListValue::From(base::Value::ToUniquePtrValue(std::move(args)));
     handler()->HandleGetPrinterCapabilities(list_args.get());
@@ -588,9 +588,9 @@ TEST_F(PrintPreviewHandlerTest, GetPrinterCapabilities) {
     std::string callback_id_in =
         "test-callback-id-" +
         base::NumberToString(i + base::size(kAllTypes) + 1);
-    args.GetList().emplace_back(callback_id_in);
-    args.GetList().emplace_back("EmptyPrinter");
-    args.GetList().emplace_back(type);
+    args.Append(callback_id_in);
+    args.Append("EmptyPrinter");
+    args.Append(type);
     std::unique_ptr<base::ListValue> list_args =
         base::ListValue::From(base::Value::ToUniquePtrValue(std::move(args)));
     handler()->HandleGetPrinterCapabilities(list_args.get());
@@ -619,11 +619,11 @@ TEST_F(PrintPreviewHandlerTest, Print) {
     base::Value args(base::Value::Type::LIST);
     std::string callback_id_in =
         "test-callback-id-" + base::NumberToString(i + 1);
-    args.GetList().emplace_back(callback_id_in);
+    args.Append(callback_id_in);
     base::Value print_ticket = GetPrintTicket(type, cloud);
     std::string json;
     base::JSONWriter::Write(print_ticket, &json);
-    args.GetList().emplace_back(json);
+    args.Append(json);
     std::unique_ptr<base::ListValue> list_args =
         base::ListValue::From(base::Value::ToUniquePtrValue(std::move(args)));
     handler()->HandlePrint(list_args.get());
@@ -794,9 +794,9 @@ TEST_F(PrintPreviewHandlerFailingTest, GetPrinterCapabilities) {
     base::Value args(base::Value::Type::LIST);
     std::string callback_id_in =
         "test-callback-id-" + base::NumberToString(i + 1);
-    args.GetList().emplace_back(callback_id_in);
-    args.GetList().emplace_back(kDummyPrinterName);
-    args.GetList().emplace_back(type);
+    args.Append(callback_id_in);
+    args.Append(kDummyPrinterName);
+    args.Append(type);
     std::unique_ptr<base::ListValue> list_args =
         base::ListValue::From(base::Value::ToUniquePtrValue(std::move(args)));
     handler()->HandleGetPrinterCapabilities(list_args.get());

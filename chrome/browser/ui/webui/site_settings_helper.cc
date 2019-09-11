@@ -658,7 +658,7 @@ base::Value CreateChooserExceptionObject(
   base::Value sites(base::Value::Type::LIST);
   for (auto& one_provider_sites : all_provider_sites) {
     for (auto& site : one_provider_sites) {
-      sites.GetList().push_back(std::move(site));
+      sites.Append(std::move(site));
     }
   }
 
@@ -712,7 +712,7 @@ base::Value GetChooserExceptionListFromProfile(
     const base::Value& object = all_chooser_objects_entry.first.second;
     const ChooserExceptionDetails& chooser_exception_details =
         all_chooser_objects_entry.second;
-    exceptions.GetList().push_back(CreateChooserExceptionObject(
+    exceptions.Append(CreateChooserExceptionObject(
         name, object, chooser_type.name, chooser_exception_details));
   }
 

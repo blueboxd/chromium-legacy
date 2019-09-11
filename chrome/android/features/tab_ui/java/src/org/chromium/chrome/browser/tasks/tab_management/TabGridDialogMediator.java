@@ -45,7 +45,7 @@ public class TabGridDialogMediator {
     interface ResetHandler {
         /**
          * Handles a reset event originated from {@link TabGridDialogMediator} and {@link
-         * GridTabSwitcherMediator}.
+         * TabSwitcherMediator}.
          *
          * @param tabs List of Tabs to reset.
          */
@@ -160,14 +160,14 @@ public class TabGridDialogMediator {
                         ? R.style.TextAppearance_BlueTitle2Incognito
                         : R.style.TextAppearance_BlueTitle2;
 
-                mModel.set(TabGridSheetProperties.DIALOG_BACKGROUND_RESOUCE_ID,
+                mModel.set(TabGridPanelProperties.DIALOG_BACKGROUND_RESOUCE_ID,
                         dialogBackgroundResource);
-                mModel.set(TabGridSheetProperties.TINT, tintList);
-                mModel.set(TabGridSheetProperties.DIALOG_UNGROUP_BAR_BACKGROUND_COLOR_ID,
+                mModel.set(TabGridPanelProperties.TINT, tintList);
+                mModel.set(TabGridPanelProperties.DIALOG_UNGROUP_BAR_BACKGROUND_COLOR_ID,
                         ungroupBarBackgroundColorId);
-                mModel.set(TabGridSheetProperties.DIALOG_UNGROUP_BAR_HOVERED_BACKGROUND_COLOR_ID,
+                mModel.set(TabGridPanelProperties.DIALOG_UNGROUP_BAR_HOVERED_BACKGROUND_COLOR_ID,
                         ungroupBarHoveredBackgroundColorId);
-                mModel.set(TabGridSheetProperties.DIALOG_UNGROUP_BAR_TEXT_APPEARANCE,
+                mModel.set(TabGridPanelProperties.DIALOG_UNGROUP_BAR_TEXT_APPEARANCE,
                         ungroupBarTextAppearance);
             }
         };
@@ -182,10 +182,10 @@ public class TabGridDialogMediator {
 
     void hideDialog(boolean showAnimation) {
         if (!showAnimation) {
-            mModel.set(TabGridSheetProperties.ANIMATION_PARAMS, null);
+            mModel.set(TabGridPanelProperties.ANIMATION_PARAMS, null);
         } else {
             if (mAnimationParamsProvider != null && mCurrentTabId != Tab.INVALID_TAB_ID) {
-                mModel.set(TabGridSheetProperties.ANIMATION_PARAMS,
+                mModel.set(TabGridPanelProperties.ANIMATION_PARAMS,
                         mAnimationParamsProvider.getAnimationParamsForTab(mCurrentTabId));
             }
         }
@@ -205,13 +205,13 @@ public class TabGridDialogMediator {
             if (mAnimationParamsProvider != null) {
                 TabGridDialogParent.AnimationParams params =
                         mAnimationParamsProvider.getAnimationParamsForTab(mCurrentTabId);
-                mModel.set(TabGridSheetProperties.ANIMATION_PARAMS, params);
+                mModel.set(TabGridPanelProperties.ANIMATION_PARAMS, params);
             }
             updateDialog();
             updateDialogScrollPosition();
-            mModel.set(TabGridSheetProperties.IS_DIALOG_VISIBLE, true);
+            mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, true);
         } else {
-            mModel.set(TabGridSheetProperties.IS_DIALOG_VISIBLE, false);
+            mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, false);
         }
     }
 
@@ -227,7 +227,7 @@ public class TabGridDialogMediator {
     }
 
     boolean isVisible() {
-        return mModel.get(TabGridSheetProperties.IS_DIALOG_VISIBLE);
+        return mModel.get(TabGridPanelProperties.IS_DIALOG_VISIBLE);
     }
 
     private void updateGridTabSwitcher() {
@@ -245,7 +245,7 @@ public class TabGridDialogMediator {
             hideDialog(true);
             return;
         }
-        mModel.set(TabGridSheetProperties.HEADER_TITLE,
+        mModel.set(TabGridPanelProperties.HEADER_TITLE,
                 mContext.getResources().getQuantityString(
                         R.plurals.bottom_tab_grid_title_placeholder, tabsCount, tabsCount));
     }
@@ -253,20 +253,20 @@ public class TabGridDialogMediator {
     private void updateDialogScrollPosition() {
         // If current selected tab is not within this dialog, always scroll to the top.
         if (mCurrentTabId != mTabModelSelector.getCurrentTabId()) {
-            mModel.set(TabGridSheetProperties.INITIAL_SCROLL_INDEX, 0);
+            mModel.set(TabGridPanelProperties.INITIAL_SCROLL_INDEX, 0);
             return;
         }
         List<Tab> relatedTabs = getRelatedTabs(mCurrentTabId);
         Tab currentTab = mTabModelSelector.getTabById(mCurrentTabId);
         int initialPosition =
                 Math.max(relatedTabs.indexOf(currentTab) - INITIAL_SCROLL_INDEX_OFFSET, 0);
-        mModel.set(TabGridSheetProperties.INITIAL_SCROLL_INDEX, initialPosition);
+        mModel.set(TabGridPanelProperties.INITIAL_SCROLL_INDEX, initialPosition);
     }
 
     private void setupToolbarClickHandlers() {
         mModel.set(
-                TabGridSheetProperties.COLLAPSE_CLICK_LISTENER, getCollapseButtonClickListener());
-        mModel.set(TabGridSheetProperties.ADD_CLICK_LISTENER, getAddButtonClickListener());
+                TabGridPanelProperties.COLLAPSE_CLICK_LISTENER, getCollapseButtonClickListener());
+        mModel.set(TabGridPanelProperties.ADD_CLICK_LISTENER, getAddButtonClickListener());
     }
 
     private void setupScrimViewObserver() {
@@ -279,7 +279,7 @@ public class TabGridDialogMediator {
             @Override
             public void onScrimVisibilityChanged(boolean visible) {}
         };
-        mModel.set(TabGridSheetProperties.SCRIMVIEW_OBSERVER, scrimObserver);
+        mModel.set(TabGridPanelProperties.SCRIMVIEW_OBSERVER, scrimObserver);
     }
 
     private View.OnClickListener getCollapseButtonClickListener() {
@@ -329,7 +329,7 @@ public class TabGridDialogMediator {
     class DialogHandler implements TabListMediator.TabGridDialogHandler {
         @Override
         public void updateUngroupBarStatus(@TabGridDialogParent.UngroupBarStatus int status) {
-            mModel.set(TabGridSheetProperties.UNGROUP_BAR_STATUS, status);
+            mModel.set(TabGridPanelProperties.UNGROUP_BAR_STATUS, status);
         }
 
         @Override

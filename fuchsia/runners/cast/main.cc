@@ -4,25 +4,31 @@
 
 #include <lib/sys/cpp/component_context.h>
 
+#include "base/command_line.h"
 #include "base/fuchsia/default_context.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
+#include "build/buildflag.h"
+#include "fuchsia/runners/buildflags.h"
 #include "fuchsia/runners/cast/cast_runner.h"
 
 int main(int argc, char** argv) {
   base::SingleThreadTaskExecutor io_task_executor(base::MessagePumpType::IO);
   base::RunLoop run_loop;
 
-  constexpr fuchsia::web::ContextFeatureFlags kCastRunnerFeatures =
+  fuchsia::web::ContextFeatureFlags features =
       fuchsia::web::ContextFeatureFlags::NETWORK |
       fuchsia::web::ContextFeatureFlags::AUDIO |
       fuchsia::web::ContextFeatureFlags::VULKAN |
       fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER;
 
+  if (!BUILDFLAG(ENABLE_SOFTWARE_VIDEO_DECODERS))
+    features |= fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER_ONLY;
+
   CastRunner runner(
       base::fuchsia::ComponentContextForCurrentProcess()->outgoing().get(),
-      WebContentRunner::CreateIncognitoWebContext(kCastRunnerFeatures));
+      WebContentRunner::CreateIncognitoWebContext(features));
 
   base::fuchsia::ComponentContextForCurrentProcess()
       ->outgoing()

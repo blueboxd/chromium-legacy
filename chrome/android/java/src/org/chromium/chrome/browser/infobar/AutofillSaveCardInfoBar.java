@@ -12,6 +12,7 @@ import android.text.style.ClickableSpan;
 import android.view.View;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.ui.UiUtils;
@@ -214,7 +215,9 @@ public class AutofillSaveCardInfoBar extends ConfirmInfoBar {
                 text.setSpan(new ClickableSpan() {
                     @Override
                     public void onClick(View view) {
-                        nativeOnLegalMessageLinkClicked(mNativeAutofillSaveCardInfoBar, link.url);
+                        AutofillSaveCardInfoBarJni.get().onLegalMessageLinkClicked(
+                                mNativeAutofillSaveCardInfoBar, AutofillSaveCardInfoBar.this,
+                                link.url);
                     }
                 }, link.start, link.end, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
             }
@@ -222,6 +225,9 @@ public class AutofillSaveCardInfoBar extends ConfirmInfoBar {
         }
     }
 
-    private native void nativeOnLegalMessageLinkClicked(
-            long nativeAutofillSaveCardInfoBar, String url);
+    @NativeMethods
+    interface Natives {
+        void onLegalMessageLinkClicked(
+                long nativeAutofillSaveCardInfoBar, AutofillSaveCardInfoBar caller, String url);
+    }
 }

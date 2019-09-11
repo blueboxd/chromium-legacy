@@ -39,7 +39,7 @@ VoiceInteractionControllerClient::VoiceInteractionControllerClient() {
   arc::ArcSessionManager::Get()->AddObserver(this);
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
 
-  voice_interaction_state_ = ash::mojom::VoiceInteractionState::NOT_READY;
+  assistant_state_ = ash::mojom::AssistantState::NOT_READY;
 }
 
 VoiceInteractionControllerClient::~VoiceInteractionControllerClient() {
@@ -64,8 +64,8 @@ VoiceInteractionControllerClient* VoiceInteractionControllerClient::Get() {
 }
 
 void VoiceInteractionControllerClient::NotifyStatusChanged(
-    ash::mojom::VoiceInteractionState state) {
-  voice_interaction_state_ = state;
+    ash::mojom::AssistantState state) {
+  assistant_state_ = state;
   ash::AssistantState::Get()->NotifyStatusChanged(state);
   for (auto& observer : observers_)
     observer.OnStateChanged(state);

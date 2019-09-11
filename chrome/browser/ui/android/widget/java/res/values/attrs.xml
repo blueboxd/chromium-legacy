@@ -4,6 +4,27 @@
      found in the LICENSE file. -->
 
 <resources>
+    <declare-styleable name="BoundedView">
+        <attr name="maxWidth" format="dimension" />
+        <attr name="maxWidthLandscape" format="dimension" />
+        <attr name="maxWidthPortrait" format="dimension" />
+        <attr name="maxHeight" format="dimension" />
+    </declare-styleable>
+
+    <declare-styleable name="DualControlLayout">
+        <attr name="stackedMargin" format="reference|dimension"/>
+        <attr name="primaryButtonText" format="reference|string"/>
+        <attr name="secondaryButtonText" format="reference|string"/>
+        <attr name="buttonAlignment" format="enum">
+            <enum name="start" value="0" />
+            <enum name="end" value="1" />
+            <enum name="apart" value="2" />
+        </attr>
+        <attr name="dualControlLayoutVerticalPadding" format="dimension"/>
+        <attr name="dualControlLayoutHorizontalPadding" format="dimension"/>
+    </declare-styleable>
+
+
     <declare-styleable name="ListMenuButton">
         <!-- Used to customize the width of the popup menu. -->
         <attr name="menuWidth" format="reference|dimension" />

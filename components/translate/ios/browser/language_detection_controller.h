@@ -15,7 +15,7 @@
 #include "base/strings/string16.h"
 #include "components/prefs/pref_member.h"
 #import "ios/web/public/web_state.h"
-#include "ios/web/public/web_state/web_state_observer.h"
+#include "ios/web/public/web_state_observer.h"
 
 class GURL;
 @class JsLanguageDetectionManager;

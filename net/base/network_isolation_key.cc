@@ -86,12 +86,10 @@ bool NetworkIsolationKey::ToValue(base::Value* out_value) const {
   *out_value = base::Value(base::Value::Type::LIST);
   // Store origins GURLs, since GURL has validation logic that can be used when
   // loading, while Origin only has DCHECKs.
-  out_value->GetList().emplace_back(
-      base::Value(top_frame_origin_->GetURL().spec()));
+  out_value->Append(base::Value(top_frame_origin_->GetURL().spec()));
 
   if (use_frame_origin_)
-    out_value->GetList().emplace_back(
-        base::Value(frame_origin_->GetURL().spec()));
+    out_value->Append(base::Value(frame_origin_->GetURL().spec()));
   return true;
 }
 

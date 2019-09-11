@@ -272,7 +272,8 @@ std::string GridIndex::ToString() const {
 // gradient fading out zones.
 class AppsGridView::FadeoutLayerDelegate : public ui::LayerDelegate {
  public:
-  FadeoutLayerDelegate() : layer_(ui::LAYER_TEXTURED) {
+  explicit FadeoutLayerDelegate(int fadeout_zone_height)
+      : layer_(ui::LAYER_TEXTURED), fadeout_zone_height_(fadeout_zone_height) {
     layer_.set_delegate(this);
     layer_.SetFillsBoundsOpaquely(false);
   }
@@ -287,9 +288,9 @@ class AppsGridView::FadeoutLayerDelegate : public ui::LayerDelegate {
   // the mask for the central area and only use it for top/bottom areas.
   void OnPaintLayer(const ui::PaintContext& context) override {
     const gfx::Size size = layer()->size();
-    gfx::Rect top_rect(0, 0, size.width(), kFadeoutZoneHeight);
-    gfx::Rect bottom_rect(0, size.height() - kFadeoutZoneHeight, size.width(),
-                          kFadeoutZoneHeight);
+    gfx::Rect top_rect(0, 0, size.width(), fadeout_zone_height_);
+    gfx::Rect bottom_rect(0, size.height() - fadeout_zone_height_, size.width(),
+                          fadeout_zone_height_);
 
     views::PaintInfo paint_info =
         views::PaintInfo::CreateRootPaintInfo(context, size);
@@ -310,12 +311,12 @@ class AppsGridView::FadeoutLayerDelegate : public ui::LayerDelegate {
     flags.setBlendMode(SkBlendMode::kSrc);
     flags.setAntiAlias(false);
     flags.setShader(gfx::CreateGradientShader(
-        gfx::Point(), gfx::Point(0, kFadeoutZoneHeight), SK_ColorTRANSPARENT,
+        gfx::Point(), gfx::Point(0, fadeout_zone_height_), SK_ColorTRANSPARENT,
         SK_ColorBLACK));
     canvas->DrawRect(top_rect, flags);
     // Draw bottom gradient zone.
     flags.setShader(gfx::CreateGradientShader(
-        gfx::Point(0, size.height() - kFadeoutZoneHeight),
+        gfx::Point(0, size.height() - fadeout_zone_height_),
         gfx::Point(0, size.height()), SK_ColorBLACK, SK_ColorTRANSPARENT));
     canvas->DrawRect(bottom_rect, flags);
   }
@@ -323,6 +324,7 @@ class AppsGridView::FadeoutLayerDelegate : public ui::LayerDelegate {
                                   float new_device_scale_factor) override {}
 
   ui::Layer layer_;
+  const int fadeout_zone_height_;
 
   DISALLOW_COPY_AND_ASSIGN(FadeoutLayerDelegate);
 };
@@ -346,8 +348,10 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
   items_container_->layer()->SetFillsBoundsOpaquely(false);
   bounds_animator_ = std::make_unique<views::BoundsAnimator>(items_container_);
 
-  if (!folder_delegate)
-    SetBorder(views::CreateEmptyBorder(gfx::Insets(kFadeoutZoneHeight, 0)));
+  if (!folder_delegate) {
+    SetBorder(views::CreateEmptyBorder(
+        gfx::Insets(GetAppListConfig().grid_fadeout_zone_height(), 0)));
+  }
 
   pagination_model_.SetTransitionDurations(
       GetAppListConfig().page_transition_duration_ms(),
@@ -1007,7 +1011,8 @@ void AppsGridView::UpdateControlVisibility(ash::AppListViewState app_list_state,
         // Always create a new layer. The layer may be recreated by animation,
         // and using the mask layer used by the detached layer can lead to
         // crash. b/118822974.
-        fadeout_layer_delegate_ = std::make_unique<FadeoutLayerDelegate>();
+        fadeout_layer_delegate_ = std::make_unique<FadeoutLayerDelegate>(
+            GetAppListConfig().grid_fadeout_zone_height());
         layer()->SetMaskLayer(fadeout_layer_delegate_->layer());
         fadeout_layer_delegate_->layer()->SetBounds(layer()->bounds());
       }
@@ -1193,6 +1198,11 @@ bool AppsGridView::EventIsBetweenOccupiedTiles(const ui::LocatedEvent* event) {
 
 void AppsGridView::Update() {
   DCHECK(!selected_view_ && !drag_view_);
+  if (!folder_delegate_) {
+    SetBorder(views::CreateEmptyBorder(
+        gfx::Insets(GetAppListConfig().grid_fadeout_zone_height(), 0)));
+  }
+
   view_model_.Clear();
   if (!item_list_ || !item_list_->item_count())
     return;
@@ -2114,8 +2124,7 @@ void AppsGridView::StartDragAndDropHostDrag(const gfx::Point& grid_location) {
   DCHECK(!IsDraggingForReparentInRootLevelGridView());
   drag_and_drop_host_->CreateDragIconProxyByLocationWithNoAnimation(
       drag_view_->GetIconBoundsInScreen().origin(), drag_view_->GetIconImage(),
-      drag_view_,
-      kDragAndDropProxyScale * contents_view_->GetAppListMainViewScale(),
+      drag_view_, kDragAndDropProxyScale,
       drag_view_->item()->is_folder() && IsTabletMode()
           ? GetAppListConfig().blur_radius()
           : 0);

@@ -108,6 +108,14 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
       mojom::XRRayPtr,
       mojom::XREnvironmentIntegrationProvider::RequestHitTestCallback) override;
 
+  void CreateAnchor(mojom::VRPosePtr anchor_pose,
+                    CreateAnchorCallback callback) override;
+  void CreatePlaneAnchor(mojom::VRPosePtr anchor_pose,
+                         int32_t plane_id,
+                         CreatePlaneAnchorCallback callback) override;
+
+  void DetachAnchor(int32_t anchor_id) override;
+
   // mojom::XRSessionController
   void SetFrameDataRestricted(bool restricted) override;
 

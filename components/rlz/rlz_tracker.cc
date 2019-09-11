@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/numerics/ranges.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -278,7 +279,7 @@ bool RLZTracker::Init(bool first_run,
   if (delegate_->ShouldEnableZeroDelayForTesting())
     EnableZeroDelayForTesting();
 
-  delay = std::min(kMaxInitDelay, std::max(min_init_delay_, delay));
+  delay = base::ClampToRange(delay, min_init_delay_, kMaxInitDelay);
 
   if (delegate_->GetBrand(&brand_) && !delegate_->IsBrandOrganic(brand_)) {
     // Register for notifications from the omnibox so that we can record when

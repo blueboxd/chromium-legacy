@@ -85,7 +85,7 @@ namespace {
 base::Value NetLogFtpCtrlResponseParams(const FtpCtrlResponse* response) {
   base::ListValue lines;
   for (const auto& line : response->lines)
-    lines.GetList().push_back(NetLogStringValue(line));
+    lines.Append(NetLogStringValue(line));
 
   base::DictionaryValue dict;
   dict.SetInteger("status_code", response->status_code);

@@ -175,11 +175,9 @@ class DownloadItemFactoryImpl : public download::DownloadItemFactory {
       bool transient,
       const std::vector<download::DownloadItem::ReceivedSlice>& received_slices)
       override {
-    int auto_resume_count = 0;
-    if (base::FeatureList::IsEnabled(
-            download::features::kDownloadDBForNewDownloads)) {
-      auto_resume_count = download::DownloadItemImpl::kMaxAutoResumeAttempts;
-    }
+    // For history download only as history don't have auto resumption count
+    // saved.
+    int auto_resume_count = download::DownloadItemImpl::kMaxAutoResumeAttempts;
 
     return new download::DownloadItemImpl(
         delegate, guid, download_id, current_path, target_path, url_chain,

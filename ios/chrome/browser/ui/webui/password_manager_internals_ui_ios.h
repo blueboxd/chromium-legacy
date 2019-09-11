@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "components/autofill/core/browser/logging/log_receiver.h"
-#include "ios/web/public/web_state/web_state_observer.h"
+#include "ios/web/public/web_state_observer.h"
 #include "ios/web/public/webui/web_ui_ios_controller.h"
 
 // The implementation for the chrome://password-manager-internals page.

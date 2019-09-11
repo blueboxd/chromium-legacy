@@ -33,7 +33,7 @@ class UrlTestImpl : public mojom::UrlTest {
 
 // Mojo version of chrome IPC test in url/ipc/url_param_traits_unittest.cc.
 TEST(MojoGURLStructTraitsTest, Basic) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
 
   mojom::UrlTestPtr proxy;
   UrlTestImpl impl(MakeRequest(&proxy));

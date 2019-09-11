@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_markup.h"
 #include "third_party/blink/renderer/core/css/css_pending_substitution_value.h"
+#include "third_party/blink/renderer/core/css/css_value_pair.h"
 #include "third_party/blink/renderer/core/css/css_value_pool.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
@@ -560,7 +561,7 @@ String StylePropertySerializer::SerializeShorthand(
       return String();
     }
     case CSSPropertyID::kBorderRadius:
-      return Get4Values(borderRadiusShorthand());
+      return BorderRadiusValue();
     case CSSPropertyID::kScrollPadding:
       return Get4Values(scrollPaddingShorthand());
     case CSSPropertyID::kScrollPaddingBlock:
@@ -1094,6 +1095,58 @@ String StylePropertySerializer::BorderImagePropertyValue() const {
     result.Append(value.CssText());
   }
   return result.ToString();
+}
+
+String StylePropertySerializer::BorderRadiusValue() const {
+  auto serialize = [](const CSSValue& top_left, const CSSValue& top_right,
+                      const CSSValue& bottom_right,
+                      const CSSValue& bottom_left) -> String {
+    bool show_bottom_left = !(top_right == bottom_left);
+    bool show_bottom_right = !(top_left == bottom_right) || show_bottom_left;
+    bool show_top_right = !(top_left == top_right) || show_bottom_right;
+
+    StringBuilder result;
+    result.Append(top_left.CssText());
+    if (show_top_right) {
+      result.Append(' ');
+      result.Append(top_right.CssText());
+    }
+    if (show_bottom_right) {
+      result.Append(' ');
+      result.Append(bottom_right.CssText());
+    }
+    if (show_bottom_left) {
+      result.Append(' ');
+      result.Append(bottom_left.CssText());
+    }
+    return result.ToString();
+  };
+
+  const CSSValuePair& top_left = To<CSSValuePair>(
+      *property_set_.GetPropertyCSSValue(GetCSSPropertyBorderTopLeftRadius()));
+  const CSSValuePair& top_right = To<CSSValuePair>(
+      *property_set_.GetPropertyCSSValue(GetCSSPropertyBorderTopRightRadius()));
+  const CSSValuePair& bottom_right =
+      To<CSSValuePair>(*property_set_.GetPropertyCSSValue(
+          GetCSSPropertyBorderBottomRightRadius()));
+  const CSSValuePair& bottom_left =
+      To<CSSValuePair>(*property_set_.GetPropertyCSSValue(
+          GetCSSPropertyBorderBottomLeftRadius()));
+
+  StringBuilder builder;
+  builder.Append(serialize(top_left.First(), top_right.First(),
+                           bottom_right.First(), bottom_left.First()));
+
+  if (!(top_left.First() == top_left.Second()) ||
+      !(top_right.First() == top_right.Second()) ||
+      !(bottom_right.First() == bottom_right.Second()) ||
+      !(bottom_left.First() == bottom_left.Second())) {
+    builder.Append(" / ");
+    builder.Append(serialize(top_left.Second(), top_right.Second(),
+                             bottom_right.Second(), bottom_left.Second()));
+  }
+
+  return builder.ToString();
 }
 
 static void AppendBackgroundRepeatValue(StringBuilder& builder,

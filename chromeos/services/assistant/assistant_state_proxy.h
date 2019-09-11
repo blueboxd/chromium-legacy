@@ -10,7 +10,6 @@
 
 #include "ash/public/cpp/assistant/assistant_state_base.h"
 #include "ash/public/mojom/assistant_state_controller.mojom.h"
-#include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -41,8 +40,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantStateProxy
 
  private:
   // AssistantStateObserver:
-  void OnAssistantStatusChanged(
-      ash::mojom::VoiceInteractionState state) override;
+  void OnAssistantStatusChanged(ash::mojom::AssistantState state) override;
   void OnAssistantFeatureAllowedChanged(
       ash::mojom::AssistantAllowedState state) override;
   void OnLocaleChanged(const std::string& locale) override;

@@ -371,11 +371,11 @@ void SetupViewport(LayerImpl* root,
   viewport_ids.outer_viewport_scroll = outer_viewport_scroll_layer->id();
   layer_tree_impl->SetViewportLayersFromIds(viewport_ids);
 
-  root->test_properties()->AddChild(std::move(inner_viewport_container_layer));
-  root->test_properties()->AddChild(std::move(page_scale_layer));
-  root->test_properties()->AddChild(std::move(inner_viewport_scroll_layer));
-  root->test_properties()->AddChild(std::move(outer_viewport_container_layer));
-  root->test_properties()->AddChild(std::move(outer_viewport_scroll_layer));
+  layer_tree_impl->AddLayer(std::move(inner_viewport_container_layer));
+  layer_tree_impl->AddLayer(std::move(page_scale_layer));
+  layer_tree_impl->AddLayer(std::move(inner_viewport_scroll_layer));
+  layer_tree_impl->AddLayer(std::move(outer_viewport_container_layer));
+  layer_tree_impl->AddLayer(std::move(outer_viewport_scroll_layer));
   layer_tree_impl->SetElementIdsForTesting();
 
   SetupViewportProperties(root, layer_tree_impl->PageScaleLayer(),

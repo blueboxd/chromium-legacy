@@ -3,6 +3,3 @@ crbug.com/972621 media/controls/paint-controls-webkit-appearance-none-custom-bg.
 crbug.com/972621 media/controls/paint-controls-webkit-appearance-none.html [ Skip ]
 crbug.com/972621 media/video-no-audio.html [ Skip ]
 crbug.com/972621 transforms/transformed-document-element.html [ Skip ]
-
-# Crash in BlinkTestController::OnPixelDumpCaptured
-crbug.com/988120 media/alpha-video-playback.html [ Skip ]

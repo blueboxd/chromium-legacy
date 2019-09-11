@@ -87,12 +87,13 @@ class CastMirroringServiceHost final : public mojom::MirroringServiceHost,
       media::mojom::VideoCaptureHostRequest request) override;
   void GetNetworkContext(
       mojo::PendingReceiver<network::mojom::NetworkContext> receiver) override;
-  void CreateAudioStream(mojom::AudioStreamCreatorClientPtr client,
-                         const media::AudioParameters& params,
-                         uint32_t total_segments) override;
+  void CreateAudioStream(
+      mojo::PendingRemote<mojom::AudioStreamCreatorClient> client,
+      const media::AudioParameters& params,
+      uint32_t total_segments) override;
   void ConnectToRemotingSource(
-      media::mojom::RemoterPtr remoter,
-      media::mojom::RemotingSourceRequest request) override;
+      mojo::PendingRemote<media::mojom::Remoter> remoter,
+      mojo::PendingReceiver<media::mojom::RemotingSource> receiver) override;
 
   // content::WebContentsObserver implementation.
   void WebContentsDestroyed() override;

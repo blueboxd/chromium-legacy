@@ -34,8 +34,8 @@ void AssistantState::BindRequest(
   bindings_.AddBinding(this, std::move(request));
 }
 
-void AssistantState::NotifyStatusChanged(mojom::VoiceInteractionState state) {
-  if (voice_interaction_state_ == state)
+void AssistantState::NotifyStatusChanged(mojom::AssistantState state) {
+  if (assistant_state_ == state)
     return;
 
   UpdateAssistantStatus(state);

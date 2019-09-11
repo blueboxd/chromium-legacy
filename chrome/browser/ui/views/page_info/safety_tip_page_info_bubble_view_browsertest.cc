@@ -563,3 +563,35 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
     EXPECT_LE(kMinWarningTime.InMilliseconds(), samples.front().min);
   }
 }
+
+// Tests that Safety Tips aren't triggered on 'unknown' flag types from the
+// component updater. This permits us to add new flag types to the component
+// without breaking this release.
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
+                       NotShownOnUnknownFlag) {
+  auto kNavigatedUrl = GetURL("site1.com");
+  SetSafetyTipPatternsWithFlagType(
+      {"site1.com/"}, chrome_browser_safety_tips::FlaggedPage::UNKNOWN);
+
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+  EXPECT_FALSE(IsUIShowing());
+
+  ASSERT_NO_FATAL_FAILURE(CheckPageInfoDoesNotShowSafetyTipInfo(browser()));
+}
+
+// Tests that Safety Tips aren't triggered on domains flagged as 'YOUNG_DOMAIN'
+// in the component. This permits us to use this flag in the component without
+// breaking this release.
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
+                       NotShownOnYoungDomain) {
+  auto kNavigatedUrl = GetURL("site1.com");
+  SetSafetyTipPatternsWithFlagType(
+      {"site1.com/"}, chrome_browser_safety_tips::FlaggedPage::YOUNG_DOMAIN);
+
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+  EXPECT_FALSE(IsUIShowing());
+
+  ASSERT_NO_FATAL_FAILURE(CheckPageInfoDoesNotShowSafetyTipInfo(browser()));
+}

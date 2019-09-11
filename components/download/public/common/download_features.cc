@@ -30,9 +30,6 @@ const base::Feature kParallelDownloading {
 #endif
 };
 
-const base::Feature kDownloadDBForNewDownloads{
-    "DownloadDBForNewDownloads", base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if defined(OS_ANDROID)
 const base::Feature kRefreshExpirationDate{"RefreshExpirationDate",
                                            base::FEATURE_ENABLED_BY_DEFAULT};

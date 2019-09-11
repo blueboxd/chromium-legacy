@@ -1246,7 +1246,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
                   policy::POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(4),
                   nullptr);
   auto url_list = std::make_unique<base::Value>(base::Value::Type::LIST);
-  url_list->GetList().push_back(
+  url_list->Append(
       base::Value(embedded_test_server()->GetURL("/title1.html").spec()));
   policy_map_.Set(policy::key::kRestoreOnStartupURLs,
                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
@@ -1337,7 +1337,7 @@ class StartupBrowserCreatorWelcomeBackTest : public InProcessBrowserTest {
                  policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
                  std::make_unique<base::Value>(4), nullptr);
       auto url_list = std::make_unique<base::Value>(base::Value::Type::LIST);
-      url_list->GetList().push_back(base::Value("http://managed.site.com/"));
+      url_list->Append(base::Value("http://managed.site.com/"));
       values.Set(policy::key::kRestoreOnStartupURLs, variant.value(),
                  policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
                  std::move(url_list), nullptr);

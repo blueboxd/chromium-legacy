@@ -89,6 +89,61 @@ bool SharedImageStub::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
+bool SharedImageStub::CreateSharedImage(const Mailbox& mailbox,
+                                        int client_id,
+                                        gfx::GpuMemoryBufferHandle handle,
+                                        gfx::BufferFormat format,
+                                        SurfaceHandle surface_handle,
+                                        const gfx::Size& size,
+                                        const gfx::ColorSpace& color_space,
+                                        uint32_t usage) {
+  TRACE_EVENT2("gpu", "SharedImageStub::CreateSharedImage", "width",
+               size.width(), "height", size.height());
+  if (!mailbox.IsSharedImage()) {
+    LOG(ERROR) << "SharedImageStub: Trying to create a SharedImage with a "
+                  "non-SharedImage mailbox.";
+    OnError();
+    return false;
+  }
+  if (!MakeContextCurrent()) {
+    OnError();
+    return false;
+  }
+  if (!factory_->CreateSharedImage(mailbox, client_id, std::move(handle),
+                                   format, surface_handle, size, color_space,
+                                   usage)) {
+    LOG(ERROR) << "SharedImageStub: Unable to create shared image";
+    OnError();
+    return false;
+  }
+  return true;
+}
+
+bool SharedImageStub::UpdateSharedImage(
+    const Mailbox& mailbox,
+    const gfx::GpuFenceHandle& in_fence_handle) {
+  TRACE_EVENT0("gpu", "SharedImageStub::UpdateSharedImage");
+  std::unique_ptr<gfx::GpuFence> in_fence;
+  if (!in_fence_handle.is_null())
+    in_fence.reset(new gfx::GpuFence(in_fence_handle));
+  if (!mailbox.IsSharedImage()) {
+    LOG(ERROR) << "SharedImageStub: Trying to access a SharedImage with a "
+                  "non-SharedImage mailbox.";
+    OnError();
+    return false;
+  }
+  if (!MakeContextCurrent()) {
+    OnError();
+    return false;
+  }
+  if (!factory_->UpdateSharedImage(mailbox, std::move(in_fence))) {
+    LOG(ERROR) << "SharedImageStub: Unable to update shared image";
+    OnError();
+    return false;
+  }
+  return true;
+}
+
 void SharedImageStub::OnCreateSharedImage(
     const GpuChannelMsg_CreateSharedImage_Params& params) {
   TRACE_EVENT2("gpu", "SharedImageStub::OnCreateSharedImage", "width",
@@ -182,26 +237,12 @@ void SharedImageStub::OnCreateGMBSharedImage(
     GpuChannelMsg_CreateGMBSharedImage_Params params) {
   TRACE_EVENT2("gpu", "SharedImageStub::OnCreateGMBSharedImage", "width",
                params.size.width(), "height", params.size.height());
-  if (!params.mailbox.IsSharedImage()) {
-    LOG(ERROR) << "SharedImageStub: Trying to create a SharedImage with a "
-                  "non-SharedImage mailbox.";
-    OnError();
-    return;
-  }
-
-  if (!MakeContextCurrent()) {
-    OnError();
-    return;
-  }
-
   // TODO(piman): add support for SurfaceHandle (for backbuffers for ozone/drm).
-  SurfaceHandle surface_handle = kNullSurfaceHandle;
-  if (!factory_->CreateSharedImage(params.mailbox, channel_->client_id(),
-                                   std::move(params.handle), params.format,
-                                   surface_handle, params.size,
-                                   params.color_space, params.usage)) {
-    LOG(ERROR) << "SharedImageStub: Unable to create shared image";
-    OnError();
+  constexpr SurfaceHandle surface_handle = kNullSurfaceHandle;
+  if (!CreateSharedImage(params.mailbox, channel_->client_id(),
+                         std::move(params.handle), params.format,
+                         surface_handle, params.size, params.color_space,
+                         params.usage)) {
     return;
   }
 
@@ -218,26 +259,9 @@ void SharedImageStub::OnUpdateSharedImage(
     uint32_t release_id,
     const gfx::GpuFenceHandle& in_fence_handle) {
   TRACE_EVENT0("gpu", "SharedImageStub::OnUpdateSharedImage");
-  std::unique_ptr<gfx::GpuFence> in_fence;
-  if (!in_fence_handle.is_null())
-    in_fence.reset(new gfx::GpuFence(in_fence_handle));
-  if (!mailbox.IsSharedImage()) {
-    LOG(ERROR) << "SharedImageStub: Trying to access a SharedImage with a "
-                  "non-SharedImage mailbox.";
-    OnError();
-    return;
-  }
 
-  if (!MakeContextCurrent()) {
-    OnError();
+  if (!UpdateSharedImage(mailbox, in_fence_handle))
     return;
-  }
-
-  if (!factory_->UpdateSharedImage(mailbox, std::move(in_fence))) {
-    LOG(ERROR) << "SharedImageStub: Unable to update shared image";
-    OnError();
-    return;
-  }
 
   SyncToken sync_token(sync_point_client_state_->namespace_id(),
                        sync_point_client_state_->command_buffer_id(),
@@ -373,13 +397,12 @@ bool SharedImageStub::MakeContextCurrent() {
   // improve performance. https://crbug.com/457431
   auto* context = context_state_->real_context();
   if (context->IsCurrent(nullptr) ||
-      context_state_->real_context()->MakeCurrent(context_state_->surface())) {
+      context->MakeCurrent(context_state_->surface())) {
     return true;
-  } else {
-    context_state_->MarkContextLost();
-    LOG(ERROR) << "SharedImageStub: MakeCurrent failed";
-    return false;
   }
+  context_state_->MarkContextLost();
+  LOG(ERROR) << "SharedImageStub: MakeCurrent failed";
+  return false;
 }
 
 ContextResult SharedImageStub::MakeContextCurrentAndCreateFactory() {

@@ -4,7 +4,8 @@
 
 #include "third_party/blink/renderer/core/fetch/blob_bytes_consumer.h"
 
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/fetch/bytes_consumer_test_util.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
@@ -43,10 +44,10 @@ class BlobBytesConsumerTest : public PageTestBase {
  public:
   void SetUp() override { PageTestBase::SetUp(IntSize(1, 1)); }
   scoped_refptr<BlobDataHandle> CreateBlob(const String& body) {
-    mojom::blink::BlobPtrInfo mojo_blob;
-    mojo::MakeStrongBinding(
+    mojo::PendingRemote<mojom::blink::Blob> mojo_blob;
+    mojo::MakeSelfOwnedReceiver(
         std::make_unique<FakeBlob>(kBlobUUID, body, &blob_state_),
-        MakeRequest(&mojo_blob));
+        mojo_blob.InitWithNewPipeAndPassReceiver());
     return BlobDataHandle::Create(kBlobUUID, "", body.length(),
                                   std::move(mojo_blob));
   }

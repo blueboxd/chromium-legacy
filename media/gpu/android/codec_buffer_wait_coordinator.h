@@ -9,7 +9,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "gpu/ipc/common/android/texture_owner.h"
+#include "gpu/command_buffer/service/texture_owner.h"
 #include "media/gpu/media_gpu_export.h"
 
 namespace media {

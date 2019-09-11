@@ -224,8 +224,8 @@ class PasswordManagerClient {
   // Gets prefs associated with this embedder.
   virtual PrefService* GetPrefs() const = 0;
 
-  // Returns the PasswordStore associated with this instance.
-  virtual PasswordStore* GetPasswordStore() const = 0;
+  // Returns the profile PasswordStore associated with this instance.
+  virtual PasswordStore* GetProfilePasswordStore() const = 0;
 
   // Reports whether and how passwords are synced in the embedder. The default
   // implementation always returns NOT_SYNCING.

@@ -870,7 +870,8 @@ android_aar_prebuilt("google_play_services_cast_framework_java") {
   ]
 
   # Removing all resources from cast framework as they are unused bloat.
-  strip_resources = true
+  # Can only safely remove them when R8 will strip the path that accesses them.
+  strip_resources = !is_java_debug
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.

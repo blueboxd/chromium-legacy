@@ -35,9 +35,10 @@
 #include "ui/wm/public/activation_change_observer.h"
 
 namespace ui {
+class EventHandler;
 class ImplicitAnimationObserver;
-class MouseEvent;
 class LocatedEvent;
+class MouseEvent;
 }  // namespace ui
 
 namespace ash {
@@ -115,6 +116,11 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   void ProcessGestureEventOfAutoHideShelf(ui::GestureEvent* event,
                                           aura::Window* target);
 
+  // Handles events that are detected while the hotseat is kExtended in in-app
+  // shelf.
+  void ProcessGestureEventOfInAppHotseat(ui::GestureEvent* event,
+                                         aura::Window* target);
+
   void AddObserver(ShelfLayoutManagerObserver* observer);
   void RemoveObserver(ShelfLayoutManagerObserver* observer);
 
@@ -126,11 +132,18 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   // Handles mouse events from the shelf.
   void ProcessMouseEventFromShelf(const ui::MouseEvent& event_in_screen);
 
+  // Handles events from ShelfWidget.
+  void ProcessGestureEventFromShelfWidget(ui::GestureEvent* event_in_screen);
+
   // Returns how the shelf background should be painted.
   ShelfBackgroundType GetShelfBackgroundType() const;
 
   // Updates the background of the shelf if it has changed.
   void MaybeUpdateShelfBackground(AnimationChangeType change_type);
+
+  // Handles events from the HotseatWidget.
+  void ProcessGestureEventFromHotseatWidget(ui::GestureEvent* event,
+                                            aura::Window* target);
 
   // Returns whether the shelf should show a blurred background. This may
   // return false even if background blur is enabled depending on the session
@@ -284,6 +297,7 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
     ShelfVisibilityState visibility_state;
     ShelfAutoHideState auto_hide_state;
     WorkspaceWindowState window_state;
+    HotseatState hotseat_state;
 
     // True when the system is in the cancelable, pre-lock screen animation.
     bool pre_lock_screen_animation_active;
@@ -292,6 +306,11 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
 
   // Sets the visibility of the shelf to |state|.
   void SetState(ShelfVisibilityState visibility_state);
+
+  // Gets the target HotseatState based on the current state of HomeLauncher,
+  // Overview, Shelf, and any active gestures.
+  HotseatState GetHotseatState(ShelfVisibilityState visibility_state,
+                               ShelfAutoHideState auto_hide_state);
 
   // Returns shelf visibility state based on current value of auto hide
   // behavior setting.
@@ -392,7 +411,9 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   bool IsDragAllowed() const;
   bool StartAppListDrag(const ui::LocatedEvent& event_in_screen,
                         float scroll_y_hint);
-  bool StartShelfDrag();
+  bool StartShelfDrag(const ui::LocatedEvent& event_in_screen);
+  // Sets the Hotseat up to be dragged, if applicable.
+  void MaybeSetupHotseatDrag(const ui::LocatedEvent& event_in_screen);
   void UpdateDrag(const ui::LocatedEvent& event_in_screen,
                   float scroll_x,
                   float scroll_y);
@@ -440,15 +461,20 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   // clamshell mode.
   bool is_app_list_visible_ = false;
 
-  // Whether the HomeLauncher is being dragged to, or animating to fullscreen.
-  // This is maintained by OnHomeLauncherTargetPositionChanged. Used to
-  // determine AppList visibility in tablet mode.
-  bool is_home_launcher_target_position_shown_ = false;
-
   // Whether the HomeLauncher is shown. This is maintained by
   // OnHomeLauncherAnimationComplete. Used to determine AppList visibility in
   // tablet mode.
   bool is_home_launcher_shown_ = false;
+
+  enum HomeLauncherAnimationState {
+    kFinished,
+    kShowing,
+    kHiding,
+  };
+
+  // Whether the home launcher is showing, hiding, or not animating. Maintained
+  // by the AppList and HomeLauncher visibility observers.
+  HomeLauncherAnimationState home_launcher_animation_state_ = kFinished;
 
   // Count of pending visibility update suspensions. Skip updating shelf
   // visibility state if it is greater than 0.
@@ -483,9 +509,20 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
 
   DragStatus drag_status_ = kDragNone;
 
+  // Whether the hotseat is being dragged.
+  bool hotseat_is_in_drag_ = false;
+
+  // Whether the EXTENDED hotseat should be hidden. Set when HotseatEventHandler
+  // detects that the background has been interacted with.
+  bool should_hide_hotseat_ = false;
+
   // Tracks the amount of the drag. The value is only valid when
   // |drag_status_| is set to kDragInProgress.
   float drag_amount_ = 0.f;
+
+  // The velocity of the last drag event. Used to determine final state of the
+  // hotseat.
+  int last_drag_velocity_ = 0;
 
   // Tracks the amount of launcher that above the shelf bottom during dragging.
   float launcher_above_shelf_bottom_amount_ = 0.f;
@@ -498,6 +535,9 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
 
   // Whether background blur is enabled.
   const bool is_background_blur_enabled_;
+
+  // Pretarget handler responsible for hiding the hotseat.
+  std::unique_ptr<ui::EventHandler> hotseat_event_handler_;
 
   // Stores the previous workspace state. Used by
   // SendA11yAlertForFullscreenWorkspaceState to compare with current workspace

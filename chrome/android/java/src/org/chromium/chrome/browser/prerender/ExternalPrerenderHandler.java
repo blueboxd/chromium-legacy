@@ -13,6 +13,7 @@ import android.view.WindowManager;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -27,7 +28,7 @@ public class ExternalPrerenderHandler {
     private long mNativeExternalPrerenderHandler;
 
     public ExternalPrerenderHandler() {
-        mNativeExternalPrerenderHandler = nativeInit();
+        mNativeExternalPrerenderHandler = ExternalPrerenderHandlerJni.get().init();
     }
 
     /**
@@ -75,16 +76,16 @@ public class ExternalPrerenderHandler {
      */
     public WebContents addPrerender(Profile profile, WebContents webContents, String url,
             String referrer, Rect bounds, boolean prerenderOnCellular) {
-        return nativeAddPrerender(mNativeExternalPrerenderHandler, profile, webContents, url,
-                referrer, bounds.top, bounds.left, bounds.bottom, bounds.right,
-                prerenderOnCellular);
+        return ExternalPrerenderHandlerJni.get().addPrerender(mNativeExternalPrerenderHandler,
+                profile, webContents, url, referrer, bounds.top, bounds.left, bounds.bottom,
+                bounds.right, prerenderOnCellular);
     }
 
     /**
      * Cancel the current prerender action on this {@link ExternalPrerenderHandler}.
      */
     public void cancelCurrentPrerender() {
-        nativeCancelCurrentPrerender(mNativeExternalPrerenderHandler);
+        ExternalPrerenderHandlerJni.get().cancelCurrentPrerender(mNativeExternalPrerenderHandler);
     }
 
     /**
@@ -97,7 +98,7 @@ public class ExternalPrerenderHandler {
      */
     @VisibleForTesting
     public static boolean hasPrerenderedUrl(Profile profile, String url, WebContents webContents)  {
-        return nativeHasPrerenderedUrl(profile, url, webContents);
+        return ExternalPrerenderHandlerJni.get().hasPrerenderedUrl(profile, url, webContents);
     }
 
     /**
@@ -142,24 +143,23 @@ public class ExternalPrerenderHandler {
 
     @VisibleForTesting
     public static boolean hasRecentlyPrefetchedUrlForTesting(Profile profile, String url) {
-        return nativeHasRecentlyPrefetchedUrlForTesting(profile, url);
+        return ExternalPrerenderHandlerJni.get().hasRecentlyPrefetchedUrlForTesting(profile, url);
     }
 
     @VisibleForTesting
     public static void clearPrefetchInformationForTesting(Profile profile) {
-        nativeClearPrefetchInformationForTesting(profile);
+        ExternalPrerenderHandlerJni.get().clearPrefetchInformationForTesting(profile);
     }
 
-    private static native long nativeInit();
-    private static native WebContents nativeAddPrerender(
-            long nativeExternalPrerenderHandlerAndroid, Profile profile,
-            WebContents webContents, String url, String referrer,
-            int top, int left, int bottom, int right, boolean prerenderOnCellular);
-    private static native boolean nativeHasPrerenderedUrl(
-            Profile profile, String url, WebContents webContents);
-    private static native void nativeCancelCurrentPrerender(
-            long nativeExternalPrerenderHandlerAndroid);
-    private static native boolean nativeHasRecentlyPrefetchedUrlForTesting(
-            Profile profile, String url);
-    private static native void nativeClearPrefetchInformationForTesting(Profile profile);
+    @NativeMethods
+    interface Natives {
+        long init();
+        WebContents addPrerender(long nativeExternalPrerenderHandlerAndroid, Profile profile,
+                WebContents webContents, String url, String referrer, int top, int left, int bottom,
+                int right, boolean prerenderOnCellular);
+        boolean hasPrerenderedUrl(Profile profile, String url, WebContents webContents);
+        void cancelCurrentPrerender(long nativeExternalPrerenderHandlerAndroid);
+        boolean hasRecentlyPrefetchedUrlForTesting(Profile profile, String url);
+        void clearPrefetchInformationForTesting(Profile profile);
+    }
 }

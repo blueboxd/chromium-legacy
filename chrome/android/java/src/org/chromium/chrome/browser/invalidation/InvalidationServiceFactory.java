@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.invalidation;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.invalidation.InvalidationService;
 
@@ -34,7 +35,7 @@ public final class InvalidationServiceFactory {
         ThreadUtils.assertOnUiThread();
         InvalidationService service = sServiceMap.get(profile);
         if (service == null) {
-            service = nativeGetForProfile(profile);
+            service = InvalidationServiceFactoryJni.get().getForProfile(profile);
             sServiceMap.put(profile, service);
         }
         return service;
@@ -42,9 +43,12 @@ public final class InvalidationServiceFactory {
 
     @VisibleForTesting
     public static InvalidationService getForTest() {
-        return nativeGetForTest();
+        return InvalidationServiceFactoryJni.get().getForTest();
     }
 
-    private static native InvalidationService nativeGetForProfile(Profile profile);
-    private static native InvalidationService nativeGetForTest();
+    @NativeMethods
+    interface Natives {
+        InvalidationService getForProfile(Profile profile);
+        InvalidationService getForTest();
+    }
 }

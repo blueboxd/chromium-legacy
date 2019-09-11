@@ -143,11 +143,11 @@ void WebHTTPBody::AppendBlob(const WebString& uuid,
                              uint64_t length,
                              mojo::ScopedMessagePipeHandle blob_handle) {
   EnsureMutable();
-  mojom::blink::BlobPtrInfo blob_ptr_info(std::move(blob_handle),
-                                          mojom::blink::Blob::Version_);
+  mojo::PendingRemote<mojom::blink::Blob> blob_remote(
+      std::move(blob_handle), mojom::blink::Blob::Version_);
   private_->AppendBlob(
       uuid, BlobDataHandle::Create(uuid, "" /* type is not necessary */, length,
-                                   std::move(blob_ptr_info)));
+                                   std::move(blob_remote)));
 }
 
 void WebHTTPBody::AppendDataPipe(mojo::ScopedMessagePipeHandle message_pipe) {

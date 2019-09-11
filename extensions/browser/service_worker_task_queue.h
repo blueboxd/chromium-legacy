@@ -92,13 +92,13 @@ class ServiceWorkerTaskQueue : public KeyedService,
   static void SetObserverForTest(TestObserver* observer);
 
  private:
-  static void DidStartWorkerForScopeOnIO(
+  static void DidStartWorkerForScopeOnCoreThread(
       const LazyContextId& context_id,
       base::WeakPtr<ServiceWorkerTaskQueue> task_queue,
       int64_t version_id,
       int process_id,
       int thread_id);
-  static void StartServiceWorkerOnIOToRunTasks(
+  static void StartServiceWorkerOnCoreThreadToRunTasks(
       base::WeakPtr<ServiceWorkerTaskQueue> task_queue_weak,
       const LazyContextId& context_id,
       content::ServiceWorkerContext* service_worker_context);

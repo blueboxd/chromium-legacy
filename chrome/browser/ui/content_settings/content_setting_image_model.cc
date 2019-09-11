@@ -9,6 +9,7 @@
 
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -17,6 +18,8 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/download/download_request_limiter.h"
+#include "chrome/browser/permissions/permission_features.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
@@ -58,6 +61,7 @@ using content::WebContents;
 //     ContentSettingDownloadsImageModel         - automatic downloads
 //     ContentSettingClipboardReadImageModel     - clipboard read
 //     ContentSettingSensorsImageModel           - sensors
+//     ContentSettingNotificationsImageModel     - notifications
 //   ContentSettingMediaImageModel             - media
 //   ContentSettingFramebustBlockImageModel    - blocked framebust
 
@@ -159,6 +163,26 @@ class ContentSettingSensorsImageModel : public ContentSettingSimpleImageModel {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentSettingSensorsImageModel);
+};
+
+// The image model for an icon that acts as a quiet permission request prompt
+// for notifications. In contrast to other icons -- which are either
+// permission-in-use indicators or permission-blocked indicators -- this is
+// shown before the user makes the first permission decision, and in fact,
+// allows the user to make that decision.
+class ContentSettingNotificationsImageModel
+    : public ContentSettingSimpleImageModel {
+ public:
+  ContentSettingNotificationsImageModel();
+
+  // ContentSettingSimpleImageModel:
+  bool UpdateAndGetVisibility(WebContents* web_contents) override;
+  std::unique_ptr<ContentSettingBubbleModel> CreateBubbleModelImpl(
+      ContentSettingBubbleModel::Delegate* delegate,
+      WebContents* web_contents) override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingNotificationsImageModel);
 };
 
 class ContentSettingPopupImageModel : public ContentSettingSimpleImageModel {
@@ -282,6 +306,8 @@ ContentSettingImageModel::CreateForContentType(ImageType image_type) {
       return std::make_unique<ContentSettingClipboardReadImageModel>();
     case ImageType::SENSORS:
       return std::make_unique<ContentSettingSensorsImageModel>();
+    case ImageType::NOTIFICATIONS_QUIET_PROMPT:
+      return std::make_unique<ContentSettingNotificationsImageModel>();
     case ImageType::NUM_IMAGE_TYPES:
       break;
   }
@@ -708,6 +734,35 @@ bool ContentSettingPopupImageModel::UpdateAndGetVisibility(
   return true;
 }
 
+// Notifications --------------------------------------------------------------
+
+ContentSettingNotificationsImageModel::ContentSettingNotificationsImageModel()
+    : ContentSettingSimpleImageModel(ImageType::NOTIFICATIONS_QUIET_PROMPT,
+                                     CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+  set_icon(vector_icons::kNotificationsOffIcon, gfx::kNoneIcon);
+  set_tooltip(
+      l10n_util::GetStringUTF16(IDS_NOTIFICATIONS_OFF_EXPLANATORY_TEXT));
+  if (QuietNotificationsPromptConfig::UIFlavorToUse() ==
+      QuietNotificationsPromptConfig::UIFlavor::ANIMATED_ICON) {
+    set_explanatory_string_id(IDS_NOTIFICATIONS_OFF_EXPLANATORY_TEXT);
+  }
+}
+
+bool ContentSettingNotificationsImageModel::UpdateAndGetVisibility(
+    WebContents* web_contents) {
+  auto* manager = PermissionRequestManager::FromWebContents(web_contents);
+  // |manager| may be null in tests.
+  return manager ? manager->ShouldShowQuietPermissionPrompt() : false;
+}
+
+std::unique_ptr<ContentSettingBubbleModel>
+ContentSettingNotificationsImageModel::CreateBubbleModelImpl(
+    ContentSettingBubbleModel::Delegate* delegate,
+    WebContents* web_contents) {
+  return std::make_unique<ContentSettingNotificationsBubbleModel>(delegate,
+                                                                  web_contents);
+}
+
 // Base class ------------------------------------------------------------------
 
 gfx::Image ContentSettingImageModel::GetIcon(SkColor icon_color) const {
@@ -757,6 +812,7 @@ ContentSettingImageModel::GenerateContentSettingImageModels() {
       ImageType::SOUND,
       ImageType::FRAMEBUST,
       ImageType::CLIPBOARD_READ,
+      ImageType::NOTIFICATIONS_QUIET_PROMPT,
   };
 
   std::vector<std::unique_ptr<ContentSettingImageModel>> result;

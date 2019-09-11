@@ -20,6 +20,8 @@
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/test/arc_data_removed_waiter.h"
+#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
+#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -65,6 +67,11 @@ constexpr char kUnmanagedAuthToken[] = "unmanaged-auth-token";
 constexpr char kWellKnownConsumerName[] = "test@gmail.com";
 constexpr char kFakeUserName[] = "test@example.com";
 constexpr char kFakeGaiaId[] = "1234567890";
+
+std::unique_ptr<KeyedService> CreateCertificateProviderService(
+    content::BrowserContext* context) {
+  return std::make_unique<chromeos::CertificateProviderService>();
+}
 
 }  // namespace
 
@@ -147,6 +154,13 @@ class ArcSessionManagerTest : public MixinBasedInProcessBrowserTest {
 
     profile()->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
     profile()->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);
+
+    // TestingProfile is not interpreted as a primary profile. Inject factory so
+    // that the instance of CertificateProviderService for the profile can be
+    // created.
+    chromeos::CertificateProviderServiceFactory::GetInstance()
+        ->SetTestingFactory(
+            profile(), base::BindRepeating(&CreateCertificateProviderService));
 
     // Set up ARC for test profile.
     // Currently, ArcSessionManager is singleton and set up with the original

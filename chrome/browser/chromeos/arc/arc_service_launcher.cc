@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/arc/cast_receiver/arc_cast_receiver_service.h"
 #include "chrome/browser/chromeos/arc/enterprise/arc_enterprise_reporting_service.h"
 #include "chrome/browser/chromeos/arc/enterprise/cert_store/arc_cert_store_bridge.h"
+#include "chrome/browser/chromeos/arc/enterprise/cert_store/arc_smart_card_manager_bridge.h"
 #include "chrome/browser/chromeos/arc/file_system_watcher/arc_file_system_watcher_service.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_bridge.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_mounter.h"
@@ -208,6 +209,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcRotationLockBridge::GetForBrowserContext(profile);
   ArcScreenCaptureBridge::GetForBrowserContext(profile);
   ArcSettingsService::GetForBrowserContext(profile);
+  ArcSmartCardManagerBridge::GetForBrowserContext(profile);
   ArcTimerBridge::GetForBrowserContext(profile);
   ArcTracingBridge::GetForBrowserContext(profile);
   ArcAppPerformanceTracing::GetForBrowserContext(profile);

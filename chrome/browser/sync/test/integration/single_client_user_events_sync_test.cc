@@ -126,9 +126,13 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, MAYBE_RetryParallel) {
 
   event_service->RecordUserEvent(specifics2);
   event_service->RecordUserEvent(specifics1);
-  // The entity that got the transient error is still considered "committed" by
-  // the fake server, so we should see it *and* its retry.
+  // First wait for these two events to arrive on the server - only after this
+  // has happened will |retry_specifics| actually be populated.
+  // Note: The entity that got the transient error is still considered
+  // "committed" by the fake server.
   EXPECT_TRUE(ExpectUserEvents({specifics1, specifics2}));
+  // Now that |retry_specifics| got populated by the lambda above, make sure it
+  // also arrives on the server.
   EXPECT_TRUE(ExpectUserEvents({specifics1, specifics2, retry_specifics}));
 }
 

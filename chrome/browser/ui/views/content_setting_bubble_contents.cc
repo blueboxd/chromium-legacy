@@ -614,8 +614,8 @@ std::unique_ptr<views::View> ContentSettingBubbleContents::CreateExtraView() {
 }
 
 bool ContentSettingBubbleContents::Accept() {
-  if (content_setting_bubble_model_->ShouldDoneButtonBehaveAsManageButton())
-    content_setting_bubble_model_->OnManageButtonClicked();
+  content_setting_bubble_model_->OnDoneButtonClicked();
+
   return true;
 }
 

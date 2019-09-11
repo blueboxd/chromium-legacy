@@ -34,7 +34,6 @@ namespace app_list {
 
 namespace {
 
-constexpr int kMaxResults = 5;
 constexpr base::TimeDelta kImpressionThreshold =
     base::TimeDelta::FromSeconds(3);
 
@@ -137,7 +136,8 @@ SearchResultListView::SearchResultListView(AppListMainView* main_view,
   results_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
 
-  for (int i = 0; i < kMaxResults; ++i) {
+  for (size_t i = 0;
+       i < AppListConfig::instance().max_search_result_list_items(); ++i) {
     search_result_views_.emplace_back(
         new SearchResultView(this, view_delegate_));
     search_result_views_.back()->set_index_in_container(i);

@@ -88,7 +88,6 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
     const KURL& new_url,
     const AtomicString& new_method,
     const KURL& new_site_for_cookies,
-    scoped_refptr<const SecurityOrigin> new_top_frame_origin,
     const String& new_referrer,
     network::mojom::ReferrerPolicy new_referrer_policy,
     bool skip_service_worker) const {
@@ -97,7 +96,6 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
   request->SetRequestorOrigin(RequestorOrigin());
   request->SetHttpMethod(new_method);
   request->SetSiteForCookies(new_site_for_cookies);
-  request->SetTopFrameOrigin(std::move(new_top_frame_origin));
   String referrer =
       new_referrer.IsEmpty() ? Referrer::NoReferrer() : String(new_referrer);
   // TODO(domfarolino): Stop storing ResourceRequest's generated referrer as a

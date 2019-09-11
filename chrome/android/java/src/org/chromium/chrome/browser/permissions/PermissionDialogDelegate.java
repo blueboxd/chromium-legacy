@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.permissions;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.tab.Tab;
 
@@ -74,22 +75,24 @@ public class PermissionDialogDelegate {
 
     public void onAccept() {
         assert mNativeDelegatePtr != 0;
-        nativeAccept(mNativeDelegatePtr);
+        PermissionDialogDelegateJni.get().accept(mNativeDelegatePtr, PermissionDialogDelegate.this);
     }
 
     public void onCancel() {
         assert mNativeDelegatePtr != 0;
-        nativeCancel(mNativeDelegatePtr);
+        PermissionDialogDelegateJni.get().cancel(mNativeDelegatePtr, PermissionDialogDelegate.this);
     }
 
     public void onDismiss() {
         assert mNativeDelegatePtr != 0;
-        nativeDismissed(mNativeDelegatePtr);
+        PermissionDialogDelegateJni.get().dismissed(
+                mNativeDelegatePtr, PermissionDialogDelegate.this);
     }
 
     public void destroy() {
         assert mNativeDelegatePtr != 0;
-        nativeDestroy(mNativeDelegatePtr);
+        PermissionDialogDelegateJni.get().destroy(
+                mNativeDelegatePtr, PermissionDialogDelegate.this);
         mNativeDelegatePtr = 0;
     }
 
@@ -141,8 +144,11 @@ public class PermissionDialogDelegate {
         mSecondaryButtonText = secondaryButtonText;
     }
 
-    private native void nativeAccept(long nativePermissionDialogDelegate);
-    private native void nativeCancel(long nativePermissionDialogDelegate);
-    private native void nativeDismissed(long nativePermissionDialogDelegate);
-    private native void nativeDestroy(long nativePermissionDialogDelegate);
+    @NativeMethods
+    interface Natives {
+        void accept(long nativePermissionDialogDelegate, PermissionDialogDelegate caller);
+        void cancel(long nativePermissionDialogDelegate, PermissionDialogDelegate caller);
+        void dismissed(long nativePermissionDialogDelegate, PermissionDialogDelegate caller);
+        void destroy(long nativePermissionDialogDelegate, PermissionDialogDelegate caller);
+    }
 }

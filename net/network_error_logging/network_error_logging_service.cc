@@ -816,7 +816,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
 
     base::Value cert_url_list = base::Value(base::Value::Type::LIST);
     if (details.cert_url.is_valid())
-      cert_url_list.GetList().push_back(base::Value(details.cert_url.spec()));
+      cert_url_list.Append(base::Value(details.cert_url.spec()));
     sxg_body->SetKey(kCertUrlKey, std::move(cert_url_list));
     body->SetDictionary(kSignedExchangeBodyKey, std::move(sxg_body));
 

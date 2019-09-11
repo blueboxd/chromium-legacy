@@ -467,6 +467,10 @@
     "label": "//third_party/brotli:brotli_fuzzer",
     "type": "fuzzer",
   },
+  "browser_switcher_bho_unittests": {
+    "label": "//chrome/browser/browser_switcher/bho:browser_switcher_bho_unittests",
+    "type": "console_test_launcher",
+  },
   "browser_tests": {
     "label": "//chrome/test:browser_tests",
     "type": "windowed_test_launcher",
@@ -618,6 +622,10 @@
   },
   "chrome_modern_public_smoke_test": {
     "label": "//chrome/android:chrome_modern_public_smoke_test",
+    "type": "console_test_launcher",
+  },
+  "chrome_modern_public_bundle_smoke_test": {
+    "label": "//chrome/android:chrome_modern_public_bundle_smoke_test",
     "type": "console_test_launcher",
   },
   "chrome_official_builder": {
@@ -1738,6 +1746,10 @@
   },
   "monochrome_public_smoke_test": {
     "label": "//chrome/android:monochrome_public_smoke_test",
+    "type": "console_test_launcher",
+  },
+  "monochrome_public_bundle_smoke_test": {
+    "label": "//chrome/android:monochrome_public_bundle_smoke_test",
     "type": "console_test_launcher",
   },
   "mojo_core_channel_fuzzer": {

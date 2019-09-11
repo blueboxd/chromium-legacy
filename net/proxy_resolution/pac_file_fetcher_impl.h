@@ -50,13 +50,6 @@ class NET_EXPORT PacFileFetcherImpl : public PacFileFetcher,
   static std::unique_ptr<PacFileFetcherImpl> Create(
       URLRequestContext* url_request_context);
 
-  // Same as Create(), but additionally allows fetching PAC URLs from file://
-  // URLs (provided the URLRequestContext supports it).
-  //
-  // This should not be used in new code (see https://crbug.com/839566).
-  static std::unique_ptr<PacFileFetcherImpl> CreateWithFileUrlSupport(
-      URLRequestContext* url_request_context);
-
   ~PacFileFetcherImpl() override;
 
   // Used by unit-tests to modify the default limits.
@@ -90,8 +83,7 @@ class NET_EXPORT PacFileFetcherImpl : public PacFileFetcher,
  private:
   enum { kBufSize = 4096 };
 
-  PacFileFetcherImpl(URLRequestContext* url_request_context,
-                     bool allow_file_url);
+  explicit PacFileFetcherImpl(URLRequestContext* url_request_context);
 
   // Returns true if |url| has an acceptable URL scheme (i.e. http://, https://,
   // etc).
@@ -156,8 +148,6 @@ class NET_EXPORT PacFileFetcherImpl : public PacFileFetcher,
 
   // The time that the first byte was received.
   base::TimeTicks fetch_time_to_first_byte_;
-
-  const bool allow_file_url_;
 
   // Factory for creating the time-out task. This takes care of revoking
   // outstanding tasks when |this| is deleted.

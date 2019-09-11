@@ -76,6 +76,7 @@ AppManagementPageHandler::AppManagementPageHandler(
       profile_(profile)
 #if defined(OS_CHROMEOS)
       ,
+      arc_app_list_prefs_observer_(this),
       shelf_delegate_(this)
 #endif
 {
@@ -91,7 +92,7 @@ AppManagementPageHandler::AppManagementPageHandler(
 
 #if defined(OS_CHROMEOS)
   if (arc::IsArcAllowedForProfile(profile_)) {
-    ArcAppListPrefs::Get(profile_)->AddObserver(this);
+    arc_app_list_prefs_observer_.Add(ArcAppListPrefs::Get(profile_));
   }
 #endif  // OS_CHROMEOS
 }

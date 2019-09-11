@@ -787,9 +787,10 @@ void Session::OnResponseParsingError(const std::string& error_message) {
   // TODO(xjz): Log the |error_message| in the mirroring logs.
 }
 
-void Session::CreateAudioStream(mojom::AudioStreamCreatorClientPtr client,
-                                const media::AudioParameters& params,
-                                uint32_t shared_memory_count) {
+void Session::CreateAudioStream(
+    mojo::PendingRemote<mojom::AudioStreamCreatorClient> client,
+    const media::AudioParameters& params,
+    uint32_t shared_memory_count) {
   resource_provider_->CreateAudioStream(std::move(client), params,
                                         shared_memory_count);
 }
@@ -893,10 +894,10 @@ void Session::CreateAndSendOffer() {
 }
 
 void Session::ConnectToRemotingSource(
-    media::mojom::RemoterPtr remoter,
-    media::mojom::RemotingSourceRequest request) {
+    mojo::PendingRemote<media::mojom::Remoter> remoter,
+    mojo::PendingReceiver<media::mojom::RemotingSource> receiver) {
   resource_provider_->ConnectToRemotingSource(std::move(remoter),
-                                              std::move(request));
+                                              std::move(receiver));
 }
 
 void Session::RequestRemotingStreaming() {

@@ -59,7 +59,6 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderClient {
   virtual bool WillFollowRedirect(
       const WebURL& new_url,
       const WebURL& new_site_for_cookies,
-      const base::Optional<WebSecurityOrigin>& new_top_frame_origin,
       const WebString& new_referrer,
       network::mojom::ReferrerPolicy new_referrer_policy,
       const WebString& new_method,

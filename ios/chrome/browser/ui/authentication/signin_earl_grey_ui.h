@@ -47,6 +47,10 @@
 // Checks that the sign-in promo view is not visible.
 + (void)checkSigninPromoNotVisible;
 
+// Signs out from the current identity. if |isManagedAccount| is true, the
+// confirmed managed dialog is confirmed while signing out.
++ (void)signOutWithManagedAccount:(BOOL)isManagedAccount;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGNIN_EARL_GREY_UI_H_

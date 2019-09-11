@@ -98,7 +98,8 @@ BASE_EXPORT bool StringToSizeT(StringPiece16 input, size_t* output);
 // If your input is locale specific, use ICU to read the number.
 // WARNING: Will write to |output| even when returning false.
 //          Read the comments here and above StringToInt() carefully.
-BASE_EXPORT bool StringToDouble(const std::string& input, double* output);
+BASE_EXPORT bool StringToDouble(StringPiece input, double* output);
+BASE_EXPORT bool StringToDouble(StringPiece16 input, double* output);
 
 // Hex encoding ----------------------------------------------------------------
 

@@ -92,6 +92,10 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationItem
       mojo::Remote<media_session::mojom::MediaController> controller,
       media_session::mojom::MediaSessionInfoPtr session_info);
 
+  // This will stop the media session associated with this item. The item will
+  // then call |MediaNotificationController::RemoveItem()| to ensure removal.
+  void Dismiss();
+
   // This will freeze the item and start a timer to destroy the item after
   // some time has passed.
   void Freeze();

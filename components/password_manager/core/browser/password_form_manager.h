@@ -204,12 +204,6 @@ class PasswordFormManager : public PasswordFormManagerInterface,
   FormSaver* form_saver() { return form_saver_.get(); }
 #endif
 
-  // TODO(https://crbug.com/831123): Remove it when the old form parsing is
-  // removed.
-  scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder() {
-    return metrics_recorder_;
-  }
-
  protected:
   // Constructor for Credentials API.
   PasswordFormManager(PasswordManagerClient* client,
@@ -232,12 +226,6 @@ class PasswordFormManager : public PasswordFormManagerInterface,
       std::unique_ptr<FormSaver> form_saver,
       scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder,
       PasswordStore::FormDigest form_digest);
-
-  // Compares |parsed_form| with |old_parsing_result_| and records UKM metric.
-  // TODO(https://crbug.com/831123): Remove it when the old form parsing is
-  // removed.
-  void RecordMetricOnCompareParsingResult(
-      const autofill::PasswordForm& parsed_form);
 
   // Records the status of readonly fields during parsing, combined with the
   // overall success of the parsing. It reports through two different metrics,

@@ -148,7 +148,7 @@ TEST_F(EncodedFormDataMojomTraitsTest, Roundtrips_FormDataElement) {
   mojo::MessagePipe pipe;
   original3.optional_blob_data_handle_ = BlobDataHandle::Create(
       original3.blob_uuid_, "type-test", 100,
-      mojom::blink::BlobPtrInfo(std::move(pipe.handle0), 0));
+      mojo::PendingRemote<mojom::blink::Blob>(std::move(pipe.handle0), 0));
   FormDataElement copied3;
   EXPECT_TRUE(mojo::test::SerializeAndDeserialize<
               blink::mojom::blink::FetchAPIDataElement>(&original3, &copied3));

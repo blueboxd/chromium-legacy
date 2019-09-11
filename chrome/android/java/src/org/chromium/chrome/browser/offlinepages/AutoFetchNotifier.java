@@ -19,6 +19,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
@@ -374,7 +375,11 @@ public class AutoFetchNotifier {
     }
 
     private static void cancelInProgress() {
-        nativeCancelInProgress(Profile.getLastUsedProfile());
+        AutoFetchNotifierJni.get().cancelInProgress(Profile.getLastUsedProfile());
     }
-    private static native void nativeCancelInProgress(Profile profile);
+
+    @NativeMethods
+    interface Natives {
+        void cancelInProgress(Profile profile);
+    }
 }

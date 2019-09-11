@@ -95,9 +95,11 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
   bool Is2d() const;
   CanvasColorParams ColorParams() const;
 
+  // For deferred canvases this will have the side effect of drawing recorded
+  // commands in order to finalize the frame
   ScriptPromise convertToBlob(ScriptState*,
                               const ImageEncodeOptions*,
-                              ExceptionState&) const;
+                              ExceptionState&);
 
   // blink::CanvasImageSource
   bool IsOffscreenCanvas() const override;

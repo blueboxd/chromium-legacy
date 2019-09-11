@@ -1423,21 +1423,23 @@ TEST_F(ShelfViewTest, ShouldHideTooltipTest) {
 
   // The tooltip should hide if placed in between the home button and the
   // first shelf button.
-  const int left = home_button->bounds().right();
+  const int left = home_button->GetBoundsInScreen().right();
   // Find the first shelf button that's to the right of the home button.
   int right = 0;
   for (int i = 0; i < test_api_->GetButtonCount(); ++i) {
     ShelfAppButton* button = test_api_->GetButton(i);
     if (!button)
       continue;
-    right = button->bounds().x();
+    right = button->GetBoundsInScreen().x();
     if (right > left)
       break;
   }
-  const int center_x =
-      shelf_view_->GetMirroredXInView(left + (right - left) / 2);
-  EXPECT_TRUE(shelf_view_->ShouldHideTooltip(
-      gfx::Point(center_x, home_button->GetMirroredBounds().left_center().y())))
+
+  gfx::Point test_point(left + (right - left) / 2,
+                        home_button->GetBoundsInScreen().y());
+  views::View::ConvertPointFromScreen(shelf_view_, &test_point);
+  EXPECT_TRUE(shelf_view_->ShouldHideTooltip(gfx::Point(
+      shelf_view_->GetMirroredXInView(test_point.x()), test_point.y())))
       << "Tooltip should hide between home button and first shelf item";
 
   // The tooltip shouldn't hide if the mouse is in the gap between two buttons.
@@ -1486,8 +1488,10 @@ TEST_F(ShelfViewTest, ShouldHideTooltipWithAppListWindowTest) {
 
   // The tooltip should hide on the home button if the app list is visible.
   HomeButton* home_button = shelf_view_->shelf_widget()->GetHomeButton();
-  EXPECT_TRUE(shelf_view_->ShouldHideTooltip(
-      home_button->GetMirroredBounds().CenterPoint()));
+  gfx::Point center_point = home_button->GetBoundsInScreen().CenterPoint();
+  views::View::ConvertPointFromScreen(shelf_view_, &center_point);
+  EXPECT_TRUE(shelf_view_->ShouldHideTooltip(gfx::Point(
+      shelf_view_->GetMirroredXInView(center_point.x()), center_point.y())));
 }
 
 // Test that by moving the mouse cursor off the button onto the bubble it closes
@@ -2940,8 +2944,8 @@ class InkDropSpy : public views::InkDrop {
     ink_drop_->AnimateToState(ink_drop_state);
   }
 
-  void SetHoverHighlightFadeDurationMs(int duration_ms) override {
-    ink_drop_->SetHoverHighlightFadeDurationMs(duration_ms);
+  void SetHoverHighlightFadeDuration(base::TimeDelta duration) override {
+    ink_drop_->SetHoverHighlightFadeDuration(duration);
   }
 
   void UseDefaultHoverHighlightFadeDuration() override {

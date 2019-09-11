@@ -615,7 +615,7 @@ void OobeUI::CurrentScreenChanged(OobeScreenId new_screen) {
 
   current_screen_ = new_screen;
   for (Observer& observer : observer_list_)
-    observer.OnCurrentScreenChanged(current_screen_, new_screen);
+    observer.OnCurrentScreenChanged(previous_screen_, new_screen);
 }
 
 bool OobeUI::IsScreenInitialized(OobeScreenId screen) {

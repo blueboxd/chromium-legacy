@@ -69,6 +69,8 @@ void DemoWindow::OnBoundsChanged(const gfx::Rect& new_bounds) {
   StartRendererIfNecessary();
 }
 
+void DemoWindow::OnMouseEnter() {}
+
 void DemoWindow::OnDamageRect(const gfx::Rect& damaged_region) {}
 
 void DemoWindow::DispatchEvent(Event* event) {

@@ -70,7 +70,6 @@ java_annotation_processor("module_interface_processor") {
     "//third_party/android_deps:com_squareup_javapoet_java",
     "//third_party/auto:auto_service_java",
   ]
-  jacoco_never_instrument = true
 }
 
 # Use this one if your target needs to depend on ModuleInstallerConfig. The

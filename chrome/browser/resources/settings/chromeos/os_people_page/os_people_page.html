@@ -112,9 +112,12 @@
               <!-- Does not use <cr-link-row> due to custom aria label. -->
               <div id="profile-icon"
                   style="background-image: [[getIconImageSet_(
-                      profileIconUrl_)]]">
+                      profileIconUrl_)]]"
+                  on-click="onAccountManagerTap_"
+                  actionable$="[[isAccountManagerEnabled_]]">
               </div>
               <div class="middle two-line no-min-width"
+                  id="profile-row"
                   on-click="onAccountManagerTap_"
                   actionable$="[[isAccountManagerEnabled_]]">
                 <div class="flex text-elide settings-box-text">

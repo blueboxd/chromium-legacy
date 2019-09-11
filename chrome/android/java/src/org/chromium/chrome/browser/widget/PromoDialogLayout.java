@@ -16,6 +16,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ui.widget.BoundedLinearLayout;
+import org.chromium.chrome.browser.ui.widget.DualControlLayout;
 import org.chromium.chrome.browser.widget.PromoDialog.DialogParams;
 
 /**

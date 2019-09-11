@@ -36,16 +36,18 @@ void FakeOverlayPresentationContext::SimulateDismissalForRequest(
   std::move(state.dismissal_callback).Run(reason);
 }
 
-void FakeOverlayPresentationContext::SetIsActive(bool active) {
-  if (active_ == active)
+void FakeOverlayPresentationContext::SetPresentationCapabilities(
+    UIPresentationCapabilities capabilities) {
+  if (capabilities_ == capabilities)
     return;
 
   for (auto& observer : observers_) {
-    observer.OverlayPresentationContextWillChangeActivationState(this, active);
+    observer.OverlayPresentationContextWillChangePresentationCapabilities(
+        this, capabilities);
   }
-  active_ = active;
+  capabilities_ = capabilities;
   for (auto& observer : observers_) {
-    observer.OverlayPresentationContextDidChangeActivationState(this);
+    observer.OverlayPresentationContextDidChangePresentationCapabilities(this);
   }
 }
 
@@ -59,8 +61,21 @@ void FakeOverlayPresentationContext::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-bool FakeOverlayPresentationContext::IsActive() const {
-  return active_;
+OverlayPresentationContext::UIPresentationCapabilities
+FakeOverlayPresentationContext::GetPresentationCapabilities() const {
+  return capabilities_;
+}
+
+bool FakeOverlayPresentationContext::CanShowUIForRequest(
+    OverlayRequest* request,
+    UIPresentationCapabilities capabilities) const {
+  return capabilities !=
+         OverlayPresentationContext::UIPresentationCapabilities::kNone;
+}
+
+bool FakeOverlayPresentationContext::CanShowUIForRequest(
+    OverlayRequest* request) const {
+  return CanShowUIForRequest(request, capabilities_);
 }
 
 void FakeOverlayPresentationContext::ShowOverlayUI(

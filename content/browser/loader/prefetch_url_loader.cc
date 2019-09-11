@@ -202,7 +202,6 @@ void PrefetchURLLoader::OnReceiveRedirect(
 
   resource_request_.url = redirect_info.new_url;
   resource_request_.site_for_cookies = redirect_info.new_site_for_cookies;
-  resource_request_.top_frame_origin = redirect_info.new_top_frame_origin;
   resource_request_.referrer = GURL(redirect_info.new_referrer);
   resource_request_.referrer_policy = redirect_info.new_referrer_policy;
   forwarding_client_->OnReceiveRedirect(redirect_info, std::move(head));

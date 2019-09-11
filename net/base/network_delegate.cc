@@ -158,13 +158,6 @@ bool NetworkDelegate::CanSetCookie(const URLRequest& request,
   return OnCanSetCookie(request, cookie, options, allowed_from_caller);
 }
 
-bool NetworkDelegate::CanAccessFile(const URLRequest& request,
-                                    const base::FilePath& original_path,
-                                    const base::FilePath& absolute_path) const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return OnCanAccessFile(request, original_path, absolute_path);
-}
-
 bool NetworkDelegate::ForcePrivacyMode(
     const GURL& url,
     const GURL& site_for_cookies,

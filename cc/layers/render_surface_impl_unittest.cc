@@ -22,7 +22,7 @@ TEST(RenderSurfaceLayerImplTest, Occlusion) {
 
   LayerTestCommon::LayerImplTest impl;
 
-  LayerImpl* owning_layer_impl = impl.AddChildToRoot<LayerImpl>();
+  LayerImpl* owning_layer_impl = impl.AddLayer<LayerImpl>();
   owning_layer_impl->SetBounds(layer_size);
   owning_layer_impl->SetDrawsContent(true);
   CopyProperties(impl.root_layer(), owning_layer_impl);

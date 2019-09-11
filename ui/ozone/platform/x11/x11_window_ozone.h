@@ -46,6 +46,8 @@ class X11WindowOzone : public X11Window,
   bool HasCapture() const override;
   void SetCursor(PlatformCursor cursor) override;
 
+  void OnMouseEnter();
+
   // Overridden from ui::XEventDispatcher:
   void CheckCanDispatchNextPlatformEvent(XEvent* xev) override;
   void PlatformEventDispatchFinished() override;

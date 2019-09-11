@@ -11,6 +11,7 @@
 #include "mojo/public/cpp/base/file_path_mojom_traits.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "mojo/public/cpp/bindings/array_traits_wtf_vector.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/string_traits_wtf.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom-blink.h"
@@ -80,12 +81,13 @@ mojo::PendingRemote<network::mojom::blink::DataPipeGetter> StructTraits<
   }
   if (data.type_ == blink::FormDataElement::kEncodedBlob) {
     if (data.optional_blob_data_handle_) {
-      blink::mojom::blink::BlobPtr blob_ptr(blink::mojom::blink::BlobPtrInfo(
-          data.optional_blob_data_handle_->CloneBlobRemote().PassPipe(),
-          blink::mojom::blink::Blob::Version_));
+      mojo::Remote<blink::mojom::blink::Blob> blob_remote(
+          mojo::PendingRemote<blink::mojom::blink::Blob>(
+              data.optional_blob_data_handle_->CloneBlobRemote().PassPipe(),
+              blink::mojom::blink::Blob::Version_));
       mojo::PendingRemote<network::mojom::blink::DataPipeGetter>
           data_pipe_getter_remote;
-      blob_ptr->AsDataPipeGetter(
+      blob_remote->AsDataPipeGetter(
           data_pipe_getter_remote.InitWithNewPipeAndPassReceiver());
       return data_pipe_getter_remote;
     }

@@ -144,6 +144,10 @@ gfx::Rect DrmWindowHost::GetRestoredBoundsInPixels() const {
   return gfx::Rect();
 }
 
+void DrmWindowHost::OnMouseEnter() {
+  delegate_->OnMouseEnter();
+}
+
 bool DrmWindowHost::CanDispatchEvent(const PlatformEvent& event) {
   DCHECK(event);
 
@@ -190,6 +194,14 @@ uint32_t DrmWindowHost::DispatchEvent(const PlatformEvent& event) {
   if (event->IsLocatedEvent()) {
     // Make the event location relative to this window's origin.
     LocatedEvent* located_event = event->AsLocatedEvent();
+
+    if (event->IsMouseEvent()) {
+      DrmWindowHost* window_on_mouse =
+          window_manager_->GetWindowAt(located_event->location());
+      if (window_on_mouse)
+        window_manager_->MouseOnWindow(window_on_mouse);
+    }
+
     gfx::PointF location = located_event->location_f();
     location -= gfx::Vector2dF(bounds_.OffsetFromOrigin());
     located_event->set_location_f(location);

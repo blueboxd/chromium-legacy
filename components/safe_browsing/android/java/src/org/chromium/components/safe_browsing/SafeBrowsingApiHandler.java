@@ -73,18 +73,17 @@ public interface SafeBrowsingApiHandler {
     public void startUriLookup(long callbackId, String uri, int[] threatsOfInterest);
 
     /**
-     * Start a check to determine if a uri is in a set of allowlists. If true, password protection
-     * service will assume the url to be safe and skip it. This feature is not applicable to Android
-     * Webview, because there is no saved password or GAIA password in AW.
+     * Start a check to determine if a uri is in an allowlist. If true, password protection
+     * service will consider the uri to be safe.
      *
      * @param uri The uri from a password protection event(user focuses on password form
      *      * or user reuses their password)
-     * @param threatsOfInterest determines the type of allowlists that the uri will be matched to.
+     * @param threatType determines the type of the allowlist that the uri will be matched to.
      *
-     * @return true if the uri is found in the set of allowlists. Otherwise, false.
+     * @return true if the uri is found in the corresponding allowlist. Otherwise, false.
      */
     // TODO(xinghuilu@): remove default once downstream implementation is patched
-    default boolean startAllowlistLookup(String uri, int[] threatsOfInterest) {
+    default boolean startAllowlistLookup(String uri, int threatType) {
         return false;
     }
 }

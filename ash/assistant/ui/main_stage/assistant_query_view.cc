@@ -10,6 +10,7 @@
 #include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "base/strings/utf_string_conversions.h"
+#include "net/base/escape.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/layout/box_layout.h"
@@ -109,11 +110,14 @@ void AssistantQueryView::SetText(const std::string& high_confidence_text,
   if (high_confidence_text.empty() && low_confidence_text.empty()) {
     label_->SetText(base::string16());
   } else {
+    // When coming from the server, both |high_confidence_text| and
+    // |low_confidence_text| may be HTML escaped, so we need to unescape both
+    // before displaying to avoid printing HTML entities to the user.
     const base::string16& high_confidence_text_16 =
-        base::UTF8ToUTF16(high_confidence_text);
+        net::UnescapeForHTML(base::UTF8ToUTF16(high_confidence_text));
 
     const base::string16& low_confidence_text_16 =
-        base::UTF8ToUTF16(low_confidence_text);
+        net::UnescapeForHTML(base::UTF8ToUTF16(low_confidence_text));
 
     label_->SetText(high_confidence_text_16 + low_confidence_text_16);
 

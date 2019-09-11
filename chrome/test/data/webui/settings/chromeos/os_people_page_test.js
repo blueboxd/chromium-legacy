@@ -114,10 +114,14 @@ cr.define('settings_people_page', function() {
       await syncBrowserProxy.whenCalled('getSyncStatus');
       Polymer.dom.flush();
 
+      // Get page elements.
+      const profileIconEl = assert(peoplePage.$$('#profile-icon'));
+      const profileRowEl = assert(peoplePage.$$('#profile-row'));
+      const profileNameEl = assert(peoplePage.$$('#profile-name'));
+
       assertEquals(
-          browserProxy.fakeProfileInfo.name,
-          peoplePage.$$('#profile-name').textContent.trim());
-      const bg = peoplePage.$$('#profile-icon').style.backgroundImage;
+          browserProxy.fakeProfileInfo.name, profileNameEl.textContent.trim());
+      const bg = profileIconEl.style.backgroundImage;
       assertTrue(bg.includes(browserProxy.fakeProfileInfo.iconUrl));
 
       const iconDataUrl = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEA' +
@@ -126,10 +130,13 @@ cr.define('settings_people_page', function() {
           'profile-info-changed', {name: 'pushedName', iconUrl: iconDataUrl});
 
       Polymer.dom.flush();
-      assertEquals(
-          'pushedName', peoplePage.$$('#profile-name').textContent.trim());
-      const newBg = peoplePage.$$('#profile-icon').style.backgroundImage;
+      assertEquals('pushedName', profileNameEl.textContent.trim());
+      const newBg = profileIconEl.style.backgroundImage;
       assertTrue(newBg.includes(iconDataUrl));
+
+      // Profile row items aren't actionable.
+      assertFalse(profileIconEl.hasAttribute('actionable'));
+      assertFalse(profileRowEl.hasAttribute('actionable'));
 
       // Sub-page trigger is hidden.
       assertTrue(peoplePage.$$('#account-manager-subpage-trigger').hidden);
@@ -147,11 +154,15 @@ cr.define('settings_people_page', function() {
       await syncBrowserProxy.whenCalled('getSyncStatus');
       Polymer.dom.flush();
 
+      // Get page elements.
+      const profileIconEl = assert(peoplePage.$$('#profile-icon'));
+      const profileRowEl = assert(peoplePage.$$('#profile-row'));
+      const profileNameEl = assert(peoplePage.$$('#profile-name'));
+
       chai.assert.include(
-          peoplePage.$$('#profile-icon').style.backgroundImage,
+          profileIconEl.style.backgroundImage,
           'data:image/png;base64,primaryAccountPicData');
-      assertEquals(
-          'Primary Account', peoplePage.$$('#profile-name').textContent.trim());
+      assertEquals('Primary Account', profileNameEl.textContent.trim());
 
       // Rather than trying to mock cr.sendWithPromise('getPluralString', ...)
       // just force an update.
@@ -159,6 +170,10 @@ cr.define('settings_people_page', function() {
       assertEquals(
           'primary@gmail.com, +2 more accounts',
           peoplePage.$$('#profile-label').textContent.trim());
+
+      // Profile row items are actionable.
+      assertTrue(profileIconEl.hasAttribute('actionable'));
+      assertTrue(profileRowEl.hasAttribute('actionable'));
 
       // Sub-page trigger is shown.
       const subpageTrigger = peoplePage.$$('#account-manager-subpage-trigger');

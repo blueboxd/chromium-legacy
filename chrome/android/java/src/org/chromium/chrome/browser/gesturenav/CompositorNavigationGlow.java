@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.gesturenav;
 import android.view.ViewGroup;
 
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -26,12 +27,14 @@ class CompositorNavigationGlow extends NavigationGlow {
     public CompositorNavigationGlow(ViewGroup parentView, WebContents webContents) {
         super(parentView);
         mNativeNavigationGlow =
-                nativeInit(parentView.getResources().getDisplayMetrics().density, webContents);
+                CompositorNavigationGlowJni.get().init(CompositorNavigationGlow.this,
+                        parentView.getResources().getDisplayMetrics().density, webContents);
     }
 
     @Override
     public void prepare(float startX, float startY) {
-        nativePrepare(mNativeNavigationGlow, startX, startY, mParentView.getWidth(),
+        CompositorNavigationGlowJni.get().prepare(mNativeNavigationGlow,
+                CompositorNavigationGlow.this, startX, startY, mParentView.getWidth(),
                 mParentView.getHeight());
     }
 
@@ -39,35 +42,42 @@ class CompositorNavigationGlow extends NavigationGlow {
     public void onScroll(float xDelta) {
         if (mNativeNavigationGlow == 0) return;
         mAccumulatedScroll += xDelta;
-        nativeOnOverscroll(mNativeNavigationGlow, mAccumulatedScroll, xDelta);
+        CompositorNavigationGlowJni.get().onOverscroll(
+                mNativeNavigationGlow, CompositorNavigationGlow.this, mAccumulatedScroll, xDelta);
     }
 
     @Override
     public void release() {
         if (mNativeNavigationGlow == 0) return;
-        nativeOnOverscroll(mNativeNavigationGlow, 0, 0);
+        CompositorNavigationGlowJni.get().onOverscroll(
+                mNativeNavigationGlow, CompositorNavigationGlow.this, 0, 0);
         mAccumulatedScroll = 0;
     }
 
     @Override
     public void reset() {
         if (mNativeNavigationGlow == 0) return;
-        nativeOnReset(mNativeNavigationGlow);
+        CompositorNavigationGlowJni.get().onReset(
+                mNativeNavigationGlow, CompositorNavigationGlow.this);
         mAccumulatedScroll = 0;
     }
 
     @Override
     public void destroy() {
         if (mNativeNavigationGlow == 0) return;
-        nativeDestroy(mNativeNavigationGlow);
+        CompositorNavigationGlowJni.get().destroy(
+                mNativeNavigationGlow, CompositorNavigationGlow.this);
         mNativeNavigationGlow = 0;
     }
 
-    private native long nativeInit(float dipScale, WebContents webContents);
-    private native void nativePrepare(
-            long nativeNavigationGlow, float startX, float startY, int width, int height);
-    private native void nativeOnOverscroll(
-            long nativeNavigationGlow, float accumulatedScroll, float delta);
-    private native void nativeOnReset(long nativeNavigationGlow);
-    private native void nativeDestroy(long nativeNavigationGlow);
+    @NativeMethods
+    interface Natives {
+        long init(CompositorNavigationGlow caller, float dipScale, WebContents webContents);
+        void prepare(long nativeNavigationGlow, CompositorNavigationGlow caller, float startX,
+                float startY, int width, int height);
+        void onOverscroll(long nativeNavigationGlow, CompositorNavigationGlow caller,
+                float accumulatedScroll, float delta);
+        void onReset(long nativeNavigationGlow, CompositorNavigationGlow caller);
+        void destroy(long nativeNavigationGlow, CompositorNavigationGlow caller);
+    }
 }

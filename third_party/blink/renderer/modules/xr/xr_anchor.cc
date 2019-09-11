@@ -68,8 +68,7 @@ double XRAnchor::lastChangedTime(bool& is_null) const {
 }
 
 void XRAnchor::detach() {
-  // TODO(992033): Actually detach anchor once anchor creation is implemented.
-  DVLOG(2) << "Detaching anchor, id_=" << id_;
+  session_->xr()->xrEnvironmentProviderPtr()->DetachAnchor(id_);
 }
 
 void XRAnchor::Trace(blink::Visitor* visitor) {

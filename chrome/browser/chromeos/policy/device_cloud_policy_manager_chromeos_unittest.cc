@@ -831,7 +831,7 @@ TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, UnregisterSucceeds) {
   DeviceManagementService::JobConfiguration::JobType job_type;
   EXPECT_CALL(device_management_service_, StartJob(_))
       .WillOnce(DoAll(device_management_service_.CaptureJobType(&job_type),
-                      device_management_service_.StartJobOKSync(response)));
+                      device_management_service_.StartJobOKAsync(response)));
   EXPECT_CALL(*this, OnUnregistered(true));
 
   // Start unregistering.
@@ -853,7 +853,7 @@ TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, UnregisterFails) {
   DeviceManagementService::JobConfiguration::JobType job_type;
   EXPECT_CALL(device_management_service_, StartJob(_))
       .WillOnce(DoAll(device_management_service_.CaptureJobType(&job_type),
-                      device_management_service_.StartJobSync(
+                      device_management_service_.StartJobAsync(
                           net::ERR_FAILED, DeviceManagementService::kSuccess)));
   EXPECT_CALL(*this, OnUnregistered(false));
 

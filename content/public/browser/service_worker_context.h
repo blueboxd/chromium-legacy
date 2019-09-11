@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/service_worker_external_request_result.h"
 #include "content/public/browser/service_worker_running_info.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom-forward.h"
 #include "url/gurl.h"
@@ -131,18 +132,21 @@ class CONTENT_EXPORT ServiceWorkerContext {
 
   // Mechanism for embedder to increment/decrement ref count of a service
   // worker.
+  //
   // Embedders can call StartingExternalRequest() while it is performing some
   // work with the worker. The worker is considered to be working until embedder
   // calls FinishedExternalRequest(). This ensures that content/ does not
   // shut the worker down while embedder is expecting the worker to be kept
   // alive.
   //
-  // Must be called from the core thread. Returns whether or not changing the
-  // ref count succeeded.
-  virtual bool StartingExternalRequest(int64_t service_worker_version_id,
-                                       const std::string& request_uuid) = 0;
-  virtual bool FinishedExternalRequest(int64_t service_worker_version_id,
-                                       const std::string& request_uuid) = 0;
+  // Must be called from the core thread.
+  virtual ServiceWorkerExternalRequestResult StartingExternalRequest(
+      int64_t service_worker_version_id,
+      const std::string& request_uuid) = 0;
+  virtual ServiceWorkerExternalRequestResult FinishedExternalRequest(
+      int64_t service_worker_version_id,
+      const std::string& request_uuid) = 0;
+
   // Returns the pending external request count for the worker with the
   // specified |origin| via |callback|. Must be called from the UI thread. The
   // callback is called on the UI thread.

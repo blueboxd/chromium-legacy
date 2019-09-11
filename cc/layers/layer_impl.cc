@@ -51,7 +51,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
     : layer_id_(id),
       layer_tree_impl_(tree_impl),
       will_always_push_properties_(will_always_push_properties),
-      test_properties_(nullptr),
       scrollable_(false),
       should_flatten_screen_space_transform_from_property_tree_(false),
       layer_property_changed_not_from_property_trees_(false),
@@ -447,15 +446,6 @@ std::unique_ptr<base::DictionaryValue> LayerImpl::LayerAsJson() const {
   list->AppendInteger(offset_to_transform_parent().y());
   result->Set("OffsetToTransformParent", std::move(list));
 
-  const gfx::Transform& gfx_transform =
-      const_cast<LayerImpl*>(this)->test_properties()->transform;
-  double transform[16];
-  gfx_transform.matrix().asColMajord(transform);
-  list = std::make_unique<base::ListValue>();
-  for (int i = 0; i < 16; ++i)
-    list->AppendDouble(transform[i]);
-  result->Set("Transform", std::move(list));
-
   result->SetBoolean("DrawsContent", draws_content_);
   result->SetBoolean("HitTestable", hit_testable_);
   result->SetBoolean("Is3dSorted", Is3dSorted());
@@ -484,17 +474,6 @@ std::unique_ptr<base::DictionaryValue> LayerImpl::LayerAsJson() const {
     std::unique_ptr<base::Value> region = non_fast_scrollable_region_.AsValue();
     result->Set("NonFastScrollableRegion", std::move(region));
   }
-
-  return result;
-}
-
-std::unique_ptr<base::DictionaryValue> LayerImpl::LayerTreeAsJson() {
-  std::unique_ptr<base::DictionaryValue> result = LayerAsJson();
-
-  auto list = std::make_unique<base::ListValue>();
-  for (size_t i = 0; i < test_properties()->children.size(); ++i)
-    list->Append(test_properties()->children[i]->LayerTreeAsJson());
-  result->Set("Children", std::move(list));
 
   return result;
 }

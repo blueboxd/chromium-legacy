@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/screen_orientation/screen_orientation.h"
 #include "third_party/blink/renderer/modules/xr/xr.h"
+#include "third_party/blink/renderer/modules/xr/xr_anchor_set.h"
 #include "third_party/blink/renderer/modules/xr/xr_bounded_reference_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_canvas_input_provider.h"
 #include "third_party/blink/renderer/modules/xr/xr_frame.h"
@@ -28,6 +29,7 @@
 #include "third_party/blink/renderer/modules/xr/xr_hit_result.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_source_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_sources_change_event.h"
+#include "third_party/blink/renderer/modules/xr/xr_plane.h"
 #include "third_party/blink/renderer/modules/xr/xr_ray.h"
 #include "third_party/blink/renderer/modules/xr/xr_reference_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_render_state.h"
@@ -59,6 +61,8 @@ const char kInlineVerticalFOVNotSupported[] =
 
 const char kNoSpaceSpecified[] = "No XRSpace specified.";
 
+const char kNoRigidTransformSpecified[] = "No XRRigidTransform specified.";
+
 const char kHitTestNotSupported[] = "Device does not support hit-test!";
 
 const char kAnchorsNotSupported[] = "Device does not support anchors!";
@@ -66,6 +70,14 @@ const char kAnchorsNotSupported[] = "Device does not support anchors!";
 const char kDeviceDisconnected[] = "The XR device has been disconnected.";
 
 const char kNotImplemented[] = "The operation has not been implemented yet.";
+
+const char kNonInvertibleMatrix[] =
+    "The operation encountered non-invertible matrix and could not be "
+    "completed.";
+
+const char kUnableToDecomposeMatrix[] =
+    "The operation was unable to decompose a matrix and could not be "
+    "completed.";
 
 const double kDegToRad = M_PI / 180.0;
 
@@ -175,6 +187,21 @@ XRSession::XRSession(
       NOTREACHED() << "Unknown environment blend mode: "
                    << environment_blend_mode;
   }
+}
+
+XRAnchorSet* XRSession::trackedAnchors() const {
+  DVLOG(3) << __func__;
+
+  HeapHashSet<Member<XRAnchor>> result;
+
+  if (is_tracked_anchors_null_)
+    return nullptr;
+
+  for (auto& anchor_id_and_anchor : anchor_ids_to_anchors_) {
+    result.insert(anchor_id_and_anchor.value);
+  }
+
+  return MakeGarbageCollected<XRAnchorSet>(result);
 }
 
 bool XRSession::immersive() const {
@@ -361,15 +388,113 @@ ScriptPromise XRSession::requestReferenceSpace(
   return promise;
 }
 
+ScriptPromise XRSession::CreateAnchor(ScriptState* script_state,
+                                      XRRigidTransform* initial_pose,
+                                      XRSpace* space,
+                                      XRPlane* plane,
+                                      ExceptionState& exception_state) {
+  if (ended_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kSessionEnded);
+    return ScriptPromise();
+  }
+
+  if (!initial_pose) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kNoRigidTransformSpecified);
+    return ScriptPromise();
+  }
+
+  if (!space) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kNoSpaceSpecified);
+    return ScriptPromise();
+  }
+
+  // Reject the promise if device doesn't support the anchors API.
+  if (!xr_->xrEnvironmentProviderPtr()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kAnchorsNotSupported);
+    return ScriptPromise();
+  }
+
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
+
+  // Transformation from mojo space to passed in |space|.
+  std::unique_ptr<TransformationMatrix> space_from_mojo =
+      space->GetTransformToMojoSpace();
+
+  DVLOG(3) << __func__
+           << ": space_from_mojo = " << space_from_mojo->ToString(true);
+
+  // Matrix will be null if transformation from mojo space to object space is
+  // not invertible, log & bail out in that case.
+  if (!space_from_mojo || !space_from_mojo->IsInvertible()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kNonInvertibleMatrix);
+    return ScriptPromise();
+  }
+
+  auto mojo_from_space = space_from_mojo->Inverse();
+
+  DVLOG(3) << __func__
+           << ": mojo_from_space = " << mojo_from_space.ToString(true);
+
+  // Transformation from passed in pose to |space|.
+  auto space_from_initial_pose = initial_pose->TransformMatrix();
+  auto mojo_from_initial_pose = mojo_from_space * space_from_initial_pose;
+
+  DVLOG(3) << __func__ << ": space_from_initial_pose = "
+           << space_from_initial_pose.ToString(true);
+
+  DVLOG(3) << __func__ << ": mojo_from_initial_pose = "
+           << mojo_from_initial_pose.ToString(true);
+
+  TransformationMatrix::DecomposedType decomposed;
+  if (!mojo_from_initial_pose.Decompose(decomposed)) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kUnableToDecomposeMatrix);
+    return ScriptPromise();
+  }
+
+  device::mojom::blink::VRPosePtr pose_ptr =
+      device::mojom::blink::VRPose::New();
+
+  pose_ptr->orientation =
+      gfx::Quaternion(-decomposed.quaternion_x, -decomposed.quaternion_y,
+                      -decomposed.quaternion_z, decomposed.quaternion_w);
+  pose_ptr->position = blink::WebFloatPoint3D(
+      decomposed.translate_x, decomposed.translate_y, decomposed.translate_z);
+
+  DVLOG(3) << __func__
+           << ": pose_ptr->orientation = " << pose_ptr->orientation->ToString()
+           << ", pose_ptr->position = [" << pose_ptr->position->x << ", "
+           << pose_ptr->position->y << ", " << pose_ptr->position->z << "]";
+
+  EnsureEnvironmentErrorHandler();
+  if (plane) {
+    xr_->xrEnvironmentProviderPtr()->CreatePlaneAnchor(
+        std::move(pose_ptr), plane->id(),
+        WTF::Bind(&XRSession::OnCreateAnchorResult, WrapPersistent(this),
+                  WrapPersistent(resolver)));
+  } else {
+    xr_->xrEnvironmentProviderPtr()->CreateAnchor(
+        std::move(pose_ptr),
+        WTF::Bind(&XRSession::OnCreateAnchorResult, WrapPersistent(this),
+                  WrapPersistent(resolver)));
+  }
+  create_anchor_promises_.insert(resolver);
+
+  return promise;
+}
+
 ScriptPromise XRSession::createAnchor(ScriptState* script_state,
                                       XRRigidTransform* initial_pose,
                                       XRSpace* space,
                                       ExceptionState& exception_state) {
-  // TODO(https://crbug.com/992033): Implement anchor creation from a session
-  // instead of rejecting the promise.
-  exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
-                                    kAnchorsNotSupported);
-  return ScriptPromise();
+  return CreateAnchor(script_state, initial_pose, space, nullptr,
+                      exception_state);
 }
 
 int XRSession::requestAnimationFrame(V8XRFrameRequestCallback* callback) {
@@ -474,7 +599,22 @@ void XRSession::OnHitTestResults(
   resolver->Resolve(hit_results);
 }
 
+void XRSession::OnCreateAnchorResult(ScriptPromiseResolver* resolver,
+                                     device::mojom::CreateAnchorResult result,
+                                     int32_t id) {
+  DCHECK(create_anchor_promises_.Contains(resolver));
+  create_anchor_promises_.erase(resolver);
+
+  XRAnchor* anchor = MakeGarbageCollected<XRAnchor>(id, this);
+
+  anchor_ids_to_anchors_.insert(id, anchor);
+
+  resolver->Resolve(anchor);
+}
+
 void XRSession::EnsureEnvironmentErrorHandler() {
+  // Install error handler on environment provider to ensure that we get
+  // notified so that we can clean up all relevant pending promises.
   if (!environment_error_handler_subscribed_ &&
       xr_->xrEnvironmentProviderPtr()) {
     environment_error_handler_subscribed_ = true;
@@ -490,6 +630,72 @@ void XRSession::OnEnvironmentProviderError() {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kInvalidStateError, kDeviceDisconnected));
   }
+
+  HeapHashSet<Member<ScriptPromiseResolver>> create_anchor_promises;
+  create_anchor_promises_.swap(create_anchor_promises);
+  for (ScriptPromiseResolver* resolver : create_anchor_promises) {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError, kDeviceDisconnected));
+  }
+}
+
+void XRSession::ProcessAnchorsData(
+    const device::mojom::blink::XRAnchorsDataPtr& tracked_anchors_data,
+    double timestamp) {
+  TRACE_EVENT0("xr", __FUNCTION__);
+
+  if (!tracked_anchors_data) {
+    DVLOG(3) << __func__ << ": tracked_anchors_data is null";
+
+    // We have received a null ptr. Mark tracked_anchors as null & clear stored
+    // anchors.
+    is_tracked_anchors_null_ = true;
+    anchor_ids_to_anchors_.clear();
+    return;
+  }
+
+  TRACE_COUNTER2("xr", "Anchor statistics", "All anchors",
+                 tracked_anchors_data->all_anchors_ids.size(),
+                 "Updated anchors",
+                 tracked_anchors_data->updated_anchors_data.size());
+
+  DVLOG(3) << __func__ << ": updated anchors size="
+           << tracked_anchors_data->updated_anchors_data.size()
+           << ", all anchors size="
+           << tracked_anchors_data->all_anchors_ids.size();
+
+  is_tracked_anchors_null_ = false;
+
+  HeapHashMap<int32_t, Member<XRAnchor>> updated_anchors;
+
+  // First, process all planes that had their information updated (new planes
+  // are also processed here).
+  for (const auto& anchor : tracked_anchors_data->updated_anchors_data) {
+    auto it = anchor_ids_to_anchors_.find(anchor->id);
+    if (it != anchor_ids_to_anchors_.end()) {
+      updated_anchors.insert(anchor->id, it->value);
+      it->value->Update(anchor, timestamp);
+    } else {
+      updated_anchors.insert(
+          anchor->id,
+          MakeGarbageCollected<XRAnchor>(anchor->id, this, anchor, timestamp));
+    }
+  }
+
+  // Then, copy over the planes that were not updated but are still present.
+  for (const auto& anchor_id : tracked_anchors_data->all_anchors_ids) {
+    auto it_updated = updated_anchors.find(anchor_id);
+
+    // If the plane was already updated, there is nothing to do as it was
+    // already moved to |updated_anchors|. Otherwise just copy it over as-is.
+    if (it_updated == updated_anchors.end()) {
+      auto it = anchor_ids_to_anchors_.find(anchor_id);
+      DCHECK(it != anchor_ids_to_anchors_.end());
+      updated_anchors.insert(anchor_id, it->value);
+    }
+  }
+
+  anchor_ids_to_anchors_.swap(updated_anchors);
 }
 
 ScriptPromise XRSession::end(ScriptState* script_state,
@@ -687,7 +893,8 @@ void XRSession::OnFrame(
     double timestamp,
     std::unique_ptr<TransformationMatrix> base_pose_matrix,
     const base::Optional<gpu::MailboxHolder>& output_mailbox_holder,
-    const device::mojom::blink::XRPlaneDetectionDataPtr& detected_planes_data) {
+    const device::mojom::blink::XRPlaneDetectionDataPtr& detected_planes_data,
+    const device::mojom::blink::XRAnchorsDataPtr& tracked_anchors_data) {
   TRACE_EVENT0("gpu", __FUNCTION__);
   DVLOG(2) << __FUNCTION__;
   // Don't process any outstanding frames once the session is ended.
@@ -699,7 +906,9 @@ void XRSession::OnFrame(
   // If there are pending render state changes, apply them now.
   ApplyPendingRenderState();
 
+  // Update objects that might change on per-frame basis.
   world_information_->ProcessPlaneInformation(detected_planes_data, timestamp);
+  ProcessAnchorsData(tracked_anchors_data, timestamp);
 
   if (pending_frame_) {
     pending_frame_ = false;
@@ -1026,7 +1235,9 @@ void XRSession::Trace(blink::Visitor* visitor) {
   visitor->Trace(canvas_input_provider_);
   visitor->Trace(callback_collection_);
   visitor->Trace(hit_test_promises_);
+  visitor->Trace(create_anchor_promises_);
   visitor->Trace(reference_spaces_);
+  visitor->Trace(anchor_ids_to_anchors_);
   EventTargetWithInlineData::Trace(visitor);
 }
 

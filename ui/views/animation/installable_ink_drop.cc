@@ -119,7 +119,8 @@ void InstallableInkDrop::AnimateToState(InkDropState ink_drop_state) {
   animator_.AnimateToState(ink_drop_state);
 }
 
-void InstallableInkDrop::SetHoverHighlightFadeDurationMs(int duration_ms) {
+void InstallableInkDrop::SetHoverHighlightFadeDuration(
+    base::TimeDelta duration) {
   NOTREACHED();
 }
 

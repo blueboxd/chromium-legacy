@@ -205,6 +205,7 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
 
     @Override
     public boolean isHidden() {
+        if (mBottomSheetController.get() == null) return true;
         return getTargetOrCurrentState() == SheetState.HIDDEN;
     }
 

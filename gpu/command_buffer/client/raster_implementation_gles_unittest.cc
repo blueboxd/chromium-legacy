@@ -226,6 +226,8 @@ class ContextSupportStub : public ContextSupport {
       const std::vector<std::pair<uint32_t, uint32_t>>& entries) override {}
   void DeleteTransferCacheEntry(uint32_t type, uint32_t id) override {}
   unsigned int GetTransferBufferFreeSize() const override { return 0; }
+  bool IsJpegDecodeAccelerationSupported() const override { return false; }
+  bool IsWebPDecodeAccelerationSupported() const override { return false; }
   bool CanDecodeWithHardwareAcceleration(
       base::span<const uint8_t> encoded_data) const override {
     return false;

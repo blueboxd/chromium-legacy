@@ -21,10 +21,6 @@
 
 class GURL;
 
-namespace base {
-class FilePath;
-}
-
 namespace url {
 class Origin;
 }
@@ -103,9 +99,6 @@ class NET_EXPORT NetworkDelegate {
                     const net::CanonicalCookie& cookie,
                     CookieOptions* options,
                     bool allowed_from_caller);
-  bool CanAccessFile(const URLRequest& request,
-                     const base::FilePath& original_path,
-                     const base::FilePath& absolute_path) const;
   bool ForcePrivacyMode(
       const GURL& url,
       const GURL& site_for_cookies,
@@ -306,15 +299,6 @@ class NET_EXPORT NetworkDelegate {
                               const CanonicalCookie& cookie,
                               CookieOptions* options,
                               bool allowed_from_caller) = 0;
-
-  // Called when a file access is attempted to allow the network delegate to
-  // allow or block access to the given file path, provided in the original
-  // and absolute forms (i.e. symbolic link is resolved). It's up to
-  // subclasses of NetworkDelegate to decide which path to use for
-  // checking. Returns true if access is allowed.
-  virtual bool OnCanAccessFile(const URLRequest& request,
-                               const base::FilePath& original_path,
-                               const base::FilePath& absolute_path) const = 0;
 
   // Returns true if the given |url| has to be requested over connection that
   // is not tracked by the server. Usually is false, unless user privacy

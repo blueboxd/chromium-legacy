@@ -18,7 +18,7 @@ InkDropState InkDropStub::GetTargetInkDropState() const {
 
 void InkDropStub::AnimateToState(InkDropState state) {}
 
-void InkDropStub::SetHoverHighlightFadeDurationMs(int duration_ms) {}
+void InkDropStub::SetHoverHighlightFadeDuration(base::TimeDelta duration) {}
 
 void InkDropStub::UseDefaultHoverHighlightFadeDuration() {}
 

@@ -232,7 +232,7 @@ void MockConsumer::OnTraceData(std::vector<perfetto::TracePacket> packets,
                                bool has_more) {
   for (auto& encoded_packet : packets) {
     perfetto::protos::TracePacket packet;
-    EXPECT_TRUE(encoded_packet.Decode(&packet));
+    EXPECT_TRUE(packet.ParseFromString(encoded_packet.GetRawBytesForTesting()));
     ++received_packets_;
     if (packet.for_testing().str() == kPerfettoTestString) {
       ++received_test_packets_;

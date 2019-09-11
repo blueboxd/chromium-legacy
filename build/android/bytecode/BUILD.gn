@@ -7,7 +7,6 @@ import("//build/config/android/rules.gni")
 assert(current_toolchain == default_toolchain)
 
 java_binary("java_bytecode_rewriter") {
-  jacoco_never_instrument = true
   java_files = [
     "java/org/chromium/bytecode/AssertionEnablerClassAdapter.java",
     "java/org/chromium/bytecode/ByteCodeProcessor.java",

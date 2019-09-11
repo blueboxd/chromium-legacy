@@ -70,7 +70,7 @@ Polymer({
 
   /** @return {!CrToolbarSearchFieldElement} */
   getSearchField: function() {
-    return this.$.search;
+    return /** @type {!CrToolbarSearchFieldElement} */ (this.$.search);
   },
 
   /** @private */

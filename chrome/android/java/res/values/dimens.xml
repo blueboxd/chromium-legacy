@@ -92,7 +92,6 @@
     <dimen name="infobar_margin_above_button_row">32dp</dimen>
 
     <!-- Margin between items in the same control group. -->
-    <dimen name="infobar_control_margin_between_items">8dp</dimen>
     <dimen name="infobar_control_margin_between_rows">8dp</dimen>
     <dimen name="infobar_control_margin_between_columns">32dp</dimen>
 
@@ -548,7 +547,6 @@
          https://www.google.com/design/spec/components/dialogs.html#dialogs-simple-dialogs -->
     <dimen name="dialog_width_unit">56dp</dimen>  <!-- MD dialog widths are multiples of this. -->
     <dimen name="dialog_header_margin">14dp</dimen>
-    <dimen name="separator_height">1dp</dimen>
 
     <!-- Modern List Item dimensions -->
     <dimen name="list_item_min_height">64dp</dimen>

@@ -24,7 +24,7 @@ BluetoothSystemFactory::~BluetoothSystemFactory() = default;
 
 void BluetoothSystemFactory::Create(
     mojo::PendingReceiver<mojom::BluetoothSystem> system_receiver,
-    mojom::BluetoothSystemClientPtr system_client) {
+    mojo::PendingRemote<mojom::BluetoothSystemClient> system_client) {
   BluetoothSystem::Create(std::move(system_receiver), std::move(system_client));
 }
 

@@ -24,7 +24,7 @@ class TestInkDrop : public InkDrop {
   void HostSizeChanged(const gfx::Size& new_size) override;
   InkDropState GetTargetInkDropState() const override;
   void AnimateToState(InkDropState ink_drop_state) override;
-  void SetHoverHighlightFadeDurationMs(int duration_ms) override;
+  void SetHoverHighlightFadeDuration(base::TimeDelta duration) override;
   void UseDefaultHoverHighlightFadeDuration() override;
   void SnapToActivated() override;
   void SnapToHidden() override;

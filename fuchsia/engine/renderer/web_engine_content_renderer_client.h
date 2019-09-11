@@ -18,6 +18,7 @@ class WebEngineContentRendererClient : public content::ContentRendererClient {
   void AddSupportedKeySystems(
       std::vector<std::unique_ptr<media::KeySystemProperties>>* key_systems)
       override;
+  bool IsSupportedVideoType(const media::VideoType& type) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebEngineContentRendererClient);

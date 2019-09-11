@@ -62,7 +62,7 @@ bool PermissionRequestNotificationAndroid::ShouldShowAsNotification(
   return (ui_flavor ==
               QuietNotificationsPromptConfig::UIFlavor::QUIET_NOTIFICATION ||
           ui_flavor == QuietNotificationsPromptConfig::UIFlavor::
-                           HEADS_UP_NOITIFCATION) &&
+                           HEADS_UP_NOTIFICATION) &&
          type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
 }
 

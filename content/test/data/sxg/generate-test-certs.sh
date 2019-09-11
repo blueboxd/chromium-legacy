@@ -52,13 +52,13 @@ openssl ca -batch \
   -in  prime256v1-sha256.csr \
   -out prime256v1-sha256-validity-too-long.public.pem
 
-# Generate a certificate which is valid for 3000 days. It is used in
+# Generate a certificate which is valid for 825 days. It is used in
 # SignedExchangeRequestHandlerRealCertVerifierBrowserTest, where the SXG cert's
 # validity period check is skipped.
 openssl ca -batch \
   -config ca.cnf \
   -extensions sxg_cert \
-  -days 3000 \
+  -days 825 \
   -in  prime256v1-sha256.csr \
   -out prime256v1-sha256-long-validity.public.pem
 

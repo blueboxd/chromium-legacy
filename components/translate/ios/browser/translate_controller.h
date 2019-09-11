@@ -16,7 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/translate/core/common/translate_errors.h"
 #import "ios/web/public/web_state.h"
-#include "ios/web/public/web_state/web_state_observer.h"
+#include "ios/web/public/web_state_observer.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 
 @class JsTranslateManager;

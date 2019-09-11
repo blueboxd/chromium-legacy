@@ -591,7 +591,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
                        const std::string& extension_id) {
     base::DictionaryValue entry;
     entry.SetKey(kPinnedAppsPrefAppIDKey, base::Value(extension_id));
-    pref_value->GetList().push_back(std::move(entry));
+    pref_value->Append(std::move(entry));
   }
 
   void InsertRemoveAllPinsChange(syncer::SyncChangeList* list) {

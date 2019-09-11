@@ -66,7 +66,7 @@ void TtsHandler::HandleGetTtsExtensions(const base::ListValue* args) {
 
           extensions::OptionsPageInfo::GetOptionsPage(extension).spec());
     }
-    responses.GetList().push_back(std::move(response));
+    responses.Append(std::move(response));
   }
 
   FireWebUIListener("tts-extensions-updated", responses);
@@ -100,7 +100,7 @@ void TtsHandler::OnVoicesChanged() {
     response.SetString("fullLanguageCode", voice.lang);
     response.SetInteger("languageScore", language_score);
     response.SetString("extensionId", voice.engine_id);
-    responses.GetList().push_back(std::move(response));
+    responses.Append(std::move(response));
   }
   AllowJavascript();
   FireWebUIListener("all-voice-data-updated", responses);

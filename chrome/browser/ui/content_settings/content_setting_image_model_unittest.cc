@@ -4,16 +4,29 @@
 
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 
+#include "base/bind.h"
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/permissions/mock_permission_request.h"
+#include "chrome/browser/permissions/permission_request.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
+#include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -30,11 +43,44 @@
 
 namespace {
 
+class ContentSettingImageModelTest : public BrowserWithTestWindowTest {
+ public:
+  ContentSettingImageModelTest()
+      : request_("test1",
+                 PermissionRequestType::PERMISSION_NOTIFICATIONS,
+                 PermissionRequestGestureType::GESTURE) {}
+  ~ContentSettingImageModelTest() override {}
+
+  content::WebContents* web_contents() {
+    return browser()->tab_strip_model()->GetActiveWebContents();
+  }
+
+  void SetUp() override {
+    BrowserWithTestWindowTest::SetUp();
+    AddTab(browser(), GURL("http://www.google.com"));
+    controller_ = &web_contents()->GetController();
+    NavigateAndCommit(controller_, GURL("http://www.google.com"));
+    PermissionRequestManager::CreateForWebContents(web_contents());
+    manager_ = PermissionRequestManager::FromWebContents(web_contents());
+  }
+
+  void WaitForBubbleToBeShown() {
+    manager_->DocumentOnLoadCompletedInMainFrame();
+    base::RunLoop().RunUntilIdle();
+  }
+
+ protected:
+  MockPermissionRequest request_;
+  PermissionRequestManager* manager_ = nullptr;
+  content::NavigationController* controller_ = nullptr;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingImageModelTest);
+};
+
 bool HasIcon(const ContentSettingImageModel& model) {
   return !model.GetIcon(gfx::kPlaceholderColor).IsEmpty();
 }
-
-using ContentSettingImageModelTest = ChromeRenderViewHostTestHarness;
 
 TEST_F(ContentSettingImageModelTest, Update) {
   TabSpecificContentSettings::CreateForWebContents(web_contents());
@@ -174,8 +220,7 @@ TEST_F(ContentSettingImageModelTest, SensorAccessPermissionsChanged) {
   feature_list.InitAndEnableFeature(features::kGenericSensorExtraClasses);
 
   TabSpecificContentSettings::CreateForWebContents(web_contents());
-  content::WebContentsTester::For(web_contents())
-      ->NavigateAndCommit(GURL("https://www.example.com"));
+  NavigateAndCommit(controller_, GURL("https://www.example.com"));
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
   HostContentSettingsMap* settings_map =
@@ -291,6 +336,7 @@ TEST_F(ContentSettingImageModelTest, SensorAccessPermissionsChanged) {
 
 // Regression test for http://crbug.com/161854.
 TEST_F(ContentSettingImageModelTest, NULLTabSpecificContentSettings) {
+  web_contents()->RemoveUserData(TabSpecificContentSettings::UserDataKey());
   EXPECT_EQ(nullptr,
             TabSpecificContentSettings::FromWebContents(web_contents()));
   // Should not crash.
@@ -315,6 +361,49 @@ TEST_F(ContentSettingImageModelTest, SubresourceFilter) {
   EXPECT_TRUE(content_setting_image_model->is_visible());
   EXPECT_TRUE(HasIcon(*content_setting_image_model));
   EXPECT_FALSE(content_setting_image_model->get_tooltip().empty());
+}
+
+TEST_F(ContentSettingImageModelTest, NotificationsIconVisibility) {
+  TabSpecificContentSettings::CreateForWebContents(web_contents());
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
+  auto content_setting_image_model =
+      ContentSettingImageModel::CreateForContentType(
+          ContentSettingImageModel::ImageType::NOTIFICATIONS_QUIET_PROMPT);
+
+  HostContentSettingsMapFactory::GetForProfile(profile())
+      ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                 CONTENT_SETTING_ALLOW);
+  content_settings->OnContentAllowed(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  content_setting_image_model->Update(web_contents());
+  EXPECT_FALSE(content_setting_image_model->is_visible());
+  HostContentSettingsMapFactory::GetForProfile(profile())
+      ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                 CONTENT_SETTING_BLOCK);
+  content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  content_setting_image_model->Update(web_contents());
+  EXPECT_FALSE(content_setting_image_model->is_visible());
+}
+
+TEST_F(ContentSettingImageModelTest, NotificationsPrompt) {
+#if !defined(OS_ANDROID)
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeatureWithParameters(
+      features::kQuietNotificationPrompts, {{"animated_icon", "foo"}});
+  auto content_setting_image_model =
+      ContentSettingImageModel::CreateForContentType(
+          ContentSettingImageModel::ImageType::NOTIFICATIONS_QUIET_PROMPT);
+  EXPECT_FALSE(content_setting_image_model->is_visible());
+  manager_->AddRequest(&request_);
+  WaitForBubbleToBeShown();
+  EXPECT_TRUE(manager_->ShouldShowQuietPermissionPrompt());
+  content_setting_image_model->Update(web_contents());
+  EXPECT_TRUE(content_setting_image_model->is_visible());
+  manager_->Accept();
+  EXPECT_FALSE(manager_->ShouldShowQuietPermissionPrompt());
+  content_setting_image_model->Update(web_contents());
+  EXPECT_FALSE(content_setting_image_model->is_visible());
+#endif  // !defined(OS_ANDROID)
 }
 
 }  // namespace

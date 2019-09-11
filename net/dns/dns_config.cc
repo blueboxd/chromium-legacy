@@ -115,7 +115,7 @@ std::unique_ptr<base::Value> DnsConfig::ToValue() const {
     val.GetAsDictionary(&dict);
     dict->SetString("server_template", server.server_template);
     dict->SetBoolean("use_post", server.use_post);
-    list->GetList().push_back(std::move(val));
+    list->Append(std::move(val));
   }
   dict->Set("doh_servers", std::move(list));
   dict->SetInteger("secure_dns_mode", static_cast<int>(secure_dns_mode));

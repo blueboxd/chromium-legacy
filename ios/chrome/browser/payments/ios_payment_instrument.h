@@ -68,6 +68,10 @@ class IOSPaymentInstrument : public PaymentInstrument {
   void IsValidForPaymentMethodIdentifier(
       const std::string& payment_method_identifier,
       bool* is_valid) const override;
+  bool HandlesShippingAddress() const override;
+  bool HandlesPayerName() const override;
+  bool HandlesPayerEmail() const override;
+  bool HandlesPayerPhone() const override;
   base::WeakPtr<PaymentInstrument> AsWeakPtr() override;
 
   // Given that the icon for the iOS payment instrument can only be determined

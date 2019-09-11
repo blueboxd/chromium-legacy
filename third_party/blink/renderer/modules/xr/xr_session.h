@@ -33,9 +33,11 @@ class ResizeObserver;
 class ScriptPromiseResolver;
 class V8XRFrameRequestCallback;
 class XR;
+class XRAnchor;
 class XRAnchorSet;
 class XRCanvasInputProvider;
 class XRHitTestOptionsInit;
+class XRPlane;
 class XRRay;
 class XRReferenceSpace;
 class XRRenderState;
@@ -81,7 +83,7 @@ class XRSession final
   XRRenderState* renderState() const { return render_state_; }
   XRWorldTrackingState* worldTrackingState() { return world_tracking_state_; }
   XRSpace* viewerSpace() const;
-  XRAnchorSet* trackedAnchors() const { return nullptr; }
+  XRAnchorSet* trackedAnchors() const;
 
   bool immersive() const;
 
@@ -101,10 +103,18 @@ class XRSession final
                                       const String& type,
                                       ExceptionState&);
 
+  // IDL-exposed
   ScriptPromise createAnchor(ScriptState* script_state,
                              XRRigidTransform* initial_pose,
                              XRSpace* space,
-                             ExceptionState&);
+                             ExceptionState& exception_state);
+
+  // helper, not IDL-exposed
+  ScriptPromise CreateAnchor(ScriptState* script_state,
+                             XRRigidTransform* pose,
+                             XRSpace* space,
+                             XRPlane* plane,
+                             ExceptionState& exception_state);
 
   int requestAnimationFrame(V8XRFrameRequestCallback* callback);
   void cancelAnimationFrame(int id);
@@ -149,11 +159,12 @@ class XRSession final
   const AtomicString& InterfaceName() const override;
 
   void OnFocusChanged();
-  void OnFrame(double timestamp,
-               std::unique_ptr<TransformationMatrix> base_pose_matrix,
-               const base::Optional<gpu::MailboxHolder>& output_mailbox_holder,
-               const device::mojom::blink::XRPlaneDetectionDataPtr&
-                   detected_planes_data);
+  void OnFrame(
+      double timestamp,
+      std::unique_ptr<TransformationMatrix> base_pose_matrix,
+      const base::Optional<gpu::MailboxHolder>& output_mailbox_holder,
+      const device::mojom::blink::XRPlaneDetectionDataPtr& detected_planes_data,
+      const device::mojom::blink::XRAnchorsDataPtr& tracked_anchors_data);
 
   void OnInputStateChange(
       int16_t frame_id,
@@ -241,8 +252,16 @@ class XRSession final
       base::Optional<WTF::Vector<device::mojom::blink::XRHitResultPtr>>
           results);
 
+  void OnCreateAnchorResult(ScriptPromiseResolver* resolver,
+                            device::mojom::CreateAnchorResult result,
+                            int32_t id);
+
   void EnsureEnvironmentErrorHandler();
   void OnEnvironmentProviderError();
+
+  void ProcessAnchorsData(
+      const device::mojom::blink::XRAnchorsDataPtr& tracked_anchors_data,
+      double timestamp);
 
   const Member<XR> xr_;
   const SessionMode mode_;
@@ -255,6 +274,10 @@ class XRSession final
   HeapVector<Member<XRRenderStateInit>> pending_render_state_;
 
   XRSessionFeatureSet enabled_features_;
+
+  bool is_tracked_anchors_null_ = true;
+  HeapHashMap<int32_t, Member<XRAnchor>> anchor_ids_to_anchors_;
+
   WTF::Vector<XRViewData> views_;
 
   Member<XRInputSourceArray> input_sources_;
@@ -262,6 +285,8 @@ class XRSession final
   Member<XRCanvasInputProvider> canvas_input_provider_;
   bool environment_error_handler_subscribed_ = false;
   HeapHashSet<Member<ScriptPromiseResolver>> hit_test_promises_;
+  // Set of promises returned from CreateAnchor that are still in-flight.
+  HeapHashSet<Member<ScriptPromiseResolver>> create_anchor_promises_;
   HeapVector<Member<XRReferenceSpace>> reference_spaces_;
 
   bool has_xr_focus_ = true;

@@ -441,16 +441,6 @@ class DownloadHistoryTest : public testing::Test {
         .WillRepeatedly(SetArgPointee<0>(items));
   }
 
-  void SetDownloadDBEnabled(bool enabled) {
-    if (enabled) {
-      feature_list_.InitAndEnableFeature(
-          download::features::kDownloadDBForNewDownloads);
-    } else {
-      feature_list_.InitAndDisableFeature(
-          download::features::kDownloadDBForNewDownloads);
-    }
-  }
-
  private:
   content::BrowserTaskEnvironment task_environment_;
   std::vector<std::unique_ptr<StrictMockDownloadItem>> items_;
@@ -464,41 +454,9 @@ class DownloadHistoryTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(DownloadHistoryTest);
 };
 
-// Test loading an item from the database, changing it, saving it back, removing
-// it.
-TEST_F(DownloadHistoryTest, DownloadHistoryTest_LoadWithoutDownloadDB) {
-  SetDownloadDBEnabled(false);
-
-  // Load a download from history, create the item, OnDownloadCreated,
-  // OnDownloadUpdated, OnDownloadRemoved.
-  history::DownloadRow row;
-  InitBasicItem(FILE_PATH_LITERAL("/foo/bar.pdf"), "http://example.com/bar.pdf",
-                "http://example.com/referrer.html",
-                download::DownloadItem::IN_PROGRESS, &row);
-  {
-    std::vector<history::DownloadRow> rows = {row};
-    CreateDownloadHistory(std::move(rows));
-    ExpectNoDownloadCreated();
-  }
-  EXPECT_TRUE(DownloadHistory::IsPersisted(&item(0)));
-
-  // Pretend that something changed on the item.
-  EXPECT_CALL(item(0), GetOpened()).WillRepeatedly(Return(true));
-  item(0).NotifyObserversDownloadUpdated();
-  row.opened = true;
-  ExpectDownloadUpdated(row, false);
-
-  // Pretend that the user removed the item.
-  IdSet ids;
-  ids.insert(row.id);
-  item(0).NotifyObserversDownloadRemoved();
-  ExpectDownloadsRemoved(ids);
-}
 
 // Test loading an item from the database, changing it and removing it.
 TEST_F(DownloadHistoryTest, DownloadHistoryTest_LoadWithDownloadDB) {
-  SetDownloadDBEnabled(true);
-
   // Load a download from history, create the item, OnDownloadCreated,
   // OnDownloadUpdated, OnDownloadRemoved.
   history::DownloadRow row;
@@ -573,12 +531,9 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_OnHistoryQueryComplete_Post) {
   download_history()->RemoveObserver(&observer);
 }
 
-// Test creating an item, saving it to the database, changing it, saving it
-// back, removing it.
+// Test creating an completed item, saving it to the database, changing it,
+// saving it back, removing it.
 TEST_F(DownloadHistoryTest, DownloadHistoryTest_Create) {
-  // Disable download DB.
-  SetDownloadDBEnabled(false);
-
   // Create a fresh item not from history, OnDownloadCreated, OnDownloadUpdated,
   // OnDownloadRemoved.
   CreateDownloadHistory({});
@@ -586,7 +541,8 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_Create) {
   history::DownloadRow row;
   InitBasicItem(FILE_PATH_LITERAL("/foo/bar.pdf"), "http://example.com/bar.pdf",
                 "http://example.com/referrer.html",
-                download::DownloadItem::IN_PROGRESS, &row);
+                download::DownloadItem::COMPLETE, &row);
+  EXPECT_CALL(item(0), IsDone()).WillRepeatedly(Return(true));
 
   // Pretend the manager just created |item|.
   CallOnDownloadCreated(0);
@@ -597,7 +553,9 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_Create) {
   EXPECT_CALL(item(0), GetOpened()).WillRepeatedly(Return(true));
   item(0).NotifyObserversDownloadUpdated();
   row.opened = true;
-  ExpectDownloadUpdated(row, false);
+  // The previous row was cached in memory, all the changes will be updated
+  // immediately
+  ExpectDownloadUpdated(row, true);
 
   // Pretend that the user removed the item.
   IdSet ids;
@@ -606,125 +564,11 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_Create) {
   ExpectDownloadsRemoved(ids);
 }
 
-// Test that changes to persisted fields in a DownloadItem triggers database
-// updates.
-TEST_F(DownloadHistoryTest, DownloadHistoryTest_Update) {
-  SetDownloadDBEnabled(false);
-  CreateDownloadHistory({});
-
-  history::DownloadRow row;
-  InitBasicItem(FILE_PATH_LITERAL("/foo/bar.pdf"), "http://example.com/bar.pdf",
-                "http://example.com/referrer.html",
-                download::DownloadItem::IN_PROGRESS, &row);
-
-  CallOnDownloadCreated(0);
-  ExpectDownloadCreated(row);
-  EXPECT_TRUE(DownloadHistory::IsPersisted(&item(0)));
-
-  base::FilePath new_path(FILE_PATH_LITERAL("/foo/baz.txt"));
-  base::Time new_time(base::Time::Now());
-  std::string new_etag("new etag");
-  std::string new_last_modifed("new last modified");
-
-  // current_path
-  EXPECT_CALL(item(0), GetFullPath()).WillRepeatedly(ReturnRefOfCopy(new_path));
-  row.current_path = new_path;
-  item(0).NotifyObserversDownloadUpdated();
-  ExpectDownloadUpdated(row, true);
-
-  // target_path
-  EXPECT_CALL(item(0), GetTargetFilePath())
-      .WillRepeatedly(ReturnRefOfCopy(new_path));
-  row.target_path = new_path;
-  item(0).NotifyObserversDownloadUpdated();
-  ExpectDownloadUpdated(row, false);
-
-  // end_time
-  EXPECT_CALL(item(0), GetEndTime()).WillRepeatedly(Return(new_time));
-  row.end_time = new_time;
-  item(0).NotifyObserversDownloadUpdated();
-  ExpectDownloadUpdated(row, false);
-
-  // received_bytes
-  EXPECT_CALL(item(0), GetReceivedBytes()).WillRepeatedly(Return(101));
-  row.received_bytes = 101;
-  item(0).NotifyObserversDownloadUpdated();
-  ExpectDownloadUpdated(row, false);
-
-  // received slices
-  std::vector<download::DownloadItem::ReceivedSlice> slices;
-  slices.push_back(download::DownloadItem::ReceivedSlice(0, 100));
-  slices.push_back(download::DownloadItem::ReceivedSlice(1000, 500));
-  EXPECT_CALL(item(0), GetReceivedSlices()).WillRepeatedly(
-      ReturnRefOfCopy(slices));
-  row.download_slice_info = history::GetHistoryDownloadSliceInfos(item(0));
-  item(0).NotifyObserversDownloadUpdated();
-  ExpectDownloadUpdated(row, false);
-
-  // total_bytes
-  EXPECT_CALL(item(0), GetTotalBytes()).WillRepeatedly(Return(102));
-  row.total_bytes = 102;
-  item(0).NotifyObserversDownloadUpdated();
-  ExpectDownloadUpdated(row, false);
-
-  // etag
-  EXPECT_CALL(item(0), GetETag()).WillRepeatedly(ReturnRefOfCopy(new_etag));
-  row.etag = new_etag;
-  item(0).NotifyObserversDownloadUpdated();
-  ExpectDownloadUpdated(row, false);
-
-  // last_modified
-  EXPECT_CALL(item(0), GetLastModifiedTime())
-      .WillRepeatedly(ReturnRefOfCopy(new_last_modifed));
-  row.last_modified = new_last_modifed;
-  item(0).NotifyObserversDownloadUpdated();
-  ExpectDownloadUpdated(row, false);
-
-  // state
-  // Changing the state to INTERRUPTED will remove its stored state.
-  EXPECT_CALL(item(0), GetState())
-      .WillRepeatedly(Return(download::DownloadItem::INTERRUPTED));
-  row.state = history::DownloadState::INTERRUPTED;
-  item(0).NotifyObserversDownloadUpdated();
-  ExpectDownloadUpdated(row, false);
-
-  // Changing the state back to IN_PROGRESS to reset its stored state.
-  EXPECT_CALL(item(0), GetState())
-      .WillRepeatedly(Return(download::DownloadItem::IN_PROGRESS));
-  row.state = history::DownloadState::IN_PROGRESS;
-  item(0).NotifyObserversDownloadUpdated();
-  ExpectDownloadUpdated(row, true);
-
-  // danger_type
-  EXPECT_CALL(item(0), GetDangerType())
-      .WillRepeatedly(Return(download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT));
-  row.danger_type = history::DownloadDangerType::DANGEROUS_CONTENT;
-  item(0).NotifyObserversDownloadUpdated();
-  ExpectDownloadUpdated(row, false);
-
-  // interrupt_reason
-  EXPECT_CALL(item(0), GetLastReason())
-      .WillRepeatedly(
-          Return(download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED));
-  row.interrupt_reason = history::ToHistoryDownloadInterruptReason(
-      download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED);
-  item(0).NotifyObserversDownloadUpdated();
-  ExpectDownloadUpdated(row, false);
-
-  // opened
-  EXPECT_CALL(item(0), GetOpened()).WillRepeatedly(Return(true));
-  row.opened = true;
-  item(0).NotifyObserversDownloadUpdated();
-  ExpectDownloadUpdated(row, false);
-}
-
 // Test creating a new item, saving it, removing it by setting it Temporary,
 // changing it without saving it back because it's Temporary, clearing
 // IsTemporary, saving it back, changing it, saving it back because it isn't
 // Temporary anymore.
 TEST_F(DownloadHistoryTest, DownloadHistoryTest_Temporary) {
-  SetDownloadDBEnabled(false);
-
   // Create a fresh item not from history, OnDownloadCreated, OnDownloadUpdated,
   // OnDownloadRemoved.
   CreateDownloadHistory({});
@@ -733,6 +577,7 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_Temporary) {
   InitBasicItem(FILE_PATH_LITERAL("/foo/bar.pdf"), "http://example.com/bar.pdf",
                 "http://example.com/referrer.html",
                 download::DownloadItem::COMPLETE, &row);
+  EXPECT_CALL(item(0), IsDone()).WillRepeatedly(Return(true));
 
   // Pretend the manager just created |item|.
   CallOnDownloadCreated(0);
@@ -835,9 +680,6 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_Multiple) {
 
 // Test what happens when HistoryService/CreateDownload::CreateDownload() fails.
 TEST_F(DownloadHistoryTest, DownloadHistoryTest_CreateFailed) {
-  // Disable download DB.
-  SetDownloadDBEnabled(false);
-
   // Create a fresh item not from history, OnDownloadCreated, OnDownloadUpdated,
   // OnDownloadRemoved.
   CreateDownloadHistory({});
@@ -846,6 +688,7 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_CreateFailed) {
   InitBasicItem(FILE_PATH_LITERAL("/foo/bar.pdf"), "http://example.com/bar.pdf",
                 "http://example.com/referrer.html",
                 download::DownloadItem::COMPLETE, &row);
+  EXPECT_CALL(item(0), IsDone()).WillRepeatedly(Return(true));
 
   FailCreateDownload();
   // Pretend the manager just created |item|.
@@ -892,11 +735,8 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_UpdateWhileAdding) {
   ExpectDownloadUpdated(row, true);
 }
 
-// Test creating and updating an item with DownloadDB enabled.
-TEST_F(DownloadHistoryTest, CreateWithDownloadDB) {
-  // Enable download DB.
-  SetDownloadDBEnabled(true);
-
+// Test creating and updating an completed item.
+TEST_F(DownloadHistoryTest, CreateCompletedItem) {
   // Create a fresh item not from download DB
   CreateDownloadHistory({});
 
@@ -920,9 +760,6 @@ TEST_F(DownloadHistoryTest, CreateWithDownloadDB) {
 
 // Test creating history download item that exists in DownloadDB.
 TEST_F(DownloadHistoryTest, CreateHistoryItemInDownloadDB) {
-  // Enable download DB.
-  SetDownloadDBEnabled(true);
-
   history::DownloadRow row;
   InitBasicItem(FILE_PATH_LITERAL("/foo/bar.pdf"), "http://example.com/bar.pdf",
                 "http://example.com/referrer.html",
@@ -950,13 +787,25 @@ TEST_F(DownloadHistoryTest, CreateHistoryItemInDownloadDB) {
   ExpectDownloadUpdated(row, true);
 }
 
-// Test creating a in-progress history download item that is non-resumable in
-// DownloadDB.
-TEST_F(DownloadHistoryTest,
-       CreateInProgressHistoryItemNonResumableInDownloadDB) {
-  // Enable download DB.
-  SetDownloadDBEnabled(true);
+// Test that new in-progress download will not be added to history.
+TEST_F(DownloadHistoryTest, CreateInProgressDownload) {
+  // Create an in-progress download.
+  CreateDownloadHistory({});
 
+  history::DownloadRow row;
+  InitBasicItem(FILE_PATH_LITERAL("/foo/bar.pdf"), "http://example.com/bar.pdf",
+                "http://example.com/referrer.html",
+                download::DownloadItem::IN_PROGRESS, &row);
+
+  // Pretend the manager just created |item|.
+  CallOnDownloadCreated(0);
+  ExpectNoDownloadCreated();
+  EXPECT_FALSE(DownloadHistory::IsPersisted(&item(0)));
+}
+
+// Test that in-progress download already in history will be updated once it
+// becomes non-resumable.
+TEST_F(DownloadHistoryTest, InProgressHistoryItemBecomesNonResumable) {
   history::DownloadRow row;
   InitBasicItem(FILE_PATH_LITERAL("/foo/bar.pdf"), "http://example.com/bar.pdf",
                 "http://example.com/referrer.html",
@@ -981,9 +830,6 @@ TEST_F(DownloadHistoryTest,
 
 // Test loading history download item that will be cleared by |manager_|
 TEST_F(DownloadHistoryTest, RemoveClearedItemFromHistory) {
-  // Enable download DB.
-  SetDownloadDBEnabled(true);
-
   history::DownloadRow row;
   InitBasicItem(FILE_PATH_LITERAL("/foo/bar.pdf"), "http://example.com/bar.pdf",
                 "http://example.com/referrer.html",

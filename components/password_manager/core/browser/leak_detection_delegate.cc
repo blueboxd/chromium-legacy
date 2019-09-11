@@ -73,7 +73,7 @@ void LeakDetectionDelegate::OnLeakDetectionDone(bool is_leaked,
       helper_ = std::make_unique<LeakDetectionDelegateHelper>(base::BindOnce(
           &LeakDetectionDelegate::OnShowLeakDetectionNotification,
           base::Unretained(this)));
-      helper_->GetCredentialLeakType(client_->GetPasswordStore(),
+      helper_->GetCredentialLeakType(client_->GetProfilePasswordStore(),
                                      std::move(url), std::move(username),
                                      std::move(password));
     }

@@ -53,6 +53,8 @@ class JsModulizerTest(unittest.TestCase):
     self._run_test_(
         'with_rename.js', 'with_rename_expected.js', ['cr.foo.Bar|Bar'])
 
+  def testSuccess_WithIgnore(self):
+    self._run_test_('with_ignore.js', 'with_ignore_expected.js')
 
 if __name__ == '__main__':
   unittest.main()

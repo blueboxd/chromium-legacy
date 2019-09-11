@@ -3470,7 +3470,6 @@ TEST_F(LayerTreeHostCommonTest, RootClipPropagationToClippedSurface) {
   clip_child->SetBounds(gfx::Size(100, 100));
   clipped_surface->SetBounds(gfx::Size(50, 50));
   clipped_surface->SetDrawsContent(true);
-  clipped_surface->test_properties()->force_render_surface = true;
 
   CopyProperties(root, unclipped_surface);
   CreateEffectNode(unclipped_surface).render_surface_reason =
@@ -7124,8 +7123,8 @@ TEST_F(LayerTreeHostCommonTestWithLayerTree, DrawPropertyScales) {
 
 TEST_F(LayerTreeHostCommonTest, AnimationScales) {
   LayerImpl* root = root_layer();
-  auto* child1 = AddChildToRoot<LayerImpl>();
-  auto* child2 = AddChildToRoot<LayerImpl>();
+  auto* child1 = AddLayer<LayerImpl>();
+  auto* child2 = AddLayer<LayerImpl>();
   SetElementIdsForTesting();
 
   gfx::Transform scale_transform_child1, scale_transform_child2;

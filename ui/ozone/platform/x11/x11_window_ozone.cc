@@ -82,6 +82,10 @@ void X11WindowOzone::SetCursor(PlatformCursor cursor) {
   XWindow::SetCursor(cursor_ozone->xcursor());
 }
 
+void X11WindowOzone::OnMouseEnter() {
+  platform_window_delegate()->OnMouseEnter();
+}
+
 void X11WindowOzone::RemoveFromWindowManager() {
   DCHECK(window_manager_);
   if (widget_ != gfx::kNullAcceleratedWidget) {
@@ -124,6 +128,9 @@ bool X11WindowOzone::CanDispatchEvent(const PlatformEvent& event) {
 
 uint32_t X11WindowOzone::DispatchEvent(const PlatformEvent& event) {
   DCHECK_NE(XWindow::window(), x11::None);
+
+  if (event->IsMouseEvent() && handle_next_event_)
+    window_manager_->MouseOnWindow(this);
 
   if (!window_manager_->event_grabber() ||
       window_manager_->event_grabber() == this) {

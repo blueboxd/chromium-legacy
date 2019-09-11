@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.PopupWindow;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.ui.DropdownPopupWindow;
 import org.chromium.ui.base.WindowAndroid;
@@ -66,7 +67,9 @@ public class PasswordGenerationPopupBridge implements PopupWindow.OnDismissListe
      */
     @Override
     public void onDismiss() {
-        nativeDismissed(mNativePasswordGenerationEditingPopupViewAndroid);
+        PasswordGenerationPopupBridgeJni.get().dismissed(
+                mNativePasswordGenerationEditingPopupViewAndroid,
+                PasswordGenerationPopupBridge.this);
     }
 
     /**
@@ -96,5 +99,9 @@ public class PasswordGenerationPopupBridge implements PopupWindow.OnDismissListe
         if (mPopup != null) mPopup.dismiss();
     }
 
-    private native void nativeDismissed(long nativePasswordGenerationEditingPopupViewAndroid);
+    @NativeMethods
+    interface Natives {
+        void dismissed(long nativePasswordGenerationEditingPopupViewAndroid,
+                PasswordGenerationPopupBridge caller);
+    }
 }

@@ -9,9 +9,11 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Handler;
 import android.support.graphics.drawable.Animatable2Compat;
 import android.support.graphics.drawable.AnimatedVectorDrawableCompat;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -23,6 +25,7 @@ import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.widget.ChromeImageView;
@@ -34,6 +37,7 @@ public class TabGridIphItemView extends FrameLayout {
     private View mIphDialogView;
     private TextView mShowIPHDialogButton;
     private TextView mCloseIPHDialogButton;
+    private TextView mIphIntroduction;
     private ChromeImageView mCloseIPHEntranceButton;
     private ScrimView mScrimView;
     private ScrimView.ScrimParams mScrimParams;
@@ -56,6 +60,7 @@ public class TabGridIphItemView extends FrameLayout {
                         .inflate(R.layout.iph_drag_and_drop_dialog_layout, backgroundView, false);
         mShowIPHDialogButton = findViewById(R.id.show_me_button);
         mCloseIPHEntranceButton = findViewById(R.id.close_iph_button);
+        mIphIntroduction = findViewById(R.id.iph_description);
         Drawable closeButtonDrawable = getScaledCloseImageDrawable();
         mCloseIPHEntranceButton.setImageDrawable(closeButtonDrawable);
         mCloseIPHDialogButton =
@@ -143,5 +148,30 @@ public class TabGridIphItemView extends FrameLayout {
         Bitmap closeBitmap = ((BitmapDrawable) closeDrawable).getBitmap();
         return new BitmapDrawable(
                 getResources(), Bitmap.createScaledBitmap(closeBitmap, size, size, true));
+    }
+
+    /**
+     * Updates color for inner views based on incognito mode.
+     * @param isIncognito Whether the color is updated for incognito mode.
+     */
+    void updateColor(boolean isIncognito) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            setBackground(
+                    TabUiColorProvider.getCardViewBackgroundDrawable(getContext(), isIncognito));
+        } else {
+            ViewCompat.setBackgroundTintList(
+                    this, TabUiColorProvider.getCardViewTintList(getContext(), isIncognito));
+        }
+
+        mShowIPHDialogButton.setTextAppearance(mShowIPHDialogButton.getContext(),
+                isIncognito ? R.style.TextAppearance_BlueTitle2Incognito
+                            : R.style.TextAppearance_BlueTitle2);
+        mIphIntroduction.setTextAppearance(mIphIntroduction.getContext(),
+                isIncognito ? R.style.TextAppearance_WhiteBody
+                            : R.style.TextAppearance_BlackBodyDefault);
+
+        ApiCompatibilityUtils.setImageTintList(mCloseIPHEntranceButton,
+                TabUiColorProvider.getActionButtonTintList(
+                        mCloseIPHEntranceButton.getContext(), isIncognito));
     }
 }

@@ -296,10 +296,6 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // are visible.
   bool IsDrawn() const;
 
-  // Returns true if this layer can have a texture (has_texture_ is true)
-  // and is not completely obscured by a child.
-  bool ShouldDraw() const;
-
   // If set to true, this layer can receive hit test events, this property does
   // not affect the layer's descendants.
   void SetAcceptEvents(bool accept_events);

@@ -29,7 +29,7 @@ source_set("public") {
     "web_state/web_state_delegate.h",
     "web_state/web_state_delegate_bridge.h",
     "web_state/web_state_observer_bridge.h",
-    "web_state/web_state_user_data.h",
+    "web_state_user_data.h",
   ]
 
   libs = [ "WebKit.framework" ]
@@ -46,7 +46,7 @@ source_set("web_state_observer") {
     "//url",
   ]
   sources = [
-    "web_state/web_state_observer.h",
+    "web_state_observer.h",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

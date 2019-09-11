@@ -15,6 +15,7 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
+#import "ios/chrome/test/earl_grey/chrome_matchers_app_interface.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 
@@ -47,7 +48,9 @@ using chrome_test_util::AccountConsistencyConfirmationOkButton;
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::PrimarySignInButton;
 using chrome_test_util::SecondarySignInButton;
+using chrome_test_util::SettingsAccountButton;
 using chrome_test_util::SettingsDoneButton;
+using chrome_test_util::SignOutAccountsButton;
 using chrome_test_util::UnifiedConsentAddAccountButton;
 
 @implementation SigninEarlGreyUI
@@ -195,6 +198,27 @@ using chrome_test_util::UnifiedConsentAddAccountButton;
       selectElementWithMatcher:grey_allOf(SecondarySignInButton(),
                                           grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_nil()];
+}
+
++ (void)signOutWithManagedAccount:(BOOL)isManagedAccount {
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI tapSettingsMenuButton:SettingsAccountButton()];
+  [ChromeEarlGreyUI tapAccountsMenuButton:SignOutAccountsButton()];
+  int confirmationLabelID = 0;
+  if (isManagedAccount) {
+    confirmationLabelID = IDS_IOS_MANAGED_DISCONNECT_DIALOG_ACCEPT_UNITY;
+  } else {
+    confirmationLabelID = IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE;
+  }
+  id<GREYMatcher> confirmationButtonMatcher = [ChromeMatchersAppInterface
+      buttonWithAccessibilityLabelID:confirmationLabelID];
+  [[EarlGrey selectElementWithMatcher:confirmationButtonMatcher]
+      performAction:grey_tap()];
+  // Wait until the user is signed out.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+      performAction:grey_tap()];
+  [SigninEarlGreyUtils checkSignedOut];
 }
 
 @end

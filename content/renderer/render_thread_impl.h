@@ -46,6 +46,7 @@
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
 #include "net/base/network_change_notifier.h"
 #include "net/nqe/effective_connection_type.h"
@@ -116,7 +117,6 @@ class BrowserPluginManager;
 class CategorizedWorkerPool;
 class GpuVideoAcceleratorFactoriesImpl;
 class LowMemoryModeController;
-class P2PSocketDispatcher;
 class PeerConnectionDependencyFactory;
 class PeerConnectionTracker;
 class RenderThreadObserver;
@@ -309,11 +309,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   PeerConnectionTracker* peer_connection_tracker() {
     return peer_connection_tracker_.get();
-  }
-
-  // Current P2PSocketDispatcher. Set to NULL if P2P API is disabled.
-  P2PSocketDispatcher* p2p_socket_dispatcher() {
-    return p2p_socket_dispatcher_.get();
   }
 
   blink::WebVideoCaptureImplManager* video_capture_impl_manager() const {
@@ -583,9 +578,6 @@ class CONTENT_EXPORT RenderThreadImpl
   // of all the peer connections created in the renderer.
   std::unique_ptr<PeerConnectionTracker> peer_connection_tracker_;
 
-  // Dispatches all P2P sockets.
-  scoped_refptr<P2PSocketDispatcher> p2p_socket_dispatcher_;
-
   // Filter out unfreezable messages and pass it to unfreezable task runners.
   scoped_refptr<UnfreezableMessageFilter> unfreezable_message_filter_;
 
@@ -722,7 +714,7 @@ class CONTENT_EXPORT RenderThreadImpl
 
   int32_t client_id_;
 
-  mojom::FrameSinkProviderPtr frame_sink_provider_;
+  mojo::Remote<mojom::FrameSinkProvider> frame_sink_provider_;
 
   // A mojo connection to the CompositingModeReporter service.
   viz::mojom::CompositingModeReporterPtr compositing_mode_reporter_;

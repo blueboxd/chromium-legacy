@@ -7,24 +7,31 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_ANDROID)
 
 extern const char kQuietNotificationPromptsUIFlavourParameterName[];
+
+#if defined(OS_ANDROID)
 extern const char kQuietNotificationPromptsHeadsUpNotification[];
 extern const char kQuietNotificationPromptsMiniInfobar[];
+#else   // OS_ANDROID
+extern const char kQuietNotificationPromptsStaticIcon[];
+extern const char kQuietNotificationPromptsAnimatedIcon[];
+#endif  // OS_ANDROID
 
 class QuietNotificationsPromptConfig {
  public:
   enum UIFlavor {
     NONE,
+#if defined(OS_ANDROID)
     QUIET_NOTIFICATION,
-    HEADS_UP_NOITIFCATION,
+    HEADS_UP_NOTIFICATION,
     MINI_INFOBAR,
+#else   // OS_ANDROID
+    STATIC_ICON,
+    ANIMATED_ICON,
+#endif  // OS_ANDROID
   };
-
   static UIFlavor UIFlavorToUse();
 };
-
-#endif  // OS_ANDROID
 
 #endif  // CHROME_BROWSER_PERMISSIONS_PERMISSION_FEATURES_H_

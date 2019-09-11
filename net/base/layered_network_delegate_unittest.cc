@@ -131,13 +131,6 @@ class TestNetworkDelegateImpl : public NetworkDelegateImpl {
     return false;
   }
 
-  bool OnCanAccessFile(const URLRequest& request,
-                       const base::FilePath& original_path,
-                       const base::FilePath& absolute_path) const override {
-    IncrementAndCompareCounter("on_can_access_file_count");
-    return false;
-  }
-
   bool OnForcePrivacyMode(
       const GURL& url,
       const GURL& site_for_cookies,
@@ -213,15 +206,13 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
     EXPECT_FALSE(OnCanGetCookies(*request, CookieList(), true));
     EXPECT_FALSE(
         OnCanSetCookie(*request, net::CanonicalCookie(), nullptr, true));
-    EXPECT_FALSE(OnCanAccessFile(*request, base::FilePath(), base::FilePath()));
     EXPECT_FALSE(OnForcePrivacyMode(GURL(), GURL(), base::nullopt));
     EXPECT_FALSE(OnCancelURLRequestWithPolicyViolatingReferrerHeader(
         *request, GURL(), GURL()));
   }
 
  protected:
-  void OnBeforeURLRequestInternal(URLRequest* request,
-                                  GURL* new_url) override {
+  void OnBeforeURLRequestInternal(URLRequest* request, GURL* new_url) override {
     ++(*counters_)["on_before_url_request_count"];
     EXPECT_EQ(1, (*counters_)["on_before_url_request_count"]);
   }
@@ -318,14 +309,6 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
     ++(*counters_)["on_can_set_cookie_count"];
     EXPECT_EQ(1, (*counters_)["on_can_set_cookie_count"]);
     return allowed_from_caller;
-  }
-
-  void OnCanAccessFileInternal(
-      const URLRequest& request,
-      const base::FilePath& original_path,
-      const base::FilePath& absolute_path) const override {
-    ++(*counters_)["on_can_access_file_count"];
-    EXPECT_EQ(1, (*counters_)["on_can_access_file_count"]);
   }
 
   bool OnForcePrivacyModeInternal(

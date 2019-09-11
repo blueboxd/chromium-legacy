@@ -45,8 +45,6 @@ void GlobalMediaControlsPromoController::ShowPromo() {
   DCHECK(owner_->GetEnabled());
 
   // Here, we open the promo bubble.
-  // TODO(https://crbug.com/991585): Also highlight the toolbar button.
-
   std::unique_ptr<FeaturePromoBubbleTimeout> feature_promo_bubble_timeout;
   if (!disable_bubble_timeout_for_test_) {
     feature_promo_bubble_timeout = std::make_unique<FeaturePromoBubbleTimeout>(
@@ -89,6 +87,8 @@ void GlobalMediaControlsPromoController::FinishPromo() {
     promo_bubble_->GetWidget()->Close();
 
   is_showing_ = false;
+
+  owner_->OnPromoEnded();
 
   GlobalMediaControlsInProductHelpFactory::GetForProfile(profile_)
       ->HelpDismissed();

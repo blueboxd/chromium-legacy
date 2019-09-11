@@ -4,12 +4,44 @@
 
 module ash.mojom;
 
-import "ash/public/mojom/voice_interaction_controller.mojom";
+// The initial state is NOT_READY, after Assistant service started it becomes
+// READY. When Assistant UI shows up the state becomes VISIBLE.
+enum AssistantState {
+  // The Assistant service is not ready yet.
+  NOT_READY = 0,
+  // The Assistant service is ready.
+  READY,
+  // The Assistant UI is showing.
+  VISIBLE
+};
+
+enum AssistantAllowedState {
+  // Assistant feature is allowed.
+  ALLOWED = 0,
+  // Disallowed because search and assistant is disabled by policy.
+  DISALLOWED_BY_POLICY,
+  // Disallowed because user's locale is not compatible.
+  DISALLOWED_BY_LOCALE,
+  // Disallowed because current user is not primary user.
+  DISALLOWED_BY_NONPRIMARY_USER,
+  // Disallowed because current user is supervised user.
+  DISALLOWED_BY_SUPERVISED_USER,
+  // Disallowed because incognito mode.
+  DISALLOWED_BY_INCOGNITO,
+  // Disallowed because the device is in demo mode.
+  DISALLOWED_BY_DEMO_MODE,
+  // Disallowed because the device is in public session.
+  DISALLOWED_BY_PUBLIC_SESSION,
+  // Disallowed because the user's account type is currently not supported.
+  DISALLOWED_BY_ACCOUNT_TYPE,
+  // Disallowed because the device is in Kiosk mode.
+  DISALLOWED_BY_KIOSK_MODE
+};
 
 // Allows observing changes to Assistant status and settings.
 interface AssistantStateObserver {
   // Called when Assistant state changes.
-  OnAssistantStatusChanged(VoiceInteractionState state);
+  OnAssistantStatusChanged(AssistantState state);
 
   // Called when assistant feature allowed state has changed.
   OnAssistantFeatureAllowedChanged(AssistantAllowedState state);

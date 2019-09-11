@@ -22,8 +22,6 @@
     <item type="id" name="close_tab" />
 
     <!-- InfoBar constants -->
-    <item type="id" name="button_primary" />
-    <item type="id" name="button_secondary" />
     <item type="id" name="infobar_icon" />
     <item type="id" name="infobar_close_button" />
     <item type="id" name="infobar_extra_check" />

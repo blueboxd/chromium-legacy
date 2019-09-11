@@ -40,7 +40,6 @@ import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.TabCountProvider.TabCountObserver;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.ColorUtils;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -424,9 +423,6 @@ public class ToolbarTablet extends ToolbarLayout
 
     @Override
     void updateButtonVisibility() {
-        if (FeatureUtilities.isNewTabPageButtonEnabled()) {
-            mHomeButton.setVisibility(isIncognito() ? GONE : VISIBLE);
-        }
         mLocationBar.updateButtonVisibility();
     }
 

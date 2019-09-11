@@ -12,4 +12,5 @@
     <drawable name="ic_play_circle_filled_24dp">
         @drawable/ic_play_circle_filled_24dp_on_light_bg
     </drawable>
+    <drawable name="shared_clipboard_zero_state">@drawable/shared_clipboard_zero_state_light</drawable>
 </resources>

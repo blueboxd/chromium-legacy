@@ -736,6 +736,29 @@ TEST_P(SimpleURLLoaderTest, Redirect) {
   }
 }
 
+// Redirect to a file:// URL.
+TEST_P(SimpleURLLoaderTest, RedirectFile) {
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper = CreateHelperForURL(
+      test_server_.GetURL("/server-redirect?file:///etc/passwd"));
+  test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
+
+  EXPECT_EQ(net::ERR_UNKNOWN_URL_SCHEME,
+            test_helper->simple_url_loader()->NetError());
+  EXPECT_FALSE(test_helper->simple_url_loader()->ResponseInfo());
+}
+
+// Redirect to a data:// URL.
+TEST_P(SimpleURLLoaderTest, RedirectData) {
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper =
+      CreateHelperForURL(test_server_.GetURL(
+          "/server-redirect?data:text/plain;charset=utf-8;base64,Zm9v"));
+  test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
+
+  EXPECT_EQ(net::ERR_UNKNOWN_URL_SCHEME,
+            test_helper->simple_url_loader()->NetError());
+  EXPECT_FALSE(test_helper->simple_url_loader()->ResponseInfo());
+}
+
 // Make sure OnRedirectCallback is invoked on a redirect.
 TEST_P(SimpleURLLoaderTest, OnRedirectCallback) {
   std::unique_ptr<SimpleLoaderTestHelper> test_helper =

@@ -106,6 +106,9 @@ if (use_system_harfbuzz) {
       "src/src/hb-map.hh",
       "src/src/hb-meta.hh",
       "src/src/hb-mutex.hh",
+      "src/src/hb-number-parser.hh",
+      "src/src/hb-number.cc",
+      "src/src/hb-number.hh",
       "src/src/hb-object.hh",
       "src/src/hb-open-file.hh",
       "src/src/hb-open-type.hh",
@@ -230,6 +233,7 @@ if (use_system_harfbuzz) {
       "HAVE_ICU",
       "HAVE_ICU_BUILTIN",
       "HAVE_INTEL_ATOMIC_PRIMITIVES",
+      "HAVE_ROUNDF",
       "HB_NO_MMAP",
 
       # Size reductions by disabling parts that we do not currently require:

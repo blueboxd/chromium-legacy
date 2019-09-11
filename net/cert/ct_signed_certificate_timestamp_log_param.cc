@@ -63,7 +63,7 @@ base::Value SCTListToPrintableValues(
     const SignedCertificateTimestampAndStatusList& sct_and_status_list) {
   base::Value output_scts(base::Value::Type::LIST);
   for (const auto& sct_and_status : sct_and_status_list)
-    output_scts.GetList().push_back(
+    output_scts.Append(
         SCTToDictionary(*(sct_and_status.sct.get()), sct_and_status.status));
 
   return output_scts;

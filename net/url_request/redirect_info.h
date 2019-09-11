@@ -28,7 +28,6 @@ struct NET_EXPORT RedirectInfo {
       const std::string& original_method,
       const GURL& original_url,
       const GURL& original_site_for_cookies,
-      const base::Optional<url::Origin>& original_top_frame_origin,
       URLRequest::FirstPartyURLPolicy original_first_party_url_policy,
       URLRequest::ReferrerPolicy original_referrer_policy,
       const std::string& original_referrer,
@@ -62,10 +61,6 @@ struct NET_EXPORT RedirectInfo {
 
   // The new first-party URL for cookies.
   GURL new_site_for_cookies;
-
-  // DEPRECATED TODO: Remove this as it was introduced for the cache key and can
-  // be removed now that |network_isolation_key| is set for the redirect cases.
-  base::Optional<url::Origin> new_top_frame_origin;
 
   // The new HTTP referrer header.
   std::string new_referrer;

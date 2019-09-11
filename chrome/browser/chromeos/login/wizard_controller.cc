@@ -131,6 +131,7 @@
 #include "chromeos/constants/chromeos_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/devicetype.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/geolocation/simple_geolocation_provider.h"
@@ -188,14 +189,18 @@ const chromeos::StaticOobeScreenId kResumableScreens[] = {
     chromeos::MultiDeviceSetupScreenView::kScreenId,
 };
 
-// Checks if device is in tablet mode, and that HID-detection screen is not
-// disabled by flag.
+// The HID detection screen is only allowed for form factors without built-in
+// inputs: Chromebases, Chromebits, and Chromeboxes (crbug.com/965765).
 bool CanShowHIDDetectionScreen() {
-  return !ash::TabletMode::Get()->InTabletMode() &&
-         !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             chromeos::switches::kDisableHIDDetectionOnOOBE) &&
-         !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             ash::switches::kAshEnableTabletMode);
+  switch (chromeos::GetDeviceType()) {
+    case chromeos::DeviceType::kChromebase:
+    case chromeos::DeviceType::kChromebit:
+    case chromeos::DeviceType::kChromebox:
+      return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDisableHIDDetectionOnOOBE);
+    default:
+      return false;
+  }
 }
 
 bool IsResumableScreen(chromeos::OobeScreenId screen) {

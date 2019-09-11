@@ -10,7 +10,7 @@
 #import "ios/web/common/crw_content_view.h"
 #import "ios/web/js_messaging/web_view_js_utils.h"
 #include "ios/web/public/security/web_interstitial.h"
-#include "ios/web/public/web_state/web_state_observer.h"
+#include "ios/web/public/web_state_observer.h"
 #include "url/gurl.h"
 
 @protocol WKNavigationDelegate;

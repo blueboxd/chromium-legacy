@@ -902,36 +902,64 @@ class CertVerifyProcInternalTest
     return true;
   }
 
-  bool WeakKeysAreInvalid() const {
-#if defined(OS_MACOSX) and !defined(OS_IOS)
-    // Starting with Mac OS 10.12, certs with weak keys are treated as
-    // (recoverable) invalid certificate errors.
-    if (verify_proc_type() == CERT_VERIFY_PROC_MAC &&
-        base::mac::IsAtLeastOS10_12()) {
-      return true;
-    }
-#endif
-    return false;
-  }
-
-  int GetMinimumRsaDsaKeySize() const {
+  // Returns true if the RSA/DSA keysize will be considered weak on the current
+  // platform. IsInvalidRsaDsaKeySize should be checked prior, since some very
+  // weak keys may be considered invalid.
+  bool IsWeakRsaDsaKeySize(int size) const {
 #if defined(OS_IOS)
     // Beginning with iOS 13, the minimum key size for RSA/DSA algorithms is
     // 2048 bits. See https://support.apple.com/en-us/HT210176
     if (verify_proc_type() == CERT_VERIFY_PROC_IOS &&
         base::ios::IsRunningOnIOS13OrLater()) {
-      return 2048;
+      return size < 2048;
     }
 #elif defined(OS_MACOSX)
     // Beginning with macOS 10.15, the minimum key size for RSA/DSA algorithms
     // is 2048 bits. See https://support.apple.com/en-us/HT210176
     if (verify_proc_type() == CERT_VERIFY_PROC_MAC &&
         base::mac::IsAtLeastOS10_15()) {
-      return 2048;
+      return size < 2048;
     }
 #endif
 
-    return 1024;
+    return size < 1024;
+  }
+
+  // Returns true if the RSA/DSA keysize will be considered invalid on the
+  // current platform.
+  bool IsInvalidRsaDsaKeySize(int size) const {
+#if defined(OS_MACOSX) and !defined(OS_IOS)
+    // Starting with Mac OS 10.12, certs with keys < 1024 are invalid.
+    if (verify_proc_type() == CERT_VERIFY_PROC_MAC &&
+        base::mac::IsAtLeastOS10_12()) {
+      return size < 1024;
+    }
+#endif
+
+    // This platform does not mark certificates with weak keys as invalid.
+    return false;
+  }
+
+  static bool ParseKeyType(const std::string& key_type,
+                           std::string* type,
+                           int* size) {
+    size_t pos = key_type.find("-");
+    std::string size_str = key_type.substr(0, pos);
+    *type = key_type.substr(pos + 1);
+    return base::StringToInt(size_str, size);
+  }
+
+  // Some platforms may reject certificates with very weak keys as invalid.
+  bool IsInvalidKeyType(const std::string& key_type) const {
+    std::string type;
+    int size = 0;
+    if (!ParseKeyType(key_type, &type, &size))
+      return false;
+
+    if (type == "rsa" || type == "dsa")
+      return IsInvalidRsaDsaKeySize(size);
+
+    return false;
   }
 
   // Currently, only RSA and DSA keys are checked for weakness, and our example
@@ -939,17 +967,17 @@ class CertVerifyProcInternalTest
   //
   // Note that this means there may be false negatives: keys for other
   // algorithms and which are weak will pass this test.
+  //
+  // Also, IsInvalidKeyType should be checked prior, since some weak keys may be
+  // considered invalid.
   bool IsWeakKeyType(const std::string& key_type) const {
-    size_t pos = key_type.find("-");
-    std::string size_str = key_type.substr(0, pos);
-    std::string type = key_type.substr(pos + 1);
+    std::string type;
     int size = 0;
-
-    if (!base::StringToInt(size_str, &size))
+    if (!ParseKeyType(key_type, &type, &size))
       return false;
 
     if (type == "rsa" || type == "dsa")
-      return size < GetMinimumRsaDsaKeySize();
+      return IsWeakRsaDsaKeySize(size);
 
     return false;
   }
@@ -1463,17 +1491,15 @@ TEST_P(CertVerifyProcInternalTest, RejectWeakKeys) {
                          CRLSet::BuiltinCRLSet().get(), CertificateList(),
                          &verify_result);
 
-      if (IsWeakKeyType(*ee_type) || IsWeakKeyType(*signer_type)) {
+      if (IsInvalidKeyType(*ee_type) || IsInvalidKeyType(*signer_type)) {
         EXPECT_NE(OK, error);
-        if (WeakKeysAreInvalid()) {
-          EXPECT_EQ(CERT_STATUS_INVALID,
-                    verify_result.cert_status & CERT_STATUS_INVALID);
-
-        } else {
-          EXPECT_EQ(CERT_STATUS_WEAK_KEY,
-                    verify_result.cert_status & CERT_STATUS_WEAK_KEY);
-          EXPECT_EQ(0u, verify_result.cert_status & CERT_STATUS_INVALID);
-        }
+        EXPECT_EQ(CERT_STATUS_INVALID,
+                  verify_result.cert_status & CERT_STATUS_INVALID);
+      } else if (IsWeakKeyType(*ee_type) || IsWeakKeyType(*signer_type)) {
+        EXPECT_NE(OK, error);
+        EXPECT_EQ(CERT_STATUS_WEAK_KEY,
+                  verify_result.cert_status & CERT_STATUS_WEAK_KEY);
+        EXPECT_EQ(0u, verify_result.cert_status & CERT_STATUS_INVALID);
       } else {
         EXPECT_THAT(error, IsOk());
         EXPECT_EQ(0U, verify_result.cert_status & CERT_STATUS_WEAK_KEY);

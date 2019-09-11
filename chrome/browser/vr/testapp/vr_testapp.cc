@@ -148,6 +148,7 @@ class AppWindow : public ui::PlatformWindowDelegate {
   }
   void OnAcceleratedWidgetDestroyed() override { NOTREACHED(); }
   void OnActivationChanged(bool active) override {}
+  void OnMouseEnter() override {}
 
  private:
   // Since we pretend to have a GPU process, we should also pretend to

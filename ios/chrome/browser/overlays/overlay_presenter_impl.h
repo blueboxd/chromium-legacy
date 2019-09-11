@@ -112,10 +112,11 @@ class OverlayPresenterImpl : public BrowserObserver,
                               OverlayRequest* request) override;
 
   // OverlayPresentationContextObserver:
-  void OverlayPresentationContextWillChangeActivationState(
+  void OverlayPresentationContextWillChangePresentationCapabilities(
       OverlayPresentationContext* presentation_context,
-      bool activating) override;
-  void OverlayPresentationContextDidChangeActivationState(
+      OverlayPresentationContext::UIPresentationCapabilities capabilities)
+      override;
+  void OverlayPresentationContextDidChangePresentationCapabilities(
       OverlayPresentationContext* presentation_context) override;
 
   // WebStateListObserver:

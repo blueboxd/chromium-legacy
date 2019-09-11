@@ -19,7 +19,9 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/service/image_decode_accelerator_worker.h"
 #include "media/gpu/vaapi/vaapi_image_decode_accelerator_worker.h"
@@ -129,6 +131,10 @@ class MockVaapiImageDecoder : public VaapiImageDecoder {
 class VaapiImageDecodeAcceleratorWorkerTest : public testing::Test {
  public:
   VaapiImageDecodeAcceleratorWorkerTest() {
+    feature_list_.InitWithFeatures(
+        {features::kVaapiJpegImageDecodeAcceleration,
+         features::kVaapiWebPImageDecodeAcceleration} /* enabled_features */,
+        {} /* disabled_features */);
     VaapiImageDecoderVector decoders;
     decoders.push_back(std::make_unique<StrictMock<MockVaapiImageDecoder>>(
         gpu::ImageDecodeAcceleratorType::kJpeg));
@@ -160,6 +166,7 @@ class VaapiImageDecodeAcceleratorWorkerTest : public testing::Test {
 
  protected:
   base::test::TaskEnvironment task_environment_;
+  base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<VaapiImageDecodeAcceleratorWorker> worker_;
 
   DISALLOW_COPY_AND_ASSIGN(VaapiImageDecodeAcceleratorWorkerTest);

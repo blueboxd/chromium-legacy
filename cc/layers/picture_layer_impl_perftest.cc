@@ -56,7 +56,6 @@ class PictureLayerImplPerfTest : public LayerTestCommon::LayerImplTest,
         FakePictureLayerImpl::CreateWithRasterSource(pending_tree, 7,
                                                      raster_source);
     pending_layer->SetDrawsContent(true);
-    pending_layer->test_properties()->force_render_surface = true;
     pending_layer_ = pending_layer.get();
     pending_tree->SetElementIdsForTesting();
     SetupRootProperties(pending_layer_);

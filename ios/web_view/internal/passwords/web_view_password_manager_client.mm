@@ -127,7 +127,7 @@ PrefService* WebViewPasswordManagerClient::GetPrefs() const {
   return delegate_.browserState->GetPrefs();
 }
 
-PasswordStore* WebViewPasswordManagerClient::GetPasswordStore() const {
+PasswordStore* WebViewPasswordManagerClient::GetProfilePasswordStore() const {
   return ios_web_view::WebViewPasswordStoreFactory::GetForBrowserState(
              delegate_.browserState, ServiceAccessType::EXPLICIT_ACCESS)
       .get();

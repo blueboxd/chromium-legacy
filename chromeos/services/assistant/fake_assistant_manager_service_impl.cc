@@ -72,7 +72,7 @@ void FakeAssistantManagerServiceImpl::StopActiveInteraction(
     bool cancel_conversation) {}
 
 void FakeAssistantManagerServiceImpl::AddAssistantInteractionSubscriber(
-    mojom::AssistantInteractionSubscriberPtr subscriber) {}
+    mojo::PendingRemote<mojom::AssistantInteractionSubscriber> subscriber) {}
 
 void FakeAssistantManagerServiceImpl::RetrieveNotification(
     mojom::AssistantNotificationPtr notification,

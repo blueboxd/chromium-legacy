@@ -48,6 +48,9 @@ class CONTENT_EXPORT PaymentManager : public payments::mojom::PaymentManager {
   void ClearPaymentInstruments(
       ClearPaymentInstrumentsCallback callback) override;
   void SetUserHint(const std::string& user_hint) override;
+  void EnableDelegations(
+      const std::vector<payments::mojom::PaymentDelegation>& delegations,
+      EnableDelegationsCallback callback) override;
 
   // Called when an error is detected on binding_.
   void OnConnectionError();

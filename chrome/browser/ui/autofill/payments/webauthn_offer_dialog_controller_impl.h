@@ -13,7 +13,7 @@
 
 namespace autofill {
 
-class WebauthnOfferDialogView;
+class WebauthnOfferDialogModel;
 
 // Implementation of the per-tab controller to control the
 // WebauthnOfferDialogView. Lazily initialized when used.
@@ -26,6 +26,7 @@ class WebauthnOfferDialogControllerImpl
 
   void ShowOfferDialog(AutofillClient::WebauthnOfferDialogCallback callback);
   bool CloseDialog();
+  void UpdateDialogWithError();
 
   // WebauthnOfferDialogController:
   void OnOkButtonClicked() override;
@@ -45,8 +46,7 @@ class WebauthnOfferDialogControllerImpl
   // clicked, the dialog stays and the cancel button is still clickable.
   AutofillClient::WebauthnOfferDialogCallback offer_dialog_callback_;
 
-  // Reference to the dialog, which is owned by the view hierarchy.
-  WebauthnOfferDialogView* dialog_view_ = nullptr;
+  WebauthnOfferDialogModel* dialog_model_ = nullptr;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

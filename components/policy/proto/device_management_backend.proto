@@ -1069,6 +1069,14 @@ message OsUpdateStatus {
 
   // New required platform version from the pending updated kiosk app.
   optional string new_required_platform_version = 3;
+
+  // The timestamp of the last update check.
+  // [timestamp] is milliseconds since Epoch in UTC timezone (Java time).
+  optional int64 last_checked_timestamp = 4;
+
+  // The timestamp of the last reboot.
+  // [timestamp] is milliseconds since Epoch in UTC timezone (Java time).
+  optional int64 last_reboot_timestamp = 5;
 }
 
 // Provides status information for an installed app/extension.

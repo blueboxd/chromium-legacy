@@ -62,7 +62,7 @@ void HttpAuthManagerImpl::SetObserverAndDeliverCredentials(
   form_manager_ = std::make_unique<PasswordFormManager>(
       client_, PasswordStore::FormDigest(observed_form),
       nullptr, /* form_fetcher */
-      std::make_unique<FormSaverImpl>(client_->GetPasswordStore()));
+      std::make_unique<FormSaverImpl>(client_->GetProfilePasswordStore()));
 }
 
 void HttpAuthManagerImpl::ProvisionallySaveForm(

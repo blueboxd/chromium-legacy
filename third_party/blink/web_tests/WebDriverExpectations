@@ -69,15 +69,6 @@ crbug.com/977228 [ Linux ] external/wpt/webdriver/tests/element_click/scroll_int
 crbug.com/977228 [ Linux ] external/wpt/webdriver/tests/element_click/scroll_into_view.py>>test_partially_visible_does_not_scroll[8] [ Failure Pass ]
 crbug.com/977228 [ Linux ] external/wpt/webdriver/tests/element_click/scroll_into_view.py>>test_partially_visible_does_not_scroll[9] [ Failure Pass ]
 crbug.com/977228 [ Linux ] external/wpt/webdriver/tests/element_click/scroll_into_view.py>>test_scroll_into_view [ Failure Pass ]
-crbug.com/999814 [ Linux ] external/wpt/webdriver/tests/perform_actions/pointer_origin.py>>test_viewport_inside [ Failure Pass ]
-crbug.com/999814 [ Linux ] external/wpt/webdriver/tests/perform_actions/pointer_origin.py>>test_viewport_outside [ Failure Pass ]
-crbug.com/999814 [ Linux ] external/wpt/webdriver/tests/perform_actions/pointer_origin.py>>test_pointer_inside [ Failure Pass ]
-crbug.com/999814 [ Linux ] external/wpt/webdriver/tests/perform_actions/pointer_origin.py>>test_pointer_outside [ Failure Pass ]
-crbug.com/999814 [ Linux ] external/wpt/webdriver/tests/perform_actions/pointer_origin.py>>test_element_center_point [ Failure Pass ]
-crbug.com/999814 [ Linux ] external/wpt/webdriver/tests/perform_actions/pointer_origin.py>>test_element_center_point_with_offset [ Failure Pass ]
-crbug.com/999814 [ Linux ] external/wpt/webdriver/tests/perform_actions/pointer_origin.py>>test_element_in_view_center_point_partly_visible [ Failure Pass ]
-crbug.com/999814 [ Linux ] external/wpt/webdriver/tests/perform_actions/pointer_origin.py>>test_element_larger_than_viewport [ Failure Pass ]
-crbug.com/999814 [ Linux ] external/wpt/webdriver/tests/perform_actions/pointer_origin.py>>test_element_outside_of_view_port [ Failure Pass ]
 
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/interface.html [ Failure ]

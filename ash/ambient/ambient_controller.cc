@@ -4,6 +4,7 @@
 
 #include "ash/ambient/ambient_controller.h"
 
+#include "ash/ambient/ambient_constants.h"
 #include "ash/ambient/model/photo_model_observer.h"
 #include "ash/ambient/ui/ambient_container_view.h"
 #include "ash/ambient/util/ambient_util.h"
@@ -30,6 +31,7 @@ AmbientController::~AmbientController() {
 }
 
 void AmbientController::OnWidgetDestroying(views::Widget* widget) {
+  refresh_timer_.Stop();
   container_view_->GetWidget()->RemoveObserver(this);
   container_view_ = nullptr;
 }
@@ -61,11 +63,11 @@ void AmbientController::Start() {
 }
 
 void AmbientController::Stop() {
-  refresh_timer_.Stop();
   DestroyContainerView();
 }
 
 void AmbientController::CreateContainerView() {
+  DCHECK(!container_view_);
   container_view_ = new AmbientContainerView(this);
   container_view_->GetWidget()->AddObserver(this);
 }
@@ -84,8 +86,6 @@ void AmbientController::RefreshImage() {
 
   if (model_.ShouldFetchImmediately()) {
     // TODO(b/140032139): Defer downloading image if it is animating.
-    constexpr base::TimeDelta kAnimationDuration =
-        base::TimeDelta::FromMilliseconds(250);
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&AmbientController::GetNextImage,
@@ -119,10 +119,6 @@ void AmbientController::OnPhotoDownloaded(const gfx::ImageSkia& image) {
     model_.AddNextImage(image);
 
   ScheduleRefreshImage();
-}
-
-AmbientContainerView* AmbientController::GetAmbientContainerViewForTesting() {
-  return container_view_;
 }
 
 }  // namespace ash

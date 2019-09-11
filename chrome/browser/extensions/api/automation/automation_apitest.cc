@@ -414,6 +414,13 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTestWithLanguageDetection,
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, IgnoredNodesNotReturned) {
+  StartEmbeddedTestServer();
+  ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs",
+                                  "ignored_nodes_not_returned.html"))
+      << message_;
+}
+
 #if defined(OS_CHROMEOS)
 
 class AutomationApiTestWithDeviceScaleFactor : public AutomationApiTest {

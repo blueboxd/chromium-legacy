@@ -99,6 +99,8 @@ class ArcBridgeHostImpl : public mojom::ArcBridgeHost {
       mojom::RotationLockInstancePtr rotation_lock_ptr) override;
   void OnScreenCaptureInstanceReady(
       mojom::ScreenCaptureInstancePtr screen_capture_ptr) override;
+  void OnSmartCardManagerInstanceReady(
+      mojom::SmartCardManagerInstancePtr smart_card_manager_ptr) override;
   void OnStorageManagerInstanceReady(
       mojom::StorageManagerInstancePtr storage_manager_ptr) override;
   void OnTimerInstanceReady(mojom::TimerInstancePtr timer_ptr) override;

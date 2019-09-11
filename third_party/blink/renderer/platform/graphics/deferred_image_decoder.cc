@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/image-decoders/segment_reader.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/skia/include/core/SkImage.h"
 
@@ -418,7 +417,6 @@ void DeferredImageDecoder::PrepareLazyDecodedFrames() {
   }
 
   can_yuv_decode_ =
-      RuntimeEnabledFeatures::DecodeLossyWebPImagesToYUVEnabled() &&
       metadata_decoder_->CanDecodeToYUV() && all_data_received_ &&
       !frame_generator_->IsMultiFrame();
 

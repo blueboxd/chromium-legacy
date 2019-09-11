@@ -44,6 +44,7 @@ class TestPlatformDelegate : public ui::PlatformWindowDelegate {
   void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override {}
   void OnAcceleratedWidgetDestroyed() override {}
   void OnActivationChanged(bool active) override {}
+  void OnMouseEnter() override {}
 };
 
 void RunPendingTasks(scoped_refptr<base::TaskRunner> task_runner) {

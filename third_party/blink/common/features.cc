@@ -188,6 +188,16 @@ const base::Feature kWebRtcHWVP9Encoding {
 const base::Feature kWebRtcHWH264Encoding{"WebRtcHWH264Encoding",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables negotiation of experimental multiplex codec in SDP.
+const base::Feature kWebRtcMultiplexCodec{"WebRTC-MultiplexCodec",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Causes WebRTC to replace host ICE candidate IP addresses with generated
+// names ending in ".local" and resolve them using mDNS.
+// http://crbug.com/878465
+const base::Feature kWebRtcHideLocalIpsWithMdns{
+    "WebRtcHideLocalIpsWithMdns", base::FEATURE_ENABLED_BY_DEFAULT};
+
 #if BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
 // Run-time feature for the |rtc_use_h264| encoder/decoder.
 const base::Feature kWebRtcH264WithOpenH264FFmpeg{

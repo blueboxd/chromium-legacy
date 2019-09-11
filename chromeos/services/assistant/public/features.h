@@ -10,6 +10,7 @@
 #include "base/component_export.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/time/time.h"
 
 namespace chromeos {
 namespace assistant {
@@ -46,6 +47,11 @@ extern const base::FeatureParam<std::string>
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::FeatureParam<bool>
     kAssistantProactiveSuggestionsSuppressDuplicates;
+
+// The timeout threshold (in milliseconds) for the proactive suggestions chip.
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
+extern const base::FeatureParam<int>
+    kAssistantProactiveSuggestionsTimeoutThresholdMillis;
 
 // Enables Assistant routines.
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
@@ -97,6 +103,9 @@ extern const base::Feature kTimerTicks;
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 std::string GetProactiveSuggestionsServerExperimentIds();
+
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
+base::TimeDelta GetProactiveSuggestionsTimeoutThreshold();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsAlarmTimerManagerEnabled();
 

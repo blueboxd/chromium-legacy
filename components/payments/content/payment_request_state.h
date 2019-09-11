@@ -264,6 +264,14 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   // Selects the default shipping address.
   void SelectDefaultShippingAddressAndNotifyObservers();
 
+  // Returns true when shipping address is required and the selected instrument
+  // (if any) does not support shipping address delegation.
+  bool ShouldShowShippingSection() const;
+
+  // Returns true when payer name/phone/email is required and the selected
+  // instrument (if any) does not support required contact info delegation.
+  bool ShouldShowContactSection() const;
+
   base::WeakPtr<PaymentRequestState> AsWeakPtr();
 
   void set_is_show_user_gesture(bool is_show_user_gesture) {

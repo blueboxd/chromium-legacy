@@ -432,8 +432,10 @@ void AssistantManagerServiceImpl::StartTextInteraction(const std::string& query,
 }
 
 void AssistantManagerServiceImpl::AddAssistantInteractionSubscriber(
-    mojom::AssistantInteractionSubscriberPtr subscriber) {
-  interaction_subscribers_.AddPtr(std::move(subscriber));
+    mojo::PendingRemote<mojom::AssistantInteractionSubscriber> subscriber) {
+  mojo::Remote<mojom::AssistantInteractionSubscriber> subscriber_remote(
+      std::move(subscriber));
+  interaction_subscribers_.Add(std::move(subscriber_remote));
 }
 
 void AssistantManagerServiceImpl::RetrieveNotification(
@@ -509,7 +511,8 @@ void AssistantManagerServiceImpl::OnScheduleWait(int id, int time_ms) {
       base::TimeDelta::FromMilliseconds(time_ms));
 
   // Notify subscribers that a wait has been started.
-  interaction_subscribers_.ForAllPtrs([](auto* ptr) { ptr->OnWaitStarted(); });
+  for (auto& it : interaction_subscribers_)
+    it->OnWaitStarted();
 }
 
 // TODO(b/113541754): Deprecate this API when the server provides a fallback.
@@ -1042,15 +1045,6 @@ void AssistantManagerServiceImpl::PostInitAssistant(
   std::move(post_init_callback).Run();
   assistant_settings_manager_->UpdateServerDeviceSettings();
 
-  if (is_first_init) {
-    is_first_init = false;
-    // Only sync status at the first init to prevent unexpected corner cases.
-    // This still does not handle browser restart.
-    if (service_->assistant_state()->hotword_enabled().value()) {
-      assistant_settings_manager_->SyncSpeakerIdEnrollmentStatus();
-    }
-  }
-
   if (base::FeatureList::IsEnabled(assistant::features::kAssistantAppSupport)) {
     mojom::AppListEventSubscriberPtr subscriber_ptr;
     app_list_subscriber_binding_.Bind(mojo::MakeRequest(&subscriber_ptr));
@@ -1115,6 +1109,13 @@ void AssistantManagerServiceImpl::OnStartFinished() {
 
   // TODO(b/129896357): find a better place for additional setups.
   start_finished_ = true;
+
+  if (is_first_init) {
+    is_first_init = false;
+    // Only sync status at the first init to prevent unexpected corner cases.
+    if (service_->assistant_state()->hotword_enabled().value())
+      assistant_settings_manager_->SyncSpeakerIdEnrollmentStatus();
+  }
 
   RegisterFallbackMediaHandler();
   AddMediaControllerObserver();
@@ -1226,9 +1227,8 @@ void AssistantManagerServiceImpl::OnConversationTurnStartedOnMainThread(
                              : mojom::AssistantInteractionType::kText;
   }
 
-  interaction_subscribers_.ForAllPtrs([&metadata_ptr](auto* ptr) {
-    ptr->OnInteractionStarted(metadata_ptr->Clone());
-  });
+  for (auto& it : interaction_subscribers_)
+    it->OnInteractionStarted(metadata_ptr->Clone());
 }
 
 void AssistantManagerServiceImpl::OnConversationTurnFinishedOnMainThread(
@@ -1249,20 +1249,20 @@ void AssistantManagerServiceImpl::OnConversationTurnFinishedOnMainThread(
     case Resolution::NORMAL:
     case Resolution::NORMAL_WITH_FOLLOW_ON:
     case Resolution::NO_RESPONSE:
-      interaction_subscribers_.ForAllPtrs([](auto* ptr) {
-        ptr->OnInteractionFinished(
+      for (auto& it : interaction_subscribers_) {
+        it->OnInteractionFinished(
             mojom::AssistantInteractionResolution::kNormal);
-      });
+      }
 
       RecordQueryResponseTypeUMA();
       break;
     // Interaction ended due to interruption.
     case Resolution::BARGE_IN:
     case Resolution::CANCELLED:
-      interaction_subscribers_.ForAllPtrs([](auto* ptr) {
-        ptr->OnInteractionFinished(
+      for (auto& it : interaction_subscribers_) {
+        it->OnInteractionFinished(
             mojom::AssistantInteractionResolution::kInterruption);
-      });
+      }
 
       if (receive_inline_response_ || receive_modify_settings_proto_response_ ||
           !receive_url_response_.empty()) {
@@ -1271,25 +1271,25 @@ void AssistantManagerServiceImpl::OnConversationTurnFinishedOnMainThread(
       break;
     // Interaction ended due to mic timeout.
     case Resolution::TIMEOUT:
-      interaction_subscribers_.ForAllPtrs([](auto* ptr) {
-        ptr->OnInteractionFinished(
+      for (auto& it : interaction_subscribers_) {
+        it->OnInteractionFinished(
             mojom::AssistantInteractionResolution::kMicTimeout);
-      });
+      }
       break;
     // Interaction ended due to error.
     case Resolution::COMMUNICATION_ERROR:
-      interaction_subscribers_.ForAllPtrs([](auto* ptr) {
-        ptr->OnInteractionFinished(
+      for (auto& it : interaction_subscribers_) {
+        it->OnInteractionFinished(
             mojom::AssistantInteractionResolution::kError);
-      });
+      }
       break;
     // Interaction ended because the device was not selected to produce a
     // response. This occurs due to multi-device hotword loss.
     case Resolution::DEVICE_NOT_SELECTED:
-      interaction_subscribers_.ForAllPtrs([](auto* ptr) {
-        ptr->OnInteractionFinished(
+      for (auto& it : interaction_subscribers_) {
+        it->OnInteractionFinished(
             mojom::AssistantInteractionResolution::kMultiDeviceHotwordLoss);
-      });
+      }
       break;
   }
 }
@@ -1299,23 +1299,22 @@ void AssistantManagerServiceImpl::OnShowHtmlOnMainThread(
     const std::string& fallback) {
   receive_inline_response_ = true;
 
-  interaction_subscribers_.ForAllPtrs(
-      [&html, &fallback](auto* ptr) { ptr->OnHtmlResponse(html, fallback); });
+  for (auto& it : interaction_subscribers_)
+    it->OnHtmlResponse(html, fallback);
 }
 
 void AssistantManagerServiceImpl::OnShowSuggestionsOnMainThread(
     const std::vector<mojom::AssistantSuggestionPtr>& suggestions) {
-  interaction_subscribers_.ForAllPtrs([&suggestions](auto* ptr) {
-    ptr->OnSuggestionsResponse(mojo::Clone(suggestions));
-  });
+  for (auto& it : interaction_subscribers_)
+    it->OnSuggestionsResponse(mojo::Clone(suggestions));
 }
 
 void AssistantManagerServiceImpl::OnShowTextOnMainThread(
     const std::string& text) {
   receive_inline_response_ = true;
 
-  interaction_subscribers_.ForAllPtrs(
-      [&text](auto* ptr) { ptr->OnTextResponse(text); });
+  for (auto& it : interaction_subscribers_)
+    it->OnTextResponse(text);
 }
 
 void AssistantManagerServiceImpl::OnOpenUrlOnMainThread(const std::string& url,
@@ -1323,9 +1322,8 @@ void AssistantManagerServiceImpl::OnOpenUrlOnMainThread(const std::string& url,
   receive_url_response_ = url;
   const GURL gurl = GURL(url);
 
-  interaction_subscribers_.ForAllPtrs([&gurl, in_background](auto* ptr) {
-    ptr->OnOpenUrlResponse(gurl, in_background);
-  });
+  for (auto& it : interaction_subscribers_)
+    it->OnOpenUrlResponse(gurl, in_background);
 }
 
 void AssistantManagerServiceImpl::OnPlaybackStateChange(
@@ -1364,42 +1362,42 @@ void AssistantManagerServiceImpl::OnRecognitionStateChangedOnMainThread(
         recognition_result) {
   switch (state) {
     case assistant_client::ConversationStateListener::RecognitionState::STARTED:
-      interaction_subscribers_.ForAllPtrs(
-          [](auto* ptr) { ptr->OnSpeechRecognitionStarted(); });
+      for (auto& it : interaction_subscribers_)
+        it->OnSpeechRecognitionStarted();
       break;
     case assistant_client::ConversationStateListener::RecognitionState::
         INTERMEDIATE_RESULT:
-      interaction_subscribers_.ForAllPtrs([&recognition_result](auto* ptr) {
-        ptr->OnSpeechRecognitionIntermediateResult(
+      for (auto& it : interaction_subscribers_) {
+        it->OnSpeechRecognitionIntermediateResult(
             recognition_result.high_confidence_text,
             recognition_result.low_confidence_text);
-      });
+      }
       break;
     case assistant_client::ConversationStateListener::RecognitionState::
         END_OF_UTTERANCE:
-      interaction_subscribers_.ForAllPtrs(
-          [](auto* ptr) { ptr->OnSpeechRecognitionEndOfUtterance(); });
+      for (auto& it : interaction_subscribers_)
+        it->OnSpeechRecognitionEndOfUtterance();
       break;
     case assistant_client::ConversationStateListener::RecognitionState::
         FINAL_RESULT:
-      interaction_subscribers_.ForAllPtrs([&recognition_result](auto* ptr) {
-        ptr->OnSpeechRecognitionFinalResult(
+      for (auto& it : interaction_subscribers_) {
+        it->OnSpeechRecognitionFinalResult(
             recognition_result.recognized_speech);
-      });
+      }
       break;
   }
 }
 
 void AssistantManagerServiceImpl::OnRespondingStartedOnMainThread(
     bool is_error_response) {
-  interaction_subscribers_.ForAllPtrs(
-      [is_error_response](auto* ptr) { ptr->OnTtsStarted(is_error_response); });
+  for (auto& it : interaction_subscribers_)
+    it->OnTtsStarted(is_error_response);
 }
 
 void AssistantManagerServiceImpl::OnSpeechLevelUpdatedOnMainThread(
     const float speech_level) {
-  interaction_subscribers_.ForAllPtrs(
-      [&speech_level](auto* ptr) { ptr->OnSpeechLevelUpdated(speech_level); });
+  for (auto& it : interaction_subscribers_)
+    it->OnSpeechLevelUpdated(speech_level);
 }
 
 void AssistantManagerServiceImpl::OnAlarmTimerStateChangedOnMainThread() {

@@ -6,8 +6,10 @@
 
 #include "ash/focus_cycler.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/shelf/scrollable_shelf_view.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
@@ -89,7 +91,14 @@ void HotseatWidget::OnMouseEvent(ui::MouseEvent* event) {
 void HotseatWidget::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP_DOWN)
     keyboard::KeyboardUIController::Get()->HideKeyboardImplicitlyByUser();
-  views::Widget::OnGestureEvent(event);
+  GetShelfView()
+      ->shelf_widget()
+      ->shelf_layout_manager()
+      ->ProcessGestureEventFromHotseatWidget(
+          event, static_cast<aura::Window*>(event->target()));
+
+  if (!event->handled())
+    views::Widget::OnGestureEvent(event);
 }
 
 bool HotseatWidget::OnNativeWidgetActivationChanged(bool active) {
@@ -121,6 +130,17 @@ const ShelfView* HotseatWidget::GetShelfView() const {
 
 bool HotseatWidget::IsShowingOverflowBubble() const {
   return GetShelfView()->IsShowingOverflowBubble();
+}
+
+bool HotseatWidget::IsDraggedToExtended() const {
+  DCHECK(GetShelfView()->shelf()->IsHorizontalAlignment());
+  const int extended_y =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestView(GetShelfView()->GetWidget()->GetNativeView())
+          .bounds()
+          .bottom() -
+      ShelfConfig::Get()->shelf_size() * 2;
+  return GetWindowBoundsInScreen().y() == extended_y;
 }
 
 void HotseatWidget::FocusOverflowShelf(bool last_element) {

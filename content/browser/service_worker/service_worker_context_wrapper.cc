@@ -475,29 +475,31 @@ void ServiceWorkerContextWrapper::UnregisterServiceWorker(
       base::BindOnce(&FinishUnregistrationOnCoreThread, std::move(callback)));
 }
 
-bool ServiceWorkerContextWrapper::StartingExternalRequest(
+ServiceWorkerExternalRequestResult
+ServiceWorkerContextWrapper::StartingExternalRequest(
     int64_t service_worker_version_id,
     const std::string& request_uuid) {
   DCHECK_CURRENTLY_ON(GetCoreThreadId());
   if (!context())
-    return false;
+    return ServiceWorkerExternalRequestResult::kNullContext;
   ServiceWorkerVersion* version =
       context()->GetLiveVersion(service_worker_version_id);
   if (!version)
-    return false;
+    return ServiceWorkerExternalRequestResult::kWorkerNotFound;
   return version->StartExternalRequest(request_uuid);
 }
 
-bool ServiceWorkerContextWrapper::FinishedExternalRequest(
+ServiceWorkerExternalRequestResult
+ServiceWorkerContextWrapper::FinishedExternalRequest(
     int64_t service_worker_version_id,
     const std::string& request_uuid) {
   DCHECK_CURRENTLY_ON(GetCoreThreadId());
   if (!context())
-    return false;
+    return ServiceWorkerExternalRequestResult::kNullContext;
   ServiceWorkerVersion* version =
       context()->GetLiveVersion(service_worker_version_id);
   if (!version)
-    return false;
+    return ServiceWorkerExternalRequestResult::kWorkerNotFound;
   return version->FinishExternalRequest(request_uuid);
 }
 

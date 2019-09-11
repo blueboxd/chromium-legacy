@@ -1073,8 +1073,11 @@ TEST_F(ShelfLayoutManagerTest, ShelfUpdatedWhenStatusAreaChangesSize) {
           .width();
   const int nav_width =
       shelf_widget->navigation_widget()->GetWindowBoundsInScreen().width();
-  const int hotseat_width =
-      GetPrimaryShelf()->GetShelfViewForTesting()->width();
+  const int hotseat_width = GetPrimaryShelf()
+                                ->shelf_widget()
+                                ->hotseat_widget()
+                                ->GetWindowBoundsInScreen()
+                                .width();
   const int margins = ShelfConfig::Get()->home_button_edge_spacing() +
                       ShelfConfig::Get()->app_icon_group_margin();
   EXPECT_EQ(200, total_width - nav_width - hotseat_width - margins);
@@ -3095,10 +3098,15 @@ TEST_F(ShelfLayoutManagerTest, RtlPlacement) {
         rtl_right_position);
   };
 
+  const std::string locale = base::i18n::GetConfiguredLocale();
+
   ShelfWidget* shelf_widget = GetPrimaryShelf()->shelf_widget();
   check_mirrored_placement(shelf_widget->navigation_widget());
   check_mirrored_placement(shelf_widget->status_area_widget());
   check_mirrored_placement(shelf_widget);
+
+  // Reset the lauguage setting.
+  base::i18n::SetICUDefaultLocale(locale);
 }
 
 class ShelfLayoutManagerKeyboardTest : public AshTestBase {

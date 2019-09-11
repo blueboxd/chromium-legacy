@@ -280,7 +280,7 @@ base::Value URLRequest::GetStateAsValue() const {
   if (url_chain_.size() > 1) {
     base::Value list(base::Value::Type::LIST);
     for (const GURL& url : url_chain_) {
-      list.GetList().emplace_back(url.possibly_invalid_spec());
+      list.Append(url.possibly_invalid_spec());
     }
     dict.SetKey("url_chain", std::move(list));
   }
@@ -705,13 +705,6 @@ void URLRequest::StartJob(URLRequestJob* job) {
   job_->Start();
 }
 
-void URLRequest::Restart() {
-  // Should only be called if the original job didn't make any progress.
-  DCHECK(job_.get() && !job_->has_response_started());
-  RestartWithJob(
-      URLRequestJobManager::GetInstance()->CreateJob(this, network_delegate_));
-}
-
 void URLRequest::RestartWithJob(URLRequestJob* job) {
   DCHECK(job->request() == this);
   PrepareToRestart();
@@ -831,17 +824,9 @@ void URLRequest::StopCaching() {
 void URLRequest::NotifyReceivedRedirect(const RedirectInfo& redirect_info,
                                         bool* defer_redirect) {
   is_redirecting_ = true;
-
-  URLRequestJob* job =
-      URLRequestJobManager::GetInstance()->MaybeInterceptRedirect(
-          this, network_delegate_, redirect_info.new_url);
-  if (job) {
-    RestartWithJob(job);
-  } else {
-    OnCallToDelegate(NetLogEventType::URL_REQUEST_DELEGATE_RECEIVED_REDIRECT);
-    delegate_->OnReceivedRedirect(this, redirect_info, defer_redirect);
-    // |this| may be have been destroyed here.
-  }
+  OnCallToDelegate(NetLogEventType::URL_REQUEST_DELEGATE_RECEIVED_REDIRECT);
+  delegate_->OnReceivedRedirect(this, redirect_info, defer_redirect);
+  // |this| may be have been destroyed here.
 }
 
 void URLRequest::NotifyResponseStarted(const URLRequestStatus& status) {
@@ -859,28 +844,21 @@ void URLRequest::NotifyResponseStarted(const URLRequestStatus& status) {
   net_log_.EndEventWithNetErrorCode(NetLogEventType::URL_REQUEST_START_JOB,
                                     net_error);
 
-  URLRequestJob* job =
-      URLRequestJobManager::GetInstance()->MaybeInterceptResponse(
-          this, network_delegate_);
-  if (job) {
-    RestartWithJob(job);
-  } else {
-    // In some cases (e.g. an event was canceled), we might have sent the
-    // completion event and receive a NotifyResponseStarted() later.
-    if (!has_notified_completion_ && status_.is_success()) {
-      if (network_delegate_)
-        network_delegate_->NotifyResponseStarted(this, net_error);
-    }
-
-    // Notify in case the entire URL Request has been finished.
-    if (!has_notified_completion_ && !status_.is_success())
-      NotifyRequestCompleted();
-
-    OnCallToDelegate(NetLogEventType::URL_REQUEST_DELEGATE_RESPONSE_STARTED);
-    delegate_->OnResponseStarted(this, net_error);
-    // Nothing may appear below this line as OnResponseStarted may delete
-    // |this|.
+  // In some cases (e.g. an event was canceled), we might have sent the
+  // completion event and receive a NotifyResponseStarted() later.
+  if (!has_notified_completion_ && status_.is_success()) {
+    if (network_delegate_)
+      network_delegate_->NotifyResponseStarted(this, net_error);
   }
+
+  // Notify in case the entire URL Request has been finished.
+  if (!has_notified_completion_ && !status_.is_success())
+    NotifyRequestCompleted();
+
+  OnCallToDelegate(NetLogEventType::URL_REQUEST_DELEGATE_RESPONSE_STARTED);
+  delegate_->OnResponseStarted(this, net_error);
+  // Nothing may appear below this line as OnResponseStarted may delete
+  // |this|.
 }
 
 void URLRequest::FollowDeferredRedirect(
@@ -993,7 +971,6 @@ void URLRequest::Redirect(
   referrer_ = redirect_info.new_referrer;
   referrer_policy_ = redirect_info.new_referrer_policy;
   site_for_cookies_ = redirect_info.new_site_for_cookies;
-  top_frame_origin_ = redirect_info.new_top_frame_origin;
 
   url_chain_.push_back(redirect_info.new_url);
   --redirect_limit_;

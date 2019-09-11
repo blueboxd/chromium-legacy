@@ -7,7 +7,8 @@
 
 #include "content/common/frame_sink_provider.mojom.h"
 #include "content/common/render_frame_metadata.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace content {
 
@@ -18,7 +19,7 @@ class FrameSinkProviderImpl : public mojom::FrameSinkProvider {
   explicit FrameSinkProviderImpl(int32_t process_id);
   ~FrameSinkProviderImpl() override;
 
-  void Bind(mojom::FrameSinkProviderRequest request);
+  void Bind(mojo::PendingReceiver<mojom::FrameSinkProvider> receiver);
   void Unbind();
 
   // mojom::FrameSinkProvider implementation.
@@ -35,7 +36,7 @@ class FrameSinkProviderImpl : public mojom::FrameSinkProvider {
 
  private:
   const int32_t process_id_;
-  mojo::Binding<mojom::FrameSinkProvider> binding_;
+  mojo::Receiver<mojom::FrameSinkProvider> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FrameSinkProviderImpl);
 };

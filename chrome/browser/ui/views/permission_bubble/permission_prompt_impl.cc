@@ -10,11 +10,14 @@
 
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "chrome/browser/content_settings/chrome_content_settings_utils.h"
 #include "chrome/browser/permissions/permission_request.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/bubble_anchor_util_views.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/front_eliding_title_label.h"
@@ -229,13 +232,31 @@ void PermissionsBubbleDialogDelegateView::UpdateAnchor() {
 // PermissionPromptImpl
 
 PermissionPromptImpl::PermissionPromptImpl(Browser* browser, Delegate* delegate)
-    : browser_(browser), delegate_(delegate), bubble_delegate_(nullptr) {
-  Show();
+    : browser_(browser),
+      delegate_(delegate),
+      bubble_delegate_(nullptr),
+      web_contents_(browser->tab_strip_model()->GetActiveWebContents()) {
+  PermissionRequestManager* manager =
+      PermissionRequestManager::FromWebContents(web_contents_);
+
+  if (manager->ShouldShowQuietPermissionPrompt()) {
+    show_quiet_permission_prompt_ = true;
+    // Show the prompt as an indicator in the right side of the omnibox.
+    content_settings::UpdateLocationBarUiForWebContents(web_contents_);
+  } else {
+    Show();
+  }
 }
 
 PermissionPromptImpl::~PermissionPromptImpl() {
   if (bubble_delegate_)
     bubble_delegate_->CloseBubble();
+
+  if (show_quiet_permission_prompt_) {
+    // Update location bar to hide the permission prompt if it is shown as a
+    // quiet permission prompt.
+    content_settings::UpdateLocationBarUiForWebContents(web_contents_);
+  }
 }
 
 void PermissionPromptImpl::UpdateAnchorPosition() {

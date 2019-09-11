@@ -60,19 +60,6 @@ URLRequestJob* URLRequestJobFactoryImpl::MaybeCreateJobWithProtocolHandler(
   return it->second->MaybeCreateJob(request, network_delegate);
 }
 
-URLRequestJob* URLRequestJobFactoryImpl::MaybeInterceptRedirect(
-    URLRequest* request,
-    NetworkDelegate* network_delegate,
-    const GURL& location) const {
-  return nullptr;
-}
-
-URLRequestJob* URLRequestJobFactoryImpl::MaybeInterceptResponse(
-    URLRequest* request,
-    NetworkDelegate* network_delegate) const {
-  return nullptr;
-}
-
 bool URLRequestJobFactoryImpl::IsHandledProtocol(
     const std::string& scheme) const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

@@ -1218,6 +1218,10 @@
       status: "stable",
     },
     {
+      name: "PaymentHandlerHandlesShippingAndContact",
+      status: "experimental",
+    },
+    {
       name: "PaymentMethodChangeEvent",
       status: "stable",
     },

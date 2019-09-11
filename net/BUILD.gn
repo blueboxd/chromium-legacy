@@ -2152,12 +2152,6 @@ component("net") {
         "base/directory_lister.h",
         "base/directory_listing.cc",
         "base/directory_listing.h",
-        "url_request/file_protocol_handler.cc",
-        "url_request/file_protocol_handler.h",
-        "url_request/url_request_file_dir_job.cc",
-        "url_request/url_request_file_dir_job.h",
-        "url_request/url_request_file_job.cc",
-        "url_request/url_request_file_job.h",
       ]
     }
 
@@ -2939,6 +2933,8 @@ static_library("test_support") {
     sources += [
       "test/url_request/url_request_mock_http_job.cc",
       "test/url_request/url_request_mock_http_job.h",
+      "test/url_request/url_request_test_job_backed_by_file.cc",
+      "test/url_request/url_request_test_job_backed_by_file.h",
       "url_request/test_url_request_interceptor.cc",
       "url_request/test_url_request_interceptor.h",
     ]
@@ -4063,7 +4059,6 @@ bundle_data("net_unittests_bundle_data") {
     "data/url_request_unittest/expect-ct-header-preload.html.mock-http-headers",
     "data/url_request_unittest/expect-ct-header.html",
     "data/url_request_unittest/expect-ct-header.html.mock-http-headers",
-    "data/url_request_unittest/filedir-sentinel",
     "data/url_request_unittest/gzip-encoded",
     "data/url_request_unittest/gzip-encoded.mock-http-headers",
     "data/url_request_unittest/hsts-headers.html",
@@ -5063,8 +5058,6 @@ test("net_unittests") {
     "base/chunked_upload_data_stream_unittest.cc",
     "base/data_url_unittest.cc",
     "base/datagram_buffer_unittest.cc",
-    "base/directory_lister_unittest.cc",
-    "base/directory_listing_unittest.cc",
     "base/elements_upload_data_stream_unittest.cc",
     "base/escape_unittest.cc",
     "base/expiring_cache_unittest.cc",
@@ -5677,8 +5670,6 @@ test("net_unittests") {
     "url_request/url_request_context_builder_unittest.cc",
     "url_request/url_request_context_unittest.cc",
     "url_request/url_request_data_job_unittest.cc",
-    "url_request/url_request_file_dir_job_unittest.cc",
-    "url_request/url_request_file_job_unittest.cc",
     "url_request/url_request_filter_unittest.cc",
     "url_request/url_request_ftp_job_unittest.cc",
     "url_request/url_request_http_job_unittest.cc",
@@ -5975,12 +5966,11 @@ test("net_unittests") {
     ]
   }
 
-  if (disable_file_support) {
-    sources -= [
+  if (!disable_file_support) {
+    sources += [
       "base/directory_lister_unittest.cc",
       "base/directory_listing_unittest.cc",
-      "url_request/url_request_file_dir_job_unittest.cc",
-      "url_request/url_request_file_job_unittest.cc",
+      "test/url_request/url_request_test_job_backed_by_file_unittest.cc",
     ]
   }
 

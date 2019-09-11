@@ -289,6 +289,8 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
   // view inside the client view.
   set_margins(gfx::Insets());
 
+  set_accept_events(false);
+
   // Inset the tab hover cards anchor rect to bring the card closer to the tab.
   constexpr gfx::Insets kTabHoverCardAnchorInsets(2, 0);
   set_anchor_view_insets(kTabHoverCardAnchorInsets);
@@ -366,7 +368,6 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
 
   GetBubbleFrameView()->set_preferred_arrow_adjustment(
       views::BubbleFrameView::PreferredArrowAdjustment::kOffset);
-  GetBubbleFrameView()->set_hit_test_transparent(true);
 
   if (CustomShadowsSupported()) {
     GetBubbleFrameView()->SetCornerRadius(

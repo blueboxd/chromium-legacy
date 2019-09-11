@@ -64,6 +64,7 @@ repack("web_engine_pak") {
 component("web_engine_core") {
   deps = [
     ":mojom",
+    ":switches",
     ":web_engine_pak",
     "//base",
     "//base:base_static",
@@ -86,6 +87,8 @@ component("web_engine_core") {
     "//services/service_manager/sandbox",
     "//skia/public/mojom",
     "//third_party/blink/public/common",
+    "//third_party/fuchsia-sdk/sdk:accessibility_semantics",
+    "//third_party/fuchsia-sdk/sdk:math",
     "//third_party/fuchsia-sdk/sdk:scenic_cpp",
     "//third_party/fuchsia-sdk/sdk:sys_cpp",
     "//third_party/fuchsia-sdk/sdk:web",
@@ -110,6 +113,8 @@ component("web_engine_core") {
   ]
   configs += [ ":web_engine_implementation" ]
   sources = [
+    "browser/accessibility_bridge.cc",
+    "browser/accessibility_bridge.h",
     "browser/content_directory_loader_factory.cc",
     "browser/content_directory_loader_factory.h",
     "browser/context_impl.cc",
@@ -152,8 +157,6 @@ component("web_engine_core") {
     "renderer/on_load_script_injector.h",
     "renderer/web_engine_content_renderer_client.cc",
     "renderer/web_engine_content_renderer_client.h",
-    "switches.cc",
-    "switches.h",
     "web_engine_content_client.cc",
     "web_engine_content_client.h",
     "web_engine_export.h",
@@ -163,6 +166,13 @@ component("web_engine_core") {
   visibility = [
     ":*",
     "//fuchsia/runners:cast_runner_browsertests__exec",
+  ]
+}
+
+source_set("switches") {
+  sources = [
+    "switches.cc",
+    "switches.h",
   ]
 }
 
@@ -221,6 +231,7 @@ test("web_engine_browsertests") {
     "browser/content_directory_browsertest.cc",
     "browser/context_impl_browsertest.cc",
     "browser/frame_impl_browsertest.cc",
+    "browser/media_browsertest.cc",
   ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
   data = [
@@ -228,6 +239,7 @@ test("web_engine_browsertests") {
   ]
   deps = [
     ":browsertest_core",
+    ":switches",
     ":web_engine_core",
     "//base/test:test_support",
     "//content/public/browser",
@@ -243,6 +255,7 @@ test("web_engine_browsertests") {
 
 test("web_engine_unittests") {
   sources = [
+    "browser/accessibility_bridge_unittest.cc",
     "browser/cookie_manager_impl_unittest.cc",
     "browser/frame_impl_unittest.cc",
     "context_provider_impl_unittest.cc",
@@ -259,6 +272,8 @@ test("web_engine_unittests") {
     "//services/network/public/mojom",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/fuchsia-sdk/sdk:accessibility_semantics",
+    "//third_party/fuchsia-sdk/sdk:scenic_cpp",
     "//third_party/fuchsia-sdk/sdk:web",
   ]
 }

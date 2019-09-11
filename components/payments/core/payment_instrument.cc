@@ -72,6 +72,36 @@ bool PaymentInstrument::operator<(const PaymentInstrument& other) const {
             autofill::AutofillClock::Now());
   }
 
+  // SW based payment instruments are sorted based on whether they will handle
+  // shipping delegation or not (i.e. shipping address is requested and the
+  // instrument supports the delegation.).
+  if (HandlesShippingAddress() != other.HandlesShippingAddress())
+    return HandlesShippingAddress();
+
+  // SW based payment instruments are sorted based on the number of the contact
+  // field delegations that they will handle (i.e. number of contact fields
+  // which are requested and the instruments support their delegations.)
+  int supported_contact_delegations_num = 0;
+  if (HandlesPayerEmail())
+    supported_contact_delegations_num++;
+  if (HandlesPayerName())
+    supported_contact_delegations_num++;
+  if (HandlesPayerPhone())
+    supported_contact_delegations_num++;
+
+  int other_supported_contact_delegations_num = 0;
+  if (other.HandlesPayerEmail())
+    other_supported_contact_delegations_num++;
+  if (other.HandlesPayerName())
+    other_supported_contact_delegations_num++;
+  if (other.HandlesPayerPhone())
+    other_supported_contact_delegations_num++;
+
+  int contact_delegations_diff = supported_contact_delegations_num -
+                                 other_supported_contact_delegations_num;
+  if (contact_delegations_diff != 0)
+    return contact_delegations_diff > 0;
+
   // SW based payment instruments are sorted based on whether they can be
   // pre-selected or not. Note that autofill based instruments are already
   // sorted by CanPreselect() since they are sorted by completeness and type

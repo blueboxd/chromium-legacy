@@ -770,13 +770,15 @@ class QuicNetworkTransactionTest
   }
 
   void AddQuicAlternateProtocolMapping(
-      MockCryptoClientStream::HandshakeMode handshake_mode) {
+      MockCryptoClientStream::HandshakeMode handshake_mode,
+      const NetworkIsolationKey& network_isolation_key =
+          NetworkIsolationKey()) {
     crypto_client_stream_factory_.set_handshake_mode(handshake_mode);
     url::SchemeHostPort server(request_.url);
     AlternativeService alternative_service(kProtoQUIC, server.host(), 443);
     base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
     http_server_properties_->SetQuicAlternativeService(
-        server, NetworkIsolationKey(), alternative_service, expiration,
+        server, network_isolation_key, alternative_service, expiration,
         supported_versions_);
   }
 
@@ -793,27 +795,33 @@ class QuicNetworkTransactionTest
         supported_versions_);
   }
 
-  void ExpectBrokenAlternateProtocolMapping() {
+  void ExpectBrokenAlternateProtocolMapping(
+      const NetworkIsolationKey& network_isolation_key =
+          NetworkIsolationKey()) {
     const url::SchemeHostPort server(request_.url);
     const AlternativeServiceInfoVector alternative_service_info_vector =
         http_server_properties_->GetAlternativeServiceInfos(
-            server, NetworkIsolationKey());
+            server, network_isolation_key);
     EXPECT_EQ(1u, alternative_service_info_vector.size());
     EXPECT_TRUE(http_server_properties_->IsAlternativeServiceBroken(
-        alternative_service_info_vector[0].alternative_service()));
+        alternative_service_info_vector[0].alternative_service(),
+        network_isolation_key));
   }
 
-  void ExpectQuicAlternateProtocolMapping() {
+  void ExpectQuicAlternateProtocolMapping(
+      const NetworkIsolationKey& network_isolation_key =
+          NetworkIsolationKey()) {
     const url::SchemeHostPort server(request_.url);
     const AlternativeServiceInfoVector alternative_service_info_vector =
         http_server_properties_->GetAlternativeServiceInfos(
-            server, NetworkIsolationKey());
+            server, network_isolation_key);
     EXPECT_EQ(1u, alternative_service_info_vector.size());
     EXPECT_EQ(
         kProtoQUIC,
         alternative_service_info_vector[0].alternative_service().protocol);
     EXPECT_FALSE(http_server_properties_->IsAlternativeServiceBroken(
-        alternative_service_info_vector[0].alternative_service()));
+        alternative_service_info_vector[0].alternative_service(),
+        network_isolation_key));
   }
 
   void AddHangingNonAlternateProtocolSocketData() {
@@ -898,6 +906,67 @@ class QuicNetworkTransactionTest
     // Verify that the second request completes successfully, and the
     // alternative proxy server job is not started.
     SendRequestAndExpectHttpResponseFromProxy("hello from http", true, 443);
+  }
+
+  // Adds a new socket data provider for an HTTP request, and runs a request,
+  // expecting it to be used.
+  void AddHttpDataAndRunRequest() {
+    MockWrite http_writes[] = {
+        MockWrite(SYNCHRONOUS, 0, "GET / HTTP/1.1\r\n"),
+        MockWrite(SYNCHRONOUS, 1, "Host: mail.example.org\r\n"),
+        MockWrite(SYNCHRONOUS, 2, "Connection: keep-alive\r\n\r\n")};
+
+    MockRead http_reads[] = {
+        MockRead(SYNCHRONOUS, 3, "HTTP/1.1 200 OK\r\n"),
+        MockRead(SYNCHRONOUS, 4, kQuicAlternativeServiceHeader),
+        MockRead(SYNCHRONOUS, 5, "http used"),
+        // Connection closed.
+        MockRead(SYNCHRONOUS, OK, 6)};
+    SequencedSocketData http_data(http_reads, http_writes);
+    socket_factory_.AddSocketDataProvider(&http_data);
+    SSLSocketDataProvider ssl_data(ASYNC, OK);
+    socket_factory_.AddSSLSocketDataProvider(&ssl_data);
+    SendRequestAndExpectHttpResponse("http used");
+    EXPECT_TRUE(http_data.AllWriteDataConsumed());
+    EXPECT_TRUE(http_data.AllReadDataConsumed());
+  }
+
+  // Adds a new socket data provider for a QUIC request, and runs a request,
+  // expecting it to be used. The new QUIC session is not closed.
+  void AddQuicDataAndRunRequest() {
+    QuicTestPacketMaker client_maker(
+        version_, quic::QuicUtils::CreateRandomConnectionId(&random_generator_),
+        &clock_, kDefaultServerHostName, quic::Perspective::IS_CLIENT,
+        client_headers_include_h2_stream_dependency_);
+    QuicTestPacketMaker server_maker(
+        version_, quic::QuicUtils::CreateRandomConnectionId(&random_generator_),
+        &clock_, kDefaultServerHostName, quic::Perspective::IS_SERVER, false);
+    MockQuicData quic_data(version_);
+    client_maker.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
+    quic_data.AddWrite(
+        SYNCHRONOUS,
+        client_maker.MakeRequestHeadersPacket(
+            1, GetNthClientInitiatedBidirectionalStreamId(0), true, true,
+            ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY),
+            GetRequestHeaders("GET", "https", "/", &client_maker), 0, nullptr));
+    client_maker.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+    quic_data.AddRead(
+        ASYNC, server_maker.MakeResponseHeadersPacket(
+                   1, GetNthClientInitiatedBidirectionalStreamId(0), false,
+                   false, server_maker.GetResponseHeaders("200 OK"), nullptr));
+    std::string header = ConstructDataHeader(9);
+    quic_data.AddRead(
+        ASYNC, server_maker.MakeDataPacket(
+                   2, GetNthClientInitiatedBidirectionalStreamId(0), false,
+                   true, header + "quic used"));
+    // Don't care about the final ack.
+    quic_data.AddWrite(SYNCHRONOUS, ERR_IO_PENDING);
+    // No more data to read.
+    quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+    quic_data.AddSocketDataToFactory(&socket_factory_);
+    SendRequestAndExpectQuicResponse("quic used");
+
+    EXPECT_TRUE(quic_data.AllReadDataConsumed());
   }
 
   quic::QuicStreamId GetNthClientInitiatedBidirectionalStreamId(int n) {
@@ -1918,8 +1987,12 @@ TEST_P(QuicNetworkTransactionTest, UseIetfAlternativeServiceForQuic) {
 TEST_P(QuicNetworkTransactionTest,
        UseAlternativeServiceForQuicWithNetworkIsolationKey) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kPartitionHttpServerPropertiesByNetworkIsolationKey);
+  feature_list.InitWithFeatures(
+      // enabled_features
+      {features::kPartitionHttpServerPropertiesByNetworkIsolationKey,
+       features::kPartitionConnectionsByNetworkIsolationKey},
+      // disabled_features
+      {});
   // Since HttpServerProperties caches the feature value, have to create a new
   // one.
   http_server_properties_ = std::make_unique<HttpServerProperties>();
@@ -2695,6 +2768,149 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPSucceeds) {
   ASSERT_TRUE(quic_data2.AllWriteDataConsumed());
 }
 
+// Much like above test, but verifies NetworkIsolationKeys are respected.
+TEST_P(QuicNetworkTransactionTest,
+       RetryOnAlternateNetworkWhileTCPSucceedsWithNetworkIsolationKey) {
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
+  const net::NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
+  const net::NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // enabled_features
+      {features::kPartitionHttpServerPropertiesByNetworkIsolationKey,
+       // Need to partition connections by NetworkIsolationKey for
+       // QuicSessionAliasKey to include NetworkIsolationKeys.
+       features::kPartitionConnectionsByNetworkIsolationKey},
+      // disabled_features
+      {});
+  // Since HttpServerProperties caches the feature value, have to create a new
+  // one.
+  http_server_properties_ = std::make_unique<HttpServerProperties>();
+
+  SetUpTestForRetryConnectionOnAlternateNetwork();
+
+  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
+
+  // The request will initially go out over QUIC.
+  MockQuicData quic_data(version_);
+  quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging read
+  int packet_num = 1;
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDummyCHLOPacket(packet_num++));  // CHLO
+  // Retranmit the handshake messages.
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDummyCHLOPacket(packet_num++));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDummyCHLOPacket(packet_num++));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDummyCHLOPacket(packet_num++));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDummyCHLOPacket(packet_num++));
+  // TODO(zhongyi): remove condition check once b/115926584 is fixed.
+  if (version_.transport_version <= quic::QUIC_VERSION_39) {
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeDummyCHLOPacket(packet_num++));
+  }
+  // After timeout, connection will be closed with QUIC_NETWORK_IDLE_TIMEOUT.
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeConnectionClosePacket(
+                         packet_num++, true, quic::QUIC_NETWORK_IDLE_TIMEOUT,
+                         "No recent network activity."));
+  quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  // Add successful TCP data so that TCP job will succeed.
+  MockWrite http_writes[] = {
+      MockWrite(SYNCHRONOUS, 0, "GET / HTTP/1.1\r\n"),
+      MockWrite(SYNCHRONOUS, 1, "Host: mail.example.org\r\n"),
+      MockWrite(SYNCHRONOUS, 2, "Connection: keep-alive\r\n\r\n")};
+
+  MockRead http_reads[] = {
+      MockRead(SYNCHRONOUS, 3, "HTTP/1.1 200 OK\r\n"),
+      MockRead(SYNCHRONOUS, 4, kQuicAlternativeServiceHeader),
+      MockRead(SYNCHRONOUS, 5, "TCP succeeds"), MockRead(SYNCHRONOUS, OK, 6)};
+  SequencedSocketData http_data(http_reads, http_writes);
+  socket_factory_.AddSocketDataProvider(&http_data);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
+
+  // Quic connection will be retried on the alternate network after the initial
+  // one fails on the default network.
+  MockQuicData quic_data2(version_);
+  quic_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Handing read.
+  quic_data2.AddWrite(SYNCHRONOUS,
+                      client_maker_.MakeDummyCHLOPacket(1));  // CHLO
+
+  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  if (VersionUsesQpack(version_.transport_version))
+    quic_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket(2));
+  quic_data2.AddSocketDataToFactory(&socket_factory_);
+
+  // Resolve the host resolution synchronously.
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
+                                           "");
+
+  CreateSession();
+  session_->quic_stream_factory()->set_require_confirmation(true);
+  // Use a TestTaskRunner to avoid waiting in real time for timeouts.
+  QuicStreamFactoryPeer::SetAlarmFactory(
+      session_->quic_stream_factory(),
+      std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
+                                                 &clock_));
+  // Add alternate protocol mapping to race QUIC and TCP.
+  // QUIC connection requires handshake to be confirmed and sends CHLO to the
+  // peer.
+  AddQuicAlternateProtocolMapping(
+      MockCryptoClientStream::COLD_START_WITH_CHLO_SENT, kNetworkIsolationKey1);
+  AddQuicAlternateProtocolMapping(
+      MockCryptoClientStream::COLD_START_WITH_CHLO_SENT, kNetworkIsolationKey2);
+
+  request_.network_isolation_key = kNetworkIsolationKey1;
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
+  TestCompletionCallback callback;
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  // Pump the message loop to get the request started.
+  // Request will be served with TCP job.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
+  CheckResponseData(&trans, "TCP succeeds");
+
+  // Fast forward to idle timeout the original connection. A new connection will
+  // be kicked off on the alternate network.
+  quic_task_runner_->FastForwardBy(quic::QuicTime::Delta::FromSeconds(4));
+  ASSERT_TRUE(quic_data.AllReadDataConsumed());
+  ASSERT_TRUE(quic_data.AllWriteDataConsumed());
+
+  // The second connection hasn't finish handshake, verify that QUIC is not
+  // marked as broken.
+  ExpectQuicAlternateProtocolMapping(kNetworkIsolationKey1);
+  ExpectQuicAlternateProtocolMapping(kNetworkIsolationKey2);
+  // Explicitly confirm the handshake on the second connection.
+  crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
+      quic::QuicSession::HANDSHAKE_CONFIRMED);
+  // Run message loop to execute posted tasks, which will notify JoController
+  // about the orphaned job status.
+  base::RunLoop().RunUntilIdle();
+
+  // Verify that QUIC is marked as broken for kNetworkIsolationKey1 only.
+  ExpectBrokenAlternateProtocolMapping(kNetworkIsolationKey1);
+  ExpectQuicAlternateProtocolMapping(kNetworkIsolationKey2);
+
+  // Deliver a message to notify the new network becomes default, the previous
+  // brokenness will be clear as the brokenness is bond with old default
+  // network.
+  scoped_mock_change_notifier_->mock_network_change_notifier()
+      ->NotifyNetworkMadeDefault(kNewNetworkForTests);
+  ExpectQuicAlternateProtocolMapping(kNetworkIsolationKey1);
+  ExpectQuicAlternateProtocolMapping(kNetworkIsolationKey2);
+
+  ASSERT_TRUE(quic_data2.AllReadDataConsumed());
+  ASSERT_TRUE(quic_data2.AllWriteDataConsumed());
+}
+
 // This test verifies that a new QUIC connection will be attempted on the
 // alternate network if the original QUIC connection fails with idle timeout
 // before handshake is confirmed. If TCP doesn't succeed but QUIC on the
@@ -3354,6 +3570,128 @@ TEST_P(QuicNetworkTransactionTest,
   ASSERT_TRUE(http_data.AllReadDataConsumed());
 }
 
+// Much like above test, but verifies that NetworkIsolationKey is respected.
+TEST_P(QuicNetworkTransactionTest,
+       ProtocolErrorAfterHandshakeConfirmedThenBrokenWithNetworkIsolationKey) {
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
+  const net::NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
+  const net::NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // enabled_features
+      {features::kPartitionHttpServerPropertiesByNetworkIsolationKey,
+       features::kPartitionConnectionsByNetworkIsolationKey},
+      // disabled_features
+      {});
+  // Since HttpServerProperties caches the feature value, have to create a new
+  // one.
+  http_server_properties_ = std::make_unique<HttpServerProperties>();
+
+  session_params_.quic_params.idle_connection_timeout =
+      base::TimeDelta::FromSeconds(5);
+
+  // The request will initially go out over QUIC.
+  MockQuicData quic_data(version_);
+  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
+  quic_data.AddWrite(SYNCHRONOUS,
+                     ConstructClientRequestHeadersPacket(
+                         1, GetNthClientInitiatedBidirectionalStreamId(0), true,
+                         true, GetRequestHeaders("GET", "https", "/")));
+  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  uint64_t packet_number = 2;
+  quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
+
+  // Peer sending data from an non-existing stream causes this end to raise
+  // error and close connection.
+  quic_data.AddRead(
+      ASYNC, ConstructServerRstPacket(
+                 1, false, GetNthClientInitiatedBidirectionalStreamId(47),
+                 quic::QUIC_STREAM_LAST_ERROR));
+  std::string quic_error_details = "Data for nonexistent stream";
+  quic_data.AddWrite(
+      SYNCHRONOUS, ConstructClientAckAndConnectionClosePacket(
+                       packet_number++, quic::QuicTime::Delta::Zero(), 1, 1, 1,
+                       quic::QUIC_INVALID_STREAM_ID, quic_error_details,
+                       quic::IETF_RST_STREAM));
+  quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  // After that fails, it will be resent via TCP.
+  MockWrite http_writes[] = {
+      MockWrite(SYNCHRONOUS, 0, "GET / HTTP/1.1\r\n"),
+      MockWrite(SYNCHRONOUS, 1, "Host: mail.example.org\r\n"),
+      MockWrite(SYNCHRONOUS, 2, "Connection: keep-alive\r\n\r\n")};
+
+  MockRead http_reads[] = {
+      MockRead(SYNCHRONOUS, 3, "HTTP/1.1 200 OK\r\n"),
+      MockRead(SYNCHRONOUS, 4, kQuicAlternativeServiceHeader),
+      MockRead(SYNCHRONOUS, 5, "hello world"), MockRead(SYNCHRONOUS, OK, 6)};
+  SequencedSocketData http_data(http_reads, http_writes);
+  socket_factory_.AddSocketDataProvider(&http_data);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
+
+  // In order for a new QUIC session to be established via alternate-protocol
+  // without racing an HTTP connection, we need the host resolution to happen
+  // synchronously.  Of course, even though QUIC *could* perform a 0-RTT
+  // connection to the the server, in this test we require confirmation
+  // before encrypting so the HTTP job will still start.
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
+                                           "");
+
+  CreateSession();
+
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT,
+                                  kNetworkIsolationKey1);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT,
+                                  kNetworkIsolationKey2);
+
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
+  TestCompletionCallback callback;
+  request_.network_isolation_key = kNetworkIsolationKey1;
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  // Pump the message loop to get the request started.
+  base::RunLoop().RunUntilIdle();
+  // Explicitly confirm the handshake.
+  crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
+      quic::QuicSession::HANDSHAKE_CONFIRMED);
+  quic_data.Resume();
+
+  // Run the QUIC session to completion.
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(quic_data.AllWriteDataConsumed());
+
+  // Let the transaction proceed which will result in QUIC being marked
+  // as broken and the request falling back to TCP.
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
+  ASSERT_TRUE(quic_data.AllWriteDataConsumed());
+  ASSERT_FALSE(http_data.AllReadDataConsumed());
+
+  // Read the response body over TCP.
+  CheckResponseData(&trans, "hello world");
+  ASSERT_TRUE(http_data.AllWriteDataConsumed());
+  ASSERT_TRUE(http_data.AllReadDataConsumed());
+
+  // The alternative service shouldhave been marked as broken under
+  // kNetworkIsolationKey1 but not kNetworkIsolationKey2.
+  ExpectBrokenAlternateProtocolMapping(kNetworkIsolationKey1);
+  ExpectQuicAlternateProtocolMapping(kNetworkIsolationKey2);
+
+  // Subsequent requests using kNetworkIsolationKey1 should not use QUIC.
+  AddHttpDataAndRunRequest();
+  // Requests using other NetworkIsolationKeys can still use QUIC.
+  request_.network_isolation_key = kNetworkIsolationKey2;
+  AddQuicDataAndRunRequest();
+
+  // The last two requests should not have changed the alternative service
+  // mappings.
+  ExpectBrokenAlternateProtocolMapping(kNetworkIsolationKey1);
+  ExpectQuicAlternateProtocolMapping(kNetworkIsolationKey2);
+}
+
 // Verify that with retry_without_alt_svc_on_quic_errors enabled, if a QUIC
 // request is reset from, then QUIC will be marked as broken and the request
 // retried over TCP.
@@ -3509,14 +3847,15 @@ TEST_P(QuicNetworkTransactionTest, RemoteAltSvcWorkingWhileLocalAltSvcBroken) {
                                                   NetworkIsolationKey(),
                                                   alternative_services);
 
-  http_server_properties_->MarkAlternativeServiceBroken(local_alternative);
+  http_server_properties_->MarkAlternativeServiceBroken(local_alternative,
+                                                        NetworkIsolationKey());
 
   SendRequestAndExpectQuicResponse("hello!");
 }
 
 // Verify that with retry_without_alt_svc_on_quic_errors enabled, if a QUIC
 // request is reset from, then QUIC will be marked as broken and the request
-// retried over TCP. Then, subsequent requests will go over a new QUIC
+// retried over TCP. Then, subsequent requests will go over a new TCP
 // connection instead of going back to the broken QUIC connection.
 // This is a regression tests for crbug/731303.
 TEST_P(QuicNetworkTransactionTest,
@@ -3629,16 +3968,17 @@ TEST_P(QuicNetworkTransactionTest,
 
   // Second request pools to existing connection with same destination,
   // because certificate matches, even though quic::QuicServerId is different.
-  // After it is reset, it will fail back to QUIC and mark QUIC as broken.
+  // After it is reset, it will fail back to TCP and mark QUIC as broken.
   request_.url = origin2;
   SendRequestAndExpectHttpResponse("hello world");
-  EXPECT_FALSE(
-      http_server_properties_->IsAlternativeServiceBroken(alternative1))
+  EXPECT_FALSE(http_server_properties_->IsAlternativeServiceBroken(
+      alternative1, NetworkIsolationKey()))
       << alternative1.ToString();
-  EXPECT_TRUE(http_server_properties_->IsAlternativeServiceBroken(alternative2))
+  EXPECT_TRUE(http_server_properties_->IsAlternativeServiceBroken(
+      alternative2, NetworkIsolationKey()))
       << alternative2.ToString();
 
-  // The third request should use a new QUIC connection, not the broken
+  // The third request should use a new TCP connection, not the broken
   // QUIC connection.
   SendRequestAndExpectHttpResponse("hello world");
 }
@@ -4222,9 +4562,9 @@ TEST_P(QuicNetworkTransactionTest, ConfirmAlternativeService) {
   AlternativeService alternative_service(kProtoQUIC,
                                          HostPortPair::FromURL(request_.url));
   http_server_properties_->MarkAlternativeServiceRecentlyBroken(
-      alternative_service);
+      alternative_service, NetworkIsolationKey());
   EXPECT_TRUE(http_server_properties_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
 
   SendRequestAndExpectHttpResponse("hello world");
   SendRequestAndExpectQuicResponse("hello!");
@@ -4232,10 +4572,97 @@ TEST_P(QuicNetworkTransactionTest, ConfirmAlternativeService) {
   mock_quic_data.Resume();
 
   EXPECT_FALSE(http_server_properties_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
   EXPECT_NE(nullptr, http_server_properties_->GetServerNetworkStats(
                          url::SchemeHostPort("https", request_.url.host(), 443),
                          NetworkIsolationKey()));
+}
+
+TEST_P(QuicNetworkTransactionTest,
+       ConfirmAlternativeServiceWithNetworkIsolationKey) {
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
+  const net::NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
+  const net::NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // enabled_features
+      {features::kPartitionHttpServerPropertiesByNetworkIsolationKey,
+       features::kPartitionConnectionsByNetworkIsolationKey},
+      // disabled_features
+      {});
+  // Since HttpServerProperties caches the feature value, have to create a new
+  // one.
+  http_server_properties_ = std::make_unique<HttpServerProperties>();
+
+  MockRead http_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"), MockRead(kQuicAlternativeServiceHeader),
+      MockRead("hello world"),
+      MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
+      MockRead(ASYNC, OK)};
+
+  StaticSocketDataProvider http_data(http_reads, base::span<MockWrite>());
+  socket_factory_.AddSocketDataProvider(&http_data);
+  AddCertificate(&ssl_data_);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
+
+  MockQuicData mock_quic_data(version_);
+  int packet_num = 1;
+  if (VersionUsesQpack(version_.transport_version)) {
+    mock_quic_data.AddWrite(SYNCHRONOUS,
+                            ConstructInitialSettingsPacket(packet_num++));
+  }
+  mock_quic_data.AddWrite(
+      SYNCHRONOUS,
+      ConstructClientRequestHeadersPacket(
+          packet_num++, GetNthClientInitiatedBidirectionalStreamId(0), true,
+          true, GetRequestHeaders("GET", "https", "/")));
+  mock_quic_data.AddRead(
+      ASYNC, ConstructServerResponseHeadersPacket(
+                 1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
+                 GetResponseHeaders("200 OK")));
+  std::string header = ConstructDataHeader(6);
+  mock_quic_data.AddRead(
+      ASYNC, ConstructServerDataPacket(
+                 2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
+                 header + "hello!"));
+  mock_quic_data.AddWrite(SYNCHRONOUS,
+                          ConstructClientAckPacket(packet_num++, 2, 1, 1));
+  mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // No more data to read
+  mock_quic_data.AddRead(ASYNC, 0);               // EOF
+
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  CreateSession();
+
+  AlternativeService alternative_service(kProtoQUIC,
+                                         HostPortPair::FromURL(request_.url));
+  http_server_properties_->MarkAlternativeServiceRecentlyBroken(
+      alternative_service, kNetworkIsolationKey1);
+  http_server_properties_->MarkAlternativeServiceRecentlyBroken(
+      alternative_service, kNetworkIsolationKey2);
+  EXPECT_TRUE(http_server_properties_->WasAlternativeServiceRecentlyBroken(
+      alternative_service, kNetworkIsolationKey1));
+  EXPECT_TRUE(http_server_properties_->WasAlternativeServiceRecentlyBroken(
+      alternative_service, kNetworkIsolationKey2));
+
+  request_.network_isolation_key = kNetworkIsolationKey1;
+  SendRequestAndExpectHttpResponse("hello world");
+  SendRequestAndExpectQuicResponse("hello!");
+
+  mock_quic_data.Resume();
+
+  EXPECT_FALSE(http_server_properties_->WasAlternativeServiceRecentlyBroken(
+      alternative_service, kNetworkIsolationKey1));
+  EXPECT_NE(nullptr, http_server_properties_->GetServerNetworkStats(
+                         url::SchemeHostPort("https", request_.url.host(), 443),
+                         kNetworkIsolationKey1));
+  EXPECT_TRUE(http_server_properties_->WasAlternativeServiceRecentlyBroken(
+      alternative_service, kNetworkIsolationKey2));
+  EXPECT_EQ(nullptr, http_server_properties_->GetServerNetworkStats(
+                         url::SchemeHostPort("https", request_.url.host(), 443),
+                         kNetworkIsolationKey2));
 }
 
 TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceForQuicForHttps) {
@@ -4970,6 +5397,57 @@ TEST_P(QuicNetworkTransactionTest, BrokenAlternateProtocol) {
   ExpectBrokenAlternateProtocolMapping();
 }
 
+TEST_P(QuicNetworkTransactionTest,
+       BrokenAlternateProtocolWithNetworkIsolationKey) {
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
+  const net::NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
+  const net::NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // enabled_features
+      {features::kPartitionHttpServerPropertiesByNetworkIsolationKey,
+       features::kPartitionConnectionsByNetworkIsolationKey},
+      // disabled_features
+      {});
+  // Since HttpServerProperties caches the feature value, have to create a new
+  // one.
+  http_server_properties_ = std::make_unique<HttpServerProperties>();
+
+  // Alternate-protocol job
+  std::unique_ptr<quic::QuicEncryptedPacket> close(
+      ConstructServerConnectionClosePacket(1));
+  MockRead quic_reads[] = {
+      MockRead(ASYNC, close->data(), close->length()),
+      MockRead(ASYNC, ERR_IO_PENDING),  // No more data to read
+      MockRead(ASYNC, OK),              // EOF
+  };
+  StaticSocketDataProvider quic_data(quic_reads, base::span<MockWrite>());
+  socket_factory_.AddSocketDataProvider(&quic_data);
+
+  // Main job which will succeed even though the alternate job fails.
+  MockRead http_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n\r\n"), MockRead("hello from http"),
+      MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
+      MockRead(ASYNC, OK)};
+
+  StaticSocketDataProvider http_data(http_reads, base::span<MockWrite>());
+  socket_factory_.AddSocketDataProvider(&http_data);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
+
+  CreateSession();
+  AddQuicAlternateProtocolMapping(
+      MockCryptoClientStream::COLD_START_WITH_CHLO_SENT, kNetworkIsolationKey1);
+  AddQuicAlternateProtocolMapping(
+      MockCryptoClientStream::COLD_START_WITH_CHLO_SENT, kNetworkIsolationKey2);
+  request_.network_isolation_key = kNetworkIsolationKey1;
+  SendRequestAndExpectHttpResponse("hello from http");
+
+  ExpectBrokenAlternateProtocolMapping(kNetworkIsolationKey1);
+  ExpectQuicAlternateProtocolMapping(kNetworkIsolationKey2);
+}
+
 TEST_P(QuicNetworkTransactionTest, BrokenAlternateProtocolReadError) {
   // Alternate-protocol job
   MockRead quic_reads[] = {
@@ -5209,7 +5687,6 @@ TEST_P(QuicNetworkTransactionTest, FailedZeroRttBrokenAlternateProtocol) {
   socket_factory_.AddSocketDataProvider(&http_data);
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
-  AddHangingNonAlternateProtocolSocketData();
   CreateSession();
 
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
@@ -5220,6 +5697,72 @@ TEST_P(QuicNetworkTransactionTest, FailedZeroRttBrokenAlternateProtocol) {
 
   EXPECT_TRUE(quic_data.AllReadDataConsumed());
   EXPECT_TRUE(quic_data.AllWriteDataConsumed());
+}
+
+TEST_P(QuicNetworkTransactionTest,
+       FailedZeroRttBrokenAlternateProtocolWithNetworkIsolationKey) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // enabled_features
+      {features::kPartitionHttpServerPropertiesByNetworkIsolationKey,
+       features::kPartitionConnectionsByNetworkIsolationKey},
+      // disabled_features
+      {});
+  // Since HttpServerProperties caches the feature value, have to create a new
+  // one.
+  http_server_properties_ = std::make_unique<HttpServerProperties>();
+
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
+  const net::NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
+  const net::NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+
+  // Alternate-protocol job
+  MockRead quic_reads[] = {
+      MockRead(ASYNC, ERR_SOCKET_NOT_CONNECTED),
+  };
+  StaticSocketDataProvider quic_data(quic_reads, base::span<MockWrite>());
+  socket_factory_.AddSocketDataProvider(&quic_data);
+
+  // Second Alternate-protocol job which will race with the TCP job.
+  StaticSocketDataProvider quic_data2(quic_reads, base::span<MockWrite>());
+  socket_factory_.AddSocketDataProvider(&quic_data2);
+
+  // Final job that will proceed when the QUIC job fails.
+  MockRead http_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n\r\n"), MockRead("hello from http"),
+      MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
+      MockRead(ASYNC, OK)};
+
+  StaticSocketDataProvider http_data(http_reads, base::span<MockWrite>());
+  socket_factory_.AddSocketDataProvider(&http_data);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
+
+  CreateSession();
+
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT,
+                                  kNetworkIsolationKey1);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT,
+                                  kNetworkIsolationKey2);
+
+  request_.network_isolation_key = kNetworkIsolationKey1;
+  SendRequestAndExpectHttpResponse("hello from http");
+  EXPECT_TRUE(quic_data.AllReadDataConsumed());
+  EXPECT_TRUE(quic_data.AllWriteDataConsumed());
+
+  ExpectBrokenAlternateProtocolMapping(kNetworkIsolationKey1);
+  ExpectQuicAlternateProtocolMapping(kNetworkIsolationKey2);
+
+  // Subsequent requests using kNetworkIsolationKey1 should not use QUIC.
+  AddHttpDataAndRunRequest();
+  // Requests using other NetworkIsolationKeys can still use QUIC.
+  request_.network_isolation_key = kNetworkIsolationKey2;
+  AddQuicDataAndRunRequest();
+
+  // The last two requests should not have changed the alternative service
+  // mappings.
+  ExpectBrokenAlternateProtocolMapping(kNetworkIsolationKey1);
+  ExpectQuicAlternateProtocolMapping(kNetworkIsolationKey2);
 }
 
 TEST_P(QuicNetworkTransactionTest, DISABLED_HangingZeroRttFallback) {

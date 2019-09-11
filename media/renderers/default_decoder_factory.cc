@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
@@ -23,6 +24,7 @@
 #endif
 
 #if defined(OS_FUCHSIA)
+#include "fuchsia/engine/switches.h"
 #include "media/filters/fuchsia/fuchsia_video_decoder.h"
 #endif
 
@@ -109,6 +111,12 @@ void DefaultDecoderFactory::CreateVideoDecoders(
     video_decoders->push_back(CreateFuchsiaVideoDecoder(
         gpu_factories->SharedImageInterface(),
         gpu_factories->GetMediaContextProvider()->ContextSupport()));
+  }
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableSoftwareVideoDecoders)) {
+    // Bypass software codec registration.
+    return;
   }
 #endif
 

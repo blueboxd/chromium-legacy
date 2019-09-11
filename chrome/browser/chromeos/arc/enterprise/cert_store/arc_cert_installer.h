@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_ARC_ENTERPRISE_CERT_STORE_ARC_CERT_INSTALLER_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
@@ -29,7 +30,7 @@ namespace arc {
 // ARC remote commands.
 class ArcCertInstaller : public policy::RemoteCommandsQueue::Observer {
  public:
-  ArcCertInstaller(content::BrowserContext* context);
+  explicit ArcCertInstaller(content::BrowserContext* context);
 
   // This constructor should be used only for testing.
   ArcCertInstaller(Profile* profile,
@@ -40,8 +41,10 @@ class ArcCertInstaller : public policy::RemoteCommandsQueue::Observer {
 
   // Install missing certificates via ARC remote commands.
   // Return false via |callback| in case of any error, and true otherwise.
-  void InstallArcCerts(const std::vector<net::ScopedCERTCertificate>& certs,
-                       InstallArcCertsCallback callback);
+  // Made virtual for override in test.
+  virtual void InstallArcCerts(
+      const std::vector<net::ScopedCERTCertificate>& certs,
+      InstallArcCertsCallback callback);
 
  private:
   // Install ARC certificate if not installed yet.

@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/dom_string_list.h"
 #include "third_party/blink/renderer/core/frame/dom_window.h"
+#include "third_party/blink/renderer/core/frame/selector.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -82,6 +83,8 @@ class CORE_EXPORT Location final : public ScriptWrappable {
 
   DOMStringList* ancestorOrigins() const;
 
+  Selector* selector() const;
+
   // Just return the |this| object the way the normal valueOf function on the
   // Object prototype would.  The valueOf function is only added to make sure
   // that it cannot be overwritten on location objects, since that would provide
@@ -112,6 +115,8 @@ class CORE_EXPORT Location final : public ScriptWrappable {
   const KURL& Url() const;
 
   const Member<DOMWindow> dom_window_;
+
+  Member<Selector> selector_;
 };
 
 }  // namespace blink

@@ -8811,5 +8811,52 @@ class LayerTreeHostTestPartialTileDamage : public LayerTreeHostTest {
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestPartialTileDamage);
 
+// Make sure that a change in top controls shown ratio causes an update to the
+// pending tree's viewports.
+class LayerTreeHostTopControlsDeltaTriggersViewportUpdate
+    : public LayerTreeHostTest {
+ public:
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void SetupTree() override {
+    LayerTreeHostTest::SetupTree();
+    Layer* root_layer = layer_tree_host()->root_layer();
+    // Set up scrollable root.
+    root_layer->SetBounds(gfx::Size(100, 100));
+    SetupViewport(root_layer, gfx::Size(50, 50), root_layer->bounds());
+    // Set browser controls to be partially shown.
+    layer_tree_host()->SetBrowserControlsHeight(kTopControlsHeight, 0.0f,
+                                                true /* shrink */);
+    layer_tree_host()->SetBrowserControlsShownRatio(kTopControlsShownRatio);
+  }
+
+  void BeginCommitOnThread(LayerTreeHostImpl* impl) override {
+    // Before commit the inner_viewport_container_bounds_delta() value should
+    // not reflect the partially shown top controls.
+    float bounds_delta = impl->pending_tree()
+                             ->property_trees()
+                             ->inner_viewport_container_bounds_delta()
+                             .y();
+    EXPECT_EQ(bounds_delta, 0.0f);
+  }
+
+  void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
+    // After commit the inner_viewport_container_bounds_delta() value should
+    // reflect the partially shown top controls.
+    float bounds_delta = impl->pending_tree()
+                             ->property_trees()
+                             ->inner_viewport_container_bounds_delta()
+                             .y();
+    EXPECT_EQ(bounds_delta,
+              kTopControlsHeight - kTopControlsHeight * kTopControlsShownRatio);
+    EndTest();
+  }
+
+  static constexpr float kTopControlsHeight = 10.0f;
+  static constexpr float kTopControlsShownRatio = 0.3f;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTopControlsDeltaTriggersViewportUpdate);
+
 }  // namespace
 }  // namespace cc

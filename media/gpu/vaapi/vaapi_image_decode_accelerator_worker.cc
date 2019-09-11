@@ -127,19 +127,13 @@ VaapiImageDecodeAcceleratorWorker::Create() {
                           VAJDAWorkerDecoderFailure::kVaapiError);
   VaapiImageDecoderVector decoders;
 
-  if (base::FeatureList::IsEnabled(
-          features::kVaapiJpegImageDecodeAcceleration)) {
-    auto jpeg_decoder = std::make_unique<VaapiJpegDecoder>();
-    if (jpeg_decoder->Initialize(uma_cb))
-      decoders.push_back(std::move(jpeg_decoder));
-  }
+  auto jpeg_decoder = std::make_unique<VaapiJpegDecoder>();
+  if (jpeg_decoder->Initialize(uma_cb))
+    decoders.push_back(std::move(jpeg_decoder));
 
-  if (base::FeatureList::IsEnabled(
-          features::kVaapiWebPImageDecodeAcceleration)) {
-    auto webp_decoder = std::make_unique<VaapiWebPDecoder>();
-    if (webp_decoder->Initialize(uma_cb))
-      decoders.push_back(std::move(webp_decoder));
-  }
+  auto webp_decoder = std::make_unique<VaapiWebPDecoder>();
+  if (webp_decoder->Initialize(uma_cb))
+    decoders.push_back(std::move(webp_decoder));
 
   // If there are no decoders due to disabled flags or initialization failure,
   // return nullptr.
@@ -183,10 +177,15 @@ VaapiImageDecoder* VaapiImageDecodeAcceleratorWorker::GetDecoderForImage(
       base::make_span<const uint8_t>(encoded_data.data(), encoded_data.size());
   auto result = decoders_.end();
 
-  if (IsJpegImage(encoded_data_span))
+  if (base::FeatureList::IsEnabled(
+          features::kVaapiJpegImageDecodeAcceleration) &&
+      IsJpegImage(encoded_data_span)) {
     result = decoders_.find(gpu::ImageDecodeAcceleratorType::kJpeg);
-  else if (IsLossyWebPImage(encoded_data_span))
+  } else if (base::FeatureList::IsEnabled(
+                 features::kVaapiWebPImageDecodeAcceleration) &&
+             IsLossyWebPImage(encoded_data_span)) {
     result = decoders_.find(gpu::ImageDecodeAcceleratorType::kWebP);
+  }
 
   return result == decoders_.end() ? nullptr : result->second.get();
 }

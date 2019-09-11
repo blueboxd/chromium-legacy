@@ -25,7 +25,6 @@
 #include "cc/layers/draw_mode.h"
 #include "cc/layers/draw_properties.h"
 #include "cc/layers/layer_collections.h"
-#include "cc/layers/layer_impl_test_properties.h"
 #include "cc/layers/performance_properties.h"
 #include "cc/layers/render_surface_impl.h"
 #include "cc/layers/touch_action_region.h"
@@ -173,12 +172,6 @@ class CC_EXPORT LayerImpl {
   // Make the layer hit testable.
   void SetHitTestable(bool should_hit_test);
   bool HitTestable() const;
-
-  LayerImplTestProperties* test_properties() {
-    if (!test_properties_)
-      test_properties_.reset(new LayerImplTestProperties(this));
-    return test_properties_.get();
-  }
 
   void SetBackgroundColor(SkColor background_color);
   SkColor background_color() const { return background_color_; }
@@ -348,9 +341,6 @@ class CC_EXPORT LayerImpl {
   virtual gfx::Rect GetDamageRect() const;
 
   virtual std::unique_ptr<base::DictionaryValue> LayerAsJson() const;
-  // TODO(pdr): This should be removed because there is no longer a tree
-  // of layers, only a list.
-  std::unique_ptr<base::DictionaryValue> LayerTreeAsJson();
 
   // This includes |layer_property_changed_not_from_property_trees_| and
   // property_trees changes.
@@ -504,8 +494,6 @@ class CC_EXPORT LayerImpl {
   const int layer_id_;
   LayerTreeImpl* const layer_tree_impl_;
   const bool will_always_push_properties_ : 1;
-
-  std::unique_ptr<LayerImplTestProperties> test_properties_;
 
   // Properties synchronized from the associated Layer.
   gfx::Size bounds_;

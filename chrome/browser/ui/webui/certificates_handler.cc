@@ -1054,7 +1054,7 @@ void CertificatesHandler::PopulateTree(const std::string& tab_name,
       cert_dict.SetKey(kCertificatesHandlerExtractableField,
                        base::Value(!cert_info->hardware_backed()));
       // TODO(mattm): Other columns.
-      subnodes.GetList().push_back(std::move(cert_dict));
+      subnodes.Append(std::move(cert_dict));
 
       contains_policy_certs |=
           cert_info->source() ==
@@ -1065,7 +1065,7 @@ void CertificatesHandler::PopulateTree(const std::string& tab_name,
     org_dict.SetKey(kCertificatesHandlerContainsPolicyCertsField,
                     base::Value(contains_policy_certs));
     org_dict.SetKey(kCertificatesHandlerSubnodesField, std::move(subnodes));
-    nodes.GetList().push_back(std::move(org_dict));
+    nodes.Append(std::move(org_dict));
   }
   std::sort(nodes.GetList().begin(), nodes.GetList().end(), comparator);
 

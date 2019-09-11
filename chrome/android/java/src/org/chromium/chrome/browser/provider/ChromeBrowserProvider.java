@@ -31,6 +31,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
@@ -453,7 +454,8 @@ public class ChromeBrowserProvider extends ContentProvider {
         int result;
         switch (match) {
             case URI_MATCH_BOOKMARKS_ID :
-                result = nativeRemoveBookmark(mNativeChromeBrowserProvider, bookmarkId);
+                result = ChromeBrowserProviderJni.get().removeBookmark(
+                        mNativeChromeBrowserProvider, ChromeBrowserProvider.this, bookmarkId);
                 break;
             case URL_MATCH_API_BOOKMARK_ID:
                 result = removeBookmarkFromAPI(
@@ -511,8 +513,8 @@ public class ChromeBrowserProvider extends ContentProvider {
                 if (values.containsKey(BOOKMARK_PARENT_ID_PARAM)) {
                     parentId = values.getAsLong(BOOKMARK_PARENT_ID_PARAM);
                 }
-                result = nativeUpdateBookmark(mNativeChromeBrowserProvider, bookmarkId, url, title,
-                        parentId);
+                result = ChromeBrowserProviderJni.get().updateBookmark(mNativeChromeBrowserProvider,
+                        ChromeBrowserProvider.this, bookmarkId, url, title, parentId);
                 updateLastModifiedBookmarkFolder(parentId);
                 break;
             case URL_MATCH_API_BOOKMARK_ID:
@@ -587,7 +589,8 @@ public class ChromeBrowserProvider extends ContentProvider {
         if (values.containsKey(BOOKMARK_PARENT_ID_PARAM)) {
             parentId = values.getAsLong(BOOKMARK_PARENT_ID_PARAM);
         }
-        long id = nativeAddBookmark(mNativeChromeBrowserProvider, url, title, isFolder, parentId);
+        long id = ChromeBrowserProviderJni.get().addBookmark(mNativeChromeBrowserProvider,
+                ChromeBrowserProvider.this, url, title, isFolder, parentId);
         if (id == INVALID_BOOKMARK_ID) return id;
 
         if (isFolder) {
@@ -925,9 +928,9 @@ public class ChromeBrowserProvider extends ContentProvider {
         if (row.mUrl == null) {
             throw new IllegalArgumentException("Must have a bookmark URL");
         }
-        return nativeAddBookmarkFromAPI(mNativeChromeBrowserProvider,
-                row.mUrl, row.mCreated, row.mIsBookmark, row.mDate, row.mFavicon,
-                row.mTitle, row.mVisits, row.mParentId);
+        return ChromeBrowserProviderJni.get().addBookmarkFromAPI(mNativeChromeBrowserProvider,
+                ChromeBrowserProvider.this, row.mUrl, row.mCreated, row.mIsBookmark, row.mDate,
+                row.mFavicon, row.mTitle, row.mVisits, row.mParentId);
     }
 
     private Cursor queryBookmarkFromAPI(String[] projectionIn, String selection,
@@ -939,24 +942,26 @@ public class ChromeBrowserProvider extends ContentProvider {
             projection = projectionIn;
         }
 
-        return nativeQueryBookmarkFromAPI(mNativeChromeBrowserProvider, projection, selection,
-                selectionArgs, sortOrder);
+        return ChromeBrowserProviderJni.get().queryBookmarkFromAPI(mNativeChromeBrowserProvider,
+                ChromeBrowserProvider.this, projection, selection, selectionArgs, sortOrder);
     }
 
     private int updateBookmarkFromAPI(ContentValues values, String selection,
             String[] selectionArgs) {
         BookmarkRow row = BookmarkRow.fromContentValues(values);
-        return nativeUpdateBookmarkFromAPI(mNativeChromeBrowserProvider,
-                row.mUrl, row.mCreated, row.mIsBookmark, row.mDate,
+        return ChromeBrowserProviderJni.get().updateBookmarkFromAPI(mNativeChromeBrowserProvider,
+                ChromeBrowserProvider.this, row.mUrl, row.mCreated, row.mIsBookmark, row.mDate,
                 row.mFavicon, row.mTitle, row.mVisits, row.mParentId, selection, selectionArgs);
     }
 
     private int removeBookmarkFromAPI(String selection, String[] selectionArgs) {
-        return nativeRemoveBookmarkFromAPI(mNativeChromeBrowserProvider, selection, selectionArgs);
+        return ChromeBrowserProviderJni.get().removeBookmarkFromAPI(
+                mNativeChromeBrowserProvider, ChromeBrowserProvider.this, selection, selectionArgs);
     }
 
     private int removeHistoryFromAPI(String selection, String[] selectionArgs) {
-        return nativeRemoveHistoryFromAPI(mNativeChromeBrowserProvider, selection, selectionArgs);
+        return ChromeBrowserProviderJni.get().removeHistoryFromAPI(
+                mNativeChromeBrowserProvider, ChromeBrowserProvider.this, selection, selectionArgs);
     }
 
     @CalledByNative
@@ -979,14 +984,15 @@ public class ChromeBrowserProvider extends ContentProvider {
         if (row.mTerm == null) {
             throw new IllegalArgumentException("Must have a search term");
         }
-        return nativeAddSearchTermFromAPI(mNativeChromeBrowserProvider, row.mTerm, row.mDate);
+        return ChromeBrowserProviderJni.get().addSearchTermFromAPI(
+                mNativeChromeBrowserProvider, ChromeBrowserProvider.this, row.mTerm, row.mDate);
     }
 
     private int updateSearchTermFromAPI(ContentValues values, String selection,
             String[] selectionArgs) {
         SearchRow row = SearchRow.fromContentValues(values);
-        return nativeUpdateSearchTermFromAPI(mNativeChromeBrowserProvider,
-                row.mTerm, row.mDate, selection, selectionArgs);
+        return ChromeBrowserProviderJni.get().updateSearchTermFromAPI(mNativeChromeBrowserProvider,
+                ChromeBrowserProvider.this, row.mTerm, row.mDate, selection, selectionArgs);
     }
 
     private Cursor querySearchTermFromAPI(String[] projectionIn, String selection,
@@ -997,13 +1003,13 @@ public class ChromeBrowserProvider extends ContentProvider {
         } else {
             projection = projectionIn;
         }
-        return nativeQuerySearchTermFromAPI(mNativeChromeBrowserProvider, projection, selection,
-                selectionArgs, sortOrder);
+        return ChromeBrowserProviderJni.get().querySearchTermFromAPI(mNativeChromeBrowserProvider,
+                ChromeBrowserProvider.this, projection, selection, selectionArgs, sortOrder);
     }
 
     private int removeSearchFromAPI(String selection, String[] selectionArgs) {
-        return nativeRemoveSearchTermFromAPI(mNativeChromeBrowserProvider,
-                selection, selectionArgs);
+        return ChromeBrowserProviderJni.get().removeSearchTermFromAPI(
+                mNativeChromeBrowserProvider, ChromeBrowserProvider.this, selection, selectionArgs);
     }
 
     private static boolean isInUiThread() {
@@ -1138,7 +1144,10 @@ public class ChromeBrowserProvider extends ContentProvider {
      */
     private void ensureNativeSideInitialized() {
         ThreadUtils.assertOnUiThread();
-        if (mNativeChromeBrowserProvider == 0) mNativeChromeBrowserProvider = nativeInit();
+        if (mNativeChromeBrowserProvider == 0) {
+            mNativeChromeBrowserProvider =
+                    ChromeBrowserProviderJni.get().init(ChromeBrowserProvider.this);
+        }
     }
 
     @SuppressLint("NewApi")
@@ -1200,43 +1209,38 @@ public class ChromeBrowserProvider extends ContentProvider {
                 externalId, IntentHandler.ExternalAppId.NUM_ENTRIES);
     }
 
-    private native long nativeInit();
+    @NativeMethods
+    interface Natives {
+        long init(ChromeBrowserProvider caller);
 
-    // Public API native methods.
-    private native long nativeAddBookmark(long nativeChromeBrowserProvider,
-            String url, String title, boolean isFolder, long parentId);
+        long addBookmark(long nativeChromeBrowserProvider, ChromeBrowserProvider caller, String url,
+                String title, boolean isFolder, long parentId);
 
-    private native int nativeRemoveBookmark(long nativeChromeBrowserProvider, long id);
-
-    private native int nativeUpdateBookmark(long nativeChromeBrowserProvider,
-            long id, String url, String title, long parentId);
-
-    private native long nativeAddBookmarkFromAPI(long nativeChromeBrowserProvider,
-            String url, Long created, Boolean isBookmark, Long date, byte[] favicon,
-            String title, Integer visits, long parentId);
-
-    private native SQLiteCursor nativeQueryBookmarkFromAPI(long nativeChromeBrowserProvider,
-            String[] projection, String selection, String[] selectionArgs, String sortOrder);
-
-    private native int nativeUpdateBookmarkFromAPI(long nativeChromeBrowserProvider,
-            String url, Long created, Boolean isBookmark, Long date, byte[] favicon,
-            String title, Integer visits, long parentId, String selection, String[] selectionArgs);
-
-    private native int nativeRemoveBookmarkFromAPI(long nativeChromeBrowserProvider,
-            String selection, String[] selectionArgs);
-
-    private native int nativeRemoveHistoryFromAPI(long nativeChromeBrowserProvider,
-            String selection, String[] selectionArgs);
-
-    private native long nativeAddSearchTermFromAPI(long nativeChromeBrowserProvider,
-            String term, Long date);
-
-    private native SQLiteCursor nativeQuerySearchTermFromAPI(long nativeChromeBrowserProvider,
-            String[] projection, String selection, String[] selectionArgs, String sortOrder);
-
-    private native int nativeUpdateSearchTermFromAPI(long nativeChromeBrowserProvider,
-            String search, Long date, String selection, String[] selectionArgs);
-
-    private native int nativeRemoveSearchTermFromAPI(long nativeChromeBrowserProvider,
-            String selection, String[] selectionArgs);
+        int removeBookmark(long nativeChromeBrowserProvider, ChromeBrowserProvider caller, long id);
+        int updateBookmark(long nativeChromeBrowserProvider, ChromeBrowserProvider caller, long id,
+                String url, String title, long parentId);
+        long addBookmarkFromAPI(long nativeChromeBrowserProvider, ChromeBrowserProvider caller,
+                String url, Long created, Boolean isBookmark, Long date, byte[] favicon,
+                String title, Integer visits, long parentId);
+        SQLiteCursor queryBookmarkFromAPI(long nativeChromeBrowserProvider,
+                ChromeBrowserProvider caller, String[] projection, String selection,
+                String[] selectionArgs, String sortOrder);
+        int updateBookmarkFromAPI(long nativeChromeBrowserProvider, ChromeBrowserProvider caller,
+                String url, Long created, Boolean isBookmark, Long date, byte[] favicon,
+                String title, Integer visits, long parentId, String selection,
+                String[] selectionArgs);
+        int removeBookmarkFromAPI(long nativeChromeBrowserProvider, ChromeBrowserProvider caller,
+                String selection, String[] selectionArgs);
+        int removeHistoryFromAPI(long nativeChromeBrowserProvider, ChromeBrowserProvider caller,
+                String selection, String[] selectionArgs);
+        long addSearchTermFromAPI(long nativeChromeBrowserProvider, ChromeBrowserProvider caller,
+                String term, Long date);
+        SQLiteCursor querySearchTermFromAPI(long nativeChromeBrowserProvider,
+                ChromeBrowserProvider caller, String[] projection, String selection,
+                String[] selectionArgs, String sortOrder);
+        int updateSearchTermFromAPI(long nativeChromeBrowserProvider, ChromeBrowserProvider caller,
+                String search, Long date, String selection, String[] selectionArgs);
+        int removeSearchTermFromAPI(long nativeChromeBrowserProvider, ChromeBrowserProvider caller,
+                String selection, String[] selectionArgs);
+    }
 }

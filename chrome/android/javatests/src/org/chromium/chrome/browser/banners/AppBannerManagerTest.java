@@ -51,7 +51,7 @@ import org.chromium.chrome.browser.infobar.InfoBarContainerLayout.Item;
 import org.chromium.chrome.browser.infobar.InstallableAmbientBadgeInfoBar;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.webapps.AddToHomescreenDialog;
+import org.chromium.chrome.browser.webapps.addtohomescreen.AddToHomescreenView;
 import org.chromium.chrome.browser.webapps.WebappDataStorage;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -256,7 +256,7 @@ public class AppBannerManagerTest {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                AddToHomescreenDialog dialog =
+                AddToHomescreenView dialog =
                         getAppBannerManager(tab).getAddToHomescreenDialogForTesting();
                 return dialog == null || dialog.getAlertDialogForTesting() == null;
             }
@@ -269,7 +269,7 @@ public class AppBannerManagerTest {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                AddToHomescreenDialog dialog =
+                AddToHomescreenView dialog =
                         getAppBannerManager(tab).getAddToHomescreenDialogForTesting();
                 if (dialog != null) {
                     AlertDialog alertDialog = dialog.getAlertDialogForTesting();

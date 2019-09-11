@@ -11,6 +11,7 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/numerics/ranges.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
@@ -626,8 +627,8 @@ void GLES2DecoderTest::CheckReadPixelsOutOfRange(GLint in_read_x,
   // is requesting a larger size.
   GLint read_x = std::max(0, in_read_x);
   GLint read_y = std::max(0, in_read_y);
-  GLint read_end_x = std::max(0, std::min(kWidth, in_read_x + in_read_width));
-  GLint read_end_y = std::max(0, std::min(kHeight, in_read_y + in_read_height));
+  GLint read_end_x = base::ClampToRange(in_read_x + in_read_width, 0, kWidth);
+  GLint read_end_y = base::ClampToRange(in_read_y + in_read_height, 0, kHeight);
   GLint read_width = read_end_x - read_x;
   GLint read_height = read_end_y - read_y;
   if (read_width > 0 && read_height > 0) {

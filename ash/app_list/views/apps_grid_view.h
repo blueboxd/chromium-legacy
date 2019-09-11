@@ -94,9 +94,6 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
     TOUCH,
   };
 
-  // The height of gradient fade-out zones.
-  static constexpr int kFadeoutZoneHeight = 24;
-
   AppsGridView(ContentsView* contents_view,
                AppsGridViewFolderDelegate* folder_delegate);
   ~AppsGridView() override;

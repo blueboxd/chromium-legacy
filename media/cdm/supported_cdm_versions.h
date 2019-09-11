@@ -32,7 +32,7 @@ struct SupportedVersion {
   bool enabled;
 };
 
-constexpr std::array<SupportedVersion, 3> kSupportedCdmInterfaceVersions = {{
+constexpr std::array<SupportedVersion, 2> kSupportedCdmInterfaceVersions = {{
     {10, true},
     {11, false},
 }};

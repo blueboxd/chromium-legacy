@@ -184,7 +184,7 @@ class ChromeEnterpriseTestCase(EnterpriseTestCase):
   def EnableUITest(self, instance_name):
     """Configures the instance so that UI tests can be run on it."""
     self.InstallWebDriver(instance_name)
-    self.InstallPackage(instance_name, 'sysinternals', '2019.6.29')
+    self.InstallPackage(instance_name, 'sysinternals', '2019.9.5')
     self.RunCommand(
         instance_name,
         r'c:\Python27\python.exe -m pip install pywinauto requests')

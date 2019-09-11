@@ -392,9 +392,8 @@ void URLRequestJob::NotifyHeadersComplete() {
 
     RedirectInfo redirect_info = RedirectInfo::ComputeRedirectInfo(
         request_->method(), request_->url(), request_->site_for_cookies(),
-        request_->top_frame_origin(), request_->first_party_url_policy(),
-        request_->referrer_policy(), request_->referrer(), http_status_code,
-        new_location,
+        request_->first_party_url_policy(), request_->referrer_policy(),
+        request_->referrer(), http_status_code, new_location,
         net::RedirectUtil::GetReferrerPolicyHeader(
             request_->response_headers()),
         insecure_scheme_was_upgraded, CopyFragmentOnRedirect(new_location));
@@ -570,12 +569,6 @@ void URLRequestJob::NotifyCanceled() {
   if (!done_) {
     OnDone(URLRequestStatus(URLRequestStatus::CANCELED, ERR_ABORTED), true);
   }
-}
-
-void URLRequestJob::NotifyRestartRequired() {
-  DCHECK(!has_handled_response_);
-  if (GetStatus().status() != URLRequestStatus::CANCELED)
-    request_->Restart();
 }
 
 void URLRequestJob::OnCallToDelegate(NetLogEventType type) {

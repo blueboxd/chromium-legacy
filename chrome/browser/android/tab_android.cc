@@ -516,7 +516,7 @@ void TabAndroid::LoadOriginalImage(JNIEnv* env,
                                    const JavaParamRef<jobject>& obj) {
   content::RenderFrameHost* render_frame_host =
       web_contents()->GetFocusedFrame();
-  chrome::mojom::ChromeRenderFrameAssociatedPtr renderer;
+  mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame> renderer;
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(&renderer);
   renderer->RequestReloadImageForContextNode();
 }

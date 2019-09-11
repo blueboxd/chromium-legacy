@@ -686,19 +686,19 @@ TEST_F(ManagementUIHandlerTests, ThreatReportingInfo) {
     base::Value value(base::Value::Type::DICTIONARY);
     value.SetStringKey("title", kManagementDataLossPreventionName);
     value.SetStringKey("permission", kManagementDataLossPreventionPermissions);
-    expected_info.GetList().push_back(std::move(value));
+    expected_info.Append(std::move(value));
   }
   {
     base::Value value(base::Value::Type::DICTIONARY);
     value.SetStringKey("title", kManagementMalwareScanningName);
     value.SetStringKey("permission", kManagementMalwareScanningPermissions);
-    expected_info.GetList().push_back(std::move(value));
+    expected_info.Append(std::move(value));
   }
   {
     base::Value value(base::Value::Type::DICTIONARY);
     value.SetStringKey("title", kManagementEnterpriseReportingName);
     value.SetStringKey("permission", kManagementEnterpriseReportingPermissions);
-    expected_info.GetList().push_back(std::move(value));
+    expected_info.Append(std::move(value));
   }
 
   EXPECT_EQ(expected_info, *threat_protection_info->FindListKey("info"));

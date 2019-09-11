@@ -12,6 +12,7 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.UserData;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.infobar.InfoBarContainerLayout.Item;
@@ -174,7 +175,7 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener {
     /** The tab that hosts this infobar container. */
     private final Tab mTab;
 
-    /** Native InfoBarContainer pointer which will be set by nativeInit(). */
+    /** Native InfoBarContainer pointer which will be set by InfoBarContainerJni.get().init(). */
     private long mNativeInfoBarContainer;
 
     /** True when this container has been emptied and its native counterpart has been destroyed. */
@@ -230,7 +231,7 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener {
 
         // Chromium's InfoBarContainer may add an InfoBar immediately during this initialization
         // call, so make sure everything in the InfoBarContainer is completely ready beforehand.
-        mNativeInfoBarContainer = nativeInit();
+        mNativeInfoBarContainer = InfoBarContainerJni.get().init(InfoBarContainer.this);
     }
 
     public SnackbarManager getSnackbarManager() {
@@ -403,7 +404,7 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener {
         destroyContainerView();
         mTab.removeObserver(mTabObserver);
         if (mNativeInfoBarContainer != 0) {
-            nativeDestroy(mNativeInfoBarContainer);
+            InfoBarContainerJni.get().destroy(mNativeInfoBarContainer, InfoBarContainer.this);
             mNativeInfoBarContainer = 0;
         }
         mDestroyed = true;
@@ -480,7 +481,8 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener {
         if (webContents != null && webContents != mInfoBarContainerView.getWebContents()) {
             mInfoBarContainerView.setWebContents(webContents);
             if (mNativeInfoBarContainer != 0) {
-                nativeSetWebContents(mNativeInfoBarContainer, webContents);
+                InfoBarContainerJni.get().setWebContents(
+                        mNativeInfoBarContainer, InfoBarContainer.this, webContents);
             }
         }
 
@@ -544,7 +546,10 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener {
 
         if (mInfoBarContainerView != null) {
             mInfoBarContainerView.setWebContents(null);
-            if (mNativeInfoBarContainer != 0) nativeSetWebContents(mNativeInfoBarContainer, null);
+            if (mNativeInfoBarContainer != 0) {
+                InfoBarContainerJni.get().setWebContents(
+                        mNativeInfoBarContainer, InfoBarContainer.this, null);
+            }
             mInfoBarContainerView.destroy();
             mInfoBarContainerView = null;
         }
@@ -588,8 +593,11 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener {
         return mInfoBarContainerView;
     }
 
-    private native long nativeInit();
-    private native void nativeSetWebContents(
-            long nativeInfoBarContainerAndroid, WebContents webContents);
-    private native void nativeDestroy(long nativeInfoBarContainerAndroid);
+    @NativeMethods
+    interface Natives {
+        long init(InfoBarContainer caller);
+        void setWebContents(long nativeInfoBarContainerAndroid, InfoBarContainer caller,
+                WebContents webContents);
+        void destroy(long nativeInfoBarContainerAndroid, InfoBarContainer caller);
+    }
 }

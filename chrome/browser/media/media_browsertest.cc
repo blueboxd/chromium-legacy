@@ -15,6 +15,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "media/audio/audio_features.h"
 #include "media/base/media_switches.h"
 #include "media/base/test_data_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -27,9 +28,13 @@ void MediaBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
   command_line->AppendSwitchASCII(
       switches::kAutoplayPolicy,
       switches::autoplay::kNoUserGestureRequiredPolicy);
-  // Disable fallback after decode error to avoid unexpected test pass on the
-  // fallback path.
-  scoped_feature_list_.InitAndDisableFeature(media::kFallbackAfterDecodeError);
+
+  scoped_feature_list_.InitWithFeatures(
+      // Enable audio thread hang dumps to help triage bot failures.
+      /*enabled_features=*/{features::kDumpOnAudioServiceHang},
+      // Disable fallback after decode error to avoid unexpected test pass on
+      // the fallback path.
+      /*disabled_features=*/{media::kFallbackAfterDecodeError});
 }
 
 void MediaBrowserTest::RunMediaTestPage(const std::string& html_page,

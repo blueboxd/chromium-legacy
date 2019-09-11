@@ -134,6 +134,16 @@ class RenderWidgetTargeter {
     return request_in_flight_.has_value();
   }
 
+  void set_is_auto_scroll_in_progress(bool autoscroll_in_progress) {
+    is_autoscroll_in_progress_ = autoscroll_in_progress;
+
+    // If middle click autoscroll ends, reset |middle_click_result_|.
+    if (!autoscroll_in_progress)
+      middle_click_result_ = RenderWidgetTargetResult();
+  }
+
+  bool is_auto_scroll_in_progress() const { return is_autoscroll_in_progress_; }
+
  private:
   class TargetingRequest {
    public:
@@ -271,6 +281,12 @@ class RenderWidgetTargeter {
   // This value keeps track of the number of clients we have asked in order to
   // do async hit-testing.
   uint32_t async_depth_ = 0;
+
+  // Target to send events to if autoscroll is in progress
+  RenderWidgetTargetResult middle_click_result_;
+
+  // True when the user middle click's mouse for autoscroll
+  bool is_autoscroll_in_progress_ = false;
 
   // This value limits how long to wait for a response from the renderer
   // process before giving up and resuming event processing.

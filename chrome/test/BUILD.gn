@@ -162,6 +162,7 @@ static_library("test_support") {
 
     #"//chrome/app/theme:theme_resources",
     "//chrome/browser:test_support",
+    "//chrome/browser/performance_manager/test_support",
     "//chrome/child",
     "//chrome/common:test_support",
     "//chrome/renderer",
@@ -509,6 +510,7 @@ if (is_android) {
       "../browser/payments/has_enrolled_instrument_browsertest.cc",
       "../browser/payments/has_enrolled_instrument_query_quota_browsertest.cc",
       "../browser/payments/hybrid_request_skip_ui_browsertest.cc",
+      "../browser/payments/payment_handler_enable_delegations_browsertest.cc",
       "../browser/payments/payment_handler_exploit_browsertest.cc",
       "../browser/payments/payment_request_can_make_payment_browsertest.cc",
       "../browser/payments/personal_data_manager_test_util.cc",
@@ -1803,6 +1805,7 @@ if (!is_android) {
         "../browser/payments/has_enrolled_instrument_browsertest.cc",
         "../browser/payments/has_enrolled_instrument_query_quota_browsertest.cc",
         "../browser/payments/manifest_verifier_browsertest.cc",
+        "../browser/payments/payment_handler_enable_delegations_browsertest.cc",
         "../browser/payments/payment_handler_exploit_browsertest.cc",
         "../browser/payments/payment_manifest_parser_browsertest.cc",
         "../browser/payments/payment_request_can_make_payment_browsertest.cc",
@@ -3057,10 +3060,6 @@ test("unit_tests") {
     "../browser/performance_manager/graph/graph_impl_operations_unittest.cc",
     "../browser/performance_manager/graph/graph_impl_unittest.cc",
     "../browser/performance_manager/graph/graph_operations_unittest.cc",
-    "../browser/performance_manager/graph/graph_test_harness.cc",
-    "../browser/performance_manager/graph/graph_test_harness.h",
-    "../browser/performance_manager/graph/mock_graphs.cc",
-    "../browser/performance_manager/graph/mock_graphs.h",
     "../browser/performance_manager/graph/node_attached_data_unittest.cc",
     "../browser/performance_manager/graph/node_base_unittest.cc",
     "../browser/performance_manager/graph/page_node_impl_unittest.cc",
@@ -3334,6 +3333,10 @@ test("unit_tests") {
     if (enable_widevine) {
       sources += [ "../browser/media/widevine_hardware_caps_win_unittest.cc" ]
     }
+  }
+
+  if (enable_library_cdms) {
+    sources += [ "../common/media/cdm_manifest_unittest.cc" ]
   }
 
   if (!is_android) {

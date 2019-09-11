@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.toolbar;
 
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
-import android.text.TextUtils;
 import android.view.View;
 
 import org.chromium.base.Callback;
@@ -20,7 +19,6 @@ import org.chromium.chrome.browser.datareduction.DataReductionSavingsMilestonePr
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
-import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -147,7 +145,6 @@ public class ToolbarButtonInProductHelpController implements Destroyable {
      */
     public void maybeShowColdStartIPH() {
         maybeShowDownloadHomeIPH();
-        maybeShowNTPButtonIPH();
     }
 
     private void maybeShowDownloadHomeIPH() {
@@ -156,16 +153,6 @@ public class ToolbarButtonInProductHelpController implements Destroyable {
                 R.string.iph_download_home_accessibility_text,
                 mActivity.getToolbarManager().getMenuButtonView(),
                 mActivity.getToolbarManager().getAppMenuHandler(), Profile.getLastUsedProfile(),
-                mActivity, null);
-    }
-
-    private void maybeShowNTPButtonIPH() {
-        if (!canShowNTPButtonIPH(mActivity)) return;
-
-        setupAndMaybeShowIPHForFeature(FeatureConstants.NTP_BUTTON_FEATURE, null, true,
-                R.string.iph_ntp_button_text_home_text,
-                R.string.iph_ntp_button_text_home_accessibility_text,
-                mActivity.findViewById(R.id.home_button), null, Profile.getLastUsedProfile(),
                 mActivity, null);
     }
 
@@ -235,11 +222,6 @@ public class ToolbarButtonInProductHelpController implements Destroyable {
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
             if (activity.isActivityFinishingOrDestroyed()) return;
 
-            if (TextUtils.equals(featureName, FeatureConstants.NTP_BUTTON_FEATURE)
-                    && !canShowNTPButtonIPH(activity)) {
-                return;
-            }
-
             if (!tracker.shouldTriggerHelpUI(featureName)) return;
             ViewRectProvider rectProvider = new ViewRectProvider(anchorView);
 
@@ -283,14 +265,5 @@ public class ToolbarButtonInProductHelpController implements Destroyable {
         } else {
             ViewHighlighter.turnOffHighlight(anchorView);
         }
-    }
-
-    private static boolean canShowNTPButtonIPH(ChromeActivity activity) {
-        View homeButton = activity.findViewById(R.id.home_button);
-        Tab tab = activity.getActivityTabProvider().get();
-        return FeatureUtilities.isNewTabPageButtonEnabled()
-                && !activity.getCurrentTabModel().isIncognito() && tab != null
-                && !NewTabPage.isNTPUrl(tab.getUrl()) && homeButton != null
-                && homeButton.getVisibility() == View.VISIBLE;
     }
 }

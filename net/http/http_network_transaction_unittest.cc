@@ -12637,7 +12637,8 @@ TEST_F(HttpNetworkTransactionTest, IdentifyQuicBroken) {
       server, NetworkIsolationKey(), alternative_service, expiration,
       HttpNetworkSession::Params().quic_params.supported_versions);
   // Mark the QUIC alternative service as broken.
-  http_server_properties->MarkAlternativeServiceBroken(alternative_service);
+  http_server_properties->MarkAlternativeServiceBroken(alternative_service,
+                                                       NetworkIsolationKey());
 
   HttpRequestInfo request;
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
@@ -12711,7 +12712,8 @@ TEST_F(HttpNetworkTransactionTest, IdentifyQuicNotBroken) {
       server, NetworkIsolationKey(), alternative_service_info_vector);
 
   // Mark one of the QUIC alternative service as broken.
-  http_server_properties->MarkAlternativeServiceBroken(alternative_service1);
+  http_server_properties->MarkAlternativeServiceBroken(alternative_service1,
+                                                       NetworkIsolationKey());
   EXPECT_EQ(2u, http_server_properties
                     ->GetAlternativeServiceInfos(server, NetworkIsolationKey())
                     .size());
@@ -12791,8 +12793,8 @@ TEST_F(HttpNetworkTransactionTest, MarkBrokenAlternateProtocolAndFallback) {
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   EXPECT_EQ(alternative_service,
             alternative_service_info_vector[0].alternative_service());
-  EXPECT_TRUE(
-      http_server_properties->IsAlternativeServiceBroken(alternative_service));
+  EXPECT_TRUE(http_server_properties->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
 }
 
 // Ensure that we are not allowed to redirect traffic via an alternate protocol
@@ -16526,8 +16528,8 @@ TEST_F(HttpNetworkTransactionTest, FailedAlternativeServiceIsNotUserVisible) {
 
   // Alternative should be marked as broken, because HTTP/1.1 is not sufficient
   // for alternative service.
-  EXPECT_TRUE(
-      http_server_properties->IsAlternativeServiceBroken(alternative_service));
+  EXPECT_TRUE(http_server_properties->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
 
   // Since |alternative_service| is broken, a second transaction to server
   // should not start an alternate Job.  It should pool to existing connection

@@ -73,8 +73,7 @@ bool IsTabletMode() {
 
 AssistantInteractionController::AssistantInteractionController(
     AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller),
-      assistant_interaction_subscriber_binding_(this) {
+    : assistant_controller_(assistant_controller) {
   AddModelObserver(this);
   assistant_controller_->AddObserver(this);
   Shell::Get()->highlighter_controller()->AddObserver(this);
@@ -91,9 +90,8 @@ void AssistantInteractionController::SetAssistant(
   assistant_ = assistant;
 
   // Subscribe to Assistant interaction events.
-  chromeos::assistant::mojom::AssistantInteractionSubscriberPtr ptr;
-  assistant_interaction_subscriber_binding_.Bind(mojo::MakeRequest(&ptr));
-  assistant_->AddAssistantInteractionSubscriber(std::move(ptr));
+  assistant_->AddAssistantInteractionSubscriber(
+      assistant_interaction_subscriber_receiver_.BindNewPipeAndPassRemote());
 }
 
 void AssistantInteractionController::AddModelObserver(

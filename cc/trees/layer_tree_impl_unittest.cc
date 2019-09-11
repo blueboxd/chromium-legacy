@@ -689,7 +689,6 @@ TEST_F(LayerTreeImplTest, HitTestingForNonClippingIntermediateLayer) {
   intermediate_layer->SetBounds(gfx::Size(50, 50));
   // Sanity check the intermediate layer should not clip.
   ASSERT_FALSE(intermediate_layer->masks_to_bounds());
-  ASSERT_FALSE(intermediate_layer->test_properties()->mask_layer);
   CopyProperties(root, intermediate_layer);
   // this layer is positioned, and hit testing should correctly know where the
   // layer is located.
@@ -969,7 +968,7 @@ TEST_F(LayerTreeImplTest, HitTestingRespectsClipParents) {
   root->SetDrawsContent(true);
   root->SetHitTestable(true);
 
-  LayerImpl* child = AddChildToRoot<LayerImpl>();
+  LayerImpl* child = AddLayer<LayerImpl>();
   child->SetBounds(gfx::Size(1, 1));
   child->SetDrawsContent(true);
   child->SetHitTestable(true);
@@ -977,14 +976,14 @@ TEST_F(LayerTreeImplTest, HitTestingRespectsClipParents) {
   child->SetOffsetToTransformParent(gfx::Vector2dF(10.f, 10.f));
   CreateClipNode(child);
 
-  LayerImpl* scroll_child = AddChildToRoot<LayerImpl>();
+  LayerImpl* scroll_child = AddLayer<LayerImpl>();
   scroll_child->SetBounds(gfx::Size(200, 200));
   scroll_child->SetDrawsContent(true);
   scroll_child->SetHitTestable(true);
   CopyProperties(root, scroll_child);
   scroll_child->SetClipTreeIndex(child->clip_tree_index());
 
-  LayerImpl* grand_child = AddChildToRoot<LayerImpl>();
+  LayerImpl* grand_child = AddLayer<LayerImpl>();
   grand_child->SetBounds(gfx::Size(200, 200));
   grand_child->SetDrawsContent(true);
   grand_child->SetHitTestable(true);
@@ -2325,8 +2324,7 @@ TEST_F(LayerTreeImplTest, TrackPictureLayersWithPaintWorklets) {
   EXPECT_EQ(layers.size(), 1u);
   EXPECT_FALSE(layers.contains(child1));
 
-  // Deleting a layer should also cause it to be removed from the set.
-  root->test_properties()->RemoveChild(child3);
+  pending_tree->DetachLayers();
   EXPECT_EQ(layers.size(), 0u);
 }
 

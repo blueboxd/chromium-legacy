@@ -105,8 +105,8 @@ std::string GetMessageString() {
 // Generates one row of the returned process info.
 base::Value MakeProcessInfo(int pid, std::string description) {
   base::Value result(base::Value::Type::LIST);
-  result.GetList().push_back(base::Value(pid));
-  result.GetList().push_back(base::Value(std::move(description)));
+  result.Append(base::Value(pid));
+  result.Append(base::Value(std::move(description)));
   return result;
 }
 

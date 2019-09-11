@@ -18,6 +18,8 @@
 #include "ui/aura/window_tree_host_observer.h"
 #include "ui/base/layout.h"
 #include "ui/compositor/compositor.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/keyboard_hook.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -272,5 +274,15 @@ void WindowTreeHostPlatform::OnAcceleratedWidgetDestroyed() {
 }
 
 void WindowTreeHostPlatform::OnActivationChanged(bool active) {}
+
+void WindowTreeHostPlatform::OnMouseEnter() {
+  client::CursorClient* cursor_client = client::GetCursorClient(window());
+  if (cursor_client) {
+    auto display =
+        display::Screen::GetScreen()->GetDisplayNearestWindow(window());
+    DCHECK(display.is_valid());
+    cursor_client->SetDisplay(display);
+  }
+}
 
 }  // namespace aura

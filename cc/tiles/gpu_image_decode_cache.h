@@ -701,6 +701,8 @@ class CC_EXPORT GpuImageDecodeCache
   viz::RasterContextProvider* context_;
   int max_texture_size_ = 0;
   const PaintImage::GeneratorClientId generator_client_id_;
+  bool allow_accelerated_jpeg_decodes_ = false;
+  bool allow_accelerated_webp_decodes_ = false;
 
   // All members below this point must only be accessed while holding |lock_|.
   // The exception are const members like |normal_max_cache_bytes_| that can

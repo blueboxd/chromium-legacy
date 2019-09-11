@@ -311,7 +311,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Provides a mechanism to external clients to keep the worker running.
   // |request_uuid| is a GUID for clients to identify the request.
   // Returns true if the request was successfully scheduled to starrt.
-  bool StartExternalRequest(const std::string& request_uuid);
+  ServiceWorkerExternalRequestResult StartExternalRequest(
+      const std::string& request_uuid);
 
   // Informs ServiceWorkerVersion that an event has finished being dispatched.
   // Returns false if no inflight requests with the provided id exist, for
@@ -322,9 +323,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   bool FinishRequest(int request_id, bool was_handled);
 
   // Finishes an external request that was started by StartExternalRequest().
-  // Returns false if there was an error finishing the request: e.g. the request
-  // was not found or the worker already terminated.
-  bool FinishExternalRequest(const std::string& request_uuid);
+  ServiceWorkerExternalRequestResult FinishExternalRequest(
+      const std::string& request_uuid);
 
   // Creates a callback that is to be used for marking simple events dispatched
   // through blink::mojom::ServiceWorker as finished for the |request_id|.

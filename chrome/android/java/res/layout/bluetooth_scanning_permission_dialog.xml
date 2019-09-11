@@ -16,7 +16,7 @@
     <include layout="@layout/device_item_list" />
 
     <!-- Button row. -->
-    <org.chromium.chrome.browser.widget.DualControlLayout
+    <org.chromium.chrome.browser.ui.widget.DualControlLayout
         android:id="@+id/button_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -40,6 +40,6 @@
             android:layout_gravity="end"
             style="@style/TextButton" />
 
-    </org.chromium.chrome.browser.widget.DualControlLayout>
+    </org.chromium.chrome.browser.ui.widget.DualControlLayout>
 
 </LinearLayout>

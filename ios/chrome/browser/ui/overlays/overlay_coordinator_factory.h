@@ -26,6 +26,11 @@ class OverlayRequest;
 // |+factoryForBrowser:modality:|.
 - (instancetype)init NS_UNAVAILABLE;
 
+// Returns whether the OverlayRequestCoordinator subclass responsible for
+// showing |request|'s overlay UI uses a child UIViewController instead of a
+// presented UIViewController.
+- (BOOL)coordinatorForRequestUsesChildViewController:(OverlayRequest*)request;
+
 // Creates a coordinator to show |request|'s overlay UI.
 - (OverlayRequestCoordinator*)
     newCoordinatorForRequest:(OverlayRequest*)request

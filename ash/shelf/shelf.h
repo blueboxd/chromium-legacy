@@ -189,6 +189,7 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   void OnAutoHideStateChanged(ShelfAutoHideState new_state) override;
   void OnBackgroundUpdated(ShelfBackgroundType background_type,
                            AnimationChangeType change_type) override;
+  void OnWorkAreaInsetsChanged() override;
 
  private:
   class AutoHideEventHandler;

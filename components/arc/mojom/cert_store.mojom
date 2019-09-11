@@ -124,3 +124,15 @@ interface CertStoreInstance {
   // CertStoreInstance must call ListCertficates to update its database.
   OnCertificatesChanged@2();
 };
+
+// Next method ID: 1
+interface SmartCardManagerHost {
+  // Refreshes smart card certificates available to Android apps.
+  Refresh@0() => (bool result);
+};
+
+// Next method ID: 1
+interface SmartCardManagerInstance {
+  // Establishes full-duplex communication with the host.
+  Init@0(SmartCardManagerHost host_ptr) => ();
+};

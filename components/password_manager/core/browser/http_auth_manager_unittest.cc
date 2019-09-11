@@ -56,7 +56,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   MOCK_METHOD2(AutofillHttpAuth,
                void(const autofill::PasswordForm&,
                     const PasswordFormManagerForUI*));
-  MOCK_CONST_METHOD0(GetPasswordStore, PasswordStore*());
+  MOCK_CONST_METHOD0(GetProfilePasswordStore, PasswordStore*());
   MOCK_METHOD0(PromptUserToSaveOrUpdatePasswordPtr, void());
 
   // Workaround for std::unique_ptr<> lacking a copy constructor.
@@ -103,7 +103,8 @@ class HttpAuthManagerTest : public testing::Test {
     ASSERT_TRUE(
         store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr));
 
-    ON_CALL(client_, GetPasswordStore()).WillByDefault(Return(store_.get()));
+    ON_CALL(client_, GetProfilePasswordStore())
+        .WillByDefault(Return(store_.get()));
     EXPECT_CALL(*store_, GetSiteStatsImpl(_)).Times(AnyNumber());
 
     httpauth_manager_.reset(new HttpAuthManagerImpl(&client_));

@@ -116,7 +116,7 @@ base::Value BuildCupsPrintersList(const std::vector<Printer>& printers) {
   for (const Printer& printer : printers) {
     // Some of these printers could be invalid but we want to allow the user
     // to edit them. crbug.com/778383
-    printers_list.GetList().push_back(
+    printers_list.Append(
         base::Value::FromUniquePtrValue(GetCupsPrinterInfo(printer)));
   }
 

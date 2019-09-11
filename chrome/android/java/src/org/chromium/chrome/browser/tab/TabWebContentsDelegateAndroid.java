@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.findinpage.FindNotificationDetails;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
+import org.chromium.chrome.browser.policy.PolicyAuditorJni;
 import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndroid;
 import org.chromium.content_public.browser.InvalidateTypes;
 import org.chromium.content_public.browser.WebContents;
@@ -151,7 +152,7 @@ public abstract class TabWebContentsDelegateAndroid extends WebContentsDelegateA
     public void visibleSSLStateChanged() {
         PolicyAuditor auditor = AppHooks.get().getPolicyAuditor();
         auditor.notifyCertificateFailure(
-                PolicyAuditor.nativeGetCertificateFailure(mTab.getWebContents()),
+                PolicyAuditorJni.get().getCertificateFailure(mTab.getWebContents()),
                 mTab.getApplicationContext());
         RewindableIterator<TabObserver> observers = mTab.getTabObservers();
         while (observers.hasNext()) {

@@ -16,6 +16,7 @@
 #include "content/browser/renderer_host/input/mouse_wheel_rails_filter_mac.h"
 #include "content/common/edit_command.h"
 #include "content/common/render_widget_host_ns_view.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #import "ui/base/cocoa/command_dispatcher.h"
 #import "ui/base/cocoa/tool_tip_base_view.h"
 #include "ui/base/ime/ime_text_span.h"
@@ -76,7 +77,7 @@ struct DidOverscrollParams;
 
   // Dummy host and host helper that are always valid (see above comments
   // about host_).
-  remote_cocoa::mojom::RenderWidgetHostNSViewHostPtr dummyHost_;
+  mojo::Remote<remote_cocoa::mojom::RenderWidgetHostNSViewHost> dummyHost_;
   std::unique_ptr<remote_cocoa::RenderWidgetHostNSViewHostHelper>
       dummyHostHelper_;
 

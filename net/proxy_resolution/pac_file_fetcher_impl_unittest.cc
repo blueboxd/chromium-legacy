@@ -43,16 +43,11 @@
 #include "net/test/test_with_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context_storage.h"
-#include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-
-#if !BUILDFLAG(DISABLE_FILE_SUPPORT)
-#include "net/url_request/file_protocol_handler.h"
-#endif
 
 using net::test::IsError;
 using net::test::IsOk;
@@ -112,11 +107,6 @@ class RequestContext : public URLRequestContext {
         false));
     std::unique_ptr<URLRequestJobFactoryImpl> job_factory =
         std::make_unique<URLRequestJobFactoryImpl>();
-#if !BUILDFLAG(DISABLE_FILE_SUPPORT)
-    job_factory->SetProtocolHandler("file",
-                                    std::make_unique<FileProtocolHandler>(
-                                        base::ThreadTaskRunnerHandle::Get()));
-#endif
     storage_.set_job_factory(std::move(job_factory));
   }
 
@@ -128,10 +118,6 @@ class RequestContext : public URLRequestContext {
 
 // Get a file:// url relative to net/data/proxy/pac_file_fetcher_unittest.
 GURL GetTestFileUrl(const std::string& relpath) {
-#if BUILDFLAG(DISABLE_FILE_SUPPORT)
-  LOG(WARNING)
-      << "Built a file:// URL to test data, however file support is disabled.";
-#endif  // BUILDFLAG(DISABLE_FILE_SUPPORT)
   base::FilePath path;
   base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
   path = path.AppendASCII("net");
@@ -209,12 +195,6 @@ class BasicNetworkDelegate : public NetworkDelegateImpl {
     return allowed_from_caller;
   }
 
-  bool OnCanAccessFile(const URLRequest& request,
-                       const base::FilePath& original_path,
-                       const base::FilePath& absolute_path) const override {
-    return true;
-  }
-
   DISALLOW_COPY_AND_ASSIGN(BasicNetworkDelegate);
 };
 
@@ -231,45 +211,6 @@ class PacFileFetcherImplTest : public PlatformTest, public WithTaskEnvironment {
   RequestContext context_;
 };
 
-// Try fetching a non-existent PAC file via file://.
-TEST_F(PacFileFetcherImplTest, FileUrlDoesNotExist) {
-  auto pac_fetcher = PacFileFetcherImpl::CreateWithFileUrlSupport(&context_);
-
-  base::string16 text;
-  TestCompletionCallback callback;
-  int result =
-      pac_fetcher->Fetch(GetTestFileUrl("does-not-exist"), &text,
-                         callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS);
-
-  EXPECT_THAT(result, IsError(ERR_IO_PENDING));
-  EXPECT_TRUE(text.empty());
-
-#if !BUILDFLAG(DISABLE_FILE_SUPPORT)
-  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_FILE_NOT_FOUND));
-#else
-  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_UNKNOWN_URL_SCHEME));
-#endif  // !BUILDFLAG(DISABLE_FILE_SUPPORT)
-}
-
-TEST_F(PacFileFetcherImplTest, FileUrlExists) {
-  auto pac_fetcher = PacFileFetcherImpl::CreateWithFileUrlSupport(&context_);
-
-  base::string16 text;
-  TestCompletionCallback callback;
-  int result =
-      pac_fetcher->Fetch(GetTestFileUrl("pac.txt"), &text, callback.callback(),
-                         TRAFFIC_ANNOTATION_FOR_TESTS);
-
-  EXPECT_THAT(result, IsError(ERR_IO_PENDING));
-
-#if !BUILDFLAG(DISABLE_FILE_SUPPORT)
-  EXPECT_THAT(callback.WaitForResult(), IsOk());
-  EXPECT_EQ(ASCIIToUTF16("-pac.txt-\n"), text);
-#else
-  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_UNKNOWN_URL_SCHEME));
-#endif  // !BUILDFLAG(DISABLE_FILE_SUPPORT)
-}
-
 TEST_F(PacFileFetcherImplTest, FileUrlNotAllowed) {
   auto pac_fetcher = PacFileFetcherImpl::Create(&context_);
 
@@ -283,15 +224,11 @@ TEST_F(PacFileFetcherImplTest, FileUrlNotAllowed) {
   EXPECT_THAT(result, IsError(ERR_DISALLOWED_URL_SCHEME));
 }
 
-// Even if the fetcher allows file://, a server-side redirect from http -->
-// file:// should not work.
-//
-// It is currently disallowed lower in the stack and results in an
-// ERR_UNSAFE_REDIRECT.
+// Redirect to file URLs are not allowed.
 TEST_F(PacFileFetcherImplTest, RedirectToFileUrl) {
   ASSERT_TRUE(test_server_.Start());
 
-  auto pac_fetcher = PacFileFetcherImpl::CreateWithFileUrlSupport(&context_);
+  auto pac_fetcher = PacFileFetcherImpl::Create(&context_);
 
   GURL url(test_server_.GetURL("/redirect-to-file"));
 
@@ -427,31 +364,21 @@ TEST_F(PacFileFetcherImplTest, NoCache) {
 TEST_F(PacFileFetcherImplTest, TooLarge) {
   ASSERT_TRUE(test_server_.Start());
 
-  auto pac_fetcher = PacFileFetcherImpl::CreateWithFileUrlSupport(&context_);
+  auto pac_fetcher = PacFileFetcherImpl::Create(&context_);
 
   // Set the maximum response size to 50 bytes.
   int prev_size = pac_fetcher->SetSizeConstraint(50);
 
-  // These two URLs are the same file, but are http:// vs file://
-  GURL urls[] = {
-    test_server_.GetURL("/large-pac.nsproxy"),
-#if !BUILDFLAG(DISABLE_FILE_SUPPORT)
-    GetTestFileUrl("large-pac.nsproxy")
-#endif
-  };
-
-  // Try fetching URLs that are 101 bytes large. We should abort the request
+  // Try fetching URL that is 101 bytes large. We should abort the request
   // after 50 bytes have been read, and fail with a too large error.
-  for (size_t i = 0; i < base::size(urls); ++i) {
-    const GURL& url = urls[i];
-    base::string16 text;
-    TestCompletionCallback callback;
-    int result = pac_fetcher->Fetch(url, &text, callback.callback(),
-                                    TRAFFIC_ANNOTATION_FOR_TESTS);
-    EXPECT_THAT(result, IsError(ERR_IO_PENDING));
-    EXPECT_THAT(callback.WaitForResult(), IsError(ERR_FILE_TOO_BIG));
-    EXPECT_TRUE(text.empty());
-  }
+  GURL url = test_server_.GetURL("/large-pac.nsproxy");
+  base::string16 text;
+  TestCompletionCallback callback;
+  int result = pac_fetcher->Fetch(url, &text, callback.callback(),
+                                  TRAFFIC_ANNOTATION_FOR_TESTS);
+  EXPECT_THAT(result, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_FILE_TOO_BIG));
+  EXPECT_TRUE(text.empty());
 
   // Restore the original size bound.
   pac_fetcher->SetSizeConstraint(prev_size);

@@ -1204,7 +1204,8 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
         const bool is_accelerated =
             usage == ResourceUsage::kAcceleratedResourceUsage ||
             usage == ResourceUsage::kAcceleratedCompositedResourceUsage ||
-            usage == ResourceUsage::kAcceleratedDirect2DResourceUsage;
+            usage == ResourceUsage::kAcceleratedDirect2DResourceUsage ||
+            usage == ResourceUsage::kAcceleratedDirect3DResourceUsage;
 
         // If the rendering will be in software and we don't have GMB support,
         // fallback to bitmap provider type.

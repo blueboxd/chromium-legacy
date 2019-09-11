@@ -45,25 +45,6 @@ id<GREYMatcher> identityChooserButtonMatcherWithEmail(NSString* userEmail) {
                     grey_sufficientlyVisible(), nil);
 }
 
-// Opens Accounts Settings and tap the sign out button. Assumes that the main
-// settings page is visible.
-void SignOutFromSettings() {
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsAccountButton()]
-      performAction:grey_tap()];
-
-  const CGFloat scroll_displacement = 100.0;
-  [[[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   chrome_test_util::SignOutAccountsButton(),
-                                   grey_interactable(), nil)]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
-                                                  scroll_displacement)
-      onElementWithMatcher:chrome_test_util::SettingsAccountsCollectionView()]
-      performAction:grey_tap()];
-  TapButtonWithLabelId(IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE);
-  [SigninEarlGreyUtils checkSignedOut];
-}
-
 }  // namespace
 
 // Sign-in interactions tests that require Unified Consent to be enabled.
@@ -140,10 +121,10 @@ void SignOutFromSettings() {
   identity_service->AddIdentity(identity2);
 
   [SigninEarlGreyUI signinWithIdentity:identity1];
-  [ChromeEarlGreyUI openSettingsMenu];
-  SignOutFromSettings();
+  [SigninEarlGreyUI signOutWithManagedAccount:NO];
 
   // Sign in with |identity2|.
+  [ChromeEarlGreyUI openSettingsMenu];
   [[EarlGrey selectElementWithMatcher:SecondarySignInButton()]
       performAction:grey_tap()];
   [SigninEarlGreyUI selectIdentityWithEmail:identity2.userEmail];
@@ -185,10 +166,10 @@ void SignOutFromSettings() {
 
   // Sign in to |identity1|.
   [SigninEarlGreyUI signinWithIdentity:identity1];
-  [ChromeEarlGreyUI openSettingsMenu];
-  SignOutFromSettings();
+  [SigninEarlGreyUI signOutWithManagedAccount:NO];
 
   // Sign in with |identity2|.
+  [ChromeEarlGreyUI openSettingsMenu];
   [[EarlGrey selectElementWithMatcher:SecondarySignInButton()]
       performAction:grey_tap()];
   [SigninEarlGreyUI selectIdentityWithEmail:identity2.userEmail];

@@ -5,14 +5,25 @@
 #include "ash/assistant/util/assistant_util.h"
 
 #include "ash/assistant/model/assistant_ui_model.h"
+#include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 
 namespace {
 
-constexpr char kEveBoardName[] = "eve";
-constexpr char kNocturneBoardName[] = "nocturne";
+constexpr char kEveBoardType[] = "eve";
+constexpr char kNocturneBoardType[] = "nocturne";
 
 bool g_override_is_google_device = false;
+
+bool IsBoardType(const std::string& board_name, const std::string& board_type) {
+  // The sub-types of the board will have the form boardtype-XXX.
+  // To prevent the possibility of common prefix in board names we check the
+  // board type with '-' here. For example there might be two board types with
+  // codename boardtype1 and boardtype123.
+  return board_name == board_type ||
+         base::StartsWith(board_name, board_type + '-',
+                          base::CompareCase::SENSITIVE);
+}
 
 }  // namespace
 
@@ -69,8 +80,9 @@ bool ShouldAttemptWarmerWelcome(AssistantEntryPoint entry_point) {
 
 bool IsGoogleDevice() {
   const std::string board_name = base::SysInfo::GetLsbReleaseBoard();
-  return g_override_is_google_device || board_name == kEveBoardName ||
-         board_name == kNocturneBoardName;
+  return g_override_is_google_device ||
+         IsBoardType(board_name, kEveBoardType) ||
+         IsBoardType(board_name, kNocturneBoardType);
 }
 
 void OverrideIsGoogleDeviceForTesting() {

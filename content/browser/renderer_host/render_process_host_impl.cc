@@ -2225,8 +2225,8 @@ void RenderProcessHostImpl::CreateEmbeddedFrameSinkProvider(
 }
 
 void RenderProcessHostImpl::BindFrameSinkProvider(
-    mojom::FrameSinkProviderRequest request) {
-  frame_sink_provider_.Bind(std::move(request));
+    mojo::PendingReceiver<mojom::FrameSinkProvider> receiver) {
+  frame_sink_provider_.Bind(std::move(receiver));
 }
 
 void RenderProcessHostImpl::BindCompositingModeReporter(

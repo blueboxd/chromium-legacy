@@ -13,7 +13,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "net/url_request/url_request_file_job.h"
+#include "net/test/url_request/url_request_test_job_backed_by_file.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -26,7 +26,7 @@ class URLRequestInterceptor;
 
 namespace net {
 
-class URLRequestMockHTTPJob : public URLRequestFileJob {
+class URLRequestMockHTTPJob : public URLRequestTestJobBackedByFile {
  public:
   // Note that all file I/O is done using ThreadPool.
   URLRequestMockHTTPJob(URLRequest* request,

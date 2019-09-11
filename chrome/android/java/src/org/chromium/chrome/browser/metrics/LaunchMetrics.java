@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.metrics;
 
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutSource;
@@ -84,7 +85,7 @@ public class LaunchMetrics {
             @WebDisplayMode
             int displayMode =
                     (webappInfo == null) ? WebDisplayMode.UNDEFINED : webappInfo.displayMode();
-            nativeRecordLaunch(
+            LaunchMetricsJni.get().recordLaunch(
                     launch.mIsShortcut, launch.mUrl, launch.mSource, displayMode, webContents);
             if (webappInfo != null && webappInfo.isForWebApk()) {
                 WebApkInfo webApkInfo = (WebApkInfo) webappInfo;
@@ -110,7 +111,8 @@ public class LaunchMetrics {
             homepageUrl = "";
             assert !showHomeButton : "Homepage should be disabled for a null URL";
         }
-        nativeRecordHomePageLaunchMetrics(showHomeButton, homepageIsNtp, homepageUrl);
+        LaunchMetricsJni.get().recordHomePageLaunchMetrics(
+                showHomeButton, homepageIsNtp, homepageUrl);
     }
 
     /**
@@ -133,8 +135,11 @@ public class LaunchMetrics {
         return (source == ShortcutSource.UNKNOWN) ? ShortcutSource.WEBAPK_UNKNOWN : source;
     }
 
-    private static native void nativeRecordLaunch(boolean isShortcut, String url, int source,
-            @WebDisplayMode int displayMode, WebContents webContents);
-    private static native void nativeRecordHomePageLaunchMetrics(
-            boolean showHomeButton, boolean homepageIsNtp, String homepageUrl);
+    @NativeMethods
+    interface Natives {
+        void recordLaunch(boolean isShortcut, String url, int source,
+                @WebDisplayMode int displayMode, WebContents webContents);
+        void recordHomePageLaunchMetrics(
+                boolean showHomeButton, boolean homepageIsNtp, String homepageUrl);
+    }
 }

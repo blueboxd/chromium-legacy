@@ -21,6 +21,7 @@
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "media/mojo/mojom/audio_output_stream.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/audio/public/mojom/audio_processing.mojom.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
 
@@ -153,7 +154,7 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
     // since we want to clean up the service when not in use. If we have active
     // muting but nothing else, we should stop it and start it again when we
     // need to reacquire the factory for some other reason.
-    audio::mojom::StreamFactoryPtr remote_factory_;
+    mojo::Remote<audio::mojom::StreamFactory> remote_factory_;
 
     // Running id used for tracking audible streams. We keep count here to avoid
     // collisions.

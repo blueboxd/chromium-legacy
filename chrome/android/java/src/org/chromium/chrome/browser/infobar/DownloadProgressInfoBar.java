@@ -14,6 +14,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadInfoBarController;
@@ -90,7 +91,10 @@ public class DownloadProgressInfoBar extends InfoBar {
      * @return The tab associated with this infobar.
      */
     public Tab getTab() {
-        return getNativeInfoBarPtr() == 0 ? null : nativeGetTab(getNativeInfoBarPtr());
+        return getNativeInfoBarPtr() == 0
+                ? null
+                : DownloadProgressInfoBarJni.get().getTab(
+                        getNativeInfoBarPtr(), DownloadProgressInfoBar.this);
     }
 
     /**
@@ -181,7 +185,7 @@ public class DownloadProgressInfoBar extends InfoBar {
      */
     public static void createInfoBar(
             Client client, Tab tab, DownloadInfoBarController.DownloadProgressInfoBarData info) {
-        nativeCreate(client, tab, info);
+        DownloadProgressInfoBarJni.get().create(client, tab, info);
     }
 
     /**
@@ -199,8 +203,10 @@ public class DownloadProgressInfoBar extends InfoBar {
         return new DownloadProgressInfoBar(client, info);
     }
 
-    private static native void nativeCreate(
-            Client client, Tab tab, DownloadInfoBarController.DownloadProgressInfoBarData info);
-
-    private native Tab nativeGetTab(long nativeDownloadProgressInfoBar);
+    @NativeMethods
+    interface Natives {
+        void create(
+                Client client, Tab tab, DownloadInfoBarController.DownloadProgressInfoBarData info);
+        Tab getTab(long nativeDownloadProgressInfoBar, DownloadProgressInfoBar caller);
+    }
 }

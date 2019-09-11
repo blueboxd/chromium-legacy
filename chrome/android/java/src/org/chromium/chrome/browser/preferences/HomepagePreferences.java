@@ -11,7 +11,6 @@ import android.support.v7.preference.PreferenceFragmentCompat;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 
 /**
  * Fragment that allows the user to configure homepage related preferences.
@@ -28,9 +27,7 @@ public class HomepagePreferences extends PreferenceFragmentCompat {
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         mHomepageManager = HomepageManager.getInstance();
 
-        getActivity().setTitle(FeatureUtilities.isNewTabPageButtonEnabled()
-                        ? R.string.options_startup_page_title
-                        : R.string.options_homepage_title);
+        getActivity().setTitle(R.string.options_homepage_title);
         PreferenceUtils.addPreferencesFromResource(this, R.xml.homepage_preferences);
 
         ChromeSwitchPreference mHomepageSwitch =

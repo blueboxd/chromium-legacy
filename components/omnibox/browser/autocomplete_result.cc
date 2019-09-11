@@ -37,6 +37,27 @@ using metrics::OmniboxEventProto;
 
 typedef AutocompleteMatchType ACMatchType;
 
+namespace {
+
+// Rotates |it| and its associated submatches to be in the front of |matches|.
+// |it| must be a valid iterator of |matches| or equal to |matches->end()|.
+void RotateMatchToFront(ACMatches::iterator it, ACMatches* matches) {
+  if (it == matches->end())
+    return;
+
+  const size_t cookie = it->subrelevance;
+  auto next = std::next(it);
+  if (cookie != 0) {
+    // If default match followed by sub-match(es), move them too.
+    while (next != matches->end() &&
+           AutocompleteMatch::IsSameFamily(cookie, next->subrelevance))
+      next = std::next(next);
+  }
+  std::rotate(matches->begin(), it, next);
+}
+
+}  // namespace
+
 struct MatchGURLHash {
   // The |bool| is whether the match is a calculator suggestion. We want them
   // compare differently against other matches with the same URL.
@@ -162,7 +183,8 @@ void AutocompleteResult::AppendMatches(const AutocompleteInput& input,
 
 void AutocompleteResult::SortAndCull(
     const AutocompleteInput& input,
-    TemplateURLService* template_url_service) {
+    TemplateURLService* template_url_service,
+    const AutocompleteMatch* preserve_default_match) {
   for (auto i(matches_.begin()); i != matches_.end(); ++i)
     i->ComputeStrippedDestinationURL(input, template_url_service);
 
@@ -186,19 +208,31 @@ void AutocompleteResult::SortAndCull(
   CompareWithDemoteByType<AutocompleteMatch> comparing_object(
       input.current_page_classification());
   std::sort(matches_.begin(), matches_.end(), comparing_object);
-  // Top match is not allowed to be the default match.  Find the most
-  // relevant legal match and shift it to the front.
-  auto it = FindTopMatch(input, &matches_);
-  if (it != matches_.end()) {
-    const size_t cookie = it->subrelevance;
-    auto next = std::next(it);
-    if (cookie != 0) {
-      // If default match followed by sub-match(es), move them too.
-      while (next != matches_.end() &&
-             AutocompleteMatch::IsSameFamily(cookie, next->subrelevance))
-        next = std::next(next);
+
+  // Find the best match and rotate it to the front to become the default match.
+  {
+    ACMatches::iterator top_match = matches_.end();
+
+    // If we are trying to keep a default match from a previous pass stable,
+    // search the current results for it, and if found, make it the top match.
+    if (preserve_default_match) {
+      std::pair<GURL, bool> default_match_fields =
+          GetMatchComparisonFields(*preserve_default_match);
+
+      top_match = std::find_if(
+          matches_.begin(), matches_.end(), [&](const AutocompleteMatch& m) {
+            // Find a match that is a duplicate AND has the same fill_into_edit.
+            return default_match_fields == GetMatchComparisonFields(m) &&
+                   preserve_default_match->fill_into_edit == m.fill_into_edit;
+          });
     }
-    std::rotate(matches_.begin(), it, next);
+
+    // Otherwise, if there's no default match from a previous pass to preserve,
+    // find the top match based on our normal undemoted scoring method.
+    if (top_match == matches_.end())
+      top_match = FindTopMatch(input, &matches_);
+
+    RotateMatchToFront(top_match, &matches_);
   }
 
   DiscourageTopMatchFromBeingSearchEntity(&matches_);

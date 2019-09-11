@@ -22,7 +22,7 @@ import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.widget.VerticallyFixedEditText;
+import org.chromium.chrome.browser.ui.widget.text.VerticallyFixedEditText;
 
 /**
  * An {@link EditText} that shows autocomplete text at the end.

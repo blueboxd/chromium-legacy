@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/numerics/safe_math.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/third_party/double_conversion/double-conversion/double-conversion.h"
 
@@ -425,14 +426,15 @@ bool StringToSizeT(StringPiece16 input, size_t* output) {
   return String16ToIntImpl(input, output);
 }
 
-bool StringToDouble(const std::string& input, double* output) {
+template <typename STRING, typename CHAR>
+bool StringToDoubleImpl(STRING input, const CHAR* data, double* output) {
   static NoDestructor<double_conversion::StringToDoubleConverter> converter(
       double_conversion::StringToDoubleConverter::ALLOW_LEADING_SPACES |
           double_conversion::StringToDoubleConverter::ALLOW_TRAILING_JUNK,
       0.0, 0, nullptr, nullptr);
 
   int processed_characters_count;
-  *output = converter->StringToDouble(input.c_str(), input.size(),
+  *output = converter->StringToDouble(data, input.size(),
                                       &processed_characters_count);
 
   // Cases to return false:
@@ -444,16 +446,17 @@ bool StringToDouble(const std::string& input, double* output) {
   //  - If the first character is a space, there was leading whitespace
   return !input.empty() && *output != HUGE_VAL && *output != -HUGE_VAL &&
          static_cast<size_t>(processed_characters_count) == input.size() &&
-         !isspace(input[0]);
+         !IsUnicodeWhitespace(input[0]);
 }
 
-// Note: if you need to add String16ToDouble, first ask yourself if it's
-// really necessary. If it is, probably the best implementation here is to
-// convert to 8-bit and then use the 8-bit version.
+bool StringToDouble(StringPiece input, double* output) {
+  return StringToDoubleImpl(input, input.data(), output);
+}
 
-// Note: if you need to add an iterator range version of StringToDouble, first
-// ask yourself if it's really necessary. If it is, probably the best
-// implementation here is to instantiate a string and use the string version.
+bool StringToDouble(StringPiece16 input, double* output) {
+  return StringToDoubleImpl(
+      input, reinterpret_cast<const uint16_t*>(input.data()), output);
+}
 
 std::string HexEncode(const void* bytes, size_t size) {
   static const char kHexChars[] = "0123456789ABCDEF";

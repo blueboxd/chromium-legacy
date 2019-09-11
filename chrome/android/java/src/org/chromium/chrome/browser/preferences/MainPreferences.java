@@ -206,15 +206,8 @@ public class MainPreferences extends PreferenceFragmentCompat
         updateSyncAndServicesPreference();
         updateSearchEnginePreference();
 
-        if (HomepageManager.shouldShowHomepageSetting()) {
-            Preference homepagePref = addPreferenceIfAbsent(PREF_HOMEPAGE);
-            if (FeatureUtilities.isNewTabPageButtonEnabled()) {
-                homepagePref.setTitle(R.string.options_startup_page_title);
-            }
-            setOnOffSummary(homepagePref, HomepageManager.getInstance().getPrefHomepageEnabled());
-        } else {
-            removePreferenceIfPresent(PREF_HOMEPAGE);
-        }
+        Preference homepagePref = addPreferenceIfAbsent(PREF_HOMEPAGE);
+        setOnOffSummary(homepagePref, HomepageManager.getInstance().getPrefHomepageEnabled());
 
         if (NightModeUtils.isNightModeSupported() && FeatureUtilities.isNightModeAvailable()) {
             addPreferenceIfAbsent(PREF_UI_THEME);

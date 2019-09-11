@@ -438,7 +438,7 @@ void PaymentSheetViewController::FillContentView(views::View* content_view) {
   layout->StartRow(views::GridLayout::kFixedSize, 0);
   layout->AddView(std::move(summary_row));
 
-  if (spec()->request_shipping()) {
+  if (state()->ShouldShowShippingSection()) {
     std::unique_ptr<PaymentRequestRowView> shipping_row = CreateShippingRow();
     shipping_row->set_previous_row(previous_row->AsWeakPtr());
     previous_row = shipping_row.get();
@@ -462,8 +462,7 @@ void PaymentSheetViewController::FillContentView(views::View* content_view) {
   previous_row = payment_method_row.get();
   layout->StartRow(views::GridLayout::kFixedSize, 0);
   layout->AddView(std::move(payment_method_row));
-  if (spec()->request_payer_name() || spec()->request_payer_email() ||
-      spec()->request_payer_phone()) {
+  if (state()->ShouldShowContactSection()) {
     std::unique_ptr<PaymentRequestRowView> contact_info_row =
         CreateContactInfoRow();
     contact_info_row->set_previous_row(previous_row->AsWeakPtr());

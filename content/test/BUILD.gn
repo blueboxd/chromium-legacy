@@ -2271,7 +2271,7 @@ test("content_unittests") {
       "//build/config/freetype",
       "//components/download/internal/common:internal_java",
       "//content/public/android:content_java",
-      "//gpu/ipc/common:android_texture_owner_test_support",
+      "//gpu/command_buffer/service:android_texture_owner_test_support",
       "//media/capture/content/android",
       "//media/capture/content/android:screen_capture_java",
       "//third_party/blink/public/common",

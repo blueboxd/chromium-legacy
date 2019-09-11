@@ -70,10 +70,14 @@ class TabGridIphItemMediator implements TabSwitcherMediator.IphProvider {
     }
 
     @Override
-    public void maybeShowIPH() {
+    public void maybeShowIPH(boolean isIncognito) {
         final Tracker tracker = TrackerFactory.getTrackerForProfile(
                 Profile.getLastUsedProfile().getOriginalProfile());
-        mModel.set(TabGridIphItemProperties.IS_IPH_ENTRANCE_VISIBLE,
-                tracker.wouldTriggerHelpUI(FeatureConstants.TAB_GROUPS_DRAG_AND_DROP_FEATURE));
+        boolean isVisible =
+                tracker.wouldTriggerHelpUI(FeatureConstants.TAB_GROUPS_DRAG_AND_DROP_FEATURE);
+
+        if (isVisible) mModel.set(TabGridIphItemProperties.IS_INCOGNITO, isIncognito);
+
+        mModel.set(TabGridIphItemProperties.IS_IPH_ENTRANCE_VISIBLE, isVisible);
     }
 }

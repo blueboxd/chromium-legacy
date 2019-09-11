@@ -60,9 +60,6 @@ class IOSChromeNetworkDelegate : public net::NetworkDelegateImpl {
                       const net::CanonicalCookie& cookie,
                       net::CookieOptions* options,
                       bool allowed_from_caller) override;
-  bool OnCanAccessFile(const net::URLRequest& request,
-                       const base::FilePath& original_path,
-                       const base::FilePath& absolute_path) const override;
   bool OnForcePrivacyMode(
       const GURL& url,
       const GURL& site_for_cookies,

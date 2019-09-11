@@ -582,7 +582,13 @@ void ShelfWidget::OnMouseEvent(ui::MouseEvent* event) {
 void ShelfWidget::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP_DOWN)
     keyboard::KeyboardUIController::Get()->HideKeyboardImplicitlyByUser();
-  views::Widget::OnGestureEvent(event);
+  ui::GestureEvent event_in_screen(*event);
+  gfx::Point location_in_screen(event->location());
+  ::wm::ConvertPointToScreen(GetNativeWindow(), &location_in_screen);
+  event_in_screen.set_location(location_in_screen);
+  shelf_layout_manager()->ProcessGestureEventFromShelfWidget(&event_in_screen);
+  if (!event->handled())
+    views::Widget::OnGestureEvent(event);
 }
 
 }  // namespace ash

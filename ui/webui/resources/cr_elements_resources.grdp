@@ -5,6 +5,14 @@
              file="cr_elements/action_link_css.html"
              type="chrome_html"
              compress="gzip" />
+  <structure name="IDR_CR_ELEMENTS_CR_ACTION_MENU_ANCHOR_ALIGNMENT_HTML"
+             file="cr_elements/cr_action_menu/anchor_alignment.html"
+             type="chrome_html"
+             compress="gzip" />
+  <structure name="IDR_CR_ELEMENTS_CR_ACTION_MENU_ANCHOR_ALIGNMENT_JS"
+             file="cr_elements/cr_action_menu/anchor_alignment.js"
+             type="chrome_html"
+             compress="gzip" />
   <structure name="IDR_CR_ELEMENTS_CR_ACTION_MENU_HTML"
              file="cr_elements/cr_action_menu/cr_action_menu.html"
              type="chrome_html"

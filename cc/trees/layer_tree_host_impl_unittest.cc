@@ -377,8 +377,7 @@ class LayerTreeHostImplTest : public testing::Test,
     std::unique_ptr<T> layer = T::Create(layer_tree_impl, next_layer_id_++,
                                          std::forward<Args>(args)...);
     T* result = layer.get();
-    layer_tree_impl->root_layer_for_testing()->test_properties()->AddChild(
-        std::move(layer));
+    layer_tree_impl->AddLayer(std::move(layer));
     return result;
   }
 
@@ -2057,16 +2056,11 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingOnLayerDestruction) {
   EXPECT_TRUE(did_request_next_frame_);
   did_request_next_frame_ = false;
 
-  // Destroy layer, unregister animation target (element).
-  child->test_properties()->parent = nullptr;
-  root->test_properties()->RemoveChild(child);
-
-  // Calling LayerImplTestProperties::RemoveChild above does not actually
-  // remove the property tree nodes for the removed layer. In the real code,
-  // you cannot remove a child on LayerImpl, but a child removed on Layer
-  // will force a full tree sync which will rebuild property trees without that
-  // child's property tree nodes. Clear property trees to simulate the rebuild
-  // that would happen before/during the commit.
+  // In the real code, you cannot remove a child on LayerImpl, but a child
+  // removed on Layer will force a full tree sync which will rebuild property
+  // trees without that child's property tree nodes. Clear active_tree (which
+  // also clears property trees) to simulate the rebuild that would happen
+  // before/during the commit.
   host_impl_->active_tree()->property_trees()->clear();
   host_impl_->UpdateElements(ElementListType::ACTIVE);
 
@@ -4133,31 +4127,14 @@ TEST_F(LayerTreeHostImplTest, ScrollbarRegistration) {
   animation_task_.Reset();
 
   // Check scrollbar unregistration.
-  root_layer()->test_properties()->RemoveChild(vert_1_scrollbar);
-  EXPECT_EQ(1ul, host_impl_->ScrollbarsFor(root_scroll->element_id()).size());
-  EXPECT_TRUE(host_impl_->ScrollbarAnimationControllerForElementId(
-      root_scroll->element_id()));
-  root_layer()->test_properties()->RemoveChild(horiz_1_scrollbar);
-  EXPECT_EQ(0ul, host_impl_->ScrollbarsFor(root_scroll->element_id()).size());
+  ElementId root_scroll_element_id = root_scroll->element_id();
+  host_impl_->active_tree()->DetachLayers();
+  EXPECT_EQ(0ul, host_impl_->ScrollbarsFor(root_scroll_element_id).size());
   EXPECT_EQ(nullptr, host_impl_->ScrollbarAnimationControllerForElementId(
-                         root_scroll->element_id()));
-
-  EXPECT_EQ(2ul, host_impl_->ScrollbarsFor(child_scroll_element_id).size());
-  root_layer()->test_properties()->RemoveChild(vert_2_scrollbar);
-  EXPECT_EQ(1ul, host_impl_->ScrollbarsFor(child_scroll_element_id).size());
-  EXPECT_TRUE(host_impl_->ScrollbarAnimationControllerForElementId(
-      child_scroll_element_id));
-  root_layer()->test_properties()->RemoveChild(horiz_2_scrollbar);
+                         root_scroll_element_id));
   EXPECT_EQ(0ul, host_impl_->ScrollbarsFor(child_scroll_element_id).size());
   EXPECT_EQ(nullptr, host_impl_->ScrollbarAnimationControllerForElementId(
-                         root_scroll->element_id()));
-
-  // Changing scroll offset should no longer trigger any animation.
-  host_impl_->InnerViewportScrollLayer()->SetCurrentScrollOffset(
-      gfx::ScrollOffset(20, 20));
-  EXPECT_TRUE(animation_task_.is_null());
-  child->SetCurrentScrollOffset(gfx::ScrollOffset(20, 20));
-  EXPECT_TRUE(animation_task_.is_null());
+                         root_scroll_element_id));
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollBeforeMouseMove) {
@@ -4880,7 +4857,7 @@ TEST_F(LayerTreeHostImplPrepareToDrawTest, PrepareToDrawSucceedsAndFails) {
   for (size_t i = 0; i < cases.size(); ++i) {
     // Clean up host_impl_ state.
     const auto& testcase = cases[i];
-    root->test_properties()->RemoveAllChildren();
+    host_impl_->active_tree()->DetachLayersKeepingRootLayerForTesting();
     timeline()->ClearAnimations();
 
     std::ostringstream scope;
@@ -4938,7 +4915,7 @@ TEST_F(LayerTreeHostImplPrepareToDrawTest,
 
   for (size_t i = 0; i < cases.size(); ++i) {
     const auto& testcase = cases[i];
-    root->test_properties()->RemoveAllChildren();
+    host_impl_->active_tree()->DetachLayersKeepingRootLayerForTesting();
 
     std::ostringstream scope;
     scope << "Test case: " << i;
@@ -8313,8 +8290,13 @@ TEST_F(LayerTreeHostImplTest, MayContainVideo) {
   UpdateDrawProperties(host_impl_->active_tree());
   EXPECT_FALSE(MayContainVideoBitSetOnFrameData(host_impl_.get()));
 
-  // Remove the large layer.
-  root->test_properties()->RemoveChild(large_layer);
+  {
+    // Remove the large layer.
+    OwnedLayerImplList layers =
+        host_impl_->active_tree()->DetachLayersKeepingRootLayerForTesting();
+    ASSERT_EQ(video_layer, layers[1].get());
+    host_impl_->active_tree()->AddLayer(std::move(layers[1]));
+  }
   UpdateDrawProperties(host_impl_->active_tree());
   EXPECT_TRUE(MayContainVideoBitSetOnFrameData(host_impl_.get()));
 
@@ -11736,12 +11718,11 @@ TEST_F(LayerTreeHostImplTest, DidBecomeActive) {
   std::unique_ptr<FakePictureLayerImpl> mask_layer =
       FakePictureLayerImpl::Create(pending_tree, next_layer_id_++);
   FakePictureLayerImpl* raw_mask_layer = mask_layer.get();
-  pending_layer->test_properties()->SetMaskLayer(std::move(mask_layer));
+  pending_tree->AddMaskLayer(std::move(mask_layer));
   GetEffectNode(pending_layer)->mask_layer_id = raw_mask_layer->id();
   GetEffectNode(pending_layer)->is_masked = true;
   GetPropertyTrees(pending_layer)
       ->effect_tree.AddMaskLayerId(raw_mask_layer->id());
-  ASSERT_EQ(raw_mask_layer, pending_layer->test_properties()->mask_layer);
 
   EXPECT_EQ(1u, pending_layer->did_become_active_call_count());
   EXPECT_EQ(0u, raw_mask_layer->did_become_active_call_count());

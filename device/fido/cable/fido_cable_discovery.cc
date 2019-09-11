@@ -40,7 +40,6 @@ namespace {
 // instead, and on Mac our only option is to advertise an additional service
 // with the EID as its UUID.
 std::unique_ptr<BluetoothAdvertisement::Data> ConstructAdvertisementData(
-    uint8_t version_number,
     base::span<const uint8_t, kCableEphemeralIdSize> client_eid) {
   auto advertisement_data = std::make_unique<BluetoothAdvertisement::Data>(
       BluetoothAdvertisement::AdvertisementType::ADVERTISEMENT_TYPE_BROADCAST);
@@ -66,7 +65,7 @@ std::unique_ptr<BluetoothAdvertisement::Data> ConstructAdvertisementData(
       3u + kCableEphemeralIdSize;
   std::array<uint8_t, 4> kCableGoogleManufacturerDataHeader = {
       kCableGoogleManufacturerDataLength, kCableGoogleManufacturerDataType,
-      kCableFlags, version_number};
+      kCableFlags, /*version=*/1};
 
   auto manufacturer_data =
       std::make_unique<BluetoothAdvertisement::ManufacturerData>();
@@ -91,7 +90,7 @@ std::unique_ptr<BluetoothAdvertisement::Data> ConstructAdvertisementData(
   // Since the remainder of this service data field is a Cable EID, set the 5th
   // bit of the flag byte.
   service_data_value[0] = kCableFlags;
-  service_data_value[1] = version_number;
+  service_data_value[1] = 1 /* version */;
   std::copy(client_eid.begin(), client_eid.end(),
             service_data_value.begin() + 2);
   service_data->emplace(kCableAdvertisementUUID128,
@@ -109,14 +108,17 @@ std::unique_ptr<BluetoothAdvertisement::Data> ConstructAdvertisementData(
 CableDiscoveryData::CableDiscoveryData() = default;
 
 CableDiscoveryData::CableDiscoveryData(
-    uint8_t version,
+    CableDiscoveryData::Version version,
     const CableEidArray& client_eid,
     const CableEidArray& authenticator_eid,
     const CableSessionPreKeyArray& session_pre_key)
-    : version(version),
-      client_eid(client_eid),
-      authenticator_eid(authenticator_eid),
-      session_pre_key(session_pre_key) {}
+    : version(version) {
+  CHECK_EQ(Version::V1, version);
+  v1.emplace();
+  v1->client_eid = client_eid;
+  v1->authenticator_eid = authenticator_eid;
+  v1->session_pre_key = session_pre_key;
+}
 
 CableDiscoveryData::CableDiscoveryData(const CableDiscoveryData& data) =
     default;
@@ -127,9 +129,21 @@ CableDiscoveryData& CableDiscoveryData::operator=(
 CableDiscoveryData::~CableDiscoveryData() = default;
 
 bool CableDiscoveryData::operator==(const CableDiscoveryData& other) const {
-  return version == other.version && client_eid == other.client_eid &&
-         authenticator_eid == other.authenticator_eid &&
-         session_pre_key == other.session_pre_key;
+  if (version != other.version) {
+    return false;
+  }
+
+  switch (version) {
+    case CableDiscoveryData::Version::V1:
+      return v1->client_eid == other.v1->client_eid &&
+             v1->authenticator_eid == other.v1->authenticator_eid &&
+             v1->session_pre_key == other.v1->session_pre_key;
+
+    case CableDiscoveryData::Version::V2:
+    case CableDiscoveryData::Version::INVALID:
+      CHECK(false);
+      return false;
+  }
 }
 
 // static
@@ -207,29 +221,30 @@ FidoCableDiscovery::CreateHandshakeHandler(
     const CableDiscoveryData* discovery_data) {
   std::unique_ptr<FidoCableHandshakeHandler> handler;
   switch (discovery_data->version) {
-    case 1: {
+    case CableDiscoveryData::Version::V1: {
       // Nonce is embedded as first 8 bytes of client EID.
       std::array<uint8_t, 8> nonce;
       const bool ok = fido_parsing_utils::ExtractArray(
-          discovery_data->client_eid, 0, &nonce);
+          discovery_data->v1->client_eid, 0, &nonce);
       DCHECK(ok);
 
       handler.reset(new FidoCableV1HandshakeHandler(
-          device, nonce, discovery_data->session_pre_key));
+          device, nonce, discovery_data->v1->session_pre_key));
       break;
     }
 
-    case 2:
+    case CableDiscoveryData::Version::V2: {
+      // Nonce is embedded as first 8 bytes of client EID.
       if (!base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport)) {
         return base::nullopt;
       }
       handler.reset(new FidoCableV2HandshakeHandler(
-          device, discovery_data->session_pre_key));
+          device, discovery_data->v1->session_pre_key));
       break;
+    }
 
-    default:
-      FIDO_LOG(DEBUG) << "Dropping caBLE handshake request for unknown version "
-                      << discovery_data->version;
+    case CableDiscoveryData::Version::INVALID:
+      CHECK(false);
       return base::nullopt;
   }
 
@@ -326,11 +341,14 @@ void FidoCableDiscovery::StartAdvertisement() {
 
   FIDO_LOG(DEBUG) << "Starting to advertise clientEID.";
   for (const auto& data : discovery_data_) {
+    if (data.version != CableDiscoveryData::Version::V1) {
+      continue;
+    }
     adapter()->RegisterAdvertisement(
-        ConstructAdvertisementData(data.version, data.client_eid),
+        ConstructAdvertisementData(data.v1->client_eid),
         base::AdaptCallbackForRepeating(
             base::BindOnce(&FidoCableDiscovery::OnAdvertisementRegistered,
-                           weak_factory_.GetWeakPtr(), data.client_eid)),
+                           weak_factory_.GetWeakPtr(), data.v1->client_eid)),
         base::AdaptCallbackForRepeating(
             base::BindOnce(&FidoCableDiscovery::OnAdvertisementRegisterError,
                            weak_factory_.GetWeakPtr())));
@@ -387,13 +405,14 @@ void FidoCableDiscovery::CableDeviceFound(BluetoothAdapter* adapter,
   const std::string device_address = device->GetAddress();
   if (!found_cable_device_data ||
       base::Contains(active_authenticator_eids_,
-                     found_cable_device_data->authenticator_eid) ||
+                     found_cable_device_data->v1->authenticator_eid) ||
       base::Contains(active_devices_, device_address)) {
     return;
   }
 
   FIDO_LOG(EVENT) << "Found new caBLE device.";
-  active_authenticator_eids_.insert(found_cable_device_data->authenticator_eid);
+  active_authenticator_eids_.insert(
+      found_cable_device_data->v1->authenticator_eid);
   active_devices_.insert(device_address);
 
   auto cable_device =
@@ -523,7 +542,7 @@ FidoCableDiscovery::GetCableDiscoveryDataFromAuthenticatorEid(
   auto discovery_data_iterator =
       std::find_if(discovery_data_.begin(), discovery_data_.end(),
                    [&authenticator_eid](const auto& data) {
-                     return authenticator_eid == data.authenticator_eid;
+                     return authenticator_eid == data.v1->authenticator_eid;
                    });
 
   if (discovery_data_iterator != discovery_data_.end()) {
@@ -547,8 +566,8 @@ FidoCableDiscovery::GetCableDiscoveryDataFromAuthenticatorEid(
           *qr_generator_key_, current_tick - i);
       if (expected_authenticator_eid == authenticator_eid) {
         CableEidArray zero_eid{};
-        return CableDiscoveryData(/*version=*/2, zero_eid, authenticator_eid,
-                                  session_pre_key);
+        return CableDiscoveryData(CableDiscoveryData::Version::V2, zero_eid,
+                                  authenticator_eid, session_pre_key);
       }
     }
   }

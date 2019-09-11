@@ -584,8 +584,7 @@ void ExtractUnderlines(NSAttributedString* string,
 - (void)setHostDisconnected {
   // Set the host to be an abandoned message pipe, and set the hostHelper
   // to forward messages to that host.
-  remote_cocoa::mojom::RenderWidgetHostNSViewHostRequest dummyHostRequest =
-      mojo::MakeRequest(&dummyHost_);
+  ignore_result(dummyHost_.BindNewPipeAndPassReceiver());
   dummyHostHelper_ = std::make_unique<DummyHostHelper>();
   host_ = dummyHost_.get();
   hostHelper_ = dummyHostHelper_.get();
@@ -601,7 +600,7 @@ void ExtractUnderlines(NSAttributedString* string,
 }
 
 - (bool)hostIsDisconnected {
-  return host_ == dummyHost_.get();
+  return host_ == (dummyHost_.is_bound() ? dummyHost_.get() : nullptr);
 }
 
 - (void)setShowingContextMenu:(BOOL)showing {

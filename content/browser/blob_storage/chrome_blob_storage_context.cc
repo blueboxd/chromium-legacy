@@ -229,11 +229,11 @@ ChromeBlobStorageContext::URLLoaderFactoryForUrl(
 }
 
 // static
-blink::mojom::BlobPtr ChromeBlobStorageContext::GetBlobPtr(
+mojo::PendingRemote<blink::mojom::Blob> ChromeBlobStorageContext::GetBlobRemote(
     BrowserContext* browser_context,
     const std::string& uuid) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  blink::mojom::BlobPtr blob_ptr;
+  mojo::PendingRemote<blink::mojom::Blob> blob_remote;
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
@@ -244,9 +244,9 @@ blink::mojom::BlobPtr ChromeBlobStorageContext::GetBlobPtr(
             if (handle)
               storage::BlobImpl::Create(std::move(handle), std::move(receiver));
           },
-          base::WrapRefCounted(GetFor(browser_context)), MakeRequest(&blob_ptr),
-          uuid));
-  return blob_ptr;
+          base::WrapRefCounted(GetFor(browser_context)),
+          blob_remote.InitWithNewPipeAndPassReceiver(), uuid));
+  return blob_remote;
 }
 
 ChromeBlobStorageContext::~ChromeBlobStorageContext() = default;

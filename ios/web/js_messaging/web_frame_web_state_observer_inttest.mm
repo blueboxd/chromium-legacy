@@ -10,7 +10,7 @@
 #import "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/web_state.h"
-#import "ios/web/public/web_state/web_state_observer.h"
+#include "ios/web/public/web_state_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

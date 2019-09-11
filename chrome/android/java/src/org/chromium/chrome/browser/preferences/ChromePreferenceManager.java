@@ -157,6 +157,7 @@ public class ChromePreferenceManager {
      * Whether or not the home page button is force enabled.
      * Default value is false.
      */
+    @Deprecated
     public static final String HOME_PAGE_BUTTON_FORCE_ENABLED_KEY =
             "home_page_button_force_enabled";
 
@@ -164,12 +165,14 @@ public class ChromePreferenceManager {
      * Whether or not the homepage tile will be shown.
      * Default value is false.
      */
+    @Deprecated
     public static final String HOMEPAGE_TILE_ENABLED_KEY = "homepage_tile_enabled";
 
     /**
      * Whether or not the new tab page button is enabled.
      * Default value is false.
      */
+    @Deprecated
     public static final String NTP_BUTTON_ENABLED_KEY = "ntp_button_enabled";
 
     /**

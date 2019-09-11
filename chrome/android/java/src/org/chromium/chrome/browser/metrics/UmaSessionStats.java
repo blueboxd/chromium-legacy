@@ -11,6 +11,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
@@ -54,9 +55,9 @@ public class UmaSessionStats {
         WebContents webContents = tab.getWebContents();
         boolean isDesktopUserAgent = webContents != null
                 && webContents.getNavigationController().getUseDesktopUserAgent();
-        nativeRecordPageLoaded(isDesktopUserAgent);
+        UmaSessionStatsJni.get().recordPageLoaded(isDesktopUserAgent);
         if (mKeyboardConnected) {
-            nativeRecordPageLoadedWithKeyboard();
+            UmaSessionStatsJni.get().recordPageLoadedWithKeyboard();
         }
 
         String url = tab.getUrl();
@@ -75,7 +76,7 @@ public class UmaSessionStats {
         if (mTabModelSelector == null) return;
 
         TabModel regularModel = mTabModelSelector.getModel(false);
-        nativeRecordTabCountPerLoad(getTabCountFromModel(regularModel));
+        UmaSessionStatsJni.get().recordTabCountPerLoad(getTabCountFromModel(regularModel));
     }
 
     private int getTabCountFromModel(TabModel model) {
@@ -114,7 +115,7 @@ public class UmaSessionStats {
             };
         }
 
-        nativeUmaResumeSession(sNativeUmaSessionStats);
+        UmaSessionStatsJni.get().umaResumeSession(sNativeUmaSessionStats, UmaSessionStats.this);
         updatePreferences();
         updateMetricsServiceState();
         DefaultBrowserInfo.logDefaultBrowserStats();
@@ -124,7 +125,7 @@ public class UmaSessionStats {
         // Lazily create the native object and the notification handler. These objects are never
         // destroyed.
         if (sNativeUmaSessionStats == 0) {
-            sNativeUmaSessionStats = nativeInit();
+            sNativeUmaSessionStats = UmaSessionStatsJni.get().init();
         }
     }
 
@@ -138,7 +139,7 @@ public class UmaSessionStats {
             mTabModelSelector = null;
         }
 
-        nativeUmaEndSession(sNativeUmaSessionStats);
+        UmaSessionStatsJni.get().umaEndSession(sNativeUmaSessionStats, UmaSessionStats.this);
     }
 
     /**
@@ -151,7 +152,7 @@ public class UmaSessionStats {
         privacyManager.setUsageAndCrashReporting(consent);
 
         // Perform native changes needed to reflect the new consent value.
-        nativeChangeMetricsReportingConsent(consent);
+        UmaSessionStatsJni.get().changeMetricsReportingConsent(consent);
 
         updateMetricsServiceState();
     }
@@ -160,21 +161,21 @@ public class UmaSessionStats {
      * Initializes the metrics consent bit to false. Used only for testing.
      */
     public static void initMetricsAndCrashReportingForTesting() {
-        nativeInitMetricsAndCrashReportingForTesting();
+        UmaSessionStatsJni.get().initMetricsAndCrashReportingForTesting();
     }
 
     /**
      * Clears the metrics consent bit used for testing to original setting. Used only for testing.
      */
     public static void unSetMetricsAndCrashReportingForTesting() {
-        nativeUnsetMetricsAndCrashReportingForTesting();
+        UmaSessionStatsJni.get().unsetMetricsAndCrashReportingForTesting();
     }
 
     /**
      * Updates the metrics consent bit to |consent|. Used only for testing.
      */
     public static void updateMetricsAndCrashReportingForTesting(boolean consent) {
-        nativeUpdateMetricsAndCrashReportingForTesting(consent);
+        UmaSessionStatsJni.get().updateMetricsAndCrashReportingForTesting(consent);
     }
 
     /**
@@ -189,7 +190,7 @@ public class UmaSessionStats {
         boolean mayUploadStats = privacyManager.isMetricsUploadPermitted();
 
         // Re-start the MetricsService with the given parameter, and current consent.
-        nativeUpdateMetricsServiceState(mayUploadStats);
+        UmaSessionStatsJni.get().updateMetricsServiceState(mayUploadStats);
     }
 
     /**
@@ -208,12 +209,12 @@ public class UmaSessionStats {
 
     public static void registerExternalExperiment(String studyName, int[] experimentIds) {
         assert isMetricsServiceAvailable();
-        nativeRegisterExternalExperiment(studyName, experimentIds);
+        UmaSessionStatsJni.get().registerExternalExperiment(studyName, experimentIds);
     }
 
     public static void registerSyntheticFieldTrial(String trialName, String groupName) {
         assert isMetricsServiceAvailable();
-        nativeRegisterSyntheticFieldTrial(trialName, groupName);
+        UmaSessionStatsJni.get().registerSyntheticFieldTrial(trialName, groupName);
     }
 
     /**
@@ -234,20 +235,20 @@ public class UmaSessionStats {
         return ApplicationStatus.hasVisibleActivities();
     }
 
-    private static native long nativeInit();
-    private static native void nativeChangeMetricsReportingConsent(boolean consent);
-    private static native void nativeInitMetricsAndCrashReportingForTesting();
-    private static native void nativeUnsetMetricsAndCrashReportingForTesting();
-    private static native void nativeUpdateMetricsAndCrashReportingForTesting(boolean consent);
-    private static native void nativeUpdateMetricsServiceState(boolean mayUpload);
-    private native void nativeUmaResumeSession(long nativeUmaSessionStats);
-    private native void nativeUmaEndSession(long nativeUmaSessionStats);
-    private static native void nativeRegisterExternalExperiment(
-            String studyName, int[] experimentIds);
-    private static native void nativeRegisterSyntheticFieldTrial(
-            String trialName, String groupName);
-    private static native void nativeRecordTabCountPerLoad(int numTabsOpen);
-    private static native void nativeRecordPageLoaded(boolean isDesktopUserAgent);
-    private static native void nativeRecordPageLoadedWithKeyboard();
-
+    @NativeMethods
+    interface Natives {
+        long init();
+        void changeMetricsReportingConsent(boolean consent);
+        void initMetricsAndCrashReportingForTesting();
+        void unsetMetricsAndCrashReportingForTesting();
+        void updateMetricsAndCrashReportingForTesting(boolean consent);
+        void updateMetricsServiceState(boolean mayUpload);
+        void umaResumeSession(long nativeUmaSessionStats, UmaSessionStats caller);
+        void umaEndSession(long nativeUmaSessionStats, UmaSessionStats caller);
+        void registerExternalExperiment(String studyName, int[] experimentIds);
+        void registerSyntheticFieldTrial(String trialName, String groupName);
+        void recordTabCountPerLoad(int numTabsOpen);
+        void recordPageLoaded(boolean isDesktopUserAgent);
+        void recordPageLoadedWithKeyboard();
+    }
 }

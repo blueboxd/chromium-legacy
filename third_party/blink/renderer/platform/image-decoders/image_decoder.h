@@ -357,11 +357,13 @@ class PLATFORM_EXPORT ImageDecoder {
     frame_buffer_cache_[0].SetMemoryAllocator(allocator);
   }
 
-  virtual bool CanDecodeToYUV() { return false; }
+  virtual bool CanDecodeToYUV() { return allow_decode_to_yuv_; }
   // Should only be called if CanDecodeToYuv() returns true, in which case
   // the subclass of ImageDecoder must override this method.
   virtual void DecodeToYUV() { NOTREACHED(); }
-  virtual void SetImagePlanes(std::unique_ptr<ImagePlanes>) {}
+  void SetImagePlanes(std::unique_ptr<ImagePlanes> image_planes) {
+    image_planes_ = std::move(image_planes);
+  }
 
  protected:
   ImageDecoder(AlphaOption alpha_option,
@@ -372,6 +374,7 @@ class PLATFORM_EXPORT ImageDecoder {
         high_bit_depth_decoding_option_(high_bit_depth_decoding_option),
         color_behavior_(color_behavior),
         max_decoded_bytes_(max_decoded_bytes),
+        allow_decode_to_yuv_(false),
         purge_aggressively_(false) {}
 
   // Calculates the most recent frame whose image data may be needed in
@@ -487,6 +490,13 @@ class PLATFORM_EXPORT ImageDecoder {
     return frame_status == ImageFrame::kFramePartial ||
            frame_status == ImageFrame::kFrameComplete;
   }
+
+  // Note that |allow_decode_to_yuv_| being true merely means that the
+  // ImageDecoder supports decoding to YUV. Other layers higher in the
+  // stack (the PaintImageGenerator, ImageFrameGenerator, or cache) may
+  // decline to go down the YUV path.
+  bool allow_decode_to_yuv_;
+  std::unique_ptr<ImagePlanes> image_planes_;
 
  private:
   // Some code paths compute the size of the image as "width * height * 4 or 8"

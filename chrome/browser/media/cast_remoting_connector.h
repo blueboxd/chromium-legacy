@@ -17,6 +17,8 @@
 #include "media/mojo/mojom/remoting.mojom.h"
 #include "media/mojo/mojom/remoting_common.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace content {
 class RenderFrameHost;
@@ -105,8 +107,9 @@ class CastRemotingConnector : public base::SupportsUserData::Data,
   void ResetRemotingPermission();
 
   // Used by Mirroring Service to connect the media remoter with this source.
-  void ConnectWithMediaRemoter(media::mojom::RemoterPtr remoter,
-                               media::mojom::RemotingSourceRequest request);
+  void ConnectWithMediaRemoter(
+      mojo::PendingRemote<media::mojom::Remoter> remoter,
+      mojo::PendingReceiver<media::mojom::RemotingSource> receiver);
 
  private:
   // Allow unit tests access to the private constructor and CreateBridge()
@@ -232,8 +235,8 @@ class CastRemotingConnector : public base::SupportsUserData::Data,
   mojo::Binding<media::mojom::MirrorServiceRemotingSource> deprecated_binding_;
   media::mojom::MirrorServiceRemoterPtr deprecated_remoter_;
 
-  mojo::Binding<media::mojom::RemotingSource> binding_;
-  media::mojom::RemoterPtr remoter_;
+  mojo::Receiver<media::mojom::RemotingSource> receiver_{this};
+  mojo::Remote<media::mojom::Remoter> remoter_;
 
   // Permission is checked the first time remoting requested to start for each
   // casting session.

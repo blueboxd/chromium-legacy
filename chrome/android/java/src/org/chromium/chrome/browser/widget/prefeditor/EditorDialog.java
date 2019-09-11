@@ -47,8 +47,8 @@ import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.preferences.autofill.CreditCardNumberFormattingTextWatcher;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.widget.AlwaysDismissedDialog;
-import org.chromium.chrome.browser.widget.FadingEdgeScrollView;
+import org.chromium.chrome.browser.ui.widget.AlwaysDismissedDialog;
+import org.chromium.chrome.browser.ui.widget.FadingEdgeScrollView;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 

@@ -2708,6 +2708,7 @@ Unknown properties are collapsed to zero. -->
   <int value="20" label="Disabled"/>
   <int value="21" label="Already provisioned"/>
   <int value="22" label="Unsupported account type"/>
+  <int value="23" label="Account is not present in Chrome"/>
 </enum>
 
 <enum name="ArcSdkVersionUpgradeType">
@@ -9560,6 +9561,18 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Aborted"/>
 </enum>
 
+<enum name="ConnectionStateAfterDNS">
+  <int value="0" label="Fresh DNS has failed, close the whole connection."/>
+  <int value="1" label="Resolved IP can be pooled."/>
+  <int value="2"
+      label="Stale connection is waiting for handshake and dns matches."/>
+  <int value="3"
+      label="Stale connection is waiting for handshake but dns doesn't match."/>
+  <int value="4" label="Stale connection finishes handshake and dns matches."/>
+  <int value="5"
+      label="Stale connection finishes handshake but dns doesn't match."/>
+</enum>
+
 <enum name="ConnectionStatus">
   <int value="0" label="Offline"/>
   <int value="1" label="Connected"/>
@@ -12303,6 +12316,18 @@ Called by update_net_error_codes.py.-->
   <int value="13"
       label="D3D11CreateDevice returned DXGI_ERROR_NOT_CURRENTLY_AVAILABLE"/>
   <int value="14" label="D3D11CreateDevice returned DXGI_ERROR_DEVICE_HUNG"/>
+</enum>
+
+<enum name="D3D11LifetimeProgression">
+  <int value="0" label="kInitializeStarted">
+    A decoder has started the initialization step.
+  </int>
+  <int value="1" label="kInitializeSucceeded">
+    A decoder has completed the initialization step successfully.
+  </int>
+  <int value="2" label="kPlaybackSucceeded">
+    A decoder has finished playing without crashing.
+  </int>
 </enum>
 
 <enum name="D3D11VideoNotSupportedReason">
@@ -18012,7 +18037,8 @@ Called by update_net_error_codes.py.-->
   <int value="598" label="RendererCodeIntegrityEnabled"/>
   <int value="599" label="DeviceLoginScreenLargeCursorEnabled"/>
   <int value="600" label="DomainsToCheckForMalwareOfUploadedContent"/>
-  <int value="601" label="HSTSPolicyBlocklist"/>
+  <int value="601" label="HSTSPolicyBypassList"/>
+  <int value="602" label="ReportDeviceOsUpdateStatus"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -35540,6 +35566,8 @@ from previous Chrome versions.
   <int value="-874602599" label="HorizontalTabSwitcherAndroid:enabled"/>
   <int value="-872764392" label="ContextualSuggestionsBottomSheet:disabled"/>
   <int value="-872302695" label="PeriodicBackgroundSync:enabled"/>
+  <int value="-871520682"
+      label="AccessibilityInternalsPageImprovements:enabled"/>
   <int value="-870120067" label="EnableSearchBoxSelection:enabled"/>
   <int value="-867087281" label="enable-virtual-keyboard"/>
   <int value="-866993841" label="OfflinePagesCTV2:disabled"/>
@@ -35797,6 +35825,7 @@ from previous Chrome versions.
   <int value="-519960638" label="enable-site-engagement-service"/>
   <int value="-518104091" label="NewAudioRenderingMixingStrategy:enabled"/>
   <int value="-516845951" label="enable-embedded-extension-options"/>
+  <int value="-515913489" label="EphemeralTabUsingBottomSheet:disabled"/>
   <int value="-513967943" label="CryptAuthV2Enrollment:disabled"/>
   <int value="-513305102" label="LanguagesPreference:enabled"/>
   <int value="-513066193" label="SyncUSSPasswords:enabled"/>
@@ -37351,6 +37380,7 @@ from previous Chrome versions.
   <int value="1646498561" label="OfflineBookmarks:disabled"/>
   <int value="1649121568" label="DynamicTcmallocTuning:disabled"/>
   <int value="1651141490" label="SaveEditedPDFForm:enabled"/>
+  <int value="1654445970" label="EphemeralTabUsingBottomSheet:enabled"/>
   <int value="1657713458" label="disable-virtual-keyboard-overscroll"/>
   <int value="1658644418" label="disable-app-list-voice-search"/>
   <int value="1659082220" label="EnableManualSaving:disabled"/>
@@ -37437,6 +37467,8 @@ from previous Chrome versions.
   <int value="1777059507" label="trust-autofill-server-name-types"/>
   <int value="1777695562" label="SendTabToSelfShowSendingUI:disabled"/>
   <int value="1777806335" label="UsePasswordSeparatedSigninFlow:disabled"/>
+  <int value="1779530254"
+      label="AccessibilityInternalsPageImprovements:disabled"/>
   <int value="1782210532" label="PerNavigationMojoInterface:disabled"/>
   <int value="1783293530" label="disallow-autofill-sync-credential"/>
   <int value="1783837132" label="enable-threaded-gpu-rasterization"/>

@@ -12,6 +12,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_embedder_interface.h"
+#include "chrome/browser/prerender/prerender_contents.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "content/public/browser/media_player_id.h"
 #include "content/public/browser/render_frame_host.h"
@@ -47,6 +48,10 @@ class TestPageLoadMetricsEmbedderInterface
     auto timer = std::make_unique<test::WeakMockTimer>();
     test_->SetMockTimer(timer->AsWeakPtr());
     return std::move(timer);
+  }
+
+  bool IsPrerender(content::WebContents* web_contents) override {
+    return prerender::PrerenderContents::FromWebContents(web_contents);
   }
 
  private:

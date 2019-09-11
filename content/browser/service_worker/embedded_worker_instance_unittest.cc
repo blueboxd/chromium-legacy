@@ -337,6 +337,14 @@ TEST_F(EmbeddedWorkerInstanceTest, StopWhenDevToolsAttached) {
 }
 
 TEST_F(EmbeddedWorkerInstanceTest, DetachDuringProcessAllocation) {
+  if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
+    // This test calls Start() then Detach() to test detaching during process
+    // allocation. But when ServiceWorkerOnUI is enabled, Start() synchronously
+    // reaches the SetupOnUIThread() step, so process allocation occurs before
+    // Detach() is called, so this test doesn't make sense.
+    return;
+  }
+
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
@@ -394,6 +402,14 @@ TEST_F(EmbeddedWorkerInstanceTest, DetachAfterSendingStartWorkerMessage) {
 }
 
 TEST_F(EmbeddedWorkerInstanceTest, StopDuringProcessAllocation) {
+  if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
+    // This test calls Start() then Stop() to test stopping during process
+    // allocation. But when ServiceWorkerOnUI is enabled, Start() synchronously
+    // reaches the SetupOnUIThread() step, so process allocation occurs before
+    // Stop() is called, so this test doesn't make sense.
+    return;
+  }
+
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 

@@ -16,7 +16,6 @@
 #include "chrome/browser/page_load_metrics/page_load_metrics_update_dispatcher.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
-#include "chrome/browser/prerender/prerender_contents.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
@@ -95,9 +94,7 @@ MetricsWebContentsObserver::MetricsWebContentsObserver(
       page_load_metrics_binding_(web_contents, this) {
   // Prerenders erroneously report that they are initially visible, so we
   // manually override visibility state for prerender.
-  const bool is_prerender =
-      prerender::PrerenderContents::FromWebContents(web_contents) != nullptr;
-  if (is_prerender)
+  if (embedder_interface_->IsPrerender(web_contents))
     in_foreground_ = false;
 
   RegisterInputEventObserver(web_contents->GetRenderViewHost());

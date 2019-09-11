@@ -282,6 +282,8 @@ void MediaNotificationView::UpdateWithMediaSessionInfo(
 
   UpdateActionButtonsVisibility();
 
+  container_->OnMediaSessionInfoChanged(session_info);
+
   PreferredSizeChanged();
   Layout();
   SchedulePaint();
@@ -481,6 +483,8 @@ void MediaNotificationView::UpdateForegroundColor() {
 
     button->SchedulePaint();
   }
+
+  container_->OnForegoundColorChanged(foreground);
 }
 
 }  // namespace media_message_center

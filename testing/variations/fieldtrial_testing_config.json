@@ -501,6 +501,22 @@
             ]
         }
     ],
+    "AndroidSystemTracing": [
+        {
+            "platforms": [
+                "android",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "EnablePerfettoSystemTracing",
+                    "enable_features": [
+                        "EnablePerfettoSystemTracing"
+                    ]
+                }
+            ]
+        }
+    ],
     "AppLauncherRefresh": [
         {
             "platforms": [
@@ -2819,21 +2835,6 @@
             ]
         }
     ],
-    "HomeButtonAndroid": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "HomePageButtonForceEnabled"
-                    ]
-                }
-            ]
-        }
-    ],
     "IDBTombstoneSweeper": [
         {
             "platforms": [
@@ -3309,21 +3310,6 @@
             ]
         }
     ],
-    "ManualTranslateTrigger": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "TranslateAndroidManualTrigger"
-                    ]
-                }
-            ]
-        }
-    ],
     "MediaCapabilitiesWithParameters": [
         {
             "platforms": [
@@ -3455,22 +3441,6 @@
                     "name": "EnabledAll",
                     "enable_features": [
                         "AutoupgradeMixedContent"
-                    ]
-                }
-            ]
-        }
-    ],
-    "MostLikelyDeprecation": [
-        {
-            "platforms": [
-                "android",
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20190520",
-                    "disable_features": [
-                        "DisplaySuggestionsServiceTiles"
                     ]
                 }
             ]
@@ -3960,6 +3930,25 @@
                     "enable_features": [
                         "OmniboxUIExperimentHideSteadyStateUrlScheme",
                         "OmniboxUIExperimentHideSteadyStateUrlTrivialSubdomains"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OptimizationHintsFetching": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20190804",
+                    "params": {
+                        "min_top_host_engagement_score_threshold": "3.0",
+                        "top_host_blacklist_size_multiplier": "2.0"
+                    },
+                    "enable_features": [
+                        "OptimizationHintsFetching"
                     ]
                 }
             ]
@@ -6152,25 +6141,6 @@
             ]
         }
     ],
-    "UseFluentLanguageModel": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "linux",
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "UseFluentLanguageModel"
-                    ]
-                }
-            ]
-        }
-    ],
     "UsePdfCompositorServiceForPrint": [
         {
             "platforms": [
@@ -6872,8 +6842,8 @@
                 "mac",
                 "chromeos",
                 "linux",
-                "ios",
-                "android"
+                "android",
+                "android_webview"
             ],
             "experiments": [
                 {

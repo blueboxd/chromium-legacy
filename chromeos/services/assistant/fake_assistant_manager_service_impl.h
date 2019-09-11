@@ -51,7 +51,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) FakeAssistantManagerServiceImpl
                                      bool allow_tts) override;
   void StopActiveInteraction(bool cancel_conversation) override;
   void AddAssistantInteractionSubscriber(
-      mojom::AssistantInteractionSubscriberPtr subscriber) override;
+      mojo::PendingRemote<mojom::AssistantInteractionSubscriber> subscriber)
+      override;
   void RetrieveNotification(mojom::AssistantNotificationPtr notification,
                             int action_index) override;
   void DismissNotification(

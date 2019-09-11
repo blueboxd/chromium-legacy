@@ -454,9 +454,17 @@ interface VRServiceClient {
   OnDeviceChanged();
 };
 
+enum CreateAnchorResult {
+  SUCCESS = 0,
+  FAILURE = 1,
+};
+
 // Provides functionality for integrating environment information into an
 // XRSession. For example, some AR sessions would implement hit test to allow
 // developers to get the information about the world that its sensors supply.
+// On XRSession end, the message pipe will be destroyed - we need to clean up
+// all outstanding JavaScript promises at that time. The XRsession might end for
+// example due to a call to XRSession::end() method (exposed to JavaScript).
 interface XREnvironmentIntegrationProvider {
   // Performs a raycast into the scene and returns a list of XRHitResults sorted
   // from closest to furthest hit from the ray. Each hit result contains a
@@ -465,6 +473,27 @@ interface XREnvironmentIntegrationProvider {
   // An empty result list means there were no hits. If a nullopt is returned,
   // there was an error.
   RequestHitTest(XRRay ray) => (array<XRHitResult>? results);
+
+  // Issues a request to create an anchor attached to a session.
+  // |result| will contain status code of the request. |anchor_id| will be valid
+  // only if the |result| is SUCCESS.
+  CreateAnchor(VRPose anchor_pose) => (CreateAnchorResult result,
+                                       int32 anchor_id);
+  // TODO(https://crbug.com/657632): Switch anchor_id to nullable integer once
+  // that's available. This will allow us to remove CreateAnchorResult if we're
+  // not interested in obtaining detailed error information from the device.
+
+  // Issues a request to create an anchor attached to a plane.
+  // |result| will contain status code of the request. |anchor_id| will be valid
+  // only if the |result| is SUCCESS.
+  CreatePlaneAnchor(VRPose anchor_pose, int32 plane_id) =>
+    (CreateAnchorResult result, int32 anchor_id);
+  // TODO(https://crbug.com/657632): Ditto - make anchor_id a nullable integer..
+
+  // Detaches an existing anchor. The |anchor_id| must be a valid id of an
+  // anchor created by one of the CreateAnchor calls, otherwise the call will be
+  // ignored.
+  DetachAnchor(int32 anchor_id);
 };
 
 // Provides a mechanism for a channel to plumb up any button click events

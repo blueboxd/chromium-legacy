@@ -16,14 +16,14 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.webapps.AddToHomescreenDialog;
+import org.chromium.chrome.browser.webapps.addtohomescreen.AddToHomescreenView;
 
 /**
  * Handles the promotion and installation of an app specified by the current web page. This object
  * is created by and owned by the native AppBannerUiDelegate.
  */
 @JNINamespace("banners")
-public class AppBannerUiDelegateAndroid implements AddToHomescreenDialog.Delegate {
+public class AppBannerUiDelegateAndroid implements AddToHomescreenView.Delegate {
     private static final String TAG = "AppBannerUi";
 
     /** Pointer to the native AppBannerUiDelegateAndroid. */
@@ -31,7 +31,7 @@ public class AppBannerUiDelegateAndroid implements AddToHomescreenDialog.Delegat
 
     private Tab mTab;
 
-    private AddToHomescreenDialog mDialog;
+    private AddToHomescreenView mDialog;
 
     private boolean mAddedToHomescreen;
 
@@ -70,7 +70,7 @@ public class AppBannerUiDelegateAndroid implements AddToHomescreenDialog.Delegat
     }
 
     @CalledByNative
-    private AddToHomescreenDialog getDialogForTesting() {
+    private AddToHomescreenView getDialogForTesting() {
         return mDialog;
     }
 
@@ -108,10 +108,10 @@ public class AppBannerUiDelegateAndroid implements AddToHomescreenDialog.Delegat
 
     /**
      * Build a dialog based on the browser mode.
-     * @return A version of the {@link AddToHomescreenDialog}.
+     * @return A version of the {@link AddToHomescreenView}.
      */
-    private AddToHomescreenDialog buildDialog() {
-        return new AddToHomescreenDialog(mTab.getActivity(), this);
+    private AddToHomescreenView buildDialog() {
+        return new AddToHomescreenView(mTab.getActivity(), this);
     }
 
     @CalledByNative

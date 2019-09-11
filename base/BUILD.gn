@@ -2991,7 +2991,10 @@ test("base_unittests") {
   }
 
   if (is_desktop_linux) {
-    sources += [ "nix/xdg_util_unittest.cc" ]
+    sources += [
+      "linux_util_unittest.cc",
+      "nix/xdg_util_unittest.cc",
+    ]
   }
 
   if (!use_glib) {

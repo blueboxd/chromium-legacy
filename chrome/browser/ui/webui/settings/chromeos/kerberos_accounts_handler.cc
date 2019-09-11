@@ -105,7 +105,7 @@ void KerberosAccountsHandler::OnListAccounts(
     account_dict.SetBoolean("passwordWasRemembered",
                             account.password_was_remembered());
     account_dict.SetString("pic", ticket_icon);
-    accounts.GetList().push_back(std::move(account_dict));
+    accounts.Append(std::move(account_dict));
   }
 
   ResolveJavascriptCallback(base::Value(callback_id), std::move(accounts));

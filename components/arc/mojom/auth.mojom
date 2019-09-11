@@ -78,6 +78,9 @@ enum ArcSignInStatus {
 
   // Account type is not supported for authorization.
   [MinVersion=16] UNSUPPORTED_ACCOUNT_TYPE = 20,
+
+  // Account is not present in Chrome OS Account Manager.
+  [MinVersion=17] CHROME_ACCOUNT_NOT_FOUND = 21,
 };
 
 // These values describe account check status.

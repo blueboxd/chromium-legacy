@@ -193,8 +193,7 @@ class LockScreenNoteDisplayStateHandlerTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(LockScreenNoteDisplayStateHandlerTest);
 };
 
-// TODO(crbug.com/1002488): Test is flaky.
-TEST_F(LockScreenNoteDisplayStateHandlerTest, DISABLED_EjectWhenScreenOn) {
+TEST_F(LockScreenNoteDisplayStateHandlerTest, EjectWhenScreenOn) {
   ui::DeviceDataManagerTestApi devices_test_api;
   devices_test_api.NotifyObserversStylusStateChanged(ui::StylusState::REMOVED);
   base::RunLoop().RunUntilIdle();
@@ -241,8 +240,9 @@ TEST_F(LockScreenNoteDisplayStateHandlerTest, EjectWhenScreenOff) {
   ASSERT_FALSE(LaunchTimeoutRunning());
 }
 
+// TODO(crbug.com/1002488): Test is flaky.
 TEST_F(LockScreenNoteDisplayStateHandlerTest,
-       EjectWhenScreenOffAndNoteNotAvailable) {
+       DISABLED_EjectWhenScreenOffAndNoteNotAvailable) {
   TurnScreenOffForUserInactivity();
 
   Shell::Get()->tray_action()->UpdateLockScreenNoteState(

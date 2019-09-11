@@ -214,7 +214,7 @@ PasswordManagerClient* CredentialManagerImpl::client() const {
 }
 
 PasswordStore* CredentialManagerImpl::GetPasswordStore() {
-  return client_ ? client_->GetPasswordStore() : nullptr;
+  return client_ ? client_->GetProfilePasswordStore() : nullptr;
 }
 
 void CredentialManagerImpl::DoneRequiringUserMediation() {

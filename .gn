@@ -597,6 +597,8 @@ check_targets = [
   "//url/*",
 
   #"//v8/*",  # Errors: https://bugs.chromium.org/p/v8/issues/detail?id=7330
+
+  "//weblayer/*",
 ]
 
 # These are the list of GN files that run exec_script. This whitelist exists

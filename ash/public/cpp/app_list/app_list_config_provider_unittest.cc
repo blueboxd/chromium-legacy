@@ -314,7 +314,7 @@ TEST_F(AppListConfigProviderTest,
   // The app list has to be scaled down horizontally.
   config = AppListConfigProvider::Get().CreateForAppListWidget(
       gfx::Size(800, 600) /*display_work_area_size*/,
-      gfx::Size(500, 480) /*available_grid_size*/, config.get());
+      gfx::Size(500, 528) /*available_grid_size*/, config.get());
   ASSERT_TRUE(config);
   EXPECT_EQ(ash::AppListConfigType::kShared, config->type());
   EXPECT_EQ(500.f / kMinGridWidth, config->scale_x());
@@ -329,10 +329,12 @@ TEST_F(AppListConfigProviderTest,
   // The app list has to be scaled down vertically.
   config = AppListConfigProvider::Get().CreateForAppListWidget(
       gfx::Size(800, 600) /*display_work_area_size*/,
-      gfx::Size(600, 400) /*available_grid_size*/, config.get());
+      gfx::Size(600, 448) /*available_grid_size*/, config.get());
   ASSERT_TRUE(config);
   EXPECT_EQ(ash::AppListConfigType::kShared, config->type());
   EXPECT_EQ(1, config->scale_x());
+  // Available height includes fadeout zones, which should not be included in
+  // scale calculation.
   EXPECT_EQ(400.f / kMinGridHeight, config->scale_y());
   EXPECT_EQ(112, config->grid_tile_width());
   // 100 == std::round(scale_y * 120)
@@ -344,10 +346,12 @@ TEST_F(AppListConfigProviderTest,
   // Both vertical and horizontal scaling required.
   config = AppListConfigProvider::Get().CreateForAppListWidget(
       gfx::Size(800, 600) /*display_work_area_size*/,
-      gfx::Size(500, 400) /*available_grid_size*/, config.get());
+      gfx::Size(500, 448) /*available_grid_size*/, config.get());
   ASSERT_TRUE(config);
   EXPECT_EQ(ash::AppListConfigType::kShared, config->type());
   EXPECT_EQ(500.f / kMinGridWidth, config->scale_x());
+  // Available height includes fadeout zones, which should not be included in
+  // scale calculation.
   EXPECT_EQ(400.f / kMinGridHeight, config->scale_y());
   // 100 == std::round(scale_x * 112)
   EXPECT_EQ(100, config->grid_tile_width());
@@ -411,10 +415,12 @@ TEST_F(AppListConfigProviderTest, CreateScaledConfigByDisplayWorkAreaPortrait) {
   // The app list has to be scaled down vertically.
   config = AppListConfigProvider::Get().CreateForAppListWidget(
       gfx::Size(600, 800) /*display_work_area_size*/,
-      gfx::Size(600, 400) /*available_grid_size*/, config.get());
+      gfx::Size(600, 448) /*available_grid_size*/, config.get());
   ASSERT_TRUE(config);
   EXPECT_EQ(ash::AppListConfigType::kShared, config->type());
   EXPECT_EQ(1, config->scale_x());
+  // Available height includes fadeout zones, which should not be included in
+  // scale calculation.
   EXPECT_EQ(400.f / kMinGridHeight, config->scale_y());
   EXPECT_EQ(112, config->grid_tile_width());
   // 80 == std::round(scale_y * 120)
@@ -426,10 +432,12 @@ TEST_F(AppListConfigProviderTest, CreateScaledConfigByDisplayWorkAreaPortrait) {
   // Both vertical and horizontal scaling required.
   config = AppListConfigProvider::Get().CreateForAppListWidget(
       gfx::Size(600, 800) /*display_work_area_size*/,
-      gfx::Size(300, 500) /*available_grid_size*/, config.get());
+      gfx::Size(300, 548) /*available_grid_size*/, config.get());
   ASSERT_TRUE(config);
   EXPECT_EQ(ash::AppListConfigType::kShared, config->type());
   EXPECT_EQ(300.f / kMinGridWidth, config->scale_x());
+  // Available height includes fadeout zones, which should not be included in
+  // scale calculation.
   EXPECT_EQ(500.f / kMinGridHeight, config->scale_y());
   // 75 == std::round(scale_x * 112)
   EXPECT_EQ(75, config->grid_tile_width());

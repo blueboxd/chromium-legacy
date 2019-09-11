@@ -7,29 +7,30 @@
 
 #include "base/component_export.h"
 #include "base/memory/ref_counted.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 
 namespace storage {
 
-// Refcounted wrapper around a mojom::BlobPtr.
+// Refcounted wrapper around a mojom::Blob.
 class COMPONENT_EXPORT(STORAGE_BROWSER) BlobHandle
     : public base::RefCounted<BlobHandle> {
  public:
-  explicit BlobHandle(blink::mojom::BlobPtr blob);
+  explicit BlobHandle(mojo::PendingRemote<blink::mojom::Blob> blob);
 
   bool is_bound() const { return blob_.is_bound(); }
   blink::mojom::Blob* get() const { return blob_.get(); }
   blink::mojom::Blob* operator->() const { return get(); }
   blink::mojom::Blob& operator*() const { return *get(); }
 
-  blink::mojom::BlobPtr Clone() const;
-  blink::mojom::BlobPtr&& TakeBlobPtr() { return std::move(blob_); }
+  mojo::PendingRemote<blink::mojom::Blob> Clone() const;
 
  private:
   friend class base::RefCounted<BlobHandle>;
   ~BlobHandle();
 
-  blink::mojom::BlobPtr blob_;
+  mojo::Remote<blink::mojom::Blob> blob_;
 };
 
 }  // namespace storage

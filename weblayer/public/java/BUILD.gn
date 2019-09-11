@@ -12,6 +12,7 @@ android_library("java") {
     "org/chromium/weblayer/Navigation.java",
     "org/chromium/weblayer/NavigationController.java",
     "org/chromium/weblayer/NavigationObserver.java",
+    "org/chromium/weblayer/ObserverList.java",
     "org/chromium/weblayer/Profile.java",
     "org/chromium/weblayer/WebLayer.java",
   ]

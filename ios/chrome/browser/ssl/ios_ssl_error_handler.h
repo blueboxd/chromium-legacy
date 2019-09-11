@@ -11,7 +11,7 @@
 #include "components/captive_portal/captive_portal_detector.h"
 #include "components/captive_portal/captive_portal_types.h"
 #include "ios/chrome/browser/interstitials/ios_security_interstitial_page.h"
-#import "ios/web/public/web_state/web_state_user_data.h"
+#import "ios/web/public/web_state_user_data.h"
 #include "url/gurl.h"
 
 namespace net {

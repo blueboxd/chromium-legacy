@@ -513,9 +513,9 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
   base::ListValue get_all_sites_args;
   get_all_sites_args.AppendString(kCallbackId);
   base::Value category_list(base::Value::Type::LIST);
-  category_list.GetList().emplace_back(kNotifications);
-  category_list.GetList().emplace_back(kFlash);
-  get_all_sites_args.GetList().push_back(std::move(category_list));
+  category_list.Append(kNotifications);
+  category_list.Append(kFlash);
+  get_all_sites_args.Append(std::move(category_list));
 
   // Test all sites is empty when there are no preferences.
   handler()->HandleGetAllSites(&get_all_sites_args);

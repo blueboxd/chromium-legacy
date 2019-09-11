@@ -14,15 +14,12 @@ import org.chromium.weblayer_private.aidl.IBrowserController;
 import org.chromium.weblayer_private.aidl.IBrowserControllerClient;
 import org.chromium.weblayer_private.aidl.ObjectWrapper;
 
-import java.util.concurrent.CopyOnWriteArrayList;
-
 public final class BrowserController {
     private static final String TAG = "WL_BrowserController";
 
     private final IBrowserController mImpl;
     private final NavigationController mNavigationController;
-    // TODO(sky): copy ObserverList from base and use it instead.
-    private final CopyOnWriteArrayList<BrowserObserver> mObservers;
+    private final ObserverList<BrowserObserver> mObservers;
 
     public BrowserController(IBrowserController impl) {
         mImpl = impl;
@@ -33,7 +30,7 @@ public final class BrowserController {
             throw new AndroidRuntimeException(e);
         }
 
-        mObservers = new CopyOnWriteArrayList<BrowserObserver>();
+        mObservers = new ObserverList<BrowserObserver>();
         mNavigationController = NavigationController.create(mImpl);
     }
 
@@ -56,11 +53,11 @@ public final class BrowserController {
     }
 
     public void addObserver(BrowserObserver observer) {
-        mObservers.add(observer);
+        mObservers.addObserver(observer);
     }
 
     public void removeObserver(BrowserObserver observer) {
-        mObservers.remove(observer);
+        mObservers.removeObserver(observer);
     }
 
     public void destroy() {

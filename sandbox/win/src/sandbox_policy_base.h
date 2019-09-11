@@ -32,6 +32,7 @@
 namespace sandbox {
 
 class LowLevelPolicy;
+class PolicyInfo;
 class TargetProcess;
 struct PolicyGlobal;
 
@@ -113,6 +114,8 @@ class PolicyBase final : public TargetPolicy {
   const base::HandlesToInheritVector& GetHandlesBeingShared();
 
  private:
+  // Allow PolicyInfo to snapshot PolicyBase for diagnostics.
+  friend class PolicyInfo;
   ~PolicyBase();
 
   // Sets up interceptions for a new target.

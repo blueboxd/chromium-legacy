@@ -391,15 +391,6 @@ public class ContextualSearchPanel extends OverlayPanel {
         return getBarHeight() + getBarBannerControl().getHeightPeekingPx() * mPxToDp;
     }
 
-    @Override
-    protected boolean doesMatchFullWidthCriteria(float containerWidth) {
-        if (!mOverrideIsFullWidthSizePanelForTesting && mActivity != null
-                && mActivity.getBottomSheet() != null) {
-            return true;
-        }
-        return super.doesMatchFullWidthCriteria(containerWidth);
-    }
-
     // ============================================================================================
     // Animation Handling
     // ============================================================================================

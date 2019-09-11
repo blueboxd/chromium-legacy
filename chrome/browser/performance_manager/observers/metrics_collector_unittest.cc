@@ -7,9 +7,9 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
-#include "chrome/browser/performance_manager/graph/graph_test_harness.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
+#include "chrome/browser/performance_manager/test_support/graph_test_harness.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "url/gurl.h"
 

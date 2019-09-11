@@ -129,7 +129,7 @@ void CrostiniApps::Launch(const std::string& app_id,
                           int32_t event_flags,
                           apps::mojom::LaunchSource launch_source,
                           int64_t display_id) {
-  apps_util::Launch(app_id, event_flags, launch_source, display_id);
+  crostini::LaunchCrostiniApp(profile_, app_id, display_id);
 }
 
 void CrostiniApps::SetPermission(const std::string& app_id,

@@ -61,6 +61,11 @@ class PlatformWindowDelegateBase {
   // Requests size constraints for the PlatformWindow.
   virtual base::Optional<gfx::Size> GetMinimumSizeForWindow();
   virtual base::Optional<gfx::Size> GetMaximumSizeForWindow();
+
+  // Called when the location of mouse pointer entered the window.  This is
+  // different from ui::ET_MOUSE_ENTERED which may not be generated when mouse
+  // is captured either by implicitly or explicitly.
+  virtual void OnMouseEnter() = 0;
 };
 
 }  // namespace ui

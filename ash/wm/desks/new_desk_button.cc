@@ -4,12 +4,14 @@
 
 #include "ash/wm/desks/new_desk_button.h"
 
+#include <memory>
 #include <utility>
 
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/wm/desks/desks_bar_item_border.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
@@ -18,6 +20,7 @@
 #include "ash/wm/overview/overview_session.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/ink_drop_impl.h"
@@ -45,10 +48,6 @@ constexpr SkColor kTextAndIconColor = gfx::kGoogleGrey200;
 constexpr SkColor kDisabledTextAndIconColor =
     SkColorSetA(kTextAndIconColor, 0x61);
 
-// The color of the highlight when this button is selected via
-// tabbing.
-constexpr int kHighlightThicknessDp = 2;
-
 }  // namespace
 
 NewDeskButton::NewDeskButton(views::ButtonListener* listener)
@@ -69,6 +68,11 @@ NewDeskButton::NewDeskButton(views::ButtonListener* listener)
   set_has_ink_drop_action_on_click(true);
   set_ink_drop_visible_opacity(kInkDropVisibleOpacity);
   SetFocusPainter(nullptr);
+
+  auto border = std::make_unique<DesksBarItemBorder>(kCornerRadius);
+  border_ptr_ = border.get();
+  SetBorder(std::move(border));
+
   UpdateButtonState();
   UpdateBorderState();
 }
@@ -85,14 +89,12 @@ void NewDeskButton::UpdateButtonState() {
   }
   SetEnabled(enabled);
 
-  const SkColor background_color =
-      AshColorProvider::Get()->GetControlsLayerColor(
-          AshColorProvider::ControlsLayerType::kInactiveControlBackground,
-          AshColorProvider::AshColorMode::kDark);
-  const SkColor disabled_background_color =
-      AshColorProvider::GetDisabledColor(background_color);
-  SetBackground(views::CreateRoundedRectBackground(
-      enabled ? background_color : disabled_background_color, kCornerRadius));
+  background_color_ = AshColorProvider::Get()->GetControlsLayerColor(
+      AshColorProvider::ControlsLayerType::kInactiveControlBackground,
+      AshColorProvider::AshColorMode::kDark);
+  if (!enabled)
+    background_color_ = AshColorProvider::GetDisabledColor(background_color_);
+  SchedulePaint();
 }
 
 void NewDeskButton::OnButtonPressed() {
@@ -105,6 +107,15 @@ void NewDeskButton::OnButtonPressed() {
 
 const char* NewDeskButton::GetClassName() const {
   return "NewDeskButton";
+}
+
+void NewDeskButton::OnPaintBackground(gfx::Canvas* canvas) {
+  // Paint a background that takes into account this view's insets.
+  cc::PaintFlags flags;
+  flags.setAntiAlias(true);
+  flags.setStyle(cc::PaintFlags::kFill_Style);
+  flags.setColor(background_color_);
+  canvas->DrawRoundRect(gfx::RectF(GetContentsBounds()), kCornerRadius, flags);
 }
 
 std::unique_ptr<views::InkDrop> NewDeskButton::CreateInkDrop() {
@@ -126,7 +137,7 @@ SkColor NewDeskButton::GetInkDropBaseColor() const {
 }
 
 std::unique_ptr<views::InkDropMask> NewDeskButton::CreateInkDropMask() const {
-  return std::make_unique<views::RoundRectInkDropMask>(size(), gfx::Insets(),
+  return std::make_unique<views::RoundRectInkDropMask>(size(), GetInsets(),
                                                        kCornerRadius);
 }
 
@@ -168,16 +179,12 @@ void NewDeskButton::OnViewUnhighlighted() {
 }
 
 void NewDeskButton::UpdateBorderState() {
-  if (IsViewHighlighted() && DesksController::Get()->CanCreateDesks()) {
-    SetBorder(views::CreateRoundedRectBorder(
-        kHighlightThicknessDp, kCornerRadius,
-        GetNativeTheme()->GetSystemColor(
-            ui::NativeTheme::kColorId_FocusedBorderColor)));
-  } else {
-    // Use an empty border when this view is not highlighted otherwise the text
-    // will shift when unhighlighted.
-    SetBorder(views::CreateEmptyBorder(gfx::Insets(kHighlightThicknessDp)));
-  }
+  border_ptr_->set_color(
+      (IsViewHighlighted() && DesksController::Get()->CanCreateDesks())
+          ? GetNativeTheme()->GetSystemColor(
+                ui::NativeTheme::kColorId_FocusedBorderColor)
+          : SK_ColorTRANSPARENT);
+  SchedulePaint();
 }
 
 }  // namespace ash

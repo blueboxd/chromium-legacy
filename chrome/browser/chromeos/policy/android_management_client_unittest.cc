@@ -78,7 +78,7 @@ TEST_F(AndroidManagementClientTest, CheckAndroidManagementCall) {
   EXPECT_CALL(service_, StartJob(_))
       .WillOnce(DoAll(service_.CaptureJobType(&job_type),
                       service_.CaptureQueryParams(&params),
-                      service_.StartJobOKSync(android_management_response_)));
+                      service_.StartJobOKAsync(android_management_response_)));
   EXPECT_CALL(callback_observer_,
               Run(AndroidManagementClient::Result::UNMANAGED))
       .Times(1);
@@ -93,6 +93,7 @@ TEST_F(AndroidManagementClientTest, CheckAndroidManagementCall) {
       .WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
           account_info.account_id, kOAuthToken, base::Time::Max());
 
+  base::RunLoop().RunUntilIdle();
   ASSERT_EQ(
       DeviceManagementService::JobConfiguration::TYPE_ANDROID_MANAGEMENT_CHECK,
       job_type);

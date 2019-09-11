@@ -84,10 +84,11 @@ class MediaRemoterTest : public mojom::CastMessageChannel,
 
   // MediaRemoter::Client implementation.
   void ConnectToRemotingSource(
-      media::mojom::RemoterPtr remoter,
-      media::mojom::RemotingSourceRequest source_request) override {
-    remoter_ = std::move(remoter);
-    remoting_source_.Bind(std::move(source_request));
+      mojo::PendingRemote<media::mojom::Remoter> remoter,
+      mojo::PendingReceiver<media::mojom::RemotingSource> source_receiver)
+      override {
+    remoter_.Bind(std::move(remoter));
+    remoting_source_.Bind(std::move(source_receiver));
     OnConnectToRemotingSource();
   }
 
@@ -176,7 +177,7 @@ class MediaRemoterTest : public mojom::CastMessageChannel,
   MessageDispatcher message_dispatcher_;
   const media::mojom::RemotingSinkMetadata sink_metadata_;
   MockRemotingSource remoting_source_;
-  media::mojom::RemoterPtr remoter_;
+  mojo::Remote<media::mojom::Remoter> remoter_;
   std::unique_ptr<MediaRemoter> media_remoter_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRemoterTest);

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
@@ -153,7 +154,13 @@ class OobeConfigurationTest : public OobeBaseTest {
 // EnterpriseEnrollmentConfigurationTest with no input devices.
 class OobeConfigurationTestNoHID : public OobeConfigurationTest {
  public:
-  OobeConfigurationTestNoHID() = default;
+  OobeConfigurationTestNoHID() {
+    // HID detection screen only appears for Chromebases, Chromebits, and
+    // Chromeboxes.
+    base::SysInfo::SetChromeOSVersionInfoForTest("DEVICETYPE=CHROMEBOX",
+                                                 base::Time::Now());
+  }
+
   ~OobeConfigurationTestNoHID() override = default;
 
  protected:

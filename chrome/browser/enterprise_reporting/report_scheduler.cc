@@ -109,6 +109,9 @@ void ReportScheduler::Start() {
        g_browser_process->local_state()->GetTime(kLastUploadTimestamp));
   // The first report delay is based on the |lastUploadTimestamp| in the
   // |local_state|, after that, it's 24 hours for each succeeded upload.
+  VLOG(1) << "Schedule the first report in about "
+          << first_request_delay.InHours() << " hour(s) and "
+          << first_request_delay.InMinutes() % 60 << " minute(s).";
   request_timer_->Start(
       FROM_HERE, first_request_delay, upload_interval,
       base::BindRepeating(&ReportScheduler::GenerateAndUploadReport,
@@ -139,7 +142,7 @@ void ReportScheduler::OnReportGenerated(ReportGenerator::Requests requests) {
 }
 
 void ReportScheduler::OnReportUploaded(ReportUploader::ReportStatus status) {
-  VLOG(1) << "The enterprise report upload result " << status;
+  VLOG(1) << "The enterprise report upload result " << status << ".";
   switch (status) {
     case ReportUploader::kSuccess:
       // Schedule the next report for success. Reset uploader to reset failure

@@ -114,6 +114,12 @@ const RESIZE_TIMEOUT_DELAY = 66;
 const MD_MAX_NUM_CUSTOM_LINK_TILES = 10;
 
 /**
+ * Maximum number of tiles if Most Visited is enabled.
+ * @const {number}
+ */
+const MD_MAX_NUM_MOST_VISITED_TILES = 8;
+
+/**
  * Maximum number of tiles per row for Material Design.
  * @const {number}
  */
@@ -161,15 +167,6 @@ let loadedCounter = 1;
  * @type {Element}
  */
 let tiles = null;
-
-/**
- * Maximum number of MostVisited tiles to show at any time. If the host page
- * doesn't send enough tiles and custom links is not enabled, we fill them blank
- * tiles. This can be changed depending on what feature is enabled. Set by the
- * host page, while 8 is default.
- * @type {number}
- */
-let maxNumTiles = 8;
 
 /**
  * List of parameters passed by query args.
@@ -296,17 +293,13 @@ class Grid {
     this.tilesAlwaysVisible_ =
         params.tilesAlwaysVisible || MD_NUM_TILES_ALWAYS_VISIBLE;
     this.maxTilesPerRow_ = params.maxTilesPerRow || MD_MAX_TILES_PER_ROW;
-    this.maxTiles_ = params.maxTiles || maxNumTiles;
+    this.maxTiles_ = params.maxTiles || getMaxNumTiles();
 
     this.maxTilesPerRowWindow_ = this.getMaxTilesPerRow_();
 
     this.tiles_ =
         this.container_.getElementsByClassName(CLASSES.GRID_TILE_CONTAINER);
-    if (this.tiles_.length > this.maxTiles_) {
-      throw new Error(
-          'The number of tiles (' + this.tiles_.length +
-          ') exceeds the maximum (' + this.maxTiles_ + ').');
-    }
+    // Ignore any tiles past the maximum allowed.
     this.position_ = new Array(this.maxTiles_);
     this.order_ = new Array(this.maxTiles_);
     for (let i = 0; i < this.maxTiles_; i++) {
@@ -737,7 +730,7 @@ function logEvent(eventType) {
 
 /**
  * Log impression of an NTP tile.
- * @param {number} tileIndex Position of the tile, >= 0 and < |maxNumTiles|.
+ * @param {number} tileIndex Position of the tile, >= 0 and < getMaxNumTiles().
  * @param {number} tileTitleSource The source of the tile's title as received
  *     from getMostVisitedItemData.
  * @param {number} tileSource The tile's source as received from
@@ -754,7 +747,7 @@ function logMostVisitedImpression(
 
 /**
  * Log click on an NTP tile.
- * @param {number} tileIndex Position of the tile, >= 0 and < |maxNumTiles|.
+ * @param {number} tileIndex Position of the tile, >= 0 and < getMaxNumTiles().
  * @param {number} tileTitleSource The source of the tile's title as received
  *     from getMostVisitedItemData.
  * @param {number} tileSource The tile's source as received from
@@ -771,10 +764,21 @@ function logMostVisitedNavigation(
 
 /**
  * Returns true if custom links are enabled.
+ * @return {boolean}
  */
 function isCustomLinksEnabled() {
   return customLinksFeatureEnabled &&
       !chrome.embeddedSearch.newTabPage.isUsingMostVisited;
+}
+
+/**
+ * Returns the maximum number of tiles to show at any time. This can be changed
+ * depending on what feature is enabled.
+ * @return {number}
+ */
+function getMaxNumTiles() {
+  return isCustomLinksEnabled() ? MD_MAX_NUM_CUSTOM_LINK_TILES :
+                                  MD_MAX_NUM_MOST_VISITED_TILES;
 }
 
 /**
@@ -905,7 +909,7 @@ function swapInNewTiles() {
 
   // Add an "add new custom link" button if we haven't reached the maximum
   // number of tiles.
-  if (isCustomLinksEnabled() && cur.childNodes.length < maxNumTiles) {
+  if (isCustomLinksEnabled() && cur.childNodes.length < getMaxNumTiles()) {
     const data = {
       'rid': -1,
       'title': queryArgs['addLink'],
@@ -989,27 +993,25 @@ function updateTileVisibility() {
 /**
  * Handler for the 'show' message from the host page, called when it wants to
  * add a suggestion tile.
- * It's also used to fill up our tiles to |maxNumTiles| if necessary.
  * @param {?MostVisitedData} args Data for the tile to be rendered.
  */
 function addTile(args) {
-  if (isFinite(args.rid)) {
-    // An actual suggestion. Grab the data from the embeddedSearch API.
-    const data =
-        chrome.embeddedSearch.newTabPage.getMostVisitedItemData(args.rid);
-    if (!data) {
-      return;
-    }
-
-    if (!data.faviconUrl) {
-      data.faviconUrl = 'chrome-search://favicon/size/16@' +
-          window.devicePixelRatio + 'x/' + data.renderViewId + '/' + data.rid;
-    }
-    tiles.appendChild(renderTile(data));
-  } else {
-    // An empty tile
-    tiles.appendChild(renderTile(null));
+  if (!isFinite(args.rid)) {
+    return;
   }
+
+  // Grab the tile's data from the embeddedSearch API.
+  const data =
+      chrome.embeddedSearch.newTabPage.getMostVisitedItemData(args.rid);
+  if (!data) {
+    return;
+  }
+
+  if (!data.faviconUrl) {
+    data.faviconUrl = 'chrome-search://favicon/size/16@' +
+        window.devicePixelRatio + 'x/' + data.renderViewId + '/' + data.rid;
+  }
+  tiles.appendChild(renderTile(data));
 }
 
 /**
@@ -1346,11 +1348,6 @@ function init() {
   if (queryArgs['enableGrid'] == '1') {
     isGridEnabled = true;
     document.body.classList.add(CLASSES.GRID_LAYOUT);
-  }
-
-  // Set the maximum number of tiles to show.
-  if (isCustomLinksEnabled()) {
-    maxNumTiles = MD_MAX_NUM_CUSTOM_LINK_TILES;
   }
 
   currGrid = new Grid();

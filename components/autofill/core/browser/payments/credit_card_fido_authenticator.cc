@@ -246,6 +246,7 @@ void CreditCardFIDOAuthenticator::OnDidGetOptChangeResult(
   // End the flow if the server responded with an error.
   if (result != AutofillClient::PaymentsRpcResult::SUCCESS) {
     current_flow_ = NONE_FLOW;
+    autofill_client_->UpdateWebauthnOfferDialogWithError();
     return;
   }
 

@@ -160,6 +160,11 @@
         <item name="android:textSize">@dimen/text_size_medium</item>
         <item name="android:textStyle">bold</item>
     </style>
+    <style name="TextAppearance.BlackToolbarTitle" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/default_text_color_secondary_list</item>
+        <item name="android:textSize">@dimen/text_size_large</item>
+        <item name="android:textStyle">bold</item>
+    </style>
 
     <!-- White Text Styles -->
     <style name="TextAppearance.WhiteHeadline" tools:ignore="UnusedResources">

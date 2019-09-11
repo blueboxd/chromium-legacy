@@ -72,6 +72,7 @@ class PageLoadMetricsEmbedder
   bool IsNewTabPageUrl(const GURL& url) override;
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override;
   std::unique_ptr<base::OneShotTimer> CreateTimer() override;
+  bool IsPrerender(content::WebContents* web_contents) override;
 
  private:
   bool IsPrerendering() const;
@@ -184,6 +185,10 @@ bool PageLoadMetricsEmbedder::IsNewTabPageUrl(const GURL& url) {
   if (!profile)
     return false;
   return search::IsInstantNTPURL(url, profile);
+}
+
+bool PageLoadMetricsEmbedder::IsPrerender(content::WebContents* web_contents) {
+  return prerender::PrerenderContents::FromWebContents(web_contents);
 }
 
 }  // namespace

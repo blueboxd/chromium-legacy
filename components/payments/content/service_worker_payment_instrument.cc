@@ -458,4 +458,40 @@ gfx::ImageSkia ServiceWorkerPaymentInstrument::icon_image_skia() const {
   return icon_image_;
 }
 
+bool ServiceWorkerPaymentInstrument::HandlesShippingAddress() const {
+  if (!spec_->request_shipping())
+    return false;
+
+  return stored_payment_app_info_
+             ? stored_payment_app_info_->supported_delegations.shipping_address
+             : false;
+}
+
+bool ServiceWorkerPaymentInstrument::HandlesPayerName() const {
+  if (!spec_->request_payer_name())
+    return false;
+
+  return stored_payment_app_info_
+             ? stored_payment_app_info_->supported_delegations.payer_name
+             : false;
+}
+
+bool ServiceWorkerPaymentInstrument::HandlesPayerEmail() const {
+  if (!spec_->request_payer_email())
+    return false;
+
+  return stored_payment_app_info_
+             ? stored_payment_app_info_->supported_delegations.payer_email
+             : false;
+}
+
+bool ServiceWorkerPaymentInstrument::HandlesPayerPhone() const {
+  if (!spec_->request_payer_phone())
+    return false;
+
+  return stored_payment_app_info_
+             ? stored_payment_app_info_->supported_delegations.payer_phone
+             : false;
+}
+
 }  // namespace payments

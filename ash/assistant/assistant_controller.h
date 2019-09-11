@@ -156,7 +156,7 @@ class ASH_EXPORT AssistantController
   void NotifyUrlOpened(const GURL& url, bool from_server);
 
   // AssistantStateObserver:
-  void OnAssistantStatusChanged(mojom::VoiceInteractionState state) override;
+  void OnAssistantStatusChanged(mojom::AssistantState state) override;
   void OnLockedFullScreenStateChanged(bool enabled) override;
 
   // AssistantInterfaceBinder implementation:

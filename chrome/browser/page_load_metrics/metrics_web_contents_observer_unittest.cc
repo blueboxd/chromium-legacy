@@ -17,6 +17,7 @@
 #include "chrome/browser/page_load_metrics/page_load_metrics_embedder_interface.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
+#include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/page_load_metrics/common/test/weak_mock_timer.h"
@@ -183,6 +184,9 @@ class TestPageLoadMetricsEmbedderInterface
     auto timer = std::make_unique<test::WeakMockTimer>();
     SetMockTimer(timer->AsWeakPtr());
     return std::move(timer);
+  }
+  bool IsPrerender(content::WebContents* web_contents) override {
+    return prerender::PrerenderContents::FromWebContents(web_contents);
   }
   const std::vector<mojom::PageLoadTimingPtr>& updated_timings() const {
     return updated_timings_;

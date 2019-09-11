@@ -124,12 +124,6 @@ class BasicNetworkDelegate : public net::NetworkDelegateImpl {
     return false;
   }
 
-  bool OnCanAccessFile(const net::URLRequest& request,
-                       const base::FilePath& original_path,
-                       const base::FilePath& absolute_path) const override {
-    return false;
-  }
-
   DISALLOW_COPY_AND_ASSIGN(BasicNetworkDelegate);
 };
 

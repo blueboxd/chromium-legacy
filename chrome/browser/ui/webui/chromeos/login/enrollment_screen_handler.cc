@@ -154,7 +154,7 @@ base::ListValue GetEncryptionTypesList() {
     enc_option.SetKey("value", base::Value(enc_types.id));
     enc_option.SetKey("selected",
                       base::Value(default_types == enc_types.encryption_types));
-    encryption_list.GetList().emplace_back(std::move(enc_option));
+    encryption_list.Append(std::move(enc_option));
   }
   return encryption_list;
 }
@@ -649,7 +649,7 @@ void EnrollmentScreenHandler::OnAdConfigurationUnlocked(
   custom.SetKey(
       "name",
       base::Value(l10n_util::GetStringUTF8(IDS_AD_CONFIG_SELECTION_CUSTOM)));
-  options->GetList().push_back(std::move(custom));
+  options->Append(std::move(custom));
   active_directory_join_type_ =
       ActiveDirectoryDomainJoinType::USING_CONFIGURATION;
   CallJS("login.OAuthEnrollmentScreen.setAdJoinConfiguration", *options);

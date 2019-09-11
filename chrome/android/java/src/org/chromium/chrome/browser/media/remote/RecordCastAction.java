@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.media.remote;
 import android.support.annotation.IntDef;
 
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.rappor.RapporServiceBridge;
@@ -46,8 +47,9 @@ public class RecordCastAction {
      * @param playerType the type of cast receiver.
      */
     public static void remotePlaybackDeviceSelected(@RecordCastAction.DeviceType int playerType) {
-        if (LibraryLoader.getInstance().isInitialized())
-            nativeRecordRemotePlaybackDeviceSelected(playerType);
+        if (LibraryLoader.getInstance().isInitialized()) {
+            RecordCastActionJni.get().recordRemotePlaybackDeviceSelected(playerType);
+        }
     }
 
     /**
@@ -56,7 +58,9 @@ public class RecordCastAction {
      * selecting the device initially.
      */
     public static void castPlayRequested() {
-        if (LibraryLoader.getInstance().isInitialized()) nativeRecordCastPlayRequested();
+        if (LibraryLoader.getInstance().isInitialized()) {
+            RecordCastActionJni.get().recordCastPlayRequested();
+        }
     }
 
     /**
@@ -65,8 +69,9 @@ public class RecordCastAction {
      * @param castSucceeded true if the playback succeeded, false if there was an error
      */
     public static void castDefaultPlayerResult(boolean castSucceeded) {
-        if (LibraryLoader.getInstance().isInitialized())
-            nativeRecordCastDefaultPlayerResult(castSucceeded);
+        if (LibraryLoader.getInstance().isInitialized()) {
+            RecordCastActionJni.get().recordCastDefaultPlayerResult(castSucceeded);
+        }
     }
 
     /**
@@ -75,8 +80,9 @@ public class RecordCastAction {
      * @param castSucceeded true if the playback succeeded, false if there was an error
      */
     public static void castYouTubePlayerResult(boolean castSucceeded) {
-        if (LibraryLoader.getInstance().isInitialized())
-            nativeRecordCastYouTubePlayerResult(castSucceeded);
+        if (LibraryLoader.getInstance().isInitialized()) {
+            RecordCastActionJni.get().recordCastYouTubePlayerResult(castSucceeded);
+        }
     }
 
     /**
@@ -87,7 +93,8 @@ public class RecordCastAction {
      */
     public static void castEndedTimeRemaining(long videoLengthMs, long timeRemainingMs) {
         if (LibraryLoader.getInstance().isInitialized()) {
-            nativeRecordCastEndedTimeRemaining((int) videoLengthMs, (int) timeRemainingMs);
+            RecordCastActionJni.get().recordCastEndedTimeRemaining(
+                    (int) videoLengthMs, (int) timeRemainingMs);
         }
     }
 
@@ -98,7 +105,9 @@ public class RecordCastAction {
      *            possible media types.
      */
     public static void castMediaType(int mediaType) {
-        if (LibraryLoader.getInstance().isInitialized()) nativeRecordCastMediaType(mediaType);
+        if (LibraryLoader.getInstance().isInitialized()) {
+            RecordCastActionJni.get().recordCastMediaType(mediaType);
+        }
     }
 
     /**
@@ -162,12 +171,15 @@ public class RecordCastAction {
         }
     }
 
-    // Cast sending
-    private static native void nativeRecordRemotePlaybackDeviceSelected(int deviceType);
-    private static native void nativeRecordCastPlayRequested();
-    private static native void nativeRecordCastDefaultPlayerResult(boolean castSucceeded);
-    private static native void nativeRecordCastYouTubePlayerResult(boolean castSucceeded);
-    private static native void nativeRecordCastEndedTimeRemaining(
-            int videoLengthMs, int timeRemainingMs);
-    private static native void nativeRecordCastMediaType(int mediaType);
+    @NativeMethods
+    interface Natives {
+        // Cast sending
+        void recordRemotePlaybackDeviceSelected(int deviceType);
+
+        void recordCastPlayRequested();
+        void recordCastDefaultPlayerResult(boolean castSucceeded);
+        void recordCastYouTubePlayerResult(boolean castSucceeded);
+        void recordCastEndedTimeRemaining(int videoLengthMs, int timeRemainingMs);
+        void recordCastMediaType(int mediaType);
+    }
 }

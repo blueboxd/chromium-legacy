@@ -55,12 +55,9 @@ public class HomeButton extends ChromeImageButton
     public HomeButton(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        final int homeButtonIcon = FeatureUtilities.isNewTabPageButtonEnabled()
-                ? R.drawable.ic_home
-                : R.drawable.btn_toolbar_home;
+        final int homeButtonIcon = R.drawable.btn_toolbar_home;
         setImageDrawable(ContextCompat.getDrawable(context, homeButtonIcon));
-        if (!FeatureUtilities.isNewTabPageButtonEnabled()
-                && !FeatureUtilities.isBottomToolbarEnabled()) {
+        if (!FeatureUtilities.isBottomToolbarEnabled()) {
             setOnCreateContextMenuListener(this);
         }
 
@@ -148,8 +145,7 @@ public class HomeButton extends ChromeImageButton
      */
     private void updateButtonEnabledState() {
         // New tab page button takes precedence over homepage.
-        final boolean isHomepageEnabled = !FeatureUtilities.isNewTabPageButtonEnabled()
-                && HomepageManager.isHomepageEnabled();
+        final boolean isHomepageEnabled = HomepageManager.isHomepageEnabled();
         final boolean isEnabled = !isActiveTabNTP()
                 || (isHomepageEnabled && !NewTabPage.isNTPUrl(HomepageManager.getHomepageUri()));
         setEnabled(isEnabled);

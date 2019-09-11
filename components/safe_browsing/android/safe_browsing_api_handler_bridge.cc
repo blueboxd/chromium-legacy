@@ -266,16 +266,13 @@ bool SafeBrowsingApiHandlerBridge::StartCSDAllowlistCheck(const GURL& url) {
     return false;
   }
 
-  SBThreatTypeSet threat_types(
-      CreateSBThreatTypeSet({safe_browsing::SB_THREAT_TYPE_CSD_WHITELIST}));
-
   // TODO(crbug.com/999344): Add UMA metrics
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_url = ConvertUTF8ToJavaString(env, url.spec());
-  ScopedJavaLocalRef<jintArray> j_threat_types =
-      SBThreatTypeSetToJavaArray(env, threat_types);
+  int j_threat_type =
+      SBThreatTypeToJavaThreatType(safe_browsing::SB_THREAT_TYPE_CSD_WHITELIST);
   return Java_SafeBrowsingApiBridge_startAllowlistLookup(env, j_api_handler_,
-                                                         j_url, j_threat_types);
+                                                         j_url, j_threat_type);
 }
 
 }  // namespace safe_browsing

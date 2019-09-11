@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_APP_MANAGEMENT_APP_MANAGEMENT_PAGE_HANDLER_H_
 
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/ui/webui/app_management/app_management.mojom.h"
 #include "chrome/browser/ui/webui/app_management/app_management_shelf_delegate_chromeos.h"
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
@@ -74,6 +75,8 @@ class AppManagementPageHandler : public app_management::mojom::PageHandler,
   Profile* profile_;
 
 #if defined(OS_CHROMEOS)
+  ScopedObserver<ArcAppListPrefs, AppManagementPageHandler>
+      arc_app_list_prefs_observer_;
   AppManagementShelfDelegate shelf_delegate_;
 #endif  // OS_CHROMEOS
 

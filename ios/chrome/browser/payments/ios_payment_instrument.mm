@@ -118,6 +118,22 @@ void IOSPaymentInstrument::IsValidForPaymentMethodIdentifier(
   *is_valid = method_name_ == payment_method_identifier;
 }
 
+bool IOSPaymentInstrument::HandlesShippingAddress() const {
+  return false;
+}
+
+bool IOSPaymentInstrument::HandlesPayerName() const {
+  return false;
+}
+
+bool IOSPaymentInstrument::HandlesPayerEmail() const {
+  return false;
+}
+
+bool IOSPaymentInstrument::HandlesPayerPhone() const {
+  return false;
+}
+
 base::WeakPtr<PaymentInstrument> IOSPaymentInstrument::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }

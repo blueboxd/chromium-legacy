@@ -15,13 +15,14 @@ BlobReader::BlobReader(content::BrowserContext* browser_context,
                        const std::string& blob_uuid,
                        BlobReadCallback callback)
     : BlobReader(
-          content::BrowserContext::GetBlobPtr(browser_context, blob_uuid),
+          content::BrowserContext::GetBlobRemote(browser_context, blob_uuid),
           std::move(callback)) {}
 
-BlobReader::BlobReader(blink::mojom::BlobPtr blob, BlobReadCallback callback)
+BlobReader::BlobReader(mojo::PendingRemote<blink::mojom::Blob> blob,
+                       BlobReadCallback callback)
     : callback_(std::move(callback)), blob_(std::move(blob)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  blob_.set_connection_error_handler(
+  blob_.set_disconnect_handler(
       base::BindOnce(&BlobReader::Failed, base::Unretained(this)));
 }
 

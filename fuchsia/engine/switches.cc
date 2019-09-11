@@ -8,5 +8,6 @@ namespace switches {
 
 const char kEnableWidevine[] = "enable-widevine";
 const char kPlayreadyKeySystem[] = "playready-key-system";
+const char kDisableSoftwareVideoDecoders[] = "disable-software-video-decoders";
 
 }  // namespace switches

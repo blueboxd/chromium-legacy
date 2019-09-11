@@ -370,9 +370,6 @@ void ContentsView::InitializeSearchBoxAnimation(
   // to be original bounds. Note that this transform shouldn't be animated
   // through ui::LayerAnimator since intermediate transformed bounds might not
   // match with other animation and that could look janky.
-  const float scale = GetAppListMainViewScale();
-  target_bounds.set_origin(
-      gfx::Point(target_bounds.x() * scale, target_bounds.y() * scale));
   search_box->GetWidget()->SetBounds(target_bounds);
 
   UpdateSearchBoxAnimation(0.0f, current_state, target_state);
@@ -385,8 +382,6 @@ void ContentsView::UpdateSearchBoxAnimation(double progress,
   if (!search_box->GetWidget())
     return;
 
-  const float scale = GetAppListMainViewScale();
-
   gfx::Rect previous_bounds = GetSearchBoxBoundsForState(current_state);
   previous_bounds = search_box->GetViewBoundsForSearchBoxContentsBounds(
       ConvertRectToWidgetWithoutTransform(previous_bounds));
@@ -398,14 +393,11 @@ void ContentsView::UpdateSearchBoxAnimation(double progress,
       gfx::Tween::RectValueBetween(progress, previous_bounds, target_bounds);
   gfx::Transform transform;
 
-  if (current_bounds == target_bounds) {
-    transform.Scale(scale, scale);
-  } else {
+  if (current_bounds != target_bounds) {
     transform.Translate(current_bounds.origin() - target_bounds.origin());
-    // The existence of |scale| casts the width/height to float, so it's safe to
-    // divide.
-    transform.Scale(scale * current_bounds.width() / target_bounds.width(),
-                    scale * current_bounds.height() / target_bounds.height());
+    transform.Scale(
+        static_cast<float>(current_bounds.width()) / target_bounds.width(),
+        static_cast<float>(current_bounds.height()) / target_bounds.height());
   }
   search_box->GetWidget()->GetLayer()->SetTransform(transform);
 }
@@ -507,6 +499,15 @@ gfx::Rect ContentsView::GetDefaultSearchBoxBounds() const {
                            0);
   search_box_bounds.set_y(
       AppListConfig::instance().search_box_fullscreen_top_padding());
+  // Reduce the search box size in fullscreen view state when the work area
+  // height is less than 600 dip - the goal is to increase the amount of space
+  // available to apps grid.
+  if (GetContentsBounds().height() < 600 &&
+      !app_list_features::IsScalableAppListEnabled() &&
+      (target_view_state_ == ash::AppListViewState::kFullscreenAllApps ||
+       target_view_state_ == ash::AppListViewState::kFullscreenSearch)) {
+    search_box_bounds.set_height(40);
+  }
   return search_box_bounds;
 }
 
@@ -598,16 +599,11 @@ void ContentsView::Layout() {
   gfx::Rect search_box_bounds = GetSearchBoxBoundsForState(current_state);
   search_box_bounds = search_box->GetViewBoundsForSearchBoxContentsBounds(
       ConvertRectToWidgetWithoutTransform(search_box_bounds));
-  const float scale = GetAppListMainViewScale();
-  search_box_bounds.set_origin(
-      gfx::Point(search_box_bounds.x() * scale, search_box_bounds.y() * scale));
   search_box->GetWidget()->SetBounds(search_box_bounds);
   search_box->UpdateLayout(1.f, current_state, current_state);
   search_box->UpdateBackground(1.f, current_state, current_state);
   // Reset the transform which can be set through animation.
-  gfx::Transform transform;
-  transform.Scale(scale, scale);
-  search_box->GetWidget()->GetLayer()->SetTransform(transform);
+  search_box->GetWidget()->GetLayer()->SetTransform(gfx::Transform());
 }
 
 const char* ContentsView::GetClassName() const {
@@ -707,24 +703,12 @@ void ContentsView::UpdateYPositionAndOpacity() {
   gfx::Rect search_rect = search_box->GetViewBoundsForSearchBoxContentsBounds(
       ConvertRectToWidgetWithoutTransform(
           apps_container_view->GetSearchBoxExpectedBounds()));
-
-  // Search box is in a different widget with AppListMainView, so we need to
-  // manually transform the search box position using the same scale based on
-  // the same origin.
-  const float scale = GetAppListMainViewScale();
-  search_rect.set_origin(
-      gfx::Point(search_rect.x() * scale, search_rect.y() * scale));
   search_box->GetWidget()->SetBounds(search_rect);
 
   search_results_page_view()->SetBoundsRect(
       apps_container_view->GetSearchBoxExpectedBounds());
 
   apps_container_view->UpdateYPositionAndOpacity();
-}
-
-float ContentsView::GetAppListMainViewScale() const {
-  // The x and y scale are the same.
-  return app_list_view_->app_list_main_view()->GetTransform().Scale2d().x();
 }
 
 void ContentsView::SetExpandArrowViewVisibility(bool show) {

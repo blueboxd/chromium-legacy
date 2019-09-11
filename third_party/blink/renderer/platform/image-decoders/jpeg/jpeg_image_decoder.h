@@ -52,7 +52,6 @@ class PLATFORM_EXPORT JPEGImageDecoder final : public ImageDecoder {
   bool CanDecodeToYUV() override;
   void DecodeToYUV() override;
   SkYUVColorSpace GetYUVColorSpace() const override;
-  void SetImagePlanes(std::unique_ptr<ImagePlanes>) override;
   Vector<SkISize> GetSupportedDecodeSizes() const override;
   bool HasImagePlanes() const { return image_planes_.get(); }
 
@@ -67,8 +66,12 @@ class PLATFORM_EXPORT JPEGImageDecoder final : public ImageDecoder {
   void SetDecodedSize(unsigned width, unsigned height);
 
   void SetSupportedDecodeSizes(Vector<SkISize> sizes);
+
+  // TODO(crbug.com/919627): |allow_decode_to_yuv_| is false by
+  // default and is only set true for unit tests. Remove it once
+  // JPEG YUV decoding is finished and YUV decoding is enabled by default.
   void SetDecodeToYuvForTesting(bool decode_to_yuv) {
-    decode_to_yuv_for_testing_ = decode_to_yuv;
+    allow_decode_to_yuv_ = decode_to_yuv;
   }
 
  private:
@@ -83,10 +86,8 @@ class PLATFORM_EXPORT JPEGImageDecoder final : public ImageDecoder {
 
   std::unique_ptr<JPEGImageReader> reader_;
   const size_t offset_;
-  std::unique_ptr<ImagePlanes> image_planes_;
   IntSize decoded_size_;
   Vector<SkISize> supported_decode_sizes_;
-  bool decode_to_yuv_for_testing_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(JPEGImageDecoder);
 };

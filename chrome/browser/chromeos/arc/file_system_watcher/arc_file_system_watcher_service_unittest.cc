@@ -78,6 +78,12 @@ TEST(ArcFileSystemWatcherServiceTest, AppendRelativePathForRemovableMedia) {
       &android_path));
   EXPECT_EQ("/storage", android_path.value());
 
+  // Error: |cros_path| is a parent of /media/removable.
+  android_path = base::FilePath(FILE_PATH_LITERAL("/storage"));
+  EXPECT_FALSE(AppendRelativePathForRemovableMedia(
+      base::FilePath(FILE_PATH_LITERAL("/media")), &android_path));
+  EXPECT_EQ("/storage", android_path.value());
+
   // Error: |cros_path| does not contain a component for device label.
   android_path = base::FilePath(FILE_PATH_LITERAL("/storage"));
   EXPECT_FALSE(AppendRelativePathForRemovableMedia(

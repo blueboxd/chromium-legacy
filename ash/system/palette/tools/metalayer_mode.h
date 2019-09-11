@@ -8,7 +8,6 @@
 #include "ash/ash_export.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
-#include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "ash/system/palette/common_palette_tool.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/events/event_handler.h"
@@ -40,14 +39,14 @@ class ASH_EXPORT MetalayerMode : public CommonPaletteTool,
   // Whether the tool is in "loading" state.
   bool loading() const {
     return feature_enabled() &&
-           voice_interaction_state_ == mojom::VoiceInteractionState::NOT_READY;
+           assistant_state_ == mojom::AssistantState::NOT_READY;
   }
 
   // Whether the tool can be selected from the menu (only true when enabled
   // by the user and fully loaded).
   bool selectable() const {
     return feature_enabled() &&
-           voice_interaction_state_ != mojom::VoiceInteractionState::NOT_READY;
+           assistant_state_ != mojom::AssistantState::NOT_READY;
   }
 
   // PaletteTool:
@@ -65,7 +64,7 @@ class ASH_EXPORT MetalayerMode : public CommonPaletteTool,
   void OnTouchEvent(ui::TouchEvent* event) override;
 
   // AssistantStateObserver:
-  void OnAssistantStatusChanged(mojom::VoiceInteractionState state) override;
+  void OnAssistantStatusChanged(mojom::AssistantState state) override;
   void OnAssistantSettingsEnabled(bool enabled) override;
   void OnAssistantContextEnabled(bool enabled) override;
   void OnAssistantFeatureAllowedChanged(
@@ -83,8 +82,7 @@ class ASH_EXPORT MetalayerMode : public CommonPaletteTool,
   // Called when the metalayer session is complete.
   void OnMetalayerSessionComplete();
 
-  mojom::VoiceInteractionState voice_interaction_state_ =
-      mojom::VoiceInteractionState::NOT_READY;
+  mojom::AssistantState assistant_state_ = mojom::AssistantState::NOT_READY;
 
   bool assistant_enabled_ = false;
 

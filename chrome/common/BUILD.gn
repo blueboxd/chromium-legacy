@@ -491,8 +491,15 @@ static_library("common") {
     ]
   }
 
-  if (enable_widevine && enable_library_cdms) {
-    deps += [ "//third_party/widevine/cdm:headers" ]
+  if (enable_library_cdms) {
+    sources += [
+      "media/cdm_manifest.cc",
+      "media/cdm_manifest.h",
+    ]
+    if (enable_widevine) {
+      # Needed by chrome_content_client.cc.
+      deps += [ "//third_party/widevine/cdm:headers" ]
+    }
   }
 
   if (safe_browsing_mode != 0) {

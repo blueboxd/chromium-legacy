@@ -158,9 +158,13 @@ void PnaclHost::Init() {
 }
 
 // Initialize for testing, optionally using the in-memory backend, and manually
-// setting the temporary file directory instead of using the system directory.
+// setting the temporary file directory instead of using the system directory,
+// and re-initializing file task runner.
 void PnaclHost::InitForTest(base::FilePath temp_dir, bool in_memory) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  file_task_runner_ =
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                       base::TaskPriority::USER_VISIBLE});
   disk_cache_.reset(new PnaclTranslationCache());
   cache_state_ = CacheInitializing;
   temp_dir_ = temp_dir;

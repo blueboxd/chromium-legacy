@@ -133,7 +133,6 @@ CrElementsToolbarSearchFieldTest.prototype = {
 };
 
 TEST_F('CrElementsToolbarSearchFieldTest', 'All', function() {
-  cr_toolbar_search_field.registerTests();
   mocha.run();
 });
 

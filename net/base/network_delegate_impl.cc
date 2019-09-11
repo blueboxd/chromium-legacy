@@ -84,13 +84,6 @@ bool NetworkDelegateImpl::OnCanSetCookie(const URLRequest& request,
   return allowed_from_caller;
 }
 
-bool NetworkDelegateImpl::OnCanAccessFile(
-    const URLRequest& request,
-    const base::FilePath& original_path,
-    const base::FilePath& absolute_path) const {
-  return false;
-}
-
 bool NetworkDelegateImpl::OnForcePrivacyMode(
     const GURL& url,
     const GURL& site_for_cookies,

@@ -54,7 +54,7 @@
 namespace gpu {
 namespace {
 
-sk_sp<SkPromiseImageTexture> CreatePromiseTexture(
+sk_sp<SkPromiseImageTexture> CreatePromiseTextureAHB(
     viz::VulkanContextProvider* context_provider,
     base::android::ScopedHardwareBufferHandle ahb_handle,
     gfx::Size size,
@@ -98,8 +98,8 @@ sk_sp<SkPromiseImageTexture> CreatePromiseTexture(
   return promise_texture;
 }
 
-void DestroyVkPromiseTexture(viz::VulkanContextProvider* context_provider,
-                             sk_sp<SkPromiseImageTexture> promise_texture) {
+void DestroyVkPromiseTextureAHB(viz::VulkanContextProvider* context_provider,
+                                sk_sp<SkPromiseImageTexture> promise_texture) {
   DCHECK(promise_texture);
   DCHECK(promise_texture->unique());
 
@@ -268,8 +268,8 @@ class SharedImageRepresentationSkiaVkAHB
   }
 
   ~SharedImageRepresentationSkiaVkAHB() override {
-    DestroyVkPromiseTexture(context_state_->vk_context_provider(),
-                            std::move(promise_texture_));
+    DestroyVkPromiseTextureAHB(context_state_->vk_context_provider(),
+                               std::move(promise_texture_));
     DCHECK_EQ(mode_, RepresentationAccessMode::kNone);
     DCHECK(!surface_);
   }
@@ -530,7 +530,7 @@ SharedImageBackingAHB::ProduceSkia(
   // Check whether we are in Vulkan mode OR GL mode and accordingly create
   // Skia representation.
   if (context_state->GrContextIsVulkan()) {
-    sk_sp<SkPromiseImageTexture> promise_texture = CreatePromiseTexture(
+    sk_sp<SkPromiseImageTexture> promise_texture = CreatePromiseTextureAHB(
         context_state->vk_context_provider(), GetAhbHandle(), size(), format());
     if (!promise_texture)
       return nullptr;

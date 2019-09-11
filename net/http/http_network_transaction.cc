@@ -172,6 +172,7 @@ int HttpNetworkTransaction::Start(const HttpRequestInfo* request_info,
   net_log_ = net_log;
   request_ = request_info;
   url_ = request_->url;
+  network_isolation_key_ = request_->network_isolation_key;
 #if BUILDFLAG(ENABLE_REPORTING)
   // Store values for later use in NEL report generation.
   request_method_ = request_->method;
@@ -326,7 +327,7 @@ void HttpNetworkTransaction::PrepareForAuthRestart(HttpAuth::Target target) {
       auth_controllers_[target]->NeedsHTTP11()) {
     session_->http_server_properties()->SetHTTP11Required(
         HttpServerProperties::GetNormalizedSchemeHostPort(request_->url),
-        request_->network_isolation_key);
+        network_isolation_key_);
   }
 
   bool keep_alive = false;
@@ -1163,7 +1164,7 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
     if (response_.ssl_info.is_valid() &&
         !IsCertStatusError(response_.ssl_info.cert_status)) {
       session_->http_stream_factory()->ProcessAlternativeServices(
-          session_, request_->network_isolation_key, response_.headers.get(),
+          session_, network_isolation_key_, response_.headers.get(),
           url::SchemeHostPort(request_->url));
     }
   }
@@ -1256,7 +1257,7 @@ int HttpNetworkTransaction::DoReadBodyComplete(int result) {
       HistogramBrokenAlternateProtocolLocation(
           BROKEN_ALTERNATE_PROTOCOL_LOCATION_HTTP_NETWORK_TRANSACTION);
       session_->http_server_properties()->MarkAlternativeServiceBroken(
-          retried_alternative_service_);
+          retried_alternative_service_, network_isolation_key_);
     }
 
 #if BUILDFLAG(ENABLE_REPORTING)
@@ -1577,7 +1578,7 @@ int HttpNetworkTransaction::HandleIOError(int error) {
       if (HasExceededMaxRetries())
         break;
       if (session_->http_server_properties()->IsAlternativeServiceBroken(
-              retried_alternative_service_)) {
+              retried_alternative_service_, network_isolation_key_)) {
         // If the alternative service was marked as broken while the request
         // was in flight, retry the request which will not use the broken
         // alternative service.

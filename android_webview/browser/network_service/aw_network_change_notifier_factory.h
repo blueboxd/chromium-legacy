@@ -12,7 +12,6 @@
 
 namespace net {
 class NetworkChangeNotifier;
-class NetworkChangeNotifierDelegateAndroid;
 }
 
 namespace android_webview {

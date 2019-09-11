@@ -260,6 +260,20 @@ void GPUCommandEncoder::copyTextureToTexture(GPUTextureCopyView* source,
       GetHandle(), &dawn_source, &dawn_destination, &dawn_copy_size);
 }
 
+void GPUCommandEncoder::pushDebugGroup(String groupLabel) {
+  GetProcs().commandEncoderPushDebugGroup(GetHandle(),
+                                          groupLabel.Utf8().data());
+}
+
+void GPUCommandEncoder::popDebugGroup() {
+  GetProcs().commandEncoderPopDebugGroup(GetHandle());
+}
+
+void GPUCommandEncoder::insertDebugMarker(String markerLabel) {
+  GetProcs().commandEncoderInsertDebugMarker(GetHandle(),
+                                             markerLabel.Utf8().data());
+}
+
 GPUCommandBuffer* GPUCommandEncoder::finish() {
   return GPUCommandBuffer::Create(
       device_, GetProcs().commandEncoderFinish(GetHandle(), nullptr));

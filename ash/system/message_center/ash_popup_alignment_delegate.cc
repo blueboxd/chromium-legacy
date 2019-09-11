@@ -147,13 +147,7 @@ void AshPopupAlignmentDelegate::UpdateWorkArea() {
 ///////////////////////////////////////////////////////////////////////////////
 // ShelfObserver:
 
-void AshPopupAlignmentDelegate::WillChangeVisibilityState(
-    ShelfVisibilityState new_state) {
-  UpdateWorkArea();
-}
-
-void AshPopupAlignmentDelegate::OnAutoHideStateChanged(
-    ShelfAutoHideState new_state) {
+void AshPopupAlignmentDelegate::OnShelfWorkAreaInsetsChanged() {
   UpdateWorkArea();
 }
 

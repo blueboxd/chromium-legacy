@@ -285,10 +285,6 @@ class NET_EXPORT URLRequestJob {
   // that we were canceled.
   void NotifyCanceled();
 
-  // Notifies the job the request should be restarted.
-  // Should only be called if the job has not started a response.
-  void NotifyRestartRequired();
-
   // See corresponding functions in url_request.h.
   void OnCallToDelegate(NetLogEventType type);
   void OnCallToDelegateComplete();

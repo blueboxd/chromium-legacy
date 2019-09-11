@@ -507,12 +507,6 @@ TEST_F(ParentAccessViewTest, TabKeyTraversal) {
   EXPECT_TRUE(test_api.back_button()->HasFocus());
 
   generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_NONE);
-  EXPECT_TRUE(test_api.title_label()->HasFocus());
-
-  generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_NONE);
-  EXPECT_TRUE(test_api.description_label()->HasFocus());
-
-  generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_NONE);
   EXPECT_TRUE(HasFocusInAnyChildView(test_api.access_code_view()));
 
   generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_NONE);
@@ -537,12 +531,6 @@ TEST_F(ParentAccessViewTest, BackwardTabKeyTraversal) {
 
   generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
   EXPECT_TRUE(HasFocusInAnyChildView(test_api.access_code_view()));
-
-  generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
-  EXPECT_TRUE(test_api.description_label()->HasFocus());
-
-  generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
-  EXPECT_TRUE(test_api.title_label()->HasFocus());
 
   generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
   EXPECT_TRUE(test_api.back_button()->HasFocus());

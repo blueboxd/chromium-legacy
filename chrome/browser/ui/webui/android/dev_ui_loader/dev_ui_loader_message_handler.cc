@@ -43,7 +43,7 @@ void DevUiLoaderMessageHandler::ReplyToJavaScript(
     const char* return_value) {
   AllowJavascript();
   base::ListValue response;
-  response.GetList().emplace_back(base::Value(return_value));
+  response.Append(base::Value(return_value));
   ResolveJavascriptCallback(callback_id, response);
 }
 

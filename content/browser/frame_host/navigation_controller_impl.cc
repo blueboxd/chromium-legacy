@@ -926,7 +926,11 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
   TRACE_EVENT1("browser,navigation",
                "NavigationControllerImpl::LoadURLWithParams",
                "url", params.url.possibly_invalid_spec());
-  if (HandleDebugURL(params.url, params.transition_type)) {
+  bool is_explicit_navigation =
+      GetContentClient()->browser()->IsExplicitNavigation(
+          params.transition_type);
+  if (HandleDebugURL(params.url, params.transition_type,
+                     is_explicit_navigation)) {
     // If Telemetry is running, allow the URL load to proceed as if it's
     // unhandled, otherwise Telemetry can't tell if Navigation completed.
     if (!base::CommandLine::ForCurrentProcess()->HasSwitch(

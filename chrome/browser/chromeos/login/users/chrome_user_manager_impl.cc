@@ -368,10 +368,10 @@ ChromeUserManagerImpl::ChromeUserManagerImpl()
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   DeviceSettingsService::Get()->AddObserver(this);
+  if (g_browser_process->profile_manager())
+    g_browser_process->profile_manager()->AddObserver(this);
 
   registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_ADDED,
                  content::NotificationService::AllSources());
 
   // Since we're in ctor postpone any actions till this is fully created.
@@ -431,6 +431,8 @@ ChromeUserManagerImpl::ChromeUserManagerImpl()
 }
 
 ChromeUserManagerImpl::~ChromeUserManagerImpl() {
+  if (g_browser_process->profile_manager())
+    g_browser_process->profile_manager()->RemoveObserver(this);
   if (DeviceSettingsService::IsInitialized())
     DeviceSettingsService::Get()->RemoveObserver(this);
 }
@@ -632,45 +634,21 @@ void ChromeUserManagerImpl::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED: {
-      Profile* profile = content::Details<Profile>(details).ptr();
-      if (IsUserLoggedIn() && !IsLoggedInAsGuest() && !IsLoggedInAsKioskApp() &&
-          !IsLoggedInAsArcKioskApp()) {
-        if (!profile->IsOffTheRecord()) {
-          if (AuthSyncObserver::ShouldObserve(profile)) {
-            AuthSyncObserver* sync_observer =
-                AuthSyncObserverFactory::GetInstance()->GetForProfile(profile);
-            sync_observer->StartObserving();
-          }
-          multi_profile_user_controller_->StartObserving(profile);
-        }
+  DCHECK_EQ(type, chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED);
+  Profile* profile = content::Details<Profile>(details).ptr();
+  if (IsUserLoggedIn() && !IsLoggedInAsGuest() && !IsLoggedInAsKioskApp() &&
+      !IsLoggedInAsArcKioskApp()) {
+    if (!profile->IsOffTheRecord()) {
+      if (AuthSyncObserver::ShouldObserve(profile)) {
+        AuthSyncObserver* sync_observer =
+            AuthSyncObserverFactory::GetInstance()->GetForProfile(profile);
+        sync_observer->StartObserving();
       }
-      system::UpdateSystemTimezone(profile);
-      UpdateUserTimeZoneRefresher(profile);
-      break;
+      multi_profile_user_controller_->StartObserving(profile);
     }
-    case chrome::NOTIFICATION_PROFILE_ADDED: {
-      Profile* profile = content::Source<Profile>(source).ptr();
-      user_manager::User* user =
-          ProfileHelper::Get()->GetUserByProfile(profile);
-      if (user != NULL) {
-        user->SetProfileIsCreated();
-
-        if (user->HasGaiaAccount())
-          GetUserImageManager(user->GetAccountId())->UserProfileCreated();
-      }
-
-      // If there is pending user switch, do it now.
-      if (GetPendingUserSwitchID().is_valid()) {
-        SwitchActiveUser(GetPendingUserSwitchID());
-        SetPendingUserSwitchId(EmptyAccountId());
-      }
-      break;
-    }
-    default:
-      NOTREACHED();
   }
+  system::UpdateSystemTimezone(profile);
+  UpdateUserTimeZoneRefresher(profile);
 }
 
 void ChromeUserManagerImpl::OwnershipStatusChanged() {
@@ -1312,6 +1290,22 @@ bool ChromeUserManagerImpl::IsGaiaUserAllowed(
 
 void ChromeUserManagerImpl::OnMinimumVersionStateChanged() {
   NotifyUsersSignInConstraintsChanged();
+}
+
+void ChromeUserManagerImpl::OnProfileAdded(Profile* profile) {
+  user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile);
+  if (user) {
+    user->SetProfileIsCreated();
+
+    if (user->HasGaiaAccount())
+      GetUserImageManager(user->GetAccountId())->UserProfileCreated();
+  }
+
+  // If there is pending user switch, do it now.
+  if (GetPendingUserSwitchID().is_valid()) {
+    SwitchActiveUser(GetPendingUserSwitchID());
+    SetPendingUserSwitchId(EmptyAccountId());
+  }
 }
 
 bool ChromeUserManagerImpl::IsUserAllowed(

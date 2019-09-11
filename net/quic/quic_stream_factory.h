@@ -544,7 +544,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       const NetworkIsolationKey& network_isolation_key) const;
 
   // Helper methods.
-  bool WasQuicRecentlyBroken(const quic::QuicServerId& server_id) const;
+  bool WasQuicRecentlyBroken(const QuicSessionKey& session_key) const;
 
   bool CryptoConfigCacheIsEmpty(const quic::QuicServerId& server_id);
 

@@ -543,9 +543,20 @@ unsigned int RasterImplementation::GetTransferBufferFreeSize() const {
   return transfer_buffer_->GetFreeSize();
 }
 
+bool RasterImplementation::IsJpegDecodeAccelerationSupported() const {
+  return image_decode_accelerator_ &&
+         image_decode_accelerator_->IsJpegDecodeAccelerationSupported();
+}
+
+bool RasterImplementation::IsWebPDecodeAccelerationSupported() const {
+  return image_decode_accelerator_ &&
+         image_decode_accelerator_->IsWebPDecodeAccelerationSupported();
+}
+
 bool RasterImplementation::CanDecodeWithHardwareAcceleration(
     base::span<const uint8_t> encoded_data) const {
-  return image_decode_accelerator_->IsImageSupported(encoded_data);
+  return image_decode_accelerator_ &&
+         image_decode_accelerator_->IsImageSupported(encoded_data);
 }
 
 const std::string& RasterImplementation::GetLogPrefix() const {

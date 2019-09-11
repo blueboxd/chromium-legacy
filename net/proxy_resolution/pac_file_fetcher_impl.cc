@@ -105,13 +105,7 @@ void ConvertResponseToUTF16(const std::string& charset,
 
 std::unique_ptr<PacFileFetcherImpl> PacFileFetcherImpl::Create(
     URLRequestContext* url_request_context) {
-  return base::WrapUnique(new PacFileFetcherImpl(url_request_context, false));
-}
-
-std::unique_ptr<PacFileFetcherImpl>
-PacFileFetcherImpl::CreateWithFileUrlSupport(
-    URLRequestContext* url_request_context) {
-  return base::WrapUnique(new PacFileFetcherImpl(url_request_context, true));
+  return base::WrapUnique(new PacFileFetcherImpl(url_request_context));
 }
 
 PacFileFetcherImpl::~PacFileFetcherImpl() {
@@ -320,8 +314,7 @@ void PacFileFetcherImpl::OnReadCompleted(URLRequest* request, int num_bytes) {
   }
 }
 
-PacFileFetcherImpl::PacFileFetcherImpl(URLRequestContext* url_request_context,
-                                       bool allow_file_url)
+PacFileFetcherImpl::PacFileFetcherImpl(URLRequestContext* url_request_context)
     : url_request_context_(url_request_context),
       buf_(base::MakeRefCounted<IOBuffer>(kBufSize)),
       next_id_(0),
@@ -329,8 +322,7 @@ PacFileFetcherImpl::PacFileFetcherImpl(URLRequestContext* url_request_context,
       result_code_(OK),
       result_text_(nullptr),
       max_response_bytes_(kDefaultMaxResponseBytes),
-      max_duration_(kDefaultMaxDuration),
-      allow_file_url_(allow_file_url) {
+      max_duration_(kDefaultMaxDuration) {
   DCHECK(url_request_context);
 }
 
@@ -338,12 +330,6 @@ bool PacFileFetcherImpl::IsUrlSchemeAllowed(const GURL& url) const {
   // Always allow http://, https://, data:, and ftp://.
   if (url.SchemeIsHTTPOrHTTPS() || url.SchemeIs("ftp") || url.SchemeIs("data"))
     return true;
-
-  // Only permit file:// if |allow_file_url_| was set. file:// should not be
-  // allowed for URLs that were auto-detected, or as the result of a server-side
-  // redirect.
-  if (url.SchemeIsFile())
-    return allow_file_url_;
 
   // Disallow any other URL scheme.
   return false;

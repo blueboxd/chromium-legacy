@@ -13,6 +13,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/feature_list.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_context.h"
@@ -109,6 +110,7 @@ D3D11VideoDecoder::D3D11VideoDecoder(
     : media_log_(std::move(media_log)),
       impl_(std::move(impl)),
       impl_task_runner_(std::move(gpu_task_runner)),
+      already_initialized_(false),
       gpu_preferences_(gpu_preferences),
       gpu_workarounds_(gpu_workarounds),
       get_d3d11_device_cb_(std::move(get_d3d11_device_cb)),
@@ -133,6 +135,8 @@ D3D11VideoDecoder::~D3D11VideoDecoder() {
 
   // Explicitly destroy the decoder, since it can reference picture buffers.
   accelerated_video_decoder_.reset();
+
+  AddLifetimeProgressionStage(D3D11LifetimeProgression::kPlaybackSucceeded);
 }
 
 std::string D3D11VideoDecoder::GetDisplayName() const {
@@ -182,6 +186,11 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
                                    InitCB init_cb,
                                    const OutputCB& output_cb,
                                    const WaitingCB& waiting_cb) {
+  if (already_initialized_)
+    AddLifetimeProgressionStage(D3D11LifetimeProgression::kPlaybackSucceeded);
+  already_initialized_ = true;
+  AddLifetimeProgressionStage(D3D11LifetimeProgression::kInitializeStarted);
+
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(output_cb);
   DCHECK(waiting_cb);
@@ -371,6 +380,8 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
       base::BindRepeating(&D3D11VideoDecoder::ReceivePictureBufferFromClient,
                           weak_factory_.GetWeakPtr());
 
+  AddLifetimeProgressionStage(D3D11LifetimeProgression::kInitializeSucceeded);
+
   // Initialize the gpu side.  We wait until everything else is initialized,
   // since we allow it to call us back re-entrantly to reduce latency.  Note
   // that if we're not on the same thread, then we should probably post the
@@ -390,6 +401,13 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
       base::BindOnce(&D3D11VideoDecoderImpl::Initialize, impl_weak_,
                      BindToCurrentLoop(std::move(impl_init_cb)),
                      BindToCurrentLoop(std::move(get_picture_buffer_cb))));
+}
+
+void D3D11VideoDecoder::AddLifetimeProgressionStage(
+    D3D11LifetimeProgression stage) {
+  DCHECK(already_initialized_);
+  const std::string uma_name("Media.D3D11.DecoderLifetimeProgression");
+  base::UmaHistogramEnumeration(uma_name, stage);
 }
 
 void D3D11VideoDecoder::ReceivePictureBufferFromClient(

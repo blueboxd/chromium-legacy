@@ -43,14 +43,12 @@ class PasswordManagerClient;
 class PasswordManagerDriver;
 class PasswordFormManagerForUI;
 class PasswordFormManagerInterface;
-class PasswordFormMetricsRecorder;
 class PasswordManagerMetricsRecorder;
 class PasswordFormManager;
 
 // Per-tab password manager. Handles creation and management of UI elements,
 // receiving password form data from the renderer and managing the password
-// database through the PasswordStore. The PasswordManager is a LoginModel
-// for purposes of supporting HTTP authentication dialogs.
+// database through the PasswordStore.
 class PasswordManager : public FormSubmissionObserver {
  public:
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -86,16 +84,6 @@ class PasswordManager : public FormSubmissionObserver {
       const autofill::PasswordForm& form,
       const base::string16& generation_element,
       bool is_manually_triggered);
-
-  // TODO(isherman): This should not be public, but is currently being used by
-  // the LoginPrompt code.
-  // When a form is submitted, we prepare to save the password but wait
-  // until we decide the user has successfully logged in. This is step 1
-  // of 2 (see SavePassword).
-  // |driver| is optional and if it's given it should be a driver that
-  // corresponds to a frame from which |form| comes from.
-  void ProvisionallySavePassword(const autofill::PasswordForm& form,
-                                 const PasswordManagerDriver* driver);
 
   // FormSubmissionObserver:
   void DidNavigateMainFrame(bool form_may_be_submitted) override;
@@ -172,13 +160,6 @@ class PasswordManager : public FormSubmissionObserver {
 #endif  // !defined(OS_IOS)
 
 #endif  // defined(UNIT_TEST)
-
-  // Reports the priority of a PasswordGenerationRequirementsSpec for a
-  // generated password. See
-  // PasswordFormMetricsRecorder::ReportSpecPriorityForGeneratedPassword.
-  void ReportSpecPriorityForGeneratedPassword(
-      const autofill::PasswordForm& password_form,
-      uint32_t spec_priority);
 
   // Reports the success from the renderer's PasswordAutofillAgent to fill
   // credentials into a site. This may be called multiple times, but only
@@ -272,10 +253,6 @@ class PasswordManager : public FormSubmissionObserver {
   // and the matched form manager has not recieved yet response from the
   // password store, then nullptr is returned. Returns manager which manages
   // |form|.
-  // |is_gaia_with_skip_save_password_form| is true iff this is Gaia form which
-  // should be skipped on saving.
-  // TODO(https://crbug.com/949519): move |is_gaia_with_skip_save_password_form|
-  // from PasswordForm to FormData, and remove it from arguments.
   PasswordFormManager* ProvisionallySaveForm(const autofill::FormData& form,
                                              PasswordManagerDriver* driver,
                                              bool is_manual_fallback);
@@ -298,10 +275,6 @@ class PasswordManager : public FormSubmissionObserver {
       PasswordManagerMetricsRecorder::ProvisionalSaveFailure failure,
       const GURL& form_origin,
       BrowserSavePasswordProgressLogger* logger);
-
-  scoped_refptr<PasswordFormMetricsRecorder>
-  GetMetricRecorderFromPasswordFormManager(const autofill::FormData& form,
-                                           const PasswordManagerDriver* driver);
 
   // Returns the manager which manages |form|. |driver| is needed to determine
   // the match. Returns nullptr when no matched manager is found.

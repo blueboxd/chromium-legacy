@@ -17,6 +17,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -65,13 +66,16 @@ public class OfflinePageDownloadBridge {
     }
 
     private OfflinePageDownloadBridge() {
-        mNativeOfflinePageDownloadBridge = sIsTesting ? 0L : nativeInit();
+        mNativeOfflinePageDownloadBridge = sIsTesting
+                ? 0L
+                : OfflinePageDownloadBridgeJni.get().init(OfflinePageDownloadBridge.this);
     }
 
     /** Destroys the native portion of the bridge. */
     public void destroy() {
         if (mNativeOfflinePageDownloadBridge != 0) {
-            nativeDestroy(mNativeOfflinePageDownloadBridge);
+            OfflinePageDownloadBridgeJni.get().destroy(
+                    mNativeOfflinePageDownloadBridge, OfflinePageDownloadBridge.this);
             mNativeOfflinePageDownloadBridge = 0;
         }
     }
@@ -172,7 +176,7 @@ public class OfflinePageDownloadBridge {
      * @param origin the object encapsulating application origin of the request.
      */
     public static void startDownload(Tab tab, OfflinePageOrigin origin) {
-        nativeStartDownload(tab, origin.encodeAsJsonString());
+        OfflinePageDownloadBridgeJni.get().startDownload(tab, origin.encodeAsJsonString());
     }
 
     /**
@@ -260,7 +264,10 @@ public class OfflinePageDownloadBridge {
         return null;
     }
 
-    private native long nativeInit();
-    private native void nativeDestroy(long nativeOfflinePageDownloadBridge);
-    private static native void nativeStartDownload(Tab tab, String origin);
+    @NativeMethods
+    interface Natives {
+        long init(OfflinePageDownloadBridge caller);
+        void destroy(long nativeOfflinePageDownloadBridge, OfflinePageDownloadBridge caller);
+        void startDownload(Tab tab, String origin);
+    }
 }

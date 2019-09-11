@@ -79,6 +79,8 @@ class XR final : public EventTargetWithInlineData,
   int64_t GetSourceId() const { return ukm_source_id_; }
 
   using EnvironmentProviderErrorCallback = base::OnceCallback<void()>;
+  // Registers a callback that'll be invoked when mojo invokes a disconnect
+  // handler on the underlying XREnvironmentIntegrationProvider remote.
   void AddEnvironmentProviderErrorHandler(
       EnvironmentProviderErrorCallback callback);
 

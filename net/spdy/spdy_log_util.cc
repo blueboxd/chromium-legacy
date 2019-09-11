@@ -30,7 +30,7 @@ base::ListValue ElideSpdyHeaderBlockForNetLog(
   for (const auto& header : headers) {
     base::StringPiece key = header.first;
     base::StringPiece value = header.second;
-    headers_list.GetList().push_back(NetLogStringValue(
+    headers_list.Append(NetLogStringValue(
         base::StrCat({key, ": ",
                       ElideHeaderValueForNetLog(capture_mode, key.as_string(),
                                                 value.as_string())})));

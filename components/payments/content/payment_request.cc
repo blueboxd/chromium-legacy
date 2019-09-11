@@ -537,8 +537,14 @@ bool PaymentRequest::SatisfiesSkipUIConstraints() {
       is_show_user_gesture_ && state()->IsInitialized() &&
       spec()->IsInitialized() && state()->available_instruments().size() == 1 &&
       spec()->stringified_method_data().size() == 1 &&
-      !spec()->request_shipping() && !spec()->request_payer_name() &&
-      !spec()->request_payer_phone() && !spec()->request_payer_email();
+      (!spec()->request_shipping() ||
+       state()->available_instruments().front()->HandlesShippingAddress()) &&
+      (!spec()->request_payer_name() ||
+       state()->available_instruments().front()->HandlesPayerName()) &&
+      (!spec()->request_payer_phone() ||
+       state()->available_instruments().front()->HandlesPayerPhone()) &&
+      (!spec()->request_payer_email() ||
+       state()->available_instruments().front()->HandlesPayerEmail());
   if (skipped_payment_request_ui_) {
     DCHECK(state()->IsInitialized() && spec()->IsInitialized());
     journey_logger_.SetEventOccurred(JourneyLogger::EVENT_SKIPPED_SHOW);

@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #import "ios/web/find_in_page/find_in_page_request.h"
 #import "ios/web/public/find_in_page/find_in_page_manager.h"
-#include "ios/web/public/web_state/web_state_observer.h"
+#include "ios/web/public/web_state_observer.h"
 
 @class NSString;
 

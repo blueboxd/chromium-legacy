@@ -22,19 +22,42 @@
 
 namespace payments {
 
-class PaymentInstrumentTest : public testing::Test,
-                              public PaymentRequestSpec::Observer {
+namespace {
+
+enum class RequiredPaymentOptions {
+  // None of the shipping address or contact information is required.
+  kNone,
+  // Shipping Address is required.
+  kShippingAddress,
+  // Payer's contact information(phone, name, email) is required.
+  kContactInformation,
+  // Payer's email is required.
+  kPayerEmail,
+  // Both contact information and shipping address are required.
+  kContactInformationAndShippingAddress,
+};
+
+}  // namespace
+
+class PaymentInstrumentTest
+    : public testing::TestWithParam<RequiredPaymentOptions>,
+      public PaymentRequestSpec::Observer {
  protected:
   PaymentInstrumentTest()
       : address_(autofill::test::GetFullProfile()),
         local_card_(autofill::test::GetCreditCard()),
-        billing_profiles_({&address_}) {
+        billing_profiles_({&address_}),
+        required_options_(GetParam()) {
     local_card_.set_billing_address_id(address_.guid());
     CreateSpec();
   }
 
   std::unique_ptr<ServiceWorkerPaymentInstrument>
-  CreateServiceWorkerPaymentInstrument(bool can_preselect) {
+  CreateServiceWorkerPaymentInstrument(bool can_preselect,
+                                       bool handles_shipping,
+                                       bool handles_name,
+                                       bool handles_phone,
+                                       bool handles_email) {
     constexpr int kBitmapDimension = 16;
 
     std::unique_ptr<content::StoredPaymentApp> stored_app =
@@ -47,6 +70,19 @@ class PaymentInstrumentTest : public testing::Test,
       stored_app->icon->allocN32Pixels(kBitmapDimension, kBitmapDimension);
       stored_app->icon->eraseColor(SK_ColorRED);
     }
+    if (handles_shipping) {
+      stored_app->supported_delegations.shipping_address = true;
+    }
+    if (handles_name) {
+      stored_app->supported_delegations.payer_name = true;
+    }
+    if (handles_phone) {
+      stored_app->supported_delegations.payer_phone = true;
+    }
+    if (handles_email) {
+      stored_app->supported_delegations.payer_email = true;
+    }
+
     return std::make_unique<ServiceWorkerPaymentInstrument>(
         &browser_context_, GURL("https://testmerchant.com"),
         GURL("https://testmerchant.com/bobpay"), spec_.get(),
@@ -58,14 +94,38 @@ class PaymentInstrumentTest : public testing::Test,
     return billing_profiles_;
   }
 
+  RequiredPaymentOptions required_options() const { return required_options_; }
+
  private:
   // PaymentRequestSpec::Observer
   void OnSpecUpdated() override {}
 
   void CreateSpec() {
     std::vector<mojom::PaymentMethodDataPtr> method_data;
+    mojom::PaymentOptionsPtr payment_options = mojom::PaymentOptions::New();
+    switch (required_options_) {
+      case RequiredPaymentOptions::kNone:
+        break;
+      case RequiredPaymentOptions::kShippingAddress:
+        payment_options->request_shipping = true;
+        break;
+      case RequiredPaymentOptions::kContactInformation:
+        payment_options->request_payer_name = true;
+        payment_options->request_payer_email = true;
+        payment_options->request_payer_phone = true;
+        break;
+      case RequiredPaymentOptions::kPayerEmail:
+        payment_options->request_payer_email = true;
+        break;
+      case RequiredPaymentOptions::kContactInformationAndShippingAddress:
+        payment_options->request_shipping = true;
+        payment_options->request_payer_name = true;
+        payment_options->request_payer_email = true;
+        payment_options->request_payer_phone = true;
+        break;
+    }
     spec_ = std::make_unique<PaymentRequestSpec>(
-        mojom::PaymentOptions::New(), mojom::PaymentDetails::New(),
+        std::move(payment_options), mojom::PaymentDetails::New(),
         std::move(method_data), this, "en-US");
   }
 
@@ -76,12 +136,23 @@ class PaymentInstrumentTest : public testing::Test,
   std::vector<autofill::AutofillProfile*> billing_profiles_;
   MockPaymentRequestDelegate delegate_;
   MockIdentityObserver identity_observer_;
+  RequiredPaymentOptions required_options_;
   std::unique_ptr<PaymentRequestSpec> spec_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentInstrumentTest);
 };
 
-TEST_F(PaymentInstrumentTest, SortInstruments) {
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    PaymentInstrumentTest,
+    ::testing::Values(
+        RequiredPaymentOptions::kNone,
+        RequiredPaymentOptions::kShippingAddress,
+        RequiredPaymentOptions::kContactInformation,
+        RequiredPaymentOptions::kPayerEmail,
+        RequiredPaymentOptions::kContactInformationAndShippingAddress));
+
+TEST_P(PaymentInstrumentTest, SortInstruments) {
   std::vector<PaymentInstrument*> instruments;
   // Add a complete instrument with mismatching type.
   autofill::CreditCard complete_dismatching_card = local_credit_card();
@@ -109,13 +180,18 @@ TEST_F(PaymentInstrumentTest, SortInstruments) {
 
   // Add a non-preselectable sw based payment instrument.
   std::unique_ptr<ServiceWorkerPaymentInstrument>
-      non_preselectable_sw_instrument =
-          CreateServiceWorkerPaymentInstrument(false);
+      non_preselectable_sw_instrument = CreateServiceWorkerPaymentInstrument(
+          false /* = can_preselect */, false /* = handles_shipping */,
+          false /* = handles_name */, false /* = handles_phone */,
+          false /* = handles_email */);
   instruments.push_back(non_preselectable_sw_instrument.get());
 
   // Add a preselectable sw based payment instrument.
   std::unique_ptr<ServiceWorkerPaymentInstrument> preselectable_sw_instrument =
-      CreateServiceWorkerPaymentInstrument(true);
+      CreateServiceWorkerPaymentInstrument(
+          true /* = can_preselect */, false /* = handles_shipping */,
+          false /* = handles_name */, false /* = handles_phone */,
+          false /* = handles_email */);
   instruments.push_back(preselectable_sw_instrument.get());
 
   // Add an instrument with no name.
@@ -159,6 +235,7 @@ TEST_F(PaymentInstrumentTest, SortInstruments) {
   size_t i = 0;
   EXPECT_EQ(instruments[i++], preselectable_sw_instrument.get());
   EXPECT_EQ(instruments[i++], non_preselectable_sw_instrument.get());
+
   // Autfill instruments (credit cards) come after sw instruments.
   EXPECT_EQ(instruments[i++], &complete_frequently_used_cc_instrument);
   EXPECT_EQ(instruments[i++], &complete_matching_cc_instrument);
@@ -167,6 +244,107 @@ TEST_F(PaymentInstrumentTest, SortInstruments) {
   EXPECT_EQ(instruments[i++], &cc_instrument_with_no_name);
   EXPECT_EQ(instruments[i++], &cc_instrument_with_no_address);
   EXPECT_EQ(instruments[i++], &cc_instrument_with_no_number);
+}
+
+TEST_P(PaymentInstrumentTest, SortInstrumentsBasedOnSupportedDelegations) {
+  std::vector<PaymentInstrument*> instruments;
+  // Add a preselectable sw based payment instrument which does not support
+  // shipping or contact delegation.
+  std::unique_ptr<ServiceWorkerPaymentInstrument> does_not_support_delegations =
+      CreateServiceWorkerPaymentInstrument(
+          true /* = can_preselect */, false /* = handles_shipping */,
+          false /* = handles_name */, false /* = handles_phone */,
+          false /* = handles_email */);
+  instruments.push_back(does_not_support_delegations.get());
+
+  // Add a preselectable sw based payment instrument which handles shipping.
+  std::unique_ptr<ServiceWorkerPaymentInstrument> handles_shipping_address =
+      CreateServiceWorkerPaymentInstrument(
+          true /* = can_preselect */, true /* = handles_shipping */,
+          false /* = handles_name */, false /* = handles_phone */,
+          false /* = handles_email */);
+  instruments.push_back(handles_shipping_address.get());
+
+  // Add a preselectable sw based payment instrument which handles payer's
+  // email.
+  std::unique_ptr<ServiceWorkerPaymentInstrument> handles_payer_email =
+      CreateServiceWorkerPaymentInstrument(
+          true /* = can_preselect */, false /* = handles_shipping */,
+          false /* = handles_name */, false /* = handles_phone */,
+          true /* = handles_email */);
+  instruments.push_back(handles_payer_email.get());
+
+  // Add a preselectable sw based payment instrument which handles contact
+  // information.
+  std::unique_ptr<ServiceWorkerPaymentInstrument> handles_contact_info =
+      CreateServiceWorkerPaymentInstrument(
+          true /* = can_preselect */, false /* = handles_shipping */,
+          true /* = handles_name */, true /* = handles_phone */,
+          true /* = handles_email */);
+  instruments.push_back(handles_contact_info.get());
+
+  // Add a preselectable sw based payment instrument which handles both shipping
+  // address and contact information.
+  std::unique_ptr<ServiceWorkerPaymentInstrument> handles_shipping_and_contact =
+      CreateServiceWorkerPaymentInstrument(
+          true /* = can_preselect */, true /* = handles_shipping */,
+          true /* = handles_name */, true /* = handles_phone */,
+          true /* = handles_email */);
+  instruments.push_back(handles_shipping_and_contact.get());
+
+  PaymentInstrument::SortInstruments(&instruments);
+  size_t i = 0;
+
+  switch (required_options()) {
+    case RequiredPaymentOptions::kNone: {
+      // When no payemnt option is required the order of the payment instruments
+      // does not change.
+      EXPECT_EQ(instruments[i++], does_not_support_delegations.get());
+      EXPECT_EQ(instruments[i++], handles_shipping_address.get());
+      EXPECT_EQ(instruments[i++], handles_payer_email.get());
+      EXPECT_EQ(instruments[i++], handles_contact_info.get());
+      EXPECT_EQ(instruments[i++], handles_shipping_and_contact.get());
+      break;
+    }
+    case RequiredPaymentOptions::kShippingAddress: {
+      // Instruments that handle shipping address come first.
+      EXPECT_EQ(instruments[i++], handles_shipping_address.get());
+      EXPECT_EQ(instruments[i++], handles_shipping_and_contact.get());
+      // The order is unchanged for instruments that do not handle shipping.
+      EXPECT_EQ(instruments[i++], does_not_support_delegations.get());
+      EXPECT_EQ(instruments[i++], handles_payer_email.get());
+      EXPECT_EQ(instruments[i++], handles_contact_info.get());
+      break;
+    }
+    case RequiredPaymentOptions::kContactInformation: {
+      // Instruments that handle all required contact information come first.
+      EXPECT_EQ(instruments[i++], handles_contact_info.get());
+      EXPECT_EQ(instruments[i++], handles_shipping_and_contact.get());
+      // The instrument that partially handles contact information comes next.
+      EXPECT_EQ(instruments[i++], handles_payer_email.get());
+      // The order for instruments that do not handle contact information is not
+      // changed.
+      EXPECT_EQ(instruments[i++], does_not_support_delegations.get());
+      EXPECT_EQ(instruments[i++], handles_shipping_address.get());
+      break;
+    }
+    case RequiredPaymentOptions::kPayerEmail: {
+      EXPECT_EQ(instruments[i++], handles_payer_email.get());
+      EXPECT_EQ(instruments[i++], handles_contact_info.get());
+      EXPECT_EQ(instruments[i++], handles_shipping_and_contact.get());
+      EXPECT_EQ(instruments[i++], does_not_support_delegations.get());
+      EXPECT_EQ(instruments[i++], handles_shipping_address.get());
+      break;
+    }
+    case RequiredPaymentOptions::kContactInformationAndShippingAddress: {
+      EXPECT_EQ(instruments[i++], handles_shipping_and_contact.get());
+      EXPECT_EQ(instruments[i++], handles_shipping_address.get());
+      EXPECT_EQ(instruments[i++], handles_contact_info.get());
+      EXPECT_EQ(instruments[i++], handles_payer_email.get());
+      EXPECT_EQ(instruments[i++], does_not_support_delegations.get());
+      break;
+    }
+  }
 }
 
 }  // namespace payments

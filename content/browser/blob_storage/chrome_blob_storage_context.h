@@ -16,6 +16,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom.h"
@@ -89,8 +90,9 @@ class CONTENT_EXPORT ChromeBlobStorageContext
       const GURL& url);
 
   // Must be called on the UI thread.
-  static blink::mojom::BlobPtr GetBlobPtr(BrowserContext* browser_context,
-                                          const std::string& uuid);
+  static mojo::PendingRemote<blink::mojom::Blob> GetBlobRemote(
+      BrowserContext* browser_context,
+      const std::string& uuid);
 
  protected:
   virtual ~ChromeBlobStorageContext();

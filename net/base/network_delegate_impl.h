@@ -18,10 +18,6 @@
 
 class GURL;
 
-namespace base {
-class FilePath;
-}
-
 namespace url {
 class Origin;
 }
@@ -90,10 +86,6 @@ class NET_EXPORT NetworkDelegateImpl : public NetworkDelegate {
                       const net::CanonicalCookie& cookie,
                       CookieOptions* options,
                       bool allowed_from_caller) override;
-
-  bool OnCanAccessFile(const URLRequest& request,
-                       const base::FilePath& original_path,
-                       const base::FilePath& absolute_path) const override;
 
   bool OnForcePrivacyMode(
       const GURL& url,

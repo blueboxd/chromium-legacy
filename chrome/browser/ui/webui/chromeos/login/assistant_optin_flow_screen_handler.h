@@ -94,7 +94,7 @@ class AssistantOptInFlowScreenHandler
   void Initialize() override;
 
   // arc::VoiceInteractionControllerClient::Observer overrides
-  void OnStateChanged(ash::mojom::VoiceInteractionState state) override;
+  void OnStateChanged(ash::mojom::AssistantState state) override;
 
   // Connect to assistant settings manager.
   void BindAssistantSettingsManager();

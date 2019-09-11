@@ -8,6 +8,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabGridIphItemPro
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridIphItemProperties.IPH_ENTRANCE_CLOSE_BUTTON_LISTENER;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridIphItemProperties.IPH_ENTRANCE_SHOW_BUTTON_LISTENER;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridIphItemProperties.IPH_SCRIM_VIEW_OBSERVER;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridIphItemProperties.IS_INCOGNITO;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridIphItemProperties.IS_IPH_DIALOG_VISIBLE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridIphItemProperties.IS_IPH_ENTRANCE_VISIBLE;
 
@@ -52,6 +53,9 @@ class TabGridIphItemViewBinder {
             } else {
                 viewHolder.contentView.removeRecyclerViewFooter();
             }
+        } else if (IS_INCOGNITO == propertyKey) {
+            boolean isIncognito = model.get(TabGridIphItemProperties.IS_INCOGNITO);
+            viewHolder.iphItemView.updateColor(isIncognito);
         }
     }
 }

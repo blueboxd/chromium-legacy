@@ -1334,15 +1334,14 @@ base::Value HttpResponseHeaders::NetLogParams(
     NetLogCaptureMode capture_mode) const {
   base::DictionaryValue dict;
   base::ListValue headers;
-  headers.GetList().push_back(NetLogStringValue(GetStatusLine()));
+  headers.Append(NetLogStringValue(GetStatusLine()));
   size_t iterator = 0;
   std::string name;
   std::string value;
   while (EnumerateHeaderLines(&iterator, &name, &value)) {
     std::string log_value =
         ElideHeaderValueForNetLog(capture_mode, name, value);
-    headers.GetList().push_back(
-        NetLogStringValue(base::StrCat({name, ": ", log_value})));
+    headers.Append(NetLogStringValue(base::StrCat({name, ": ", log_value})));
   }
   dict.SetKey("headers", std::move(headers));
   return std::move(dict);

@@ -133,6 +133,7 @@ const char kActualLastLaunchTimeFormatted[] = "Sat, 1 Sep 2018 11:50:50 GMT";
 const char kLastLaunchTimeWindowStartFormatted[] =
     "Sat, 1 Sep 2018 00:00:00 GMT";
 const long kLastLaunchTimeWindowStartInJavaTime = 1535760000000;
+const char kDefaultPlatformVersion[] = "1234.0.0";
 
 class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
  public:
@@ -1966,16 +1967,16 @@ TEST_F(DeviceStatusCollectorTest, ReportArcKioskSessionStatus) {
 }
 
 TEST_F(DeviceStatusCollectorTest, NoOsUpdateStatusByDefault) {
-  MockPlatformVersion("1234.0.0");
+  MockPlatformVersion(kDefaultPlatformVersion);
   MockAutoLaunchKioskAppWithRequiredPlatformVersion(
-      fake_kiosk_device_local_account_, "1234.0.0");
+      fake_kiosk_device_local_account_, kDefaultPlatformVersion);
 
   GetStatus();
   EXPECT_FALSE(device_status_.has_os_update_status());
 }
 
 TEST_F(DeviceStatusCollectorTest, ReportOsUpdateStatusUpToDate) {
-  MockPlatformVersion("1234.0.0");
+  MockPlatformVersion(kDefaultPlatformVersion);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportOsUpdateStatus, true);
 
@@ -1998,7 +1999,7 @@ TEST_F(DeviceStatusCollectorTest, ReportOsUpdateStatusUpToDate) {
 }
 
 TEST_F(DeviceStatusCollectorTest, ReportOsUpdateStatus) {
-  MockPlatformVersion("1234.0.0");
+  MockPlatformVersion(kDefaultPlatformVersion);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportOsUpdateStatus, true);
   MockAutoLaunchKioskAppWithRequiredPlatformVersion(
@@ -2044,10 +2045,76 @@ TEST_F(DeviceStatusCollectorTest, ReportOsUpdateStatus) {
             device_status_.os_update_status().update_status());
 }
 
-TEST_F(DeviceStatusCollectorTest, NoRunningKioskAppByDefault) {
-  MockPlatformVersion("1234.0.0");
+TEST_F(DeviceStatusCollectorTest, NoLastCheckedTimestampByDefault) {
+  MockPlatformVersion(kDefaultPlatformVersion);
   MockAutoLaunchKioskAppWithRequiredPlatformVersion(
-      fake_kiosk_device_local_account_, "1234.0.0");
+      fake_kiosk_device_local_account_, kDefaultPlatformVersion);
+
+  GetStatus();
+  EXPECT_FALSE(device_status_.os_update_status().has_last_checked_timestamp());
+}
+
+TEST_F(DeviceStatusCollectorTest, ReportLastCheckedTimestamp) {
+  MockPlatformVersion(kDefaultPlatformVersion);
+  MockAutoLaunchKioskAppWithRequiredPlatformVersion(
+      fake_kiosk_device_local_account_, kDefaultPlatformVersion);
+
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportOsUpdateStatus, true);
+
+  // Check update multiple times, the timestamp stored in device status should
+  // change accordingly.
+  const int64 kLastCheckedTimes[] = {10, 20, 30};
+
+  for (size_t i = 0; i < base::size(kLastCheckedTimes); ++i) {
+    chromeos::UpdateEngineClient::Status update_status;
+    update_status.new_version = kDefaultPlatformVersion;
+    update_status.last_checked_time = kLastCheckedTimes[i];
+    update_engine_client_->PushLastStatus(update_status);
+
+    GetStatus();
+    ASSERT_TRUE(device_status_.os_update_status().has_last_checked_timestamp());
+
+    // The timestamp precision in UpdateEngine is in seconds, but the
+    // DeviceStatusCollector is in milliseconds. Therefore, the number should be
+    // multiplied by 1000 before validation.
+    ASSERT_EQ(kLastCheckedTimes[i] * 1000,
+              device_status_.os_update_status().last_checked_timestamp());
+  }
+}
+
+TEST_F(DeviceStatusCollectorTest, NoLastRebootTimestampByDefault) {
+  MockPlatformVersion(kDefaultPlatformVersion);
+  MockAutoLaunchKioskAppWithRequiredPlatformVersion(
+      fake_kiosk_device_local_account_, kDefaultPlatformVersion);
+
+  GetStatus();
+  EXPECT_FALSE(device_status_.os_update_status().has_last_reboot_timestamp());
+}
+
+TEST_F(DeviceStatusCollectorTest, ReportLastRebootTimestamp) {
+  MockPlatformVersion(kDefaultPlatformVersion);
+  MockAutoLaunchKioskAppWithRequiredPlatformVersion(
+      fake_kiosk_device_local_account_, kDefaultPlatformVersion);
+
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportOsUpdateStatus, true);
+
+  GetStatus();
+  ASSERT_TRUE(device_status_.os_update_status().has_last_reboot_timestamp());
+
+  // No good way to inject specific last reboot timestamp of the test machine,
+  // so just make sure UnixEpoch < RebootTime < Now.
+  EXPECT_GT(device_status_.os_update_status().last_reboot_timestamp(),
+            base::Time::UnixEpoch().ToJavaTime());
+  EXPECT_LT(device_status_.os_update_status().last_reboot_timestamp(),
+            base::Time::Now().ToJavaTime());
+}
+
+TEST_F(DeviceStatusCollectorTest, NoRunningKioskAppByDefault) {
+  MockPlatformVersion(kDefaultPlatformVersion);
+  MockAutoLaunchKioskAppWithRequiredPlatformVersion(
+      fake_kiosk_device_local_account_, kDefaultPlatformVersion);
   status_collector_->set_kiosk_account(
       std::make_unique<policy::DeviceLocalAccount>(
           fake_kiosk_device_local_account_));
@@ -2060,9 +2127,9 @@ TEST_F(DeviceStatusCollectorTest, NoRunningKioskAppByDefault) {
 TEST_F(DeviceStatusCollectorTest, NoRunningKioskAppWhenNotInKioskSession) {
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportRunningKioskApp, true);
-  MockPlatformVersion("1234.0.0");
+  MockPlatformVersion(kDefaultPlatformVersion);
   MockAutoLaunchKioskAppWithRequiredPlatformVersion(
-      fake_kiosk_device_local_account_, "1234.0.0");
+      fake_kiosk_device_local_account_, kDefaultPlatformVersion);
 
   GetStatus();
   EXPECT_FALSE(device_status_.has_running_kiosk_app());
@@ -2071,7 +2138,7 @@ TEST_F(DeviceStatusCollectorTest, NoRunningKioskAppWhenNotInKioskSession) {
 TEST_F(DeviceStatusCollectorTest, ReportRunningKioskApp) {
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportRunningKioskApp, true);
-  MockPlatformVersion("1234.0.0");
+  MockPlatformVersion(kDefaultPlatformVersion);
   MockAutoLaunchKioskAppWithRequiredPlatformVersion(
       fake_kiosk_device_local_account_, "1235");
   MockRunningKioskApp(fake_kiosk_device_local_account_, false /* arc_kiosk */);

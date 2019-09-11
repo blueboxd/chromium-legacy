@@ -16,6 +16,7 @@
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
+#include "chrome/browser/permissions/permission_features.h"
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -70,16 +71,6 @@ bool ShouldGroupRequests(PermissionRequest* a, PermissionRequest* b) {
 }  // namespace
 
 // PermissionRequestManager ----------------------------------------------------
-
-PermissionRequestManager::PermissionRequestManager(
-    content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
-      view_factory_(base::Bind(&PermissionPrompt::Create)),
-      view_(nullptr),
-      main_frame_has_fully_loaded_(false),
-      tab_is_hidden_(web_contents->GetVisibility() ==
-                     content::Visibility::HIDDEN),
-      auto_response_for_test_(NONE) {}
 
 PermissionRequestManager::~PermissionRequestManager() {
   DCHECK(requests_.empty());
@@ -331,6 +322,16 @@ void PermissionRequestManager::Closing() {
   FinalizeBubble(PermissionAction::DISMISSED);
 }
 
+PermissionRequestManager::PermissionRequestManager(
+    content::WebContents* web_contents)
+    : content::WebContentsObserver(web_contents),
+      view_factory_(base::Bind(&PermissionPrompt::Create)),
+      view_(nullptr),
+      main_frame_has_fully_loaded_(false),
+      tab_is_hidden_(web_contents->GetVisibility() ==
+                     content::Visibility::HIDDEN),
+      auto_response_for_test_(NONE) {}
+
 void PermissionRequestManager::ScheduleShowBubble() {
   // ::ScheduleShowBubble() will be called again when the main frame will be
   // loaded.
@@ -393,9 +394,6 @@ void PermissionRequestManager::FinalizeBubble(
     PermissionAction permission_action) {
   DCHECK(!requests_.empty());
 
-  if (view_)
-    DeleteBubble();
-
   PermissionUmaUtil::PermissionPromptResolved(requests_, web_contents(),
                                               permission_action);
 
@@ -434,6 +432,10 @@ void PermissionRequestManager::FinalizeBubble(
     RequestFinishedIncludingDuplicates(*requests_iter);
   }
   requests_.clear();
+
+  if (view_)
+    DeleteBubble();
+
   if (!queued_requests_.empty())
     DequeueRequestsAndShowBubble();
 }
@@ -513,6 +515,21 @@ void PermissionRequestManager::AddObserver(Observer* observer) {
 
 void PermissionRequestManager::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
+}
+
+bool PermissionRequestManager::ShouldShowQuietPermissionPrompt() {
+  if (!requests_.size())
+    return false;
+
+#if !defined(OS_ANDROID)
+  const auto ui_flavor = QuietNotificationsPromptConfig::UIFlavorToUse();
+  return (requests_.front()->GetPermissionRequestType() ==
+              PermissionRequestType::PERMISSION_NOTIFICATIONS &&
+          (ui_flavor == QuietNotificationsPromptConfig::STATIC_ICON ||
+           ui_flavor == QuietNotificationsPromptConfig::ANIMATED_ICON));
+#else   // OS_ANDROID
+  return false;
+#endif  // OS_ANDROID
 }
 
 void PermissionRequestManager::NotifyBubbleAdded() {

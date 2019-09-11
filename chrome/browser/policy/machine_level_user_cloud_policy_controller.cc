@@ -62,18 +62,6 @@ void RecordEnrollmentResult(
       "Enterprise.MachineLevelUserCloudPolicyEnrollment.Result", result);
 }
 
-// The MachineLevelUserCloudPolicy is only enabled on Chrome by default.
-// However, it can be enabled on Chromium by command line switch for test and
-// development purpose.
-bool IsMachineLevelUserCloudPolicyEnabled() {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  return true;
-#else
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableMachineLevelUserCloudPolicy);
-#endif
-}
-
 // Read the kCloudPolicyOverridesPlatformPolicy from platform provider directly
 // because the local_state is not ready when the
 // MachineLevelUserCloudPolicyManager is created.
@@ -97,6 +85,16 @@ bool DoesCloudPolicyHasPriority(
 const base::FilePath::CharType
     MachineLevelUserCloudPolicyController::kPolicyDir[] =
         FILE_PATH_LITERAL("Policy");
+
+bool MachineLevelUserCloudPolicyController::
+    IsMachineLevelUserCloudPolicyEnabled() {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  return true;
+#else
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableMachineLevelUserCloudPolicy);
+#endif
+}
 
 MachineLevelUserCloudPolicyController::MachineLevelUserCloudPolicyController() {
 }

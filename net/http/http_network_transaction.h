@@ -20,6 +20,7 @@
 #include "net/base/completion_repeating_callback.h"
 #include "net/base/net_error_details.h"
 #include "net/base/net_export.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_auth.h"
 #include "net/http/http_request_headers.h"
@@ -322,6 +323,10 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   GURL url_;
   RequestPriority priority_;
   HttpResponseInfo response_;
+
+  // Copied from |request_|, as it's needed after the response body has been
+  // read.
+  NetworkIsolationKey network_isolation_key_;
 
   // |proxy_info_| is the ProxyInfo used by the HttpStreamRequest.
   ProxyInfo proxy_info_;

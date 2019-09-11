@@ -345,7 +345,7 @@ void OfflineInternalsUIMessageHandler::HandleGeneratePageBundle(
   // serialize it into JSON, instead of doing direct string manipulation.
   base::ListValue urls;
   for (const auto& prefetch_url : prefetch_urls) {
-    urls.GetList().emplace_back(prefetch_url.url.spec());
+    urls.Append(prefetch_url.url.spec());
   }
   std::string json;
   base::JSONWriter::Write(urls, &json);

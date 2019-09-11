@@ -29,6 +29,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
 import org.chromium.components.url_formatter.UrlFormatter;
@@ -177,7 +178,8 @@ public class AccountChooserDialog
             spanableTitle.setSpan(new ClickableSpan() {
                 @Override
                 public void onClick(View view) {
-                    nativeOnLinkClicked(mNativeAccountChooserDialog);
+                    AccountChooserDialogJni.get().onLinkClicked(
+                            mNativeAccountChooserDialog, AccountChooserDialog.this);
                     mDialog.dismiss();
                 }
             }, mTitleLinkStart, mTitleLinkEnd, Spanned.SPAN_INCLUSIVE_INCLUSIVE);
@@ -287,7 +289,8 @@ public class AccountChooserDialog
         assert mNativeAccountChooserDialog != 0;
         assert !mIsDestroyed;
         mIsDestroyed = true;
-        nativeDestroy(mNativeAccountChooserDialog);
+        AccountChooserDialogJni.get().destroy(
+                mNativeAccountChooserDialog, AccountChooserDialog.this);
         mNativeAccountChooserDialog = 0;
         mDialog = null;
     }
@@ -311,18 +314,22 @@ public class AccountChooserDialog
     public void onDismiss(DialogInterface dialog) {
         if (!mWasDismissedByNative) {
             if (mCredential != null) {
-                nativeOnCredentialClicked(mNativeAccountChooserDialog, mCredential.getIndex(),
-                        mSigninButtonClicked);
+                AccountChooserDialogJni.get().onCredentialClicked(mNativeAccountChooserDialog,
+                        AccountChooserDialog.this, mCredential.getIndex(), mSigninButtonClicked);
             } else {
-                nativeCancelDialog(mNativeAccountChooserDialog);
+                AccountChooserDialogJni.get().cancelDialog(
+                        mNativeAccountChooserDialog, AccountChooserDialog.this);
             }
         }
         destroy();
     }
 
-    private native void nativeOnCredentialClicked(long nativeAccountChooserDialogAndroid,
-            int credentialId, boolean signinButtonClicked);
-    private native void nativeCancelDialog(long nativeAccountChooserDialogAndroid);
-    private native void nativeDestroy(long nativeAccountChooserDialogAndroid);
-    private native void nativeOnLinkClicked(long nativeAccountChooserDialogAndroid);
+    @NativeMethods
+    interface Natives {
+        void onCredentialClicked(long nativeAccountChooserDialogAndroid,
+                AccountChooserDialog caller, int credentialId, boolean signinButtonClicked);
+        void cancelDialog(long nativeAccountChooserDialogAndroid, AccountChooserDialog caller);
+        void destroy(long nativeAccountChooserDialogAndroid, AccountChooserDialog caller);
+        void onLinkClicked(long nativeAccountChooserDialogAndroid, AccountChooserDialog caller);
+    }
 }

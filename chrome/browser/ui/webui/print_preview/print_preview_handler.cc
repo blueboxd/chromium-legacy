@@ -914,7 +914,7 @@ void PrintPreviewHandler::HandleClosePreviewDialog(
 void PrintPreviewHandler::HandleOpenPrinterSettings(
     const base::ListValue* args) {
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-      Profile::FromWebUI(web_ui()), chrome::kPrintingSettingsSubPage);
+      Profile::FromWebUI(web_ui()), chrome::kNativePrintingSettingsSubPage);
 }
 #endif
 
@@ -965,7 +965,7 @@ void PrintPreviewHandler::GetUserAccountList(base::Value* settings) {
     const std::vector<gaia::ListedAccount>& accounts =
         identity_manager_->GetAccountsInCookieJar().signed_in_accounts;
     for (const gaia::ListedAccount& account : accounts) {
-      account_list.GetList().emplace_back(account.email);
+      account_list.Append(account.email);
     }
     settings->SetKey(kSyncAvailable, base::Value(true));
   } else {
@@ -1122,7 +1122,7 @@ void PrintPreviewHandler::OnAccountsInCookieUpdated(
   const std::vector<gaia::ListedAccount>& accounts =
       accounts_in_cookie_jar_info.signed_in_accounts;
   for (const auto account : accounts) {
-    account_list.GetList().emplace_back(account.email);
+    account_list.Append(account.email);
   }
   FireWebUIListener("user-accounts-updated", std::move(account_list));
 }

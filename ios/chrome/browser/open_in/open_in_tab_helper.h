@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #import "ios/chrome/browser/open_in/open_in_tab_helper_delegate.h"
-#include "ios/web/public/web_state/web_state_observer.h"
-#import "ios/web/public/web_state/web_state_user_data.h"
+#include "ios/web/public/web_state_observer.h"
+#import "ios/web/public/web_state_user_data.h"
 
 namespace net {
 class HttpResponseHeaders;

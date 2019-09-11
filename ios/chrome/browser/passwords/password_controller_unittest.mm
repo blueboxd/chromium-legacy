@@ -93,7 +93,7 @@ class MockPasswordManagerClient
 
   PrefService* GetPrefs() const override { return prefs_.get(); }
 
-  password_manager::PasswordStore* GetPasswordStore() const override {
+  password_manager::PasswordStore* GetProfilePasswordStore() const override {
     return store_;
   }
 

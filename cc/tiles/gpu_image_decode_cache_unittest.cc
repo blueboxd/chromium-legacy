@@ -5,7 +5,9 @@
 #include "cc/tiles/gpu_image_decode_cache.h"
 
 #include <memory>
+#include <vector>
 
+#include "base/feature_list.h"
 #include "base/test/scoped_feature_list.h"
 #include "cc/paint/draw_image.h"
 #include "cc/paint/image_transfer_cache_entry.h"
@@ -172,6 +174,14 @@ class FakeGPUImageDecodeTestGLES2Interface : public viz::TestGLES2Interface,
     transfer_cache_helper_->DeleteEntryDirect(MakeEntryKey(type, id));
   }
 
+  bool IsJpegDecodeAccelerationSupported() const override {
+    return advertise_accelerated_decoding_;
+  }
+
+  bool IsWebPDecodeAccelerationSupported() const override {
+    return advertise_accelerated_decoding_;
+  }
+
   bool CanDecodeWithHardwareAcceleration(
       base::span<const uint8_t> encoded_data) const override {
     return advertise_accelerated_decoding_;
@@ -319,14 +329,21 @@ class GpuImageDecodeCacheTest
           std::tuple<SkColorType,
                      bool /* use_transfer_cache */,
                      bool /* do_yuv_decode */,
+                     bool /* allow_accelerated_jpeg_decoding */,
+                     bool /* allow_accelerated_webp_decoding */,
                      bool /* advertise_accelerated_decoding */>> {
  public:
   void SetUp() override {
-    advertise_accelerated_decoding_ = std::get<3>(GetParam());
-    if (advertise_accelerated_decoding_) {
-      feature_list_.InitAndEnableFeature(
-          features::kVaapiJpegImageDecodeAcceleration);
-    }
+    std::vector<base::Feature> enabled_features;
+    allow_accelerated_jpeg_decoding_ = std::get<3>(GetParam());
+    if (allow_accelerated_jpeg_decoding_)
+      enabled_features.push_back(features::kVaapiJpegImageDecodeAcceleration);
+    allow_accelerated_webp_decoding_ = std::get<4>(GetParam());
+    if (allow_accelerated_webp_decoding_)
+      enabled_features.push_back(features::kVaapiWebPImageDecodeAcceleration);
+    feature_list_.InitWithFeatures(enabled_features,
+                                   {} /* disabled_features */);
+    advertise_accelerated_decoding_ = std::get<5>(GetParam());
     context_provider_ = GPUImageDecodeTestMockContextProvider::Create(
         &discardable_manager_, &transfer_cache_helper_,
         advertise_accelerated_decoding_);
@@ -556,6 +573,8 @@ class GpuImageDecodeCacheTest
   bool use_transfer_cache_;
   SkColorType color_type_;
   bool do_yuv_decode_;
+  bool allow_accelerated_jpeg_decoding_;
+  bool allow_accelerated_webp_decoding_;
   bool advertise_accelerated_decoding_;
   int max_texture_size_ = 0;
 };
@@ -2912,6 +2931,8 @@ INSTANTIATE_TEST_SUITE_P(
         testing::ValuesIn(test_color_types),
         testing::ValuesIn(false_array) /* use_transfer_cache */,
         testing::Bool() /* do_yuv_decode */,
+        testing::ValuesIn(false_array) /* allow_accelerated_jpeg_decoding */,
+        testing::ValuesIn(false_array) /* allow_accelerated_webp_decoding */,
         testing::ValuesIn(false_array) /* advertise_accelerated_decoding */));
 
 INSTANTIATE_TEST_SUITE_P(
@@ -2921,6 +2942,8 @@ INSTANTIATE_TEST_SUITE_P(
         testing::ValuesIn(test_color_types),
         testing::ValuesIn(true_array) /* use_transfer_cache */,
         testing::Bool() /* do_yuv_decode */,
+        testing::ValuesIn(false_array) /* allow_accelerated_jpeg_decoding */,
+        testing::ValuesIn(false_array) /* allow_accelerated_webp_decoding */,
         testing::ValuesIn(false_array) /* advertise_accelerated_decoding */));
 
 class GpuImageDecodeCacheWithAcceleratedDecodesTest
@@ -2929,7 +2952,8 @@ class GpuImageDecodeCacheWithAcceleratedDecodesTest
   PaintImage CreatePaintImageForDecodeAcceleration(
       const gfx::Size& size,
       sk_sp<SkColorSpace> color_space = nullptr,
-      bool is_eligible_for_accelerated_decoding = true) {
+      bool is_eligible_for_accelerated_decoding = true,
+      PaintImage::ImageType image_type = PaintImage::ImageType::kJPEG) {
     SkImageInfo info =
         SkImageInfo::Make(size.width(), size.height(), color_type_,
                           kPremul_SkAlphaType, color_space);
@@ -2942,6 +2966,7 @@ class GpuImageDecodeCacheWithAcceleratedDecodesTest
     }
     if (is_eligible_for_accelerated_decoding)
       generator->SetEligibleForAcceleratedDecoding();
+    generator->SetImageType(image_type);
     PaintImage image = PaintImageBuilder::WithDefault()
                            .set_id(PaintImage::GetNextId())
                            .set_paint_image_generator(generator)
@@ -3227,7 +3252,111 @@ INSTANTIATE_TEST_SUITE_P(
         testing::ValuesIn(test_color_types),
         testing::ValuesIn(true_array) /* use_transfer_cache */,
         testing::Bool() /* do_yuv_decode */,
+        testing::ValuesIn(true_array) /* allow_accelerated_jpeg_decoding */,
+        testing::ValuesIn(true_array) /* allow_accelerated_webp_decoding */,
         testing::ValuesIn(true_array) /* advertise_accelerated_decoding */));
+
+class GpuImageDecodeCacheWithAcceleratedDecodesFlagsTest
+    : public GpuImageDecodeCacheWithAcceleratedDecodesTest {};
+
+TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesFlagsTest,
+       RequestAcceleratedDecodeSuccessfully) {
+  auto cache = CreateCache();
+  const gfx::Size image_size = GetNormalImageSize();
+  const SkFilterQuality quality = kHigh_SkFilterQuality;
+  const gfx::ColorSpace target_color_space = gfx::ColorSpace::CreateSRGB();
+  ASSERT_TRUE(target_color_space.IsValid());
+
+  // Try a JPEG image.
+  const PaintImage jpeg_image = CreatePaintImageForDecodeAcceleration(
+      image_size, SkColorSpace::MakeSRGB(),
+      true /* is_eligible_for_accelerated_decoding */,
+      PaintImage::ImageType::kJPEG);
+  DrawImage jpeg_draw_image(
+      jpeg_image, SkIRect::MakeWH(jpeg_image.width(), jpeg_image.height()),
+      quality, CreateMatrix(SkSize::Make(0.75f, 0.75f)),
+      PaintImage::kDefaultFrameIndex, target_color_space);
+  ImageDecodeCache::TaskResult jpeg_task = cache->GetTaskForImageAndRef(
+      jpeg_draw_image, ImageDecodeCache::TracingInfo());
+  EXPECT_TRUE(jpeg_task.need_unref);
+  ASSERT_TRUE(jpeg_task.task);
+  // If the hardware decoder claims support for the image (i.e.,
+  // |advertise_accelerated_decoding_| is true) and the feature flag for the
+  // image type is on (i.e., |allow_accelerated_jpeg_decoding_| is true), we
+  // should expect hardware acceleration. In that path, there is only an upload
+  // task without a decode dependency since the decode will be done in the GPU
+  // process. In the alternative path (software decoding), the upload task
+  // depends on a decode task that runs in the renderer.
+  if (advertise_accelerated_decoding_ && allow_accelerated_jpeg_decoding_) {
+    ASSERT_TRUE(jpeg_task.task->dependencies().empty());
+    EXPECT_CALL(*raster_implementation(),
+                DoScheduleImageDecode(image_size, _, gfx::ColorSpace(), _))
+        .Times(1);
+  } else {
+    ASSERT_EQ(jpeg_task.task->dependencies().size(), 1u);
+    ASSERT_TRUE(jpeg_task.task->dependencies()[0]);
+    TestTileTaskRunner::ProcessTask(jpeg_task.task->dependencies()[0].get());
+  }
+  TestTileTaskRunner::ProcessTask(jpeg_task.task.get());
+  testing::Mock::VerifyAndClearExpectations(raster_implementation());
+  cache->UnrefImage(jpeg_draw_image);
+
+  // Try a WebP image.
+  const PaintImage webp_image = CreatePaintImageForDecodeAcceleration(
+      image_size, SkColorSpace::MakeSRGB(),
+      true /* is_eligible_for_accelerated_decoding */,
+      PaintImage::ImageType::kWEBP);
+  DrawImage webp_draw_image(
+      webp_image, SkIRect::MakeWH(webp_image.width(), webp_image.height()),
+      quality, CreateMatrix(SkSize::Make(0.75f, 0.75f)),
+      PaintImage::kDefaultFrameIndex, target_color_space);
+  ImageDecodeCache::TaskResult webp_task = cache->GetTaskForImageAndRef(
+      webp_draw_image, ImageDecodeCache::TracingInfo());
+  EXPECT_TRUE(webp_task.need_unref);
+  ASSERT_TRUE(webp_task.task);
+  if (advertise_accelerated_decoding_ && allow_accelerated_webp_decoding_) {
+    ASSERT_TRUE(webp_task.task->dependencies().empty());
+    EXPECT_CALL(*raster_implementation(),
+                DoScheduleImageDecode(image_size, _, gfx::ColorSpace(), _))
+        .Times(1);
+  } else {
+    ASSERT_EQ(webp_task.task->dependencies().size(), 1u);
+    ASSERT_TRUE(webp_task.task->dependencies()[0]);
+    TestTileTaskRunner::ProcessTask(webp_task.task->dependencies()[0].get());
+  }
+  TestTileTaskRunner::ProcessTask(webp_task.task.get());
+  testing::Mock::VerifyAndClearExpectations(raster_implementation());
+  cache->UnrefImage(webp_draw_image);
+
+  // Try a PNG image (which should not be hardware accelerated).
+  const PaintImage png_image = CreatePaintImageForDecodeAcceleration(
+      image_size, SkColorSpace::MakeSRGB(),
+      true /* is_eligible_for_accelerated_decoding */,
+      PaintImage::ImageType::kPNG);
+  DrawImage png_draw_image(
+      png_image, SkIRect::MakeWH(jpeg_image.width(), jpeg_image.height()),
+      quality, CreateMatrix(SkSize::Make(0.75f, 0.75f)),
+      PaintImage::kDefaultFrameIndex, target_color_space);
+  ImageDecodeCache::TaskResult png_task = cache->GetTaskForImageAndRef(
+      png_draw_image, ImageDecodeCache::TracingInfo());
+  EXPECT_TRUE(png_task.need_unref);
+  ASSERT_TRUE(png_task.task);
+  ASSERT_EQ(png_task.task->dependencies().size(), 1u);
+  ASSERT_TRUE(png_task.task->dependencies()[0]);
+  TestTileTaskRunner::ProcessTask(png_task.task->dependencies()[0].get());
+  TestTileTaskRunner::ProcessTask(png_task.task.get());
+  cache->UnrefImage(png_draw_image);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    GpuImageDecodeCacheTestsOOPR,
+    GpuImageDecodeCacheWithAcceleratedDecodesFlagsTest,
+    testing::Combine(testing::Values(kN32_SkColorType),
+                     testing::ValuesIn(true_array) /* use_transfer_cache */,
+                     testing::Bool() /* do_yuv_decode */,
+                     testing::Bool() /* allow_accelerated_jpeg_decoding */,
+                     testing::Bool() /* allow_accelerated_webp_decoding */,
+                     testing::Bool() /* advertise_accelerated_decoding */));
 
 #undef EXPECT_TRUE_IF_NOT_USING_TRANSFER_CACHE
 #undef EXPECT_FALSE_IF_NOT_USING_TRANSFER_CACHE

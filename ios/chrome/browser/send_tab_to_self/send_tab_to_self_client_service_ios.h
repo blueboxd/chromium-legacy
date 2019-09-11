@@ -12,7 +12,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/send_tab_to_self/send_tab_to_self_model_observer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
-#import "ios/web/public/web_state/web_state_observer.h"
+#include "ios/web/public/web_state_observer.h"
 
 namespace ios {
 class ChromeBrowserState;

@@ -563,10 +563,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void BuildPropertyTreesForTesting();
 
   // Layer iterators.
-  LayerListIterator<Layer> begin() const;
-  LayerListIterator<Layer> end() const;
-  LayerListReverseIterator<Layer> rbegin();
-  LayerListReverseIterator<Layer> rend();
+  LayerListIterator begin() const;
+  LayerListIterator end() const;
+  LayerListReverseIterator rbegin();
+  LayerListReverseIterator rend();
 
   // LayerTreeHost interface to Proxy.
   void WillBeginMainFrame();

@@ -63,7 +63,6 @@ extern const base::FilePath::CharType kOfflinePageArchivesDirname[];
 extern const base::FilePath::CharType kOfflinePageMetadataDirname[];
 extern const base::FilePath::CharType kOfflinePagePrefetchStoreDirname[];
 extern const base::FilePath::CharType kOfflinePageRequestQueueDirname[];
-extern const base::FilePath::CharType kPageLoadCappingOptOutDBFilename[];
 extern const base::FilePath::CharType kPreferencesFilename[];
 extern const base::FilePath::CharType kPreviewsOptOutDBFilename[];
 extern const base::FilePath::CharType kReadmeFilename[];

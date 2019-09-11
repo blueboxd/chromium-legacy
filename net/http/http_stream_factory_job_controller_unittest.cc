@@ -303,7 +303,8 @@ class HttpStreamFactoryJobControllerTest : public TestWithTaskEnvironment {
     EXPECT_EQ(1u, alternative_service_info_vector.size());
     EXPECT_EQ(should_mark_broken,
               session_->http_server_properties()->IsAlternativeServiceBroken(
-                  alternative_service_info_vector[0].alternative_service()));
+                  alternative_service_info_vector[0].alternative_service(),
+                  NetworkIsolationKey()));
   }
 
   void TestAltJobSucceedsAfterMainJobFailed(
@@ -1891,7 +1892,7 @@ TEST_F(HttpStreamFactoryJobControllerTest, ResumeMainJobLaterCanceled) {
   // Now the alt service is marked as broken (e.g. through a different request),
   // so only non-alt job is restarted.
   session_->http_server_properties()->MarkAlternativeServiceBroken(
-      alternative_service);
+      alternative_service, NetworkIsolationKey());
 
   job_controller_->OnStreamFailed(job_factory_.main_job(), ERR_FAILED,
                                   SSLConfig());

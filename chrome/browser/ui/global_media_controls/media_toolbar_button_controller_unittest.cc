@@ -152,6 +152,22 @@ class MediaToolbarButtonControllerTest : public testing::Test {
     delegate->Open(controller_.get());
   }
 
+  void SimulateTabClosed(const base::UnguessableToken& id) {
+    // When a tab is closing, audio focus will be lost before the WebContents is
+    // destroyed, so to simulate closer to reality we will also simulate audio
+    // focus lost here.
+    SimulateFocusLost(id);
+
+    // Now, close the tab.
+    auto item_itr = controller_->sessions_.find(id.ToString());
+    EXPECT_NE(controller_->sessions_.end(), item_itr);
+    item_itr->second.WebContentsDestroyed();
+  }
+
+  void SimulateDismissButtonClicked(const base::UnguessableToken& id) {
+    controller_->OnDismissButtonClicked(id.ToString());
+  }
+
   void ExpectHistogramCountRecorded(int count, int size) {
     histogram_tester_.ExpectBucketCount(
         media_message_center::kCountHistogramName, count, size);
@@ -351,4 +367,34 @@ TEST_F(MediaToolbarButtonControllerTest, NewMediaSessionWhileDialogOpen) {
   SimulateDialogOpened(&new_dialog);
   ExpectHistogramCountRecorded(1, 1);
   ExpectHistogramCountRecorded(2, 1);
+}
+
+TEST_F(MediaToolbarButtonControllerTest,
+       SessionIsRemovedImmediatelyWhenATabCloses) {
+  // First, show the button.
+  EXPECT_CALL(delegate(), Show());
+  base::UnguessableToken id = SimulatePlayingControllableMedia();
+  testing::Mock::VerifyAndClearExpectations(&delegate());
+
+  // Then, close the tab. The button should immediately hide.
+  EXPECT_CALL(delegate(), Hide());
+  SimulateTabClosed(id);
+  testing::Mock::VerifyAndClearExpectations(&delegate());
+}
+
+TEST_F(MediaToolbarButtonControllerTest, DismissesMediaSession) {
+  // First, show the button.
+  EXPECT_CALL(delegate(), Show());
+  base::UnguessableToken id = SimulatePlayingControllableMedia();
+  testing::Mock::VerifyAndClearExpectations(&delegate());
+
+  // Then, open a dialog.
+  MockMediaDialogDelegate dialog_delegate;
+  EXPECT_CALL(dialog_delegate, ShowMediaSession(id.ToString(), _));
+  SimulateDialogOpened(&dialog_delegate);
+
+  // Then, click the dismiss button. This should stop and hide the session.
+  EXPECT_CALL(dialog_delegate, HideMediaSession(id.ToString()));
+  SimulateDismissButtonClicked(id);
+  testing::Mock::VerifyAndClearExpectations(&delegate());
 }

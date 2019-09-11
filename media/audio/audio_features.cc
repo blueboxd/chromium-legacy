@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "media/audio/audio_features.h"
+#include "base/feature_list.h"
 
 namespace features {
 

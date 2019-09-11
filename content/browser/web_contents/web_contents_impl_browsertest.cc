@@ -2781,8 +2781,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   DownloadImageTestInternal(shell(), kImageUrl, 0, 0);
 }
 
+// Disabled due to flakiness: https://crbug.com/1002755.
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
-                       DownloadImage_Allow_FileImage) {
+                       DISABLED_DownloadImage_Allow_FileImage) {
   shell()->LoadURL(GetTestUrl("", "simple_page.html"));
 
   const GURL kImageUrl =

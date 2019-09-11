@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "components/security_state/core/security_state.h"
-#import "ios/web/public/web_state/web_state_user_data.h"
+#import "ios/web/public/web_state_user_data.h"
 
 namespace web {
 class WebState;

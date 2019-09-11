@@ -68,11 +68,11 @@ std::unique_ptr<base::Value> RuleSetToDict(
     const browser_switcher::RuleSet& ruleset) {
   auto sitelist = std::make_unique<base::ListValue>();
   for (const std::string& rule : ruleset.sitelist)
-    sitelist->GetList().emplace_back(rule);
+    sitelist->Append(rule);
 
   auto greylist = std::make_unique<base::ListValue>();
   for (const std::string& rule : ruleset.greylist)
-    greylist->GetList().emplace_back(rule);
+    greylist->Append(rule);
 
   auto dict = std::make_unique<base::DictionaryValue>();
   dict->Set("sitelist", std::move(sitelist));

@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/selector.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
@@ -45,10 +46,12 @@
 
 namespace blink {
 
-Location::Location(DOMWindow* dom_window) : dom_window_(dom_window) {}
+Location::Location(DOMWindow* dom_window)
+    : dom_window_(dom_window), selector_(MakeGarbageCollected<Selector>()) {}
 
 void Location::Trace(blink::Visitor* visitor) {
   visitor->Trace(dom_window_);
+  visitor->Trace(selector_);
   ScriptWrappable::Trace(visitor);
 }
 
@@ -93,6 +96,10 @@ String Location::search() const {
 
 String Location::origin() const {
   return DOMURLUtilsReadOnly::origin(Url());
+}
+
+Selector* Location::selector() const {
+  return selector_;
 }
 
 DOMStringList* Location::ancestorOrigins() const {

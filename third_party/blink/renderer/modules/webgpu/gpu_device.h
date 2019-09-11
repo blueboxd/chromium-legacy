@@ -41,6 +41,7 @@ class GPUShaderModule;
 class GPUShaderModuleDescriptor;
 class GPUTexture;
 class GPUTextureDescriptor;
+class ScriptPromiseResolver;
 class ScriptState;
 
 class GPUDevice final : public EventTargetWithInlineData,
@@ -98,6 +99,10 @@ class GPUDevice final : public EventTargetWithInlineData,
 
   GPUQueue* getQueue();
 
+  void pushErrorScope(const WTF::String& filter);
+  ScriptPromise popErrorScope(ScriptState* script_state,
+                              ExceptionState& exception_state);
+
   DEFINE_ATTRIBUTE_EVENT_LISTENER(uncapturederror, kUncapturederror)
 
   // EventTarget overrides.
@@ -108,6 +113,10 @@ class GPUDevice final : public EventTargetWithInlineData,
   void OnUncapturedError(ExecutionContext* execution_context,
                          DawnErrorType errorType,
                          const char* message);
+
+  void OnPopErrorScopeCallback(ScriptPromiseResolver* resolver,
+                               DawnErrorType type,
+                               const char* message);
 
   Member<GPUAdapter> adapter_;
   Member<GPUQueue> queue_;

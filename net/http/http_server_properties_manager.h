@@ -166,6 +166,7 @@ class NET_EXPORT_PRIVATE HttpServerPropertiesManager {
                               QuicServerInfoMap* quic_server_info_map);
   void AddToBrokenAlternativeServices(
       const base::DictionaryValue& broken_alt_svc_entry_dict,
+      bool use_network_isolation_key,
       BrokenAlternativeServiceList* broken_alternative_service_list,
       RecentlyBrokenAlternativeServices* recently_broken_alternative_services);
 

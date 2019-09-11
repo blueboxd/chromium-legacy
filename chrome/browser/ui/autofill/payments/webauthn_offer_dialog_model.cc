@@ -5,8 +5,10 @@
 #include "chrome/browser/ui/autofill/payments/webauthn_offer_dialog_model.h"
 
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/ui/autofill/payments/webauthn_offer_dialog_model_observer.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/paint_vector_icon.h"
 
 namespace autofill {
 
@@ -16,8 +18,24 @@ WebauthnOfferDialogModel::WebauthnOfferDialogModel() {
 
 WebauthnOfferDialogModel::~WebauthnOfferDialogModel() = default;
 
+void WebauthnOfferDialogModel::SetDialogState(DialogState state) {
+  state_ = state;
+  for (WebauthnOfferDialogModelObserver& observer : observers_)
+    observer.OnDialogStateChanged();
+}
+
+void WebauthnOfferDialogModel::AddObserver(
+    WebauthnOfferDialogModelObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void WebauthnOfferDialogModel::RemoveObserver(
+    WebauthnOfferDialogModelObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 bool WebauthnOfferDialogModel::IsActivityIndicatorVisible() const {
-  return state_ == kPending;
+  return state_ == DialogState::kPending;
 }
 
 bool WebauthnOfferDialogModel::IsBackButtonVisible() const {
@@ -29,16 +47,28 @@ bool WebauthnOfferDialogModel::IsCancelButtonVisible() const {
 }
 
 base::string16 WebauthnOfferDialogModel::GetCancelButtonLabel() const {
-  return l10n_util::GetStringUTF16(
-      IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_CANCEL_BUTTON_LABEL);
+  switch (state_) {
+    case DialogState::kOffer:
+    case DialogState::kPending:
+      return l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_CANCEL_BUTTON_LABEL);
+    case DialogState::kError:
+      return l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_CANCEL_BUTTON_LABEL_ERROR);
+    case DialogState::kInactive:
+    case DialogState::kUnknown:
+      break;
+  }
+  NOTREACHED();
+  return base::string16();
 }
 
 bool WebauthnOfferDialogModel::IsAcceptButtonVisible() const {
-  return true;
+  return state_ == DialogState::kOffer || state_ == DialogState::kPending;
 }
 
 bool WebauthnOfferDialogModel::IsAcceptButtonEnabled() const {
-  return state_ != kPending;
+  return state_ != DialogState::kPending;
 }
 
 base::string16 WebauthnOfferDialogModel::GetAcceptButtonLabel() const {
@@ -48,18 +78,55 @@ base::string16 WebauthnOfferDialogModel::GetAcceptButtonLabel() const {
 
 const gfx::VectorIcon& WebauthnOfferDialogModel::GetStepIllustration(
     ImageColorScheme color_scheme) const {
-  return color_scheme == ImageColorScheme::kDark
-             ? kWebauthnOfferDialogHeaderDarkIcon
-             : kWebauthnOfferDialogHeaderIcon;
+  switch (state_) {
+    case DialogState::kOffer:
+    case DialogState::kPending:
+      return color_scheme == ImageColorScheme::kDark
+                 ? kWebauthnOfferDialogHeaderDarkIcon
+                 : kWebauthnOfferDialogHeaderIcon;
+    case DialogState::kError:
+      return color_scheme == ImageColorScheme::kDark ? kWebauthnErrorDarkIcon
+                                                     : kWebauthnErrorIcon;
+    case DialogState::kInactive:
+    case DialogState::kUnknown:
+      break;
+  }
+  NOTREACHED();
+  return gfx::kNoneIcon;
 }
 
 base::string16 WebauthnOfferDialogModel::GetStepTitle() const {
-  return l10n_util::GetStringUTF16(IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_TITLE);
+  switch (state_) {
+    case DialogState::kOffer:
+    case DialogState::kPending:
+      return l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_TITLE);
+    case DialogState::kError:
+      return l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_TITLE_ERROR);
+    case DialogState::kInactive:
+    case DialogState::kUnknown:
+      break;
+  }
+  NOTREACHED();
+  return base::string16();
 }
 
 base::string16 WebauthnOfferDialogModel::GetStepDescription() const {
-  return l10n_util::GetStringUTF16(
-      IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_INSTRUCTION);
+  switch (state_) {
+    case DialogState::kOffer:
+    case DialogState::kPending:
+      return l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_INSTRUCTION);
+    case DialogState::kError:
+      return l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_INSTRUCTION_ERROR);
+    case DialogState::kInactive:
+    case DialogState::kUnknown:
+      break;
+  }
+  NOTREACHED();
+  return base::string16();
 }
 
 base::Optional<base::string16>
@@ -70,13 +137,5 @@ WebauthnOfferDialogModel::GetAdditionalDescription() const {
 ui::MenuModel* WebauthnOfferDialogModel::GetOtherTransportsMenuModel() {
   return nullptr;
 }
-
-void WebauthnOfferDialogModel::OnBack() {}
-
-void WebauthnOfferDialogModel::OnAccept() {
-  state_ = kPending;
-}
-
-void WebauthnOfferDialogModel::OnCancel() {}
 
 }  // namespace autofill

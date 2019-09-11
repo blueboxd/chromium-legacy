@@ -18,6 +18,8 @@ DawnBindGroupLayoutBinding AsDawnType(
   dawn_binding.type = AsDawnEnum<DawnBindingType>(webgpu_binding->type());
   dawn_binding.visibility =
       AsDawnEnum<DawnShaderStage>(webgpu_binding->visibility());
+  dawn_binding.textureDimension =
+      AsDawnEnum<DawnTextureViewDimension>(webgpu_binding->textureDimension());
   dawn_binding.textureComponentType = AsDawnEnum<DawnTextureComponentType>(
       webgpu_binding->textureComponentType());
   dawn_binding.multisampled = webgpu_binding->multisampled();

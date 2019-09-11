@@ -33,8 +33,10 @@
 #include "media/audio/test_audio_thread.h"
 #include "media/base/audio_parameters.h"
 #include "media/mojo/mojom/audio_data_pipe.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/audio/public/cpp/fake_stream_factory.h"
 #include "services/audio/public/mojom/constants.mojom.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
@@ -94,15 +96,16 @@ class MAYBE_RenderFrameAudioInputStreamFactoryTest
     RenderViewHostTestHarness::TearDown();
   }
 
-  void BindFactory(mojo::ScopedMessagePipeHandle factory_request) {
-    audio_service_stream_factory_.binding_.Bind(
-        audio::mojom::StreamFactoryRequest(std::move(factory_request)));
+  void BindFactory(mojo::ScopedMessagePipeHandle factory_receiver) {
+    audio_service_stream_factory_.receiver_.Bind(
+        mojo::PendingReceiver<audio::mojom::StreamFactory>(
+            std::move(factory_receiver)));
   }
 
   class MockStreamFactory : public audio::FakeStreamFactory {
    public:
-    MockStreamFactory() : binding_(this) {}
-    ~MockStreamFactory() override {}
+    MockStreamFactory() = default;
+    ~MockStreamFactory() override = default;
 
     void CreateInputStream(
         mojo::PendingReceiver<media::mojom::AudioInputStream> stream_receiver,
@@ -133,7 +136,7 @@ class MAYBE_RenderFrameAudioInputStreamFactoryTest
     CreateInputStreamCallback last_created_callback;
     CreateLoopbackStreamCallback last_created_loopback_callback;
 
-    mojo::Binding<audio::mojom::StreamFactory> binding_;
+    mojo::Receiver<audio::mojom::StreamFactory> receiver_{this};
   };
 
   class FakeRendererAudioInputStreamFactoryClient

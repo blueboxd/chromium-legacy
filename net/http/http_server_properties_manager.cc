@@ -113,6 +113,23 @@ void AddAlternativeServiceFieldsToDictionaryValue(
                   NextProtoToString(alternative_service.protocol));
 }
 
+// Fails in the case of NetworkIsolationKeys that can't be persisted to disk,
+// like unique origins.
+bool TryAddBrokenAlternativeServiceFieldsToDictionaryValue(
+    const BrokenAlternativeService& broken_alt_service,
+    base::DictionaryValue* dict) {
+  base::Value network_isolation_key_value;
+  if (!broken_alt_service.network_isolation_key.ToValue(
+          &network_isolation_key_value)) {
+    return false;
+  }
+
+  dict->SetKey(kNetworkIsolationKey, std::move(network_isolation_key_value));
+  AddAlternativeServiceFieldsToDictionaryValue(
+      broken_alt_service.alternative_service, dict);
+  return true;
+}
+
 quic::QuicServerId QuicServerIdFromString(const std::string& str) {
   GURL url(str);
   if (!url.is_valid()) {
@@ -261,7 +278,8 @@ void HttpServerPropertiesManager::ReadPrefs(
         continue;
       }
       AddToBrokenAlternativeServices(
-          *entry_dict, broken_alternative_service_list->get(),
+          *entry_dict, use_network_isolation_key,
+          broken_alternative_service_list->get(),
           recently_broken_alternative_services->get());
     }
   }
@@ -287,6 +305,7 @@ void HttpServerPropertiesManager::ReadPrefs(
 
 void HttpServerPropertiesManager::AddToBrokenAlternativeServices(
     const base::DictionaryValue& broken_alt_svc_entry_dict,
+    bool use_network_isolation_key,
     BrokenAlternativeServiceList* broken_alternative_service_list,
     RecentlyBrokenAlternativeServices* recently_broken_alternative_services) {
   AlternativeService alt_service;
@@ -295,6 +314,20 @@ void HttpServerPropertiesManager::AddToBrokenAlternativeServices(
                                    &alt_service)) {
     return;
   }
+
+  const base::Value* network_isolation_key_value =
+      broken_alt_svc_entry_dict.FindKey(kNetworkIsolationKey);
+  NetworkIsolationKey network_isolation_key;
+  if (!network_isolation_key_value ||
+      !NetworkIsolationKey::FromValue(*network_isolation_key_value,
+                                      &network_isolation_key)) {
+    return;
+  }
+
+  // Fail if NetworkIsolationKeys are disabled, but the entry has a non-empty
+  // NetworkIsolationKey.
+  if (!use_network_isolation_key && !network_isolation_key.IsEmpty())
+    return;
 
   // Each entry must contain either broken-count and/or broken-until fields.
   bool contains_broken_count_or_broken_until = false;
@@ -313,7 +346,10 @@ void HttpServerPropertiesManager::AddToBrokenAlternativeServices(
       DVLOG(1) << "Broken alternative service has negative broken-count.";
       return;
     }
-    recently_broken_alternative_services->Put(alt_service, broken_count);
+    recently_broken_alternative_services->Put(
+        BrokenAlternativeService(alt_service, network_isolation_key,
+                                 use_network_isolation_key),
+        broken_count);
     contains_broken_count_or_broken_until = true;
   }
 
@@ -335,8 +371,10 @@ void HttpServerPropertiesManager::AddToBrokenAlternativeServices(
     base::TimeTicks expiration_time_ticks =
         clock_->NowTicks() +
         (base::Time::FromTimeT(expiration_time_t) - base::Time::Now());
-    broken_alternative_service_list->push_back(
-        std::make_pair(alt_service, expiration_time_ticks));
+    broken_alternative_service_list->push_back(std::make_pair(
+        BrokenAlternativeService(alt_service, network_isolation_key,
+                                 use_network_isolation_key),
+        expiration_time_ticks));
     contains_broken_count_or_broken_until = true;
   }
 
@@ -686,7 +724,7 @@ void HttpServerPropertiesManager::WriteToPrefs(
     server_dict.SetStringKey(kServerKey, key.server.Serialize());
     server_dict.SetKey(kNetworkIsolationKey,
                        std::move(network_isolation_key_value));
-    servers_list.GetList().emplace_back(std::move(server_dict));
+    servers_list.Append(std::move(server_dict));
   }
   http_server_properties_dict.SetKey(kServersKey, std::move(servers_list));
 
@@ -797,8 +835,9 @@ void HttpServerPropertiesManager::SaveBrokenAlternativeServicesToPrefs(
         recently_broken_alternative_services,
     base::DictionaryValue* http_server_properties_dict) {
   if (broken_alternative_service_list.empty() &&
-      recently_broken_alternative_services.empty())
+      recently_broken_alternative_services.empty()) {
     return;
+  }
 
   // JSON list will be in MRU order according to
   // |recently_broken_alternative_services|.
@@ -807,19 +846,22 @@ void HttpServerPropertiesManager::SaveBrokenAlternativeServicesToPrefs(
 
   // Maps recently-broken alternative services to the index where it's stored
   // in |json_list|.
-  std::unordered_map<AlternativeService, size_t, AlternativeServiceHash>
-      json_list_index_map;
+  std::map<BrokenAlternativeService, size_t> json_list_index_map;
 
   if (!recently_broken_alternative_services.empty()) {
     for (auto it = recently_broken_alternative_services.rbegin();
          it != recently_broken_alternative_services.rend(); ++it) {
-      const AlternativeService& alt_service = it->first;
+      const BrokenAlternativeService& broken_alt_service = it->first;
       int broken_count = it->second;
+
       base::DictionaryValue entry_dict;
-      AddAlternativeServiceFieldsToDictionaryValue(alt_service, &entry_dict);
+      if (!TryAddBrokenAlternativeServiceFieldsToDictionaryValue(
+              broken_alt_service, &entry_dict)) {
+        continue;
+      }
       entry_dict.SetKey(kBrokenCountKey, base::Value(broken_count));
-      json_list_index_map[alt_service] = json_list->GetList().size();
-      json_list->GetList().push_back(std::move(entry_dict));
+      json_list_index_map[broken_alt_service] = json_list->GetList().size();
+      json_list->Append(std::move(entry_dict));
     }
   }
 
@@ -831,7 +873,7 @@ void HttpServerPropertiesManager::SaveBrokenAlternativeServicesToPrefs(
          it != broken_alternative_service_list.end() &&
          count < max_broken_alternative_services;
          ++it, ++count) {
-      const AlternativeService& alt_service = it->first;
+      const BrokenAlternativeService& broken_alt_service = it->first;
       base::TimeTicks expiration_time_ticks = it->second;
       // Convert expiration from TimeTicks to Time to time_t
       time_t expiration_time_t =
@@ -839,7 +881,7 @@ void HttpServerPropertiesManager::SaveBrokenAlternativeServicesToPrefs(
               .ToTimeT();
       int64_t expiration_int64 = static_cast<int64_t>(expiration_time_t);
 
-      auto index_map_it = json_list_index_map.find(alt_service);
+      auto index_map_it = json_list_index_map.find(broken_alt_service);
       if (index_map_it != json_list_index_map.end()) {
         size_t json_list_index = index_map_it->second;
         base::DictionaryValue* entry_dict = nullptr;
@@ -850,15 +892,22 @@ void HttpServerPropertiesManager::SaveBrokenAlternativeServicesToPrefs(
                            base::Value(base::NumberToString(expiration_int64)));
       } else {
         base::DictionaryValue entry_dict;
-        AddAlternativeServiceFieldsToDictionaryValue(alt_service, &entry_dict);
+        if (!TryAddBrokenAlternativeServiceFieldsToDictionaryValue(
+                broken_alt_service, &entry_dict)) {
+          continue;
+        }
         entry_dict.SetKey(kBrokenUntilKey,
                           base::Value(base::NumberToString(expiration_int64)));
-        json_list->GetList().push_back(std::move(entry_dict));
+        json_list->Append(std::move(entry_dict));
       }
     }
   }
 
-  DCHECK(!json_list->empty());
+  // This can happen if all the entries are for NetworkIsolationKeys for opaque
+  // origins, which isn't exactly common, but can theoretically happen.
+  if (json_list->empty())
+    return;
+
   http_server_properties_dict->SetWithoutPathExpansion(
       kBrokenAlternativeServicesKey, std::move(json_list));
 }

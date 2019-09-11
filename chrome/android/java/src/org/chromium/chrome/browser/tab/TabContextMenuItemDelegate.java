@@ -12,8 +12,11 @@ import android.net.Uri;
 import android.provider.Browser;
 import android.provider.ContactsContract;
 
+import androidx.browser.customtabs.CustomTabsIntent;
+
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.DefaultBrowserInfo;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.contextmenu.ContextMenuItemDelegate;
@@ -35,8 +38,6 @@ import org.chromium.ui.base.PageTransition;
 
 import java.net.URI;
 import java.util.Locale;
-
-import androidx.browser.customtabs.CustomTabsIntent;
 
 /**
  * A default {@link ContextMenuItemDelegate} that supports the context menu functionality in Tab.
@@ -225,7 +226,13 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
 
     @Override
     public void onOpenInEphemeralTab(String url, String title) {
-        mTab.getActivity().getEphemeralTabPanel().requestOpenPanel(url, title, mTab.isIncognito());
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.EPHEMERAL_TAB_USING_BOTTOM_SHEET)) {
+            mTab.getActivity().getEphemeralTabCoordinator().requestOpenSheet(
+                    url, title, mTab.isIncognito());
+        } else {
+            mTab.getActivity().getEphemeralTabPanel().requestOpenPanel(
+                    url, title, mTab.isIncognito());
+        }
     }
 
     @Override

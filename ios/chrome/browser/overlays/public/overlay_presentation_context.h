@@ -22,9 +22,32 @@ class OverlayPresentationContext {
   virtual void AddObserver(OverlayPresentationContextObserver* observer) = 0;
   virtual void RemoveObserver(OverlayPresentationContextObserver* observer) = 0;
 
-  // Whether the presentation context is active.  Overlay UI will only be
-  // presented for active contexts.
-  virtual bool IsActive() const = 0;
+  // Enum describing the current capabilities of the presentation context.
+  enum UIPresentationCapabilities {
+    // The context cannot show any overlay UI.
+    kNone = 0,
+    // The context can show overlay UI that is contained as a child to its
+    // backing UIViewController.
+    kContained = 1 << 0,
+    // The context can show overlay UI that is presented upon its backing
+    // UIViewController.
+    kPresented = 1 << 1,
+  };
+
+  // Returns the context's current presentation capabilities.  Overlay UI should
+  // not be shown in this context if CanShowUIForRequest() returns false for
+  // the current capabilities.
+  virtual UIPresentationCapabilities GetPresentationCapabilities() const = 0;
+
+  // Returns whether the presentation context can show the UI for |request|
+  // while it has |capabilities|.
+  virtual bool CanShowUIForRequest(
+      OverlayRequest* request,
+      UIPresentationCapabilities capabilities) const = 0;
+
+  // Returns whether the presentation context supports showing the UI for
+  // |request| with its current presentation capabilities.
+  virtual bool CanShowUIForRequest(OverlayRequest* request) const = 0;
 
   // Called by |presenter| to show the overlay UI for |request|.
   // |presentation_callback| must be called when the UI is finished being

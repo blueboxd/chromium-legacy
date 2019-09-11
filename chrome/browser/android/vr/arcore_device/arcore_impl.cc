@@ -37,6 +37,36 @@ device::mojom::VRPosePtr GetMojomPoseFromArPose(
   return result;
 }
 
+device::internal::ScopedArCoreObject<ArPose*> GetArPoseFromMojomPose(
+    ArSession* session,
+    const device::mojom::VRPosePtr& pose) {
+  float pose_raw[7] = {};  // 7 = orientation(4) + position(3).
+
+  if (pose->orientation) {
+    pose_raw[0] = pose->orientation->x();
+    pose_raw[1] = pose->orientation->y();
+    pose_raw[2] = pose->orientation->z();
+    pose_raw[3] = pose->orientation->w();
+  } else {
+    // Only need to set the .w to 1.
+    pose_raw[3] = 1;
+  }
+
+  if (pose->position) {
+    pose_raw[4] = pose->position->x();
+    pose_raw[5] = pose->position->y();
+    pose_raw[6] = pose->position->z();
+  }
+
+  device::internal::ScopedArCoreObject<ArPose*> result;
+
+  ArPose_create(
+      session, pose_raw,
+      device::internal::ScopedArCoreObject<ArPose*>::Receiver(result).get());
+
+  return result;
+}
+
 }  // namespace
 
 namespace device {
@@ -259,7 +289,7 @@ void ArCoreImpl::ForEachArCorePlane(FunctionType fn) {
       continue;
     }
 
-    fn(ar_plane);
+    fn(std::move(trackable), ar_plane);
   }
 }  // namespace device
 
@@ -293,6 +323,10 @@ std::vector<mojom::XRAnchorDataPtr> ArCoreImpl::GetUpdatedAnchorsData() {
     bool created;
     std::tie(anchor_id, created) = *maybe_anchor_id_and_created;
 
+    DCHECK(!created)
+        << "Anchor creation is app-initiated - we should never encounter an "
+           "anchor that was created outside of `ArCoreImpl::CreateAnchor()`.";
+
     result.push_back(mojom::XRAnchorData::New(anchor_id, std::move(pose)));
   });
 
@@ -319,9 +353,9 @@ std::vector<int32_t> ArCoreImpl::GetAllAnchorIds() {
     bool created;
     std::tie(anchor_id, created) = *maybe_anchor_id_and_created;
 
-    // TODO(https://crbug.com/992033): Add explanation for the below DCHECK when
-    // implementing anchor creation.
-    DCHECK(!created);
+    DCHECK(!created)
+        << "Anchor creation is app-initiated - we should never encounter an "
+           "anchor that was created outside of `ArCoreImpl::CreateAnchor()`.";
 
     result.emplace_back(anchor_id);
   });
@@ -365,7 +399,9 @@ std::vector<mojom::XRPlaneDataPtr> ArCoreImpl::GetUpdatedPlanesData() {
   ArFrame_getUpdatedTrackables(arcore_session_.get(), arcore_frame_.get(),
                                plane_tracked_type, arcore_planes_.get());
 
-  ForEachArCorePlane([this, &result](ArPlane* ar_plane) {
+  ForEachArCorePlane([this, &result](
+                         internal::ScopedArCoreObject<ArTrackable*> trackable,
+                         ArPlane* ar_plane) {
     // orientation
     ArPlaneType plane_type;
     ArPlane_getType(arcore_session_.get(), ar_plane, &plane_type);
@@ -426,7 +462,13 @@ std::vector<int32_t> ArCoreImpl::GetAllPlaneIds() {
   ArSession_getAllTrackables(arcore_session_.get(), plane_tracked_type,
                              arcore_planes_.get());
 
-  ForEachArCorePlane([this, &result](ArPlane* ar_plane) {
+  std::unordered_map<int32_t,
+                     device::internal::ScopedArCoreObject<ArTrackable*>>
+      plane_id_to_plane_object;
+
+  ForEachArCorePlane([this, &plane_id_to_plane_object, &result](
+                         internal::ScopedArCoreObject<ArTrackable*> trackable,
+                         ArPlane* ar_plane) {
     // ID
     auto maybe_plane_id_and_created = CreateOrGetPlaneId(ar_plane);
     if (!maybe_plane_id_and_created) {
@@ -443,7 +485,10 @@ std::vector<int32_t> ArCoreImpl::GetAllPlaneIds() {
         << "Newly detected planes should be handled by GetUpdatedPlanesData().";
 
     result.emplace_back(plane_id);
+    plane_id_to_plane_object[plane_id] = std::move(trackable);
   });
+
+  plane_id_to_plane_object_.swap(plane_id_to_plane_object);
 
   return result;
 }
@@ -670,6 +715,81 @@ bool ArCoreImpl::RequestHitTest(
 
   DVLOG(2) << __func__ << ": hit_results->size()=" << hit_results->size();
   return true;
+}
+
+base::Optional<int32_t> ArCoreImpl::CreateAnchor(
+    const device::mojom::VRPosePtr& pose) {
+  DCHECK(pose);
+
+  auto ar_pose = GetArPoseFromMojomPose(arcore_session_.get(), pose);
+
+  device::internal::ScopedArCoreObject<ArAnchor*> ar_anchor;
+  ArSession_acquireNewAnchor(
+      arcore_session_.get(), ar_pose.get(),
+      device::internal::ScopedArCoreObject<ArAnchor*>::Receiver(ar_anchor)
+          .get());
+
+  auto maybe_anchor_id_and_created = CreateOrGetAnchorId(ar_anchor.get());
+  if (!maybe_anchor_id_and_created) {
+    return base::nullopt;
+  }
+
+  int32_t anchor_id;
+  bool created;
+  std::tie(anchor_id, created) = *maybe_anchor_id_and_created;
+
+  DCHECK(created) << "This should always be a new anchor, not something we've "
+                     "seen previously.";
+
+  anchor_id_to_anchor_object_[anchor_id] = std::move(ar_anchor);
+
+  return anchor_id;
+}
+
+base::Optional<int32_t> ArCoreImpl::CreateAnchor(
+    const device::mojom::VRPosePtr& pose,
+    int32_t plane_id) {
+  DCHECK(pose);
+
+  auto ar_pose = GetArPoseFromMojomPose(arcore_session_.get(), pose);
+
+  auto it = plane_id_to_plane_object_.find(plane_id);
+  if (it == plane_id_to_plane_object_.end()) {
+    return base::nullopt;
+  }
+
+  device::internal::ScopedArCoreObject<ArAnchor*> ar_anchor;
+  ArTrackable_acquireNewAnchor(
+      arcore_session_.get(), it->second.get(), ar_pose.get(),
+      device::internal::ScopedArCoreObject<ArAnchor*>::Receiver(ar_anchor)
+          .get());
+
+  auto maybe_anchor_id_and_created = CreateOrGetAnchorId(ar_anchor.get());
+  if (!maybe_anchor_id_and_created) {
+    return base::nullopt;
+  }
+
+  int32_t anchor_id;
+  bool created;
+  std::tie(anchor_id, created) = *maybe_anchor_id_and_created;
+
+  DCHECK(created) << "This should always be a new anchor, not something we've "
+                     "seen previously.";
+
+  anchor_id_to_anchor_object_[anchor_id] = std::move(ar_anchor);
+
+  return anchor_id;
+}
+
+void ArCoreImpl::DetachAnchor(int32_t anchor_id) {
+  auto it = anchor_id_to_anchor_object_.find(anchor_id);
+  if (it == anchor_id_to_anchor_object_.end()) {
+    return;
+  }
+
+  ArAnchor_detach(arcore_session_.get(), it->second.get());
+
+  anchor_id_to_anchor_object_.erase(it);
 }
 
 bool ArCoreImpl::IsOnGlThread() {

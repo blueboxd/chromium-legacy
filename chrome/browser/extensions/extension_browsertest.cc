@@ -75,7 +75,6 @@
 #include "extensions/common/file_util.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/value_builder.h"
-#include "net/url_request/url_request_file_job.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/constants/chromeos_switches.h"

@@ -110,7 +110,8 @@
         embedded></cr-link-row>
     <cr-link-row class="hr" label="$i18n{appearanceSettingsTitle}"
         on-click="onAppearanceTap_"
-        sub-label="$i18n{appearanceSettingsDescription}" embedded></cr-link-row>
+        sub-label="$i18n{appearanceSettingsDescription}"
+        external="[[isOSSettings_]]" embedded></cr-link-row>
 
     <h2>$i18n{keyboardAndTextInputHeading}</h2>
     <settings-toggle-button class="first"

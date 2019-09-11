@@ -192,7 +192,6 @@ CastRemotingConnector::CastRemotingConnector(
       permission_request_callback_(std::move(permission_request_callback)),
       active_bridge_(nullptr),
       deprecated_binding_(this),
-      binding_(this),
       pref_service_(pref_service) {
   DCHECK(permission_request_callback_);
 #if !defined(OS_ANDROID)
@@ -244,19 +243,18 @@ void CastRemotingConnector::ResetRemotingPermission() {
 }
 
 void CastRemotingConnector::ConnectWithMediaRemoter(
-    media::mojom::RemoterPtr remoter,
-    media::mojom::RemotingSourceRequest request) {
-  DCHECK(!binding_);
+    mojo::PendingRemote<media::mojom::Remoter> remoter,
+    mojo::PendingReceiver<media::mojom::RemotingSource> receiver) {
   DCHECK(!remoter_);
   DCHECK(remoter);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DVLOG(2) << __func__;
 
-  binding_.Bind(std::move(request));
-  binding_.set_connection_error_handler(base::BindOnce(
+  receiver_.Bind(std::move(receiver));
+  receiver_.set_disconnect_handler(base::BindOnce(
       &CastRemotingConnector::OnMirrorServiceStopped, base::Unretained(this)));
-  remoter_ = std::move(remoter);
-  remoter_.set_connection_error_handler(base::BindOnce(
+  remoter_.Bind(std::move(remoter));
+  remoter_.set_disconnect_handler(base::BindOnce(
       &CastRemotingConnector::OnMirrorServiceStopped, base::Unretained(this)));
 }
 
@@ -267,8 +265,7 @@ void CastRemotingConnector::OnMirrorServiceStopped() {
   if (deprecated_binding_)
     deprecated_binding_.Close();
   deprecated_remoter_.reset();
-  if (binding_)
-    binding_.Close();
+  receiver_.reset();
   remoter_.reset();
 
   sink_metadata_ = RemotingSinkMetadata();

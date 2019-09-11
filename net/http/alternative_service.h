@@ -113,12 +113,6 @@ NET_EXPORT_PRIVATE std::ostream& operator<<(
     std::ostream& os,
     const AlternativeService& alternative_service);
 
-struct AlternativeServiceHash {
-  size_t operator()(const net::AlternativeService& entry) const {
-    return entry.protocol ^ std::hash<std::string>()(entry.host) ^ entry.port;
-  }
-};
-
 class NET_EXPORT_PRIVATE AlternativeServiceInfo {
  public:
   static AlternativeServiceInfo CreateHttp2AlternativeServiceInfo(

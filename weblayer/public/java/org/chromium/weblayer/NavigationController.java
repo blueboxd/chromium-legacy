@@ -15,16 +15,13 @@ import org.chromium.weblayer_private.aidl.INavigation;
 import org.chromium.weblayer_private.aidl.INavigationController;
 import org.chromium.weblayer_private.aidl.INavigationControllerClient;
 
-import java.util.concurrent.CopyOnWriteArrayList;
-
 /**
  * Provides methods to control navigation, along with maintaining the current list of navigations.
  */
 public final class NavigationController {
     private static final String TAG = "WebLayer";
     private INavigationController mNavigationController;
-    // TODO(sky): copy ObserverList from base and use it instead.
-    private final CopyOnWriteArrayList<NavigationObserver> mObservers;
+    private final ObserverList<NavigationObserver> mObservers;
 
     static NavigationController create(IBrowserController browserController) {
         NavigationController navigationController = new NavigationController();
@@ -40,7 +37,7 @@ public final class NavigationController {
     }
 
     private NavigationController() {
-        mObservers = new CopyOnWriteArrayList<NavigationObserver>();
+        mObservers = new ObserverList<NavigationObserver>();
     }
 
     public void navigate(Uri uri) {
@@ -116,11 +113,11 @@ public final class NavigationController {
     }
 
     public void addObserver(NavigationObserver observer) {
-        mObservers.add(observer);
+        mObservers.addObserver(observer);
     }
 
     public void removeObserver(NavigationObserver observer) {
-        mObservers.remove(observer);
+        mObservers.removeObserver(observer);
     }
 
     private final class NavigationControllerClientImpl extends INavigationControllerClient.Stub {

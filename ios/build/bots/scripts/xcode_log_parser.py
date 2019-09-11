@@ -183,7 +183,7 @@ class Xcode11LogParser(object):
 
   @staticmethod
   def collect_test_results(xcresult, output):
-    """Gets test result data from xcresult.
+    """Gets test result and diagnostic data from xcresult.
 
     Args:
       xcresult: (str) A path to xcresult.
@@ -224,6 +224,7 @@ class Xcode11LogParser(object):
     else:
       test_results['failed'] = Xcode11LogParser._list_of_failed_tests(root)
       test_results['passed'] = Xcode11LogParser._list_of_passed_tests(xcresult)
+    Xcode11LogParser._export_diagnostic_data(xcresult + '.xcresult')
     return test_results
 
   @staticmethod
@@ -249,6 +250,34 @@ class Xcode11LogParser(object):
                                       format_test_case(test_case))
       copy_screenshots_for_failed_test(failure_summary['message']['_value'],
                                        test_case_folder)
+
+  @staticmethod
+  def _export_diagnostic_data(xcresult):
+    """Exports diagnostic data from xcresult to xcresult_diagnostic folder.
+
+    Since Xcode 11 format of result bundles changed, to get diagnostic data
+    need to run command below:
+    xcresulttool export --type directory --id DIAGNOSTICS_REF --output-path
+    ./export_folder --path ./RB.xcresult
+
+    Args:
+      xcresult: (str) A path to xcresult directory.
+    """
+    plist_path = os.path.join(xcresult, 'Info.plist')
+    if not (os.path.exists(xcresult) and os.path.exists(plist_path)):
+      return
+    root = json.loads(Xcode11LogParser._xcresulttool_get(xcresult))
+    try:
+      diagnostics_ref = root['actions']['_values'][0]['actionResult'][
+          'diagnosticsRef']['id']['_value']
+      export_command = ['xcresulttool', 'export',
+                        '--type', 'directory',
+                        '--id', diagnostics_ref,
+                        '--path', xcresult,
+                        '--output-path', '%s_diagnostic' % xcresult]
+      subprocess.check_output(export_command).strip()
+    except KeyError:
+      LOGGER.warn('Did not parse diagnosticsRef from %s!' % xcresult)
 
 
 class XcodeLogParser(object):

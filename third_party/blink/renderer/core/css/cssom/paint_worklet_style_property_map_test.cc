@@ -12,8 +12,10 @@
 #include "third_party/blink/renderer/core/css/css_test_helpers.h"
 #include "third_party/blink/renderer/core/css/cssom/css_keyword_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_unit_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_unparsed_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_unsupported_color_value.h"
 #include "third_party/blink/renderer/core/css/cssom/paint_worklet_input.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/custom_property.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
@@ -45,6 +47,27 @@ class PaintWorkletStylePropertyMapTest : public PageTestBase {
                             CrossThreadUnretained(this),
                             CrossThreadUnretained(&waitable_event)));
     waitable_event.Wait();
+  }
+
+  void CheckUnregisteredProperty(base::WaitableEvent* waitable_event,
+                                 scoped_refptr<PaintWorkletInput> input) {
+    ASSERT_TRUE(!IsMainThread());
+
+    PaintWorkletStylePropertyMap* map =
+        MakeGarbageCollected<PaintWorkletStylePropertyMap>(
+            input->StyleMapData());
+    ASSERT_TRUE(map);
+
+    const PaintWorkletStylePropertyMap::CrossThreadData& data =
+        map->StyleMapDataForTest();
+    EXPECT_EQ(data.size(), 1u);
+    EXPECT_EQ(data.at("--x")->GetType(),
+              CrossThreadStyleValue::StyleValueType::kUnparsedType);
+    CSSStyleValue* style_value = data.at("--x")->ToCSSStyleValue();
+    EXPECT_EQ(style_value->GetType(),
+              CSSStyleValue::StyleValueType::kUnparsedType);
+    EXPECT_EQ(static_cast<CSSUnparsedValue*>(style_value)->ToString(), "50");
+    waitable_event->Signal();
   }
 
   void CheckCrossThreadData(base::WaitableEvent* waitable_event,
@@ -86,6 +109,46 @@ class PaintWorkletStylePropertyMapTest : public PageTestBase {
  protected:
   std::unique_ptr<blink::Thread> thread_;
 };
+
+TEST_F(PaintWorkletStylePropertyMapTest, UnregisteredCustomProperty) {
+  CustomProperty property("--x", GetDocument());
+  Vector<CSSPropertyID> native_properties;
+  Vector<AtomicString> custom_properties({"--x"});
+
+  GetDocument().documentElement()->SetInnerHTMLFromString(
+      "<div id='target' style='--x:50'></div>");
+  UpdateAllLifecyclePhasesForTest();
+
+  Element* node = GetDocument().getElementById("target");
+  node->GetLayoutObject()->GetMutableForPainting().EnsureId();
+  CompositorPaintWorkletInput::PropertyKeys input_property_keys;
+  auto data = PaintWorkletStylePropertyMap::BuildCrossThreadData(
+      GetDocument(), node->GetLayoutObject()->UniqueId(),
+      node->ComputedStyleRef(), native_properties, custom_properties,
+      input_property_keys);
+  EXPECT_TRUE(data.has_value());
+
+  Vector<std::unique_ptr<CrossThreadStyleValue>> input_arguments;
+  std::vector<cc::PaintWorkletInput::PropertyKey> property_keys;
+  scoped_refptr<PaintWorkletInput> input =
+      base::MakeRefCounted<PaintWorkletInput>(
+          "test", FloatSize(100, 100), 1.0f, 1.0f, 1, std::move(data.value()),
+          std::move(input_arguments), std::move(property_keys));
+  ASSERT_TRUE(input);
+
+  thread_ = blink::Thread::CreateThread(
+      ThreadCreationParams(WebThreadType::kTestThread).SetSupportsGC(true));
+  base::WaitableEvent waitable_event;
+  PostCrossThreadTask(
+      *thread_->GetTaskRunner(), FROM_HERE,
+      CrossThreadBindOnce(
+          &PaintWorkletStylePropertyMapTest::CheckUnregisteredProperty,
+          CrossThreadUnretained(this), CrossThreadUnretained(&waitable_event),
+          std::move(input)));
+  waitable_event.Wait();
+
+  ShutDownThread();
+}
 
 TEST_F(PaintWorkletStylePropertyMapTest, CreateSupportedCrossThreadData) {
   Vector<CSSPropertyID> native_properties({CSSPropertyID::kDisplay});

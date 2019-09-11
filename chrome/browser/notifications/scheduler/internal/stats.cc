@@ -106,12 +106,9 @@ void LogDbInit(DatabaseType type, bool success, int entry_count) {
   init_histogram_name.append(".InitResult");
   base::UmaHistogramBoolean(init_histogram_name, success);
 
-  // Currently icon database doesn't have record count metric.
-  if (type != DatabaseType::kIconDb) {
-    std::string record_count_name = prefix;
-    record_count_name.append(".RecordCount");
-    base::UmaHistogramCounts100(record_count_name, entry_count);
-  }
+  std::string record_count_name = prefix;
+  record_count_name.append(".RecordCount");
+  base::UmaHistogramCounts100(record_count_name, entry_count);
 }
 
 void LogDbOperation(DatabaseType type, bool success) {

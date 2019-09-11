@@ -68,7 +68,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/mojom/voice_interaction_controller.mojom.h"
+#include "ash/public/mojom/assistant_state_controller.mojom.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/account_manager/account_manager_util.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"

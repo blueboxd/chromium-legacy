@@ -225,7 +225,7 @@ void DesksBarView::Layout() {
   if (mini_views_.empty())
     return;
 
-  constexpr int kMiniViewsSpacing = 8;
+  constexpr int kMiniViewsSpacing = 12;
   const gfx::Size mini_view_size = mini_views_[0]->GetPreferredSize();
   const int total_width =
       mini_views_.size() * (mini_view_size.width() + kMiniViewsSpacing) -

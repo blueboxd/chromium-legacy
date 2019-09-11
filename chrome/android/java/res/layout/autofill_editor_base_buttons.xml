@@ -10,7 +10,7 @@
     <Space style="@style/ButtonBarTopSpacerLight" />
 
     <!-- CANCEL and DONE buttons. -->
-    <org.chromium.chrome.browser.widget.DualControlLayout
+    <org.chromium.chrome.browser.ui.widget.DualControlLayout
         android:id="@+id/button_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

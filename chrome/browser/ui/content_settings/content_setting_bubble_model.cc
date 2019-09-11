@@ -29,6 +29,7 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/permission_bubble_media_access_handler.h"
 #include "chrome/browser/media/webrtc/system_media_capture_permissions_mac.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
@@ -186,8 +187,6 @@ ContentSettingSimpleBubbleModel::ContentSettingSimpleBubbleModel(
     ContentSettingsType content_type)
     : ContentSettingBubbleModel(delegate, web_contents),
       content_type_(content_type) {
-  // Notifications do not have a bubble.
-  DCHECK_NE(content_type, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
   SetTitle();
   SetMessage();
   SetManageText();
@@ -1083,8 +1082,20 @@ void ContentSettingMediaStreamBubbleModel::OnManageButtonClicked() {
   if (!delegate())
     return;
 
-  if (ShouldDoneButtonBehaveAsManageButton()) {
+  if (MicrophoneAccessed() && CameraAccessed()) {
+    delegate()->ShowMediaSettingsPage();
+  } else {
+    delegate()->ShowContentSettingsPage(
+        CameraAccessed() ? CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA
+                         : CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
+  }
+}
+
+void ContentSettingMediaStreamBubbleModel::OnDoneButtonClicked() {
+  if (ShouldShowSystemMediaPermissions()) {
 #if defined(OS_MACOSX)
+    DCHECK(CameraAccessed() || MicrophoneAccessed());
+
     base::RecordAction(UserMetricsAction("Media.OpenPreferencesClicked"));
     DCHECK(ShouldShowSystemMediaPermissions());
 
@@ -1098,19 +1109,6 @@ void ContentSettingMediaStreamBubbleModel::OnManageButtonClicked() {
     return;
 #endif  // defined(OS_MACOSX)
   }
-
-  if (MicrophoneAccessed() && CameraAccessed()) {
-    delegate()->ShowMediaSettingsPage();
-  } else {
-    delegate()->ShowContentSettingsPage(
-        CameraAccessed() ? CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA
-                         : CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
-  }
-}
-
-bool ContentSettingMediaStreamBubbleModel::
-    ShouldDoneButtonBehaveAsManageButton() {
-  return ShouldShowSystemMediaPermissions();
 }
 
 bool ContentSettingMediaStreamBubbleModel::MicrophoneAccessed() const {
@@ -1443,7 +1441,7 @@ ContentSettingSubresourceFilterBubbleModel::
 }
 
 ContentSettingSubresourceFilterBubbleModel::
-    ~ContentSettingSubresourceFilterBubbleModel() {}
+    ~ContentSettingSubresourceFilterBubbleModel() = default;
 
 void ContentSettingSubresourceFilterBubbleModel::SetTitle() {
   set_title(l10n_util::GetStringUTF16(IDS_BLOCKED_ADS_PROMPT_TITLE));
@@ -1618,6 +1616,39 @@ void ContentSettingFramebustBlockBubbleModel::BlockedUrlAdded(
   AddListItem(CreateUrlListItem(0 /* id */, blocked_url));
 }
 
+// ContentSettingNotificationsBubbleModel ----------------------------------
+ContentSettingNotificationsBubbleModel::ContentSettingNotificationsBubbleModel(
+    Delegate* delegate,
+    WebContents* web_contents)
+    : ContentSettingBubbleModel(delegate, web_contents) {
+  set_title(l10n_util::GetStringUTF16(
+      IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_TITLE));
+  set_message(l10n_util::GetStringUTF16(
+      IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_DESCRIPTION));
+  set_done_button_text(l10n_util::GetStringUTF16(
+      IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_ALLOW_BUTTON));
+  set_show_learn_more(false);
+}
+
+ContentSettingNotificationsBubbleModel::
+    ~ContentSettingNotificationsBubbleModel() = default;
+
+ContentSettingNotificationsBubbleModel*
+ContentSettingNotificationsBubbleModel::AsNotificationsBubbleModel() {
+  return this;
+}
+
+void ContentSettingNotificationsBubbleModel::OnManageButtonClicked() {
+  if (delegate())
+    delegate()->ShowContentSettingsPage(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+}
+
+void ContentSettingNotificationsBubbleModel::OnDoneButtonClicked() {
+  PermissionRequestManager* manager =
+      PermissionRequestManager::FromWebContents(web_contents());
+  manager->Accept();
+}
+
 // ContentSettingBubbleModel ---------------------------------------------------
 
 // This class must be placed last because it needs the definition of the other
@@ -1724,13 +1755,14 @@ ContentSettingSimpleBubbleModel*
   return nullptr;
 }
 
-bool ContentSettingBubbleModel::ShouldDoneButtonBehaveAsManageButton() {
-  return false;
-}
-
 ContentSettingMediaStreamBubbleModel*
     ContentSettingBubbleModel::AsMediaStreamBubbleModel() {
   // In general, bubble models might not inherit from the media bubble model.
+  return nullptr;
+}
+
+ContentSettingNotificationsBubbleModel*
+ContentSettingBubbleModel::AsNotificationsBubbleModel() {
   return nullptr;
 }
 

@@ -251,4 +251,20 @@ void AutofillPaymentInstrument::OnAddressNormalized(
     GenerateBasicCardResponse();
 }
 
+bool AutofillPaymentInstrument::HandlesShippingAddress() const {
+  return false;
+}
+
+bool AutofillPaymentInstrument::HandlesPayerName() const {
+  return false;
+}
+
+bool AutofillPaymentInstrument::HandlesPayerEmail() const {
+  return false;
+}
+
+bool AutofillPaymentInstrument::HandlesPayerPhone() const {
+  return false;
+}
+
 }  // namespace payments

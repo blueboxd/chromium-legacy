@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/ambient/ambient_constants.h"
 #include "ash/ambient/ambient_controller.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -86,10 +87,8 @@ void PhotoView::StartSlideAnimation() {
   transform.Translate(x_offset, 0);
   layer->SetTransform(transform);
   {
-    constexpr base::TimeDelta kDuration =
-        base::TimeDelta::FromMilliseconds(250);
     ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
-    animation.SetTransitionDuration(kDuration);
+    animation.SetTransitionDuration(kAnimationDuration);
     animation.SetTweenType(gfx::Tween::EASE_OUT);
     animation.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);

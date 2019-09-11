@@ -23,6 +23,8 @@
 #include "media/cast/cast_environment.h"
 #include "media/cast/net/cast_transport_defines.h"
 #include "media/mojo/mojom/video_encode_accelerator.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
 namespace media {
@@ -97,9 +99,10 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) Session final
 
   // Creates an audio input stream through Audio Service. |client| will be
   // called after the stream is created.
-  void CreateAudioStream(mojom::AudioStreamCreatorClientPtr client,
-                         const media::AudioParameters& params,
-                         uint32_t shared_memory_count);
+  void CreateAudioStream(
+      mojo::PendingRemote<mojom::AudioStreamCreatorClient> client,
+      const media::AudioParameters& params,
+      uint32_t shared_memory_count);
 
   // Callback for CAPABILITIES_RESPONSE.
   void OnCapabilitiesResponse(const ReceiverResponse& response);
@@ -109,8 +112,9 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) Session final
 
   // MediaRemoter::Client implementation.
   void ConnectToRemotingSource(
-      media::mojom::RemoterPtr remoter,
-      media::mojom::RemotingSourceRequest source_request) override;
+      mojo::PendingRemote<media::mojom::Remoter> remoter,
+      mojo::PendingReceiver<media::mojom::RemotingSource> source_receiver)
+      override;
   void RequestRemotingStreaming() override;
   void RestartMirroringStreaming() override;
 

@@ -55,9 +55,9 @@ import "components/arc/mojom/volume_mounter.mojom";
 import "components/arc/mojom/wake_lock.mojom";
 import "components/arc/mojom/wallpaper.mojom";
 
-// Next MinVersion: 48
+// Next MinVersion: 49
 // Deprecated method IDs: 101, 105
-// Next method ID: 153
+// Next method ID: 154
 interface ArcBridgeHost {
   // Keep the entries alphabetical. In order to do so without breaking
   // compatibility with the ARC instance, explicitly assign each interface a
@@ -189,6 +189,10 @@ interface ArcBridgeHost {
 
   // Notifies Chrome that the ScreenCaptureInstance interface is ready.
   [MinVersion=35] OnScreenCaptureInstanceReady@140(ScreenCaptureInstance instance_ptr);
+
+  // Notifies Chrome that the SmartCardManagerInstance interface is ready.
+  [MinVersion=48] OnSmartCardManagerInstanceReady@153(
+      SmartCardManagerInstance instance_ptr);
 
   // Notifies Chrome that the StorageManagerInstance interface is ready.
   [MinVersion=12] OnStorageManagerInstanceReady@118(StorageManagerInstance instance_ptr);

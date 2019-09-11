@@ -36,6 +36,7 @@
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/aura/window_occlusion_tracker.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -521,6 +522,9 @@ ShellSurfaceBase::AsTracedValue() const {
 // SurfaceDelegate overrides:
 
 void ShellSurfaceBase::OnSurfaceCommit() {
+  // Pause occlusion tracking since we will update a bunch of window properties.
+  aura::WindowOcclusionTracker::ScopedPause pause_occlusion;
+
   // SetShadowBounds requires synchronizing shadow bounds with the next frame,
   // so submit the next frame to a new surface and let the host window use the
   // new surface.

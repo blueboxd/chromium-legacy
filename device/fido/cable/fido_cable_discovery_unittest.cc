@@ -32,7 +32,10 @@ namespace device {
 
 namespace {
 
-constexpr uint8_t kTestCableVersionNumber = 0x01;
+constexpr auto kTestCableVersion = CableDiscoveryData::Version::V1;
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+constexpr auto kTestCableVersionNumber = 1;
+#endif
 
 // Constants required for discovering and constructing a Cable device that
 // are given by the relying party via an extension.
@@ -300,11 +303,11 @@ class FakeFidoCableDiscovery : public FidoCableDiscovery {
                          const CableDiscoveryData* discovery_data) override {
     // Nonce is embedded as first 8 bytes of client EID.
     std::array<uint8_t, 8> nonce;
-    const bool ok =
-        fido_parsing_utils::ExtractArray(discovery_data->client_eid, 0, &nonce);
+    const bool ok = fido_parsing_utils::ExtractArray(
+        discovery_data->v1->client_eid, 0, &nonce);
     DCHECK(ok);
     return std::make_unique<FakeHandshakeHandler>(
-        device, nonce, discovery_data->session_pre_key);
+        device, nonce, discovery_data->v1->session_pre_key);
   }
 
   static std::array<uint8_t, 32> BogusQRGeneratorKey() {
@@ -320,7 +323,7 @@ class FidoCableDiscoveryTest : public ::testing::Test {
  public:
   std::unique_ptr<FidoCableDiscovery> CreateDiscovery() {
     std::vector<CableDiscoveryData> discovery_data;
-    discovery_data.emplace_back(kTestCableVersionNumber, kClientEid,
+    discovery_data.emplace_back(kTestCableVersion, kClientEid,
                                 kAuthenticatorEid, kTestSessionPreKey);
     return std::make_unique<FakeFidoCableDiscovery>(std::move(discovery_data));
   }
@@ -398,9 +401,9 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryFindsIncorrectDevice) {
 // BluetoothAdapter::RegisterAdvertisement().
 TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithMultipleEids) {
   std::vector<CableDiscoveryData> discovery_data;
-  discovery_data.emplace_back(kTestCableVersionNumber, kClientEid,
-                              kAuthenticatorEid, kTestSessionPreKey);
-  discovery_data.emplace_back(kTestCableVersionNumber, kSecondaryClientEid,
+  discovery_data.emplace_back(kTestCableVersion, kClientEid, kAuthenticatorEid,
+                              kTestSessionPreKey);
+  discovery_data.emplace_back(kTestCableVersion, kSecondaryClientEid,
                               kSecondaryAuthenticatorEid,
                               kSecondarySessionPreKey);
   auto cable_discovery =
@@ -432,9 +435,9 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithMultipleEids) {
 // scanning process should be invoked.
 TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithPartialAdvertisementSuccess) {
   std::vector<CableDiscoveryData> discovery_data;
-  discovery_data.emplace_back(kTestCableVersionNumber, kClientEid,
-                              kAuthenticatorEid, kTestSessionPreKey);
-  discovery_data.emplace_back(kTestCableVersionNumber, kSecondaryClientEid,
+  discovery_data.emplace_back(kTestCableVersion, kClientEid, kAuthenticatorEid,
+                              kTestSessionPreKey);
+  discovery_data.emplace_back(kTestCableVersion, kSecondaryClientEid,
                               kSecondaryAuthenticatorEid,
                               kSecondarySessionPreKey);
   auto cable_discovery =
@@ -463,9 +466,9 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithPartialAdvertisementSuccess) {
 // Test the scenario when all advertisement for client EID's fails.
 TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithAdvertisementFailures) {
   std::vector<CableDiscoveryData> discovery_data;
-  discovery_data.emplace_back(kTestCableVersionNumber, kClientEid,
-                              kAuthenticatorEid, kTestSessionPreKey);
-  discovery_data.emplace_back(kTestCableVersionNumber, kSecondaryClientEid,
+  discovery_data.emplace_back(kTestCableVersion, kClientEid, kAuthenticatorEid,
+                              kTestSessionPreKey);
+  discovery_data.emplace_back(kTestCableVersion, kSecondaryClientEid,
                               kSecondaryAuthenticatorEid,
                               kSecondarySessionPreKey);
   auto cable_discovery =

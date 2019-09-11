@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/metrics/field_trial_params.h"
@@ -43,7 +44,6 @@ namespace {
 // in some UI, so we need to allow returning more results than actual maximum
 // number of results to be displayed in UI.
 constexpr size_t kMaxAppsGroupResults = 7;
-constexpr size_t kMaxOmniboxResults = 4;
 constexpr size_t kMaxLauncherSearchResults = 2;
 constexpr size_t kMaxZeroStateFileResults = 6;
 constexpr size_t kMaxDriveQuickAccessResults = 6;
@@ -91,7 +91,8 @@ std::unique_ptr<SearchController> CreateSearchController(
   size_t answer_card_group_id = controller->AddGroup(1, 1.0, 5.0);
   size_t apps_group_id =
       controller->AddGroup(kMaxAppsGroupResults, 1.0, kBoostOfApps);
-  size_t omnibox_group_id = controller->AddGroup(kMaxOmniboxResults, 1.0, 0.0);
+  size_t omnibox_group_id = controller->AddGroup(
+      AppListConfig::instance().max_search_result_list_items(), 1.0, 0.0);
 
   // Add search providers.
   controller->AddProvider(

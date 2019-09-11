@@ -12,8 +12,7 @@ namespace mirroring {
 
 CapturedAudioInput::CapturedAudioInput(StreamCreatorCallback callback)
     : stream_creator_callback_(std::move(callback)),
-      stream_client_binding_(this),
-      stream_creator_client_binding_(this) {
+      stream_client_binding_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(!stream_creator_callback_.is_null());
 }
@@ -29,9 +28,9 @@ void CapturedAudioInput::CreateStream(media::AudioInputIPCDelegate* delegate,
   DCHECK(delegate);
   DCHECK(!delegate_);
   delegate_ = delegate;
-  mojom::AudioStreamCreatorClientPtr client;
-  stream_creator_client_binding_.Bind(mojo::MakeRequest(&client));
-  stream_creator_callback_.Run(std::move(client), params, total_segments);
+  stream_creator_callback_.Run(
+      stream_creator_client_receiver_.BindNewPipeAndPassRemote(), params,
+      total_segments);
 }
 
 void CapturedAudioInput::RecordStream() {

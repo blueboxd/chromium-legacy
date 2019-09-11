@@ -30,9 +30,9 @@ void VerifyInputSourceProfilesArray(
   // verified its size above, so we can check the expressions a single time
   // here instead of polling them.
   for (size_t i = 0; i < expected_values.size(); ++i) {
-    t->RunJavaScriptAndExtractBoolOrFail("isProfileEqualTo(" +
-                                         base::NumberToString(i) + ", '" +
-                                         expected_values[i] + "')");
+    ASSERT_TRUE(t->RunJavaScriptAndExtractBoolOrFail(
+        "isProfileEqualTo(" + base::NumberToString(i) + ", '" +
+        expected_values[i] + "')"));
   }
 }
 
@@ -593,12 +593,14 @@ IN_PROC_MULTI_CLASS_BROWSER_TEST_F2(WebXrVrOpenVrBrowserTest,
     button_count = "4";
 
   // Make sure both gamepads have the expected button count and mapping.
-  t->RunJavaScriptAndExtractBoolOrFail("isButtonCountEqualTo(" + button_count +
-                                       ", 0)");
-  t->RunJavaScriptAndExtractBoolOrFail("isButtonCountEqualTo(" + button_count +
-                                       ", 1)");
-  t->RunJavaScriptAndExtractBoolOrFail("isMappingEqualTo('xr-standard', 0)");
-  t->RunJavaScriptAndExtractBoolOrFail("isMappingEqualTo('xr-standard', 1)");
+  ASSERT_TRUE(t->RunJavaScriptAndExtractBoolOrFail("isButtonCountEqualTo(" +
+                                                   button_count + ", 0)"));
+  ASSERT_TRUE(t->RunJavaScriptAndExtractBoolOrFail("isButtonCountEqualTo(" +
+                                                   button_count + ", 1)"));
+  ASSERT_TRUE(t->RunJavaScriptAndExtractBoolOrFail(
+      "isMappingEqualTo('xr-standard', 0)"));
+  ASSERT_TRUE(t->RunJavaScriptAndExtractBoolOrFail(
+      "isMappingEqualTo('xr-standard', 1)"));
 
   // Press the trigger and set the axis to a non-zero amount, so we can ensure
   // we aren't getting just default gamepad data.

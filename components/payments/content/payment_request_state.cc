@@ -330,19 +330,18 @@ void PaymentRequestState::OnPaymentAppWindowClosed() {
 }
 
 void PaymentRequestState::RecordUseStats() {
-  if (spec_->request_shipping()) {
+  if (ShouldShowShippingSection()) {
     DCHECK(selected_shipping_profile_);
     personal_data_manager_->RecordUseOf(*selected_shipping_profile_);
   }
 
-  if (spec_->request_payer_name() || spec_->request_payer_email() ||
-      spec_->request_payer_phone()) {
+  if (ShouldShowContactSection()) {
     DCHECK(selected_contact_profile_);
 
     // If the same address was used for both contact and shipping, the stats
     // should only be updated once.
-    if (!spec_->request_shipping() || (selected_shipping_profile_->guid() !=
-                                       selected_contact_profile_->guid())) {
+    if (!ShouldShowShippingSection() || (selected_shipping_profile_->guid() !=
+                                         selected_contact_profile_->guid())) {
       personal_data_manager_->RecordUseOf(*selected_contact_profile_);
     }
   }
@@ -534,6 +533,31 @@ void PaymentRequestState::SelectDefaultShippingAddressAndNotifyObservers() {
   UpdateIsReadyToPayAndNotifyObservers();
 }
 
+bool PaymentRequestState::ShouldShowShippingSection() const {
+  if (!spec_->request_shipping())
+    return false;
+
+  return selected_instrument_ ? !selected_instrument_->HandlesShippingAddress()
+                              : true;
+}
+
+bool PaymentRequestState::ShouldShowContactSection() const {
+  if (spec_->request_payer_name() &&
+      (!selected_instrument_ || !selected_instrument_->HandlesPayerName())) {
+    return true;
+  }
+  if (spec_->request_payer_email() &&
+      (!selected_instrument_ || !selected_instrument_->HandlesPayerEmail())) {
+    return true;
+  }
+  if (spec_->request_payer_phone() &&
+      (!selected_instrument_ || !selected_instrument_->HandlesPayerPhone())) {
+    return true;
+  }
+
+  return false;
+}
+
 base::WeakPtr<PaymentRequestState> PaymentRequestState::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
@@ -561,8 +585,7 @@ void PaymentRequestState::PopulateProfileCache() {
 
   // Set the number of suggestions shown for the sections requested by the
   // merchant.
-  if (spec_->request_payer_name() || spec_->request_payer_phone() ||
-      spec_->request_payer_email()) {
+  if (ShouldShowContactSection()) {
     bool has_complete_contact =
         contact_profiles_.empty()
             ? false
@@ -572,7 +595,7 @@ void PaymentRequestState::PopulateProfileCache() {
         JourneyLogger::Section::SECTION_CONTACT_INFO, contact_profiles_.size(),
         has_complete_contact);
   }
-  if (spec_->request_shipping()) {
+  if (ShouldShowShippingSection()) {
     bool has_complete_shipping =
         shipping_profiles_.empty()
             ? false
@@ -668,13 +691,18 @@ bool PaymentRequestState::ArePaymentOptionsSatisfied() {
   if (is_waiting_for_merchant_validation_)
     return false;
 
-  if (!profile_comparator()->IsShippingComplete(selected_shipping_profile_))
+  if (ShouldShowShippingSection() &&
+      (!spec_->selected_shipping_option() ||
+       !profile_comparator()->IsShippingComplete(selected_shipping_profile_))) {
     return false;
+  }
 
-  if (spec_->request_shipping() && !spec_->selected_shipping_option())
+  if (ShouldShowContactSection() &&
+      !profile_comparator()->IsContactInfoComplete(selected_contact_profile_)) {
     return false;
+  }
 
-  return profile_comparator()->IsContactInfoComplete(selected_contact_profile_);
+  return true;
 }
 
 void PaymentRequestState::OnAddressNormalized(

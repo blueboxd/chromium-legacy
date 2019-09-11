@@ -48,6 +48,7 @@ class ContentSettingImageModel {
     FRAMEBUST = 14,
     CLIPBOARD_READ = 15,
     SENSORS = 16,
+    NOTIFICATIONS_QUIET_PROMPT = 17,
 
     NUM_IMAGE_TYPES
   };

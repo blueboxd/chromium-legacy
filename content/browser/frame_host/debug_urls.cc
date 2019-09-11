@@ -128,22 +128,15 @@ void HangCurrentThread() {
 
 }  // namespace
 
-bool HandleDebugURL(const GURL& url, ui::PageTransition transition) {
-  // Ensure that the user explicitly navigated to this URL, unless
-  // kEnableGpuBenchmarking is enabled by Telemetry.
+bool HandleDebugURL(const GURL& url,
+                    ui::PageTransition transition,
+                    bool is_explicit_navigation) {
+  // We want to handle the debug URL if the user explicitly navigated to this
+  // URL, unless kEnableGpuBenchmarking is enabled by Telemetry.
   bool is_telemetry_navigation =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           cc::switches::kEnableGpuBenchmarking) &&
       (PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED));
-
-  // TODO(crbug.com/986346): allow this behavior to be customized by the
-  // embedder.
-  bool is_explicit_navigation =
-#if defined(ENABLE_ADDRESS_BAR)
-      transition & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR;
-#else
-      ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED);
-#endif
 
   if (!is_explicit_navigation && !is_telemetry_navigation)
     return false;

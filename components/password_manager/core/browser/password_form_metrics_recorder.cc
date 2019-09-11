@@ -448,17 +448,6 @@ void PasswordFormMetricsRecorder::RecordFormSignature(
       HashFormSignature(form_signature));
 }
 
-void PasswordFormMetricsRecorder::RecordParsingsComparisonResult(
-    ParsingComparisonResult comparison_result) {
-  ukm_entry_builder_.SetParsingComparison(
-      static_cast<uint64_t>(comparison_result));
-}
-
-void PasswordFormMetricsRecorder::RecordParsingOnSavingDifference(
-    uint64_t comparison_result) {
-  ukm_entry_builder_.SetParsingOnSavingDifference(comparison_result);
-}
-
 void PasswordFormMetricsRecorder::RecordReadonlyWhenFilling(uint64_t value) {
   ukm_entry_builder_.SetReadonlyWhenFilling(value);
 }

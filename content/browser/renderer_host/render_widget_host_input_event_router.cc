@@ -698,8 +698,12 @@ void RenderWidgetHostInputEventRouter::DispatchMouseWheelEvent(
       wheel_target_ = target;
     } else {
       if (wheel_target_) {
-        DCHECK(!target);
-        target = wheel_target_;
+        // If middle click autoscroll is in progress, browser routes all input
+        // events to single renderer. So if autoscroll is in progress, route
+        // mouse wheel events to the |target| instead of |wheel_target_|.
+        DCHECK(!target || event_targeter_->is_auto_scroll_in_progress());
+        if (!event_targeter_->is_auto_scroll_in_progress())
+          target = wheel_target_;
       } else if ((mouse_wheel_event.phase ==
                       blink::WebMouseWheelEvent::kPhaseEnded ||
                   mouse_wheel_event.momentum_phase ==
@@ -1966,6 +1970,11 @@ RenderWidgetHostInputEventRouter::GetMouseCaptureWidgetForTests() const {
   if (mouse_capture_target_)
     return mouse_capture_target_->host();
   return nullptr;
+}
+
+void RenderWidgetHostInputEventRouter::SetAutoScrollInProgress(
+    bool is_autoscroll_in_progress) {
+  event_targeter_->set_is_auto_scroll_in_progress(is_autoscroll_in_progress);
 }
 
 }  // namespace content

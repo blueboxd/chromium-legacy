@@ -45,6 +45,7 @@ aggregate_vector_icons("components_vector_icons") {
     "mic.icon",
     "midi.icon",
     "notifications.icon",
+    "notifications_off.icon",
     "open_in_new.icon",
     "pause.icon",
     "play_arrow.icon",

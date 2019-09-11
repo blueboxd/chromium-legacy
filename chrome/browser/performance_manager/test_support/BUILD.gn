@@ -1,0 +1,24 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//chrome/common/features.gni")
+
+# Expose the graph implementation, test fixtures and test support through
+# this test only target.
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "graph_impl.h",
+    "graph_test_harness.cc",
+    "graph_test_harness.h",
+    "mock_graphs.cc",
+    "mock_graphs.h",
+  ]
+  deps = [
+    "//chrome/browser",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}

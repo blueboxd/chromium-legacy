@@ -24,6 +24,8 @@
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
+#include "chrome/browser/chromeos/printing/history/print_job_info.pb.h"
+#include "chrome/browser/chromeos/printing/history/print_job_info_conversions.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
@@ -316,14 +318,16 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
     if (job_details->type() == ::printing::JobEventDetails::DOC_DONE) {
       const ::printing::PrintedDocument* document = job_details->document();
       DCHECK(document);
-      base::string16 title = printing::SimplifyDocumentTitle(document->name());
+      base::string16 title =
+          ::printing::SimplifyDocumentTitle(document->name());
       if (title.empty()) {
-        title = printing::SimplifyDocumentTitle(
+        title = ::printing::SimplifyDocumentTitle(
             l10n_util::GetStringUTF16(IDS_DEFAULT_PRINT_DOCUMENT_TITLE));
       }
       CreatePrintJob(base::UTF16ToUTF8(document->settings().device_name()),
                      base::UTF16ToUTF8(title), job_details->job_id(),
-                     document->page_count(), job->source(), job->source_id());
+                     document->page_count(), job->source(), job->source_id(),
+                     PrintSettingsToProto(document->settings()));
     }
   }
 
@@ -335,7 +339,8 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
                       int job_id,
                       int total_page_number,
                       ::printing::PrintJob::Source source,
-                      const std::string& source_id) {
+                      const std::string& source_id,
+                      const printing::proto::PrintSettings& settings) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
     auto printer =
@@ -355,8 +360,9 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
                                20);
 
     // Create a new print job.
-    auto cpj = std::make_unique<CupsPrintJob>(
-        *printer, job_id, title, total_page_number, source, source_id);
+    auto cpj = std::make_unique<CupsPrintJob>(*printer, job_id, title,
+                                              total_page_number, source,
+                                              source_id, settings);
     std::string key = cpj->GetUniqueId();
     jobs_[key] = std::move(cpj);
 

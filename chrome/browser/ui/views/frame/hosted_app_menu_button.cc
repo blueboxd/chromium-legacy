@@ -65,8 +65,8 @@ void HostedAppMenuButton::SetColor(SkColor color) {
 }
 
 void HostedAppMenuButton::StartHighlightAnimation() {
-  GetInkDrop()->SetHoverHighlightFadeDurationMs(
-      HostedAppButtonContainer::kOriginFadeInDuration.InMilliseconds());
+  GetInkDrop()->SetHoverHighlightFadeDuration(
+      HostedAppButtonContainer::kOriginFadeInDuration);
   GetInkDrop()->SetHovered(true);
   GetInkDrop()->UseDefaultHoverHighlightFadeDuration();
 
@@ -97,8 +97,8 @@ SkColor HostedAppMenuButton::GetInkDropBaseColor() const {
 
 void HostedAppMenuButton::FadeHighlightOff() {
   if (!ShouldEnterHoveredState()) {
-    GetInkDrop()->SetHoverHighlightFadeDurationMs(
-        HostedAppButtonContainer::kOriginFadeOutDuration.InMilliseconds());
+    GetInkDrop()->SetHoverHighlightFadeDuration(
+        HostedAppButtonContainer::kOriginFadeOutDuration);
     GetInkDrop()->SetHovered(false);
     GetInkDrop()->UseDefaultHoverHighlightFadeDuration();
   }

@@ -208,7 +208,6 @@ net::RedirectInfo CreateRedirectInfo(
   // Step 3. Set actualResponse's status to 303. [spec text]
   return net::RedirectInfo::ComputeRedirectInfo(
       "GET", outer_request.url, outer_request.site_for_cookies,
-      outer_request.top_frame_origin,
       outer_request.update_first_party_url_on_redirect
           ? net::URLRequest::FirstPartyURLPolicy::
                 UPDATE_FIRST_PARTY_URL_ON_REDIRECT

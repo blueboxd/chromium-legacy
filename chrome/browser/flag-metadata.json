@@ -29,6 +29,11 @@
 
 [
   {
+    "name": "accessibility-internals-page-improvements",
+    "owners": [ "abigailbklein" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "account-consistency",
     "owners": [ "droger", "msarda" ],
     "expiry_milestone": 80
@@ -1149,6 +1154,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "enable-ephemeral-tab-bottom-sheet",
+    "owners": [ "donnd", "jinsukkim" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "enable-experimental-accessibility-autoclick",
     "owners": [ "katie", "dmazzoni", "dtseng" ],
     "expiry_milestone": 78
@@ -1284,11 +1294,6 @@
     "name": "enable-history-manipulation-intervention",
     "owners": [ "shivanisha" ],
     "expiry_milestone": 76
-  },
-  {
-    "name": "enable-homepage-tile",
-    "owners": [ "dimich", "twellington" ],
-    "expiry_milestone": 78
   },
   {
     "name": "enable-horizontal-tab-switcher",
@@ -1446,11 +1451,6 @@
   {
     "name": "enable-notification-indicator",
     "owners": [ "newcomer" ],
-    "expiry_milestone": 78
-  },
-  {
-    "name": "enable-ntp-button",
-    "owners": [ "twellington" ],
     "expiry_milestone": 78
   },
   {
@@ -2113,11 +2113,6 @@
     // ECT is a baked-in feature of Chrome. This flag is used for frequent
     // testing and should not be removed.
     "expiry_milestone": -1
-  },
-  {
-    "name": "force-enable-home-page-button",
-    "owners": [ "twellington", "chrome-android-app" ],
-    "expiry_milestone": 81
   },
   {
     "name": "force-enable-system-aec",

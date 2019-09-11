@@ -34,7 +34,6 @@ UIResourceLayerImpl* GenerateUIResourceLayer(
       UIResourceLayerImpl::Create(host_impl->active_tree(), 1);
   layer->draw_properties().visible_layer_rect = visible_layer_rect;
   layer->SetBounds(layer_size);
-  layer->test_properties()->force_render_surface = true;
 
   UIResourceBitmap bitmap(bitmap_size, opaque);
 
@@ -190,7 +189,7 @@ TEST(UIResourceLayerImplTest, Occlusion) {
   impl.host_impl()->CreateUIResource(uid, bitmap);
 
   UIResourceLayerImpl* ui_resource_layer_impl =
-      impl.AddChildToRoot<UIResourceLayerImpl>();
+      impl.AddLayer<UIResourceLayerImpl>();
   ui_resource_layer_impl->SetBounds(layer_size);
   ui_resource_layer_impl->SetDrawsContent(true);
   ui_resource_layer_impl->SetUIResourceId(uid);

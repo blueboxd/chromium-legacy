@@ -159,7 +159,8 @@ TEST(AuthenticatorMojomTraitsTest, SerializePublicKeyCredentialUserEntity) {
 // Verify serialization and deserialization of CableDiscoveryData.
 TEST(AuthenticatorMojomTraitsTest, SerializeCableDiscoveryData) {
   std::vector<CableDiscoveryData> success_cases = {
-      CableDiscoveryData(0, kClientEid, kAuthenticatorEid, kSessionPreKey)};
+      CableDiscoveryData(CableDiscoveryData::Version::V1, kClientEid,
+                         kAuthenticatorEid, kSessionPreKey)};
 
   AssertSerializeAndDeserializeSucceeds<blink::mojom::CableAuthentication,
                                         CableDiscoveryData>(success_cases);

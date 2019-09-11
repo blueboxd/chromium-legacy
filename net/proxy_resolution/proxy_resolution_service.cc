@@ -331,7 +331,7 @@ base::Value NetLogBadProxyListParams(const ProxyRetryInfoMap* retry_info) {
   base::Value list(base::Value::Type::LIST);
 
   for (const auto& retry_info_pair : *retry_info)
-    list.GetList().emplace_back(retry_info_pair.first);
+    list.Append(retry_info_pair.first);
   dict.SetKey("bad_proxy_list", std::move(list));
   return dict;
 }

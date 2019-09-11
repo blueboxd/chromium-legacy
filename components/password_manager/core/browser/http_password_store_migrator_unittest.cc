@@ -96,7 +96,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   explicit MockPasswordManagerClient(PasswordStore* store) : store_(store) {}
 
   // PasswordManagerClient:
-  PasswordStore* GetPasswordStore() const override { return store_; }
+  PasswordStore* GetProfilePasswordStore() const override { return store_; }
   void PostHSTSQueryForHost(const GURL& gurl,
                             HSTSCallback callback) const override {
     saved_callback_ = std::move(callback);

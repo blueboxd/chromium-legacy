@@ -55,7 +55,7 @@ void IconProtoDbStore::InitAndLoadKeys(InitAndLoadKeysCallback callback) {
 
 void IconProtoDbStore::AddIcons(IconTypeBundleMap icons, AddCallback callback) {
   if (icons.empty()) {
-    std::move(callback).Run({} /*IconTypeUuidMap*/, true);
+    std::move(callback).Run(IconTypeUuidMap{}, true);
     return;
   }
 
@@ -80,6 +80,10 @@ void IconProtoDbStore::AddIcons(IconTypeBundleMap icons, AddCallback callback) {
 
 void IconProtoDbStore::LoadIcons(const std::vector<std::string>& keys,
                                  LoadIconsCallback callback) {
+  if (keys.empty()) {
+    std::move(callback).Run(true, LoadedIconsMap{});
+    return;
+  }
   db_->LoadKeysAndEntriesWithFilter(
       base::BindRepeating(&HasKeyInDb, keys),
       base::BindOnce(&IconProtoDbStore::OnIconEntriesLoaded,
@@ -88,6 +92,10 @@ void IconProtoDbStore::LoadIcons(const std::vector<std::string>& keys,
 
 void IconProtoDbStore::DeleteIcons(const std::vector<std::string>& keys,
                                    UpdateCallback callback) {
+  if (keys.empty()) {
+    std::move(callback).Run(true);
+    return;
+  }
   auto keys_to_delete = std::make_unique<KeyVector>();
   for (size_t i = 0; i < keys.size(); i++)
     keys_to_delete->emplace_back(keys[i]);
@@ -124,7 +132,7 @@ void IconProtoDbStore::OnIconEntriesLoaded(
     bool success,
     std::unique_ptr<std::map<std::string, IconEntry>> icon_entries) {
   if (!success) {
-    std::move(callback).Run(false, {} /*IconsMap*/);
+    std::move(callback).Run(false, LoadedIconsMap{});
     return;
   }
 
@@ -175,7 +183,7 @@ void IconProtoDbStore::OnIconsDecoded(
     std::unique_ptr<DecodeResult> decoded_result) {
   stats::LogPngIconConverterDecodeResult(decoded_result->success);
   if (!decoded_result->success) {
-    std::move(callback).Run(false, {} /*IconsMap*/);
+    std::move(callback).Run(false, LoadedIconsMap{});
     return;
   }
 

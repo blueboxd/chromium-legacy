@@ -10,6 +10,9 @@
 #include "chrome/browser/ui/views/webauthn/authenticator_request_sheet_view.h"
 #include "chrome/browser/ui/views/webauthn/sheet_view_factory.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "components/web_modal/web_contents_modal_dialog_host.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
+#include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/window/dialog_client_view.h"
@@ -23,35 +26,39 @@ WebauthnOfferDialogViewImpl::WebauthnOfferDialogViewImpl(
   std::unique_ptr<WebauthnOfferDialogModel> model =
       std::make_unique<WebauthnOfferDialogModel>();
   model_ = model.get();
+  model_->AddObserver(this);
   sheet_view_ =
       AddChildView(CreateSheetViewForAutofillWebAuthn(std::move(model)));
   sheet_view_->ReInitChildViews();
 }
 
-WebauthnOfferDialogViewImpl::~WebauthnOfferDialogViewImpl() = default;
+WebauthnOfferDialogViewImpl::~WebauthnOfferDialogViewImpl() {
+  model_->RemoveObserver(this);
+}
 
 // static
-WebauthnOfferDialogView* WebauthnOfferDialogView::CreateAndShow(
+WebauthnOfferDialogModel* WebauthnOfferDialogView::CreateAndShow(
     WebauthnOfferDialogController* controller) {
   WebauthnOfferDialogViewImpl* dialog =
       new WebauthnOfferDialogViewImpl(controller);
   constrained_window::ShowWebModalDialogViews(dialog,
                                               controller->GetWebContents());
-  return dialog;
+  return dialog->model();
 }
 
-void WebauthnOfferDialogViewImpl::Hide() {
-  GetWidget()->Close();
-}
-
-// TODO(crbug.com/991037): Need to resize the dialog after reinitializing the
-// dialog to error dialog since the string content in the error dialog is
-// different.
-void WebauthnOfferDialogViewImpl::RefreshContent() {
-  sheet_view_->ReInitChildViews();
-  sheet_view_->InvalidateLayout();
-  Layout();
-  DialogModelChanged();
+void WebauthnOfferDialogViewImpl::OnDialogStateChanged() {
+  switch (model_->dialog_state()) {
+    case WebauthnOfferDialogModel::DialogState::kInactive:
+      Hide();
+      break;
+    case WebauthnOfferDialogModel::DialogState::kPending:
+    case WebauthnOfferDialogModel::DialogState::kError:
+      RefreshContent();
+      break;
+    case WebauthnOfferDialogModel::DialogState::kUnknown:
+    case WebauthnOfferDialogModel::DialogState::kOffer:
+      NOTREACHED();
+  }
 }
 
 gfx::Size WebauthnOfferDialogViewImpl::CalculatePreferredSize() const {
@@ -61,14 +68,19 @@ gfx::Size WebauthnOfferDialogViewImpl::CalculatePreferredSize() const {
 }
 
 bool WebauthnOfferDialogViewImpl::Accept() {
-  model_->OnAccept();
+  DCHECK_EQ(model_->dialog_state(),
+            WebauthnOfferDialogModel::DialogState::kOffer);
   controller_->OnOkButtonClicked();
   return false;
 }
 
 bool WebauthnOfferDialogViewImpl::Cancel() {
-  model_->OnCancel();
-  controller_->OnCancelButtonClicked();
+  if (model_->dialog_state() == WebauthnOfferDialogModel::DialogState::kOffer ||
+      model_->dialog_state() ==
+          WebauthnOfferDialogModel::DialogState::kPending) {
+    controller_->OnCancelButtonClicked();
+  }
+
   return true;
 }
 
@@ -76,12 +88,12 @@ bool WebauthnOfferDialogViewImpl::Close() {
   return true;
 }
 
-// TODO(crbug.com/991037): Fetching authentication challenge will send a request
-// to Payments server, and it can fail sometimes. For the error case, the dialog
-// should be updated and the OK button should not be shown.
 int WebauthnOfferDialogViewImpl::GetDialogButtons() const {
-  DCHECK(model_->IsAcceptButtonVisible() && model_->IsCancelButtonVisible());
-  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
+  // Cancel button is always visible but OK button depends on dialog state.
+  DCHECK(model_->IsCancelButtonVisible());
+  return model_->IsAcceptButtonVisible()
+             ? ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL
+             : ui::DIALOG_BUTTON_CANCEL;
 }
 
 base::string16 WebauthnOfferDialogViewImpl::GetDialogButtonLabel(
@@ -116,6 +128,26 @@ void WebauthnOfferDialogViewImpl::WindowClosing() {
   if (controller_) {
     controller_->OnDialogClosed();
     controller_ = nullptr;
+  }
+}
+
+void WebauthnOfferDialogViewImpl::Hide() {
+  GetWidget()->Close();
+}
+
+void WebauthnOfferDialogViewImpl::RefreshContent() {
+  sheet_view_->ReInitChildViews();
+  sheet_view_->InvalidateLayout();
+  DialogModelChanged();
+  Layout();
+
+  // Update the dialog's size.
+  if (GetWidget() && controller_->GetWebContents()) {
+    constrained_window::UpdateWebContentsModalDialogPosition(
+        GetWidget(), web_modal::WebContentsModalDialogManager::FromWebContents(
+                         controller_->GetWebContents())
+                         ->delegate()
+                         ->GetWebContentsModalDialogHost());
   }
 }
 

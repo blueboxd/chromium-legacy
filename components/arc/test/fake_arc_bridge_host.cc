@@ -174,6 +174,9 @@ void FakeArcBridgeHost::OnRotationLockInstanceReady(
 void FakeArcBridgeHost::OnScreenCaptureInstanceReady(
     mojom::ScreenCaptureInstancePtr screen_capture_ptr) {}
 
+void FakeArcBridgeHost::OnSmartCardManagerInstanceReady(
+    mojom::SmartCardManagerInstancePtr smart_cardManager_ptr) {}
+
 void FakeArcBridgeHost::OnStorageManagerInstanceReady(
     mojom::StorageManagerInstancePtr storage_manager_ptr) {}
 

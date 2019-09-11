@@ -149,6 +149,8 @@ class PDFiumPage {
   friend class PDFiumTestBase;
 
   FRIEND_TEST_ALL_PREFIXES(PDFiumPageImageTest, TestCalculateImages);
+  FRIEND_TEST_ALL_PREFIXES(PDFiumPageLinkTest, TestAnnotLinkGeneration);
+  FRIEND_TEST_ALL_PREFIXES(PDFiumPageImageTest, TestImageAltText);
   FRIEND_TEST_ALL_PREFIXES(PDFiumPageLinkTest, TestLinkGeneration);
 
   // Returns a link index if the given character index is over a link, or -1
@@ -156,6 +158,10 @@ class PDFiumPage {
   int GetLink(int char_index, LinkTarget* target);
   // Calculate the locations of any links on the page.
   void CalculateLinks();
+  // Populates weblinks on the page.
+  void PopulateWebLinks();
+  // Populates annotation links on the page.
+  void PopulateAnnotationLinks();
   // Calculate the locations of images on the page.
   void CalculateImages();
   // Returns link type and fills target associated with a link. Returns
@@ -209,9 +215,7 @@ class PDFiumPage {
     // Represents the number of characters that the link overlaps with.
     int32_t char_count = 0;
     std::vector<pp::Rect> bounding_rects;
-
-    // Valid for links with external urls only.
-    std::string url;
+    LinkTarget target;
   };
 
   // Represents an Image inside the page.

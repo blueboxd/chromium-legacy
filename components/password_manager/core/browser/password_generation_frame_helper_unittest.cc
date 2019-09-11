@@ -134,7 +134,9 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
 
   ~MockPasswordManagerClient() override { store_->ShutdownOnUIThread(); }
 
-  PasswordStore* GetPasswordStore() const override { return store_.get(); }
+  PasswordStore* GetProfilePasswordStore() const override {
+    return store_.get();
+  }
   PrefService* GetPrefs() const override { return prefs_.get(); }
   PasswordRequirementsService* GetPasswordRequirementsService() override {
     return &password_requirements_service_;

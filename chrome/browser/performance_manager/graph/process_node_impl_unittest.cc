@@ -7,8 +7,8 @@
 #include "base/process/process.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
-#include "chrome/browser/performance_manager/graph/graph_test_harness.h"
-#include "chrome/browser/performance_manager/graph/mock_graphs.h"
+#include "chrome/browser/performance_manager/test_support/graph_test_harness.h"
+#include "chrome/browser/performance_manager/test_support/mock_graphs.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

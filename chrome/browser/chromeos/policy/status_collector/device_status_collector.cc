@@ -1745,15 +1745,32 @@ bool DeviceStatusCollector::GetOsUpdateStatus(
   os_update_status->set_new_required_platform_version(
       required_platfrom_version.GetString());
 
+  const chromeos::UpdateEngineClient::Status update_engine_status =
+      chromeos::DBusThreadManager::Get()
+          ->GetUpdateEngineClient()
+          ->GetLastStatus();
+
+  // Get last reboot timestamp.
+  const base::Time last_reboot_timestamp =
+      base::Time::Now() - base::SysInfo::Uptime();
+
+  os_update_status->set_last_reboot_timestamp(
+      last_reboot_timestamp.ToJavaTime());
+
+  // Get last check timestamp.
+  // As the timestamp precision return from UpdateEngine is in seconds (see
+  // time_t). It should be converted to milliseconds before being reported.
+  const base::Time last_checked_timestamp =
+      base::Time::FromTimeT(update_engine_status.last_checked_time);
+
+  os_update_status->set_last_checked_timestamp(
+      last_checked_timestamp.ToJavaTime());
+
   if (platform_version == required_platfrom_version) {
     os_update_status->set_update_status(em::OsUpdateStatus::OS_UP_TO_DATE);
     return true;
   }
 
-  const chromeos::UpdateEngineClient::Status update_engine_status =
-      chromeos::DBusThreadManager::Get()
-          ->GetUpdateEngineClient()
-          ->GetLastStatus();
   if (update_engine_status.status ==
           chromeos::UpdateEngineClient::UPDATE_STATUS_DOWNLOADING ||
       update_engine_status.status ==

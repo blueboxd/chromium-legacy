@@ -178,8 +178,8 @@ public class RevampedContextMenuTest implements DownloadTestRule.CustomMainActiv
             }
         });
 
-        TestTouchUtils.singleClickView(
-                InstrumentationRegistry.getInstrumentation(), tab.getView(), 0, 0);
+        TestTouchUtils.singleClickView(InstrumentationRegistry.getInstrumentation(), tab.getView(),
+                tab.getView().getWidth() - 5, tab.getView().getHeight() - 5);
 
         CriteriaHelper.pollUiThread(new Criteria("Activity did not regain focus.") {
             @Override

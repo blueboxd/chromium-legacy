@@ -351,6 +351,7 @@ class ProcessManager : public KeyedService,
   ExtensionRenderFrames all_extension_frames_;
 
   // TaskRunner for interacting with ServiceWorkerContexts.
+  // TODO(crbug.com/824858): This is unused when ServiceWorkerOnUI is enabled.
   scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
 
   // Contains all active extension Service Worker information for all

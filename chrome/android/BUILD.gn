@@ -703,6 +703,7 @@ junit_binary("chrome_junit_tests") {
     "//chrome/android/webapk/libs/client:client_java",
     "//chrome/android/webapk/libs/common:common_java",
     "//chrome/android/webapk/test:junit_test_support",
+    "//chrome/browser/ui/android/widget:ui_widget_junit_tests",
     "//chrome/test/android:chrome_java_test_support",
     "//components/background_task_scheduler:background_task_scheduler_java",
     "//components/bookmarks/common/android:bookmarks_java",
@@ -1997,6 +1998,7 @@ chrome_test_apk_tmpl("chrome_public_test_apk") {
     "//chrome/android/webapk/libs/runtime_library:runtime_library_javatests",
     "//chrome/android/webapk/shell_apk:shell_apk_javatests",
     "//chrome/browser/profiling_host:profiling_host_javatests",
+    "//chrome/browser/ui/android/widget:ui_widget_java_tests",
   ]
   if (enable_chrome_android_internal) {
     data_deps = [
@@ -2094,7 +2096,7 @@ android_test_apk("chrome_smoke_test_apk") {
   apk_name = "ChromeSmokeTest"
   android_manifest =
       "javatests/src/org/chromium/chrome/test/smoke/AndroidManifest.xml"
-  target_sdk_version = 28
+  target_sdk_version = android_sdk_version
   testonly = true
   java_files =
       [ "javatests/src/org/chromium/chrome/test/smoke/ChromeSmokeTest.java" ]
@@ -2131,7 +2133,7 @@ android_test_apk("chrome_bundle_smoke_test_apk") {
   apk_name = "ChromeBundleSmokeTest"
   android_manifest =
       "javatests/src/org/chromium/chrome/test/smoke/AndroidManifest_bundle.xml"
-  target_sdk_version = 28
+  target_sdk_version = android_sdk_version
   testonly = true
   java_files = [
     "javatests/src/org/chromium/chrome/test/smoke/ChromeBundleSmokeTest.java",
@@ -2146,16 +2148,34 @@ android_test_apk("chrome_bundle_smoke_test_apk") {
   ]
 }
 
+_bundle_smoke_test_extra_args = [
+  # Make extra args be passed through to the bundle under test (see below).
+  "--use-apk-under-test-flags-file",
+
+  # Chrome crashes at startup if strict mode is turned on.
+  "--strict-mode=off",
+
+  # These args are passed through to the bundle under test.
+  "--enable-test-dummy-module",
+  "--disable-fre",
+]
+
+instrumentation_test_runner("chrome_modern_public_bundle_smoke_test") {
+  apk_under_test = ":chrome_modern_public_bundle_apks"
+  android_test_apk = ":chrome_bundle_smoke_test_apk"
+  android_test_apk_name = "ChromeBundleSmokeTest"
+  never_incremental = true
+  modules = [ "test_dummy" ]
+  extra_args = _bundle_smoke_test_extra_args
+}
+
 instrumentation_test_runner("monochrome_public_bundle_smoke_test") {
   apk_under_test = "//chrome/android:monochrome_public_bundle_apks"
   android_test_apk = ":chrome_bundle_smoke_test_apk"
   android_test_apk_name = "ChromeBundleSmokeTest"
   never_incremental = true
   modules = [ "test_dummy" ]
-  command_line_args = [
-    "--enable-test-dummy-module",
-    "--no-fre",
-  ]
+  extra_args = _bundle_smoke_test_extra_args
 }
 
 if (defined(expected_static_initializer_count)) {
@@ -2696,7 +2716,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/util/ChromeContextUtil.java",
     "java/src/org/chromium/chrome/browser/util/FeatureUtilities.java",
     "java/src/org/chromium/chrome/browser/util/PlatformUtil.java",
-    "java/src/org/chromium/chrome/browser/webapps/AddToHomescreenManager.java",
     "java/src/org/chromium/chrome/browser/webapps/WebApkHandlerDelegate.java",
     "java/src/org/chromium/chrome/browser/webapps/WebApkInstallService.java",
     "java/src/org/chromium/chrome/browser/webapps/WebApkInstaller.java",
@@ -2705,6 +2724,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/webapps/WebApkUpdateDataFetcher.java",
     "java/src/org/chromium/chrome/browser/webapps/WebApkUpdateManager.java",
     "java/src/org/chromium/chrome/browser/webapps/WebappRegistry.java",
+    "java/src/org/chromium/chrome/browser/webapps/addtohomescreen/AddToHomescreenManager.java",
     "java/src/org/chromium/chrome/browser/widget/ThumbnailGenerator.java",
   ]
 

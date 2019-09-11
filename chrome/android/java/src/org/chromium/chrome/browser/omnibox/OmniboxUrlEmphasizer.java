@@ -11,6 +11,7 @@ import android.text.style.StrikethroughSpan;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.UrlConstants;
@@ -82,7 +83,8 @@ public class OmniboxUrlEmphasizer {
      */
     public static EmphasizeComponentsResponse parseForEmphasizeComponents(
             Profile profile, String text) {
-        int[] emphasizeValues = nativeParseForEmphasizeComponents(profile, text);
+        int[] emphasizeValues =
+                OmniboxUrlEmphasizerJni.get().parseForEmphasizeComponents(profile, text);
         assert emphasizeValues != null;
         assert emphasizeValues.length == 4;
 
@@ -188,17 +190,19 @@ public class OmniboxUrlEmphasizer {
                         }
                         break;
                     case ConnectionSecurityLevel.DANGEROUS:
-                        if (emphasizeScheme)
+                        if (emphasizeScheme) {
                             colorId = useDarkColors ? R.color.default_red_dark
                                                     : R.color.default_red_light;
+                        }
                         strikeThroughScheme = true;
                         break;
                     case ConnectionSecurityLevel.EV_SECURE:
                     // Intentional fall-through:
                     case ConnectionSecurityLevel.SECURE:
-                        if (emphasizeScheme)
+                        if (emphasizeScheme) {
                             colorId = useDarkColors ? R.color.default_green_dark
                                                     : R.color.default_green_light;
+                        }
                         break;
                     default:
                         assert false;
@@ -328,5 +332,8 @@ public class OmniboxUrlEmphasizer {
         }
     }
 
-    private static native int[] nativeParseForEmphasizeComponents(Profile profile, String text);
+    @NativeMethods
+    interface Natives {
+        int[] parseForEmphasizeComponents(Profile profile, String text);
+    }
 }

@@ -14,8 +14,8 @@
 #include "base/observer_list_types.h"
 #include "ios/chrome/browser/overlays/public/overlay_modality.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
-#import "ios/web/public/web_state/web_state_observer.h"
-#import "ios/web/public/web_state/web_state_user_data.h"
+#include "ios/web/public/web_state_observer.h"
+#import "ios/web/public/web_state_user_data.h"
 
 // Mutable implementation of OverlayRequestQueue.
 class OverlayRequestQueueImpl : public OverlayRequestQueue {

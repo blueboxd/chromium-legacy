@@ -8,14 +8,11 @@
 #include <memory>
 #include <string>
 
-#include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 
 namespace net {
 class HttpResponseHeaders;
-class URLRequest;
 }
 
 namespace android_webview {
@@ -43,8 +40,6 @@ class AwWebResourceResponse {
   bool GetResponseHeaders(JNIEnv* env, net::HttpResponseHeaders* headers) const;
 
  private:
-  AwWebResourceResponse();
-
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
 
   bool input_stream_transferred_;

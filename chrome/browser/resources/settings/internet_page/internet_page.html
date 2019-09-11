@@ -1,7 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/mojo_interface_provider.html">
-<link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
@@ -49,13 +48,12 @@
           </cr-expand-button>
           <template is="dom-if" if="[[addConnectionExpanded_]]">
             <div class="list-frame vertical-list">
-              <template is="dom-if"
-                  if="[[deviceIsEnabled_(deviceStates, 'WiFi')]]">
+              <template is="dom-if" if="[[wifiIsEnabled_(deviceStates)]]">
                 <div actionable class="list-item" on-click="onAddWiFiTap_">
                   <div class="start settings-box-text">
                     $i18n{internetAddWiFi}
                   </div>
-                  <cr-icon-button class$="[[getAddNetworkClass_('WiFi')]]"
+                  <cr-icon-button class="icon-add-wifi"
                       aria-label="$i18n{internetAddWiFi}"></cr-icon-button>
                 </div>
               </template>
@@ -63,7 +61,7 @@
                 <div class="start settings-box-text">
                   $i18n{internetAddVPN}
                 </div>
-                <cr-icon-button class$="[[getAddNetworkClass_('VPN')]]"
+                <cr-icon-button class="icon-add-circle"
                     aria-label="$i18n{internetAddVPN}"></cr-icon-button>
               </div>
               <template is="dom-repeat" items="[[vpnProviders_]]">

@@ -885,7 +885,7 @@ base::Value PolicyUIHandler::GetPolicyNames() const {
   const policy::Schema* chrome_schema = schema_map->GetSchema(chrome_ns);
   for (auto it = chrome_schema->GetPropertiesIterator(); !it.IsAtEnd();
        it.Advance()) {
-    chrome_policy_names->GetList().push_back(base::Value(it.key()));
+    chrome_policy_names->Append(base::Value(it.key()));
   }
   auto chrome_values = std::make_unique<base::DictionaryValue>();
   chrome_values->SetString("name", "Chrome Policies");
@@ -911,7 +911,7 @@ base::Value PolicyUIHandler::GetPolicyNames() const {
       // Store in a map, not an array, for faster lookup on JS side.
       for (auto prop = schema->GetPropertiesIterator(); !prop.IsAtEnd();
            prop.Advance()) {
-        policy_names->GetList().push_back(base::Value(prop.key()));
+        policy_names->Append(base::Value(prop.key()));
       }
     }
     extension_value->Set("policyNames", std::move(policy_names));

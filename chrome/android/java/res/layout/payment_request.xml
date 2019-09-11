@@ -6,7 +6,7 @@
 <!-- PaymentRequestUI dialog
      Sits at the bottom of the screen like a Bottom Sheet.
 -->
-<org.chromium.chrome.browser.widget.BoundedLinearLayout
+<org.chromium.chrome.browser.ui.widget.BoundedLinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/payment_request"
@@ -19,7 +19,7 @@
     <include layout="@layout/payment_request_header" />
     <include layout="@layout/payment_request_spinny" />
 
-    <org.chromium.chrome.browser.widget.FadingEdgeScrollView
+    <org.chromium.chrome.browser.ui.widget.FadingEdgeScrollView
         android:id="@+id/option_container"
         android:layout_height="0dp"
         android:layout_width="match_parent"
@@ -41,8 +41,8 @@
                 android:textAppearance="@style/TextAppearance.PaymentsUiSectionWarningText" />
         </LinearLayout>
 
-    </org.chromium.chrome.browser.widget.FadingEdgeScrollView>
+    </org.chromium.chrome.browser.ui.widget.FadingEdgeScrollView>
 
      <include layout="@layout/payment_request_bottom_bar" />
 
-</org.chromium.chrome.browser.widget.BoundedLinearLayout>
+</org.chromium.chrome.browser.ui.widget.BoundedLinearLayout>

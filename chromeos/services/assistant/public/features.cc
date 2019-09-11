@@ -32,6 +32,10 @@ const base::FeatureParam<std::string>
 const base::FeatureParam<bool> kAssistantProactiveSuggestionsSuppressDuplicates{
     &kAssistantProactiveSuggestions, "suppress-duplicates", true};
 
+const base::FeatureParam<int>
+    kAssistantProactiveSuggestionsTimeoutThresholdMillis{
+        &kAssistantProactiveSuggestions, "timeout-threshold-millis", 15 * 1000};
+
 const base::Feature kAssistantRoutines{"AssistantRoutines",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -75,6 +79,11 @@ const base::Feature kEnableMediaSessionIntegration{
 
 std::string GetProactiveSuggestionsServerExperimentIds() {
   return kAssistantProactiveSuggestionsServerExperimentIds.Get();
+}
+
+base::TimeDelta GetProactiveSuggestionsTimeoutThreshold() {
+  return base::TimeDelta::FromMilliseconds(
+      kAssistantProactiveSuggestionsTimeoutThresholdMillis.Get());
 }
 
 bool IsAlarmTimerManagerEnabled() {

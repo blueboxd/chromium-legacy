@@ -6,12 +6,17 @@ import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
   deps = [
+    ":anchor_alignment",
     ":cr_action_menu",
   ]
 }
 
+js_library("anchor_alignment") {
+}
+
 js_library("cr_action_menu") {
   deps = [
+    ":anchor_alignment",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:util",
     "//ui/webui/resources/js/cr/ui:focus_row",

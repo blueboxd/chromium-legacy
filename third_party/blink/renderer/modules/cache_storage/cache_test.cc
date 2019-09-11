@@ -10,7 +10,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink.h"
@@ -271,14 +272,14 @@ class CacheStorageTest : public PageTestBase {
 
   Cache* CreateCache(ScopedFetcherForTests* fetcher,
                      std::unique_ptr<ErrorCacheForTests> cache) {
-    mojom::blink::CacheStorageCacheAssociatedPtr cache_ptr;
-    auto request = mojo::MakeRequestAssociatedWithDedicatedPipe(&cache_ptr);
+    mojo::AssociatedRemote<mojom::blink::CacheStorageCache> cache_remote;
     cache_ = std::move(cache);
-    binding_ = std::make_unique<
-        mojo::AssociatedBinding<mojom::blink::CacheStorageCache>>(
-        cache_.get(), std::move(request));
+    receiver_ = std::make_unique<
+        mojo::AssociatedReceiver<mojom::blink::CacheStorageCache>>(
+        cache_.get(),
+        cache_remote.BindNewEndpointAndPassDedicatedReceiverForTesting());
     return MakeGarbageCollected<Cache>(
-        fetcher, cache_ptr.PassInterface(),
+        fetcher, cache_remote.Unbind(),
         blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   }
 
@@ -379,8 +380,8 @@ class CacheStorageTest : public PageTestBase {
   };
 
   std::unique_ptr<ErrorCacheForTests> cache_;
-  std::unique_ptr<mojo::AssociatedBinding<mojom::blink::CacheStorageCache>>
-      binding_;
+  std::unique_ptr<mojo::AssociatedReceiver<mojom::blink::CacheStorageCache>>
+      receiver_;
 };
 
 RequestInfo StringToRequestInfo(const String& value) {

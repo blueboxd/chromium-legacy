@@ -95,7 +95,7 @@ class VirtualDeviceTest : public ::testing::Test {
   std::unique_ptr<MockProducer> producer_;
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   media::VideoCaptureDeviceInfo device_info_;
 };
 

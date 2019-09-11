@@ -55,7 +55,7 @@ class NSHTTPSystemCookieStoreTestDelegate {
   SystemCookieStore* GetCookieStore() { return store_.get(); }
 
  private:
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   ScopedTestingCookieStoreIOSClient scoped_cookie_store_ios_client_;
   NSHTTPCookieStorage* shared_store_;
   std::unique_ptr<net::NSHTTPSystemCookieStore> store_;

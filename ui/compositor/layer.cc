@@ -668,10 +668,6 @@ bool Layer::IsDrawn() const {
   return layer == nullptr;
 }
 
-bool Layer::ShouldDraw() const {
-  return type_ != LAYER_NOT_DRAWN && GetCombinedOpacity() > 0.0f;
-}
-
 void Layer::SetRoundedCornerRadius(const gfx::RoundedCornersF& corner_radii) {
   GetAnimator()->SetRoundedCorners(corner_radii);
 }

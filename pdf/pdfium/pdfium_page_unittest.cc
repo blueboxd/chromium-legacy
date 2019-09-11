@@ -73,7 +73,7 @@ TEST_F(PDFiumPageLinkTest, TestLinkGeneration) {
   ASSERT_EQ(3u, links.size());
 
   const PDFiumPage::Link& link = links[0];
-  EXPECT_EQ("http://yahoo.com", link.url);
+  EXPECT_EQ("http://yahoo.com", link.target.url);
   EXPECT_EQ(7, link.start_char_index);
   EXPECT_EQ(16, link.char_count);
   ASSERT_EQ(1u, link.bounding_rects.size());
@@ -84,7 +84,7 @@ TEST_F(PDFiumPageLinkTest, TestLinkGeneration) {
   }
 
   const PDFiumPage::Link& second_link = links[1];
-  EXPECT_EQ("http://bing.com", second_link.url);
+  EXPECT_EQ("http://bing.com", second_link.target.url);
   EXPECT_EQ(52, second_link.start_char_index);
   EXPECT_EQ(15, second_link.char_count);
   ASSERT_EQ(1u, second_link.bounding_rects.size());
@@ -95,11 +95,65 @@ TEST_F(PDFiumPageLinkTest, TestLinkGeneration) {
   }
 
   const PDFiumPage::Link& third_link = links[2];
-  EXPECT_EQ("http://google.com", third_link.url);
+  EXPECT_EQ("http://google.com", third_link.target.url);
   EXPECT_EQ(92, third_link.start_char_index);
   EXPECT_EQ(17, third_link.char_count);
   ASSERT_EQ(1u, third_link.bounding_rects.size());
   CompareRect({82, 67, 161, 21}, third_link.bounding_rects[0]);
+}
+
+TEST_F(PDFiumPageLinkTest, TestAnnotLinkGeneration) {
+  struct ExpectedLink {
+    int32_t start_char_index;
+    int32_t char_count;
+    std::vector<pp::Rect> bounding_rects;
+    std::string url;
+    int page;
+    float y_in_pixels;
+  };
+  static ExpectedLink expected_links[] = {
+      {144, 38, {{99, 436, 236, 13}}, "https://pdfium.googlesource.com/pdfium"},
+      {27, 38, {{112, 215, 617, 28}}, "", 1, 89.333336},
+      {65, 27, {{93, 334, 174, 21}}, "https://www.adobe.com"},
+      {253,
+       18,
+       {{242, 455, 1, 18}, {242, 472, 1, 15}},
+       "https://cs.chromium.org"},
+      {-1, 0, {{58, 926, 28, 27}}, "https://www.google.com"}};
+  if (IsRunningOnChromeOS()) {
+    expected_links[0].bounding_rects[0] = {99, 436, 236, 14};
+  }
+  static constexpr size_t kExpectedLinkCount = base::size(expected_links);
+
+  TestClient client;
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("link_annots.pdf"));
+  ASSERT_TRUE(engine);
+  ASSERT_EQ(2, engine->GetNumberOfPages());
+
+  const std::vector<PDFiumPage::Link>& links = GetLinks(engine.get(), 0);
+  ASSERT_EQ(kExpectedLinkCount, links.size());
+
+  for (size_t i = 0; i < kExpectedLinkCount; ++i) {
+    const PDFiumPage::Link& actual_current_link = links[i];
+    const ExpectedLink& expected_current_link = expected_links[i];
+    EXPECT_EQ(expected_current_link.start_char_index,
+              actual_current_link.start_char_index);
+    EXPECT_EQ(expected_current_link.char_count, actual_current_link.char_count);
+    size_t bounds_size = actual_current_link.bounding_rects.size();
+    ASSERT_EQ(expected_current_link.bounding_rects.size(), bounds_size);
+    for (size_t bounds_index = 0; bounds_index < bounds_size; ++bounds_index) {
+      CompareRect(expected_current_link.bounding_rects[bounds_index],
+                  actual_current_link.bounding_rects[bounds_index]);
+    }
+    EXPECT_EQ(expected_current_link.url, actual_current_link.target.url);
+    if (actual_current_link.target.url.empty()) {
+      EXPECT_EQ(expected_current_link.page, actual_current_link.target.page);
+      ASSERT_TRUE(actual_current_link.target.y_in_pixels.has_value());
+      EXPECT_FLOAT_EQ(expected_current_link.y_in_pixels,
+                      actual_current_link.target.y_in_pixels.value());
+    }
+  }
 }
 
 using PDFiumPageImageTest = PDFiumTestBase;
@@ -121,6 +175,25 @@ TEST_F(PDFiumPageImageTest, TestCalculateImages) {
   EXPECT_EQ("Image 2", page->images_[1].alt_text);
   CompareRect({380, 678, 1, 1}, page->images_[2].bounding_rect);
   EXPECT_EQ("Image 3", page->images_[2].alt_text);
+}
+
+TEST_F(PDFiumPageImageTest, TestImageAltText) {
+  TestClient client;
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("text_with_image.pdf"));
+  ASSERT_TRUE(engine);
+  ASSERT_EQ(1, engine->GetNumberOfPages());
+
+  PDFiumPage* page = GetPDFiumPageForTest(engine.get(), 0);
+  ASSERT_TRUE(page);
+  page->CalculateImages();
+  ASSERT_EQ(3u, page->images_.size());
+  CompareRect({380, 78, 67, 68}, page->images_[0].bounding_rect);
+  EXPECT_EQ("Image 1", page->images_[0].alt_text);
+  CompareRect({380, 385, 27, 28}, page->images_[1].bounding_rect);
+  EXPECT_EQ("", page->images_[1].alt_text);
+  CompareRect({380, 678, 1, 1}, page->images_[2].bounding_rect);
+  EXPECT_EQ("", page->images_[2].alt_text);
 }
 
 using PDFiumPageTextTest = PDFiumTestBase;

@@ -112,6 +112,9 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // Returns whether the view should adapt to RTL.
   bool ShouldAdaptToRTL() const;
 
+  // Returns whether the app icon layout should be centering alignment.
+  bool ShouldApplyDisplayCentering() const;
+
   Shelf* GetShelf();
   const Shelf* GetShelf() const;
 
@@ -133,11 +136,14 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // Overridden from ShellObserver:
   void OnShelfAlignmentChanged(aura::Window* root_window) override;
 
-  // Returns the padding inset. Padding for two scenarios: if there is
-  // sufficient space to accommodate all of shelf icons, add padding to show
-  // ScrollableShelfView in centering alignment; otherwise, add padding to fully
-  // show all of visible shelf icons.
+  // Returns the padding inset. Different Padding strategies for three scenarios
+  // (1) display centering alignment
+  // (2) scrollable shelf centering alignment
+  // (3) overflow mode
   gfx::Insets CalculateEdgePadding() const;
+
+  // Calculates padding for display centering alignment.
+  gfx::Insets CalculatePaddingForDisplayCentering() const;
 
   // Returns whether the received gesture event should be handled here.
   bool ShouldHandleGestures(const ui::GestureEvent& event);

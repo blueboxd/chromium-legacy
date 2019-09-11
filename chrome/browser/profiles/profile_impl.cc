@@ -745,16 +745,6 @@ void ProfileImpl::DoFinalInit() {
 
   HeavyAdServiceFactory::GetForBrowserContext(this)->Initialize(GetPath());
 
-  // Page Load Capping was remove in M74, so the database file should be removed
-  // when users upgrade Chrome.
-  // TODO(ryansturm): Remove this after M-79. https://crbug.com/937489
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::LOWEST, base::MayBlock()},
-      base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                     GetPath().Append(chrome::kPageLoadCappingOptOutDBFilename),
-                     false));
-
   PushMessagingServiceImpl::InitializeForProfile(this);
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)

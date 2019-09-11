@@ -34,8 +34,15 @@ class X11WindowManagerOzone {
   void RemoveWindow(X11WindowOzone* window);
   X11WindowOzone* GetWindow(gfx::AcceleratedWidget widget) const;
 
+  void MouseOnWindow(X11WindowOzone* delegate);
+
+  const X11WindowOzone* window_mouse_currently_on_for_test() const {
+    return window_mouse_currently_on_;
+  }
+
  private:
   X11WindowOzone* event_grabber_;
+  X11WindowOzone* window_mouse_currently_on_ = nullptr;
 
   base::flat_map<gfx::AcceleratedWidget, X11WindowOzone*> windows_;
 

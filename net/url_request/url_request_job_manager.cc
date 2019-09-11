@@ -92,56 +92,6 @@ URLRequestJob* URLRequestJobManager::CreateJob(
   return new URLRequestErrorJob(request, network_delegate, ERR_FAILED);
 }
 
-URLRequestJob* URLRequestJobManager::MaybeInterceptRedirect(
-    URLRequest* request,
-    NetworkDelegate* network_delegate,
-    const GURL& location) const {
-  DCHECK(IsAllowedThread());
-  if (!request->url().is_valid() ||
-      request->status().status() == URLRequestStatus::CANCELED) {
-    return nullptr;
-  }
-
-  const URLRequestJobFactory* job_factory = nullptr;
-  job_factory = request->context()->job_factory();
-
-  const std::string& scheme = request->url().scheme();  // already lowercase
-  if (!job_factory->IsHandledProtocol(scheme))
-    return nullptr;
-
-  URLRequestJob* job =
-      request->context()->job_factory()->MaybeInterceptRedirect(
-          request, network_delegate, location);
-  if (job)
-    return job;
-
-  return nullptr;
-}
-
-URLRequestJob* URLRequestJobManager::MaybeInterceptResponse(
-    URLRequest* request, NetworkDelegate* network_delegate) const {
-  DCHECK(IsAllowedThread());
-  if (!request->url().is_valid() ||
-      request->status().status() == URLRequestStatus::CANCELED) {
-    return nullptr;
-  }
-
-  const URLRequestJobFactory* job_factory = nullptr;
-  job_factory = request->context()->job_factory();
-
-  const std::string& scheme = request->url().scheme();  // already lowercase
-  if (!job_factory->IsHandledProtocol(scheme))
-    return nullptr;
-
-  URLRequestJob* job =
-      request->context()->job_factory()->MaybeInterceptResponse(
-          request, network_delegate);
-  if (job)
-    return job;
-
-  return nullptr;
-}
-
 // static
 bool URLRequestJobManager::SupportsScheme(const std::string& scheme) {
   for (size_t i = 0; i < base::size(kBuiltinFactories); ++i) {

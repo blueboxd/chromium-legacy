@@ -27,6 +27,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
+using testing::AtLeast;
 using testing::Invoke;
 using testing::NiceMock;
 using testing::Return;
@@ -176,7 +177,9 @@ class PipelineHelper {
   void SetPipelineStartExpectations() {
     // The pipeline will be paused first, for the initial data buffering. Then
     // it will be resumed, once enough data is buffered to start playback.
-    EXPECT_CALL(*pipeline_backend_, GetCurrentPts());
+    // When starting media pipeline, GetCurrentPts will be called every
+    // kTimeUpdateInterval(250ms).
+    EXPECT_CALL(*pipeline_backend_, GetCurrentPts()).Times(AtLeast(1));
     EXPECT_CALL(*pipeline_backend_, Pause());
     EXPECT_CALL(*pipeline_backend_, SetPlaybackRate(1.0f));
     EXPECT_CALL(*pipeline_backend_, Resume());

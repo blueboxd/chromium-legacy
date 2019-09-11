@@ -48,6 +48,9 @@ class GPUCommandEncoder : public DawnObject<DawnCommandEncoder> {
   void copyTextureToTexture(GPUTextureCopyView* source,
                             GPUTextureCopyView* destination,
                             GPUExtent3D* copy_size);
+  void pushDebugGroup(String groupLabel);
+  void popDebugGroup();
+  void insertDebugMarker(String markerLabel);
   GPUCommandBuffer* finish();
 
  private:

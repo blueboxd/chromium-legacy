@@ -498,11 +498,11 @@ BrowserContext::BlobContextGetter BrowserContext::GetBlobStorageContext(
 }
 
 // static
-blink::mojom::BlobPtr BrowserContext::GetBlobPtr(
+mojo::PendingRemote<blink::mojom::Blob> BrowserContext::GetBlobRemote(
     BrowserContext* browser_context,
     const std::string& uuid) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return ChromeBlobStorageContext::GetBlobPtr(browser_context, uuid);
+  return ChromeBlobStorageContext::GetBlobRemote(browser_context, uuid);
 }
 
 // static

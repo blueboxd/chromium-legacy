@@ -42,7 +42,7 @@ _CWD = os.getcwd()
 
 IMPORT_LINE_REGEX = '// #import'
 EXPORT_LINE_REGEX = '/* #export */'
-IGNORE_LINE_REGEX = '\s+/\* #ignore \*/(\S|\s)*'
+IGNORE_LINE_REGEX = '\s*/\* #ignore \*/(\S|\s)*'
 
 # Ignore lines that contain <include> tags, (for example see util.js).
 INCLUDE_LINE_REGEX = '^// <include '

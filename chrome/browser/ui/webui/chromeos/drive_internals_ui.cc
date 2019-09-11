@@ -231,7 +231,7 @@ void AppendKeyValue(base::ListValue* list,
   dict->SetKey(kValue, base::Value(std::move(value)));
   if (!clazz.empty())
     dict->SetKey(kClass, base::Value(std::move(clazz)));
-  list->GetList().push_back(std::move(*dict));
+  list->Append(std::move(*dict));
 }
 
 ino_t GetInodeValue(const base::FilePath& path) {

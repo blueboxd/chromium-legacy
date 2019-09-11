@@ -19,8 +19,8 @@ import android.widget.TextView;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.widget.BoundedLinearLayout;
-import org.chromium.chrome.browser.widget.FadingEdgeScrollView;
+import org.chromium.chrome.browser.ui.widget.BoundedLinearLayout;
+import org.chromium.chrome.browser.ui.widget.FadingEdgeScrollView;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 

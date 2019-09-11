@@ -27,17 +27,15 @@ MediaRemoter::MediaRemoter(
     : client_(client),
       sink_metadata_(sink_metadata),
       message_dispatcher_(message_dispatcher),
-      binding_(this),
       cast_environment_(nullptr),
       transport_(nullptr),
       state_(MIRRORING) {
   DCHECK(client_);
   DCHECK(message_dispatcher_);
 
-  media::mojom::RemoterPtr remoter;
-  binding_.Bind(mojo::MakeRequest(&remoter));
-  client_->ConnectToRemotingSource(std::move(remoter),
-                                   mojo::MakeRequest(&remoting_source_));
+  client_->ConnectToRemotingSource(
+      receiver_.BindNewPipeAndPassRemote(),
+      remoting_source_.BindNewPipeAndPassReceiver());
   remoting_source_->OnSinkAvailable(sink_metadata_.Clone());
 }
 

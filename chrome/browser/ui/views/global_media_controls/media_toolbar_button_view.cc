@@ -16,6 +16,7 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/controls/button/button_controller.h"
 
 MediaToolbarButtonView::MediaToolbarButtonView(
@@ -73,6 +74,12 @@ void MediaToolbarButtonView::Disable() {
   InformIPHOfButtonDisabledorHidden();
 }
 
+SkColor MediaToolbarButtonView::GetInkDropBaseColor() const {
+  return is_promo_showing_ ? GetNativeTheme()->GetSystemColor(
+                                 ui::NativeTheme::kColorId_ProminentButtonColor)
+                           : ToolbarButton::GetInkDropBaseColor();
+}
+
 void MediaToolbarButtonView::UpdateIcon() {
   // TODO(https://crbug.com/973500): Use actual icon instead of this
   // placeholder.
@@ -95,6 +102,13 @@ void MediaToolbarButtonView::UpdateIcon() {
 
 void MediaToolbarButtonView::ShowPromo() {
   GetPromoController().ShowPromo();
+  is_promo_showing_ = true;
+  GetInkDrop()->AnimateToState(views::InkDropState::ACTIVATED);
+}
+
+void MediaToolbarButtonView::OnPromoEnded() {
+  is_promo_showing_ = false;
+  GetInkDrop()->AnimateToState(views::InkDropState::HIDDEN);
 }
 
 GlobalMediaControlsPromoController&

@@ -18,10 +18,10 @@ Polymer({
   properties: {
     /**
      * The type of networks to list.
-     * @type {CrOnc.Type}
+     * @type {chromeos.networkConfig.mojom.NetworkType|undefined}
      */
     networkType: {
-      type: String,
+      type: Number,
       observer: 'networkTypeChanged_',
     },
 
@@ -90,13 +90,13 @@ Polymer({
    * @private
    */
   refreshNetworks_: function() {
-    if (!this.networkType) {
+    if (this.networkType === undefined) {
       return;
     }
     const filter = {
       filter: chromeos.networkConfig.mojom.FilterType.kConfigured,
       limit: chromeos.networkConfig.mojom.kNoLimit,
-      networkType: OncMojo.getNetworkTypeFromString(this.networkType),
+      networkType: this.networkType,
     };
     this.networkConfig_.getNetworkStateList(filter).then(response => {
       this.networkStateList_ = response.result;

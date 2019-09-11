@@ -56,6 +56,17 @@ class GPU_IPC_SERVICE_EXPORT SharedImageStub
   SharedImageDestructionCallback GetSharedImageDestructionCallback(
       const Mailbox& mailbox);
 
+  bool CreateSharedImage(const Mailbox& mailbox,
+                         int client_id,
+                         gfx::GpuMemoryBufferHandle handle,
+                         gfx::BufferFormat format,
+                         SurfaceHandle surface_handle,
+                         const gfx::Size& size,
+                         const gfx::ColorSpace& color_space,
+                         uint32_t usage);
+  bool UpdateSharedImage(const Mailbox& mailbox,
+                         const gfx::GpuFenceHandle& in_fence_handle);
+
  private:
   SharedImageStub(GpuChannel* channel, int32_t route_id);
 

@@ -250,7 +250,7 @@ base::Value ProxyConfig::ToValue() const {
       base::Value list(base::Value::Type::LIST);
 
       for (const auto& bypass_rule : bypass.rules())
-        list.GetList().emplace_back(bypass_rule->ToString());
+        list.Append(bypass_rule->ToString());
 
       dict.SetKey("bypass_list", std::move(list));
     }

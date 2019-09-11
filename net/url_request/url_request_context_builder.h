@@ -204,13 +204,6 @@ class NET_EXPORT URLRequestContextBuilder {
     data_enabled_ = enable;
   }
 
-#if !BUILDFLAG(DISABLE_FILE_SUPPORT)
-  // Control support for file:// requests. By default it's disabled.
-  void set_file_enabled(bool enable) {
-    file_enabled_ = enable;
-  }
-#endif
-
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
   // Control support for ftp:// requests. By default it's disabled.
   void set_ftp_enabled(bool enable) {
@@ -377,10 +370,6 @@ class NET_EXPORT URLRequestContextBuilder {
 
   // Include support for data:// requests.
   bool data_enabled_ = false;
-#if !BUILDFLAG(DISABLE_FILE_SUPPORT)
-  // Include support for file:// requests.
-  bool file_enabled_ = false;
-#endif
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
   // Include support for ftp:// requests.
   bool ftp_enabled_ = false;

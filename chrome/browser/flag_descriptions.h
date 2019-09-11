@@ -53,6 +53,9 @@ extern const char kAcceleratedVideoDecodeDescription[];
 extern const char kAcceleratedVideoEncodeName[];
 extern const char kAcceleratedVideoEncodeDescription[];
 
+extern const char kAccessibilityInternalsPageImprovementsName[];
+extern const char kAccessibilityInternalsPageImprovementsDescription[];
+
 extern const char kAllowInsecureLocalhostName[];
 extern const char kAllowInsecureLocalhostDescription[];
 
@@ -980,6 +983,9 @@ extern const char kQueryInOmniboxDescription[];
 extern const char kQuicName[];
 extern const char kQuicDescription[];
 
+extern const char kQuietNotificationPromptsName[];
+extern const char kQuietNotificationPromptsDescription[];
+
 extern const char kReducedReferrerGranularityName[];
 extern const char kReducedReferrerGranularityDescription[];
 
@@ -1463,17 +1469,14 @@ extern const char kEnableWebNfcDescription[];
 extern const char kEphemeralTabName[];
 extern const char kEphemeralTabDescription[];
 
+extern const char kEphemeralTabUsingBottomSheetName[];
+extern const char kEphemeralTabUsingBottomSheetDescription[];
+
 extern const char kExploreSitesName[];
 extern const char kExploreSitesDescription[];
 
 extern const char kInterestFeedNotificationsName[];
 extern const char kInterestFeedNotificationsDescription[];
-
-extern const char kHomePageButtonName[];
-extern const char kHomePageButtonDescription[];
-
-extern const char kHomepageTileName[];
-extern const char kHomepageTileDescription[];
 
 extern const char kIdentityDiscName[];
 extern const char kIdentityDiscDescription[];
@@ -1492,9 +1495,6 @@ extern const char kNewPhotoPickerDescription[];
 
 extern const char kNoCreditCardAbort[];
 extern const char kNoCreditCardAbortDescription[];
-
-extern const char kNtpButtonName[];
-extern const char kNtpButtonDescription[];
 
 extern const char kOfflineIndicatorAlwaysHttpProbeName[];
 extern const char kOfflineIndicatorAlwaysHttpProbeDescription[];
@@ -1553,9 +1553,6 @@ extern const char kProcessSharingWithDefaultSiteInstancesDescription[];
 extern const char kProcessSharingWithStrictSiteInstancesName[];
 extern const char kProcessSharingWithStrictSiteInstancesDescription[];
 
-extern const char kQuietNotificationPromptsName[];
-extern const char kQuietNotificationPromptsDescription[];
-
 extern const char kReaderModeHeuristicsName[];
 extern const char kReaderModeHeuristicsDescription[];
 extern const char kReaderModeHeuristicsMarkup[];
@@ -1584,9 +1581,6 @@ extern const char kStrictSiteIsolationDescription[];
 
 extern const char kTabSwitcherLongpressMenuName[];
 extern const char kTabSwitcherLongpressMenuDescription[];
-
-extern const char kTranslateAndroidManualTriggerName[];
-extern const char kTranslateAndroidManualTriggerDescription[];
 
 extern const char kStartSurfaceAndroidName[];
 extern const char kStartSurfaceAndroidDescription[];

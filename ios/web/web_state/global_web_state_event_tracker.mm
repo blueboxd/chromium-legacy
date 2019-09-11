@@ -8,7 +8,7 @@
 
 #include "base/macros.h"
 #include "base/no_destructor.h"
-#import "ios/web/public/web_state/web_state_user_data.h"
+#import "ios/web/public/web_state_user_data.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

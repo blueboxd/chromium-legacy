@@ -19,6 +19,7 @@
 #include "media/mojo/mojom/audio_output_stream.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/audio/public/cpp/fake_stream_factory.h"
@@ -158,7 +159,8 @@ struct TestEnvironment {
   StrictMock<MockAudioOutputStreamProviderClient> provider_client;
   std::unique_ptr<AudioOutputStreamBroker> broker;
   MockStreamFactory stream_factory;
-  audio::mojom::StreamFactoryPtr factory_ptr{stream_factory.MakeRemote()};
+  mojo::Remote<audio::mojom::StreamFactory> factory_ptr{
+      stream_factory.MakeRemote()};
 };
 
 }  // namespace

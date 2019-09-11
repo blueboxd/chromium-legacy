@@ -121,7 +121,7 @@ base::Value NetLogQuicAckFrameParams(const quic::QuicAckFrame* frame) {
     for (quic::QuicPacketNumber packet = frame->packets.Min();
          packet < frame->largest_acked; ++packet) {
       if (!frame->packets.Contains(packet)) {
-        missing->GetList().push_back(NetLogNumberValue(packet.ToUint64()));
+        missing->Append(NetLogNumberValue(packet.ToUint64()));
       }
     }
   }
@@ -237,7 +237,7 @@ base::Value NetLogQuicCertificateVerifiedParams(
   base::DictionaryValue dict;
   auto subjects = std::make_unique<base::ListValue>();
   for (auto& dns_name : dns_names) {
-    subjects->GetList().emplace_back(std::move(dns_name));
+    subjects->Append(std::move(dns_name));
   }
   dict.Set("subjects", std::move(subjects));
   return std::move(dict);

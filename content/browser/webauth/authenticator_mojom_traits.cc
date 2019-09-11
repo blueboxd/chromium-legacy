@@ -236,10 +236,14 @@ bool StructTraits<blink::mojom::CableAuthenticationDataView,
                   device::CableDiscoveryData>::
     Read(blink::mojom::CableAuthenticationDataView data,
          device::CableDiscoveryData* out) {
-  out->version = data.version();
-  if (!data.ReadClientEid(&out->client_eid) ||
-      !data.ReadAuthenticatorEid(&out->authenticator_eid) ||
-      !data.ReadSessionPreKey(&out->session_pre_key)) {
+  if (data.version() != 1) {
+    return false;
+  }
+  out->version = device::CableDiscoveryData::Version::V1;
+  out->v1.emplace();
+  if (!data.ReadClientEid(&out->v1->client_eid) ||
+      !data.ReadAuthenticatorEid(&out->v1->authenticator_eid) ||
+      !data.ReadSessionPreKey(&out->v1->session_pre_key)) {
     return false;
   }
   return true;

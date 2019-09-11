@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "ios/web/public/web_state/web_state_observer.h"
+#include "ios/web/public/web_state_observer.h"
 
 // Observes page lifecyle events from Objective-C. To use as a
 // web::WebStateObserver, wrap in a web::WebStateObserverBridge.

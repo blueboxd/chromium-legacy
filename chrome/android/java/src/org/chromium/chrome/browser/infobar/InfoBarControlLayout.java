@@ -24,7 +24,7 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.widget.DualControlLayout;
+import org.chromium.chrome.browser.ui.widget.DualControlLayout;
 import org.chromium.chrome.browser.widget.RadioButtonLayout;
 
 import java.util.List;

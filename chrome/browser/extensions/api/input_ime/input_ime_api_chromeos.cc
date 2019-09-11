@@ -355,9 +355,8 @@ class ImeObserverChromeOS : public ui::ImeObserver {
     if (flags & ui::TEXT_INPUT_FLAG_AUTOCAPITALIZE_WORDS)
       return input_method_private::AUTO_CAPITALIZE_TYPE_WORDS;
 
-    // At least one flag should be set. See |ComputeAutocapitalizeFlags| in
-    // third_party/blink/renderer/core/editing/ime/input_method_controller.cc
-    NOTREACHED();
+    // Autocapitalize flag may be missing for native text fields.
+    // See https://crbug.com/1002713.
     return input_method_private::AUTO_CAPITALIZE_TYPE_NONE;
   }
 

@@ -38,7 +38,13 @@ class ASH_EXPORT AmbientController : views::WidgetObserver {
 
   const PhotoModel& model() const { return model_; }
 
-  AmbientContainerView* GetAmbientContainerViewForTesting();
+  AmbientContainerView* get_container_view_for_testing() {
+    return container_view_;
+  }
+
+  const base::OneShotTimer& get_timer_for_testing() const {
+    return refresh_timer_;
+  }
 
  private:
   void Start();

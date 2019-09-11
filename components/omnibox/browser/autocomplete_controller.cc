@@ -19,6 +19,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -548,17 +549,14 @@ void AutocompleteController::UpdateResult(
     bool regenerate_result,
     bool force_notify_default_match_changed) {
   TRACE_EVENT0("omnibox", "AutocompleteController::UpdateResult");
-  const bool last_default_was_valid = result_.default_match() != result_.end();
-  // The following three variables are only set and used if
-  // |last_default_was_valid|.
-  base::string16 last_default_fill_into_edit, last_default_keyword,
-      last_default_associated_keyword;
-  if (last_default_was_valid) {
-    last_default_fill_into_edit = result_.default_match()->fill_into_edit;
-    last_default_keyword = result_.default_match()->keyword;
-    if (result_.default_match()->associated_keyword) {
+
+  base::Optional<AutocompleteMatch> last_default_match;
+  base::string16 last_default_associated_keyword;
+  if (result_.default_match() != result_.end()) {
+    last_default_match = *result_.default_match();
+    if (last_default_match->associated_keyword) {
       last_default_associated_keyword =
-          result_.default_match()->associated_keyword->keyword;
+          last_default_match->associated_keyword->keyword;
     }
   }
 
@@ -579,7 +577,13 @@ void AutocompleteController::UpdateResult(
     result_.ConvertOpenTabMatches(provider_client_.get(), &input_);
 
   // Sort the matches and trim to a small number of "best" matches.
-  result_.SortAndCull(input_, template_url_service_);
+  const AutocompleteMatch* preserve_default_match = nullptr;
+  if (!in_start_ && !regenerate_result && last_default_match &&
+      base::FeatureList::IsEnabled(
+          omnibox::kOmniboxPreserveDefaultMatchAgainstAsyncUpdate)) {
+    preserve_default_match = &last_default_match.value();
+  }
+  result_.SortAndCull(input_, template_url_service_, preserve_default_match);
 
   // Need to validate before invoking CopyOldMatches as the old matches are not
   // valid against the current input.
@@ -616,12 +620,12 @@ void AutocompleteController::UpdateResult(
   // even though the fill into edit hasn't changed (see SearchProvider
   // for one case of this).
   const bool notify_default_match =
-      (last_default_was_valid != default_is_valid) ||
-      (last_default_was_valid &&
+      (last_default_match.has_value() != default_is_valid) ||
+      (last_default_match &&
        ((result_.default_match()->fill_into_edit !=
-          last_default_fill_into_edit) ||
+         last_default_match->fill_into_edit) ||
         (default_associated_keyword != last_default_associated_keyword) ||
-        (result_.default_match()->keyword != last_default_keyword)));
+        (result_.default_match()->keyword != last_default_match->keyword)));
   if (notify_default_match)
     last_time_default_match_changed_ = base::TimeTicks::Now();
 

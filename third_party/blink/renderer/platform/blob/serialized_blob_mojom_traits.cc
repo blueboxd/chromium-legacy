@@ -16,7 +16,7 @@ bool StructTraits<blink::mojom::blink::SerializedBlob::DataView,
     return false;
   *out = blink::BlobDataHandle::Create(
       uuid, type, data.size(),
-      data.TakeBlob<blink::mojom::blink::BlobPtrInfo>());
+      data.TakeBlob<mojo::PendingRemote<blink::mojom::blink::Blob>>());
   return true;
 }
 

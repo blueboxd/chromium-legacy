@@ -7,7 +7,15 @@
 
 #include <string>
 
-// Sets the patterns to trigger a bad-reputation Safety Tip for tests.
+#include "chrome/browser/lookalikes/safety_tips/safety_tips.pb.h"
+
+// Sets the patterns included in component with the given flag type for tests.
+void SetSafetyTipPatternsWithFlagType(
+    std::vector<std::string> pattern,
+    chrome_browser_safety_tips::FlaggedPage::FlagType type);
+
+// Sets the patterns to trigger a bad-reputation Safety Tip for tests. This just
+// calls SetSafetyTipPatternsWithFlagType with BAD_REPUTATION as the type.
 void SetSafetyTipBadRepPatterns(std::vector<std::string> pattern);
 
 #endif  // CHROME_BROWSER_LOOKALIKES_SAFETY_TIPS_SAFETY_TIP_TEST_UTILS_H_

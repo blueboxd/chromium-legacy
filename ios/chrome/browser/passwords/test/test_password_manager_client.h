@@ -50,7 +50,7 @@ class TestPasswordManagerClient
  private:
   // PasswordManagerClient:
   PrefService* GetPrefs() const override;
-  PasswordStore* GetPasswordStore() const override;
+  PasswordStore* GetProfilePasswordStore() const override;
   const PasswordManager* GetPasswordManager() const override;
   const GURL& GetLastCommittedEntryURL() const override;
   // Stores |manager| into |manager_|. Save() should be

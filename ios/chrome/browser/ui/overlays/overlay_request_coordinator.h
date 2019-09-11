@@ -16,6 +16,10 @@ class OverlayRequest;
 // Returns whether this overlay coordinator type supports |request|.
 + (BOOL)supportsRequest:(OverlayRequest*)request;
 
+// Returns whether this overlay coordinator type uses child view controllers
+// instead of presentating over the container context.  Default value is NO.
+@property(class, nonatomic, readonly) BOOL showsOverlayUsingChildViewController;
+
 // Initializer for a coordinator for |request|.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                    browser:(Browser*)browser

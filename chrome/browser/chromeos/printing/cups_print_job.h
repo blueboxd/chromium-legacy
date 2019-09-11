@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/printing/history/print_job_info.pb.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chromeos/printing/printer_configuration.h"
 
@@ -45,7 +46,8 @@ class CupsPrintJob {
                const std::string& document_title,
                int total_page_number,
                ::printing::PrintJob::Source source,
-               const std::string& source_id);
+               const std::string& source_id,
+               const printing::proto::PrintSettings& settings);
   ~CupsPrintJob();
 
   // Create a unique id for a print job using the |printer_id| and |job_id|.
@@ -68,6 +70,7 @@ class CupsPrintJob {
   int printed_page_number() const { return printed_page_number_; }
   ::printing::PrintJob::Source source() const { return source_; }
   const std::string& source_id() const { return source_id_; }
+  const printing::proto::PrintSettings& settings() const { return settings_; }
   base::Time creation_time() const { return creation_time_; }
   State state() const { return state_; }
   ErrorCode error_code() const { return error_code_; }
@@ -94,6 +97,7 @@ class CupsPrintJob {
   int printed_page_number_ = 0;
   const ::printing::PrintJob::Source source_;
   const std::string source_id_;
+  const printing::proto::PrintSettings settings_;
   const base::Time creation_time_;
 
   State state_ = State::STATE_NONE;

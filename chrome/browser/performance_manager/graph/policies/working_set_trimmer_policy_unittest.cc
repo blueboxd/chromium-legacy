@@ -4,8 +4,8 @@
 
 #include "chrome/browser/performance_manager/graph/policies/working_set_trimmer_policy.h"
 
-#include "chrome/browser/performance_manager/graph/graph_test_harness.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
+#include "chrome/browser/performance_manager/test_support/graph_test_harness.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

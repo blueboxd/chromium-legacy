@@ -30,12 +30,10 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
-import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.chrome.browser.touchless.TouchlessDelegate;
 import org.chromium.components.signin.AccountManagerFacade;
-import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.List;
@@ -73,9 +71,6 @@ public class FeatureUtilities {
     private static Boolean sHasGoogleAccountAuthenticator;
     private static Boolean sHasRecognitionIntentHandler;
 
-    private static Boolean sIsHomePageButtonForceEnabled;
-    private static Boolean sIsHomepageTileEnabled;
-    private static Boolean sIsNewTabPageButtonEnabled;
     private static Boolean sIsBottomToolbarEnabled;
     private static Boolean sIsAdaptiveToolbarEnabled;
     private static Boolean sIsLabeledBottomToolbarEnabled;
@@ -96,9 +91,6 @@ public class FeatureUtilities {
     private static Boolean sDownloadAutoResumptionEnabledInNative;
 
     private static String sReachedCodeProfilerTrialGroup;
-
-    private static final String NTP_BUTTON_TRIAL_NAME = "NewTabPage";
-    private static final String NTP_BUTTON_VARIANT_PARAM_NAME = "variation";
 
     /**
      * Determines whether or not the {@link RecognizerIntent#ACTION_WEB_SEARCH} {@link Intent}
@@ -177,9 +169,6 @@ public class FeatureUtilities {
     public static void cacheNativeFlags() {
         cacheCommandLineOnNonRootedEnabled();
         FirstRunUtils.cacheFirstRunPrefs();
-        cacheHomePageButtonForceEnabled();
-        cacheHomepageTileEnabled();
-        cacheNewTabPageButtonEnabled();
         cacheBottomToolbarEnabled();
         cacheAdaptiveToolbarEnabled();
         cacheLabeledBottomToolbarEnabled();
@@ -224,38 +213,6 @@ public class FeatureUtilities {
             return false;
         }
         return Build.VERSION.SDK_INT > Build.VERSION_CODES.M;
-    }
-
-    /**
-     * Cache whether or not the home page button is force enabled so on next startup, the value can
-     * be made available immediately.
-     */
-    public static void cacheHomePageButtonForceEnabled() {
-        if (PartnerBrowserCustomizations.isHomepageProviderAvailableAndEnabled()) return;
-        ChromePreferenceManager.getInstance().writeBoolean(
-                ChromePreferenceManager.HOME_PAGE_BUTTON_FORCE_ENABLED_KEY,
-                ChromeFeatureList.isEnabled(ChromeFeatureList.HOME_PAGE_BUTTON_FORCE_ENABLED));
-    }
-
-    /**
-     * @return Whether or not the home page button is force enabled.
-     */
-    public static boolean isHomePageButtonForceEnabled() {
-        if (sIsHomePageButtonForceEnabled == null) {
-            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
-
-            sIsHomePageButtonForceEnabled = prefManager.readBoolean(
-                    ChromePreferenceManager.HOME_PAGE_BUTTON_FORCE_ENABLED_KEY, false);
-        }
-        return sIsHomePageButtonForceEnabled;
-    }
-
-    /**
-     * Resets whether the home page button is enabled for tests. After this is called, the next
-     * call to #isHomePageButtonForceEnabled() will retrieve the value from shared preferences.
-     */
-    public static void resetHomePageButtonForceEnabledForTests() {
-        sIsHomePageButtonForceEnabled = null;
     }
 
     private static void cacheServiceManagerForDownloadResumption() {
@@ -340,62 +297,6 @@ public class FeatureUtilities {
                     ChromePreferenceManager.DOWNLOAD_AUTO_RESUMPTION_IN_NATIVE_KEY, true);
         }
         return sDownloadAutoResumptionEnabledInNative;
-    }
-
-    /**
-     * Cache whether or not the new tab page button is enabled so on next startup, the value can
-     * be made available immediately.
-     */
-    public static void cacheHomepageTileEnabled() {
-        ChromePreferenceManager.getInstance().writeBoolean(
-                ChromePreferenceManager.HOMEPAGE_TILE_ENABLED_KEY,
-                ChromeFeatureList.isEnabled(ChromeFeatureList.HOMEPAGE_TILE));
-    }
-
-    /**
-     * @return Whether or not the new tab page button is enabled.
-     */
-    public static boolean isHomepageTileEnabled() {
-        if (sIsHomepageTileEnabled == null) {
-            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
-
-            sIsHomepageTileEnabled = prefManager.readBoolean(
-                    ChromePreferenceManager.HOMEPAGE_TILE_ENABLED_KEY, false);
-        }
-        return sIsHomepageTileEnabled;
-    }
-
-    /**
-     * Cache whether or not the new tab page button is enabled so that on next startup, it can be
-     * made available immediately.
-     */
-    private static void cacheNewTabPageButtonEnabled() {
-        boolean isNTPButtonEnabled = ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_BUTTON);
-        ChromePreferenceManager.getInstance().writeBoolean(
-                ChromePreferenceManager.NTP_BUTTON_ENABLED_KEY, isNTPButtonEnabled);
-    }
-
-    /**
-     * Gets the new tab page button variant from variations associated data.
-     * Native must be initialized before this method is called.
-     * @return The new tab page button variant.
-     */
-    public static String getNTPButtonVariant() {
-        return VariationsAssociatedData.getVariationParamValue(
-                NTP_BUTTON_TRIAL_NAME, NTP_BUTTON_VARIANT_PARAM_NAME);
-    }
-
-    /**
-     * @return Whether or not the new tab page button is enabled.
-     */
-    public static boolean isNewTabPageButtonEnabled() {
-        if (sIsNewTabPageButtonEnabled == null) {
-            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
-
-            sIsNewTabPageButtonEnabled =
-                    prefManager.readBoolean(ChromePreferenceManager.NTP_BUTTON_ENABLED_KEY, false);
-        }
-        return sIsNewTabPageButtonEnabled;
     }
 
     /**

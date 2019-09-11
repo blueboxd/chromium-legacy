@@ -353,6 +353,10 @@ void InProgressDownloadManager::Initialize(
 
   download_db_cache_ =
       std::make_unique<DownloadDBCache>(std::move(download_db));
+  if (GetDownloadDBTaskRunnerForTesting()) {
+    download_db_cache_->SetTimerTaskRunnerForTesting(
+        GetDownloadDBTaskRunnerForTesting());
+  }
   download_db_cache_->Initialize(base::BindOnce(
       &InProgressDownloadManager::OnDBInitialized, weak_factory_.GetWeakPtr()));
 }
@@ -581,36 +585,34 @@ void InProgressDownloadManager::OnDownloadNamesRetrieved(
         CreateDownloadEntryFromDownloadDBEntry(entry);
     if (download_entry)
       download_entries_[download_entry->guid] = download_entry.value();
-    if (base::FeatureList::IsEnabled(features::kDownloadDBForNewDownloads)) {
-      auto item = CreateDownloadItemImpl(this, entry);
-      if (!item)
-        continue;
-      uint32_t download_id = item->GetId();
-      // Remove entries with duplicate ids.
-      if (download_id != DownloadItem::kInvalidId &&
-          base::Contains(download_ids, download_id)) {
-        RemoveInProgressDownload(item->GetGuid());
-        num_duplicates++;
-        continue;
-      }
-#if defined(OS_ANDROID)
-      const base::FilePath& path = item->GetTargetFilePath();
-      if (path.IsContentUri()) {
-        base::FilePath display_name = GetDownloadDisplayName(path);
-        // If a download doesn't have a display name, remove it.
-        if (display_name.empty()) {
-          RemoveInProgressDownload(item->GetGuid());
-          continue;
-        } else {
-          item->SetDisplayName(display_name);
-        }
-      }
-#endif
-      item->AddObserver(download_db_cache_.get());
-      OnNewDownloadCreated(item.get());
-      in_progress_downloads_.emplace_back(std::move(item));
-      download_ids.insert(download_id);
+    auto item = CreateDownloadItemImpl(this, entry);
+    if (!item)
+      continue;
+    uint32_t download_id = item->GetId();
+    // Remove entries with duplicate ids.
+    if (download_id != DownloadItem::kInvalidId &&
+        base::Contains(download_ids, download_id)) {
+      RemoveInProgressDownload(item->GetGuid());
+      num_duplicates++;
+      continue;
     }
+#if defined(OS_ANDROID)
+    const base::FilePath& path = item->GetTargetFilePath();
+    if (path.IsContentUri()) {
+      base::FilePath display_name = GetDownloadDisplayName(path);
+      // If a download doesn't have a display name, remove it.
+      if (display_name.empty()) {
+        RemoveInProgressDownload(item->GetGuid());
+        continue;
+      } else {
+        item->SetDisplayName(display_name);
+      }
+    }
+#endif
+    item->AddObserver(download_db_cache_.get());
+    OnNewDownloadCreated(item.get());
+    in_progress_downloads_.emplace_back(std::move(item));
+    download_ids.insert(download_id);
   }
   if (num_duplicates > 0)
     RecordDuplicateInProgressDownloadIdCount(num_duplicates);

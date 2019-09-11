@@ -287,7 +287,7 @@ class BluetoothGattBlueZTest : public testing::Test {
       base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   bluez::FakeBluetoothDeviceClient* fake_bluetooth_device_client_;
   bluez::FakeBluetoothGattServiceClient* fake_bluetooth_gatt_service_client_;

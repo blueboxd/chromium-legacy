@@ -10,7 +10,6 @@
 #include "ash/app_list/app_list_controller_observer.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
-#include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "ash/session/session_observer.h"
 #include "base/macros.h"
 
@@ -62,7 +61,7 @@ class HomeButtonController : public AppListControllerObserver,
   void OnTabletModeStarted() override;
 
   // AssistantStateObserver:
-  void OnAssistantStatusChanged(mojom::VoiceInteractionState state) override;
+  void OnAssistantStatusChanged(mojom::AssistantState state) override;
   void OnAssistantSettingsEnabled(bool enabled) override;
 
   void OnAppListShown();

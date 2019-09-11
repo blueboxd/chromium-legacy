@@ -821,6 +821,7 @@
         'ReportDeviceNetworkInterfaces',
         'ReportDeviceHardwareStatus',
         'ReportDeviceSessionStatus',
+        'ReportDeviceOsUpdateStatus',
         'ReportDeviceBoardStatus',
         'ReportDevicePowerStatus',
         'ReportDeviceStorageStatus',
@@ -7270,6 +7271,28 @@
       'arc_support': 'This policy has no effect on the logging done by Android.',
     },
     {
+      'name': 'ReportDeviceOsUpdateStatus',
+      'owners': ['anqing@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:79-'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': False,
+      'id': 602,
+      'caption': '''Report OS update status''',
+      'tags': ['admin-sharing'],
+      'desc': '''Report OS update information such as update status, platform version,
+      last update check and last reboot.
+
+      If the policy is set to false or left unset, the OS update information will not be
+      reported. If set to true, OS update information will be reported.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
+    },
+    {
       'name': 'ReportDevicePowerStatus',
       'owners': ['antrim@chromium.org'],
       'type': 'main',
@@ -7286,8 +7309,8 @@
       'tags': ['admin-sharing'],
       'desc': '''Report hardware statistics and identifiers related to power.
 
-      If the policy is set to false, the statistics will not be reported.
-      If set to true or left unset, statistics will be reported.''',
+      If the policy is set to false or left unset, the statistics will not be reported.
+      If set to true, statistics will be reported.''',
       'arc_support': 'This policy has no effect on the logging done by Android.',
     },
     {
@@ -7307,8 +7330,8 @@
       'tags': ['admin-sharing'],
       'desc': '''Report hardware statistics and identifiers for storage devices.
 
-      If the policy is set to false, the statistics will not be reported.
-      If set to true or left unset, statistics will be reported.''',
+      If the policy is set to false or left unset, the statistics will not be reported.
+      If set to true, statistics will be reported.''',
       'arc_support': 'This policy has no effect on the logging done by Android.',
     },
     {
@@ -7328,8 +7351,8 @@
       'tags': ['admin-sharing'],
       'desc': '''Report hardware statistics for SoC components.
 
-      If the policy is set to false, the statistics will not be reported.
-      If set to true or left unset, statistics will be reported.''',
+      If the policy is set to false or left unset, the statistics will not be reported.
+      If set to true, statistics will be reported.''',
       'arc_support': 'This policy has no effect on the logging done by Android.',
     },
     {
@@ -17812,7 +17835,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     ['DeviceLoginScreenSaverTimeout', ''],
     ['DeviceAppPack', ''],
     # Proto fields with unknown policy.
-    ['', 'device_reporting.report_os_update_status'],
     ['', 'device_reporting.report_running_kiosk_app'],
     ['', 'camera_enabled.camera_enabled'],
     # Not an actual policy.
@@ -17909,6 +17931,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'ReportDeviceUsers': 'device_reporting.report_users',
     'ReportDeviceHardwareStatus': 'device_reporting.report_hardware_status',
     'ReportDeviceSessionStatus': 'device_reporting.report_session_status',
+    'ReportDeviceOsUpdateStatus': 'device_reporting.report_os_update_status',
     'ReportDeviceVersionInfo': 'device_reporting.report_version_info',
     'ReportUploadFrequency': 'device_reporting.device_status_frequency',
     'NetworkThrottlingEnabled': 'network_throttling.enabled',
@@ -18329,6 +18352,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
         'ReportDeviceNetworkInterfaces',
         'ReportDeviceHardwareStatus',
         'ReportDeviceSessionStatus',
+        'ReportDeviceOsUpdateStatus',
         'ReportDeviceBoardStatus',
         'ReportDevicePowerStatus',
         'ReportDeviceStorageStatus',
@@ -18394,6 +18418,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 601,
+  'highest_id_currently_used': 602,
   'highest_atomic_group_id_currently_used': 37
 }

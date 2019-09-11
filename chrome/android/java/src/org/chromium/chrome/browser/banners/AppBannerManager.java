@@ -17,7 +17,7 @@ import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
-import org.chromium.chrome.browser.webapps.AddToHomescreenDialog;
+import org.chromium.chrome.browser.webapps.addtohomescreen.AddToHomescreenView;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -170,7 +170,7 @@ public class AppBannerManager extends EmptyTabObserver {
     }
 
     @VisibleForTesting
-    public AddToHomescreenDialog getAddToHomescreenDialogForTesting() {
+    public AddToHomescreenView getAddToHomescreenDialogForTesting() {
         return AppBannerManagerJni.get().getAddToHomescreenDialogForTesting(
                 mNativePointer, AppBannerManager.this);
     }
@@ -217,7 +217,7 @@ public class AppBannerManager extends EmptyTabObserver {
         boolean onAppDetailsRetrieved(long nativeAppBannerManagerAndroid, AppBannerManager caller,
                 AppData data, String title, String packageName, String imageUrl);
         // Testing methods.
-        AddToHomescreenDialog getAddToHomescreenDialogForTesting(
+        AddToHomescreenView getAddToHomescreenDialogForTesting(
                 long nativeAppBannerManagerAndroid, AppBannerManager caller);
 
         boolean isRunningForTesting(long nativeAppBannerManagerAndroid, AppBannerManager caller);

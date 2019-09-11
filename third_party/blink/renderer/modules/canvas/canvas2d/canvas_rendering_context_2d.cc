@@ -671,6 +671,12 @@ scoped_refptr<StaticBitmapImage> blink::CanvasRenderingContext2D::GetImage(
   return canvas()->GetCanvas2DLayerBridge()->NewImageSnapshot(hint);
 }
 
+void CanvasRenderingContext2D::FinalizeFrame() {
+  if (canvas() && canvas()->GetCanvas2DLayerBridge())
+    canvas()->GetCanvas2DLayerBridge()->FinalizeFrame();
+  usage_counters_.num_frames_since_reset++;
+}
+
 bool CanvasRenderingContext2D::ParseColorOrCurrentColor(
     Color& color,
     const String& color_string) const {

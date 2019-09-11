@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <vector>
 
 #include "base/timer/lap_timer.h"
@@ -48,17 +49,14 @@ class GpuImageDecodeCachePerfTest
         context_provider_(
             base::MakeRefCounted<viz::TestInProcessContextProvider>(
                 UseTransferCache(),
-                false /* support_locking */)),
-        cache_(context_provider_.get(),
-               UseTransferCache(),
-               kRGBA_8888_SkColorType,
-               kCacheSize,
-               MaxTextureSize(),
-               PaintImage::kDefaultGeneratorClientId) {
-    // Initializing context here is ok because image decode cache does not use
-    // context provider in its constructor.
+                false /* support_locking */)) {}
+
+  void SetUp() override {
     gpu::ContextResult result = context_provider_->BindToCurrentThread();
-    DCHECK_EQ(result, gpu::ContextResult::kSuccess);
+    ASSERT_EQ(result, gpu::ContextResult::kSuccess);
+    cache_ = std::make_unique<GpuImageDecodeCache>(
+        context_provider_.get(), UseTransferCache(), kRGBA_8888_SkColorType,
+        kCacheSize, MaxTextureSize(), PaintImage::kDefaultGeneratorClientId);
   }
 
  protected:
@@ -97,7 +95,7 @@ class GpuImageDecodeCachePerfTest
 
   base::LapTimer timer_;
   scoped_refptr<viz::TestInProcessContextProvider> context_provider_;
-  GpuImageDecodeCache cache_;
+  std::unique_ptr<GpuImageDecodeCache> cache_;
 };
 
 INSTANTIATE_TEST_SUITE_P(P,
@@ -118,8 +116,8 @@ TEST_P(GpuImageDecodeCachePerfTest, DecodeWithColorConversion) {
         CreateMatrix(SkSize::Make(1.0f, 1.0f)), 0u,
         gfx::ColorSpace::CreateXYZD50());
 
-    DecodedDrawImage decoded_image = cache_.GetDecodedImageForDraw(image);
-    cache_.DrawWithImageFinished(image, decoded_image);
+    DecodedDrawImage decoded_image = cache_->GetDecodedImageForDraw(image);
+    cache_->DrawWithImageFinished(image, decoded_image);
     timer_.NextLap();
   } while (!timer_.HasTimeLimitExpired());
 
@@ -150,7 +148,7 @@ TEST_P(GpuImageDecodeCachePerfTestNoSw, DecodeWithMips) {
         SkIRect::MakeWH(1024, 2048), kMedium_SkFilterQuality,
         CreateMatrix(SkSize::Make(0.6f, 0.6f)), 0u, gfx::ColorSpace());
 
-    DecodedDrawImage decoded_image = cache_.GetDecodedImageForDraw(image);
+    DecodedDrawImage decoded_image = cache_->GetDecodedImageForDraw(image);
 
     if (GetParam() == TestMode::kGpu) {
       SkPaint paint;
@@ -161,7 +159,7 @@ TEST_P(GpuImageDecodeCachePerfTestNoSw, DecodeWithMips) {
       surface->flush();
     }
 
-    cache_.DrawWithImageFinished(image, decoded_image);
+    cache_->DrawWithImageFinished(image, decoded_image);
     timer_.NextLap();
   } while (!timer_.HasTimeLimitExpired());
 
@@ -180,12 +178,12 @@ TEST_P(GpuImageDecodeCachePerfTest, AcquireExistingImages) {
       CreateMatrix(SkSize::Make(1.0f, 1.0f)), 0u,
       gfx::ColorSpace::CreateXYZD50());
 
-  DecodedDrawImage decoded_image = cache_.GetDecodedImageForDraw(image);
-  cache_.DrawWithImageFinished(image, decoded_image);
+  DecodedDrawImage decoded_image = cache_->GetDecodedImageForDraw(image);
+  cache_->DrawWithImageFinished(image, decoded_image);
 
   do {
-    decoded_image = cache_.GetDecodedImageForDraw(image);
-    cache_.DrawWithImageFinished(image, decoded_image);
+    decoded_image = cache_->GetDecodedImageForDraw(image);
+    cache_->DrawWithImageFinished(image, decoded_image);
     timer_.NextLap();
   } while (!timer_.HasTimeLimitExpired());
 

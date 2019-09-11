@@ -496,7 +496,8 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, RefreshPolicy) {
   response.mutable_policy_response()->add_responses()->CopyFrom(
       device_local_account_policy_.policy());
   EXPECT_CALL(mock_device_management_service_, StartJob(_))
-      .WillOnce(mock_device_management_service_.StartJobOKSync(response));
+      .WillRepeatedly(
+          mock_device_management_service_.StartJobOKAsync(response));
   EXPECT_CALL(*this, OnRefreshDone(true)).Times(1);
   // This will be called twice, because the ComponentCloudPolicyService will
   // also become ready after flushing all the pending tasks.
@@ -967,7 +968,7 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, RefreshPolicies) {
   // Bring up the cloud connection. The refresh scheduler may fire refreshes at
   // this point which are not relevant for the test.
   EXPECT_CALL(mock_device_management_service_, StartJob(_))
-      .WillRepeatedly(mock_device_management_service_.StartJobSync(
+      .WillRepeatedly(mock_device_management_service_.StartJobAsync(
           net::ERR_FAILED, DeviceManagementService::kSuccess));
   service_->Connect(&mock_device_management_service_);
   FlushDeviceSettings();

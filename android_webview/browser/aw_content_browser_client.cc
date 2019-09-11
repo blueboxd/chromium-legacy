@@ -399,6 +399,11 @@ void AwContentBrowserClient::RenderProcessWillLaunch(
   host->AddFilter(new cdm::CdmMessageFilterAndroid(true, false));
 }
 
+bool AwContentBrowserClient::IsExplicitNavigation(
+    ui::PageTransition transition) {
+  return ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED);
+}
+
 bool AwContentBrowserClient::ShouldUseMobileFlingCurve() {
   return true;
 }

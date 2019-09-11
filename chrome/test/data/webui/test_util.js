@@ -127,22 +127,11 @@ cr.define('test_util', function() {
     return !!rect && rect.width * rect.height > 0;
   }
 
-  /**
-   * Dummy importHtml() for Polymer 3 tests, that does nothing since Polymer 3
-   * doesn't use HTML imports. To use, import from test_util.m.js and set
-   * PolymerTest.importHtml|importHtml in namespace_rewrites.
-   * @return {!Promise}
-   */
-  /* #export */ function importHtml() {
-    return Promise.resolve();
-  }
-
   // #cr_define_end
   return {
     eventToPromise: eventToPromise,
     fakeDataBind: fakeDataBind,
     flushTasks: flushTasks,
-    importHtml: importHtml,
     isVisible: isVisible,
     waitAfterNextRender: waitAfterNextRender,
     waitBeforeNextRender: waitBeforeNextRender,

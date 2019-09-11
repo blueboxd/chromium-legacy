@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.util;
 
-import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -15,18 +14,12 @@ import android.os.IBinder;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.TransactionTooLargeException;
-import android.provider.Browser;
 import android.support.annotation.Nullable;
 import android.support.v4.app.BundleCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.ApplicationStatus;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.IntentHandler.TabOpenType;
-import org.chromium.chrome.browser.customtabs.CustomTabActivity;
-import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -446,31 +439,6 @@ public class IntentUtils {
         } else {
             throw e;
         }
-    }
-
-    /**
-     * Creates an Intent that tells Chrome to bring an Activity for a particular Tab back to the
-     * foreground.
-     * @param tabId The id of the Tab to bring to the foreground.
-     * @return Created Intent or null if this operation isn't possible.
-     */
-    @Nullable
-    public static Intent createBringTabToFrontIntent(int tabId) {
-        // Iterate through all {@link CustomTab}s and check whether the given tabId belongs to a
-        // {@link CustomTab}. If so, return null as the client app's task cannot be foregrounded.
-        for (Activity activity : ApplicationStatus.getRunningActivities()) {
-            if (activity instanceof CustomTabActivity
-                    && ((CustomTabActivity) activity).getActivityTab() != null
-                    && tabId == ((CustomTabActivity) activity).getActivityTab().getId()) {
-                return null;
-            }
-        }
-
-        Context context = ContextUtils.getApplicationContext();
-        Intent intent = new Intent(context, ChromeLauncherActivity.class);
-        intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
-        intent.putExtra(TabOpenType.BRING_TAB_TO_FRONT_STRING, tabId);
-        return intent;
     }
 
     private static Intent logInvalidIntent(Intent intent, Exception e) {

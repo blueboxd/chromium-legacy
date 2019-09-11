@@ -558,10 +558,6 @@ bool DownloadHistory::NeedToUpdateDownloadHistory(
   }
 #endif
 
-  if (!base::FeatureList::IsEnabled(
-          download::features::kDownloadDBForNewDownloads)) {
-    return true;
-  }
   // When download DB is enabled, only downloads that are in terminal state
   // are added to or updated in history DB. Non-transient in-progress and
   // interrupted download will be stored in the in-progress DB.

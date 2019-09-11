@@ -184,6 +184,8 @@ std::unique_ptr<base::DictionaryValue> CreateManifest(
     bool has_background_script) {
   std::vector<std::string> permissions = hosts;
   permissions.push_back(kAPIPermission);
+  permissions.push_back("webRequest");
+  permissions.push_back("webRequestBlocking");
 
   std::vector<std::string> background_scripts;
   if (has_background_script)

@@ -135,6 +135,12 @@ class ContextSupport {
 
   virtual unsigned int GetTransferBufferFreeSize() const = 0;
 
+  // Determines if hardware decode acceleration is supported for JPEG images.
+  virtual bool IsJpegDecodeAccelerationSupported() const = 0;
+
+  // Determines if hardware decode acceleration is supported for WebP images.
+  virtual bool IsWebPDecodeAccelerationSupported() const = 0;
+
   // Determines if an encoded image can be decoded using hardware decode
   // acceleration. If this method returns true, then the client can be confident
   // that a call to RasterInterface::ScheduleImageDecode() will succeed.

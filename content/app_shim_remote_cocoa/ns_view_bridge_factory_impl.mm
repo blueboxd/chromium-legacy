@@ -17,6 +17,8 @@
 #include "content/common/render_widget_host_ns_view.mojom.h"
 #include "content/common/web_contents_ns_view_bridge.mojom.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/cocoa/remote_accessibility_api.h"
@@ -30,20 +32,20 @@ class RenderWidgetHostNSViewBridgeOwner
     : public RenderWidgetHostNSViewHostHelper {
  public:
   explicit RenderWidgetHostNSViewBridgeOwner(
-      mojom::RenderWidgetHostNSViewHostAssociatedPtr client,
+      mojo::PendingAssociatedRemote<mojom::RenderWidgetHostNSViewHost> client,
       mojo::PendingAssociatedReceiver<mojom::RenderWidgetHostNSView>
           bridge_receiver)
       : host_(std::move(client)) {
     bridge_ = std::make_unique<remote_cocoa::RenderWidgetHostNSViewBridge>(
         host_.get(), this);
     bridge_->BindReceiver(std::move(bridge_receiver));
-    host_.set_connection_error_handler(
-        base::BindOnce(&RenderWidgetHostNSViewBridgeOwner::OnConnectionError,
+    host_.set_disconnect_handler(
+        base::BindOnce(&RenderWidgetHostNSViewBridgeOwner::OnMojoDisconnect,
                        base::Unretained(this)));
   }
 
  private:
-  void OnConnectionError() { delete this; }
+  void OnMojoDisconnect() { delete this; }
 
   std::unique_ptr<content::InputEvent> TranslateEvent(
       const blink::WebInputEvent& web_event) {
@@ -120,7 +122,7 @@ class RenderWidgetHostNSViewBridgeOwner
     host_->SmartMagnify(TranslateEvent(web_event));
   }
 
-  mojom::RenderWidgetHostNSViewHostAssociatedPtr host_;
+  mojo::AssociatedRemote<mojom::RenderWidgetHostNSViewHost> host_;
   std::unique_ptr<RenderWidgetHostNSViewBridge> bridge_;
   base::scoped_nsobject<NSAccessibilityRemoteUIElement>
       remote_accessibility_element_;
@@ -136,9 +138,8 @@ void CreateRenderWidgetHostNSView(
   // and mojom::RenderWidgetHostNSView private interfaces.
   // TODO(ccameron): Remove the need for this cast.
   // https://crbug.com/888290
-  mojom::RenderWidgetHostNSViewHostAssociatedPtr host(
-      mojo::AssociatedInterfacePtrInfo<mojom::RenderWidgetHostNSViewHost>(
-          std::move(host_handle), 0));
+  mojo::PendingAssociatedRemote<mojom::RenderWidgetHostNSViewHost> host(
+      std::move(host_handle), 0);
 
   // Create a RenderWidgetHostNSViewBridgeOwner. The resulting object will be
   // destroyed when its underlying pipe is closed.

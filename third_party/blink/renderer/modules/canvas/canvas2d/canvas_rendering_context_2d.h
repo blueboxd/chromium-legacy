@@ -190,7 +190,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   void ValidateStateStack() const final;
 
-  void FinalizeFrame() override { usage_counters_.num_frames_since_reset++; }
+  void FinalizeFrame() override;
 
   bool IsPaintable() const final { return canvas()->GetCanvas2DLayerBridge(); }
 
@@ -201,10 +201,6 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   CanvasColorParams ColorParamsForTest() const { return ColorParams(); }
 
  protected:
-  void NeedsFinalizeFrame() override {
-    CanvasRenderingContext::NeedsFinalizeFrame();
-  }
-
   CanvasColorParams ColorParams() const override;
   bool WritePixels(const SkImageInfo& orig_info,
                    const void* pixels,

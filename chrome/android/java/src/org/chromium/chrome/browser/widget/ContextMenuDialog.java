@@ -19,6 +19,8 @@ import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.ScaleAnimation;
 
+import org.chromium.chrome.browser.ui.widget.AlwaysDismissedDialog;
+
 /**
  * ContextMenuDialog is a subclass of AlwaysDismissedDialog that ensures that the proper scale
  * animation is played upon calling {@link #show()} and {@link #dismiss()}.

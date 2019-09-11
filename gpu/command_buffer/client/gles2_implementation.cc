@@ -6718,6 +6718,16 @@ unsigned int GLES2Implementation::GetTransferBufferFreeSize() const {
   return 0;
 }
 
+bool GLES2Implementation::IsJpegDecodeAccelerationSupported() const {
+  NOTREACHED();
+  return false;
+}
+
+bool GLES2Implementation::IsWebPDecodeAccelerationSupported() const {
+  NOTREACHED();
+  return false;
+}
+
 bool GLES2Implementation::CanDecodeWithHardwareAcceleration(
     base::span<const uint8_t> encoded_data) const {
   NOTREACHED();

@@ -8,7 +8,6 @@
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/assistant/util/i18n_util.h"
-#include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"

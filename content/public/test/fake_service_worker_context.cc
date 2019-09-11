@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 #include "content/public/test/fake_service_worker_context.h"
-#include "content/public/browser/service_worker_context_observer.h"
+
+#include <utility>
 
 #include "base/callback.h"
 #include "base/logging.h"
+#include "content/public/browser/service_worker_context_observer.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 
 namespace content {
@@ -33,17 +35,19 @@ void FakeServiceWorkerContext::UnregisterServiceWorker(
     ResultCallback callback) {
   NOTREACHED();
 }
-bool FakeServiceWorkerContext::StartingExternalRequest(
+ServiceWorkerExternalRequestResult
+FakeServiceWorkerContext::StartingExternalRequest(
     int64_t service_worker_version_id,
     const std::string& request_uuid) {
   NOTREACHED();
-  return false;
+  return ServiceWorkerExternalRequestResult::kWorkerNotFound;
 }
-bool FakeServiceWorkerContext::FinishedExternalRequest(
+ServiceWorkerExternalRequestResult
+FakeServiceWorkerContext::FinishedExternalRequest(
     int64_t service_worker_version_id,
     const std::string& request_uuid) {
   NOTREACHED();
-  return false;
+  return ServiceWorkerExternalRequestResult::kWorkerNotFound;
 }
 void FakeServiceWorkerContext::CountExternalRequestsForTest(
     const GURL& url,

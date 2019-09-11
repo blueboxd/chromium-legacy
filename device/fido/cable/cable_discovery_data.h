@@ -32,7 +32,13 @@ using QRGeneratorKey = std::array<uint8_t, 32>;
 // TODO(hongjunchoi): Add discovery data required for MakeCredential request.
 // See: https://crbug.com/837088
 struct COMPONENT_EXPORT(DEVICE_FIDO) CableDiscoveryData {
-  CableDiscoveryData(uint8_t version,
+  enum class Version {
+    INVALID,
+    V1,
+    V2,
+  };
+
+  CableDiscoveryData(Version version,
                      const CableEidArray& client_eid,
                      const CableEidArray& authenticator_eid,
                      const CableSessionPreKeyArray& session_pre_key);
@@ -61,10 +67,17 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CableDiscoveryData {
       base::span<const uint8_t, 32> qr_generator_key,
       const int64_t tick);
 
-  uint8_t version;
-  CableEidArray client_eid;
-  CableEidArray authenticator_eid;
-  CableSessionPreKeyArray session_pre_key;
+  // version indicates whether v1 or v2 data is contained in this object.
+  // |INVALID| is not a valid version but is set as the default to catch any
+  // cases where the version hasn't been set explicitly.
+  Version version = Version::INVALID;
+
+  struct V1Data {
+    CableEidArray client_eid;
+    CableEidArray authenticator_eid;
+    CableSessionPreKeyArray session_pre_key;
+  };
+  base::Optional<V1Data> v1;
 };
 
 }  // namespace device

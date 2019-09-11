@@ -70,7 +70,7 @@ struct CookieStoreIOSTestTraits {
   static const bool has_exact_change_ordering = false;
   static const int creation_time_granularity_in_ms = 1000;
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
 INSTANTIATE_TYPED_TEST_SUITE_P(CookieStoreIOS,
@@ -197,7 +197,7 @@ class CookieStoreIOSTest : public PlatformTest {
   const GURL kTestCookieURLFoo;
   const GURL kTestCookieURLBarBar;
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   ScopedTestingCookieStoreIOSClient scoped_cookie_store_ios_client_;
   scoped_refptr<TestPersistentCookieStore> backend_;
   // |system_store_| will point to the NSHTTPSystemCookieStore object owned by

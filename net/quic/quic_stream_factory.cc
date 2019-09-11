@@ -91,11 +91,17 @@ enum InitialRttEstimateSource {
   INITIAL_RTT_SOURCE_MAX,
 };
 
-enum class EmptyStaleResultLocation {
-  kResolveHost = 0,
-  kMatchFreshResult = 1,
-  kNotEmpty = 2,
-  kMaxValue = kNotEmpty,
+// These values are logged to UMA. Entries should not be renumbered and
+// numeric values should never be reused. Please keep in sync with
+// "ConnectionStateAfterDNS" in src/tools/metrics/histograms/enums.xml.
+enum class ConnectionStateAfterDNS {
+  kDNSFailed = 0,
+  kIpPooled = 1,
+  kWaitingForCryptoDnsMatched = 2,
+  kWaitingForCryptoDnsNoMatch = 3,
+  kCryptoFinishedDnsMatch = 4,
+  kCryptoFinishedDnsNoMatch = 5,
+  kMaxValue = kCryptoFinishedDnsNoMatch,
 };
 
 // The maximum receive window sizes for QUIC sessions and streams.
@@ -159,13 +165,8 @@ void LogConnectionIpPooling(bool pooled) {
   UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.ConnectionIpPooled", pooled);
 }
 
-void LogEmptyStaleResult(EmptyStaleResultLocation location) {
-  UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.StaleHostResolveFailed", location);
-}
-
-void LogSessionAvailabilityWhenValidatingHost(bool available) {
-  UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.SessionAvailableWhenValidatingDNS",
-                        available);
+void LogRacingStatus(ConnectionStateAfterDNS status) {
+  UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.ConnectionStateAfterDNS", status);
 }
 
 void SetInitialRttEstimate(base::TimeDelta estimate,
@@ -427,29 +428,19 @@ class QuicStreamFactory::Job {
     if (session_) {
       QuicChromiumClientSession* session = session_;
       session_ = nullptr;
-      if (session) {
-        session->CloseSessionOnErrorLater(
-            ERR_ABORTED, quic::QUIC_STALE_CONNECTION_CANCELLED,
-            quic::ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
-      }
+      session->CloseSessionOnErrorLater(
+          ERR_ABORTED, quic::QUIC_STALE_CONNECTION_CANCELLED,
+          quic::ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     }
   }
 
   bool DoesPeerAddressMatchWithFreshAddressList() {
-    LogSessionAvailabilityWhenValidatingHost(session_ != nullptr);
-
     if (!session_)
       return false;
 
     std::vector<net::IPEndPoint> endpoints =
         fresh_resolve_host_request_->GetAddressResults().value().endpoints();
 
-    if (!resolve_host_request_->GetAddressResults()) {
-      LogEmptyStaleResult(EmptyStaleResultLocation::kMatchFreshResult);
-      return false;
-    }
-
-    LogEmptyStaleResult(EmptyStaleResultLocation::kNotEmpty);
     IPEndPoint stale_address =
         resolve_host_request_->GetAddressResults().value().front();
 
@@ -628,6 +619,7 @@ void QuicStreamFactory::Job::OnResolveHostComplete(int rv) {
     DCHECK(race_stale_dns_on_connection_);
     dns_resolution_end_time_ = base::TimeTicks::Now();
     if (rv != OK) {
+      LogRacingStatus(ConnectionStateAfterDNS::kDNSFailed);
       CloseStaleHostConnection();
       resolve_host_request_ = std::move(fresh_resolve_host_request_);
       io_state_ = STATE_RESOLVE_HOST_COMPLETE;
@@ -636,6 +628,7 @@ void QuicStreamFactory::Job::OnResolveHostComplete(int rv) {
                    fresh_resolve_host_request_->GetAddressResults().value())) {
       // Session with resolved IP has already existed, so close racing
       // connection, run callback, and return.
+      LogRacingStatus(ConnectionStateAfterDNS::kIpPooled);
       LogConnectionIpPooling(true);
       CloseStaleHostConnection();
       if (!callback_.is_null())
@@ -645,10 +638,12 @@ void QuicStreamFactory::Job::OnResolveHostComplete(int rv) {
       // Case where host resolution returns successfully, but stale connection
       // hasn't finished yet.
       if (DoesPeerAddressMatchWithFreshAddressList()) {
+        LogRacingStatus(ConnectionStateAfterDNS::kWaitingForCryptoDnsMatched);
         LogStaleAndFreshHostMatched(true);
         fresh_resolve_host_request_ = nullptr;
         return;
       }
+      LogRacingStatus(ConnectionStateAfterDNS::kWaitingForCryptoDnsNoMatch);
       LogStaleAndFreshHostMatched(false);
       CloseStaleHostConnection();
       resolve_host_request_ = std::move(fresh_resolve_host_request_);
@@ -751,7 +746,6 @@ int QuicStreamFactory::Job::DoResolveHost() {
   // Check to make sure stale host request does produce valid results.
   if (!resolve_host_request_->GetAddressResults()) {
     LogStaleHostRacing(false);
-    LogEmptyStaleResult(EmptyStaleResultLocation::kResolveHost);
     resolve_host_request_ = std::move(fresh_resolve_host_request_);
     return fresh_rv;
   }
@@ -850,6 +844,7 @@ int QuicStreamFactory::Job::DoConnectComplete(int rv) {
 // have finished successfully.
 int QuicStreamFactory::Job::DoValidateHost() {
   if (DoesPeerAddressMatchWithFreshAddressList()) {
+    LogRacingStatus(ConnectionStateAfterDNS::kCryptoFinishedDnsMatch);
     LogStaleAndFreshHostMatched(true);
     fresh_resolve_host_request_ = nullptr;
     host_resolution_finished_ = true;
@@ -857,6 +852,7 @@ int QuicStreamFactory::Job::DoValidateHost() {
     return OK;
   }
 
+  LogRacingStatus(ConnectionStateAfterDNS::kCryptoFinishedDnsNoMatch);
   LogStaleAndFreshHostMatched(false);
   resolve_host_request_ = std::move(fresh_resolve_host_request_);
   CloseStaleHostConnection();
@@ -1415,7 +1411,7 @@ int QuicStreamFactory::Create(const QuicSessionKey& session_key,
   QuicSessionAliasKey key(destination, session_key);
   std::unique_ptr<Job> job =
       std::make_unique<Job>(this, quic_version, host_resolver_, key,
-                            WasQuicRecentlyBroken(session_key.server_id()),
+                            WasQuicRecentlyBroken(session_key),
                             params_.retry_on_alternate_network_before_handshake,
                             params_.race_stale_dns_on_connection, priority,
                             cert_verify_flags, net_log);
@@ -1613,7 +1609,7 @@ std::unique_ptr<base::Value> QuicStreamFactory::QuicStreamFactoryInfoToValue()
         hosts.insert(HostPortPair(alias_it->server_id().host(),
                                   alias_it->server_id().port()));
       }
-      list->GetList().push_back(session->GetInfoAsValue(hosts));
+      list->Append(session->GetInfoAsValue(hosts));
     }
   }
   return std::move(list);
@@ -2028,11 +2024,12 @@ int64_t QuicStreamFactory::GetServerNetworkStatsSmoothedRttInMicroseconds(
 }
 
 bool QuicStreamFactory::WasQuicRecentlyBroken(
-    const quic::QuicServerId& server_id) const {
+    const QuicSessionKey& session_key) const {
   const AlternativeService alternative_service(
-      kProtoQUIC, HostPortPair(server_id.host(), server_id.port()));
+      kProtoQUIC, HostPortPair(session_key.server_id().host(),
+                               session_key.server_id().port()));
   return http_server_properties_->WasAlternativeServiceRecentlyBroken(
-      alternative_service);
+      alternative_service, session_key.network_isolation_key());
 }
 
 bool QuicStreamFactory::CryptoConfigCacheIsEmpty(
@@ -2103,11 +2100,16 @@ void QuicStreamFactory::ProcessGoingAwaySession(
 
   url::SchemeHostPort server("https", server_id.host(), server_id.port());
   // Do nothing if QUIC is currently marked as broken.
-  if (http_server_properties_->IsAlternativeServiceBroken(alternative_service))
+  if (http_server_properties_->IsAlternativeServiceBroken(
+          alternative_service,
+          session->quic_session_key().network_isolation_key())) {
     return;
+  }
 
   if (session->IsCryptoHandshakeConfirmed()) {
-    http_server_properties_->ConfirmAlternativeService(alternative_service);
+    http_server_properties_->ConfirmAlternativeService(
+        alternative_service,
+        session->quic_session_key().network_isolation_key());
     ServerNetworkStats network_stats;
     network_stats.srtt = base::TimeDelta::FromMicroseconds(stats.srtt_us);
     network_stats.bandwidth_estimate = stats.estimated_bandwidth;
@@ -2138,7 +2140,7 @@ void QuicStreamFactory::ProcessGoingAwaySession(
   // avoid not using QUIC when we otherwise could, we mark it as recently
   // broken, which means that 0-RTT will be disabled but we'll still race.
   http_server_properties_->MarkAlternativeServiceRecentlyBroken(
-      alternative_service);
+      alternative_service, session->quic_session_key().network_isolation_key());
 }
 
 }  // namespace net

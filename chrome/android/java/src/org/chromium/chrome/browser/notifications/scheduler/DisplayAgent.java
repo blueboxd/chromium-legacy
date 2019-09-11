@@ -13,6 +13,7 @@ import android.graphics.Bitmap;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
@@ -168,18 +169,18 @@ public class DisplayAgent {
             case NotificationIntentInterceptor.IntentType.UNKNOWN:
                 break;
             case NotificationIntentInterceptor.IntentType.CONTENT_INTENT:
-                nativeOnUserAction(Profile.getLastUsedProfile(), clientType, UserActionType.CLICK,
-                        guid, ActionButtonType.UNKNOWN_ACTION, null);
+                DisplayAgentJni.get().onUserAction(Profile.getLastUsedProfile(), clientType,
+                        UserActionType.CLICK, guid, ActionButtonType.UNKNOWN_ACTION, null);
                 break;
             case NotificationIntentInterceptor.IntentType.DELETE_INTENT:
-                nativeOnUserAction(Profile.getLastUsedProfile(), clientType, UserActionType.DISMISS,
-                        guid, ActionButtonType.UNKNOWN_ACTION, null);
+                DisplayAgentJni.get().onUserAction(Profile.getLastUsedProfile(), clientType,
+                        UserActionType.DISMISS, guid, ActionButtonType.UNKNOWN_ACTION, null);
                 break;
             case NotificationIntentInterceptor.IntentType.ACTION_INTENT:
                 int actionButtonType = IntentUtils.safeGetIntExtra(
                         intent, EXTRA_ACTION_BUTTON_TYPE, ActionButtonType.UNKNOWN_ACTION);
                 String buttonId = IntentUtils.safeGetStringExtra(intent, EXTRA_ACTION_BUTTON_ID);
-                nativeOnUserAction(Profile.getLastUsedProfile(), clientType,
+                DisplayAgentJni.get().onUserAction(Profile.getLastUsedProfile(), clientType,
                         UserActionType.BUTTON_CLICK, guid, actionButtonType, buttonId);
                 break;
         }
@@ -283,7 +284,10 @@ public class DisplayAgent {
 
     private DisplayAgent() {}
 
-    private static native void nativeOnUserAction(Profile profile,
-            @SchedulerClientType int clientType, @UserActionType int actionType, String guid,
-            @ActionButtonType int type, String buttonId);
+    @NativeMethods
+    interface Natives {
+        void onUserAction(Profile profile, @SchedulerClientType int clientType,
+                @UserActionType int actionType, String guid, @ActionButtonType int type,
+                String buttonId);
+    }
 }

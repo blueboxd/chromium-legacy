@@ -19,7 +19,7 @@ StoreMetricsReporter::StoreMetricsReporter(
     const signin::IdentityManager* identity_manager,
     PrefService* prefs) {
   // May be null in tests.
-  if (PasswordStore* store = client->GetPasswordStore()) {
+  if (PasswordStore* store = client->GetProfilePasswordStore()) {
     store->ReportMetrics(
         password_manager::sync_util::GetSyncUsernameIfSyncingPasswords(
             sync_service, identity_manager),

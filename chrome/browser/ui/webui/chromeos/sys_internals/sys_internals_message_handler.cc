@@ -115,7 +115,7 @@ void SetCpusValue(const std::vector<CpuInfo>& infos, base::Value* result) {
     cpu_result.SetKey("kernel", base::Value(cpu.kernel));
     cpu_result.SetKey("idle", base::Value(cpu.idle));
     cpu_result.SetKey("total", base::Value(cpu.total));
-    cpu_results.GetList().push_back(std::move(cpu_result));
+    cpu_results.Append(std::move(cpu_result));
   }
   result->SetKey("cpus", std::move(cpu_results));
 }

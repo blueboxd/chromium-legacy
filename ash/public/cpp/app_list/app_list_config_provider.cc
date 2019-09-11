@@ -16,8 +16,7 @@ namespace app_list {
 namespace {
 
 // The minimum scale that can be used when scaling down the app list view UI.
-// Selected so the grid tile height does not get smaller than 80 dip.
-constexpr float kMinimumConfigScale = 80. / 120.;
+constexpr float kMinimumConfigScale = 48. / 120.;
 
 // Determines the app list config that should be used for a display work area
 // size. It should not be used if ScalableAppList feature is disabled.
@@ -125,7 +124,9 @@ std::unique_ptr<AppListConfig> AppListConfigProvider::CreateForAppListWidget(
   if (available_grid_size.height() < min_grid_height) {
     scale_y = std::max(
         kMinimumConfigScale,
-        static_cast<float>(available_grid_size.height()) / min_grid_height);
+        static_cast<float>(available_grid_size.height() -
+                           2 * base_config.grid_fadeout_zone_height()) /
+            min_grid_height);
     // Adjust scale to reflect the fact the app list item title height does not
     // get scaled. The adjustment is derived from:
     // s * x + c = S * (x + c) and t = x + c
@@ -153,7 +154,8 @@ std::unique_ptr<AppListConfig> AppListConfigProvider::CreateForAppListWidget(
   }
 
   return std::make_unique<AppListConfig>(base_config, scale_x, scale_y,
-                                         inner_tile_scale_y);
+                                         inner_tile_scale_y,
+                                         scale_y == kMinimumConfigScale);
 }
 
 void AppListConfigProvider::ResetForTesting() {

@@ -28,7 +28,6 @@ import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarTabController;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.ToolbarProgressBar;
 
 /**
@@ -63,8 +62,7 @@ public class TopToolbarCoordinator implements Toolbar {
             new HomepageManager.HomepageStateListener() {
                 @Override
                 public void onHomepageStateUpdated() {
-                    mToolbarLayout.onHomeButtonUpdate(HomepageManager.isHomepageEnabled()
-                            || FeatureUtilities.isNewTabPageButtonEnabled());
+                    mToolbarLayout.onHomeButtonUpdate(HomepageManager.isHomepageEnabled());
                 }
             };
 

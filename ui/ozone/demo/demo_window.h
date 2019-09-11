@@ -45,6 +45,7 @@ class DemoWindow : public PlatformWindowDelegate {
   void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override;
   void OnAcceleratedWidgetDestroyed() override;
   void OnActivationChanged(bool active) override;
+  void OnMouseEnter() override;
 
  private:
   // Since we pretend to have a GPU process, we should also pretend to

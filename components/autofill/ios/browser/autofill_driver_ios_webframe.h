@@ -7,7 +7,7 @@
 
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #include "ios/web/public/js_messaging/web_frame_user_data.h"
-#include "ios/web/public/web_state/web_state_user_data.h"
+#import "ios/web/public/web_state_user_data.h"
 
 namespace web {
 class WebFrame;

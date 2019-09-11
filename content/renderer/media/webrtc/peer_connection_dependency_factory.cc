@@ -23,7 +23,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/webrtc_ip_handling_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -31,6 +30,7 @@
 #include "content/renderer/p2p/ipc_socket_factory.h"
 #include "content/renderer/p2p/mdns_responder_adapter.h"
 #include "content/renderer/p2p/port_allocator.h"
+#include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -120,9 +120,10 @@ class ProxyAsyncResolverFactory final : public webrtc::AsyncResolverFactory {
 }  // namespace
 
 PeerConnectionDependencyFactory::PeerConnectionDependencyFactory(
-    P2PSocketDispatcher* p2p_socket_dispatcher)
+    bool create_p2p_socket_dispatcher)
     : network_manager_(nullptr),
-      p2p_socket_dispatcher_(p2p_socket_dispatcher),
+      p2p_socket_dispatcher_(
+          create_p2p_socket_dispatcher ? new P2PSocketDispatcher() : nullptr),
       signaling_thread_(nullptr),
       worker_thread_(nullptr),
       chrome_signaling_thread_("Chrome_libJingle_Signaling"),
@@ -206,7 +207,8 @@ void PeerConnectionDependencyFactory::CreatePeerConnectionFactory() {
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   std::unique_ptr<MdnsResponderAdapter> mdns_responder;
 #if BUILDFLAG(ENABLE_MDNS)
-  if (base::FeatureList::IsEnabled(features::kWebRtcHideLocalIpsWithMdns)) {
+  if (base::FeatureList::IsEnabled(
+          blink::features::kWebRtcHideLocalIpsWithMdns)) {
     // Note that MdnsResponderAdapter is created on the main thread to have
     // access to the connector to the service manager.
     mdns_responder = std::make_unique<MdnsResponderAdapter>();
@@ -304,7 +306,7 @@ void PeerConnectionDependencyFactory::InitializeSignalingThread(
       blink::CreateWebrtcVideoDecoderFactory(gpu_factories);
 
   // Enable Multiplex codec in SDP optionally.
-  if (base::FeatureList::IsEnabled(features::kWebRtcMultiplexCodec)) {
+  if (base::FeatureList::IsEnabled(blink::features::kWebRtcMultiplexCodec)) {
     webrtc_encoder_factory = std::make_unique<webrtc::MultiplexEncoderFactory>(
         std::move(webrtc_encoder_factory));
     webrtc_decoder_factory = std::make_unique<webrtc::MultiplexDecoderFactory>(
@@ -369,7 +371,7 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
       .get();
 }
 
-std::unique_ptr<P2PPortAllocator>
+std::unique_ptr<cricket::PortAllocator>
 PeerConnectionDependencyFactory::CreatePortAllocator(
     blink::WebLocalFrame* web_frame) {
   DCHECK(web_frame);

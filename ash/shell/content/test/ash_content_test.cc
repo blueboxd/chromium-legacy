@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/shell.h"
 #include "ash/shell/content/client/shell_browser_main_parts.h"
 #include "ash/shell/content/embedded_browser.h"
@@ -146,8 +147,8 @@ void AshContentTest::SetUpOnMainThread() {
         GetUMAHistogramNames());
   }
   gfx::Size display_size = ash::Shell::GetPrimaryRootWindow()->bounds().size();
-  test_window_size_.set_height((display_size.height() - ash::kShelfSize) *
-                               0.95f);
+  test_window_size_.set_height(
+      (display_size.height() - ash::ShelfConfig::Get()->shelf_size()) * 0.95f);
   test_window_size_.set_width(display_size.width() * 0.7f);
 }
 

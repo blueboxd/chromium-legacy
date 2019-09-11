@@ -491,7 +491,7 @@ void StorageHandler::UpdateExternalStorages() {
     base::Value device(base::Value::Type::DICTIONARY);
     device.SetKey("uuid", base::Value(disk->fs_uuid()));
     device.SetKey("label", base::Value(disk->device_label()));
-    devices.GetList().push_back(std::move(device));
+    devices.Append(std::move(device));
   }
   FireWebUIListener("onExternalStoragesUpdated", devices);
 }

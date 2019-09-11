@@ -1203,11 +1203,17 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, UpdatePackedExtension) {
   // a callback that forces itself to reload.
   constexpr char kScript1[] =
       R"(
+         addEventListener('activate', event => {
+           // TODO(crbug.com/999027, crbug.com/984522): Delaying sending
+           // 'ready1' until activation seems to reduce the flakiness described
+           // in the bugs. It'd be better to fix the underlying bugs.
+           chrome.test.sendMessage('ready1');
+         });
+
          chrome.runtime.onUpdateAvailable.addListener(function(details) {
            chrome.test.assertEq('%s', details.version);
            chrome.runtime.reload();
          });
-         chrome.test.sendMessage('ready1');
         )";
 
   std::string id;
@@ -1289,11 +1295,29 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, UpdateUnpackedExtension) {
          })";
   constexpr char kScript[] =
       R"(
-         chrome.runtime.onInstalled.addListener(function(details) {
-           chrome.test.assertEq('%s', details.reason);
-           chrome.test.sendMessage('onInstalled');
+         let activated;
+         let installed;
+
+         addEventListener('activate', event => {
+           activated = true;
+           NotifyIfDone();
          });
-         chrome.test.sendMessage('%s');
+
+         chrome.runtime.onInstalled.addListener(function(details) {
+           installed = true;
+           chrome.test.assertEq('%s', details.reason);
+           NotifyIfDone();
+         });
+
+         // TODO(crbug.com/999027, crbug.com/984522): Delaying notification
+         // until activation seems to reduce the flakiness described in the
+         // bugs. It'd be better to fix the underlying bugs.
+         function NotifyIfDone() {
+           if (!activated || !installed)
+             return;
+           chrome.test.sendMessage('%s');
+           chrome.test.sendMessage('onInstalled');
+         }
         )";
 
   std::string id;

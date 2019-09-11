@@ -91,31 +91,31 @@ const char* LocationToString(extensions::Manifest::Location loc) {
 base::Value CreationFlagsToList(int creation_flags) {
   base::Value flags_value(base::Value::Type::LIST);
   if (creation_flags & extensions::Extension::NO_FLAGS)
-    flags_value.GetList().emplace_back("NO_FLAGS");
+    flags_value.Append("NO_FLAGS");
   if (creation_flags & extensions::Extension::REQUIRE_KEY)
-    flags_value.GetList().emplace_back("REQUIRE_KEY");
+    flags_value.Append("REQUIRE_KEY");
   if (creation_flags & extensions::Extension::REQUIRE_MODERN_MANIFEST_VERSION)
-    flags_value.GetList().emplace_back("REQUIRE_MODERN_MANIFEST_VERSION");
+    flags_value.Append("REQUIRE_MODERN_MANIFEST_VERSION");
   if (creation_flags & extensions::Extension::ALLOW_FILE_ACCESS)
-    flags_value.GetList().emplace_back("ALLOW_FILE_ACCESS");
+    flags_value.Append("ALLOW_FILE_ACCESS");
   if (creation_flags & extensions::Extension::FROM_WEBSTORE)
-    flags_value.GetList().emplace_back("FROM_WEBSTORE");
+    flags_value.Append("FROM_WEBSTORE");
   if (creation_flags & extensions::Extension::FROM_BOOKMARK)
-    flags_value.GetList().emplace_back("FROM_BOOKMARK");
+    flags_value.Append("FROM_BOOKMARK");
   if (creation_flags & extensions::Extension::FOLLOW_SYMLINKS_ANYWHERE)
-    flags_value.GetList().emplace_back("FOLLOW_SYMLINKS_ANYWHERE");
+    flags_value.Append("FOLLOW_SYMLINKS_ANYWHERE");
   if (creation_flags & extensions::Extension::ERROR_ON_PRIVATE_KEY)
-    flags_value.GetList().emplace_back("ERROR_ON_PRIVATE_KEY");
+    flags_value.Append("ERROR_ON_PRIVATE_KEY");
   if (creation_flags & extensions::Extension::WAS_INSTALLED_BY_DEFAULT)
-    flags_value.GetList().emplace_back("WAS_INSTALLED_BY_DEFAULT");
+    flags_value.Append("WAS_INSTALLED_BY_DEFAULT");
   if (creation_flags & extensions::Extension::REQUIRE_PERMISSIONS_CONSENT)
-    flags_value.GetList().emplace_back("REQUIRE_PERMISSIONS_CONSENT");
+    flags_value.Append("REQUIRE_PERMISSIONS_CONSENT");
   if (creation_flags & extensions::Extension::IS_EPHEMERAL)
-    flags_value.GetList().emplace_back("IS_EPHEMERAL");
+    flags_value.Append("IS_EPHEMERAL");
   if (creation_flags & extensions::Extension::WAS_INSTALLED_BY_OEM)
-    flags_value.GetList().emplace_back("WAS_INSTALLED_BY_OEM");
+    flags_value.Append("WAS_INSTALLED_BY_OEM");
   if (creation_flags & extensions::Extension::MAY_BE_UNTRUSTED)
-    flags_value.GetList().emplace_back("MAY_BE_UNTRUSTED");
+    flags_value.Append("MAY_BE_UNTRUSTED");
   return flags_value;
 }
 
@@ -286,7 +286,7 @@ base::Value FormatKeepaliveData(extensions::ProcessManager* process_manager,
     activities_entry.SetKey(
         kTypeKey, base::Value(extensions::Activity::ToString(activity.first)));
     activities_entry.SetKey(kExtraDataKey, base::Value(activity.second));
-    activities_data.GetList().push_back(std::move(activities_entry));
+    activities_data.Append(std::move(activities_entry));
   }
   keepalive_data.SetKey(kActivitesKey, std::move(activities_data));
   return keepalive_data;
@@ -304,9 +304,9 @@ base::Value FormatDetailedPermissionSet(const T& permissions) {
       base::Value tmp(base::Value::Type::DICTIONARY);
       tmp.SetKey(permission->name(),
                  base::Value::FromUniquePtrValue(std::move(detail)));
-      value_list.GetList().push_back(std::move(tmp));
+      value_list.Append(std::move(tmp));
     } else {
-      value_list.GetList().push_back(base::Value(permission->name()));
+      value_list.Append(base::Value(permission->name()));
     }
   }
   return value_list;
@@ -392,7 +392,7 @@ void AddEventListenerData(extensions::EventRouter* event_router,
       if (filter != nullptr) {
         listener_data.SetKey(kFilterKey, filter->Clone());
       }
-      listeners_list.GetList().push_back(std::move(listener_data));
+      listeners_list.Append(std::move(listener_data));
     }
   }
 
@@ -468,7 +468,7 @@ std::string ExtensionsInternalsSource::WriteToString() const {
     extension_data.SetKey(kInternalsVersionKey,
                           base::Value(extension->GetVersionForDisplay()));
     extension_data.SetKey(kPermissionsKey, FormatPermissionsData(*extension));
-    data.GetList().push_back(std::move(extension_data));
+    data.Append(std::move(extension_data));
   }
 
   // Aggregate and add the data for the registered event listeners.

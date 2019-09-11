@@ -76,13 +76,21 @@ class FrameSequenceTrackerTest : public testing::Test {
     return ++frame_token;
   }
 
+  // Check whether a type of tracker exists in |frame_trackers_| or not.
+  bool TrackerExists(FrameSequenceTrackerType type) const {
+    return collection_.frame_trackers_.contains(type);
+  }
+
   void TestNotifyFramePresented() {
     collection_.StartSequence(FrameSequenceTrackerType::kCompositorAnimation);
     collection_.StartSequence(FrameSequenceTrackerType::kMainThreadAnimation);
-    EXPECT_EQ(collection_.frame_trackers_.size(), 3u);
+    // The kTouchScroll tracker is created in the test constructor, and the
+    // kUniversal tracker is created in the FrameSequenceTrackerCollection
+    // constructor.
+    EXPECT_EQ(collection_.frame_trackers_.size(), 4u);
 
     collection_.StopSequence(kCompositorAnimation);
-    EXPECT_EQ(collection_.frame_trackers_.size(), 2u);
+    EXPECT_EQ(collection_.frame_trackers_.size(), 3u);
     EXPECT_TRUE(collection_.frame_trackers_.contains(
         FrameSequenceTrackerType::kMainThreadAnimation));
     EXPECT_TRUE(collection_.frame_trackers_.contains(
@@ -140,6 +148,17 @@ TEST_F(FrameSequenceTrackerTest, SourceIdChangeDuringSequence) {
   // (from source_1);
   collection_.NotifySubmitFrame(NextFrameToken(), /*has_missing_content=*/false,
                                 viz::BeginFrameAck(args_2, true), args_1);
+}
+
+TEST_F(FrameSequenceTrackerTest, UniversalTrackerCreation) {
+  // The universal tracker should have been created when the |collection_| is
+  // created.
+  EXPECT_TRUE(TrackerExists(FrameSequenceTrackerType::kUniversal));
+}
+
+TEST_F(FrameSequenceTrackerTest, UniversalTrackerExistsAfterClearAll) {
+  collection_.ClearAll();
+  EXPECT_TRUE(TrackerExists(FrameSequenceTrackerType::kUniversal));
 }
 
 TEST_F(FrameSequenceTrackerTest, TestNotifyFramePresented) {

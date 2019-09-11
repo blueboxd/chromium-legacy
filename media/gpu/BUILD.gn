@@ -136,9 +136,7 @@ component("gpu") {
     ]
     libs += [ "android" ]
     deps += [
-      "//gpu/command_buffer/service:shared_image_video",
       "//gpu/ipc/common:android_image_reader_utils",
-      "//gpu/ipc/common:android_texture_owner",
 
       # TODO(crbug.com/789435): This can be removed once CdmManager is removed.
       "//gpu/ipc/common:ipc_common_sources",
@@ -425,7 +423,7 @@ if (is_win || is_android || use_v4l2_codec || use_vaapi) {
     if (is_android) {
       deps += [
         ":android_video_decode_accelerator_unittests",
-        "//gpu/ipc/common:android_texture_owner_unittests",
+        "//gpu/command_buffer/service:android_texture_owner_unittests",
         "//media/base/android:media_java",
         "//media/test:run_all_unittests",
         "//ui/android:ui_java",
@@ -484,7 +482,7 @@ source_set("android_video_decode_accelerator_unittests") {
       ":gpu",
       "//base/test:test_support",
       "//gpu:test_support",
-      "//gpu/ipc/common:android_texture_owner_test_support",
+      "//gpu/command_buffer/service:android_texture_owner_test_support",
       "//media",
       "//media:test_support",
       "//testing/gmock",

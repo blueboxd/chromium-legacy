@@ -48,7 +48,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
-import org.chromium.chrome.browser.widget.VerticallyFixedEditText;
+import org.chromium.chrome.browser.ui.widget.text.VerticallyFixedEditText;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.lang.annotation.Retention;

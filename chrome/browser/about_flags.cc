@@ -1308,8 +1308,19 @@ const FeatureEntry::FeatureVariation kQuietNotificationPromptsVariations[] = {
      1, nullptr},
     {"(mini-infobars)", &kQuietNotificationPromptsMiniInfobars, 1, nullptr},
 };
-
-#endif  // OS_ANDROID
+#else   // OS_ANDROID
+const FeatureEntry::FeatureParam kQuietNotificationPromptsStaticIcons = {
+    kQuietNotificationPromptsUIFlavourParameterName,
+    kQuietNotificationPromptsStaticIcon};
+const FeatureEntry::FeatureParam kQuietNotificationPromptsAnimatedIcons = {
+    kQuietNotificationPromptsUIFlavourParameterName,
+    kQuietNotificationPromptsAnimatedIcon};
+// The "default" option that only shows "Enabled" will be the static icon.
+const FeatureEntry::FeatureVariation kQuietNotificationPromptsVariations[] = {
+    {"(static-icon)", &kQuietNotificationPromptsStaticIcons, 1, nullptr},
+    {"(animated-icon)", &kQuietNotificationPromptsAnimatedIcons, 1, nullptr},
+};
+#endif  // !OS_ANDROID
 
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
@@ -1402,7 +1413,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-webrtc-hide-local-ips-with-mdns",
      flag_descriptions::kWebrtcHideLocalIpsWithMdnsName,
      flag_descriptions::kWebrtcHideLocalIpsWithMdnsDecription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kWebRtcHideLocalIpsWithMdns)},
+     FEATURE_VALUE_TYPE(blink::features::kWebRtcHideLocalIpsWithMdns)},
 #if defined(OS_ANDROID)
     {"clear-old-browsing-data", flag_descriptions::kClearOldBrowsingDataName,
      flag_descriptions::kClearOldBrowsingDataDescription, kOsAndroid,
@@ -1912,15 +1923,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-chrome-duet-labels", flag_descriptions::kChromeDuetLabelsName,
      flag_descriptions::kChromeDuetLabelsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kChromeDuetLabeled)},
-    {"force-enable-home-page-button", flag_descriptions::kHomePageButtonName,
-     flag_descriptions::kHomePageButtonDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kHomePageButtonForceEnabled)},
-    {"enable-ntp-button", flag_descriptions::kNtpButtonName,
-     flag_descriptions::kNtpButtonDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kNTPButton)},
-    {"enable-homepage-tile", flag_descriptions::kHomepageTileName,
-     flag_descriptions::kHomepageTileDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kHomepageTile)},
     {"enable-bookmark-reorder", flag_descriptions::kReorderBookmarksName,
      flag_descriptions::kReorderBookmarksDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kReorderBookmarks)},
@@ -3667,15 +3669,15 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDrawVerticallyEdgeToEdgeName,
      flag_descriptions::kDrawVerticallyEdgeToEdgeDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kDrawVerticallyEdgeToEdge)},
-    {"translate-android-manual-trigger",
-     flag_descriptions::kTranslateAndroidManualTriggerName,
-     flag_descriptions::kTranslateAndroidManualTriggerDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(translate::kTranslateMobileManualTrigger)},
 #endif
 #if defined(OS_ANDROID)
     {"enable-ephemeral-tab", flag_descriptions::kEphemeralTabName,
      flag_descriptions::kEphemeralTabDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kEphemeralTab)},
+    {"enable-ephemeral-tab-bottom-sheet",
+     flag_descriptions::kEphemeralTabUsingBottomSheetName,
+     flag_descriptions::kEphemeralTabUsingBottomSheetDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kEphemeralTabUsingBottomSheet)},
     {"overlay-new-layout", flag_descriptions::kOverlayNewLayoutName,
      flag_descriptions::kOverlayNewLayoutDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kOverlayNewLayout)},
@@ -4465,14 +4467,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPasswordLeakDetectionDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kLeakDetection)},
 
-#if defined(OS_ANDROID)
     {"quiet-notification-prompts",
      flag_descriptions::kQuietNotificationPromptsName,
-     flag_descriptions::kQuietNotificationPromptsDescription, kOsAndroid,
+     flag_descriptions::kQuietNotificationPromptsDescription, kOsAll,
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kQuietNotificationPrompts,
                                     kQuietNotificationPromptsVariations,
                                     "QuietNotificationPrompts")},
 
+#if defined(OS_ANDROID)
     {"context-menu-search-with-google-lens",
      flag_descriptions::kContextMenuSearchWithGoogleLensName,
      flag_descriptions::kContextMenuSearchWithGoogleLensDescription, kOsAndroid,
@@ -4518,6 +4520,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSyncClipboardServiceDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSyncClipboardServiceFeature)},
 #endif  // OS_WIN || OS_MACOSX || OS_LINUX
+
+#if !defined(OS_ANDROID)
+    {"accessibility-internals-page-improvements",
+     flag_descriptions::kAccessibilityInternalsPageImprovementsName,
+     flag_descriptions::kAccessibilityInternalsPageImprovementsDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kAccessibilityInternalsPageImprovements)},
+#endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

@@ -124,8 +124,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   friend class AssistantServiceTest;
 
   // mojom::AssistantService overrides
-  void Init(mojom::ClientPtr client,
-            mojom::DeviceActionsPtr device_actions,
+  void Init(mojo::PendingRemote<mojom::Client> client,
+            mojo::PendingRemote<mojom::DeviceActions> device_actions,
             bool is_test) override;
   void BindAssistant(mojo::PendingReceiver<mojom::Assistant> receiver) override;
   void BindSettingsManager(
@@ -176,8 +176,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   mojo::ReceiverSet<mojom::Assistant> assistant_receivers_;
 
   bool observing_ash_session_ = false;
-  mojom::ClientPtr client_;
-  mojom::DeviceActionsPtr device_actions_;
+  mojo::Remote<mojom::Client> client_;
+  mojo::Remote<mojom::DeviceActions> device_actions_;
 
   identity::mojom::IdentityAccessorPtr identity_accessor_;
 

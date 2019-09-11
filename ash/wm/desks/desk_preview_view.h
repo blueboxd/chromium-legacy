@@ -15,6 +15,7 @@ class LayerTreeOwner;
 
 namespace ash {
 
+class DesksBarItemBorder;
 class DeskMiniView;
 class WallpaperBaseView;
 
@@ -49,17 +50,12 @@ class WallpaperBaseView;
 //        |      without the dimming and blur that overview mode adds.
 //        |
 //        |
-//     `background_view_`'s layer: A solid color layer to paint a background
-//      behind everything else, simulating a colored border around the view.
+//     `shadow_layer_`: A layer that paints a shadow behind this view.
 //
-// `background_view_` has the same size as this view, while `wallpaper_preview_`
-// and `desk_mirrored_contents_view_` are inset by an amount equal to the border
-// size from all sides (See `kBorderSize`).
-//
-// Note that both |background_view_| and |wallpaper_preview_| paint to layers
-// with rounded corners. In order to use the fast rounded corners implementation
-// we must make them sibling layers, rather than one being a descendant of the
-// other. Otherwise, this will trigger a render surface.
+// Note that both |desk_mirrored_contents_view_| and |wallpaper_preview_| paint
+// to layers with rounded corners. In order to use the fast rounded corners
+// implementation we must make them sibling layers, rather than one being a
+// descendant of the other. Otherwise, this will trigger a render surface.
 class DeskPreviewView : public views::View {
  public:
   explicit DeskPreviewView(DeskMiniView* mini_view);
@@ -83,10 +79,6 @@ class DeskPreviewView : public views::View {
 
   DeskMiniView* const mini_view_;
 
-  // A view to paint a background color behind the |wallpaper_preview_| to
-  // simulate a border. Owned by the views hierarchy.
-  views::View* background_view_;
-
   // A view that paints the wallpaper in the mini_view. It avoids the dimming
   // and blur overview mode adds to the original wallpaper. Owned by the views
   // hierarchy.
@@ -96,6 +88,10 @@ class DeskPreviewView : public views::View {
   // A view whose layer will act as the parent of desk's mirrored contents layer
   // tree. Owned by the views hierarchy.
   views::View* desk_mirrored_contents_view_;
+
+  // Owned by this View via `View::border_`. This is just a convenient pointer
+  // to it.
+  DesksBarItemBorder* border_ptr_;
 
   // Owns the layer tree of the desk's contents mirrored layers.
   std::unique_ptr<ui::LayerTreeOwner> desk_mirrored_contents_layer_tree_owner_;

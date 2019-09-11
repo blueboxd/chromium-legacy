@@ -164,7 +164,24 @@ class ConciergeClientImpl : public ConciergeClient {
       const vm_tools::concierge::AttachUsbDeviceRequest& request,
       DBusMethodCallback<vm_tools::concierge::AttachUsbDeviceResponse> callback)
       override {
-    CallMethod(kAttachUsbDeviceMethod, request, std::move(callback));
+    dbus::MethodCall method_call(vm_tools::concierge::kVmConciergeInterface,
+                                 vm_tools::concierge::kAttachUsbDeviceMethod);
+    dbus::MessageWriter writer(&method_call);
+
+    if (!writer.AppendProtoAsArrayOfBytes(request)) {
+      LOG(ERROR) << "Failed to encode AttachUsbDeviceRequest protobuf";
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
+      return;
+    }
+
+    writer.AppendFileDescriptor(fd.get());
+
+    concierge_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
+                           vm_tools::concierge::AttachUsbDeviceResponse>,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void DetachUsbDevice(

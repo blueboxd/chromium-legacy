@@ -5,7 +5,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="@dimen/tab_grid_iph_dialog_size"
-    android:layout_height="@dimen/tab_grid_iph_dialog_size"
+    android:layout_height="wrap_content"
     android:layout_gravity="center"
     android:orientation="vertical"
     android:background="@drawable/popup_bg_tinted"
@@ -14,35 +14,35 @@
     <ImageView
         android:id="@+id/animation_drawable"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="5"
+        android:layout_height="@dimen/tab_grid_iph_dialog_animated_drawable_size"
         app:srcCompat="@drawable/iph_drag_and_drop_animated_drawable"
         android:contentDescription="@string/iph_drag_and_drop_content" />
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="2"
+        android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
         android:text="@string/iph_drag_and_drop_title"
-        android:textAppearance="@style/TextAppearance.BlackHeadline"
-        android:gravity="center_vertical" />
+        android:textAppearance="@style/TextAppearance.BlackHeadline" />
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
+        android:layout_marginBottom="16dp"
         android:text="@string/iph_drag_and_drop_content"
         android:textAppearance="@style/TextAppearance.BlackBodyDefault"
         android:gravity="start" />
     <TextView
         android:id="@+id/iph_drag_and_drop_dialog_close_button"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
         android:text="@string/ok"
         android:textAppearance="@style/TextAppearance.BlueTitle2"
         android:gravity="end" />

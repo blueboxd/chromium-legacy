@@ -1325,6 +1325,62 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
+            "chrome_modern_public_bundle_smoke_test"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
+              "location": ".android",
+              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
+            },
+            {
+              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
+              "location": "third_party/android_sdk/public",
+              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
+            },
+            {
+              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
+              "location": "third_party/android_sdk/public",
+              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "device_os": null,
+              "device_type": null,
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ]
+        },
+        "test": "chrome_modern_public_bundle_smoke_test"
+      },
+      {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices",
+          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
+          "--emulator-home=../../.android"
+        ],
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
             "chrome_modern_public_smoke_test"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"

@@ -83,10 +83,12 @@
 
     'android_modern_smoke_tests': {
       'chrome_modern_public_smoke_test': {},
+      'chrome_modern_public_bundle_smoke_test': {},
     },
 
     'android_monochrome_smoke_tests': {
       'monochrome_public_smoke_test': {},
+      'monochrome_public_bundle_smoke_test': {},
     },
 
     'android_oreo_standard_gtests': {
@@ -5001,6 +5003,7 @@
     },
 
     'win_specific_chromium_gtests': {
+      'browser_switcher_bho_unittests': {},
       'chrome_cleaner_unittests': {},
       'chrome_elf_unittests': {},
       'courgette_unittests': {},

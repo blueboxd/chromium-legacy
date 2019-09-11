@@ -203,7 +203,7 @@ void AddDeviceReportingElement(base::Value* report_sources,
   base::Value data(base::Value::Type::DICTIONARY);
   data.SetKey("messageId", base::Value(message_id));
   data.SetKey("reportingType", base::Value(ToJSDeviceReportingType(type)));
-  report_sources->GetList().push_back(std::move(data));
+  report_sources->Append(std::move(data));
 }
 
 void AddDeviceReportingInfo(base::Value* report_sources, Profile* profile) {
@@ -297,7 +297,7 @@ base::Value GetPowerfulExtensions(const extensions::ExtensionSet& extensions) {
           extensions::util::GetExtensionInfo(extension.get());
       extension_to_add->SetKey("permissions",
                                base::Value(std::move(permission_messages)));
-      powerful_extensions.GetList().push_back(std::move(*extension_to_add));
+      powerful_extensions.Append(std::move(*extension_to_add));
     }
   }
 
@@ -503,7 +503,7 @@ void ManagementUIHandler::AddExtensionReportingInfo(
     data.SetKey(
         "reportingType",
         base::Value(GetReportingTypeValue(report_definition.reporting_type)));
-    report_sources->GetList().push_back(std::move(data));
+    report_sources->Append(std::move(data));
   }
 }
 
@@ -597,7 +597,7 @@ base::Value ManagementUIHandler::GetThreatProtectionInfo(
     base::Value value(base::Value::Type::DICTIONARY);
     value.SetStringKey("title", kManagementDataLossPreventionName);
     value.SetStringKey("permission", kManagementDataLossPreventionPermissions);
-    info.GetList().push_back(std::move(value));
+    info.Append(std::move(value));
   }
 
   // SendFilesForMalwareCheck is a int-enum policy. The accepted values are
@@ -612,7 +612,7 @@ base::Value ManagementUIHandler::GetThreatProtectionInfo(
     base::Value value(base::Value::Type::DICTIONARY);
     value.SetStringKey("title", kManagementMalwareScanningName);
     value.SetStringKey("permission", kManagementMalwareScanningPermissions);
-    info.GetList().push_back(std::move(value));
+    info.Append(std::move(value));
   }
 
   auto* unsafe_event_reporting_value =
@@ -621,7 +621,7 @@ base::Value ManagementUIHandler::GetThreatProtectionInfo(
     base::Value value(base::Value::Type::DICTIONARY);
     value.SetStringKey("title", kManagementEnterpriseReportingName);
     value.SetStringKey("permission", kManagementEnterpriseReportingPermissions);
-    info.GetList().push_back(std::move(value));
+    info.Append(std::move(value));
   }
 
 #if defined(OS_CHROMEOS)

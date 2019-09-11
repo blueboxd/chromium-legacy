@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/autofill/payments/webauthn_offer_dialog_controller_impl.h"
 
+#include "chrome/browser/ui/autofill/payments/webauthn_offer_dialog_model.h"
 #include "chrome/browser/ui/autofill/payments/webauthn_offer_dialog_view.h"
 
 namespace autofill {
@@ -17,38 +18,45 @@ WebauthnOfferDialogControllerImpl::~WebauthnOfferDialogControllerImpl() =
 
 void WebauthnOfferDialogControllerImpl::ShowOfferDialog(
     AutofillClient::WebauthnOfferDialogCallback callback) {
-  DCHECK(!dialog_view_);
+  DCHECK(!dialog_model_);
 
   offer_dialog_callback_ = std::move(callback);
-  dialog_view_ = WebauthnOfferDialogView::CreateAndShow(this);
+  dialog_model_ = WebauthnOfferDialogView::CreateAndShow(this);
 }
 
 bool WebauthnOfferDialogControllerImpl::CloseDialog() {
-  if (!dialog_view_)
+  if (!dialog_model_)
     return false;
 
-  dialog_view_->Hide();
+  dialog_model_->SetDialogState(
+      WebauthnOfferDialogModel::DialogState::kInactive);
   return true;
 }
 
-void WebauthnOfferDialogControllerImpl::OnOkButtonClicked() {
-  DCHECK(offer_dialog_callback_);
-  offer_dialog_callback_.Run(/*did_accept=*/true);
-  dialog_view_->RefreshContent();
-}
-
-void WebauthnOfferDialogControllerImpl::OnCancelButtonClicked() {
-  DCHECK(offer_dialog_callback_);
-  offer_dialog_callback_.Run(/*did_accept=*/false);
+void WebauthnOfferDialogControllerImpl::UpdateDialogWithError() {
+  dialog_model_->SetDialogState(WebauthnOfferDialogModel::DialogState::kError);
+  offer_dialog_callback_.Reset();
 }
 
 void WebauthnOfferDialogControllerImpl::OnDialogClosed() {
-  dialog_view_ = nullptr;
+  dialog_model_ = nullptr;
   offer_dialog_callback_.Reset();
 }
 
 content::WebContents* WebauthnOfferDialogControllerImpl::GetWebContents() {
   return web_contents();
+}
+
+void WebauthnOfferDialogControllerImpl::OnOkButtonClicked() {
+  DCHECK(offer_dialog_callback_);
+  offer_dialog_callback_.Run(/*did_accept=*/true);
+  dialog_model_->SetDialogState(
+      WebauthnOfferDialogModel::DialogState::kPending);
+}
+
+void WebauthnOfferDialogControllerImpl::OnCancelButtonClicked() {
+  DCHECK(offer_dialog_callback_);
+  offer_dialog_callback_.Run(/*did_accept=*/false);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(WebauthnOfferDialogControllerImpl)

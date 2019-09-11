@@ -293,6 +293,12 @@ void ArcBridgeHostImpl::OnScreenCaptureInstanceReady(
                   std::move(screen_capture_ptr));
 }
 
+void ArcBridgeHostImpl::OnSmartCardManagerInstanceReady(
+    mojom::SmartCardManagerInstancePtr smart_card_manager_ptr) {
+  OnInstanceReady(arc_bridge_service_->smart_card_manager(),
+                  std::move(smart_card_manager_ptr));
+}
+
 void ArcBridgeHostImpl::OnStorageManagerInstanceReady(
     mojom::StorageManagerInstancePtr storage_manager_ptr) {
   OnInstanceReady(arc_bridge_service_->storage_manager(),

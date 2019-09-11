@@ -6,11 +6,11 @@
 #define ANDROID_WEBVIEW_BROWSER_NETWORK_SERVICE_AW_PROXY_CONFIG_MONITOR_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "net/proxy_resolution/proxy_config_service_android.h"
-#include "net/url_request/url_request_context_builder.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
 namespace android_webview {

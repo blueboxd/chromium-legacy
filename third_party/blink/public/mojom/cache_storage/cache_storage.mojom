@@ -75,7 +75,7 @@ struct BatchOperation {
 // Result of Open method. |status| is only set if there is a failure.
 union OpenResult {
   CacheStorageError status;
-  associated CacheStorageCache cache;
+  pending_associated_remote<CacheStorageCache> cache;
 };
 
 // Result of Match for both interfaces CacheStorage and CacheStorageCache

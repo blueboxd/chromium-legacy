@@ -17,6 +17,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.MainDex;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
@@ -62,7 +63,7 @@ public class DecoderService extends Service {
             });
 
             LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_CHILD);
-            nativeInitializePhotoPickerSandbox();
+            DecoderServiceJni.get().initializePhotoPickerSandbox();
 
             mNativeLibraryAndSandboxInitialized = true;
         } catch (ProcessInitException e) {
@@ -149,7 +150,10 @@ public class DecoderService extends Service {
         }
     };
 
-    // Initializes the seccomp-bpf sandbox when it's supported by the device. Records the sandbox
-    // status to the Android.SeccompStatus.PhotoPickerSandbox histogram.
-    private static native void nativeInitializePhotoPickerSandbox();
+    @NativeMethods
+    interface Natives {
+        // Initializes the seccomp-bpf sandbox when it's supported by the device. Records the
+        // sandbox status to the Android.SeccompStatus.PhotoPickerSandbox histogram.
+        void initializePhotoPickerSandbox();
+    }
 }

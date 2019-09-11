@@ -138,6 +138,15 @@ void PaymentManager::SetUserHint(const std::string& user_hint) {
       scope_, user_hint);
 }
 
+void PaymentManager::EnableDelegations(
+    const std::vector<payments::mojom::PaymentDelegation>& delegations,
+    PaymentManager::EnableDelegationsCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  payment_app_context_->payment_app_database()->EnablePaymentAppDelegations(
+      scope_, delegations, std::move(callback));
+}
+
 void PaymentManager::OnConnectionError() {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   payment_app_context_->PaymentManagerHadConnectionError(this);

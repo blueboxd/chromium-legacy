@@ -70,8 +70,7 @@ class TestLayerTreeHostBase : public testing::Test {
     std::unique_ptr<T> layer = T::Create(layer_tree_impl, next_layer_id_++,
                                          std::forward<Args>(args)...);
     T* result = layer.get();
-    layer_tree_impl->root_layer_for_testing()->test_properties()->AddChild(
-        std::move(layer));
+    layer_tree_impl->AddLayer(std::move(layer));
     return result;
   }
 
@@ -82,7 +81,7 @@ class TestLayerTreeHostBase : public testing::Test {
     std::unique_ptr<T> mask = T::Create(layer_tree_impl, next_layer_id_++,
                                         std::forward<Args>(args)...);
     T* result = mask.get();
-    masked_layer->test_properties()->SetMaskLayer(std::move(mask));
+    layer_tree_impl->AddMaskLayer(std::move(mask));
     CopyProperties(masked_layer, result);
     auto* masked_effect = GetEffectNode(masked_layer);
     masked_effect->render_surface_reason = RenderSurfaceReason::kMask;

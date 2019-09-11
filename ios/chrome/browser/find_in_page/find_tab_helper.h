@@ -9,8 +9,8 @@
 
 #include "base/ios/block_types.h"
 #include "base/macros.h"
-#include "ios/web/public/web_state/web_state_observer.h"
-#import "ios/web/public/web_state/web_state_user_data.h"
+#include "ios/web/public/web_state_observer.h"
+#import "ios/web/public/web_state_user_data.h"
 
 @class FindInPageController;
 @class FindInPageModel;

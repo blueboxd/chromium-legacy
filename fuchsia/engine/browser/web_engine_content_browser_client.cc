@@ -15,6 +15,7 @@
 #include "fuchsia/engine/browser/web_engine_browser_main_parts.h"
 #include "fuchsia/engine/browser/web_engine_devtools_manager_delegate.h"
 #include "fuchsia/engine/common.h"
+#include "fuchsia/engine/switches.h"
 
 WebEngineContentBrowserClient::WebEngineContentBrowserClient(
     fidl::InterfaceRequest<fuchsia::web::Context> request)
@@ -97,4 +98,9 @@ void WebEngineContentBrowserClient::AppendExtraCommandLineSwitches(
     int child_process_id) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(kContentDirectories))
     command_line->AppendSwitch(kContentDirectories);
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableSoftwareVideoDecoders)) {
+    command_line->AppendSwitch(switches::kDisableSoftwareVideoDecoders);
+  }
 }

@@ -65,8 +65,6 @@ std::string SourceToString(SourceForRefreshTokenOperation source) {
     case SourceForRefreshTokenOperation::
         kAccountReconcilor_RevokeTokensNotInCookies:
       return "AccountReconcilor::RevokeTokensNotInCookies";
-    case SourceForRefreshTokenOperation::kAddSupervision_SupervisionEnabled:
-      return "AddSupervision::SupervisionEnabled";
   }
 }
 }  // namespace

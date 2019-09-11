@@ -165,6 +165,20 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
     kMaxValue = kCouldNotGetD3D11Device
   };
 
+  enum class D3D11LifetimeProgression {
+    kInitializeStarted = 0,
+    kInitializeSucceeded = 1,
+    kPlaybackSucceeded = 2,
+
+    // For UMA. Must be the last entry. It should be initialized to the
+    // numerically largest value above; if you add more entries, then please
+    // update this to the last one.
+    kMaxValue = kPlaybackSucceeded
+  };
+
+  // Log UMA progression state.
+  void AddLifetimeProgressionStage(D3D11LifetimeProgression stage);
+
   std::unique_ptr<MediaLog> media_log_;
 
   enum class State {
@@ -208,6 +222,9 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
 
   // Task runner for |impl_|.  This must be the GPU main thread.
   scoped_refptr<base::SequencedTaskRunner> impl_task_runner_;
+
+  // Set in initialize, and used to determine reinitializations.
+  bool already_initialized_;
 
   gpu::GpuPreferences gpu_preferences_;
   gpu::GpuDriverBugWorkarounds gpu_workarounds_;

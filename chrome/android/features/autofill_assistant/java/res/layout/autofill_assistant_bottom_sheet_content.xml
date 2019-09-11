@@ -10,7 +10,7 @@
     android:layout_width="match_parent"
     android:paddingTop="12dp"
     android:orientation="vertical">
-    <org.chromium.chrome.browser.widget.FadingEdgeScrollView
+    <org.chromium.chrome.browser.ui.widget.FadingEdgeScrollView
         android:id="@+id/scrollable_content"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -22,5 +22,5 @@
             android:orientation="vertical"
             android:clipChildren="false"
             android:clipToPadding="false" />
-    </org.chromium.chrome.browser.widget.FadingEdgeScrollView>
+    </org.chromium.chrome.browser.ui.widget.FadingEdgeScrollView>
 </LinearLayout>

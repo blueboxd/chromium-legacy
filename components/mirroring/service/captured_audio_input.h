@@ -13,6 +13,7 @@
 #include "media/audio/audio_input_ipc.h"
 #include "media/mojo/mojom/audio_input_stream.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace mirroring {
 
@@ -23,10 +24,10 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) CapturedAudioInput final
       public mojom::AudioStreamCreatorClient,
       public media::mojom::AudioInputStreamClient {
  public:
-  using StreamCreatorCallback =
-      base::RepeatingCallback<void(mojom::AudioStreamCreatorClientPtr client,
-                                   const media::AudioParameters& params,
-                                   uint32_t total_segments)>;
+  using StreamCreatorCallback = base::RepeatingCallback<void(
+      mojo::PendingRemote<mojom::AudioStreamCreatorClient> client,
+      const media::AudioParameters& params,
+      uint32_t total_segments)>;
   explicit CapturedAudioInput(StreamCreatorCallback callback);
   ~CapturedAudioInput() override;
 
@@ -55,7 +56,8 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) CapturedAudioInput final
 
   const StreamCreatorCallback stream_creator_callback_;
   mojo::Binding<media::mojom::AudioInputStreamClient> stream_client_binding_;
-  mojo::Binding<mojom::AudioStreamCreatorClient> stream_creator_client_binding_;
+  mojo::Receiver<mojom::AudioStreamCreatorClient>
+      stream_creator_client_receiver_{this};
   media::AudioInputIPCDelegate* delegate_ = nullptr;
   media::mojom::AudioInputStreamPtr stream_;
 

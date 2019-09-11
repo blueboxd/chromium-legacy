@@ -3368,9 +3368,8 @@ class CacheStorageSideDataSizeChecker
 
     ASSERT_EQ(CacheStorageError::kSuccess, error);
     ASSERT_TRUE(response->blob);
-    blink::mojom::BlobPtr blob_ptr(std::move(response->blob->blob));
-    auto blob_handle =
-        base::MakeRefCounted<storage::BlobHandle>(std::move(blob_ptr));
+    auto blob_handle = base::MakeRefCounted<storage::BlobHandle>(
+        std::move(response->blob->blob));
     blob_handle->get()->ReadSideData(base::BindOnce(
         [](scoped_refptr<storage::BlobHandle> blob_handle, int* result,
            base::OnceClosure continuation,

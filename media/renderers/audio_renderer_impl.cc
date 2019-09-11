@@ -406,11 +406,11 @@ void AudioRendererImpl::OnDeviceInfoReceived(
                             output_device_info.device_status(),
                             OUTPUT_DEVICE_STATUS_MAX + 1);
   if (output_device_info.device_status() != OUTPUT_DEVICE_STATUS_OK) {
-    sink_ = new NullAudioSink(task_runner_);
-    output_device_info = sink_->GetOutputDeviceInfo();
     MEDIA_LOG(ERROR, media_log_)
         << "Output device error, falling back to null sink. device_status="
         << output_device_info.device_status();
+    sink_ = new NullAudioSink(task_runner_);
+    output_device_info = sink_->GetOutputDeviceInfo();
   }
 
   current_decoder_config_ = stream->audio_decoder_config();

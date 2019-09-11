@@ -94,7 +94,7 @@ class FakePasswordManagerClient : public StubPasswordManagerClient {
                    : StubPasswordManagerClient::GetStoreResultFilter();
   }
 
-  PasswordStore* GetPasswordStore() const override { return store_; }
+  PasswordStore* GetProfilePasswordStore() const override { return store_; }
 
   std::unique_ptr<CredentialsFilter> filter_;
   PasswordStore* store_ = nullptr;

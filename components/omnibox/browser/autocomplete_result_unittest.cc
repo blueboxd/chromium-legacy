@@ -749,6 +749,47 @@ TEST_F(AutocompleteResultTest,
   }
 }
 
+// Test SortAndCull promoting a lower-scoring match to keep the default match
+// stable during the asynchronous pass.
+TEST_F(AutocompleteResultTest, SortAndCullWithPreserveDefaultMatch) {
+  TestData last[] = {
+      {0, 1, 500, true},
+      {1, 1, 400, true},
+  };
+  // Same as |last|, but with the scores swapped.
+  TestData current[] = {
+      {1, 1, 500, true},
+      {0, 1, 400, true},
+  };
+
+  AutocompleteInput input(base::ASCIIToUTF16("a"),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+
+  ACMatches last_matches;
+  PopulateAutocompleteMatches(last, base::size(last), &last_matches);
+  AutocompleteResult last_result;
+  last_result.AppendMatches(input, last_matches);
+  last_result.SortAndCull(input, template_url_service_.get());
+
+  ACMatches current_matches;
+  PopulateAutocompleteMatches(current, base::size(current), &current_matches);
+  AutocompleteResult current_result;
+  current_result.AppendMatches(input, current_matches);
+
+  // Run SortAndCull, but try to keep the first entry of last_matches on top.
+  current_result.SortAndCull(input, template_url_service_.get(),
+                             last_result.match_at(0));
+
+  // Assert that the lower scoring match has been promoted to the top to keep
+  // the default match stable.
+  TestData result[] = {
+      {0, 1, 400, true},
+      {1, 1, 500, true},
+  };
+  AssertResultMatches(current_result, result, base::size(result));
+}
+
 TEST_F(AutocompleteResultTest, DemoteOnDeviceSearchSuggestions) {
   // clang-format off
   TestData data[] = {

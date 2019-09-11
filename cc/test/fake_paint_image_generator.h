@@ -50,6 +50,7 @@ class FakePaintImageGenerator : public PaintImageGenerator {
                       size_t frame_index,
                       uint32_t lazy_pixel_ref) override;
   SkISize GetSupportedDecodeSize(const SkISize& requested_size) const override;
+  PaintImage::ImageType GetImageType() const override;
 
   const base::flat_map<size_t, int>& frames_decoded() const {
     return frames_decoded_count_;
@@ -63,12 +64,16 @@ class FakePaintImageGenerator : public PaintImageGenerator {
   void SetEligibleForAcceleratedDecoding() {
     is_eligible_for_accelerated_decode_ = true;
   }
+  void SetImageType(PaintImage::ImageType image_type) {
+    image_type_ = image_type;
+  }
 
  private:
   std::vector<uint8_t> image_backing_memory_;
   SkPixmap image_pixmap_;
   base::flat_map<size_t, int> frames_decoded_count_;
   std::vector<SkISize> supported_sizes_;
+  PaintImage::ImageType image_type_ = PaintImage::ImageType::kInvalid;
   std::vector<SkImageInfo> decode_infos_;
   bool is_yuv_ = false;
   SkYUVASizeInfo yuva_size_info_;

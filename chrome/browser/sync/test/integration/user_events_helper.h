@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SYNC_TEST_INTEGRATION_USER_EVENTS_HELPER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/time/time.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
@@ -36,7 +37,7 @@ class UserEventEqualityChecker : public SingleClientStatusChangeChecker {
 
  private:
   fake_server::FakeServer* fake_server_;
-  std::multimap<int64_t, sync_pb::UserEventSpecifics> expected_specifics_;
+  const std::vector<sync_pb::UserEventSpecifics> expected_specifics_;
 
   DISALLOW_COPY_AND_ASSIGN(UserEventEqualityChecker);
 };

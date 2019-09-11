@@ -353,7 +353,8 @@ template("mac_framework_bundle") {
 
     if (enable_dsyms) {
       data = [
-        "$root_out_dir/$_output_name.dSYM/",
+        "$root_out_dir/$_output_name.dSYM/Contents/Info.plist",
+        "$root_out_dir/$_output_name.dSYM/Contents/Resources/DWARF/$_output_name",
       ]
     }
 
@@ -560,7 +561,8 @@ template("mac_app_bundle") {
 
     if (enable_dsyms) {
       data = [
-        "$root_out_dir/$_output_name.dSYM/",
+        "$root_out_dir/$_output_name.dSYM/Contents/Info.plist",
+        "$root_out_dir/$_output_name.dSYM/Contents/Resources/DWARF/$_output_name",
       ]
     }
 
@@ -606,7 +608,7 @@ template("mac_plugin_bundle") {
     forward_variables_from(invoker, [ "testonly" ])
     visibility = [ ":$_target_name" ]
     sources = [
-      "$target_out_dir/${_output_name}.so",
+      "$target_out_dir/$_output_name.so",
     ]
     outputs = [
       "{{bundle_executable_dir}}/$_output_name",
@@ -632,7 +634,8 @@ template("mac_plugin_bundle") {
 
     if (enable_dsyms) {
       data = [
-        "$root_out_dir/$_output_name.so.dSYM/",
+        "$root_out_dir/$_output_name.so.dSYM/Contents/Info.plist",
+        "$root_out_dir/$_output_name.so.dSYM/Contents/Resources/DWARF/$_output_name.so",
       ]
     }
 

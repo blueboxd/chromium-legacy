@@ -19,10 +19,6 @@
 
 class GURL;
 
-namespace base {
-class FilePath;
-}
-
 namespace net {
 
 class CookieOptions;
@@ -86,9 +82,6 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
                       const net::CanonicalCookie& cookie,
                       CookieOptions* options,
                       bool allowed_from_caller) final;
-  bool OnCanAccessFile(const URLRequest& request,
-                       const base::FilePath& original_path,
-                       const base::FilePath& absolute_path) const final;
   bool OnForcePrivacyMode(
       const GURL& url,
       const GURL& site_for_cookies,
@@ -164,11 +157,6 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
   virtual void OnAuthRequiredInternal(URLRequest* request,
                                       const AuthChallengeInfo& auth_info,
                                       AuthCredentials* credentials);
-
-  virtual void OnCanAccessFileInternal(
-      const URLRequest& request,
-      const base::FilePath& original_path,
-      const base::FilePath& absolute_path) const;
 
   // If this returns false, it short circuits the corresponding call in any
   // nested NetworkDelegates.

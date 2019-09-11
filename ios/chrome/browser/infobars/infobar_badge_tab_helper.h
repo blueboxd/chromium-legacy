@@ -8,11 +8,10 @@
 #include <unordered_map>
 
 #include "base/scoped_observer.h"
-#import "ios/web/public/web_state/web_state_user_data.h"
-
 #include "components/infobars/core/infobar_manager.h"
 #import "ios/chrome/browser/infobars/infobar_type.h"
 #import "ios/chrome/browser/ui/badges/badge_item.h"
+#import "ios/web/public/web_state_user_data.h"
 
 namespace web {
 class WebState;

@@ -433,8 +433,12 @@ class TopSitesCallbackList {
 
 }  // namespace
 
-// Param specifies whether Popular Sites is enabled via variations.
-class MostVisitedSitesTest : public ::testing::TestWithParam<bool> {
+// Param is a tuple with two components:
+// * The first specifies whether Popular Sites is enabled via variations.
+// * The second specifies whether Suggestions Service tiles are enabled via
+//   variations.
+class MostVisitedSitesTest
+    : public ::testing::TestWithParam<std::tuple<bool, bool>> {
  protected:
   MostVisitedSitesTest()
       : is_custom_links_enabled_(false),
@@ -442,18 +446,24 @@ class MostVisitedSitesTest : public ::testing::TestWithParam<bool> {
         mock_top_sites_(new StrictMock<MockTopSites>()) {
     MostVisitedSites::RegisterProfilePrefs(pref_service_.registry());
 
+    std::vector<base::Feature> enabled_features;
     // Disable FaviconServer in most tests and override in specific tests.
+    std::vector<base::Feature> disabled_features = {
+        kNtpMostLikelyFaviconsFromServerFeature};
     if (IsPopularSitesFeatureEnabled()) {
-      feature_list_.InitWithFeatures(
-          /*enabled_features=*/{kUsePopularSitesSuggestions},
-          /*disabled_features=*/{kNtpMostLikelyFaviconsFromServerFeature});
-      popular_sites_factory_.SeedWithSampleData();
+      enabled_features.push_back(kUsePopularSitesSuggestions);
     } else {
-      feature_list_.InitWithFeatures(
-          /*enabled_features=*/{},
-          /*disabled_features=*/{kUsePopularSitesSuggestions,
-                                 kNtpMostLikelyFaviconsFromServerFeature});
+      disabled_features.push_back(kUsePopularSitesSuggestions);
     }
+    if (IsDisplaySuggestionsServiceTilesEnabled()) {
+      enabled_features.push_back(kDisplaySuggestionsServiceTiles);
+    } else {
+      disabled_features.push_back(kDisplaySuggestionsServiceTiles);
+    }
+
+    feature_list_.InitWithFeatures(enabled_features, disabled_features);
+    if (IsPopularSitesFeatureEnabled())
+      popular_sites_factory_.SeedWithSampleData();
 
     RecreateMostVisitedSites();
   }
@@ -509,7 +519,10 @@ class MostVisitedSitesTest : public ::testing::TestWithParam<bool> {
         /*supervisor=*/nullptr);
   }
 
-  bool IsPopularSitesFeatureEnabled() const { return GetParam(); }
+  bool IsPopularSitesFeatureEnabled() const { return std::get<0>(GetParam()); }
+  bool IsDisplaySuggestionsServiceTilesEnabled() const {
+    return std::get<1>(GetParam());
+  }
 
   bool VerifyAndClearExpectations() {
     base::RunLoop().RunUntilIdle();
@@ -1081,7 +1094,8 @@ TEST_P(MostVisitedSitesTest, ShouldHandleTopSitesCacheHit) {
 
 INSTANTIATE_TEST_SUITE_P(MostVisitedSitesTest,
                          MostVisitedSitesTest,
-                         ::testing::Bool());
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool()));
 
 TEST(MostVisitedSitesTest, ShouldDeduplicateDomainWithNoWwwDomain) {
   EXPECT_TRUE(MostVisitedSites::IsHostOrMobilePageKnown({"www.mobile.de"},
@@ -1715,9 +1729,12 @@ TEST_P(MostVisitedSitesWithCustomLinksTest, RebuildTilesOnCustomLinksChanged) {
       ElementsAre(MatchesTile(kTestTitle1, kTestUrl1, TileSource::TOP_SITES)));
 }
 
+// These tests expect Most Likely to be enabled, and exclude Android and iOS,
+// so this will continue to be the case.
 INSTANTIATE_TEST_SUITE_P(MostVisitedSitesWithCustomLinksTest,
                          MostVisitedSitesWithCustomLinksTest,
-                         ::testing::Bool());
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Values(true)));
 #endif
 
 class MostVisitedSitesWithCacheHitTest : public MostVisitedSitesTest {
@@ -1875,9 +1892,11 @@ TEST_P(MostVisitedSitesWithCacheHitTest, ShouldFetchFaviconsIfEnabled) {
   base::RunLoop().RunUntilIdle();
 }
 
+// Tests only apply when the suggestions service is enabled.
 INSTANTIATE_TEST_SUITE_P(MostVisitedSitesWithCacheHitTest,
                          MostVisitedSitesWithCacheHitTest,
-                         ::testing::Bool());
+                         ::testing::Combine(::testing::Bool(),
+                                            testing::Values(true)));
 
 class MostVisitedSitesWithEmptyCacheTest : public MostVisitedSitesTest {
  public:
@@ -2166,9 +2185,11 @@ TEST_P(MostVisitedSitesWithEmptyCacheTest,
   }
 }
 
+// Tests only apply when the suggestions service is enabled.
 INSTANTIATE_TEST_SUITE_P(MostVisitedSitesWithEmptyCacheTest,
                          MostVisitedSitesWithEmptyCacheTest,
-                         ::testing::Bool());
+                         ::testing::Combine(::testing::Bool(),
+                                            testing::Values(true)));
 
 // This a test for MostVisitedSites::MergeTiles(...) method, and thus has the
 // same scope as the method itself. This tests merging popular sites with

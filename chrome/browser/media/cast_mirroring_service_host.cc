@@ -273,7 +273,7 @@ void CastMirroringServiceHost::GetNetworkContext(
 }
 
 void CastMirroringServiceHost::CreateAudioStream(
-    mojom::AudioStreamCreatorClientPtr client,
+    mojo::PendingRemote<mojom::AudioStreamCreatorClient> client,
     const media::AudioParameters& params,
     uint32_t total_segments) {
   content::WebContents* source_web_contents = nullptr;
@@ -292,27 +292,29 @@ void CastMirroringServiceHost::CreateAudioStream(
   audio_stream_creator_->CreateLoopbackStream(
       source_web_contents, params, total_segments,
       base::BindRepeating(
-          [](mojom::AudioStreamCreatorClientPtr client,
+          [](mojo::PendingRemote<mojom::AudioStreamCreatorClient> client,
              media::mojom::AudioInputStreamPtr stream,
              media::mojom::AudioInputStreamClientRequest client_request,
              media::mojom::ReadOnlyAudioDataPipePtr data_pipe) {
             // TODO(xjz): Remove |initially_muted| argument from
             // mojom::AudioStreamCreatorClient::StreamCreated().
-            client->StreamCreated(std::move(stream), std::move(client_request),
-                                  std::move(data_pipe),
-                                  false /* initially_muted */);
+            mojo::Remote<mojom::AudioStreamCreatorClient> audio_client(
+                std::move(client));
+            audio_client->StreamCreated(
+                std::move(stream), std::move(client_request),
+                std::move(data_pipe), false /* initially_muted */);
           },
           base::Passed(&client)));
 }
 
 void CastMirroringServiceHost::ConnectToRemotingSource(
-    media::mojom::RemoterPtr remoter,
-    media::mojom::RemotingSourceRequest request) {
+    mojo::PendingRemote<media::mojom::Remoter> remoter,
+    mojo::PendingReceiver<media::mojom::RemotingSource> receiver) {
   if (source_media_id_.type == content::DesktopMediaID::TYPE_WEB_CONTENTS) {
     content::WebContents* source_contents = web_contents();
     if (source_contents) {
       CastRemotingConnector::Get(source_contents)
-          ->ConnectWithMediaRemoter(std::move(remoter), std::move(request));
+          ->ConnectWithMediaRemoter(std::move(remoter), std::move(receiver));
     }
   }
 }

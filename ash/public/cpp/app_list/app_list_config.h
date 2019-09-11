@@ -34,12 +34,14 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   // |scale_y| - The scale at which apps grid tile should be scaled
   // vertically.
   // |inner_title_scale_y| - The scale to use to vertically scale dimensions
+  // |min_y_scale| - Whether |scale_y| is the minimum scale allowed.
   // within the apps grid tile. Different from |scale_y| because tile title
   // height is not vertically scaled.
   AppListConfig(const AppListConfig& base_config,
                 float scale_x,
                 float scale_y,
-                float inner_tile_scale_y);
+                float inner_tile_scale_y,
+                bool min_y_scale);
   ~AppListConfig();
 
   // Gets default app list configuration.
@@ -62,6 +64,7 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   int grid_focus_dimension() const { return grid_focus_dimension_; }
   int grid_focus_corner_radius() const { return grid_focus_corner_radius_; }
   SkColor grid_title_color() const { return grid_title_color_; }
+  int grid_fadeout_zone_height() const { return grid_fadeout_zone_height_; }
   int search_tile_icon_dimension() const { return search_tile_icon_dimension_; }
   int search_tile_badge_icon_dimension() const {
     return search_tile_badge_icon_dimension_;
@@ -156,6 +159,10 @@ class ASH_PUBLIC_EXPORT AppListConfig {
 
   size_t max_search_result_tiles() const { return max_search_result_tiles_; }
 
+  size_t max_search_result_list_items() const {
+    return max_search_result_list_items_;
+  }
+
   gfx::Size grid_icon_size() const {
     return gfx::Size(grid_icon_dimension_, grid_icon_dimension_);
   }
@@ -246,6 +253,9 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   // The focus dimension and corner radius of tile views in apps grid view.
   const int grid_focus_dimension_;
   const int grid_focus_corner_radius_;
+
+  // The vertical insets in the apps grid rezerved for the grid fade out mask.
+  const int grid_fadeout_zone_height_;
 
   // The icon dimension of tile views in search result page view.
   const int search_tile_icon_dimension_;
@@ -407,6 +417,9 @@ class ASH_PUBLIC_EXPORT AppListConfig {
 
   // Max number of search result tiles in the launcher suggestion window.
   const size_t max_search_result_tiles_ = 6;
+
+  // Max number of search result list items in the launcher suggestion window.
+  const size_t max_search_result_list_items_ = 5;
 
   DISALLOW_COPY_AND_ASSIGN(AppListConfig);
 };

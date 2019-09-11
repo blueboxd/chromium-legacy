@@ -239,13 +239,12 @@ public abstract class ChromeFeatureList {
     public static final String DOWNLOAD_TAB_MANAGEMENT_MODULE = "DownloadTabManagementModule";
     public static final String DRAW_VERTICALLY_EDGE_TO_EDGE = "DrawVerticallyEdgeToEdge";
     public static final String EPHEMERAL_TAB = "EphemeralTab";
+    public static final String EPHEMERAL_TAB_USING_BOTTOM_SHEET = "EphemeralTabUsingBottomSheet";
     public static final String EXPLICIT_LANGUAGE_ASK = "ExplicitLanguageAsk";
     public static final String EXPLORE_SITES = "ExploreSites";
     public static final String GENERIC_SENSOR_EXTRA_CLASSES = "GenericSensorExtraClasses";
     public static final String GRANT_NOTIFICATIONS_TO_DSE = "GrantNotificationsToDSE";
     public static final String HANDLE_MEDIA_INTENTS = "HandleMediaIntents";
-    public static final String HOME_PAGE_BUTTON_FORCE_ENABLED = "HomePageButtonForceEnabled";
-    public static final String HOMEPAGE_TILE = "HomepageTile";
     public static final String HORIZONTAL_TAB_SWITCHER_ANDROID = "HorizontalTabSwitcherAndroid";
     public static final String IDENTITY_DISC = "IdentityDisc";
     public static final String IMMERSIVE_UI_MODE = "ImmersiveUiMode";
@@ -268,7 +267,6 @@ public abstract class ChromeFeatureList {
     public static final String NOTIFICATION_SUSPENDER = "NotificationSuspender";
     public static final String NO_CREDIT_CARD_ABORT = "NoCreditCardAbort";
     public static final String NTP_ARTICLE_SUGGESTIONS = "NTPArticleSuggestions";
-    public static final String NTP_BUTTON = "NTPButton";
     public static final String NTP_LAUNCH_AFTER_INACTIVITY = "NTPLaunchAfterInactivity";
     public static final String OFFLINE_INDICATOR = "OfflineIndicator";
     public static final String OFFLINE_INDICATOR_ALWAYS_HTTP_PROBE =

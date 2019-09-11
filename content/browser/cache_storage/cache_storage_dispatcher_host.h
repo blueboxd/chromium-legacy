@@ -8,8 +8,9 @@
 #include <stdint.h>
 
 #include "content/browser/cache_storage/cache_storage_handle.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding_set.h"
+#include "mojo/public/cpp/bindings/unique_associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 
@@ -47,16 +48,17 @@ class CacheStorageDispatcherHost {
   class CacheImpl;
   friend class CacheImpl;
 
-  void AddCacheBinding(
+  void AddCacheReceiver(
       std::unique_ptr<CacheImpl> cache_impl,
-      blink::mojom::CacheStorageCacheAssociatedRequest request);
+      mojo::PendingAssociatedReceiver<blink::mojom::CacheStorageCache>
+          receiver);
   CacheStorageHandle OpenCacheStorage(const url::Origin& origin);
 
   scoped_refptr<CacheStorageContextImpl> context_;
 
   mojo::UniqueReceiverSet<blink::mojom::CacheStorage> receivers_;
-  mojo::StrongAssociatedBindingSet<blink::mojom::CacheStorageCache>
-      cache_bindings_;
+  mojo::UniqueAssociatedReceiverSet<blink::mojom::CacheStorageCache>
+      cache_receivers_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(CacheStorageDispatcherHost);

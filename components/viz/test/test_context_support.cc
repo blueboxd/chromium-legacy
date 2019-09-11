@@ -131,9 +131,14 @@ unsigned int TestContextSupport::GetTransferBufferFreeSize() const {
   NOTIMPLEMENTED();
   return 0;
 }
+bool TestContextSupport::IsJpegDecodeAccelerationSupported() const {
+  return false;
+}
+bool TestContextSupport::IsWebPDecodeAccelerationSupported() const {
+  return false;
+}
 bool TestContextSupport::CanDecodeWithHardwareAcceleration(
     base::span<const uint8_t> encoded_data) const {
-  NOTIMPLEMENTED();
   return false;
 }
 

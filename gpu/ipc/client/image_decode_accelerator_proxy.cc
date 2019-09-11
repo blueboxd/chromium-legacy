@@ -191,6 +191,26 @@ bool ImageDecodeAcceleratorProxy::IsImageSupported(
   return false;
 }
 
+bool ImageDecodeAcceleratorProxy::IsJpegDecodeAccelerationSupported() const {
+  const auto& profiles =
+      host_->gpu_info().image_decode_accelerator_supported_profiles;
+  for (const auto& profile : profiles) {
+    if (profile.image_type == ImageDecodeAcceleratorType::kJpeg)
+      return true;
+  }
+  return false;
+}
+
+bool ImageDecodeAcceleratorProxy::IsWebPDecodeAccelerationSupported() const {
+  const auto& profiles =
+      host_->gpu_info().image_decode_accelerator_supported_profiles;
+  for (const auto& profile : profiles) {
+    if (profile.image_type == ImageDecodeAcceleratorType::kWebP)
+      return true;
+  }
+  return false;
+}
+
 SyncToken ImageDecodeAcceleratorProxy::ScheduleImageDecode(
     base::span<const uint8_t> encoded_data,
     const gfx::Size& output_size,

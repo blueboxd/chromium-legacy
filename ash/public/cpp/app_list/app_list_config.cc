@@ -16,6 +16,11 @@ namespace app_list {
 
 namespace {
 
+// The height reduced from the tile when min scale is not sufficient to make the
+// apps grid fit the available size - This would essentially remove the vertical
+// padding for the unclipped folder icon.
+constexpr int kMinYScaleHeightAdjustment = 16;
+
 // Scales |value| using the smaller one of |scale_1| and |scale_2|.
 int MinScale(int value, float scale_1, float scale_2) {
   return std::round(value * std::min(scale_1, scale_2));
@@ -245,6 +250,7 @@ AppListConfig::AppListConfig(ash::AppListConfigType type)
       grid_title_color_(SK_ColorWHITE),
       grid_focus_dimension_(GridFocusDimensionForType(type)),
       grid_focus_corner_radius_(GridFocusCornerRadiusForType(type)),
+      grid_fadeout_zone_height_(24),
       search_tile_icon_dimension_(48),
       search_tile_badge_icon_dimension_(22),
       search_tile_badge_icon_offset_(5),
@@ -305,21 +311,31 @@ AppListConfig::AppListConfig(ash::AppListConfigType type)
 AppListConfig::AppListConfig(const AppListConfig& base_config,
                              float scale_x,
                              float scale_y,
-                             float inner_tile_scale_y)
+                             float inner_tile_scale_y,
+                             bool min_y_scale)
     : type_(base_config.type_),
       scale_x_(scale_x),
       scale_y_(scale_y),
       grid_tile_width_(MinScale(base_config.grid_tile_width_, scale_x, 1)),
-      grid_tile_height_(MinScale(base_config.grid_tile_height_, scale_y, 1)),
+      grid_tile_height_(
+          MinScale(base_config.grid_tile_height_ -
+                       (min_y_scale ? kMinYScaleHeightAdjustment : 0),
+                   scale_y,
+                   1)),
       grid_tile_spacing_(base_config.grid_tile_spacing_),
       grid_icon_dimension_(MinScale(base_config.grid_icon_dimension_,
                                     scale_x,
                                     inner_tile_scale_y)),
-      grid_icon_bottom_padding_(MinScale(base_config.grid_icon_bottom_padding_,
-                                         inner_tile_scale_y,
-                                         1)),
+      grid_icon_bottom_padding_(
+          MinScale(base_config.grid_icon_bottom_padding_ +
+                       (min_y_scale ? kMinYScaleHeightAdjustment : 0),
+                   inner_tile_scale_y,
+                   1)),
       grid_title_top_padding_(
-          MinScale(base_config.grid_title_top_padding_, inner_tile_scale_y, 1)),
+          MinScale(base_config.grid_title_top_padding_ -
+                       (min_y_scale ? kMinYScaleHeightAdjustment : 0),
+                   inner_tile_scale_y,
+                   1)),
       grid_title_bottom_padding_(
           MinScale(base_config.grid_title_bottom_padding_,
                    inner_tile_scale_y,
@@ -334,6 +350,10 @@ AppListConfig::AppListConfig(const AppListConfig& base_config,
       grid_focus_corner_radius_(MinScale(base_config.grid_focus_corner_radius_,
                                          scale_x,
                                          inner_tile_scale_y)),
+      grid_fadeout_zone_height_(
+          min_y_scale
+              ? 8
+              : MinScale(base_config.grid_fadeout_zone_height_, scale_y, 1)),
       search_tile_icon_dimension_(base_config.search_tile_icon_dimension_),
       search_tile_badge_icon_dimension_(
           base_config.search_tile_badge_icon_dimension_),
@@ -347,7 +367,8 @@ AppListConfig::AppListConfig(const AppListConfig& base_config,
       suggestion_chip_icon_dimension_(
           base_config.suggestion_chip_icon_dimension_),
       app_title_max_line_height_(base_config.app_title_max_line_height_),
-      app_title_font_(base_config.app_title_font_),
+      app_title_font_(base_config.app_title_font_.DeriveWithSizeDelta(
+          min_y_scale ? -2 : (scale_y < 0.66 ? -1 : 0))),
       peeking_app_list_height_(base_config.peeking_app_list_height_),
       search_box_closed_top_padding_(
           base_config.search_box_closed_top_padding_),
@@ -389,7 +410,7 @@ AppListConfig::AppListConfig(const AppListConfig& base_config,
       folder_dropping_circle_radius_(
           MinScale(base_config.folder_dropping_circle_radius_,
                    scale_x,
-                   scale_y)),
+                   inner_tile_scale_y)),
       folder_dropping_delay_(base_config.folder_dropping_delay_),
       folder_background_color_(base_config.folder_background_color_),
       page_flip_zone_size_(base_config.page_flip_zone_size_),

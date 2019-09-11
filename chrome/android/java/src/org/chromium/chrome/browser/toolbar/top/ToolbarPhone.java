@@ -496,7 +496,6 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             });
         }
         onHomeButtonUpdate(HomepageManager.isHomepageEnabled()
-                || FeatureUtilities.isNewTabPageButtonEnabled()
                 || FeatureUtilities.isBottomToolbarEnabled());
 
         setTabSwitcherAnimationMenuDrawable();
@@ -1624,11 +1623,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     public void updateButtonVisibility() {
         if (mHomeButton == null) return;
 
-        boolean isNTP = getToolbarDataProvider().getNewTabPageForCurrentTab() != null;
-        boolean hideHomeButton = FeatureUtilities.isNewTabPageButtonEnabled()
-                ? isNTP || isIncognito()
-                : !mIsHomeButtonEnabled;
-        if (mIsBottomToolbarVisible) hideHomeButton = true;
+        boolean hideHomeButton = !mIsHomeButtonEnabled || mIsBottomToolbarVisible;
         if (hideHomeButton) {
             removeHomeButton();
         } else {

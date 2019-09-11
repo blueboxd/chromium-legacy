@@ -59,6 +59,8 @@
     [SetterCallWith=Isolate, RaisesException=Setter, Unforgeable] attribute USVString search;
     [SetterCallWith=Isolate, RaisesException=Setter, Unforgeable] attribute USVString hash;
 
+    [RuntimeEnabled=TextFragmentIdentifiers] readonly attribute Selector selector;
+
     // TODO(foolip): Location does not have a valueOf() override in the spec.
     // See the comment in Location.h for the purpose of this.
     [NotEnumerable, CallWith=ThisValue, Unforgeable] any valueOf();

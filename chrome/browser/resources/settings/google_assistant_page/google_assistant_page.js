@@ -15,8 +15,8 @@ const DspHotwordState = {
 /**
  * Indicates user's activity control consent status.
  *
- * Note: This should be kept in sync with ash::mojom::ConsentStatus in
- * ash/public/mojom/voice_interaction_controller.mojom
+ * Note: This should be kept in sync with ConsentStatus in
+ * chromeos/services/assistant/public/cpp/assistant_prefs.h
  * @enum {number}
  */
 const ConsentStatus = {

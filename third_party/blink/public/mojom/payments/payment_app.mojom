@@ -50,6 +50,13 @@ struct PaymentInstrument {
   array<BasicCardType> supported_types;
 };
 
+enum PaymentDelegation {
+  SHIPPING_ADDRESS,
+  PAYER_NAME,
+  PAYER_PHONE,
+  PAYER_EMAIL,
+};
+
 // This interface provides implementation of PaymentInstruments.idl
 // and PaymentManager.idl in render side. This interface is implemented
 // by payment_manager.cc and runs in browser side.
@@ -72,6 +79,11 @@ interface PaymentManager {
   ClearPaymentInstruments()
       => (PaymentHandlerStatus status);
   SetUserHint(string user_hint);
+  // A method from PaymentManager.idl which lets payment handlers specify
+  // whether or not they can handle shipping address or contact info (payer's
+  // name/email/phone).
+  EnableDelegations(array<PaymentDelegation> delegations)
+     =>(PaymentHandlerStatus status);
 };
 
 // This struct is provided to send payment request data to render side

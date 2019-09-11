@@ -26,7 +26,7 @@ namespace {
 
 class MockPasswordManagerClient : public StubPasswordManagerClient {
  public:
-  MOCK_CONST_METHOD0(GetPasswordStore, PasswordStore*());
+  MOCK_CONST_METHOD0(GetProfilePasswordStore, PasswordStore*());
   MOCK_CONST_METHOD0(GetPasswordSyncState, SyncState());
   MOCK_CONST_METHOD0(IsUnderAdvancedProtection, bool());
 };
@@ -73,7 +73,7 @@ TEST_P(StoreMetricsReporterTest, StoreIndependentMetrics) {
   prefs_.SetInteger(password_manager::prefs::kPasswordManagerOnboardingState,
                     onboarding_state);
   base::HistogramTester histogram_tester;
-  EXPECT_CALL(client_, GetPasswordStore()).WillOnce(Return(nullptr));
+  EXPECT_CALL(client_, GetProfilePasswordStore()).WillOnce(Return(nullptr));
   StoreMetricsReporter reporter(&client_, sync_service(), identity_manager(),
                                 &prefs_);
 
@@ -96,7 +96,7 @@ TEST_P(StoreMetricsReporterTest, StoreDependentMetrics) {
                               ? password_manager::SYNCING_WITH_CUSTOM_PASSPHRASE
                               : password_manager::SYNCING_NORMAL_ENCRYPTION;
   EXPECT_CALL(client_, GetPasswordSyncState()).WillOnce(Return(sync_state));
-  EXPECT_CALL(client_, GetPasswordStore()).WillOnce(Return(store.get()));
+  EXPECT_CALL(client_, GetProfilePasswordStore()).WillOnce(Return(store.get()));
   EXPECT_CALL(client_, IsUnderAdvancedProtection())
       .WillOnce(Return(is_under_advanced_protection));
   EXPECT_CALL(*store,

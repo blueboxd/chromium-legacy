@@ -28,7 +28,9 @@ class XRSpace : public EventTargetWithInlineData {
   explicit XRSpace(XRSession*);
   ~XRSpace() override;
 
-  // Get a transform that maps from this space to mojo space.
+  // Get a transform that maps from this space to mojo space (aka device space).
+  // Unless noted otherwise, all data returned over vr_service.mojom interfaces
+  // is relative to mojo space.
   // Returns nullptr if computing a transform is not possible.
   virtual std::unique_ptr<TransformationMatrix> GetTransformToMojoSpace();
 

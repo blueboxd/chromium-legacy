@@ -56,6 +56,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
+import org.chromium.chrome.browser.util.ChromeIntentUtil;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -197,7 +198,7 @@ public class DownloadUtils {
                 tab.loadUrl(params);
 
                 // Bring Chrome to the foreground, if possible.
-                Intent intent = IntentUtils.createBringTabToFrontIntent(tab.getId());
+                Intent intent = ChromeIntentUtil.createBringTabToFrontIntent(tab.getId());
                 if (intent != null) {
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     IntentUtils.safeStartActivity(appContext, intent);

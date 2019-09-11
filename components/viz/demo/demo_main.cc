@@ -173,6 +173,7 @@ class DemoWindow : public ui::PlatformWindowDelegate {
   void OnLostCapture() override {}
   void OnAcceleratedWidgetDestroyed() override {}
   void OnActivationChanged(bool active) override {}
+  void OnMouseEnter() override {}
 
   std::unique_ptr<demo::DemoHost> host_;
   std::unique_ptr<demo::DemoService> service_;

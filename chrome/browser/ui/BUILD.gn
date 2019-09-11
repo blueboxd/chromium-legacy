@@ -1990,6 +1990,7 @@ jumbo_split_static_library("ui") {
       "autofill/payments/webauthn_offer_dialog_controller_impl.h",
       "autofill/payments/webauthn_offer_dialog_model.cc",
       "autofill/payments/webauthn_offer_dialog_model.h",
+      "autofill/payments/webauthn_offer_dialog_model_observer.h",
       "autofill/payments/webauthn_offer_dialog_view.h",
       "frame/window_frame_util.cc",
       "frame/window_frame_util.h",

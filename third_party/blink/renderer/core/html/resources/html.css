@@ -407,7 +407,7 @@ input, textarea, select, button {
     margin: 0__qem;
     font: -webkit-small-control;
     text-rendering: auto; /* FIXME: Remove when tabs work with optimizeLegibility. */
-    color: initial;
+    color: -internal-light-dark-color(black, white);
     letter-spacing: normal;
     word-spacing: normal;
     line-height: normal;
@@ -425,7 +425,7 @@ input[type="hidden" i] {
 input {
     -webkit-appearance: textfield; /* AutoAppearanceFor() should match to this. */
     padding: 1px;
-    background-color: white;
+    background-color: -internal-light-dark-color(white, black);
     border: 2px inset;
     -webkit-rtl-ordering: logical;
     cursor: text;
@@ -498,7 +498,7 @@ select {
 
 textarea {
     -webkit-appearance: textarea; /* AutoAppearanceFor() should match to this. */
-    background-color: white;
+    background-color: -internal-light-dark-color(white, black);
     border: 1px solid;
     -webkit-rtl-ordering: logical;
     flex-direction: column;
@@ -511,7 +511,7 @@ textarea {
 
 ::-webkit-input-placeholder {
     -webkit-text-security: none;
-    color: rgba(0, 0, 0, 0.54);
+    color: -internal-light-dark-color(rgba(0, 0, 0, 0.54), rgba(255, 255, 255, 0.54));
     pointer-events: none !important;
 }
 
@@ -568,7 +568,7 @@ textarea:-internal-autofill-previewed,
 select:-internal-autofill-previewed {
   background-color: #E8F0FE !important;
   background-image:none !important;
-  color: #000000 !important;
+  color: -internal-light-dark-color(black, white) !important;
 }
 
 input:-internal-autofill-selected,
@@ -576,7 +576,7 @@ textarea:-internal-autofill-selected,
 select:-internal-autofill-selected {
   background-color: #E8F0FE !important;
   background-image:none !important;
-  color: #000000 !important;
+  color: -internal-light-dark-color(black, white) !important;
 }
 
 input[type="radio" i], input[type="checkbox" i] {
@@ -790,8 +790,8 @@ select {
     border: 1px solid;
     white-space: pre;
     -webkit-rtl-ordering: logical;
-    color: black;
-    background-color: white;
+    color: -internal-light-dark-color(black, white);
+    background-color: -internal-light-dark-color(white, black);
     cursor: default;
 }
 
@@ -1146,8 +1146,8 @@ dialog {
     margin: auto;
     border: solid;
     padding: 1em;
-    background: white;
-    color: black
+    background: -internal-light-dark-color(white, black);
+    color: -internal-light-dark-color(black, white);
 }
 
 /* TODO(foolip): In the Fullscreen spec, there's a ::backdrop block with the

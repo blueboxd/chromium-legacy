@@ -50,7 +50,7 @@ void AssistantStateProxy::SetPrefConnectionDelegateForTesting(
 }
 
 void AssistantStateProxy::OnAssistantStatusChanged(
-    ash::mojom::VoiceInteractionState state) {
+    ash::mojom::AssistantState state) {
   UpdateAssistantStatus(state);
 }
 

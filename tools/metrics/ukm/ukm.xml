@@ -6083,6 +6083,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="Generation.SpecPriority">
+    <obsolete>
+      Deprecated 09/2019.
+    </obsolete>
     <summary>
       Reports the priority of a PasswordGenerationRequirementsSpec for a
       generated password. This can be used for debugging as a 0 means that no
@@ -6106,6 +6109,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="ParsingComparison">
+    <obsolete>
+      Deprecated 09/2019.
+    </obsolete>
     <summary>
       Records comparison result of old and new password form parsing algorithms.
       Metric is recorded on a password form detection. Recorded values
@@ -6114,6 +6120,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="ParsingOnSavingDifference">
+    <obsolete>
+      Deprecated 09/2019.
+    </obsolete>
     <summary>
       Records the comparison of the old and new password form parsing for
       saving. Multiple values from the

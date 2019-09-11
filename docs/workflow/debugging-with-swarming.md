@@ -64,7 +64,12 @@ $ tools/mb/mb.py isolate //$outdir $target
 ```
 
 This will produce some files in $outdir. The most pertinent two are
-`$outdir/$target.isolate` and $outdir/target.isolated`.
+`$outdir/$target.isolate` and `$outdir/target.isolated`. If you've already built
+$target, you can save some CPU time and run `tools/mb/mb.py` with `--no-build`:
+
+```
+$ tools/mb/mb.py isolate --no-build //$outdir $target
+```
 
 Support for building an isolate using swarming, which would allow you to build
 for a platform you can't build for locally, does not yet exist.

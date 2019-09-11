@@ -18,8 +18,8 @@ import java.lang.annotation.RetentionPolicy;
         FeatureConstants.CHROME_DUET_FEATURE, FeatureConstants.CHROME_HOME_EXPAND_FEATURE,
         FeatureConstants.CHROME_HOME_PULL_TO_REFRESH_FEATURE,
         FeatureConstants.DATA_SAVER_PREVIEW_FEATURE, FeatureConstants.DATA_SAVER_DETAIL_FEATURE,
-        FeatureConstants.NTP_BUTTON_FEATURE, FeatureConstants.PREVIEWS_OMNIBOX_UI_FEATURE,
-        FeatureConstants.HOMEPAGE_TILE_FEATURE, FeatureConstants.TRANSLATE_MENU_BUTTON_FEATURE,
+        FeatureConstants.PREVIEWS_OMNIBOX_UI_FEATURE,
+        FeatureConstants.TRANSLATE_MENU_BUTTON_FEATURE,
         FeatureConstants.CONTEXTUAL_SEARCH_WEB_SEARCH_FEATURE,
         FeatureConstants.CONTEXTUAL_SEARCH_PROMOTE_TAP_FEATURE,
         FeatureConstants.CONTEXTUAL_SEARCH_PROMOTE_PANEL_OPEN_FEATURE,
@@ -49,9 +49,7 @@ public @interface FeatureConstants {
     String KEYBOARD_ACCESSORY_ADDRESS_FILL_FEATURE = "IPH_KeyboardAccessoryAddressFilling";
     String KEYBOARD_ACCESSORY_PASSWORD_FILLING_FEATURE = "IPH_KeyboardAccessoryPasswordFilling";
     String KEYBOARD_ACCESSORY_PAYMENT_FILLING_FEATURE = "IPH_KeyboardAccessoryPaymentFilling";
-    String NTP_BUTTON_FEATURE = "IPH_NewTabPageButton";
     String PREVIEWS_OMNIBOX_UI_FEATURE = "IPH_PreviewsOmniboxUI";
-    String HOMEPAGE_TILE_FEATURE = "IPH_HomepageTile";
     String TRANSLATE_MENU_BUTTON_FEATURE = "IPH_TranslateMenuButton";
     String EXPLORE_SITES_TILE_FEATURE = "IPH_ExploreSitesTile";
 

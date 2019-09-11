@@ -11,8 +11,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
+#include "net/test/url_request/url_request_test_job_backed_by_file.h"
 #include "net/url_request/url_request.h"
-#include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,18 +21,18 @@ namespace net {
 
 namespace {
 
-// This class is needed because URLRequestFileJob always returns a -1
-// HTTP response status code.
-class TestURLRequestJob : public URLRequestFileJob {
+// This class is needed because URLRequestTestJobBackedByFile always returns a
+// -1 HTTP response status code.
+class TestURLRequestJob : public URLRequestTestJobBackedByFile {
  public:
   TestURLRequestJob(URLRequest* request,
                     NetworkDelegate* network_delegate,
                     const base::FilePath& file_path,
                     const scoped_refptr<base::TaskRunner>& worker_task_runner)
-      : URLRequestFileJob(request,
-                          network_delegate,
-                          file_path,
-                          worker_task_runner) {}
+      : URLRequestTestJobBackedByFile(request,
+                                      network_delegate,
+                                      file_path,
+                                      worker_task_runner) {}
 
   void GetResponseInfo(HttpResponseInfo* info) override {
     info->headers = new net::HttpResponseHeaders("HTTP/1.1 200 OK");

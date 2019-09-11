@@ -13,10 +13,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_embedder_interface.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
-#include "chrome/browser/prerender/prerender_contents.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_handle.h"
@@ -199,11 +197,8 @@ PageLoadTracker::PageLoadTracker(
 
   UMA_HISTOGRAM_BOOLEAN(internal::kPageLoadStartedInForeground,
                         started_in_foreground_);
-  const bool is_prerender = prerender::PrerenderContents::FromWebContents(
-                                navigation_handle->GetWebContents()) != nullptr;
-  if (is_prerender) {
+  if (embedder_interface_->IsPrerender(navigation_handle->GetWebContents()))
     UMA_HISTOGRAM_BOOLEAN(internal::kPageLoadPrerender, true);
-  }
 }
 
 PageLoadTracker::~PageLoadTracker() {

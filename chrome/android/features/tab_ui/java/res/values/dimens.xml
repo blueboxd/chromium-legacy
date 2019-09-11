@@ -17,6 +17,7 @@
     <dimen name="tab_grid_iph_card_text_inset">16dp</dimen>
     <dimen name="tab_grid_iph_card_close_button_size">18dp</dimen>
     <dimen name="tab_grid_iph_dialog_size">370dp</dimen>
+    <dimen name="tab_grid_iph_dialog_animated_drawable_size">220dp</dimen>
     <dimen name="tab_grid_merge_threshold">45dp</dimen>
     <dimen name="tab_grid_thumbnail_card_default_size">152dp</dimen>
     <dimen name="tab_grid_thumbnail_favicon_frame_padding">16dp</dimen>

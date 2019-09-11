@@ -5,7 +5,6 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_NETWORK_SERVICE_ANDROID_STREAM_READER_URL_LOADER_H_
 #define ANDROID_WEBVIEW_BROWSER_NETWORK_SERVICE_ANDROID_STREAM_READER_URL_LOADER_H_
 
-#include "android_webview/browser/network_service/aw_web_resource_response.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/http/http_byte_range.h"

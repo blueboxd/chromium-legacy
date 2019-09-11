@@ -193,7 +193,7 @@ base::Value HttpRequestHeaders::NetLogParams(
   for (auto it = headers_.begin(); it != headers_.end(); ++it) {
     std::string log_value =
         ElideHeaderValueForNetLog(capture_mode, it->key, it->value);
-    headers->GetList().push_back(
+    headers->Append(
         NetLogStringValue(base::StrCat({it->key, ": ", log_value})));
   }
   dict.Set("headers", std::move(headers));

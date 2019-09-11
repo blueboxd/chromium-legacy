@@ -789,10 +789,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   void NotifyReceivedRedirect(const RedirectInfo& redirect_info,
                               bool* defer_redirect);
 
-  // Allow an interceptor's URLRequestJob to restart this request.
-  // Should only be called if the original job has not started a response.
-  void Restart();
-
  private:
   friend class URLRequestJob;
   friend class URLRequestContext;

@@ -392,8 +392,7 @@ void ThrottlingURLLoader::StartNow() {
 
     net::RedirectInfo redirect_info = net::RedirectInfo::ComputeRedirectInfo(
         start_info_->url_request.method, start_info_->url_request.url,
-        start_info_->url_request.site_for_cookies,
-        start_info_->url_request.top_frame_origin, first_party_url_policy,
+        start_info_->url_request.site_for_cookies, first_party_url_policy,
         start_info_->url_request.referrer_policy,
         start_info_->url_request.referrer.spec(),
         // Use status code 307 to preserve the method, so POST requests work.
@@ -626,7 +625,6 @@ void ThrottlingURLLoader::OnReceiveRedirect(
   request.url = redirect_info.new_url;
   request.method = redirect_info.new_method;
   request.site_for_cookies = redirect_info.new_site_for_cookies;
-  request.top_frame_origin = redirect_info.new_top_frame_origin;
   request.referrer = GURL(redirect_info.new_referrer);
   request.referrer_policy = redirect_info.new_referrer_policy;
 

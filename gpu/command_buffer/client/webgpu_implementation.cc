@@ -153,6 +153,14 @@ unsigned int WebGPUImplementation::GetTransferBufferFreeSize() const {
   NOTREACHED();
   return 0;
 }
+bool WebGPUImplementation::IsJpegDecodeAccelerationSupported() const {
+  NOTREACHED();
+  return false;
+}
+bool WebGPUImplementation::IsWebPDecodeAccelerationSupported() const {
+  NOTREACHED();
+  return false;
+}
 bool WebGPUImplementation::CanDecodeWithHardwareAcceleration(
     base::span<const uint8_t> encoded_data) const {
   NOTREACHED();

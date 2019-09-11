@@ -482,4 +482,43 @@ TEST_F(CanvasResourceProviderTest,
   EXPECT_EQ(provider->NewOrRecycledResource(), resource);
 }
 
+// Verifies that Accelerated Direct 3D resources are backed by SharedImages.
+// https://crbug.com/985366
+TEST_F(CanvasResourceProviderTest, CanvasResourceProviderDirect3D) {
+  const IntSize kSize(10, 10);
+  const CanvasColorParams kColorParams(kSRGBCanvasColorSpace,
+                                       kRGBA8CanvasPixelFormat, kNonOpaque);
+
+  auto provider = CanvasResourceProvider::Create(
+      kSize,
+      CanvasResourceProvider::ResourceUsage::kAcceleratedDirect3DResourceUsage,
+      context_provider_wrapper_, 0 /* msaa_sample_count */,
+      kLow_SkFilterQuality, kColorParams,
+      CanvasResourceProvider::kDefaultPresentationMode,
+      nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
+
+  EXPECT_EQ(provider->Size(), kSize);
+  EXPECT_TRUE(provider->IsValid());
+  EXPECT_TRUE(provider->IsAccelerated());
+  EXPECT_TRUE(provider->SupportsDirectCompositing());
+  EXPECT_FALSE(provider->SupportsSingleBuffering());
+  EXPECT_EQ(provider->ColorParams().ColorSpace(), kColorParams.ColorSpace());
+  EXPECT_EQ(provider->ColorParams().PixelFormat(), kColorParams.PixelFormat());
+  EXPECT_EQ(provider->ColorParams().GetOpacityMode(),
+            kColorParams.GetOpacityMode());
+
+  EXPECT_FALSE(provider->IsSingleBuffered());
+  provider->TryEnableSingleBuffering();
+  EXPECT_FALSE(provider->IsSingleBuffered());
+
+  auto resource = provider->ProduceCanvasResource();
+  viz::TransferableResource transferable_resource;
+  std::unique_ptr<viz::SingleReleaseCallback> callback;
+  resource->PrepareTransferableResource(&transferable_resource, &callback,
+                                        kOrderingBarrier);
+  EXPECT_TRUE(transferable_resource.mailbox_holder.mailbox.IsSharedImage());
+  EXPECT_FALSE(transferable_resource.is_overlay_candidate);
+  callback->Run(gpu::SyncToken(), true /* is_lost */);
+}
+
 }  // namespace blink

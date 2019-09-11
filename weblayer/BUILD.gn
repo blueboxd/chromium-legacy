@@ -80,12 +80,14 @@ jumbo_static_library("weblayer_lib") {
     "//content/app/resources",
     "//content/app/strings",
     "//content/public/app:both",
-    "//content/public/child:child",
+    "//content/public/browser",
+    "//content/public/child",
     "//content/public/common",
     "//content/public/common:service_names",
     "//net",
     "//net:net_resources",
     "//sandbox",
+    "//services/service_manager/embedder:embedder_result_codes",
     "//skia",
     "//third_party/icu",
     "//ui/base",
@@ -130,6 +132,7 @@ jumbo_static_library("weblayer_lib") {
 
   if (is_android) {
     deps += [
+      "//components/version_info",
       "//ui/android",
       "//weblayer/browser/java:jni",
     ]
@@ -143,6 +146,9 @@ jumbo_static_library("weblayer_lib") {
       "browser/top_controls_container_view.cc",
       "browser/top_controls_container_view.h",
     ]
+  }
+  if (!is_android) {
+    deps += [ "//ui/views/controls/webview" ]
   }
 
   if (toolkit_views) {

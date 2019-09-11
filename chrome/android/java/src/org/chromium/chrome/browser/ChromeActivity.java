@@ -36,7 +36,6 @@ import android.view.WindowManager;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityManager.AccessibilityStateChangeListener;
 import android.view.accessibility.AccessibilityManager.TouchExplorationStateChangeListener;
-import org.chromium.base.annotations.UsedByReflection;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
@@ -52,6 +51,7 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -65,6 +65,7 @@ import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
+import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCoordinator;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabPanel;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
@@ -151,7 +152,7 @@ import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.vr.ArDelegate;
 import org.chromium.chrome.browser.vr.ArDelegateProvider;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
-import org.chromium.chrome.browser.webapps.AddToHomescreenManager;
+import org.chromium.chrome.browser.webapps.addtohomescreen.AddToHomescreenManager;
 import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
@@ -284,6 +285,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     @Nullable
     private ToolbarManager mToolbarManager;
     private BottomSheetController mBottomSheetController;
+    private EphemeralTabCoordinator mEphemeralTabCoordinator;
     private UpdateNotificationController mUpdateNotificationController;
     private BottomSheet mBottomSheet;
     private ScrimView mScrimView;
@@ -1427,6 +1429,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             initializeBottomSheet(true);
         }
 
+        if (mBottomSheet != null) {
+            mEphemeralTabCoordinator = new EphemeralTabCoordinator(this, mBottomSheetController);
+        }
+
         // TODO(crbug.com/959841): Once crrev.com/c/1669360 is submitted, make the code below
         // conditional on ChromeFeatureList.isEnabled(ChromeFeatureList.DIRECT_ACTIONS)
         mDirectActionInitializer = DirectActionInitializer.create(mTabModelSelector);
@@ -1798,6 +1804,13 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     public ContextualSearchManager getContextualSearchManager() {
         return mContextualSearchManager;
+    }
+
+    /**
+     * @return The {@code EphemeralTabCoordinator}.
+     */
+    public EphemeralTabCoordinator getEphemeralTabCoordinator() {
+        return mEphemeralTabCoordinator;
     }
 
     /**

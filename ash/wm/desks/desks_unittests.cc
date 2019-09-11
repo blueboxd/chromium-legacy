@@ -1354,7 +1354,7 @@ TEST_F(DesksTest, NewDeskButtonStateAndColor) {
   const SkColor disabled_background_color =
       AshColorProvider::GetDisabledColor(background_color);
   EXPECT_TRUE(new_desk_button->GetEnabled());
-  EXPECT_EQ(background_color, new_desk_button->background()->get_color());
+  EXPECT_EQ(background_color, new_desk_button->GetBackgroundColorForTesting());
 
   const gfx::Point button_center =
       new_desk_button->GetBoundsInScreen().CenterPoint();
@@ -1362,7 +1362,7 @@ TEST_F(DesksTest, NewDeskButtonStateAndColor) {
   event_generator->MoveMouseTo(button_center);
   event_generator->ClickLeftButton();
   EXPECT_TRUE(new_desk_button->GetEnabled());
-  EXPECT_EQ(background_color, new_desk_button->background()->get_color());
+  EXPECT_EQ(background_color, new_desk_button->GetBackgroundColorForTesting());
 
   // Tests that adding desks until we reach the desks limit should change the
   // state and color of the new desk button.
@@ -1374,7 +1374,7 @@ TEST_F(DesksTest, NewDeskButtonStateAndColor) {
   }
   EXPECT_FALSE(new_desk_button->GetEnabled());
   EXPECT_EQ(disabled_background_color,
-            new_desk_button->background()->get_color());
+            new_desk_button->GetBackgroundColorForTesting());
 }
 
 class TabletModeDesksTest : public DesksTest {

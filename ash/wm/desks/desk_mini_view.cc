@@ -25,11 +25,10 @@ namespace {
 
 constexpr int kLabelPreviewSpacing = 8;
 
-constexpr int kCloseButtonMargin = 4;
+constexpr int kCloseButtonMargin = 8;
 
-constexpr SkColor kActiveColor = SkColorSetA(SK_ColorWHITE, 0xCC);  // 80%
-
-constexpr SkColor kInactiveColor = SkColorSetA(SK_ColorWHITE, 0x33);  // 20%
+constexpr SkColor kActiveColor = SK_ColorWHITE;
+constexpr SkColor kInactiveColor = SK_ColorTRANSPARENT;
 
 constexpr SkColor kDraggedOverColor = SkColorSetARGB(0xFF, 0x5B, 0xBC, 0xFF);
 

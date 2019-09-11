@@ -56,6 +56,11 @@ void inline ScopedGenericArObject<ArPlane*>::Free(ArPlane* ar_plane) {
 }
 
 template <>
+void inline ScopedGenericArObject<ArAnchor*>::Free(ArAnchor* ar_anchor) {
+  ArAnchor_release(ar_anchor);
+}
+
+template <>
 void inline ScopedGenericArObject<ArTrackableList*>::Free(
     ArTrackableList* ar_trackable_list) {
   ArTrackableList_destroy(ar_trackable_list);
@@ -108,6 +113,13 @@ class ArCoreImpl : public ArCore {
 
   bool RequestHitTest(const mojom::XRRayPtr& ray,
                       std::vector<mojom::XRHitResultPtr>* hit_results) override;
+
+  base::Optional<int32_t> CreateAnchor(
+      const device::mojom::VRPosePtr& pose) override;
+  base::Optional<int32_t> CreateAnchor(const device::mojom::VRPosePtr& pose,
+                                       int32_t plane_id) override;
+
+  void DetachAnchor(int32_t anchor_id) override;
 
  private:
   bool IsOnGlThread();
@@ -162,7 +174,12 @@ class ArCoreImpl : public ArCore {
 
   int32_t next_id_ = 1;
   std::unordered_map<void*, int32_t> ar_plane_address_to_id_;
+  std::unordered_map<int32_t,
+                     device::internal::ScopedArCoreObject<ArTrackable*>>
+      plane_id_to_plane_object_;
   std::unordered_map<void*, int32_t> ar_anchor_address_to_id_;
+  std::unordered_map<int32_t, device::internal::ScopedArCoreObject<ArAnchor*>>
+      anchor_id_to_anchor_object_;
 
   // Returns tuple containing plane id and a boolean signifying that the plane
   // was created. The result will be a nullopt in case the ID should be assigned

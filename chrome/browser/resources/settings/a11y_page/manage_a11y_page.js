@@ -126,6 +126,18 @@ Polymer({
     },
 
     /**
+     * Whether this page shown as part of OS settings.
+     * TODO(crbug.com/986596): Remove this when SplitSettings is the default.
+     * @private
+     */
+    isOSSettings_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('isOSSettings');
+      },
+    },
+
+    /**
      * |hasKeyboard_|starts undefined so observers don't trigger
      * until it has been populated.
      * @private

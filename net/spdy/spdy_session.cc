@@ -1427,7 +1427,7 @@ base::Value SpdySession::GetInfoAsValue() const {
   if (!pooled_aliases_.empty()) {
     base::Value alias_list(base::Value::Type::LIST);
     for (const auto& alias : pooled_aliases_) {
-      alias_list.GetList().emplace_back(alias.host_port_pair().ToString());
+      alias_list.Append(alias.host_port_pair().ToString());
     }
     dict.SetKey("aliases", std::move(alias_list));
   }

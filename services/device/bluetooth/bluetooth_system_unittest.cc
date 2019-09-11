@@ -21,7 +21,7 @@
 #include "device/bluetooth/dbus/bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/bluetooth_device_client.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/device_service_test_base.h"
 #include "services/device/public/mojom/bluetooth_system.mojom-test-utils.h"
@@ -741,12 +741,9 @@ class BluetoothSystemTest : public DeviceServiceTestBase,
 
  protected:
   mojo::Remote<mojom::BluetoothSystem> CreateBluetoothSystem() {
-    mojom::BluetoothSystemClientPtr client_ptr;
-    system_client_binding_.Bind(mojo::MakeRequest(&client_ptr));
-
     mojo::Remote<mojom::BluetoothSystem> system;
     system_factory_->Create(system.BindNewPipeAndPassReceiver(),
-                            std::move(client_ptr));
+                            system_client_receiver_.BindNewPipeAndPassRemote());
     return system;
   }
 
@@ -768,7 +765,7 @@ class BluetoothSystemTest : public DeviceServiceTestBase,
   TestBluetoothAdapterClient* test_bluetooth_adapter_client_;
   TestBluetoothDeviceClient* test_bluetooth_device_client_;
 
-  mojo::Binding<mojom::BluetoothSystemClient> system_client_binding_{this};
+  mojo::Receiver<mojom::BluetoothSystemClient> system_client_receiver_{this};
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BluetoothSystemTest);
@@ -777,15 +774,12 @@ class BluetoothSystemTest : public DeviceServiceTestBase,
 // Tests that the Create method for BluetoothSystemFactory works.
 TEST_F(BluetoothSystemTest, FactoryCreate) {
   mojo::Remote<mojom::BluetoothSystem> system;
-  mojo::Binding<mojom::BluetoothSystemClient> client_binding(this);
-
-  mojom::BluetoothSystemClientPtr client_ptr;
-  client_binding.Bind(mojo::MakeRequest(&client_ptr));
+  mojo::Receiver<mojom::BluetoothSystemClient> client_receiver(this);
 
   EXPECT_FALSE(system.is_bound());
 
   system_factory_->Create(system.BindNewPipeAndPassReceiver(),
-                          std::move(client_ptr));
+                          client_receiver.BindNewPipeAndPassRemote());
   base::RunLoop run_loop;
   system.FlushAsyncForTesting(run_loop.QuitClosure());
   run_loop.Run();

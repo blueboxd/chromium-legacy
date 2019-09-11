@@ -5,11 +5,14 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_NETWORK_SERVICE_AW_PROXYING_RESTRICTED_COOKIE_MANAGER_H_
 #define ANDROID_WEBVIEW_BROWSER_NETWORK_SERVICE_AW_PROXYING_RESTRICTED_COOKIE_MANAGER_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
-#include "url/gurl.h"
+
+class GURL;
 
 namespace android_webview {
 

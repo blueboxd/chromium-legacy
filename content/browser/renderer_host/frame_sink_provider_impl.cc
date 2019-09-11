@@ -7,21 +7,22 @@
 namespace content {
 
 FrameSinkProviderImpl::FrameSinkProviderImpl(int32_t process_id)
-    : process_id_(process_id), binding_(this) {}
+    : process_id_(process_id) {}
 
 FrameSinkProviderImpl::~FrameSinkProviderImpl() = default;
 
-void FrameSinkProviderImpl::Bind(mojom::FrameSinkProviderRequest request) {
-  if (binding_.is_bound()) {
+void FrameSinkProviderImpl::Bind(
+    mojo::PendingReceiver<mojom::FrameSinkProvider> receiver) {
+  if (receiver_.is_bound()) {
     DLOG(ERROR) << "Received multiple requests for FrameSinkProvider. "
                 << "There should be only one instance per renderer.";
     return;
   }
-  binding_.Bind(std::move(request));
+  receiver_.Bind(std::move(receiver));
 }
 
 void FrameSinkProviderImpl::Unbind() {
-  binding_.Close();
+  receiver_.reset();
 }
 
 void FrameSinkProviderImpl::CreateForWidget(

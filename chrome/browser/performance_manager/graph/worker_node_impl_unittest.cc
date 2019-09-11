@@ -8,9 +8,9 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
-#include "chrome/browser/performance_manager/graph/graph_test_harness.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
+#include "chrome/browser/performance_manager/test_support/graph_test_harness.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace performance_manager {

@@ -6,7 +6,7 @@
 #define MEDIA_GPU_ANDROID_CODEC_SURFACE_BUNDLE_H_
 
 #include "base/memory/ref_counted_delete_on_sequence.h"
-#include "gpu/ipc/common/android/texture_owner.h"
+#include "gpu/command_buffer/service/texture_owner.h"
 #include "media/base/android/android_overlay.h"
 #include "media/gpu/android/codec_buffer_wait_coordinator.h"
 #include "media/gpu/media_gpu_export.h"

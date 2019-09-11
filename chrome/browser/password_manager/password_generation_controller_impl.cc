@@ -221,9 +221,6 @@ void PasswordGenerationControllerImpl::ShowDialog(PasswordGenerationType type) {
           generation_element_data_->form_signature,
           generation_element_data_->field_signature,
           generation_element_data_->max_password_length, &spec_priority);
-  active_frame_driver_->GetPasswordManager()
-      ->ReportSpecPriorityForGeneratedPassword(generation_element_data_->form,
-                                               spec_priority);
   dialog_view_->Show(password, active_frame_driver_, type);
 }
 

@@ -106,7 +106,7 @@ void IncompatibleApplicationsHandler::HandleRequestIncompatibleApplicationsList(
                 base::Value(application.blacklist_action->message_type()));
     dict.SetKey("url",
                 base::Value(application.blacklist_action->message_url()));
-    application_list.GetList().push_back(std::move(dict));
+    application_list.Append(std::move(dict));
   }
 
   UMA_HISTOGRAM_COUNTS_100("IncompatibleApplicationsPage.NumApplications",

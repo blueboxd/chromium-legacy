@@ -10,6 +10,7 @@
 #include "base/json/string_escape.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/common/trace_event_common.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/sliced_protobuf_input_stream.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_packet.pb.h"
 
 namespace tracing {
@@ -85,7 +86,8 @@ void TrackEventJSONExporter::ProcessPackets(
     // reduces binary bloat and only has the fields we are interested in. So
     // Decode the serialized proto as a ChromeTracePacket.
     perfetto::protos::ChromeTracePacket packet;
-    bool decoded = encoded_packet.Decode(&packet);
+    ::perfetto::SlicedProtobufInputStream stream(&encoded_packet.slices());
+    bool decoded = packet.ParseFromZeroCopyStream(&stream);
     DCHECK(decoded);
 
     // If this is a different packet_sequence_id we have to reset all our state

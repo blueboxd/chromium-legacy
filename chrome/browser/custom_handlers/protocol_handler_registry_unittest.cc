@@ -25,50 +25,11 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_renderer_host.h"
-#include "net/base/request_priority.h"
-#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
 
 namespace {
-
-// FakeURLRequestJobFactory returns NULL for all job creation requests and false
-// for all IsHandledProtocol() requests. FakeURLRequestJobFactory can be chained
-// to ProtocolHandlerRegistry::JobInterceptorFactory so the result of
-// MaybeCreateJobWithProtocolHandler() indicates whether the
-// ProtocolHandlerRegistry properly handled a job creation request.
-class FakeURLRequestJobFactory : public net::URLRequestJobFactory {
-  // net::URLRequestJobFactory implementation:
-  net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
-      const std::string& scheme,
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    return NULL;
-  }
-
-  net::URLRequestJob* MaybeInterceptRedirect(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate,
-      const GURL& location) const override {
-    return nullptr;
-  }
-
-  net::URLRequestJob* MaybeInterceptResponse(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    return nullptr;
-  }
-
-  bool IsHandledProtocol(const std::string& scheme) const override {
-    return false;
-  }
-  bool IsSafeRedirectTarget(const GURL& location) const override {
-    return true;
-  }
-};
 
 std::unique_ptr<base::DictionaryValue> GetProtocolHandlerValue(
     const std::string& protocol,

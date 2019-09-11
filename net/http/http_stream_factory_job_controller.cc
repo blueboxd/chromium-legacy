@@ -886,7 +886,8 @@ void HttpStreamFactory::JobController::MaybeReportBrokenAlternativeService() {
     // network changes.
     session_->http_server_properties()
         ->MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
-            alternative_service_info_.alternative_service());
+            alternative_service_info_.alternative_service(),
+            request_info_.network_isolation_key);
     // Reset error status for Jobs after reporting brokenness.
     ResetErrorStatusForJobs();
     return;
@@ -907,7 +908,8 @@ void HttpStreamFactory::JobController::MaybeReportBrokenAlternativeService() {
   HistogramBrokenAlternateProtocolLocation(
       BROKEN_ALTERNATE_PROTOCOL_LOCATION_HTTP_STREAM_FACTORY_JOB_ALT);
   session_->http_server_properties()->MarkAlternativeServiceBroken(
-      alternative_service_info_.alternative_service());
+      alternative_service_info_.alternative_service(),
+      request_info_.network_isolation_key);
   // Reset error status for Jobs after reporting brokenness.
   ResetErrorStatusForJobs();
 }
@@ -1010,7 +1012,8 @@ HttpStreamFactory::JobController::GetAlternativeServiceInfoInternal(
     if (!quic_advertised && alternative_service_info.protocol() == kProtoQUIC)
       quic_advertised = true;
     const bool is_broken = http_server_properties.IsAlternativeServiceBroken(
-        alternative_service_info.alternative_service());
+        alternative_service_info.alternative_service(),
+        request_info.network_isolation_key);
     net_log_.AddEvent(
         NetLogEventType::HTTP_STREAM_JOB_CONTROLLER_ALT_SVC_FOUND, [&] {
           return NetLogAltSvcParams(&alternative_service_info, is_broken);

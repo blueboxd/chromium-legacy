@@ -22,6 +22,16 @@ enum ShelfAlignment {
   SHELF_ALIGNMENT_BOTTOM_LOCKED,
 };
 
+enum class HotseatState {
+  // Hotseat is shown off screen.
+  kHidden,
+  // Hotseat is shown within the shelf. This will always be the case
+  // in clamshell mode.
+  kShown,
+  // Hotseat is shown above the shelf.
+  kExtended,
+};
+
 enum ShelfAutoHideBehavior {
   // Always auto-hide.
   SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,

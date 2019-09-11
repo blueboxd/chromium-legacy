@@ -24,7 +24,6 @@
     <color name="modal_dialog_scrim_color">@color/black_alpha_65</color>
 
     <!-- Modern color palette -->
-    <color name="black_alpha_11">#1D000000</color>
     <color name="black_alpha_12">#1F000000</color>
     <color name="black_alpha_20">#33000000</color>
     <color name="black_alpha_30">#4D000000</color>
@@ -127,7 +126,6 @@
     <color name="toolbar_background_primary_incognito">@color/default_bg_color_dark_elev_3</color>
     <color name="toolbar_text_box_background">@color/modern_grey_100</color>
     <color name="toolbar_text_box_background_incognito">@color/black_alpha_38</color>
-    <color name="toolbar_shadow_color">@color/black_alpha_11</color>
 
     <!-- LocationBar colors -->
     <color name="locationbar_dark_hint_text">@color/search_box_hint</color>

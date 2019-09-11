@@ -26,7 +26,7 @@ class URLRequest;
 
 namespace android_webview {
 
-class AwWebResourceResponse;
+class AwWebResourceInterceptResponse;
 struct AwWebResourceRequest;
 
 // This class provides a means of calling Java methods on an instance that has
@@ -109,11 +109,11 @@ class AwContentsIoThreadClient {
                               int child_render_frame_id);
 
   // This method is called on the IO thread only.
-  using ShouldInterceptRequestResultCallback =
-      base::OnceCallback<void(std::unique_ptr<AwWebResourceResponse>)>;
+  using ShouldInterceptRequestResponseCallback =
+      base::OnceCallback<void(std::unique_ptr<AwWebResourceInterceptResponse>)>;
   void ShouldInterceptRequestAsync(
       AwWebResourceRequest request,
-      ShouldInterceptRequestResultCallback callback);
+      ShouldInterceptRequestResponseCallback callback);
 
   // Retrieve the AllowContentAccess setting value of this AwContents.
   // This method is called on the IO thread only.

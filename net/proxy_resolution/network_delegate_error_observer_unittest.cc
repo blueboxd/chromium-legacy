@@ -75,11 +75,6 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
                       bool allowed_from_caller) override {
     return allowed_from_caller;
   }
-  bool OnCanAccessFile(const URLRequest& request,
-                       const base::FilePath& original_path,
-                       const base::FilePath& absolute_path) const override {
-    return true;
-  }
 
   bool got_pac_error_;
 };

@@ -128,9 +128,7 @@ class CastMirroringServiceHostBrowserTest
       public mojom::AudioStreamCreatorClient {
  public:
   CastMirroringServiceHostBrowserTest()
-      : observer_binding_(this),
-        outbound_channel_binding_(this),
-        audio_client_binding_(this) {}
+      : observer_binding_(this), outbound_channel_binding_(this) {}
   ~CastMirroringServiceHostBrowserTest() override {}
 
  protected:
@@ -194,13 +192,11 @@ class CastMirroringServiceHostBrowserTest
     media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                                   media::CHANNEL_LAYOUT_STEREO, kAudioTimebase,
                                   kAudioTimebase / 100);
-    mojom::AudioStreamCreatorClientPtr audio_client_ptr;
-    audio_client_binding_.Bind(mojo::MakeRequest(&audio_client_ptr));
     base::RunLoop run_loop;
     EXPECT_CALL(*this, OnAudioStreamCreated())
         .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
-    host_->CreateAudioStream(std::move(audio_client_ptr), params,
-                             kTotalSegments);
+    host_->CreateAudioStream(audio_client_receiver_.BindNewPipeAndPassRemote(),
+                             params, kTotalSegments);
     run_loop.Run();
   }
 
@@ -232,7 +228,7 @@ class CastMirroringServiceHostBrowserTest
 
   mojo::Binding<mojom::SessionObserver> observer_binding_;
   mojo::Binding<mojom::CastMessageChannel> outbound_channel_binding_;
-  mojo::Binding<mojom::AudioStreamCreatorClient> audio_client_binding_;
+  mojo::Receiver<mojom::AudioStreamCreatorClient> audio_client_receiver_{this};
   mojom::CastMessageChannelPtr inbound_channel_;
 
   std::unique_ptr<CastMirroringServiceHost> host_;

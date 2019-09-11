@@ -16,7 +16,7 @@
 #include "gpu/command_buffer/service/gl_stream_texture_image.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/stream_texture_shared_image_interface.h"
-#include "gpu/ipc/common/android/texture_owner.h"
+#include "gpu/command_buffer/service/texture_owner.h"
 #include "gpu/ipc/service/command_buffer_stub.h"
 #include "ipc/ipc_listener.h"
 #include "ui/gl/android/surface_texture.h"

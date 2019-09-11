@@ -46,8 +46,7 @@ class AssistantContainerViewTest : public AshTestBase {
 
     // After mocks are set up our Assistant service is ready for use. Indicate
     // this by changing status from NOT_READY to STOPPED.
-    AssistantState::Get()->NotifyStatusChanged(
-        mojom::VoiceInteractionState::STOPPED);
+    AssistantState::Get()->NotifyStatusChanged(mojom::AssistantState::READY);
   }
 
   AssistantUiController* ui_controller() { return ui_controller_; }

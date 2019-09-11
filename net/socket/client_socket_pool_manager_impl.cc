@@ -101,7 +101,7 @@ ClientSocketPoolManagerImpl::SocketPoolInfoToValue() const {
     } else {
       type = "http_proxy_socket_pool";
     }
-    list->GetList().push_back(
+    list->Append(
         socket_pool.second->GetInfoAsValue(socket_pool.first.ToURI(), type));
   }
 

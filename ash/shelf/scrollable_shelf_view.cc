@@ -5,8 +5,10 @@
 #include "ash/shelf/scrollable_shelf_view.h"
 
 #include "ash/public/cpp/shelf_config.h"
+#include "ash/screen_util.h"
 #include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shelf/shelf_widget.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/numerics/ranges.h"
 #include "ui/compositor/paint_recorder.h"
@@ -382,6 +384,32 @@ bool ScrollableShelfView::ShouldAdaptToRTL() const {
   return base::i18n::IsRTL() && GetShelf()->IsHorizontalAlignment();
 }
 
+bool ScrollableShelfView::ShouldApplyDisplayCentering() const {
+  if (layout_strategy_ != kNotShowArrowButtons)
+    return false;
+
+  const gfx::Rect display_bounds =
+      screen_util::GetDisplayBoundsWithShelf(GetWidget()->GetNativeWindow());
+  const int display_size_primary = GetShelf()->PrimaryAxisValue(
+      display_bounds.width(), display_bounds.height());
+  StatusAreaWidget* status_widget =
+      GetShelf()->shelf_widget()->status_area_widget();
+  const int status_widget_size = GetShelf()->PrimaryAxisValue(
+      status_widget->GetWindowBoundsInScreen().width(),
+      status_widget->GetWindowBoundsInScreen().height());
+
+  // An easy way to check whether the apps fit at the exact center of the
+  // screen is to imagine that we have another status widget on the other
+  // side (the status widget is always bigger than the home button plus
+  // the back button if applicable) and see if the apps can fit in the middle
+  int available_space_for_screen_centering =
+      display_size_primary -
+      2 * (status_widget_size + ShelfConfig::Get()->app_icon_group_margin());
+  return available_space_for_screen_centering >
+         shelf_view_->GetSizeOfAppIcons(shelf_view_->number_of_visible_apps(),
+                                        false);
+}
+
 Shelf* ScrollableShelfView::GetShelf() {
   return const_cast<Shelf*>(
       const_cast<const ScrollableShelfView*>(this)->GetShelf());
@@ -563,24 +591,52 @@ void ScrollableShelfView::OnShelfAlignmentChanged(aura::Window* root_window) {
 }
 
 gfx::Insets ScrollableShelfView::CalculateEdgePadding() const {
-  const int available_size_for_app_icons =
-      (GetShelf()->IsHorizontalAlignment() ? width() : height()) -
-      2 * ShelfConfig::Get()->app_icon_group_margin();
+  // Display centering alignment
+  if (ShouldApplyDisplayCentering())
+    return CalculatePaddingForDisplayCentering();
+
   const int icons_size = shelf_view_->GetSizeOfAppIcons(
       shelf_view_->number_of_visible_apps(), false);
-
   gfx::Insets padding_insets(
       /*vertical= */ 0,
       /*horizontal= */ ShelfConfig::Get()->app_icon_group_margin());
-  int gap = layout_strategy_ == kNotShowArrowButtons
-                ? available_size_for_app_icons - icons_size -
-                      2 * GetAppIconEndPadding()
-                : CalculateOverflowPadding(available_size_for_app_icons);
+
+  const int available_size_for_app_icons =
+      (GetShelf()->IsHorizontalAlignment() ? width() : height()) -
+      2 * ShelfConfig::Get()->app_icon_group_margin();
+
+  int gap =
+      layout_strategy_ == kNotShowArrowButtons
+          ? available_size_for_app_icons - icons_size  // shelf centering
+          : CalculateOverflowPadding(available_size_for_app_icons);  // overflow
+
   padding_insets.set_left(padding_insets.left() + gap / 2);
   padding_insets.set_right(padding_insets.right() +
                            (gap % 2 ? gap / 2 + 1 : gap / 2));
 
   return padding_insets;
+}
+
+gfx::Insets ScrollableShelfView::CalculatePaddingForDisplayCentering() const {
+  const int icons_size = shelf_view_->GetSizeOfAppIcons(
+      shelf_view_->number_of_visible_apps(), false);
+  const gfx::Rect display_bounds =
+      screen_util::GetDisplayBoundsWithShelf(GetWidget()->GetNativeWindow());
+  const int display_size_primary = GetShelf()->PrimaryAxisValue(
+      display_bounds.width(), display_bounds.height());
+  const int gap = (display_size_primary - icons_size) / 2;
+
+  // Calculates paddings in view coordinates.
+  const gfx::Rect screen_bounds = GetBoundsInScreen();
+  const int left_padding = gap - GetShelf()->PrimaryAxisValue(
+                                     screen_bounds.x() - display_bounds.x(),
+                                     screen_bounds.y() - display_bounds.y());
+  const int right_padding =
+      gap - GetShelf()->PrimaryAxisValue(
+                display_bounds.right() - screen_bounds.right(),
+                display_bounds.bottom() - screen_bounds.bottom());
+
+  return gfx::Insets(0, left_padding, 0, right_padding);
 }
 
 bool ScrollableShelfView::ShouldHandleGestures(const ui::GestureEvent& event) {

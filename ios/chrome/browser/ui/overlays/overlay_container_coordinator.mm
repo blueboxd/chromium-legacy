@@ -21,8 +21,10 @@
     OverlayContainerViewControllerDelegate>
 // Whether the coordinator is started.
 @property(nonatomic, assign, getter=isStarted) BOOL started;
-// The UI delegate that is used to drive presentation for this container.
-@property(nonatomic, readonly) OverlayPresentationContextImpl* UIDelegate;
+// The presentation context used by OverlayPresenter to drive presentation for
+// this container.
+@property(nonatomic, readonly)
+    OverlayPresentationContextImpl* presentationContext;
 @end
 
 @implementation OverlayContainerCoordinator
@@ -34,10 +36,10 @@
                                        browser:browser]) {
     OverlayPresentationContextImpl::Container::CreateForUserData(browser,
                                                                  browser);
-    _UIDelegate =
+    _presentationContext =
         OverlayPresentationContextImpl::Container::FromUserData(browser)
             ->PresentationContextForModality(modality);
-    DCHECK(_UIDelegate);
+    DCHECK(_presentationContext);
   }
   return self;
 }
@@ -61,13 +63,14 @@
   [self.baseViewController.view addSubview:containerView];
   AddSameConstraints(containerView, self.baseViewController.view);
   [_viewController didMoveToParentViewController:self.baseViewController];
+  self.presentationContext->SetCoordinator(self);
 }
 
 - (void)stop {
   if (!self.started)
     return;
   self.started = NO;
-  self.UIDelegate->SetCoordinator(nil);
+  self.presentationContext->SetCoordinator(nil);
   // Remove the container view and reset the view controller.
   [_viewController willMoveToParentViewController:nil];
   [_viewController.view removeFromSuperview];
@@ -80,10 +83,7 @@
 - (void)containerViewController:
             (OverlayContainerViewController*)containerViewController
                 didMoveToWindow:(UIWindow*)window {
-  // UIViewController presentation no-ops when attempted on window-less parent
-  // view controllers.  Wait to set UI delegate's coordinator until the
-  // container is added to a window.
-  self.UIDelegate->SetCoordinator(window ? self : nil);
+  self.presentationContext->WindowDidChange();
 }
 
 @end

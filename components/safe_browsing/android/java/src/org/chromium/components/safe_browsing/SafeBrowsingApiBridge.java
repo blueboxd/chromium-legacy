@@ -89,8 +89,8 @@ public final class SafeBrowsingApiBridge {
      */
     @CalledByNative
     private static boolean startAllowlistLookup(
-            SafeBrowsingApiHandler handler, String uri, int[] threatsOfInterest) {
-        return handler.startAllowlistLookup(uri, threatsOfInterest);
+            SafeBrowsingApiHandler handler, String uri, int threatType) {
+        return handler.startAllowlistLookup(uri, threatType);
     }
 
     private static native boolean nativeAreLocalBlacklistsEnabled();

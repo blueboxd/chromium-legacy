@@ -12,12 +12,14 @@
 #include "android_webview/browser/aw_cookie_access_policy.h"
 #include "android_webview/browser/input_stream.h"
 #include "android_webview/browser/network_service/android_stream_reader_url_loader.h"
+#include "android_webview/browser/network_service/aw_web_resource_intercept_response.h"
 #include "android_webview/browser/network_service/aw_web_resource_response.h"
 #include "android_webview/browser/network_service/net_helpers.h"
 #include "android_webview/browser/renderer_host/auto_login_parser.h"
 #include "android_webview/common/url_constants.h"
 #include "base/android/build_info.h"
 #include "base/bind.h"
+#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
@@ -31,6 +33,8 @@
 #include "content/public/common/url_utils.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_util.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "url/gurl.h"
 
 namespace android_webview {
 
@@ -85,7 +89,7 @@ class InterceptedRequest : public network::mojom::URLLoader,
       std::unique_ptr<AwWebResourceResponse> response);
 
   void InterceptResponseReceived(
-      std::unique_ptr<AwWebResourceResponse> response);
+      std::unique_ptr<AwWebResourceInterceptResponse> intercept_response);
 
   // Returns true if the request was restarted or completed.
   bool InputStreamFailed(bool restart_needed);
@@ -331,7 +335,7 @@ bool InterceptedRequest::ShouldNotInterceptRequest() {
 }
 
 void InterceptedRequest::InterceptResponseReceived(
-    std::unique_ptr<AwWebResourceResponse> response) {
+    std::unique_ptr<AwWebResourceInterceptResponse> intercept_response) {
   // We send the application's package name in the X-Requested-With header for
   // compatibility with previous WebView versions. This should not be visible to
   // shouldInterceptRequest. It should also not trigger CORS prefetch if
@@ -343,21 +347,30 @@ void InterceptedRequest::InterceptResponseReceived(
         base::android::BuildInfo::GetInstance()->host_package_name());
   }
 
-  if (response) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  if (intercept_response && intercept_response->RaisedException(env)) {
+    // The JNI handler has already raised an exception. Fail the resource load
+    // as it may be insecure to load on error.
+    SendErrorAndCompleteImmediately(net::ERR_UNEXPECTED);
+    return;
+  }
+
+  if (intercept_response && intercept_response->HasResponse(env)) {
     // non-null response: make sure to use it as an override for the
     // normal network data.
-    ContinueAfterInterceptWithOverride(std::move(response));
-  } else {
-    // Request was not intercepted/overridden. Proceed with loading
-    // from network, unless this is a special |intercept_only_| loader,
-    // which happens for external schemes: e.g. unsupported schemes and
-    // cid: schemes.
-    if (intercept_only_) {
-      SendErrorAndCompleteImmediately(net::ERR_UNKNOWN_URL_SCHEME);
-      return;
-    }
-    ContinueAfterIntercept();
+    ContinueAfterInterceptWithOverride(intercept_response->GetResponse(env));
+    return;
   }
+
+  // Request was not intercepted/overridden. Proceed with loading from network,
+  // unless this is a special |intercept_only_| loader, which happens for
+  // external schemes: e.g. unsupported schemes and cid: schemes.
+  if (intercept_only_) {
+    SendErrorAndCompleteImmediately(net::ERR_UNKNOWN_URL_SCHEME);
+    return;
+  }
+
+  ContinueAfterIntercept();
 }
 
 // returns true if the request has been restarted or was completed.

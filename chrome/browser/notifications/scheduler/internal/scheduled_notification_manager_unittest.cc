@@ -315,7 +315,7 @@ TEST_F(ScheduledNotificationManagerTest, ScheduleNotification) {
   EXPECT_CALL(*icon_store(), AddIcons(_, _))
       .WillOnce(Invoke([](IconStore::IconTypeBundleMap icons,
                           IconStore::AddCallback callback) {
-        std::move(callback).Run({}, true);
+        std::move(callback).Run(IconStore::IconTypeUuidMap{}, true);
       }));
   EXPECT_CALL(*notification_store(), Add(guid, _, _))
       .WillOnce(Invoke([guid](const std::string&, const NotificationEntry&,
@@ -345,6 +345,43 @@ TEST_F(ScheduledNotificationManagerTest, ScheduleNotification) {
   EXPECT_EQ(buttons[1].type, ActionButtonType::kUnhelpful);
 }
 
+// Verifies that schedules a notification with unregistered client will fail.
+TEST_F(ScheduledNotificationManagerTest, ScheduleInvalidNotification) {
+  InitWithData(std::vector<NotificationEntry>());
+  NotificationData notification_data;
+  notification_data.title = base::UTF8ToUTF16(kTitle);
+  ScheduleParams schedule_params;
+  // Client type kTest3 is not registered.
+  auto params = std::make_unique<NotificationParams>(
+      SchedulerClientType::kTest3, notification_data, schedule_params);
+
+  EXPECT_CALL(*icon_store(), AddIcons(_, _)).Times(0);
+  EXPECT_CALL(*notification_store(), Add(_, _, _)).Times(0);
+  ScheduleNotification(std::move(params), false /*expected_success*/);
+}
+
+// Verifies that schedules a notification with duplicate guid will fail.
+TEST_F(ScheduledNotificationManagerTest, ScheduleNotificationDuplicateGuid) {
+  auto entry = CreateNotificationEntry(SchedulerClientType::kTest1);
+  entry.guid = kGuid;
+  InitWithData(std::vector<NotificationEntry>({entry}));
+
+  NotificationData notification_data;
+  notification_data.title = base::UTF8ToUTF16(kTitle);
+  ScheduleParams schedule_params;
+  auto params = std::make_unique<NotificationParams>(
+      SchedulerClientType::kTest1, notification_data, schedule_params);
+  params->schedule_params.deliver_time_start = base::Time::Now();
+  params->schedule_params.deliver_time_end =
+      base::Time::Now() + base::TimeDelta::FromDays(1);
+  // Duplicate guid.
+  params->guid = kGuid;
+
+  EXPECT_CALL(*icon_store(), AddIcons(_, _)).Times(0);
+  EXPECT_CALL(*notification_store(), Add(_, _, _)).Times(0);
+  ScheduleNotification(std::move(params), false /*expected_success*/);
+}
+
 // Test to schedule a notification without guid, we will auto generated one.
 TEST_F(ScheduledNotificationManagerTest, ScheduleNotificationEmptyGuid) {
   InitWithData(std::vector<NotificationEntry>());
@@ -358,7 +395,7 @@ TEST_F(ScheduledNotificationManagerTest, ScheduleNotificationEmptyGuid) {
   EXPECT_CALL(*icon_store(), AddIcons(_, _))
       .WillOnce(Invoke([](IconStore::IconTypeBundleMap icons,
                           IconStore::AddCallback callback) {
-        std::move(callback).Run({}, true);
+        std::move(callback).Run(IconStore::IconTypeUuidMap{}, true);
       }));
   EXPECT_CALL(*notification_store(), Add(_, _, _))
       .WillOnce(Invoke(
@@ -696,7 +733,7 @@ TEST_F(ScheduledNotificationManagerTest, DisplayNotificationWithIconsFailed) {
   EXPECT_CALL(*icon_store(), LoadIcons(_, _))
       .WillOnce(Invoke([](std::vector<std::string> keys,
                           IconStore::LoadIconsCallback callback) {
-        std::move(callback).Run(false, {});
+        std::move(callback).Run(false, IconStore::LoadedIconsMap{});
       }));
   EXPECT_CALL(*notification_store(), Delete(kGuid, _));
   EXPECT_CALL(*icon_store(), DeleteIcons(_, _));

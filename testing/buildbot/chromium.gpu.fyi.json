@@ -6911,8 +6911,7 @@
               "device_os": "MMB29Q",
               "device_os_type": "userdebug",
               "device_type": "bullhead",
-              "os": "Android",
-              "pool": "Chrome-GPU"
+              "os": "Android"
             }
           ],
           "idempotent": false
@@ -6942,8 +6941,7 @@
               "device_os": "MMB29Q",
               "device_os_type": "userdebug",
               "device_type": "bullhead",
-              "os": "Android",
-              "pool": "Chrome-GPU"
+              "os": "Android"
             }
           ],
           "idempotent": false
@@ -6973,8 +6971,7 @@
               "device_os": "MMB29Q",
               "device_os_type": "userdebug",
               "device_type": "bullhead",
-              "os": "Android",
-              "pool": "Chrome-GPU"
+              "os": "Android"
             }
           ],
           "idempotent": false
@@ -7004,8 +7001,7 @@
               "device_os": "MMB29Q",
               "device_os_type": "userdebug",
               "device_type": "bullhead",
-              "os": "Android",
-              "pool": "Chrome-GPU"
+              "os": "Android"
             }
           ],
           "idempotent": false
@@ -7042,8 +7038,7 @@
               "device_os": "MMB29Q",
               "device_os_type": "userdebug",
               "device_type": "bullhead",
-              "os": "Android",
-              "pool": "Chrome-GPU"
+              "os": "Android"
             }
           ],
           "idempotent": false
@@ -7074,8 +7069,7 @@
               "device_os": "MMB29Q",
               "device_os_type": "userdebug",
               "device_type": "bullhead",
-              "os": "Android",
-              "pool": "Chrome-GPU"
+              "os": "Android"
             }
           ],
           "idempotent": false
@@ -7121,8 +7115,7 @@
               "device_os": "MMB29Q",
               "device_os_type": "userdebug",
               "device_type": "bullhead",
-              "os": "Android",
-              "pool": "Chrome-GPU"
+              "os": "Android"
             }
           ],
           "idempotent": false,

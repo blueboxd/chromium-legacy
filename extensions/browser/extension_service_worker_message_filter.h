@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_EXTENSION_SERVICE_WORKER_MESSAGE_FILTER_H_
 #define EXTENSIONS_BROWSER_EXTENSION_SERVICE_WORKER_MESSAGE_FILTER_H_
 
+#include <string>
 #include <unordered_set>
 
 #include "base/macros.h"

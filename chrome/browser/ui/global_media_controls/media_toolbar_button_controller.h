@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/media_message_center/media_notification_controller.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
@@ -59,6 +60,9 @@ class MediaToolbarButtonController
 
   void SetDialogDelegate(MediaDialogDelegate* delegate);
 
+  // Called when the dismiss button was clicked on a session.
+  void OnDismissButtonClicked(const std::string& id);
+
  private:
   friend class MediaToolbarButtonControllerTest;
 
@@ -69,18 +73,23 @@ class MediaToolbarButtonController
     kHidden,
   };
 
-  class Session {
+  class Session : public content::WebContentsObserver {
    public:
-    Session(std::unique_ptr<media_message_center::MediaNotificationItem> item,
+    Session(MediaToolbarButtonController* owner,
+            const std::string& id,
+            std::unique_ptr<media_message_center::MediaNotificationItem> item,
             content::WebContents* web_contents);
-    ~Session();
+    ~Session() override;
+
+    // content::WebContentsObserver implementation.
+    void WebContentsDestroyed() override;
 
     media_message_center::MediaNotificationItem* item() { return item_.get(); }
-    content::WebContents* web_contents() { return web_contents_; }
 
    private:
+    MediaToolbarButtonController* owner_;
+    const std::string id_;
     std::unique_ptr<media_message_center::MediaNotificationItem> item_;
-    content::WebContents* web_contents_;
 
     DISALLOW_COPY_AND_ASSIGN(Session);
   };

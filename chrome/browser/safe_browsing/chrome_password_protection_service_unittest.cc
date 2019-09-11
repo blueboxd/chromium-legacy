@@ -654,8 +654,6 @@ TEST_F(ChromePasswordProtectionServiceTest,
   // multiple prefs and doesn't add much verification value.
 }
 
-// TODO(crbug/914410): Renable once we know the SecurityEventRecorder won't
-// crash Chrome.
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyPasswordReuseDetectedSecurityEventRecorded) {
   identity_test_env()->SetPrimaryAccount(kTestEmail);

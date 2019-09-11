@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/content_browser_client.h"
@@ -65,6 +64,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   content::WebContentsViewDelegate* GetWebContentsViewDelegate(
       content::WebContents* web_contents) override;
   void RenderProcessWillLaunch(content::RenderProcessHost* host) override;
+  bool IsExplicitNavigation(ui::PageTransition transition) override;
   bool ShouldUseMobileFlingCurve() override;
   bool IsHandledURL(const GURL& url) override;
   bool ForceSniffingFileUrlsForHtml() override;

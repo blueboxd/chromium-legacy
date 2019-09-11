@@ -19,6 +19,7 @@
 #include "base/optional.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "services/network/public/mojom/cors_origin_pattern.mojom-forward.h"
@@ -169,13 +170,16 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   static BlobContextGetter GetBlobStorageContext(
       BrowserContext* browser_context);
 
-  // Returns a mojom::BlobPtr for a specific blob. If no blob exists with the
-  // given UUID, the BlobPtr pipe will close.
-  // This method should be called on the UI thread.
+  // Returns a mojom::mojo::PendingRemote<blink::mojom::Blob> for a specific
+  // blob. If no blob exists with the given UUID, the
+  // mojo::PendingRemote<blink::mojom::Blob> pipe will close. This method should
+  // be called on the UI thread.
   // TODO(mek): Blob UUIDs should be entirely internal to the blob system, so
-  // eliminate this method in favor of just passing around the BlobPtr directly.
-  static blink::mojom::BlobPtr GetBlobPtr(BrowserContext* browser_context,
-                                          const std::string& uuid);
+  // eliminate this method in favor of just passing around the
+  // mojo::PendingRemote<blink::mojom::Blob> directly.
+  static mojo::PendingRemote<blink::mojom::Blob> GetBlobRemote(
+      BrowserContext* browser_context,
+      const std::string& uuid);
 
   // Delivers a push message with |data| to the Service Worker identified by
   // |origin| and |service_worker_registration_id|.

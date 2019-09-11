@@ -1503,8 +1503,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         Tab currentTab = mLocationBarModel.getTab();
         if (currentTab == null) return;
         String homePageUrl = HomepageManager.getHomepageUri();
-        boolean isNewTabPageButtonEnabled = FeatureUtilities.isNewTabPageButtonEnabled();
-        if (TextUtils.isEmpty(homePageUrl) || isNewTabPageButtonEnabled) {
+        if (TextUtils.isEmpty(homePageUrl)) {
             homePageUrl = UrlConstants.NTP_URL;
         }
         boolean is_chrome_internal =
@@ -1513,11 +1512,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                 || homePageUrl.startsWith(UrlConstants.CHROME_NATIVE_URL_SHORT_PREFIX);
         RecordHistogram.recordBooleanHistogram(
                 "Navigation.Home.IsChromeInternal", is_chrome_internal);
-        if (isNewTabPageButtonEnabled) {
-            recordToolbarUseForIPH(EventConstants.CLEAR_TAB_BUTTON_CLICKED);
-        } else {
-            recordToolbarUseForIPH(EventConstants.HOMEPAGE_BUTTON_CLICKED);
-        }
+
+        recordToolbarUseForIPH(EventConstants.HOMEPAGE_BUTTON_CLICKED);
         currentTab.loadUrl(new LoadUrlParams(homePageUrl, PageTransition.HOME_PAGE));
     }
 

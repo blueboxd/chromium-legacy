@@ -226,6 +226,12 @@ void MediaNotificationItem::SetController(
   MaybeHideOrShowNotification();
 }
 
+void MediaNotificationItem::Dismiss() {
+  if (media_controller_remote_.is_bound())
+    media_controller_remote_->Stop();
+  controller_->RemoveItem(request_id_);
+}
+
 void MediaNotificationItem::Freeze() {
   if (frozen_)
     return;

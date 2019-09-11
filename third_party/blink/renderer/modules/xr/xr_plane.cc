@@ -83,14 +83,10 @@ HeapVector<Member<DOMPointReadOnly>> XRPlane::polygon() const {
 
 ScriptPromise XRPlane::createAnchor(ScriptState* script_state,
                                     XRRigidTransform* initial_pose,
-                                    XRSpace* space) {
-  // TODO(https://crbug.com/992033): Implement anchor creation from a plane
-  // instead of rejecting the promise. This'll cause the string literal used
-  // below to be removed.
-  return ScriptPromise::RejectWithDOMException(
-      script_state,
-      MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
-                                         "Device does not support anchors!"));
+                                    XRSpace* space,
+                                    ExceptionState& exception_state) {
+  return session_->CreateAnchor(script_state, initial_pose, space, this,
+                                exception_state);
 }
 
 void XRPlane::Update(const device::mojom::blink::XRPlaneDataPtr& plane_data,

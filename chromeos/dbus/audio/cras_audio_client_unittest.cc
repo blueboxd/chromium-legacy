@@ -437,7 +437,7 @@ class CrasAudioClientTest : public testing::Test {
   // The interface name.
   const std::string interface_name_;
   // A message loop to emulate asynchronous behavior.
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   // The mock bus.
   scoped_refptr<dbus::MockBus> mock_bus_;
   // The mock object proxy.

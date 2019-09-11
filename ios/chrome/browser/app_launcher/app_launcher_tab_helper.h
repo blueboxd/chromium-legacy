@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #import "ios/web/public/navigation/web_state_policy_decider.h"
-#import "ios/web/public/web_state/web_state_user_data.h"
+#import "ios/web/public/web_state_user_data.h"
 
 @protocol AppLauncherTabHelperDelegate;
 @class AppLauncherAbuseDetector;

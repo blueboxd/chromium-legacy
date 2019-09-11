@@ -24,7 +24,7 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
-import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.chrome.browser.util.ChromeIntentUtil;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.MediaSession;
 import org.chromium.content_public.browser.MediaSessionObserver;
@@ -208,7 +208,7 @@ public class MediaSessionTabHelper implements MediaImageCallback {
                     return;
                 }
 
-                Intent contentIntent = IntentUtils.createBringTabToFrontIntent(mTab.getId());
+                Intent contentIntent = ChromeIntentUtil.createBringTabToFrontIntent(mTab.getId());
                 if (contentIntent != null) {
                     contentIntent.putExtra(MediaNotificationUma.INTENT_EXTRA_NAME,
                             MediaNotificationUma.Source.MEDIA);
@@ -318,8 +318,9 @@ public class MediaSessionTabHelper implements MediaImageCallback {
             assert tab == mTab;
 
             if (!navigation.hasCommitted() || !navigation.isInMainFrame()
-                    || navigation.isSameDocument())
+                    || navigation.isSameDocument()) {
                 return;
+            }
 
             String origin = mTab.getUrl();
             try {

@@ -685,7 +685,6 @@ static bool IsManualRedirectFetchRequest(const ResourceRequest& request) {
 bool ResourceLoader::WillFollowRedirect(
     const WebURL& new_url,
     const WebURL& new_site_for_cookies,
-    const base::Optional<WebSecurityOrigin>& new_top_frame_origin,
     const WebString& new_referrer,
     network::mojom::ReferrerPolicy new_referrer_policy,
     const WebString& new_method,
@@ -700,14 +699,10 @@ bool ResourceLoader::WillFollowRedirect(
     return false;
   }
 
-  scoped_refptr<const SecurityOrigin> top_frame_origin =
-      new_top_frame_origin
-          ? base::WrapRefCounted(new_top_frame_origin.value().Get())
-          : scoped_refptr<SecurityOrigin>();
   std::unique_ptr<ResourceRequest> new_request =
       resource_->LastResourceRequest().CreateRedirectRequest(
-          new_url, new_method, new_site_for_cookies, top_frame_origin,
-          new_referrer, new_referrer_policy,
+          new_url, new_method, new_site_for_cookies, new_referrer,
+          new_referrer_policy,
 
           !passed_redirect_response.WasFetchedViaServiceWorker());
 

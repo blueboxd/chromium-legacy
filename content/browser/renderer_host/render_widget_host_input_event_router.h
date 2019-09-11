@@ -189,6 +189,8 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
     route_to_root_for_devtools_ = route;
   }
 
+  void SetAutoScrollInProgress(bool is_autoscroll_in_progress);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserSideFlingBrowserTest,
                            InertialGSUBubblingStopsWhenParentCannotScroll);

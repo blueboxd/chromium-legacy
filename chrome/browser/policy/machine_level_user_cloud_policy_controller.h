@@ -66,6 +66,11 @@ class MachineLevelUserCloudPolicyController {
   // Directory name under the user-data-dir where the policy data is stored.
   static const base::FilePath::CharType kPolicyDir[];
 
+  // The MachineLevelUserCloudPolicy is only enabled on Chrome by default.
+  // However, it can be enabled on Chromium by command line switch for test and
+  // development purpose.
+  static bool IsMachineLevelUserCloudPolicyEnabled();
+
   MachineLevelUserCloudPolicyController();
   virtual ~MachineLevelUserCloudPolicyController();
 

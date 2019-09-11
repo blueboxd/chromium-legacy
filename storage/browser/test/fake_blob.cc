@@ -10,9 +10,9 @@ namespace storage {
 
 FakeBlob::FakeBlob(const std::string& uuid) : uuid_(uuid) {}
 
-blink::mojom::BlobPtr FakeBlob::Clone() {
-  blink::mojom::BlobPtr result;
-  Clone(MakeRequest(&result));
+mojo::PendingRemote<blink::mojom::Blob> FakeBlob::Clone() {
+  mojo::PendingRemote<blink::mojom::Blob> result;
+  Clone(result.InitWithNewPipeAndPassReceiver());
   return result;
 }
 

@@ -18,6 +18,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/desks/desks_util.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "base/command_line.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
@@ -250,6 +251,33 @@ TEST_F(AshPopupAlignmentDelegateTest, KeyboardShowing) {
 
   shelf->SetVirtualKeyboardBoundsForTesting(gfx::Rect());
   EXPECT_EQ(baseline, alignment_delegate()->GetBaseline());
+}
+
+// Tests that notification bubble baseline is correct when entering and exiting
+// overview with a full screen window.
+TEST_F(AshPopupAlignmentDelegateTest, BaselineInOverview) {
+  UpdateDisplay("800x600");
+
+  ASSERT_TRUE(GetPrimaryShelf()->IsHorizontalAlignment());
+  ASSERT_EQ(SHELF_VISIBLE, GetPrimaryShelf()->GetVisibilityState());
+  const int baseline_with_visible_shelf = alignment_delegate()->GetBaseline();
+
+  std::unique_ptr<views::Widget> widget = CreateTestWidget();
+  widget->SetFullscreen(true);
+  ASSERT_EQ(SHELF_HIDDEN, GetPrimaryShelf()->GetVisibilityState());
+  const int baseline_with_hidden_shelf = alignment_delegate()->GetBaseline();
+  EXPECT_NE(baseline_with_visible_shelf, baseline_with_hidden_shelf);
+
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->StartOverview();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  const int baseline_in_overview = alignment_delegate()->GetBaseline();
+  EXPECT_EQ(baseline_in_overview, baseline_with_visible_shelf);
+
+  overview_controller->EndOverview();
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  const int baseline_no_overview = alignment_delegate()->GetBaseline();
+  EXPECT_EQ(baseline_no_overview, baseline_with_hidden_shelf);
 }
 
 }  // namespace ash

@@ -189,8 +189,8 @@ def run_command_with_output(argv, stdoutfile, env=None, cwd=None):
   assert stdoutfile
   with io.open(stdoutfile, 'wb') as writer, \
       io.open(stdoutfile, 'rb', 1) as reader:
-    process = subprocess.Popen(argv, env=env, cwd=cwd, stdout=writer,
-        stderr=subprocess.STDOUT)
+    process = _popen(argv, env=env, cwd=cwd, stdout=writer,
+                     stderr=subprocess.STDOUT)
     forward_signals([process])
     while process.poll() is None:
       sys.stdout.write(reader.read())
@@ -214,7 +214,7 @@ def run_command(argv, env=None, cwd=None, log=True):
   """
   if log:
     print('Running %r in %r (env: %r)' % (argv, cwd, env))
-  process = subprocess.Popen(argv, env=env, cwd=cwd, stderr=subprocess.STDOUT)
+  process = _popen(argv, env=env, cwd=cwd, stderr=subprocess.STDOUT)
   forward_signals([process])
   return wait_with_signals(process)
 
@@ -229,7 +229,7 @@ def run_command_output_to_handle(argv, file_handle, env=None, cwd=None):
     integer returncode of the subprocess.
   """
   print('Running %r in %r (env: %r)' % (argv, cwd, env))
-  process = subprocess.Popen(
+  process = _popen(
       argv, env=env, cwd=cwd, stderr=file_handle, stdout=file_handle)
   forward_signals([process])
   exit_code = wait_with_signals(process)
@@ -356,9 +356,9 @@ def run_executable(cmd, env, stdoutfile=None):
     elif use_symbolization_script:
       # See above comment regarding offline symbolization.
       # Need to pipe to the symbolizer script.
-      p1 = subprocess.Popen(cmd, env=env, stdout=subprocess.PIPE,
-                            stderr=sys.stdout)
-      p2 = subprocess.Popen(
+      p1 = _popen(cmd, env=env, stdout=subprocess.PIPE,
+                  stderr=sys.stdout)
+      p2 = _popen(
           get_sanitizer_symbolize_command(executable_path=cmd[0]),
           env=env, stdin=p1.stdout)
       p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
@@ -373,6 +373,14 @@ def run_executable(cmd, env, stdoutfile=None):
   except OSError:
     print >> sys.stderr, 'Failed to start %s' % cmd
     raise
+
+
+def _popen(*args, **kwargs):
+  assert 'creationflags' not in kwargs
+  if sys.platform == 'win32':
+    # Necessary for signal handling. See crbug.com/733612#c6.
+    kwargs['creationflags'] = subprocess.CREATE_NEW_PROCESS_GROUP
+  return subprocess.Popen(*args, **kwargs)
 
 
 def main():

@@ -8,7 +8,6 @@
 #include <string>
 
 #include "ash/public/mojom/assistant_state_controller.mojom.h"
-#include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
@@ -35,8 +34,7 @@ class ASH_PUBLIC_EXPORT AssistantStateObserver
   virtual void OnAssistantNotificationEnabled(bool notification_enabled) {}
 
   // mojom::AssistantStateObserver:
-  void OnAssistantStatusChanged(
-      ash::mojom::VoiceInteractionState state) override {}
+  void OnAssistantStatusChanged(ash::mojom::AssistantState state) override {}
   void OnAssistantFeatureAllowedChanged(
       ash::mojom::AssistantAllowedState state) override {}
   void OnArcPlayStoreEnabledChanged(bool enabled) override {}
@@ -57,9 +55,7 @@ class ASH_PUBLIC_EXPORT AssistantStateBase {
   AssistantStateBase();
   virtual ~AssistantStateBase();
 
-  const mojom::VoiceInteractionState& voice_interaction_state() const {
-    return voice_interaction_state_;
-  }
+  mojom::AssistantState assistant_state() const { return assistant_state_; }
 
   const base::Optional<bool>& settings_enabled() const {
     return settings_enabled_;
@@ -122,14 +118,13 @@ class ASH_PUBLIC_EXPORT AssistantStateBase {
   void UpdateNotificationEnabled();
 
   // Called when new values of the listened states are received.
-  void UpdateAssistantStatus(mojom::VoiceInteractionState state);
+  void UpdateAssistantStatus(mojom::AssistantState state);
   void UpdateFeatureAllowedState(mojom::AssistantAllowedState state);
   void UpdateLocale(const std::string& locale);
   void UpdateArcPlayStoreEnabled(bool enabled);
   void UpdateLockedFullScreenState(bool enabled);
 
-  mojom::VoiceInteractionState voice_interaction_state_ =
-      mojom::VoiceInteractionState::NOT_READY;
+  mojom::AssistantState assistant_state_ = mojom::AssistantState::NOT_READY;
 
   // TODO(b/138679823): Maybe remove Optional for preference values.
   // Whether the Assistant is enabled in system settings. nullopt if the

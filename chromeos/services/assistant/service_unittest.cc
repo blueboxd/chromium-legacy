@@ -155,12 +155,10 @@ class FakeAssistantClient : public FakeClient {
 
 class FakeDeviceActions : mojom::DeviceActions {
  public:
-  FakeDeviceActions() : binding_(this) {}
+  FakeDeviceActions() {}
 
-  mojom::DeviceActionsPtr CreateInterfacePtrAndBind() {
-    mojom::DeviceActionsPtr ptr;
-    binding_.Bind(mojo::MakeRequest(&ptr));
-    return ptr;
+  mojo::PendingRemote<mojom::DeviceActions> CreatePendingRemoteAndBind() {
+    return receiver_.BindNewPipeAndPassRemote();
   }
 
  private:
@@ -183,7 +181,7 @@ class FakeDeviceActions : mojom::DeviceActions {
       chromeos::assistant::mojom::AppListEventSubscriberPtr subscriber)
       override {}
 
-  mojo::Binding<mojom::DeviceActions> binding_;
+  mojo::Receiver<mojom::DeviceActions> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeDeviceActions);
 };
@@ -234,9 +232,8 @@ class AssistantServiceTest : public testing::Test {
     service_->SetIdentityAccessorForTesting(
         fake_identity_accessor_.CreateInterfacePtrAndBind());
 
-    remote_service_->Init(mojom::ClientPtr(mojom::ClientPtrInfo(
-                              fake_assistant_client_.MakeRemote())),
-                          fake_device_actions_.CreateInterfacePtrAndBind(),
+    remote_service_->Init(fake_assistant_client_.MakeRemote(),
+                          fake_device_actions_.CreatePendingRemoteAndBind(),
                           /*is_test=*/true);
     base::RunLoop().RunUntilIdle();
   }

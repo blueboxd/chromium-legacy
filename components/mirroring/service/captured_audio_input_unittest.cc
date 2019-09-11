@@ -10,6 +10,7 @@
 #include "base/test/task_environment.h"
 #include "media/base/audio_parameters.h"
 #include "media/mojo/mojom/audio_data_pipe.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -53,10 +54,11 @@ class CapturedAudioInputTest : public ::testing::Test {
 
   ~CapturedAudioInputTest() override { task_environment_.RunUntilIdle(); }
 
-  void CreateMockStream(bool initially_muted,
-                        mojom::AudioStreamCreatorClientPtr client,
-                        const media::AudioParameters& params,
-                        uint32_t total_segments) {
+  void CreateMockStream(
+      bool initially_muted,
+      mojo::PendingRemote<mojom::AudioStreamCreatorClient> client,
+      const media::AudioParameters& params,
+      uint32_t total_segments) {
     EXPECT_EQ(base::SyncSocket::kInvalidHandle, socket_.handle());
     EXPECT_FALSE(stream_);
     media::mojom::AudioInputStreamPtr stream_ptr;
@@ -67,7 +69,9 @@ class CapturedAudioInputTest : public ::testing::Test {
     base::CancelableSyncSocket foreign_socket;
     EXPECT_TRUE(
         base::CancelableSyncSocket::CreatePair(&socket_, &foreign_socket));
-    client->StreamCreated(
+    mojo::Remote<mojom::AudioStreamCreatorClient> audio_client(
+        std::move(client));
+    audio_client->StreamCreated(
         std::move(stream_ptr), mojo::MakeRequest(&stream_client_),
         {base::in_place, base::ReadOnlySharedMemoryRegion::Create(1024).region,
          mojo::WrapPlatformFile(foreign_socket.Release())},

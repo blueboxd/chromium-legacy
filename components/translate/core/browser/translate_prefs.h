@@ -43,9 +43,6 @@ extern const base::Feature kTranslateRecentTarget;
 // Enable or disable the Translate popup altogether.
 extern const base::Feature kTranslateUI;
 
-// Enable the "Translate" item in the overflow menu on Mobile.
-extern const base::Feature kTranslateMobileManualTrigger;
-
 // Minimum number of times the user must accept a translation before we show
 // a shortcut to the "Always Translate" functionality.
 #if defined(OS_ANDROID) || defined(OS_IOS)

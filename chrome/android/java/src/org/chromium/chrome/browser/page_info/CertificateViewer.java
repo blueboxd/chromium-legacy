@@ -22,6 +22,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 
 import java.io.ByteArrayInputStream;
@@ -153,40 +154,41 @@ class CertificateViewer implements OnItemSelectedListener {
 
         mTitles.add(sslCert.getIssuedTo().getCName());
 
-        addSectionTitle(certificateView, nativeGetCertIssuedToText());
-        addItem(certificateView, nativeGetCertInfoCommonNameText(),
+        addSectionTitle(certificateView, CertificateViewerJni.get().getCertIssuedToText());
+        addItem(certificateView, CertificateViewerJni.get().getCertInfoCommonNameText(),
                 sslCert.getIssuedTo().getCName());
-        addItem(certificateView, nativeGetCertInfoOrganizationText(),
+        addItem(certificateView, CertificateViewerJni.get().getCertInfoOrganizationText(),
                 sslCert.getIssuedTo().getOName());
-        addItem(certificateView, nativeGetCertInfoOrganizationUnitText(),
+        addItem(certificateView, CertificateViewerJni.get().getCertInfoOrganizationUnitText(),
                 sslCert.getIssuedTo().getUName());
-        addItem(certificateView, nativeGetCertInfoSerialNumberText(),
+        addItem(certificateView, CertificateViewerJni.get().getCertInfoSerialNumberText(),
                 formatBytes(x509.getSerialNumber().toByteArray(), ':'));
 
-        addSectionTitle(certificateView, nativeGetCertIssuedByText());
-        addItem(certificateView, nativeGetCertInfoCommonNameText(),
+        addSectionTitle(certificateView, CertificateViewerJni.get().getCertIssuedByText());
+        addItem(certificateView, CertificateViewerJni.get().getCertInfoCommonNameText(),
                 sslCert.getIssuedBy().getCName());
-        addItem(certificateView, nativeGetCertInfoOrganizationText(),
+        addItem(certificateView, CertificateViewerJni.get().getCertInfoOrganizationText(),
                 sslCert.getIssuedBy().getOName());
-        addItem(certificateView, nativeGetCertInfoOrganizationUnitText(),
+        addItem(certificateView, CertificateViewerJni.get().getCertInfoOrganizationUnitText(),
                 sslCert.getIssuedBy().getUName());
 
-        addSectionTitle(certificateView, nativeGetCertValidityText());
+        addSectionTitle(certificateView, CertificateViewerJni.get().getCertValidityText());
         DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
-        addItem(certificateView, nativeGetCertIssuedOnText(),
+        addItem(certificateView, CertificateViewerJni.get().getCertIssuedOnText(),
                 dateFormat.format(sslCert.getValidNotBeforeDate()));
-        addItem(certificateView, nativeGetCertExpiresOnText(),
+        addItem(certificateView, CertificateViewerJni.get().getCertExpiresOnText(),
                 dateFormat.format(sslCert.getValidNotAfterDate()));
 
-        addSectionTitle(certificateView, nativeGetCertFingerprintsText());
-        addItem(certificateView, nativeGetCertSHA256FingerprintText(),
+        addSectionTitle(certificateView, CertificateViewerJni.get().getCertFingerprintsText());
+        addItem(certificateView, CertificateViewerJni.get().getCertSHA256FingerprintText(),
                 formatBytes(sha256Digest, ' '));
-        addItem(certificateView, nativeGetCertSHA1FingerprintText(), formatBytes(sha1Digest, ' '));
+        addItem(certificateView, CertificateViewerJni.get().getCertSHA1FingerprintText(),
+                formatBytes(sha1Digest, ' '));
 
         List<String> subjectAltNames = getSubjectAlternativeNames(x509);
         if (!subjectAltNames.isEmpty()) {
-            addSectionTitle(certificateView, nativeGetCertExtensionText());
-            addLabel(certificateView, nativeGetCertSANText());
+            addSectionTitle(certificateView, CertificateViewerJni.get().getCertExtensionText());
+            addLabel(certificateView, CertificateViewerJni.get().getCertSANText());
             for (String name : subjectAltNames) {
                 addValue(certificateView, name);
             }
@@ -282,18 +284,21 @@ class CertificateViewer implements OnItemSelectedListener {
     public void onNothingSelected(AdapterView<?> parent) {
     }
 
-    private static native String nativeGetCertIssuedToText();
-    private static native String nativeGetCertInfoCommonNameText();
-    private static native String nativeGetCertInfoOrganizationText();
-    private static native String nativeGetCertInfoSerialNumberText();
-    private static native String nativeGetCertInfoOrganizationUnitText();
-    private static native String nativeGetCertIssuedByText();
-    private static native String nativeGetCertValidityText();
-    private static native String nativeGetCertIssuedOnText();
-    private static native String nativeGetCertExpiresOnText();
-    private static native String nativeGetCertFingerprintsText();
-    private static native String nativeGetCertSHA256FingerprintText();
-    private static native String nativeGetCertSHA1FingerprintText();
-    private static native String nativeGetCertExtensionText();
-    private static native String nativeGetCertSANText();
+    @NativeMethods
+    interface Natives {
+        String getCertIssuedToText();
+        String getCertInfoCommonNameText();
+        String getCertInfoOrganizationText();
+        String getCertInfoSerialNumberText();
+        String getCertInfoOrganizationUnitText();
+        String getCertIssuedByText();
+        String getCertValidityText();
+        String getCertIssuedOnText();
+        String getCertExpiresOnText();
+        String getCertFingerprintsText();
+        String getCertSHA256FingerprintText();
+        String getCertSHA1FingerprintText();
+        String getCertExtensionText();
+        String getCertSANText();
+    }
 }

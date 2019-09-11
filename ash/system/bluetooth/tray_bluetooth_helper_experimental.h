@@ -10,7 +10,7 @@
 #include "ash/ash_export.h"
 #include "ash/system/bluetooth/tray_bluetooth_helper.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/bluetooth_system.mojom.h"
 
@@ -49,8 +49,8 @@ class TrayBluetoothHelperExperimental
   service_manager::Connector* connector_;
 
   mojo::Remote<device::mojom::BluetoothSystem> bluetooth_system_;
-  mojo::Binding<device::mojom::BluetoothSystemClient>
-      bluetooth_system_client_binding_{this};
+  mojo::Receiver<device::mojom::BluetoothSystemClient>
+      bluetooth_system_client_receiver_{this};
 
   device::mojom::BluetoothSystem::State cached_state_ =
       device::mojom::BluetoothSystem::State::kUnavailable;

@@ -437,7 +437,7 @@ void PasswordManager::ShowManualFallbackForSaving(
         ->set_user_typed_password_on_chrome_sign_in_page();
   }
 
-  if (!client_->GetPasswordStore()->IsAbleToSavePasswords() ||
+  if (!client_->GetProfilePasswordStore()->IsAbleToSavePasswords() ||
       !client_->IsSavingAndFillingEnabled(password_form.origin) ||
       ShouldBlockPasswordForSameOriginButDifferentScheme(
           password_form.origin) ||
@@ -562,7 +562,8 @@ PasswordFormManager* PasswordManager::CreateFormManager(
       client_,
       driver ? driver->AsWeakPtr() : base::WeakPtr<PasswordManagerDriver>(),
       form, nullptr,
-      std::make_unique<FormSaverImpl>(client_->GetPasswordStore()), nullptr));
+      std::make_unique<FormSaverImpl>(client_->GetProfilePasswordStore()),
+      nullptr));
   form_managers_.back()->ProcessServerPredictions(predictions_);
   return form_managers_.back().get();
 }
@@ -640,12 +641,6 @@ PasswordFormManager* PasswordManager::ProvisionallySaveForm(
   ReportSubmittedFormFrameMetric(driver, *matched_manager->GetSubmittedForm());
 
   return matched_manager;
-}
-
-void PasswordManager::ReportSpecPriorityForGeneratedPassword(
-    const PasswordForm& password_form,
-    uint32_t spec_priority) {
-  // TODO(https://crbug.com/949519): remove Generation.SpecPriority metric.
 }
 
 void PasswordManager::LogFirstFillingResult(PasswordManagerDriver* driver,
@@ -845,7 +840,7 @@ void PasswordManager::OnLoginSuccessful() {
     logger->LogSuccessfulSubmissionIndicatorEvent(submission_event);
 
   bool able_to_save_passwords =
-      client_->GetPasswordStore()->IsAbleToSavePasswords();
+      client_->GetProfilePasswordStore()->IsAbleToSavePasswords();
   UMA_HISTOGRAM_BOOLEAN("PasswordManager.AbleToSavePasswordsOnSuccessfulLogin",
                         able_to_save_passwords);
   if (!able_to_save_passwords)
@@ -918,7 +913,7 @@ void PasswordManager::MaybeSavePasswordHash(
   if (username.empty())
     return;
 
-  password_manager::PasswordStore* store = client_->GetPasswordStore();
+  password_manager::PasswordStore* store = client_->GetProfilePasswordStore();
   // May be null in tests.
   if (!store)
     return;
@@ -1042,14 +1037,6 @@ void PasswordManager::RecordProvisionalSaveFailure(
     client_->GetMetricsRecorder()->RecordProvisionalSaveFailure(
         failure, main_frame_url_, form_origin, logger);
   }
-}
-
-scoped_refptr<PasswordFormMetricsRecorder>
-PasswordManager::GetMetricRecorderFromPasswordFormManager(
-    const FormData& form,
-    const PasswordManagerDriver* driver) {
-  PasswordFormManager* matched_manager = GetMatchedManager(driver, form);
-  return matched_manager ? matched_manager->metrics_recorder() : nullptr;
 }
 
 // TODO(https://crbug.com/831123): Implement creating missing

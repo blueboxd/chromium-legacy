@@ -24,7 +24,6 @@
 namespace blink {
 
 using mojom::blink::Blob;
-using mojom::blink::BlobPtr;
 using mojom::blink::BlobRegistry;
 using mojom::blink::DataElement;
 using mojom::blink::DataElementBlob;
@@ -203,7 +202,8 @@ class BlobDataHandleTest : public testing::Test {
 
         base::RunLoop loop;
         String received_uuid;
-        mojom::blink::BlobPtr blob(std::move(actual->get_blob()->blob));
+        mojo::Remote<mojom::blink::Blob> blob(
+            std::move(actual->get_blob()->blob));
         blob->GetInternalUUID(base::BindOnce(
             [](base::Closure quit_closure, String* uuid_out,
                const String& uuid) {

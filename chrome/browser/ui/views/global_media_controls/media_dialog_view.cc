@@ -61,13 +61,18 @@ void MediaDialogView::ShowMediaSession(
     const std::string& id,
     base::WeakPtr<media_message_center::MediaNotificationItem> item) {
   active_sessions_view_->ShowNotification(
-      id, std::make_unique<MediaNotificationContainerImpl>(this, item));
+      id, std::make_unique<MediaNotificationContainerImpl>(this, controller_,
+                                                           id, item));
   OnAnchorBoundsChanged();
 }
 
 void MediaDialogView::HideMediaSession(const std::string& id) {
   active_sessions_view_->HideNotification(id);
-  OnAnchorBoundsChanged();
+
+  if (active_sessions_view_->empty())
+    HideDialog();
+  else
+    OnAnchorBoundsChanged();
 }
 
 int MediaDialogView::GetDialogButtons() const {

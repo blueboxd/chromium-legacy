@@ -21,6 +21,7 @@
 #include "content/public/common/origin_util.h"
 #include "content/public/common/referrer_type_converters.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -597,15 +598,16 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
                 return;
               }
 
-              blink::mojom::CacheStorageCacheAssociatedPtrInfo ptr_info;
-              auto request = mojo::MakeRequest(&ptr_info);
+              mojo::PendingAssociatedRemote<blink::mojom::CacheStorageCache>
+                  pending_remote;
               auto cache_impl =
                   std::make_unique<CacheImpl>(std::move(cache_handle));
-              self->owner_->AddCacheBinding(std::move(cache_impl),
-                                            std::move(request));
+              self->owner_->AddCacheReceiver(
+                  std::move(cache_impl),
+                  pending_remote.InitWithNewEndpointAndPassReceiver());
 
-              std::move(callback).Run(
-                  blink::mojom::OpenResult::NewCache(std::move(ptr_info)));
+              std::move(callback).Run(blink::mojom::OpenResult::NewCache(
+                  std::move(pending_remote)));
             },
             weak_factory_.GetWeakPtr(), base::TimeTicks::Now(), trace_id,
             std::move(callback));
@@ -662,11 +664,11 @@ void CacheStorageDispatcherHost::AddReceiver(
   receivers_.Add(std::move(impl), std::move(receiver));
 }
 
-void CacheStorageDispatcherHost::AddCacheBinding(
+void CacheStorageDispatcherHost::AddCacheReceiver(
     std::unique_ptr<CacheImpl> cache_impl,
-    blink::mojom::CacheStorageCacheAssociatedRequest request) {
+    mojo::PendingAssociatedReceiver<blink::mojom::CacheStorageCache> receiver) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  cache_bindings_.AddBinding(std::move(cache_impl), std::move(request));
+  cache_receivers_.Add(std::move(cache_impl), std::move(receiver));
 }
 
 CacheStorageHandle CacheStorageDispatcherHost::OpenCacheStorage(

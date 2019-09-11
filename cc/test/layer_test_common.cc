@@ -233,11 +233,6 @@ void LayerTestCommon::LayerImplTest::AppendSurfaceQuadsWithOcclusion(
   surface_impl->AppendQuads(DRAW_MODE_HARDWARE, render_pass_.get(), &data);
 }
 
-void LayerTestCommon::LayerImplTest::RequestCopyOfOutput() {
-  root_layer()->test_properties()->copy_requests.push_back(
-      viz::CopyOutputRequest::CreateStubForTesting());
-}
-
 void LayerTestCommon::LayerImplTest::ExecuteCalculateDrawProperties(
     LayerImpl* root_layer,
     float device_scale_factor,

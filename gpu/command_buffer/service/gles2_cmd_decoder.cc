@@ -5804,8 +5804,8 @@ error::Error GLES2DecoderImpl::HandleResizeCHROMIUM(
   static_assert(sizeof(GLuint) >= sizeof(int), "Unexpected GLuint size.");
   static const GLuint kMaxDimension =
       static_cast<GLuint>(std::numeric_limits<int>::max());
-  width = std::min(std::max(1U, width), kMaxDimension);
-  height = std::min(std::max(1U, height), kMaxDimension);
+  width = base::ClampToRange(width, 1U, kMaxDimension);
+  height = base::ClampToRange(height, 1U, kMaxDimension);
 
   gl::GLSurface::ColorSpace surface_color_space =
       gl::GLSurface::ColorSpace::UNSPECIFIED;
@@ -8353,13 +8353,13 @@ void GLES2DecoderImpl::DoEnable(GLenum cap) {
 }
 
 void GLES2DecoderImpl::DoDepthRangef(GLclampf znear, GLclampf zfar) {
-  state_.z_near = std::min(1.0f, std::max(0.0f, znear));
-  state_.z_far = std::min(1.0f, std::max(0.0f, zfar));
+  state_.z_near = base::ClampToRange(znear, 0.0f, 1.0f);
+  state_.z_far = base::ClampToRange(zfar, 0.0f, 1.0f);
   api()->glDepthRangeFn(znear, zfar);
 }
 
 void GLES2DecoderImpl::DoSampleCoverage(GLclampf value, GLboolean invert) {
-  state_.sample_coverage_value = std::min(1.0f, std::max(0.0f, value));
+  state_.sample_coverage_value = base::ClampToRange(value, 0.0f, 1.0f);
   state_.sample_coverage_invert = (invert != 0);
   api()->glSampleCoverageFn(state_.sample_coverage_value, invert);
 }
@@ -9699,7 +9699,7 @@ void GLES2DecoderImpl::DoRenderbufferStorage(
 
 void GLES2DecoderImpl::DoLineWidth(GLfloat width) {
   api()->glLineWidthFn(
-      std::min(std::max(width, line_width_range_[0]), line_width_range_[1]));
+      base::ClampToRange(width, line_width_range_[0], line_width_range_[1]));
 }
 
 void GLES2DecoderImpl::DoLinkProgram(GLuint program_id) {
@@ -19921,7 +19921,7 @@ error::Error GLES2DecoderImpl::HandlePathParameterfCHROMIUM(
       hasValueError = std::isnan(value) || !std::isfinite(value) || value < 0;
       break;
     case GL_PATH_STROKE_BOUND_CHROMIUM:
-      value = std::max(std::min(1.0f, value), 0.0f);
+      value = base::ClampToRange(value, 0.0f, 1.0f);
       break;
     case GL_PATH_END_CAPS_CHROMIUM:
       hasValueError = !validators_->path_parameter_cap_values.IsValid(
@@ -19974,7 +19974,7 @@ error::Error GLES2DecoderImpl::HandlePathParameteriCHROMIUM(
       hasValueError = value < 0;
       break;
     case GL_PATH_STROKE_BOUND_CHROMIUM:
-      value = std::max(std::min(1, value), 0);
+      value = base::ClampToRange(value, 0, 1);
       break;
     case GL_PATH_END_CAPS_CHROMIUM:
       hasValueError = !validators_->path_parameter_cap_values.IsValid(value);

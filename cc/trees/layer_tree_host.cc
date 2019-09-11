@@ -1619,6 +1619,15 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
     tree_impl->RequestForceSendMetadata();
 
   tree_impl->set_has_ever_been_drawn(false);
+
+  // TODO(ericrk): The viewport changes caused by |top_controls_shown_ratio_|
+  // changes should propagate back to the main tree. This does not currently
+  // happen, so we must force the impl tree to update its viewports if
+  // |top_controls_shown_ratio_| is greater than 0.0f and less than 1.0f
+  // (partially shown). crbug.com/875943
+  if (top_controls_shown_ratio_ > 0.0f && top_controls_shown_ratio_ < 1.0f) {
+    tree_impl->UpdateViewportContainerSizes();
+  }
 }
 
 void LayerTreeHost::PushSurfaceRangesTo(LayerTreeImpl* tree_impl) {
@@ -1837,20 +1846,20 @@ void LayerTreeHost::QueueImageDecode(const PaintImage& image,
   SetNeedsCommit();
 }
 
-LayerListIterator<Layer> LayerTreeHost::begin() const {
-  return LayerListIterator<Layer>(root_layer_.get());
+LayerListIterator LayerTreeHost::begin() const {
+  return LayerListIterator(root_layer_.get());
 }
 
-LayerListIterator<Layer> LayerTreeHost::end() const {
-  return LayerListIterator<Layer>(nullptr);
+LayerListIterator LayerTreeHost::end() const {
+  return LayerListIterator(nullptr);
 }
 
-LayerListReverseIterator<Layer> LayerTreeHost::rbegin() {
-  return LayerListReverseIterator<Layer>(root_layer_.get());
+LayerListReverseIterator LayerTreeHost::rbegin() {
+  return LayerListReverseIterator(root_layer_.get());
 }
 
-LayerListReverseIterator<Layer> LayerTreeHost::rend() {
-  return LayerListReverseIterator<Layer>(nullptr);
+LayerListReverseIterator LayerTreeHost::rend() {
+  return LayerListReverseIterator(nullptr);
 }
 
 void LayerTreeHost::SetPropertyTreesForTesting(

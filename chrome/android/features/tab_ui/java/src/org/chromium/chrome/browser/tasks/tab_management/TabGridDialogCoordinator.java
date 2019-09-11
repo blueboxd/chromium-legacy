@@ -29,7 +29,7 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.ResetHand
     private final TabListCoordinator mTabListCoordinator;
     private final TabGridDialogMediator mMediator;
     private final PropertyModel mToolbarPropertyModel;
-    private final TabGridSheetToolbarCoordinator mToolbarCoordinator;
+    private final TabGridPanelToolbarCoordinator mToolbarCoordinator;
     private TabGridDialogParent mParentLayout;
 
     TabGridDialogCoordinator(Context context, TabModelSelector tabModelSelector,
@@ -42,7 +42,7 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.ResetHand
         mComponentName = animationParamsProvider == null ? "TabGridDialogFromStrip"
                                                          : "TabGridDialogInSwitcher";
 
-        mToolbarPropertyModel = new PropertyModel(TabGridSheetProperties.ALL_KEYS);
+        mToolbarPropertyModel = new PropertyModel(TabGridPanelProperties.ALL_KEYS);
 
         mMediator =
                 new TabGridDialogMediator(context, this, mToolbarPropertyModel, tabModelSelector,
@@ -56,7 +56,7 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.ResetHand
         mParentLayout = new TabGridDialogParent(context, containerView);
 
         TabListRecyclerView recyclerView = mTabListCoordinator.getContainerView();
-        mToolbarCoordinator = new TabGridSheetToolbarCoordinator(
+        mToolbarCoordinator = new TabGridPanelToolbarCoordinator(
                 mContext, recyclerView, mToolbarPropertyModel, mParentLayout);
     }
 

@@ -68,7 +68,7 @@ template <typename LayerTreeType>
 void PushLayerList(OwnedLayerImplMap* old_layers,
                    LayerTreeType* host,
                    LayerTreeImpl* tree_impl) {
-  tree_impl->ClearLayerList();
+  DCHECK(tree_impl->LayerListIsEmpty());
   for (auto* layer : *host) {
     std::unique_ptr<LayerImpl> layer_impl(
         ReuseOrCreateLayerImpl(old_layers, layer, tree_impl));
@@ -82,7 +82,6 @@ void PushLayerList(OwnedLayerImplMap* old_layers,
            LayerWillPushProperties(host, layer));
 #endif
 
-    tree_impl->AddToLayerList(layer_impl.get());
     tree_impl->AddLayer(std::move(layer_impl));
   }
   tree_impl->OnCanDrawStateChangedForTree();
@@ -95,10 +94,10 @@ void SynchronizeTreesInternal(LayerTreeType* source_tree,
   DCHECK(tree_impl);
 
   TRACE_EVENT0("cc", "TreeSynchronizer::SynchronizeTrees");
-  std::unique_ptr<OwnedLayerImplList> old_layers(tree_impl->DetachLayers());
+  OwnedLayerImplList old_layers = tree_impl->DetachLayers();
 
   OwnedLayerImplMap old_layer_map;
-  for (auto& it : *old_layers) {
+  for (auto& it : old_layers) {
     DCHECK(it);
     old_layer_map[it->id()] = std::move(it);
   }
@@ -108,7 +107,7 @@ void SynchronizeTreesInternal(LayerTreeType* source_tree,
   for (int id : property_trees->effect_tree.mask_layer_ids()) {
     std::unique_ptr<LayerImpl> layer_impl(ReuseOrCreateLayerImpl(
         &old_layer_map, source_tree->LayerById(id), tree_impl));
-    tree_impl->AddLayer(std::move(layer_impl));
+    tree_impl->AddMaskLayer(std::move(layer_impl));
   }
 }
 

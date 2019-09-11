@@ -82,11 +82,7 @@ class MockAppInstallEventLogUploaderDelegate
 
 class AppInstallEventLogUploaderTest : public testing::Test {
  protected:
-  AppInstallEventLogUploaderTest()
-      : task_environment_(
-            base::test::TaskEnvironment::TimeSource::MOCK_TIME,
-            base::test::TaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY),
-        value_report_(base::Value::Type::DICTIONARY) {}
+  AppInstallEventLogUploaderTest() = default;
 
   void TearDown() override {
     Mock::VerifyAndClearExpectations(&client_);
@@ -163,9 +159,10 @@ class AppInstallEventLogUploaderTest : public testing::Test {
     CaptureUpload(callback);
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   em::AppInstallReportRequest log_;
-  base::Value value_report_;
+  base::Value value_report_{base::Value::Type::DICTIONARY};
 
   MockCloudPolicyClient client_;
   MockAppInstallEventLogUploaderDelegate delegate_;

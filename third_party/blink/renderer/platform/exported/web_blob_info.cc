@@ -4,6 +4,7 @@
 
 #include "third_party/blink/public/platform/web_blob_info.h"
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 
@@ -13,12 +14,13 @@ WebBlobInfo::WebBlobInfo(const WebString& uuid,
                          const WebString& type,
                          uint64_t size,
                          mojo::ScopedMessagePipeHandle handle)
-    : WebBlobInfo(BlobDataHandle::Create(
-          uuid,
-          type,
-          size,
-          mojom::blink::BlobPtrInfo(std::move(handle),
-                                    mojom::blink::Blob::Version_))) {}
+    : WebBlobInfo(
+          BlobDataHandle::Create(uuid,
+                                 type,
+                                 size,
+                                 mojo::PendingRemote<mojom::blink::Blob>(
+                                     std::move(handle),
+                                     mojom::blink::Blob::Version_))) {}
 
 WebBlobInfo::WebBlobInfo(const WebString& uuid,
                          const WebString& file_path,
@@ -27,15 +29,16 @@ WebBlobInfo::WebBlobInfo(const WebString& uuid,
                          double last_modified,
                          uint64_t size,
                          mojo::ScopedMessagePipeHandle handle)
-    : WebBlobInfo(BlobDataHandle::Create(
-                      uuid,
-                      type,
-                      size,
-                      mojom::blink::BlobPtrInfo(std::move(handle),
-                                                mojom::blink::Blob::Version_)),
-                  file_path,
-                  file_name,
-                  last_modified) {}
+    : WebBlobInfo(
+          BlobDataHandle::Create(uuid,
+                                 type,
+                                 size,
+                                 mojo::PendingRemote<mojom::blink::Blob>(
+                                     std::move(handle),
+                                     mojom::blink::Blob::Version_)),
+          file_path,
+          file_name,
+          last_modified) {}
 
 // static
 WebBlobInfo WebBlobInfo::BlobForTesting(const WebString& uuid,

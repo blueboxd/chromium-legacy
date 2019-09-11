@@ -391,6 +391,11 @@ void Shelf::OnBackgroundUpdated(ShelfBackgroundType background_type,
     observer.OnBackgroundTypeChanged(background_type, change_type);
 }
 
+void Shelf::OnWorkAreaInsetsChanged() {
+  for (auto& observer : observers_)
+    observer.OnShelfWorkAreaInsetsChanged();
+}
+
 WorkAreaInsets* Shelf::GetWorkAreaInsets() const {
   const aura::Window* window = GetWindow();
   DCHECK(window);

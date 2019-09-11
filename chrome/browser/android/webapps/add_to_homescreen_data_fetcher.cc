@@ -123,7 +123,7 @@ AddToHomescreenDataFetcher::AddToHomescreenDataFetcher(
   DCHECK(shortcut_info_.url.is_valid());
 
   // Send a message to the renderer to retrieve information about the page.
-  chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame;
+  mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame> chrome_render_frame;
   web_contents->GetMainFrame()->GetRemoteAssociatedInterfaces()->GetInterface(
       &chrome_render_frame);
   // Bind the InterfacePtr into the callback so that it's kept alive
@@ -137,7 +137,8 @@ AddToHomescreenDataFetcher::AddToHomescreenDataFetcher(
 AddToHomescreenDataFetcher::~AddToHomescreenDataFetcher() {}
 
 void AddToHomescreenDataFetcher::OnDidGetWebApplicationInfo(
-    chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame,
+    mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame>
+        chrome_render_frame,
     const WebApplicationInfo& received_web_app_info) {
   if (!web_contents())
     return;

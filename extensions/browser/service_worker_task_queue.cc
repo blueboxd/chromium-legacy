@@ -42,8 +42,10 @@ const char kServiceWorkerVersion[] = "version";
 ServiceWorkerTaskQueue::TestObserver* g_test_observer = nullptr;
 
 void DidStartWorkerFail() {
-  DCHECK(false) << "DidStartWorkerFail";
-  // TODO(lazyboy): Handle failure case.
+  // TODO(lazyboy): Handle failure case. One case this can happen is when the
+  // registration got unregistered right before we tried to start it, see
+  // crbug.com/999027.
+  LOG(ERROR) << "DidStartWorkerFail";
 }
 
 }  // namespace
@@ -63,29 +65,38 @@ ServiceWorkerTaskQueue* ServiceWorkerTaskQueue::Get(BrowserContext* context) {
 }
 
 // static
-void ServiceWorkerTaskQueue::DidStartWorkerForScopeOnIO(
+void ServiceWorkerTaskQueue::DidStartWorkerForScopeOnCoreThread(
     const LazyContextId& context_id,
     base::WeakPtr<ServiceWorkerTaskQueue> task_queue,
     int64_t version_id,
     int process_id,
     int thread_id) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&ServiceWorkerTaskQueue::DidStartWorkerForScope,
-                                task_queue, context_id, version_id, process_id,
-                                thread_id));
+  DCHECK_CURRENTLY_ON(content::ServiceWorkerContext::GetCoreThreadId());
+  if (content::ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
+    if (task_queue) {
+      task_queue->DidStartWorkerForScope(context_id, version_id, process_id,
+                                         thread_id);
+    }
+  } else {
+    base::PostTask(
+        FROM_HERE, {content::BrowserThread::UI},
+        base::BindOnce(&ServiceWorkerTaskQueue::DidStartWorkerForScope,
+                       task_queue, context_id, version_id, process_id,
+                       thread_id));
+  }
 }
 
 // static
-void ServiceWorkerTaskQueue::StartServiceWorkerOnIOToRunTasks(
+void ServiceWorkerTaskQueue::StartServiceWorkerOnCoreThreadToRunTasks(
     base::WeakPtr<ServiceWorkerTaskQueue> task_queue_weak,
     const LazyContextId& context_id,
     content::ServiceWorkerContext* service_worker_context) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(content::ServiceWorkerContext::GetCoreThreadId());
   service_worker_context->StartWorkerForScope(
       context_id.service_worker_scope(),
-      base::BindOnce(&ServiceWorkerTaskQueue::DidStartWorkerForScopeOnIO,
-                     context_id, std::move(task_queue_weak)),
+      base::BindOnce(
+          &ServiceWorkerTaskQueue::DidStartWorkerForScopeOnCoreThread,
+          context_id, std::move(task_queue_weak)),
       base::BindOnce(&DidStartWorkerFail));
 }
 
@@ -239,12 +250,17 @@ void ServiceWorkerTaskQueue::RunTasksAfterStartWorker(
   content::ServiceWorkerContext* service_worker_context =
       partition->GetServiceWorkerContext();
 
-  content::ServiceWorkerContext::RunTask(
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}),
-      FROM_HERE, service_worker_context,
-      base::BindOnce(&ServiceWorkerTaskQueue::StartServiceWorkerOnIOToRunTasks,
-                     weak_factory_.GetWeakPtr(), context_id,
-                     service_worker_context));
+  if (content::ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
+    StartServiceWorkerOnCoreThreadToRunTasks(
+        weak_factory_.GetWeakPtr(), context_id, service_worker_context);
+  } else {
+    content::ServiceWorkerContext::RunTask(
+        base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}),
+        FROM_HERE, service_worker_context,
+        base::BindOnce(
+            &ServiceWorkerTaskQueue::StartServiceWorkerOnCoreThreadToRunTasks,
+            weak_factory_.GetWeakPtr(), context_id, service_worker_context));
+  }
 }
 
 void ServiceWorkerTaskQueue::DidRegisterServiceWorker(
@@ -273,7 +289,7 @@ void ServiceWorkerTaskQueue::DidRegisterServiceWorker(
   if (!pending_tasks_[context_id].empty()) {
     // TODO(lazyboy): If worker for |context_id| is already running, consider
     // not calling StartWorker. This isn't straightforward as service worker's
-    // internal state is mostly on IO thread.
+    // internal state is mostly on the core thread.
     RunTasksAfterStartWorker(context_id);
   }
 }

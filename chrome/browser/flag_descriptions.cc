@@ -22,6 +22,11 @@ const char kAcceleratedVideoEncodeName[] = "Hardware-accelerated video encode";
 const char kAcceleratedVideoEncodeDescription[] =
     "Hardware-accelerated video encode where available.";
 
+const char kAccessibilityInternalsPageImprovementsName[] =
+    "Accessibility internals page improvements";
+const char kAccessibilityInternalsPageImprovementsDescription[] =
+    "Improvements to the chrome://accessibility page.";
+
 const char kAllowInsecureLocalhostName[] =
     "Allow invalid certificates for resources loaded from localhost.";
 const char kAllowInsecureLocalhostDescription[] =
@@ -1628,6 +1633,13 @@ const char kQueryInOmniboxDescription[] =
 const char kQuicName[] = "Experimental QUIC protocol";
 const char kQuicDescription[] = "Enable experimental QUIC protocol support.";
 
+const char kQuietNotificationPromptsName[] =
+    "Quieter notification permission prompts";
+const char kQuietNotificationPromptsDescription[] =
+    "Enables quieter permission prompts for notification permission requests. "
+    "When a site wishes to show notifications, the usual modal dialog is "
+    "replaced with a quieter version.";
+
 const char kReducedReferrerGranularityName[] =
     "Reduce default 'referer' header granularity.";
 const char kReducedReferrerGranularityDescription[] =
@@ -2464,6 +2476,11 @@ const char kEphemeralTabName[] = "An ephemeral Preview Tab in an Overlay Panel";
 const char kEphemeralTabDescription[] =
     "Enable a 'Preview page/image' at a linked page into an overlay.";
 
+const char kEphemeralTabUsingBottomSheetName[] =
+    "An ephemeral Preview Tab in the bottom sheet";
+const char kEphemeralTabUsingBottomSheetDescription[] =
+    "Enable a 'Preview page/image' at a linked page into the bottom sheet.";
+
 const char kExploreSitesName[] = "Explore websites";
 const char kExploreSitesDescription[] =
     "Enables portal from new tab page to explore websites.";
@@ -2472,15 +2489,6 @@ const char kInterestFeedNotificationsName[] = "Interest Feed Notifications";
 const char kInterestFeedNotificationsDescription[] =
     "Show notifications for some suggested content from the interest feed. "
     "#interest-feed-content-suggestions should also be enabled.";
-
-const char kHomePageButtonName[] = "Force Enable Home Page Button";
-const char kHomePageButtonDescription[] = "Displays a home button if enabled.";
-
-const char kHomepageTileName[] =
-    "Enable Homepage tile shown in Suggested Tiles";
-const char kHomepageTileDescription[] =
-    "When NTPButton is enabled, the first tile of the Suggested Tiles will be "
-    "used for homepage. It will not have an effect when NTPButton is disabled.";
 
 const char kIdentityDiscName[] = "Identity Disc";
 const char kIdentityDiscDescription[] =
@@ -2510,10 +2518,6 @@ const char kNewPhotoPickerDescription[] =
 const char kNoCreditCardAbort[] = "No Credit Card Abort";
 const char kNoCreditCardAbortDescription[] =
     "Whether or not the No Credit Card Abort is enabled.";
-
-const char kNtpButtonName[] = "Enable NTP Button";
-const char kNtpButtonDescription[] =
-    "Displays a New Tab Page button in the toolbar if enabled.";
 
 const char kOfflineIndicatorAlwaysHttpProbeName[] = "Always http probe";
 const char kOfflineIndicatorAlwaysHttpProbeDescription[] =
@@ -2635,13 +2639,6 @@ extern const char kProcessSharingWithStrictSiteInstancesDescription[] =
     "separated like strict site isolation, but process selection puts multiple "
     "site instances in a single process.";
 
-const char kQuietNotificationPromptsName[] =
-    "Quieter notification permission prompts";
-const char kQuietNotificationPromptsDescription[] =
-    "Enables quieter permission prompts for notification permission requests. "
-    "When a site wishes to show notifications, the usual modal dialog is "
-    "replaced with a quieter version.";
-
 const char kReaderModeHeuristicsName[] = "Reader Mode triggering";
 const char kReaderModeHeuristicsDescription[] =
     "Determines what pages the Reader Mode infobar is shown on.";
@@ -2695,11 +2692,6 @@ extern const char kTabSwitcherLongpressMenuName[] =
 extern const char kTabSwitcherLongpressMenuDescription[] =
     "Enable showing a popup menu when the tab switcher is long-pressed, which "
     "displays options for 'NewTab', 'New incognito tab' and 'Close tab'.";
-
-const char kTranslateAndroidManualTriggerName[] =
-    "Enable manual translate trigger";
-const char kTranslateAndroidManualTriggerDescription[] =
-    "Show a menu item in the main menu that triggers page translation.";
 
 const char kStartSurfaceAndroidName[] = "Start Surface";
 const char kStartSurfaceAndroidDescription[] =

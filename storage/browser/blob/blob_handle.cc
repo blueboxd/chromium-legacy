@@ -6,13 +6,14 @@
 
 namespace storage {
 
-BlobHandle::BlobHandle(blink::mojom::BlobPtr blob) : blob_(std::move(blob)) {
+BlobHandle::BlobHandle(mojo::PendingRemote<blink::mojom::Blob> blob)
+    : blob_(std::move(blob)) {
   DCHECK(blob_);
 }
 
-blink::mojom::BlobPtr BlobHandle::Clone() const {
-  blink::mojom::BlobPtr clone;
-  blob_->Clone(MakeRequest(&clone));
+mojo::PendingRemote<blink::mojom::Blob> BlobHandle::Clone() const {
+  mojo::PendingRemote<blink::mojom::Blob> clone;
+  blob_->Clone(clone.InitWithNewPipeAndPassReceiver());
   return clone;
 }
 

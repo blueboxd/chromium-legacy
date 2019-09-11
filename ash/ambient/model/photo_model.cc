@@ -4,18 +4,10 @@
 
 #include "ash/ambient/model/photo_model.h"
 
+#include "ash/ambient/ambient_constants.h"
 #include "ash/ambient/model/photo_model_observer.h"
 
 namespace ash {
-
-namespace {
-
-// This class has a local in memory cache of downloaded photos. This is the
-// desired max number of photos stored in cache. If this is an even number,
-// the max number could be one larger.
-constexpr int kImageBufferLength = 5;
-
-}  // namespace
 
 PhotoModel::PhotoModel() = default;
 

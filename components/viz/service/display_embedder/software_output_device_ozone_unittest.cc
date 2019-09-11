@@ -49,6 +49,7 @@ class TestPlatformWindowDelegate : public ui::PlatformWindowDelegate {
   }
   void OnAcceleratedWidgetDestroyed() override {}
   void OnActivationChanged(bool active) override {}
+  void OnMouseEnter() override {}
 
  private:
   gfx::AcceleratedWidget widget_;

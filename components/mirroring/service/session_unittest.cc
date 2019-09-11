@@ -20,6 +20,8 @@
 #include "media/cast/test/utility/default_config.h"
 #include "media/cast/test/utility/net_utility.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/ip_address.h"
 #include "services/viz/public/cpp/gpu/gpu.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -44,11 +46,11 @@ namespace {
 
 class MockRemotingSource final : public media::mojom::RemotingSource {
  public:
-  MockRemotingSource() : binding_(this) {}
+  MockRemotingSource() {}
   ~MockRemotingSource() override {}
 
-  void Bind(media::mojom::RemotingSourceRequest request) {
-    binding_.Bind(std::move(request));
+  void Bind(mojo::PendingReceiver<media::mojom::RemotingSource> receiver) {
+    receiver_.Bind(std::move(receiver));
   }
 
   MOCK_METHOD0(OnSinkGone, void());
@@ -62,7 +64,7 @@ class MockRemotingSource final : public media::mojom::RemotingSource {
   }
 
  private:
-  mojo::Binding<media::mojom::RemotingSource> binding_;
+  mojo::Receiver<media::mojom::RemotingSource> receiver_{this};
 };
 
 }  // namespace
@@ -126,17 +128,18 @@ class SessionTest : public mojom::ResourceProvider,
     OnGetNetworkContext();
   }
 
-  void CreateAudioStream(mojom::AudioStreamCreatorClientPtr client,
-                         const media::AudioParameters& params,
-                         uint32_t total_segments) override {
+  void CreateAudioStream(
+      mojo::PendingRemote<mojom::AudioStreamCreatorClient> client,
+      const media::AudioParameters& params,
+      uint32_t total_segments) override {
     OnCreateAudioStream();
   }
 
   void ConnectToRemotingSource(
-      media::mojom::RemoterPtr remoter,
-      media::mojom::RemotingSourceRequest request) override {
-    remoter_ = std::move(remoter);
-    remoting_source_.Bind(std::move(request));
+      mojo::PendingRemote<media::mojom::Remoter> remoter,
+      mojo::PendingReceiver<media::mojom::RemotingSource> receiver) override {
+    remoter_.Bind(std::move(remoter));
+    remoting_source_.Bind(std::move(receiver));
     OnConnectToRemotingSource();
   }
 
@@ -341,7 +344,7 @@ class SessionTest : public mojom::ResourceProvider,
   mojo::Binding<mojom::CastMessageChannel> outbound_channel_binding_;
   mojom::CastMessageChannelPtr inbound_channel_;
   SessionType session_type_ = SessionType::AUDIO_AND_VIDEO;
-  media::mojom::RemoterPtr remoter_;
+  mojo::Remote<media::mojom::Remoter> remoter_;
   MockRemotingSource remoting_source_;
   std::string cast_mode_;
   int32_t offer_sequence_number_ = -1;

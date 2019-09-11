@@ -98,6 +98,14 @@ class PaymentInstrument {
   // Returns a WeakPtr to this payment instrument.
   virtual base::WeakPtr<PaymentInstrument> AsWeakPtr() = 0;
 
+  // Returns true if this payment instrument can collect and return the required
+  // information. This is used to show/hide shipping/contact sections in payment
+  // sheet view depending on the selected instrument.
+  virtual bool HandlesShippingAddress() const = 0;
+  virtual bool HandlesPayerName() const = 0;
+  virtual bool HandlesPayerEmail() const = 0;
+  virtual bool HandlesPayerPhone() const = 0;
+
   // Sorts the instruments using the overloaded < operator.
   static void SortInstruments(
       std::vector<std::unique_ptr<PaymentInstrument>>* instruments);

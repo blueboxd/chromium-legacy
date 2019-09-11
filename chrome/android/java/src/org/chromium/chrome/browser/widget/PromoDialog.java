@@ -18,6 +18,7 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ui.widget.AlwaysDismissedDialog;
 
 /**
  * Generic builder for promo dialogs.

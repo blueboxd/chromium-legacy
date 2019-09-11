@@ -37,12 +37,10 @@
 using chrome_test_util::AccountsSyncButton;
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
-using chrome_test_util::ClearBrowsingDataView;
 using chrome_test_util::GoogleServicesSettingsButton;
 using chrome_test_util::SettingsAccountButton;
 using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::SettingsMenuPrivacyButton;
-using chrome_test_util::SignOutAccountsButton;
 using chrome_test_util::SyncSwitchCell;
 using chrome_test_util::TurnSyncSwitchOn;
 

@@ -170,7 +170,9 @@ class CC_EXPORT LayerTreeImpl {
   void SetRootLayerForTesting(std::unique_ptr<LayerImpl>);
   void OnCanDrawStateChangedForTree();
   bool IsRootLayer(const LayerImpl* layer) const;
-  std::unique_ptr<OwnedLayerImplList> DetachLayers();
+
+  OwnedLayerImplList DetachLayers();
+  OwnedLayerImplList DetachLayersKeepingRootLayerForTesting();
 
   void SetPropertyTrees(PropertyTrees* property_trees);
   PropertyTrees* property_trees() {
@@ -460,8 +462,6 @@ class CC_EXPORT LayerTreeImpl {
   LayerImpl* ScrollableLayerByElementId(ElementId element_id) const;
 
   bool IsElementInPropertyTree(ElementId element_id) const;
-  void AddToElementPropertyTreeList(ElementId element_id);
-  void RemoveFromElementPropertyTreeList(ElementId element_id);
 
   void AddToElementLayerList(ElementId element_id, LayerImpl* layer);
   void RemoveFromElementLayerList(ElementId element_id);
@@ -482,9 +482,13 @@ class CC_EXPORT LayerTreeImpl {
   void RegisterLayer(LayerImpl* layer);
   void UnregisterLayer(LayerImpl* layer);
 
-  // These manage ownership of the LayerImpl.
+  // Append a layer to the list.
   void AddLayer(std::unique_ptr<LayerImpl> layer);
-  std::unique_ptr<LayerImpl> RemoveLayer(int id);
+
+  // Mask layer is special: it's managed by LayerTreeImpl (in layers_), but
+  // not in layer_list_. TODO(wangxianzhu): Remove this when we switch ui
+  // compositor to property based masks.
+  void AddMaskLayer(std::unique_ptr<LayerImpl> mask_layer);
 
   size_t NumLayers();
 
@@ -644,12 +648,6 @@ class CC_EXPORT LayerTreeImpl {
 
   void ResetAllChangeTracking();
 
-  void AddToLayerList(LayerImpl* layer);
-
-  void ClearLayerList();
-
-  void BuildLayerListForTesting();
-
   void HandleTickmarksVisibilityChange();
   void HandleScrollbarShowRequestsFromMain();
 
@@ -661,9 +659,6 @@ class CC_EXPORT LayerTreeImpl {
   LayerTreeLifecycle& lifecycle() { return lifecycle_; }
 
   std::string LayerListAsJson() const;
-  // TODO(pdr): This should be removed because there is no longer a tree
-  // of layers, only a list.
-  std::string LayerTreeAsJson() const;
 
   AnimatedPaintWorkletTracker& paint_worklet_tracker() {
     return host_impl_->paint_worklet_tracker();
@@ -683,6 +678,8 @@ class CC_EXPORT LayerTreeImpl {
  private:
   friend class LayerTreeHost;
 
+  void AddOwnedLayer(std::unique_ptr<LayerImpl> layer);
+
   TransformNode* PageScaleTransformNode();
   void UpdatePageScaleNode();
 
@@ -696,7 +693,6 @@ class CC_EXPORT LayerTreeImpl {
   LayerTreeHostImpl* host_impl_;
   int source_frame_number_;
   int is_first_frame_after_commit_tracker_;
-  LayerImpl* root_layer_for_testing_;
   HeadsUpDisplayLayerImpl* hud_layer_;
   PropertyTrees property_trees_;
   SkColor background_color_;
@@ -726,9 +722,17 @@ class CC_EXPORT LayerTreeImpl {
 
   scoped_refptr<SyncedElasticOverscroll> elastic_overscroll_;
 
-  std::unique_ptr<OwnedLayerImplList> layers_;
+  // TODO(wangxianzhu): Combine layers_ and layer_list_ when we remove
+  // support of mask layers.
+
+  // Contains all managed layers, including layers in layer_list_ and mask
+  // layers.
+  OwnedLayerImplList layers_;
+  // Maps from layer id to layer (for each layer in layers_).
   LayerImplMap layer_id_map_;
+  // Contains non-mask layers, sorted in draw order.
   LayerImplList layer_list_;
+
   // Set of layers that need to push properties.
   base::flat_set<LayerImpl*> layers_that_should_push_properties_;
 

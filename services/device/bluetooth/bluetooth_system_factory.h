@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/mojom/bluetooth_system.mojom.h"
 
 namespace device {
@@ -20,8 +21,9 @@ class BluetoothSystemFactory : public mojom::BluetoothSystemFactory {
   ~BluetoothSystemFactory() override;
 
   // mojom::BluetoothSystemFactory
-  void Create(mojo::PendingReceiver<mojom::BluetoothSystem> system_receiver,
-              mojom::BluetoothSystemClientPtr system_client) override;
+  void Create(
+      mojo::PendingReceiver<mojom::BluetoothSystem> system_receiver,
+      mojo::PendingRemote<mojom::BluetoothSystemClient> system_client) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BluetoothSystemFactory);

@@ -111,5 +111,4 @@ java_annotation_processor("jni_processor") {
   ]
 
   srcjar_deps = [ ":processor_args_java" ]
-  jacoco_never_instrument = true
 }

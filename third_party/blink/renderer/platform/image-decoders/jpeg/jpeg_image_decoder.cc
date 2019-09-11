@@ -924,19 +924,17 @@ bool JPEGImageDecoder::ShouldGenerateAllSizes() const {
 }
 
 bool JPEGImageDecoder::CanDecodeToYUV() {
-  // TODO(crbug.com/919627): Right now |decode_to_yuv_for_testing_| is false by
-  // default and is only set true for unit tests. Remove it once
-  // JPEG YUV decoding is finished and YUV decoding doesn't need to be disabled
-  // outside of tests.
+  // TODO(crbug.com/919627): Right now |allow_decode_to_yuv_| is false by
+  // default and is only set true for unit tests.
   //
-  // Returning false here is a bit deceptive because the JPEG decoder does
-  // support YUV. But the rest of the infrastructure at levels above the decoder
-  // is not quite there yet to handle the resulting JPEG YUV data,
-  // so for now we disable that path.
+  // Returning false here is a bit deceptive because the
+  // JPEG decoder does support YUV. But the rest of the infrastructure at levels
+  // above the decoder is not quite there yet to handle the resulting JPEG YUV
+  // data, so for now we disable that path.
   //
   // Calling IsSizeAvailable() ensures the reader is created and the output
   // color space is set.
-  return decode_to_yuv_for_testing_ && IsSizeAvailable() &&
+  return allow_decode_to_yuv_ && IsSizeAvailable() &&
          reader_->Info()->out_color_space == JCS_YCbCr;
 }
 
@@ -954,11 +952,6 @@ void JPEGImageDecoder::DecodeToYUV() {
 // TODO(crbug.com/919627): Confirm that this is correct for all cases.
 SkYUVColorSpace JPEGImageDecoder::GetYUVColorSpace() const {
   return SkYUVColorSpace::kJPEG_SkYUVColorSpace;
-}
-
-void JPEGImageDecoder::SetImagePlanes(
-    std::unique_ptr<ImagePlanes> image_planes) {
-  image_planes_ = std::move(image_planes);
 }
 
 void JPEGImageDecoder::SetSupportedDecodeSizes(Vector<SkISize> sizes) {

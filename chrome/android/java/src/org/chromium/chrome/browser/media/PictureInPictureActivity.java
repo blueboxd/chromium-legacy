@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.thinwebview.CompositorView;
 import org.chromium.chrome.browser.thinwebview.CompositorViewFactory;
+import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.content_public.browser.MediaSession;
 import org.chromium.content_public.browser.MediaSessionObserver;
 import org.chromium.ui.base.ActivityWindowAndroid;
@@ -44,6 +45,9 @@ import java.util.ArrayList;
 public class PictureInPictureActivity extends AsyncInitializationActivity {
     private static final String ACTION_PLAY =
             "org.chromium.chrome.browser.media.PictureInPictureActivity.Play";
+
+    private static final float MAX_ASPECT_RATIO = 2.39f;
+    private static final float MIN_ASPECT_RATIO = 1 / 2.39f;
 
     private static long sNativeOverlayWindowAndroid;
     private static Tab sInitiatorTab;
@@ -235,6 +239,11 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
     @SuppressLint("NewApi")
     private void updateVideoSize(int width, int height) {
         PictureInPictureParams.Builder builder = new PictureInPictureParams.Builder();
+
+        float aspectRatio =
+                MathUtils.clamp(width / (float) height, MIN_ASPECT_RATIO, MAX_ASPECT_RATIO);
+        width = (int) (height * aspectRatio);
+
         builder.setAspectRatio(new Rational(width, height));
         setPictureInPictureParams(builder.build());
     }

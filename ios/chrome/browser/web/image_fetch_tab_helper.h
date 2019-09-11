@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "ios/web/public/web_state/web_state_observer.h"
-#import "ios/web/public/web_state/web_state_user_data.h"
+#include "ios/web/public/web_state_observer.h"
+#import "ios/web/public/web_state_user_data.h"
 
 // Key of the UMA ContextMenu.iOS.GetImageDataByJsResult histogram.
 extern const char kUmaGetImageDataByJsResult[];

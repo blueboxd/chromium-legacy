@@ -121,9 +121,6 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   void PushFrame() override;
 
  protected:
-  void NeedsFinalizeFrame() override {
-    CanvasRenderingContext::NeedsFinalizeFrame();
-  }
 
   CanvasColorParams ColorParams() const override;
   bool WritePixels(const SkImageInfo& orig_info,

@@ -46,7 +46,7 @@
 #include "ios/web/public/test/fakes/test_web_state_observer.h"
 #import "ios/web/public/test/fakes/test_web_view_content_view.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
-#include "ios/web/public/web_state/web_state_observer.h"
+#include "ios/web/public/web_state_observer.h"
 #import "ios/web/security/wk_web_view_security_util.h"
 #import "ios/web/test/fakes/crw_fake_back_forward_list.h"
 #import "ios/web/test/fakes/crw_fake_wk_frame_info.h"

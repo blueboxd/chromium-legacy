@@ -324,8 +324,8 @@ void AssistantController::NotifyUrlOpened(const GURL& url, bool from_server) {
 }
 
 void AssistantController::OnAssistantStatusChanged(
-    mojom::VoiceInteractionState state) {
-  if (state == mojom::VoiceInteractionState::NOT_READY)
+    mojom::AssistantState state) {
+  if (state == mojom::AssistantState::NOT_READY)
     assistant_ui_controller_.CloseUi(AssistantExitPoint::kUnspecified);
 }
 

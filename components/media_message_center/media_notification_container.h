@@ -6,6 +6,7 @@
 #define COMPONENTS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_CONTAINER_H_
 
 #include "base/component_export.h"
+#include "services/media_session/public/mojom/media_session.mojom.h"
 
 namespace media_message_center {
 
@@ -16,6 +17,13 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationContainer {
  public:
   // Called when MediaNotificationView's expanded state changes.
   virtual void OnExpanded(bool expanded) = 0;
+
+  // Called when the MediaSessionInfo changes.
+  virtual void OnMediaSessionInfoChanged(
+      const media_session::mojom::MediaSessionInfoPtr& session_info) = 0;
+
+  // Called when MediaNotificationView's foreground color changes.
+  virtual void OnForegoundColorChanged(SkColor color) = 0;
 };
 
 }  // namespace media_message_center

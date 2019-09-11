@@ -130,27 +130,9 @@ void RemoveBrowsingData() {
 
   // Sign in to |identity|.
   [SigninEarlGreyUI signinWithIdentity:identity];
-  [ChromeEarlGreyUI openSettingsMenu];
 
-  // Go to Accounts Settings and tap the sign out button.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsAccountButton()]
-      performAction:grey_tap()];
-
-  const CGFloat scroll_displacement = 100.0;
-  [[[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   chrome_test_util::SignOutAccountsButton(),
-                                   grey_interactable(), nil)]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
-                                                  scroll_displacement)
-      onElementWithMatcher:chrome_test_util::SettingsAccountsCollectionView()]
-      performAction:grey_tap()];
-  TapButtonWithLabelId(IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE);
-  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
-      performAction:grey_tap()];
-
-  // Check that there is no signed in user.
-  [SigninEarlGreyUtils checkSignedOut];
+  // Sign out.
+  [SigninEarlGreyUI signOutWithManagedAccount:NO];
 }
 
 // Tests that signing out of a managed account from the Settings works
@@ -176,22 +158,8 @@ void RemoveBrowsingData() {
   [SigninEarlGreyUI confirmSigninConfirmationDialog];
   [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
 
-  // Go to Accounts Settings and tap the sign out button.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsAccountButton()]
-      performAction:grey_tap()];
-
-  const CGFloat scroll_displacement = 100.0;
-  [[[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   chrome_test_util::SignOutAccountsButton(),
-                                   grey_interactable(), nil)]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
-                                                  scroll_displacement)
-      onElementWithMatcher:chrome_test_util::SettingsAccountsCollectionView()]
-      performAction:grey_tap()];
-  TapButtonWithLabelId(IDS_IOS_MANAGED_DISCONNECT_DIALOG_ACCEPT);
-  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
-      performAction:grey_tap()];
+  // Sign out.
+  [SigninEarlGreyUI signOutWithManagedAccount:YES];
 
   // Check that there is no signed in user.
   [SigninEarlGreyUtils checkSignedOut];
@@ -281,25 +249,12 @@ void RemoveBrowsingData() {
   // effectively block the authentication flow, ensuring that the authentication
   // flow is always still running when the sign-in is being cancelled.
   [SigninEarlGreyUI signinWithIdentity:identity2];
-  [ChromeEarlGreyUI openSettingsMenu];
 
-  // Go to Accounts Settings and tap the sign out button.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsAccountButton()]
-      performAction:grey_tap()];
-
-  const CGFloat scroll_displacement = 100.0;
-  [[[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   chrome_test_util::SignOutAccountsButton(),
-                                   grey_interactable(), nil)]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
-                                                  scroll_displacement)
-      onElementWithMatcher:chrome_test_util::SettingsAccountsCollectionView()]
-      performAction:grey_tap()];
-  TapButtonWithLabelId(IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE);
-  [SigninEarlGreyUtils checkSignedOut];
+  // Sign out.
+  [SigninEarlGreyUI signOutWithManagedAccount:NO];
 
   // Sign in with |identity1|.
+  [ChromeEarlGreyUI openSettingsMenu];
   [[EarlGrey selectElementWithMatcher:SecondarySignInButton()]
       performAction:grey_tap()];
   [SigninEarlGreyUI selectIdentityWithEmail:identity1.userEmail];

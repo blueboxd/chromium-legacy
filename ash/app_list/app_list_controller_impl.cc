@@ -645,7 +645,7 @@ void AppListControllerImpl::OnKeyboardVisibilityChanged(const bool is_visible) {
 }
 
 void AppListControllerImpl::OnAssistantStatusChanged(
-    mojom::VoiceInteractionState state) {
+    mojom::AssistantState state) {
   UpdateAssistantVisibility();
 }
 
@@ -1177,8 +1177,7 @@ bool AppListControllerImpl::IsAssistantAllowedAndEnabled() const {
   auto* state = AssistantState::Get();
   return state->settings_enabled().value_or(false) &&
          state->allowed_state() == mojom::AssistantAllowedState::ALLOWED &&
-         state->voice_interaction_state() !=
-             mojom::VoiceInteractionState::NOT_READY;
+         state->assistant_state() != mojom::AssistantState::NOT_READY;
 }
 
 bool AppListControllerImpl::ShouldShowAssistantPrivacyInfo() const {

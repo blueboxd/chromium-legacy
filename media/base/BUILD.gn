@@ -29,7 +29,8 @@ jumbo_source_set("base") {
   }
 
   if (is_android) {
-    visibility += [ "//gpu/ipc/common:android_texture_owner_unittests" ]
+    visibility +=
+        [ "//gpu/command_buffer/service:android_texture_owner_unittests" ]
   }
 
   sources = [

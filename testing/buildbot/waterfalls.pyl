@@ -2571,7 +2571,6 @@
         'browser_config': 'android-chromium',
         'skip_merge_script': True,
         'mixins': [
-          'gpu_pool',
           'marshmallow',
           'bullhead',
        ],

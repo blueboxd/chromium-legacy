@@ -38,6 +38,7 @@ enum FrameSequenceTrackerType {
   kRAF,
   kTouchScroll,
   kWheelScroll,
+  kUniversal,
   kMaxType
 };
 

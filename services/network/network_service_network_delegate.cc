@@ -128,15 +128,6 @@ bool NetworkServiceNetworkDelegate::OnCanSetCookie(
   return allowed_from_caller;
 }
 
-bool NetworkServiceNetworkDelegate::OnCanAccessFile(
-    const net::URLRequest& request,
-    const base::FilePath& original_path,
-    const base::FilePath& absolute_path) const {
-  // Match the default implementation (BasicNetworkDelegate)'s behavior for
-  // now.
-  return true;
-}
-
 bool NetworkServiceNetworkDelegate::OnCanQueueReportingReport(
     const url::Origin& origin) const {
   return network_context_->cookie_manager()

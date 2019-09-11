@@ -273,6 +273,13 @@ class CONTENT_EXPORT ContentBrowserClient {
       const GURL& candidate_url,
       const GURL& destination_url);
 
+  // Returns true if the user intentionally initiated the navigation. This is
+  // used to determine whether we should process debug URLs like chrome://crash.
+  // The default implementation checks whether the transition was initiated via
+  // the address bar (rather than whether it was typed) to permit the pasting of
+  // debug URLs.
+  virtual bool IsExplicitNavigation(ui::PageTransition transition);
+
   // Returns whether gesture fling events should use the mobile-behavior gesture
   // curve for scrolling.
   virtual bool ShouldUseMobileFlingCurve();

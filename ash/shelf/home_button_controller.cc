@@ -141,8 +141,10 @@ bool HomeButtonController::IsVoiceInteractionAvailable() {
 }
 
 bool HomeButtonController::IsVoiceInteractionRunning() {
-  return AssistantState::Get()->voice_interaction_state() ==
-         mojom::VoiceInteractionState::RUNNING;
+  // TODO(b/140823590): Update the method name/description and use Assistant
+  // visibility state instead.
+  return AssistantState::Get()->assistant_state() ==
+         mojom::AssistantState::VISIBLE;
 }
 
 void HomeButtonController::OnAppListVisibilityChanged(bool shown,
@@ -171,21 +173,21 @@ void HomeButtonController::OnTabletModeStarted() {
 }
 
 void HomeButtonController::OnAssistantStatusChanged(
-    mojom::VoiceInteractionState state) {
+    mojom::AssistantState state) {
   button_->OnVoiceInteractionAvailabilityChanged();
 
   if (!assistant_overlay_)
     return;
 
   switch (state) {
-    case mojom::VoiceInteractionState::STOPPED:
+    case mojom::AssistantState::READY:
       UMA_HISTOGRAM_TIMES(
           "VoiceInteraction.OpenDuration",
           base::TimeTicks::Now() - voice_interaction_start_timestamp_);
       break;
-    case mojom::VoiceInteractionState::NOT_READY:
+    case mojom::AssistantState::NOT_READY:
       break;
-    case mojom::VoiceInteractionState::RUNNING:
+    case mojom::AssistantState::VISIBLE:
       // we start hiding the animation if it is running.
       if (assistant_overlay_->IsBursting() || assistant_overlay_->IsWaiting()) {
         assistant_animation_hide_delay_timer_->Start(

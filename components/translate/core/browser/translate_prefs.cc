@@ -82,9 +82,6 @@ const base::Feature kTranslateRecentTarget{"TranslateRecentTarget",
 const base::Feature kTranslateUI{"TranslateUI",
                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kTranslateMobileManualTrigger{
-    "TranslateAndroidManualTrigger", base::FEATURE_ENABLED_BY_DEFAULT};
-
 DenialTimeUpdate::DenialTimeUpdate(PrefService* prefs,
                                    const std::string& language,
                                    size_t max_denial_count)

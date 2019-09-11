@@ -45,10 +45,8 @@ base::string16 TypeConverter<bool>::ToString(bool source_value) {
   return base::ASCIIToUTF16(source_value ? "true" : "false");
 }
 
-base::string16 TypeConverter<gfx::Size>::ToString(
-    const gfx::Size& source_value) {
-  return base::ASCIIToUTF16(base::StringPrintf("{%i, %i}", source_value.width(),
-                                               source_value.height()));
+base::string16 TypeConverter<const char*>::ToString(const char* source_value) {
+  return base::UTF8ToUTF16(source_value);
 }
 
 base::string16 TypeConverter<base::string16>::ToString(
@@ -56,8 +54,10 @@ base::string16 TypeConverter<base::string16>::ToString(
   return source_value;
 }
 
-base::string16 TypeConverter<const char*>::ToString(const char* source_value) {
-  return base::UTF8ToUTF16(source_value);
+base::string16 TypeConverter<base::TimeDelta>::ToString(
+    const base::TimeDelta& source_value) {
+  return base::NumberToString16(source_value.InSecondsF()) +
+         base::ASCIIToUTF16(" s");
 }
 
 base::string16 TypeConverter<gfx::ShadowValues>::ToString(
@@ -70,6 +70,12 @@ base::string16 TypeConverter<gfx::ShadowValues>::ToString(
   ret[ret.length() - 1] = ' ';
   ret += base::ASCIIToUTF16("]");
   return ret;
+}
+
+base::string16 TypeConverter<gfx::Size>::ToString(
+    const gfx::Size& source_value) {
+  return base::ASCIIToUTF16(base::StringPrintf("{%i, %i}", source_value.width(),
+                                               source_value.height()));
 }
 
 base::string16 TypeConverter<gfx::Range>::ToString(
@@ -170,22 +176,21 @@ base::Optional<bool> TypeConverter<bool>::FromString(
   return base::nullopt;
 }
 
-base::Optional<gfx::Size> TypeConverter<gfx::Size>::FromString(
-    const base::string16& source_value) {
-  const auto values =
-      base::SplitStringPiece(source_value, base::ASCIIToUTF16("{,}"),
-                             base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  int width, height;
-  if ((values.size() == 2) && base::StringToInt(values[0], &width) &&
-      base::StringToInt(values[1], &height)) {
-    return gfx::Size(width, height);
-  }
-  return base::nullopt;
-}
-
 base::Optional<base::string16> TypeConverter<base::string16>::FromString(
     const base::string16& source_value) {
   return source_value;
+}
+
+base::Optional<base::TimeDelta> TypeConverter<base::TimeDelta>::FromString(
+    const base::string16& source_value) {
+  if (!base::EndsWith(source_value, base::ASCIIToUTF16(" s"),
+                      base::CompareCase::SENSITIVE))
+    return base::nullopt;
+  double ret;
+  return base::StringToDouble(source_value.substr(0, source_value.length() - 2),
+                              &ret)
+             ? base::make_optional(base::TimeDelta::FromSecondsD(ret))
+             : base::nullopt;
 }
 
 base::Optional<gfx::ShadowValues> TypeConverter<gfx::ShadowValues>::FromString(
@@ -214,6 +219,19 @@ base::Optional<gfx::ShadowValues> TypeConverter<gfx::ShadowValues>::FromString(
       ret.emplace_back(gfx::Vector2d(x, y), blur, SkColorSetARGB(a, r, g, b));
   }
   return ret;
+}
+
+base::Optional<gfx::Size> TypeConverter<gfx::Size>::FromString(
+    const base::string16& source_value) {
+  const auto values =
+      base::SplitStringPiece(source_value, base::ASCIIToUTF16("{,}"),
+                             base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  int width, height;
+  if ((values.size() == 2) && base::StringToInt(values[0], &width) &&
+      base::StringToInt(values[1], &height)) {
+    return gfx::Size(width, height);
+  }
+  return base::nullopt;
 }
 
 base::Optional<gfx::Range> TypeConverter<gfx::Range>::FromString(

@@ -36,7 +36,7 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.widget.DualControlLayout;
+import org.chromium.chrome.browser.ui.widget.DualControlLayout;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
 import org.chromium.ui.HorizontalListDividerDrawable;
@@ -1517,7 +1517,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
             setBackground(HorizontalListDividerDrawable.create(getContext()));
             LinearLayout.LayoutParams params =
                     new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT,
-                            resources.getDimensionPixelSize(R.dimen.separator_height));
+                            resources.getDimensionPixelSize(R.dimen.divider_height));
 
             int margin =
                     resources.getDimensionPixelSize(R.dimen.editor_dialog_section_large_spacing);

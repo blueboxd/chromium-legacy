@@ -182,7 +182,9 @@ class ArcAuthService : public KeyedService,
   void DeletePendingTokenRequest(ArcFetcherBase* fetcher);
 
   // Triggers an async push of the accounts in IdentityManager to ARC.
-  void TriggerAccountsPushToArc();
+  // If |filter_primary_account| is set to |true|, the Primary Account in Chrome
+  // OS Account Manager will not be pushed to ARC as part of this call.
+  void TriggerAccountsPushToArc(bool filter_primary_account);
 
   // Issues a request to ARC, which will complete callback with the list of
   // Google accounts in ARC.

@@ -85,25 +85,6 @@ class LayerTestCommon {
                                  std::forward<Args>(args)...);
     }
 
-    // TODO(crbug.com/994361): Remove this function when all impl-side tests are
-    // converted into layer list mode.
-    template <typename T, typename... Args>
-    T* AddChildToRoot(Args&&... args) {
-      return AddLayer<T>(std::forward<Args>(args)...);
-    }
-
-    // TODO(crbug.com/994361): Remove this function when all impl-side tests are
-    // converted into layer list mode.
-    template <typename T, typename... Args>
-    T* AddChild(LayerImpl* parent, Args&&... args) {
-      std::unique_ptr<T> layer =
-          T::Create(host_impl()->active_tree(), layer_impl_id_++,
-                    std::forward<Args>(args)...);
-      T* ptr = layer.get();
-      parent->test_properties()->AddChild(std::move(layer));
-      return ptr;
-    }
-
     template <typename T, typename... Args>
     T* AddMaskLayer(LayerImpl* origin, Args&&... args) {
       std::unique_ptr<T> layer =
@@ -111,7 +92,7 @@ class LayerTestCommon {
                     std::forward<Args>(args)...);
       layer->SetBounds(origin->bounds());
       T* ptr = layer.get();
-      origin->test_properties()->SetMaskLayer(std::move(layer));
+      host_impl()->active_tree()->AddMaskLayer(std::move(layer));
       if (host_impl()->active_tree()->settings().use_layer_lists) {
         auto* origin_effect = GetEffectNode(origin);
         origin_effect->render_surface_reason = RenderSurfaceReason::kMask;
@@ -132,8 +113,6 @@ class LayerTestCommon {
                                          const gfx::Rect& occluded);
     void AppendSurfaceQuadsWithOcclusion(RenderSurfaceImpl* surface_impl,
                                          const gfx::Rect& occluded);
-
-    void RequestCopyOfOutput();
 
     LayerTreeFrameSink* layer_tree_frame_sink() const {
       return host_impl()->layer_tree_frame_sink();
@@ -194,8 +173,7 @@ class LayerTestCommon {
       std::unique_ptr<T> layer =
           T::Create(tree, layer_impl_id_++, std::forward<Args>(args)...);
       T* ptr = layer.get();
-      tree->root_layer_for_testing()->test_properties()->AddChild(
-          std::move(layer));
+      tree->AddLayer(std::move(layer));
       return ptr;
     }
 

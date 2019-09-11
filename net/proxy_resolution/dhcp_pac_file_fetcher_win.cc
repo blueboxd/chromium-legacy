@@ -223,7 +223,7 @@ base::Value NetLogGetAdaptersDoneParams(DhcpAdapterNamesLoggingInfo* info) {
     bool skipped = !IsDhcpCapableAdapter(adapter);
     adapter_value.SetKey("skipped", base::Value(skipped));
 
-    adapters_value.GetList().push_back(std::move(adapter_value));
+    adapters_value.Append(std::move(adapter_value));
   }
   result.SetKey("adapters", std::move(adapters_value));
 

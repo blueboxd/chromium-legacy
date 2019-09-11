@@ -6,7 +6,6 @@
 
 #import "base/test/ios/wait_util.h"
 #include "components/unified_consent/feature.h"
-#import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"

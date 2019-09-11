@@ -194,7 +194,6 @@ crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_OffscreenCanvasWebGLSo
 crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker [ Skip ]
 crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_RepeatedWebGLTo2D_SoftwareCompositing [ Skip ]
 crbug.com/985366 [ linux skia-renderer use-vulkan ] Pixel_CanvasLowLatency2D [ Skip ]
-crbug.com/985366 [ linux skia-renderer use-vulkan ] Pixel_CanvasLowLatencyWebGL [ Skip ]
 
 # Also producing blank images on Intel
 crbug.com/974383 [ linux skia-renderer use-vulkan intel ] Pixel_CanvasDisplayLinearRGBAccelerated2D [ Skip ]

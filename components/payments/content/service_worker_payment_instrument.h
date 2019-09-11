@@ -109,6 +109,10 @@ class ServiceWorkerPaymentInstrument : public PaymentInstrument {
       bool* is_valid) const override;
   base::WeakPtr<PaymentInstrument> AsWeakPtr() override;
   gfx::ImageSkia icon_image_skia() const override;
+  bool HandlesShippingAddress() const override;
+  bool HandlesPayerName() const override;
+  bool HandlesPayerEmail() const override;
+  bool HandlesPayerPhone() const override;
 
   void set_payment_handler_host(
       mojo::PendingRemote<mojom::PaymentHandlerHost> payment_handler_host) {

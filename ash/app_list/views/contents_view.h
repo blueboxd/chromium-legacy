@@ -214,10 +214,6 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // Updates y position and opacity of the items in this view during dragging.
   void UpdateYPositionAndOpacity();
 
-  // Returns the scale that is used to transform the AppListMainView. The scale
-  // is also applied to search box window.
-  float GetAppListMainViewScale() const;
-
   // Show/hide the expand arrow view button when contents view is in fullscreen
   // and tablet mode is enabled.
   void SetExpandArrowViewVisibility(bool show);

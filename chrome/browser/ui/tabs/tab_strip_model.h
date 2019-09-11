@@ -245,6 +245,8 @@ class TabStripModel {
   // Move the WebContents at the specified index to another index. This
   // method does NOT send Detached/Attached notifications, rather it moves the
   // WebContents inline and sends a Moved notification instead.
+  // EnsureGroupContiguity() is called after the move, so this will never result
+  // in non-contiguous group (though the moved tab's group may change).
   // If |select_after_move| is false, whatever tab was selected before the move
   // will still be selected, but its index may have incremented or decremented
   // one slot. It returns the index the web contents is actually moved to.
@@ -682,6 +684,12 @@ class TabStripModel {
   // Sets the opener of any tabs that reference the tab at |index| to that tab's
   // opener.
   void FixOpeners(int index);
+
+  // Makes sure the tab at |index| is not causing a group contiguity error. Will
+  // make the minimum change to ensure that the tab's group is not non-
+  // contiguous as well as ensuring that it is not breaking up a non-contiguous
+  // group, possibly by setting or clearing its group.
+  void EnsureGroupContiguity(int index);
 
   // The WebContents data currently hosted within this TabStripModel. This must
   // be kept in sync with |selection_model_|.

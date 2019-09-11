@@ -56,6 +56,7 @@ class VulkanDemo : public ui::PlatformWindowDelegate {
   void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override;
   void OnAcceleratedWidgetDestroyed() override {}
   void OnActivationChanged(bool active) override {}
+  void OnMouseEnter() override {}
 
   void CreateSkSurface();
   void Draw(SkCanvas* canvas, float fraction);

@@ -14,7 +14,7 @@
 #include "components/translate/core/common/translate_errors.h"
 #include "components/translate/ios/browser/language_detection_controller.h"
 #include "components/translate/ios/browser/translate_controller.h"
-#include "ios/web/public/web_state/web_state_observer.h"
+#include "ios/web/public/web_state_observer.h"
 
 @class CRWJSInjectionReceiver;
 

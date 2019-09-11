@@ -20,7 +20,6 @@ import android.webkit.MimeTypeMap;
 import org.chromium.base.annotations.CalledByNative;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**
@@ -165,12 +164,8 @@ public abstract class ContentUriUtils {
                     return new AssetFileDescriptor(pfd, 0, AssetFileDescriptor.UNKNOWN_LENGTH);
                 }
             }
-        } catch (FileNotFoundException e) {
-            Log.w(TAG, "Cannot find content uri: " + uriString, e);
-        } catch (SecurityException e) {
-            Log.w(TAG, "Cannot open content uri: " + uriString, e);
         } catch (Exception e) {
-            Log.w(TAG, "Unknown content uri: " + uriString, e);
+            Log.w(TAG, "Cannot open content uri: %s", uriString, e);
         }
         return null;
     }
@@ -238,7 +233,7 @@ public abstract class ContentUriUtils {
             // There are a few Exceptions we can hit here (e.g. SecurityException), but we don't
             // particularly care what kind of Exception we hit. If we hit one, just don't return a
             // display name.
-            Log.w(TAG, "Cannot open content uri: " + uriString, e);
+            Log.w(TAG, "Cannot open content uri: %s", uriString, e);
         }
 
         // If we are unable to query the content URI, just return null.
@@ -323,7 +318,7 @@ public abstract class ContentUriUtils {
             }
         } catch (IllegalArgumentException e) {
             // This happens when the given File is outside the paths supported by the provider.
-            Log.e(TAG, "Cannot retrieve content uri from file: " + filePathString, e);
+            Log.e(TAG, "Cannot retrieve content uri from file: %s", filePathString, e);
         }
         return null;
     }

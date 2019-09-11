@@ -13,6 +13,7 @@ include_rules = [
   "+chromeos/assistant",
   "+chromeos/services/assistant/public",
   "+mojo/public/cpp",
+  "+net/base",
   "+services/content/public",
   "+third_party/skia/include/core",
   "+ui",

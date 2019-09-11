@@ -8,7 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"

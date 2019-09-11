@@ -1317,7 +1317,7 @@ TEST_F(PeopleHandlerTest, DashboardClearWhileSettingsOpen_ConfirmSoon) {
       });
 
   base::ListValue did_abort;
-  did_abort.GetList().push_back(base::Value(false));
+  did_abort.Append(base::Value(false));
   handler_->OnDidClosePage(&did_abort);
 }
 
@@ -1384,7 +1384,7 @@ TEST_F(PeopleHandlerTest, DashboardClearWhileSettingsOpen_ConfirmLater) {
   }
 
   base::ListValue did_abort;
-  did_abort.GetList().push_back(base::Value(false));
+  did_abort.Append(base::Value(false));
   handler_->OnDidClosePage(&did_abort);
 }
 

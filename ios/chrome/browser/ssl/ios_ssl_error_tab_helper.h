@@ -6,8 +6,8 @@
 #define IOS_CHROME_BROWSER_SSL_IOS_SSL_ERROR_TAB_HELPER_H_
 
 #include "ios/chrome/browser/interstitials/ios_security_interstitial_page.h"
-#include "ios/web/public/web_state/web_state_observer.h"
-#import "ios/web/public/web_state/web_state_user_data.h"
+#include "ios/web/public/web_state_observer.h"
+#import "ios/web/public/web_state_user_data.h"
 
 namespace web {
 class WebState;

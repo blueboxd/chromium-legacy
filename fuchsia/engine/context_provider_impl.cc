@@ -248,6 +248,24 @@ void ContextProviderImpl::Create(
                                       key_system);
   }
 
+  bool disable_software_video_decoder =
+      (features &
+       fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER_ONLY) ==
+      fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER_ONLY;
+  bool enable_hardware_video_decoder =
+      (features & fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER) ==
+      fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER;
+  if (disable_software_video_decoder) {
+    if (!enable_hardware_video_decoder) {
+      LOG(ERROR) << "Software video decoding may only be disabled if hardware "
+                    "video decoding is enabled.";
+      context_request.Close(ZX_ERR_INVALID_ARGS);
+      return;
+    }
+
+    launch_command.AppendSwitch(switches::kDisableSoftwareVideoDecoders);
+  }
+
   // Validate embedder-supplied product, and optional version, and pass it to
   // the Context to include in the UserAgent.
   if (params.has_user_agent_product()) {

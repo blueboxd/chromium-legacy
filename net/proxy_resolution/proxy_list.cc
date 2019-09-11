@@ -145,7 +145,7 @@ std::string ProxyList::ToPacString() const {
 base::Value ProxyList::ToValue() const {
   base::Value list(base::Value::Type::LIST);
   for (const auto& proxy : proxies_)
-    list.GetList().emplace_back(proxy.ToURI());
+    list.Append(proxy.ToURI());
   return list;
 }
 

@@ -50,6 +50,7 @@ class StubPlatformWindowDelegate : public PlatformWindowDelegate {
     widget_ = gfx::kNullAcceleratedWidget;
   }
   void OnActivationChanged(bool active) override {}
+  void OnMouseEnter() override {}
 
  private:
   gfx::AcceleratedWidget widget_ = gfx::kNullAcceleratedWidget;

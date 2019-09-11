@@ -10,9 +10,9 @@
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/public/common/content_features.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "jingle/glue/utils.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace content {
 
@@ -33,8 +33,8 @@ void P2PAsyncAddressResolver::Start(const rtc::SocketAddress& host_name,
 
   state_ = STATE_SENT;
   done_callback_ = std::move(done_callback);
-  bool enable_mdns =
-      base::FeatureList::IsEnabled(features::kWebRtcHideLocalIpsWithMdns);
+  bool enable_mdns = base::FeatureList::IsEnabled(
+      blink::features::kWebRtcHideLocalIpsWithMdns);
   dispatcher_->GetP2PSocketManager()->get()->GetHostAddress(
       host_name.hostname(), enable_mdns,
       base::BindOnce(&P2PAsyncAddressResolver::OnResponse,

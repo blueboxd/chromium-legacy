@@ -225,7 +225,7 @@ abstract class OverlayPanelBase {
     private float mMaximumHeight;
 
     private boolean mIsFullWidthSizePanelForTesting;
-    protected boolean mOverrideIsFullWidthSizePanelForTesting;
+    private boolean mOverrideIsFullWidthSizePanelForTesting;
 
     /**
      * Called when the layout has changed.
@@ -264,9 +264,8 @@ abstract class OverlayPanelBase {
      * @return Whether the given width matches the criteria required for a full width Panel.
      */
     protected boolean doesMatchFullWidthCriteria(float containerWidth) {
-        if (mOverrideIsFullWidthSizePanelForTesting) {
-            return mIsFullWidthSizePanelForTesting;
-        }
+        if (mOverrideIsFullWidthSizePanelForTesting) return mIsFullWidthSizePanelForTesting;
+
         return containerWidth <= SMALL_PANEL_WIDTH_THRESHOLD_DP;
     }
 

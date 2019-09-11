@@ -113,4 +113,8 @@ SkISize FakePaintImageGenerator::GetSupportedDecodeSize(
   return PaintImageGenerator::GetSupportedDecodeSize(requested_size);
 }
 
+PaintImage::ImageType FakePaintImageGenerator::GetImageType() const {
+  return image_type_;
+}
+
 }  // namespace cc

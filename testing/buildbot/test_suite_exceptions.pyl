@@ -1653,8 +1653,6 @@
   },
   'vulkan_content_browsertests' : {
     'remove_from': [
-      # Flaky hangs crbug.com/940723
-      'Linux FYI GPU TSAN Release',
       # Vulkan Driver needs updating crbug.com/953535
       'Linux FYI Release (AMD R7 240)',
       'Linux FYI Release (Intel HD 630)',

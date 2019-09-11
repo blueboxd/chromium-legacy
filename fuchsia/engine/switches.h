@@ -13,6 +13,10 @@ extern const char kEnableWidevine[];
 // Enables PlayReady CDM and specifies the corresponding key system string.
 extern const char kPlayreadyKeySystem[];
 
+// Prevents the use of video codecs that are not hardware-accelerated.
+extern const char
+    kDisableSoftwareVideoDecoders[];  // "disable-software-video-decoders"
+
 }  // namespace switches
 
 #endif  // FUCHSIA_ENGINE_SWITCHES_H_

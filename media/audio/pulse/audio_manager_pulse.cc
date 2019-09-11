@@ -25,14 +25,12 @@ using pulse::AutoPulseLock;
 using pulse::WaitForOperationCompletion;
 
 // Maximum number of output streams that can be open simultaneously.
-static const int kMaxOutputStreams = 50;
+constexpr int kMaxOutputStreams = 50;
 
-// Define bounds for the output buffer size.
-static const int kMinimumOutputBufferSize = 512;
-static const int kMaximumOutputBufferSize = 8192;
-
-// Default input buffer size.
-static const int kDefaultInputBufferSize = 1024;
+constexpr int kMinimumOutputBufferSize = 512;
+constexpr int kMaximumOutputBufferSize = 8192;
+constexpr int kDefaultInputBufferSize = 1024;
+constexpr int kDefaultSampleRate = 48000;
 
 AudioManagerPulse::AudioManagerPulse(std::unique_ptr<AudioThread> audio_thread,
                                      AudioLogFactory* audio_log_factory,
@@ -118,7 +116,9 @@ AudioParameters AudioManagerPulse::GetInputStreamParameters(
     return AudioParameters();
   }
   return AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                         CHANNEL_LAYOUT_STEREO, native_input_sample_rate_,
+                         CHANNEL_LAYOUT_STEREO,
+                         native_input_sample_rate_ ? native_input_sample_rate_
+                                                   : kDefaultSampleRate,
                          buffer_size);
 }
 
@@ -206,8 +206,10 @@ AudioParameters AudioManagerPulse::GetPreferredOutputStreamParameters(
   // Query native parameters where applicable; Pulse does not require these to
   // be respected though, so prefer the input parameters for channel count.
   UpdateNativeAudioHardwareInfo();
-  int sample_rate = native_input_sample_rate_;
-  ChannelLayout channel_layout = GuessChannelLayout(native_channel_count_);
+  int sample_rate = native_input_sample_rate_ ? native_input_sample_rate_
+                                              : kDefaultSampleRate;
+  ChannelLayout channel_layout =
+      GuessChannelLayout(native_channel_count_ ? native_channel_count_ : 2);
 
   if (input_params.IsValid()) {
     // Use the system's output channel count for the DISCRETE layout. This is to
@@ -246,6 +248,15 @@ void AudioManagerPulse::UpdateNativeAudioHardwareInfo() {
   DCHECK(input_mainloop_);
   DCHECK(input_context_);
   AutoPulseLock auto_lock(input_mainloop_);
+
+  // Ensure the context hasn't gone bad after creation.
+  pa_context_state_t context_state = pa_context_get_state(input_context_);
+  if (!PA_CONTEXT_IS_GOOD(context_state)) {
+    LOG(ERROR) << "Can't retrieve hardware parameters. pa_context is bad: "
+               << context_state;
+    return;
+  }
+
   pa_operation* operation = pa_context_get_server_info(
       input_context_, AudioHardwareInfoCallback, this);
   WaitForOperationCompletion(input_mainloop_, operation);

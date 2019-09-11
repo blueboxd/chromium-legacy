@@ -44,6 +44,7 @@ DawnTextureViewDescriptor AsDawnType(
   dawn_desc.mipLevelCount = webgpu_desc->mipLevelCount();
   dawn_desc.baseArrayLayer = webgpu_desc->baseArrayLayer();
   dawn_desc.arrayLayerCount = webgpu_desc->arrayLayerCount();
+  dawn_desc.aspect = AsDawnEnum<DawnTextureAspect>(webgpu_desc->aspect());
 
   return dawn_desc;
 }

@@ -136,13 +136,13 @@ AssistantStateProxy* Service::GetAssistantStateProxyForTesting() {
   return &assistant_state_;
 }
 
-void Service::Init(mojom::ClientPtr client,
-                   mojom::DeviceActionsPtr device_actions,
+void Service::Init(mojo::PendingRemote<mojom::Client> client,
+                   mojo::PendingRemote<mojom::DeviceActions> device_actions,
                    bool is_test) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   is_test_ = is_test;
-  client_ = std::move(client);
-  device_actions_ = std::move(device_actions);
+  client_.Bind(std::move(client));
+  device_actions_.Bind(std::move(device_actions));
 
   assistant_state_.Init(client_.get());
   assistant_state_.AddObserver(this);

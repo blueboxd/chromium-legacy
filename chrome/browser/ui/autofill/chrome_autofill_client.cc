@@ -289,6 +289,16 @@ bool ChromeAutofillClient::CloseWebauthnOfferDialog() {
   return false;
 }
 
+void ChromeAutofillClient::UpdateWebauthnOfferDialogWithError() {
+#if !defined(OS_ANDROID)
+  WebauthnOfferDialogControllerImpl* controller =
+      autofill::WebauthnOfferDialogControllerImpl::FromWebContents(
+          web_contents());
+  if (controller)
+    controller->UpdateDialogWithError();
+#endif
+}
+
 void ChromeAutofillClient::ConfirmSaveAutofillProfile(
     const AutofillProfile& profile,
     base::OnceClosure callback) {

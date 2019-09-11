@@ -14,6 +14,8 @@
 
 namespace ash {
 
+class DesksBarItemBorder;
+
 // A button view that shows up in the top-right corner of the screen when
 // overview mode is on, which is used to create a new virtual desk.
 class ASH_EXPORT NewDeskButton
@@ -30,6 +32,7 @@ class ASH_EXPORT NewDeskButton
 
   // LabelButton:
   const char* GetClassName() const override;
+  void OnPaintBackground(gfx::Canvas* canvas) override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
@@ -47,8 +50,16 @@ class ASH_EXPORT NewDeskButton
   bool OnViewHighlighted() override;
   void OnViewUnhighlighted() override;
 
+  SkColor GetBackgroundColorForTesting() const { return background_color_; }
+
  private:
   void UpdateBorderState();
+
+  // Owned by this View via `View::border_`. This is just a convenient pointer
+  // to it.
+  DesksBarItemBorder* border_ptr_;
+
+  SkColor background_color_;
 
   DISALLOW_COPY_AND_ASSIGN(NewDeskButton);
 };

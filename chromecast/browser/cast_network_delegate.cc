@@ -45,20 +45,6 @@ bool CastNetworkDelegate::IsWhitelisted(const GURL& gurl,
       gurl, session_id, render_process_id, render_frame_id, for_device_auth);
 }
 
-bool CastNetworkDelegate::OnCanAccessFile(
-    const net::URLRequest& request,
-    const base::FilePath& original_path,
-    const base::FilePath& absolute_path) const {
-  if (base::CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kEnableLocalFileAccesses)) {
-    return true;
-  }
-
-  LOG(WARNING) << "Could not access file " << original_path.value()
-               << ". All file accesses are forbidden.";
-  return false;
-}
-
 int CastNetworkDelegate::OnBeforeURLRequest(
     net::URLRequest* request,
     net::CompletionOnceCallback callback,

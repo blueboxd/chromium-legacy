@@ -961,6 +961,20 @@ GpuImageDecodeCache::GpuImageDecodeCache(
       persistent_cache_(PersistentCache::NO_AUTO_EVICT),
       max_working_set_bytes_(max_working_set_bytes),
       max_working_set_items_(kMaxItemsInWorkingSet) {
+  // Note that to compute |allow_accelerated_jpeg_decodes_| and
+  // |allow_accelerated_webp_decodes_|, the last thing we check is the feature
+  // flag. That's because we want to ensure that we're in OOP-R mode and the
+  // hardware decoder supports the image type so that finch experiments
+  // involving hardware decode acceleration only count users in that
+  // population (both in the 'control' and the 'enabled' groups).
+  allow_accelerated_jpeg_decodes_ =
+      use_transfer_cache &&
+      context_->ContextSupport()->IsJpegDecodeAccelerationSupported() &&
+      base::FeatureList::IsEnabled(features::kVaapiJpegImageDecodeAcceleration);
+  allow_accelerated_webp_decodes_ =
+      use_transfer_cache &&
+      context_->ContextSupport()->IsWebPDecodeAccelerationSupported() &&
+      base::FeatureList::IsEnabled(features::kVaapiWebPImageDecodeAcceleration);
   // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
   // Don't register a dump provider in these cases.
   if (base::ThreadTaskRunnerHandle::IsSet()) {
@@ -2265,9 +2279,6 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image,
   //   of this, we return a pointer to the contiguous data (as |encoded_data|)
   //   so that we can re-use it later (when requesting the image decode).
   //
-  // TODO(crbug.com/953363): ideally, we can make the hardware decoder support
-  // decision without requiring contiguous data.
-  //
   // TODO(crbug.com/953367): currently, we don't support scaling with hardware
   // decode acceleration. Note that it's still okay for the image to be
   // downscaled by Skia using the GPU.
@@ -2276,15 +2287,17 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image,
   // decoded data, but for accelerated decodes we won't know until the driver
   // gives us the result in the GPU process. Figure out what to do.
   bool do_hardware_accelerated_decode = false;
-  if ((base::FeatureList::IsEnabled(
-           features::kVaapiJpegImageDecodeAcceleration) ||
-       base::FeatureList::IsEnabled(
-           features::kVaapiWebPImageDecodeAcceleration)) &&
-      allow_hardware_decode && mode == DecodedDataMode::kTransferCache &&
-      upload_scale_mip_level == 0 &&
+  if ((allow_accelerated_jpeg_decodes_ || allow_accelerated_webp_decodes_) &&
+      allow_hardware_decode && upload_scale_mip_level == 0 &&
       draw_image.paint_image().IsEligibleForAcceleratedDecoding() &&
       draw_image.paint_image().color_space() &&
       draw_image.paint_image().color_space()->isSRGB()) {
+    DCHECK_EQ(mode, DecodedDataMode::kTransferCache);
+    // TODO(crbug.com/995149): we should not require the encoded data to figure
+    // out if the hardware decoder supports the image. Instead, we should pass
+    // only the necessary attributes to CanDecodeWithHardwareAcceleration().
+    // This is important because extracting the encoded data may require a copy
+    // if the data is not contiguous.
     sk_sp<SkData> tmp_encoded_data =
         draw_image.paint_image().GetSkImage()
             ? draw_image.paint_image().GetSkImage()->refEncodedData()
@@ -2293,7 +2306,13 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image,
         context_->ContextSupport()->CanDecodeWithHardwareAcceleration(
             base::make_span<const uint8_t>(tmp_encoded_data->bytes(),
                                            tmp_encoded_data->size()))) {
-      do_hardware_accelerated_decode = true;
+      const bool is_jpeg = (draw_image.paint_image().GetImageType() ==
+                            PaintImage::ImageType::kJPEG);
+      const bool is_webp = (draw_image.paint_image().GetImageType() ==
+                            PaintImage::ImageType::kWEBP);
+      do_hardware_accelerated_decode =
+          (is_jpeg && allow_accelerated_jpeg_decodes_) ||
+          (is_webp && allow_accelerated_webp_decodes_);
       DCHECK(encoded_data);
       *encoded_data = std::move(tmp_encoded_data);
     }

@@ -5506,6 +5506,7 @@ interface PaymentManager
     getter instruments
     getter userHint
     method constructor
+    method enableDelegations
     setter userHint
 interface PaymentMethodChangeEvent : PaymentRequestUpdateEvent
     attribute @@toStringTag

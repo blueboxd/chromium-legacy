@@ -4,6 +4,7 @@
 package org.chromium.chrome.browser.password_manager;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.ui.base.WindowAndroid;
@@ -49,17 +50,25 @@ public class CredentialLeakDialogBridge {
         if (mNativeCredentialLeakDialogViewAndroid == 0) return;
         switch (dismissalCause) {
             case DialogDismissalCause.POSITIVE_BUTTON_CLICKED:
-                nativeAccepted(mNativeCredentialLeakDialogViewAndroid);
+                CredentialLeakDialogBridgeJni.get().accepted(
+                        mNativeCredentialLeakDialogViewAndroid, CredentialLeakDialogBridge.this);
                 return;
             case DialogDismissalCause.NEGATIVE_BUTTON_CLICKED:
-                nativeCancelled(mNativeCredentialLeakDialogViewAndroid);
+                CredentialLeakDialogBridgeJni.get().cancelled(
+                        mNativeCredentialLeakDialogViewAndroid, CredentialLeakDialogBridge.this);
                 return;
             default:
-                nativeClosed(mNativeCredentialLeakDialogViewAndroid);
+                CredentialLeakDialogBridgeJni.get().closed(
+                        mNativeCredentialLeakDialogViewAndroid, CredentialLeakDialogBridge.this);
         }
     }
 
-    private native void nativeAccepted(long nativeCredentialLeakDialogViewAndroid);
-    private native void nativeCancelled(long nativeCredentialLeakDialogViewAndroid);
-    private native void nativeClosed(long nativeCredentialLeakDialogViewAndroid);
+    @NativeMethods
+    interface Natives {
+        void accepted(
+                long nativeCredentialLeakDialogViewAndroid, CredentialLeakDialogBridge caller);
+        void cancelled(
+                long nativeCredentialLeakDialogViewAndroid, CredentialLeakDialogBridge caller);
+        void closed(long nativeCredentialLeakDialogViewAndroid, CredentialLeakDialogBridge caller);
+    }
 }

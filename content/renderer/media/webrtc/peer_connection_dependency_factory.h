@@ -14,7 +14,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
-#include "content/renderer/p2p/socket_dispatcher.h"
 #include "ipc/ipc_platform_file.h"
 #include "third_party/blink/public/platform/modules/peerconnection/stun_field_trial.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
@@ -22,6 +21,10 @@
 
 namespace base {
 class WaitableEvent;
+}
+
+namespace cricket {
+class PortAllocator;
 }
 
 namespace media {
@@ -44,13 +47,13 @@ namespace content {
 
 class IpcPacketSocketFactory;
 class MdnsResponderAdapter;
-class P2PPortAllocator;
+class P2PSocketDispatcher;
 
 // Object factory for RTC PeerConnections.
 class CONTENT_EXPORT PeerConnectionDependencyFactory
     : base::MessageLoopCurrent::DestructionObserver {
  public:
-  PeerConnectionDependencyFactory(P2PSocketDispatcher* p2p_socket_dispatcher);
+  PeerConnectionDependencyFactory(bool create_p2p_socket_dispatcher);
   ~PeerConnectionDependencyFactory() override;
 
   // Create a RTCPeerConnectionHandler object that implements the
@@ -84,7 +87,7 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
 
   // Creates a PortAllocator that uses Chrome IPC sockets and enforces privacy
   // controls according to the permissions granted on the page.
-  virtual std::unique_ptr<P2PPortAllocator> CreatePortAllocator(
+  virtual std::unique_ptr<cricket::PortAllocator> CreatePortAllocator(
       blink::WebLocalFrame* web_frame);
 
   // Creates an AsyncResolverFactory that uses the networking Mojo service.
@@ -163,7 +166,9 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
 
   scoped_refptr<webrtc::PeerConnectionFactoryInterface> pc_factory_;
 
+  // Dispatches all P2P sockets.
   scoped_refptr<P2PSocketDispatcher> p2p_socket_dispatcher_;
+
   scoped_refptr<blink::WebRtcAudioDeviceImpl> audio_device_;
 
   std::unique_ptr<blink::StunProberTrial> stun_trial_;

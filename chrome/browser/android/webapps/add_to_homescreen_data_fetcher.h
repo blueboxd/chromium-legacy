@@ -16,6 +16,7 @@
 #include "chrome/browser/android/shortcut_info.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace favicon_base {
@@ -59,7 +60,8 @@ class AddToHomescreenDataFetcher : public content::WebContentsObserver {
 
   // IPC message received when the initialization is finished.
   void OnDidGetWebApplicationInfo(
-      chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame,
+      mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame>
+          chrome_render_frame,
       const WebApplicationInfo& web_app_info);
 
   // Accessors, etc.

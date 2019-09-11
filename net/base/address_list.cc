@@ -79,7 +79,7 @@ base::Value AddressList::NetLogParams() const {
   base::Value list(base::Value::Type::LIST);
 
   for (const auto& ip_endpoint : *this)
-    list.GetList().emplace_back(ip_endpoint.ToString());
+    list.Append(ip_endpoint.ToString());
 
   dict.SetKey("address_list", std::move(list));
   dict.SetStringKey("canonical_name", canonical_name());

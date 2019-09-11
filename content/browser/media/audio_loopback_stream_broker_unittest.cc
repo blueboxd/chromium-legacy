@@ -11,6 +11,8 @@
 #include "base/test/mock_callback.h"
 #include "content/public/test/browser_task_environment.h"
 #include "media/mojo/mojom/audio_input_stream.mojom.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/audio/public/cpp/fake_stream_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -110,7 +112,7 @@ class MockStreamFactory : public audio::FakeStreamFactory {
     base::UnguessableToken group_id;
     mojo::ScopedSharedBufferHandle key_press_count_buffer;
     CreateLoopbackStreamCallback created_callback;
-    audio::mojom::LocalMuterAssociatedRequest muter_request;
+    mojo::PendingAssociatedReceiver<audio::mojom::LocalMuter> muter_receiver;
   };
 
   void ExpectStreamCreation(StreamRequestData* ex) {
@@ -143,7 +145,7 @@ class MockStreamFactory : public audio::FakeStreamFactory {
   void BindMuter(
       mojo::PendingAssociatedReceiver<audio::mojom::LocalMuter> receiver,
       const base::UnguessableToken& group_id) final {
-    stream_request_data_->muter_request = std::move(receiver);
+    stream_request_data_->muter_receiver = std::move(receiver);
     IsMuting(group_id);
   }
 
@@ -172,7 +174,8 @@ struct TestEnvironment {
   StrictMock<MockRendererAudioInputStreamFactoryClient> renderer_factory_client;
   std::unique_ptr<AudioLoopbackStreamBroker> broker;
   MockStreamFactory stream_factory;
-  audio::mojom::StreamFactoryPtr factory_ptr{stream_factory.MakeRemote()};
+  mojo::Remote<audio::mojom::StreamFactory> factory_ptr{
+      stream_factory.MakeRemote()};
 };
 
 }  // namespace

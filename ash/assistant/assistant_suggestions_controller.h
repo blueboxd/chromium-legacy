@@ -12,7 +12,6 @@
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/assistant/proactive_suggestions_client.h"
-#include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "base/macros.h"
 
 namespace ash {

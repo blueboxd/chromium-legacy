@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/numerics/ranges.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -185,7 +186,7 @@ bool IntRangePolicyHandlerBase::EnsureInRange(const base::Value* input,
     if (!clamp_)
       return false;
 
-    value = std::min(std::max(value, min_), max_);
+    value = base::ClampToRange(value, min_, max_);
   }
 
   if (output)

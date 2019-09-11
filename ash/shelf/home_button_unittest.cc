@@ -181,7 +181,7 @@ TEST_F(HomeButtonTest, LongPressGesture) {
   prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantEnabled, true);
   assistant_state()->NotifyFeatureAllowed(
       mojom::AssistantAllowedState::ALLOWED);
-  assistant_state()->NotifyStatusChanged(mojom::VoiceInteractionState::STOPPED);
+  assistant_state()->NotifyStatusChanged(mojom::AssistantState::READY);
 
   ui::GestureEvent long_press =
       CreateGestureEvent(ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));

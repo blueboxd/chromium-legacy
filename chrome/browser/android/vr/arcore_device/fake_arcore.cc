@@ -231,15 +231,52 @@ mojom::XRPlaneDetectionDataPtr FakeArCore::GetDetectedPlanesData() {
 
 mojom::XRAnchorsDataPtr FakeArCore::GetAnchorsData() {
   std::vector<mojom::XRAnchorDataPtr> result;
+  std::vector<int32_t> result_ids;
 
-  // 2m ahead of the origin, neutral orientation facing forward.
-  mojom::VRPosePtr pose = mojom::VRPose::New();
-  pose->position = gfx::Point3F(0.0, 0.0, -2.0);
-  pose->orientation = gfx::Quaternion();
+  for (auto& anchor_id_and_data : anchors_) {
+    mojom::VRPosePtr pose = mojom::VRPose::New();
+    pose->position = anchor_id_and_data.second.position;
+    pose->orientation = anchor_id_and_data.second.orientation;
 
-  result.push_back(mojom::XRAnchorData::New(2, std::move(pose)));
+    result.push_back(
+        mojom::XRAnchorData::New(anchor_id_and_data.first, std::move(pose)));
+    result_ids.push_back(anchor_id_and_data.first);
+  }
 
-  return mojom::XRAnchorsData::New(std::vector<int32_t>{2}, std::move(result));
+  return mojom::XRAnchorsData::New(std::move(result_ids), std::move(result));
+}
+
+base::Optional<int32_t> FakeArCore::CreateAnchor(const mojom::VRPosePtr& pose,
+                                                 int32_t plane_id) {
+  // TODO(992035): Fix this when implementing tests.
+  return CreateAnchor(pose);
+}
+
+base::Optional<int32_t> FakeArCore::CreateAnchor(const mojom::VRPosePtr& pose) {
+  DCHECK(pose);
+
+  gfx::Point3F position =
+      pose->position ? gfx::Point3F(pose->position->x(), pose->position->y(),
+                                    pose->position->z())
+                     : gfx::Point3F();
+
+  gfx::Quaternion orientation =
+      pose->orientation
+          ? gfx::Quaternion(pose->orientation->x(), pose->orientation->y(),
+                            pose->orientation->z(), pose->orientation->w())
+          : gfx::Quaternion(0, 0, 0, 1);
+
+  anchors_[next_id_] = {position, orientation};
+  int32_t anchor_id = next_id_;
+
+  next_id_++;
+
+  return anchor_id;
+}
+
+void FakeArCore::DetachAnchor(int32_t anchor_id) {
+  auto count = anchors_.erase(anchor_id);
+  DCHECK_EQ(1u, count);
 }
 
 void FakeArCore::Pause() {

@@ -147,7 +147,13 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     /**
      * An interface to control whether to show IPH on grid tab switcher.
      */
-    public interface IphProvider { void maybeShowIPH(); }
+    public interface IphProvider {
+        /**
+         * Shows IPH on grid tab switcher based on incognito mode.
+         * @param isIncognito Whether IPH is shown for incognito mode.
+         */
+        void maybeShowIPH(boolean isIncognito);
+    }
 
     /**
      * Basic constructor for the Mediator.
@@ -183,6 +189,9 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
                 mContainerViewModel.set(IS_INCOGNITO, currentTabModelFilter.isIncognito());
                 if (mTabGridDialogResetHandler != null) {
                     mTabGridDialogResetHandler.hideDialog(false);
+                }
+                if (mIphProvider != null) {
+                    mIphProvider.maybeShowIPH(mTabModelSelector.isIncognitoSelected());
                 }
             }
         };
@@ -431,7 +440,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         mTabIdwhenShown = mTabModelSelector.getCurrentTabId();
         mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, true);
         if (mIphProvider != null) {
-            mIphProvider.maybeShowIPH();
+            mIphProvider.maybeShowIPH(mTabModelSelector.isIncognitoSelected());
         }
 
         recordTabCounts();

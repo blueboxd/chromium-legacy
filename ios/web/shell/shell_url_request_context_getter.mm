@@ -15,8 +15,8 @@
 #include "base/task/post_task.h"
 #import "ios/net/cookies/cookie_store_ios_persistent.h"
 #import "ios/web/public/web_client.h"
-#include "ios/web/shell/shell_network_delegate.h"
 #include "net/base/cache_type.h"
+#include "net/base/network_delegate_impl.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/multi_log_ct_verifier.h"
@@ -63,7 +63,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     url_request_context_.reset(new net::URLRequestContext());
     url_request_context_->set_net_log(net_log_.get());
     DCHECK(!network_delegate_.get());
-    network_delegate_.reset(new ShellNetworkDelegate);
+    network_delegate_ = std::make_unique<net::NetworkDelegateImpl>();
     url_request_context_->set_network_delegate(network_delegate_.get());
 
     storage_.reset(

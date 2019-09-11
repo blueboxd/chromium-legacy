@@ -293,11 +293,11 @@ TEST_F(SyncConfirmationHandlerTest, TestHandleUndo) {
 TEST_F(SyncConfirmationHandlerTest, TestHandleConfirm) {
   // The consent description consists of strings 1, 2, and 4.
   base::ListValue consent_description;
-  consent_description.GetList().push_back(
+  consent_description.Append(
       base::Value(SyncConfirmationHandlerTest::kConsentText1));
-  consent_description.GetList().push_back(
+  consent_description.Append(
       base::Value(SyncConfirmationHandlerTest::kConsentText2));
-  consent_description.GetList().push_back(
+  consent_description.Append(
       base::Value(SyncConfirmationHandlerTest::kConsentText4));
 
   // The consent confirmation contains string 5.
@@ -305,8 +305,8 @@ TEST_F(SyncConfirmationHandlerTest, TestHandleConfirm) {
 
   // These are passed as parameters to HandleConfirm().
   base::ListValue args;
-  args.GetList().push_back(std::move(consent_description));
-  args.GetList().push_back(std::move(consent_confirmation));
+  args.Append(std::move(consent_description));
+  args.Append(std::move(consent_confirmation));
 
   handler()->HandleConfirm(&args);
   did_user_explicitly_interact = true;
@@ -334,11 +334,11 @@ TEST_F(SyncConfirmationHandlerTest, TestHandleConfirm) {
 TEST_F(SyncConfirmationHandlerTest, TestHandleConfirmWithAdvancedSyncSettings) {
   // The consent description consists of strings 2, 3, and 5.
   base::ListValue consent_description;
-  consent_description.GetList().push_back(
+  consent_description.Append(
       base::Value(SyncConfirmationHandlerTest::kConsentText2));
-  consent_description.GetList().push_back(
+  consent_description.Append(
       base::Value(SyncConfirmationHandlerTest::kConsentText3));
-  consent_description.GetList().push_back(
+  consent_description.Append(
       base::Value(SyncConfirmationHandlerTest::kConsentText5));
 
   // The consent confirmation contains string 2.
@@ -346,8 +346,8 @@ TEST_F(SyncConfirmationHandlerTest, TestHandleConfirmWithAdvancedSyncSettings) {
 
   // These are passed as parameters to HandleGoToSettings().
   base::ListValue args;
-  args.GetList().push_back(std::move(consent_description));
-  args.GetList().push_back(std::move(consent_confirmation));
+  args.Append(std::move(consent_description));
+  args.Append(std::move(consent_confirmation));
 
   handler()->HandleGoToSettings(&args);
   did_user_explicitly_interact = true;

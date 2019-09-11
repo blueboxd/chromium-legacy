@@ -114,7 +114,7 @@ TEST(NotificationSchedulerStatsTest, LogDbInit) {
   LogDbInit(DatabaseType::kIconDb, true, 1);
   histograms.ExpectBucketCount("Notifications.Scheduler.IconDb.InitResult",
                                true, 1);
-  histograms.ExpectTotalCount("Notifications.Scheduler.IconDb.RecordCount", 0);
+  histograms.ExpectTotalCount("Notifications.Scheduler.IconDb.RecordCount", 1);
 }
 
 // Verifies database operations are correctly tracked.

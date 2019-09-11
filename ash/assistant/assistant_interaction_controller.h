@@ -19,7 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace ash {
 
@@ -138,8 +138,8 @@ class AssistantInteractionController
   // Owned by AssistantController.
   chromeos::assistant::mojom::Assistant* assistant_ = nullptr;
 
-  mojo::Binding<chromeos::assistant::mojom::AssistantInteractionSubscriber>
-      assistant_interaction_subscriber_binding_;
+  mojo::Receiver<chromeos::assistant::mojom::AssistantInteractionSubscriber>
+      assistant_interaction_subscriber_receiver_{this};
 
   AssistantInteractionModel model_;
 

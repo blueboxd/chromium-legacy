@@ -36,11 +36,9 @@ void TrayBluetoothHelperExperimental::Initialize() {
   connector_->Connect(device::mojom::kServiceName,
                       bluetooth_system_factory.BindNewPipeAndPassReceiver());
 
-  device::mojom::BluetoothSystemClientPtr client_ptr;
-  bluetooth_system_client_binding_.Bind(mojo::MakeRequest(&client_ptr));
-
   bluetooth_system_factory->Create(
-      bluetooth_system_.BindNewPipeAndPassReceiver(), std::move(client_ptr));
+      bluetooth_system_.BindNewPipeAndPassReceiver(),
+      bluetooth_system_client_receiver_.BindNewPipeAndPassRemote());
   bluetooth_system_->GetState(
       base::BindOnce(&TrayBluetoothHelperExperimental::OnStateChanged,
                      // See base::Unretained() note at the top.

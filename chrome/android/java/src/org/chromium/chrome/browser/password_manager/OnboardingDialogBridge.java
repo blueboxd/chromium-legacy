@@ -10,6 +10,7 @@ import static org.chromium.chrome.browser.ChromeFeatureList.getFieldTrialParamBy
 import android.content.res.Resources;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.ui.base.WindowAndroid;
@@ -76,18 +77,24 @@ public class OnboardingDialogBridge {
         if (mNativeOnboardingDialogView == 0) return;
         switch (dismissalCause) {
             case DialogDismissalCause.POSITIVE_BUTTON_CLICKED:
-                nativeOnboardingAccepted(mNativeOnboardingDialogView);
+                OnboardingDialogBridgeJni.get().onboardingAccepted(
+                        mNativeOnboardingDialogView, OnboardingDialogBridge.this);
                 return;
             case DialogDismissalCause.NEGATIVE_BUTTON_CLICKED:
-                nativeOnboardingRejected(mNativeOnboardingDialogView);
+                OnboardingDialogBridgeJni.get().onboardingRejected(
+                        mNativeOnboardingDialogView, OnboardingDialogBridge.this);
                 return;
 
             default:
-                nativeOnboardingAborted(mNativeOnboardingDialogView);
+                OnboardingDialogBridgeJni.get().onboardingAborted(
+                        mNativeOnboardingDialogView, OnboardingDialogBridge.this);
         }
     }
 
-    private native void nativeOnboardingAccepted(long nativeOnboardingDialogView);
-    private native void nativeOnboardingRejected(long nativeOnboardingDialogView);
-    private native void nativeOnboardingAborted(long nativeOnboardingDialogView);
+    @NativeMethods
+    interface Natives {
+        void onboardingAccepted(long nativeOnboardingDialogView, OnboardingDialogBridge caller);
+        void onboardingRejected(long nativeOnboardingDialogView, OnboardingDialogBridge caller);
+        void onboardingAborted(long nativeOnboardingDialogView, OnboardingDialogBridge caller);
+    }
 }

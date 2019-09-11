@@ -27,6 +27,10 @@ class ImageDecodeAcceleratorInterface {
   virtual bool IsImageSupported(
       base::span<const uint8_t> encoded_data) const = 0;
 
+  virtual bool IsJpegDecodeAccelerationSupported() const = 0;
+
+  virtual bool IsWebPDecodeAccelerationSupported() const = 0;
+
   virtual SyncToken ScheduleImageDecode(
       base::span<const uint8_t> encoded_data,
       const gfx::Size& output_size,

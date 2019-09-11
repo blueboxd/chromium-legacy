@@ -236,10 +236,10 @@ class Cache::BarrierCallbackForPut final
     MaybeReportInstalledScripts();
     int operation_count = batch_operations_.size();
     DCHECK_GE(operation_count, 1);
-    // Make sure to bind the Cache object to keep the mojo interface pointer
-    // alive during the operation.  Otherwise GC might prevent the callback
-    // from ever being executed.
-    cache_->cache_ptr_->Batch(
+    // Make sure to bind the Cache object to keep the mojo remote alive during
+    // the operation. Otherwise GC might prevent the callback from ever being
+    // executed.
+    cache_->cache_remote_->Batch(
         std::move(batch_operations_), trace_id_,
         WTF::Bind(
             [](const String& method_name, ScriptPromiseResolver* resolver,
@@ -549,7 +549,7 @@ class Cache::CodeCacheHandleCallbackForPut final
       global_scope->DidEndTask(task_id);
       return;
     }
-    cache_->cache_ptr_->SetSideData(
+    cache_->cache_remote_->SetSideData(
         url_, response_time, cached_metadata->SerializedData(), trace_id_,
         WTF::Bind(
             [](ServiceWorkerGlobalScope* global_scope, int task_id,
@@ -697,10 +697,11 @@ ScriptPromise Cache::keys(ScriptState* script_state,
 }
 
 Cache::Cache(GlobalFetch::ScopedFetcher* fetcher,
-             mojom::blink::CacheStorageCacheAssociatedPtrInfo cache_ptr_info,
+             mojo::PendingAssociatedRemote<mojom::blink::CacheStorageCache>
+                 cache_pending_remote,
              scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : scoped_fetcher_(fetcher) {
-  cache_ptr_.Bind(std::move(cache_ptr_info), std::move(task_runner));
+  cache_remote_.Bind(std::move(cache_pending_remote), std::move(task_runner));
 }
 
 void Cache::Trace(blink::Visitor* visitor) {
@@ -729,10 +730,10 @@ ScriptPromise Cache::MatchImpl(ScriptState* script_state,
     return promise;
   }
 
-  // Make sure to bind the Cache object to keep the mojo interface pointer
-  // alive during the operation.  Otherwise GC might prevent the callback
-  // from ever being executed.
-  cache_ptr_->Match(
+  // Make sure to bind the Cache object to keep the mojo remote alive during
+  // the operation. Otherwise GC might prevent the callback from ever being
+  // executed.
+  cache_remote_->Match(
       std::move(mojo_request), std::move(mojo_options), trace_id,
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, base::TimeTicks start_time,
@@ -808,10 +809,10 @@ ScriptPromise Cache::MatchAllImpl(ScriptState* script_state,
     return promise;
   }
 
-  // Make sure to bind the Cache object to keep the mojo interface pointer
-  // alive during the operation.  Otherwise GC might prevent the callback
-  // from ever being executed.
-  cache_ptr_->MatchAll(
+  // Make sure to bind the Cache object to keep the mojo remote alive during
+  // the operation. Otherwise GC might prevent the callback from ever being
+  // executed.
+  cache_remote_->MatchAll(
       std::move(fetch_api_request), std::move(mojo_options), trace_id,
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, base::TimeTicks start_time,
@@ -917,10 +918,10 @@ ScriptPromise Cache::DeleteImpl(ScriptState* script_state,
     return promise;
   }
 
-  // Make sure to bind the Cache object to keep the mojo interface pointer
-  // alive during the operation.  Otherwise GC might prevent the callback
-  // from ever being executed.
-  cache_ptr_->Batch(
+  // Make sure to bind the Cache object to keep the mojo remote alive during
+  // the operation. Otherwise GC might prevent the callback from ever being
+  // executed.
+  cache_remote_->Batch(
       std::move(batch_operations), trace_id,
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, base::TimeTicks start_time,
@@ -1082,10 +1083,10 @@ ScriptPromise Cache::KeysImpl(ScriptState* script_state,
     return promise;
   }
 
-  // Make sure to bind the Cache object to keep the mojo interface pointer
-  // alive during the operation.  Otherwise GC might prevent the callback
-  // from ever being executed.
-  cache_ptr_->Keys(
+  // Make sure to bind the Cache object to keep the mojo remote alive during
+  // the operation. Otherwise GC might prevent the callback from ever being
+  // executed.
+  cache_remote_->Keys(
       std::move(fetch_api_request), std::move(mojo_options), trace_id,
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, base::TimeTicks start_time,

@@ -52,7 +52,6 @@ public class WebPlatformTestsActivity extends Activity {
     private WebView mWebView;
     private WebView mChildWebView;
     private LinearLayout mChildLayout;
-    private TextView mChildTitleText;
     private TestCallback mTestCallback;
 
     private class MultiWindowWebChromeClient extends WebChromeClient {
@@ -70,7 +69,8 @@ public class WebPlatformTestsActivity extends Activity {
                 @Override
                 public void onPageFinished(WebView childWebView, String url) {
                     // Once the view has loaded, display its title for debugging.
-                    mChildTitleText.setText(childWebView.getTitle());
+                    TextView childTitleText = mChildLayout.findViewById(R.id.childTitleText);
+                    childTitleText.setText(childWebView.getTitle());
                 }
             });
             mChildWebView.setWebChromeClient(new WebChromeClient() {
@@ -145,7 +145,6 @@ public class WebPlatformTestsActivity extends Activity {
         LinearLayout childLayout =
                 (LinearLayout) mRootLayout.getChildAt(mRootLayout.getChildCount() - 1);
 
-        mChildTitleText = childLayout.findViewById(R.id.childTitleText);
         Button childCloseButton = childLayout.findViewById(R.id.childCloseButton);
         childCloseButton.setOnClickListener((View v) -> { closeChild(); });
         return childLayout;
@@ -165,7 +164,8 @@ public class WebPlatformTestsActivity extends Activity {
     }
 
     private void closeChild() {
-        mChildTitleText.setText("");
+        TextView childTitleText = mChildLayout.findViewById(R.id.childTitleText);
+        childTitleText.setText("");
         mChildLayout.setVisibility(View.INVISIBLE);
         removeAndDestroyChildWebView();
         if (mTestCallback != null) mTestCallback.onChildLayoutInvisible();

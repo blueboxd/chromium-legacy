@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.payments;
 
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.WebContents;
 
 /** SSL validity checker. */
@@ -23,7 +24,7 @@ public class SslValidityChecker {
      *         contents or an empty string when the SSL certificate is valid.
      */
     public static String getInvalidSslCertificateErrorMessage(WebContents webContents) {
-        return nativeGetInvalidSslCertificateErrorMessage(webContents);
+        return SslValidityCheckerJni.get().getInvalidSslCertificateErrorMessage(webContents);
     }
 
     /**
@@ -33,12 +34,14 @@ public class SslValidityChecker {
      * @return Whether the web contents is a allowed in a payment handler window.
      */
     public static boolean isValidPageInPaymentHandlerWindow(WebContents webContents) {
-        return nativeIsValidPageInPaymentHandlerWindow(webContents);
+        return SslValidityCheckerJni.get().isValidPageInPaymentHandlerWindow(webContents);
     }
 
     private SslValidityChecker() {}
 
-    private static native String nativeGetInvalidSslCertificateErrorMessage(
-            WebContents webContents);
-    private static native boolean nativeIsValidPageInPaymentHandlerWindow(WebContents webContents);
+    @NativeMethods
+    interface Natives {
+        String getInvalidSslCertificateErrorMessage(WebContents webContents);
+        boolean isValidPageInPaymentHandlerWindow(WebContents webContents);
+    }
 }

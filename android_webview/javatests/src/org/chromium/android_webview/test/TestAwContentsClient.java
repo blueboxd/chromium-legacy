@@ -557,8 +557,15 @@ public class TestAwContentsClient extends NullContentsClient {
         private Map<String, AwWebResourceRequest> mRequestsByUrls =
                 Collections.synchronizedMap(new HashMap<String, AwWebResourceRequest>());
         private Runnable mRunnableForFirstTimeCallback;
+        private boolean mRaiseExceptionWhenCalled;
         // This is read on another thread, so needs to be marked volatile.
         private volatile AwWebResourceResponse mShouldInterceptRequestReturnValue;
+        void setRaiseExceptionWhenCalled(boolean value) {
+            mRaiseExceptionWhenCalled = value;
+        }
+        boolean getRaiseExceptionWhenCalled() {
+            return mRaiseExceptionWhenCalled;
+        }
         void setReturnValue(AwWebResourceResponse value) {
             mShouldInterceptRequestReturnValue = value;
         }
@@ -597,10 +604,11 @@ public class TestAwContentsClient extends NullContentsClient {
     public AwWebResourceResponse shouldInterceptRequest(AwWebResourceRequest request) {
         super.shouldInterceptRequest(request);
         if (TRACE) Log.i(TAG, "shouldInterceptRequest " + request.url);
-        AwWebResourceResponse returnValue =
-                mShouldInterceptRequestHelper.getReturnValue(request.url);
         mShouldInterceptRequestHelper.notifyCalled(request);
-        return returnValue;
+        if (mShouldInterceptRequestHelper.getRaiseExceptionWhenCalled()) {
+            throw new RuntimeException("Exception in ShouldInterceptRequestHelper");
+        }
+        return mShouldInterceptRequestHelper.getReturnValue(request.url);
     }
 
     /**

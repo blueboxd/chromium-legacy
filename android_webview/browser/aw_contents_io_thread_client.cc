@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "android_webview/browser/input_stream.h"
+#include "android_webview/browser/network_service/aw_web_resource_intercept_response.h"
 #include "android_webview/browser/network_service/aw_web_resource_request.h"
 #include "android_webview/browser/network_service/aw_web_resource_response.h"
 #include "android_webview/browser_jni_headers/AwContentsBackgroundThreadClient_jni.h"
@@ -381,7 +382,9 @@ void RecordInterceptedScheme(bool response_is_null, const std::string& url) {
 // Record UMA for the custom response status code for the intercepted requests
 // where input stream is null. UMA is recorded only when the status codes and
 // reason phrases are actually valid.
-void RecordResponseStatusCode(JNIEnv* env, AwWebResourceResponse* response) {
+void RecordResponseStatusCode(
+    JNIEnv* env,
+    const std::unique_ptr<AwWebResourceResponse>& response) {
   DCHECK(response);
   DCHECK(!response->HasInputStream(env));
 
@@ -409,7 +412,11 @@ void RecordResponseStatusCode(JNIEnv* env, AwWebResourceResponse* response) {
       status_code);
 }
 
-std::unique_ptr<AwWebResourceResponse> RunShouldInterceptRequest(
+std::unique_ptr<AwWebResourceInterceptResponse> NoInterceptRequest() {
+  return nullptr;
+}
+
+std::unique_ptr<AwWebResourceInterceptResponse> RunShouldInterceptRequest(
     AwWebResourceRequest request,
     JavaObjectWeakGlobalRef ref) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
@@ -417,8 +424,9 @@ std::unique_ptr<AwWebResourceResponse> RunShouldInterceptRequest(
 
   JNIEnv* env = AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> obj = ref.get(env);
-  if (obj.is_null())
-    return nullptr;
+  if (obj.is_null()) {
+    return NoInterceptRequest();
+  }
 
   AwWebResourceRequest::AwJavaWebResourceRequest java_web_resource_request;
   AwWebResourceRequest::ConvertToJava(env, request, &java_web_resource_request);
@@ -435,31 +443,27 @@ std::unique_ptr<AwWebResourceResponse> RunShouldInterceptRequest(
   RecordInterceptedScheme(ret.is_null(), request.url);
 
   if (ret.is_null())
-    return nullptr;
+    return NoInterceptRequest();
 
-  std::unique_ptr<AwWebResourceResponse> response =
-      std::make_unique<AwWebResourceResponse>(ret);
-  if (!response->HasInputStream(env)) {
+  auto response = std::make_unique<AwWebResourceInterceptResponse>(ret);
+  if (!response->RaisedException(env) && response->HasResponse(env) &&
+      !response->GetResponse(env)->HasInputStream(env)) {
     // Only record UMA for cases where the input stream is null (see
     // crbug.com/974273).
-    RecordResponseStatusCode(env, response.get());
+    RecordResponseStatusCode(env, response->GetResponse(env));
   }
 
   return response;
-}
-
-std::unique_ptr<AwWebResourceResponse> ReturnNull() {
-  return nullptr;
 }
 
 }  // namespace
 
 void AwContentsIoThreadClient::ShouldInterceptRequestAsync(
     AwWebResourceRequest request,
-    ShouldInterceptRequestResultCallback callback) {
+    ShouldInterceptRequestResponseCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::OnceCallback<std::unique_ptr<AwWebResourceResponse>()> get_response =
-      base::BindOnce(&ReturnNull);
+  base::OnceCallback<std::unique_ptr<AwWebResourceInterceptResponse>()>
+      get_response = base::BindOnce(&NoInterceptRequest);
   JNIEnv* env = AttachCurrentThread();
   if (bg_thread_client_object_.is_null() && !java_object_.is_null()) {
     bg_thread_client_object_.Reset(

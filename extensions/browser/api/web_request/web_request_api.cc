@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/containers/flat_map.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
@@ -187,18 +188,56 @@ void LogRequestAction(RequestAction action) {
                             RequestAction::MAX);
 }
 
-bool IsWebRequestEvent(const std::string& event_name) {
-  std::string web_request_event_name(event_name);
-  if (base::StartsWith(web_request_event_name,
-                       webview::kWebViewEventPrefix,
-                       base::CompareCase::SENSITIVE)) {
-    web_request_event_name.replace(
-        0, strlen(webview::kWebViewEventPrefix), kWebRequestEventPrefix);
-  }
-  auto* const* web_request_events_end =
-      kWebRequestEvents + base::size(kWebRequestEvents);
-  return std::find(kWebRequestEvents, web_request_events_end,
-                   web_request_event_name) != web_request_events_end;
+// Returns the corresponding EventTypes for the given |event_name|. If
+// |event_name| is an invalid event, returns EventTypes::kInvalidEvent.
+ExtensionWebRequestEventRouter::EventTypes GetEventTypeFromEventName(
+    base::StringPiece event_name) {
+  static const base::flat_map<base::StringPiece,
+                              ExtensionWebRequestEventRouter::EventTypes>
+      kRequestStageMap(
+          {{keys::kOnBeforeRequest,
+            ExtensionWebRequestEventRouter::kOnBeforeRequest},
+           {keys::kOnBeforeSendHeaders,
+            ExtensionWebRequestEventRouter::kOnBeforeSendHeaders},
+           {keys::kOnSendHeaders,
+            ExtensionWebRequestEventRouter::kOnSendHeaders},
+           {keys::kOnHeadersReceived,
+            ExtensionWebRequestEventRouter::kOnHeadersReceived},
+           {keys::kOnBeforeRedirect,
+            ExtensionWebRequestEventRouter::kOnBeforeRedirect},
+           {keys::kOnAuthRequired,
+            ExtensionWebRequestEventRouter::kOnAuthRequired},
+           {keys::kOnResponseStarted,
+            ExtensionWebRequestEventRouter::kOnResponseStarted},
+           {keys::kOnErrorOccurred,
+            ExtensionWebRequestEventRouter::kOnErrorOccurred},
+           {keys::kOnCompleted, ExtensionWebRequestEventRouter::kOnCompleted}});
+
+  DCHECK_EQ(kRequestStageMap.size(), base::size(kWebRequestEvents));
+
+  static const size_t kWebRequestEventPrefixLen =
+      strlen(kWebRequestEventPrefix);
+  static const size_t kWebViewEventPrefixLen =
+      strlen(webview::kWebViewEventPrefix);
+
+  // Canonicalize the |event_name| to the request stage.
+  if (event_name.starts_with(kWebRequestEventPrefix))
+    event_name.remove_prefix(kWebRequestEventPrefixLen);
+  else if (event_name.starts_with(webview::kWebViewEventPrefix))
+    event_name.remove_prefix(kWebViewEventPrefixLen);
+  else
+    return ExtensionWebRequestEventRouter::kInvalidEvent;
+
+  auto it = kRequestStageMap.find(event_name);
+  if (it == kRequestStageMap.end())
+    return ExtensionWebRequestEventRouter::kInvalidEvent;
+
+  return it->second;
+}
+
+bool IsWebRequestEvent(base::StringPiece event_name) {
+  return GetEventTypeFromEventName(event_name) !=
+         ExtensionWebRequestEventRouter::kInvalidEvent;
 }
 
 // Returns whether |request| has been triggered by an extension enabled in
@@ -1015,40 +1054,6 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
 
   const bool is_incognito_context = IsIncognitoBrowserContext(browser_context);
 
-  // Handle Declarative Net Request API rules. This gets preference over the Web
-  // Request and Declarative Web Request APIs. Only checking the rules in the
-  // OnBeforeRequest stage works, since the rules currently only depend on the
-  // request url, initiator and resource type, which should stay the same during
-  // the diffierent network request stages. A redirect should cause another
-  // OnBeforeRequest call.
-  const Action& action =
-      declarative_net_request::RulesMonitorService::Get(browser_context)
-          ->ruleset_manager()
-          ->EvaluateRequest(*request, is_incognito_context);
-  switch (action.type) {
-    case Action::Type::NONE:
-      break;
-    case Action::Type::BLOCK:
-      OnDNRActionMatched(browser_context, *request);
-      return net::ERR_BLOCKED_BY_CLIENT;
-    case Action::Type::COLLAPSE:
-      OnDNRActionMatched(browser_context, *request);
-      *should_collapse_initiator = true;
-      return net::ERR_BLOCKED_BY_CLIENT;
-    case Action::Type::REDIRECT:
-      DCHECK(action.redirect_url);
-      OnDNRActionMatched(browser_context, *request);
-      *new_url = action.redirect_url.value();
-      return net::OK;
-    case Action::Type::REMOVE_HEADERS:
-      // Unlike other actions, allow web request extensions to intercept the
-      // request here. The headers will be removed during subsequent request
-      // stages.
-      DCHECK(request->dnr_action.has_value());
-      DCHECK_EQ(request->dnr_action->type, Action::Type::REMOVE_HEADERS);
-      break;
-  }
-
   // Whether to initialized |blocked_requests_|.
   bool initialize_blocked_requests = false;
 
@@ -1067,6 +1072,45 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
 
     initialize_blocked_requests |= DispatchEvent(
         browser_context, request, listeners, std::move(event_details));
+  }
+
+  // Handle Declarative Net Request API rules. In case the request is blocked or
+  // redirected, we un-block the request and ignore any subsequent responses
+  // from webRequestBlocking listeners. Note: We don't remove the request from
+  // the |EventListener::blocked_requests| set of any blocking listeners it was
+  // dispatched to, since the listener's response will be ignored in
+  // |DecrementBlockCount| anyway.
+
+  // Only checking the rules in the OnBeforeRequest stage works, since the rules
+  // currently only depend on the request url, initiator and resource type,
+  // which should stay the same during the diffierent network request stages. A
+  // redirect should cause another OnBeforeRequest call.
+  const Action& action =
+      declarative_net_request::RulesMonitorService::Get(browser_context)
+          ->ruleset_manager()
+          ->EvaluateRequest(*request, is_incognito_context);
+  switch (action.type) {
+    case Action::Type::NONE:
+      break;
+    case Action::Type::BLOCK:
+      ClearPendingCallbacks(*request);
+      OnDNRActionMatched(browser_context, *request);
+      return net::ERR_BLOCKED_BY_CLIENT;
+    case Action::Type::COLLAPSE:
+      ClearPendingCallbacks(*request);
+      OnDNRActionMatched(browser_context, *request);
+      *should_collapse_initiator = true;
+      return net::ERR_BLOCKED_BY_CLIENT;
+    case Action::Type::REDIRECT:
+      ClearPendingCallbacks(*request);
+      DCHECK(action.redirect_url);
+      OnDNRActionMatched(browser_context, *request);
+      *new_url = action.redirect_url.value();
+      return net::OK;
+    case Action::Type::REMOVE_HEADERS:
+      DCHECK(request->dnr_action.has_value());
+      DCHECK_EQ(request->dnr_action->type, Action::Type::REMOVE_HEADERS);
+      break;
   }
 
   if (!initialize_blocked_requests)
@@ -2145,12 +2189,17 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
   std::unique_ptr<EventResponse> response_scoped(response);
 
   // It's possible that this request was deleted, or cancelled by a previous
-  // event handler. If so, ignore this response.
+  // event handler or handled by Declarative Net Request API. If so, ignore this
+  // response.
   auto it = blocked_requests_.find(request_id);
   if (it == blocked_requests_.end())
     return;
 
   BlockedRequest& blocked_request = it->second;
+
+  // Ensure that the response is for the event we are blocked on.
+  DCHECK_EQ(blocked_request.event, GetEventTypeFromEventName(event_name));
+
   int num_handlers_blocking = --blocked_request.num_handlers_blocking;
   CHECK_GE(num_handlers_blocking, 0);
 
@@ -2166,9 +2215,8 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
     blocked_request.response_deltas.push_back(std::move(delta));
   }
 
-  if (num_handlers_blocking == 0) {
+  if (num_handlers_blocking == 0)
     ExecuteDeltas(browser_context, blocked_request.request, true);
-  }
 }
 
 void ExtensionWebRequestEventRouter::SendMessages(

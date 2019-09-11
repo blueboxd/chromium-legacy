@@ -20,7 +20,7 @@ import org.chromium.ui.widget.ChromeImageView;
 
 /**
  * Represents a generic toolbar used in the bottom strip/grid component.
- * {@link TabGridSheetToolbarCoordinator}
+ * {@link TabGridPanelToolbarCoordinator}
  */
 public class TabGroupUiToolbarView extends FrameLayout {
     private ChromeImageView mRightButton;

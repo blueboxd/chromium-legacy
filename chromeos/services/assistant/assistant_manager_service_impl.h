@@ -26,8 +26,8 @@
 #include "libassistant/shared/public/device_state_listener.h"
 #include "libassistant/shared/public/media_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
@@ -120,7 +120,8 @@ class AssistantManagerServiceImpl
                                      bool allow_tts) override;
   void StopActiveInteraction(bool cancel_conversation) override;
   void AddAssistantInteractionSubscriber(
-      mojom::AssistantInteractionSubscriberPtr subscriber) override;
+      mojo::PendingRemote<mojom::AssistantInteractionSubscriber> subscriber)
+      override;
   void RetrieveNotification(mojom::AssistantNotificationPtr notification,
                             int action_index) override;
   void DismissNotification(
@@ -306,7 +307,7 @@ class AssistantManagerServiceImpl
   // same ownership as assistant_manager_.
   assistant_client::AssistantManagerInternal* assistant_manager_internal_ =
       nullptr;
-  mojo::InterfacePtrSet<mojom::AssistantInteractionSubscriber>
+  mojo::RemoteSet<mojom::AssistantInteractionSubscriber>
       interaction_subscribers_;
   media_session::mojom::MediaControllerPtr media_controller_;
 

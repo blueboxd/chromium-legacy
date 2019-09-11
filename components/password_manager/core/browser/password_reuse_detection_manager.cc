@@ -64,7 +64,7 @@ void PasswordReuseDetectionManager::OnKeyPressed(const base::string16& text) {
     input_characters_.erase(
         0, input_characters_.size() - kMaxNumberOfCharactersToStore);
   }
-  PasswordStore* store = client_->GetPasswordStore();
+  PasswordStore* store = client_->GetProfilePasswordStore();
   if (!store)
     return;
   store->CheckReuse(input_characters_, main_frame_url_.GetOrigin().spec(),
@@ -78,7 +78,7 @@ void PasswordReuseDetectionManager::OnPaste(const base::string16 text) {
   base::string16 input = std::move(text);
   if (input.size() > kMaxNumberOfCharactersToStore)
     input = text.substr(input.size() - kMaxNumberOfCharactersToStore);
-  PasswordStore* store = client_->GetPasswordStore();
+  PasswordStore* store = client_->GetProfilePasswordStore();
   if (!store)
     return;
   store->CheckReuse(input, main_frame_url_.GetOrigin().spec(), this);

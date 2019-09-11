@@ -42,8 +42,8 @@ bool AssistantSetup::BounceOptInWindowIfActive() {
   return chromeos::AssistantOptInDialog::BounceIfActive();
 }
 
-void AssistantSetup::OnStateChanged(ash::mojom::VoiceInteractionState state) {
-  if (state == ash::mojom::VoiceInteractionState::NOT_READY)
+void AssistantSetup::OnStateChanged(ash::mojom::AssistantState state) {
+  if (state == ash::mojom::AssistantState::NOT_READY)
     return;
 
   // Sync settings state when Assistant service started.

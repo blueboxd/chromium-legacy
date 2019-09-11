@@ -576,8 +576,8 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time,
   }
 
   viz::BeginFrameArgs begin_frame_args(viz::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, viz::BeginFrameArgs::kManualSourceId, 1,
-      frame_begin_time, base::TimeTicks(),
+      BEGINFRAME_FROM_HERE, viz::BeginFrameArgs::kManualSourceId,
+      begin_frame_sequence_number_++, frame_begin_time, base::TimeTicks(),
       viz::BeginFrameArgs::DefaultInterval(), viz::BeginFrameArgs::NORMAL));
 
   // Start the impl frame.

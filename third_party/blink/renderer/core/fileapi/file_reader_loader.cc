@@ -283,9 +283,10 @@ void FileReaderLoader::OnReceivedData(const char* data, unsigned data_length) {
 
   // Receiving more data than expected would indicate a bug in the
   // implementation of the mojom Blob interface. However there is no guarantee
-  // that the BlobPtr is actually backed by a "real" blob, so to defend against
-  // compromised renderer processes we still need to carefully validate anything
-  // received. So return an error if we received too much data.
+  // that the Blob is actually backed by a "real" blob, so to
+  // defend against compromised renderer processes we still need to carefully
+  // validate anything received. So return an error if we received too much
+  // data.
   if (bytes_loaded_ + data_length > raw_data_.DataLength()) {
     raw_data_.reset();
     bytes_loaded_ = 0;

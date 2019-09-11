@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/test/hid_controller_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
@@ -18,7 +19,13 @@ namespace chromeos {
 
 class HidDetectionTest : public OobeBaseTest {
  public:
-  HidDetectionTest() = default;
+  HidDetectionTest() {
+    // HID detection screen only appears for Chromebases, Chromebits, and
+    // Chromeboxes.
+    base::SysInfo::SetChromeOSVersionInfoForTest("DEVICETYPE=CHROMEBOX",
+                                                 base::Time::Now());
+  }
+
   ~HidDetectionTest() override = default;
 
  protected:

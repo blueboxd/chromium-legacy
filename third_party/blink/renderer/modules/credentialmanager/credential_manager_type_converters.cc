@@ -575,13 +575,18 @@ TypeConverter<PublicKeyCredentialRequestOptionsPtr,
     if (extensions->hasCableAuthentication()) {
       Vector<CableAuthenticationPtr> mojo_data;
       for (auto& data : extensions->cableAuthentication()) {
+        if (data->version() != 1) {
+          continue;
+        }
         CableAuthenticationPtr mojo_cable =
             CableAuthentication::From(data.Get());
         if (mojo_cable) {
           mojo_data.push_back(std::move(mojo_cable));
         }
       }
-      mojo_options->cable_authentication_data = std::move(mojo_data);
+      if (mojo_data.size() > 0) {
+        mojo_options->cable_authentication_data = std::move(mojo_data);
+      }
     }
 #if defined(OS_ANDROID)
     if (extensions->hasUvm()) {

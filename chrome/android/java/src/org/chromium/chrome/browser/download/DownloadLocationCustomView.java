@@ -19,7 +19,7 @@ import android.widget.TextView;
 
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.download.DownloadDirectoryAdapter;
-import org.chromium.chrome.browser.widget.AlertDialogEditText;
+import org.chromium.chrome.browser.ui.widget.text.AlertDialogEditText;
 import org.chromium.chrome.download.R;
 
 import java.io.File;

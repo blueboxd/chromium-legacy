@@ -327,10 +327,11 @@ GetTestPublicKeyCredentialRequestOptions() {
 
 std::vector<device::CableDiscoveryData> GetTestCableExtension() {
   device::CableDiscoveryData cable;
-  cable.version = 1;
-  cable.client_eid.fill(0x01);
-  cable.authenticator_eid.fill(0x02);
-  cable.session_pre_key.fill(0x03);
+  cable.version = device::CableDiscoveryData::Version::V1;
+  cable.v1.emplace();
+  cable.v1->client_eid.fill(0x01);
+  cable.v1->authenticator_eid.fill(0x02);
+  cable.v1->session_pre_key.fill(0x03);
 
   std::vector<device::CableDiscoveryData> ret;
   ret.emplace_back(std::move(cable));

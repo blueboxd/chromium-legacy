@@ -1709,10 +1709,10 @@
     Removable device detected
   </message>
   <message name="IDS_REMOVABLE_DEVICE_NAVIGATION_MESSAGE" desc="Text of notification message to navigate users to the Files app. If user clicks a button in the notification, the Files app opens.">
-    Explore the device's content in the Files app.
+    Explore the device’s content in the Files app.
   </message>
   <message name="IDS_REMOVABLE_DEVICE_ALLOW_PLAY_STORE_ACCESS_MESSAGE" desc="Text of notification message to navigate users to the ARC settings page. If user clicks a button in the notification, the page opens.">
-    To allow full file system access for apps from Google Play, go to Settings.
+    For device preferences, go to Settings.
   </message>
   <message name="IDS_REMOVABLE_DEVICE_PLAY_STORE_APPS_HAVE_ACCESS_MESSAGE" desc="Text of notification message to navigate users to the ARC settings page. If user clicks a button in the notification, the page opens.">
     Play Store applications have access to this device.

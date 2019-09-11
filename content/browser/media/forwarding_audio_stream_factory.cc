@@ -315,10 +315,10 @@ audio::mojom::StreamFactory* ForwardingAudioStreamFactory::Core::GetFactory() {
     TRACE_EVENT_INSTANT1(
         "audio", "ForwardingAudioStreamFactory: Binding new factory",
         TRACE_EVENT_SCOPE_THREAD, "group", group_id_.GetLowForSerialization());
-    connector_->BindInterface(audio::mojom::kServiceName,
-                              mojo::MakeRequest(&remote_factory_));
+    connector_->Connect(audio::mojom::kServiceName,
+                        remote_factory_.BindNewPipeAndPassReceiver());
     // Unretained is safe because |this| owns |remote_factory_|.
-    remote_factory_.set_connection_error_handler(base::BindOnce(
+    remote_factory_.set_disconnect_handler(base::BindOnce(
         &ForwardingAudioStreamFactory::Core::ResetRemoteFactoryPtr,
         base::Unretained(this)));
 

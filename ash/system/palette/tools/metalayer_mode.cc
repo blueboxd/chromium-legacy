@@ -150,9 +150,8 @@ void MetalayerMode::OnTouchEvent(ui::TouchEvent* event) {
   event->StopPropagation();
 }
 
-void MetalayerMode::OnAssistantStatusChanged(
-    mojom::VoiceInteractionState state) {
-  voice_interaction_state_ = state;
+void MetalayerMode::OnAssistantStatusChanged(mojom::AssistantState state) {
+  assistant_state_ = state;
   UpdateState();
 }
 

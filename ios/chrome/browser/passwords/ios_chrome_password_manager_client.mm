@@ -155,7 +155,7 @@ PrefService* IOSChromePasswordManagerClient::GetPrefs() const {
   return (delegate_.browserState)->GetPrefs();
 }
 
-PasswordStore* IOSChromePasswordManagerClient::GetPasswordStore() const {
+PasswordStore* IOSChromePasswordManagerClient::GetProfilePasswordStore() const {
   return IOSChromePasswordStoreFactory::GetForBrowserState(
              delegate_.browserState, ServiceAccessType::EXPLICIT_ACCESS)
       .get();

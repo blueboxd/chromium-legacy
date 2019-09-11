@@ -163,7 +163,10 @@ enum class ProvisioningResult : int {
   // Account type is not supported for authorization.
   UNSUPPORTED_ACCOUNT_TYPE = 22,
 
-  kMaxValue = UNSUPPORTED_ACCOUNT_TYPE,
+  // Account is not present in Chrome OS Account Manager.
+  CHROME_ACCOUNT_NOT_FOUND = 23,
+
+  kMaxValue = CHROME_ACCOUNT_NOT_FOUND,
 };
 
 enum class OptInFlowResult : int {

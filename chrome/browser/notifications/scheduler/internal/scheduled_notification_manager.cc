@@ -101,6 +101,7 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
     if (!clients_.count(type) ||
         (notifications_.count(type) && notifications_[type].count(guid))) {
       // TODO(xingliu): Report duplicate guid failure.
+      std::move(callback).Run(false);
       return;
     }
 
@@ -109,6 +110,7 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
     if (!valid) {
       stats::LogNotificationLifeCycleEvent(
           stats::NotificationLifeCycleEvent::kInvalidInput, type);
+      std::move(callback).Run(false);
       return;
     }
 

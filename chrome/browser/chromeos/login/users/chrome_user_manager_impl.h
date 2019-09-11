@@ -27,6 +27,7 @@
 #include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/profiles/profile_manager_observer.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user.h"
 #include "content/public/browser/notification_observer.h"
@@ -60,6 +61,7 @@ class ChromeUserManagerImpl
       public DeviceSettingsService::Observer,
       public policy::DeviceLocalAccountPolicyService::Observer,
       public policy::MinimumVersionPolicyHandler::Observer,
+      public ProfileManagerObserver,
       public MultiProfileUserControllerDelegate {
  public:
   ~ChromeUserManagerImpl() override;
@@ -112,28 +114,31 @@ class ChromeUserManagerImpl
                              std::string* out_resolved_locale) const override;
   bool IsValidDefaultUserImageId(int image_index) const override;
 
-  // content::NotificationObserver implementation.
+  // content::NotificationObserver.
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // DeviceSettingsService::Observer implementation:
+  // DeviceSettingsService::Observer:
   void OwnershipStatusChanged() override;
 
-  // policy::DeviceLocalAccountPolicyService::Observer implementation.
+  // policy::DeviceLocalAccountPolicyService::Observer:
   void OnPolicyUpdated(const std::string& user_id) override;
   void OnDeviceLocalAccountsChanged() override;
 
   void StopPolicyObserverForTesting();
 
-  // policy::MinimumVersionPolicyHandler::Observer implementation.
+  // policy::MinimumVersionPolicyHandler::Observer:
   void OnMinimumVersionStateChanged() override;
 
-  // UserManagerBase implementation:
+  // ProfileManagerObserver:
+  void OnProfileAdded(Profile* profile) override;
+
+  // UserManagerBase:
   bool AreEphemeralUsersEnabled() const override;
   void OnUserRemoved(const AccountId& account_id) override;
 
-  // ChromeUserManager implementation:
+  // ChromeUserManager:
   bool IsEnterpriseManaged() const override;
   void SetUserAffiliation(
       const AccountId& account_id,

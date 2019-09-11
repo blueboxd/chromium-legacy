@@ -58,8 +58,9 @@ class BlobRegistryImpl::BlobUnderConstruction {
 
  private:
   // Holds onto a blink::mojom::DataElement struct and optionally a bound
-  // mojo::Remote<blink::mojom::BytesProvider> or blink::mojom::BlobPtr, if the
-  // element encapsulates a large byte array or a blob.
+  // mojo::Remote<blink::mojom::BytesProvider> or
+  // mojo::Remote<blink::mojom::Blob>, if the element encapsulates a large byte
+  // array or a blob.
   struct ElementEntry {
     explicit ElementEntry(blink::mojom::DataElementPtr e)
         : element(std::move(e)) {
@@ -76,7 +77,7 @@ class BlobRegistryImpl::BlobUnderConstruction {
 
     blink::mojom::DataElementPtr element;
     mojo::Remote<blink::mojom::BytesProvider> bytes_provider;
-    blink::mojom::BlobPtr blob;
+    mojo::Remote<blink::mojom::Blob> blob;
   };
 
   BlobStorageContext* context() const { return blob_registry_->context_.get(); }
@@ -220,7 +221,7 @@ void BlobRegistryImpl::BlobUnderConstruction::StartTransportation() {
       // If connection to blob is broken, something bad happened, so mark this
       // new blob as broken, which will delete |this| and keep it from doing
       // unneeded extra work.
-      entry.blob.set_connection_error_handler(base::BindOnce(
+      entry.blob.set_disconnect_handler(base::BindOnce(
           &BlobUnderConstruction::MarkAsBroken, weak_ptr_factory_.GetWeakPtr(),
           BlobStatus::ERR_REFERENCED_BLOB_BROKEN, ""));
 
@@ -237,7 +238,8 @@ void BlobRegistryImpl::BlobUnderConstruction::StartTransportation() {
 
   // TODO(mek): Do we need some kind of timeout for fetching the UUIDs?
   // Without it a blob could forever remaing pending if a renderer sends us
-  // a BlobPtr connected to a (malicious) non-responding implementation.
+  // a mojo::Remote<Blob> connected to a (malicious) non-responding
+  // implementation.
 
   // Do some basic validation of bytes to transport, and determine memory
   // transport strategy to use later.

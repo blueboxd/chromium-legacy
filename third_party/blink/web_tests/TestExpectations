@@ -6217,3 +6217,7 @@ crbug.com/1001817 external/wpt/css/css-ui/text-overflow-016.html [ Pass Failure 
 crbug.com/1001816 external/wpt/css/css-masking/clip-path/clip-path-inline-003.html [ Pass Failure ]
 crbug.com/1001814 external/wpt/css/css-masking/clip-path/clip-path-inline-002.html [ Pass Failure ]
 crbug.com/1001936 external/wpt/css/css-masking/clip-path/clip-path-inline-001.html [ Pass Failure ]
+
+# Sheriff 2019-09-10
+crbug.com/1002527 [ Debug ] fast/text/large-text-composed-char.html [ Pass Crash ]
+crbug.com/1002686 [ Mac10.13 ] virtual/threaded/http/tests/devtools/tracing/timeline-style/timeline-recalculate-styles.js [ Failure ]

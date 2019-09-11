@@ -8,14 +8,14 @@ import android.graphics.Bitmap;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.browser.webapps.AddToHomescreenDialog;
+import org.chromium.chrome.browser.webapps.AddToHomescreenView;
 import org.chromium.chrome.browser.webapps.TouchlessAddToHomescreenDialog;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 
 /**
  * Add to homescreen manager specifically for touchless devices.
  */
-class TouchlessAddToHomescreenManager implements AddToHomescreenDialog.Delegate {
+class TouchlessAddToHomescreenManager implements AddToHomescreenView.Delegate {
     private final ChromeActivity mActivity;
     private final ModalDialogManager mDialogManager;
     private final String mUrl;
@@ -33,7 +33,7 @@ class TouchlessAddToHomescreenManager implements AddToHomescreenDialog.Delegate 
 
     // Starts the process of showing the dialog and adding the shortcut.
     public void start() {
-        AddToHomescreenDialog dialog =
+        AddToHomescreenView dialog =
                 new TouchlessAddToHomescreenDialog(mActivity, mDialogManager, this);
         dialog.show();
         dialog.onUserTitleAvailable(mTitle, mUrl, false);

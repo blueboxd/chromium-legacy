@@ -7,8 +7,10 @@
 #include "gpu/command_buffer/client/webgpu_interface.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_adapter.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_bind_group.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_bind_group_layout.h"
@@ -207,6 +209,60 @@ GPURenderBundleEncoder* GPUDevice::createRenderBundleEncoder(
 
 GPUQueue* GPUDevice::getQueue() {
   return queue_;
+}
+
+void GPUDevice::pushErrorScope(const WTF::String& filter) {
+  GetProcs().devicePushErrorScope(GetHandle(),
+                                  AsDawnEnum<DawnErrorFilter>(filter));
+}
+
+ScriptPromise GPUDevice::popErrorScope(ScriptState* script_state,
+                                       ExceptionState& exception_state) {
+  ScriptPromiseResolver* resolver =
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
+
+  auto* callback =
+      BindDawnCallback(&GPUDevice::OnPopErrorScopeCallback,
+                       WrapPersistent(this), WrapPersistent(resolver));
+
+  if (!GetProcs().devicePopErrorScope(GetHandle(), callback->UnboundCallback(),
+                                      callback->AsUserdata())) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
+                                      "No error scopes to pop.");
+    delete callback;
+  }
+
+  // WebGPU guarantees callbacks complete in finite time. Flush now so that
+  // commands reach the GPU process. TODO(enga): This should happen at the end
+  // of the task.
+  GetInterface()->FlushCommands();
+
+  return promise;
+}
+
+void GPUDevice::OnPopErrorScopeCallback(ScriptPromiseResolver* resolver,
+                                        DawnErrorType type,
+                                        const char* message) {
+  ScriptState* script_state = resolver->GetScriptState();
+  switch (type) {
+    case DAWN_ERROR_TYPE_NO_ERROR:
+      resolver->Resolve(ScriptValue::CreateNull(script_state));
+      break;
+    case DAWN_ERROR_TYPE_OUT_OF_MEMORY:
+      resolver->Resolve(GPUOutOfMemoryError::Create());
+      break;
+    case DAWN_ERROR_TYPE_VALIDATION:
+      resolver->Resolve(GPUValidationError::Create(message));
+      break;
+    case DAWN_ERROR_TYPE_UNKNOWN:
+    case DAWN_ERROR_TYPE_DEVICE_LOST:
+      resolver->Reject(
+          MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 ExecutionContext* GPUDevice::GetExecutionContext() const {

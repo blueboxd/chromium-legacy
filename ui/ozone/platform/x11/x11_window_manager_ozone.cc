@@ -43,6 +43,8 @@ void X11WindowManagerOzone::RemoveWindow(X11WindowOzone* window) {
   DCHECK_NE(gfx::kNullAcceleratedWidget, window->widget());
   auto it = windows_.find(window->widget());
   DCHECK(it != windows_.end());
+  if (window_mouse_currently_on_ == it->second)
+    window_mouse_currently_on_ = nullptr;
   windows_.erase(it);
 }
 
@@ -51,6 +53,14 @@ X11WindowOzone* X11WindowManagerOzone::GetWindow(
   DCHECK_NE(gfx::kNullAcceleratedWidget, widget);
   auto it = windows_.find(widget);
   return it != windows_.end() ? it->second : nullptr;
+}
+
+void X11WindowManagerOzone::MouseOnWindow(X11WindowOzone* window) {
+  if (window_mouse_currently_on_ == window)
+    return;
+
+  window_mouse_currently_on_ = window;
+  window->OnMouseEnter();
 }
 
 }  // namespace ui

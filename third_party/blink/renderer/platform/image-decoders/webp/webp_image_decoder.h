@@ -59,8 +59,6 @@ class PLATFORM_EXPORT WEBPImageDecoder final : public ImageDecoder {
   size_t DecodeFrameCount() override;
   void InitializeNewFrame(size_t) override;
   void Decode(size_t) override;
-  void SetImagePlanes(std::unique_ptr<ImagePlanes>) override;
-  bool CanDecodeToYUV() override;
   void DecodeToYUV() override;
   SkYUVColorSpace GetYUVColorSpace() const override;
 
@@ -88,7 +86,7 @@ class PLATFORM_EXPORT WEBPImageDecoder final : public ImageDecoder {
 
   bool IsDoingYuvDecode() const {
     if (image_planes_) {
-      DCHECK(can_decode_to_yuv_);
+      DCHECK(allow_decode_to_yuv_);
       return true;
     }
     return false;
@@ -98,12 +96,6 @@ class PLATFORM_EXPORT WEBPImageDecoder final : public ImageDecoder {
   WebPDecBuffer decoder_buffer_;
   int format_flags_;
   bool frame_background_has_alpha_;
-  // Note that |can_decode_to_yuv_| being true merely means that the
-  // WEBPImageDecoder is allowed to decode to YUV. Other layers higher in the
-  // stack (the PaintImageGenerator, ImageFrameGenerator, or cache) may
-  // decline to go down the YUV path.
-  bool can_decode_to_yuv_;
-  std::unique_ptr<ImagePlanes> image_planes_;
 
   // Provides the size of each component.
   IntSize DecodedYUVSize(int component) const override;

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_PAYMENTS_WEBAUTHN_OFFER_DIALOG_VIEW_IMPL_H_
 
 #include "base/macros.h"
+#include "chrome/browser/ui/autofill/payments/webauthn_offer_dialog_model_observer.h"
 #include "chrome/browser/ui/autofill/payments/webauthn_offer_dialog_view.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -20,15 +21,15 @@ class WebauthnOfferDialogModel;
 // authenticator. It is shown automatically after card unmasked details are
 // obtained and filled into the form.
 class WebauthnOfferDialogViewImpl : public WebauthnOfferDialogView,
+                                    public WebauthnOfferDialogModelObserver,
                                     public views::DialogDelegateView {
  public:
   explicit WebauthnOfferDialogViewImpl(
       WebauthnOfferDialogController* controller);
   ~WebauthnOfferDialogViewImpl() override;
 
-  // WebauthnOfferDialogView:
-  void Hide() override;
-  void RefreshContent() override;
+  // WebauthnOfferDialogModelObserver:
+  void OnDialogStateChanged() override;
 
   // views::DialogDelegateView:
   gfx::Size CalculatePreferredSize() const override;
@@ -44,7 +45,15 @@ class WebauthnOfferDialogViewImpl : public WebauthnOfferDialogView,
   bool ShouldShowCloseButton() const override;
   void WindowClosing() override;
 
+  WebauthnOfferDialogModel* model() { return model_; }
+
  private:
+  // Closes the dialog.
+  void Hide();
+
+  // Re-inits dialog content and resizes.
+  void RefreshContent();
+
   WebauthnOfferDialogController* controller_ = nullptr;
 
   AuthenticatorRequestSheetView* sheet_view_ = nullptr;

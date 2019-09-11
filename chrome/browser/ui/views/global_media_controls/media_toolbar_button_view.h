@@ -43,10 +43,20 @@ class MediaToolbarButtonView : public ToolbarButton,
   // views::ButtonListener implementation.
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  // views::InkDropHostView implementation.
+  SkColor GetInkDropBaseColor() const override;
+
   // Updates the icon image.
   void UpdateIcon();
 
   void ShowPromo();
+
+  // Called when the in-product help bubble has gone away.
+  void OnPromoEnded();
+
+  GlobalMediaControlsPromoController* GetPromoControllerForTesting() {
+    return &GetPromoController();
+  }
 
  private:
   // Lazily constructs |promo_controller_| if necessary.
@@ -63,6 +73,9 @@ class MediaToolbarButtonView : public ToolbarButton,
 
   // Shows the in-product help bubble.
   std::unique_ptr<GlobalMediaControlsPromoController> promo_controller_;
+
+  // True if the in-product help bubble is currently showing.
+  bool is_promo_showing_ = false;
 
   service_manager::Connector* const connector_;
   MediaToolbarButtonController controller_;

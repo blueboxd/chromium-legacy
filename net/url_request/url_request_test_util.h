@@ -303,9 +303,6 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   int blocked_set_cookie_count() const { return blocked_set_cookie_count_; }
   int set_cookie_count() const { return set_cookie_count_; }
 
-  void set_can_access_files(bool val) { can_access_files_ = val; }
-  bool can_access_files() const { return can_access_files_; }
-
   void set_experimental_cookie_features_enabled(bool val) {
     experimental_cookie_features_enabled_ = val;
   }
@@ -380,9 +377,6 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
                       const net::CanonicalCookie& cookie,
                       CookieOptions* options,
                       bool allowed_from_caller) override;
-  bool OnCanAccessFile(const URLRequest& request,
-                       const base::FilePath& original_path,
-                       const base::FilePath& absolute_path) const override;
   bool OnCancelURLRequestWithPolicyViolatingReferrerHeader(
       const URLRequest& request,
       const GURL& target_url,
@@ -428,7 +422,6 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   LoadTimingInfo load_timing_info_before_auth_;
   bool has_load_timing_info_before_auth_;
 
-  bool can_access_files_;  // true by default
   bool experimental_cookie_features_enabled_;           // false by default
   bool cancel_request_with_policy_violating_referrer_;  // false by default
   bool will_be_intercepted_on_next_error_;

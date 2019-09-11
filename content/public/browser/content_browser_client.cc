@@ -91,6 +91,10 @@ bool ContentBrowserClient::ShouldCompareEffectiveURLsForSiteInstanceSelection(
   return true;
 }
 
+bool ContentBrowserClient::IsExplicitNavigation(ui::PageTransition transition) {
+  return transition & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR;
+}
+
 bool ContentBrowserClient::ShouldUseMobileFlingCurve() {
   return false;
 }

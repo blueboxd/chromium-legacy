@@ -563,28 +563,30 @@ TEST_F(HttpServerPropertiesManagerTest, ConfirmAlternativeService) {
   http_server_props_->SetHttp2AlternativeService(
       spdy_server_mail, NetworkIsolationKey(), alternative_service,
       one_day_from_now_);
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(alternative_service));
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
   EXPECT_FALSE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
 
   EXPECT_EQ(1u, GetPendingMainThreadTaskCount());
 
-  http_server_props_->MarkAlternativeServiceBroken(alternative_service);
-  EXPECT_TRUE(
-      http_server_props_->IsAlternativeServiceBroken(alternative_service));
+  http_server_props_->MarkAlternativeServiceBroken(alternative_service,
+                                                   NetworkIsolationKey());
+  EXPECT_TRUE(http_server_props_->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
   EXPECT_TRUE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
 
   // In addition to the pref update task, there's now a task to mark the
   // alternative service as no longer broken.
   EXPECT_EQ(2u, GetPendingMainThreadTaskCount());
 
-  http_server_props_->ConfirmAlternativeService(alternative_service);
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(alternative_service));
+  http_server_props_->ConfirmAlternativeService(alternative_service,
+                                                NetworkIsolationKey());
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
   EXPECT_FALSE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
 
   EXPECT_EQ(2u, GetPendingMainThreadTaskCount());
 
@@ -593,10 +595,10 @@ TEST_F(HttpServerPropertiesManagerTest, ConfirmAlternativeService) {
   FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(alternative_service));
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
   EXPECT_FALSE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
 }
 
 // Check the case that prefs are loaded only after setting alternative service
@@ -712,29 +714,30 @@ TEST_F(HttpServerPropertiesManagerTest,
   http_server_props_->SetHttp2AlternativeService(
       spdy_server_mail, NetworkIsolationKey(), alternative_service,
       one_day_from_now_);
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(alternative_service));
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
   EXPECT_FALSE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
 
   EXPECT_EQ(1u, GetPendingMainThreadTaskCount());
 
   http_server_props_->MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
-      alternative_service);
-  EXPECT_TRUE(
-      http_server_props_->IsAlternativeServiceBroken(alternative_service));
+      alternative_service, NetworkIsolationKey());
+  EXPECT_TRUE(http_server_props_->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
   EXPECT_TRUE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
 
   // In addition to the pref update task, there's now a task to mark the
   // alternative service as no longer broken.
   EXPECT_EQ(2u, GetPendingMainThreadTaskCount());
 
-  http_server_props_->ConfirmAlternativeService(alternative_service);
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(alternative_service));
+  http_server_props_->ConfirmAlternativeService(alternative_service,
+                                                NetworkIsolationKey());
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
   EXPECT_FALSE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
 
   EXPECT_EQ(2u, GetPendingMainThreadTaskCount());
 
@@ -743,10 +746,10 @@ TEST_F(HttpServerPropertiesManagerTest,
   FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(alternative_service));
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
   EXPECT_FALSE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
 }
 
 TEST_F(HttpServerPropertiesManagerTest,
@@ -763,29 +766,29 @@ TEST_F(HttpServerPropertiesManagerTest,
   http_server_props_->SetHttp2AlternativeService(
       spdy_server_mail, NetworkIsolationKey(), alternative_service,
       one_day_from_now_);
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(alternative_service));
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
   EXPECT_FALSE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
 
   EXPECT_EQ(1u, GetPendingMainThreadTaskCount());
 
   http_server_props_->MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
-      alternative_service);
-  EXPECT_TRUE(
-      http_server_props_->IsAlternativeServiceBroken(alternative_service));
+      alternative_service, NetworkIsolationKey());
+  EXPECT_TRUE(http_server_props_->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
   EXPECT_TRUE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
 
   // In addition to the pref update task, there's now a task to mark the
   // alternative service as no longer broken.
   EXPECT_EQ(2u, GetPendingMainThreadTaskCount());
 
   http_server_props_->OnDefaultNetworkChanged();
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(alternative_service));
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
   EXPECT_FALSE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
 
   EXPECT_EQ(2u, GetPendingMainThreadTaskCount());
 
@@ -794,10 +797,10 @@ TEST_F(HttpServerPropertiesManagerTest,
   FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(alternative_service));
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
   EXPECT_FALSE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
 }
 
 TEST_F(HttpServerPropertiesManagerTest, OnDefaultNetworkChangedWithBrokenOnly) {
@@ -813,28 +816,29 @@ TEST_F(HttpServerPropertiesManagerTest, OnDefaultNetworkChangedWithBrokenOnly) {
   http_server_props_->SetHttp2AlternativeService(
       spdy_server_mail, NetworkIsolationKey(), alternative_service,
       one_day_from_now_);
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(alternative_service));
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
   EXPECT_FALSE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
 
   EXPECT_EQ(1u, GetPendingMainThreadTaskCount());
 
-  http_server_props_->MarkAlternativeServiceBroken(alternative_service);
-  EXPECT_TRUE(
-      http_server_props_->IsAlternativeServiceBroken(alternative_service));
+  http_server_props_->MarkAlternativeServiceBroken(alternative_service,
+                                                   NetworkIsolationKey());
+  EXPECT_TRUE(http_server_props_->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
   EXPECT_TRUE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
 
   // In addition to the pref update task, there's now a task to mark the
   // alternative service as no longer broken.
   EXPECT_EQ(2u, GetPendingMainThreadTaskCount());
 
   http_server_props_->OnDefaultNetworkChanged();
-  EXPECT_TRUE(
-      http_server_props_->IsAlternativeServiceBroken(alternative_service));
+  EXPECT_TRUE(http_server_props_->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
   EXPECT_TRUE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
 
   EXPECT_EQ(2u, GetPendingMainThreadTaskCount());
 
@@ -843,10 +847,10 @@ TEST_F(HttpServerPropertiesManagerTest, OnDefaultNetworkChangedWithBrokenOnly) {
   FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(alternative_service));
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
   EXPECT_TRUE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
 }
 
 TEST_F(HttpServerPropertiesManagerTest, SupportsQuic) {
@@ -967,7 +971,8 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   http_server_props_->SetAlternativeServices(spdy_server, NetworkIsolationKey(),
                                              alt_svc_info_vector);
 
-  http_server_props_->MarkAlternativeServiceBroken(broken_alternative_service);
+  http_server_props_->MarkAlternativeServiceBroken(broken_alternative_service,
+                                                   NetworkIsolationKey());
   http_server_props_->SetSupportsSpdy(spdy_server, NetworkIsolationKey(), true);
   http_server_props_->SetSupportsQuic(true, actual_address);
   ServerNetworkStats stats;
@@ -984,7 +989,7 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
   EXPECT_TRUE(http_server_props_->IsAlternativeServiceBroken(
-      broken_alternative_service));
+      broken_alternative_service, NetworkIsolationKey()));
   EXPECT_TRUE(http_server_props_->SupportsRequestPriority(
       spdy_server, NetworkIsolationKey()));
   EXPECT_TRUE(HasAlternativeService(spdy_server, NetworkIsolationKey()));
@@ -1012,7 +1017,7 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   EXPECT_TRUE(callback_invoked_);
 
   EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
-      broken_alternative_service));
+      broken_alternative_service, NetworkIsolationKey()));
   EXPECT_FALSE(http_server_props_->SupportsRequestPriority(
       spdy_server, NetworkIsolationKey()));
   EXPECT_FALSE(HasAlternativeService(spdy_server, NetworkIsolationKey()));
@@ -1037,21 +1042,20 @@ TEST_F(HttpServerPropertiesManagerTest, BadSupportsQuic) {
     alternative_service_dict.SetStringKey("protocol_str", "quic");
     alternative_service_dict.SetIntKey("port", i);
     base::Value alternative_service_list(base::Value::Type::LIST);
-    alternative_service_list.GetList().emplace_back(
-        std::move(alternative_service_dict));
+    alternative_service_list.Append(std::move(alternative_service_dict));
     server_dict.SetKey("alternative_service",
                        std::move(alternative_service_list));
     server_dict.SetStringKey("server",
                              StringPrintf("https://www.google.com:%d", i));
     server_dict.SetKey("isolation", base::Value(base::Value::Type::LIST));
-    servers_list->GetList().emplace_back(std::move(server_dict));
+    servers_list->Append(std::move(server_dict));
   }
 
   // Set the server preference for http://mail.google.com server.
   base::Value server_dict2(base::Value::Type::DICTIONARY);
   server_dict2.SetStringKey("server", "https://mail.google.com");
   server_dict2.SetKey("isolation", base::Value(base::Value::Type::LIST));
-  servers_list->GetList().emplace_back(std::move(server_dict2));
+  servers_list->Append(std::move(server_dict2));
 
   base::DictionaryValue http_server_properties_dict = DictWithVersion();
   http_server_properties_dict.SetWithoutPathExpansion("servers",
@@ -1120,9 +1124,10 @@ TEST_F(HttpServerPropertiesManagerTest, UpdatePrefsWithCache) {
       server_mail, NetworkIsolationKey(), mail_alternative_service,
       expiration3);
 
-  http_server_props_->MarkAlternativeServiceBroken(www_alternative_service2);
+  http_server_props_->MarkAlternativeServiceBroken(www_alternative_service2,
+                                                   NetworkIsolationKey());
   http_server_props_->MarkAlternativeServiceRecentlyBroken(
-      mail_alternative_service);
+      mail_alternative_service, NetworkIsolationKey());
 
   // #3: Set SPDY server map
   http_server_props_->SetSupportsSpdy(server_www, NetworkIsolationKey(), false);
@@ -1209,10 +1214,10 @@ TEST_F(HttpServerPropertiesManagerTest, UpdatePrefsWithCache) {
   const char expected_json[] =
       "{"
       "\"broken_alternative_services\":"
-      "[{\"broken_count\":1,\"host\":\"www.google.com\",\"port\":1234,"
-      "\"protocol_str\":\"h2\"},"
-      "{\"broken_count\":1,\"host\":\"foo.google.com\",\"port\":444,"
-      "\"protocol_str\":\"h2\"}],"
+      "[{\"broken_count\":1,\"host\":\"www.google.com\",\"isolation\":[],"
+      "\"port\":1234,\"protocol_str\":\"h2\"},"
+      "{\"broken_count\":1,\"host\":\"foo.google.com\",\"isolation\":[],"
+      "\"port\":444,\"protocol_str\":\"h2\"}],"
       "\"quic_servers\":"
       "{\"https://mail.google.com:80\":"
       "{\"server_info\":\"quic_server_info1\"}},"
@@ -1328,7 +1333,8 @@ TEST_F(HttpServerPropertiesManagerTest, DoNotPersistExpiredAlternativeService) {
       AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
           broken_alternative_service, time_one_day_later));
   // #1: MarkAlternativeServiceBroken().
-  http_server_props_->MarkAlternativeServiceBroken(broken_alternative_service);
+  http_server_props_->MarkAlternativeServiceBroken(broken_alternative_service,
+                                                   NetworkIsolationKey());
 
   const AlternativeService expired_alternative_service(
       kProtoHTTP2, "expired.example.com", 443);
@@ -1713,10 +1719,12 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   AlternativeService cached_recently_broken_service(kProtoQUIC,
                                                     "cached_rbroken", 443);
 
-  http_server_props_->MarkAlternativeServiceBroken(cached_broken_service);
-  http_server_props_->MarkAlternativeServiceBroken(cached_broken_service2);
+  http_server_props_->MarkAlternativeServiceBroken(cached_broken_service,
+                                                   NetworkIsolationKey());
+  http_server_props_->MarkAlternativeServiceBroken(cached_broken_service2,
+                                                   NetworkIsolationKey());
   http_server_props_->MarkAlternativeServiceRecentlyBroken(
-      cached_recently_broken_service);
+      cached_recently_broken_service, NetworkIsolationKey());
 
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
   // There should be a task to remove remove alt services from the cache of
@@ -1737,13 +1745,16 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
       "{\"broken_until\":\"" +
       expiration_str +
       "\","
-      "\"host\":\"www.google.com\",\"port\":1234,\"protocol_str\":\"h2\"},"
+      "\"host\":\"www.google.com\",\"isolation\":[],"
+      "\"port\":1234,\"protocol_str\":\"h2\"},"
       "{\"broken_count\":2,\"broken_until\":\"" +
       expiration_str +
       "\","
-      "\"host\":\"cached_broken\",\"port\":443,\"protocol_str\":\"quic\"},"
+      "\"host\":\"cached_broken\",\"isolation\":[],"
+      "\"port\":443,\"protocol_str\":\"quic\"},"
       "{\"broken_count\":3,"
-      "\"host\":\"cached_rbroken\",\"port\":443,\"protocol_str\":\"quic\"}],"
+      "\"host\":\"cached_rbroken\",\"isolation\":[],"
+      "\"port\":443,\"protocol_str\":\"quic\"}],"
       "\"quic_servers\":{"
       "\"https://mail.google.com:80\":{"
       "\"server_info\":\"quic_server_info1\"}"
@@ -1840,12 +1851,12 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   // Verify broken alternative services.
   //
   AlternativeService prefs_broken_service(kProtoHTTP2, "www.google.com", 1234);
-  EXPECT_TRUE(
-      http_server_props_->IsAlternativeServiceBroken(cached_broken_service));
-  EXPECT_TRUE(
-      http_server_props_->IsAlternativeServiceBroken(cached_broken_service2));
-  EXPECT_TRUE(
-      http_server_props_->IsAlternativeServiceBroken(prefs_broken_service));
+  EXPECT_TRUE(http_server_props_->IsAlternativeServiceBroken(
+      cached_broken_service, NetworkIsolationKey()));
+  EXPECT_TRUE(http_server_props_->IsAlternativeServiceBroken(
+      cached_broken_service2, NetworkIsolationKey()));
+  EXPECT_TRUE(http_server_props_->IsAlternativeServiceBroken(
+      prefs_broken_service, NetworkIsolationKey()));
 
   // Verify brokenness expiration times.
   // |cached_broken_service|'s expiration time should've been overwritten by the
@@ -1855,19 +1866,19 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   // now which comes from the prefs.
   FastForwardBy(base::TimeDelta::FromMinutes(5) -
                 HttpServerProperties::GetUpdatePrefsDelayForTesting());
-  EXPECT_TRUE(
-      http_server_props_->IsAlternativeServiceBroken(cached_broken_service));
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(cached_broken_service2));
-  EXPECT_TRUE(
-      http_server_props_->IsAlternativeServiceBroken(prefs_broken_service));
+  EXPECT_TRUE(http_server_props_->IsAlternativeServiceBroken(
+      cached_broken_service, NetworkIsolationKey()));
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      cached_broken_service2, NetworkIsolationKey()));
+  EXPECT_TRUE(http_server_props_->IsAlternativeServiceBroken(
+      prefs_broken_service, NetworkIsolationKey()));
   FastForwardBy(base::TimeDelta::FromDays(1));
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(cached_broken_service));
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(cached_broken_service2));
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(prefs_broken_service));
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      cached_broken_service, NetworkIsolationKey()));
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      cached_broken_service2, NetworkIsolationKey()));
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      prefs_broken_service, NetworkIsolationKey()));
 
   // Now that |prefs_broken_service|'s brokenness has expired, it should've
   // been removed from the alternative services info vectors of all servers.
@@ -1890,61 +1901,64 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   // broken.
 
   EXPECT_TRUE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      prefs_broken_service));
+      prefs_broken_service, NetworkIsolationKey()));
   EXPECT_TRUE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      cached_recently_broken_service));
+      cached_recently_broken_service, NetworkIsolationKey()));
   EXPECT_TRUE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      cached_broken_service));
+      cached_broken_service, NetworkIsolationKey()));
   EXPECT_TRUE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      cached_broken_service2));
+      cached_broken_service2, NetworkIsolationKey()));
   // Make sure |prefs_broken_service| has the right expiration delay when marked
   // broken. Since |prefs_broken_service| had no broken_count specified in the
   // prefs, a broken_count value of 1 should have been assumed by
   // |http_server_props_|.
-  http_server_props_->MarkAlternativeServiceBroken(prefs_broken_service);
+  http_server_props_->MarkAlternativeServiceBroken(prefs_broken_service,
+                                                   NetworkIsolationKey());
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
   EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   FastForwardBy(base::TimeDelta::FromMinutes(10) -
                 base::TimeDelta::FromInternalValue(1));
-  EXPECT_TRUE(
-      http_server_props_->IsAlternativeServiceBroken(prefs_broken_service));
+  EXPECT_TRUE(http_server_props_->IsAlternativeServiceBroken(
+      prefs_broken_service, NetworkIsolationKey()));
   FastForwardBy(base::TimeDelta::FromInternalValue(1));
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(prefs_broken_service));
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      prefs_broken_service, NetworkIsolationKey()));
   // Make sure |cached_recently_broken_service| has the right expiration delay
   // when marked broken.
   http_server_props_->MarkAlternativeServiceBroken(
-      cached_recently_broken_service);
+      cached_recently_broken_service, NetworkIsolationKey());
   EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   FastForwardBy(base::TimeDelta::FromMinutes(40) -
                 base::TimeDelta::FromInternalValue(1));
   EXPECT_TRUE(http_server_props_->IsAlternativeServiceBroken(
-      cached_recently_broken_service));
+      cached_recently_broken_service, NetworkIsolationKey()));
   FastForwardBy(base::TimeDelta::FromInternalValue(1));
   EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
-      cached_recently_broken_service));
+      cached_recently_broken_service, NetworkIsolationKey()));
   // Make sure |cached_broken_service| has the right expiration delay when
   // marked broken.
-  http_server_props_->MarkAlternativeServiceBroken(cached_broken_service);
+  http_server_props_->MarkAlternativeServiceBroken(cached_broken_service,
+                                                   NetworkIsolationKey());
   EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   FastForwardBy(base::TimeDelta::FromMinutes(20) -
                 base::TimeDelta::FromInternalValue(1));
-  EXPECT_TRUE(
-      http_server_props_->IsAlternativeServiceBroken(cached_broken_service));
+  EXPECT_TRUE(http_server_props_->IsAlternativeServiceBroken(
+      cached_broken_service, NetworkIsolationKey()));
   FastForwardBy(base::TimeDelta::FromInternalValue(1));
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(cached_broken_service));
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      cached_broken_service, NetworkIsolationKey()));
   // Make sure |cached_broken_service2| has the right expiration delay when
   // marked broken.
-  http_server_props_->MarkAlternativeServiceBroken(cached_broken_service2);
+  http_server_props_->MarkAlternativeServiceBroken(cached_broken_service2,
+                                                   NetworkIsolationKey());
   EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   FastForwardBy(base::TimeDelta::FromMinutes(10) -
                 base::TimeDelta::FromInternalValue(1));
-  EXPECT_TRUE(
-      http_server_props_->IsAlternativeServiceBroken(cached_broken_service2));
+  EXPECT_TRUE(http_server_props_->IsAlternativeServiceBroken(
+      cached_broken_service2, NetworkIsolationKey()));
   FastForwardBy(base::TimeDelta::FromInternalValue(1));
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(cached_broken_service2));
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      cached_broken_service2, NetworkIsolationKey()));
 
   //
   // Verify ServerNetworkStats.
@@ -2387,6 +2401,260 @@ TEST_F(HttpServerPropertiesManagerTest,
       3u,
       properties->GetAlternativeServiceInfos(kServer3, kNetworkIsolationKey2)
           .size());
+}
+
+// Tests a full round trip with a NetworkIsolationKey, using the
+// HttpServerProperties interface and setting alternative services as broken.
+TEST_F(HttpServerPropertiesManagerTest,
+       NetworkIsolationKeyBrokenAltServiceRoundTrip) {
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo1.test/"));
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://foo2.test/"));
+
+  const AlternativeService kAlternativeService1(kProtoHTTP2,
+                                                "alt.service1.test", 443);
+  const AlternativeService kAlternativeService2(kProtoHTTP2,
+                                                "alt.service2.test", 443);
+
+  for (auto save_network_isolation_key_mode : kNetworkIsolationKeyModes) {
+    SCOPED_TRACE(static_cast<int>(save_network_isolation_key_mode));
+
+    // Save prefs using |save_network_isolation_key_mode|.
+    std::unique_ptr<base::DictionaryValue> saved_value;
+    {
+      // Configure the the feature.
+      std::unique_ptr<base::test::ScopedFeatureList> feature_list =
+          SetNetworkIsolationKeyMode(save_network_isolation_key_mode);
+
+      // The NetworkIsolationKey constructor checks the field trial state, so
+      // need to create the keys only after setting up the field trials.
+      const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+      const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+
+      // Create and initialize an HttpServerProperties, must be done after
+      // setting the feature.
+      std::unique_ptr<MockPrefDelegate> pref_delegate =
+          std::make_unique<MockPrefDelegate>();
+      MockPrefDelegate* unowned_pref_delegate = pref_delegate.get();
+      std::unique_ptr<HttpServerProperties> properties =
+          std::make_unique<HttpServerProperties>(std::move(pref_delegate),
+                                                 /*net_log=*/nullptr,
+                                                 GetMockTickClock());
+      unowned_pref_delegate->InitializePrefs(base::DictionaryValue());
+
+      // Set kAlternativeService1 as broken in the context of
+      // kNetworkIsolationKey1, and kAlternativeService2 as broken in the
+      // context of the empty NetworkIsolationKey2, and recently broken in the
+      // context of the empty NetworkIsolationKey.
+      properties->MarkAlternativeServiceBroken(kAlternativeService1,
+                                               kNetworkIsolationKey1);
+      properties->MarkAlternativeServiceRecentlyBroken(kAlternativeService2,
+                                                       NetworkIsolationKey());
+      properties->MarkAlternativeServiceBroken(kAlternativeService2,
+                                               kNetworkIsolationKey2);
+
+      // Verify values were set.
+      EXPECT_TRUE(properties->IsAlternativeServiceBroken(
+          kAlternativeService1, kNetworkIsolationKey1));
+      EXPECT_TRUE(properties->WasAlternativeServiceRecentlyBroken(
+          kAlternativeService1, kNetworkIsolationKey1));
+      // When NetworkIsolationKeys are disabled, kAlternativeService2 is marked
+      // as broken regardless of the values passed to NetworkIsolationKey's
+      // constructor.
+      EXPECT_EQ(
+          save_network_isolation_key_mode == NetworkIsolationKeyMode::kDisabled,
+          properties->IsAlternativeServiceBroken(kAlternativeService2,
+                                                 NetworkIsolationKey()));
+      EXPECT_TRUE(properties->WasAlternativeServiceRecentlyBroken(
+          kAlternativeService2, NetworkIsolationKey()));
+      EXPECT_TRUE(properties->IsAlternativeServiceBroken(
+          kAlternativeService2, kNetworkIsolationKey2));
+      EXPECT_TRUE(properties->WasAlternativeServiceRecentlyBroken(
+          kAlternativeService2, kNetworkIsolationKey2));
+
+      // If NetworkIsolationKeys are enabled, there should be no
+      // cross-contamination of the NetworkIsolationKeys.
+      if (save_network_isolation_key_mode !=
+          NetworkIsolationKeyMode::kDisabled) {
+        EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+            kAlternativeService2, kNetworkIsolationKey1));
+        EXPECT_FALSE(properties->WasAlternativeServiceRecentlyBroken(
+            kAlternativeService2, kNetworkIsolationKey1));
+        EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+            kAlternativeService1, NetworkIsolationKey()));
+        EXPECT_FALSE(properties->WasAlternativeServiceRecentlyBroken(
+            kAlternativeService1, NetworkIsolationKey()));
+        EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+            kAlternativeService1, kNetworkIsolationKey2));
+        EXPECT_FALSE(properties->WasAlternativeServiceRecentlyBroken(
+            kAlternativeService1, kNetworkIsolationKey2));
+      }
+
+      // Wait until the data's been written to prefs, and then create a copy of
+      // the prefs data.
+      FastForwardBy(HttpServerProperties::GetUpdatePrefsDelayForTesting());
+      saved_value =
+          unowned_pref_delegate->GetServerProperties()->CreateDeepCopy();
+    }
+
+    // Now try and load the data in each of the feature modes.
+    for (auto load_network_isolation_key_mode : kNetworkIsolationKeyModes) {
+      SCOPED_TRACE(static_cast<int>(load_network_isolation_key_mode));
+
+      std::unique_ptr<base::test::ScopedFeatureList> feature_list =
+          SetNetworkIsolationKeyMode(load_network_isolation_key_mode);
+
+      // The NetworkIsolationKey constructor checks the field trial state, so
+      // need to create the keys only after setting up the field trials.
+      const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+      const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+
+      // Create a new HttpServerProperties, loading the data from before.
+      std::unique_ptr<MockPrefDelegate> pref_delegate =
+          std::make_unique<MockPrefDelegate>();
+      MockPrefDelegate* unowned_pref_delegate = pref_delegate.get();
+      std::unique_ptr<HttpServerProperties> properties =
+          std::make_unique<HttpServerProperties>(std::move(pref_delegate),
+                                                 /*net_log=*/nullptr,
+                                                 GetMockTickClock());
+      unowned_pref_delegate->InitializePrefs(*saved_value);
+
+      if (save_network_isolation_key_mode ==
+          NetworkIsolationKeyMode::kDisabled) {
+        // If NetworkIsolationKey was disabled when saving, it was saved with an
+        // empty NetworkIsolationKey, which should always be loaded
+        // successfully. This is needed to continue to support consumers that
+        // don't use NetworkIsolationKeys.
+        EXPECT_TRUE(properties->IsAlternativeServiceBroken(
+            kAlternativeService1, NetworkIsolationKey()));
+        EXPECT_TRUE(properties->WasAlternativeServiceRecentlyBroken(
+            kAlternativeService1, NetworkIsolationKey()));
+        EXPECT_TRUE(properties->IsAlternativeServiceBroken(
+            kAlternativeService2, NetworkIsolationKey()));
+        EXPECT_TRUE(properties->WasAlternativeServiceRecentlyBroken(
+            kAlternativeService2, NetworkIsolationKey()));
+      } else if (save_network_isolation_key_mode ==
+                 load_network_isolation_key_mode) {
+        // If the save and load modes are the same, the load should succeed, and
+        // the network isolation keys should match.
+        EXPECT_TRUE(properties->IsAlternativeServiceBroken(
+            kAlternativeService1, kNetworkIsolationKey1));
+        EXPECT_TRUE(properties->WasAlternativeServiceRecentlyBroken(
+            kAlternativeService1, kNetworkIsolationKey1));
+        // When NetworkIsolationKeys are disabled, kAlternativeService2 is
+        // marked as broken regardless of the values passed to
+        // NetworkIsolationKey's constructor.
+        EXPECT_EQ(save_network_isolation_key_mode ==
+                      NetworkIsolationKeyMode::kDisabled,
+                  properties->IsAlternativeServiceBroken(
+                      kAlternativeService2, NetworkIsolationKey()));
+        EXPECT_TRUE(properties->WasAlternativeServiceRecentlyBroken(
+            kAlternativeService2, NetworkIsolationKey()));
+        EXPECT_TRUE(properties->IsAlternativeServiceBroken(
+            kAlternativeService2, kNetworkIsolationKey2));
+        EXPECT_TRUE(properties->WasAlternativeServiceRecentlyBroken(
+            kAlternativeService2, kNetworkIsolationKey2));
+
+        // If NetworkIsolationKeys are enabled, there should be no
+        // cross-contamination of the NetworkIsolationKeys.
+        if (save_network_isolation_key_mode !=
+            NetworkIsolationKeyMode::kDisabled) {
+          EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+              kAlternativeService2, kNetworkIsolationKey1));
+          EXPECT_FALSE(properties->WasAlternativeServiceRecentlyBroken(
+              kAlternativeService2, kNetworkIsolationKey1));
+          EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+              kAlternativeService1, NetworkIsolationKey()));
+          EXPECT_FALSE(properties->WasAlternativeServiceRecentlyBroken(
+              kAlternativeService1, NetworkIsolationKey()));
+          EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+              kAlternativeService1, kNetworkIsolationKey2));
+          EXPECT_FALSE(properties->WasAlternativeServiceRecentlyBroken(
+              kAlternativeService1, kNetworkIsolationKey2));
+        }
+      } else {
+        // Otherwise, only the values set with an empty NetworkIsolationKey
+        // should have been loaded successfully.
+        EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+            kAlternativeService1, kNetworkIsolationKey1));
+        EXPECT_FALSE(properties->WasAlternativeServiceRecentlyBroken(
+            kAlternativeService1, kNetworkIsolationKey1));
+        EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+            kAlternativeService2, NetworkIsolationKey()));
+        EXPECT_TRUE(properties->WasAlternativeServiceRecentlyBroken(
+            kAlternativeService2, NetworkIsolationKey()));
+        EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+            kAlternativeService2, kNetworkIsolationKey2));
+        // If the load mode is NetworkIsolationKeyMode::kDisabled,
+        // kNetworkIsolationKey2 is NetworkIsolationKey().
+        EXPECT_EQ(load_network_isolation_key_mode ==
+                      NetworkIsolationKeyMode::kDisabled,
+                  properties->WasAlternativeServiceRecentlyBroken(
+                      kAlternativeService2, kNetworkIsolationKey2));
+
+        // There should be no cross-contamination of NetworkIsolationKeys, if
+        // NetworkIsolationKeys are enabled.
+        if (load_network_isolation_key_mode !=
+            NetworkIsolationKeyMode::kDisabled) {
+          EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+              kAlternativeService2, kNetworkIsolationKey1));
+          EXPECT_FALSE(properties->WasAlternativeServiceRecentlyBroken(
+              kAlternativeService2, kNetworkIsolationKey1));
+          EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+              kAlternativeService1, NetworkIsolationKey()));
+          EXPECT_FALSE(properties->WasAlternativeServiceRecentlyBroken(
+              kAlternativeService1, NetworkIsolationKey()));
+          EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+              kAlternativeService1, kNetworkIsolationKey2));
+          EXPECT_FALSE(properties->WasAlternativeServiceRecentlyBroken(
+              kAlternativeService1, kNetworkIsolationKey2));
+        }
+      }
+    }
+  }
+}
+
+// Make sure broken alt services with opaque origins aren't saved.
+TEST_F(HttpServerPropertiesManagerTest,
+       NetworkIsolationKeyBrokenAltServiceOpaqueOrigin) {
+  const url::Origin kOpaqueOrigin =
+      url::Origin::Create(GURL("data:text/plain,Hello World"));
+  const NetworkIsolationKey kNetworkIsolationKey(kOpaqueOrigin, kOpaqueOrigin);
+  const AlternativeService kAlternativeService(kProtoHTTP2, "alt.service1.test",
+                                               443);
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPartitionHttpServerPropertiesByNetworkIsolationKey);
+
+  // Create and initialize an HttpServerProperties, must be done after
+  // setting the feature.
+  std::unique_ptr<MockPrefDelegate> pref_delegate =
+      std::make_unique<MockPrefDelegate>();
+  MockPrefDelegate* unowned_pref_delegate = pref_delegate.get();
+  std::unique_ptr<HttpServerProperties> properties =
+      std::make_unique<HttpServerProperties>(std::move(pref_delegate),
+                                             /*net_log=*/nullptr,
+                                             GetMockTickClock());
+  unowned_pref_delegate->InitializePrefs(base::DictionaryValue());
+
+  properties->MarkAlternativeServiceBroken(kAlternativeService,
+                                           kNetworkIsolationKey);
+
+  // Verify values were set.
+  EXPECT_TRUE(properties->IsAlternativeServiceBroken(kAlternativeService,
+                                                     kNetworkIsolationKey));
+  EXPECT_TRUE(properties->WasAlternativeServiceRecentlyBroken(
+      kAlternativeService, kNetworkIsolationKey));
+
+  // Wait until the data's been written to prefs, and then create a copy of
+  // the prefs data.
+  FastForwardBy(HttpServerProperties::GetUpdatePrefsDelayForTesting());
+
+  // No information should have been saved to prefs.
+  std::string preferences_json;
+  base::JSONWriter::Write(*unowned_pref_delegate->GetServerProperties(),
+                          &preferences_json);
+  EXPECT_EQ("{\"servers\":[],\"version\":5}", preferences_json);
 }
 
 }  // namespace net

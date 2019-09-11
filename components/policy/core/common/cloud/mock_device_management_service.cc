@@ -37,12 +37,6 @@ void DoURLCompletion(base::WeakPtr<DeviceManagementService> service,
 
 }  // namespace
 
-ACTION_P4(CreateSyncAction, service, net_error, response_code, payload) {
-  // Just respond to the job immediately.
-  DoURLCompletion(service->GetWeakPtr(), arg0->GetWeakPtr(), net_error,
-                  response_code, payload);
-}
-
 ACTION_P5(CreateAsyncAction,
           service,
           task_runner,
@@ -114,7 +108,7 @@ MockDeviceManagementService::MockDeviceManagementService()
 MockDeviceManagementService::~MockDeviceManagementService() {}
 
 testing::Action<MockDeviceManagementService::StartJobFunction>
-MockDeviceManagementService::StartJobOKSync(
+MockDeviceManagementService::StartJobOKAsync(
     const enterprise_management::DeviceManagementResponse& response) {
   // SerializeToString() may fail, that's OK.  Some tests explicitly use
   // malformed responses.
@@ -122,21 +116,7 @@ MockDeviceManagementService::StartJobOKSync(
   if (response.IsInitialized())
     response.SerializeToString(&payload);
 
-  return CreateSyncAction(this, net::OK, kSuccess, payload);
-}
-
-testing::Action<MockDeviceManagementService::StartJobFunction>
-MockDeviceManagementService::StartJobSync(
-    int net_error,
-    int response_code,
-    const enterprise_management::DeviceManagementResponse& response) {
-  // SerializeToString() may fail, that's OK.  Some tests explicitly use
-  // malformed responses.
-  std::string payload;
-  if (response.IsInitialized())
-    response.SerializeToString(&payload);
-
-  return CreateSyncAction(this, net_error, response_code, payload);
+  return StartJobAsync(net::OK, kSuccess, payload);
 }
 
 testing::Action<MockDeviceManagementService::StartJobFunction>

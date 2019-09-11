@@ -31,7 +31,6 @@
 #include "cc/layers/effect_tree_layer_list_iterator.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/layer.h"
-#include "cc/layers/layer_list_iterator.h"
 #include "cc/layers/render_surface_impl.h"
 #include "cc/layers/scrollbar_layer_impl_base.h"
 #include "cc/resources/ui_resource_request.h"
@@ -122,7 +121,6 @@ LayerTreeImpl::LayerTreeImpl(
     : host_impl_(host_impl),
       source_frame_number_(-1),
       is_first_frame_after_commit_tracker_(-1),
-      root_layer_for_testing_(nullptr),
       hud_layer_(nullptr),
       background_color_(0),
       last_scrolled_scroll_node_index_(ScrollTree::kInvalidNodeId),
@@ -133,7 +131,6 @@ LayerTreeImpl::LayerTreeImpl(
       device_scale_factor_(1.f),
       painted_device_scale_factor_(1.f),
       elastic_overscroll_(elastic_overscroll),
-      layers_(new OwnedLayerImplList),
       needs_update_draw_properties_(true),
       scrollbar_geometries_need_update_(false),
       needs_full_tree_sync_(true),
@@ -154,7 +151,7 @@ LayerTreeImpl::~LayerTreeImpl() {
   // Need to explicitly clear the tree prior to destroying this so that
   // the LayerTreeImpl pointer is still valid in the LayerImpl dtor.
   DCHECK(LayerListIsEmpty());
-  DCHECK(layers_->empty());
+  DCHECK(layers_.empty());
 }
 
 void LayerTreeImpl::Shutdown() {
@@ -162,45 +159,27 @@ void LayerTreeImpl::Shutdown() {
   BreakSwapPromises(IsActiveTree() ? SwapPromise::SWAP_FAILS
                                    : SwapPromise::ACTIVATION_FAILS);
   DCHECK(LayerListIsEmpty());
+  DCHECK(layers_.empty());
 }
 
 void LayerTreeImpl::ReleaseResources() {
-#if DCHECK_IS_ON()
-  // These DCHECKs catch tests that add layers to the tree but fail to build the
-  // layer list afterward.
-  LayerListIterator<LayerImpl> it(root_layer_for_testing_);
-  size_t i = 0;
-  for (; it != LayerListIterator<LayerImpl>(nullptr); ++it, ++i) {
-    DCHECK_LT(i, layer_list_.size());
-    DCHECK_EQ(layer_list_[i], *it);
-  }
-#endif
-
-  if (!LayerListIsEmpty()) {
-    LayerTreeHostCommon::CallFunctionForEveryLayer(
-        this, [](LayerImpl* layer) { layer->ReleaseResources(); });
-  }
+  for (auto& layer : layers_)
+    layer->ReleaseResources();
 }
 
 void LayerTreeImpl::OnPurgeMemory() {
-  if (!LayerListIsEmpty()) {
-    LayerTreeHostCommon::CallFunctionForEveryLayer(
-        this, [](LayerImpl* layer) { layer->OnPurgeMemory(); });
-  }
+  for (auto& layer : layers_)
+    layer->OnPurgeMemory();
 }
 
 void LayerTreeImpl::ReleaseTileResources() {
-  if (!LayerListIsEmpty()) {
-    LayerTreeHostCommon::CallFunctionForEveryLayer(
-        this, [](LayerImpl* layer) { layer->ReleaseTileResources(); });
-  }
+  for (auto& layer : layers_)
+    layer->ReleaseTileResources();
 }
 
 void LayerTreeImpl::RecreateTileResources() {
-  if (!LayerListIsEmpty()) {
-    LayerTreeHostCommon::CallFunctionForEveryLayer(
-        this, [](LayerImpl* layer) { layer->RecreateTileResources(); });
-  }
+  for (auto& layer : layers_)
+    layer->RecreateTileResources();
 }
 
 void LayerTreeImpl::DidUpdateScrollOffset(ElementId id) {
@@ -321,35 +300,14 @@ bool LayerTreeImpl::LayerListIsEmpty() const {
 }
 
 void LayerTreeImpl::SetRootLayerForTesting(std::unique_ptr<LayerImpl> layer) {
-  if (root_layer_for_testing_ && layer.get() != root_layer_for_testing_)
-    RemoveLayer(root_layer_for_testing_->id());
-  root_layer_for_testing_ = layer.get();
-  ClearLayerList();
-  if (layer) {
+  DetachLayers();
+  if (layer)
     AddLayer(std::move(layer));
-    BuildLayerListForTesting();
-  }
   host_impl_->OnCanDrawStateChangedForTree();
 }
 
 void LayerTreeImpl::OnCanDrawStateChangedForTree() {
   host_impl_->OnCanDrawStateChangedForTree();
-}
-
-void LayerTreeImpl::AddToLayerList(LayerImpl* layer) {
-  layer_list_.push_back(layer);
-}
-
-void LayerTreeImpl::ClearLayerList() {
-  layer_list_.clear();
-}
-
-void LayerTreeImpl::BuildLayerListForTesting() {
-  ClearLayerList();
-  LayerListIterator<LayerImpl> it(root_layer_for_testing_);
-  for (; it != LayerListIterator<LayerImpl>(nullptr); ++it) {
-    AddToLayerList(*it);
-  }
 }
 
 void LayerTreeImpl::InvalidateRegionForImages(
@@ -509,14 +467,17 @@ gfx::ScrollOffset LayerTreeImpl::TotalMaxScrollOffset() const {
   return offset;
 }
 
-std::unique_ptr<OwnedLayerImplList> LayerTreeImpl::DetachLayers() {
-  root_layer_for_testing_ = nullptr;
+OwnedLayerImplList LayerTreeImpl::DetachLayers() {
   layer_list_.clear();
   render_surface_list_.clear();
   set_needs_update_draw_properties();
-  std::unique_ptr<OwnedLayerImplList> ret = std::move(layers_);
-  layers_.reset(new OwnedLayerImplList);
-  return ret;
+  return std::move(layers_);
+}
+
+OwnedLayerImplList LayerTreeImpl::DetachLayersKeepingRootLayerForTesting() {
+  auto layers = DetachLayers();
+  SetRootLayerForTesting(std::move(layers[0]));
+  return layers;
 }
 
 void LayerTreeImpl::SetPropertyTrees(PropertyTrees* property_trees) {
@@ -1338,15 +1299,10 @@ const ScrollNode* LayerTreeImpl::OuterViewportScrollNode() const {
 }
 
 // For unit tests, we use the layer's id as its element id.
-static void SetElementIdForTesting(LayerImpl* layer) {
-  layer->SetElementId(LayerIdToElementIdForTesting(layer->id()));
-}
-
 void LayerTreeImpl::SetElementIdsForTesting() {
-  LayerListIterator<LayerImpl> it(root_layer_for_testing_);
-  for (; it != LayerListIterator<LayerImpl>(nullptr); ++it) {
-    if (!it->element_id())
-      SetElementIdForTesting(*it);
+  for (auto& layer : layers_) {
+    if (!layer->element_id())
+      layer->SetElementId(LayerIdToElementIdForTesting(layer->id()));
   }
 }
 
@@ -1599,24 +1555,21 @@ void LayerTreeImpl::UnregisterLayer(LayerImpl* layer) {
   layer_id_map_.erase(layer->id());
 }
 
-// These manage ownership of the LayerImpl.
 void LayerTreeImpl::AddLayer(std::unique_ptr<LayerImpl> layer) {
-  DCHECK(!base::Contains(*layers_, layer));
-  DCHECK(layer);
-  layers_->push_back(std::move(layer));
-  set_needs_update_draw_properties();
+  DCHECK(!base::Contains(layer_list_, layer.get()));
+  layer_list_.push_back(layer.get());
+  AddOwnedLayer(std::move(layer));
 }
 
-std::unique_ptr<LayerImpl> LayerTreeImpl::RemoveLayer(int id) {
-  for (auto it = layers_->begin(); it != layers_->end(); ++it) {
-    if ((*it) && (*it)->id() != id)
-      continue;
-    std::unique_ptr<LayerImpl> ret = std::move(*it);
-    set_needs_update_draw_properties();
-    layers_->erase(it);
-    return ret;
-  }
-  return nullptr;
+void LayerTreeImpl::AddMaskLayer(std::unique_ptr<LayerImpl> layer) {
+  AddOwnedLayer(std::move(layer));
+}
+
+void LayerTreeImpl::AddOwnedLayer(std::unique_ptr<LayerImpl> layer) {
+  DCHECK(!base::Contains(layers_, layer));
+  DCHECK(layer);
+  layers_.push_back(std::move(layer));
+  set_needs_update_draw_properties();
 }
 
 size_t LayerTreeImpl::NumLayers() {
@@ -1633,10 +1586,8 @@ void LayerTreeImpl::DidBecomeActive() {
   // if we were in a good state.
   host_impl_->ResetRequiresHighResToDraw();
 
-  if (!layer_list_.empty()) {
-    LayerTreeHostCommon::CallFunctionForEveryLayer(
-        this, [](LayerImpl* layer) { layer->DidBecomeActive(); });
-  }
+  for (auto& layer : layers_)
+    layer->DidBecomeActive();
 
   for (const auto& swap_promise : swap_promise_list_)
     swap_promise->DidActivate();
@@ -2487,7 +2438,7 @@ bool LayerTreeImpl::TakeForceSendMetadataRequest() {
 void LayerTreeImpl::ResetAllChangeTracking() {
   layers_that_should_push_properties_.clear();
   // Iterate over all layers, including masks.
-  for (auto& layer : *layers_)
+  for (auto& layer : layers_)
     layer->ResetChangeTracking();
   property_trees_.ResetAllChangeTracking();
 }
@@ -2502,20 +2453,6 @@ std::string LayerTreeImpl::LayerListAsJson() const {
       base::JSONWriter::OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION |
           base::JSONWriter::OPTIONS_PRETTY_PRINT,
       &str);
-  return str;
-}
-
-std::string LayerTreeImpl::LayerTreeAsJson() const {
-  std::string str;
-  if (root_layer_for_testing_) {
-    std::unique_ptr<base::Value> json(
-        root_layer_for_testing_->LayerTreeAsJson());
-    base::JSONWriter::WriteWithOptions(
-        *json,
-        base::JSONWriter::OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION |
-            base::JSONWriter::OPTIONS_PRETTY_PRINT,
-        &str);
-  }
   return str;
 }
 

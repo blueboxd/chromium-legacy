@@ -7,8 +7,8 @@
 
 #include "base/values.h"
 #include "ios/chrome/browser/web/java_script_console/java_script_console_tab_helper_delegate.h"
-#include "ios/web/public/web_state/web_state_observer.h"
-#import "ios/web/public/web_state/web_state_user_data.h"
+#include "ios/web/public/web_state_observer.h"
+#import "ios/web/public/web_state_user_data.h"
 
 namespace web {
 class WebFrame;

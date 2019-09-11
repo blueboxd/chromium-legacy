@@ -1264,6 +1264,42 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
   }
 }
 
+IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
+                       BadCableExtensionVersions) {
+  // The caBLE extension should only contain v1 data. Test that nothing crashes
+  // if a site tries to set other versions.
+
+  InjectVirtualFidoDeviceFactory();
+  GetParameters parameters;
+  parameters.allow_credentials =
+      "allowCredentials: [{ type: 'public-key',"
+      "  id: new TextEncoder().encode('allowedCredential'),"
+      "  transports: ['cable']}],"
+      "extensions: {"
+      "  cableAuthentication: [{"
+      "    version: 1,"
+      "    clientEid: new Uint8Array(Array(16).fill(1)),"
+      "    authenticatorEid: new Uint8Array(Array(16).fill(2)),"
+      "    sessionPreKey: new Uint8Array(Array(32).fill(3)),"
+      "  },{"
+      "    version: 2,"
+      "    clientEid: new Uint8Array(Array(16).fill(1)),"
+      "    authenticatorEid: new Uint8Array(Array(16).fill(2)),"
+      "    sessionPreKey: new Uint8Array(Array(32).fill(3)),"
+      "  },{"
+      "    version: 3,"
+      "    clientEid: new Uint8Array(Array(16).fill(1)),"
+      "    authenticatorEid: new Uint8Array(Array(16).fill(2)),"
+      "    sessionPreKey: new Uint8Array(Array(32).fill(3)),"
+      "  }]"
+      "}";
+  std::string result;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      shell()->web_contents()->GetMainFrame(),
+      BuildGetCallWithParameters(parameters), &result));
+  ASSERT_EQ(kNotAllowedErrorMessage, result);
+}
+
 #if defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest, WinMakeCredential) {
   NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title1.html"));

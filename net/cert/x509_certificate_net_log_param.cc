@@ -21,7 +21,7 @@ base::Value NetLogX509CertificateParams(const X509Certificate* certificate) {
   std::vector<std::string> encoded_chain;
   certificate->GetPEMEncodedChain(&encoded_chain);
   for (auto& pem : encoded_chain)
-    certs.GetList().emplace_back(std::move(pem));
+    certs.Append(std::move(pem));
   dict.SetKey("certificates", std::move(certs));
   return dict;
 }

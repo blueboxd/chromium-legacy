@@ -6,7 +6,6 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/common/extensions/api/safe_browsing_private.h"
@@ -114,10 +113,6 @@ class SafeBrowsingPrivateEventRouterTest : public testing::Test {
     SafeBrowsingPrivateEventRouterFactory::GetInstance()->SetTestingFactory(
         profile_, base::BindRepeating(&BuildSafeBrowsingPrivateEventRouter));
 
-    // Make sure real-time feature is eanbled so that the tests will run.
-    scoped_feature_list_.InitAndEnableFeature(
-        SafeBrowsingPrivateEventRouter::kRealtimeReportingFeature);
-
     // Set a mock cloud policy client in the router.  The router will own the
     // client, but a pointer to the client is maintained in the test class to
     // manage expectations.
@@ -129,7 +124,6 @@ class SafeBrowsingPrivateEventRouterTest : public testing::Test {
 
  protected:
   content::BrowserTaskEnvironment task_environment_;
-  base::test::ScopedFeatureList scoped_feature_list_;
   TestingProfileManager profile_manager_;
   TestingProfile* profile_;
   extensions::TestEventRouter* event_router_ = nullptr;

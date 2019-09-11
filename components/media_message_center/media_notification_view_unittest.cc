@@ -84,6 +84,10 @@ class MockMediaNotificationContainer : public MediaNotificationContainer {
 
   // MediaNotificationContainer implementation.
   MOCK_METHOD1(OnExpanded, void(bool expanded));
+  MOCK_METHOD1(
+      OnMediaSessionInfoChanged,
+      void(const media_session::mojom::MediaSessionInfoPtr& session_info));
+  MOCK_METHOD1(OnForegoundColorChanged, void(SkColor color));
 
   MediaNotificationView* view() const { return view_.get(); }
   void SetView(std::unique_ptr<MediaNotificationView> view) {
@@ -375,6 +379,8 @@ TEST_F(MediaNotificationViewTest, PlayPauseButtonTooltipCheck) {
   EnableAction(MediaSessionAction::kPlay);
   EnableAction(MediaSessionAction::kPause);
 
+  EXPECT_CALL(container(), OnMediaSessionInfoChanged(_));
+
   auto* button = GetButtonForAction(MediaSessionAction::kPlay);
   base::string16 tooltip = button->GetTooltipText(gfx::Point());
   EXPECT_FALSE(tooltip.empty());
@@ -420,6 +426,7 @@ TEST_F(MediaNotificationViewTest, PlayButtonClick) {
 TEST_F(MediaNotificationViewTest, PauseButtonClick) {
   EXPECT_CALL(controller(), LogMediaSessionActionButtonPressed(_));
   EnableAction(MediaSessionAction::kPause);
+  EXPECT_CALL(container(), OnMediaSessionInfoChanged(_));
 
   EXPECT_EQ(0, media_controller()->suspend_count());
 
@@ -692,6 +699,7 @@ TEST_F(MediaNotificationViewTest, UpdateArtworkFromItem) {
   int title_artist_width = title_artist_row()->width();
   const SkColor accent = header_row()->accent_color_for_testing();
   gfx::Size size = view()->size();
+  EXPECT_CALL(container(), OnForegoundColorChanged(_)).Times(2);
 
   SkBitmap image;
   image.allocN32Pixels(10, 10);
@@ -900,6 +908,7 @@ TEST_F(MediaNotificationViewTest, Freezing_DoNotUpdateImage) {
   SkBitmap image;
   image.allocN32Pixels(10, 10);
   image.eraseColor(SK_ColorMAGENTA);
+  EXPECT_CALL(container(), OnForegoundColorChanged(_)).Times(0);
 
   GetItem()->Freeze();
   GetItem()->MediaControllerImageChanged(
@@ -911,6 +920,8 @@ TEST_F(MediaNotificationViewTest, Freezing_DoNotUpdateImage) {
 TEST_F(MediaNotificationViewTest, Freezing_DoNotUpdatePlaybackState) {
   EnableAction(MediaSessionAction::kPlay);
   EnableAction(MediaSessionAction::kPause);
+
+  EXPECT_CALL(container(), OnMediaSessionInfoChanged(_)).Times(0);
 
   GetItem()->Freeze();
 

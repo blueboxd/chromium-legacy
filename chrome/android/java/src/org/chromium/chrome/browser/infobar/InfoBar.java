@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.InfoBarContainerLayout.Item.InfoBarPriority;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
@@ -247,7 +248,7 @@ public abstract class InfoBar implements InfoBarView {
     @InfoBarIdentifier
     public int getInfoBarIdentifier() {
         if (mNativeInfoBarPtr == 0) return InfoBarIdentifier.INVALID;
-        return nativeGetInfoBarIdentifier(mNativeInfoBarPtr);
+        return InfoBarJni.get().getInfoBarIdentifier(mNativeInfoBarPtr, InfoBar.this);
     }
 
     /**
@@ -315,7 +316,7 @@ public abstract class InfoBar implements InfoBarView {
 
     @Override
     public void onLinkClicked() {
-        if (mNativeInfoBarPtr != 0) nativeOnLinkClicked(mNativeInfoBarPtr);
+        if (mNativeInfoBarPtr != 0) InfoBarJni.get().onLinkClicked(mNativeInfoBarPtr, InfoBar.this);
     }
 
     /**
@@ -323,13 +324,15 @@ public abstract class InfoBar implements InfoBarView {
      * @param action The type of action defined in {@link ActionType} in this class.
      */
     protected void onButtonClicked(@ActionType int action) {
-        if (mNativeInfoBarPtr != 0) nativeOnButtonClicked(mNativeInfoBarPtr, action);
+        if (mNativeInfoBarPtr != 0) {
+            InfoBarJni.get().onButtonClicked(mNativeInfoBarPtr, InfoBar.this, action);
+        }
     }
 
     @Override
     public void onCloseButtonClicked() {
         if (mNativeInfoBarPtr != 0 && !mIsDismissed) {
-            nativeOnCloseButtonClicked(mNativeInfoBarPtr);
+            InfoBarJni.get().onCloseButtonClicked(mNativeInfoBarPtr, InfoBar.this);
         }
     }
 
@@ -338,8 +341,12 @@ public abstract class InfoBar implements InfoBarView {
     }
 
     @InfoBarIdentifier
-    private native int nativeGetInfoBarIdentifier(long nativeInfoBarAndroid);
-    private native void nativeOnLinkClicked(long nativeInfoBarAndroid);
-    private native void nativeOnButtonClicked(long nativeInfoBarAndroid, int action);
-    private native void nativeOnCloseButtonClicked(long nativeInfoBarAndroid);
+
+    @NativeMethods
+    interface Natives {
+        int getInfoBarIdentifier(long nativeInfoBarAndroid, InfoBar caller);
+        void onLinkClicked(long nativeInfoBarAndroid, InfoBar caller);
+        void onButtonClicked(long nativeInfoBarAndroid, InfoBar caller, int action);
+        void onCloseButtonClicked(long nativeInfoBarAndroid, InfoBar caller);
+    }
 }

@@ -8,18 +8,15 @@
 namespace autofill {
 
 class WebauthnOfferDialogController;
+class WebauthnOfferDialogModel;
 
-// An interface which displays the dialog to offer the option of using device's
-// platform authenticator instead of CVC to verify the card in the future.
+// The dialog to offer the option of using device's platform authenticator
+// instead of CVC to verify the card in the future. Returns the reference to the
+// model of the dialog.
 class WebauthnOfferDialogView {
  public:
-  static WebauthnOfferDialogView* CreateAndShow(
+  static WebauthnOfferDialogModel* CreateAndShow(
       WebauthnOfferDialogController* controller);
-
-  virtual void Hide() = 0;
-
-  // Reinitializes the content in the dialog and resizes.
-  virtual void RefreshContent() = 0;
 };
 
 }  // namespace autofill

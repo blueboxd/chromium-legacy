@@ -62,7 +62,7 @@ public class MockSafeBrowsingApiHandler implements SafeBrowsingApiHandler {
     }
 
     @Override
-    public boolean startAllowlistLookup(final String uri, int[] threatsOfInterest) {
+    public boolean startAllowlistLookup(final String uri, int threatType) {
         return false;
     }
 

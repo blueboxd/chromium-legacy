@@ -22,6 +22,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -52,7 +53,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/download/public/common/download_features.h"
+#include "components/download/public/common/download_task_runner.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "components/guest_view/browser/guest_view_manager_factory.h"
@@ -2745,57 +2746,34 @@ std::unique_ptr<net::test_server::HttpResponse> HandleDownloadRequestWithCookie(
   return std::move(response);
 }
 
-class DownloadHistoryWaiter : public DownloadHistory::Observer {
+// Class for waiting for download manager to be initiailized.
+class DownloadManagerWaiter : public content::DownloadManager::Observer {
  public:
-  explicit DownloadHistoryWaiter(content::BrowserContext* browser_context) {
-    DownloadCoreService* service =
-        DownloadCoreServiceFactory::GetForBrowserContext(browser_context);
-    download_history_ = service->GetDownloadHistory();
-    download_history_->AddObserver(this);
+  explicit DownloadManagerWaiter(content::DownloadManager* download_manager)
+      : initialized_(false), download_manager_(download_manager) {
+    download_manager_->AddObserver(this);
   }
 
-  ~DownloadHistoryWaiter() override { download_history_->RemoveObserver(this); }
+  ~DownloadManagerWaiter() override { download_manager_->RemoveObserver(this); }
 
-  void WaitForStored(size_t download_count) {
-    if (stored_downloads_.size() >= download_count)
+  void WaitForInitialized() {
+    if (initialized_)
       return;
-    stored_download_target_ = download_count;
-    Wait();
-  }
-
-  void WaitForHistoryLoad() {
-    if (history_query_complete_)
-      return;
-    Wait();
-  }
-
- private:
-  void Wait() {
     base::RunLoop run_loop;
     quit_closure_ = run_loop.QuitClosure();
     run_loop.Run();
   }
 
-  void OnDownloadStored(download::DownloadItem* item,
-                        const history::DownloadRow& info) override {
-    stored_downloads_.insert(item);
-    if (!quit_closure_.is_null() &&
-        stored_downloads_.size() >= stored_download_target_) {
-      std::move(quit_closure_).Run();
-    }
-  }
-
-  void OnHistoryQueryComplete() override {
-    history_query_complete_ = true;
-    if (!quit_closure_.is_null())
+  void OnManagerInitialized() override {
+    initialized_ = true;
+    if (quit_closure_)
       std::move(quit_closure_).Run();
   }
 
-  std::unordered_set<download::DownloadItem*> stored_downloads_;
-  size_t stored_download_target_ = 0;
-  bool history_query_complete_ = false;
+ private:
   base::Closure quit_closure_;
-  DownloadHistory* download_history_ = nullptr;
+  bool initialized_;
+  content::DownloadManager* download_manager_;
 };
 
 }  // namespace
@@ -2894,15 +2872,14 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_DownloadCookieIsolation) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, PRE_DownloadCookieIsolation_CrossSession) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(
-      download::features::kDownloadDBForNewDownloads);
-
   embedded_test_server()->RegisterRequestHandler(
       base::BindRepeating(&HandleDownloadRequestWithCookie));
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
   LoadAndLaunchPlatformApp("web_view/download_cookie_isolation",
                            "created-webviews");
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner(
+      new base::TestMockTimeTaskRunner);
+  download::SetDownloadDBTaskRunnerForTesting(task_runner);
 
   content::WebContents* web_contents = GetFirstAppWindowWebContents();
   ASSERT_TRUE(web_contents);
@@ -2910,9 +2887,6 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, PRE_DownloadCookieIsolation_CrossSession) {
   content::DownloadManager* download_manager =
       content::BrowserContext::GetDownloadManager(
           web_contents->GetBrowserContext());
-
-  DownloadHistoryWaiter history_waiter(web_contents->GetBrowserContext());
-
   std::unique_ptr<content::DownloadTestObserver> interrupted_observer(
       new content::DownloadTestObserverInterrupted(
           download_manager, 2,
@@ -2945,7 +2919,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, PRE_DownloadCookieIsolation_CrossSession) {
   interrupted_observer->WaitForFinished();
 
   // Wait for both downloads to be stored.
-  history_waiter.WaitForStored(2);
+  task_runner->FastForwardUntilNoTasksRemain();
 
   content::EnsureCookiesFlushed(profile());
 }
@@ -2961,21 +2935,21 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, PRE_DownloadCookieIsolation_CrossSession) {
 
 IN_PROC_BROWSER_TEST_F(WebViewTest,
                        MAYBE_DownloadCookieIsolation_CrossSession) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(
-      download::features::kDownloadDBForNewDownloads);
-
   embedded_test_server()->RegisterRequestHandler(
       base::BindRepeating(&HandleDownloadRequestWithCookie));
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
+
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner(
+      new base::TestMockTimeTaskRunner);
+  download::SetDownloadDBTaskRunnerForTesting(task_runner);
 
   content::BrowserContext* browser_context = profile();
   content::DownloadManager* download_manager =
       content::BrowserContext::GetDownloadManager(browser_context);
 
-  DownloadHistoryWaiter history_waiter(browser_context);
-  history_waiter.WaitForHistoryLoad();
-
+  task_runner->FastForwardUntilNoTasksRemain();
+  DownloadManagerWaiter waiter(download_manager);
+  waiter.WaitForInitialized();
   content::DownloadManager::DownloadVector saved_downloads;
   download_manager->GetAllDownloads(&saved_downloads);
   ASSERT_EQ(2u, saved_downloads.size());
@@ -3018,7 +2992,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest,
     ASSERT_TRUE(download->GetFullPath().empty());
     EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
               download->GetLastReason());
-    download->Resume(false);
+    download->Resume(true);
   }
 
   completion_observer->WaitForFinished();

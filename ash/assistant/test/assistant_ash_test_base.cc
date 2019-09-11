@@ -38,8 +38,7 @@ void AssistantAshTestBase::SetUp() {
 
   // At this point our Assistant service is ready for use.
   // Indicate this by changing status from NOT_READY to STOPPED.
-  AssistantState::Get()->NotifyStatusChanged(
-      mojom::VoiceInteractionState::STOPPED);
+  AssistantState::Get()->NotifyStatusChanged(mojom::AssistantState::READY);
 
   DisableAnimations();
 }

@@ -35,7 +35,7 @@ AssistantStateBase::~AssistantStateBase() = default;
 std::string AssistantStateBase::ToString() const {
   std::stringstream result;
   result << "AssistantState:";
-  result << voice_interaction_state_;
+  result << assistant_state_;
   PRINT_VALUE(settings_enabled);
   PRINT_VALUE(context_enabled);
   PRINT_VALUE(hotword_enabled);
@@ -123,7 +123,7 @@ void AssistantStateBase::InitializeObserver(AssistantStateObserver* observer) {
 
 void AssistantStateBase::InitializeObserverMojom(
     mojom::AssistantStateObserver* observer) {
-  observer->OnAssistantStatusChanged(voice_interaction_state_);
+  observer->OnAssistantStatusChanged(assistant_state_);
   if (allowed_state_.has_value())
     observer->OnAssistantFeatureAllowedChanged(allowed_state_.value());
   if (locale_.has_value())
@@ -216,11 +216,10 @@ void AssistantStateBase::UpdateNotificationEnabled() {
     observer.OnAssistantNotificationEnabled(notification_enabled_.value());
 }
 
-void AssistantStateBase::UpdateAssistantStatus(
-    mojom::VoiceInteractionState state) {
-  voice_interaction_state_ = state;
+void AssistantStateBase::UpdateAssistantStatus(mojom::AssistantState state) {
+  assistant_state_ = state;
   for (auto& observer : observers_)
-    observer.OnAssistantStatusChanged(voice_interaction_state_);
+    observer.OnAssistantStatusChanged(assistant_state_);
 }
 
 void AssistantStateBase::UpdateFeatureAllowedState(

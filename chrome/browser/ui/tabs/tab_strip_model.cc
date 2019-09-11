@@ -295,6 +295,7 @@ class TabStripModel::GroupData {
     visual_data_ = std::move(visual_data);
   }
 
+  int tab_count() const { return tab_count_; }
   bool empty() const { return tab_count_ == 0; }
 
   void TabAdded() { ++tab_count_; }
@@ -618,8 +619,12 @@ int TabStripModel::MoveWebContentsAt(int index,
                     ? std::min(first_non_pinned_tab - 1, to_position)
                     : std::max(first_non_pinned_tab, to_position);
 
-  if (index != to_position)
-    MoveWebContentsAtImpl(index, to_position, select_after_move);
+  if (index == to_position)
+    return to_position;
+
+  MoveWebContentsAtImpl(index, to_position, select_after_move);
+  EnsureGroupContiguity(to_position);
+
   return to_position;
 }
 
@@ -1978,5 +1983,26 @@ void TabStripModel::FixOpeners(int index) {
   for (auto& data : contents_data_) {
     if (data->opener() == old_contents)
       data->set_opener(contents_data_[index]->opener());
+  }
+}
+
+void TabStripModel::EnsureGroupContiguity(int index) {
+  const auto old_group = GetTabGroupForTab(index);
+  const auto new_left_group = GetTabGroupForTab(index - 1);
+  const auto new_right_group = GetTabGroupForTab(index + 1);
+  if (old_group != new_left_group && old_group != new_right_group) {
+    if (new_left_group == new_right_group && new_left_group.has_value()) {
+      // The tab is in the middle of an existing group, so add it to that group.
+      UngroupTab(index);
+      contents_data_[index]->set_group(new_left_group);
+      group_data_.at(new_left_group.value()).TabAdded();
+      NotifyGroupChange(index, old_group, new_left_group);
+    } else if (old_group.has_value() &&
+               group_data_.at(*old_group).tab_count() > 1) {
+      // The tab is between groups and its group is non-contiguous, so clear
+      // this tab's group.
+      UngroupTab(index);
+      NotifyGroupChange(index, old_group, base::nullopt);
+    }
   }
 }

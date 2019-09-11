@@ -11,6 +11,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.profiles.Profile;
 
 import java.util.ArrayList;
@@ -52,10 +53,10 @@ public class RequestCoordinatorBridge {
      */
     @VisibleForTesting
     public void getRequestsInQueue(Callback<SavePageRequest[]> callback) {
-        nativeGetRequestsInQueue(mProfile, callback);
+        RequestCoordinatorBridgeJni.get().getRequestsInQueue(mProfile, callback);
     }
 
-    private static class RequestsRemovedCallback {
+    static class RequestsRemovedCallback {
         private final Callback<List<RequestRemovedResult>> mCallback;
 
         public RequestsRemovedCallback(Callback<List<RequestRemovedResult>> callback) {
@@ -114,7 +115,8 @@ public class RequestCoordinatorBridge {
         for (int i = 0; i < requestIdList.size(); i++) {
             requestIds[i] = requestIdList.get(i).longValue();
         }
-        nativeRemoveRequestsFromQueue(mProfile, requestIds, new RequestsRemovedCallback(callback));
+        RequestCoordinatorBridgeJni.get().removeRequestsFromQueue(
+                mProfile, requestIds, new RequestsRemovedCallback(callback));
     }
 
     /**
@@ -182,8 +184,9 @@ public class RequestCoordinatorBridge {
                 }
             }
         };
-        nativeSavePageLater(mProfile, wrapper, url, clientId.getNamespace(), clientId.getId(),
-                origin.encodeAsJsonString(), userRequested);
+        RequestCoordinatorBridgeJni.get().savePageLater(mProfile, wrapper, url,
+                clientId.getNamespace(), clientId.getId(), origin.encodeAsJsonString(),
+                userRequested);
     }
 
     /**
@@ -234,11 +237,12 @@ public class RequestCoordinatorBridge {
         savePageLater(url, clientId, userRequested, origin, callback);
     }
 
-    private static native void nativeGetRequestsInQueue(
-            Profile profile, Callback<SavePageRequest[]> callback);
-    private static native void nativeRemoveRequestsFromQueue(
-            Profile profile, long[] requestIds, RequestsRemovedCallback callback);
-    private static native void nativeSavePageLater(Profile profile, Callback<Integer> callback,
-            String url, String clientNamespace, String clientId, String origin,
-            boolean userRequested);
+    @NativeMethods
+    interface Natives {
+        void getRequestsInQueue(Profile profile, Callback<SavePageRequest[]> callback);
+        void removeRequestsFromQueue(
+                Profile profile, long[] requestIds, RequestsRemovedCallback callback);
+        void savePageLater(Profile profile, Callback<Integer> callback, String url,
+                String clientNamespace, String clientId, String origin, boolean userRequested);
+    }
 }

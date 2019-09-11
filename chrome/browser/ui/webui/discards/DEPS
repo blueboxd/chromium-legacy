@@ -1,9 +1,4 @@
 specific_include_rules = {
-  # Tests need to include the graph implementation.
-  "webui_graph_dump_impl_unittest\.cc": [
-    "+chrome/browser/performance_manager/graph",
-    "+chrome/browser/performance_manager/performance_manager_clock.h",
-  ],
   # Until CallOnGraph is in the public interface, the impl needs GraphImpl
   "webui_graph_dump_impl\.cc": [
     "+chrome/browser/performance_manager/graph",

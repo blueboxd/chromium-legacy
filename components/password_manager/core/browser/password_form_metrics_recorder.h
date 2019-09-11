@@ -353,14 +353,6 @@ class PasswordFormMetricsRecorder
   // distinguish two forms on the same site.
   void RecordFormSignature(autofill::FormSignature form_signature);
 
-  // Records old and new form parsings comparison result.
-  void RecordParsingsComparisonResult(
-      ParsingComparisonResult comparison_result);
-
-  // Records the comparison of the old and new password form parsing for saving.
-  // |comparison_result| is a bitmask of values from ParsingOnSavingDifference.
-  void RecordParsingOnSavingDifference(uint64_t comparison_result);
-
   // Records the readonly status encoded with parsing success after parsing for
   // filling. The |value| is constructed as follows: The least significant bit
   // says whether parsing succeeded (1) or not (0). The rest, shifted by one

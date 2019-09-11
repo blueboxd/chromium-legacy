@@ -111,7 +111,7 @@ base::Value CreateZippyData(const SettingZippyList& zippy_list) {
     data.SetKey("iconUri", base::Value(setting_zippy.icon_uri()));
     data.SetKey("popupLink", base::Value(l10n_util::GetStringUTF16(
                                  IDS_ASSISTANT_ACTIVITY_CONTROL_POPUP_LINK)));
-    zippy_data.GetList().push_back(std::move(data));
+    zippy_data.Append(std::move(data));
   }
   return zippy_data;
 }
@@ -131,7 +131,7 @@ base::Value CreateDisclosureData(const SettingZippyList& disclosure_list) {
                   base::Value(disclosure.additional_info_paragraph(0)));
     }
     data.SetKey("iconUri", base::Value(disclosure.icon_uri()));
-    disclosure_data.GetList().push_back(std::move(data));
+    disclosure_data.Append(std::move(data));
   }
   return disclosure_data;
 }
@@ -157,7 +157,7 @@ base::Value CreateGetMoreData(bool email_optin_needed,
       "iconUri",
       base::Value("https://www.gstatic.com/images/icons/material/system/"
                   "2x/screen_search_desktop_grey600_24dp.png"));
-  get_more_data.GetList().push_back(std::move(context_data));
+  get_more_data.Append(std::move(context_data));
 
   // Process email optin data.
   if (email_optin_needed) {
@@ -169,7 +169,7 @@ base::Value CreateGetMoreData(bool email_optin_needed,
                 base::Value(email_optin_ui.default_enabled()));
     data.SetKey("iconUri", base::Value(email_optin_ui.icon_uri()));
     data.SetKey("legalText", base::Value(email_optin_ui.legal_text()));
-    get_more_data.GetList().push_back(std::move(data));
+    get_more_data.Append(std::move(data));
   }
 
   return get_more_data;

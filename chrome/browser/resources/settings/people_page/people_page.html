@@ -161,12 +161,14 @@
           <div id="picture-subpage-trigger" class="settings-box first two-line">
             <template is="dom-if" if="[[syncStatus]]">
               <div id="profile-icon" on-click="onProfileTap_"
-                  actionable$="[[allowChangePicture_]]"
+                  actionable$="[[isProfileActionable_]]"
                   style="background-image: [[getIconImageSet_(
                       profileIconUrl_)]]">
               </div>
               <div class="middle two-line no-min-width"
-                  on-click="onProfileTap_" actionable>
+                  id="profile-row"
+                  on-click="onProfileTap_"
+                  actionable$="[[isProfileActionable_]]">
                 <div class="flex text-elide settings-box-text">
                   <span id="profile-name">[[profileName_]]</span>
                   <div class="secondary" hidden="[[!syncStatus.signedIn]]">
@@ -181,7 +183,7 @@
 <if expr="chromeos">
                 <cr-icon-button class="subpage-arrow"
                     id="profile-subpage-arrow"
-                    hidden="[[!allowChangePicture_]]"
+                    hidden="[[!isProfileActionable_]]"
                     aria-label="$i18n{changePictureTitle}"
                     aria-describedby="profile-name"></cr-icon-button>
 </if>

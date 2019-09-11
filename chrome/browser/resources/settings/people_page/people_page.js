@@ -91,11 +91,11 @@ Polymer({
     profileIconUrl_: String,
 
     /**
-     * Whether clicking on the profile row should take the user to the
-     * "change picture" sub-page.
+     * Whether the profile row is clickable. The behavior depends on the
+     * platform.
      * @private
      */
-    allowChangePicture_: {
+    isProfileActionable_: {
       type: Boolean,
       value: function() {
         // On Chrome OS, only allow when SplitSettings is disabled.
@@ -379,8 +379,8 @@ Polymer({
   /** @private */
   onProfileTap_: function() {
     // <if expr="chromeos">
-    if (this.allowChangePicture_) {
-      // Testing allowChangePicture_ is simpler than conditionally removing
+    if (this.isProfileActionable_) {
+      // Testing isProfileActionable_ is simpler than conditionally removing
       // on-click handlers in the HTML.
       settings.navigateTo(settings.routes.CHANGE_PICTURE);
     }

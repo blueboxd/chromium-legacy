@@ -340,12 +340,14 @@ AlternativeServiceInfoVector HttpServerProperties::GetAlternativeServiceInfos(
     AlternativeService alternative_service(it->alternative_service());
     if (alternative_service.host.empty()) {
       alternative_service.host = canonical->second.host();
-      if (IsAlternativeServiceBroken(alternative_service)) {
+      if (IsAlternativeServiceBroken(alternative_service,
+                                     network_isolation_key)) {
         ++it;
         continue;
       }
       alternative_service.host = origin.host();
-    } else if (IsAlternativeServiceBroken(alternative_service)) {
+    } else if (IsAlternativeServiceBroken(alternative_service,
+                                          network_isolation_key)) {
       ++it;
       continue;
     }
@@ -487,40 +489,55 @@ void HttpServerProperties::SetAlternativeServices(
 }
 
 void HttpServerProperties::MarkAlternativeServiceBroken(
-    const AlternativeService& alternative_service) {
-  broken_alternative_services_.MarkBroken(alternative_service);
+    const AlternativeService& alternative_service,
+    const net::NetworkIsolationKey& network_isolation_key) {
+  broken_alternative_services_.MarkBroken(BrokenAlternativeService(
+      alternative_service, network_isolation_key, use_network_isolation_key_));
   MaybeQueueWriteProperties();
 }
 
 void HttpServerProperties::
     MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
-        const AlternativeService& alternative_service) {
+        const AlternativeService& alternative_service,
+        const net::NetworkIsolationKey& network_isolation_key) {
   broken_alternative_services_.MarkBrokenUntilDefaultNetworkChanges(
-      alternative_service);
+      BrokenAlternativeService(alternative_service, network_isolation_key,
+                               use_network_isolation_key_));
   MaybeQueueWriteProperties();
 }
 
 void HttpServerProperties::MarkAlternativeServiceRecentlyBroken(
-    const AlternativeService& alternative_service) {
-  broken_alternative_services_.MarkRecentlyBroken(alternative_service);
+    const AlternativeService& alternative_service,
+    const net::NetworkIsolationKey& network_isolation_key) {
+  broken_alternative_services_.MarkRecentlyBroken(BrokenAlternativeService(
+      alternative_service, network_isolation_key, use_network_isolation_key_));
   MaybeQueueWriteProperties();
 }
 
 bool HttpServerProperties::IsAlternativeServiceBroken(
-    const AlternativeService& alternative_service) const {
-  return broken_alternative_services_.IsBroken(alternative_service);
+    const AlternativeService& alternative_service,
+    const net::NetworkIsolationKey& network_isolation_key) const {
+  return broken_alternative_services_.IsBroken(BrokenAlternativeService(
+      alternative_service, network_isolation_key, use_network_isolation_key_));
 }
 
 bool HttpServerProperties::WasAlternativeServiceRecentlyBroken(
-    const AlternativeService& alternative_service) {
-  return broken_alternative_services_.WasRecentlyBroken(alternative_service);
+    const AlternativeService& alternative_service,
+    const net::NetworkIsolationKey& network_isolation_key) {
+  return broken_alternative_services_.WasRecentlyBroken(
+      BrokenAlternativeService(alternative_service, network_isolation_key,
+                               use_network_isolation_key_));
 }
 
 void HttpServerProperties::ConfirmAlternativeService(
-    const AlternativeService& alternative_service) {
-  bool old_value = IsAlternativeServiceBroken(alternative_service);
-  broken_alternative_services_.Confirm(alternative_service);
-  bool new_value = IsAlternativeServiceBroken(alternative_service);
+    const AlternativeService& alternative_service,
+    const net::NetworkIsolationKey& network_isolation_key) {
+  bool old_value =
+      IsAlternativeServiceBroken(alternative_service, network_isolation_key);
+  broken_alternative_services_.Confirm(BrokenAlternativeService(
+      alternative_service, network_isolation_key, use_network_isolation_key_));
+  bool new_value =
+      IsAlternativeServiceBroken(alternative_service, network_isolation_key);
 
   // For persisting, we only care about the value returned by
   // IsAlternativeServiceBroken. If that value changes, then call persist.
@@ -555,8 +572,11 @@ HttpServerProperties::GetAlternativeServiceInfoAsValue() const {
         alternative_service.host = key.server.host();
       }
       base::TimeTicks brokenness_expiration_ticks;
-      if (broken_alternative_services_.IsBroken(alternative_service,
-                                                &brokenness_expiration_ticks)) {
+      if (broken_alternative_services_.IsBroken(
+              BrokenAlternativeService(alternative_service,
+                                       server_info.first.network_isolation_key,
+                                       use_network_isolation_key_),
+              &brokenness_expiration_ticks)) {
         // Convert |brokenness_expiration| from TimeTicks to Time
         base::Time brokenness_expiration =
             now + (brokenness_expiration_ticks - now_ticks);
@@ -735,12 +755,14 @@ bool HttpServerProperties::IsInitialized() const {
 }
 
 void HttpServerProperties::OnExpireBrokenAlternativeService(
-    const AlternativeService& expired_alternative_service) {
+    const AlternativeService& expired_alternative_service,
+    const NetworkIsolationKey& network_isolation_key) {
   // Remove every occurrence of |expired_alternative_service| from
   // |alternative_service_map_|.
   for (auto map_it = server_info_map_.begin();
        map_it != server_info_map_.end();) {
-    if (!map_it->second.alternative_services.has_value()) {
+    if (!map_it->second.alternative_services.has_value() ||
+        map_it->first.network_isolation_key != network_isolation_key) {
       ++map_it;
       continue;
     }
@@ -763,8 +785,7 @@ void HttpServerProperties::OnExpireBrokenAlternativeService(
     // from both |canonical_alt_svc_map_| and
     // |alternative_service_map_|.
     if (service_info->empty()) {
-      // TODO(mmenke): Take a NetworkIsolationKey as input and use it here.
-      RemoveAltSvcCanonicalHost(map_it->first.server, NetworkIsolationKey());
+      RemoveAltSvcCanonicalHost(map_it->first.server, network_isolation_key);
       map_it->second.alternative_services.reset();
       map_it = server_info_map_.EraseIfEmpty(map_it);
       continue;
@@ -812,7 +833,8 @@ HttpServerProperties::GetIteratorWithAlternativeServiceInfo(
     if (alternative_service.host.empty()) {
       alternative_service.host = canonical_server.host();
     }
-    if (!IsAlternativeServiceBroken(alternative_service)) {
+    if (!IsAlternativeServiceBroken(alternative_service,
+                                    network_isolation_key)) {
       return it;
     }
   }

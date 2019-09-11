@@ -904,8 +904,17 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   ASSERT_EQ(notification_ids[0], first_id);
 }
 
-IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
-                       OrphanedNonPersistentNotificationCreatesForegroundTab) {
+// TODO(crbug.com/1002602): Test is flaky on TSAN.
+#if defined(THREAD_SANITIZER)
+#define MAYBE_OrphanedNonPersistentNotificationCreatesForegroundTab \
+  DISABLED_OrphanedNonPersistentNotificationCreatesForegroundTab
+#else
+#define MAYBE_OrphanedNonPersistentNotificationCreatesForegroundTab \
+  OrphanedNonPersistentNotificationCreatesForegroundTab
+#endif
+IN_PROC_BROWSER_TEST_F(
+    PlatformNotificationServiceBrowserTest,
+    MAYBE_OrphanedNonPersistentNotificationCreatesForegroundTab) {
   // Verifies that activating a non-persistent notification that no longer has
   // any event listeners attached (e.g. because the tab closed) creates a new
   // foreground tab.

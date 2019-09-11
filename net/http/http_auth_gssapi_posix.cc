@@ -168,7 +168,7 @@ base::Value GetGssStatusCodeValue(GSSAPILibrary* gssapi_lib,
     if (!base::IsStringUTF8(message_string))
       continue;
 
-    messages.GetList().emplace_back(message_string);
+    messages.Append(message_string);
   } while (message_context != 0 && ++iterations < kMaxDisplayIterations);
 
   if (messages.GetList().size() > 0)

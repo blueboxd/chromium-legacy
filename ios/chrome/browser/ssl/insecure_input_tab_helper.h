@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "components/autofill/ios/form_util/form_activity_observer.h"
-#include "ios/web/public/web_state/web_state_observer.h"
-#import "ios/web/public/web_state/web_state_user_data.h"
+#include "ios/web/public/web_state_observer.h"
+#import "ios/web/public/web_state_user_data.h"
 
 // Observes user activity on forms and receives notifications about page content
 // from autofill and updates the page's |SSLStatusUserData| to track insecure

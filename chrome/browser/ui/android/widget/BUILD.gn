@@ -6,11 +6,19 @@ import("//build/config/android/rules.gni")
 
 android_library("java") {
   java_files = [
+    "java/src/org/chromium/chrome/browser/ui/widget/AlwaysDismissedDialog.java",
+    "java/src/org/chromium/chrome/browser/ui/widget/BoundedLinearLayout.java",
     "java/src/org/chromium/chrome/browser/ui/widget/CompositeTouchDelegate.java",
+    "java/src/org/chromium/chrome/browser/ui/widget/DualControlLayout.java",
     "java/src/org/chromium/chrome/browser/ui/widget/FadingShadow.java",
     "java/src/org/chromium/chrome/browser/ui/widget/FadingShadowView.java",
+    "java/src/org/chromium/chrome/browser/ui/widget/FadingEdgeScrollView.java",
     "java/src/org/chromium/chrome/browser/ui/widget/ListMenuButton.java",
+    "java/src/org/chromium/chrome/browser/ui/widget/LoadingView.java",
+    "java/src/org/chromium/chrome/browser/ui/widget/text/AccessibleTextView.java",
+    "java/src/org/chromium/chrome/browser/ui/widget/text/AlertDialogEditText.java",
     "java/src/org/chromium/chrome/browser/ui/widget/text/TextViewWithCompoundDrawables.java",
+    "java/src/org/chromium/chrome/browser/ui/widget/text/VerticallyFixedEditText.java",
   ]
 
   deps = [
@@ -18,6 +26,7 @@ android_library("java") {
     "//base:base_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:com_android_support_design_java",
+    "//third_party/android_deps:com_android_support_interpolator_java",
     "//ui/android:ui_java",
   ]
 }
@@ -90,8 +99,35 @@ java_strings_grd("ui_widget_strings_grd") {
   ]
 }
 
+android_library("ui_widget_java_tests") {
+  testonly = true
+
+  java_files = [
+    "java/src/org/chromium/chrome/browser/ui/widget/DualControlLayoutTest.java",
+  ]
+  deps = [
+    ":java",
+    ":ui_widget_java_resources",
+    ":ui_widget_java_test_resources",
+    "//chrome/test/android:chrome_java_test_support",
+    "//third_party/android_support_test_runner:rules_java",
+    "//third_party/android_support_test_runner:runner_java",
+    "//third_party/junit",
+  ]
+}
+
+android_resources("ui_widget_java_test_resources") {
+  custom_package = "org.chromium.chrome.browser.ui.widget.test"
+  resource_dirs = [ "test/java/res" ]
+  deps = [
+    ":ui_widget_java_resources",
+    ":ui_widget_strings_grd",
+    "//ui/android:ui_java_resources",
+  ]
+}
+
 junit_binary("ui_widget_junit_tests") {
-  java_files = [ "junit/src/org/chromium/chrome//browser/ui/widget/CompositeTouchDelegateTest.java" ]
+  java_files = [ "java/src/org/chromium/chrome/browser/ui/widget/CompositeTouchDelegateUnitTest.java" ]
   deps = [
     ":java",
     "//base:base_java",

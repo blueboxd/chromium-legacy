@@ -180,4 +180,33 @@ TEST_F(X11WindowOzoneTest, GetWindowFromAcceleratedWigets) {
   EXPECT_EQ(nullptr, window_manager()->GetWindow(widget_2));
 }
 
+// This test case ensures that OnMouseEnter is called once when a mouse location
+// moved to the window, and |window_mouse_currently_on_| is properly reset when
+// the window is deleted.
+TEST_F(X11WindowOzoneTest, MouseEnterAndDelete) {
+  gfx::Rect bounds_1(0, 0, 100, 100);
+  MockPlatformWindowDelegate delegate_1;
+  gfx::AcceleratedWidget widget_1;
+  auto window_1 = CreatePlatformWindow(&delegate_1, bounds_1, &widget_1);
+
+  MockPlatformWindowDelegate delegate_2;
+  gfx::AcceleratedWidget widget_2;
+  gfx::Rect bounds_2(0, 100, 100, 100);
+  auto window_2 = CreatePlatformWindow(&delegate_2, bounds_2, &widget_2);
+
+  EXPECT_CALL(delegate_1, OnMouseEnter()).Times(1);
+  window_manager()->MouseOnWindow(static_cast<X11WindowOzone*>(window_1.get()));
+  // The mouse is already on window_1, and this should not call OnMouseEnter.
+  window_manager()->MouseOnWindow(static_cast<X11WindowOzone*>(window_1.get()));
+
+  EXPECT_CALL(delegate_2, OnMouseEnter()).Times(1);
+  window_manager()->MouseOnWindow(static_cast<X11WindowOzone*>(window_2.get()));
+
+  // Removing the window should reset the |window_mouse_currently_on_|.
+  EXPECT_EQ(window_2.get(),
+            window_manager()->window_mouse_currently_on_for_test());
+  window_2.reset();
+  EXPECT_FALSE(window_manager()->window_mouse_currently_on_for_test());
+}
+
 }  // namespace ui

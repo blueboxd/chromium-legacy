@@ -120,13 +120,14 @@ void NotifyAndroidAppListRefreshed(
 DeviceActions::DeviceActions() : scoped_prefs_observer_(this) {}
 
 DeviceActions::~DeviceActions() {
-  bindings_.CloseAllBindings();
+  receivers_.Clear();
 }
 
-chromeos::assistant::mojom::DeviceActionsPtr DeviceActions::AddBinding() {
-  chromeos::assistant::mojom::DeviceActionsPtr ptr;
-  bindings_.AddBinding(this, mojo::MakeRequest(&ptr));
-  return ptr;
+mojo::PendingRemote<chromeos::assistant::mojom::DeviceActions>
+DeviceActions::AddReceiver() {
+  mojo::PendingRemote<chromeos::assistant::mojom::DeviceActions> pending_remote;
+  receivers_.Add(this, pending_remote.InitWithNewPipeAndPassReceiver());
+  return pending_remote;
 }
 
 void DeviceActions::SetWifiEnabled(bool enabled) {

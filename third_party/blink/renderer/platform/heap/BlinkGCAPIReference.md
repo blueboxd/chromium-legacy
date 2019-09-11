@@ -40,8 +40,13 @@ You may not allocate an on-heap object on stack.
 
 Your class may need to have a tracing method. See [Tracing](#Tracing) for details.
 
-If your class needs finalization (i.e. some work needs to be done on destruction), use
-[GarbageCollectedFinalized](#GarbageCollectedFinalized) instead.
+Your class will be automatically finalized as long as it is non-trivially destructible. Non-final classes are
+required to have a virtual destructor.
+
+Note that finalization is done at an arbitrary time after the object becomes unreachable.
+
+Any destructor executed within the finalization period must not touch any other on-heap object, because destructors
+can be executed in any order.
 
 `GarbageCollected<T>` or any class deriving from `GarbageCollected<T>`, directly or indirectly, must be the first
 element in its base class list (called "leftmost derivation rule"). This rule is needed to assure each on-heap object
@@ -75,40 +80,11 @@ public:
 };
 ```
 
-### GarbageCollectedFinalized
-
-If you want to make your class garbage-collected and the class needs finalization, your class needs to inherit from
-`GarbageCollectedFinalized<YourClass>` instead of `GarbageCollected<YourClass>`.
-
-A class is said to *need finalization* when it meets either of the following criteria:
-
-*   It has non-empty destructor; or
-*   It has a member that needs finalization.
-
-```c++
-class YourClass : public GarbageCollectedFinalized<YourClass> {
-public:
-  ~YourClass() { ... } // Non-empty destructor means finalization is needed.
-
-private:
-  scoped_refptr<Something> something_; // scoped_refptr<> has non-empty destructor, so finalization is needed.
-};
-```
-
-Note that finalization is done at an arbitrary time after the object becomes unreachable.
-
-Any destructor executed within the finalization period must not touch any other on-heap object, because destructors
-can be executed in any order.
-
-Because `GarbageCollectedFinalized<T>` is a special case of `GarbageCollected<T>`, all the restrictions that apply
-to `GarbageCollected<T>` classes also apply to `GarbageCollectedFinalized<T>`.
-
 ### GarbageCollectedMixin
 
 A non-leftmost base class of a garbage-collected class may derive from `GarbageCollectedMixin`. If a direct child
-class of `GarbageCollected<T>` or `GarbageCollectedFinalized<T>` has a non-leftmost base class deriving from
-`GarbageCollectedMixin`, the garbage-collected class must declare the `USING_GARBAGE_COLLECTED_MIXIN(ClassName)` macro
-in its class declaration.
+class of `GarbageCollected<T>` has a non-leftmost base class deriving from `GarbageCollectedMixin`, the
+garbage-collected class must declare the `USING_GARBAGE_COLLECTED_MIXIN(ClassName)` macro in its class declaration.
 
 A class deriving from `GarbageCollectedMixin` can be treated similarly as garbage-collected classes. Specifically, it
 can have `Member<T>`s and `WeakMember<T>`s, and a tracing method. A pointer to such a class must be retained in the
@@ -179,7 +155,7 @@ It is invoked before the sweeping phase starts to allow a pre-finalizer to touch
 It is useful for doing cleanups that cannot be done with a destructor.
 
 ```c++
-class YourClass : public GarbageCollectedFinalized<YourClass> {
+class YourClass : public GarbageCollected<YourClass> {
   USING_PRE_FINALIZER(YourClass, Dispose);
 public:
   void Dispose() {
@@ -200,7 +176,7 @@ Sometimes it is necessary to further delegate pre-finalizers up the class hierar
 It is possible to construct such delegations using virtual methods.
 
 ```c++
-class Parent : public GarbageCollectedFinalized<Parent> {
+class Parent : public GarbageCollected<Parent> {
   USING_PRE_FINALIZER(Parent, Dispose);
  public:
   void Dispose() { DisposeImpl(); }

@@ -154,7 +154,7 @@ base::ListValue UsbDevicesToListValue(
     const bool shared_in_crostini =
         device.vm_sharing_info[crostini::kCrostiniDefaultVmName].shared;
     device_info.SetKey("shared", base::Value(shared_in_crostini));
-    usb_devices_list.GetList().push_back(std::move(device_info));
+    usb_devices_list.Append(std::move(device_info));
   }
   return usb_devices_list;
 }

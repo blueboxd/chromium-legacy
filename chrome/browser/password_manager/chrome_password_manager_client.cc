@@ -679,7 +679,7 @@ PrefService* ChromePasswordManagerClient::GetPrefs() const {
 }
 
 password_manager::PasswordStore*
-ChromePasswordManagerClient::GetPasswordStore() const {
+ChromePasswordManagerClient::GetProfilePasswordStore() const {
   // Always use EXPLICIT_ACCESS as the password manager checks IsIncognito
   // itself when it shouldn't access the PasswordStore.
   // TODO(gcasto): Is is safe to change this to

@@ -7,6 +7,7 @@
 
 #include <string>
 #include <tuple>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/observer_list.h"
@@ -38,10 +39,12 @@ class FakeServiceWorkerContext : public ServiceWorkerContext {
       ResultCallback callback) override;
   void UnregisterServiceWorker(const GURL& scope,
                                ResultCallback callback) override;
-  bool StartingExternalRequest(int64_t service_worker_version_id,
-                               const std::string& request_uuid) override;
-  bool FinishedExternalRequest(int64_t service_worker_version_id,
-                               const std::string& request_uuid) override;
+  ServiceWorkerExternalRequestResult StartingExternalRequest(
+      int64_t service_worker_version_id,
+      const std::string& request_uuid) override;
+  ServiceWorkerExternalRequestResult FinishedExternalRequest(
+      int64_t service_worker_version_id,
+      const std::string& request_uuid) override;
   void CountExternalRequestsForTest(
       const GURL& url,
       CountExternalRequestsCallback callback) override;

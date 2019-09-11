@@ -322,7 +322,7 @@ base::DictionaryValue HostCache::Entry::GetAsValue(
       // Append all of the resolved addresses.
       base::ListValue addresses_value;
       for (const IPEndPoint& address : addresses().value()) {
-        addresses_value.GetList().emplace_back(address.ToStringWithoutPort());
+        addresses_value.Append(address.ToStringWithoutPort());
       }
       entry_dict.SetKey(kAddressesKey, std::move(addresses_value));
     }
@@ -331,7 +331,7 @@ base::DictionaryValue HostCache::Entry::GetAsValue(
       // Append all resolved text records.
       base::ListValue text_list_value;
       for (const std::string& text_record : text_records().value()) {
-        text_list_value.GetList().emplace_back(text_record);
+        text_list_value.Append(text_record);
       }
       entry_dict.SetKey(kTextRecordsKey, std::move(text_list_value));
     }
@@ -341,8 +341,8 @@ base::DictionaryValue HostCache::Entry::GetAsValue(
       base::ListValue hostnames_value;
       base::ListValue host_ports_value;
       for (const HostPortPair& hostname : hostnames().value()) {
-        hostnames_value.GetList().emplace_back(hostname.host());
-        host_ports_value.GetList().emplace_back(hostname.port());
+        hostnames_value.Append(hostname.host());
+        host_ports_value.Append(hostname.port());
       }
       entry_dict.SetKey(kHostnameResultsKey, std::move(hostnames_value));
       entry_dict.SetKey(kHostPortsKey, std::move(host_ports_value));

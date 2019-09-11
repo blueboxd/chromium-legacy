@@ -36,8 +36,31 @@ sys.path = [os.path.join(CHROMIUM_SRC_DIR, 'build')] + sys.path
 
 import gn_helpers
 
+def PruneVirtualEnv():
+  # Set by VirtualEnv, no need to keep it.
+  os.environ.pop('VIRTUAL_ENV', None)
+
+  # Set by VPython, if scripts want it back they have to set it explicitly.
+  os.environ.pop('PYTHONNOUSERSITE', None)
+
+  # Look for "activate_this.py" in this path, which is installed by VirtualEnv.
+  # This mechanism is used by vpython as well to sanitize VirtualEnvs from
+  # $PATH.
+  os.environ['PATH'] = os.pathsep.join([
+    p for p in os.environ.get('PATH', '').split(os.pathsep)
+    if not os.path.isfile(os.path.join(p, 'activate_this.py'))
+  ])
+
 
 def main(args):
+  # Prune all evidence of VPython/VirtualEnv out of the environment. This means
+  # that we 'unwrap' vpython VirtualEnv path/env manipulation. Invocations of
+  # `python` from GN should never inherit the gn.py's own VirtualEnv. This also
+  # helps to ensure that generated ninja files do not reference python.exe from
+  # the VirtualEnv generated from depot_tools' own .vpython file (or lack
+  # thereof), but instead reference the default python from the PATH.
+  PruneVirtualEnv()
+
   mbw = MetaBuildWrapper()
   return mbw.Main(args)
 
@@ -1092,7 +1115,7 @@ class MetaBuildWrapper(object):
       # Skip a few configs that need extra cleanup for now.
       # TODO(https://crbug.com/912946): Fix everything on all platforms and
       # enable check everywhere.
-      if is_android or is_cros:
+      if is_android:
         break
 
       # Skip a few existing violations that need to be cleaned up. Each of
@@ -1104,40 +1127,35 @@ class MetaBuildWrapper(object):
           f == 'locales/' or
           f.startswith('nacl_test_data/') or
           f.startswith('ppapi_nacl_tests_libs/') or
+          (is_cros and f in (  # https://crbug.com/1002509
+              'chromevox_test_data/',
+              'gen/ui/file_manager/file_manager/',
+              'resources/chromeos/',
+              'resources/chromeos/autoclick/',
+              'resources/chromeos/chromevox/',
+              'resources/chromeos/select_to_speak/',
+              'test_data/chrome/browser/resources/chromeos/autoclick/',
+              'test_data/chrome/browser/resources/chromeos/chromevox/',
+              'test_data/chrome/browser/resources/chromeos/select_to_speak/',
+          )) or
           (is_mac and f in (  # https://crbug.com/1000667
-              'AlertNotificationService.dSYM/',
               'AlertNotificationService.xpc/',
-              'Chromium Framework.dSYM/',
               'Chromium Framework.framework/',
               'Chromium Helper.app/',
               'Chromium.app/',
-              'Chromium.dSYM/',
               'Content Shell.app/',
-              'Content Shell.dSYM/',
-              'Google Chrome Framework.dSYM/',
               'Google Chrome Framework.framework/',
               'Google Chrome Helper (GPU).app/',
-              'Google Chrome Helper (GPU).dSYM/',
               'Google Chrome Helper (Plugin).app/',
-              'Google Chrome Helper (Plugin).dSYM/',
               'Google Chrome Helper (Renderer).app/',
-              'Google Chrome Helper (Renderer).dSYM/',
               'Google Chrome Helper.app/',
-              'Google Chrome Helper.dSYM/',
               'Google Chrome.app/',
-              'Google Chrome.dSYM/',
               'blink_deprecated_test_plugin.plugin/',
-              'blink_deprecated_test_plugin.so.dSYM/',
               'blink_test_plugin.plugin/',
-              'blink_test_plugin.so.dSYM/',
               'corb_test_plugin.plugin/',
-              'corb_test_plugin.so.dSYM/',
               'obj/tools/grit/brotli_mac_asan_workaround/',
               'power_saver_test_plugin.plugin/',
-              'power_saver_test_plugin.so.dSYM/',
               'ppapi_tests.plugin/',
-              'ppapi_tests.so.dSYM/',
-              'ui_unittests Framework.dSYM/',
               'ui_unittests Framework.framework/',
           ))):
         continue
@@ -1291,14 +1309,19 @@ class MetaBuildWrapper(object):
     java_coverage = 'jacoco_coverage=true' in vals['gn_args']
 
     test_type = isolate_map[target]['type']
+    use_python3 = isolate_map[target].get('use_python3', False)
 
     executable = isolate_map[target].get('executable', target)
     executable_suffix = isolate_map[target].get(
         'executable_suffix', '.exe' if is_win else '')
 
-    cmdline = []
-    extra_files = [
-      '../../.vpython',
+    if use_python3:
+      cmdline = [ 'vpython3' ]
+      extra_files = [ '../../.vpython3' ]
+    else:
+      cmdline = [ 'vpython' ]
+      extra_files = [ '../../.vpython' ]
+    extra_files += [
       '../../testing/test_env.py',
     ]
 
@@ -1310,19 +1333,18 @@ class MetaBuildWrapper(object):
       script = isolate_map[target]['script']
       if self.platform == 'win32':
         script += '.bat'
-      cmdline = [
+      cmdline += [
           '../../testing/test_env.py',
           script,
       ]
     elif test_type == 'fuzzer':
-      cmdline = [
+      cmdline += [
         '../../testing/test_env.py',
         '../../tools/code_coverage/run_fuzz_target.py',
         '--fuzzer', './' + target,
         '--output-dir', '${ISOLATED_OUTDIR}',
         '--timeout', '3600']
     elif is_android and test_type != "script":
-      cmdline = []
       if asan:
         cmdline += [os.path.join('bin', 'run_with_asan'), '--']
       cmdline += [
@@ -1334,20 +1356,20 @@ class MetaBuildWrapper(object):
       if java_coverage:
         cmdline += ['--coverage-dir', '${ISOLATED_OUTDIR}']
     elif is_fuchsia and test_type != 'script':
-      cmdline = [
+      cmdline += [
           '../../testing/test_env.py',
           os.path.join('bin', 'run_%s' % target),
           '--test-launcher-bot-mode',
           '--system-log-file', '${ISOLATED_OUTDIR}/system_log'
       ]
     elif is_simplechrome and test_type != 'script':
-      cmdline = [
+      cmdline += [
           '../../testing/test_env.py',
           os.path.join('bin', 'run_%s' % target),
       ]
     elif use_xvfb and test_type == 'windowed_test_launcher':
       extra_files.append('../../testing/xvfb.py')
-      cmdline = [
+      cmdline += [
           '../../testing/xvfb.py',
           './' + str(executable) + executable_suffix,
           '--test-launcher-bot-mode',
@@ -1362,7 +1384,7 @@ class MetaBuildWrapper(object):
           '--cfi-diag=%d' % cfi_diag,
       ]
     elif test_type in ('windowed_test_launcher', 'console_test_launcher'):
-      cmdline = [
+      cmdline += [
           '../../testing/test_env.py',
           './' + str(executable) + executable_suffix,
           '--test-launcher-bot-mode',
@@ -1377,7 +1399,6 @@ class MetaBuildWrapper(object):
           '--cfi-diag=%d' % cfi_diag,
       ]
     elif test_type == 'script':
-      cmdline = []
       # If we're testing a CrOS simplechrome build, assume we need to prepare a
       # DUT for testing. So prepend the command to run with the test wrapper.
       if is_simplechrome:

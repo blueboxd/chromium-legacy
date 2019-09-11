@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #import "ios/chrome/browser/ui/elements/top_aligned_image_view.h"
-#include "ios/web/public/web_state/web_state_observer.h"
-#import "ios/web/public/web_state/web_state_user_data.h"
+#include "ios/web/public/web_state_observer.h"
+#import "ios/web/public/web_state_user_data.h"
 
 // Displays placeholder to cover what WebState is actually displaying. Can be
 // used to display the cached image of the web page during the Tab restoration.

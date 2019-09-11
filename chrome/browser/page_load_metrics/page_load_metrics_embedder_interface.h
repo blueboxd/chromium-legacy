@@ -13,6 +13,10 @@ namespace base {
 class OneShotTimer;
 }  // namespace base
 
+namespace content {
+class WebContents;
+}  // namespace content
+
 namespace page_load_metrics {
 
 class PageLoadTracker;
@@ -25,6 +29,7 @@ class PageLoadMetricsEmbedderInterface {
   virtual bool IsNewTabPageUrl(const GURL& url) = 0;
   virtual void RegisterObservers(PageLoadTracker* metrics) = 0;
   virtual std::unique_ptr<base::OneShotTimer> CreateTimer() = 0;
+  virtual bool IsPrerender(content::WebContents* web_contents) = 0;
 };
 
 }  // namespace page_load_metrics

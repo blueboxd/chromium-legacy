@@ -174,7 +174,6 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
     : RenderWidgetHostViewBase(widget),
       page_at_minimum_scale_(true),
       mouse_wheel_phase_handler_(this),
-      remote_ns_view_client_binding_(this),
       is_loading_(false),
       is_guest_view_hack_(is_guest_view_hack),
       popup_parent_host_view_(nullptr),
@@ -248,9 +247,9 @@ void RenderWidgetHostViewMac::MigrateNSViewBridge(
   remote_window_accessible_.reset();
 
   // Disconnect from the previous bridge (this will have the effect of
-  // destroying the associated bridge), and close the binding (to allow it
+  // destroying the associated bridge), and close the receiver (to allow it
   // to be re-bound). Note that |in_process_ns_view_bridge_| remains valid.
-  remote_ns_view_client_binding_.Close();
+  remote_ns_view_client_receiver_.reset();
   remote_ns_view_.reset();
 
   // Enable accessibility focus overriding for remote NSViews.
@@ -263,8 +262,8 @@ void RenderWidgetHostViewMac::MigrateNSViewBridge(
     return;
   }
 
-  remote_cocoa::mojom::RenderWidgetHostNSViewHostAssociatedPtr client;
-  remote_ns_view_client_binding_.Bind(mojo::MakeRequest(&client));
+  mojo::PendingAssociatedRemote<remote_cocoa::mojom::RenderWidgetHostNSViewHost>
+      client = remote_ns_view_client_receiver_.BindNewEndpointAndPassRemote();
   mojo::PendingAssociatedReceiver<remote_cocoa::mojom::RenderWidgetHostNSView>
       view_receiver = remote_ns_view_.BindNewEndpointAndPassReceiver();
 
@@ -274,7 +273,7 @@ void RenderWidgetHostViewMac::MigrateNSViewBridge(
   // TODO(ccameron): Remove the need for this cast.
   // https://crbug.com/888290
   mojo::AssociatedInterfacePtrInfo<remote_cocoa::mojom::StubInterface>
-      stub_client(client.PassInterface().PassHandle(), 0);
+      stub_client(client.PassHandle(), 0);
   remote_cocoa::mojom::StubInterfaceAssociatedRequest stub_bridge_request(
       view_receiver.PassHandle());
 
@@ -701,7 +700,7 @@ void RenderWidgetHostViewMac::Destroy() {
   // the other side of |ns_view_| may outlive us due to other retains.
   ns_view_ = nullptr;
   in_process_ns_view_bridge_.reset();
-  remote_ns_view_client_binding_.Close();
+  remote_ns_view_client_receiver_.reset();
   remote_ns_view_.reset();
 
   // Delete the delegated frame state, which will reach back into

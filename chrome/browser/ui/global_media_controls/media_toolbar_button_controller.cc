@@ -20,6 +20,11 @@
 
 namespace {
 
+// Here we check to see if the WebContents is focused. Note that since Session
+// is a WebContentsObserver, we could in theory listen for
+// |OnWebContentsFocused()| and |OnWebContentsLostFocus()|. However, this won't
+// actually work since focusing the MediaDialogView causes the WebContents to
+// "lose focus", so we'd never be focused.
 bool IsWebContentsFocused(content::WebContents* web_contents) {
   DCHECK(web_contents);
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
@@ -38,11 +43,25 @@ bool IsWebContentsFocused(content::WebContents* web_contents) {
 }  // anonymous namespace
 
 MediaToolbarButtonController::Session::Session(
+    MediaToolbarButtonController* owner,
+    const std::string& id,
     std::unique_ptr<media_message_center::MediaNotificationItem> item,
     content::WebContents* web_contents)
-    : item_(std::move(item)), web_contents_(web_contents) {}
+    : content::WebContentsObserver(web_contents),
+      owner_(owner),
+      id_(id),
+      item_(std::move(item)) {
+  DCHECK(owner_);
+  DCHECK(item_);
+}
 
 MediaToolbarButtonController::Session::~Session() = default;
+
+void MediaToolbarButtonController::Session::WebContentsDestroyed() {
+  // If the WebContents is destroyed, then we should just remove the item
+  // instead of freezing it.
+  owner_->RemoveItem(id_);
+}
 
 MediaToolbarButtonController::MediaToolbarButtonController(
     const base::UnguessableToken& source_id,
@@ -106,6 +125,7 @@ void MediaToolbarButtonController::OnFocusGained(
     sessions_.emplace(
         std::piecewise_construct, std::forward_as_tuple(id),
         std::forward_as_tuple(
+            this, id,
             std::make_unique<media_message_center::MediaNotificationItem>(
                 this, id, session->source_name.value_or(std::string()),
                 std::move(controller), std::move(session->session_info)),
@@ -204,6 +224,13 @@ void MediaToolbarButtonController::SetDialogDelegate(
 
   media_message_center::RecordConcurrentNotificationCount(
       active_controllable_session_ids_.size());
+}
+
+void MediaToolbarButtonController::OnDismissButtonClicked(
+    const std::string& id) {
+  auto it = sessions_.find(id);
+  if (it != sessions_.end())
+    it->second.item()->Dismiss();
 }
 
 void MediaToolbarButtonController::OnReceivedAudioFocusRequests(

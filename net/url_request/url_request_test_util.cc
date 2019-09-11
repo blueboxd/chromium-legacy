@@ -365,7 +365,6 @@ TestNetworkDelegate::TestNetworkDelegate()
       total_network_bytes_sent_(0),
       has_load_timing_info_before_redirect_(false),
       has_load_timing_info_before_auth_(false),
-      can_access_files_(true),
       experimental_cookie_features_enabled_(false),
       cancel_request_with_policy_violating_referrer_(false),
       will_be_intercepted_on_next_error_(false),
@@ -673,13 +672,6 @@ bool TestNetworkDelegate::OnCanSetCookie(const URLRequest& request,
   }
 
   return allow;
-}
-
-bool TestNetworkDelegate::OnCanAccessFile(
-    const URLRequest& request,
-    const base::FilePath& original_path,
-    const base::FilePath& absolute_path) const {
-  return can_access_files_;
 }
 
 bool TestNetworkDelegate::OnCancelURLRequestWithPolicyViolatingReferrerHeader(

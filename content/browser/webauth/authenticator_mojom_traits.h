@@ -186,22 +186,26 @@ struct BLINK_COMMON_EXPORT
     StructTraits<blink::mojom::CableAuthenticationDataView,
                  device::CableDiscoveryData> {
   static uint8_t version(const device::CableDiscoveryData& in) {
-    return in.version;
+    CHECK_EQ(device::CableDiscoveryData::Version::V1, in.version);
+    return 1;
   }
 
   static const device::CableEidArray& client_eid(
       const device::CableDiscoveryData& in) {
-    return in.client_eid;
+    CHECK_EQ(device::CableDiscoveryData::Version::V1, in.version);
+    return in.v1->client_eid;
   }
 
   static const device::CableEidArray& authenticator_eid(
       const device::CableDiscoveryData& in) {
-    return in.authenticator_eid;
+    CHECK_EQ(device::CableDiscoveryData::Version::V1, in.version);
+    return in.v1->authenticator_eid;
   }
 
   static const device::CableSessionPreKeyArray& session_pre_key(
       const device::CableDiscoveryData& in) {
-    return in.session_pre_key;
+    CHECK_EQ(device::CableDiscoveryData::Version::V1, in.version);
+    return in.v1->session_pre_key;
   }
 
   static bool Read(blink::mojom::CableAuthenticationDataView data,

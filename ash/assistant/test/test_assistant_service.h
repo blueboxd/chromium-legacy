@@ -32,8 +32,9 @@ class TestAssistantService : public chromeos::assistant::mojom::Assistant {
                                      bool allow_tts) override {}
   void StopActiveInteraction(bool cancel_conversation) override {}
   void AddAssistantInteractionSubscriber(
-      chromeos::assistant::mojom::AssistantInteractionSubscriberPtr subscriber)
-      override {}
+      mojo::PendingRemote<
+          chromeos::assistant::mojom::AssistantInteractionSubscriber>
+          subscriber) override {}
   void RetrieveNotification(
       chromeos::assistant::mojom::AssistantNotificationPtr notification,
       int action_index) override {}

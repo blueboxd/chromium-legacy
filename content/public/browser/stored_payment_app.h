@@ -37,6 +37,17 @@ struct CONTENT_EXPORT StoredCapabilities {
   std::vector<int32_t> supported_card_types;
 };
 
+// This class represents the supported delegations of the StoredPaymentApp.
+struct CONTENT_EXPORT StoredSupportedDelegations {
+  StoredSupportedDelegations();
+  ~StoredSupportedDelegations();
+
+  bool shipping_address = false;
+  bool payer_name = false;
+  bool payer_phone = false;
+  bool payer_email = false;
+};
+
 // This class represents the stored payment app.
 struct CONTENT_EXPORT StoredPaymentApp {
   StoredPaymentApp();
@@ -76,6 +87,9 @@ struct CONTENT_EXPORT StoredPaymentApp {
 
   // User hint for this payment app.
   std::string user_hint;
+
+  // List of supported delegations for this payment app.
+  StoredSupportedDelegations supported_delegations;
 };
 
 }  // namespace content

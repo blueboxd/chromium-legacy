@@ -139,8 +139,9 @@ security_state::SafetyTipStatus FlagTypeToSafetyTipStatus(
   switch (type) {
     case FlaggedPage::FlagType::FlaggedPage_FlagType_UNKNOWN:
     case FlaggedPage::FlagType::FlaggedPage_FlagType_YOUNG_DOMAIN:
-      NOTREACHED();
-      break;
+      // Reached if component includes these flags, which might happen to
+      // support newer Chrome releases.
+      return security_state::SafetyTipStatus::kNone;
     case FlaggedPage::FlagType::FlaggedPage_FlagType_BAD_REP:
       return security_state::SafetyTipStatus::kBadReputation;
   }
@@ -264,8 +265,15 @@ security_state::SafetyTipStatus GetUrlBlockType(const GURL& url) {
           return a.pattern() < b.pattern();
         });
 
-    if (lower != flagged_pages.end() && pattern == lower->pattern()) {
-      return FlagTypeToSafetyTipStatus(lower->type());
+    while (lower != flagged_pages.end() && pattern == lower->pattern()) {
+      // Skip over sites with unexpected flag types and keep looking for other
+      // matches. This allows components to include flag types not handled by
+      // this release.
+      auto type = FlagTypeToSafetyTipStatus(lower->type());
+      if (type != security_state::SafetyTipStatus::kNone) {
+        return type;
+      }
+      ++lower;
     }
   }
 

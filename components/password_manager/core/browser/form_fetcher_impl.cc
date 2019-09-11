@@ -204,7 +204,7 @@ void FormFetcherImpl::Fetch() {
     return;
   }
 
-  PasswordStore* password_store = client_->GetPasswordStore();
+  PasswordStore* password_store = client_->GetProfilePasswordStore();
   if (!password_store) {
     if (logger)
       logger->LogMessage(Logger::STRING_NO_STORE);

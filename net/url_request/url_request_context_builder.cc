@@ -48,10 +48,6 @@
 #include "net/url_request/url_request_throttler_manager.h"
 #include "url/url_constants.h"
 
-#if !BUILDFLAG(DISABLE_FILE_SUPPORT)
-#include "net/url_request/file_protocol_handler.h"  // nogncheck
-#endif
-
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
 #include "net/ftp/ftp_auth_cache.h"                // nogncheck
 #include "net/ftp/ftp_network_layer.h"             // nogncheck
@@ -130,12 +126,6 @@ class BasicNetworkDelegate : public NetworkDelegateImpl {
                       CookieOptions* options,
                       bool allowed_from_caller) override {
     return allowed_from_caller;
-  }
-
-  bool OnCanAccessFile(const URLRequest& request,
-                       const base::FilePath& original_path,
-                       const base::FilePath& absolute_path) const override {
-    return true;
   }
 
   DISALLOW_COPY_AND_ASSIGN(BasicNetworkDelegate);
@@ -640,17 +630,6 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   if (data_enabled_)
     job_factory->SetProtocolHandler(url::kDataScheme,
                                     std::make_unique<DataProtocolHandler>());
-
-#if !BUILDFLAG(DISABLE_FILE_SUPPORT)
-  if (file_enabled_) {
-    job_factory->SetProtocolHandler(
-        url::kFileScheme,
-        std::make_unique<FileProtocolHandler>(base::CreateTaskRunner(
-            {base::ThreadPool(), base::MayBlock(),
-             base::TaskPriority::USER_BLOCKING,
-             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})));
-  }
-#endif  // !BUILDFLAG(DISABLE_FILE_SUPPORT)
 
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
   if (ftp_enabled_) {

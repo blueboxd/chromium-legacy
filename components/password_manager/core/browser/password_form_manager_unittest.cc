@@ -1231,9 +1231,6 @@ TEST_F(PasswordFormManagerTest, Clone) {
   // Check that |form_fetcher| was cloned.
   EXPECT_NE(form_manager_->GetFormFetcher(), cloned_manager->GetFormFetcher());
 
-  EXPECT_EQ(form_manager_->metrics_recorder(),
-            cloned_manager->metrics_recorder());
-
   EXPECT_EQ(form_manager_->GetPendingCredentials(),
             cloned_manager->GetPendingCredentials());
   ASSERT_TRUE(cloned_manager->GetSubmittedForm());

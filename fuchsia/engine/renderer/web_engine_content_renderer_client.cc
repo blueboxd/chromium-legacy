@@ -8,7 +8,9 @@
 #include "components/cdm/renderer/widevine_key_system_properties.h"
 #include "content/public/renderer/render_frame.h"
 #include "fuchsia/engine/renderer/on_load_script_injector.h"
+#include "fuchsia/engine/switches.h"
 #include "media/base/eme_constants.h"
+#include "media/base/video_codecs.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
@@ -50,4 +52,24 @@ void WebEngineContentRendererClient::AddSupportedKeySystems(
       media::EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent usage record
       media::EmeFeatureSupport::ALWAYS_ENABLED,     // persistent state
       media::EmeFeatureSupport::ALWAYS_ENABLED));   // distinctive identifier
+}
+
+bool WebEngineContentRendererClient::IsSupportedVideoType(
+    const media::VideoType& type) {
+  // Fall back to default codec querying logic if software codecs aren't
+  // disabled.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableSoftwareVideoDecoders)) {
+    return ContentRendererClient::IsSupportedVideoType(type);
+  }
+
+  // TODO(fxb/36000): Replace these hardcoded checks with a query to the
+  // fuchsia.mediacodec FIDL service.
+  if (type.codec == media::kCodecH264 && type.level <= 41)
+    return true;
+
+  if (type.codec == media::kCodecVP9 && type.level <= 40)
+    return true;
+
+  return false;
 }

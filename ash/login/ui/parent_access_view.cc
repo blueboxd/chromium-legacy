@@ -617,7 +617,7 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
     label->SetSubpixelRenderingEnabled(false);
     label->SetAutoColorReadabilityEnabled(false);
     label->SetEnabledColor(kTextColor);
-    label->SetFocusBehavior(FocusBehavior::ALWAYS);
+    label->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   };
 
   // Main view title.
@@ -842,6 +842,7 @@ void ParentAccessView::UpdateState(State state) {
       title_label_->SetEnabledColor(kErrorColor);
       title_label_->SetText(
           l10n_util::GetStringUTF16(IDS_ASH_LOGIN_PARENT_ACCESS_TITLE_ERROR));
+      title_label_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
       return;
     }
   }

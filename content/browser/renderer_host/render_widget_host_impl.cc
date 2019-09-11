@@ -2341,6 +2341,8 @@ void RenderWidgetHostImpl::OnAutoscrollStart(const gfx::PointF& position) {
   GetView()->OnAutoscrollStart();
   sent_autoscroll_scroll_begin_ = false;
   autoscroll_in_progress_ = true;
+  delegate()->GetInputEventRouter()->SetAutoScrollInProgress(
+      autoscroll_in_progress_);
   autoscroll_start_position_ = position;
 }
 
@@ -2373,6 +2375,9 @@ void RenderWidgetHostImpl::OnAutoscrollFling(const gfx::Vector2dF& velocity) {
 
 void RenderWidgetHostImpl::OnAutoscrollEnd() {
   autoscroll_in_progress_ = false;
+
+  delegate()->GetInputEventRouter()->SetAutoScrollInProgress(
+      autoscroll_in_progress_);
   // Don't send a GFC if no GSB is sent.
   if (!sent_autoscroll_scroll_begin_)
     return;

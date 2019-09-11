@@ -690,8 +690,8 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
         // GESTURE scroll on impl thread. Also tests that the last scrolled
         // layer id is stored even after the scrolling ends.
         gfx::Point scroll_point = gfx::ToCeiledPoint(
-            expected_scroll_layer_impl->test_properties()->position -
-            gfx::Vector2dF(0.5f, 0.5f));
+            gfx::PointF(-0.5f, -0.5f) +
+            GetTransformNode(expected_scroll_layer_impl)->post_translation);
         InputHandler::ScrollStatus status = impl->ScrollBegin(
             BeginState(scroll_point).get(), InputHandler::TOUCHSCREEN);
         EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
@@ -715,8 +715,8 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
       case 1: {
         // WHEEL scroll on impl thread.
         gfx::Point scroll_point = gfx::ToCeiledPoint(
-            expected_scroll_layer_impl->test_properties()->position +
-            gfx::Vector2dF(0.5f, 0.5f));
+            gfx::PointF(0.5f, 0.5f) +
+            GetTransformNode(expected_scroll_layer_impl)->post_translation);
         InputHandler::ScrollStatus status = impl->ScrollBegin(
             BeginState(scroll_point).get(), InputHandler::WHEEL);
         EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);

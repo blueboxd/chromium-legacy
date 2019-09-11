@@ -699,6 +699,8 @@ cr.define('settings_people_page', function() {
         // Profile row items aren't actionable.
         const profileIcon = assert(peoplePage.$$('#profile-icon'));
         assertFalse(profileIcon.hasAttribute('actionable'));
+        const profileRow = assert(peoplePage.$$('#profile-row'));
+        assertFalse(profileRow.hasAttribute('actionable'));
         const subpageArrow = assert(peoplePage.$$('#profile-subpage-arrow'));
         assertFalse(subpageArrow.hasAttribute('actionable'));
 

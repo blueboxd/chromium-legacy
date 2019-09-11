@@ -8,4 +8,7 @@
 
     <!-- Custom Menu dimensions -->
     <dimen name="menu_negative_software_vertical_offset">0dp</dimen>
+
+    <!-- DualControlLayout dimensions -->
+    <dimen name="dual_control_margin_between_items">8dp</dimen>
 </resources>

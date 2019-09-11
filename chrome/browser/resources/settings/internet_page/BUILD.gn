@@ -28,7 +28,6 @@ js_library("internet_page") {
     "//chromeos/services/network_config/public/mojom:mojom_js_library_for_compile",
     "//ui/webui/resources/cr_components/chromeos/network:mojo_interface_provider",
     "//ui/webui/resources/cr_elements/chromeos/network:cr_network_listener_behavior",
-    "//ui/webui/resources/cr_elements/chromeos/network:cr_onc_types",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:i18n_behavior",
     "//ui/webui/resources/js:web_ui_listener_behavior",
@@ -82,7 +81,6 @@ js_library("internet_detail_page") {
 js_library("internet_known_networks_page") {
   deps = [
     "//ui/webui/resources/cr_elements/chromeos/network:cr_network_listener_behavior",
-    "//ui/webui/resources/cr_elements/chromeos/network:cr_onc_types",
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
     "//ui/webui/resources/cr_elements/policy:cr_policy_network_behavior_mojo",
     "//ui/webui/resources/js:assert",

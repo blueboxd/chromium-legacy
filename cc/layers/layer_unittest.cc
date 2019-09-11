@@ -966,7 +966,6 @@ TEST_F(LayerTest, PushPropertiesAccumulatesUpdateRect) {
                                   layer_tree_host_->SetRootLayer(test_layer));
 
   host_impl_.active_tree()->SetRootLayerForTesting(std::move(impl_layer));
-  host_impl_.active_tree()->BuildLayerListForTesting();
   LayerImpl* impl_layer_ptr = host_impl_.active_tree()->LayerById(1);
   test_layer->SetNeedsDisplayRect(gfx::Rect(5, 5));
   test_layer->PushPropertiesTo(impl_layer_ptr);

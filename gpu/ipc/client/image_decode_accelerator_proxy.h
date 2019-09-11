@@ -56,6 +56,12 @@ class ImageDecodeAcceleratorProxy : public ImageDecodeAcceleratorInterface {
   // teardown if the decode fails.
   bool IsImageSupported(base::span<const uint8_t> encoded_data) const override;
 
+  // Determines if hardware decode acceleration is supported for JPEG images.
+  bool IsJpegDecodeAccelerationSupported() const override;
+
+  // Determines if hardware decode acceleration is supported for WebP images.
+  bool IsWebPDecodeAccelerationSupported() const override;
+
   // Schedules a hardware-accelerated image decode on the GPU process. The image
   // in |encoded_data| is decoded and scaled to |output_size|. Upon completion
   // and after the sync token corresponding to

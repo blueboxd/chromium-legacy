@@ -10,6 +10,7 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "ui/display/display.h"
 #include "ui/gfx/transform.h"
@@ -53,6 +54,13 @@ class ArCore {
   virtual bool RequestHitTest(
       const mojom::XRRayPtr& ray,
       std::vector<mojom::XRHitResultPtr>* hit_results) = 0;
+
+  virtual base::Optional<int32_t> CreateAnchor(
+      const mojom::VRPosePtr& pose) = 0;
+  virtual base::Optional<int32_t> CreateAnchor(const mojom::VRPosePtr& pose,
+                                               int32_t plane_id) = 0;
+
+  virtual void DetachAnchor(int32_t anchor_id) = 0;
 
   virtual void Pause() = 0;
   virtual void Resume() = 0;

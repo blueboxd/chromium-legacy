@@ -27,8 +27,11 @@ class ASH_EXPORT HotseatWidget : public views::Widget {
   void OnGestureEvent(ui::GestureEvent* event) override;
   bool OnNativeWidgetActivationChanged(bool active) override;
 
-  // Returns whether the overflow menu/bubble is currently being shown.
+  // Whether the overflow menu/bubble is currently being shown.
   bool IsShowingOverflowBubble() const;
+
+  // Whether the widget has been dragged to the extended position.
+  bool IsDraggedToExtended() const;
 
   // Focuses the first or the last app shortcut inside the overflow shelf.
   // Does nothing if the overflow shelf is not currently shown.

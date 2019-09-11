@@ -59,7 +59,7 @@ class TestPasswordManagerClient : public ChromePasswordManagerClient {
 
   bool IsSavingAndFillingEnabled(const GURL& url) const override;
   void GeneratePassword() override;
-  password_manager::PasswordStore* GetPasswordStore() const override;
+  password_manager::PasswordStore* GetProfilePasswordStore() const override;
 
  private:
   scoped_refptr<MockPasswordStore> mock_password_store_;
@@ -97,8 +97,8 @@ bool TestPasswordManagerClient::IsSavingAndFillingEnabled(
 
 void TestPasswordManagerClient::GeneratePassword() {}
 
-password_manager::PasswordStore* TestPasswordManagerClient::GetPasswordStore()
-    const {
+password_manager::PasswordStore*
+TestPasswordManagerClient::GetProfilePasswordStore() const {
   return mock_password_store_.get();
 }
 

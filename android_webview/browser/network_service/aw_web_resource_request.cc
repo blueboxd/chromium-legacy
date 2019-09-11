@@ -4,6 +4,8 @@
 
 #include "android_webview/browser/network_service/aw_web_resource_request.h"
 
+#include "base/android/jni_array.h"
+#include "base/android/jni_string.h"
 #include "content/public/common/resource_type.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"

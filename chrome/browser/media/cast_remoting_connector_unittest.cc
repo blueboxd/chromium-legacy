@@ -103,11 +103,11 @@ class FakeMediaRouter : public media_router::MockMediaRouter {
 
 class MockRemotingSource : public media::mojom::RemotingSource {
  public:
-  MockRemotingSource() : binding_(this) {}
+  MockRemotingSource() {}
   ~MockRemotingSource() final {}
 
-  void Bind(RemotingSourceRequest request) {
-    binding_.Bind(std::move(request));
+  void Bind(mojo::PendingReceiver<RemotingSource> receiver) {
+    receiver_.Bind(std::move(receiver));
   }
 
   MOCK_METHOD0(OnSinkGone, void());
@@ -121,7 +121,7 @@ class MockRemotingSource : public media::mojom::RemotingSource {
   }
 
  private:
-  mojo::Binding<media::mojom::RemotingSource> binding_;
+  mojo::Receiver<media::mojom::RemotingSource> receiver_{this};
 };
 
 // TODO(xjz): Remove the media::mojom::MirrorServiceRemoter implementation after
@@ -131,7 +131,7 @@ class MockMediaRemoter final : public media::mojom::MirrorServiceRemoter,
  public:
   // TODO(xjz): Remove this ctor after Mirroring Service is launched.
   explicit MockMediaRemoter(FakeMediaRouter* media_router)
-      : deprecated_binding_(this), binding_(this) {
+      : deprecated_binding_(this) {
     MirrorServiceRemoterPtr remoter;
     deprecated_binding_.Bind(mojo::MakeRequest(&remoter));
     media_router->OnMediaRemoterCreated(kRemotingTabId, std::move(remoter),
@@ -139,10 +139,8 @@ class MockMediaRemoter final : public media::mojom::MirrorServiceRemoter,
   }
 
   explicit MockMediaRemoter(CastRemotingConnector* connector)
-      : deprecated_binding_(this), binding_(this) {
-    RemoterPtr remoter;
-    binding_.Bind(mojo::MakeRequest(&remoter));
-    connector->ConnectWithMediaRemoter(std::move(remoter),
+      : deprecated_binding_(this) {
+    connector->ConnectWithMediaRemoter(receiver_.BindNewPipeAndPassRemote(),
                                        mojo::MakeRequest(&source_));
   }
 
@@ -220,7 +218,7 @@ class MockMediaRemoter final : public media::mojom::MirrorServiceRemoter,
   mojo::Binding<media::mojom::MirrorServiceRemoter> deprecated_binding_;
   MirrorServiceRemotingSourcePtr deprecated_source_;
 
-  mojo::Binding<media::mojom::Remoter> binding_;
+  mojo::Receiver<media::mojom::Remoter> receiver_{this};
   RemotingSourcePtr source_;
 };
 

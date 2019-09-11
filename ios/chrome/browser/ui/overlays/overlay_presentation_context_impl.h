@@ -51,15 +51,22 @@ class OverlayPresentationContextImpl : public OverlayPresentationContext {
   };
 
   // The OverlayContainerCoordinator is used to present the overlay UI at the
-  // correct modality in the app.  Should only be set when the coordinator's
-  // presentation context is able to present.
+  // correct modality in the app.  Should only be set when the coordinator is
+  // started.
   OverlayContainerCoordinator* coordinator() const { return coordinator_; }
   void SetCoordinator(OverlayContainerCoordinator* coordinator);
+
+  // Called when |coordinator_|'s view was moved to a new window.
+  void WindowDidChange();
 
   // OverlayPresentationContext:
   void AddObserver(OverlayPresentationContextObserver* observer) override;
   void RemoveObserver(OverlayPresentationContextObserver* observer) override;
-  bool IsActive() const override;
+  UIPresentationCapabilities GetPresentationCapabilities() const override;
+  bool CanShowUIForRequest(
+      OverlayRequest* request,
+      UIPresentationCapabilities capabilities) const override;
+  bool CanShowUIForRequest(OverlayRequest* request) const override;
   void ShowOverlayUI(OverlayPresenter* presenter,
                      OverlayRequest* request,
                      OverlayPresentationCallback presentation_callback,
@@ -78,6 +85,10 @@ class OverlayPresentationContextImpl : public OverlayPresentationContext {
 
   // Returns the UI state for |request|.
   OverlayRequestUIState* GetRequestUIState(OverlayRequest* request);
+
+  // Updates |coordinator_| and |presentation_capabilities_| using
+  // |coordinator|.
+  void UpdateForCoordinator(OverlayContainerCoordinator* coordinator);
 
   // Shows the UI for the presented request using the container coordinator.
   void ShowUIForPresentedRequest();
@@ -133,6 +144,9 @@ class OverlayPresentationContextImpl : public OverlayPresentationContext {
   OverlayRequestCoordinatorFactory* coordinator_factory_ = nil;
   // The coordinator responsible for presenting the UI delegate's UI.
   OverlayContainerCoordinator* coordinator_ = nil;
+  // The presentation capabilities of |coordinator_|'s view controller.
+  UIPresentationCapabilities presentation_capabilities_ =
+      UIPresentationCapabilities::kNone;
   // The request that is currently presented by |presenter_|.  The UI for this
   // request might not yet be visible if no OverlayContainerCoordinator has been
   // provided.  When a new request is presented, the UI state for the request

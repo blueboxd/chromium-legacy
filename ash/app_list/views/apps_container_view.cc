@@ -75,9 +75,8 @@ gfx::Size AppsContainerView::GetNonAppsGridSize() {
           ? 0
           : kAppsGridMinimumMargin * 2;
 
-  // Enlarge with the apps grid view insets and margin.
-  size.Enlarge(min_grid_horizontal_margin,
-               AppsGridView::kFadeoutZoneHeight * 2);
+  // Enlarge with the apps grid view horizontal margin.
+  size.Enlarge(min_grid_horizontal_margin, 0);
 
   // Enlarge with suggestion chips.
   size.Enlarge(0, kSuggestionChipFullscreenY + kSuggestionChipContainerHeight);
@@ -282,7 +281,7 @@ void AppsContainerView::Layout() {
       // fullscreen and peeking state to avoid resizing the view during
       // animation and dragging, which is an expensive operation.
       rect.set_y(chip_container_rect.bottom());
-      rect.set_height(rect.height() - kSuggestionChipFullscreenY -
+      rect.set_height(rect.height() - GetSuggestionChipContainerFullscreenY() -
                       kSuggestionChipContainerHeight);
 
       const int page_switcher_width =
@@ -423,21 +422,6 @@ void AppsContainerView::OnGestureEvent(ui::GestureEvent* event) {
     event->SetHandled();
 }
 
-gfx::Size AppsContainerView::GetMinimumSize() const {
-  const bool switch_cols_and_rows = ShouldSwitchColsAndRows();
-  const int cols = switch_cols_and_rows
-                       ? AppListConfig::instance().preferred_rows()
-                       : AppListConfig::instance().preferred_cols();
-  const int rows = switch_cols_and_rows
-                       ? AppListConfig::instance().preferred_cols()
-                       : AppListConfig::instance().preferred_rows();
-  gfx::Size min_size = apps_grid_view_->GetMinimumTileGridSize(cols, rows);
-
-  const gfx::Size non_apps_grid_size = GetNonAppsGridSize();
-  min_size.Enlarge(non_apps_grid_size.width(), non_apps_grid_size.height());
-  return min_size;
-}
-
 void AppsContainerView::OnWillBeHidden() {
   if (show_state_ == SHOW_APPS || show_state_ == SHOW_ITEM_REPARENT)
     apps_grid_view_->EndDrag(true);
@@ -564,7 +548,18 @@ int AppsContainerView::GetExpectedSuggestionChipY(float progress) {
   // Currently transition progress is between peeking and fullscreen
   // state.
   return gfx::Tween::IntValueBetween(progress - 1, kSuggestionChipPeekingY,
-                                     kSuggestionChipFullscreenY);
+                                     GetSuggestionChipContainerFullscreenY());
+}
+
+int AppsContainerView::GetSuggestionChipContainerFullscreenY() const {
+  // For small screen sizes, account for the search box size diff (48 - > 40),
+  // and reduce the margin between the search box and suggestion chips (24 ->
+  // 8).
+  if (GetContentsBounds().height() < kAppsGridMarginSmallWidthThreshold &&
+      !app_list_features::IsScalableAppListEnabled()) {
+    return kSuggestionChipFullscreenY - 24;
+  }
+  return kSuggestionChipFullscreenY;
 }
 
 bool AppsContainerView::ShouldSwitchColsAndRows() const {

@@ -685,14 +685,6 @@ CHAR-LIMIT guidelines:
         Open this page
       </message>
 
-      <!-- Startup page preferences -->
-      <message name="IDS_OPTIONS_STARTUP_PAGE_TITLE" desc="The title of the setting that allows users to manage the page that opens when they start Chrome.">
-        Startup Page
-      </message>
-      <message name="IDS_OPTIONS_STARTUP_PAGE_EDIT_TITLE" desc="The title of the screen that allows users to change the URL of the page that opens when they start Chrome.">
-        Edit startup page
-      </message>
-
       <!-- Notifications preferences -->
       <message name="IDS_PREFS_NOTIFICATIONS" desc="Title for Notification preferences.">
         Notifications
@@ -3816,18 +3808,6 @@ The site does NOT gain access to the camera. The camera images are only visible 
       <message name="IDS_IPH_DOWNLOAD_INFOBAR_DOWNLOADS_ARE_FASTER_TEXT" desc="The in-product-help message on the download InfoBar to inform that downloads are now faster than before.">
         Chrome now downloads files faster
       </message>
-      <message name="IDS_IPH_NTP_BUTTON_TEXT_HOME_TEXT" desc="The in-product-help message to tap on the home button to navigate to the new tab page on the current tab.">
-        Tap to load the new tab page
-      </message>
-      <message name="IDS_IPH_NTP_BUTTON_TEXT_HOME_ACCESSIBILITY_TEXT" desc="The in-product-help accessibility message to tap on the home button to navigate to the new tab page on the current tab.">
-        Tap the home button to load the new tab page
-      </message>
-      <message name="IDS_IPH_HOMEPAGE_TILE_TEXT" desc="The in-product-help message to use first tile in Most Visited as homepage tile.">
-        Your favorite pages are here
-      </message>
-      <message name="IDS_IPH_HOMEPAGE_TILE_ACCESSIBILITY_TEXT" desc="The in-product-help message to use first tile in Most Visited as homepage tile when accessibility mode is enabled.">
-        Links to your favorite websites can be found on this page
-      </message>
 
       <!-- Launcher Shortcuts -->
       <message name="IDS_DISABLED_INCOGNITO_LAUNCHER_SHORTCUT_MESSAGE" desc="Text for a toast displayed prompting the user to remove the disabled 'New incognito tab' app shortcut and recreate it.">
@@ -3884,8 +3864,14 @@ The site does NOT gain access to the camera. The camera images are only visible 
       <message name="IDS_SHARING_DISMISS_ACTION" desc="Text for action that dismiss a sharing sending notification.">
         Dismiss
       </message>
-      <message name="IDS_SHARING_DEVICE_LIST_EMPTY" desc="Text to shown when no device targets are available for sharing.">
-        No devices available.
+      <message name="IDS_SHARING_NO_DEVICES_AVAILABLE_TITLE" desc="Text to show when no device targets are available for sharing.">
+        Turn on sync to share across devices
+      </message>
+      <message name="IDS_SHARING_NO_DEVICES_AVAILABLE_TEXT" desc="Text to show when no device targets are available for sharing.">
+        To share something from your phone to another device, turn on sync in Chrome settings on both devices
+      </message>
+      <message name="IDS_SHARING_CHROME_SETTINGS" desc="Text shown in a button when user has turned off sync.">
+        Go to Chrome settings
       </message>
 
       <!-- ClickToCall -->

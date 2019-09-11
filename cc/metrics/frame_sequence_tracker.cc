@@ -19,7 +19,7 @@ namespace cc {
 
 const char* const FrameSequenceTracker::kFrameSequenceTrackerTypeNames[] = {
     "CompositorAnimation", "MainThreadAnimation", "PinchZoom", "RAF",
-    "TouchScroll",         "WheelScroll",         ""};
+    "TouchScroll",         "WheelScroll",         "Universal", ""};
 
 namespace {
 
@@ -69,7 +69,9 @@ std::string GetFrameSequenceLengthHistogramName(FrameSequenceTrackerType type) {
 FrameSequenceTrackerCollection::FrameSequenceTrackerCollection(
     CompositorFrameReportingController* compositor_frame_reporting_controller)
     : compositor_frame_reporting_controller_(
-          compositor_frame_reporting_controller) {}
+          compositor_frame_reporting_controller) {
+  StartSequence(FrameSequenceTrackerType::kUniversal);
+}
 
 FrameSequenceTrackerCollection::~FrameSequenceTrackerCollection() {
   frame_trackers_.clear();
@@ -106,6 +108,7 @@ void FrameSequenceTrackerCollection::StopSequence(
 void FrameSequenceTrackerCollection::ClearAll() {
   frame_trackers_.clear();
   removal_trackers_.clear();
+  StartSequence(FrameSequenceTrackerType::kUniversal);
 }
 
 void FrameSequenceTrackerCollection::NotifyBeginImplFrame(

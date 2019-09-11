@@ -17,6 +17,10 @@
   return NO;
 }
 
++ (BOOL)showsOverlayUsingChildViewController {
+  return NO;
+}
+
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                    browser:(Browser*)browser
                                    request:(OverlayRequest*)request

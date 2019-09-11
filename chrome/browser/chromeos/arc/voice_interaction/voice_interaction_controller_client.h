@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/public/mojom/voice_interaction_controller.mojom.h"
+#include "ash/public/mojom/assistant_state_controller.mojom.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -26,7 +26,7 @@ class VoiceInteractionControllerClient
   class Observer {
    public:
     // Called when voice interaction session state changes.
-    virtual void OnStateChanged(ash::mojom::VoiceInteractionState state) = 0;
+    virtual void OnStateChanged(ash::mojom::AssistantState state) = 0;
   };
 
   VoiceInteractionControllerClient();
@@ -34,15 +34,15 @@ class VoiceInteractionControllerClient
   static VoiceInteractionControllerClient* Get();
 
   // Notify the controller about state changes.
-  void NotifyStatusChanged(ash::mojom::VoiceInteractionState state);
+  void NotifyStatusChanged(ash::mojom::AssistantState state);
 
   void NotifyLockedFullScreenStateChanged(bool enabled);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  const ash::mojom::VoiceInteractionState& voice_interaction_state() const {
-    return voice_interaction_state_;
+  const ash::mojom::AssistantState& assistant_state() const {
+    return assistant_state_;
   }
 
  private:
@@ -65,8 +65,8 @@ class VoiceInteractionControllerClient
 
   Profile* profile_ = nullptr;
 
-  ash::mojom::VoiceInteractionState voice_interaction_state_ =
-      ash::mojom::VoiceInteractionState::STOPPED;
+  ash::mojom::AssistantState assistant_state_ =
+      ash::mojom::AssistantState::READY;
 
   base::ObserverList<Observer>::Unchecked observers_;
 

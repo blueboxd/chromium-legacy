@@ -2247,6 +2247,11 @@ enum class EnterTabSwitcherSnapshotResult {
   // to be cloase, it is thus the responsibility of the main controller to
   // dismiss the the advanced sign-in settings by dismssing the settings
   // presented by |self.signinInteractionCoordinator|.
+  // To reproduce this case:
+  //  - open Bookmark view
+  //  - start sign-in
+  //  - tap on "Settings" to open the advanced sign-in settings
+  //  - tap on "Manage Your Google Account"
   DCHECK(self.signinInteractionCoordinator.isSettingsViewPresented);
   [self.signinInteractionCoordinator
       abortAndDismissSettingsViewAnimated:animated

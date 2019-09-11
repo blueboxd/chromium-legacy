@@ -583,6 +583,42 @@ void ArCoreGl::RequestHitTest(
   hit_test_requests_.push_back(std::move(request));
 }
 
+void ArCoreGl::CreateAnchor(mojom::VRPosePtr anchor_pose,
+                            CreateAnchorCallback callback) {
+  DVLOG(2) << __func__;
+
+  base::Optional<int32_t> maybe_anchor_id = arcore_->CreateAnchor(anchor_pose);
+
+  if (maybe_anchor_id) {
+    std::move(callback).Run(device::mojom::CreateAnchorResult::SUCCESS,
+                            *maybe_anchor_id);
+  } else {
+    std::move(callback).Run(device::mojom::CreateAnchorResult::FAILURE, 0);
+  }
+}
+
+void ArCoreGl::CreatePlaneAnchor(mojom::VRPosePtr anchor_pose,
+                                 int32_t plane_id,
+                                 CreatePlaneAnchorCallback callback) {
+  DVLOG(2) << __func__;
+
+  base::Optional<int32_t> maybe_anchor_id =
+      arcore_->CreateAnchor(anchor_pose, plane_id);
+
+  if (maybe_anchor_id) {
+    std::move(callback).Run(device::mojom::CreateAnchorResult::SUCCESS,
+                            *maybe_anchor_id);
+  } else {
+    std::move(callback).Run(device::mojom::CreateAnchorResult::FAILURE, 0);
+  }
+}
+
+void ArCoreGl::DetachAnchor(int32_t anchor_id) {
+  DVLOG(2) << __func__;
+
+  arcore_->DetachAnchor(anchor_id);
+}
+
 void ArCoreGl::SetFrameDataRestricted(bool frame_data_restricted) {
   DCHECK(IsOnGlThread());
   DCHECK(is_initialized_);

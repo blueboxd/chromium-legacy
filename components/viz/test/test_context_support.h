@@ -77,6 +77,8 @@ class TestContextSupport : public gpu::ContextSupport {
   void DeleteTransferCacheEntry(uint32_t entry_type,
                                 uint32_t entry_id) override;
   unsigned int GetTransferBufferFreeSize() const override;
+  bool IsJpegDecodeAccelerationSupported() const override;
+  bool IsWebPDecodeAccelerationSupported() const override;
   bool CanDecodeWithHardwareAcceleration(
       base::span<const uint8_t> encoded_data) const override;
   bool HasGrContextSupport() const override;

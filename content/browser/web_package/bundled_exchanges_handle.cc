@@ -74,7 +74,6 @@ class PrimaryURLRedirectLoader final : public network::mojom::URLLoader {
 
     net::RedirectInfo redirect_info = net::RedirectInfo::ComputeRedirectInfo(
         "GET", resource_request.url, resource_request.site_for_cookies,
-        resource_request.top_frame_origin,
         resource_request.update_first_party_url_on_redirect
             ? net::URLRequest::FirstPartyURLPolicy::
                   UPDATE_FIRST_PARTY_URL_ON_REDIRECT

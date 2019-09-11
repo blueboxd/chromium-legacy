@@ -115,13 +115,6 @@ bool IOSChromeNetworkDelegate::OnCanSetCookie(
                                     request.url(), request.site_for_cookies());
 }
 
-bool IOSChromeNetworkDelegate::OnCanAccessFile(
-    const net::URLRequest& request,
-    const base::FilePath& original_path,
-    const base::FilePath& absolute_path) const {
-  return true;
-}
-
 bool IOSChromeNetworkDelegate::OnForcePrivacyMode(
     const GURL& url,
     const GURL& site_for_cookies,

@@ -6,8 +6,7 @@
 #define IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_OVERLAY_PRESENTATION_CONTEXT_OBSERVER_H_
 
 #include "base/observer_list_types.h"
-
-class OverlayPresentationContext;
+#import "ios/chrome/browser/overlays/public/overlay_presentation_context.h"
 
 // Observer class for the ObserverPresentationContext.
 class OverlayPresentationContextObserver : public base::CheckedObserver {
@@ -16,12 +15,12 @@ class OverlayPresentationContextObserver : public base::CheckedObserver {
 
   // Called before |presentation_context|'s activation state changes to
   // |activating|.
-  virtual void OverlayPresentationContextWillChangeActivationState(
+  virtual void OverlayPresentationContextWillChangePresentationCapabilities(
       OverlayPresentationContext* presentation_context,
-      bool activating) {}
+      OverlayPresentationContext::UIPresentationCapabilities capabilities) {}
 
   // Called after |presentation_context|'s activation state changes.
-  virtual void OverlayPresentationContextDidChangeActivationState(
+  virtual void OverlayPresentationContextDidChangePresentationCapabilities(
       OverlayPresentationContext* presentation_context) {}
 };
 

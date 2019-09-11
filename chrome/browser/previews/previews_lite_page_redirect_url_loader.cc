@@ -172,7 +172,6 @@ void PreviewsLitePageRedirectURLLoader::CreateRedirectInformation(
   redirect_info_ = net::RedirectInfo::ComputeRedirectInfo(
       modified_resource_request_.method, modified_resource_request_.url,
       modified_resource_request_.site_for_cookies,
-      modified_resource_request_.top_frame_origin,
       net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT,
       modified_resource_request_.referrer_policy,
       modified_resource_request_.referrer.spec(), net::HTTP_TEMPORARY_REDIRECT,
@@ -190,8 +189,6 @@ void PreviewsLitePageRedirectURLLoader::CreateRedirectInformation(
   modified_resource_request_.method = redirect_info_.new_method;
   modified_resource_request_.site_for_cookies =
       redirect_info_.new_site_for_cookies;
-  modified_resource_request_.top_frame_origin =
-      redirect_info_.new_top_frame_origin;
   modified_resource_request_.referrer = GURL(redirect_info_.new_referrer);
   modified_resource_request_.referrer_policy =
       redirect_info_.new_referrer_policy;

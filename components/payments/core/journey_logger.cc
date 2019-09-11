@@ -481,15 +481,6 @@ void JourneyLogger::ValidateEventBits() const {
   if (events_ & EVENT_SKIPPED_SHOW) {
     // Built in autofill payment handler for basic card should not skip UI show.
     DCHECK(!(events_ & EVENT_SELECTED_CREDIT_CARD));
-    // Payment sheet should not get skipped when any of the following info is
-    // required, unless skip-to-gpay is enabled. Checking the feature flag here
-    // may mess up the Finch result, so using EVENT_REQUEST_METHOD_GOOGLE as a
-    // proxy.
-    bool gpay_requested = events_ & EVENT_REQUEST_METHOD_GOOGLE;
-    DCHECK(!(events_ & EVENT_REQUEST_SHIPPING) || gpay_requested);
-    DCHECK(!(events_ & EVENT_REQUEST_PAYER_NAME) || gpay_requested);
-    DCHECK(!(events_ & EVENT_REQUEST_PAYER_EMAIL) || gpay_requested);
-    DCHECK(!(events_ & EVENT_REQUEST_PAYER_PHONE) || gpay_requested);
   }
 
   // Check that the two bits are not set at the same time.

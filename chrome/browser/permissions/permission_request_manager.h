@@ -80,6 +80,8 @@ class PermissionRequestManager
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  bool ShouldShowQuietPermissionPrompt();
+
   // Do NOT use this methods in production code. Use this methods in browser
   // tests that need to accept or deny permissions when requested in
   // JavaScript. Your test needs to set this appropriately, and then the bubble
@@ -87,21 +89,6 @@ class PermissionRequestManager
   void set_auto_response_for_test(AutoResponseType response) {
     auto_response_for_test_ = response;
   }
-
- private:
-  friend class test::PermissionRequestManagerTestApi;
-
-  // TODO(felt): Update testing to use the TestApi so that it doesn't involve a
-  // lot of friends.
-  friend class GeolocationBrowserTest;
-  friend class GeolocationPermissionContextTests;
-  friend class MockPermissionPromptFactory;
-  friend class PermissionContextBaseTests;
-  friend class PermissionRequestManagerTest;
-  friend class content::WebContentsUserData<PermissionRequestManager>;
-  FRIEND_TEST_ALL_PREFIXES(DownloadTest, TestMultipleDownloadsBubble);
-
-  explicit PermissionRequestManager(content::WebContents* web_contents);
 
   // WebContentsObserver:
   void DidStartNavigation(
@@ -120,6 +107,21 @@ class PermissionRequestManager
   void Accept() override;
   void Deny() override;
   void Closing() override;
+
+ private:
+  friend class test::PermissionRequestManagerTestApi;
+
+  // TODO(felt): Update testing to use the TestApi so that it doesn't involve a
+  // lot of friends.
+  friend class GeolocationBrowserTest;
+  friend class GeolocationPermissionContextTests;
+  friend class MockPermissionPromptFactory;
+  friend class PermissionContextBaseTests;
+  friend class PermissionRequestManagerTest;
+  friend class content::WebContentsUserData<PermissionRequestManager>;
+  FRIEND_TEST_ALL_PREFIXES(DownloadTest, TestMultipleDownloadsBubble);
+
+  explicit PermissionRequestManager(content::WebContents* web_contents);
 
   // Posts a task which will allow the bubble to become visible if it is needed.
   void ScheduleShowBubble();

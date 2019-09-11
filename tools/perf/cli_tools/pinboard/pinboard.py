@@ -35,16 +35,24 @@ TZ = 'America/Los_Angeles'  # MTV-time.
 
 # Only these are exported and uploaded to the Cloud Storage dataset.
 MEASUREMENTS = set([
-    'memory:chrome:renderer_processes:reported_by_chrome:v8:effective_size',
+    # V8 metrics.
     'JavaScript:duration',
-    'Optimize:duration',
     'Optimize-Background:duration',
-    'Total:duration',
-    'V8-Only:duration',
+    'Optimize:duration',
+    'RunsPerMinute',
     'Total-Main-Thread:duration',
+    'Total:duration',
     'V8-Only-Main-Thread:duration',
+    'V8-Only:duration',
+    'memory:chrome:renderer_processes:reported_by_chrome:v8:effective_size',
     'total:500ms_window:renderer_eqt:v8',
-    'RunsPerMinute'
+
+    # Startup metrics.
+    'experimental_content_start_time',
+    'experimental_navigation_start_time',
+    'first_contentful_paint_time',
+    'messageloop_start_time',
+    'navigation_commit_time',
 ])
 
 # Compute averages over a fixed set of active stories. These may need to be
@@ -66,7 +74,8 @@ ACTIVE_STORIES = set([
     'load:media:facebook_photos',
     'load:media:youtube:2018',
     'load:news:irctc',
-    'load:news:wikipedia:2018'
+    'load:news:wikipedia:2018',
+    'intent:coldish:bbc',
 ])
 
 

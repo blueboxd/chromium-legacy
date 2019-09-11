@@ -13,11 +13,19 @@ declare_args() {
   # Enable remote debugging for WebContentRunner instances on this port.
   # Set to 0 to disable.
   enable_remote_debugging_on_port = 0
+
+  # Allow the Cast Runner to use software decoders for rendering video.
+  # TODO(crbug.com/1000858): Revisit this value once hardware playback is fixed
+  #                          (fxb/13659).
+  enable_software_video_decoders = true
 }
 
 buildflag_header("buildflags") {
   header = "buildflags.h"
-  flags = [ "ENABLE_REMOTE_DEBUGGING_ON_PORT=$enable_remote_debugging_on_port" ]
+  flags = [
+    "ENABLE_REMOTE_DEBUGGING_ON_PORT=$enable_remote_debugging_on_port",
+    "ENABLE_SOFTWARE_VIDEO_DECODERS=$enable_software_video_decoders",
+  ]
   visibility = [ ":*" ]
 }
 
@@ -89,6 +97,7 @@ executable("cast_runner_exe") {
     "cast/main.cc",
   ]
   deps = [
+    ":buildflags",
     ":cast_runner_core",
     ":common",
     "//base",

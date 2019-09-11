@@ -20,5 +20,5 @@ interface XRPlane {
     readonly attribute XRPlaneOrientation? orientation;
     readonly attribute DOMHighResTimeStamp lastChangedTime;
 
-    [RuntimeEnabled=WebXRAnchors, CallWith=ScriptState] Promise<XRAnchor> createAnchor(XRRigidTransform initial_pose, XRSpace space);
+    [RuntimeEnabled=WebXRAnchors, CallWith=ScriptState, RaisesException] Promise<XRAnchor> createAnchor(XRRigidTransform initial_pose, XRSpace space);
 };

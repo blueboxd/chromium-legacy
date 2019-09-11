@@ -2798,6 +2798,110 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   EXPECT_EQ(first_tab_badge_text, action->GetDisplayBadgeText(first_tab_id));
 }
 
+// Ensure web request events are still dispatched even if DNR blocks/redirects
+// the request. (Regression test for crbug.com/999744).
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, WebRequestEvents) {
+  // Load the extension with a background script so scripts can be run from its
+  // generated background page.
+  set_has_background_script(true);
+
+  TestRule rule = CreateGenericRule();
+  rule.condition->url_filter = "||example.com";
+  rule.condition->resource_types = std::vector<std::string>({"main_frame"});
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
+      {rule}, "test_extension", {URLPattern::kAllUrlsPattern}));
+
+  GURL url = embedded_test_server()->GetURL("example.com",
+                                            "/pages_with_script/index.html");
+
+  // Set up web request listeners listening to request to |url|.
+  const char kWebRequestListenerScript[] = R"(
+    let filter = {'urls' : ['%s'], 'types' : ['main_frame']};
+
+    let onBeforeRequestSeen = false;
+    chrome.webRequest.onBeforeRequest.addListener(() => {
+      onBeforeRequestSeen = true;
+    }, filter);
+
+    // The request will fail since it will be blocked by DNR.
+    chrome.webRequest.onErrorOccurred.addListener(() => {
+      if (onBeforeRequestSeen)
+        chrome.test.sendMessage('PASS');
+    }, filter);
+
+    chrome.test.sendMessage('INSTALLED');
+  )";
+
+  ExtensionTestMessageListener pass_listener("PASS", false /* will_reply */);
+  ExtensionTestMessageListener installed_listener("INSTALLED",
+                                                  false /* will_reply */);
+  ExecuteScriptInBackgroundPageNoWait(
+      last_loaded_extension_id(),
+      base::StringPrintf(kWebRequestListenerScript, url.spec().c_str()));
+
+  // Wait for the web request listeners to be installed before navigating.
+  ASSERT_TRUE(installed_listener.WaitUntilSatisfied());
+
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  ASSERT_FALSE(WasFrameWithScriptLoaded(GetMainFrame()));
+  EXPECT_TRUE(pass_listener.WaitUntilSatisfied());
+}
+
+// Ensure Declarative Net Request gets priority over the web request API.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, WebRequestPriority) {
+  // Load the extension with a background script so scripts can be run from its
+  // generated background page.
+  set_has_background_script(true);
+
+  GURL url = embedded_test_server()->GetURL("example.com",
+                                            "/pages_with_script/index.html");
+  GURL redirect_url = embedded_test_server()->GetURL(
+      "redirect.com", "/pages_with_script/index.html");
+
+  TestRule example_com_redirect_rule = CreateGenericRule();
+  example_com_redirect_rule.condition->url_filter = "||example.com";
+  example_com_redirect_rule.condition->resource_types =
+      std::vector<std::string>({"main_frame"});
+  example_com_redirect_rule.action->type = std::string("redirect");
+  example_com_redirect_rule.action->redirect.emplace();
+  example_com_redirect_rule.action->redirect->url = redirect_url.spec();
+  example_com_redirect_rule.priority = kMinValidPriority;
+
+  ASSERT_NO_FATAL_FAILURE(
+      LoadExtensionWithRules({example_com_redirect_rule}, "test_extension",
+                             {URLPattern::kAllUrlsPattern}));
+
+  // Set up a web request listener to block the request to example.com.
+  const char kWebRequestBlockScript[] = R"(
+    let filter = {'urls' : ['%s'], 'types' : ['main_frame']};
+    chrome.webRequest.onBeforeRequest.addListener((details) => {
+      chrome.test.sendMessage('SEEN')
+    }, filter, ['blocking']);
+    chrome.test.sendMessage('INSTALLED');
+  )";
+
+  ExtensionTestMessageListener seen_listener("SEEN", false /* will_reply */);
+  ExtensionTestMessageListener installed_listener("INSTALLED",
+                                                  false /* will_reply */);
+  ExecuteScriptInBackgroundPageNoWait(
+      last_loaded_extension_id(),
+      base::StringPrintf(kWebRequestBlockScript, url.spec().c_str()));
+
+  // Wait for the web request listeners to be installed before navigating.
+  ASSERT_TRUE(installed_listener.WaitUntilSatisfied());
+
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Ensure the response from the web request listener was ignored and the
+  // request was redirected.
+  ASSERT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
+  EXPECT_EQ(web_contents()->GetLastCommittedURL(), redirect_url);
+
+  // Ensure onBeforeRequest is seen by the web request extension.
+  EXPECT_TRUE(seen_listener.WaitUntilSatisfied());
+}
+
 // Test that the extension cannot retrieve the number of actions matched
 // from the badge text by calling chrome.browserAction.getBadgeText.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,

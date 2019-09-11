@@ -175,7 +175,7 @@ class DamageTrackerTest : public LayerTestCommon::LayerImplTest,
 
  protected:
   void ClearLayersAndProperties() {
-    root_layer()->test_properties()->RemoveAllChildren();
+    host_impl()->active_tree()->DetachLayersKeepingRootLayerForTesting();
     host_impl()->active_tree()->property_trees()->clear();
     child_layers_.clear();
     child1_ = child2_ = grand_child1_ = grand_child2_ = nullptr;
@@ -1161,8 +1161,13 @@ TEST_F(DamageTrackerTest, VerifyDamageForAddingAndRemovingLayer) {
   EXPECT_TRUE(root_damage_rect.IsEmpty());
 
   // Then, test removing child1_.
-  root->test_properties()->RemoveChild(child1);
-  child1 = nullptr;
+  {
+    OwnedLayerImplList layers =
+        host_impl()->active_tree()->DetachLayersKeepingRootLayerForTesting();
+    ASSERT_EQ(3u, layers.size());
+    ASSERT_EQ(child1, layers[1].get());
+    host_impl()->active_tree()->AddLayer(std::move(layers[2]));
+  }
   EmulateDrawingOneFrame(root);
 
   EXPECT_TRUE(GetRenderSurface(root)->damage_tracker()->GetDamageRectIfValid(
@@ -1624,7 +1629,6 @@ TEST_F(DamageTrackerTest, VerifyDamageForMask) {
 
   // Then test mask removal.
   ClearDamageForAllSurfaces(root);
-  child->test_properties()->SetMaskLayer(nullptr);
   GetEffectNode(child)->is_masked = false;
   GetEffectNode(child)->mask_layer_id = -1;
   child->NoteLayerPropertyChanged();

@@ -20,7 +20,7 @@
 #include "gpu/command_buffer/service/shared_image_representation_skia_gl.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/command_buffer/service/texture_manager.h"
-#include "gpu/ipc/common/android/texture_owner.h"
+#include "gpu/command_buffer/service/texture_owner.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
@@ -33,7 +33,7 @@
 namespace gpu {
 
 namespace {
-sk_sp<SkPromiseImageTexture> CreatePromiseTexture(
+sk_sp<SkPromiseImageTexture> CreatePromiseTextureVideo(
     viz::VulkanContextProvider* context_provider,
     base::android::ScopedHardwareBufferHandle ahb_handle,
     gfx::Size size,
@@ -93,8 +93,9 @@ sk_sp<SkPromiseImageTexture> CreatePromiseTexture(
   return promise_texture;
 }
 
-void DestroyVkPromiseTexture(viz::VulkanContextProvider* context_provider,
-                             sk_sp<SkPromiseImageTexture> promise_texture) {
+void DestroyVkPromiseTextureVideo(
+    viz::VulkanContextProvider* context_provider,
+    sk_sp<SkPromiseImageTexture> promise_texture) {
   DCHECK(promise_texture);
   DCHECK(promise_texture->unique());
 
@@ -295,8 +296,8 @@ class SharedImageRepresentationVideoSkiaVk
     // |promise_texture_| could be null if we never being read.
     if (!promise_texture_)
       return;
-    DestroyVkPromiseTexture(context_state_->vk_context_provider(),
-                            std::move(promise_texture_));
+    DestroyVkPromiseTextureVideo(context_state_->vk_context_provider(),
+                                 std::move(promise_texture_));
   }
 
   sk_sp<SkSurface> BeginWriteAccess(
@@ -339,7 +340,7 @@ class SharedImageRepresentationVideoSkiaVk
 
     if (!promise_texture_) {
       // Create the promise texture.
-      promise_texture_ = CreatePromiseTexture(
+      promise_texture_ = CreatePromiseTextureVideo(
           context_state_->vk_context_provider(),
           scoped_hardware_buffer_->TakeBuffer(), size(), format());
     }

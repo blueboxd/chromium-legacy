@@ -197,6 +197,7 @@ core_idl_files =
                     "frame/report_body.idl",
                     "frame/reporting_observer.idl",
                     "frame/scheduling.idl",
+                    "frame/selector.idl",
                     "frame/test_report_body.idl",
                     "frame/user_activation.idl",
                     "frame/visual_viewport.idl",

@@ -61,11 +61,11 @@ class VIEWS_EXPORT SmoothedThrobber : public Throbber {
   void Start() override;
   void Stop() override;
 
-  int GetStartDelayMs() const;
-  void SetStartDelayMs(int start_delay_ms);
+  base::TimeDelta GetStartDelay() const;
+  void SetStartDelay(const base::TimeDelta& start_delay);
 
-  int GetStopDelayMs() const;
-  void SetStopDelayMs(int stop_delay_ms);
+  base::TimeDelta GetStopDelay() const;
+  void SetStopDelay(const base::TimeDelta& stop_delay);
 
  private:
   // Called when the startup-delay timer fires
@@ -76,11 +76,11 @@ class VIEWS_EXPORT SmoothedThrobber : public Throbber {
   // This function stops the actual throbbing.
   void StopDelayOver();
 
-  // Delay after work starts before starting throbber, in milliseconds.
-  int start_delay_ms_;
+  // Delay after work starts before starting throbber.
+  base::TimeDelta start_delay_;
 
-  // Delay after work stops before stopping, in milliseconds.
-  int stop_delay_ms_;
+  // Delay after work stops before stopping.
+  base::TimeDelta stop_delay_;
 
   base::OneShotTimer start_timer_;
   base::OneShotTimer stop_timer_;

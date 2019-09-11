@@ -83,7 +83,6 @@ class PLATFORM_EXPORT ResourceRequest final {
       const KURL& new_url,
       const AtomicString& new_method,
       const KURL& new_site_for_cookies,
-      scoped_refptr<const SecurityOrigin> new_top_frame_origin,
       const String& new_referrer,
       network::mojom::ReferrerPolicy new_referrer_policy,
       bool skip_service_worker) const;

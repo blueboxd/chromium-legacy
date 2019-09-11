@@ -37,13 +37,16 @@ class FakeOverlayPresentationContext : public OverlayPresentationContext {
   void SimulateDismissalForRequest(OverlayRequest* request,
                                    OverlayDismissalReason reason);
 
-  // Setter for whether the context is active.
-  void SetIsActive(bool active);
+  void SetPresentationCapabilities(UIPresentationCapabilities capabilities);
 
   // OverlayUIDelegate:
   void AddObserver(OverlayPresentationContextObserver* observer) override;
   void RemoveObserver(OverlayPresentationContextObserver* observer) override;
-  bool IsActive() const override;
+  UIPresentationCapabilities GetPresentationCapabilities() const override;
+  bool CanShowUIForRequest(
+      OverlayRequest* request,
+      UIPresentationCapabilities capabilities) const override;
+  bool CanShowUIForRequest(OverlayRequest* request) const override;
   void ShowOverlayUI(OverlayPresenter* presenter,
                      OverlayRequest* request,
                      OverlayPresentationCallback presentation_callback,
@@ -66,8 +69,11 @@ class FakeOverlayPresentationContext : public OverlayPresentationContext {
 
   // The UI states for each request.
   std::map<OverlayRequest*, FakeUIState> states_;
-  // Whether the context is active.
-  bool active_ = true;
+
+  UIPresentationCapabilities capabilities_ =
+      static_cast<UIPresentationCapabilities>(
+          UIPresentationCapabilities::kContained |
+          UIPresentationCapabilities::kPresented);
 
   base::ObserverList<OverlayPresentationContextObserver,
                      /* check_empty= */ true>

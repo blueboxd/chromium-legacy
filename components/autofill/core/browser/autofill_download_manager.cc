@@ -16,6 +16,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
 #include "base/strings/strcat.h"
@@ -966,9 +967,9 @@ std::string AutofillDownloadManager::GetCombinedSignature(
 int AutofillDownloadManager::GetMaxServerAttempts() {
   // This value is constant for the life of the browser, so we cache it
   // statically on first use to avoid re-parsing the param on each retry
-  // opportunity. The range is forced to be within [1, 20].
-  static int max_attempts =
-      std::max(1, std::min(20, kAutofillMaxServerAttempts.Get()));
+  // opportunity.
+  static const int max_attempts =
+      base::ClampToRange(kAutofillMaxServerAttempts.Get(), 1, 20);
   return max_attempts;
 }
 

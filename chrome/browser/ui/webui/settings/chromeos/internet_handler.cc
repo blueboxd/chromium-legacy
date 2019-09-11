@@ -213,7 +213,7 @@ void InternetHandler::SendGmsCoreNotificationsDisabledDeviceNames() {
 
   base::ListValue device_names_value;
   for (const auto& device_name : device_names_without_notifications_)
-    device_names_value.GetList().push_back(device_name->Clone());
+    device_names_value.Append(device_name->Clone());
 
   FireWebUIListener(kSendGmsCoreNotificationsDisabledDeviceNames,
                     device_names_value);

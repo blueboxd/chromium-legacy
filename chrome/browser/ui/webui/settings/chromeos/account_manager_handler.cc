@@ -204,7 +204,7 @@ void AccountManagerUIHandler::OnGetAccounts(
     if (IsSameAccount(account_key, device_account_id)) {
       device_account = std::move(account);
     } else {
-      accounts.GetList().push_back(std::move(account));
+      accounts.Append(std::move(account));
     }
   }
 

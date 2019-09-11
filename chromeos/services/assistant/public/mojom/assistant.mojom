@@ -28,8 +28,8 @@ import "url/mojom/url.mojom";
 interface AssistantService {
   // Initiates assistant and provides interfaces for assistant to call into the
   // browser.
-  Init(Client assistant_client_interface,
-       DeviceActions device_actions_interface,
+  Init(pending_remote<Client> assistant_client_interface,
+       pending_remote<DeviceActions> device_actions_interface,
        bool is_test);
 
   // Binds the main assistant backend interface.
@@ -99,7 +99,8 @@ interface Assistant {
 
   // Registers assistant interaction event subscriber. Subscribers'
   // implementation is responsible for selecting events of interest.
-  AddAssistantInteractionSubscriber(AssistantInteractionSubscriber subscriber);
+  AddAssistantInteractionSubscriber(
+      pending_remote<AssistantInteractionSubscriber> subscriber);
 
   // Retrieves a notification. A voiceless interaction will be sent to server to
   // retrieve the notification of |action_index|, which can trigger other

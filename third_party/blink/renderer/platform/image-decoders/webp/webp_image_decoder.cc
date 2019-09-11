@@ -168,7 +168,6 @@ WEBPImageDecoder::WEBPImageDecoder(AlphaOption alpha_option,
       decoder_(nullptr),
       format_flags_(0),
       frame_background_has_alpha_(false),
-      can_decode_to_yuv_(false),
       demux_(nullptr),
       demux_state_(WEBP_DEMUX_PARSING_HEADER),
       have_already_parsed_this_data_(false),
@@ -249,7 +248,9 @@ void WEBPImageDecoder::OnSetData(SegmentReader* data) {
   // we don't require IsAllDataReceived() to be true before decoding).
   if (IsAllDataReceived()) {
     UpdateDemuxer();
-    can_decode_to_yuv_ = CanAllowYUVDecodingForWebP();
+    allow_decode_to_yuv_ =
+        RuntimeEnabledFeatures::DecodeLossyWebPImagesToYUVEnabled() &&
+        CanAllowYUVDecodingForWebP();
   }
 }
 
@@ -381,15 +382,6 @@ void WEBPImageDecoder::OnInitFrameBuffer(size_t frame_index) {
   // loading. The correct alpha value for the frame will be set when it is fully
   // decoded.
   buffer.SetHasAlpha(true);
-}
-
-void WEBPImageDecoder::SetImagePlanes(
-    std::unique_ptr<ImagePlanes> image_planes) {
-  image_planes_ = std::move(image_planes);
-}
-
-bool WEBPImageDecoder::CanDecodeToYUV() {
-  return can_decode_to_yuv_;
 }
 
 void WEBPImageDecoder::DecodeToYUV() {

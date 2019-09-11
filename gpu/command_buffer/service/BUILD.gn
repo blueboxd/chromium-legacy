@@ -382,9 +382,17 @@ target(link_target_type, "gles2_sources") {
     sources += [
       "ahardwarebuffer_utils.cc",
       "ahardwarebuffer_utils.h",
+      "image_reader_gl_owner.cc",
+      "image_reader_gl_owner.h",
       "shared_image_backing_factory_ahardwarebuffer.cc",
       "shared_image_backing_factory_ahardwarebuffer.h",
+      "shared_image_video.cc",
+      "shared_image_video.h",
       "stream_texture_shared_image_interface.h",
+      "surface_texture_gl_owner.cc",
+      "surface_texture_gl_owner.h",
+      "texture_owner.cc",
+      "texture_owner.h",
     ]
 
     # TODO(cblume): http://crbug.com/911313
@@ -409,36 +417,51 @@ target(link_target_type, "gles2_sources") {
   }
 }
 
-if (is_android) {
-  component("shared_image_video") {
-    sources = [
-      "shared_image_video.cc",
-      "shared_image_video.h",
-    ]
-    configs += [ "//gpu:gpu_gles2_implementation" ]
-    deps = [
-      "//base",
-      "//components/viz/common:resource_format_utils",
-      "//components/viz/common:vulkan_context_provider",
-      "//gpu/command_buffer/service:gles2_sources",
-      "//gpu/command_buffer/service:service_sources",
-      "//gpu/ipc/common:android_texture_owner",
-      "//gpu/ipc/common:common",
-      "//ui/gl",
-    ]
-    if (enable_vulkan) {
-      deps += [ "//gpu/vulkan:vulkan" ]
-    }
-
-    visibility = [
-      "//gpu/*",
-      "//media/gpu:gpu",
-    ]
-  }
-}
-
 proto_library("disk_cache_proto") {
   sources = [
     "disk_cache_proto.proto",
   ]
+}
+
+if (is_android) {
+  jumbo_static_library("android_texture_owner_test_support") {
+    testonly = true
+    sources = [
+      "mock_abstract_texture.cc",
+      "mock_abstract_texture.h",
+      "mock_texture_owner.cc",
+      "mock_texture_owner.h",
+    ]
+    deps = [
+      ":gles2",
+      "//base/test:test_support",
+      "//gpu:test_support",
+      "//testing/gmock",
+      "//testing/gtest",
+      "//ui/gl",
+      "//ui/gl/init",
+    ]
+  }
+}
+
+if (is_android) {
+  source_set("android_texture_owner_unittests") {
+    testonly = true
+    sources = [
+      "image_reader_gl_owner_unittest.cc",
+      "surface_texture_gl_owner_unittest.cc",
+    ]
+
+    deps = [
+      ":android_texture_owner_test_support",
+      ":gles2",
+      "//base/test:test_support",
+      "//gpu:test_support",
+      "//media/base:base",
+      "//testing/gmock",
+      "//testing/gtest",
+      "//ui/gl",
+      "//ui/gl/init",
+    ]
+  }
 }

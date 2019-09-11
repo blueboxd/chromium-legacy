@@ -27,7 +27,16 @@
     GPURenderBundleEncoder createRenderBundleEncoder(GPURenderBundleEncoderDescriptor descriptor);
     GPUQueue getQueue();
 
+    void pushErrorScope(GPUErrorFilter filter);
+    [CallWith=ScriptState, RaisesException] Promise<GPUError?> popErrorScope();
+
     attribute EventHandler onuncapturederror;
+};
+
+enum GPUErrorFilter {
+    "none",
+    "out-of-memory",
+    "validation"
 };
 
 typedef sequence<any> GPUMappedBuffer;  // [GPUBuffer, ArrayBuffer]

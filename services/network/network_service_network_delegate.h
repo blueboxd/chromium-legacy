@@ -42,10 +42,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceNetworkDelegate
                       const net::CanonicalCookie& cookie,
                       net::CookieOptions* options,
                       bool allowed_from_caller) override;
-  bool OnCanAccessFile(const net::URLRequest& request,
-                       const base::FilePath& original_path,
-                       const base::FilePath& absolute_path) const override;
-
   bool OnCanQueueReportingReport(const url::Origin& origin) const override;
   void OnCanSendReportingReports(std::set<url::Origin> origins,
                                  base::OnceCallback<void(std::set<url::Origin>)>

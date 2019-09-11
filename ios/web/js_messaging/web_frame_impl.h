@@ -16,7 +16,7 @@
 #include "base/values.h"
 #include "crypto/symmetric_key.h"
 #import "ios/web/public/web_state.h"
-#include "ios/web/public/web_state/web_state_observer.h"
+#include "ios/web/public/web_state_observer.h"
 #include "url/gurl.h"
 
 namespace web {

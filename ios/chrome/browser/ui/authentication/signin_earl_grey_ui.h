@@ -14,8 +14,14 @@
 // Methods used for the EarlGrey tests, related to UI.
 @interface SigninEarlGreyUI : NSObject
 
-// Adds the identity (if not already added), and perform a sign-in.
+// Calls [SigninEarlGreyUI signinWithIdentity:identity isManagedAccount:NO].
 + (void)signinWithIdentity:(ChromeIdentity*)identity;
+
+// Adds the identity (if not already added), and perform a sign-in. if
+// |isManagedAccount| is true, |identity| needs to be a managed account and the
+// managed dialog is expected while signing in.
++ (void)signinWithIdentity:(ChromeIdentity*)identity
+          isManagedAccount:(BOOL)isManagedAccount;
 
 // Taps on the settings link in the sign-in view. The sign-in view has to be
 // opened before calling this method.
@@ -24,6 +30,9 @@
 // Selects an identity when the identity chooser dialog is presented. The dialog
 // is confirmed, but it doesn't validated the user consent page.
 + (void)selectIdentityWithEmail:(NSString*)userEmail;
+
+// Confirms the managed account dialog with signing in.
++ (void)confirmSigninWithManagedAccount;
 
 // Confirms the sign in confirmation page, scrolls first to make the OK button
 // visible on short devices (e.g. iPhone 5s).

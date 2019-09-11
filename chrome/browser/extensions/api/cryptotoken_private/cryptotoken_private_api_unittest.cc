@@ -83,8 +83,8 @@ class CryptoTokenPrivateApiTest : public extensions::ExtensionApiUnittest {
     function->set_has_callback(true);
 
     auto args = std::make_unique<base::Value>(base::Value::Type::LIST);
-    args->GetList().emplace_back(
-        base::Value::BlobStorage(app_id.begin(), app_id.end()));
+    args->Append(
+        base::Value(base::Value::BlobStorage(app_id.begin(), app_id.end())));
 
     if (!extension_function_test_utils::RunFunction(
             function.get(), base::ListValue::From(std::move(args)), browser(),
@@ -210,7 +210,7 @@ class CryptoTokenPermissionTest : public ExtensionApiUnittest {
     dict.emplace("tabId", std::make_unique<base::Value>(tab_id_));
     dict.emplace("origin", std::make_unique<base::Value>(app_id));
     auto args = std::make_unique<base::Value>(base::Value::Type::LIST);
-    args->GetList().emplace_back(std::move(dict));
+    args->Append(base::Value(std::move(dict)));
     auto args_list = base::ListValue::From(std::move(args));
 
     extension_function_test_utils::RunFunction(

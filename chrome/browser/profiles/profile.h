@@ -19,6 +19,7 @@
 #include "components/domain_reliability/clear_mode.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/network_service.mojom-forward.h"
 
 #if !defined(OS_ANDROID)
@@ -375,7 +376,7 @@ class Profile : public content::BrowserContext {
 
   // Creates NetworkContext for the specified isolated app (or for the profile
   // itself, if |relative_path| is empty).
-  virtual network::mojom::NetworkContextPtr CreateNetworkContext(
+  virtual mojo::Remote<network::mojom::NetworkContext> CreateNetworkContext(
       bool in_memory,
       const base::FilePath& relative_partition_path);
 

@@ -392,7 +392,8 @@ Session::Session(mojom::SessionParametersPtr session_params,
   DCHECK(resource_provider_);
   mirror_settings_.SetResolutionContraints(max_resolution.width(),
                                            max_resolution.height());
-  resource_provider_->GetNetworkContext(mojo::MakeRequest(&network_context_));
+  resource_provider_->GetNetworkContext(
+      network_context_.BindNewPipeAndPassReceiver());
 
   if (session_params->type != mojom::SessionType::AUDIO_ONLY &&
       io_task_runner) {

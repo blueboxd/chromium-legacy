@@ -27,6 +27,7 @@ struct NET_EXPORT RedirectInfo {
       // request.
       const std::string& original_method,
       const GURL& original_url,
+      const base::Optional<url::Origin>& initiator,
       const GURL& original_site_for_cookies,
       URLRequest::FirstPartyURLPolicy original_first_party_url_policy,
       URLRequest::ReferrerPolicy original_referrer_policy,

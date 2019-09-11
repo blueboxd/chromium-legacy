@@ -11,13 +11,13 @@
 
 namespace tracing {
 
-MockAgent::MockAgent() : binding_(this) {}
+MockAgent::MockAgent() {}
 
 MockAgent::~MockAgent() = default;
 
-mojom::AgentPtr MockAgent::CreateAgentPtr() {
-  mojom::AgentPtr agent_proxy;
-  binding_.Bind(mojo::MakeRequest(&agent_proxy));
+mojo::PendingRemote<mojom::Agent> MockAgent::CreateAgentRemote() {
+  mojo::PendingRemote<mojom::Agent> agent_proxy;
+  receiver_.Bind(agent_proxy.InitWithNewPipeAndPassReceiver());
   return agent_proxy;
 }
 

@@ -1923,7 +1923,7 @@ void ChromeContentBrowserClient::PersistIsolatedOrigin(
   base::ListValue* list = update.Get();
   base::Value value(origin.Serialize());
   if (!base::Contains(list->GetList(), value))
-    list->GetList().push_back(std::move(value));
+    list->Append(std::move(value));
 }
 
 bool ChromeContentBrowserClient::IsFileAccessAllowed(
@@ -4653,22 +4653,14 @@ void ChromeContentBrowserClient::
     RegisterNonNetworkServiceWorkerUpdateURLLoaderFactories(
         content::BrowserContext* browser_context,
         NonNetworkURLLoaderFactoryMap* factories) {
-#if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   DCHECK(browser_context);
   DCHECK(factories);
-#if BUILDFLAG(ENABLE_EXTENSIONS)
   factories->emplace(
       extensions::kExtensionScheme,
       extensions::CreateExtensionServiceWorkerScriptURLLoaderFactory(
           browser_context));
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-#if defined(OS_CHROMEOS)
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  factories->emplace(content::kExternalFileScheme,
-                     std::make_unique<chromeos::ExternalFileURLLoaderFactory>(
-                         profile, content::ChildProcessHost::kInvalidUniqueID));
-#endif  // defined(OS_CHROMEOS)
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_CHROMEOS)
 }
 
 namespace {
@@ -4968,7 +4960,7 @@ void ChromeContentBrowserClient::OnNetworkServiceCreated(
       network_service);
 }
 
-network::mojom::NetworkContextPtr
+mojo::Remote<network::mojom::NetworkContext>
 ChromeContentBrowserClient::CreateNetworkContext(
     content::BrowserContext* context,
     bool in_memory,

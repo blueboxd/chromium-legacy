@@ -39,13 +39,8 @@ struct PriorityCompare {
                   const Member<SVGSMILElement>& b) {
     // FIXME: This should also consider possible timing relations between the
     // elements.
-    SMILTime a_begin = a->IntervalBegin();
-    SMILTime b_begin = b->IntervalBegin();
-    // Frozen elements need to be prioritized based on their previous interval.
-    a_begin = a->IsFrozen() && elapsed_ < a_begin ? a->PreviousIntervalBegin()
-                                                  : a_begin;
-    b_begin = b->IsFrozen() && elapsed_ < b_begin ? b->PreviousIntervalBegin()
-                                                  : b_begin;
+    SMILTime a_begin = a->BeginTimeForPrioritization(elapsed_);
+    SMILTime b_begin = b->BeginTimeForPrioritization(elapsed_);
     if (a_begin == b_begin)
       return a->DocumentOrderIndex() < b->DocumentOrderIndex();
     return a_begin < b_begin;
@@ -66,8 +61,8 @@ class SMILAnimationSandwich : public GarbageCollected<SMILAnimationSandwich> {
   void UpdateSyncBases(double elapsed);
   SVGSMILElement* ApplyAnimationValues();
 
-  SMILTime NextInterestingTime(SMILTime) const;
-  SMILTime GetNextFireTime() const;
+  SMILTime NextInterestingTime(double presentation_time) const;
+  SMILTime NextProgressTime(double presentation_time) const;
 
   bool IsEmpty() { return sandwich_.IsEmpty(); }
 

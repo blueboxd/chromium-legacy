@@ -56,7 +56,7 @@ TaskAttributionVector PerformanceLongTaskTiming::attribution() const {
 
 void PerformanceLongTaskTiming::BuildJSONValue(V8ObjectBuilder& builder) const {
   PerformanceEntry::BuildJSONValue(builder);
-  Vector<ScriptValue> attribution;
+  HeapVector<ScriptValue> attribution;
   for (unsigned i = 0; i < attribution_.size(); i++) {
     attribution.push_back(
         attribution_[i]->toJSONForBinding(builder.GetScriptState()));

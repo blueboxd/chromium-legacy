@@ -64,7 +64,7 @@ void JsonFileSanitizer::Start(
     return;
   }
 
-  connector->BindInterface(service_filter, &json_parser_ptr_);
+  connector->Connect(service_filter, json_parser_.BindNewPipeAndPassReceiver());
 
   for (const base::FilePath& path : file_paths_) {
     base::PostTaskAndReplyWithResult(
@@ -86,10 +86,9 @@ void JsonFileSanitizer::JsonFileRead(
     ReportError(Status::kFileDeleteError, std::string());
     return;
   }
-  json_parser_ptr_->Parse(
-      std::get<0>(read_and_delete_result),
-      base::BindOnce(&JsonFileSanitizer::JsonParsingDone,
-                     weak_factory_.GetWeakPtr(), file_path));
+  json_parser_->Parse(std::get<0>(read_and_delete_result),
+                      base::BindOnce(&JsonFileSanitizer::JsonParsingDone,
+                                     weak_factory_.GetWeakPtr(), file_path));
 }
 
 void JsonFileSanitizer::JsonParsingDone(

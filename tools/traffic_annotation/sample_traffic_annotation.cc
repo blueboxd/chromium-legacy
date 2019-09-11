@@ -10,7 +10,7 @@
 // and
 // out/Debug/gen/components/policy/proto/chrome_settings.proto
 // For more information on policies, please refer to:
-// http://dev.chromium.org/administrators/policy-list-3
+// https://cloud.google.com/docs/chrome-enterprise/policies
 
 // A template for one level traffic annotation.
 void network_traffic_annotation_template() {

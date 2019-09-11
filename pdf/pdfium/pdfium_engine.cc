@@ -37,7 +37,6 @@
 #include "pdf/pdfium/pdfium_permissions.h"
 #include "pdf/pdfium/pdfium_unsupported_features.h"
 #include "pdf/url_loader_wrapper_impl.h"
-#include "ppapi/c/private/ppp_pdf.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/private/pdf.h"
 #include "ppapi/cpp/var_dictionary.h"
@@ -1986,11 +1985,11 @@ void PDFiumEngine::HandleAccessibilityAction(
     const PP_PdfAccessibilityActionData& action_data) {
   switch (action_data.action) {
     case PP_PdfAccessibilityAction::PP_PDF_SCROLL_TO_MAKE_VISIBLE: {
-      pp::Rect target_rect =
-          pp::Rect(action_data.target_rect.point, action_data.target_rect.size);
-      pp::Rect target_point_screen = GetScreenRect(target_rect);
-      client_->ScrollBy(target_point_screen.point());
-    } break;
+      ScrollBasedOnScrollAlignment(action_data.target_rect,
+                                   action_data.horizontal_scroll_alignment,
+                                   action_data.vertical_scroll_alignment);
+      break;
+    }
     case PP_PdfAccessibilityAction::PP_PDF_DO_DEFAULT_ACTION: {
       if (PageIndexInBounds(action_data.page_index)) {
         PDFiumPage::LinkTarget target;
@@ -2000,7 +1999,8 @@ void PDFiumEngine::HandleAccessibilityAction(
         NavigateToLinkDestination(area, target,
                                   WindowOpenDisposition::CURRENT_TAB);
       }
-    } break;
+      break;
+    }
     default:
       NOTREACHED();
       break;
@@ -2110,6 +2110,62 @@ pp::VarDictionary PDFiumEngine::TraverseBookmarks(FPDF_BOOKMARK bookmark,
   }
   dict.Set(pp::Var("children"), children);
   return dict;
+}
+
+void PDFiumEngine::ScrollBasedOnScrollAlignment(
+    const pp::Rect& scroll_rect,
+    const PP_PdfAccessibilityScrollAlignment& horizontal_scroll_alignment,
+    const PP_PdfAccessibilityScrollAlignment& vertical_scroll_alignment) {
+  pp::Point scroll_offset = GetScreenRect(scroll_rect).point();
+  switch (horizontal_scroll_alignment) {
+    case PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_RIGHT:
+      scroll_offset.set_x(scroll_offset.x() - plugin_size_.width());
+      break;
+    case PP_PDF_SCROLL_ALIGNMENT_CENTER:
+      scroll_offset.set_x(scroll_offset.x() - (plugin_size_.width() / 2));
+      break;
+    case PP_PDF_SCROLL_ALIGNMENT_CLOSEST_EDGE: {
+      scroll_offset.set_x((std::abs(scroll_offset.x()) <=
+                           std::abs(scroll_offset.x() - plugin_size_.width()))
+                              ? scroll_offset.x()
+                              : scroll_offset.x() - plugin_size_.width());
+      break;
+    }
+    case PP_PDF_SCROLL_NONE:
+      scroll_offset.set_x(0);
+      break;
+    case PP_PDF_SCROLL_ALIGNMENT_LEFT:
+    case PP_PDF_SCROLL_ALIGNMENT_TOP:
+    case PP_PDF_SCROLL_ALIGNMENT_BOTTOM:
+    default:
+      break;
+  }
+
+  switch (vertical_scroll_alignment) {
+    case PP_PDF_SCROLL_ALIGNMENT_BOTTOM:
+      scroll_offset.set_y(scroll_offset.y() - plugin_size_.height());
+      break;
+    case PP_PDF_SCROLL_ALIGNMENT_CENTER:
+      scroll_offset.set_y(scroll_offset.y() - (plugin_size_.height() / 2));
+      break;
+    case PP_PDF_SCROLL_ALIGNMENT_CLOSEST_EDGE: {
+      scroll_offset.set_y((std::abs(scroll_offset.y()) <=
+                           std::abs(scroll_offset.y() - plugin_size_.height()))
+                              ? scroll_offset.y()
+                              : scroll_offset.y() - plugin_size_.height());
+      break;
+    }
+    case PP_PDF_SCROLL_NONE:
+      scroll_offset.set_y(0);
+      break;
+    case PP_PDF_SCROLL_ALIGNMENT_TOP:
+    case PP_PDF_SCROLL_ALIGNMENT_LEFT:
+    case PP_PDF_SCROLL_ALIGNMENT_RIGHT:
+    default:
+      break;
+  }
+
+  client_->ScrollBy(scroll_offset);
 }
 
 base::Optional<PDFEngine::NamedDestination> PDFiumEngine::GetNamedDestination(

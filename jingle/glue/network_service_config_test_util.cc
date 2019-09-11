@@ -24,7 +24,7 @@ NetworkServiceConfigTestUtil::NetworkServiceConfigTestUtil(
   mojo_runner_ = base::SequencedTaskRunnerHandle::Get();
   if (net_runner_->BelongsToCurrentThread()) {
     CreateNetworkContextOnNetworkRunner(
-        mojo::MakeRequest(&network_context_ptr_), nullptr);
+        network_context_remote_.BindNewPipeAndPassReceiver(), nullptr);
   } else {
     base::ScopedAllowBaseSyncPrimitivesForTesting permission;
     base::WaitableEvent wait_for_create;
@@ -32,7 +32,8 @@ NetworkServiceConfigTestUtil::NetworkServiceConfigTestUtil(
         FROM_HERE,
         base::BindOnce(
             &NetworkServiceConfigTestUtil::CreateNetworkContextOnNetworkRunner,
-            base::Unretained(this), mojo::MakeRequest(&network_context_ptr_),
+            base::Unretained(this),
+            network_context_remote_.BindNewPipeAndPassReceiver(),
             &wait_for_create));
     // Block for creation to avoid needing to worry about
     // CreateNetworkContextOnNetworkRunner
@@ -96,7 +97,7 @@ void NetworkServiceConfigTestUtil::RequestSocketOnMojoRunner(
     instance->network_context_getter_.Run()->CreateProxyResolvingSocketFactory(
         std::move(request));
   } else {
-    instance->network_context_ptr_->CreateProxyResolvingSocketFactory(
+    instance->network_context_remote_->CreateProxyResolvingSocketFactory(
         std::move(request));
   }
 }

@@ -230,7 +230,7 @@ void BreakBlockquoteCommand::DoApply(EditingState* editing_state) {
   for (wtf_size_t i = ancestors.size(); i != 0; --i) {
     Element& cloned_child = ancestors[i - 1]->CloneWithoutChildren();
     // Preserve list item numbering in cloned lists.
-    if (IsHTMLOListElement(cloned_child)) {
+    if (IsA<HTMLOListElement>(cloned_child)) {
       Node* list_child_node = i > 1 ? ancestors[i - 2].Get() : start_node;
       // The first child of the cloned list might not be a list item element,
       // find the first one so that we know where to start numbering.

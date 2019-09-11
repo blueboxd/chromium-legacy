@@ -1069,9 +1069,10 @@ void InterceptionJob::ProcessRedirectByClient(const GURL& redirect_url) {
 
   response_metadata_->redirect_info = std::make_unique<net::RedirectInfo>(
       net::RedirectInfo::ComputeRedirectInfo(
-          request.method, request.url, request.site_for_cookies,
-          first_party_url_policy, request.referrer_policy,
-          request.referrer.spec(), headers.response_code(), redirect_url,
+          request.method, request.url, request.request_initiator,
+          request.site_for_cookies, first_party_url_policy,
+          request.referrer_policy, request.referrer.spec(),
+          headers.response_code(), redirect_url,
           net::RedirectUtil::GetReferrerPolicyHeader(&headers),
           false /* insecure_scheme_was_upgraded */, true /* copy_fragment */));
 

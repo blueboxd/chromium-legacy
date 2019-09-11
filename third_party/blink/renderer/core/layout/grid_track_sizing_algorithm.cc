@@ -135,7 +135,6 @@ class DefiniteSizeStrategy final : public GridTrackSizingAlgorithmStrategy {
     return false;
   }
   LayoutUnit FreeSpaceForStretchAutoTracksStep() const override;
-  LayoutUnit MinContentForChild(LayoutBox&) const override;
   bool IsComputingSizeContainment() const override { return false; }
 };
 
@@ -150,15 +149,10 @@ bool GridTrackSizingAlgorithmStrategy::
       GridLayoutUtils::FlowAwareDirectionForChild(grid, child, kForColumns);
   if (direction == child_inline_direction) {
     return child.HasRelativeLogicalWidth() ||
-           child.StyleRef().LogicalWidth().IsIntrinsicOrAuto() ||
-           child.StyleRef().MarginStart().IsPercentOrCalc() ||
-           child.StyleRef().MarginEnd().IsPercentOrCalc();
+           child.StyleRef().LogicalWidth().IsIntrinsicOrAuto();
   }
   return child.HasRelativeLogicalHeight() ||
-         child.StyleRef().LogicalHeight().IsIntrinsicOrAuto() ||
-         child.StyleRef().MarginBefore().IsPercentOrCalc() ||
-         child.StyleRef().MarginAfter().IsPercentOrCalc();
-  ;
+         child.StyleRef().LogicalHeight().IsIntrinsicOrAuto();
 }
 
 void GridTrackSizingAlgorithmStrategy::
@@ -583,21 +577,6 @@ LayoutUnit DefiniteSizeStrategy::FreeSpaceForStretchAutoTracksStep() const {
   return algorithm_.FreeSpace(Direction()).value();
 }
 
-DISABLE_CFI_PERF
-LayoutUnit DefiniteSizeStrategy::MinContentForChild(LayoutBox& child) const {
-  GridTrackSizingDirection child_inline_direction =
-      GridLayoutUtils::FlowAwareDirectionForChild(*GetLayoutGrid(), child,
-                                                  kForColumns);
-  if (Direction() == child_inline_direction &&
-      ShouldClearOverrideContainingBlockContentSizeForChild(
-          *GetLayoutGrid(), child, child_inline_direction)) {
-    SetOverrideContainingBlockContentSizeForChild(child, child_inline_direction,
-                                                  LayoutUnit());
-  }
-
-  return GridTrackSizingAlgorithmStrategy::MinContentForChild(child);
-}
-
 void IndefiniteSizeStrategy::LayoutGridItemForMinSizeComputation(
     LayoutBox& child,
     bool override_size_has_changed) const {
@@ -894,9 +873,8 @@ GridTrackSize GridTrackSizingAlgorithm::GetGridTrackSize(
   // values are treated as <auto>.
   if (IsRelativeSizedTrackAsAuto(track_size, direction)) {
     if (direction == kForRows) {
-      Deprecation::CountDeprecation(
-          layout_grid_->GetDocument(),
-          WebFeature::kGridRowTrackPercentIndefiniteHeight);
+      UseCounter::Count(layout_grid_->GetDocument(),
+                        WebFeature::kGridRowTrackPercentIndefiniteHeight);
     }
     if (min_track_breadth.HasPercentage())
       min_track_breadth = Length::Auto();

@@ -323,41 +323,6 @@ FileTableColumnModel.ColumnSnapshot = class {
   }
 };
 
-/**
- * Custom splitter that resizes column with retaining the sum of all the column
- * width.
- */
-const FileTableSplitter = cr.ui.define('div');
-
-/**
- * Inherits from cr.ui.TableSplitter.
- */
-FileTableSplitter.prototype.__proto__ = cr.ui.TableSplitter.prototype;
-
-/**
- * Handles the drag start event.
- */
-FileTableSplitter.prototype.handleSplitterDragStart = function() {
-  cr.ui.TableSplitter.prototype.handleSplitterDragStart.call(this);
-  this.table_.columnModel.handleSplitterDragStart();
-};
-
-/**
- * Handles the drag move event.
- * @param {number} deltaX Horizontal mouse move offset.
- */
-FileTableSplitter.prototype.handleSplitterDragMove = function(deltaX) {
-  this.table_.columnModel.setWidthAndKeepTotal(
-      this.columnIndex, this.columnWidth_ + deltaX, true);
-};
-
-/**
- * Handles the drag end event.
- */
-FileTableSplitter.prototype.handleSplitterDragEnd = function() {
-  cr.ui.TableSplitter.prototype.handleSplitterDragEnd.call(this);
-  this.table_.columnModel.handleSplitterDragEnd();
-};
 
 /**
  * File list Table View.
@@ -516,20 +481,6 @@ class FileTable extends cr.ui.Table {
 
     self.relayoutRateLimiter_ =
         new AsyncUtil.RateLimiter(self.relayoutImmediately_.bind(self));
-
-    // Override header#redraw to use FileTableSplitter.
-    /** @this {cr.ui.table.TableHeader} */
-    selfAsTable.header.redraw = function() {
-      this.__proto__.redraw.call(this);
-      // Extend table splitters
-      const splitters = this.querySelectorAll('.table-header-splitter');
-      for (let i = 0; i < splitters.length; i++) {
-        if (splitters[i] instanceof FileTableSplitter) {
-          continue;
-        }
-        FileTableSplitter.decorate(splitters[i]);
-      }
-    };
 
     // Save the last selection. This is used by shouldStartDragSelection.
     self.list.addEventListener('mousedown', function(e) {

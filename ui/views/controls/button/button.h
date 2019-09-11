@@ -149,10 +149,17 @@ class VIEWS_EXPORT Button : public InkDropHostView,
     animate_on_state_change_ = value;
   }
 
+  bool hide_ink_drop_when_showing_context_menu() const {
+    return hide_ink_drop_when_showing_context_menu_;
+  }
   void set_hide_ink_drop_when_showing_context_menu(
       bool hide_ink_drop_when_showing_context_menu) {
     hide_ink_drop_when_showing_context_menu_ =
         hide_ink_drop_when_showing_context_menu;
+  }
+
+  void set_show_ink_drop_when_hot_tracked(bool show_ink_drop_when_hot_tracked) {
+    show_ink_drop_when_hot_tracked_ = show_ink_drop_when_hot_tracked;
   }
 
   void set_ink_drop_base_color(SkColor color) { ink_drop_base_color_ = color; }
@@ -345,6 +352,10 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   // When true, the ink drop ripple and hover will be hidden prior to showing
   // the context menu.
   bool hide_ink_drop_when_showing_context_menu_ = true;
+
+  // When true, the ink drop ripple will be shown when setting state to hot
+  // tracked with SetHotTracked().
+  bool show_ink_drop_when_hot_tracked_ = false;
 
   // The color of the ripple and hover.
   SkColor ink_drop_base_color_;

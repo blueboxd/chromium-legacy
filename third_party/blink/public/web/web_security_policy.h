@@ -34,6 +34,7 @@
 #include "services/network/public/mojom/cors_origin_pattern.mojom-shared.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
 
 namespace blink {
 
@@ -108,6 +109,7 @@ class WebSecurityPolicy {
   // referrer header should be omitted.
   BLINK_EXPORT static WebString GenerateReferrerHeader(
       network::mojom::ReferrerPolicy,
+      const WebSecurityOrigin& origin,
       const WebURL&,
       const WebString& referrer);
 

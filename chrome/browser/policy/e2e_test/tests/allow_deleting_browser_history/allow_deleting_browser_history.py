@@ -12,7 +12,7 @@ from infra import ChromeEnterpriseTestCase
 class AllowDeletingBrowserHistory(ChromeEnterpriseTestCase):
   """Test the AllowDeletingBrowserHistory policy:
 
-    https://www.chromium.org/administrators/policy-list-3#AllowDeletingBrowserHistory.
+    https://cloud.google.com/docs/chrome-enterprise/policies/?policy=AllowDeletingBrowserHistory.
     """
 
   @before_all

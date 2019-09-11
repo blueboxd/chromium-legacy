@@ -65,7 +65,7 @@ class SerialConnection : public ApiResource,
       device::mojom::SerialPort::SetControlSignalsCallback;
 
   SerialConnection(const std::string& owner_extension_id,
-                   device::mojom::SerialPortPtrInfo serial_port_info);
+                   device::mojom::SerialPortPtr serial_port);
   ~SerialConnection() override;
 
   // ApiResource override.
@@ -132,7 +132,7 @@ class SerialConnection : public ApiResource,
   // Initiates an asynchronous close of the device.
   void Close(base::OnceClosure callback);
 
-  static const BrowserThread::ID kThreadId = BrowserThread::IO;
+  static const BrowserThread::ID kThreadId = BrowserThread::UI;
 
  private:
   friend class ApiResourceManager<SerialConnection>;

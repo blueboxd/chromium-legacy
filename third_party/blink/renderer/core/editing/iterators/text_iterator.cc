@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
 
 #include <unicode/utf16.h>
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
@@ -310,10 +311,13 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
       node_ = nullptr;
       return;
     }
+    const bool locked =
+        DisplayLockUtilities::NearestLockedInclusiveAncestor(*node_);
 
     LayoutObject* layout_object = node_->GetLayoutObject();
-    if (!layout_object) {
-      if (IsA<ShadowRoot>(node_.Get()) || HasDisplayContents(*node_)) {
+    if (!layout_object || locked) {
+      if (!locked &&
+          (IsA<ShadowRoot>(node_.Get()) || HasDisplayContents(*node_))) {
         // Shadow roots or display: contents elements don't have LayoutObjects,
         // but we want to visit children anyway.
         iteration_progress_ = iteration_progress_ < kHandledNode
@@ -374,7 +378,7 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
                        (IsHTMLFormControlElement(html_element) ||
                         IsA<HTMLLegendElement>(html_element) ||
                         IsHTMLImageElement(html_element) ||
-                        IsHTMLMeterElement(html_element) ||
+                        IsA<HTMLMeterElement>(html_element) ||
                         IsHTMLProgressElement(html_element))))) {
             HandleReplacedElement();
           } else {
@@ -612,7 +616,7 @@ static bool ShouldEmitNewlinesBeforeAndAfterNode(const Node& node) {
 
   // Need to make an exception for option and optgroup, because we want to
   // keep the legacy behavior before we added layoutObjects to them.
-  if (IsHTMLOptionElement(node) || IsHTMLOptGroupElement(node))
+  if (IsHTMLOptionElement(node) || IsA<HTMLOptGroupElement>(node))
     return false;
 
   // Need to make an exception for table cells, because they are blocks, but we

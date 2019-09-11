@@ -1498,7 +1498,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Creates Web Bluetooth Service owned by the frame. Returns a raw pointer
   // to it.
   WebBluetoothServiceImpl* CreateWebBluetoothService(
-      blink::mojom::WebBluetoothServiceRequest request);
+      mojo::PendingReceiver<blink::mojom::WebBluetoothService> receiver);
 
   // Deletes the Web Bluetooth Service owned by the frame.
   void DeleteWebBluetoothService(

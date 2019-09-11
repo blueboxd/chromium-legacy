@@ -26,6 +26,14 @@ class ConciergeClientImpl : public ConciergeClient {
 
   ~ConciergeClientImpl() override = default;
 
+  void AddVmObserver(VmObserver* observer) override {
+    vm_observer_list_.AddObserver(observer);
+  }
+
+  void RemoveVmObserver(VmObserver* observer) override {
+    vm_observer_list_.RemoveObserver(observer);
+  }
+
   void AddContainerObserver(ContainerObserver* observer) override {
     container_observer_list_.AddObserver(observer);
   }
@@ -40,6 +48,14 @@ class ConciergeClientImpl : public ConciergeClient {
 
   void RemoveDiskImageObserver(DiskImageObserver* observer) override {
     disk_image_observer_list_.RemoveObserver(observer);
+  }
+
+  bool IsVmStartedSignalConnected() override {
+    return is_vm_started_signal_connected_;
+  }
+
+  bool IsVmStoppedSignalConnected() override {
+    return is_vm_stopped_signal_connected_;
   }
 
   bool IsContainerStartupFailedSignalConnected() override {
@@ -215,6 +231,20 @@ class ConciergeClientImpl : public ConciergeClient {
     }
     concierge_proxy_->ConnectToSignal(
         vm_tools::concierge::kVmConciergeInterface,
+        vm_tools::concierge::kVmStartedSignal,
+        base::BindRepeating(&ConciergeClientImpl::OnVmStartedSignal,
+                            weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&ConciergeClientImpl::OnSignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
+    concierge_proxy_->ConnectToSignal(
+        vm_tools::concierge::kVmConciergeInterface,
+        vm_tools::concierge::kVmStoppedSignal,
+        base::BindRepeating(&ConciergeClientImpl::OnVmStoppedSignal,
+                            weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&ConciergeClientImpl::OnSignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
+    concierge_proxy_->ConnectToSignal(
+        vm_tools::concierge::kVmConciergeInterface,
         vm_tools::concierge::kContainerStartupFailedSignal,
         base::BindRepeating(
             &ConciergeClientImpl::OnContainerStartupFailedSignal,
@@ -269,6 +299,38 @@ class ConciergeClientImpl : public ConciergeClient {
     std::move(callback).Run(std::move(reponse_proto));
   }
 
+  void OnVmStartedSignal(dbus::Signal* signal) {
+    DCHECK_EQ(signal->GetInterface(),
+              vm_tools::concierge::kVmConciergeInterface);
+    DCHECK_EQ(signal->GetMember(), vm_tools::concierge::kVmStartedSignal);
+
+    vm_tools::concierge::VmStartedSignal vm_started_signal;
+    dbus::MessageReader reader(signal);
+    if (!reader.PopArrayOfBytesAsProto(&vm_started_signal)) {
+      LOG(ERROR) << "Failed to parse proto from DBus Signal";
+      return;
+    }
+
+    for (auto& observer : vm_observer_list_)
+      observer.OnVmStarted(vm_started_signal);
+  }
+
+  void OnVmStoppedSignal(dbus::Signal* signal) {
+    DCHECK_EQ(signal->GetInterface(),
+              vm_tools::concierge::kVmConciergeInterface);
+    DCHECK_EQ(signal->GetMember(), vm_tools::concierge::kVmStoppedSignal);
+
+    vm_tools::concierge::VmStoppedSignal vm_stopped_signal;
+    dbus::MessageReader reader(signal);
+    if (!reader.PopArrayOfBytesAsProto(&vm_stopped_signal)) {
+      LOG(ERROR) << "Failed to parse proto from DBus Signal";
+      return;
+    }
+
+    for (auto& observer : vm_observer_list_)
+      observer.OnVmStopped(vm_stopped_signal);
+  }
+
   void OnContainerStartupFailedSignal(dbus::Signal* signal) {
     DCHECK_EQ(signal->GetInterface(),
               vm_tools::concierge::kVmConciergeInterface);
@@ -313,7 +375,12 @@ class ConciergeClientImpl : public ConciergeClient {
     if (!is_connected)
       LOG(ERROR) << "Failed to connect to signal: " << signal_name;
 
-    if (signal_name == vm_tools::concierge::kContainerStartupFailedSignal) {
+    if (signal_name == vm_tools::concierge::kVmStartedSignal) {
+      is_vm_started_signal_connected_ = is_connected;
+    } else if (signal_name == vm_tools::concierge::kVmStoppedSignal) {
+      is_vm_stopped_signal_connected_ = is_connected;
+    } else if (signal_name ==
+               vm_tools::concierge::kContainerStartupFailedSignal) {
       is_container_startup_failed_signal_connected_ = is_connected;
     } else if (signal_name == vm_tools::concierge::kDiskImageProgressSignal) {
       is_disk_import_progress_signal_connected_ = is_connected;
@@ -324,9 +391,12 @@ class ConciergeClientImpl : public ConciergeClient {
 
   dbus::ObjectProxy* concierge_proxy_ = nullptr;
 
+  base::ObserverList<VmObserver>::Unchecked vm_observer_list_;
   base::ObserverList<ContainerObserver>::Unchecked container_observer_list_;
   base::ObserverList<DiskImageObserver>::Unchecked disk_image_observer_list_;
 
+  bool is_vm_started_signal_connected_ = false;
+  bool is_vm_stopped_signal_connected_ = false;
   bool is_container_startup_failed_signal_connected_ = false;
   bool is_disk_import_progress_signal_connected_ = false;
 

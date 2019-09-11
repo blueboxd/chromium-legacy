@@ -412,19 +412,15 @@ void ExtensionApps::OnExtensionUnloaded(
     case extensions::UnloadedExtensionReason::DISABLE:
       readiness = apps::mojom::Readiness::kDisabledByUser;
       break;
-
-    // TODO: Check the process for other status, and set the correct value to
-    // app->readiness. AppServiceAppModelBuilder::OnAppUpdate should be updated
-    // to show the correct icon status in app list.
     case extensions::UnloadedExtensionReason::BLACKLIST:
       readiness = apps::mojom::Readiness::kDisabledByBlacklist;
-      return;
+      break;
     case extensions::UnloadedExtensionReason::TERMINATE:
       readiness = apps::mojom::Readiness::kTerminated;
-      return;
+      break;
     case extensions::UnloadedExtensionReason::UNINSTALL:
       readiness = apps::mojom::Readiness::kUninstalledByUser;
-      return;
+      break;
     default:
       return;
   }

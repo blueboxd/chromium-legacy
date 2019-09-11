@@ -32,7 +32,7 @@ class BarcodeDetectionProviderMac
   static void Create(mojom::BarcodeDetectionProviderRequest request);
 
   void CreateBarcodeDetection(
-      mojom::BarcodeDetectionRequest request,
+      mojo::PendingReceiver<mojom::BarcodeDetection> receiver,
       mojom::BarcodeDetectorOptionsPtr options) override;
   void EnumerateSupportedFormats(
       EnumerateSupportedFormatsCallback callback) override;

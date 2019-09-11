@@ -326,8 +326,7 @@ void ExternalPrefLoader::ReadStandaloneExtensionPrefFiles(
   std::unique_ptr<base::ListValue> default_user_types;
   if (options_ & USE_USER_TYPE_PROFILE_FILTER) {
     default_user_types = std::make_unique<base::ListValue>();
-    default_user_types->GetList().push_back(
-        base::Value(apps::kUserTypeUnmanaged));
+    default_user_types->Append(base::Value(apps::kUserTypeUnmanaged));
   }
 
   // For each file read the json description & build the proper

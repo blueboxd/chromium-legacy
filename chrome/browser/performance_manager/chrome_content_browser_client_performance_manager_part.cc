@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "chrome/browser/performance_manager/performance_manager.h"
+#include "chrome/browser/performance_manager/performance_manager_impl.h"
 #include "chrome/browser/performance_manager/render_process_user_data.h"
 #include "content/public/browser/render_process_host.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
@@ -29,8 +29,8 @@ void BindProcessNode(
       performance_manager::RenderProcessUserData::GetForRenderProcessHost(
           render_process_host);
 
-  performance_manager::PerformanceManager* performance_manager =
-      performance_manager::PerformanceManager::GetInstance();
+  performance_manager::PerformanceManagerImpl* performance_manager =
+      performance_manager::PerformanceManagerImpl::GetInstance();
   DCHECK(performance_manager);
 
   performance_manager->task_runner()->PostTask(

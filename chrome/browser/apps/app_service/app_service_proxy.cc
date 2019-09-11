@@ -86,6 +86,22 @@ AppServiceProxy::AppServiceProxy(Profile* profile,
       icon_coalescer_(&inner_icon_loader_),
       outer_icon_loader_(&icon_coalescer_,
                          apps::IconCache::GarbageCollectionPolicy::kEager) {
+  Initialize(profile, connector);
+}
+
+AppServiceProxy::~AppServiceProxy() = default;
+
+void AppServiceProxy::ReInitializeForTesting(
+    Profile* profile,
+    service_manager::Connector* connector) {
+  // Some test code creates a profile and profile-linked services, like the App
+  // Service without linking to the correct connector. To work around that, we
+  // issue a second Initialize call to set the connector.
+  Initialize(profile, connector);
+}
+
+void AppServiceProxy::Initialize(Profile* profile,
+                                 service_manager::Connector* connector) {
   if (!profile) {
     return;
   }
@@ -124,8 +140,6 @@ AppServiceProxy::AppServiceProxy(Profile* profile,
 #endif  // OS_CHROMEOS
   }
 }
-
-AppServiceProxy::~AppServiceProxy() = default;
 
 apps::mojom::AppServicePtr& AppServiceProxy::AppService() {
   return app_service_;

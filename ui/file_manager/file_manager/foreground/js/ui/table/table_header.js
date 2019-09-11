@@ -7,8 +7,6 @@
  */
 
 cr.define('cr.ui.table', function() {
-  /** @const */ const TableSplitter = cr.ui.TableSplitter;
-
   /**
    * Creates a new table header.
    * @param {Object=} opt_propertyBag Optional properties.
@@ -208,7 +206,7 @@ cr.define('cr.ui.table', function() {
       let minDistance = TableHeader.TOUCH_DRAG_AREA_WIDTH;
       let candidate;
 
-      const splitters = /** @type {NodeList<cr.ui.TableSplitter>} */ (
+      const splitters = /** @type {NodeList<TableSplitter>} */ (
           this.querySelectorAll('.table-header-splitter'));
       for (let i = 0; i < splitters.length; i++) {
         const r = splitters[i].getBoundingClientRect();

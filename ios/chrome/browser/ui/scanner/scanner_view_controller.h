@@ -37,6 +37,12 @@ enum DismissalReason {
 // Card scanner view.
 @property(nonatomic, readwrite) ScannerView* scannerView;
 
+// The scanned result.
+@property(nonatomic, strong) NSString* result;
+
+// Whether the scanned result should be immediately loaded.
+@property(nonatomic, assign) bool loadResultImmediately;
+
 // Stores the presentation provider.
 @property(nonatomic, readwrite, weak) id<ScannerPresenting>
     presentationProvider;
@@ -48,11 +54,6 @@ enum DismissalReason {
                          bundle:(NSBundle*)bundle NS_UNAVAILABLE;
 
 - (instancetype)initWithCoder:(NSCoder*)coder NS_UNAVAILABLE;
-
-// Returns a view controller to be presented based on the camera state. Returns
-// |self| if the camera is available or an appropriate UIAlertController if
-// there was an error loading the camera.
-- (UIViewController*)getViewControllerToPresent;
 
 // Builds the scanner view. Must be overridden in the subclass.
 - (ScannerView*)buildScannerView;

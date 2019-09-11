@@ -75,7 +75,7 @@ Value CreateImagesValue(const std::vector<mojom::MediaImagePtr>& images) {
       image_value.SetIntKey("width", image->size->width());
       image_value.SetIntKey("height", image->size->height());
     }
-    image_list.GetList().push_back(std::move(image_value));
+    image_list.Append(std::move(image_value));
   }
   return image_list;
 }
@@ -170,7 +170,7 @@ class CastMediaControllerTest : public testing::Test {
 
     Value status_list(Value::Type::DICTIONARY);
     status_list.SetKey("status", Value(Value::Type::LIST));
-    status_list.FindKey("status")->GetList().push_back(std::move(status_value));
+    status_list.FindKey("status")->Append(std::move(status_value));
     controller_->SetMediaStatus(std::move(status_list));
   }
 

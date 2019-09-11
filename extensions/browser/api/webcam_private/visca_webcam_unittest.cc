@@ -19,8 +19,8 @@ namespace {
 
 class TestSerialConnection : public SerialConnection {
  public:
-  explicit TestSerialConnection(device::mojom::SerialPortPtrInfo port_ptr_info)
-      : SerialConnection("dummy_id", std::move(port_ptr_info)) {}
+  explicit TestSerialConnection(device::mojom::SerialPortPtr port_ptr)
+      : SerialConnection("dummy_id", std::move(port_ptr)) {}
   ~TestSerialConnection() override {}
 
   void SetReceiveBuffer(const std::vector<uint8_t>& receive_buffer) {
@@ -103,11 +103,11 @@ std::vector<uint8_t> ToByteVector(const char (&array)[N]) {
 class ViscaWebcamTest : public testing::Test {
  protected:
   ViscaWebcamTest() {
-    device::mojom::SerialPortPtrInfo port_ptr_info;
-    mojo::MakeRequest(&port_ptr_info);
+    device::mojom::SerialPortPtr port_ptr;
+    mojo::MakeRequest(&port_ptr);
     webcam_ = new ViscaWebcam;
     webcam_->OpenForTesting(
-        std::make_unique<TestSerialConnection>(std::move(port_ptr_info)));
+        std::make_unique<TestSerialConnection>(std::move(port_ptr)));
   }
   ~ViscaWebcamTest() override {}
 

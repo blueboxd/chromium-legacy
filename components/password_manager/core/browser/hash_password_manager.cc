@@ -355,14 +355,14 @@ bool HashPasswordManager::EncryptAndSave(
     }
   }
   if (replace_old_entry) {
-    update->GetList().push_back(std::move(encrypted_password_hash_entry));
+    update->Append(std::move(encrypted_password_hash_entry));
     return true;
   }
 
   if (update->GetList().size() >= kMaxPasswordHashDataDictSize)
     RemoveOldestSignInPasswordHashData(&update->GetList());
 
-  update->GetList().push_back(std::move(encrypted_password_hash_entry));
+  update->Append(std::move(encrypted_password_hash_entry));
   return true;
 }
 

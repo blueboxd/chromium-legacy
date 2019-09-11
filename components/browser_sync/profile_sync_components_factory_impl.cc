@@ -322,18 +322,8 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
 
 #if defined(OS_CHROMEOS)
   if (!disabled_types.Has(syncer::PRINTERS)) {
-    // TODO(crbug.com/867801) This still uses a proxy delegate even though the
-    // model lives on the UI thread. Switching to forwarding delegate causes
-    // cryptic test failures on chromeos. Fix that and switch to the forwarding
-    // delegate.
-    controllers.push_back(std::make_unique<ModelTypeController>(
-        syncer::PRINTERS,
-        std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
-            ui_thread_,
-            base::BindRepeating(&browser_sync::BrowserSyncClient::
-                                    GetControllerDelegateForModelType,
-                                base::Unretained(sync_client_),
-                                syncer::PRINTERS))));
+    controllers.push_back(
+        CreateModelTypeControllerForModelRunningOnUIThread(syncer::PRINTERS));
   }
   if (!disabled_types.Has(syncer::WIFI_CONFIGURATIONS) &&
       base::FeatureList::IsEnabled(switches::kSyncWifiConfigurations)) {

@@ -26,7 +26,7 @@ std::unique_ptr<base::DictionaryValue> CreateJsonWithFilter(
   auto root = std::make_unique<base::DictionaryValue>();
   base::ListValue filter;
   for (const auto& user_type : user_types)
-    filter.GetList().push_back(base::Value(user_type));
+    filter.Append(base::Value(user_type));
   root->SetKey(kKeyUserType, std::move(filter));
   return root;
 }
@@ -123,8 +123,8 @@ TEST_F(UserTypeFilterTest, EmptyFilter) {
 TEST_F(UserTypeFilterTest, DefaultFilter) {
   auto profile = CreateProfile();
   base::ListValue default_filter;
-  default_filter.GetList().push_back(base::Value(kUserTypeUnmanaged));
-  default_filter.GetList().push_back(base::Value(kUserTypeGuest));
+  default_filter.Append(base::Value(kUserTypeUnmanaged));
+  default_filter.Append(base::Value(kUserTypeGuest));
 
   // Unmanaged user.
   EXPECT_TRUE(MatchDefault(profile, default_filter));

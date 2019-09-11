@@ -87,7 +87,7 @@ class ChromeOsAdmlWriterUnittest(adml_writer_unittest.AdmlWriterUnittest):
         '<string id="DictionaryPolicyStub">Dictionary policy caption</string>\n'
         '<string id="DictionaryPolicyStub_Explain">'
         'This is a test description.\n'
-        'See https://www.chromium.org/administrators/policy-list-3#'
+        'See https://cloud.google.com/docs/chrome-enterprise/policies/?policy='
         'DictionaryPolicyStub\n</string>\n'
         '<string id="DictionaryPolicyStub_Legacy">'
         'Dictionary policy label (deprecated)</string>')

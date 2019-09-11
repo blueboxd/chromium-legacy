@@ -62,6 +62,7 @@
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
@@ -415,13 +416,13 @@ void BindChildProcessImpl(
     base::RepeatingClosure quit_closure,
     ChildThreadImpl::Options::ServiceBinder service_binder,
     mojo::PendingReceiver<mojom::ChildProcessHost> host_receiver,
-    mojom::ChildProcessRequest request) {
+    mojo::PendingReceiver<mojom::ChildProcess> receiver) {
   mojo::MakeSelfOwnedReceiver<mojom::ChildProcess>(
       std::make_unique<ChildProcessImpl>(
           std::move(main_thread_task_runner), std::move(weak_main_thread),
           std::move(quit_closure), std::move(service_binder),
           std::move(host_receiver)),
-      std::move(request));
+      std::move(receiver));
 }
 
 }  // namespace

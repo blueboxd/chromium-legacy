@@ -17,8 +17,6 @@ import org.chromium.components.signin.AccountManagerFacade;
  *
  * This class has a native counterpart called CoreAccountInfo. There are several differences between
  * these two classes:
- * - Android class doesn't store Gaia ID as a string because {@link CoreAccountId} already contains
- * it.
  * - Android class additionally exposes {@link android.accounts.Account} object for interactions
  * with the system.
  * - Android class has the "account name" whereas the native class has "email". This is the same
@@ -27,21 +25,38 @@ import org.chromium.components.signin.AccountManagerFacade;
 public class CoreAccountInfo {
     private final CoreAccountId mId;
     private final Account mAccount;
+    private final String mGaiaId;
 
-    public CoreAccountInfo(@NonNull CoreAccountId id, @NonNull Account account) {
+    /**
+     * Constructs a CoreAccountInfo with the provided parameters
+     * @param id A CoreAccountId associated with the account, equal to either account.name or
+     *         gaiaId.
+     * @param account Android account.
+     * @param gaiaId String representation of the Gaia ID. Must not be an email address.
+     */
+    public CoreAccountInfo(
+            @NonNull CoreAccountId id, @NonNull Account account, @NonNull String gaiaId) {
         assert id != null;
         assert account != null;
+        assert gaiaId != null;
+        assert !gaiaId.contains("@");
 
         mId = id;
         mAccount = account;
+        mGaiaId = gaiaId;
     }
 
     @CalledByNative
-    private CoreAccountInfo(@NonNull String id, @NonNull String name) {
+    private CoreAccountInfo(
+            @NonNull CoreAccountId id, @NonNull String name, @NonNull String gaiaId) {
         assert id != null;
         assert name != null;
+        assert gaiaId != null;
+        assert !gaiaId.contains("@");
+
+        mId = id;
         mAccount = AccountManagerFacade.createAccountFromName(name);
-        mId = new CoreAccountId(id);
+        mGaiaId = gaiaId;
     }
 
     /**
@@ -56,6 +71,13 @@ public class CoreAccountInfo {
      */
     public String getName() {
         return mAccount.name;
+    }
+
+    /**
+     * Returns the string representation of the Gaia ID
+     */
+    public String getGaiaId() {
+        return mGaiaId;
     }
 
     /**

@@ -29,10 +29,14 @@ class AnsibleManagementService : public KeyedService,
   explicit AnsibleManagementService(Profile* profile);
   ~AnsibleManagementService() override;
 
+  // |callback| is called once Ansible installation is finished.
   void InstallAnsibleInDefaultContainer(
       base::OnceCallback<void(bool success)> callback);
 
-  void ApplyAnsiblePlaybookToDefaultContainer(const std::string& playbook);
+  // |callback| is called once Ansible playbook application is finished.
+  void ApplyAnsiblePlaybookToDefaultContainer(
+      const std::string& playbook,
+      base::OnceCallback<void(bool success)> callback);
 
   // LinuxPackageOperationProgressObserver:
   void OnInstallLinuxPackageProgress(const std::string& vm_name,
@@ -44,12 +48,23 @@ class AnsibleManagementService : public KeyedService,
                                   UninstallPackageProgressStatus status,
                                   int progress_percent) override;
 
+  void OnApplyAnsiblePlaybookProgress(
+      vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal::Status status);
+
  private:
   void OnInstallAnsibleInDefaultContainer(CrostiniResult result);
+
+  // Callback for
+  // CrostiniAnsibleManagementService::ApplyAnsiblePlaybookToDefaultContainer
+  void OnApplyAnsiblePlaybook(
+      base::Optional<vm_tools::cicerone::ApplyAnsiblePlaybookResponse>
+          response);
 
   Profile* profile_;
   base::OnceCallback<void(bool success)>
       ansible_installation_finished_callback_;
+  base::OnceCallback<void(bool success)>
+      ansible_playbook_application_finished_callback_;
   base::WeakPtrFactory<AnsibleManagementService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AnsibleManagementService);

@@ -114,7 +114,7 @@ HTMLSelectElement* HTMLHRElement::OwnerSelectElement() const {
     return nullptr;
   if (auto* select = ToHTMLSelectElementOrNull(*parentNode()))
     return select;
-  if (!IsHTMLOptGroupElement(*parentNode()))
+  if (!IsA<HTMLOptGroupElement>(*parentNode()))
     return nullptr;
   return ToHTMLSelectElementOrNull(parentNode()->parentNode());
 }
@@ -123,8 +123,9 @@ Node::InsertionNotificationRequest HTMLHRElement::InsertedInto(
     ContainerNode& insertion_point) {
   HTMLElement::InsertedInto(insertion_point);
   if (HTMLSelectElement* select = OwnerSelectElement()) {
-    if (&insertion_point == select || (IsHTMLOptGroupElement(insertion_point) &&
-                                       insertion_point.parentNode() == select))
+    if (&insertion_point == select ||
+        (IsA<HTMLOptGroupElement>(insertion_point) &&
+         insertion_point.parentNode() == select))
       select->HrInsertedOrRemoved(*this);
   }
   return kInsertionDone;
@@ -132,9 +133,9 @@ Node::InsertionNotificationRequest HTMLHRElement::InsertedInto(
 
 void HTMLHRElement::RemovedFrom(ContainerNode& insertion_point) {
   if (auto* select = ToHTMLSelectElementOrNull(insertion_point)) {
-    if (!parentNode() || IsHTMLOptGroupElement(*parentNode()))
+    if (!parentNode() || IsA<HTMLOptGroupElement>(*parentNode()))
       select->HrInsertedOrRemoved(*this);
-  } else if (IsHTMLOptGroupElement(insertion_point)) {
+  } else if (IsA<HTMLOptGroupElement>(insertion_point)) {
     Node* parent = insertion_point.parentNode();
     select = ToHTMLSelectElementOrNull(parent);
     if (select)

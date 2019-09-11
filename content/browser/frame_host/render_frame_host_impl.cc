@@ -5,6 +5,7 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 
 #include <algorithm>
+#include <memory>
 #include <unordered_map>
 #include <utility>
 
@@ -202,6 +203,7 @@
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
+#include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_host_test_interface.mojom.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 #include "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom.h"
@@ -6169,12 +6171,13 @@ void RenderFrameHostImpl::AXContentTreeDataToAXTreeData(
 }
 
 WebBluetoothServiceImpl* RenderFrameHostImpl::CreateWebBluetoothService(
-    blink::mojom::WebBluetoothServiceRequest request) {
+    mojo::PendingReceiver<blink::mojom::WebBluetoothService> receiver) {
   // RFHI owns |web_bluetooth_services_| and |web_bluetooth_service| owns the
-  // |binding_| which may run the error handler. |binding_| can't run the error
-  // handler after it's destroyed so it can't run after the RFHI is destroyed.
+  // |receiver_| which may run the error handler. |receiver_| can't run the
+  // error handler after it's destroyed so it can't run after the RFHI is
+  // destroyed.
   auto web_bluetooth_service =
-      std::make_unique<WebBluetoothServiceImpl>(this, std::move(request));
+      std::make_unique<WebBluetoothServiceImpl>(this, std::move(receiver));
   web_bluetooth_service->SetClientConnectionErrorHandler(
       base::BindOnce(&RenderFrameHostImpl::DeleteWebBluetoothService,
                      base::Unretained(this), web_bluetooth_service.get()));

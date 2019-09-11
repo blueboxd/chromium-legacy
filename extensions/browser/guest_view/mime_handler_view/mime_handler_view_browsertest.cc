@@ -244,8 +244,10 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest,
 // to load a MimeHandlerView. The test passes if MHV loads. This is to catch the
 // potential race between the cross-origin renderer initiated navigation and
 // the navigation to "about:blank" started from the browser.
+//
+// Disabled due to flakiness: https://crbug.com/1002788.
 IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest,
-                       NavigationRaceFromEmbedder) {
+                       DISABLED_NavigationRaceFromEmbedder) {
   if (!is_cross_process_mode()) {
     // Note that this test would pass trivially with BrowserPlugin-based guests
     // because loading a plugin is quite independent from navigating a plugin.

@@ -8,6 +8,7 @@
 #include "content/common/frame_sink_provider.mojom.h"
 #include "content/common/render_frame_metadata.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
 namespace content {
@@ -30,9 +31,10 @@ class FrameSinkProviderImpl : public mojom::FrameSinkProvider {
       override;
   void RegisterRenderFrameMetadataObserver(
       int32_t widget_id,
-      mojom::RenderFrameMetadataObserverClientRequest
-          render_frame_metadata_observer_client_request,
-      mojom::RenderFrameMetadataObserverPtr observer) override;
+      mojo::PendingReceiver<mojom::RenderFrameMetadataObserverClient>
+          render_frame_metadata_observer_client_receiver,
+      mojo::PendingRemote<mojom::RenderFrameMetadataObserver> observer)
+      override;
 
  private:
   const int32_t process_id_;

@@ -3448,6 +3448,14 @@ AXPlatformNodeAuraLinux::GetEmbeddedObjectIndicesForId(int id) {
                         UTF16ToUnicodeOffsetInText(offset->first + 1));
 }
 
+base::Optional<std::pair<int, int>>
+AXPlatformNodeAuraLinux::GetEmbeddedObjectIndices() {
+  auto* parent = AtkObjectToAXPlatformNodeAuraLinux(GetParent());
+  if (!parent)
+    return base::nullopt;
+  return parent->GetEmbeddedObjectIndicesForId(GetUniqueId());
+}
+
 void AXPlatformNodeAuraLinux::UpdateHypertext() {
   EnsureAtkObjectIsValid();
   AXHypertext old_hypertext = hypertext_;
@@ -3819,20 +3827,6 @@ AtkHyperlink* AXPlatformNodeAuraLinux::GetAtkHyperlink() {
       ATK_HYPERLINK(g_object_new(AX_PLATFORM_ATK_HYPERLINK_TYPE, 0));
   ax_platform_atk_hyperlink_set_object(
       AX_PLATFORM_ATK_HYPERLINK(atk_hyperlink_), this);
-
-  auto* parent = AtkObjectToAXPlatformNodeAuraLinux(GetParent());
-  if (!parent)
-    return atk_hyperlink_;
-
-  base::Optional<std::pair<int, int>> indices =
-      parent->GetEmbeddedObjectIndicesForId(GetUniqueId());
-  if (!indices.has_value())
-    return atk_hyperlink_;
-
-  ax_platform_atk_hyperlink_set_indices(
-      AX_PLATFORM_ATK_HYPERLINK(atk_hyperlink_), indices->first,
-      indices->second);
-
   return atk_hyperlink_;
 }
 

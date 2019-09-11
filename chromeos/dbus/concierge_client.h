@@ -20,6 +20,21 @@ namespace chromeos {
 // start and stop VMs, as well as for disk image management.
 class COMPONENT_EXPORT(CHROMEOS_DBUS) ConciergeClient : public DBusClient {
  public:
+  // Used for observing VMs starting and stopping.
+  class VmObserver {
+   public:
+    // OnVmStarted is signaled by Concierge when a VM starts.
+    virtual void OnVmStarted(
+        const vm_tools::concierge::VmStartedSignal& signal) = 0;
+
+    // OnVmStopped is signaled by Concierge when a VM stops.
+    virtual void OnVmStopped(
+        const vm_tools::concierge::VmStoppedSignal& signal) = 0;
+
+   protected:
+    virtual ~VmObserver() = default;
+  };
+
   // Used for observing all concierge signals related to running
   // containers (e.g. startup).
   class ContainerObserver {
@@ -48,6 +63,11 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ConciergeClient : public DBusClient {
     virtual ~DiskImageObserver() = default;
   };
 
+  // Adds an observer for VM start and stop.
+  virtual void AddVmObserver(VmObserver* observer) = 0;
+  // Removes an observer if added.
+  virtual void RemoveVmObserver(VmObserver* observer) = 0;
+
   // Adds an observer for container startup.
   virtual void AddContainerObserver(ContainerObserver* observer) = 0;
   // Removes an observer if added.
@@ -57,6 +77,11 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ConciergeClient : public DBusClient {
   virtual void AddDiskImageObserver(DiskImageObserver* observer) = 0;
   // Adds an observer for disk image operations.
   virtual void RemoveDiskImageObserver(DiskImageObserver* observer) = 0;
+
+  // IsVmSartedSignalConnected and IsVmStoppedSignalConnected must return true
+  // before RestartCrostini is called.
+  virtual bool IsVmStartedSignalConnected() = 0;
+  virtual bool IsVmStoppedSignalConnected() = 0;
 
   // IsContainerStartupFailedSignalConnected must return true before
   // StartContainer is called.

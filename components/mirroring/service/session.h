@@ -25,6 +25,7 @@
 #include "media/mojo/mojom/video_encode_accelerator.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
 namespace media {
@@ -162,7 +163,7 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) Session final
 
   MessageDispatcher message_dispatcher_;
 
-  network::mojom::NetworkContextPtr network_context_;
+  mojo::Remote<network::mojom::NetworkContext> network_context_;
 
   base::Optional<SessionMonitor> session_monitor_;
 

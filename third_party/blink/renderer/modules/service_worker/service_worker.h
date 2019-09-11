@@ -55,7 +55,7 @@ class MODULES_EXPORT ServiceWorker final
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(ServiceWorker);
   USING_PRE_FINALIZER(ServiceWorker, Dispose);
-  
+
  public:
   static ServiceWorker* From(ExecutionContext*,
                              mojom::blink::ServiceWorkerObjectInfoPtr);
@@ -80,7 +80,7 @@ class MODULES_EXPORT ServiceWorker final
 
   void postMessage(ScriptState*,
                    const ScriptValue& message,
-                   Vector<ScriptValue>& transfer,
+                   HeapVector<ScriptValue>& transfer,
                    ExceptionState&);
   void postMessage(ScriptState*,
                    const ScriptValue& message,

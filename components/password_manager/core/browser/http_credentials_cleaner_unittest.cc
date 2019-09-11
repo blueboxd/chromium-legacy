@@ -17,6 +17,7 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/network_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -174,9 +175,9 @@ TEST_P(HttpCredentialCleanerTest, ReportHttpMigrationMetrics) {
 
   auto request_context = base::MakeRefCounted<net::TestURLRequestContextGetter>(
       base::ThreadTaskRunnerHandle::Get());
-  network::mojom::NetworkContextPtr network_context_pipe;
+  mojo::Remote<network::mojom::NetworkContext> network_context_remote;
   auto network_context = std::make_unique<network::NetworkContext>(
-      nullptr, mojo::MakeRequest(&network_context_pipe),
+      nullptr, network_context_remote.BindNewPipeAndPassReceiver(),
       request_context->GetURLRequestContext(),
       /*cors_exempt_header_list=*/std::vector<std::string>());
 
@@ -201,13 +202,13 @@ TEST_P(HttpCredentialCleanerTest, ReportHttpMigrationMetrics) {
   HttpCredentialCleaner cleaner(
       store_,
       base::BindLambdaForTesting([&]() -> network::mojom::NetworkContext* {
-        // This needs to be network_context_pipe.get() and
+        // This needs to be network_context_remote.get() and
         // not network_context.get() to make HSTS queries asynchronous, which
         // is what the progress tracking logic in HttpMetricsMigrationReporter
         // assumes.  This also matches reality, since
         // StoragePartition::GetNetworkContext will return a mojo pipe
         // even in the in-process case.
-        return network_context_pipe.get();
+        return network_context_remote.get();
       }),
       &prefs);
   EXPECT_CALL(observer, CleaningCompleted);
@@ -282,9 +283,9 @@ TEST(HttpCredentialCleaner, StartCleanUpTest) {
     auto request_context =
         base::MakeRefCounted<net::TestURLRequestContextGetter>(
             base::ThreadTaskRunnerHandle::Get());
-    network::mojom::NetworkContextPtr network_context_pipe;
+    mojo::Remote<network::mojom::NetworkContext> network_context_remote;
     auto network_context = std::make_unique<network::NetworkContext>(
-        nullptr, mojo::MakeRequest(&network_context_pipe),
+        nullptr, network_context_remote.BindNewPipeAndPassReceiver(),
         request_context->GetURLRequestContext(),
         /*cors_exempt_header_list=*/std::vector<std::string>());
 
@@ -292,13 +293,13 @@ TEST(HttpCredentialCleaner, StartCleanUpTest) {
     HttpCredentialCleaner cleaner(
         password_store,
         base::BindLambdaForTesting([&]() -> network::mojom::NetworkContext* {
-          // This needs to be network_context_pipe.get() and
+          // This needs to be network_context_remote.get() and
           // not network_context.get() to make HSTS queries asynchronous, which
           // is what the progress tracking logic in HttpMetricsMigrationReporter
           // assumes.  This also matches reality, since
           // StoragePartition::GetNetworkContext will return a mojo pipe
           // even in the in-process case.
-          return network_context_pipe.get();
+          return network_context_remote.get();
         }),
         &prefs);
     EXPECT_TRUE(cleaner.NeedsCleaning());

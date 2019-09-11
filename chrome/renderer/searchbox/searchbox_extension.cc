@@ -1357,7 +1357,7 @@ void SearchBoxExtension::DispatchQueryAutocompleteResult(
       base::Value entry(base::Value::Type::DICTIONARY);
       entry.SetIntKey("offset", classification->offset);
       entry.SetIntKey("style", classification->style);
-      contents_class.GetList().push_back(std::move(entry));
+      contents_class.Append(std::move(entry));
     }
     dict.SetKey("contentsClass", std::move(contents_class));
     dict.SetStringKey("description", match->description);
@@ -1366,7 +1366,7 @@ void SearchBoxExtension::DispatchQueryAutocompleteResult(
       base::Value entry(base::Value::Type::DICTIONARY);
       entry.SetIntKey("offset", classification->offset);
       entry.SetIntKey("style", classification->style);
-      description_class.GetList().push_back(std::move(entry));
+      description_class.Append(std::move(entry));
     }
     dict.SetKey("descriptionClass", std::move(description_class));
     dict.SetStringKey("destinationUrl", match->destination_url);
@@ -1376,7 +1376,7 @@ void SearchBoxExtension::DispatchQueryAutocompleteResult(
     dict.SetBoolKey("swapContentsAndDescription",
                     match->swap_contents_and_description);
     dict.SetStringKey("type", match->type);
-    list.GetList().push_back(std::move(dict));
+    list.Append(std::move(dict));
   }
   std::string json;
   base::JSONWriter::Write(list, &json);

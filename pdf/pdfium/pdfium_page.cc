@@ -439,9 +439,8 @@ PDFiumPage::Area PDFiumPage::GetLinkTargetAtIndex(int link_index,
   CalculateLinks();
   if (link_index >= static_cast<int>(links_.size()))
     return NONSELECTABLE_AREA;
-  target->url = links_[link_index].target.url;
-  DCHECK(!target->url.empty());
-  return WEBLINK_AREA;
+  *target = links_[link_index].target;
+  return target->url.empty() ? DOCLINK_AREA : WEBLINK_AREA;
 }
 
 PDFiumPage::Area PDFiumPage::GetCharIndex(const pp::Point& point,

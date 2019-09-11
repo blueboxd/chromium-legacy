@@ -16,7 +16,7 @@ int NGTextDecorationOffset::ComputeUnderlineOffsetForUnder(
     float text_decoration_thickness,
     FontVerticalPositionType position_type) const {
   LayoutUnit offset = LayoutUnit::Max();
-  const ComputedStyle& style = text_item_.Style();
+  const ComputedStyle& style = text_style_;
   FontBaseline baseline_type = style.GetFontBaseline();
 
   if (decorating_box_) {

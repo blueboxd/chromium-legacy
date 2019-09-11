@@ -14,7 +14,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
-#include "chrome/browser/performance_manager/performance_manager.h"
+#include "chrome/browser/performance_manager/public/performance_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom.h"
@@ -461,11 +461,9 @@ void DiscardsUI::BindDiscardsDetailsProvider(
 
 void DiscardsUI::BindWebUIGraphDumpProvider(
     performance_manager::mojom::WebUIGraphDumpRequest request) {
-  performance_manager::PerformanceManager* performance_manager =
-      performance_manager::PerformanceManager::GetInstance();
-  if (performance_manager) {
+  if (performance_manager::PerformanceManager::IsAvailable()) {
     // Forward the interface request directly to the service.
-    performance_manager->CallOnGraph(
+    performance_manager::PerformanceManager::CallOnGraph(
         FROM_HERE,
         base::BindOnce(&performance_manager::WebUIGraphDumpImpl::CreateAndBind,
                        std::move(request)));

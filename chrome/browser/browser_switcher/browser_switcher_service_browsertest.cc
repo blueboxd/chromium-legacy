@@ -419,7 +419,7 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
   policy::PolicyMap policies;
   EnableBrowserSwitcher(&policies);
   auto url_list = std::make_unique<base::ListValue>();
-  url_list->GetList().emplace_back("*");
+  url_list->Append("*");
   SetPolicy(&policies, policy::key::kBrowserSwitcherUrlList,
             std::move(url_list));
   SetPolicy(&policies, policy::key::kBrowserSwitcherExternalGreylistUrl,
@@ -654,21 +654,21 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, WritesPrefsToCacheFile) {
   SetPolicy(&policies, policy::key::kAlternativeBrowserPath,
             std::make_unique<base::Value>("IExplore.exe"));
   auto alt_params = std::make_unique<base::ListValue>();
-  alt_params->GetList().push_back(base::Value("--bogus-flag"));
+  alt_params->Append(base::Value("--bogus-flag"));
   SetPolicy(&policies, policy::key::kAlternativeBrowserParameters,
             std::move(alt_params));
   SetPolicy(&policies, policy::key::kBrowserSwitcherChromePath,
             std::make_unique<base::Value>("chrome.exe"));
   auto chrome_params = std::make_unique<base::ListValue>();
-  chrome_params->GetList().push_back(base::Value("--force-dark-mode"));
+  chrome_params->Append(base::Value("--force-dark-mode"));
   SetPolicy(&policies, policy::key::kBrowserSwitcherChromeParameters,
             std::move(chrome_params));
   auto url_list = std::make_unique<base::ListValue>();
-  url_list->GetList().push_back(base::Value("example.com"));
+  url_list->Append(base::Value("example.com"));
   SetPolicy(&policies, policy::key::kBrowserSwitcherUrlList,
             std::move(url_list));
   auto greylist = std::make_unique<base::ListValue>();
-  greylist->GetList().push_back(base::Value("foo.example.com"));
+  greylist->Append(base::Value("foo.example.com"));
   SetPolicy(&policies, policy::key::kBrowserSwitcherUrlGreylist,
             std::move(greylist));
   policy_provider().UpdateChromePolicy(policies);

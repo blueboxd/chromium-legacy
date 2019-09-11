@@ -4536,7 +4536,7 @@ class RestoreOnStartupPolicyTest
         nullptr);
     auto urls = std::make_unique<base::Value>(base::Value::Type::LIST);
     for (const auto* url_string : kRestoredURLs)
-      urls->GetList().emplace_back(url_string);
+      urls->Append(url_string);
     policies.Set(key::kURLBlacklist, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                  POLICY_SOURCE_CLOUD, std::move(urls), nullptr);
     provider_.UpdateChromePolicy(policies);
@@ -6548,7 +6548,7 @@ IN_PROC_BROWSER_TEST_F(NoteTakingOnLockScreenPolicyTest,
             GetAppLockScreenStatus(app->id()));
 
   auto policy = std::make_unique<base::ListValue>();
-  policy->GetList().emplace_back(base::Value(kTestAppId));
+  policy->Append(base::Value(kTestAppId));
   SetPolicyValue(std::move(policy));
 
   EXPECT_EQ(chromeos::NoteTakingLockScreenSupport::kSupported,
@@ -6850,17 +6850,17 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbAllowDevicesForUrls) {
   device_value.SetKey("product_id", base::Value(0));
 
   base::Value devices_value(base::Value::Type::LIST);
-  devices_value.GetList().push_back(std::move(device_value));
+  devices_value.Append(std::move(device_value));
 
   base::Value urls_value(base::Value::Type::LIST);
-  urls_value.GetList().emplace_back(base::Value("https://foo.com"));
+  urls_value.Append(base::Value("https://foo.com"));
 
   base::Value entry(base::Value::Type::DICTIONARY);
   entry.SetKey("devices", std::move(devices_value));
   entry.SetKey("urls", std::move(urls_value));
 
   auto policy_value = std::make_unique<base::Value>(base::Value::Type::LIST);
-  policy_value->GetList().push_back(std::move(entry));
+  policy_value->Append(std::move(entry));
 
   SetPolicy(&policies, key::kWebUsbAllowDevicesForUrls,
             std::move(policy_value));
@@ -6975,7 +6975,7 @@ class WebAppInstallForceListPolicyTest : public PolicyTest {
     item.SetKey("default_launch_container", std::move(launch_container));
 
     base::Value list(base::Value::Type::LIST);
-    list.GetList().push_back(std::move(item));
+    list.Append(std::move(item));
 
     PolicyMap policies;
     SetPolicy(&policies, key::kWebAppInstallForceList,

@@ -40,7 +40,7 @@ void AppendChildToLastNode(std::vector<base::Value>* buffer,
   DCHECK(!IsTextNode(parent));
 
   if (auto* children = parent.FindListKey("children")) {
-    children->GetList().push_back(std::move(new_child));
+    children->Append(std::move(new_child));
     return;
   }
 

@@ -69,6 +69,10 @@ PasswordStore* StubPasswordManagerClient::GetProfilePasswordStore() const {
   return nullptr;
 }
 
+PasswordStore* StubPasswordManagerClient::GetAccountPasswordStore() const {
+  return nullptr;
+}
+
 const GURL& StubPasswordManagerClient::GetLastCommittedEntryURL() const {
   return GURL::EmptyGURL();
 }

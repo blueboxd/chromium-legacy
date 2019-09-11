@@ -44,6 +44,7 @@
 #include "media/mojo/mojom/remoting.mojom.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/mime_util.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -1377,7 +1378,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // For NetworkContexts returned from the Network Service, some requirements:
   //   -enable data URL support (or else data URLs will fail)
   //   -disable file URL support (for security)
-  virtual network::mojom::NetworkContextPtr CreateNetworkContext(
+  virtual mojo::Remote<network::mojom::NetworkContext> CreateNetworkContext(
       BrowserContext* context,
       bool in_memory,
       const base::FilePath& relative_partition_path);

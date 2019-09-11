@@ -15,6 +15,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/token.h"
 #include "base/values.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
 #include "services/data_decoder/public/mojom/json_parser.mojom.h"
 
@@ -54,7 +55,7 @@ class SafeJsonParserImpl : public SafeJsonParser {
   SuccessCallback success_callback_;
   ErrorCallback error_callback_;
 
-  mojom::JsonParserPtr json_parser_ptr_;
+  mojo::Remote<mojom::JsonParser> json_parser_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

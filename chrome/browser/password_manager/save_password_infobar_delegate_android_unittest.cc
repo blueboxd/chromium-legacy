@@ -154,7 +154,7 @@ SavePasswordInfoBarDelegateTest::CreateMockFormManager(
   auto manager = std::make_unique<MockPasswordFormManager>(
       &client_, driver_.AsWeakPtr(), observed_form_, &fetcher_,
       metrics_recorder);
-  manager->ProvisionallySave(observed_form_, &driver_);
+  manager->ProvisionallySave(observed_form_, &driver_, nullptr);
   return manager;
 }
 

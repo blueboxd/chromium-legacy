@@ -737,7 +737,7 @@ void CastContentBrowserClient::ExposeInterfacesToRenderer(
     blink::AssociatedInterfaceRegistry* associated_registry,
     content::RenderProcessHost* render_process_host) {
   registry->AddInterface(
-      base::Bind(&media::MediaCapsImpl::AddBinding,
+      base::Bind(&media::MediaCapsImpl::AddReceiver,
                  base::Unretained(cast_browser_main_parts_->media_caps())),
       base::ThreadTaskRunnerHandle::Get());
 
@@ -995,7 +995,7 @@ void CastContentBrowserClient::OnNetworkServiceCreated(
   cast_network_contexts_->OnNetworkServiceCreated(network_service);
 }
 
-network::mojom::NetworkContextPtr
+mojo::Remote<network::mojom::NetworkContext>
 CastContentBrowserClient::CreateNetworkContext(
     content::BrowserContext* context,
     bool in_memory,

@@ -32,7 +32,7 @@ class MODULES_EXPORT Task : public ScriptWrappable, ContextLifecycleObserver {
   Task(TaskQueue*,
        ExecutionContext*,
        V8Function*,
-       const Vector<ScriptValue>& args,
+       const HeapVector<ScriptValue>& args,
        base::TimeDelta delay);
 
   // Task IDL Interface.
@@ -84,7 +84,7 @@ class MODULES_EXPORT Task : public ScriptWrappable, ContextLifecycleObserver {
   TaskHandle task_handle_;
   Member<TaskQueue> task_queue_;
   Member<V8Function> callback_;
-  Vector<ScriptValue> arguments_;
+  HeapVector<ScriptValue> arguments_;
   const base::TimeDelta delay_;
   // Only set if |delay_| > 0 since Now() can be somewhat expensive. This
   // optimizes the case where there is no delay, which we expect to be the

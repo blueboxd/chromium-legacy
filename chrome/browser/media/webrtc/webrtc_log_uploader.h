@@ -166,18 +166,19 @@ class WebRtcLogUploader {
   // Append information (upload time, report ID and local ID) about a log to a
   // log list file, limited to |kLogListLimitLines| entries. This list is used
   // for viewing the logs under chrome://webrtc-logs, see WebRtcLogUploadList.
-  // The list has the format
-  // upload_time,report_id,local_id
-  // upload_time,report_id,local_id
-  // etc.
-  // where each line represents a log. "upload_time" is the time when the log
-  // was uploaded in Unix time. "report_id" is the ID reported back by the
-  // server. "local_id" is the ID for the locally stored log. It's the time
-  // stored in Unix time and it's also used as file name.
-  // AddLocallyStoredLogInfoToUploadListFile() will first be called,
-  // "upload_time" and "report_id" is the left empty in the entry written to the
-  // list file. If uploading is successful, AddUploadedLogInfoToUploadListFile()
-  // is called and those empty items are filled out.
+  // The list has the format:
+  //   [upload_time],[report_id],[local_id],[capture_time]
+  // Each line represents a log.
+  // * |upload_time| is the time when the log was uploaded in Unix time.
+  // * |report_id| is the ID reported back by the server.
+  // * |local_id| is the ID for the locally stored log. It's the time stored
+  //   in Unix time and it's also used as file name.
+  // * |capture_time| is the Unix time when the log was captured.
+  // AddLocallyStoredLogInfoToUploadListFile() will first be called.
+  // |upload_time| and |report_id| will be left empty in the entry written to
+  // the list file. If uploading is successful,
+  // AddUploadedLogInfoToUploadListFile() will be called and those empty fields
+  // will be filled out.
   // Must be called on the FILE thread.
   void AddLocallyStoredLogInfoToUploadListFile(
       const base::FilePath& upload_list_path,

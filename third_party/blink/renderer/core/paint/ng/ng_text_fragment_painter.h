@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NG_NG_TEXT_FRAGMENT_PAINTER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NG_NG_TEXT_FRAGMENT_PAINTER_H_
 
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -14,33 +16,49 @@ namespace blink {
 class ComputedStyle;
 class DisplayItemClient;
 class LayoutObject;
-class NGFragmentItem;
-class NGFragmentItems;
 class NGPaintFragment;
-class NGPhysicalTextFragment;
+class NGInlineCursor;
 struct NGTextFragmentPaintInfo;
 struct PaintInfo;
 struct PhysicalOffset;
 struct PhysicalRect;
 struct PhysicalSize;
 
+// The helper class for templatize |NGTextFragmentPainter|.
+// TODO(yosin): Remove |NGTextPainterCursor| once the transition to
+// |NGFragmentItem| is done. http://crbug.com/982194
+class NGTextPainterCursor {
+  STACK_ALLOCATED();
+
+ public:
+  explicit NGTextPainterCursor(const NGPaintFragment& paint_fragment)
+      : paint_fragment_(paint_fragment),
+        text_fragment_(
+            To<NGPhysicalTextFragment>(paint_fragment.PhysicalFragment())) {}
+
+  const NGPaintFragment& PaintFragment() const { return paint_fragment_; }
+  const NGPhysicalTextFragment* CurrentItem() const { return &text_fragment_; }
+
+ private:
+  const NGPaintFragment& paint_fragment_;
+  const NGPhysicalTextFragment& text_fragment_;
+};
+
 // Text fragment painter for LayoutNG. Operates on NGPhysicalTextFragments and
 // handles clipping, selection, etc. Delegates to NGTextPainter to paint the
 // text itself.
+// TODO(yosin): We should make |NGTextFragmentPainter| non-template class onnce
+// we get rid of |NGPaintFragment|.
+template <typename Cursor>
 class NGTextFragmentPainter {
   STACK_ALLOCATED();
 
  public:
-  // TODO(kojii) : Remove | NGPaintFragment | once the transition is done.
-  // crbug.com/982194
-  explicit NGTextFragmentPainter(const NGPaintFragment&);
-  NGTextFragmentPainter(const NGFragmentItem&, const NGFragmentItems&);
+  explicit NGTextFragmentPainter(const Cursor&);
 
   void Paint(const PaintInfo&, const PhysicalOffset& paint_offset);
 
  private:
-  void PaintItem(const PaintInfo&, const PhysicalOffset& paint_offset);
-
   void Paint(const NGTextFragmentPaintInfo& fragment_paint_info,
              const LayoutObject* layout_object,
              const DisplayItemClient& display_item_client,
@@ -58,12 +76,11 @@ class NGTextFragmentPainter {
                           const PaintInfo& paint_info,
                           const PhysicalOffset& paint_offset);
 
-  const NGPaintFragment* paint_fragment_ = nullptr;
-  const NGPhysicalTextFragment* text_fragment_ = nullptr;
-
-  const NGFragmentItem* item_ = nullptr;
-  const NGFragmentItems* items_ = nullptr;
+  const Cursor& cursor_;
 };
+
+extern template class NGTextFragmentPainter<NGTextPainterCursor>;
+extern template class NGTextFragmentPainter<NGInlineCursor>;
 
 }  // namespace blink
 

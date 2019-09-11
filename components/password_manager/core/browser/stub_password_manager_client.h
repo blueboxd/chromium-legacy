@@ -55,6 +55,7 @@ class StubPasswordManagerClient : public PasswordManagerClient {
       std::unique_ptr<PasswordFormManagerForUI> saved_manager) override;
   PrefService* GetPrefs() const override;
   PasswordStore* GetProfilePasswordStore() const override;
+  PasswordStore* GetAccountPasswordStore() const override;
   const GURL& GetLastCommittedEntryURL() const override;
   const CredentialsFilter* GetStoreResultFilter() const override;
   const autofill::LogManager* GetLogManager() const override;

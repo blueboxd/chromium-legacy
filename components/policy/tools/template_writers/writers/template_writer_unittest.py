@@ -228,7 +228,8 @@ class TemplateWriterUnittests(unittest.TestCase):
     expanded_description = tw.GetExpandedPolicyDescription(policy)
     self.assertEqual(
         expanded_description,
-        'See https://www.chromium.org/administrators/policy-list-3#PolicyName')
+        'See https://cloud.google.com/docs/chrome-enterprise/policies/?policy=PolicyName'
+    )
 
 
 if __name__ == '__main__':

@@ -63,8 +63,8 @@ TEST_F(PasswordSiteIsolationPolicyTest, ApplyPersistedIsolatedOrigins) {
     ListPrefUpdate update(profile->GetPrefs(),
                           prefs::kUserTriggeredIsolatedOrigins);
     base::ListValue* list = update.Get();
-    list->GetList().emplace_back("http://foo.com");
-    list->GetList().emplace_back("https://bar.com");
+    list->Append("http://foo.com");
+    list->Append("https://bar.com");
   }
 
   // New SiteInstances for foo.com and bar.com shouldn't require a dedicated
@@ -141,7 +141,7 @@ TEST_F(NoPasswordSiteIsolationPolicyTest,
     ListPrefUpdate update(profile->GetPrefs(),
                           prefs::kUserTriggeredIsolatedOrigins);
     base::ListValue* list = update.Get();
-    list->GetList().emplace_back("http://foo.com");
+    list->Append("http://foo.com");
   }
 
   // Applying saved isolated origins should have no effect, since site

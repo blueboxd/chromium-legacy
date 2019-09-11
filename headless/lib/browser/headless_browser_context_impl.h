@@ -21,6 +21,7 @@
 #include "headless/public/headless_browser.h"
 #include "headless/public/headless_browser_context.h"
 #include "headless/public/headless_export.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace headless {
 class HeadlessBrowserImpl;
@@ -98,7 +99,7 @@ class HEADLESS_EXPORT HeadlessBrowserContextImpl final
   const base::UnguessableToken* GetDevToolsFrameTokenForFrameTreeNodeId(
       int frame_tree_node_id) const;
 
-  ::network::mojom::NetworkContextPtr CreateNetworkContext(
+  mojo::Remote<::network::mojom::NetworkContext> CreateNetworkContext(
       bool in_memory,
       const base::FilePath& relative_partition_path);
 

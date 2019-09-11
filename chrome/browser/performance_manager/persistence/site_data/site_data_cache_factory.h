@@ -30,7 +30,8 @@ class SiteDataCacheInspector;
 
 // This class is responsible for tracking the SiteDataCache instances associated
 // with each browser context. It is meant to be used as a bridge between the
-// browser contexts living on the UI thread and the PerformanceManager sequence.
+// browser contexts living on the UI thread and the PerformanceManager
+// sequence.
 //
 // This can be created on any sequence but it then should be passed to the
 // graph and used on the PerformanceManager sequence.

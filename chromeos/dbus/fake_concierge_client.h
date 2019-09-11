@@ -22,10 +22,15 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   ~FakeConciergeClient() override;
 
   // ConciergeClient:
+  void AddVmObserver(VmObserver* observer) override;
+  void RemoveVmObserver(VmObserver* observer) override;
   void AddContainerObserver(ContainerObserver* observer) override;
   void RemoveContainerObserver(ContainerObserver* observer) override;
   void AddDiskImageObserver(DiskImageObserver* observer) override;
   void RemoveDiskImageObserver(DiskImageObserver* observer) override;
+
+  bool IsVmStartedSignalConnected() override;
+  bool IsVmStoppedSignalConnected() override;
   bool IsContainerStartupFailedSignalConnected() override;
   bool IsDiskImageProgressSignalConnected() override;
   void CreateDiskImage(
@@ -116,6 +121,12 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   bool detach_usb_device_called() const { return detach_usb_device_called_; }
   bool list_usb_devices_called() const { return list_usb_devices_called_; }
   bool start_arc_vm_called() const { return start_arc_vm_called_; }
+  void set_vm_started_signal_connected(bool connected) {
+    is_vm_started_signal_connected_ = connected;
+  }
+  void set_vm_stopped_signal_connected(bool connected) {
+    is_vm_stopped_signal_connected_ = connected;
+  }
   void set_container_startup_failed_signal_connected(bool connected) {
     is_container_startup_failed_signal_connected_ = connected;
   }
@@ -238,6 +249,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   bool detach_usb_device_called_ = false;
   bool list_usb_devices_called_ = false;
   bool start_arc_vm_called_ = false;
+  bool is_vm_started_signal_connected_ = true;
+  bool is_vm_stopped_signal_connected_ = true;
   bool is_container_startup_failed_signal_connected_ = true;
   bool is_disk_image_progress_signal_connected_ = true;
 
@@ -263,6 +276,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   // Can be set to fake a series of disk image status signals.
   std::vector<vm_tools::concierge::DiskImageStatusResponse>
       disk_image_status_signals_;
+
+  base::ObserverList<VmObserver>::Unchecked vm_observer_list_;
 
   base::ObserverList<ContainerObserver>::Unchecked container_observer_list_;
 

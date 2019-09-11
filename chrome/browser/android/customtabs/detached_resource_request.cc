@@ -79,7 +79,8 @@ DetachedResourceRequest::DetachedResourceRequest(
   resource_request->url = url_;
   // The referrer is stripped if it's not set properly initially.
   resource_request->referrer = net::URLRequestJob::ComputeReferrerForPolicy(
-      referrer_policy, site_for_cookies_, url_);
+      referrer_policy, site_for_cookies_,
+      url::Origin::Create(site_for_cookies_), url_);
   resource_request->referrer_policy = referrer_policy;
   resource_request->site_for_cookies = site_for_cookies_;
   resource_request->request_initiator = url::Origin::Create(site_for_cookies_);

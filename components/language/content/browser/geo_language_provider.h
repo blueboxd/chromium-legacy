@@ -12,6 +12,7 @@
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "components/language/content/browser/language_code_locator.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/geolocation.mojom.h"
 
 namespace base {
@@ -102,7 +103,7 @@ class GeoLanguageProvider {
   std::unique_ptr<service_manager::Connector> service_manager_connector_;
 
   // Connection to the IP geolocation service.
-  device::mojom::GeolocationPtr geolocation_provider_;
+  mojo::Remote<device::mojom::Geolocation> geolocation_provider_;
 
   // Location -> Language lookup library.
   std::unique_ptr<language::LanguageCodeLocator> language_code_locator_;

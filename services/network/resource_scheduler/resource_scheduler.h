@@ -83,8 +83,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceScheduler {
     base::OnceClosure resume_callback_;
   };
 
-  explicit ResourceScheduler(bool enabled,
-                             const base::TickClock* tick_clock = nullptr);
+  explicit ResourceScheduler(const base::TickClock* tick_clock = nullptr);
   ~ResourceScheduler();
 
   // Requests that this ResourceScheduler schedule, and eventually loads, the
@@ -141,8 +140,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceScheduler {
     task_runner_ = std::move(sequenced_task_runner);
   }
 
-  bool enabled() const { return enabled_; }
-
   void SetResourceSchedulerParamsManagerForTests(
       const ResourceSchedulerParamsManager& resource_scheduler_params_manager);
 
@@ -187,11 +184,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceScheduler {
 
   // Timer to dispatch requests that may have been queued for too long.
   base::OneShotTimer long_queued_requests_dispatch_timer_;
-
-  // Whether or not to enable ResourceScheduling. This will almost always be
-  // enabled, except for some C++ headless embedders who may implement their own
-  // resource scheduling via protocol handlers.
-  const bool enabled_;
 
   // Duration after which the timer to dispatch queued requests should fire.
   const base::TimeDelta queued_requests_dispatch_periodicity_;

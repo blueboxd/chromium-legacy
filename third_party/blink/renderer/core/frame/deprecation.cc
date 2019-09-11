@@ -473,16 +473,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
               "Creating a MediaStreamAudioSourceNode on an OfflineAudioContext",
               kM71, "5258622686724096")};
 
-    case WebFeature::kGridRowTrackPercentIndefiniteHeight:
-      return {"GridRowTrackPercentIndefiniteHeight", kM70,
-              String::Format("Percentages row tracks and gutters for "
-                             "indefinite height grid containers will be "
-                             "resolved against the intrinsic height instead of "
-                             "being treated as auto and zero respectively. "
-                             "This change will happen in %s. See "
-                             "https://www.chromestatus.com/feature/"
-                             "6708326821789696 for more details.",
-                             MilestoneString(kM70))};
     case WebFeature::kTextToSpeech_SpeakDisallowedByAutoplay:
       return {
           "TextToSpeech_DisallowedByAutoplay", kM71,

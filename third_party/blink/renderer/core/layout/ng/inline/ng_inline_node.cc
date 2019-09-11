@@ -614,7 +614,6 @@ class NGInlineNodeDataEditor final {
     // Copy items after replaced range
     ++it;
     while (it != data_->items.end()) {
-      DCHECK_NE(it->layout_object_, layout_text_);
       DCHECK_LE(end_offset, it->start_offset_);
       items.push_back(*it);
       ShiftItem(&items.back(), diff);

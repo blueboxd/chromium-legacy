@@ -219,14 +219,14 @@ ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)
 
 ProfileNetworkContextService::~ProfileNetworkContextService() {}
 
-network::mojom::NetworkContextPtr
+mojo::Remote<network::mojom::NetworkContext>
 ProfileNetworkContextService::CreateNetworkContext(
     bool in_memory,
     const base::FilePath& relative_partition_path) {
-  network::mojom::NetworkContextPtr network_context;
+  mojo::Remote<network::mojom::NetworkContext> network_context;
 
   content::GetNetworkService()->CreateNetworkContext(
-      MakeRequest(&network_context),
+      network_context.BindNewPipeAndPassReceiver(),
       CreateNetworkContextParams(in_memory, relative_partition_path));
 
   if ((!in_memory && !profile_->IsOffTheRecord())) {

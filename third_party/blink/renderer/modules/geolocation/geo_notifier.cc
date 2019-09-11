@@ -7,7 +7,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/modules/geolocation/geolocation.h"
-#include "third_party/blink/renderer/modules/geolocation/position_error.h"
+#include "third_party/blink/renderer/modules/geolocation/geolocation_position_error.h"
 #include "third_party/blink/renderer/modules/geolocation/position_options.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -45,7 +45,7 @@ void GeoNotifier::Trace(blink::Visitor* visitor) {
   visitor->Trace(fatal_error_);
 }
 
-void GeoNotifier::SetFatalError(PositionError* error) {
+void GeoNotifier::SetFatalError(GeolocationPositionError* error) {
   // If a fatal error has already been set, stick with it. This makes sure that
   // when permission is denied, this is the error reported, as required by the
   // spec.
@@ -67,7 +67,7 @@ void GeoNotifier::RunSuccessCallback(Geoposition* position) {
   success_callback_->InvokeAndReportException(nullptr, position);
 }
 
-void GeoNotifier::RunErrorCallback(PositionError* error) {
+void GeoNotifier::RunErrorCallback(GeolocationPositionError* error) {
   if (error_callback_)
     error_callback_->InvokeAndReportException(nullptr, error);
 }
@@ -132,8 +132,8 @@ void GeoNotifier::TimerFired(TimerBase*) {
 
   if (error_callback_) {
     error_callback_->InvokeAndReportException(
-        nullptr, MakeGarbageCollected<PositionError>(PositionError::kTimeout,
-                                                     "Timeout expired"));
+        nullptr, MakeGarbageCollected<GeolocationPositionError>(
+                     GeolocationPositionError::kTimeout, "Timeout expired"));
   }
 
   DEFINE_STATIC_LOCAL(CustomCountHistogram, timeout_expired_histogram,

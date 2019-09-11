@@ -12,7 +12,7 @@
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "chrome/browser/performance_manager/performance_manager.h"
+#include "chrome/browser/performance_manager/performance_manager_impl.h"
 #include "chrome/browser/performance_manager/render_process_user_data.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
@@ -34,7 +34,7 @@ void PerformanceManagerTabHelper::DetachAndDestroyAll() {
 PerformanceManagerTabHelper::PerformanceManagerTabHelper(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      performance_manager_(PerformanceManager::GetInstance()) {
+      performance_manager_(PerformanceManagerImpl::GetInstance()) {
   page_node_ = performance_manager_->CreatePageNode(
       WebContentsProxy(weak_factory_.GetWeakPtr()),
       web_contents->GetBrowserContext()->UniqueId(),
@@ -72,7 +72,8 @@ PerformanceManagerTabHelper::PerformanceManagerTabHelper(
 }
 
 PerformanceManagerTabHelper::~PerformanceManagerTabHelper() {
-  // Ship our page and frame nodes to the PerformanceManager for incineration.
+  // Ship our page and frame nodes to the PerformanceManagerImpl for
+  // incineration.
   std::vector<std::unique_ptr<NodeBase>> nodes;
   nodes.push_back(std::move(page_node_));
   for (auto& kv : frames_)

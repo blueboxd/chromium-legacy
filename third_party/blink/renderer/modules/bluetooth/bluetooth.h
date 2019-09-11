@@ -5,7 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BLUETOOTH_BLUETOOTH_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_BLUETOOTH_BLUETOOTH_H_
 
-#include <memory>
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
@@ -61,8 +63,8 @@ class Bluetooth final : public EventTargetWithInlineData,
   // PageVisibilityObserver
   void PageVisibilityChanged() override;
 
-  void CancelScan(mojo::BindingId);
-  bool IsScanActive(mojo::BindingId) const;
+  void CancelScan(mojo::ReceiverId);
+  bool IsScanActive(mojo::ReceiverId) const;
 
  private:
   BluetoothDevice* GetBluetoothDeviceRepresentingDevice(
@@ -74,20 +76,20 @@ class Bluetooth final : public EventTargetWithInlineData,
                              mojom::blink::WebBluetoothDevicePtr);
 
   void RequestScanningCallback(ScriptPromiseResolver*,
-                               mojo::BindingId id,
+                               mojo::ReceiverId id,
                                mojom::blink::RequestScanningStartResultPtr);
 
-  void EnsureServiceConnection();
+  void EnsureServiceConnection(ExecutionContext*);
 
   // Map of device ids to BluetoothDevice objects.
   // Ensures only one BluetoothDevice instance represents each
   // Bluetooth device inside a single global object.
   HeapHashMap<String, Member<BluetoothDevice>> device_instance_map_;
 
-  mojo::AssociatedBindingSet<mojom::blink::WebBluetoothScanClient>
-      client_bindings_;
+  mojo::AssociatedReceiverSet<mojom::blink::WebBluetoothScanClient>
+      client_receivers_;
 
-  mojom::blink::WebBluetoothServicePtr service_;
+  mojo::Remote<mojom::blink::WebBluetoothService> service_;
 };
 
 }  // namespace blink

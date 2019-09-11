@@ -1801,6 +1801,7 @@ void RenderProcessHostImpl::InitializeChannelProxy() {
   // surprising behavior.
   remote_route_provider_.reset();
   channel_->GetRemoteAssociatedInterface(&remote_route_provider_);
+  renderer_interface_.reset();
   channel_->GetRemoteAssociatedInterface(&renderer_interface_);
 
   // We start the Channel in a paused state. It will be briefly unpaused again

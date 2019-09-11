@@ -96,8 +96,9 @@ void SMILTimeContainer::Schedule(SVGSMILElement* animation,
 
   sandwich->Schedule(animation);
 
-  SMILTime next_fire_time = animation->NextProgressTime();
-  if (next_fire_time.IsFinite())
+  double latest_update = CurrentDocumentTime();
+  if (animation->IntervalBegin() <= latest_update ||
+      animation->NextProgressTime(latest_update).IsFinite())
     NotifyIntervalsChanged();
 }
 
@@ -422,31 +423,30 @@ void SMILTimeContainer::UpdateAnimationsAndScheduleFrameIfNeeded(
   UpdateAnimationTimings(elapsed);
   ApplyAnimationValues(elapsed);
 
-  SMILTime earliest_fire_time = SMILTime::Unresolved();
+  SMILTime next_progress_time = SMILTime::Unresolved();
   for (auto& sandwich : scheduled_animations_) {
-    SMILTime next_fire_time = sandwich.value->GetNextFireTime();
-    if (next_fire_time.IsFinite())
-      earliest_fire_time = std::min(next_fire_time, earliest_fire_time);
+    next_progress_time =
+        std::min(next_progress_time, sandwich.value->NextProgressTime(elapsed));
   }
 
-  if (!CanScheduleFrame(earliest_fire_time))
+  if (!CanScheduleFrame(next_progress_time))
     return;
-  double delay_time = earliest_fire_time.Value() - elapsed;
+  double delay_time = next_progress_time.Value() - elapsed;
   ScheduleAnimationFrame(delay_time);
 }
 
 // A helper function to fetch the next interesting time after document_time
-SMILTime SMILTimeContainer::NextInterestingTime(SMILTime document_time) const {
-  DCHECK(document_time.IsFinite());
-  DCHECK(document_time >= 0.0);
+SMILTime SMILTimeContainer::NextInterestingTime(
+    double presentation_time) const {
+  DCHECK_GE(presentation_time, 0);
   SMILTime next_interesting_time = SMILTime::Indefinite();
-  for (const auto& entry : scheduled_animations_) {
-    const auto* sandwich = entry.value.Get();
-    SMILTime interesting_time = sandwich->NextInterestingTime(document_time);
-    next_interesting_time = std::min(next_interesting_time, interesting_time);
+  for (const auto& sandwich : scheduled_animations_) {
+    next_interesting_time =
+        std::min(next_interesting_time,
+                 sandwich.value->NextInterestingTime(presentation_time));
   }
   DCHECK(!next_interesting_time.IsFinite() ||
-         document_time < next_interesting_time);
+         presentation_time < next_interesting_time);
   return next_interesting_time;
 }
 
@@ -482,7 +482,7 @@ void SMILTimeContainer::UpdateIntervals(SMILTime document_time) {
   } while (intervals_dirty_);
 }
 
-void SMILTimeContainer::UpdateAnimationTimings(SMILTime elapsed) {
+void SMILTimeContainer::UpdateAnimationTimings(double presentation_time) {
   DCHECK(GetDocument().IsActive());
 
 #if DCHECK_IS_ON()
@@ -499,18 +499,14 @@ void SMILTimeContainer::UpdateAnimationTimings(SMILTime elapsed) {
 
   RemoveUnusedKeys();
 
-  // Don't update if it's a duplicate.
-  if (elapsed == latest_update_time_ && elapsed != 0.0) {
-    return;
-  }
-
   if (intervals_dirty_)
     UpdateIntervals(latest_update_time_);
 
   active_sandwiches_.ReserveCapacity(scheduled_animations_.size());
-  while (latest_update_time_ < elapsed) {
+  while (latest_update_time_ < presentation_time) {
     const SMILTime interesting_time = NextInterestingTime(latest_update_time_);
-    latest_update_time_ = std::min(elapsed, interesting_time).Value();
+    latest_update_time_ =
+        std::min<SMILTime>(presentation_time, interesting_time).Value();
 
     UpdateIntervals(latest_update_time_);
   }

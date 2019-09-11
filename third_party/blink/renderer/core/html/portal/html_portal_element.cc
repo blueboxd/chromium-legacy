@@ -131,7 +131,8 @@ void HTMLPortalElement::Navigate() {
   if (referrer_policy_to_use == network::mojom::ReferrerPolicy::kDefault)
     referrer_policy_to_use = GetDocument().GetReferrerPolicy();
   Referrer referrer = SecurityPolicy::GenerateReferrer(
-      referrer_policy_to_use, url, GetDocument().OutgoingReferrer());
+      referrer_policy_to_use, GetDocument().GetSecurityOrigin(), url,
+      GetDocument().OutgoingReferrer());
   auto mojo_referrer = mojom::blink::Referrer::New(
       KURL(NullURL(), referrer.referrer), referrer.referrer_policy);
 
@@ -258,7 +259,7 @@ ScriptPromise HTMLPortalElement::activate(ScriptState* script_state,
 void HTMLPortalElement::postMessage(ScriptState* script_state,
                                     const ScriptValue& message,
                                     const String& target_origin,
-                                    const Vector<ScriptValue>& transfer,
+                                    const HeapVector<ScriptValue>& transfer,
                                     ExceptionState& exception_state) {
   WindowPostMessageOptions* options = WindowPostMessageOptions::Create();
   options->setTargetOrigin(target_origin);

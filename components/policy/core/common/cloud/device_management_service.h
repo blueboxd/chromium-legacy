@@ -49,7 +49,7 @@ enum class DMServerRequestSuccess {
   // 1..kMaxRetries: number of retries. kMaxRetries is the maximum number of
   // retries allowed, defined in the .cc file.
 
-  // The request failed (too many retries or non-retriable error).
+  // The request failed (too many retries or non-retryable error).
   kRequestFailed = 10,
   // The server responded with an error.
   kRequestError = 11,
@@ -119,7 +119,7 @@ class POLICY_EXPORT DeviceManagementService {
   //
   // JobConfiguration is the interface used by callers to specify parameters
   // of network requests.  This object is not immutable and may be changed after
-  // a call to OnBeforeRetry().  DeviceManagemmentService calls the GetXXX
+  // a call to OnBeforeRetry().  DeviceManagementService calls the GetXXX
   // methods again to create a new network request for each retry.
   //
   // JobControl is the interface used internally by DeviceManagementService to
@@ -163,6 +163,7 @@ class POLICY_EXPORT DeviceManagementService {
       TYPE_INITIAL_ENROLLMENT_STATE_RETRIEVAL = 20,
       TYPE_UPLOAD_POLICY_VALIDATION_REPORT = 21,
       TYPE_UPLOAD_REAL_TIME_REPORT = 22,
+      TYPE_REQUEST_SAML_URL = 23,
     };
 
     // The set of HTTP query parmaters of the request.
@@ -350,7 +351,7 @@ class POLICY_EXPORT JobConfigurationBase
 
  protected:
   // Adds the query parameter to the network request's URL.  If the parameter
-  // already eixsts its value is replaced.
+  // already exists its value is replaced.
   void AddParameter(const std::string& name, const std::string& value);
 
   const DMAuth& GetAuth() { return *auth_data_.get(); }
@@ -379,7 +380,7 @@ class POLICY_EXPORT JobConfigurationBase
   // and |oauth_token_| can be specified for one request.
   base::Optional<std::string> oauth_token_;
 
-  // Query pamaters for the network request.
+  // Query parameters for the network request.
   ParameterMap query_params_;
 
   DISALLOW_COPY_AND_ASSIGN(JobConfigurationBase);

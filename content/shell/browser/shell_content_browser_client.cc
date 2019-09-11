@@ -497,12 +497,12 @@ bool ShellContentBrowserClient::PreSpawnRenderer(sandbox::TargetPolicy* policy,
 }
 #endif  // OS_WIN
 
-network::mojom::NetworkContextPtr
+mojo::Remote<network::mojom::NetworkContext>
 ShellContentBrowserClient::CreateNetworkContext(
     BrowserContext* context,
     bool in_memory,
     const base::FilePath& relative_partition_path) {
-  network::mojom::NetworkContextPtr network_context;
+  mojo::Remote<network::mojom::NetworkContext> network_context;
   network::mojom::NetworkContextParamsPtr context_params =
       network::mojom::NetworkContextParams::New();
   UpdateCorsExemptHeader(context_params.get());
@@ -523,8 +523,8 @@ ShellContentBrowserClient::CreateNetworkContext(
   }
 #endif
 
-  GetNetworkService()->CreateNetworkContext(MakeRequest(&network_context),
-                                            std::move(context_params));
+  GetNetworkService()->CreateNetworkContext(
+      network_context.BindNewPipeAndPassReceiver(), std::move(context_params));
   return network_context;
 }
 

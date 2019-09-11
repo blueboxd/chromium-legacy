@@ -32,6 +32,11 @@ class UsbPolicyAllowedDevicesTest : public testing::Test {
  protected:
   Profile* profile() { return &profile_; }
 
+  std::unique_ptr<UsbPolicyAllowedDevices> CreateUsbPolicyAllowedDevices() {
+    return std::make_unique<UsbPolicyAllowedDevices>(
+        profile()->GetPrefs(), prefs::kManagedWebUsbAllowDevicesForUrls);
+  }
+
   device::FakeUsbDeviceManager device_manager_;
 
  private:
@@ -39,11 +44,16 @@ class UsbPolicyAllowedDevicesTest : public testing::Test {
   TestingProfile profile_;
 };
 
+std::unique_ptr<base::Value> ReadJson(base::StringPiece json) {
+  base::Optional<base::Value> value = base::JSONReader::Read(json);
+  EXPECT_TRUE(value);
+  return value ? base::Value::ToUniquePtrValue(std::move(*value)) : nullptr;
+}
+
 }  // namespace
 
 TEST_F(UsbPolicyAllowedDevicesTest, InitializeWithMissingPrefValue) {
-  auto usb_policy_allowed_devices =
-      std::make_unique<UsbPolicyAllowedDevices>(profile()->GetPrefs());
+  auto usb_policy_allowed_devices = CreateUsbPolicyAllowedDevices();
 
   EXPECT_TRUE(usb_policy_allowed_devices->map().empty());
 }
@@ -53,8 +63,7 @@ TEST_F(UsbPolicyAllowedDevicesTest, InitializeWithExistingEmptyPrefValue) {
 
   SetWebUsbAllowDevicesForUrlsPrefValue(pref_value);
 
-  auto usb_policy_allowed_devices =
-      std::make_unique<UsbPolicyAllowedDevices>(profile()->GetPrefs());
+  auto usb_policy_allowed_devices = CreateUsbPolicyAllowedDevices();
 
   EXPECT_TRUE(usb_policy_allowed_devices->map().empty());
 }
@@ -94,13 +103,11 @@ std::pair<url::Origin, base::Optional<url::Origin>> MakeOriginPair(
 }  // namespace
 
 TEST_F(UsbPolicyAllowedDevicesTest, InitializeWithExistingPrefValue) {
-  std::unique_ptr<base::Value> pref_value =
-      base::JSONReader::ReadDeprecated(kPolicySetting);
+  std::unique_ptr<base::Value> pref_value = ReadJson(kPolicySetting);
 
   SetWebUsbAllowDevicesForUrlsPrefValue(*pref_value);
 
-  auto usb_policy_allowed_devices =
-      std::make_unique<UsbPolicyAllowedDevices>(profile()->GetPrefs());
+  auto usb_policy_allowed_devices = CreateUsbPolicyAllowedDevices();
 
   const UsbPolicyAllowedDevices::UsbDeviceIdsToUrlsMap& map =
       usb_policy_allowed_devices->map();
@@ -132,13 +139,11 @@ TEST_F(UsbPolicyAllowedDevicesTest, InitializeWithExistingPrefValue) {
 
 TEST_F(UsbPolicyAllowedDevicesTest,
        InitializeWithMissingPolicyThenUpdatePolicy) {
-  auto usb_policy_allowed_devices =
-      std::make_unique<UsbPolicyAllowedDevices>(profile()->GetPrefs());
+  auto usb_policy_allowed_devices = CreateUsbPolicyAllowedDevices();
   EXPECT_TRUE(usb_policy_allowed_devices->map().empty());
 
   // Ensure that the allowed devices can be dynamically updated.
-  std::unique_ptr<base::Value> pref_value =
-      base::JSONReader::ReadDeprecated(kPolicySetting);
+  std::unique_ptr<base::Value> pref_value = ReadJson(kPolicySetting);
 
   SetWebUsbAllowDevicesForUrlsPrefValue(*pref_value);
 
@@ -172,13 +177,11 @@ TEST_F(UsbPolicyAllowedDevicesTest,
 
 TEST_F(UsbPolicyAllowedDevicesTest,
        InitializeWithExistingPolicyThenRemovePolicy) {
-  std::unique_ptr<base::Value> pref_value =
-      base::JSONReader::ReadDeprecated(kPolicySetting);
+  std::unique_ptr<base::Value> pref_value = ReadJson(kPolicySetting);
 
   SetWebUsbAllowDevicesForUrlsPrefValue(*pref_value);
 
-  auto usb_policy_allowed_devices =
-      std::make_unique<UsbPolicyAllowedDevices>(profile()->GetPrefs());
+  auto usb_policy_allowed_devices = CreateUsbPolicyAllowedDevices();
 
   const UsbPolicyAllowedDevices::UsbDeviceIdsToUrlsMap& map =
       usb_policy_allowed_devices->map();
@@ -234,13 +237,12 @@ constexpr char kPolicySettingWithEntriesContainingDuplicateDevices[] = R"(
 
 TEST_F(UsbPolicyAllowedDevicesTest,
        InitializeWithExistingPrefValueContainingDuplicateDevices) {
-  std::unique_ptr<base::Value> pref_value = base::JSONReader::ReadDeprecated(
-      kPolicySettingWithEntriesContainingDuplicateDevices);
+  std::unique_ptr<base::Value> pref_value =
+      ReadJson(kPolicySettingWithEntriesContainingDuplicateDevices);
 
   SetWebUsbAllowDevicesForUrlsPrefValue(*pref_value);
 
-  auto usb_policy_allowed_devices =
-      std::make_unique<UsbPolicyAllowedDevices>(profile()->GetPrefs());
+  auto usb_policy_allowed_devices = CreateUsbPolicyAllowedDevices();
 
   const UsbPolicyAllowedDevices::UsbDeviceIdsToUrlsMap& map =
       usb_policy_allowed_devices->map();
@@ -275,13 +277,12 @@ constexpr char kPolicySettingWithEntriesMatchingMultipleDevices[] = R"(
 }  // namespace
 
 TEST_F(UsbPolicyAllowedDevicesTest, IsDeviceAllowed) {
-  std::unique_ptr<base::Value> pref_value = base::JSONReader::ReadDeprecated(
-      kPolicySettingWithEntriesMatchingMultipleDevices);
+  std::unique_ptr<base::Value> pref_value =
+      ReadJson(kPolicySettingWithEntriesMatchingMultipleDevices);
 
   SetWebUsbAllowDevicesForUrlsPrefValue(*pref_value);
 
-  auto usb_policy_allowed_devices =
-      std::make_unique<UsbPolicyAllowedDevices>(profile()->GetPrefs());
+  auto usb_policy_allowed_devices = CreateUsbPolicyAllowedDevices();
 
   const auto kGoogleOrigin = url::Origin::Create(GURL("https://google.com"));
   const auto kYoutubeOrigin =
@@ -345,13 +346,12 @@ TEST_F(UsbPolicyAllowedDevicesTest, IsDeviceAllowed) {
 }
 
 TEST_F(UsbPolicyAllowedDevicesTest, IsDeviceAllowedForUrlsNotInPref) {
-  std::unique_ptr<base::Value> pref_value = base::JSONReader::ReadDeprecated(
-      kPolicySettingWithEntriesMatchingMultipleDevices);
+  std::unique_ptr<base::Value> pref_value =
+      ReadJson(kPolicySettingWithEntriesMatchingMultipleDevices);
 
   SetWebUsbAllowDevicesForUrlsPrefValue(*pref_value);
 
-  auto usb_policy_allowed_devices =
-      std::make_unique<UsbPolicyAllowedDevices>(profile()->GetPrefs());
+  auto usb_policy_allowed_devices = CreateUsbPolicyAllowedDevices();
 
   const url::Origin origins[] = {
       url::Origin::Create(GURL("https://evil.com")),
@@ -369,13 +369,12 @@ TEST_F(UsbPolicyAllowedDevicesTest, IsDeviceAllowedForUrlsNotInPref) {
 }
 
 TEST_F(UsbPolicyAllowedDevicesTest, IsDeviceAllowedForDeviceNotInPref) {
-  std::unique_ptr<base::Value> pref_value = base::JSONReader::ReadDeprecated(
-      kPolicySettingWithEntriesMatchingMultipleDevices);
+  std::unique_ptr<base::Value> pref_value =
+      ReadJson(kPolicySettingWithEntriesMatchingMultipleDevices);
 
   SetWebUsbAllowDevicesForUrlsPrefValue(*pref_value);
 
-  auto usb_policy_allowed_devices =
-      std::make_unique<UsbPolicyAllowedDevices>(profile()->GetPrefs());
+  auto usb_policy_allowed_devices = CreateUsbPolicyAllowedDevices();
 
   const url::Origin origins[] = {
       url::Origin::Create(GURL("https://google.com")),
@@ -407,13 +406,12 @@ constexpr char kPolicySettingWithUrlContainingEmbeddingOrigin[] = R"(
 
 TEST_F(UsbPolicyAllowedDevicesTest,
        IsDeviceAllowedForUrlContainingEmbeddingOrigin) {
-  std::unique_ptr<base::Value> pref_value = base::JSONReader::ReadDeprecated(
-      kPolicySettingWithUrlContainingEmbeddingOrigin);
+  std::unique_ptr<base::Value> pref_value =
+      ReadJson(kPolicySettingWithUrlContainingEmbeddingOrigin);
 
   SetWebUsbAllowDevicesForUrlsPrefValue(*pref_value);
 
-  auto usb_policy_allowed_devices =
-      std::make_unique<UsbPolicyAllowedDevices>(profile()->GetPrefs());
+  auto usb_policy_allowed_devices = CreateUsbPolicyAllowedDevices();
 
   const auto requesting_origin =
       url::Origin::Create(GURL("https://requesting.com"));

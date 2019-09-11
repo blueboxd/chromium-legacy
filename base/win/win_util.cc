@@ -40,6 +40,7 @@
 #include "base/macros.h"
 #include "base/scoped_native_library.h"
 #include "base/strings/string_util.h"
+#include "base/strings/string_util_win.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/scoped_thread_priority.h"
@@ -334,20 +335,20 @@ bool IsKeyboardPresentOnSlate(std::string* reason, HWND hwnd) {
       break;
 
     // Get the device ID.
-    char16 device_id[MAX_DEVICE_ID_LEN];
-    CONFIGRET status =
-        CM_Get_Device_ID(device_info_data.DevInst, as_writable_wcstr(device_id),
-                         MAX_DEVICE_ID_LEN, 0);
+    wchar_t device_id[MAX_DEVICE_ID_LEN];
+    CONFIGRET status = CM_Get_Device_ID(device_info_data.DevInst, device_id,
+                                        MAX_DEVICE_ID_LEN, 0);
     if (status == CR_SUCCESS) {
       // To reduce the scope of the hack we only look for ACPI and HID\\VID
       // prefixes in the keyboard device ids.
-      if (StartsWith(device_id, STRING16_LITERAL("ACPI"),
+      if (StartsWith(base::AsStringPiece16(device_id), STRING16_LITERAL("ACPI"),
                      CompareCase::INSENSITIVE_ASCII) ||
-          StartsWith(device_id, STRING16_LITERAL("HID\\VID"),
+          StartsWith(base::AsStringPiece16(device_id),
+                     STRING16_LITERAL("HID\\VID"),
                      CompareCase::INSENSITIVE_ASCII)) {
         if (reason) {
           *reason += "device: ";
-          *reason += UTF16ToUTF8(device_id);
+          *reason += WideToUTF8(device_id);
           *reason += '\n';
         }
         // The heuristic we are using is to check the count of keyboards and
@@ -374,7 +375,7 @@ void GetNonClientMetrics(NONCLIENTMETRICS_XP* metrics) {
   DCHECK(success);
 }
 
-bool GetUserSidString(string16* user_sid) {
+bool GetUserSidString(std::wstring* user_sid) {
   // Get the current token.
   HANDLE token = NULL;
   if (!::OpenProcessToken(::GetCurrentProcess(), TOKEN_QUERY, &token))
@@ -396,7 +397,7 @@ bool GetUserSidString(string16* user_sid) {
   if (!::ConvertSidToStringSid(user->User.Sid, &sid_string))
     return false;
 
-  *user_sid = as_u16cstr(sid_string);
+  *user_sid = sid_string;
 
   ::LocalFree(sid_string);
 
@@ -409,14 +410,11 @@ bool UserAccountControlIsEnabled() {
   //   http://code.google.com/p/chromium/issues/detail?id=61644
   ThreadRestrictions::ScopedAllowIO allow_io;
 
-  RegKey key(
-      HKEY_LOCAL_MACHINE,
-      STRING16_LITERAL(
-          "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System"),
-      KEY_READ);
+  RegKey key(HKEY_LOCAL_MACHINE,
+             L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
+             KEY_READ);
   DWORD uac_enabled;
-  if (key.ReadValueDW(STRING16_LITERAL("EnableLUA"), &uac_enabled) !=
-      ERROR_SUCCESS) {
+  if (key.ReadValueDW(L"EnableLUA", &uac_enabled) != ERROR_SUCCESS) {
     return true;
   }
   // Users can set the EnableLUA value to something arbitrary, like 2, which
@@ -440,9 +438,9 @@ bool SetBooleanValueForPropertyStore(IPropertyStore* property_store,
 
 bool SetStringValueForPropertyStore(IPropertyStore* property_store,
                                     const PROPERTYKEY& property_key,
-                                    const char16* property_string_value) {
+                                    const wchar_t* property_string_value) {
   ScopedPropVariant property_value;
-  if (FAILED(InitPropVariantFromString(as_wcstr(property_string_value),
+  if (FAILED(InitPropVariantFromString(property_string_value,
                                        property_value.Receive()))) {
     return false;
   }
@@ -466,36 +464,37 @@ bool SetClsidForPropertyStore(IPropertyStore* property_store,
 }
 
 bool SetAppIdForPropertyStore(IPropertyStore* property_store,
-                              const char16* app_id) {
+                              const wchar_t* app_id) {
   // App id should be less than 64 chars and contain no space. And recommended
   // format is CompanyName.ProductName[.SubProduct.ProductNumber].
   // See http://msdn.microsoft.com/en-us/library/dd378459%28VS.85%29.aspx
-  DCHECK_LT(lstrlen(as_wcstr(app_id)), 64);
-  DCHECK_EQ(wcschr(as_wcstr(app_id), L' '), nullptr);
+  DCHECK_LT(lstrlen(app_id), 64);
+  DCHECK_EQ(wcschr(app_id, L' '), nullptr);
 
   return SetStringValueForPropertyStore(property_store,
                                         PKEY_AppUserModel_ID,
                                         app_id);
 }
 
-static const char16 kAutoRunKeyPath[] =
-    STRING16_LITERAL("Software\\Microsoft\\Windows\\CurrentVersion\\Run");
+static const wchar_t kAutoRunKeyPath[] =
+    L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
 
-bool AddCommandToAutoRun(HKEY root_key, const string16& name,
-                         const string16& command) {
+bool AddCommandToAutoRun(HKEY root_key,
+                         const std::wstring& name,
+                         const std::wstring& command) {
   RegKey autorun_key(root_key, kAutoRunKeyPath, KEY_SET_VALUE);
   return (autorun_key.WriteValue(name.c_str(), command.c_str()) ==
       ERROR_SUCCESS);
 }
 
-bool RemoveCommandFromAutoRun(HKEY root_key, const string16& name) {
+bool RemoveCommandFromAutoRun(HKEY root_key, const std::wstring& name) {
   RegKey autorun_key(root_key, kAutoRunKeyPath, KEY_SET_VALUE);
   return (autorun_key.DeleteValue(name.c_str()) == ERROR_SUCCESS);
 }
 
 bool ReadCommandFromAutoRun(HKEY root_key,
-                            const string16& name,
-                            string16* command) {
+                            const std::wstring& name,
+                            std::wstring* command) {
   RegKey autorun_key(root_key, kAutoRunKeyPath, KEY_QUERY_VALUE);
   return (autorun_key.ReadValue(name.c_str(), command) == ERROR_SUCCESS);
 }
@@ -766,9 +765,9 @@ void* GetUser32FunctionPointer(const char* function_name,
   return nullptr;
 }
 
-string16 GetWindowObjectName(HANDLE handle) {
+std::wstring GetWindowObjectName(HANDLE handle) {
   // Get the size of the name.
-  string16 object_name;
+  std::wstring object_name;
 
   DWORD size = 0;
   ::GetUserObjectInformation(handle, UOI_NAME, nullptr, 0, &size);
@@ -781,7 +780,7 @@ string16 GetWindowObjectName(HANDLE handle) {
 
   // Query the name of the object.
   if (!::GetUserObjectInformation(
-          handle, UOI_NAME, WriteInto(&object_name, size / sizeof(wchar_t)),
+          handle, UOI_NAME, WriteIntoW(&object_name, size / sizeof(wchar_t)),
           size, &size)) {
     DPCHECK(false);
   }
@@ -789,13 +788,14 @@ string16 GetWindowObjectName(HANDLE handle) {
   return object_name;
 }
 
-bool IsRunningUnderDesktopName(StringPiece16 desktop_name) {
+bool IsRunningUnderDesktopName(WStringPiece desktop_name) {
   HDESK thread_desktop = ::GetThreadDesktop(::GetCurrentThreadId());
   if (!thread_desktop)
     return false;
 
-  string16 current_desktop_name = GetWindowObjectName(thread_desktop);
-  return EqualsCaseInsensitiveASCII(current_desktop_name, desktop_name);
+  std::wstring current_desktop_name = GetWindowObjectName(thread_desktop);
+  return EqualsCaseInsensitiveASCII(AsStringPiece16(current_desktop_name),
+                                    AsStringPiece16(desktop_name));
 }
 
 // This method is used to detect whether current session is a remote session.
@@ -810,14 +810,13 @@ bool IsCurrentSessionRemote() {
   if (!::ProcessIdToSessionId(::GetCurrentProcessId(), &current_session_id))
     return false;
 
-  static constexpr char16 kRdpSettingsKeyName[] =
-      STRING16_LITERAL("SYSTEM\\CurrentControlSet\\Control\\Terminal Server");
+  static constexpr wchar_t kRdpSettingsKeyName[] =
+      L"SYSTEM\\CurrentControlSet\\Control\\Terminal Server";
   RegKey key(HKEY_LOCAL_MACHINE, kRdpSettingsKeyName, KEY_READ);
   if (!key.Valid())
     return false;
 
-  static constexpr char16 kGlassSessionIdValueName[] =
-      STRING16_LITERAL("GlassSessionId");
+  static constexpr wchar_t kGlassSessionIdValueName[] = L"GlassSessionId";
   DWORD glass_session_id = 0;
   if (key.ReadValueDW(kGlassSessionIdValueName, &glass_session_id) !=
       ERROR_SUCCESS)

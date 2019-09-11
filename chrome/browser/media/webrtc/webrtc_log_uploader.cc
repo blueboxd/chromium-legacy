@@ -544,7 +544,7 @@ void WebRtcLogUploader::AddLocallyStoredLogInfoToUploadListFile(
     }
   }
 
-  // Write the capture time and log ID to the log list file. Leave the upload
+  // Write the log ID and capture time to the log list file. Leave the upload
   // time and report ID empty.
   contents += ",," + local_log_id + "," +
               base::NumberToString(base::Time::Now().ToDoubleT()) + '\n';

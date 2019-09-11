@@ -183,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(InterstitialUITest, CaptivePortalInterstitialWifi) {
 IN_PROC_BROWSER_TEST_F(InterstitialUITest, OriginPolicyErrorInterstitial) {
   TestInterstitial(GURL("chrome://interstitials/origin_policy"),
                    "Origin Policy Error",
-                   base::ASCIIToUTF16("has requested that a security policy"));
+                   base::ASCIIToUTF16("has requested that an origin policy"));
 }
 
 // Tests that back button works after opening an interstitial from

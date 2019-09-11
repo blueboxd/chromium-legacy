@@ -47,16 +47,16 @@ TestWithPerformanceManager::TestWithPerformanceManager() = default;
 TestWithPerformanceManager::~TestWithPerformanceManager() = default;
 
 void TestWithPerformanceManager::SetUp() {
-  EXPECT_EQ(nullptr, PerformanceManager::GetInstance());
-  performance_manager_ = PerformanceManager::Create();
+  EXPECT_EQ(nullptr, PerformanceManagerImpl::GetInstance());
+  performance_manager_ = PerformanceManagerImpl::Create();
   // Make sure creation registers the created instance.
-  EXPECT_EQ(performance_manager_.get(), PerformanceManager::GetInstance());
+  EXPECT_EQ(performance_manager_.get(), PerformanceManagerImpl::GetInstance());
 }
 
 void TestWithPerformanceManager::TearDown() {
-  PerformanceManager::Destroy(std::move(performance_manager_));
+  PerformanceManagerImpl::Destroy(std::move(performance_manager_));
   // Make sure destruction unregisters the instance.
-  EXPECT_EQ(nullptr, PerformanceManager::GetInstance());
+  EXPECT_EQ(nullptr, PerformanceManagerImpl::GetInstance());
 
   task_environment_.RunUntilIdle();
 }

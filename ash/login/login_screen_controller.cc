@@ -25,7 +25,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/debug/alias.h"
-#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/session_manager/session_manager_types.h"
@@ -124,9 +124,10 @@ void LoginScreenController::AuthenticateUserWithPasswordOrPin(
 
   authentication_stage_ = AuthenticationStage::kDoAuthenticate;
 
-  int dummy_value;
-  bool is_pin =
-      authenticated_by_pin && base::StringToInt(password, &dummy_value);
+  // Checking if the password is only formed of numbers with base::StringToInt
+  // will easily fail due to numeric limits. ContainsOnlyChars is used instead.
+  const bool is_pin =
+      authenticated_by_pin && base::ContainsOnlyChars(password, "0123456789");
   client_->AuthenticateUserWithPasswordOrPin(
       account_id, password, is_pin,
       base::BindOnce(&LoginScreenController::OnAuthenticateComplete,

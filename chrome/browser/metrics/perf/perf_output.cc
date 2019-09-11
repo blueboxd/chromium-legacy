@@ -7,15 +7,44 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/task/post_task.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
+#include "dbus/bus.h"
+#include "dbus/message.h"
+#include "dbus/object_path.h"
+#include "dbus/object_proxy.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace metrics {
 
-PerfOutputCall::PerfOutputCall(base::TimeDelta duration,
+DebugdClientProvider::DebugdClientProvider()
+    : dbus_task_runner_(base::CreateSingleThreadTaskRunner(
+          {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+           base::MayBlock()})),
+      debug_daemon_client_(chromeos::DebugDaemonClient::Create()) {
+  dbus::Bus::Options dbus_options;
+  dbus_options.bus_type = dbus::Bus::SYSTEM;
+  dbus_options.connection_type = dbus::Bus::PRIVATE;
+  dbus_options.dbus_task_runner = dbus_task_runner_;
+  dbus_bus_ = base::MakeRefCounted<dbus::Bus>(dbus_options);
+
+  debug_daemon_client_->Init(dbus_bus_.get());
+}
+
+DebugdClientProvider::~DebugdClientProvider() {
+  DCHECK(debug_daemon_client_);
+  DCHECK(dbus_bus_);
+
+  debug_daemon_client_ = nullptr;
+  dbus_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&dbus::Bus::ShutdownAndBlock, dbus_bus_));
+}
+
+PerfOutputCall::PerfOutputCall(chromeos::DebugDaemonClient* debug_daemon_client,
+                               base::TimeDelta duration,
                                const std::vector<std::string>& perf_args,
                                DoneCallback callback)
-    : duration_(duration),
+    : debug_daemon_client_(debug_daemon_client),
+      duration_(duration),
       perf_args_(perf_args),
       done_callback_(std::move(callback)),
       pending_stop_(false) {
@@ -30,14 +59,17 @@ PerfOutputCall::PerfOutputCall(base::TimeDelta duration,
   base::ScopedFD pipe_write_end =
       perf_data_pipe_reader_->StartIO(base::BindOnce(
           &PerfOutputCall::OnIOComplete, weak_factory_.GetWeakPtr()));
-  chromeos::DebugDaemonClient* client =
-      chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
-  client->GetPerfOutput(duration_, perf_args_, pipe_write_end.get(),
-                        base::BindOnce(&PerfOutputCall::OnGetPerfOutput,
-                                       weak_factory_.GetWeakPtr()));
+  DCHECK(debug_daemon_client_);
+  debug_daemon_client_->GetPerfOutput(
+      duration_, perf_args_, pipe_write_end.get(),
+      base::BindOnce(&PerfOutputCall::OnGetPerfOutput,
+                     weak_factory_.GetWeakPtr()));
 }
 
-PerfOutputCall::PerfOutputCall() : pending_stop_(false), weak_factory_(this) {}
+PerfOutputCall::PerfOutputCall()
+    : debug_daemon_client_(nullptr),
+      pending_stop_(false),
+      weak_factory_(this) {}
 
 PerfOutputCall::~PerfOutputCall() {}
 
@@ -86,9 +118,7 @@ void PerfOutputCall::OnGetPerfOutput(base::Optional<uint64_t> result) {
 
 void PerfOutputCall::StopImpl() {
   DCHECK(perf_session_id_);
-  chromeos::DebugDaemonClient* client =
-      chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
-  client->StopPerf(*perf_session_id_, base::DoNothing());
+  debug_daemon_client_->StopPerf(*perf_session_id_, base::DoNothing());
 }
 
 }  // namespace metrics

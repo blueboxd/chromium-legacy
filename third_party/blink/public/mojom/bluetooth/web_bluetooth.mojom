@@ -191,7 +191,8 @@ interface WebBluetoothService {
   // Returns the result of the connection request.
   RemoteServerConnect(
     WebBluetoothDeviceId device_id,
-    associated WebBluetoothServerClient client) => (WebBluetoothResult result);
+    pending_associated_remote<WebBluetoothServerClient> client) => (
+    WebBluetoothResult result);
 
   // If a GATT connection exists for Device identified by |device_id| then
   // decreases the ref count for that connection.
@@ -245,7 +246,7 @@ interface WebBluetoothService {
   // Returns the result of the connection request.
   RemoteCharacteristicStartNotifications(
     string characteristic_instance_id,
-    associated WebBluetoothCharacteristicClient client) => (
+    pending_associated_remote<WebBluetoothCharacteristicClient> client) => (
       WebBluetoothResult result);
 
   // Stops notifications for the characteristic identified by
@@ -285,9 +286,10 @@ interface WebBluetoothService {
     array<uint8> value) => (WebBluetoothResult result);
 
   // Starts scanning for low energy devices.
-  RequestScanningStart(associated WebBluetoothScanClient client,
-                       WebBluetoothRequestLEScanOptions options) => (
-                       RequestScanningStartResult result);
+  RequestScanningStart(
+    pending_associated_remote<WebBluetoothScanClient> client,
+    WebBluetoothRequestLEScanOptions options) => (
+    RequestScanningStartResult result);
 };
 
 // Classes that implement this interface will be notified of device events.

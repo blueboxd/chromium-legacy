@@ -47,7 +47,7 @@ bool LayoutNGListMarker::NeedsOccupyWholeLine() const {
   LayoutObject* next_sibling = NextSibling();
   if (next_sibling && next_sibling->GetNode() &&
       (IsHTMLUListElement(*next_sibling->GetNode()) ||
-       IsHTMLOListElement(*next_sibling->GetNode())))
+       IsA<HTMLOListElement>(*next_sibling->GetNode())))
     return true;
 
   return false;

@@ -40,6 +40,7 @@
 #include "content/public/common/webplugininfo.h"
 #include "gpu/config/gpu_info.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/cpp/geolocation/geoposition.h"
 #include "services/device/public/mojom/constants.mojom.h"
@@ -241,7 +242,7 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
   std::vector<content::WebPluginInfo> plugins_;
   bool waiting_on_plugins_;
   device::mojom::Geoposition geoposition_;
-  device::mojom::GeolocationPtr geolocation_;
+  mojo::Remote<device::mojom::Geolocation> geolocation_;
   device::mojom::GeolocationContextPtr geolocation_context_;
 
   // Timer to enforce a maximum timeout before the |callback_| is called, even
@@ -315,7 +316,8 @@ FingerprintDataLoader::FingerprintDataLoader(
   DCHECK(connector);
   connector->BindInterface(device::mojom::kServiceName,
                            mojo::MakeRequest(&geolocation_context_));
-  geolocation_context_->BindGeolocation(mojo::MakeRequest(&geolocation_));
+  geolocation_context_->BindGeolocation(
+      geolocation_.BindNewPipeAndPassReceiver());
   geolocation_->SetHighAccuracy(false);
   geolocation_->QueryNextPosition(
       base::BindOnce(&FingerprintDataLoader::OnGotGeoposition,

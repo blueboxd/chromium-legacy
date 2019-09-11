@@ -858,7 +858,7 @@ std::unique_ptr<base::Value> ArcNetHostImpl::TranslateStringListToValue(
   std::unique_ptr<base::Value> result =
       std::make_unique<base::Value>(base::Value::Type::LIST);
   for (const auto& item : string_list) {
-    result->GetList().emplace_back(item);
+    result->Append(item);
   }
   return result;
 }

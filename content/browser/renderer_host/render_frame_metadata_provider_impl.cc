@@ -13,8 +13,7 @@ RenderFrameMetadataProviderImpl::RenderFrameMetadataProviderImpl(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     FrameTokenMessageQueue* frame_token_message_queue)
     : task_runner_(task_runner),
-      frame_token_message_queue_(frame_token_message_queue),
-      render_frame_metadata_observer_client_binding_(this) {}
+      frame_token_message_queue_(frame_token_message_queue) {}
 
 RenderFrameMetadataProviderImpl::~RenderFrameMetadataProviderImpl() = default;
 
@@ -27,12 +26,14 @@ void RenderFrameMetadataProviderImpl::RemoveObserver(Observer* observer) {
 }
 
 void RenderFrameMetadataProviderImpl::Bind(
-    mojom::RenderFrameMetadataObserverClientRequest client_request,
-    mojom::RenderFrameMetadataObserverPtr observer) {
-  render_frame_metadata_observer_ptr_ = std::move(observer);
-  render_frame_metadata_observer_client_binding_.Close();
-  render_frame_metadata_observer_client_binding_.Bind(std::move(client_request),
-                                                      task_runner_);
+    mojo::PendingReceiver<mojom::RenderFrameMetadataObserverClient>
+        client_receiver,
+    mojo::PendingRemote<mojom::RenderFrameMetadataObserver> observer) {
+  render_frame_metadata_observer_remote_.reset();
+  render_frame_metadata_observer_remote_.Bind(std::move(observer));
+  render_frame_metadata_observer_client_receiver_.reset();
+  render_frame_metadata_observer_client_receiver_.Bind(
+      std::move(client_receiver), task_runner_);
 
 #if defined(OS_ANDROID)
   if (pending_report_all_root_scrolls_for_accessibility_.has_value()) {
@@ -51,24 +52,24 @@ void RenderFrameMetadataProviderImpl::Bind(
 #if defined(OS_ANDROID)
 void RenderFrameMetadataProviderImpl::ReportAllRootScrollsForAccessibility(
     bool enabled) {
-  if (!render_frame_metadata_observer_ptr_) {
+  if (!render_frame_metadata_observer_remote_) {
     pending_report_all_root_scrolls_for_accessibility_ = enabled;
     return;
   }
 
-  render_frame_metadata_observer_ptr_->ReportAllRootScrollsForAccessibility(
+  render_frame_metadata_observer_remote_->ReportAllRootScrollsForAccessibility(
       enabled);
 }
 #endif
 
 void RenderFrameMetadataProviderImpl::ReportAllFrameSubmissionsForTesting(
     bool enabled) {
-  if (!render_frame_metadata_observer_ptr_) {
+  if (!render_frame_metadata_observer_remote_) {
     pending_report_all_frame_submission_for_testing_ = enabled;
     return;
   }
 
-  render_frame_metadata_observer_ptr_->ReportAllFrameSubmissionsForTesting(
+  render_frame_metadata_observer_remote_->ReportAllFrameSubmissionsForTesting(
       enabled);
 }
 

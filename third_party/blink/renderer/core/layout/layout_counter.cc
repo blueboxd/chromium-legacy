@@ -185,7 +185,7 @@ static bool PlanCounter(LayoutObject& object,
         is_reset = false;
         return true;
       }
-      if (auto* olist = ToHTMLOListElementOrNull(*e)) {
+      if (auto* olist = DynamicTo<HTMLOListElement>(*e)) {
         value = olist->StartConsideringItemCount();
         is_reset = true;
         return true;

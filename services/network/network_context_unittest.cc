@@ -353,8 +353,10 @@ class NetworkContextTest : public testing::Test {
 
   std::unique_ptr<NetworkContext> CreateContextWithParams(
       mojom::NetworkContextParamsPtr context_params) {
+    network_context_remote_.reset();
     return std::make_unique<NetworkContext>(
-        network_service_.get(), mojo::MakeRequest(&network_context_ptr_),
+        network_service_.get(),
+        network_context_remote_.BindNewPipeAndPassReceiver(),
         std::move(context_params));
   }
 
@@ -441,9 +443,10 @@ class NetworkContextTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   std::unique_ptr<NetworkService> network_service_;
-  // Stores the NetworkContextPtr of the most recently created NetworkContext.
-  // Not strictly needed, but seems best to mimic real-world usage.
-  mojom::NetworkContextPtr network_context_ptr_;
+  // Stores the mojo::Remote<NetworkContext> of the most recently created
+  // NetworkContext. Not strictly needed, but seems best to mimic real-world
+  // usage.
+  mojo::Remote<mojom::NetworkContext> network_context_remote_;
 };
 
 TEST_F(NetworkContextTest, DestroyContextWithLiveRequest) {

@@ -287,7 +287,7 @@ const SyncStatusCode kStatus5 = static_cast<SyncStatusCode>(-5);
 }  // namespace
 
 TEST(SyncTaskManagerTest, ScheduleTask) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   TaskManagerClient client(0 /* maximum_background_task */);
   int callback_count = 0;
   SyncStatusCode callback_status = SYNC_STATUS_OK;
@@ -307,7 +307,7 @@ TEST(SyncTaskManagerTest, ScheduleTask) {
 }
 
 TEST(SyncTaskManagerTest, ScheduleTwoTasks) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   TaskManagerClient client(0 /* maximum_background_task */);
   int callback_count = 0;
   SyncStatusCode callback_status = SYNC_STATUS_OK;
@@ -330,7 +330,7 @@ TEST(SyncTaskManagerTest, ScheduleTwoTasks) {
 }
 
 TEST(SyncTaskManagerTest, ScheduleIdleTask) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   TaskManagerClient client(0 /* maximum_background_task */);
 
   client.ScheduleTaskIfIdle(kStatus1);
@@ -344,7 +344,7 @@ TEST(SyncTaskManagerTest, ScheduleIdleTask) {
 }
 
 TEST(SyncTaskManagerTest, ScheduleIdleTaskWhileNotIdle) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   TaskManagerClient client(0 /* maximum_background_task */);
   int callback_count = 0;
   SyncStatusCode callback_status = SYNC_STATUS_OK;
@@ -366,7 +366,7 @@ TEST(SyncTaskManagerTest, ScheduleIdleTaskWhileNotIdle) {
 }
 
 TEST(SyncTaskManagerTest, ScheduleAndCancelSyncTask) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
 
   int callback_count = 0;
   SyncStatusCode status = SYNC_STATUS_UNKNOWN;
@@ -395,7 +395,7 @@ TEST(SyncTaskManagerTest, ScheduleAndCancelSyncTask) {
 }
 
 TEST(SyncTaskManagerTest, ScheduleTaskAtPriority) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   SyncTaskManager task_manager(base::WeakPtr<SyncTaskManager::Client>(),
                                0 /* maximum_background_task */,
                                base::ThreadTaskRunnerHandle::Get());
@@ -456,7 +456,7 @@ TEST(SyncTaskManagerTest, ScheduleTaskAtPriority) {
 }
 
 TEST(SyncTaskManagerTest, BackgroundTask_Sequential) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   SyncTaskManager task_manager(base::WeakPtr<SyncTaskManager::Client>(),
                                10 /* maximum_background_task */,
                                base::ThreadTaskRunnerHandle::Get());
@@ -488,7 +488,7 @@ TEST(SyncTaskManagerTest, BackgroundTask_Sequential) {
 }
 
 TEST(SyncTaskManagerTest, BackgroundTask_Parallel) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   SyncTaskManager task_manager(base::WeakPtr<SyncTaskManager::Client>(),
                                10 /* maximum_background_task */,
                                base::ThreadTaskRunnerHandle::Get());
@@ -520,7 +520,7 @@ TEST(SyncTaskManagerTest, BackgroundTask_Parallel) {
 }
 
 TEST(SyncTaskManagerTest, BackgroundTask_Throttled) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   SyncTaskManager task_manager(base::WeakPtr<SyncTaskManager::Client>(),
                                2 /* maximum_background_task */,
                                base::ThreadTaskRunnerHandle::Get());
@@ -552,7 +552,7 @@ TEST(SyncTaskManagerTest, BackgroundTask_Throttled) {
 }
 
 TEST(SyncTaskManagerTest, UpdateTaskBlocker) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   SyncTaskManager task_manager(base::WeakPtr<SyncTaskManager::Client>(),
                                10 /* maximum_background_task */,
                                base::ThreadTaskRunnerHandle::Get());

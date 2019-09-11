@@ -1211,16 +1211,6 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
-        "test": "browser_switcher_bho_unittests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
         "test": "browser_tests"
       },
       {
@@ -2388,22 +2378,6 @@
           ]
         },
         "test": "boringssl_ssl_tests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-17134"
-            }
-          ]
-        },
-        "test": "browser_switcher_bho_unittests"
       },
       {
         "merge": {

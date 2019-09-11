@@ -450,6 +450,7 @@ target(link_target_type, "renderer") {
     "//third_party/webrtc/api:callfactory_api",
     "//third_party/webrtc/api:libjingle_logging_api",
     "//third_party/webrtc/api:libjingle_peerconnection_api",
+    "//third_party/webrtc/api:rtc_error",
     "//third_party/webrtc/api:rtc_stats_api",
     "//third_party/webrtc/api:scoped_refptr",
     "//third_party/webrtc/api/audio:aec3_config",

@@ -125,6 +125,19 @@ TEST_F(LayoutNGTextTest, SetTextWithOffsetDeleteRTL) {
             GetItemsAsString(*text.GetLayoutObject()));
 }
 
+// http://crbug.com/1000685
+TEST_F(LayoutNGTextTest, SetTextWithOffsetDeleteRTL2) {
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
+  SetBodyInnerHTML(u"<p id=target dir=rtl>0(xy)5</p>");
+  Text& text = To<Text>(*GetElementById("target")->firstChild());
+  text.deleteData(0, 1, ASSERT_NO_EXCEPTION);  // remove "0"
+
+  EXPECT_EQ("*{'(xy)5', ShapeResult=0+5}\n",
+            GetItemsAsString(*text.GetLayoutObject()));
+}
+
 TEST_F(LayoutNGTextTest, SetTextWithOffsetInsert) {
   if (!RuntimeEnabledFeatures::LayoutNGEnabled())
     return;

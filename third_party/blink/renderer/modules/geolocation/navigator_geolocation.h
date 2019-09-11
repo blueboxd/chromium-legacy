@@ -30,10 +30,9 @@ namespace blink {
 class Geolocation;
 class Navigator;
 
-class NavigatorGeolocation final
-    : public GarbageCollected<NavigatorGeolocation>,
-      public Supplement<Navigator>,
-      public NameClient {
+class NavigatorGeolocation final : public GarbageCollected<Geolocation>,
+                                   public Supplement<Navigator>,
+                                   public NameClient {
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorGeolocation);
 
  public:

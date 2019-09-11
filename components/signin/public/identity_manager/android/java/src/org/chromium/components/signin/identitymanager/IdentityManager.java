@@ -4,6 +4,8 @@
 
 package org.chromium.components.signin.identitymanager;
 
+import android.support.annotation.Nullable;
+
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -35,21 +37,27 @@ public class IdentityManager {
     }
 
     private long mNativeIdentityManager;
+    private PrimaryAccountMutator mPrimaryAccountMutator;
 
     private final ObserverList<Observer> mObservers = new ObserverList<>();
 
     /**
      * Called by native to create an instance of IdentityManager.
+     * @param primaryAccountMutator can be null if native's IdentityManager received a null
+     * PrimaryAccountMutator, this happens in tests.
      */
     @CalledByNative
-    static private IdentityManager create(long nativeIdentityManager) {
+    static private IdentityManager create(
+            long nativeIdentityManager, @Nullable PrimaryAccountMutator primaryAccountMutator) {
         assert nativeIdentityManager != 0;
-        return new IdentityManager(nativeIdentityManager);
+        return new IdentityManager(nativeIdentityManager, primaryAccountMutator);
     }
 
     @VisibleForTesting
-    public IdentityManager(long nativeIdentityManager) {
+    public IdentityManager(
+            long nativeIdentityManager, PrimaryAccountMutator primaryAccountMutator) {
         mNativeIdentityManager = nativeIdentityManager;
+        mPrimaryAccountMutator = primaryAccountMutator;
     }
 
     /**
@@ -102,8 +110,30 @@ public class IdentityManager {
         return IdentityManagerJni.get().hasPrimaryAccount(mNativeIdentityManager);
     }
 
+    /**
+     * Looks up and returns information for account with given |email_address|. If the account
+     * cannot be found, return a null value.
+     */
+    public @Nullable CoreAccountInfo
+    findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(String email) {
+        return IdentityManagerJni.get()
+                .findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
+                        mNativeIdentityManager, email);
+    }
+
+    /*
+     * Returns pointer to the object used to change the signed-in state of the
+     * primary account.
+     */
+    public PrimaryAccountMutator getPrimaryAccountMutator() {
+        return mPrimaryAccountMutator;
+    }
+
     @NativeMethods
     interface Natives {
         public boolean hasPrimaryAccount(long nativeIdentityManager);
+        public @Nullable CoreAccountInfo
+        findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
+                long nativeIdentityManager, String email);
     }
 }

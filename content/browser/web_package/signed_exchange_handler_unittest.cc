@@ -22,6 +22,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/browser_task_environment.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/test_completion_callback.h"
@@ -321,7 +322,7 @@ class SignedExchangeHandlerTest
       std::unique_ptr<net::TestURLRequestContext> context) {
     url_request_context_ = std::move(context);
     network_context_ = std::make_unique<network::NetworkContext>(
-        nullptr, mojo::MakeRequest(&network_context_ptr_),
+        nullptr, network_context_remote_.BindNewPipeAndPassReceiver(),
         url_request_context_.get(),
         /*cors_exempt_header_list=*/std::vector<std::string>());
     SignedExchangeHandler::SetNetworkContextForTesting(network_context_.get());
@@ -406,7 +407,7 @@ class SignedExchangeHandlerTest
   ContentBrowserClient* original_client_;
   std::unique_ptr<net::TestURLRequestContext> url_request_context_;
   std::unique_ptr<network::NetworkContext> network_context_;
-  network::mojom::NetworkContextPtr network_context_ptr_;
+  mojo::Remote<network::mojom::NetworkContext> network_context_remote_;
   const url::Origin request_initiator_;
   std::unique_ptr<SignedExchangeCertificateChain::IgnoreErrorsSPKIList>
       original_ignore_errors_spki_list_;

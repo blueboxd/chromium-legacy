@@ -82,7 +82,7 @@ TEST_F(RenderProcessHostProxyTest, RPHDeletionInvalidatesProxy) {
   // what would happen with a policy message being posted from the graph.
   {
     base::RunLoop run_loop;
-    PerformanceManager::GetInstance()->CallOnGraph(
+    PerformanceManagerImpl::GetInstance()->CallOnGraphImpl(
         FROM_HERE,
         base::BindLambdaForTesting(
             [&deref_proxy, process_node,
@@ -102,7 +102,7 @@ TEST_F(RenderProcessHostProxyTest, RPHDeletionInvalidatesProxy) {
   // Run the same test but make sure the RPH is gone first.
   {
     base::RunLoop run_loop;
-    PerformanceManager::GetInstance()->CallOnGraph(
+    PerformanceManagerImpl::GetInstance()->CallOnGraphImpl(
         FROM_HERE,
         base::BindLambdaForTesting([&rph_factory, &deref_proxy, process_node,
                                     host, quit_loop = run_loop.QuitClosure()](

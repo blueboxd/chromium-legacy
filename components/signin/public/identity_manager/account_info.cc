@@ -7,6 +7,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_string.h"
+#include "components/signin/internal/identity_manager/android/jni_headers/CoreAccountId_jni.h"
 #include "components/signin/internal/identity_manager/android/jni_headers/CoreAccountInfo_jni.h"
 #endif
 
@@ -127,13 +128,28 @@ std::ostream& operator<<(std::ostream& os, const CoreAccountInfo& account) {
 
 #if defined(OS_ANDROID)
 base::android::ScopedJavaLocalRef<jobject> ConvertToJavaCoreAccountInfo(
+    JNIEnv* env,
     const CoreAccountInfo& account_info) {
-  if (account_info.IsEmpty())
-    return base::android::ScopedJavaLocalRef<jobject>();
-  JNIEnv* env = base::android::AttachCurrentThread();
   return signin::Java_CoreAccountInfo_Constructor(
-      env,
-      base::android::ConvertUTF8ToJavaString(env, account_info.account_id.id),
-      base::android::ConvertUTF8ToJavaString(env, account_info.email));
+      env, ConvertToJavaCoreAccountId(env, account_info.account_id),
+      base::android::ConvertUTF8ToJavaString(env, account_info.email),
+      base::android::ConvertUTF8ToJavaString(env, account_info.gaia));
+}
+
+base::android::ScopedJavaLocalRef<jobject> ConvertToJavaCoreAccountId(
+    JNIEnv* env,
+    const CoreAccountId& account_id) {
+  DCHECK(!account_id.empty());
+  return signin::Java_CoreAccountId_Constructor(
+      env, base::android::ConvertUTF8ToJavaString(env, account_id.id));
+}
+
+CoreAccountId ConvertFromJavaCoreAccountId(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& j_core_account_id) {
+  CoreAccountId id;
+  id.id = base::android::ConvertJavaStringToUTF8(
+      signin::Java_CoreAccountId_getId(env, j_core_account_id));
+  return id;
 }
 #endif

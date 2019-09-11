@@ -14,9 +14,38 @@
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/pipe_reader.h"
 
+namespace chromeos {
+class DebugDaemonClient;
+}  // namespace chromeos
+
+namespace dbus {
+class Bus;
+}  // namespace dbus
+
 namespace metrics {
+
+// This class hosts a private DBus connection for perf collection. The collector
+// sequence acts as the origin thread of the DBus Bus and ObjectProxy objects.
+class DebugdClientProvider {
+ public:
+  DebugdClientProvider();
+  ~DebugdClientProvider();
+
+  chromeos::DebugDaemonClient* debug_daemon_client() const {
+    return debug_daemon_client_.get();
+  }
+
+ private:
+  // The private bus.
+  scoped_refptr<dbus::Bus> dbus_bus_;
+  scoped_refptr<base::SequencedTaskRunner> dbus_task_runner_;
+  std::unique_ptr<chromeos::DebugDaemonClient> debug_daemon_client_;
+
+  DISALLOW_COPY_AND_ASSIGN(DebugdClientProvider);
+};
 
 // Class for handling getting output from perf over DBus. Manages the
 // asynchronous DBus call and retrieving data from quipper over a pipe.
@@ -31,7 +60,8 @@ class PerfOutputCall {
   // The output is transferred to |perf_stdout|.
   using DoneCallback = base::OnceCallback<void(std::string perf_stdout)>;
 
-  PerfOutputCall(base::TimeDelta duration,
+  PerfOutputCall(chromeos::DebugDaemonClient* debug_daemon_client,
+                 base::TimeDelta duration,
                  const std::vector<std::string>& perf_args,
                  DoneCallback callback);
   virtual ~PerfOutputCall();
@@ -49,6 +79,9 @@ class PerfOutputCall {
   void OnGetPerfOutput(base::Optional<uint64_t> result);
 
   void StopImpl();
+
+  // A non-retaining pointer to the DebugDaemonClient instance.
+  chromeos::DebugDaemonClient* debug_daemon_client_;
 
   // Used to capture perf data written to a pipe.
   std::unique_ptr<chromeos::PipeReader> perf_data_pipe_reader_;

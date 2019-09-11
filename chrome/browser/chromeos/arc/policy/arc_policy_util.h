@@ -57,7 +57,7 @@ base::Optional<EcryptfsMigrationAction> DecodeMigrationActionFromPolicy(
 
 // Returns set of packages requested to install from |arc_policy|. |arc_policy|
 // has JSON blob format, see
-// https://www.chromium.org/administrators/policy-list-3#ArcPolicy
+// https://cloud.google.com/docs/chrome-enterprise/policies/?policy=ArcPolicy
 std::set<std::string> GetRequestedPackagesFromArcPolicy(
     const std::string& arc_policy);
 

@@ -255,7 +255,7 @@ ExtensionFunction::ResponseAction
   for (auto& component : components->GetList()) {
     base::Value row(base::Value::Type::DICTIONARY);
     row.SetKey("row", std::move(component));
-    rows.GetList().emplace_back(std::move(row));
+    rows.Append(std::move(row));
   }
 
   address_components.SetKey("components", std::move(rows));

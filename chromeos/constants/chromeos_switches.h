@@ -172,7 +172,6 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kOobeSkipToLogin[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kOobeTimerInterval[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kPublicAccountsSamlAclUrl[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kPublicAccountsSamlUrl[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDisableArcCpuRestriction[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kProfileRequiresPolicy[];

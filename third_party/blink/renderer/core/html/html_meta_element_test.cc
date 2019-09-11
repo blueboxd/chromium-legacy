@@ -55,8 +55,7 @@ class HTMLMetaElementTest : public PageTestBase,
   }
 
   void SetColorScheme(const AtomicString& content) {
-    HTMLMetaElement* meta =
-        ToHTMLMetaElement(GetDocument().head()->firstChild());
+    auto* meta = To<HTMLMetaElement>(GetDocument().head()->firstChild());
     ASSERT_TRUE(meta);
     meta->setAttribute(html_names::kContentAttr, content);
   }

@@ -48,7 +48,7 @@ class CORE_EXPORT PortalHost : public EventTargetWithInlineData,
   void postMessage(ScriptState* script_state,
                    const ScriptValue& message,
                    const String& target_origin,
-                   Vector<ScriptValue>& transfer,
+                   HeapVector<ScriptValue>& transfer,
                    ExceptionState& exception_state);
   void postMessage(ScriptState* script_state,
                    const ScriptValue& message,

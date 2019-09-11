@@ -360,7 +360,7 @@ void ElementInnerTextCollector::ProcessNode(const Node& node) {
 
   // 9. If node is a p element, then append 2 (a required line break count) at
   // the beginning and end of items.
-  if (IsHTMLParagraphElement(node)) {
+  if (IsA<HTMLParagraphElement>(node)) {
     // Note: <p style="display:contents>foo</p> doesn't generate layout object
     // for P.
     ProcessChildrenWithRequiredLineBreaks(node, 2);
@@ -390,7 +390,7 @@ void ElementInnerTextCollector::ProcessSelectElement(
       ProcessOptionElement(ToHTMLOptionElement(child));
       continue;
     }
-    if (!IsHTMLOptGroupElement(child))
+    if (!IsA<HTMLOptGroupElement>(child))
       continue;
     // Note: We should emit newline for OPTGROUP even if it has no OPTION.
     // e.g. <div>a<select><optgroup></select>b</div>.innerText == "a\nb"

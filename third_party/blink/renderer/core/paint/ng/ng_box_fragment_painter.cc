@@ -885,7 +885,7 @@ void NGBoxFragmentPainter::PaintInlineItems(
     DCHECK(item);
     switch (item->Type()) {
       case NGFragmentItem::kText:
-        PaintTextItem(*item, paint_info, paint_offset);
+        PaintTextItem(cursor, paint_info, paint_offset);
         break;
       case NGFragmentItem::kGeneratedText:
         // TODO(kojii): Implement.
@@ -1094,14 +1094,15 @@ void NGBoxFragmentPainter::PaintTextChild(const NGPaintFragment& paint_fragment,
       paint_info.phase != PaintPhase::kMask)
     return;
 
-  NGTextFragmentPainter text_painter(paint_fragment);
+  NGTextPainterCursor cursor(paint_fragment);
+  NGTextFragmentPainter<NGTextPainterCursor> text_painter(cursor);
   text_painter.Paint(paint_info, paint_offset);
 }
 
-void NGBoxFragmentPainter::PaintTextItem(const NGFragmentItem& item,
+void NGBoxFragmentPainter::PaintTextItem(const NGInlineCursor& cursor,
                                          const PaintInfo& paint_info,
                                          const PhysicalOffset& paint_offset) {
-  DCHECK_EQ(item.Type(), NGFragmentItem::kText);
+  DCHECK_EQ(cursor.CurrentItem()->Type(), NGFragmentItem::kText);
   DCHECK(items_);
 
   // Only paint during the foreground/selection phases.
@@ -1111,7 +1112,7 @@ void NGBoxFragmentPainter::PaintTextItem(const NGFragmentItem& item,
       paint_info.phase != PaintPhase::kMask)
     return;
 
-  NGTextFragmentPainter text_painter(item, *items_);
+  NGTextFragmentPainter<NGInlineCursor> text_painter(cursor);
   text_painter.Paint(paint_info, paint_offset);
 }
 

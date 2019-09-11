@@ -50,7 +50,9 @@ void InlinePainter::Paint(const PaintInfo& paint_info) {
                           fragment->Offset();
 
       if (fragment->PhysicalFragment().IsText()) {
-        NGTextFragmentPainter(*fragment).Paint(paint_info, child_offset);
+        NGTextPainterCursor cursor(*fragment);
+        NGTextFragmentPainter<NGTextPainterCursor>(cursor).Paint(paint_info,
+                                                                 child_offset);
       } else {
         NGInlineBoxFragmentPainter(*fragment).Paint(paint_info, child_offset);
       }

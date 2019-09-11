@@ -134,7 +134,6 @@ class CrostiniImpl {
     // Record UMA.
     const root = this.getRoot_(entry);
     let suffix = CrostiniImpl.VALID_ROOT_TYPES_FOR_SHARE.get(root) ||
-        CrostiniImpl.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE.get(root) ||
         CrostiniImpl.UMA_ROOT_TYPE_OTHER;
     metrics.recordSmallCount(
         'CrostiniSharedPaths.Depth.' + suffix,
@@ -267,9 +266,7 @@ class CrostiniImpl {
       return false;
     }
 
-    return CrostiniImpl.VALID_ROOT_TYPES_FOR_SHARE.has(root) ||
-        (loadTimeData.getBoolean('DRIVE_FS_ENABLED') &&
-         CrostiniImpl.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE.has(root));
+    return CrostiniImpl.VALID_ROOT_TYPES_FOR_SHARE.has(root);
   }
 }
 
@@ -295,17 +292,6 @@ CrostiniImpl.VALID_ROOT_TYPES_FOR_SHARE = new Map([
   [VolumeManagerCommon.RootType.DOWNLOADS, 'Downloads'],
   [VolumeManagerCommon.RootType.REMOVABLE, 'Removable'],
   [VolumeManagerCommon.RootType.ANDROID_FILES, 'AndroidFiles'],
-]);
-
-/**
- * Can be collapsed into VALID_ROOT_TYPES_FOR_SHARE once
- * DriveFS flag is removed.
- * Keep in sync with histograms.xml:FileBrowserCrostiniSharedPathsDepth
- * histogram_suffix.
- * @type {!Map<?VolumeManagerCommon.RootType, string>}
- * @const
- */
-CrostiniImpl.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE = new Map([
   [VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT, 'DriveComputers'],
   [VolumeManagerCommon.RootType.COMPUTER, 'DriveComputers'],
   [VolumeManagerCommon.RootType.DRIVE, 'MyDrive'],

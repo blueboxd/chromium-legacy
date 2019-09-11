@@ -140,10 +140,11 @@ class ServiceListener : public service_manager::mojom::ServiceManagerListener {
       service_manager::mojom::RunningServiceInfoPtr service) override {}
 
  private:
-  void OnProcessConnected(mojom::TracedProcessPtr traced_process,
-                          uint32_t pid,
-                          mojom::PerfettoServiceRequest service_request,
-                          mojom::AgentRegistryRequest registry_request) {
+  void OnProcessConnected(
+      mojom::TracedProcessPtr traced_process,
+      uint32_t pid,
+      mojom::PerfettoServiceRequest service_request,
+      mojo::PendingReceiver<mojom::AgentRegistry> registry_receiver) {
     auto result = connected_pids_.insert(pid);
     if (!result.second) {
       // The PID was already connected. Nothing more to do.
@@ -153,7 +154,7 @@ class ServiceListener : public service_manager::mojom::ServiceManagerListener {
     connected_pids_.insert(pid);
     PerfettoService::GetInstance()->BindRequest(std::move(service_request),
                                                 pid);
-    agent_registry_->BindAgentRegistryRequest(std::move(registry_request));
+    agent_registry_->BindAgentRegistryReceiver(std::move(registry_receiver));
   }
 
   mojo::Binding<service_manager::mojom::ServiceManagerListener> binding_{this};

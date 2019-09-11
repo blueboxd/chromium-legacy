@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
-#include "components/content_settings/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
 #include "services/device/public/mojom/usb_manager.mojom.h"
@@ -42,14 +41,15 @@ bool FindMatchInSet(
 
 }  // namespace
 
-UsbPolicyAllowedDevices::UsbPolicyAllowedDevices(PrefService* pref_service) {
+UsbPolicyAllowedDevices::UsbPolicyAllowedDevices(PrefService* pref_service,
+                                                 const char* pref_name)
+    : pref_name_(pref_name) {
   pref_change_registrar_.Init(pref_service);
-  // Add an observer for |kManagedWebUsbAllowDevicesForUrls| to call
-  // CreateOrUpdateMap when the value is changed. The lifetime of
-  // |pref_change_registrar_| is managed by this class, therefore it is safe to
-  // use base::Unretained here.
+  // Add an observer for |pref_name| to call CreateOrUpdateMap when the value is
+  // changed. The lifetime of |pref_change_registrar_| is managed by this class,
+  // therefore it is safe to use base::Unretained here.
   pref_change_registrar_.Add(
-      prefs::kManagedWebUsbAllowDevicesForUrls,
+      pref_name,
       base::BindRepeating(&UsbPolicyAllowedDevices::CreateOrUpdateMap,
                           base::Unretained(this)));
 
@@ -92,8 +92,8 @@ bool UsbPolicyAllowedDevices::IsDeviceAllowed(
 }
 
 void UsbPolicyAllowedDevices::CreateOrUpdateMap() {
-  const base::Value* pref_value = pref_change_registrar_.prefs()->Get(
-      prefs::kManagedWebUsbAllowDevicesForUrls);
+  const base::Value* pref_value =
+      pref_change_registrar_.prefs()->Get(pref_name_);
   usb_device_ids_to_urls_.clear();
 
   // A policy has not been assigned.

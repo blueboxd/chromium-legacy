@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/data_decoder/bundled_exchanges_parser_factory.h"
 #include "services/data_decoder/image_decoder_impl.h"
@@ -69,23 +70,25 @@ void DataDecoderService::OnBindInterface(
 
 #ifdef OS_CHROMEOS
 void DataDecoderService::BindBleScanParser(
-    mojom::BleScanParserRequest request) {
-  mojo::MakeStrongBinding(
+    mojo::PendingReceiver<mojom::BleScanParser> receiver) {
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<BleScanParserImpl>(keepalive_.CreateRef()),
-      std::move(request));
+      std::move(receiver));
 }
 #endif  // OS_CHROMEOS
 
-void DataDecoderService::BindImageDecoder(mojom::ImageDecoderRequest request) {
-  mojo::MakeStrongBinding(
+void DataDecoderService::BindImageDecoder(
+    mojo::PendingReceiver<mojom::ImageDecoder> receiver) {
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<ImageDecoderImpl>(keepalive_.CreateRef()),
-      std::move(request));
+      std::move(receiver));
 }
 
-void DataDecoderService::BindJsonParser(mojom::JsonParserRequest request) {
-  mojo::MakeStrongBinding(
+void DataDecoderService::BindJsonParser(
+    mojo::PendingReceiver<mojom::JsonParser> receiver) {
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<JsonParserImpl>(keepalive_.CreateRef()),
-      std::move(request));
+      std::move(receiver));
 }
 
 void DataDecoderService::BindXmlParser(mojom::XmlParserRequest request) {
@@ -94,10 +97,10 @@ void DataDecoderService::BindXmlParser(mojom::XmlParserRequest request) {
 }
 
 void DataDecoderService::BindBundledExchangesParserFactory(
-    mojom::BundledExchangesParserFactoryRequest request) {
-  mojo::MakeStrongBinding(
+    mojo::PendingReceiver<mojom::BundledExchangesParserFactory> receiver) {
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<BundledExchangesParserFactory>(keepalive_.CreateRef()),
-      std::move(request));
+      std::move(receiver));
 }
 
 }  // namespace data_decoder

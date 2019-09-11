@@ -15,7 +15,7 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "media/base/audio_codecs.h"
 #include "media/base/audio_parameters.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace extensions {
 class ExtensionsClient;
@@ -96,8 +96,8 @@ class CastContentRendererClient
       prescient_networking_dispatcher_;
   std::unique_ptr<media::MediaCapsObserverImpl> media_caps_observer_;
   std::unique_ptr<media::SupportedCodecProfileLevelsMemo> supported_profiles_;
-  mojo::Binding<mojom::ApplicationMediaCapabilitiesObserver>
-      app_media_capabilities_observer_binding_;
+  mojo::Receiver<mojom::ApplicationMediaCapabilitiesObserver>
+      app_media_capabilities_observer_receiver_{this};
 #if !defined(OS_ANDROID)
   std::unique_ptr<MemoryPressureObserverImpl> memory_pressure_observer_;
 #endif

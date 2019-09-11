@@ -220,7 +220,7 @@ void DummyBindPasswordManagerDriver(
 
 void PassMojoCookieManagerToAwCookieManager(
     CookieManager* cookie_manager,
-    const network::mojom::NetworkContextPtr& network_context) {
+    const mojo::Remote<network::mojom::NetworkContext>& network_context) {
   // Get the CookieManager from the NetworkContext.
   mojo::PendingRemote<network::mojom::CookieManager> cookie_manager_remote;
   network_context->GetCookieManager(
@@ -342,7 +342,8 @@ void AwContentBrowserClient::OnNetworkServiceCreated(
   content::GetNetworkService()->SetUpHttpAuth(std::move(auth_static_params));
 }
 
-network::mojom::NetworkContextPtr AwContentBrowserClient::CreateNetworkContext(
+mojo::Remote<network::mojom::NetworkContext>
+AwContentBrowserClient::CreateNetworkContext(
     content::BrowserContext* context,
     bool in_memory,
     const base::FilePath& relative_partition_path) {
@@ -352,14 +353,14 @@ network::mojom::NetworkContextPtr AwContentBrowserClient::CreateNetworkContext(
       AwBrowserProcess::GetInstance()->CreateHttpAuthDynamicParams());
 
   auto* aw_context = static_cast<AwBrowserContext*>(context);
-  network::mojom::NetworkContextPtr network_context;
+  mojo::Remote<network::mojom::NetworkContext> network_context;
   network::mojom::NetworkContextParamsPtr context_params =
       aw_context->GetNetworkContextParams(in_memory, relative_partition_path);
 #if DCHECK_IS_ON()
   g_created_network_context_params = true;
 #endif
   content::GetNetworkService()->CreateNetworkContext(
-      MakeRequest(&network_context), std::move(context_params));
+      network_context.BindNewPipeAndPassReceiver(), std::move(context_params));
 
   // Pass a CookieManager to the code supporting AwCookieManager.java (i.e., the
   // Cookies APIs).

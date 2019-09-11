@@ -53,7 +53,7 @@ void ParamTraits<network::DataElement>::Write(base::Pickle* m,
     case network::mojom::DataElementType::kChunkedDataPipe: {
       WriteParam(m, const_cast<network::DataElement&>(p)
                         .ReleaseChunkedDataPipeGetter()
-                        .PassHandle()
+                        .PassPipe()
                         .release());
       break;
     }
@@ -138,13 +138,13 @@ bool ParamTraits<network::DataElement>::Read(const base::Pickle* m,
       return true;
     }
     case network::mojom::DataElementType::kChunkedDataPipe: {
-      network::mojom::ChunkedDataPipeGetterPtr chunked_data_pipe_getter;
       mojo::MessagePipeHandle message_pipe;
       if (!ReadParam(m, iter, &message_pipe))
         return false;
-      chunked_data_pipe_getter.Bind(
-          network::mojom::ChunkedDataPipeGetterPtrInfo(
-              mojo::ScopedMessagePipeHandle(message_pipe), 0u));
+      mojo::PendingRemote<network::mojom::ChunkedDataPipeGetter>
+          chunked_data_pipe_getter(mojo::ScopedMessagePipeHandle(message_pipe),
+                                   0u);
+
       r->SetToChunkedDataPipe(std::move(chunked_data_pipe_getter));
       return true;
     }

@@ -33,7 +33,7 @@
 #include "build/build_config.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "net/base/escape.h"
@@ -385,8 +385,7 @@ void StopMonitorBodyReadFromNetBeforePausedHistogram() {
 class URLLoaderTest : public testing::Test {
  public:
   URLLoaderTest()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
-        resource_scheduler_(true) {
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {
     net::TestRootCerts* root_certs = net::TestRootCerts::GetInstance();
     root_certs->AddFromFile(
         net::GetTestCertsDirectory().AppendASCII("quic-root.pem"));
@@ -1789,7 +1788,7 @@ TEST_F(URLLoaderTest, UploadChunkedDataPipe) {
       CreateResourceRequest("POST", test_server()->GetURL("/echo"));
   request.request_body = base::MakeRefCounted<ResourceRequestBody>();
   request.request_body->SetToChunkedDataPipe(
-      data_pipe_getter.GetDataPipeGetterPtr());
+      data_pipe_getter.GetDataPipeGetterRemote());
 
   base::RunLoop delete_run_loop;
   mojom::URLLoaderPtr loader;
@@ -2642,7 +2641,7 @@ class MockNetworkContextClient : public TestNetworkContextClient {
       case CertificateResponse::INVALID_CERTIFICATE_SIGNATURE:
         client_cert_responder->ContinueWithCertificate(
             std::move(certificate_), provider_name_, algorithm_preferences_,
-            std::move(ssl_private_key_ptr_));
+            std::move(ssl_private_key_remote_));
         break;
       case CertificateResponse::DESTROY_CLIENT_CERT_RESPONDER:
         // Send no response and let the local variable be destroyed.
@@ -2727,10 +2726,9 @@ class MockNetworkContextClient : public TestNetworkContextClient {
     ssl_private_key_ = std::move(ssl_private_key);
     provider_name_ = ssl_private_key_->GetProviderName();
     algorithm_preferences_ = ssl_private_key_->GetAlgorithmPreferences();
-    auto ssl_private_key_request = mojo::MakeRequest(&ssl_private_key_ptr_);
-    mojo::MakeStrongBinding(
+    mojo::MakeSelfOwnedReceiver(
         std::make_unique<FakeSSLPrivateKeyImpl>(std::move(ssl_private_key_)),
-        std::move(ssl_private_key_request));
+        ssl_private_key_remote_.InitWithNewPipeAndPassReceiver());
   }
 
   void set_certificate(scoped_refptr<net::X509Certificate> certificate) {
@@ -2762,7 +2760,7 @@ class MockNetworkContextClient : public TestNetworkContextClient {
   CertificateResponse certificate_response_ = CertificateResponse::INVALID;
   scoped_refptr<net::SSLPrivateKey> ssl_private_key_;
   scoped_refptr<net::X509Certificate> certificate_;
-  network::mojom::SSLPrivateKeyPtr ssl_private_key_ptr_;
+  mojo::PendingRemote<network::mojom::SSLPrivateKey> ssl_private_key_remote_;
   std::string provider_name_;
   std::vector<uint16_t> algorithm_preferences_;
   int on_certificate_requested_counter_ = 0;

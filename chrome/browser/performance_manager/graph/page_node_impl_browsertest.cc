@@ -11,7 +11,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/performance_manager/decorators/freeze_origin_trial_policy_aggregator.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
-#include "chrome/browser/performance_manager/performance_manager.h"
+#include "chrome/browser/performance_manager/performance_manager_impl.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -158,10 +158,10 @@ std::string GetContentForURL(const std::string& url) {
 
 void RunOriginTrialTestOnPMSequence(
     const resource_coordinator::mojom::InterventionPolicy expected_policy) {
-  auto* perf_manager = PerformanceManager::GetInstance();
+  auto* perf_manager = PerformanceManagerImpl::GetInstance();
   ASSERT_TRUE(perf_manager);
   base::RunLoop run_loop;
-  perf_manager->CallOnGraph(
+  perf_manager->CallOnGraphImpl(
       FROM_HERE, base::BindOnce(
                      [](base::OnceClosure quit_closure,
                         const resource_coordinator::mojom::InterventionPolicy

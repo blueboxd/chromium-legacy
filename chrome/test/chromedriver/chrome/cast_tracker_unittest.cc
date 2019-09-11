@@ -54,8 +54,8 @@ TEST_F(CastTrackerTest, OnSinksUpdated) {
   EXPECT_EQ(0u, cast_tracker_->sinks().GetList().size());
 
   base::Value sinks(base::Value::Type::LIST);
-  sinks.GetList().emplace_back(CreateSink("sink1", "1"));
-  sinks.GetList().emplace_back(CreateSink("sink2", "2"));
+  sinks.Append(CreateSink("sink1", "1"));
+  sinks.Append(CreateSink("sink2", "2"));
   params.SetKey("sinks", std::move(sinks));
   cast_tracker_->OnEvent(&devtools_client_, "Cast.sinksUpdated", params);
   EXPECT_EQ(2u, cast_tracker_->sinks().GetList().size());

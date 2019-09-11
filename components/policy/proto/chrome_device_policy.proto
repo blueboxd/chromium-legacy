@@ -1343,8 +1343,16 @@ message DevicePowerwashAllowedProto {
   optional bool device_powerwash_allowed = 1;
 }
 
+// Settings that controls which devices are whitelisted for certain urls to be
+// used via the WebUSB API on the login screen.
+message DeviceLoginScreenWebUsbAllowDevicesForUrlsProto {
+  // This is a JSON string, for details see
+  // "DeviceLoginScreenWebUsbAllowDevicesForUrls" in policy_templates.json.
+  optional string device_login_screen_webusb_allow_devices_for_urls = 1;
+}
+
 message ChromeDeviceSettingsProto {
-  reserved 61;
+  reserved 61, 90;
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
   optional GuestModeEnabledProto guest_mode_enabled = 3;
@@ -1455,4 +1463,6 @@ message ChromeDeviceSettingsProto {
   optional DeviceUsbPowerShareProto device_usb_power_share = 88;
   optional DeviceScheduledUpdateCheckProto device_scheduled_update_check = 89;
   optional DevicePowerwashAllowedProto device_powerwash_allowed = 91;
+  optional DeviceLoginScreenWebUsbAllowDevicesForUrlsProto
+      device_login_screen_webusb_allow_devices_for_urls = 92;
 }

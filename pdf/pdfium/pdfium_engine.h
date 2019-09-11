@@ -24,6 +24,7 @@
 #include "pdf/pdfium/pdfium_page.h"
 #include "pdf/pdfium/pdfium_print.h"
 #include "pdf/pdfium/pdfium_range.h"
+#include "ppapi/c/private/ppp_pdf.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/dev/buffer_dev.h"
 #include "ppapi/cpp/image_data.h"
@@ -512,6 +513,11 @@ class PDFiumEngine : public PDFEngine,
   // Note that the "root" bookmark contains no useful information.
   pp::VarDictionary TraverseBookmarks(FPDF_BOOKMARK bookmark,
                                       unsigned int depth);
+
+  void ScrollBasedOnScrollAlignment(
+      const pp::Rect& scroll_rect,
+      const PP_PdfAccessibilityScrollAlignment& horizontal_scroll_alignment,
+      const PP_PdfAccessibilityScrollAlignment& vertical_scroll_alignment);
 
   // Set if the document has any local edits.
   void SetEditMode(bool edit_mode);

@@ -77,18 +77,6 @@
   padding: unset;
 }
 
-#oobe-bottom[android] {
-  box-shadow: 0 -1px 1px rgba(0, 0, 0, 0.14);
-}
-
-#oobe-bottom[android][hideShadow] {
-  box-shadow: unset;
-}
-
-#oobe-bottom[android] {
-  height: 60px;
-}
-
 #oobe-bottom ::slotted(*) {
   width: 100%;
 }

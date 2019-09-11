@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -163,6 +164,13 @@ class ReceiverSetBase {
   // ReceiverSet will not schedule or execute any further method invocations or
   // disconnection notifications until a new receiver is added to the set.
   void Clear() { receivers_.clear(); }
+
+  // Predicate to test if a receiver exists in the set.
+  //
+  // Returns |true| if the receiver is in the set and |false| if not.
+  bool HasReceiver(ReceiverId id) const {
+    return base::Contains(receivers_, id);
+  }
 
   bool empty() const { return receivers_.empty(); }
 

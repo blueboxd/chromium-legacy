@@ -105,8 +105,12 @@ IdentityManager::IdentityManager(
     UpdateUnconsentedPrimaryAccount();
 
 #if defined(OS_ANDROID)
+  base::android::ScopedJavaLocalRef<jobject> java_primary_account_mutator =
+      primary_account_mutator_ ? primary_account_mutator_->GetJavaObject()
+                               : nullptr;
   java_identity_manager_ = Java_IdentityManager_create(
-      base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this));
+      base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this),
+      java_primary_account_mutator);
 #endif
 }
 
@@ -435,6 +439,18 @@ void IdentityManager::ForceRefreshOfExtendedAccountInfo(
 bool IdentityManager::HasPrimaryAccount(JNIEnv* env) const {
   return HasPrimaryAccount();
 }
+
+base::android::ScopedJavaLocalRef<jobject> IdentityManager::
+    FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
+        JNIEnv* env,
+        const base::android::JavaParamRef<jstring>& j_email) const {
+  auto account_info =
+      FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
+          base::android::ConvertJavaStringToUTF8(env, j_email));
+  if (!account_info.has_value())
+    return nullptr;
+  return ConvertToJavaCoreAccountInfo(env, account_info.value());
+}
 #endif
 
 PrimaryAccountManager* IdentityManager::GetPrimaryAccountManager() {
@@ -516,10 +532,12 @@ void IdentityManager::GoogleSigninSucceeded(
     observer.OnPrimaryAccountSet(account_info);
   }
 #if defined(OS_ANDROID)
-  if (java_identity_manager_)
+  if (java_identity_manager_) {
+    JNIEnv* env = base::android::AttachCurrentThread();
     Java_IdentityManager_onPrimaryAccountSet(
-        base::android::AttachCurrentThread(), java_identity_manager_,
-        ConvertToJavaCoreAccountInfo(account_info));
+        env, java_identity_manager_,
+        ConvertToJavaCoreAccountInfo(env, account_info));
+  }
 #endif
 }
 
@@ -530,10 +548,12 @@ void IdentityManager::GoogleSignedOut(const CoreAccountInfo& account_info) {
     observer.OnPrimaryAccountCleared(account_info);
   }
 #if defined(OS_ANDROID)
-  if (java_identity_manager_)
+  if (java_identity_manager_) {
+    JNIEnv* env = base::android::AttachCurrentThread();
     Java_IdentityManager_onPrimaryAccountCleared(
-        base::android::AttachCurrentThread(), java_identity_manager_,
-        ConvertToJavaCoreAccountInfo(account_info));
+        env, java_identity_manager_,
+        ConvertToJavaCoreAccountInfo(env, account_info));
+  }
 #endif
 }
 

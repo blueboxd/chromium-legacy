@@ -690,7 +690,7 @@ crbug.com/591099 external/wpt/css/css-text/shaping/shaping-009.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-text/shaping/shaping-010.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-text/shaping/shaping-011.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-text/word-break/word-break-break-all-inline-006.html [ Failure ]
-crbug.com/953479 external/wpt/css/cssom-view/offsetTopLeft-trailing-space-inline.html [ Failure ]
+crbug.com/1002815 external/wpt/css/cssom-view/offsetTopLeft-trailing-space-inline.html [ Failure ]
 crbug.com/591099 fast/backgrounds/quirks-mode-line-box-backgrounds.html [ Failure ]
 crbug.com/591099 fast/borders/inline-mask-overlay-image-outset-vertical-rl.html [ Failure ]
 crbug.com/835484 fast/css/outline-narrowLine.html [ Failure ]
@@ -2178,6 +2178,11 @@ crbug.com/803276 [ Win ] inspector-protocol/memory/sampling-native-snapshot.js [
 # Run these tests with under virtual/scalefactor... only.
 crbug.com/567837 fast/hidpi/static [ Skip ]
 
+crbug.com/1002780 [ Linux ] external/wpt/websockets/stream-tentative/backpressure-receive.any.html [ Failure Pass ]
+crbug.com/1002780 [ Linux ] external/wpt/websockets/stream-tentative/backpressure-receive.any.serviceworker.html [ Failure Pass ]
+crbug.com/1002780 [ Linux ] external/wpt/websockets/stream-tentative/backpressure-receive.any.sharedworker.html [ Failure Pass ]
+crbug.com/1002780 [ Linux ] external/wpt/websockets/stream-tentative/backpressure-receive.any.worker.html [ Failure Pass ]
+
 # For win10, see crbug.com/955109
 crbug.com/538697 [ Win Win10 ] virtual/threaded/printing/webgl-oversized-printing.html [ Failure Crash ]
 crbug.com/538697 [ Win ] printing/webgl-oversized-printing.html [ Failure Crash ]
@@ -3112,7 +3117,7 @@ crbug.com/953847 [ Mac ] virtual/main_thread_scrollbar_gestures/fast/scrolling/s
 # is addressed. Uncomment below line when fixing crbug.com/965829.
 #crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
 crbug.com/987115 [ Win ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure Crash ]
-crbug.com/965829 [ Mac Linux ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
+crbug.com/965829 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
 
 # Some control characters still not visible
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-001.html [ Failure ]
@@ -6221,3 +6226,6 @@ crbug.com/1001936 external/wpt/css/css-masking/clip-path/clip-path-inline-001.ht
 # Sheriff 2019-09-10
 crbug.com/1002527 [ Debug ] fast/text/large-text-composed-char.html [ Pass Crash ]
 crbug.com/1002686 [ Mac10.13 ] virtual/threaded/http/tests/devtools/tracing/timeline-style/timeline-recalculate-styles.js [ Failure ]
+
+# Sheriff 2019-09-11
+crbug.com/1002828 [ Linux ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Pass Failure Crash ]

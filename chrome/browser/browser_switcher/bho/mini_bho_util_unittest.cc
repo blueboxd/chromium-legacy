@@ -11,7 +11,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/test_suite.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -39,13 +38,13 @@ TEST(MiniBhoUtil, Logging) {
   util::SetLogFilePathForTesting(log_path.value().c_str());
   util::InitLog();
 
-  util::puts(INFO, "hello world");
+  util::puts(DEBUG, "hello world");
   util::printf(ERR, "n = %d\n", 34);
 
   util::CloseLog();
 
   const char expected[] =
-      "[info] : hello world\n"
+      "[debug] : hello world\n"
       "[*ERROR!*] : n = 34\n";
 
   EXPECT_TRUE(base::PathExists(log_path));
@@ -183,5 +182,6 @@ TEST(MiniBhoUtil, utf_conversions) {
 }
 
 int main(int argc, char** argv) {
-  base::RunUnitTestsUsingBaseTestSuite(argc, argv);
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

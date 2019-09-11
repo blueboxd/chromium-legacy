@@ -31,7 +31,7 @@ class VIZ_HOST_EXPORT GpuClient : public mojom::GpuMemoryBufferFactory,
   ~GpuClient() override;
 
   // This needs to be run on the thread associated with |task_runner_|.
-  void Add(mojom::GpuRequest request);
+  void Add(mojo::PendingReceiver<mojom::Gpu> receiver);
 
   void PreEstablishGpuChannel();
 
@@ -86,7 +86,7 @@ class VIZ_HOST_EXPORT GpuClient : public mojom::GpuMemoryBufferFactory,
   const uint64_t client_tracing_id_;
   mojo::ReceiverSet<mojom::GpuMemoryBufferFactory>
       gpu_memory_buffer_factory_receivers_;
-  mojo::BindingSet<mojom::Gpu> gpu_bindings_;
+  mojo::ReceiverSet<mojom::Gpu> gpu_receivers_;
   bool gpu_channel_requested_ = false;
   EstablishGpuChannelCallback callback_;
   mojo::ScopedMessagePipeHandle channel_handle_;

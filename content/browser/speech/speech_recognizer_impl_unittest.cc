@@ -30,6 +30,7 @@
 #include "media/audio/test_audio_thread.h"
 #include "media/base/audio_bus.h"
 #include "media/base/test_helpers.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/net_errors.h"
@@ -411,7 +412,7 @@ TEST_F(SpeechRecognizerImplTest, StopWithData) {
   // that we are streaming out encoded data as chunks without waiting for the
   // full recording to complete.
   const size_t kNumChunks = 5;
-  network::mojom::ChunkedDataPipeGetterPtr chunked_data_pipe_getter;
+  mojo::Remote<network::mojom::ChunkedDataPipeGetter> chunked_data_pipe_getter;
   mojo::DataPipe data_pipe;
   for (size_t i = 0; i < kNumChunks; ++i) {
     Capture(audio_bus_.get());

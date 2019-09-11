@@ -352,7 +352,7 @@ base::Value ConvertCollectionInfoToDict(
     dict.SetKey("collectionName", base::Value(collection.collection_name));
     dict.SetKey("previewImageUrl",
                 base::Value(collection.preview_image_url.spec()));
-    collections.GetList().push_back(std::move(dict));
+    collections.Append(std::move(dict));
   }
   return collections;
 }
@@ -369,12 +369,12 @@ base::Value ConvertCollectionImageToDict(
     dict.SetKey("collectionId", base::Value(image.collection_id));
     base::Value attributions(base::Value::Type::LIST);
     for (const auto& attribution : image.attribution) {
-      attributions.GetList().push_back(base::Value(attribution));
+      attributions.Append(base::Value(attribution));
     }
     dict.SetKey("attributions", std::move(attributions));
     dict.SetKey("attributionActionUrl",
                 base::Value(image.attribution_action_url.spec()));
-    images.GetList().push_back(std::move(dict));
+    images.Append(std::move(dict));
   }
   return images;
 }

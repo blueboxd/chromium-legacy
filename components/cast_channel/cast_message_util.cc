@@ -341,7 +341,7 @@ CastMessage CreateGetAppAvailabilityRequest(const std::string& source_id,
               Value(EnumToString<CastMessageType,
                                  CastMessageType::kGetAppAvailability>()));
   Value app_id_value(Value::Type::LIST);
-  app_id_value.GetList().push_back(Value(app_id));
+  app_id_value.Append(Value(app_id));
   dict.SetKey("appId", std::move(app_id_value));
   dict.SetKey("requestId", Value(request_id));
 

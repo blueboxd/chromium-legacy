@@ -239,8 +239,14 @@ void Button::SetInstallFocusRingOnFocus(bool install) {
 }
 
 void Button::SetHotTracked(bool is_hot_tracked) {
-  if (state_ != STATE_DISABLED)
+  if (state_ != STATE_DISABLED) {
     SetState(is_hot_tracked ? STATE_HOVERED : STATE_NORMAL);
+    if (show_ink_drop_when_hot_tracked_) {
+      AnimateInkDrop(is_hot_tracked ? views::InkDropState::ACTIVATED
+                                    : views::InkDropState::HIDDEN,
+                     nullptr);
+    }
+  }
 
   if (is_hot_tracked)
     NotifyAccessibilityEvent(ax::mojom::Event::kHover, true);

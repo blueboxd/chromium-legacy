@@ -71,7 +71,7 @@ base::Value AvailableContentListToValue(
     const std::vector<AvailableOfflineContentPtr>& content_list) {
   base::Value value(base::Value::Type::LIST);
   for (const auto& content : content_list) {
-    value.GetList().push_back(AvailableContentToValue(content));
+    value.Append(AvailableContentToValue(content));
   }
   return value;
 }

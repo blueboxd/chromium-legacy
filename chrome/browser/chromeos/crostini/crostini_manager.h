@@ -115,6 +115,7 @@ class VmShutdownObserver : public base::CheckedObserver {
 // possible. The existence of Cicerone is abstracted behind this class and
 // only the Concierge name is exposed outside of here.
 class CrostiniManager : public KeyedService,
+                        public chromeos::ConciergeClient::VmObserver,
                         public chromeos::ConciergeClient::ContainerObserver,
                         public chromeos::CiceroneClient::Observer,
                         public chromeos::PowerManagerClient::Observer {
@@ -429,7 +430,11 @@ class CrostiniManager : public KeyedService,
   void AddVmShutdownObserver(VmShutdownObserver* observer);
   void RemoveVmShutdownObserver(VmShutdownObserver* observer);
 
-  // ConciergeClient::Observer:
+  // ConciergeClient::VmObserver:
+  void OnVmStarted(const vm_tools::concierge::VmStartedSignal& signal) override;
+  void OnVmStopped(const vm_tools::concierge::VmStoppedSignal& signal) override;
+
+  // ConciergeClient::ContainerObserver:
   void OnContainerStartupFailed(
       const vm_tools::concierge::ContainerStartedSignal& signal) override;
 
@@ -462,6 +467,9 @@ class CrostiniManager : public KeyedService,
       override;
   void OnPendingAppListUpdates(
       const vm_tools::cicerone::PendingAppListUpdatesSignal& signal) override;
+  void OnApplyAnsiblePlaybookProgress(
+      const vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal& signal)
+      override;
 
   // chromeos::PowerManagerClient::Observer overrides:
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
@@ -713,6 +721,8 @@ class CrostiniManager : public KeyedService,
 
   // Callback for CrostiniManager::RemoveCrostini.
   void OnRemoveCrostini(CrostiniResult result);
+
+  void OnVmStoppedCleanup(const std::string& vm_name);
 
   Profile* profile_;
   std::string owner_id_;

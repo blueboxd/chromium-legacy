@@ -118,6 +118,7 @@ group("launchscreen_assets") {
   public_deps = [
     ":launchscreen_app_logo",
     ":launchscreen_brand_name",
+    "//ios/chrome/common/colors/resources:background_color",
   ]
 }
 

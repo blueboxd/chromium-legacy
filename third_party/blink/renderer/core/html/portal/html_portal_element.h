@@ -48,7 +48,7 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement,
   void postMessage(ScriptState* script_state,
                    const ScriptValue& message,
                    const String& target_origin,
-                   const Vector<ScriptValue>& transfer,
+                   const HeapVector<ScriptValue>& transfer,
                    ExceptionState& exception_state);
   void postMessage(ScriptState* script_state,
                    const ScriptValue& message,

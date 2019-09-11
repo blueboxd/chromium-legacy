@@ -9,18 +9,20 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 
 namespace content {
 
 struct GATTConnectionAndServerClient {
   GATTConnectionAndServerClient(
       std::unique_ptr<device::BluetoothGattConnection> connection,
-      blink::mojom::WebBluetoothServerClientAssociatedPtr client)
+      mojo::AssociatedRemote<blink::mojom::WebBluetoothServerClient> client)
       : gatt_connection(std::move(connection)),
         server_client(std::move(client)) {}
 
   std::unique_ptr<device::BluetoothGattConnection> gatt_connection;
-  blink::mojom::WebBluetoothServerClientAssociatedPtr server_client;
+  mojo::AssociatedRemote<blink::mojom::WebBluetoothServerClient> server_client;
 };
 
 FrameConnectedBluetoothDevices::FrameConnectedBluetoothDevices(
@@ -47,7 +49,7 @@ bool FrameConnectedBluetoothDevices::IsConnectedToDeviceWithId(
 void FrameConnectedBluetoothDevices::Insert(
     const blink::WebBluetoothDeviceId& device_id,
     std::unique_ptr<device::BluetoothGattConnection> connection,
-    blink::mojom::WebBluetoothServerClientAssociatedPtr client) {
+    mojo::AssociatedRemote<blink::mojom::WebBluetoothServerClient> client) {
   if (device_id_to_connection_map_.find(device_id) !=
       device_id_to_connection_map_.end()) {
     // It's possible for WebBluetoothServiceImpl to issue two successive

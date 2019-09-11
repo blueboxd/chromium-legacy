@@ -181,7 +181,7 @@ bool MHTMLFrameSerializerDelegate::ShouldIgnoreMetaElement(
   // the saved MHTML page, there is no need to carry the directives. If they
   // are still kept in the MHTML, child frames that are referred to using cid:
   // scheme could be prevented from loading.
-  if (!IsHTMLMetaElement(element))
+  if (!IsA<HTMLMetaElement>(element))
     return false;
   if (!element.FastHasAttribute(html_names::kContentAttr))
     return false;

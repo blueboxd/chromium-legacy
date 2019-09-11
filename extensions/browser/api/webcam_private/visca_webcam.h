@@ -32,7 +32,7 @@ class ViscaWebcam : public Webcam {
   // command buffer. After these three steps completes, |open_callback| will be
   // called.
   void Open(const std::string& extension_id,
-            device::mojom::SerialPortPtrInfo port_ptr_info,
+            device::mojom::SerialPortPtr port_ptr,
             const OpenCompleteCallback& open_callback);
 
  private:
@@ -50,10 +50,6 @@ class ViscaWebcam : public Webcam {
 
   // Private because WebCam is base::RefCounted.
   ~ViscaWebcam() override;
-
-  void OpenOnIOThread(const std::string& extension_id,
-                      device::mojom::SerialPortPtrInfo port_ptr_info,
-                      const OpenCompleteCallback& open_callback);
 
   // Callback function that will be called after the serial connection has been
   // opened successfully.
@@ -74,8 +70,6 @@ class ViscaWebcam : public Webcam {
   // Send or queue a command and wait for the camera's response.
   void Send(const std::vector<char>& command,
             const CommandCompleteCallback& callback);
-  void SendOnIOThread(const std::vector<char>& data,
-                      const CommandCompleteCallback& callback);
   void OnSendCompleted(const CommandCompleteCallback& callback,
                        uint32_t bytes_sent,
                        api::serial::SendError error);
@@ -96,7 +90,6 @@ class ViscaWebcam : public Webcam {
                           const std::vector<char>& response);
 
   void ProcessNextCommand();
-  void PostOpenFailureTask(const OpenCompleteCallback& open_callback);
 
   // Webcam Overrides:
   void GetPan(const GetPTZCompleteCallback& callback) override;
@@ -142,10 +135,8 @@ class ViscaWebcam : public Webcam {
 
   // Visca webcam always get/set pan-tilt together. |pan| and |tilt| are used to
   // store the current value of pan and tilt positions.
-  int pan_;
-  int tilt_;
-
-  base::WeakPtrFactory<ViscaWebcam> weak_ptr_factory_{this};
+  int pan_ = 0;
+  int tilt_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ViscaWebcam);
 };

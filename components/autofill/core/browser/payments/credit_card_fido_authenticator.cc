@@ -439,7 +439,7 @@ base::Value CreditCardFIDOAuthenticator::ParseAttestationResponse(
   base::Value authenticator_transport_list =
       base::Value(base::Value::Type::LIST);
   for (FidoTransportProtocol protocol : attestation_response->transports) {
-    authenticator_transport_list.GetList().push_back(
+    authenticator_transport_list.Append(
         base::Value(base::ToUpperASCII(device::ToString(protocol))));
   }
 

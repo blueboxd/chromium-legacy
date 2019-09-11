@@ -310,7 +310,6 @@ void WorkerScriptFetchInitiator::CreateScriptLoader(
     // network service after a crash, but it's OK since it's used only for a
     // single request to fetch the worker's main script during startup. If the
     // network service crashes, worker startup should simply fail.
-    network::mojom::URLLoaderFactoryPtr network_factory_ptr;
     auto network_factory =
         storage_partition->GetURLLoaderFactoryForBrowserProcess();
     network_factory->Clone(std::move(default_factory_receiver));

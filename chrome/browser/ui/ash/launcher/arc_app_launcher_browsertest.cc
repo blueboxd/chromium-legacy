@@ -236,6 +236,9 @@ class ArcAppLauncherBrowserTest : public extensions::ExtensionBrowserTest {
 
   void SendPackageRemoved(const std::string& package_name) {
     app_host()->OnPackageRemoved(package_name);
+
+    // Ensure async callbacks from the resulting observer calls are run.
+    base::RunLoop().RunUntilIdle();
   }
 
   void SendInstallationStarted(const std::string& package_name) {

@@ -13,8 +13,11 @@
 #include "content/test/test_web_contents.h"
 #include "device/bluetooth/bluetooth_adapter_factory_wrapper.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
-#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 
 using testing::Return;
 
@@ -87,10 +90,11 @@ class FakeWebBluetoothScanClientImpl : blink::mojom::WebBluetoothScanClient {
   // blink::mojom::WebBluetoothScanClient:
   void ScanEvent(blink::mojom::WebBluetoothScanResultPtr result) override {}
 
-  void BindRequest(
-      blink::mojom::WebBluetoothScanClientAssociatedRequest request) {
-    binding_.Bind(std::move(request));
-    binding_.set_connection_error_handler(
+  void BindReceiver(
+      mojo::PendingAssociatedReceiver<blink::mojom::WebBluetoothScanClient>
+          receiver) {
+    receiver_.Bind(std::move(receiver));
+    receiver_.set_disconnect_handler(
         base::BindOnce(&FakeWebBluetoothScanClientImpl::OnConnectionError,
                        base::Unretained(this)));
   }
@@ -100,7 +104,8 @@ class FakeWebBluetoothScanClientImpl : blink::mojom::WebBluetoothScanClient {
   bool on_connection_error_called() { return on_connection_error_called_; }
 
  private:
-  mojo::AssociatedBinding<blink::mojom::WebBluetoothScanClient> binding_{this};
+  mojo::AssociatedReceiver<blink::mojom::WebBluetoothScanClient> receiver_{
+      this};
   bool on_connection_error_called_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FakeWebBluetoothScanClientImpl);
@@ -149,8 +154,8 @@ class WebBluetoothServiceImplTest : public RenderViewHostImplTestHarness {
   blink::mojom::RequestScanningStartResultPtr RequestScanningStart(
       const blink::mojom::WebBluetoothLeScanFilter& filter,
       FakeWebBluetoothScanClientImpl* client_impl) {
-    blink::mojom::WebBluetoothScanClientAssociatedPtrInfo client_info;
-    client_impl->BindRequest(mojo::MakeRequest(&client_info));
+    mojo::PendingAssociatedRemote<blink::mojom::WebBluetoothScanClient> client;
+    client_impl->BindReceiver(client.InitWithNewEndpointAndPassReceiver());
     auto options = blink::mojom::WebBluetoothRequestLEScanOptions::New();
     options->filters.emplace();
     auto filter_ptr = blink::mojom::WebBluetoothLeScanFilter::New(filter);
@@ -158,7 +163,7 @@ class WebBluetoothServiceImplTest : public RenderViewHostImplTestHarness {
     base::RunLoop loop;
     blink::mojom::RequestScanningStartResultPtr result;
     service_->RequestScanningStart(
-        std::move(client_info), std::move(options),
+        std::move(client), std::move(options),
         base::BindLambdaForTesting(
             [&](blink::mojom::RequestScanningStartResultPtr p) {
               result = std::move(p);

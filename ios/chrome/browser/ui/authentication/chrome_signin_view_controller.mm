@@ -308,7 +308,7 @@ enum AuthenticationState {
 }
 
 - (void)setPrimaryButtonStyling:(MDCButton*)button {
-  UIColor* hintColor = UIColor.cr_systemBackgroundColor;
+  UIColor* hintColor = self.backgroundColor;
   UIColor* backgroundColor = [UIColor colorNamed:kBlueColor];
   UIColor* titleColor = [UIColor colorNamed:kSolidButtonTextColor];
 
@@ -331,8 +331,8 @@ enum AuthenticationState {
 }
 
 - (void)setSecondaryButtonStyling:(MDCButton*)button {
-  UIColor* hintColor = UIColor.cr_systemBackgroundColor;
-  UIColor* backgroundColor = UIColor.cr_systemBackgroundColor;
+  UIColor* hintColor = self.backgroundColor;
+  UIColor* backgroundColor = self.backgroundColor;
   UIColor* titleColor = [UIColor colorNamed:kBlueColor];
 
   if (@available(iOS 13, *)) {
@@ -451,7 +451,7 @@ enum AuthenticationState {
 }
 
 - (void)updateGradientColors {
-  UIColor* backgroundColor = UIColor.cr_systemBackgroundColor;
+  UIColor* backgroundColor = self.backgroundColor;
 
   if (@available(iOS 13, *)) {
     backgroundColor =
@@ -503,6 +503,10 @@ enum AuthenticationState {
 
 - (NSString*)skipSigninButtonTitle {
   return l10n_util::GetNSString(IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON);
+}
+
+- (UIColor*)backgroundColor {
+  return UIColor.cr_systemBackgroundColor;
 }
 
 - (UIButton*)primaryButton {
@@ -815,7 +819,7 @@ enum AuthenticationState {
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  self.view.backgroundColor = UIColor.cr_systemBackgroundColor;
+  self.view.backgroundColor = self.backgroundColor;
 
   _primaryButton = [[MDCFlatButton alloc] init];
   [self setPrimaryButtonStyling:_primaryButton];

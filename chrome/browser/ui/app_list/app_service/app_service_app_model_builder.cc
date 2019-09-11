@@ -12,6 +12,23 @@
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace {
+
+bool ShouldShowInLauncher(const apps::AppUpdate& update) {
+  apps::mojom::Readiness readiness = update.Readiness();
+  switch (readiness) {
+    case apps::mojom::Readiness::kReady:
+    case apps::mojom::Readiness::kDisabledByUser:
+    case apps::mojom::Readiness::kDisabledByBlacklist:
+    case apps::mojom::Readiness::kTerminated:
+      return update.ShowInLauncher() == apps::mojom::OptionalBool::kTrue;
+    default:
+      return false;
+  }
+}
+
+}  // namespace
+
 // static
 apps::AppServiceProxy*
     AppServiceAppModelBuilder::app_service_proxy_for_testing_ = nullptr;
@@ -92,10 +109,7 @@ void AppServiceAppModelBuilder::BuildModel() {
 
 void AppServiceAppModelBuilder::OnAppUpdate(const apps::AppUpdate& update) {
   ChromeAppListItem* item = GetAppItem(update.AppId());
-  apps::mojom::Readiness readiness = update.Readiness();
-  bool show = (((readiness == apps::mojom::Readiness::kReady) ||
-                (readiness == apps::mojom::Readiness::kDisabledByUser)) &&
-               (update.ShowInLauncher() == apps::mojom::OptionalBool::kTrue));
+  bool show = ShouldShowInLauncher(update);
   if (item) {
     if (show) {
       DCHECK(item->GetItemType() == AppServiceAppItem::kItemType);

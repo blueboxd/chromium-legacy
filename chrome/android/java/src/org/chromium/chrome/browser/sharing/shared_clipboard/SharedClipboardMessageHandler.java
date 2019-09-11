@@ -71,7 +71,7 @@ public class SharedClipboardMessageHandler {
             return;
         }
 
-        int token = SharingNotificationUtil.showSendingNotification(
+        SharingNotificationUtil.showSendingNotification(
                 NotificationUmaTracker.SystemNotificationType.SHARED_CLIPBOARD,
                 NotificationConstants.GROUP_SHARED_CLIPBOARD,
                 NotificationConstants.NOTIFICATION_ID_SHARED_CLIPBOARD_OUTGOING, deviceName);
@@ -101,7 +101,7 @@ public class SharedClipboardMessageHandler {
                         NotificationUmaTracker.SystemNotificationType.SHARED_CLIPBOARD,
                         NotificationConstants.GROUP_SHARED_CLIPBOARD,
                         NotificationConstants.NOTIFICATION_ID_SHARED_CLIPBOARD_OUTGOING,
-                        contentTitle, contentText, token, tryAgainIntent);
+                        contentTitle, contentText, tryAgainIntent);
             }
         });
     }

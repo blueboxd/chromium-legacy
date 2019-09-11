@@ -133,6 +133,11 @@ PasswordStore* WebViewPasswordManagerClient::GetProfilePasswordStore() const {
       .get();
 }
 
+PasswordStore* WebViewPasswordManagerClient::GetAccountPasswordStore() const {
+  // Account password stores aren't currently supported in iOS webviews.
+  return nullptr;
+}
+
 void WebViewPasswordManagerClient::NotifyUserAutoSignin(
     std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
     const GURL& origin) {

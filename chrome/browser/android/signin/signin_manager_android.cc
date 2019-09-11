@@ -161,35 +161,6 @@ void SigninManagerAndroid::Shutdown() {
                              java_signin_manager_);
 }
 
-jboolean SigninManagerAndroid::SetPrimaryAccount(
-    JNIEnv* env,
-    const JavaParamRef<jstring>& username) {
-  DVLOG(1) << "SigninManagerAndroid::SetPrimaryAccount";
-
-  auto account =
-      identity_manager_
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
-              base::android::ConvertJavaStringToUTF8(env, username));
-  DCHECK(account.has_value());
-  auto* account_mutator = identity_manager_->GetPrimaryAccountMutator();
-  return account_mutator->SetPrimaryAccount(account->account_id);
-}
-
-void SigninManagerAndroid::SignOut(JNIEnv* env,
-                                   jint signoutReason) {
-  auto* account_mutator = identity_manager_->GetPrimaryAccountMutator();
-
-  // GetPrimaryAccountMutator() returns nullptr on ChromeOS only.
-  DCHECK(account_mutator);
-  account_mutator->ClearPrimaryAccount(
-      signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
-      static_cast<signin_metrics::ProfileSignout>(signoutReason),
-      // Always use IGNORE_METRIC for the profile deletion argument. Chrome
-      // Android has just a single-profile which is never deleted upon
-      // sign-out.
-      signin_metrics::SignoutDelete::IGNORE_METRIC);
-}
-
 void SigninManagerAndroid::ClearLastSignedInUser(JNIEnv* env) {
   ClearLastSignedInUserForProfile(profile_);
 }

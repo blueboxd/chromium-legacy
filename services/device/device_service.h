@@ -138,7 +138,8 @@ class DeviceService : public service_manager::Service {
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
-  void BindFingerprintRequest(mojom::FingerprintRequest request);
+  void BindFingerprintReceiver(
+      mojo::PendingReceiver<mojom::Fingerprint> receiver);
   void BindGeolocationConfigRequest(mojom::GeolocationConfigRequest request);
   void BindGeolocationContextRequest(mojom::GeolocationContextRequest request);
   void BindGeolocationControlRequest(mojom::GeolocationControlRequest request);

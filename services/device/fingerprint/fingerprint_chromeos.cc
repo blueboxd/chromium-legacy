@@ -9,7 +9,8 @@
 #include "base/bind.h"
 #include "chromeos/dbus/biod/biod_client.h"
 #include "dbus/object_path.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/device/fingerprint/fingerprint.h"
 #include "services/device/public/mojom/fingerprint.mojom.h"
 
@@ -331,9 +332,10 @@ void FingerprintChromeOS::StartNextRequest() {
 }
 
 // static
-void Fingerprint::Create(device::mojom::FingerprintRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<FingerprintChromeOS>(),
-                          std::move(request));
+void Fingerprint::Create(
+    mojo::PendingReceiver<device::mojom::Fingerprint> receiver) {
+  mojo::MakeSelfOwnedReceiver(std::make_unique<FingerprintChromeOS>(),
+                              std::move(receiver));
 }
 
 }  // namespace device

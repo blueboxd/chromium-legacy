@@ -47,6 +47,9 @@ class AppServiceProxy : public KeyedService,
 
   ~AppServiceProxy() override;
 
+  void ReInitializeForTesting(Profile* profile,
+                              service_manager::Connector* connector);
+
   apps::mojom::AppServicePtr& AppService();
   apps::AppRegistryCache& AppRegistryCache();
 
@@ -140,6 +143,8 @@ class AppServiceProxy : public KeyedService,
   };
 
   AppServiceProxy(Profile* profile, service_manager::Connector* connector);
+
+  void Initialize(Profile* profile, service_manager::Connector* connector);
 
   void AddAppIconSource(Profile* profile);
 

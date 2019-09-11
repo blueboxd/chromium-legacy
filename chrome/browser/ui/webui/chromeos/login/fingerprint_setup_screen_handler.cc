@@ -55,8 +55,8 @@ FingerprintSetupScreenHandler::FingerprintSetupScreenHandler(
     : BaseScreenHandler(kScreenId, js_calls_container) {
   set_user_acted_method_path("login.FingerprintSetupScreen.userActed");
 
-  content::GetSystemConnector()->BindInterface(device::mojom::kServiceName,
-                                               &fp_service_);
+  content::GetSystemConnector()->Connect(
+      device::mojom::kServiceName, fp_service_.BindNewPipeAndPassReceiver());
   device::mojom::FingerprintObserverPtr observer;
   binding_.Bind(mojo::MakeRequest(&observer));
   fp_service_->AddFingerprintObserver(std::move(observer));

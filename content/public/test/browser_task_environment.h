@@ -142,7 +142,7 @@ class BrowserTaskEnvironment : public base::test::TaskEnvironment {
   static constexpr MainThreadType IO_MAINLOOP = MainThreadType::IO;
 
   struct ValidTraits {
-    ValidTraits(TaskEnvironment::ValidTrait);
+    ValidTraits(TaskEnvironment::ValidTraits);
     ValidTraits(Options);
   };
 

@@ -229,10 +229,11 @@ void BlinkGCPluginConsumer::CheckClass(RecordInfo* info) {
         reporter_.ClassContainsGCRoots(info, visitor.gc_roots());
     }
 
-    if (info->NeedsFinalization())
+    if (!options_.no_gc_finalized && info->NeedsFinalization())
       CheckFinalization(info);
 
-    if (options_.warn_unneeded_finalizer && info->IsGCFinalized())
+    if (!options_.no_gc_finalized && options_.warn_unneeded_finalizer &&
+        info->IsGCFinalized())
       CheckUnneededFinalization(info);
   }
 
@@ -381,11 +382,13 @@ void BlinkGCPluginConsumer::CheckDispatch(RecordInfo* info) {
   if (base == info->record()) {
     if (!trace_dispatch)
       reporter_.MissingTraceDispatchMethod(info);
-    if (finalized && !finalize_dispatch)
-      reporter_.MissingFinalizeDispatchMethod(info);
-    if (!finalized && finalize_dispatch) {
-      reporter_.ClassRequiresFinalization(info);
-      reporter_.NoteUserDeclaredFinalizer(finalize_dispatch);
+    if (!options_.no_gc_finalized) {
+      if (finalized && !finalize_dispatch)
+        reporter_.MissingFinalizeDispatchMethod(info);
+      if (!finalized && finalize_dispatch) {
+        reporter_.ClassRequiresFinalization(info);
+        reporter_.NoteUserDeclaredFinalizer(finalize_dispatch);
+      }
     }
   }
 
@@ -410,7 +413,8 @@ void BlinkGCPluginConsumer::CheckDispatch(RecordInfo* info) {
       reporter_.MissingTraceDispatch(defn, info);
   }
 
-  if (finalized && finalize_dispatch && finalize_dispatch->isDefined(defn)) {
+  if ((finalized || options_.no_gc_finalized) && finalize_dispatch &&
+      finalize_dispatch->isDefined(defn)) {
     CheckDispatchVisitor visitor(info);
     visitor.TraverseStmt(defn->getBody());
     if (!visitor.dispatched_to_receiver())

@@ -113,8 +113,6 @@ class DriveShareAction {
     const canShareItem = metadata[0].canShare !== false;
     return this.volumeManager_.getDriveConnectionState().type !==
         VolumeManagerCommon.DriveConnectionType.OFFLINE &&
-        (loadTimeData.getBoolean('DRIVE_FS_ENABLED') ||
-         !util.isTeamDriveRoot(this.entry_)) &&
         canShareItem;
   }
 
@@ -191,16 +189,7 @@ class DriveToggleOfflineAction {
    */
   static create(
       entries, metadataModel, driveSyncHandler, ui, value, onExecute) {
-    if (!loadTimeData.getBoolean('DRIVE_FS_ENABLED')) {
-      if (entries.some((entry) => entry.isDirectory)) {
-        return null;
-      }
-    }
-
     const actionableEntries = entries.filter(entry => {
-      if (entry.isDirectory && !loadTimeData.getBoolean('DRIVE_FS_ENABLED')) {
-        return false;
-      }
       const metadata = metadataModel.getCache([entry], ['hosted', 'pinned'])[0];
       if (metadata.hosted) {
         return false;
@@ -536,9 +525,7 @@ class DriveManageAction {
    */
   canExecute() {
     return this.volumeManager_.getDriveConnectionState().type !==
-        VolumeManagerCommon.DriveConnectionType.OFFLINE &&
-        (loadTimeData.getBoolean('DRIVE_FS_ENABLED') ||
-         !util.isTeamDriveRoot(this.entry_));
+        VolumeManagerCommon.DriveConnectionType.OFFLINE;
   }
 
   /**

@@ -5,6 +5,7 @@
 package org.chromium.components.module_installer;
 
 import android.content.SharedPreferences;
+import android.os.SystemClock;
 import android.util.SparseLongArray;
 
 import com.google.android.play.core.splitinstall.SplitInstallException;
@@ -40,7 +41,7 @@ import java.util.Set;
 
         public InstallTimes(boolean isCached) {
             mIsCached = isCached;
-            mInstallTimes.put(SplitInstallSessionStatus.UNKNOWN, System.currentTimeMillis());
+            mInstallTimes.put(SplitInstallSessionStatus.UNKNOWN, SystemClock.uptimeMillis());
         }
     }
 
@@ -190,7 +191,7 @@ import java.util.Set;
             case SplitInstallSessionStatus.INSTALLED:
                 for (String name : state.moduleNames()) {
                     mInstallTimesMap.get(name).mInstallTimes.put(
-                            state.status(), System.currentTimeMillis());
+                            state.status(), SystemClock.uptimeMillis());
                 }
                 if (state.status() == SplitInstallSessionStatus.INSTALLED) {
                     finish(true, state.moduleNames(), INSTALL_STATUS_SUCCESS);
@@ -310,7 +311,7 @@ import java.util.Set;
             return;
         }
         RecordHistogram.recordLongTimesHistogram(
-                String.format("Android.FeatureModules.%sInstallDuration%s.%s",
+                String.format("Android.FeatureModules.%sAwakeInstallDuration%s.%s",
                         installTimes.mIsCached ? "Cached" : "Uncached", histogramSubname,
                         moduleName),
                 installTimes.mInstallTimes.get(endKey) - installTimes.mInstallTimes.get(startKey));

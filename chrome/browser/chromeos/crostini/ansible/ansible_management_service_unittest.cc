@@ -22,11 +22,13 @@ class AnsibleManagementServiceTest : public testing::Test {
     fake_cicerone_client_ = static_cast<chromeos::FakeCiceroneClient*>(
         chromeos::DBusThreadManager::Get()->GetCiceroneClient());
     profile_ = std::make_unique<TestingProfile>();
+    crostini_manager_ = CrostiniManager::GetForProfile(profile_.get());
     ansible_management_service_ =
-        std::make_unique<AnsibleManagementService>(profile_.get());
+        AnsibleManagementService::GetForProfile(profile_.get());
   }
   ~AnsibleManagementServiceTest() override {
-    ansible_management_service_.reset();
+    ansible_management_service_->Shutdown();
+    crostini_manager_->Shutdown();
     profile_.reset();
     chromeos::DBusThreadManager::Shutdown();
   }
@@ -35,7 +37,7 @@ class AnsibleManagementServiceTest : public testing::Test {
   Profile* profile() { return profile_.get(); }
 
   AnsibleManagementService* ansible_management_service() {
-    return ansible_management_service_.get();
+    return ansible_management_service_;
   }
 
   void SendSucceededInstallSignal() {
@@ -49,11 +51,25 @@ class AnsibleManagementServiceTest : public testing::Test {
     fake_cicerone_client_->InstallLinuxPackageProgress(signal);
   }
 
+  void SendSucceededApplicationSignal() {
+    vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal signal;
+    signal.set_owner_id(CryptohomeIdForProfile(profile()));
+    signal.set_vm_name(kCrostiniDefaultVmName);
+    signal.set_container_name(kCrostiniDefaultContainerName);
+    signal.set_status(
+        vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal::SUCCEEDED);
+
+    fake_cicerone_client_->NotifyApplyAnsiblePlaybookProgress(signal);
+  }
+
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
-  std::unique_ptr<AnsibleManagementService> ansible_management_service_;
+  CrostiniManager* crostini_manager_;
+  AnsibleManagementService* ansible_management_service_;
   base::MockCallback<base::OnceCallback<void(bool)>>
       ansible_installation_finished_mock_callback_;
+  base::MockCallback<base::OnceCallback<void(bool)>>
+      ansible_playbook_application_finished_mock_callback_;
   // Owned by chromeos::DBusThreadManager
   chromeos::FakeCiceroneClient* fake_cicerone_client_;
 
@@ -90,6 +106,43 @@ TEST_F(AnsibleManagementServiceTest, InstallAnsibleInDefaultContainerFail) {
       ansible_installation_finished_mock_callback_.Get());
 
   // Actually starts installing Ansible.
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(AnsibleManagementServiceTest,
+       ApplyAnsiblePlaybookToDefaultContainerSuccess) {
+  vm_tools::cicerone::ApplyAnsiblePlaybookResponse response;
+  response.set_status(
+      vm_tools::cicerone::ApplyAnsiblePlaybookResponse::STARTED);
+  fake_cicerone_client_->set_apply_ansible_playbook_response(response);
+
+  EXPECT_CALL(ansible_playbook_application_finished_mock_callback_, Run(true))
+      .Times(1);
+
+  ansible_management_service()->ApplyAnsiblePlaybookToDefaultContainer(
+      /*playbook=*/"",
+      ansible_playbook_application_finished_mock_callback_.Get());
+
+  // Actually starts applying Ansible playbook.
+  base::RunLoop().RunUntilIdle();
+
+  SendSucceededApplicationSignal();
+}
+
+TEST_F(AnsibleManagementServiceTest,
+       ApplyAnsiblePlaybookToDefaultContainerFail) {
+  vm_tools::cicerone::ApplyAnsiblePlaybookResponse response;
+  response.set_status(vm_tools::cicerone::ApplyAnsiblePlaybookResponse::FAILED);
+  fake_cicerone_client_->set_apply_ansible_playbook_response(response);
+
+  EXPECT_CALL(ansible_playbook_application_finished_mock_callback_, Run(false))
+      .Times(1);
+
+  ansible_management_service()->ApplyAnsiblePlaybookToDefaultContainer(
+      /*playbook=*/"",
+      ansible_playbook_application_finished_mock_callback_.Get());
+
+  // Actually starts applying Ansible playbook.
   base::RunLoop().RunUntilIdle();
 }
 

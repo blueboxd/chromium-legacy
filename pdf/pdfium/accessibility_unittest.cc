@@ -7,6 +7,7 @@
 #include "pdf/pdfium/pdfium_engine.h"
 #include "pdf/pdfium/pdfium_test_base.h"
 #include "pdf/test/test_client.h"
+#include "pdf/test/test_utils.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/private/ppp_pdf.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -172,21 +173,140 @@ TEST_F(AccessibilityTest, TestScrollIntoViewActionHandling) {
   // This test checks that accessibility scroll action is passed
   // on to the ScrollEnabledTestClient implementation.
   ScrollEnabledTestClient client;
-  std::unique_ptr<PDFiumEngine> engine =
-      InitializeEngine(&client, FILE_PATH_LITERAL("hello_world2.pdf"));
+  std::unique_ptr<PDFiumEngine> engine = InitializeEngine(
+      &client, FILE_PATH_LITERAL("rectangles_multi_pages.pdf"));
   ASSERT_TRUE(engine);
+  engine->PluginSizeUpdated({400, 400});
   PP_PdfAccessibilityActionData action_data;
   action_data.action = PP_PdfAccessibilityAction::PP_PDF_SCROLL_TO_MAKE_VISIBLE;
   action_data.target_rect = {{120, 0}, {10, 10}};
-  // As Pdfium::Client is mocked, we will receive the same points back.
-  engine->HandleAccessibilityAction(action_data);
-  EXPECT_EQ(action_data.target_rect.point, client.GetScrollRequestPoints());
 
-  // Simulate a zoom update in the PDFiumEngine.
-  engine->ZoomUpdated(1.5);
+  // Horizontal and Vertical scroll alignment of none should not scroll.
+  action_data.horizontal_scroll_alignment =
+      PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_NONE;
+  action_data.vertical_scroll_alignment =
+      PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_NONE;
   engine->HandleAccessibilityAction(action_data);
-  constexpr PP_Point kExpectedPoint = {180, 0};
-  EXPECT_EQ(kExpectedPoint, client.GetScrollRequestPoints());
+  ComparePoint({0, 0}, client.GetScrollRequestPoints());
+
+  action_data.horizontal_scroll_alignment =
+      PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_LEFT;
+  action_data.vertical_scroll_alignment =
+      PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_TOP;
+  engine->HandleAccessibilityAction(action_data);
+  ComparePoint({120, 0}, client.GetScrollRequestPoints());
+
+  action_data.horizontal_scroll_alignment =
+      PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_LEFT;
+  action_data.vertical_scroll_alignment =
+      PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_BOTTOM;
+  engine->HandleAccessibilityAction(action_data);
+  ComparePoint({120, -400}, client.GetScrollRequestPoints());
+
+  action_data.horizontal_scroll_alignment =
+      PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_RIGHT;
+  action_data.vertical_scroll_alignment =
+      PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_TOP;
+  engine->HandleAccessibilityAction(action_data);
+  ComparePoint({-280, 0}, client.GetScrollRequestPoints());
+
+  action_data.horizontal_scroll_alignment =
+      PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_RIGHT;
+  action_data.vertical_scroll_alignment =
+      PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_BOTTOM;
+  engine->HandleAccessibilityAction(action_data);
+  ComparePoint({-280, -400}, client.GetScrollRequestPoints());
+
+  action_data.horizontal_scroll_alignment =
+      PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_CENTER;
+  action_data.vertical_scroll_alignment =
+      PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_CENTER;
+  engine->HandleAccessibilityAction(action_data);
+  ComparePoint({-80, -200}, client.GetScrollRequestPoints());
+
+  // Simulate a 150% zoom update in the PDFiumEngine.
+  engine->PluginSizeUpdated({600, 600});
+
+  action_data.horizontal_scroll_alignment =
+      PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_NONE;
+  action_data.vertical_scroll_alignment =
+      PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_NONE;
+  engine->HandleAccessibilityAction(action_data);
+  ComparePoint({0, 0}, client.GetScrollRequestPoints());
+
+  action_data.horizontal_scroll_alignment =
+      PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_LEFT;
+  action_data.vertical_scroll_alignment =
+      PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_TOP;
+  engine->HandleAccessibilityAction(action_data);
+  ComparePoint({120, 0}, client.GetScrollRequestPoints());
+
+  action_data.horizontal_scroll_alignment =
+      PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_LEFT;
+  action_data.vertical_scroll_alignment =
+      PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_BOTTOM;
+  engine->HandleAccessibilityAction(action_data);
+  ComparePoint({120, -600}, client.GetScrollRequestPoints());
+
+  action_data.horizontal_scroll_alignment =
+      PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_RIGHT;
+  action_data.vertical_scroll_alignment =
+      PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_TOP;
+  engine->HandleAccessibilityAction(action_data);
+  ComparePoint({-480, 0}, client.GetScrollRequestPoints());
+
+  action_data.horizontal_scroll_alignment =
+      PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_RIGHT;
+  action_data.vertical_scroll_alignment =
+      PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_BOTTOM;
+  engine->HandleAccessibilityAction(action_data);
+  ComparePoint({-480, -600}, client.GetScrollRequestPoints());
+
+  action_data.horizontal_scroll_alignment =
+      PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_CENTER;
+  action_data.vertical_scroll_alignment =
+      PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_CENTER;
+  engine->HandleAccessibilityAction(action_data);
+  ComparePoint({-180, -300}, client.GetScrollRequestPoints());
+}
+
+TEST_F(AccessibilityTest, TestScrollToNearestEdge) {
+  ScrollEnabledTestClient client;
+  std::unique_ptr<PDFiumEngine> engine = InitializeEngine(
+      &client, FILE_PATH_LITERAL("rectangles_multi_pages.pdf"));
+  ASSERT_TRUE(engine);
+  engine->PluginSizeUpdated({400, 400});
+  PP_PdfAccessibilityActionData action_data;
+  action_data.action = PP_PdfAccessibilityAction::PP_PDF_SCROLL_TO_MAKE_VISIBLE;
+
+  action_data.horizontal_scroll_alignment =
+      PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_CLOSEST_EDGE;
+  action_data.vertical_scroll_alignment =
+      PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_CLOSEST_EDGE;
+  // Point which is in the middle of the viewport.
+  action_data.target_rect = {{200, 200}, {10, 10}};
+  engine->HandleAccessibilityAction(action_data);
+  ComparePoint({200, 200}, client.GetScrollRequestPoints());
+
+  // Point which is near the top left of the viewport.
+  action_data.target_rect = {{199, 199}, {10, 10}};
+  engine->HandleAccessibilityAction(action_data);
+  ComparePoint({199, 199}, client.GetScrollRequestPoints());
+
+  // Point which is near the top right of the viewport
+  action_data.target_rect = {{201, 199}, {10, 10}};
+  engine->HandleAccessibilityAction(action_data);
+  ComparePoint({-199, 199}, client.GetScrollRequestPoints());
+
+  // Point which is near the bottom left of the viewport.
+  action_data.target_rect = {{199, 201}, {10, 10}};
+  engine->HandleAccessibilityAction(action_data);
+  ComparePoint({199, -199}, client.GetScrollRequestPoints());
+
+  // Point which is near the bottom right of the viewport
+  action_data.target_rect = {{201, 201}, {10, 10}};
+  engine->HandleAccessibilityAction(action_data);
+  ComparePoint({-199, -199}, client.GetScrollRequestPoints());
 }
 
 // This class is required to just override the NavigateTo
@@ -203,15 +323,24 @@ class NavigationEnabledTestClient : public TestClient {
     disposition_ = disposition;
   }
 
+  void ScrollToY(int y_in_screen_coords, bool compensate_for_toolbar) override {
+    y_scroll_offset_ = y_in_screen_coords;
+    compensate_for_toolbar_ = compensate_for_toolbar;
+  }
+
   const std::string& url() const { return url_; }
   WindowOpenDisposition disposition() const { return disposition_; }
+  int y_scroll_offset() const { return y_scroll_offset_; }
+  bool compensate_for_toolbar() const { return compensate_for_toolbar_; }
 
  private:
   std::string url_;
-  WindowOpenDisposition disposition_;
+  WindowOpenDisposition disposition_ = WindowOpenDisposition::UNKNOWN;
+  int y_scroll_offset_ = 0;
+  bool compensate_for_toolbar_ = false;
 };
 
-TEST_F(AccessibilityTest, TestLinkDefaultActionHandling) {
+TEST_F(AccessibilityTest, TestWebLinkClickActionHandling) {
   NavigationEnabledTestClient client;
   std::unique_ptr<PDFiumEngine> engine =
       InitializeEngine(&client, FILE_PATH_LITERAL("weblinks.pdf"));
@@ -224,6 +353,22 @@ TEST_F(AccessibilityTest, TestLinkDefaultActionHandling) {
   engine->HandleAccessibilityAction(action_data);
   EXPECT_EQ("http://yahoo.com", client.url());
   EXPECT_EQ(WindowOpenDisposition::CURRENT_TAB, client.disposition());
+}
+
+TEST_F(AccessibilityTest, TestInternalLinkClickActionHandling) {
+  NavigationEnabledTestClient client;
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("link_annots.pdf"));
+  ASSERT_TRUE(engine);
+
+  PP_PdfAccessibilityActionData action_data;
+  action_data.action = PP_PdfAccessibilityAction::PP_PDF_DO_DEFAULT_ACTION;
+  action_data.page_index = 0;
+  action_data.link_index = 1;
+  engine->HandleAccessibilityAction(action_data);
+  EXPECT_EQ(1159, client.y_scroll_offset());
+  EXPECT_TRUE(client.compensate_for_toolbar());
+  EXPECT_TRUE(client.url().empty());
 }
 
 }  // namespace chrome_pdf

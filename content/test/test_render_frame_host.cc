@@ -525,7 +525,7 @@ WebBluetoothServiceImpl*
 TestRenderFrameHost::CreateWebBluetoothServiceForTesting() {
   WebBluetoothServiceImpl* service =
       RenderFrameHostImpl::CreateWebBluetoothService(
-          blink::mojom::WebBluetoothServiceRequest());
+          dummy_web_bluetooth_service_remote_.InitWithNewPipeAndPassReceiver());
   return service;
 }
 

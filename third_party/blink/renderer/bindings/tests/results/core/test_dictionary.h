@@ -49,11 +49,11 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   virtual ~TestDictionary();
 
   bool hasAnyInRecordMember() const { return has_any_in_record_member_; }
-  const Vector<std::pair<String, ScriptValue>>& anyInRecordMember() const {
+  const HeapVector<std::pair<String, ScriptValue>>& anyInRecordMember() const {
     DCHECK(has_any_in_record_member_);
     return any_in_record_member_;
   }
-  void setAnyInRecordMember(const Vector<std::pair<String, ScriptValue>>&);
+  void setAnyInRecordMember(const HeapVector<std::pair<String, ScriptValue>>&);
 
   bool hasAnyMember() const { return !(any_member_.IsEmpty() || any_member_.IsUndefined()); }
   ScriptValue anyMember() const {
@@ -492,7 +492,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   bool has_union_or_null_sequence_member_ = false;
   bool has_unrestricted_double_member_ = false;
 
-  Vector<std::pair<String, ScriptValue>> any_in_record_member_;
+  HeapVector<std::pair<String, ScriptValue>> any_in_record_member_;
   ScriptValue any_member_;
   int32_t applicable_to_type_long_member_;
   String applicable_to_type_string_member_;

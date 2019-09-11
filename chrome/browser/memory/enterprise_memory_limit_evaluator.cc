@@ -5,8 +5,8 @@
 #include "chrome/browser/memory/enterprise_memory_limit_evaluator.h"
 
 #include "base/bind.h"
-#include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/browser/performance_manager/public/graph/process_node.h"
+#include "chrome/browser/performance_manager/public/performance_manager.h"
 
 namespace memory {
 
@@ -55,7 +55,7 @@ void EnterpriseMemoryLimitEvaluator::Stop() {
   performance_manager::PerformanceManager::CallOnGraph(
       FROM_HERE, base::BindOnce(
                      [](performance_manager::GraphOwned* observer,
-                        performance_manager::GraphImpl* graph) {
+                        performance_manager::Graph* graph) {
                        // This will destroy the observer since TakeFromGraph
                        // returns a unique_ptr.
                        graph->TakeFromGraph(observer);

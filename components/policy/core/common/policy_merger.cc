@@ -117,7 +117,7 @@ void PolicyListMerger::DoMerge(PolicyMap::Entry* policy) const {
   if (value_changed) {
     base::ListValue* new_value = new base::ListValue();
     for (const base::Value* it : merged_values)
-      new_value->GetList().emplace_back(it->Clone());
+      new_value->Append(it->Clone());
 
     policy->value.reset(new_value);
   }

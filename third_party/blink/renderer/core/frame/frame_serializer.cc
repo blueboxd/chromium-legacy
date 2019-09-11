@@ -149,8 +149,8 @@ bool SerializerMarkupAccumulator::ShouldIgnoreElement(
     return true;
   if (IsHTMLNoScriptElement(element))
     return true;
-  if (IsHTMLMetaElement(element) &&
-      ToHTMLMetaElement(element).ComputeEncoding().IsValid()) {
+  auto* meta = DynamicTo<HTMLMetaElement>(element);
+  if (meta && meta->ComputeEncoding().IsValid()) {
     return true;
   }
   // This is done in serializing document.StyleSheets.

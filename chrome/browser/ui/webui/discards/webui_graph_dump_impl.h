@@ -19,8 +19,6 @@
 
 namespace performance_manager {
 
-class GraphImpl;
-
 // TODO(siggi): Add workers to the WebUI graph.
 class WebUIGraphDumpImpl : public mojom::WebUIGraphDump,
                            public GraphOwned,
@@ -33,8 +31,7 @@ class WebUIGraphDumpImpl : public mojom::WebUIGraphDump,
 
   // Creates a new WebUIGraphDumpImpl to service |request| and passes its
   // ownership to |graph|.
-  static void CreateAndBind(mojom::WebUIGraphDumpRequest request,
-                            GraphImpl* graph);
+  static void CreateAndBind(mojom::WebUIGraphDumpRequest request, Graph* graph);
 
   // Exposed for testing.
   void BindWithGraph(Graph* graph, mojom::WebUIGraphDumpRequest request);
@@ -117,7 +114,7 @@ class WebUIGraphDumpImpl : public mojom::WebUIGraphDump,
       scoped_refptr<base::RefCountedMemory> bitmap_data);
 
   static void BindOnPMSequence(mojom::WebUIGraphDumpRequest request,
-                               GraphImpl* graph);
+                               Graph* graph);
   static void OnConnectionError(WebUIGraphDumpImpl* impl);
 
   Graph* graph_ = nullptr;

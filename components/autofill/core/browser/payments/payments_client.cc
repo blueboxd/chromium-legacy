@@ -142,7 +142,7 @@ void AppendStringIfNotEmpty(const AutofillProfile& profile,
                             base::Value& list) {
   const base::string16 value = profile.GetInfo(type, app_locale);
   if (!value.empty())
-    list.GetList().emplace_back(value);
+    list.Append(value);
 }
 
 // Returns a dictionary with the structure expected by Payments RPCs, containing
@@ -228,7 +228,7 @@ void SetActiveExperiments(const std::vector<const char*>& active_experiments,
 
   base::Value active_chrome_experiments(base::Value::Type::LIST);
   for (const char* it : active_experiments)
-    active_chrome_experiments.GetList().emplace_back(it);
+    active_chrome_experiments.Append(it);
 
   request_dict.SetKey("active_chrome_experiments",
                       std::move(active_chrome_experiments));
@@ -568,8 +568,7 @@ class GetUploadDetailsRequest : public PaymentsRequest {
       // min address is not possible). The final parameter directs
       // BuildAddressDictionary to omit names and phone numbers, which aren't
       // useful for these purposes.
-      addresses.GetList().push_back(
-          BuildAddressDictionary(profile, app_locale_, false));
+      addresses.Append(BuildAddressDictionary(profile, app_locale_, false));
     }
     request_dict.SetKey("address", std::move(addresses));
 
@@ -740,8 +739,7 @@ class UploadCardRequest : public PaymentsRequest {
 
     base::Value addresses(base::Value::Type::LIST);
     for (const AutofillProfile& profile : request_details_.profiles) {
-      addresses.GetList().push_back(
-          BuildAddressDictionary(profile, app_locale, true));
+      addresses.Append(BuildAddressDictionary(profile, app_locale, true));
     }
     request_dict.SetKey("address", std::move(addresses));
 
@@ -859,7 +857,7 @@ class MigrateCardsRequest : public PaymentsRequest {
     for (size_t index = 0; index < migratable_credit_cards_.size(); ++index) {
       std::string pan_field_name = GetPanFieldName(index);
       // Generate credit card dictionary.
-      migrate_cards.GetList().push_back(BuildCreditCardDictionary(
+      migrate_cards.Append(BuildCreditCardDictionary(
           migratable_credit_cards_[index].credit_card(), app_locale,
           pan_field_name));
       // Append pan data to the |all_pans_data|.

@@ -467,10 +467,6 @@
     "label": "//third_party/brotli:brotli_fuzzer",
     "type": "fuzzer",
   },
-  "browser_switcher_bho_unittests": {
-    "label": "//chrome/browser/browser_switcher/bho:browser_switcher_bho_unittests",
-    "type": "console_test_launcher",
-  },
   "browser_tests": {
     "label": "//chrome/test:browser_tests",
     "type": "windowed_test_launcher",

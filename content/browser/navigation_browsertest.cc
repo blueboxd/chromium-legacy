@@ -176,6 +176,40 @@ class BrowserMessageObserver : public content::BrowserMessageFilter {
   DISALLOW_COPY_AND_ASSIGN(BrowserMessageObserver);
 };
 
+// Simulate embedders of content/ keeping track of the current visible URL using
+// NavigateStateChanged() and GetVisibleURL() API.
+class EmbedderVisibleUrlTracker : public WebContentsDelegate {
+ public:
+  const GURL& url() { return url_; }
+
+  // WebContentsDelegate's implementation:
+  void NavigationStateChanged(WebContents* source,
+                              InvalidateTypes changed_flags) override {
+    if (!(changed_flags & INVALIDATE_TYPE_URL))
+      return;
+    url_ = source->GetVisibleURL();
+    if (on_url_invalidated_)
+      std::move(on_url_invalidated_).Run();
+  }
+
+  void WaitUntilUrlInvalidated() {
+    base::RunLoop loop;
+    on_url_invalidated_ = loop.QuitClosure();
+    loop.Run();
+  }
+
+ private:
+  GURL url_;
+  base::OnceClosure on_url_invalidated_;
+};
+
+const char* non_cacheable_html_response =
+    "HTTP/1.1 200 OK\n"
+    "cache-control: no-cache, no-store, must-revalidate\n"
+    "content-type: text/html; charset=UTF-8\n"
+    "\n"
+    "HTML content.";
+
 }  // namespace
 
 // Test about navigation.
@@ -2325,6 +2359,104 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
 
   ASSERT_EQ(3, controller.GetEntryCount());
   ASSERT_EQ(1, controller.GetCurrentEntryIndex());
+}
+
+// Make sure embedders are notified about visible URL changes in this scenario:
+// 1. Navigate to A.
+// 2. Navigate to B.
+// 3. Add a forward entry in the history for later (same-document).
+// 4. Start navigation to C.
+// 5. Start history cross-document navigation, cancelling 4.
+// 6. Start history same-document navigation, cancelling 5.
+//
+// Regression test for https://crbug.com/998284.
+IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest,
+                       BackForwardInOldDocumentCancelPendingNavigation) {
+  using Response = net::test_server::ControllableHttpResponse;
+  Response response_A1(embedded_test_server(), "/A");
+  Response response_A2(embedded_test_server(), "/A");
+  Response response_B1(embedded_test_server(), "/B");
+  Response response_C1(embedded_test_server(), "/C");
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url_a = embedded_test_server()->GetURL("a.com", "/A");
+  GURL url_b = embedded_test_server()->GetURL("b.com", "/B");
+  GURL url_c = embedded_test_server()->GetURL("c.com", "/C");
+
+  EmbedderVisibleUrlTracker embedder_url_tracker;
+  shell()->web_contents()->SetDelegate(&embedder_url_tracker);
+
+  // 1. Navigate to A.
+  shell()->LoadURL(url_a);
+  response_A1.WaitForRequest();
+  response_A1.Send(non_cacheable_html_response);
+  response_A1.Done();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // 2. Navigate to B.
+  shell()->LoadURL(url_b);
+  response_B1.WaitForRequest();
+  response_B1.Send(non_cacheable_html_response);
+  response_B1.Done();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // 3. Add a forward entry in the history for later (same-document).
+  EXPECT_TRUE(ExecJs(shell()->web_contents(), R"(
+    history.pushState({},'');
+    history.back();
+  )"));
+
+  // 4. Start navigation to C.
+  {
+    EXPECT_EQ(url_b, shell()->web_contents()->GetVisibleURL());
+    EXPECT_EQ(url_b, embedder_url_tracker.url());
+  }
+  shell()->LoadURL(url_c);
+  // TODO(arthursonzogni): The embedder_url_tracker should update to url_c at
+  // this point, but we currently rely on FrameTreeNode::DidStopLoading for
+  // invalidation and it does not occur when a prior navigation is already in
+  // progress. The browser is still waiting on the same-document
+  // "history.back()" to complete.
+  {
+    EXPECT_EQ(url_c, shell()->web_contents()->GetVisibleURL());
+    EXPECT_EQ(url_b, embedder_url_tracker.url());
+  }
+  embedder_url_tracker.WaitUntilUrlInvalidated();
+  {
+    EXPECT_EQ(url_c, shell()->web_contents()->GetVisibleURL());
+    EXPECT_EQ(url_c, embedder_url_tracker.url());
+  }
+  response_C1.WaitForRequest();
+
+  // 5. Start history cross-document navigation, cancelling 4.
+  EXPECT_TRUE(ExecJs(shell()->web_contents(), "history.back()"));
+  // TODO(arthursonzogni): The embedder_url_tracker should update the visible
+  // URL here.
+  {
+    EXPECT_EQ(url_b, shell()->web_contents()->GetVisibleURL());
+    EXPECT_EQ(url_c, embedder_url_tracker.url());
+  }
+  response_A2.WaitForRequest();
+  {
+    EXPECT_EQ(url_b, shell()->web_contents()->GetVisibleURL());
+    EXPECT_EQ(url_c, embedder_url_tracker.url());
+  }
+
+  // 6. Start history same-document navigation, cancelling 5.
+  EXPECT_TRUE(ExecJs(shell()->web_contents(), "history.forward()"));
+  {
+    EXPECT_EQ(url_b, shell()->web_contents()->GetVisibleURL());
+    EXPECT_EQ(url_c, embedder_url_tracker.url());
+  }
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  {
+    EXPECT_EQ(url_b, shell()->web_contents()->GetVisibleURL());
+    EXPECT_EQ(url_c, embedder_url_tracker.url());
+  }
+
+  // TODO(https://crbug.com/998284): The URL tracked by the embedder should have
+  // been invalidated. At some point, |url_b| should be displayed, not |url_c|.
 }
 
 }  // namespace content

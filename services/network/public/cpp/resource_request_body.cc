@@ -88,7 +88,8 @@ void ResourceRequestBody::AppendDataPipe(
 }
 
 void ResourceRequestBody::SetToChunkedDataPipe(
-    mojom::ChunkedDataPipeGetterPtr chunked_data_pipe_getter) {
+    mojo::PendingRemote<mojom::ChunkedDataPipeGetter>
+        chunked_data_pipe_getter) {
   DCHECK(elements_.empty());
 
   elements_.push_back(DataElement());

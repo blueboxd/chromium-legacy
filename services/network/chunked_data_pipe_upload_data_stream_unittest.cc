@@ -40,7 +40,7 @@ class ChunkedDataPipeUploadDataStreamTest : public testing::Test {
     chunked_data_pipe_getter_ = std::make_unique<TestChunkedDataPipeGetter>();
     chunked_upload_stream_ = std::make_unique<ChunkedDataPipeUploadDataStream>(
         base::MakeRefCounted<network::ResourceRequestBody>(),
-        chunked_data_pipe_getter_->GetDataPipeGetterPtr());
+        chunked_data_pipe_getter_->GetDataPipeGetterRemote());
     // Nothing interesting happens before Init, so always wait for it in the
     // test fixture.
     net::TestCompletionCallback callback;
@@ -319,7 +319,7 @@ TEST_F(ChunkedDataPipeUploadDataStreamTest, GetSizeSucceedsBeforeInit) {
   chunked_data_pipe_getter_ = std::make_unique<TestChunkedDataPipeGetter>();
   chunked_upload_stream_ = std::make_unique<ChunkedDataPipeUploadDataStream>(
       base::MakeRefCounted<network::ResourceRequestBody>(),
-      chunked_data_pipe_getter_->GetDataPipeGetterPtr());
+      chunked_data_pipe_getter_->GetDataPipeGetterRemote());
   get_size_callback_ = chunked_data_pipe_getter_->WaitForGetSize();
   std::move(get_size_callback_).Run(net::OK, kData.size());
   // Wait for the ChunkedUploadStream to receive the size.
@@ -408,7 +408,7 @@ TEST_F(ChunkedDataPipeUploadDataStreamTest, GetSizeFailsBeforeInit) {
   chunked_data_pipe_getter_ = std::make_unique<TestChunkedDataPipeGetter>();
   chunked_upload_stream_ = std::make_unique<ChunkedDataPipeUploadDataStream>(
       base::MakeRefCounted<network::ResourceRequestBody>(),
-      chunked_data_pipe_getter_->GetDataPipeGetterPtr());
+      chunked_data_pipe_getter_->GetDataPipeGetterRemote());
   get_size_callback_ = chunked_data_pipe_getter_->WaitForGetSize();
   std::move(get_size_callback_).Run(net::ERR_ACCESS_DENIED, 0);
   // Wait for the ChunkedUploadStream to receive the size.
@@ -712,7 +712,7 @@ TEST_F(ChunkedDataPipeUploadDataStreamTest, ClosePipeGetterBeforeInit) {
   chunked_data_pipe_getter_ = std::make_unique<TestChunkedDataPipeGetter>();
   chunked_upload_stream_ = std::make_unique<ChunkedDataPipeUploadDataStream>(
       base::MakeRefCounted<network::ResourceRequestBody>(),
-      chunked_data_pipe_getter_->GetDataPipeGetterPtr());
+      chunked_data_pipe_getter_->GetDataPipeGetterRemote());
 
   // Destroy the DataPipeGetter pipe, which is the pipe used for
   // GetSizeCallback.

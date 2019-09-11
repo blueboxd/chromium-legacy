@@ -15,7 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "libassistant/shared/internal_api/http_connection.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/simple_url_loader_stream_consumer.h"
@@ -107,7 +107,7 @@ class ChromiumHttpConnection
   std::unique_ptr<mojo::SimpleWatcher> upload_pipe_watcher_;
   // If non-null, invoked once the size of the upload is known.
   network::mojom::ChunkedDataPipeGetter::GetSizeCallback get_size_callback_;
-  mojo::BindingSet<network::mojom::ChunkedDataPipeGetter> binding_set_;
+  mojo::ReceiverSet<network::mojom::ChunkedDataPipeGetter> receiver_set_;
 
   // Parameters to be set before Start() call.
   GURL url_;

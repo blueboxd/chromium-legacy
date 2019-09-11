@@ -13,7 +13,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/tracing/public/mojom/tracing.mojom.h"
 
@@ -25,7 +26,7 @@ class AgentRegistry : public mojom::AgentRegistry {
    public:
     AgentEntry(size_t id,
                AgentRegistry* agent_registry,
-               mojom::AgentPtr agent,
+               mojo::PendingRemote<mojom::Agent> agent,
                const std::string& label,
                mojom::TraceDataType type,
                base::ProcessId pid);
@@ -49,7 +50,7 @@ class AgentRegistry : public mojom::AgentRegistry {
 
     const size_t id_;
     AgentRegistry* agent_registry_;
-    mojom::AgentPtr agent_;
+    mojo::Remote<mojom::Agent> agent_;
     const std::string label_;
     const mojom::TraceDataType type_;
     const base::ProcessId pid_;
@@ -68,8 +69,8 @@ class AgentRegistry : public mojom::AgentRegistry {
 
   void DisconnectAllAgents();
 
-  void BindAgentRegistryRequest(
-      mojom::AgentRegistryRequest request);
+  void BindAgentRegistryReceiver(
+      mojo::PendingReceiver<mojom::AgentRegistry> receiver);
 
   // Returns the number of existing agents that the callback was run on.
   size_t SetAgentInitializationCallback(
@@ -89,14 +90,14 @@ class AgentRegistry : public mojom::AgentRegistry {
   friend class CoordinatorTestUtil;  // For testing.
 
   // mojom::AgentRegistry
-  void RegisterAgent(mojom::AgentPtr agent,
+  void RegisterAgent(mojo::PendingRemote<mojom::Agent> agent,
                      const std::string& label,
                      mojom::TraceDataType type,
                      base::ProcessId pid) override;
 
   void UnregisterAgent(size_t agent_id);
 
-  mojo::BindingSet<mojom::AgentRegistry> bindings_;
+  mojo::ReceiverSet<mojom::AgentRegistry> receivers_;
   size_t next_agent_id_ = 0;
   std::map<size_t, std::unique_ptr<AgentEntry>> agents_;
   AgentInitializationCallback agent_initialization_callback_;

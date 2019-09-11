@@ -24,6 +24,7 @@
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory.h"
 #include "components/password_manager/core/browser/leak_detection_delegate.h"
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
+#include "components/password_manager/core/browser/possible_username_data.h"
 
 class PrefRegistrySimple;
 
@@ -45,6 +46,7 @@ class PasswordFormManagerForUI;
 class PasswordFormManagerInterface;
 class PasswordManagerMetricsRecorder;
 class PasswordFormManager;
+struct PossibleUsernameData;
 
 // Per-tab password manager. Handles creation and management of UI elements,
 // receiving password form data from the renderer and managing the password
@@ -114,10 +116,9 @@ class PasswordManager : public FormSubmissionObserver {
   // Called when a user changed a value in a non-password field. The field is in
   // a frame corresponding to |driver| and has a renderer id |renderer_id|.
   // |value| is the current value of the field.
-  void OnUserModifiedNonPasswordField(
-      password_manager::PasswordManagerDriver* driver,
-      int32_t renderer_id,
-      const base::string16& value);
+  void OnUserModifiedNonPasswordField(PasswordManagerDriver* driver,
+                                      int32_t renderer_id,
+                                      const base::string16& value);
 
   // Handles a request to show manual fallback for password saving, i.e. the
   // omnibox icon with the anchored hidden prompt.
@@ -340,7 +341,9 @@ class PasswordManager : public FormSubmissionObserver {
 #if !defined(OS_IOS)
   // Helper for making the requests on leak detection.
   LeakDetectionDelegate leak_delegate_;
+
 #endif  // !defined(OS_IOS)
+  base::Optional<PossibleUsernameData> possible_username_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManager);
 };

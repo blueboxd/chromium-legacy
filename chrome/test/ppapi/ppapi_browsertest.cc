@@ -44,6 +44,7 @@
 #include "extensions/test/extension_test_message_listener.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/net_errors.h"
@@ -841,9 +842,9 @@ class MockNetworkContext : public network::TestNetworkContext {
 // pipe makes sure that everything happens asynchronously through a pipe.
 #define RUN_TCP_FAILURE_TEST(test_name, failure_type)                         \
   do {                                                                        \
-    network::mojom::NetworkContextPtr network_context_proxy;                  \
+    mojo::Remote<network::mojom::NetworkContext> network_context_proxy;       \
     MockNetworkContext network_context(                                       \
-        failure_type, mojo::MakeRequest(&network_context_proxy));             \
+        failure_type, network_context_proxy.BindNewPipeAndPassReceiver());    \
     ppapi::SetPepperTCPNetworkContextForTesting(network_context_proxy.get()); \
     RunTestViaHTTP(LIST_TEST(test_name));                                     \
     ppapi::SetPepperTCPNetworkContextForTesting(nullptr);                     \

@@ -73,9 +73,9 @@ std::unique_ptr<base::DictionaryValue> CreateFileHandlersForBookmarkApp(
         continue;
 
       if (acceptsUTF8[0] == '.') {
-        file_extensions.GetList().push_back(base::Value(acceptsUTF8.substr(1)));
+        file_extensions.Append(base::Value(acceptsUTF8.substr(1)));
       } else {
-        mime_types.GetList().push_back(base::Value(acceptsUTF8));
+        mime_types.Append(base::Value(acceptsUTF8));
       }
     }
 

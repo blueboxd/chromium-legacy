@@ -43,7 +43,7 @@ TEST(BaseWinUtilTest, TestIsUACEnabled) {
 }
 
 TEST(BaseWinUtilTest, TestGetUserSidString) {
-  string16 user_sid;
+  std::wstring user_sid;
   EXPECT_TRUE(GetUserSidString(&user_sid));
   EXPECT_TRUE(!user_sid.empty());
 }
@@ -101,9 +101,9 @@ TEST(BaseWinUtilTest, String16FromGUID) {
 }
 
 TEST(BaseWinUtilTest, GetWindowObjectName) {
-  base::string16 created_desktop_name(STRING16_LITERAL("test_desktop"));
+  std::wstring created_desktop_name(L"test_desktop");
   HDESK desktop_handle =
-      ::CreateDesktop(as_wcstr(created_desktop_name), nullptr, nullptr, 0,
+      ::CreateDesktop(created_desktop_name.c_str(), nullptr, nullptr, 0,
                       DESKTOP_CREATEWINDOW | DESKTOP_READOBJECTS |
                           READ_CONTROL | WRITE_DAC | WRITE_OWNER,
                       nullptr);
@@ -117,13 +117,15 @@ TEST(BaseWinUtilTest, IsRunningUnderDesktopName) {
   HDESK thread_desktop = ::GetThreadDesktop(::GetCurrentThreadId());
 
   ASSERT_NE(thread_desktop, nullptr);
-  base::string16 desktop_name = GetWindowObjectName(thread_desktop);
+  std::wstring desktop_name = GetWindowObjectName(thread_desktop);
 
   EXPECT_TRUE(IsRunningUnderDesktopName(desktop_name));
-  EXPECT_TRUE(IsRunningUnderDesktopName(base::ToLowerASCII(desktop_name)));
-  EXPECT_TRUE(IsRunningUnderDesktopName(base::ToUpperASCII(desktop_name)));
-  EXPECT_FALSE(IsRunningUnderDesktopName(
-      desktop_name + STRING16_LITERAL("_non_existent_desktop_name")));
+  EXPECT_TRUE(IsRunningUnderDesktopName(
+      AsWString(ToLowerASCII(AsStringPiece16(desktop_name)))));
+  EXPECT_TRUE(IsRunningUnderDesktopName(
+      AsWString(ToUpperASCII(AsStringPiece16(desktop_name)))));
+  EXPECT_FALSE(
+      IsRunningUnderDesktopName(desktop_name + L"_non_existent_desktop_name"));
 }
 
 }  // namespace win

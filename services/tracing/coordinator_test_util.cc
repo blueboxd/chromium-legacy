@@ -46,7 +46,7 @@ void CoordinatorTestUtil::OnDataComplete() {
 
 MockAgent* CoordinatorTestUtil::AddArrayAgent(base::ProcessId pid) {
   auto agent = std::make_unique<MockAgent>();
-  agent_registry_->RegisterAgent(agent->CreateAgentPtr(), "traceEvents",
+  agent_registry_->RegisterAgent(agent->CreateAgentRemote(), "traceEvents",
                                  mojom::TraceDataType::ARRAY, pid);
   agents_.push_back(std::move(agent));
   return agents_.back().get();
@@ -58,16 +58,16 @@ MockAgent* CoordinatorTestUtil::AddArrayAgent() {
 
 MockAgent* CoordinatorTestUtil::AddObjectAgent() {
   auto agent = std::make_unique<MockAgent>();
-  agent_registry_->RegisterAgent(agent->CreateAgentPtr(), "systemTraceEvents",
-                                 mojom::TraceDataType::OBJECT,
-                                 base::kNullProcessId);
+  agent_registry_->RegisterAgent(
+      agent->CreateAgentRemote(), "systemTraceEvents",
+      mojom::TraceDataType::OBJECT, base::kNullProcessId);
   agents_.push_back(std::move(agent));
   return agents_.back().get();
 }
 
 MockAgent* CoordinatorTestUtil::AddStringAgent() {
   auto agent = std::make_unique<MockAgent>();
-  agent_registry_->RegisterAgent(agent->CreateAgentPtr(), "power",
+  agent_registry_->RegisterAgent(agent->CreateAgentRemote(), "power",
                                  mojom::TraceDataType::STRING,
                                  base::kNullProcessId);
   agents_.push_back(std::move(agent));

@@ -137,13 +137,14 @@ CastNetworkContexts::GetSystemSharedURLLoaderFactory() {
   return system_shared_url_loader_factory_;
 }
 
-network::mojom::NetworkContextPtr CastNetworkContexts::CreateNetworkContext(
+mojo::Remote<network::mojom::NetworkContext>
+CastNetworkContexts::CreateNetworkContext(
     content::BrowserContext* context,
     bool in_memory,
     const base::FilePath& relative_partition_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  network::mojom::NetworkContextPtr network_context;
+  mojo::Remote<network::mojom::NetworkContext> network_context;
   network::mojom::NetworkContextParamsPtr context_params =
       CreateDefaultNetworkContextParams();
 
@@ -153,7 +154,7 @@ network::mojom::NetworkContextPtr CastNetworkContexts::CreateNetworkContext(
   context_params->accept_language = "en-us,en";
 
   content::GetNetworkService()->CreateNetworkContext(
-      MakeRequest(&network_context), std::move(context_params));
+      network_context.BindNewPipeAndPassReceiver(), std::move(context_params));
   return network_context;
 }
 

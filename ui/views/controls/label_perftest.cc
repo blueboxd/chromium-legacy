@@ -6,7 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/lap_timer.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
 #include "ui/views/test/views_test_base.h"
 
 namespace views {
@@ -34,8 +34,9 @@ TEST_F(LabelPerfTest, GetPreferredSize) {
     label.GetPreferredSize();
     timer.NextLap();
   }
-  perf_test::PrintResult("LabelPerfTest", std::string(), "GetPreferredSize",
-                         timer.LapsPerSecond(), "runs/s", true);
+  perf_test::PerfResultReporter reporter("LabelPerfTest", "GetPreferredSize");
+  reporter.RegisterImportantMetric("", "runs/s");
+  reporter.AddResult("", timer.LapsPerSecond());
 }
 
 }  // namespace views

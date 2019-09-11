@@ -96,7 +96,7 @@ class PolicyBlacklistNavigationThrottleTest
 
   void SetBlacklistUrlPattern(const std::string& pattern) {
     auto value = std::make_unique<base::Value>(base::Value::Type::LIST);
-    value->GetList().push_back(base::Value(pattern));
+    value->Append(base::Value(pattern));
     pref_service_.SetManagedPref(policy::policy_prefs::kUrlBlacklist,
                                  std::move(value));
     base::RunLoop().RunUntilIdle();
@@ -104,7 +104,7 @@ class PolicyBlacklistNavigationThrottleTest
 
   void SetWhitelistUrlPattern(const std::string& pattern) {
     auto value = std::make_unique<base::Value>(base::Value::Type::LIST);
-    value->GetList().push_back(base::Value(pattern));
+    value->Append(base::Value(pattern));
     pref_service_.SetManagedPref(policy::policy_prefs::kUrlWhitelist,
                                  std::move(value));
     base::RunLoop().RunUntilIdle();

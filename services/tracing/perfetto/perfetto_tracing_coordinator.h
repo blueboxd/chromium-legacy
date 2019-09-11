@@ -10,7 +10,6 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "services/tracing/coordinator.h"
 #include "services/tracing/public/mojom/tracing.mojom.h"
 
@@ -31,8 +30,8 @@ class PerfettoTracingCoordinator : public Coordinator {
 
   ~PerfettoTracingCoordinator() override;
 
-  void BindCoordinatorRequest(
-      mojom::CoordinatorRequest request,
+  void BindCoordinatorReceiver(
+      mojo::PendingReceiver<mojom::Coordinator> receiver,
       const service_manager::BindSourceInfo& source_info);
 
   // mojom::Coordinator implementation.
@@ -57,7 +56,7 @@ class PerfettoTracingCoordinator : public Coordinator {
                             const std::string& agent_label,
                             StopAndFlushCallback callback);
 
-  mojo::Binding<mojom::Coordinator> binding_;
+  mojo::Receiver<mojom::Coordinator> receiver_{this};
 
   class TracingSession;
   std::unique_ptr<TracingSession> tracing_session_;

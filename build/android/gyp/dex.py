@@ -35,7 +35,7 @@ def _ParseArgs(args):
       '--multi-dex',
       action='store_true',
       help='Allow multiple dex files within output.')
-  parser.add_argument('--d8-jar-path', required=True, help='Path to D8 jar.')
+  parser.add_argument('--r8-jar-path', required=True, help='Path to R8 jar.')
   parser.add_argument(
       '--release',
       action='store_true',
@@ -250,7 +250,7 @@ def _PerformDexlayout(tmp_dir, tmp_dex_output, options):
 
 
 def _PerformDexing(options):
-  dex_cmd = ['java', '-jar', options.d8_jar_path, '--no-desugaring']
+  dex_cmd = ['java', '-jar', options.r8_jar_path, 'd8', '--no-desugaring']
   if options.multi_dex and options.main_dex_list_path:
     dex_cmd += ['--main-dex-list', options.main_dex_list_path]
   if options.release:

@@ -14,7 +14,7 @@ struct BarcodeDetectorOptions {
 };
 
 interface BarcodeDetectionProvider {
-  CreateBarcodeDetection(BarcodeDetection& request,
+  CreateBarcodeDetection(pending_receiver<BarcodeDetection> receiver,
                          BarcodeDetectorOptions options);
 
   EnumerateSupportedFormats() => (array<BarcodeFormat> supported_formats);

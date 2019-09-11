@@ -51,7 +51,7 @@ class MODULES_EXPORT TaskQueue : public ScriptWrappable,
   // returns nullptr.
   Task* postTask(V8Function*,
                  TaskQueuePostTaskOptions*,
-                 const Vector<ScriptValue>& args);
+                 const HeapVector<ScriptValue>& args);
 
   // Move the task from its current TaskQueue to this one. For pending
   // non-delayed tasks, the task is enqueued at the end of this TaskQueue. For

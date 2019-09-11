@@ -25,9 +25,7 @@ let crostini;
 function setUp() {
   // Mock LoadTimeData strings.
   window.loadTimeData = {
-    data: {
-      'DRIVE_FS_ENABLED': false,
-    },
+    data: {},
     getBoolean: function(key) {
       return window.loadTimeData.data[key];
     },
@@ -50,14 +48,6 @@ function setUp() {
   // Create and initialize Crostini.
   crostini = createCrostiniForTest();
   crostini.initVolumeManager(volumeManager);
-}
-
-/**
- * Sets the DriveFs enabled state.
- * @param {boolean} enabled
- */
-function setDriveFsEnabled(enabled) {
-  window.loadTimeData.data['DRIVE_FS_ENABLED'] = enabled;
 }
 
 /**
@@ -176,29 +166,6 @@ function testCanSharePath() {
   const fooFile = new MockEntry(mockFileSystem, '/foo/file');
   const fooFolder = MockDirectoryEntry.create(mockFileSystem, '/foo/folder');
 
-  // Test with DriveFs disabled.
-  setDriveFsEnabled(false);
-  const disallowed = [
-    'computers_grand_root', 'computer', 'drive', 'shared_drives_grand_root',
-    'team_drive', 'test'
-  ];
-  for (const type of disallowed) {
-    volumeManagerRootType =
-        /** @type {!VolumeManagerCommon.RootType<string>} */ (type);
-    assertFalse(crostini.canSharePath('vm', root, true));
-    assertFalse(crostini.canSharePath('vm', root, false));
-    assertFalse(crostini.canSharePath('vm', rootFile, true));
-    assertFalse(crostini.canSharePath('vm', rootFile, false));
-    assertFalse(crostini.canSharePath('vm', rootFolder, true));
-    assertFalse(crostini.canSharePath('vm', rootFolder, false));
-    assertFalse(crostini.canSharePath('vm', fooFile, true));
-    assertFalse(crostini.canSharePath('vm', fooFile, false));
-    assertFalse(crostini.canSharePath('vm', fooFolder, true));
-    assertFalse(crostini.canSharePath('vm', fooFolder, false));
-  }
-
-  // Test with DriveFs enabled.
-  setDriveFsEnabled(true);
   // TODO(crbug.com/917920): Add computers_grand_root and computers when DriveFS
   // enforces allowed write paths.
 

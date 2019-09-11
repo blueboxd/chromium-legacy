@@ -6,6 +6,7 @@
 
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,22 +20,26 @@ class SimpleDeviceAccessProvider : public mojom::BluetoothDeviceAccessProvider {
 
   // mojom::BluetoothDeviceAccessProvider implementation:
   void RequestDeviceAccess(
-      mojom::BluetoothDeviceAccessProviderClientPtr client) override {
+      mojo::PendingRemote<mojom::BluetoothDeviceAccessProviderClient> client)
+      override {
     DCHECK(!client_);
-    client.set_connection_error_handler(connection_closed_.Get());
+    client_.Bind(std::move(client));
+    client_.set_disconnect_handler(connection_closed_.Get());
     for (const auto& address : approved_devices_)
-      client->GrantAccess(address);
-    client_ = std::move(client);
+      client_->GrantAccess(address);
   }
 
-  mojom::BluetoothDeviceAccessProviderClientPtr& client() { return client_; }
+  mojom::BluetoothDeviceAccessProviderClient* client() {
+    return client_ ? client_.get() : nullptr;
+  }
+  void reset_client() { return client_.reset(); }
   base::MockCallback<base::OnceClosure>& connection_closed() {
     return connection_closed_;
   }
   std::vector<std::string>& approved_devices() { return approved_devices_; }
 
  private:
-  mojom::BluetoothDeviceAccessProviderClientPtr client_;
+  mojo::Remote<mojom::BluetoothDeviceAccessProviderClient> client_;
   base::MockCallback<base::OnceClosure> connection_closed_;
   std::vector<std::string> approved_devices_;
 
@@ -47,11 +52,9 @@ using testing::AnyOf;
 
 class CastBluetoothChooserTest : public testing::Test {
  public:
-  CastBluetoothChooserTest() : provider_binding_(&provider_) {
-    mojom::BluetoothDeviceAccessProviderPtr provider;
-    provider_binding_.Bind(mojo::MakeRequest(&provider));
+  CastBluetoothChooserTest() : provider_receiver_(&provider_) {
     cast_bluetooth_chooser_ = std::make_unique<CastBluetoothChooser>(
-        handler_.Get(), std::move(provider));
+        handler_.Get(), provider_receiver_.BindNewPipeAndPassRemote());
     task_environment_.RunUntilIdle();
   }
 
@@ -71,7 +74,7 @@ class CastBluetoothChooserTest : public testing::Test {
 
  private:
   SimpleDeviceAccessProvider provider_;
-  mojo::Binding<mojom::BluetoothDeviceAccessProvider> provider_binding_;
+  mojo::Receiver<mojom::BluetoothDeviceAccessProvider> provider_receiver_;
   std::unique_ptr<CastBluetoothChooser> cast_bluetooth_chooser_;
 
   DISALLOW_COPY_AND_ASSIGN(CastBluetoothChooserTest);
@@ -152,7 +155,7 @@ TEST_F(CastBluetoothChooserTest, TearDownClientAfterAllAccessGranted) {
   // Tear down the client. Now that it has granted access to the client, it does
   // not need to keep a reference to it. However, the chooser should stay alive
   // and wait for devices to be made available.
-  provider().client().reset();
+  provider().reset_client();
   EXPECT_FALSE(provider().client());
   task_environment_.RunUntilIdle();
 
@@ -171,7 +174,7 @@ TEST_F(CastBluetoothChooserTest, TearDownClientBeforeApprovedDeviceDiscovered) {
   // Tear the client down before any access is granted. |handler| should run,
   // but with Event::CANCELLED.
   EXPECT_CALL(handler_, Run(content::BluetoothChooser::Event::CANCELLED, ""));
-  provider().client().reset();
+  provider().reset_client();
   EXPECT_FALSE(provider().client());
   task_environment_.RunUntilIdle();
 }

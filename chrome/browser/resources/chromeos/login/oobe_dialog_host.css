@@ -22,8 +22,3 @@
   border-radius: 4px;
   box-shadow: 0 24px 24px rgba(0, 0, 0, .24), 0 0 24px rgba(0, 0, 0, .12);
 }
-
-:host([android]) {
-  min-height: 480px;
-  min-width: 576px;
-}

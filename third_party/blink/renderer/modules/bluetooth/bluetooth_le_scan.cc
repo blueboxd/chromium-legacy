@@ -4,10 +4,12 @@
 
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_le_scan.h"
 
+#include "mojo/public/cpp/bindings/receiver_set.h"
+
 namespace blink {
 
 BluetoothLEScan::BluetoothLEScan(
-    mojo::BindingId id,
+    mojo::ReceiverId id,
     Bluetooth* bluetooth,
     mojom::blink::WebBluetoothRequestLEScanOptionsPtr options)
     : id_(id),

@@ -21,6 +21,7 @@
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/test_completion_callback.h"
@@ -268,7 +269,8 @@ class NetExportFileWriterTest : public ::testing::Test {
     params->initial_proxy_config =
         net::ProxyConfigWithAnnotation::CreateDirect();
     network_context_ = std::make_unique<network::NetworkContext>(
-        network_service_.get(), mojo::MakeRequest(&network_context_ptr_),
+        network_service_.get(),
+        network_context_remote_.BindNewPipeAndPassReceiver(),
         std::move(params));
 
     // Override |file_writer_|'s default-log-base-directory-getter to
@@ -435,7 +437,7 @@ class NetExportFileWriterTest : public ::testing::Test {
   TestStateObserver* test_state_observer() { return &test_state_observer_; }
 
   network::mojom::NetworkContext* network_context() {
-    return network_context_ptr_.get();
+    return network_context_remote_.get();
   }
 
  private:
@@ -444,10 +446,10 @@ class NetExportFileWriterTest : public ::testing::Test {
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   std::unique_ptr<network::NetworkService> network_service_;
 
-  network::mojom::NetworkContextPtr network_context_ptr_;
+  mojo::Remote<network::mojom::NetworkContext> network_context_remote_;
   std::unique_ptr<network::NetworkContext> network_context_;
 
-  // |file_writer_| is initialized after |network_context_ptr_| since
+  // |file_writer_| is initialized after |network_context_remote_| since
   // |file_writer_| destructor can talk to mojo objects owned by
   // |network_context_|.
   NetExportFileWriter file_writer_;

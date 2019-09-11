@@ -474,6 +474,7 @@ jumbo_source_set("unit_tests") {
     "//third_party/blink/renderer/platform",
     "//third_party/blink/renderer/platform/wtf",
     "//third_party/opus",
+    "//third_party/webrtc/api:rtc_error",
     "//third_party/webrtc/rtc_base:rtc_base",
     "//v8",
   ]

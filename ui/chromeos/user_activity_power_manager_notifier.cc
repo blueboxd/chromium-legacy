@@ -55,10 +55,11 @@ UserActivityPowerManagerNotifier::UserActivityPowerManagerNotifier(
   if (connector) {
     // Treat fingerprint attempts as user activies to turn on the screen.
     // I.e., when user tried to use fingerprint to unlock.
-    connector->BindInterface(device::mojom::kServiceName, &fingerprint_ptr_);
+    connector->Connect(device::mojom::kServiceName,
+                       fingerprint_.BindNewPipeAndPassReceiver());
     device::mojom::FingerprintObserverPtr observer;
     fingerprint_observer_binding_.Bind(mojo::MakeRequest(&observer));
-    fingerprint_ptr_->AddFingerprintObserver(std::move(observer));
+    fingerprint_->AddFingerprintObserver(std::move(observer));
   }
 }
 

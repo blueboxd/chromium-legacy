@@ -61,8 +61,12 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
     return StyleVariant() == NGStyleVariant::kEllipsis;
   }
 
-  unsigned Length() const { return end_offset_ - start_offset_; }
-  StringView Text() const { return StringView(text_, start_offset_, Length()); }
+  bool IsSymbolMarker() const { return TextType() == kSymbolMarker; }
+
+  unsigned TextLength() const { return end_offset_ - start_offset_; }
+  StringView Text() const {
+    return StringView(text_, start_offset_, TextLength());
+  }
   const String& TextContent() const { return text_; }
 
   // ShapeResult may be nullptr if |IsFlowControl()|.

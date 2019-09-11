@@ -35,16 +35,16 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
-#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
-#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "ui/base/page_transition_types.h"
 
+// TODO(crbug.com/922875): Need foo.mojom.shared-forward.h.
 namespace network {
 namespace mojom {
 enum class CorsPreflightPolicy : int32_t;
 enum class CredentialsMode : int32_t;
 enum class RedirectMode : int32_t;
+enum class ReferrerPolicy : int32_t;
 enum class RequestMode : int32_t;
 enum class RequestContextFrameType : int32_t;
 }  // namespace mojom
@@ -54,6 +54,7 @@ namespace blink {
 
 namespace mojom {
 enum class FetchCacheMode : int32_t;
+enum class RequestContextType : int32_t;
 }  // namespace mojom
 
 class ResourceRequest;
@@ -153,7 +154,9 @@ class WebURLRequest {
     virtual ~ExtraData() = default;
 
    protected:
-    int render_frame_id_ = MSG_ROUTING_NONE;
+    BLINK_PLATFORM_EXPORT ExtraData();
+
+    int render_frame_id_;
     bool is_main_frame_ = false;
     ui::PageTransition transition_type_ = ui::PAGE_TRANSITION_LINK;
     bool is_for_no_state_prefetch_ = false;

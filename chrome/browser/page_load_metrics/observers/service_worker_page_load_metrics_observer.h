@@ -58,6 +58,9 @@ extern const char
 extern const char kHistogramNoServiceWorkerDomContentLoadedSearch[];
 extern const char kHistogramNoServiceWorkerLoadSearch[];
 
+extern const char kHistogramServiceWorkerFirstContentfulPaintDocs[];
+extern const char kHistogramNoServiceWorkerFirstContentfulPaintDocs[];
+
 }  // namespace internal
 
 class ServiceWorkerPageLoadMetricsObserver

@@ -1510,7 +1510,8 @@ Maybe<String> GetBlockedReasonFor(
 }  // namespace
 
 void NetworkHandler::NavigationRequestWillBeSent(
-    const NavigationRequest& nav_request) {
+    const NavigationRequest& nav_request,
+    base::TimeTicks timestamp) {
   if (!enabled_)
     return;
 
@@ -1571,8 +1572,7 @@ void NetworkHandler::NavigationRequestWillBeSent(
                     .Build();
   }
   std::string id = nav_request.devtools_navigation_token().ToString();
-  double current_ticks =
-      (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
+  double current_ticks = timestamp.since_origin().InSecondsF();
   double current_wall_time = base::Time::Now().ToDoubleT();
   std::string frame_token =
       nav_request.frame_tree_node()->devtools_frame_token().ToString();
@@ -1587,7 +1587,8 @@ void NetworkHandler::RequestSent(const std::string& request_id,
                                  const std::string& loader_id,
                                  const network::ResourceRequest& request,
                                  const char* initiator_type,
-                                 const base::Optional<GURL>& initiator_url) {
+                                 const base::Optional<GURL>& initiator_url,
+                                 base::TimeTicks timestamp) {
   if (!enabled_)
     return;
   std::unique_ptr<DictionaryValue> headers_dict(DictionaryValue::create());
@@ -1612,10 +1613,8 @@ void NetworkHandler::RequestSent(const std::string& request_id,
     request_object->SetUrlFragment(url_fragment);
   frontend_->RequestWillBeSent(
       request_id, loader_id, url_without_fragment, std::move(request_object),
-      base::TimeTicks::Now().ToInternalValue() /
-          static_cast<double>(base::Time::kMicrosecondsPerSecond),
-      base::Time::Now().ToDoubleT(), std::move(initiator),
-      std::unique_ptr<Network::Response>(),
+      timestamp.since_origin().InSecondsF(), base::Time::Now().ToDoubleT(),
+      std::move(initiator), std::unique_ptr<Network::Response>(),
       std::string(Network::ResourceTypeEnum::Other),
       Maybe<std::string>() /* frame_id */, request.has_user_gesture);
 }

@@ -855,4 +855,50 @@ TEST_F(PendingAppInstallTaskTest, UninstallAndReplace) {
   }
 }
 
+TEST_F(PendingAppInstallTaskTest, InstallURLLoadFailed) {
+  struct ResultPair {
+    WebAppUrlLoader::Result loader_result;
+    InstallResultCode install_result;
+  } result_pairs[] = {{WebAppUrlLoader::Result::kRedirectedUrlLoaded,
+                       InstallResultCode::kInstallURLRedirected},
+                      {WebAppUrlLoader::Result::kFailedUnknownReason,
+                       InstallResultCode::kInstallURLLoadFailed},
+                      {WebAppUrlLoader::Result::kFailedPageTookTooLong,
+                       InstallResultCode::kInstallURLLoadFailed}};
+
+  for (const auto& result_pair : result_pairs) {
+    base::RunLoop run_loop;
+
+    ExternalInstallOptions install_options(
+        GURL(), LaunchContainer::kWindow,
+        ExternalInstallSource::kInternalDefault);
+    PendingAppInstallTask install_task(profile(), registrar(), ui_manager(),
+                                       finalizer(), install_options);
+
+    install_task.Install(
+        web_contents(), result_pair.loader_result,
+        base::BindLambdaForTesting([&](PendingAppInstallTask::Result result) {
+          EXPECT_EQ(result.code, result_pair.install_result);
+          run_loop.Quit();
+        }));
+
+    run_loop.Run();
+  }
+}
+
+TEST_F(PendingAppInstallTaskTest, FailedWebContentsDestroyed) {
+  ExternalInstallOptions install_options(
+      GURL(), LaunchContainer::kWindow,
+      ExternalInstallSource::kInternalDefault);
+  PendingAppInstallTask install_task(profile(), registrar(), ui_manager(),
+                                     finalizer(), install_options);
+
+  install_task.Install(
+      web_contents(), WebAppUrlLoader::Result::kFailedWebContentsDestroyed,
+      base::BindLambdaForTesting(
+          [&](PendingAppInstallTask::Result) { NOTREACHED(); }));
+
+  base::RunLoop().RunUntilIdle();
+}
+
 }  // namespace web_app

@@ -28,6 +28,7 @@
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/browser/possible_username_data.h"
 #include "components/password_manager/core/browser/statistics_table.h"
 
 using autofill::FormData;
@@ -625,7 +626,8 @@ void PasswordFormManager::OnFetchCompleted() {
 
 bool PasswordFormManager::ProvisionallySave(
     const FormData& submitted_form,
-    const PasswordManagerDriver* driver) {
+    const PasswordManagerDriver* driver,
+    const PossibleUsernameData* possible_username) {
   DCHECK(DoesManage(submitted_form, driver));
 
   std::unique_ptr<PasswordForm> parsed_submitted_form =
@@ -643,6 +645,13 @@ bool PasswordFormManager::ProvisionallySave(
   submitted_form_ = submitted_form;
   is_submitted_ = true;
   CalculateFillingAssistanceMetric(submitted_form);
+
+  if (parsed_submitted_form_->username_value.empty() && possible_username &&
+      IsPossibleUsernameValid(*possible_username,
+                              parsed_submitted_form_->signon_realm,
+                              base::Time::Now())) {
+    parsed_submitted_form_->username_value = possible_username->value;
+  }
 
   CreatePendingCredentials();
   return true;

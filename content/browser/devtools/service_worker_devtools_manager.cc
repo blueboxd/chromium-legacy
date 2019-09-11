@@ -188,11 +188,12 @@ void ServiceWorkerDevToolsManager::NavigationPreloadRequestSent(
   auto it = live_hosts_.find(worker_id);
   if (it == live_hosts_.end())
     return;
+  auto timestamp = base::TimeTicks::Now();
   for (auto* network :
        protocol::NetworkHandler::ForAgentHost(it->second.get())) {
     network->RequestSent(request_id, std::string(), request,
                          protocol::Network::Initiator::TypeEnum::Preload,
-                         base::nullopt /* initiator_url */);
+                         base::nullopt /* initiator_url */, timestamp);
   }
 }
 

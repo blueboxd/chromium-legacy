@@ -49,7 +49,6 @@
 #define E2E_ENABLED(test_name) MACRO_CONCAT(test_name, E2ETest)
 
 class ProfileSyncServiceHarness;
-class P2PSyncRefresher;
 
 namespace arc {
 class SyncArcPackageHelper;
@@ -464,10 +463,6 @@ class SyncTest : public InProcessBrowserTest {
 
   // Mapping from client indexes to decryption passphrases to use for them.
   std::map<int, std::string> client_decryption_passphrases_;
-
-  // A set of objects to listen for commit activity and broadcast refresh
-  // notifications of this activity to its peer sync clients.
-  std::vector<std::unique_ptr<P2PSyncRefresher>> sync_refreshers_;
 
   // Owns the FakeServerInvalidationSender for each profile.
   std::vector<std::unique_ptr<fake_server::FakeServerInvalidationSender>>

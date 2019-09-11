@@ -15,6 +15,7 @@
 #include "chrome/browser/net/proxy_config_monitor.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/host_resolver.mojom-forward.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom-forward.h"
@@ -170,7 +171,7 @@ class SystemNetworkContextManager {
 
   // NetworkContext using the network service, if the network service is
   // enabled. nullptr, otherwise.
-  network::mojom::NetworkContextPtr network_service_network_context_;
+  mojo::Remote<network::mojom::NetworkContext> network_service_network_context_;
 
   // URLLoaderFactory backed by the NetworkContext returned by GetContext(), so
   // consumers don't all need to create their own factory.

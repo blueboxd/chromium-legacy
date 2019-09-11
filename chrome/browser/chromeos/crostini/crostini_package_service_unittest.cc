@@ -205,6 +205,8 @@ class CrostiniPackageServiceTest : public testing::Test {
   }
 
   void TearDown() override {
+    // Complete all CrostiniManager queued tasks before deleting it.
+    base::RunLoop().RunUntilIdle();
     service_.reset();
     notification_display_service_tester_.reset();
     crostini_test_helper_.reset();

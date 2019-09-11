@@ -14,37 +14,27 @@
 
 namespace blink {
 
-using UnitType = CSSPrimitiveValue::UnitType;
-
-namespace {
-
-CSSMathExpressionNode* NumberNode(double number) {
-  return CSSMathExpressionNumericLiteral::Create(
-      CSSNumericLiteralValue::Create(number, UnitType::kNumber));
-}
-
-CSSMathExpressionNode* PercentageNode(double number) {
-  return CSSMathExpressionNumericLiteral::Create(
-      CSSNumericLiteralValue::Create(number, UnitType::kPercentage));
-}
-
-}  // namespace
-
 // static
 std::unique_ptr<InterpolableLength> InterpolableLength::CreatePixels(
     double pixels) {
-  return std::make_unique<InterpolableLength>(pixels, UnitType::kPixels);
+  CSSLengthArray length_array;
+  length_array.values[CSSPrimitiveValue::kUnitTypePixels] = pixels;
+  length_array.type_flags.set(CSSPrimitiveValue::kUnitTypePixels);
+  return std::make_unique<InterpolableLength>(std::move(length_array));
 }
 
 // static
 std::unique_ptr<InterpolableLength> InterpolableLength::CreatePercent(
     double percent) {
-  return std::make_unique<InterpolableLength>(percent, UnitType::kPercentage);
+  CSSLengthArray length_array;
+  length_array.values[CSSPrimitiveValue::kUnitTypePercentage] = percent;
+  length_array.type_flags.set(CSSPrimitiveValue::kUnitTypePercentage);
+  return std::make_unique<InterpolableLength>(std::move(length_array));
 }
 
 // static
 std::unique_ptr<InterpolableLength> InterpolableLength::CreateNeutral() {
-  return std::make_unique<InterpolableLength>();
+  return std::make_unique<InterpolableLength>(CSSLengthArray());
 }
 
 // static
@@ -58,13 +48,14 @@ std::unique_ptr<InterpolableLength> InterpolableLength::MaybeConvertCSSValue(
       !primitive_value->IsCalculatedPercentageWithLength())
     return nullptr;
 
-  if (const auto* numeric_literal =
-          DynamicTo<CSSNumericLiteralValue>(primitive_value)) {
-    return std::make_unique<InterpolableLength>(*numeric_literal);
+  CSSLengthArray length_array;
+  if (!primitive_value->AccumulateLengthArray(length_array)) {
+    // TODO(crbug.com/991672): Implement interpolation when CSS comparison
+    // functions min/max are involved.
+    return nullptr;
   }
 
-  return std::make_unique<InterpolableLength>(
-      *To<CSSMathFunctionValue>(primitive_value)->ExpressionNode());
+  return std::make_unique<InterpolableLength>(std::move(length_array));
 }
 
 // static
@@ -74,16 +65,24 @@ std::unique_ptr<InterpolableLength> InterpolableLength::MaybeConvertLength(
   if (!length.IsSpecified())
     return nullptr;
 
-  // Do not use CSSPrimitiveValue::CreateFromLength(), as it might drop 0% in
-  // calculated lengths.
-  // TODO(crbug.com/991672): Try not to drop 0% there.
+  if (length.IsCalculated() && length.GetCalculationValue().IsExpression()) {
+    // TODO(crbug.com/991672): Support interpolation on min/max results.
+    return nullptr;
+  }
 
-  if (length.IsFixed())
-    return CreatePixels(length.Pixels() / zoom);
-  if (length.IsPercent())
-    return CreatePercent(length.Percent());
-  return std::make_unique<InterpolableLength>(
-      *CSSMathExpressionNode::Create(length.GetCalculationValue()));
+  PixelsAndPercent pixels_and_percent = length.GetPixelsAndPercent();
+  CSSLengthArray length_array;
+
+  length_array.values[CSSPrimitiveValue::kUnitTypePixels] =
+      pixels_and_percent.pixels / zoom;
+  length_array.type_flags[CSSPrimitiveValue::kUnitTypePixels] =
+      pixels_and_percent.pixels != 0;
+
+  length_array.values[CSSPrimitiveValue::kUnitTypePercentage] =
+      pixels_and_percent.percent;
+  length_array.type_flags[CSSPrimitiveValue::kUnitTypePercentage] =
+      length.IsPercentOrCalc();
+  return std::make_unique<InterpolableLength>(std::move(length_array));
 }
 
 // static
@@ -95,168 +94,107 @@ PairwiseInterpolationValue InterpolableLength::MergeSingles(
   // should stop doing that.
   auto& start_length = To<InterpolableLength>(*start);
   auto& end_length = To<InterpolableLength>(*end);
-  if (start_length.HasPercentage() || end_length.HasPercentage()) {
-    start_length.SetHasPercentage();
-    end_length.SetHasPercentage();
-  }
+  start_length.length_array_.type_flags |= end_length.length_array_.type_flags;
+  end_length.length_array_.type_flags = start_length.length_array_.type_flags;
   return PairwiseInterpolationValue(std::move(start), std::move(end));
 }
 
-InterpolableLength::InterpolableLength(double value, UnitType unit_type) {
-  SetNumericLiteral(value, unit_type);
-}
-
-InterpolableLength::InterpolableLength()
-    : InterpolableLength(0, UnitType::kPixels) {}
-
-InterpolableLength::InterpolableLength(const CSSNumericLiteralValue& value)
-    : InterpolableLength(value.DoubleValue(), value.GetType()) {}
-
-InterpolableLength::InterpolableLength(
-    const CSSMathExpressionNode& expression) {
-  SetExpression(expression);
-}
-
-std::unique_ptr<InterpolableValue> InterpolableLength::Clone() const {
-  return std::make_unique<InterpolableLength>(*this);
-}
-
-void InterpolableLength::SetNumericLiteral(
-    double value,
-    CSSPrimitiveValue::UnitType unit_type) {
-  type_ = Type::kNumericLiteral;
-  single_value_ = value;
-  unit_type_ = unit_type;
-  expression_.Clear();
-}
-
-void InterpolableLength::SetNumericLiteral(
-    const CSSNumericLiteralValue& value) {
-  SetNumericLiteral(value.DoubleValue(), value.GetType());
-}
-
-void InterpolableLength::SetExpression(
-    const CSSMathExpressionNode& expression) {
-  if (expression.IsNumericLiteral()) {
-    return SetNumericLiteral(
-        *To<CSSMathExpressionNumericLiteral>(expression).GetValue());
-  }
-
-  type_ = Type::kExpression;
-  expression_ = &expression;
-}
-
-const CSSMathExpressionNode& InterpolableLength::AsExpression() const {
-  if (IsExpression())
-    return *expression_;
-  return *CSSMathExpressionNumericLiteral::Create(
-      CSSNumericLiteralValue::Create(single_value_, unit_type_));
-}
-
-bool InterpolableLength::HasPercentage() const {
-  if (IsNumericLiteral())
-    return unit_type_ == UnitType::kPercentage;
-  return expression_->HasPercentage();
-}
-
-void InterpolableLength::SetHasPercentage() {
-  DEFINE_STATIC_LOCAL(Persistent<CSSMathExpressionNode>, zero_percent,
-                      {PercentageNode(0)});
-  if (HasPercentage())
-    return;
-  if (IsZeroLength())
-    return SetNumericLiteral(0, UnitType::kPercentage);
-  SetExpression(*CSSMathExpressionBinaryOperation::Create(
-      &AsExpression(), zero_percent, CSSMathOperator::kAdd));
-}
-
 void InterpolableLength::SubtractFromOneHundredPercent() {
-  DEFINE_STATIC_LOCAL(Persistent<CSSMathExpressionNode>, hundred_percent,
-                      {PercentageNode(100)});
-  if (IsNumericLiteral()) {
-    if (unit_type_ == UnitType::kPercentage) {
-      single_value_ = 100 - single_value_;
-      return;
-    }
-    if (IsZeroLength())
-      return SetNumericLiteral(100, UnitType::kPercentage);
-
-    // Fall through, as the result requires an expression to represent
-  }
-
-  SetExpression(*CSSMathExpressionBinaryOperation::CreateSimplified(
-      hundred_percent, &AsExpression(), CSSMathOperator::kSubtract));
+  for (double& value : length_array_.values)
+    value *= -1;
+  length_array_.values[CSSPrimitiveValue::kUnitTypePercentage] += 100;
+  length_array_.type_flags.set(CSSPrimitiveValue::kUnitTypePercentage);
 }
 
 static double ClampToRange(double x, ValueRange range) {
   return (range == kValueRangeNonNegative && x < 0) ? 0 : x;
 }
 
+static CSSPrimitiveValue::UnitType IndexToUnitType(wtf_size_t index) {
+  return CSSPrimitiveValue::LengthUnitTypeToUnitType(
+      static_cast<CSSPrimitiveValue::LengthUnitType>(index));
+}
+
 Length InterpolableLength::CreateLength(
     const CSSToLengthConversionData& conversion_data,
     ValueRange range) const {
-  if (IsNumericLiteral()) {
-    const double value = ClampToRange(single_value_, range);
-    if (CSSPrimitiveValue::IsLength(unit_type_)) {
-      const double value_px =
-          conversion_data.ZoomedComputedPixels(value, unit_type_);
-      return Length::Fixed(CSSPrimitiveValue::ClampToCSSLengthRange(value_px));
+  bool has_percentage = HasPercentage();
+  double pixels = 0;
+  double percentage = 0;
+  for (wtf_size_t i = 0; i < length_array_.values.size(); ++i) {
+    double value = length_array_.values[i];
+    if (value == 0)
+      continue;
+    if (i == CSSPrimitiveValue::kUnitTypePercentage) {
+      percentage = value;
+    } else {
+      pixels += conversion_data.ZoomedComputedPixels(value, IndexToUnitType(i));
     }
-    DCHECK_EQ(UnitType::kPercentage, unit_type_);
-    return Length::Percent(value);
   }
 
-  // In the uncommon case where |this| is a math expression, this implementation
-  // avoids a lot of code complexity at the cost of creating a temporary
-  // |CSSMathFunctionValue| object.
-  return CreateCSSValue(range)->ConvertToLength(conversion_data);
+  if (percentage != 0)
+    has_percentage = true;
+  if (pixels != 0 && has_percentage) {
+    return Length(CalculationValue::Create(
+        PixelsAndPercent(clampTo<float>(pixels), clampTo<float>(percentage)),
+        range));
+  }
+  if (has_percentage)
+    return Length::Percent(ClampToRange(percentage, range));
+  return Length::Fixed(
+      CSSPrimitiveValue::ClampToCSSLengthRange(ClampToRange(pixels, range)));
 }
 
 const CSSPrimitiveValue* InterpolableLength::CreateCSSValue(
     ValueRange range) const {
-  if (IsExpression())
-    return CSSMathFunctionValue::Create(&AsExpression(), range);
+  bool has_percentage = HasPercentage();
 
-  DCHECK(IsNumericLiteral());
-  return CSSNumericLiteralValue::Create(ClampToRange(single_value_, range),
-                                        unit_type_);
-}
+  CSSMathExpressionNode* root_node = nullptr;
+  CSSNumericLiteralValue* first_value = nullptr;
 
-void InterpolableLength::Scale(double scale) {
-  if (IsNumericLiteral()) {
-    single_value_ *= scale;
-    return;
+  for (wtf_size_t i = 0; i < length_array_.values.size(); ++i) {
+    double value = length_array_.values[i];
+    if (value == 0 &&
+        (i != CSSPrimitiveValue::kUnitTypePercentage || !has_percentage)) {
+      continue;
+    }
+    CSSNumericLiteralValue* current_value =
+        CSSNumericLiteralValue::Create(value, IndexToUnitType(i));
+
+    if (!first_value) {
+      DCHECK(!root_node);
+      first_value = current_value;
+      continue;
+    }
+    CSSMathExpressionNode* current_node =
+        CSSMathExpressionNumericLiteral::Create(current_value);
+    if (!root_node) {
+      root_node = CSSMathExpressionNumericLiteral::Create(first_value);
+    }
+    root_node = CSSMathExpressionBinaryOperation::Create(
+        root_node, current_node, CSSMathOperator::kAdd);
   }
 
-  DCHECK(IsExpression());
-  SetExpression(*CSSMathExpressionBinaryOperation::CreateSimplified(
-      &AsExpression(), NumberNode(scale), CSSMathOperator::kMultiply));
+  if (root_node) {
+    return CSSMathFunctionValue::Create(root_node, range);
+  }
+  if (first_value) {
+    if (range == kValueRangeNonNegative && first_value->DoubleValue() < 0)
+      return CSSNumericLiteralValue::Create(0, first_value->GetType());
+    return first_value;
+  }
+  return CSSNumericLiteralValue::Create(0,
+                                        CSSPrimitiveValue::UnitType::kPixels);
 }
 
 void InterpolableLength::ScaleAndAdd(double scale,
                                      const InterpolableValue& other) {
   const InterpolableLength& other_length = To<InterpolableLength>(other);
-  if (IsNumericLiteral() && other_length.IsNumericLiteral() &&
-      unit_type_ == other_length.unit_type_) {
-    single_value_ = single_value_ * scale + other_length.single_value_;
-    return;
+  for (wtf_size_t i = 0; i < length_array_.values.size(); ++i) {
+    length_array_.values[i] =
+        length_array_.values[i] * scale + other_length.length_array_.values[i];
   }
-
-  // Avoid creating an addition expression with a zero-length operand.
-  if (IsZeroLength()) {
-    *this = other_length;
-    return;
-  }
-  if (other_length.IsZeroLength())
-    return Scale(scale);
-
-  CSSMathExpressionNode* scaled =
-      CSSMathExpressionBinaryOperation::CreateSimplified(
-          &AsExpression(), NumberNode(scale), CSSMathOperator::kMultiply);
-  CSSMathExpressionNode* result =
-      CSSMathExpressionBinaryOperation::CreateSimplified(
-          scaled, &other_length.AsExpression(), CSSMathOperator::kAdd);
-  SetExpression(*result);
+  length_array_.type_flags |= other_length.length_array_.type_flags;
 }
 
 void InterpolableLength::AssertCanInterpolateWith(
@@ -266,47 +204,23 @@ void InterpolableLength::AssertCanInterpolateWith(
   // two |InterpolableLength| objects should also assign them the same shape
   // (i.e. type flags) after merging into a |PairwiseInterpolationValue|. We
   // currently fail to do that, and hit the following DCHECK:
-  // DCHECK_EQ(HasPercentage(),
-  //           To<InterpolableLength>(other).HasPercentage());
+  // DCHECK_EQ(length_array_.type_flags,
+  //           To<InterpolableLength>(other).length_array_.type_flags);
 }
 
 void InterpolableLength::Interpolate(const InterpolableValue& to,
                                      const double progress,
                                      InterpolableValue& result) const {
-  const auto& to_length = To<InterpolableLength>(to);
-  auto& result_length = To<InterpolableLength>(result);
-
-  if (IsNumericLiteral() && to_length.IsNumericLiteral() &&
-      unit_type_ == to_length.unit_type_) {
-    return result_length.SetNumericLiteral(
-        Blend(single_value_, to_length.single_value_, progress), unit_type_);
+  const CSSLengthArray& to_length_array =
+      To<InterpolableLength>(to).length_array_;
+  CSSLengthArray& result_length_array =
+      To<InterpolableLength>(result).length_array_;
+  for (wtf_size_t i = 0; i < length_array_.values.size(); ++i) {
+    result_length_array.values[i] =
+        Blend(length_array_.values[i], to_length_array.values[i], progress);
   }
-
-  // Avoid creating an addition expression with a zero-length operand.
-  if (IsZeroLength()) {
-    result_length = to_length;
-    return result_length.Scale(progress);
-  }
-  if (to_length.IsZeroLength()) {
-    result_length = *this;
-    return result_length.Scale(1 - progress);
-  }
-
-  CSSMathExpressionNode* blended_from =
-      CSSMathExpressionBinaryOperation::CreateSimplified(
-          &AsExpression(), NumberNode(1 - progress),
-          CSSMathOperator::kMultiply);
-  CSSMathExpressionNode* blended_to =
-      CSSMathExpressionBinaryOperation::CreateSimplified(
-          &to_length.AsExpression(), NumberNode(progress),
-          CSSMathOperator::kMultiply);
-  CSSMathExpressionNode* result_expression =
-      CSSMathExpressionBinaryOperation::CreateSimplified(
-          blended_from, blended_to, CSSMathOperator::kAdd);
-  result_length.SetExpression(*result_expression);
-
-  DCHECK_EQ(result_length.HasPercentage(),
-            HasPercentage() || to_length.HasPercentage());
+  result_length_array.type_flags =
+      length_array_.type_flags | to_length_array.type_flags;
 }
 
 }  // namespace blink

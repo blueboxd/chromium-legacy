@@ -20,7 +20,7 @@ namespace blink {
 Task::Task(TaskQueue* task_queue,
            ExecutionContext* context,
            V8Function* callback,
-           const Vector<ScriptValue>& args,
+           const HeapVector<ScriptValue>& args,
            base::TimeDelta delay)
     : ContextLifecycleObserver(context),
       status_(Status::kPending),
@@ -39,6 +39,7 @@ Task::Task(TaskQueue* task_queue,
 void Task::Trace(Visitor* visitor) {
   visitor->Trace(task_queue_);
   visitor->Trace(callback_);
+  visitor->Trace(arguments_);
   visitor->Trace(result_value_);
   visitor->Trace(result_promise_);
   visitor->Trace(exception_);

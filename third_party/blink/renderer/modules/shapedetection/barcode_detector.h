@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SHAPEDETECTION_BARCODE_DETECTOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SHAPEDETECTION_BARCODE_DETECTOR_H_
 
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/shape_detection/public/mojom/barcodedetection.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -44,7 +45,7 @@ class MODULES_EXPORT BarcodeDetector final : public ShapeDetector {
 
   void OnConnectionError();
 
-  shape_detection::mojom::blink::BarcodeDetectionPtr service_;
+  mojo::Remote<shape_detection::mojom::blink::BarcodeDetection> service_;
 
   HeapHashSet<Member<ScriptPromiseResolver>> detect_requests_;
 };

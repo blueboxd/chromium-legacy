@@ -77,7 +77,7 @@ void UploadTraceToCrashServer(std::string upload_url,
   base::Value rule(base::Value::Type::DICTIONARY);
   rule.SetKey("rule", base::Value("MEMLOG"));
   rule.SetKey("trigger_name", base::Value(std::move(trigger_name)));
-  rules_list.GetList().push_back(std::move(rule));
+  rules_list.Append(std::move(rule));
 
   std::string sampling_mode = base::StringPrintf("SAMPLING_%u", sampling_rate);
 

@@ -6,7 +6,12 @@
 
 #include <utility>
 
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -149,7 +154,7 @@ ScriptPromise Bluetooth::getAvailability(ScriptState* script_state) {
   }
 
   CHECK(context->IsSecureContext());
-  EnsureServiceConnection();
+  EnsureServiceConnection(context);
 
   // Subsequent steps are handled in the browser process.
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -183,7 +188,12 @@ void Bluetooth::RequestDeviceCallback(
 ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
                                        const RequestDeviceOptions* options,
                                        ExceptionState& exception_state) {
-  ExecutionContext* context = ExecutionContext::From(script_state);
+  ExecutionContext* context = GetExecutionContext();
+  if (!context) {
+    return ScriptPromise::Reject(
+        script_state, V8ThrowException::CreateTypeError(
+                          script_state->GetIsolate(), kInactiveDocumentError));
+  }
 
 // Remind developers when they are using Web Bluetooth on unsupported platforms.
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_MACOSX) && \
@@ -216,7 +226,7 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
             "Must be handling a user gesture to show a permission request."));
   }
 
-  EnsureServiceConnection();
+  EnsureServiceConnection(context);
 
   // In order to convert the arguments from service names and aliases to just
   // UUIDs, do the following substeps:
@@ -278,7 +288,7 @@ static void ConvertRequestLEScanOptions(
 
 void Bluetooth::RequestScanningCallback(
     ScriptPromiseResolver* resolver,
-    mojo::BindingId id,
+    mojo::ReceiverId id,
     mojom::blink::RequestScanningStartResultPtr result) {
   if (!resolver->GetExecutionContext() ||
       resolver->GetExecutionContext()->IsContextDestroyed()) {
@@ -300,8 +310,12 @@ void Bluetooth::RequestScanningCallback(
 ScriptPromise Bluetooth::requestLEScan(ScriptState* script_state,
                                        const BluetoothLEScanOptions* options,
                                        ExceptionState& exception_state) {
-  ExecutionContext* context = ExecutionContext::From(script_state);
-  DCHECK(context);
+  ExecutionContext* context = GetExecutionContext();
+  if (!context) {
+    return ScriptPromise::Reject(
+        script_state, V8ThrowException::CreateTypeError(
+                          script_state->GetIsolate(), kInactiveDocumentError));
+  }
 
   // Remind developers when they are using Web Bluetooth on unsupported
   // platforms.
@@ -332,7 +346,7 @@ ScriptPromise Bluetooth::requestLEScan(ScriptState* script_state,
             "Must be handling a user gesture to show a permission request."));
   }
 
-  EnsureServiceConnection();
+  EnsureServiceConnection(context);
 
   auto scan_options = mojom::blink::WebBluetoothRequestLEScanOptions::New();
   ConvertRequestLEScanOptions(options, scan_options, exception_state);
@@ -347,11 +361,11 @@ ScriptPromise Bluetooth::requestLEScan(ScriptState* script_state,
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  mojom::blink::WebBluetoothScanClientAssociatedPtrInfo client;
+  mojo::PendingAssociatedRemote<mojom::blink::WebBluetoothScanClient> client;
   // See https://bit.ly/2S0zRAS for task types.
-  mojo::BindingId id = client_bindings_.AddBinding(
-      this, mojo::MakeRequest(&client),
-      context->GetTaskRunner(TaskType::kMiscPlatformAPI));
+  mojo::ReceiverId id =
+      client_receivers_.Add(this, client.InitWithNewEndpointAndPassReceiver(),
+                            context->GetTaskRunner(TaskType::kMiscPlatformAPI));
 
   service_->RequestScanningStart(
       std::move(client), std::move(scan_options),
@@ -399,15 +413,15 @@ void Bluetooth::ScanEvent(mojom::blink::WebBluetoothScanResultPtr result) {
 }
 
 void Bluetooth::PageVisibilityChanged() {
-  client_bindings_.CloseAllBindings();
+  client_receivers_.Clear();
 }
 
-void Bluetooth::CancelScan(mojo::BindingId id) {
-  client_bindings_.RemoveBinding(id);
+void Bluetooth::CancelScan(mojo::ReceiverId id) {
+  client_receivers_.Remove(id);
 }
 
-bool Bluetooth::IsScanActive(mojo::BindingId id) const {
-  return client_bindings_.HasBinding(id);
+bool Bluetooth::IsScanActive(mojo::ReceiverId id) const {
+  return client_receivers_.HasReceiver(id);
 }
 
 const WTF::AtomicString& Bluetooth::InterfaceName() const {
@@ -419,7 +433,7 @@ ExecutionContext* Bluetooth::GetExecutionContext() const {
 }
 
 void Bluetooth::ContextDestroyed(ExecutionContext*) {
-  client_bindings_.CloseAllBindings();
+  client_receivers_.Clear();
 }
 
 void Bluetooth::Trace(blink::Visitor* visitor) {
@@ -434,7 +448,7 @@ Bluetooth::Bluetooth(ExecutionContext* context)
       PageVisibilityObserver(To<Document>(context)->GetPage()) {}
 
 Bluetooth::~Bluetooth() {
-  DCHECK(client_bindings_.empty());
+  DCHECK(client_receivers_.empty());
 }
 
 BluetoothDevice* Bluetooth::GetBluetoothDeviceRepresentingDevice(
@@ -451,15 +465,12 @@ BluetoothDevice* Bluetooth::GetBluetoothDeviceRepresentingDevice(
   return device;
 }
 
-void Bluetooth::EnsureServiceConnection() {
+void Bluetooth::EnsureServiceConnection(ExecutionContext* context) {
   if (!service_) {
     // See https://bit.ly/2S0zRAS for task types.
-    auto* context = GetExecutionContext();
-    DCHECK(context);
-
     auto task_runner = context->GetTaskRunner(TaskType::kMiscPlatformAPI);
     context->GetInterfaceProvider()->GetInterface(
-        mojo::MakeRequest(&service_, task_runner));
+        service_.BindNewPipeAndPassReceiver(task_runner));
   }
 }
 

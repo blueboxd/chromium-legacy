@@ -920,7 +920,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   mojo::Remote<mojom::ChildProcess> child_process_;
   mojo::AssociatedRemote<mojom::RouteProvider> remote_route_provider_;
-  mojom::RendererAssociatedPtr renderer_interface_;
+  mojo::AssociatedRemote<mojom::Renderer> renderer_interface_;
   mojo::AssociatedBinding<mojom::RendererHost> renderer_host_binding_;
 
   // Tracks active audio and video streams within the render process; used to

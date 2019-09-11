@@ -311,10 +311,10 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
       return mojo::NullRemote();
     return element.CloneDataPipeGetter();
   }
-  static network::mojom::ChunkedDataPipeGetterPtrInfo chunked_data_pipe_getter(
-      const network::DataElement& element) {
+  static mojo::PendingRemote<network::mojom::ChunkedDataPipeGetter>
+  chunked_data_pipe_getter(const network::DataElement& element) {
     if (element.type_ != network::mojom::DataElementType::kChunkedDataPipe)
-      return nullptr;
+      return mojo::NullRemote();
     return const_cast<network::DataElement&>(element)
         .ReleaseChunkedDataPipeGetter();
   }

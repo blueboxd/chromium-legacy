@@ -459,6 +459,11 @@ class IdentityManager : public KeyedService,
 
   // Overloads for calls from java:
   bool HasPrimaryAccount(JNIEnv* env) const;
+
+  base::android::ScopedJavaLocalRef<jobject>
+  FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jstring>& j_email) const;
 #endif
 
  private:

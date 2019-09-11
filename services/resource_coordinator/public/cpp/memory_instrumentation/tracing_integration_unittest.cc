@@ -21,7 +21,7 @@
 #include "base/trace_event/trace_config.h"
 #include "base/trace_event/trace_config_memory_test_util.h"
 #include "base/trace_event/trace_log.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/coordinator.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -101,10 +101,10 @@ class MockCoordinator : public Coordinator, public mojom::Coordinator {
  public:
   MockCoordinator(MemoryTracingIntegrationTest* client) : client_(client) {}
 
-  void BindCoordinatorRequest(
-      mojom::CoordinatorRequest request,
+  void BindCoordinatorReceiver(
+      mojo::PendingReceiver<mojom::Coordinator> receiver,
       const service_manager::BindSourceInfo& source_info) override {
-    bindings_.AddBinding(this, std::move(request));
+    receivers_.Add(this, std::move(receiver));
   }
 
   void RegisterClientProcess(mojom::ClientProcessPtr,
@@ -133,7 +133,7 @@ class MockCoordinator : public Coordinator, public mojom::Coordinator {
       RequestGlobalMemoryDumpAndAppendToTraceCallback) override;
 
  private:
-  mojo::BindingSet<mojom::Coordinator> bindings_;
+  mojo::ReceiverSet<mojom::Coordinator> receivers_;
   MemoryTracingIntegrationTest* client_;
 };
 

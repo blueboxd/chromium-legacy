@@ -7,8 +7,7 @@ License File: NOT_SHIPPED
 Security Critical: no
 
 Description:
-D8 is a dexer that converts java byte code to dex code. R8 is a proguard-like
-optimizer that also has the ability to dex. D8 is found within R8's repo.
+R8 is a proguard-like optimizer that also has the ability to dex.
 
 Local Modifications:
 Turning off vertical and horizontal class merging, as described in

@@ -783,8 +783,7 @@ TEST_F(PolicyServiceTest, DictionaryPoliciesMerging) {
 
   std::unique_ptr<base::Value> policy =
       std::make_unique<base::Value>(base::Value::Type::LIST);
-  policy->GetList().push_back(
-      base::Value(policy::key::kContentPackManualBehaviorURLs));
+  policy->Append(base::Value(policy::key::kContentPackManualBehaviorURLs));
 
   auto policy_bundle1 = std::make_unique<PolicyBundle>();
   PolicyMap& policy_map1 = policy_bundle1->Get(chrome_namespace);
@@ -828,19 +827,18 @@ TEST_F(PolicyServiceTest, ListsPoliciesMerging) {
   const PolicyNamespace chrome_namespace(POLICY_DOMAIN_CHROME, std::string());
 
   std::unique_ptr<base::ListValue> list1 = std::make_unique<base::ListValue>();
-  list1->GetList().push_back(base::Value("google.com"));
-  list1->GetList().push_back(base::Value("gmail.com"));
+  list1->Append(base::Value("google.com"));
+  list1->Append(base::Value("gmail.com"));
   std::unique_ptr<base::ListValue> list2 = std::make_unique<base::ListValue>();
-  list2->GetList().push_back(base::Value("example.com"));
-  list2->GetList().push_back(base::Value("gmail.com"));
+  list2->Append(base::Value("example.com"));
+  list2->Append(base::Value("gmail.com"));
   std::unique_ptr<base::ListValue> result = std::make_unique<base::ListValue>();
-  result->GetList().push_back(base::Value("google.com"));
-  result->GetList().push_back(base::Value("gmail.com"));
-  result->GetList().push_back(base::Value("example.com"));
+  result->Append(base::Value("google.com"));
+  result->Append(base::Value("gmail.com"));
+  result->Append(base::Value("example.com"));
 
   std::unique_ptr<base::ListValue> policy = std::make_unique<base::ListValue>();
-  policy->GetList().push_back(
-      base::Value(policy::key::kExtensionInstallForcelist));
+  policy->Append(base::Value(policy::key::kExtensionInstallForcelist));
 
   auto policy_bundle1 = std::make_unique<PolicyBundle>();
   PolicyMap& policy_map1 = policy_bundle1->Get(chrome_namespace);
@@ -883,20 +881,18 @@ TEST_F(PolicyServiceTest, GroupPoliciesMergingDisabledForCloudUsers) {
   const PolicyNamespace chrome_namespace(POLICY_DOMAIN_CHROME, std::string());
 
   std::unique_ptr<base::ListValue> list1 = std::make_unique<base::ListValue>();
-  list1->GetList().push_back(base::Value("google.com"));
+  list1->Append(base::Value("google.com"));
   std::unique_ptr<base::ListValue> list2 = std::make_unique<base::ListValue>();
-  list2->GetList().push_back(base::Value("example.com"));
+  list2->Append(base::Value("example.com"));
   std::unique_ptr<base::ListValue> list3 = std::make_unique<base::ListValue>();
-  list3->GetList().push_back(base::Value("example_xyz.com"));
+  list3->Append(base::Value("example_xyz.com"));
   std::unique_ptr<base::ListValue> result = std::make_unique<base::ListValue>();
-  result->GetList().push_back(base::Value("google.com"));
-  result->GetList().push_back(base::Value("example.com"));
+  result->Append(base::Value("google.com"));
+  result->Append(base::Value("example.com"));
 
   std::unique_ptr<base::ListValue> policy = std::make_unique<base::ListValue>();
-  policy->GetList().push_back(
-      base::Value(policy::key::kExtensionInstallForcelist));
-  policy->GetList().push_back(
-      base::Value(policy::key::kExtensionInstallBlacklist));
+  policy->Append(base::Value(policy::key::kExtensionInstallForcelist));
+  policy->Append(base::Value(policy::key::kExtensionInstallBlacklist));
 
   auto policy_bundle1 = std::make_unique<PolicyBundle>();
   PolicyMap& policy_map1 = policy_bundle1->Get(chrome_namespace);
@@ -953,20 +949,18 @@ TEST_F(PolicyServiceTest, GroupPoliciesMergingEnabled) {
   const PolicyNamespace chrome_namespace(POLICY_DOMAIN_CHROME, std::string());
 
   std::unique_ptr<base::ListValue> list1 = std::make_unique<base::ListValue>();
-  list1->GetList().push_back(base::Value("google.com"));
+  list1->Append(base::Value("google.com"));
   std::unique_ptr<base::ListValue> list2 = std::make_unique<base::ListValue>();
-  list2->GetList().push_back(base::Value("example.com"));
+  list2->Append(base::Value("example.com"));
   std::unique_ptr<base::ListValue> list3 = std::make_unique<base::ListValue>();
-  list3->GetList().push_back(base::Value("example_xyz.com"));
+  list3->Append(base::Value("example_xyz.com"));
   std::unique_ptr<base::ListValue> result = std::make_unique<base::ListValue>();
-  result->GetList().push_back(base::Value("google.com"));
-  result->GetList().push_back(base::Value("example.com"));
+  result->Append(base::Value("google.com"));
+  result->Append(base::Value("example.com"));
 
   std::unique_ptr<base::ListValue> policy = std::make_unique<base::ListValue>();
-  policy->GetList().push_back(
-      base::Value(policy::key::kExtensionInstallForcelist));
-  policy->GetList().push_back(
-      base::Value(policy::key::kExtensionInstallBlacklist));
+  policy->Append(base::Value(policy::key::kExtensionInstallForcelist));
+  policy->Append(base::Value(policy::key::kExtensionInstallBlacklist));
 
   auto policy_bundle1 = std::make_unique<PolicyBundle>();
   PolicyMap& policy_map1 = policy_bundle1->Get(chrome_namespace);

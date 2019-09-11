@@ -32,6 +32,7 @@
 
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/position.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -1028,6 +1029,17 @@ TEST_P(TextIteratorTest, TextOffsetMappingAndFlatTree) {
 TEST_P(TextIteratorTest, EmitsSpaceForNbsp) {
   SetBodyContent("foo &nbsp;bar");
   EXPECT_EQ("[foo  bar]", Iterate<DOMTree>(EmitsSpaceForNbspBehavior()));
+}
+
+TEST_P(TextIteratorTest, IterateWithLockedSubtree) {
+  SetBodyContent("<div id='parent'>foo<div id='locked'>text</div>bar</div>");
+  auto* locked = GetDocument().getElementById("locked");
+  locked->setAttribute("rendersubtree", "invisible activatable");
+  GetDocument().UpdateStyleAndLayout();
+  auto* parent = GetDocument().getElementById("parent");
+  const Position start_position = Position::FirstPositionInNode(*parent);
+  const Position end_position = Position::LastPositionInNode(*parent);
+  EXPECT_EQ(6, TextIterator::RangeLength(start_position, end_position));
 }
 
 }  // namespace text_iterator_test

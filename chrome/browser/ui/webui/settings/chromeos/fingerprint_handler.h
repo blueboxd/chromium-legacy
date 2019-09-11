@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/fingerprint.mojom.h"
 
 class Profile;
@@ -79,7 +80,7 @@ class FingerprintHandler : public ::settings::SettingsPageUIHandler,
   std::vector<std::string> fingerprints_paths_;
   std::string user_id_;
 
-  device::mojom::FingerprintPtr fp_service_;
+  mojo::Remote<device::mojom::Fingerprint> fp_service_;
   mojo::Binding<device::mojom::FingerprintObserver> binding_;
   ScopedObserver<session_manager::SessionManager,
                  session_manager::SessionManagerObserver>

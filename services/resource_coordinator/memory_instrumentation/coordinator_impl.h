@@ -16,6 +16,7 @@
 #include "base/trace_event/memory_dump_request_args.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/resource_coordinator/memory_instrumentation/process_map.h"
 #include "services/resource_coordinator/memory_instrumentation/queued_request.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/coordinator.h"
@@ -46,8 +47,8 @@ class CoordinatorImpl : public Coordinator,
   CoordinatorImpl(service_manager::Connector* connector);
 
   // Binds a client library to this coordinator instance.
-  void BindCoordinatorRequest(
-      mojom::CoordinatorRequest,
+  void BindCoordinatorReceiver(
+      mojo::PendingReceiver<mojom::Coordinator>,
       const service_manager::BindSourceInfo& source_info) override;
 
   void BindHeapProfilerHelperRequest(
@@ -182,8 +183,8 @@ class CoordinatorImpl : public Coordinator,
       in_progress_vm_region_requests_;
 
   // There may be extant callbacks in |queued_memory_dump_requests_|. The
-  // bindings_ must be closed before destroying the un-run callbacks.
-  mojo::BindingSet<mojom::Coordinator, service_manager::Identity> bindings_;
+  // receivers_ must be closed before destroying the un-run callbacks.
+  mojo::ReceiverSet<mojom::Coordinator, service_manager::Identity> receivers_;
 
   // There may be extant callbacks in |queued_memory_dump_requests_|. The
   // bindings_ must be closed before destroying the un-run callbacks.

@@ -366,7 +366,7 @@ HTMLElement* EnclosingList(const Node* node) {
   ContainerNode* root = HighestEditableRoot(FirstPositionInOrBeforeNode(*node));
 
   for (Node& runner : NodeTraversal::AncestorsOf(*node)) {
-    if (IsHTMLUListElement(runner) || IsHTMLOListElement(runner))
+    if (IsHTMLUListElement(runner) || IsA<HTMLOListElement>(runner))
       return To<HTMLElement>(&runner);
     if (runner == root)
       return nullptr;

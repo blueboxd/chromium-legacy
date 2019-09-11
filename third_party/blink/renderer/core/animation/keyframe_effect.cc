@@ -142,8 +142,9 @@ void KeyframeEffect::setComposite(String composite_string) {
       EffectModel::StringToCompositeOperation(composite_string).value());
 }
 
-Vector<ScriptValue> KeyframeEffect::getKeyframes(ScriptState* script_state) {
-  Vector<ScriptValue> computed_keyframes;
+HeapVector<ScriptValue> KeyframeEffect::getKeyframes(
+    ScriptState* script_state) {
+  HeapVector<ScriptValue> computed_keyframes;
   if (!model_->HasFrames())
     return computed_keyframes;
 

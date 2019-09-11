@@ -25,7 +25,7 @@ class BarcodeDetectionProviderImpl
   }
 
   void CreateBarcodeDetection(
-      shape_detection::mojom::BarcodeDetectionRequest request,
+      mojo::PendingReceiver<shape_detection::mojom::BarcodeDetection> receiver,
       shape_detection::mojom::BarcodeDetectorOptionsPtr options) override;
   void EnumerateSupportedFormats(
       EnumerateSupportedFormatsCallback callback) override;

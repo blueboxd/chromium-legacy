@@ -249,8 +249,8 @@ bool NGLineTruncator::TruncateChild(
       IsLtr(line_direction_) ? space_for_child
                              : shape_result->Width() - space_for_child,
       line_direction_);
-  DCHECK_LE(new_length, fragment.Length());
-  if (!new_length || new_length == fragment.Length()) {
+  DCHECK_LE(new_length, fragment.TextLength());
+  if (!new_length || new_length == fragment.TextLength()) {
     if (!is_first_child)
       return false;
     new_length = !new_length ? 1 : new_length - 1;

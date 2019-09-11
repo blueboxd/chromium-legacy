@@ -30,6 +30,10 @@ struct BlinkGCPluginOptions {
   // TODO(sof): remove this option once safely rolled out.
   bool enable_weak_members_in_unmanaged_classes = false;
 
+  // If |true| don't perform checks on whether a class needs to be derived from
+  // GarbageCollectedFinalized.
+  bool no_gc_finalized = false;
+
   std::set<std::string> ignored_classes;
   std::set<std::string> checked_namespaces;
   std::vector<std::string> ignored_directories;

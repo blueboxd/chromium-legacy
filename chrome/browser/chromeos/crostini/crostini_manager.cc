@@ -122,10 +122,11 @@ void InvokeAndErasePendingContainerCallbacks(
 
 class CrostiniManager::CrostiniRestarter
     : public base::RefCountedThreadSafe<CrostiniRestarter>,
+      public crostini::VmShutdownObserver,
       public chromeos::disks::DiskMountManager::Observer {
  public:
   CrostiniRestarter(Profile* profile,
-                    base::WeakPtr<CrostiniManager> crostini_manager,
+                    CrostiniManager* crostini_manager,
                     std::string vm_name,
                     std::string container_name,
                     CrostiniManager::CrostiniResultCallback callback)
@@ -134,7 +135,9 @@ class CrostiniManager::CrostiniRestarter
         vm_name_(std::move(vm_name)),
         container_name_(std::move(container_name)),
         completed_callback_(std::move(callback)),
-        restart_id_(next_restart_id_++) {}
+        restart_id_(next_restart_id_++) {
+    crostini_manager_->AddVmShutdownObserver(this);
+  }
 
   void Restart() {
     is_initial_install_ = crostini_manager_->GetInstallerViewStatus();
@@ -171,6 +174,14 @@ class CrostiniManager::CrostiniRestarter
     std::move(completed_callback_).Run(result);
   }
 
+  // crostini::VmShutdownObserver
+  void OnVmShutdown(const std::string& vm_name) override {
+    if (vm_name == vm_name_) {
+      LOG(WARNING) << "Unexpected VM shutdown during restart for " << vm_name;
+      FinishRestart(CrostiniResult::RESTART_FAILED_VM_STOPPED);
+    }
+  }
+
   void Abort(base::OnceClosure callback) {
     is_aborted_ = true;
     observer_list_.Clear();
@@ -196,6 +207,7 @@ class CrostiniManager::CrostiniRestarter
   friend class base::RefCountedThreadSafe<CrostiniRestarter>;
 
   ~CrostiniRestarter() override {
+    crostini_manager_->RemoveVmShutdownObserver(this);
     if (completed_callback_) {
       LOG(ERROR) << "Destroying without having called the callback.";
     }
@@ -367,12 +379,6 @@ class CrostiniManager::CrostiniRestarter
 
   void StartLxdContainerFinished(CrostiniResult result) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    // The restarter shouldn't outlive the CrostiniManager but it can when
-    // skip_restart_for_testing is set.
-    if (!crostini_manager_) {
-      LOG(ERROR) << "CrostiniManager deleted";
-      return;
-    }
 
     CloseCrostiniUpgradeContainerView();
     for (auto& observer : observer_list_) {
@@ -444,6 +450,7 @@ class CrostiniManager::CrostiniRestarter
                     chromeos::MOUNT_ACCESS_MODE_READ_WRITE);
   }
 
+  // chromeos::disks::DiskMountManager::Observer
   void OnMountEvent(chromeos::disks::DiskMountManager::MountEvent event,
                     chromeos::MountError error_code,
                     const chromeos::disks::DiskMountManager::MountPointInfo&
@@ -493,9 +500,9 @@ class CrostiniManager::CrostiniRestarter
   }
 
   Profile* profile_;
-  // This isn't accessed after the CrostiniManager is destroyed, but we still
-  // use a WeakPtr for safety.
-  base::WeakPtr<CrostiniManager> crostini_manager_;
+  // This isn't accessed after the CrostiniManager is destroyed and we need a
+  // reference to it during the CrostiniRestarter destructor.
+  CrostiniManager* crostini_manager_;
 
   std::string vm_name_;
   std::string container_name_;
@@ -633,6 +640,7 @@ CrostiniManager::CrostiniManager(Profile* profile)
     : profile_(profile), owner_id_(CryptohomeIdForProfile(profile)) {
   DCHECK(!profile_->IsOffTheRecord());
   GetCiceroneClient()->AddObserver(this);
+  GetConciergeClient()->AddVmObserver(this);
   GetConciergeClient()->AddContainerObserver(this);
   if (chromeos::PowerManagerClient::Get()) {
     chromeos::PowerManagerClient::Get()->AddObserver(this);
@@ -1634,8 +1642,8 @@ CrostiniManager::RestartId CrostiniManager::RestartCrostini(
   }
 
   auto restarter = base::MakeRefCounted<CrostiniRestarter>(
-      profile_, weak_ptr_factory_.GetWeakPtr(), std::move(vm_name),
-      std::move(container_name), std::move(callback));
+      profile_, this, std::move(vm_name), std::move(container_name),
+      std::move(callback));
   if (observer)
     restarter->AddObserver(observer);
   auto key = std::make_pair(restarter->vm_name(), restarter->container_name());
@@ -1919,6 +1927,11 @@ void CrostiniManager::OnStopVm(
     }
   }
 
+  OnVmStoppedCleanup(vm_name);
+  std::move(callback).Run(CrostiniResult::SUCCESS);
+}
+
+void CrostiniManager::OnVmStoppedCleanup(const std::string& vm_name) {
   for (auto& observer : vm_shutdown_observers_) {
     observer.OnVmShutdown(vm_name);
   }
@@ -1932,7 +1945,6 @@ void CrostiniManager::OnStopVm(
   InvokeAndErasePendingCallbacks(
       &import_lxd_container_callbacks_, vm_name,
       CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED_VM_STOPPED);
-  std::move(callback).Run(CrostiniResult::SUCCESS);
 }
 
 void CrostiniManager::OnGetTerminaVmKernelVersion(
@@ -1999,6 +2011,16 @@ void CrostiniManager::OnAnsibleInDefaultContainerInstalled(bool success) {
   InvokeAndErasePendingContainerCallbacks(
       &start_container_callbacks_, kCrostiniDefaultVmName,
       kCrostiniDefaultContainerName, result);
+}
+
+void CrostiniManager::OnVmStarted(
+    const vm_tools::concierge::VmStartedSignal& signal) {}
+
+void CrostiniManager::OnVmStopped(
+    const vm_tools::concierge::VmStoppedSignal& signal) {
+  if (signal.owner_id() != owner_id_)
+    return;
+  OnVmStoppedCleanup(signal.name());
 }
 
 void CrostiniManager::OnContainerStartupFailed(
@@ -2102,6 +2124,16 @@ void CrostiniManager::OnUninstallPackageProgress(
                                         signal.container_name(), status,
                                         signal.progress_percent());
   }
+}
+
+void CrostiniManager::OnApplyAnsiblePlaybookProgress(
+    const vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal& signal) {
+  if (signal.owner_id() != owner_id_)
+    return;
+
+  // TODO(okalitova): Add an observer.
+  AnsibleManagementService::GetForProfile(profile_)
+      ->OnApplyAnsiblePlaybookProgress(signal.status());
 }
 
 void CrostiniManager::OnUninstallPackageOwningFile(

@@ -65,7 +65,7 @@ MessagePort::~MessagePort() {
 
 void MessagePort::postMessage(ScriptState* script_state,
                               const ScriptValue& message,
-                              Vector<ScriptValue>& transfer,
+                              HeapVector<ScriptValue>& transfer,
                               ExceptionState& exception_state) {
   PostMessageOptions* options = PostMessageOptions::Create();
   if (!transfer.IsEmpty())

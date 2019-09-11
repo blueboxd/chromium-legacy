@@ -1095,22 +1095,24 @@ void TestingProfile::SetNetworkContext(
   network_context_ = std::move(network_context);
 }
 
-network::mojom::NetworkContextPtr TestingProfile::CreateNetworkContext(
+mojo::Remote<network::mojom::NetworkContext>
+TestingProfile::CreateNetworkContext(
     bool in_memory,
     const base::FilePath& relative_partition_path) {
   if (network_context_) {
-    network::mojom::NetworkContextPtr network_context_ptr;
+    mojo::Remote<network::mojom::NetworkContext> network_context_remote;
     network_context_bindings_.AddBinding(
-        network_context_.get(), mojo::MakeRequest(&network_context_ptr));
-    return network_context_ptr;
+        network_context_.get(),
+        network_context_remote.BindNewPipeAndPassReceiver());
+    return network_context_remote;
   }
-  network::mojom::NetworkContextPtr network_context;
+  mojo::Remote<network::mojom::NetworkContext> network_context;
   network::mojom::NetworkContextParamsPtr context_params =
       network::mojom::NetworkContextParams::New();
   context_params->user_agent = GetUserAgent();
   context_params->accept_language = "en-us,en";
   content::GetNetworkService()->CreateNetworkContext(
-      MakeRequest(&network_context), std::move(context_params));
+      network_context.BindNewPipeAndPassReceiver(), std::move(context_params));
   return network_context;
 }
 

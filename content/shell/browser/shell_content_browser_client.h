@@ -101,7 +101,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
                         RendererSpawnFlags flags) override;
 #endif
 
-  network::mojom::NetworkContextPtr CreateNetworkContext(
+  mojo::Remote<network::mojom::NetworkContext> CreateNetworkContext(
       BrowserContext* context,
       bool in_memory,
       const base::FilePath& relative_partition_path) override;

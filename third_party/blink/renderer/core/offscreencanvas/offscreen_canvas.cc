@@ -243,7 +243,11 @@ CanvasRenderingContext* OffscreenCanvas::GetCanvasRenderingContext(
       return nullptr;
     }
   } else {
-    context_ = factory->Create(this, attributes);
+    CanvasContextCreationAttributesCore recomputed_attributes = attributes;
+    if (!allow_high_performance_power_preference_)
+      recomputed_attributes.power_preference = "low-power";
+
+    context_ = factory->Create(this, recomputed_attributes);
   }
 
   return context_.Get();

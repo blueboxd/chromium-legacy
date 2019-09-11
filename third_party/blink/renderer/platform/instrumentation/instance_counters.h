@@ -48,7 +48,6 @@ namespace blink {
   V(MediaKeys)                     \
   V(Node)                          \
   V(Resource)                      \
-  V(ScriptPromise)                 \
   V(ContextLifecycleStateObserver) \
   V(V8PerContextData)              \
   V(WorkerGlobalScope)             \

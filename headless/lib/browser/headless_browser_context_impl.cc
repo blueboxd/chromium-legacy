@@ -281,7 +281,7 @@ const std::string& HeadlessBrowserContextImpl::Id() {
   return UniqueId();
 }
 
-::network::mojom::NetworkContextPtr
+mojo::Remote<::network::mojom::NetworkContext>
 HeadlessBrowserContextImpl::CreateNetworkContext(
     bool in_memory,
     const base::FilePath& relative_partition_path) {

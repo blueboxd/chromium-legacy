@@ -25,7 +25,7 @@
 #include "content/public/browser/render_process_host_factory.h"
 #include "ipc/ipc_test_sink.h"
 #include "media/media_buildflags.h"
-#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/network_isolation_key.h"
 #include "services/service_manager/public/cpp/identity.h"
@@ -209,7 +209,7 @@ class MockRenderProcessHost : public RenderProcessHost {
                                 const InterfaceBinder& binder);
 
   void OverrideRendererInterfaceForTesting(
-      std::unique_ptr<mojo::AssociatedInterfacePtr<mojom::Renderer>>
+      std::unique_ptr<mojo::AssociatedRemote<mojom::Renderer>>
           renderer_interface);
 
   // SetNetworkFactory() wins over this.
@@ -246,8 +246,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   base::Process process;
   int keep_alive_ref_count_;
   int foreground_service_worker_count_;
-  std::unique_ptr<mojo::AssociatedInterfacePtr<mojom::Renderer>>
-      renderer_interface_;
+  std::unique_ptr<mojo::AssociatedRemote<mojom::Renderer>> renderer_interface_;
   std::map<std::string, InterfaceBinder> binder_overrides_;
   service_manager::Identity child_identity_;
   bool is_renderer_locked_to_site_ = false;

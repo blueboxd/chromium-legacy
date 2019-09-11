@@ -38,7 +38,7 @@ bool StructTraits<
   out->data_pipe_getter_ =
       data.TakeDataPipeGetter<network::mojom::DataPipeGetterPtrInfo>();
   out->chunked_data_pipe_getter_ = data.TakeChunkedDataPipeGetter<
-      network::mojom::ChunkedDataPipeGetterPtrInfo>();
+      mojo::PendingRemote<network::mojom::ChunkedDataPipeGetter>>();
   out->offset_ = data.offset();
   out->length_ = data.length();
   return true;

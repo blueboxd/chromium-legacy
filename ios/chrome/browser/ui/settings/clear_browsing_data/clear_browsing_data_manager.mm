@@ -54,6 +54,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_link_item.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/common/channel_info.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -68,10 +69,7 @@ namespace {
 // Maximum number of times to show a notice about other forms of browsing
 // history.
 const int kMaxTimesHistoryNoticeShown = 1;
-// The tableView button red background color.
-const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
-// TableViewClearBrowsingDataItem's selectedBackgroundViewBackgroundColor.
-const int kSelectedBackgroundColorRGB = 0x4285F4;
+// TableViewClearBrowsingDataItem's selectedBackgroundViewBackgroundColorAlpha.
 const CGFloat kSelectedBackgroundColorAlpha = 0.05;
 
 // List of flags that have corresponding counters.
@@ -430,7 +428,7 @@ static NSDictionary* _imageNamesByItemTypes = @{
     collectionClearButtonItem.text =
         l10n_util::GetNSString(IDS_IOS_CLEAR_BUTTON);
     collectionClearButtonItem.accessibilityTraits |= UIAccessibilityTraitButton;
-    collectionClearButtonItem.textColor = [[MDCPalette cr_redPalette] tint500];
+    collectionClearButtonItem.textColor = [UIColor colorNamed:kRedColor];
     collectionClearButtonItem.accessibilityIdentifier =
         kClearBrowsingDataButtonIdentifier;
     clearButtonItem = collectionClearButtonItem;
@@ -441,7 +439,7 @@ static NSDictionary* _imageNamesByItemTypes = @{
     tableViewClearButtonItem.buttonText =
         l10n_util::GetNSString(IDS_IOS_CLEAR_BUTTON);
     tableViewClearButtonItem.buttonBackgroundColor =
-        UIColorFromRGB(kTableViewButtonBackgroundColor);
+        [UIColor colorNamed:kRedColor];
     tableViewClearButtonItem.buttonAccessibilityIdentifier =
         kClearBrowsingDataButtonIdentifier;
     clearButtonItem = tableViewClearButtonItem;
@@ -510,8 +508,9 @@ static NSDictionary* _imageNamesByItemTypes = @{
     tableViewClearDataItem.prefName = prefName;
     if (IsNewClearBrowsingDataUIEnabled()) {
       tableViewClearDataItem.useCustomSeparator = YES;
-      tableViewClearDataItem.checkedBackgroundColor = UIColorFromRGB(
-          kSelectedBackgroundColorRGB, kSelectedBackgroundColorAlpha);
+      tableViewClearDataItem.checkedBackgroundColor =
+          [[UIColor colorNamed:kBlueColor]
+              colorWithAlphaComponent:kSelectedBackgroundColorAlpha];
       tableViewClearDataItem.imageName = [_imageNamesByItemTypes
           objectForKey:[NSNumber numberWithInteger:itemType]];
       if (itemType == ItemTypeDataTypeCookiesSiteData) {

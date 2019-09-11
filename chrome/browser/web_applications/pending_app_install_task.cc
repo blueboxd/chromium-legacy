@@ -86,10 +86,20 @@ void PendingAppInstallTask::Install(content::WebContents* web_contents,
     return;
   }
 
+  // Avoid counting an error if we are shutting down. This matches later
+  // stages of install where if the WebContents is destroyed we return early.
+  if (load_url_result == WebAppUrlLoader::Result::kFailedWebContentsDestroyed)
+    return;
+
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(result_callback),
-                                Result(InstallResultCode::kFailedUnknownReason,
-                                       base::nullopt)));
+      FROM_HERE,
+      base::BindOnce(
+          std::move(result_callback),
+          Result(
+              load_url_result == WebAppUrlLoader::Result::kRedirectedUrlLoaded
+                  ? InstallResultCode::kInstallURLRedirected
+                  : InstallResultCode::kInstallURLLoadFailed,
+              base::nullopt)));
 }
 
 void PendingAppInstallTask::UninstallPlaceholderApp(

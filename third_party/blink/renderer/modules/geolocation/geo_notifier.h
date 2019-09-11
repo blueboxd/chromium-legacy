@@ -16,8 +16,8 @@
 namespace blink {
 
 class Geolocation;
+class GeolocationPositionError;
 class Geoposition;
-class PositionError;
 
 class GeoNotifier final : public GarbageCollectedFinalized<GeoNotifier>,
                           public NameClient {
@@ -34,7 +34,7 @@ class GeoNotifier final : public GarbageCollectedFinalized<GeoNotifier>,
 
   // Sets the given error as the fatal error if there isn't one yet.
   // Starts the timer with an interval of 0.
-  void SetFatalError(PositionError*);
+  void SetFatalError(GeolocationPositionError*);
 
   bool UseCachedPosition() const { return use_cached_position_; }
 
@@ -43,7 +43,7 @@ class GeoNotifier final : public GarbageCollectedFinalized<GeoNotifier>,
   void SetUseCachedPosition();
 
   void RunSuccessCallback(Geoposition*);
-  void RunErrorCallback(PositionError*);
+  void RunErrorCallback(GeolocationPositionError*);
 
   void StartTimer();
   void StopTimer();
@@ -83,7 +83,7 @@ class GeoNotifier final : public GarbageCollectedFinalized<GeoNotifier>,
   Member<V8PositionErrorCallback> error_callback_;
   Member<const PositionOptions> options_;
   Member<Timer> timer_;
-  Member<PositionError> fatal_error_;
+  Member<GeolocationPositionError> fatal_error_;
   bool use_cached_position_;
 };
 

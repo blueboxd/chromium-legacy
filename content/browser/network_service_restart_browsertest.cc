@@ -43,6 +43,8 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/test/storage_partition_test_utils.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -64,12 +66,13 @@ namespace {
 using SharedURLLoaderFactoryGetterCallback =
     base::OnceCallback<scoped_refptr<network::SharedURLLoaderFactory>()>;
 
-network::mojom::NetworkContextPtr CreateNetworkContext() {
-  network::mojom::NetworkContextPtr network_context;
+mojo::PendingRemote<network::mojom::NetworkContext> CreateNetworkContext() {
+  mojo::PendingRemote<network::mojom::NetworkContext> network_context;
   network::mojom::NetworkContextParamsPtr context_params =
       network::mojom::NetworkContextParams::New();
-  GetNetworkService()->CreateNetworkContext(mojo::MakeRequest(&network_context),
-                                            std::move(context_params));
+  GetNetworkService()->CreateNetworkContext(
+      network_context.InitWithNewPipeAndPassReceiver(),
+      std::move(context_params));
   return network_context;
 }
 
@@ -315,29 +318,31 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
                        NetworkServiceProcessRecovery) {
   if (IsInProcessNetworkService())
     return;
-  network::mojom::NetworkContextPtr network_context = CreateNetworkContext();
+  mojo::Remote<network::mojom::NetworkContext> network_context(
+      CreateNetworkContext());
   EXPECT_EQ(net::OK, LoadBasicRequest(network_context.get(), GetTestURL()));
   EXPECT_TRUE(network_context.is_bound());
-  EXPECT_FALSE(network_context.encountered_error());
+  EXPECT_TRUE(network_context.is_connected());
 
   // Crash the NetworkService process. Existing interfaces should receive error
   // notifications at some point.
   SimulateNetworkServiceCrash();
   // |network_context| will receive an error notification, but it's not
-  // guaranteed to have arrived at this point. Flush the pointer to make sure
+  // guaranteed to have arrived at this point. Flush the remote to make sure
   // the notification has been received.
   network_context.FlushForTesting();
   EXPECT_TRUE(network_context.is_bound());
-  EXPECT_TRUE(network_context.encountered_error());
+  EXPECT_FALSE(network_context.is_connected());
   // Make sure we could get |net::ERR_FAILED| with an invalid |network_context|.
   EXPECT_EQ(net::ERR_FAILED,
             LoadBasicRequest(network_context.get(), GetTestURL()));
 
   // NetworkService should restart automatically and return valid interface.
-  network::mojom::NetworkContextPtr network_context2 = CreateNetworkContext();
+  mojo::Remote<network::mojom::NetworkContext> network_context2(
+      CreateNetworkContext());
   EXPECT_EQ(net::OK, LoadBasicRequest(network_context2.get(), GetTestURL()));
   EXPECT_TRUE(network_context2.is_bound());
-  EXPECT_FALSE(network_context2.encountered_error());
+  EXPECT_TRUE(network_context2.is_connected());
 }
 
 void IncrementInt(int* i) {
@@ -349,7 +354,8 @@ void IncrementInt(int* i) {
 IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, CrashHandlers) {
   if (IsInProcessNetworkService())
     return;
-  network::mojom::NetworkContextPtr network_context = CreateNetworkContext();
+  mojo::Remote<network::mojom::NetworkContext> network_context(
+      CreateNetworkContext());
   EXPECT_TRUE(network_context.is_bound());
 
   // Register 2 crash handlers.
@@ -363,18 +369,19 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, CrashHandlers) {
   // Crash the NetworkService process.
   SimulateNetworkServiceCrash();
   // |network_context| will receive an error notification, but it's not
-  // guaranteed to have arrived at this point. Flush the pointer to make sure
+  // guaranteed to have arrived at this point. Flush the remote to make sure
   // the notification has been received.
   network_context.FlushForTesting();
   EXPECT_TRUE(network_context.is_bound());
-  EXPECT_TRUE(network_context.encountered_error());
+  EXPECT_FALSE(network_context.is_connected());
 
   // Verify the crash handlers executed.
   EXPECT_EQ(1, counter1);
   EXPECT_EQ(1, counter2);
 
   // Revive the NetworkService process.
-  network_context = CreateNetworkContext();
+  network_context.reset();
+  network_context.Bind(CreateNetworkContext());
   EXPECT_TRUE(network_context.is_bound());
 
   // Unregister one of the handlers.
@@ -383,11 +390,11 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, CrashHandlers) {
   // Crash the NetworkService process.
   SimulateNetworkServiceCrash();
   // |network_context| will receive an error notification, but it's not
-  // guaranteed to have arrived at this point. Flush the pointer to make sure
+  // guaranteed to have arrived at this point. Flush the remote to make sure
   // the notification has been received.
   network_context.FlushForTesting();
   EXPECT_TRUE(network_context.is_bound());
-  EXPECT_TRUE(network_context.encountered_error());
+  EXPECT_FALSE(network_context.is_connected());
 
   // Verify only the first crash handler executed.
   EXPECT_EQ(2, counter1);

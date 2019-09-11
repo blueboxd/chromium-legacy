@@ -357,8 +357,7 @@ void PolicyProvider::GetAutoSelectCertificateSettingsFromPreferences(
 
     // Don't pass removed values from |value|, because base::Values read with
     // JSONReader use a shared string buffer. Instead, Clone() here.
-    filters_map[pattern_str].FindKey("filters")->GetList().push_back(
-        filter->Clone());
+    filters_map[pattern_str].FindKey("filters")->Append(filter->Clone());
   }
 
   for (const auto& it : filters_map) {

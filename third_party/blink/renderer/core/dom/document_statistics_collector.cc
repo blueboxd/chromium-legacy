@@ -164,13 +164,13 @@ bool HasOpenGraphArticle(const Element& head) {
   DEFINE_STATIC_LOCAL(AtomicString, property_attr, ("property"));
   for (const Element* child = ElementTraversal::FirstChild(head); child;
        child = ElementTraversal::NextSibling(*child)) {
-    if (!IsHTMLMetaElement(*child))
+    auto* meta = DynamicTo<HTMLMetaElement>(child);
+    if (!meta)
       continue;
-    const HTMLMetaElement& meta = ToHTMLMetaElement(*child);
 
-    if (meta.GetName() == og_type ||
-        meta.getAttribute(property_attr) == og_type) {
-      if (DeprecatedEqualIgnoringCase(meta.Content(), "article")) {
+    if (meta->GetName() == og_type ||
+        meta->getAttribute(property_attr) == og_type) {
+      if (DeprecatedEqualIgnoringCase(meta->Content(), "article")) {
         return true;
       }
     }

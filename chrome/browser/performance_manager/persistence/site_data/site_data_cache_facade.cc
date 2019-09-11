@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "chrome/browser/performance_manager/performance_manager.h"
+#include "chrome/browser/performance_manager/performance_manager_impl.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_factory.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_impl.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -48,7 +48,7 @@ void SiteDataCacheFacade::IsDataCacheRecordingForTesting(
 void SiteDataCacheFacade::WaitUntilCacheInitializedForTesting() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::RunLoop run_loop;
-  PerformanceManager::GetInstance()->CallOnGraph(
+  PerformanceManagerImpl::GetInstance()->CallOnGraphImpl(
       FROM_HERE, base::BindOnce(
                      [](base::OnceClosure quit_closure,
                         const std::string& browser_context_id,

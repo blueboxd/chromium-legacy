@@ -571,7 +571,7 @@ void SupervisedUserWhitelistInstallerImpl::RegisterWhitelist(
 
     base::Value client(client_id);
     DCHECK(!base::Contains(clients->GetList(), client));
-    clients->GetList().push_back(std::move(client));
+    clients->Append(std::move(client));
   }
 
   if (!newly_added) {

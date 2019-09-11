@@ -417,6 +417,17 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
                   POLICY_SOURCE_CLOUD, std::move(rules), nullptr);
   }
 
+  if (policy.has_device_login_screen_webusb_allow_devices_for_urls()) {
+    const em::DeviceLoginScreenWebUsbAllowDevicesForUrlsProto& container(
+        policy.device_login_screen_webusb_allow_devices_for_urls());
+    if (container.has_device_login_screen_webusb_allow_devices_for_urls()) {
+      SetJsonDevicePolicy(
+          key::kDeviceLoginScreenWebUsbAllowDevicesForUrls,
+          container.device_login_screen_webusb_allow_devices_for_urls(),
+          policies);
+    }
+  }
+
   if (policy.has_saml_login_authentication_type()) {
     const em::SamlLoginAuthenticationTypeProto& container(
         policy.saml_login_authentication_type());

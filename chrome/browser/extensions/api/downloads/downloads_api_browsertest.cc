@@ -932,7 +932,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   scoped_refptr<DownloadsOpenFunction> scoped_open(new DownloadsOpenFunction());
   scoped_open->set_user_gesture(true);
   base::Value args_list(base::Value::Type::LIST);
-  args_list.GetList().emplace_back(static_cast<int>(download_item->GetId()));
+  args_list.Append(static_cast<int>(download_item->GetId()));
   scoped_open->SetArgs(std::move(args_list));
   scoped_open->set_browser_context(current_browser()->profile());
   scoped_open->set_extension(extension());

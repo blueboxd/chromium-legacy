@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/data_decoder/public/mojom/image_decoder.mojom.h"
 #include "services/service_manager/public/cpp/service_filter.h"
 
@@ -106,7 +107,7 @@ class ImageSanitizer {
   std::set<base::FilePath> image_paths_;
   ImageDecodedCallback image_decoded_callback_;
   SanitizationDoneCallback done_callback_;
-  data_decoder::mojom::ImageDecoderPtr image_decoder_ptr_;
+  mojo::Remote<data_decoder::mojom::ImageDecoder> image_decoder_;
   base::WeakPtrFactory<ImageSanitizer> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ImageSanitizer);

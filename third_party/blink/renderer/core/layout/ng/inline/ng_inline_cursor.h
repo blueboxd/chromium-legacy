@@ -51,6 +51,10 @@ class CORE_EXPORT NGInlineCursor {
   }
   const NGPhysicalBoxFragment* CurrentBoxFragment() const;
   const LayoutObject* CurrentLayoutObject() const;
+  const NGFragmentItems& Items() const {
+    DCHECK(fragment_items_);
+    return *fragment_items_;
+  }
 
   // The offset relative to the root of the inline formatting context.
   const PhysicalOffset CurrentOffset() const;
@@ -88,6 +92,7 @@ class CORE_EXPORT NGInlineCursor {
   ItemsSpan items_;
   ItemsSpan::iterator item_iter_;
   const NGFragmentItem* current_item_ = nullptr;
+  const NGFragmentItems* fragment_items_ = nullptr;
 
   const NGPaintFragment* root_paint_fragment_ = nullptr;
   const NGPaintFragment* current_paint_fragment_ = nullptr;

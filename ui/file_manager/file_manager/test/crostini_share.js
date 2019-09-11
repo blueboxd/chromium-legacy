@@ -194,8 +194,6 @@ shareBase.testSharePaths = async (
   await test.waitForFiles(
       test.TestEntryInfo.getExpectedRows(test.BASIC_CROSTINI_ENTRY_SET));
 
-  // Set DRIVE_FS_ENABLED=false, and check that 'Share with <VM>' is not shown.
-  loadTimeData.data_['DRIVE_FS_ENABLED'] = false;
   // Check 'Share with <VM>' is not shown in menu.
   assertTrue(
       test.fakeMouseRightClick('#file-list [file-name="A"]'),
@@ -209,16 +207,6 @@ shareBase.testSharePaths = async (
   await test.waitForFiles(
       test.TestEntryInfo.getExpectedRows(test.BASIC_DRIVE_ENTRY_SET));
 
-  // Check 'Share with <VM>' is not shown in menu.
-  assertTrue(test.fakeMouseRightClick(photos), 'right-click photos');
-  await test.waitForElement(menuNoShareWith);
-
-  // Close menu by clicking file-list.
-  assertTrue(test.fakeMouseClick('#file-list'));
-  await test.waitForElement(menuHidden);
-
-  // Set DRIVE_FS_ENABLED=true, and check that 'Share with <VM>' is shown.
-  loadTimeData.data_['DRIVE_FS_ENABLED'] = true;
   // Check 'Share with <VM>' is shown in menu.
   assertTrue(test.fakeMouseRightClick(photos), 'right-click photos');
   await test.waitForElement(menuShareWith);

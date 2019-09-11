@@ -20,7 +20,7 @@
 #include "chrome/browser/performance_manager/graph/graph_impl_operations.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "chrome/browser/performance_manager/performance_manager.h"
+#include "chrome/browser/performance_manager/performance_manager_impl.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/audio_service_info.h"
 #include "content/public/browser/render_process_host.h"
@@ -587,7 +587,7 @@ void ProcessMemoryMetricsEmitter::FetchAndEmitProcessMemoryMetrics() {
       base::SequencedTaskRunnerHandle::Get(),
       scoped_refptr<ProcessMemoryMetricsEmitter>(this));
 
-  performance_manager::PerformanceManager::CallOnGraph(
+  performance_manager::PerformanceManagerImpl::CallOnGraphImpl(
       FROM_HERE,
       base::BindOnce(&ProcessMemoryMetricsEmitter::GetProcessToPageInfoMap,
                      std::move(callback2)));

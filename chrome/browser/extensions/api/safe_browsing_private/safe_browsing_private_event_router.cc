@@ -379,7 +379,7 @@ void SafeBrowsingPrivateEventRouter::ReportRealtimeEvent(const char* name,
   wrapper.SetKey(name, std::move(event));
 
   base::Value event_list(base::Value::Type::LIST);
-  event_list.GetList().push_back(std::move(wrapper));
+  event_list.Append(std::move(wrapper));
 
   client_->UploadRealtimeReport(
       policy::RealtimeReportingJobConfiguration::BuildReport(

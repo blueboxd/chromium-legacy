@@ -17,6 +17,7 @@
 #include "base/timer/timer.h"
 #include "base/trace_event/trace_config.h"
 #include "base/values.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/tracing/agent_registry.h"
 #include "services/tracing/public/mojom/tracing.mojom.h"
@@ -46,7 +47,7 @@ class Coordinator : public mojom::Coordinator {
               const base::RepeatingClosure& on_disconnect_callback);
 
   void BindCoordinatorRequest(
-      mojom::CoordinatorRequest request,
+      mojo::PendingReceiver<mojom::Coordinator> request,
       const service_manager::BindSourceInfo& source_info);
 
   bool IsConnected();
@@ -106,7 +107,7 @@ class Coordinator : public mojom::Coordinator {
                                      uint32_t count);
 
   base::RepeatingClosure on_disconnect_callback_;
-  mojo::Binding<mojom::Coordinator> binding_;
+  mojo::Receiver<mojom::Coordinator> receiver_{this};
   const scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
   std::string config_;
   bool is_tracing_ = false;

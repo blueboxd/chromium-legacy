@@ -18,6 +18,7 @@
 #include "base/test/task_environment.h"
 #include "content/browser/speech/audio_buffer.h"
 #include "content/browser/speech/proto/google_streaming_api.pb.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
@@ -104,7 +105,7 @@ class SpeechRecognitionEngineTest
 
   network::TestURLLoaderFactory url_loader_factory_;
   mojo::ScopedDataPipeProducerHandle downstream_data_pipe_;
-  network::mojom::ChunkedDataPipeGetterPtr chunked_data_pipe_getter_;
+  mojo::Remote<network::mojom::ChunkedDataPipeGetter> chunked_data_pipe_getter_;
   mojo::ScopedDataPipeConsumerHandle upstream_data_pipe_;
 
   std::unique_ptr<SpeechRecognitionEngine> engine_under_test_;

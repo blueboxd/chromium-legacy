@@ -79,7 +79,7 @@ TaskQueue* Scheduler::GetTaskQueue(WebSchedulingPriority priority) {
 
 Task* Scheduler::postTask(V8Function* callback_function,
                           SchedulerPostTaskOptions* options,
-                          const Vector<ScriptValue>& args) {
+                          const HeapVector<ScriptValue>& args) {
   TaskQueue* task_queue = getTaskQueue(AtomicString(options->priority()));
   if (!task_queue)
     return nullptr;

@@ -13,7 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "chrome/browser/performance_manager/performance_manager.h"
+#include "chrome/browser/performance_manager/performance_manager_impl.h"
 #include "chrome/browser/performance_manager/public/render_process_host_proxy.h"
 #include "content/public/browser/child_process_termination_info.h"
 #include "content/public/browser/render_process_host.h"
@@ -33,7 +33,7 @@ RenderProcessUserData::RenderProcessUserData(
     content::RenderProcessHost* render_process_host)
     : host_(render_process_host) {
   host_->AddObserver(this);
-  process_node_ = PerformanceManager::GetInstance()->CreateProcessNode(
+  process_node_ = PerformanceManagerImpl::GetInstance()->CreateProcessNode(
       RenderProcessHostProxy(host_->GetID()));
 
   // Push this instance to the list.
@@ -45,7 +45,7 @@ RenderProcessUserData::RenderProcessUserData(
 }
 
 RenderProcessUserData::~RenderProcessUserData() {
-  PerformanceManager::GetInstance()->DeleteNode(std::move(process_node_));
+  PerformanceManagerImpl::GetInstance()->DeleteNode(std::move(process_node_));
   host_->RemoveObserver(this);
 
   if (first_ == this)
@@ -89,7 +89,8 @@ RenderProcessUserData* RenderProcessUserData::GetOrCreateForRenderProcessHost(
 
 void RenderProcessUserData::RenderProcessReady(
     content::RenderProcessHost* host) {
-  PerformanceManager* performance_manager = PerformanceManager::GetInstance();
+  PerformanceManagerImpl* performance_manager =
+      PerformanceManagerImpl::GetInstance();
 
   const base::Time launch_time =
 #if defined(OS_ANDROID)
@@ -110,7 +111,8 @@ void RenderProcessUserData::RenderProcessReady(
 void RenderProcessUserData::RenderProcessExited(
     content::RenderProcessHost* host,
     const content::ChildProcessTerminationInfo& info) {
-  PerformanceManager* performance_manager = PerformanceManager::GetInstance();
+  PerformanceManagerImpl* performance_manager =
+      PerformanceManagerImpl::GetInstance();
 
   performance_manager->task_runner()->PostTask(
       FROM_HERE,

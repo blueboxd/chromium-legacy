@@ -4951,6 +4951,52 @@
         URL patterns in this policy should not clash with the ones configured via WebUsbBlockedForUrls. If there is a clash, this policy will take precedence over WebUsbBlockedForUrls and WebUsbAskForUrls.''',
     },
     {
+      'name': 'DeviceLoginScreenWebUsbAllowDevicesForUrls',
+      'owners': ['reillyg@chromium.org', 'odejesush@chromium.org'],
+      'type': 'dict',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'object',
+          'properties': {
+            'devices': {
+              'type': 'array',
+              'items': {
+                'type': 'object',
+                'properties': {
+                  'vendor_id': { 'type': 'integer' },
+                  'product_id': { 'type': 'integer' }
+                }
+              }
+            },
+            'urls': {
+              'type': 'array',
+              'items': { 'type': 'string' }
+            }
+          },
+          'required': ['devices', 'urls']
+        }
+      },
+      'supported_on': ['chrome_os:79-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': [{
+        'devices': [{'vendor_id': 1234, 'product_id': 5678}],
+        'urls': ['https://google.com', 'https://requesting.com,https://embedded.com'],
+      }],
+      'id': 603,
+      'caption': '''Automatically grant permission to these sites to connect to USB devices with the given vendor and product IDs on the login screen.''',
+      'tags': ['website-sharing'],
+      'desc': '''Allows you to set a list of urls that specify which sites will automatically be granted permission to access a USB device with the given vendor and product IDs on the login screen. Each item in the list must contain both devices and urls in order for the policy to be valid. Each item in devices can contain a vendor ID and product ID field. Any ID that is omitted is treated as a wildcard with one exception, and that exception is that a product ID cannot be specified without a vendor ID also being specified. Otherwise, the policy will not be valid and will be ignored.
+
+        The USB permission model uses the URL of the requesting site ("requesting URL") and the URL of the top-level frame site ("embedding URL") to grant permission to the requesting URL to access the USB device. The requesting URL may be different than the embedding URL when the requesting site is loaded in an iframe. Therefore, the "urls" field can contain up to two URL strings delimited by a comma to specify the requesting and embedding URL respectively. If only one URL is specified, then access to the corresponding USB devices will be granted when the requesting site's URL matches this URL regardless of embedding status. The URLs in "urls" must be valid URLs, otherwise the policy will be ignored.
+
+        If this policy is left not set, the global default value will be used for all sites (no automatic access).''',
+    },
+    {
       'name': 'WebUsbAskForUrls',
       'owners': ['reillyg@chromium.org', 'odejesush@chromium.org'],
       'type': 'list',
@@ -15170,7 +15216,11 @@
       'desc': '''
       If the policy is set to true, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is allowed to collect WebRTC event logs from Google services (e.g. Google Meet), and upload those logs to Google.
 
-      If the policy is set to false, or is unset, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> may not collect nor upload such logs.
+      If the policy is set to false, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> may not collect nor upload such logs.
+
+      If the policy is unset, up to and including M76, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> may not collect nor upload such logs.
+
+      If the policy is unset, since M77, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> may collect or upload such logs by default if the browser profile is considered managed, i.e. if the profile receives cloud or machine level policies, and is not a child, ephemeral, login, or incognito profile.
 
       These logs contain diagnostic information helpful when debugging issues with audio or video calls in Chrome, such as the time and size of sent and received RTP packets, feedback about congestion on the network, and metadata about time and quality of audio and video frames. These logs do not contain audio or video contents from the call.
 
@@ -17785,7 +17835,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     },
     'doc_reference_link': {
       'desc': '''Text pointing the user to the reference page for this policy, which may have more info (since it doesn't have a size limit)''',
-      'text': '''Reference: <ph name="REFERENCE_URL">$6<ex>https://www.chromium.org/administrators/policy-list-3#WallpaperImage</ex></ph>''',
+      'text': '''Reference: <ph name="REFERENCE_URL">$6<ex>https://cloud.google.com/docs/chrome-enterprise/policies/?policy=WallpaperImage</ex></ph>''',
     },
     'doc_legacy_single_line_label': {
       'desc': '''A label for the legacy single-line textbox for a policy also has a more user-friendly multi-line textbox. See http://crbug/829328''',
@@ -17805,7 +17855,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     },
     'doc_schema_description_link': {
       'desc': '''Text pointing the user to the expanded documentation page for this policy, containing the information about schema and formatting.''',
-      'text': '''See <ph name="REFERENCE_URL">$6<ex>https://www.chromium.org/administrators/policy-list-3#WallpaperImage</ex></ph> for more information about schema and formatting.'''
+      'text': '''See <ph name="REFERENCE_URL">$6<ex>https://cloud.google.com/docs/chrome-enterprise/policies/?policy=WallpaperImage</ex></ph> for more information about schema and formatting.'''
     },
     'deprecated_policy_group_caption': {
       'desc': '''Localized name for the deprecated policies folder, for Microsoft's Group Policy Editor.''',
@@ -17977,7 +18027,8 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceBatteryChargeCustomStartCharging': 'device_battery_charge_mode.custom_charge_start',
     'DeviceBatteryChargeCustomStopCharging': 'device_battery_charge_mode.custom_charge_stop',
     'DeviceScheduledUpdateCheck': 'device_scheduled_update_check.device_scheduled_update_check_settings',
-    'DevicePowerwashAllowed': 'device_powerwash_allowed.device_powerwash_allowed'
+    'DevicePowerwashAllowed': 'device_powerwash_allowed.device_powerwash_allowed',
+    'DeviceLoginScreenWebUsbAllowDevicesForUrls': 'device_login_screen_webusb_allow_devices_for_urls.device_login_screen_webusb_allow_devices_for_urls'
   },
   'policy_atomic_group_definitions': [
     {
@@ -18164,6 +18215,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       'caption': '''Web USB settings''',
       'policies': [
         'DefaultWebUsbGuardSetting',
+        'DeviceLoginScreenWebUsbAllowDevicesForUrls',
         'WebUsbAllowDevicesForUrls',
         'WebUsbAskForUrls',
         'WebUsbBlockedForUrls',
@@ -18418,6 +18470,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 602,
+  'highest_id_currently_used': 603,
   'highest_atomic_group_id_currently_used': 37
 }

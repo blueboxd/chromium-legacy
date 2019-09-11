@@ -251,7 +251,7 @@ void TriggerThrottler::WriteTriggerEventsToPref() {
         base::NumberToString(static_cast<int>(trigger_item.first)),
         base::Value(base::Value::Type::LIST));
     for (const base::Time timestamp : trigger_item.second) {
-      pref_timestamps->GetList().push_back(base::Value(timestamp.ToDoubleT()));
+      pref_timestamps->Append(base::Value(timestamp.ToDoubleT()));
     }
   }
 

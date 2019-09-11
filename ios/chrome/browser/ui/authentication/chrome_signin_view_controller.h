@@ -113,6 +113,7 @@ using TimerGeneratorBlock = std::unique_ptr<base::OneShotTimer> (^)();
 // Secondary button title used to skip the sign-in.
 @property(nonatomic, readonly) NSString* skipSigninButtonTitle;
 
+@property(nonatomic, readonly) UIColor* backgroundColor;
 @property(nonatomic, readonly) UIButton* primaryButton;
 @property(nonatomic, readonly) UIButton* secondaryButton;
 

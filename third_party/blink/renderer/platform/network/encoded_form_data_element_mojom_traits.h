@@ -31,9 +31,9 @@ struct PLATFORM_EXPORT StructTraits<blink::mojom::FetchAPIDataElementDataView,
   static mojo::PendingRemote<network::mojom::blink::DataPipeGetter>
   data_pipe_getter(const blink::FormDataElement& data);
 
-  static network::mojom::blink::ChunkedDataPipeGetterPtrInfo
+  static mojo::PendingRemote<network::mojom::blink::ChunkedDataPipeGetter>
   chunked_data_pipe_getter(const blink::FormDataElement& data) {
-    return nullptr;
+    return mojo::NullRemote();
   }
 
   static uint64_t offset(const blink::FormDataElement& data) {

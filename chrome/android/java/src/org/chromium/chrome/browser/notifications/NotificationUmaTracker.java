@@ -91,7 +91,7 @@ public class NotificationUmaTracker {
             ActionType.DOWNLOAD_PAGE_RESUME, ActionType.DOWNLOAD_PAGE_CANCEL,
             ActionType.CONTENT_SUGGESTION_SETTINGS, ActionType.WEB_APP_ACTION_SHARE,
             ActionType.WEB_APP_ACTION_OPEN_IN_CHROME,
-            ActionType.OFFLINE_CONTENT_SUGGESTION_SETTINGS})
+            ActionType.OFFLINE_CONTENT_SUGGESTION_SETTINGS, ActionType.SHARING_TRY_AGAIN})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ActionType {
         int UNKNOWN = -1;
@@ -116,7 +116,7 @@ public class NotificationUmaTracker {
         // Setting button in offline content suggestion notification.
         int OFFLINE_CONTENT_SUGGESTION_SETTINGS = 9;
         // Dismiss button on sharing notification.
-        int SHARING_DISMISS = 10;
+        // int SHARING_DISMISS = 10; deprecated
         // Try again button on sharing error notification.
         int SHARING_TRY_AGAIN = 11;
 

@@ -33,7 +33,7 @@ class BarcodeDetectorStatics final
   ~BarcodeDetectorStatics();
 
   void CreateBarcodeDetection(
-      shape_detection::mojom::blink::BarcodeDetectionRequest,
+      mojo::PendingReceiver<shape_detection::mojom::blink::BarcodeDetection>,
       shape_detection::mojom::blink::BarcodeDetectorOptionsPtr);
   ScriptPromise EnumerateSupportedFormats(ScriptState*);
 

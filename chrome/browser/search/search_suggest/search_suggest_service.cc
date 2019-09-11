@@ -297,7 +297,7 @@ void SearchSuggestService::BlocklistSearchSuggestionWithHash(
   base::Value* value = blocklist->FindKey(task_version_id);
   if (!value)
     value = blocklist->SetKey(task_version_id, base::ListValue());
-  value->GetList().emplace_back(base::Value(hash_string));
+  value->Append(base::Value(hash_string));
 
   search_suggest_data_ = base::nullopt;
   Refresh();

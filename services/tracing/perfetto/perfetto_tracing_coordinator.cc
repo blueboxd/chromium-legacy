@@ -240,8 +240,7 @@ class PerfettoTracingCoordinator::TracingSession : public perfetto::Consumer {
 PerfettoTracingCoordinator::PerfettoTracingCoordinator(
     AgentRegistry* agent_registry,
     base::RepeatingClosure on_disconnect_callback)
-    : Coordinator(agent_registry, std::move(on_disconnect_callback)),
-      binding_(this) {
+    : Coordinator(agent_registry, std::move(on_disconnect_callback)) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -252,15 +251,15 @@ PerfettoTracingCoordinator::~PerfettoTracingCoordinator() {
 void PerfettoTracingCoordinator::OnClientConnectionError() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   tracing_session_.reset();
-  binding_.Close();
+  receiver_.reset();
   Coordinator::OnClientConnectionError();
 }
 
-void PerfettoTracingCoordinator::BindCoordinatorRequest(
-    mojom::CoordinatorRequest request,
+void PerfettoTracingCoordinator::BindCoordinatorReceiver(
+    mojo::PendingReceiver<mojom::Coordinator> receiver,
     const service_manager::BindSourceInfo& source_info) {
-  binding_.Bind(std::move(request));
-  binding_.set_connection_error_handler(
+  receiver_.Bind(std::move(receiver));
+  receiver_.set_disconnect_handler(
       base::BindOnce(&PerfettoTracingCoordinator::OnClientConnectionError,
                      base::Unretained(this)));
 }

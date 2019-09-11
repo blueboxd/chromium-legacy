@@ -254,7 +254,7 @@ void ExternalPopupMenu::GetPopupMenuInfo(WebPopupMenuInfo& info,
     popup_item.checked = false;
     if (IsA<HTMLHRElement>(item_element)) {
       popup_item.type = WebMenuItemInfo::kSeparator;
-    } else if (IsHTMLOptGroupElement(item_element)) {
+    } else if (IsA<HTMLOptGroupElement>(item_element)) {
       popup_item.type = WebMenuItemInfo::kGroup;
     } else {
       popup_item.type = WebMenuItemInfo::kOption;

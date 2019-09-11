@@ -33,6 +33,7 @@
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/lock_screen_utils.h"
 #include "chrome/browser/chromeos/login/reauth_stats.h"
+#include "chrome/browser/chromeos/login/saml/public_saml_url_fetcher.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/login/signin_partition_manager.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -365,10 +366,29 @@ void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
   login::SigninPartitionManager* signin_partition_manager =
       login::SigninPartitionManager::Factory::GetForBrowserContext(
           Profile::FromWebUI(web_ui()));
-  signin_partition_manager->StartSigninSession(
-      web_ui()->GetWebContents(),
+
+  auto partition_call = base::BindOnce(
+      &login::SigninPartitionManager::StartSigninSession,
+      base::Unretained(signin_partition_manager), web_ui()->GetWebContents(),
       base::BindOnce(&GaiaScreenHandler::LoadGaiaWithPartition,
                      weak_factory_.GetWeakPtr(), context));
+
+  if (!context.email.empty()) {
+    const AccountId account_id = GetAccountId(
+        context.email, std::string() /* id */, AccountType::UNKNOWN);
+    const user_manager::User* const user =
+        user_manager::UserManager::Get()->FindUser(account_id);
+
+    if (user && user->using_saml() &&
+        user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
+      public_saml_url_fetcher_ =
+          std::make_unique<chromeos::PublicSamlUrlFetcher>(account_id);
+      public_saml_url_fetcher_->Fetch(std::move(partition_call));
+      return;
+    }
+  }
+  public_saml_url_fetcher_.reset();
+  std::move(partition_call).Run();
 }
 
 void GaiaScreenHandler::LoadGaiaWithPartition(
@@ -444,30 +464,6 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
   screen_mode_ = GetGaiaScreenMode(context.email, context.use_offline);
   params.SetInteger("screenMode", screen_mode_);
 
-  if (!context.email.empty()) {
-    const AccountId account_id = GetAccountId(
-        context.email, std::string() /* id */, AccountType::UNKNOWN);
-    const user_manager::User* const user =
-        user_manager::UserManager::Get()->FindUser(account_id);
-    if (user && user->using_saml() &&
-        user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT &&
-        base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kPublicAccountsSamlUrl)) {
-      std::string saml_url =
-          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-              switches::kPublicAccountsSamlUrl);
-      params.SetBoolean("startsOnSamlPage", true);
-      params.SetString("frameUrl", saml_url);
-      params.SetString("email", account_id.GetUserEmail());
-      CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kPublicAccountsSamlAclUrl));
-      std::string saml_acl_url =
-          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-              switches::kPublicAccountsSamlAclUrl);
-      params.SetString("samlAclUrl", saml_acl_url);
-    }
-  }
-
   if (screen_mode_ == GAIA_SCREEN_MODE_AD && !authpolicy_login_helper_)
     authpolicy_login_helper_ = std::make_unique<AuthPolicyHelper>();
 
@@ -537,6 +533,26 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
   params.SetBoolean("extractSamlPasswordAttributes",
                     ExtractSamlPasswordAttributesEnabled());
   params.SetBoolean("enableGaiaActionButtons", GaiaActionButtonsEnabled());
+
+  if (public_saml_url_fetcher_) {
+    params.SetBoolean("startsOnSamlPage", true);
+    CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kPublicAccountsSamlAclUrl));
+    std::string saml_acl_url =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kPublicAccountsSamlAclUrl);
+    params.SetString("samlAclUrl", saml_acl_url);
+    if (public_saml_url_fetcher_->FetchSucceeded()) {
+      params.SetString("frameUrl", public_saml_url_fetcher_->GetRedirectUrl());
+    } else {
+      // TODO: make the string localized.
+      std::string msg = "Failed to fetch the SAML redirect URL from the server";
+      core_oobe_view_->ShowSignInError(
+          0, msg, std::string(), HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
+      return;
+    }
+  }
+  public_saml_url_fetcher_.reset();
 
   frame_state_ = FRAME_STATE_LOADING;
   CallJS("login.GaiaSigninScreen.loadAuthExtension", params);

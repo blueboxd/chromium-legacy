@@ -38,7 +38,7 @@ void SecondsToMilliseconds(base::Value* val) {
 void StringToList(base::Value* val) {
   std::string str = val->GetString();
   *val = base::Value(base::Value::Type::LIST);
-  val->GetList().push_back(base::Value(std::move(str)));
+  val->Append(base::Value(std::move(str)));
 }
 
 }  // namespace

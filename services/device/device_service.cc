@@ -143,7 +143,7 @@ void DeviceService::SetPlatformSensorProviderForTesting(
 
 void DeviceService::OnStart() {
   registry_.AddInterface<mojom::Fingerprint>(base::Bind(
-      &DeviceService::BindFingerprintRequest, base::Unretained(this)));
+      &DeviceService::BindFingerprintReceiver, base::Unretained(this)));
   registry_.AddInterface<mojom::GeolocationConfig>(base::BindRepeating(
       &DeviceService::BindGeolocationConfigRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::GeolocationContext>(base::Bind(
@@ -275,8 +275,9 @@ void DeviceService::BindInputDeviceManagerRequest(
 }
 #endif
 
-void DeviceService::BindFingerprintRequest(mojom::FingerprintRequest request) {
-  Fingerprint::Create(std::move(request));
+void DeviceService::BindFingerprintReceiver(
+    mojo::PendingReceiver<mojom::Fingerprint> receiver) {
+  Fingerprint::Create(std::move(receiver));
 }
 
 void DeviceService::BindGeolocationConfigRequest(

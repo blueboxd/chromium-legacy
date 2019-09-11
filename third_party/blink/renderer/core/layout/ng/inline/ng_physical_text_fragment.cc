@@ -244,7 +244,7 @@ unsigned NGPhysicalTextFragment::TextOffsetForPoint(
   LayoutUnit inline_offset = IsLtr(ResolvedDirection())
                                  ? point_in_line_direction
                                  : size.inline_size - point_in_line_direction;
-  DCHECK_EQ(1u, Length());
+  DCHECK_EQ(1u, TextLength());
   return inline_offset <= size.inline_size / 2 ? StartOffset() : EndOffset();
 }
 

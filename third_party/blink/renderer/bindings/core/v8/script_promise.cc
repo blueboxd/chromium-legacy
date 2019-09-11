@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
-#include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -47,7 +46,7 @@ class PromiseAllHandler final
     : public GarbageCollectedFinalized<PromiseAllHandler> {
  public:
   static ScriptPromise All(ScriptState* script_state,
-                           const Vector<ScriptPromise>& promises) {
+                           const HeapVector<ScriptPromise>& promises) {
     if (promises.IsEmpty())
       return ScriptPromise::Cast(script_state,
                                  v8::Array::New(script_state->GetIsolate()));
@@ -55,7 +54,8 @@ class PromiseAllHandler final
         ->resolver_.Promise();
   }
 
-  PromiseAllHandler(ScriptState* script_state, Vector<ScriptPromise> promises)
+  PromiseAllHandler(ScriptState* script_state,
+                    HeapVector<ScriptPromise> promises)
       : number_of_pending_promises_(promises.size()), resolver_(script_state) {
     DCHECK(!promises.IsEmpty());
     values_.resize(promises.size());
@@ -65,7 +65,10 @@ class PromiseAllHandler final
     }
   }
 
-  virtual void Trace(blink::Visitor* visitor) { visitor->Trace(resolver_); }
+  virtual void Trace(blink::Visitor* visitor) {
+    visitor->Trace(resolver_);
+    visitor->Trace(values_);
+  }
 
  private:
   class AdapterFunction : public ScriptFunction {
@@ -157,7 +160,7 @@ class PromiseAllHandler final
 
   // This is cleared when owners of this handler, that is, given promises are
   // settled.
-  Vector<ScriptValue> values_;
+  HeapVector<ScriptValue> values_;
 
   DISALLOW_COPY_AND_ASSIGN(PromiseAllHandler);
 };
@@ -210,15 +213,9 @@ void ScriptPromise::InternalResolver::Reject(v8::Local<v8::Value> value) {
   Clear();
 }
 
-ScriptPromise::ScriptPromise() {
-  IncreaseInstanceCount();
-}
-
 ScriptPromise::ScriptPromise(ScriptState* script_state,
                              v8::Local<v8::Value> value)
     : script_state_(script_state) {
-  IncreaseInstanceCount();
-
   if (value.IsEmpty())
     return;
 
@@ -232,14 +229,8 @@ ScriptPromise::ScriptPromise(ScriptState* script_state,
 }
 
 ScriptPromise::ScriptPromise(const ScriptPromise& other) {
-  IncreaseInstanceCount();
-
   this->script_state_ = other.script_state_;
   this->promise_ = other.promise_;
-}
-
-ScriptPromise::~ScriptPromise() {
-  DecreaseInstanceCount();
 }
 
 ScriptPromise ScriptPromise::Then(v8::Local<v8::Function> on_fulfilled,
@@ -350,16 +341,8 @@ void ScriptPromise::MarkAsHandled() {
 }
 
 ScriptPromise ScriptPromise::All(ScriptState* script_state,
-                                 const Vector<ScriptPromise>& promises) {
+                                 const HeapVector<ScriptPromise>& promises) {
   return PromiseAllHandler::All(script_state, promises);
-}
-
-void ScriptPromise::IncreaseInstanceCount() {
-  InstanceCounters::IncrementCounter(InstanceCounters::kScriptPromiseCounter);
-}
-
-void ScriptPromise::DecreaseInstanceCount() {
-  InstanceCounters::DecrementCounter(InstanceCounters::kScriptPromiseCounter);
 }
 
 }  // namespace blink

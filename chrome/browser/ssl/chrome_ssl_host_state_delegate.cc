@@ -122,7 +122,7 @@ void UpdateRecurrentInterstitialPref(Profile* profile,
     // (i.e. out of order). Save a new list composed of just this one error
     // instance.
     base::ListValue error_list;
-    error_list.GetList().push_back(base::Value(now));
+    error_list.Append(base::Value(now));
     pref_update->SetKey(net::ErrorToShortString(error), std::move(error_list));
   } else {
     // Only up to |threshold| values need to be stored. If the list already

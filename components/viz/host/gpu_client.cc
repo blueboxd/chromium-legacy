@@ -32,26 +32,26 @@ GpuClient::GpuClient(std::unique_ptr<GpuClientDelegate> delegate,
       client_tracing_id_(client_tracing_id),
       task_runner_(std::move(task_runner)) {
   DCHECK(delegate_);
-  gpu_bindings_.set_connection_error_handler(
+  gpu_receivers_.set_disconnect_handler(
       base::BindRepeating(&GpuClient::OnError, base::Unretained(this),
                           ErrorReason::kConnectionLost));
 }
 
 GpuClient::~GpuClient() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  gpu_bindings_.CloseAllBindings();
+  gpu_receivers_.Clear();
   OnError(ErrorReason::kInDestructor);
 }
 
-void GpuClient::Add(mojom::GpuRequest request) {
+void GpuClient::Add(mojo::PendingReceiver<mojom::Gpu> receiver) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  gpu_bindings_.AddBinding(this, std::move(request));
+  gpu_receivers_.Add(this, std::move(receiver));
 }
 
 void GpuClient::OnError(ErrorReason reason) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   ClearCallback();
-  if (gpu_bindings_.empty() && delegate_) {
+  if (gpu_receivers_.empty() && delegate_) {
     if (auto* gpu_memory_buffer_manager =
             delegate_->GetGpuMemoryBufferManager()) {
       gpu_memory_buffer_manager->DestroyAllGpuMemoryBufferForClient(client_id_);

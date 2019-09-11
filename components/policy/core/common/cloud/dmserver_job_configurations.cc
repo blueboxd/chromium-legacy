@@ -76,6 +76,8 @@ const char* JobTypeToRequestType(
     case DeviceManagementService::JobConfiguration::
         TYPE_UPLOAD_POLICY_VALIDATION_REPORT:
       return dm_protocol::kValueRequestUploadPolicyValidationReport;
+    case DeviceManagementService::JobConfiguration::TYPE_REQUEST_SAML_URL:
+      return dm_protocol::kValueRequestPublicSamlUser;
     case DeviceManagementService::JobConfiguration::
         TYPE_UPLOAD_REAL_TIME_REPORT:
       NOTREACHED() << "Not a DMServer request type" << type;

@@ -20,7 +20,7 @@ const int32_t kAgentResponseTimeoutInSeconds = 10;
 
 AgentRegistry::AgentEntry::AgentEntry(size_t id,
                                       AgentRegistry* agent_registry,
-                                      mojom::AgentPtr agent,
+                                      mojo::PendingRemote<mojom::Agent> agent,
                                       const std::string& label,
                                       mojom::TraceDataType type,
                                       base::ProcessId pid)
@@ -31,7 +31,7 @@ AgentRegistry::AgentEntry::AgentEntry(size_t id,
       type_(type),
       pid_(pid) {
   DCHECK(!label.empty());
-  agent_.set_connection_error_handler(base::BindRepeating(
+  agent_.set_disconnect_handler(base::BindRepeating(
       &AgentRegistry::AgentEntry::OnConnectionError, AsWeakPtr()));
 }
 
@@ -81,12 +81,12 @@ AgentRegistry::AgentRegistry() = default;
 AgentRegistry::~AgentRegistry() = default;
 
 void AgentRegistry::DisconnectAllAgents() {
-  bindings_.CloseAllBindings();
+  receivers_.Clear();
 }
 
-void AgentRegistry::BindAgentRegistryRequest(
-    mojom::AgentRegistryRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void AgentRegistry::BindAgentRegistryReceiver(
+    mojo::PendingReceiver<mojom::AgentRegistry> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 size_t AgentRegistry::SetAgentInitializationCallback(
@@ -111,7 +111,7 @@ bool AgentRegistry::HasDisconnectClosure(const void* closure_name) {
   return false;
 }
 
-void AgentRegistry::RegisterAgent(mojom::AgentPtr agent,
+void AgentRegistry::RegisterAgent(mojo::PendingRemote<mojom::Agent> agent,
                                   const std::string& label,
                                   mojom::TraceDataType type,
                                   base::ProcessId pid) {

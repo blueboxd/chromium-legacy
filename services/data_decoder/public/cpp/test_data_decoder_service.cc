@@ -4,6 +4,7 @@
 
 #include "services/data_decoder/public/cpp/test_data_decoder_service.h"
 
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/data_decoder/data_decoder_service.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
 
@@ -37,16 +38,18 @@ void CrashyDataDecoderService::OnBindInterface(
   DCHECK(interface_name == mojom::JsonParser::Name_ ||
          interface_name == mojom::ImageDecoder::Name_);
   if (interface_name == mojom::JsonParser::Name_ && crash_json_) {
-    DCHECK(!json_parser_binding_);
-    json_parser_binding_ = std::make_unique<mojo::Binding<mojom::JsonParser>>(
-        this, mojom::JsonParserRequest(std::move(interface_pipe)));
+    DCHECK(!json_parser_receiver_);
+    json_parser_receiver_ = std::make_unique<mojo::Receiver<mojom::JsonParser>>(
+        this,
+        mojo::PendingReceiver<mojom::JsonParser>(std::move(interface_pipe)));
     return;
   }
   if (interface_name == mojom::ImageDecoder::Name_ && crash_image_) {
-    DCHECK(!image_decoder_binding_);
-    image_decoder_binding_ =
-        std::make_unique<mojo::Binding<mojom::ImageDecoder>>(
-            this, mojom::ImageDecoderRequest(std::move(interface_pipe)));
+    DCHECK(!image_decoder_receiver_);
+    image_decoder_receiver_ =
+        std::make_unique<mojo::Receiver<mojom::ImageDecoder>>(
+            this, mojo::PendingReceiver<mojom::ImageDecoder>(
+                      std::move(interface_pipe)));
     return;
   }
   real_service_.OnBindInterface(source_info, interface_name,
@@ -61,7 +64,7 @@ void CrashyDataDecoderService::DecodeImage(
     int64_t max_size_in_bytes,
     const gfx::Size& desired_image_frame_size,
     DecodeImageCallback callback) {
-  image_decoder_binding_.reset();
+  image_decoder_receiver_.reset();
 }
 
 void CrashyDataDecoderService::DecodeAnimation(
@@ -69,12 +72,12 @@ void CrashyDataDecoderService::DecodeAnimation(
     bool shrink_to_fit,
     int64_t max_size_in_bytes,
     DecodeAnimationCallback callback) {
-  image_decoder_binding_.reset();
+  image_decoder_receiver_.reset();
 }
 
 void CrashyDataDecoderService::Parse(const std::string& json,
                                      ParseCallback callback) {
-  json_parser_binding_.reset();
+  json_parser_receiver_.reset();
 }
 
 }  // namespace data_decoder

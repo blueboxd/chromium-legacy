@@ -32,7 +32,7 @@ class WebGL2ComputeRenderingContextBase : public WebGL2RenderingContextBase {
   String getProgramResourceName(WebGLProgram*,
                                 GLenum program_interface,
                                 GLuint index);
-  base::Optional<Vector<ScriptValue>> getProgramResource(
+  base::Optional<HeapVector<ScriptValue>> getProgramResource(
       ScriptState*,
       WebGLProgram*,
       GLenum program_interface,

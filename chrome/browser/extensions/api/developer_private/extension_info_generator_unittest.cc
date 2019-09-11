@@ -80,7 +80,7 @@ std::string SiteControlsToString(
   list.GetList().reserve(controls.size());
   for (const auto& control : controls) {
     std::unique_ptr<base::Value> control_value = control.ToValue();
-    list.GetList().push_back(std::move(*control_value));
+    list.Append(std::move(*control_value));
   }
 
   std::string json;

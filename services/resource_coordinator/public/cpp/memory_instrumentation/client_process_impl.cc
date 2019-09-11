@@ -48,7 +48,7 @@ ClientProcessImpl::ClientProcessImpl(const Config& config)
     MemoryInstrumentation::CreateInstance(config.connector,
                                           config.service_name);
   } else {
-    config.coordinator_for_testing->BindCoordinatorRequest(
+    config.coordinator_for_testing->BindCoordinatorReceiver(
         mojo::MakeRequest(&coordinator_), service_manager::BindSourceInfo());
   }
 

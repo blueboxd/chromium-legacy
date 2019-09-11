@@ -302,7 +302,7 @@ TEST_F(AccessibilitySelectionTest, SetSelectionAcrossLineBreak) {
 
   const Node* paragraph = GetDocument().QuerySelector("p");
   ASSERT_NE(nullptr, paragraph);
-  ASSERT_TRUE(IsHTMLParagraphElement(paragraph));
+  ASSERT_TRUE(IsA<HTMLParagraphElement>(paragraph));
   const Node* br = GetDocument().QuerySelector("br");
   ASSERT_NE(nullptr, br);
   ASSERT_TRUE(IsA<HTMLBRElement>(br));
@@ -347,7 +347,7 @@ TEST_F(AccessibilitySelectionTest, SetSelectionAcrossLineBreakInEditableText) {
 
   const Node* paragraph = GetDocument().QuerySelector("p");
   ASSERT_NE(nullptr, paragraph);
-  ASSERT_TRUE(IsHTMLParagraphElement(paragraph));
+  ASSERT_TRUE(IsA<HTMLParagraphElement>(paragraph));
   const Node* br = GetDocument().QuerySelector("br");
   ASSERT_NE(nullptr, br);
   ASSERT_TRUE(IsA<HTMLBRElement>(br));

@@ -523,9 +523,9 @@ of the certificate, thus exposing a user's HTTPS browsing history to the
 responder (a third party).
 
 That said, you can use enterprise policies to [enable soft-fail
-OCSP](https://www.chromium.org/administrators/policy-list-3#EnableOnlineRevocationChecks)
+OCSP](https://cloud.google.com/docs/chrome-enterprise/policies/?policy=EnableOnlineRevocationChecks)
 and hard-fail OCSP for [local trust
-anchors](https://www.chromium.org/administrators/policy-list-3#RequireOnlineRevocationChecksForLocalAnchors).
+anchors](https://cloud.google.com/docs/chrome-enterprise/policies/?policy=RequireOnlineRevocationChecksForLocalAnchors).
 
 Chrome performs online checking for [Extended
 Validation](https://cabforum.org/about-ev-ssl/) certificates if it does not

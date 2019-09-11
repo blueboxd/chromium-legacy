@@ -453,11 +453,11 @@ class ProgressCenterPanel {
                 this.completedHost_.removePanelItem(donePanelItem);
               }
             };
-            // Delete after 7 seconds, doesn't matter if it's manually deleted
+            // Delete after 4 seconds, doesn't matter if it's manually deleted
             // before the timer fires, as removePanelItem handles that case.
             setTimeout(() => {
               this.completedHost_.removePanelItem(donePanelItem);
-            }, 7000);
+            }, 4000);
           }
           // Drop through to remove the progress panel.
         case 'canceled':

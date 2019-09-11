@@ -45,15 +45,6 @@ class SigninManagerAndroid : public KeyedService {
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
-  // Indicates that the user has made the choice to sign-in. |username|
-  // contains the email address of the account to use as primary.
-  jboolean SetPrimaryAccount(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jstring>& username);
-
-  void SignOut(JNIEnv* env,
-               jint signoutReason);
-
   void LogInSignedInUser(JNIEnv* env);
 
   void ClearLastSignedInUser(JNIEnv* env);

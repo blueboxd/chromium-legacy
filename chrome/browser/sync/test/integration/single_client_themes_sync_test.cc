@@ -54,12 +54,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientThemesSyncTest, CustomTheme) {
   EXPECT_EQ(GetCustomTheme(0), GetThemeID(verifier()));
 }
 
-// TODO(sync): Fails on Chrome OS. See http://crbug.com/84575.
-#if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(SingleClientThemesSyncTest, DISABLED_NativeTheme) {
-#else
 IN_PROC_BROWSER_TEST_F(SingleClientThemesSyncTest, NativeTheme) {
-#endif  // OS_CHROMEOS
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   SetCustomTheme(GetProfile(0));

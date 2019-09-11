@@ -4,10 +4,17 @@
 
 #include "pdf/test/test_utils.h"
 
+#include "ppapi/cpp/point.h"
 #include "ppapi/cpp/rect.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_pdf {
+
+void ComparePoint(const pp::Point& expected_point,
+                  const pp::Point& given_point) {
+  EXPECT_EQ(expected_point.x(), given_point.x());
+  EXPECT_EQ(expected_point.y(), given_point.y());
+}
 
 void CompareRect(const pp::Rect& expected_rect, const pp::Rect& given_rect) {
   EXPECT_EQ(expected_rect.x(), given_rect.x());

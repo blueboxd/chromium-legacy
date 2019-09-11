@@ -221,6 +221,11 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   // return it, otherwise return base::nullopt;
   base::Optional<FindInPageResultInfo> GetSelectionOffsetsFromFindInPage();
 
+  // Get the embedded object ("hyperlink") indices for this object in the
+  // parent. If this object doesn't have a parent or isn't embedded, return
+  // nullopt.
+  base::Optional<std::pair<int, int>> GetEmbeddedObjectIndices();
+
   std::string accessible_name_;
 
  protected:

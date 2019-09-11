@@ -209,6 +209,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
     return offset_;
   }
   PhysicalSize Size() const { return PhysicalFragment().Size(); }
+  PhysicalRect Rect() const { return {Offset(), Size()}; }
 
   // Converts the given point, relative to the fragment itself, into a position
   // in DOM tree.

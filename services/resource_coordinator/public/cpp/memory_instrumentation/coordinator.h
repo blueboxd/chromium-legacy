@@ -15,9 +15,9 @@ namespace memory_instrumentation {
 
 class Coordinator {
  public:
-  // Binds a CoordinatorRequest to this Coordinator instance.
-  virtual void BindCoordinatorRequest(
-      mojom::CoordinatorRequest,
+  // Binds a Coordinator Receiver to this Coordinator instance.
+  virtual void BindCoordinatorReceiver(
+      mojo::PendingReceiver<mojom::Coordinator>,
       const service_manager::BindSourceInfo& source_info) = 0;
 };
 

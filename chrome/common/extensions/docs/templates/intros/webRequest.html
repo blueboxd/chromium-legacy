@@ -119,12 +119,15 @@ complete nor stable.
 </p>
 
 <p>
-<span class="availability">Starting from Chrome 79</span>, header modifications
-affect Cross-Origin Resource Sharing (CORS) checks. If modified headers for
-cross-origin requests do not meet the criteria, it will result in sending a CORS
-preflight to ask the server if such headers can be accepted. If you really need
-to modify headers in a way to violate the CORS protocol, you need to specify
-<code>'extraHeaders'</code> in <code>opt_extraInfoSpec</code>.
+<span class="availability">Starting from Chrome 79</span>, request header
+modifications affect Cross-Origin Resource Sharing (CORS) checks. If modified
+headers for cross-origin requests do not meet the criteria, it will result in
+sending a CORS preflight to ask the server if such headers can be accepted.
+If you really need to modify headers in a way to violate the CORS protocol, you
+need to specify <code>'extraHeaders'</code> in <code>opt_extraInfoSpec</code>.
+On the other hand, response header modifications do not work to deceive CORS
+checks. If you need to deceive the CORS protocol, you also need to specify
+<code>'extraHeaders'</code> for the response modifications.
 </p>
 
 <p>

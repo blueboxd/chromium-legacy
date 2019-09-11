@@ -39,6 +39,7 @@ class Key;
 class SamlPasswordAttributes;
 class SigninScreenHandler;
 class UserContext;
+class PublicSamlUrlFetcher;
 
 class GaiaView {
  public:
@@ -413,6 +414,8 @@ class GaiaScreenHandler : public BaseScreenHandler,
 
   std::unique_ptr<LoginClientCertUsageObserver>
       extension_provided_client_cert_usage_observer_;
+
+  std::unique_ptr<chromeos::PublicSamlUrlFetcher> public_saml_url_fetcher_;
 
   // State of the security token PIN dialogs:
 

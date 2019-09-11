@@ -141,7 +141,7 @@ function testDriveDirectoryEntry(callback) {
       model.initialize()
           .then(() => {
             const actions = model.getActions();
-            assertEquals(3, Object.keys(actions).length);
+            assertEquals(5, Object.keys(actions).length);
 
             // 'Share' should be disabled in offline mode.
             const shareAction = actions[ActionsModel.CommonActionId.SHARE];
@@ -179,7 +179,7 @@ function testDriveDirectoryEntry(callback) {
           })
           .then(() => {
             const actions = model.getActions();
-            assertEquals(4, Object.keys(actions).length);
+            assertEquals(6, Object.keys(actions).length);
             assertTrue(!!actions[ActionsModel.CommonActionId.SHARE]);
             assertTrue(
                 !!actions[ActionsModel.InternalActionId.MANAGE_IN_DRIVE]);
@@ -317,18 +317,19 @@ function testTeamDriveRootEntry(callback) {
   return reportPromise(
       model.initialize().then(() => {
         const actions = model.getActions();
-        assertEquals(2, Object.keys(actions).length);
+        console.log(Object.keys(actions));
+        assertEquals(4, Object.keys(actions).length);
 
-        // "share" action is disabled for Team Drive Root entries.
+        // "share" action is enabled for Team Drive Root entries.
         const shareAction = actions[ActionsModel.CommonActionId.SHARE];
         assertTrue(!!shareAction);
-        assertFalse(shareAction.canExecute());
+        assertTrue(shareAction.canExecute());
 
         // "manage in drive" action is disabled for Team Drive Root entries.
         const manageAction =
             actions[ActionsModel.InternalActionId.MANAGE_IN_DRIVE];
         assertTrue(!!manageAction);
-        assertFalse(manageAction.canExecute());
+        assertTrue(manageAction.canExecute());
       }),
       callback);
 }
@@ -352,12 +353,24 @@ function testTeamDriveDirectoryEntry(callback) {
   return reportPromise(
       model.initialize().then(() => {
         const actions = model.getActions();
-        assertEquals(3, Object.keys(actions).length);
+        assertEquals(5, Object.keys(actions).length);
 
         // "Share" is enabled for Team Drive directories.
         const shareAction = actions[ActionsModel.CommonActionId.SHARE];
         assertTrue(!!shareAction);
         assertTrue(shareAction.canExecute());
+
+        // "Available Offline" toggle is enabled for Team Drive directories.
+        const saveForOfflineAction =
+            actions[ActionsModel.CommonActionId.SAVE_FOR_OFFLINE];
+        assertTrue(!!saveForOfflineAction);
+        assertTrue(saveForOfflineAction.canExecute());
+
+        // "Available Offline" toggle is enabled for Team Drive directories.
+        const offlineNotNecessaryAction =
+            actions[ActionsModel.CommonActionId.OFFLINE_NOT_NECESSARY];
+        assertTrue(!!offlineNotNecessaryAction);
+        assertTrue(offlineNotNecessaryAction.canExecute());
 
         // "Manage in drive" is enabled for Team Drive directories.
         const manageAction =

@@ -282,7 +282,6 @@ blink_core_tests("unit_tests") {
     "document_timeline_test.cc",
     "effect_input_test.cc",
     "effect_stack_test.cc",
-    "interpolable_length_test.cc",
     "interpolable_value_test.cc",
     "interpolation_effect_test.cc",
     "keyframe_effect_model_test.cc",

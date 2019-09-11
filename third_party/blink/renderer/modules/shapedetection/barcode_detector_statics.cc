@@ -34,10 +34,11 @@ BarcodeDetectorStatics::BarcodeDetectorStatics(ExecutionContext& document)
 BarcodeDetectorStatics::~BarcodeDetectorStatics() = default;
 
 void BarcodeDetectorStatics::CreateBarcodeDetection(
-    shape_detection::mojom::blink::BarcodeDetectionRequest request,
+    mojo::PendingReceiver<shape_detection::mojom::blink::BarcodeDetection>
+        receiver,
     shape_detection::mojom::blink::BarcodeDetectorOptionsPtr options) {
   EnsureServiceConnection();
-  service_->CreateBarcodeDetection(std::move(request), std::move(options));
+  service_->CreateBarcodeDetection(std::move(receiver), std::move(options));
 }
 
 ScriptPromise BarcodeDetectorStatics::EnumerateSupportedFormats(

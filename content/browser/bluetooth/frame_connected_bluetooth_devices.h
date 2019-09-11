@@ -11,6 +11,7 @@
 
 #include "base/optional.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/common/bluetooth/web_bluetooth_device_id.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 #include "url/origin.h"
@@ -43,9 +44,10 @@ class CONTENT_EXPORT FrameConnectedBluetoothDevices final {
 
   // If a connection doesn't exist already for |device_id|, adds a connection to
   // the map and increases the WebContents count of connected devices.
-  void Insert(const blink::WebBluetoothDeviceId& device_id,
-              std::unique_ptr<device::BluetoothGattConnection> connection,
-              blink::mojom::WebBluetoothServerClientAssociatedPtr client);
+  void Insert(
+      const blink::WebBluetoothDeviceId& device_id,
+      std::unique_ptr<device::BluetoothGattConnection> connection,
+      mojo::AssociatedRemote<blink::mojom::WebBluetoothServerClient> client);
 
   // Deletes the BluetoothGattConnection for |device_id| and decrements the
   // WebContents count of connected devices if |device_id| had a connection.

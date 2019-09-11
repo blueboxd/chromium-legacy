@@ -142,8 +142,8 @@ String WebFrameSerializerImpl::PreActionBeforeSerializeOpenTag(
     // have overrided the META which have correct charset declaration after
     // serializing open tag of HEAD element.
     DCHECK(element);
-    if (IsHTMLMetaElement(element) &&
-        ToHTMLMetaElement(element)->ComputeEncoding().IsValid()) {
+    auto* meta = DynamicTo<HTMLMetaElement>(element);
+    if (meta && meta->ComputeEncoding().IsValid()) {
       // Found META tag declared charset, we need to skip it when
       // serializing DOM.
       param->skip_meta_element = element;

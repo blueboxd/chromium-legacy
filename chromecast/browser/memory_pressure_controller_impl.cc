@@ -24,14 +24,13 @@ void MemoryPressureControllerImpl::AddBinding(
 
 void MemoryPressureControllerImpl::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel level) {
-  observers_.ForAllPtrs([level](mojom::MemoryPressureObserver* observer) {
+  for (auto& observer : observers_)
     observer->MemoryPressureLevelChanged(level);
-  });
 }
 
 void MemoryPressureControllerImpl::AddObserver(
-    mojom::MemoryPressureObserverPtr observer) {
-  observers_.AddPtr(std::move(observer));
+    mojo::PendingRemote<mojom::MemoryPressureObserver> observer) {
+  observers_.Add(std::move(observer));
 }
 
 }  // namespace chromecast

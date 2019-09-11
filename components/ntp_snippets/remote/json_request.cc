@@ -351,8 +351,7 @@ std::string JsonRequest::Builder::BuildBody() const {
     exclusive_category_parameters.SetInteger("numSuggestions",
                                              params_.count_to_fetch);
     base::ListValue category_parameters;
-    category_parameters.GetList().push_back(
-        std::move(exclusive_category_parameters));
+    category_parameters.Append(std::move(exclusive_category_parameters));
     request->SetKey("categoryParameters", std::move(category_parameters));
   }
 

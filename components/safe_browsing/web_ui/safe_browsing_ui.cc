@@ -254,10 +254,9 @@ base::Value UserReadableTimeFromMillisSinceEpoch(int64_t time_in_milliseconds) {
 void AddStoreInfo(const DatabaseManagerInfo::DatabaseInfo::StoreInfo store_info,
                   base::ListValue* database_info_list) {
   if (store_info.has_file_name()) {
-    database_info_list->GetList().push_back(
-        base::Value(store_info.file_name()));
+    database_info_list->Append(base::Value(store_info.file_name()));
   } else {
-    database_info_list->GetList().push_back(base::Value("Unknown store"));
+    database_info_list->Append(base::Value("Unknown store"));
   }
 
   std::string store_info_string = "<blockquote>";
@@ -287,15 +286,14 @@ void AddStoreInfo(const DatabaseManagerInfo::DatabaseInfo::StoreInfo store_info,
 
   store_info_string += "</blockquote>";
 
-  database_info_list->GetList().push_back(base::Value(store_info_string));
+  database_info_list->Append(base::Value(store_info_string));
 }
 
 void AddDatabaseInfo(const DatabaseManagerInfo::DatabaseInfo database_info,
                      base::ListValue* database_info_list) {
   if (database_info.has_database_size_bytes()) {
-    database_info_list->GetList().push_back(
-        base::Value("Database size (in bytes)"));
-    database_info_list->GetList().push_back(
+    database_info_list->Append(base::Value("Database size (in bytes)"));
+    database_info_list->Append(
         base::Value(static_cast<double>(database_info.database_size_bytes())));
   }
 
@@ -309,22 +307,18 @@ void AddUpdateInfo(const DatabaseManagerInfo::UpdateInfo update_info,
                    base::ListValue* database_info_list) {
   if (update_info.has_network_status_code()) {
     // Network status of the last GetUpdate().
-    database_info_list->GetList().push_back(
-        base::Value("Last update network status code"));
-    database_info_list->GetList().push_back(
-        base::Value(update_info.network_status_code()));
+    database_info_list->Append(base::Value("Last update network status code"));
+    database_info_list->Append(base::Value(update_info.network_status_code()));
   }
   if (update_info.has_last_update_time_millis()) {
-    database_info_list->GetList().push_back(base::Value("Last update time"));
-    database_info_list->GetList().push_back(
-        UserReadableTimeFromMillisSinceEpoch(
-            update_info.last_update_time_millis()));
+    database_info_list->Append(base::Value("Last update time"));
+    database_info_list->Append(UserReadableTimeFromMillisSinceEpoch(
+        update_info.last_update_time_millis()));
   }
   if (update_info.has_next_update_time_millis()) {
-    database_info_list->GetList().push_back(base::Value("Next update time"));
-    database_info_list->GetList().push_back(
-        UserReadableTimeFromMillisSinceEpoch(
-            update_info.next_update_time_millis()));
+    database_info_list->Append(base::Value("Next update time"));
+    database_info_list->Append(UserReadableTimeFromMillisSinceEpoch(
+        update_info.next_update_time_millis()));
   }
 }
 
@@ -379,13 +373,13 @@ void ParseFullHashCache(const FullHashCacheInfo::FullHashCache full_hash_cache,
             .GetString());
   }
 
-  full_hash_cache_list->GetList().push_back(std::move(full_hash_cache_parsed));
+  full_hash_cache_list->Append(std::move(full_hash_cache_parsed));
 
   for (auto full_hash_info_it :
        full_hash_cache.cached_hash_prefix_info().full_hash_info()) {
     base::DictionaryValue full_hash_info_dict;
     ParseFullHashInfo(full_hash_info_it, &full_hash_info_dict);
-    full_hash_cache_list->GetList().push_back(std::move(full_hash_info_dict));
+    full_hash_cache_list->Append(std::move(full_hash_info_dict));
   }
 }
 
@@ -395,14 +389,14 @@ void ParseFullHashCacheInfo(const FullHashCacheInfo full_hash_cache_info_proto,
     base::DictionaryValue number_of_hits;
     number_of_hits.SetInteger("Number of cache hits",
                               full_hash_cache_info_proto.number_of_hits());
-    full_hash_cache_info->GetList().push_back(std::move(number_of_hits));
+    full_hash_cache_info->Append(std::move(number_of_hits));
   }
 
   // Record FullHashCache list.
   for (auto full_hash_cache_it : full_hash_cache_info_proto.full_hash_cache()) {
     base::ListValue full_hash_cache_list;
     ParseFullHashCache(full_hash_cache_it, &full_hash_cache_list);
-    full_hash_cache_info->GetList().push_back(std::move(full_hash_cache_list));
+    full_hash_cache_info->Append(std::move(full_hash_cache_list));
   }
 }
 
@@ -458,7 +452,7 @@ base::Value SerializeReferrer(const ReferrerChainEntry& referrer) {
 
   base::ListValue ip_addresses;
   for (const std::string& ip_address : referrer.ip_addresses()) {
-    ip_addresses.GetList().push_back(base::Value(ip_address));
+    ip_addresses.Append(base::Value(ip_address));
   }
   referrer_dict.SetKey("ip_addresses", std::move(ip_addresses));
 
@@ -476,7 +470,7 @@ base::Value SerializeReferrer(const ReferrerChainEntry& referrer) {
   base::ListValue server_redirects;
   for (const ReferrerChainEntry::ServerRedirect& server_redirect :
        referrer.server_redirect_chain()) {
-    server_redirects.GetList().push_back(base::Value(server_redirect.url()));
+    server_redirects.Append(base::Value(server_redirect.url()));
   }
   referrer_dict.SetKey("server_redirect_chain", std::move(server_redirects));
 
@@ -542,8 +536,7 @@ std::string SerializeClientDownloadRequest(const ClientDownloadRequest& cdr) {
 
   auto referrer_chain = std::make_unique<base::ListValue>();
   for (const auto& referrer_chain_entry : cdr.referrer_chain()) {
-    referrer_chain->GetList().push_back(
-        SerializeReferrer(referrer_chain_entry));
+    referrer_chain->Append(SerializeReferrer(referrer_chain_entry));
   }
   dict.SetList("referrer_chain", std::move(referrer_chain));
 
@@ -822,7 +815,7 @@ base::Value SerializeFrame(const LoginReputationClientRequest::Frame& frame) {
 
   base::ListValue referrer_list;
   for (const ReferrerChainEntry& referrer : frame.referrer_chain()) {
-    referrer_list.GetList().push_back(SerializeReferrer(referrer));
+    referrer_list.Append(SerializeReferrer(referrer));
   }
   frame_dict.SetKey("referrer_chain", std::move(referrer_list));
 
@@ -837,7 +830,7 @@ base::Value SerializeFrame(const LoginReputationClientRequest::Frame& frame) {
     form_dict.SetKey("action_url", base::Value(form.action_url()));
     form_dict.SetKey("has_password_field",
                      base::Value(form.has_password_field()));
-    form_list.GetList().push_back(std::move(form_dict));
+    form_list.Append(std::move(form_dict));
   }
   frame_dict.SetKey("forms", std::move(form_list));
 
@@ -850,7 +843,7 @@ base::Value SerializePasswordReuseEvent(
 
   base::ListValue domains_list;
   for (const std::string& domain : event.domains_matching_password()) {
-    domains_list.GetList().push_back(base::Value(domain));
+    domains_list.Append(base::Value(domain));
   }
   event_dict.SetKey("domains_matching_password", std::move(domains_list));
 
@@ -919,7 +912,7 @@ base::Value SerializeChromeUserPopulation(
 
   base::ListValue finch_list;
   for (const std::string& finch_group : population.finch_active_groups()) {
-    finch_list.GetList().push_back(base::Value(finch_group));
+    finch_list.Append(base::Value(finch_group));
   }
   population_dict.SetKey("finch_active_groups", std::move(finch_list));
 
@@ -992,7 +985,7 @@ std::string SerializePGPing(const LoginReputationClientRequest& request) {
 
   base::ListValue frames_list;
   for (const LoginReputationClientRequest::Frame& frame : request.frames()) {
-    frames_list.GetList().push_back(SerializeFrame(frame));
+    frames_list.Append(SerializeFrame(frame));
   }
   request_dict.SetKey("frames", std::move(frames_list));
 
@@ -1154,8 +1147,8 @@ void SafeBrowsingUIHandler::OnGetCookie(
   }
 
   base::Value response(base::Value::Type::LIST);
-  response.GetList().push_back(base::Value(cookie));
-  response.GetList().push_back(base::Value(time));
+  response.Append(base::Value(cookie));
+  response.Append(base::Value(time));
 
   AllowJavascript();
   ResolveJavascriptCallback(base::Value(callback_id), std::move(response));
@@ -1201,7 +1194,7 @@ void SafeBrowsingUIHandler::GetDatabaseManagerInfo(
                       &database_manager_info);
     }
 
-    database_manager_info.GetList().push_back(
+    database_manager_info.Append(
         base::Value(AddFullHashCacheInfo(full_hash_cache_info_proto)));
   }
 #endif
@@ -1221,8 +1214,7 @@ void SafeBrowsingUIHandler::GetSentClientDownloadRequests(
   base::ListValue cdrs_sent;
 
   for (const auto& cdr : cdrs) {
-    cdrs_sent.GetList().push_back(
-        base::Value(SerializeClientDownloadRequest(*cdr)));
+    cdrs_sent.Append(base::Value(SerializeClientDownloadRequest(*cdr)));
   }
 
   AllowJavascript();
@@ -1239,8 +1231,7 @@ void SafeBrowsingUIHandler::GetReceivedClientDownloadResponses(
   base::ListValue cdrs_received;
 
   for (const auto& cdr : cdrs) {
-    cdrs_received.GetList().push_back(
-        base::Value(SerializeClientDownloadResponse(*cdr)));
+    cdrs_received.Append(base::Value(SerializeClientDownloadResponse(*cdr)));
   }
 
   AllowJavascript();
@@ -1256,7 +1247,7 @@ void SafeBrowsingUIHandler::GetSentCSBRRs(const base::ListValue* args) {
   base::ListValue sent_reports;
 
   for (const auto& report : reports) {
-    sent_reports.GetList().push_back(base::Value(SerializeCSBRR(*report)));
+    sent_reports.Append(base::Value(SerializeCSBRR(*report)));
   }
 
   AllowJavascript();
@@ -1272,7 +1263,7 @@ void SafeBrowsingUIHandler::GetPGEvents(const base::ListValue* args) {
   base::ListValue events_sent;
 
   for (const sync_pb::UserEventSpecifics& event : events)
-    events_sent.GetList().push_back(SerializePGEvent(event));
+    events_sent.Append(SerializePGEvent(event));
 
   AllowJavascript();
   std::string callback_id;
@@ -1287,7 +1278,7 @@ void SafeBrowsingUIHandler::GetSecurityEvents(const base::ListValue* args) {
   base::ListValue events_sent;
 
   for (const sync_pb::GaiaPasswordReuse& event : events)
-    events_sent.GetList().push_back(SerializeSecurityEvent(event));
+    events_sent.Append(SerializeSecurityEvent(event));
 
   AllowJavascript();
   std::string callback_id;
@@ -1303,10 +1294,9 @@ void SafeBrowsingUIHandler::GetPGPings(const base::ListValue* args) {
   for (size_t request_index = 0; request_index < requests.size();
        request_index++) {
     base::ListValue ping_entry;
-    ping_entry.GetList().push_back(base::Value(int(request_index)));
-    ping_entry.GetList().push_back(
-        base::Value(SerializePGPing(requests[request_index])));
-    pings_sent.GetList().push_back(std::move(ping_entry));
+    ping_entry.Append(base::Value(int(request_index)));
+    ping_entry.Append(base::Value(SerializePGPing(requests[request_index])));
+    pings_sent.Append(std::move(ping_entry));
   }
 
   AllowJavascript();
@@ -1322,10 +1312,10 @@ void SafeBrowsingUIHandler::GetPGResponses(const base::ListValue* args) {
   base::ListValue responses_sent;
   for (const auto& token_and_response : responses) {
     base::ListValue response_entry;
-    response_entry.GetList().push_back(base::Value(token_and_response.first));
-    response_entry.GetList().push_back(
+    response_entry.Append(base::Value(token_and_response.first));
+    response_entry.Append(
         base::Value(SerializePGResponse(token_and_response.second)));
-    responses_sent.GetList().push_back(std::move(response_entry));
+    responses_sent.Append(std::move(response_entry));
   }
 
   AllowJavascript();
@@ -1356,7 +1346,7 @@ void SafeBrowsingUIHandler::GetReferrerChain(const base::ListValue* args) {
 
   base::ListValue referrer_list;
   for (const ReferrerChainEntry& entry : referrer_chain) {
-    referrer_list.GetList().push_back(SerializeReferrer(entry));
+    referrer_list.Append(SerializeReferrer(entry));
   }
 
   std::string referrer_chain_serialized;
@@ -1375,7 +1365,7 @@ void SafeBrowsingUIHandler::GetLogMessages(const base::ListValue* args) {
 
   base::ListValue messages_received;
   for (const auto& message : log_messages) {
-    messages_received.GetList().push_back(
+    messages_received.Append(
         base::Value(SerializeLogMessage(message.first, message.second)));
   }
 
@@ -1423,8 +1413,8 @@ void SafeBrowsingUIHandler::NotifyPGPingJsListener(
     int token,
     const LoginReputationClientRequest& request) {
   base::ListValue request_list;
-  request_list.GetList().push_back(base::Value(token));
-  request_list.GetList().push_back(base::Value(SerializePGPing(request)));
+  request_list.Append(base::Value(token));
+  request_list.Append(base::Value(SerializePGPing(request)));
 
   AllowJavascript();
   FireWebUIListener("pg-pings-update", request_list);
@@ -1434,8 +1424,8 @@ void SafeBrowsingUIHandler::NotifyPGResponseJsListener(
     int token,
     const LoginReputationClientResponse& response) {
   base::ListValue response_list;
-  response_list.GetList().push_back(base::Value(token));
-  response_list.GetList().push_back(base::Value(SerializePGResponse(response)));
+  response_list.Append(base::Value(token));
+  response_list.Append(base::Value(SerializePGResponse(response)));
 
   AllowJavascript();
   FireWebUIListener("pg-responses-update", response_list);

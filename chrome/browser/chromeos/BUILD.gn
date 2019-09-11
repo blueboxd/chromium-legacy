@@ -1310,6 +1310,8 @@ source_set("chromeos") {
     "login/saml/in_session_password_change_manager.h",
     "login/saml/password_expiry_notification.cc",
     "login/saml/password_expiry_notification.h",
+    "login/saml/public_saml_url_fetcher.cc",
+    "login/saml/public_saml_url_fetcher.h",
     "login/saml/saml_offline_signin_limiter.cc",
     "login/saml/saml_offline_signin_limiter.h",
     "login/saml/saml_offline_signin_limiter_factory.cc",

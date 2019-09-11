@@ -166,8 +166,8 @@ DevToolsAndroidBridge::DevToolsAndroidBridge(Profile* profile)
       base::Bind(&DevToolsAndroidBridge::CreateDeviceProviders,
                  base::Unretained(this)));
   base::Value target_discovery(base::Value::Type::LIST);
-  target_discovery.GetList().emplace_back(kChromeDiscoveryURL);
-  target_discovery.GetList().emplace_back(kNodeDiscoveryURL);
+  target_discovery.Append(kChromeDiscoveryURL);
+  target_discovery.Append(kNodeDiscoveryURL);
   profile->GetPrefs()->SetDefaultPrefValue(prefs::kDevToolsTCPDiscoveryConfig,
                                            std::move(target_discovery));
   CreateDeviceProviders();

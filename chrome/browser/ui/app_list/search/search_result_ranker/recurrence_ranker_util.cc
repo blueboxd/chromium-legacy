@@ -244,7 +244,7 @@ void JsonConfigConverter::Convert(const std::string& json_string,
                                   const std::string& model_identifier,
                                   OnConfigLoadedCallback callback) {
   DCHECK(connector_);
-  GetJsonParser().Parse(
+  GetJsonParser()->Parse(
       json_string,
       base::BindOnce(&JsonConfigConverter::OnJsonParsed, base::Unretained(this),
                      std::move(callback), model_identifier));
@@ -267,16 +267,16 @@ void JsonConfigConverter::OnJsonParsed(
   }
 }
 
-data_decoder::mojom::JsonParser& JsonConfigConverter::GetJsonParser() {
+data_decoder::mojom::JsonParser* JsonConfigConverter::GetJsonParser() {
   if (!json_parser_) {
-    connector_->BindInterface(data_decoder::mojom::kServiceName,
-                              mojo::MakeRequest(&json_parser_));
-    json_parser_.set_connection_error_handler(base::BindOnce(
+    connector_->Connect(data_decoder::mojom::kServiceName,
+                        json_parser_.BindNewPipeAndPassReceiver());
+    json_parser_.set_disconnect_handler(base::BindOnce(
         [](JsonConfigConverter* const loader) { loader->json_parser_.reset(); },
         base::Unretained(this)));
   }
 
-  return *json_parser_;
+  return json_parser_.get();
 }
 
 }  // namespace app_list

@@ -58,7 +58,7 @@ inline HANDLE Uint32ToHandle(uint32_t h) {
 
 // Returns the string representing the current user sid. Does not modify
 // |user_sid| on failure.
-BASE_EXPORT bool GetUserSidString(string16* user_sid);
+BASE_EXPORT bool GetUserSidString(std::wstring* user_sid);
 
 // Returns false if user account control (UAC) has been disabled with the
 // EnableLUA registry flag. Returns true if user account control is enabled.
@@ -78,7 +78,7 @@ BASE_EXPORT bool SetBooleanValueForPropertyStore(
 BASE_EXPORT bool SetStringValueForPropertyStore(
     IPropertyStore* property_store,
     const PROPERTYKEY& property_key,
-    const char16* property_string_value);
+    const wchar_t* property_string_value);
 
 // Sets the CLSID value for a given key in a given IPropertyStore.
 BASE_EXPORT bool SetClsidForPropertyStore(IPropertyStore* property_store,
@@ -89,22 +89,23 @@ BASE_EXPORT bool SetClsidForPropertyStore(IPropertyStore* property_store,
 // for tagging application/chromium shortcut, browser window and jump list for
 // Win7.
 BASE_EXPORT bool SetAppIdForPropertyStore(IPropertyStore* property_store,
-                                          const char16* app_id);
+                                          const wchar_t* app_id);
 
 // Adds the specified |command| using the specified |name| to the AutoRun key.
 // |root_key| could be HKCU or HKLM or the root of any user hive.
 BASE_EXPORT bool AddCommandToAutoRun(HKEY root_key,
-                                     const string16& name,
-                                     const string16& command);
+                                     const std::wstring& name,
+                                     const std::wstring& command);
 // Removes the command specified by |name| from the AutoRun key. |root_key|
 // could be HKCU or HKLM or the root of any user hive.
-BASE_EXPORT bool RemoveCommandFromAutoRun(HKEY root_key, const string16& name);
+BASE_EXPORT bool RemoveCommandFromAutoRun(HKEY root_key,
+                                          const std::wstring& name);
 
 // Reads the command specified by |name| from the AutoRun key. |root_key|
 // could be HKCU or HKLM or the root of any user hive. Used for unit-tests.
 BASE_EXPORT bool ReadCommandFromAutoRun(HKEY root_key,
-                                        const string16& name,
-                                        string16* command);
+                                        const std::wstring& name,
+                                        std::wstring* command);
 
 // Sets whether to crash the process during exit. This is inspected by DLLMain
 // and used to intercept unexpected terminations of the process (via calls to
@@ -216,12 +217,12 @@ BASE_EXPORT void* GetUser32FunctionPointer(
     NativeLibraryLoadError* error = nullptr);
 
 // Returns the name of a desktop or a window station.
-BASE_EXPORT string16 GetWindowObjectName(HANDLE handle);
+BASE_EXPORT std::wstring GetWindowObjectName(HANDLE handle);
 
 // Checks if the calling thread is running under a desktop with the name
 // given by |desktop_name|. |desktop_name| is ASCII case insensitive (non-ASCII
 // characters will be compared with exact matches).
-BASE_EXPORT bool IsRunningUnderDesktopName(StringPiece16 desktop_name);
+BASE_EXPORT bool IsRunningUnderDesktopName(WStringPiece desktop_name);
 
 // Returns true if current session is a remote session.
 BASE_EXPORT bool IsCurrentSessionRemote();

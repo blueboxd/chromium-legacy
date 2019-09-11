@@ -187,8 +187,8 @@ ScreenLocker::ScreenLocker(const user_manager::UserList& users)
                       bundle.GetRawDataResource(IDR_SOUND_LOCK_WAV));
   manager->Initialize(SOUND_UNLOCK,
                       bundle.GetRawDataResource(IDR_SOUND_UNLOCK_WAV));
-  content::GetSystemConnector()->BindInterface(device::mojom::kServiceName,
-                                               &fp_service_);
+  content::GetSystemConnector()->Connect(
+      device::mojom::kServiceName, fp_service_.BindNewPipeAndPassReceiver());
 
   device::mojom::FingerprintObserverPtr observer;
   fingerprint_observer_binding_.Bind(mojo::MakeRequest(&observer));

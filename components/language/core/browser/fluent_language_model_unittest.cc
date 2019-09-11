@@ -62,8 +62,8 @@ TEST_F(FluentLanguageModelTest, Defaults) {
 TEST_F(FluentLanguageModelTest, AllFluent) {
   prefs_->SetString(prefs::kAcceptLanguages, "ja,fr");
   base::ListValue fluent_languages;
-  fluent_languages.GetList().emplace_back("fr");
-  fluent_languages.GetList().emplace_back("ja");
+  fluent_languages.Append("fr");
+  fluent_languages.Append("ja");
   prefs_->Set(prefs::kFluentLanguages, fluent_languages);
 
   FluentLanguageModel model(prefs_.get(), prefs::kAcceptLanguages);
@@ -74,8 +74,8 @@ TEST_F(FluentLanguageModelTest, AllFluent) {
 TEST_F(FluentLanguageModelTest, OneNonFluent) {
   prefs_->SetString(prefs::kAcceptLanguages, "ja,en,fr");
   base::ListValue fluent_languages;
-  fluent_languages.GetList().emplace_back("fr");
-  fluent_languages.GetList().emplace_back("ja");
+  fluent_languages.Append("fr");
+  fluent_languages.Append("ja");
   prefs_->Set(prefs::kFluentLanguages, fluent_languages);
 
   FluentLanguageModel model(prefs_.get(), prefs::kAcceptLanguages);
@@ -86,7 +86,7 @@ TEST_F(FluentLanguageModelTest, OneNonFluent) {
 TEST_F(FluentLanguageModelTest, OneFluent) {
   prefs_->SetString(prefs::kAcceptLanguages, "ja,en,fr");
   base::ListValue fluent_languages;
-  fluent_languages.GetList().emplace_back("ja");
+  fluent_languages.Append("ja");
   prefs_->Set(prefs::kFluentLanguages, fluent_languages);
 
   FluentLanguageModel model(prefs_.get(), prefs::kAcceptLanguages);

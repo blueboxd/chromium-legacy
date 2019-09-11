@@ -11,7 +11,6 @@
 namespace blink {
 
 class ComputedStyle;
-class NGFragmentItem;
 class NGPhysicalBoxFragment;
 
 // Class for computing the decoration offset for text fragments in LayoutNG.
@@ -20,10 +19,10 @@ class CORE_EXPORT NGTextDecorationOffset : public TextDecorationOffsetBase {
 
  public:
   NGTextDecorationOffset(const ComputedStyle& style,
-                         const NGFragmentItem& text_item,
+                         const ComputedStyle& text_style,
                          const NGPhysicalBoxFragment* decorating_box)
       : TextDecorationOffsetBase(style),
-        text_item_(text_item),
+        text_style_(text_style),
         decorating_box_(decorating_box) {}
   ~NGTextDecorationOffset() = default;
 
@@ -31,7 +30,7 @@ class CORE_EXPORT NGTextDecorationOffset : public TextDecorationOffsetBase {
                                      FontVerticalPositionType) const override;
 
  private:
-  const NGFragmentItem& text_item_;
+  const ComputedStyle& text_style_;
   const NGPhysicalBoxFragment* decorating_box_;
 };
 

@@ -1155,7 +1155,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewForSelectedPages) {
   page_range.SetKey(kSettingPageRangeFrom, base::Value(2));
   page_range.SetKey(kSettingPageRangeTo, base::Value(3));
   base::Value page_range_array(base::Value::Type::LIST);
-  page_range_array.GetList().push_back(std::move(page_range));
+  page_range_array.Append(std::move(page_range));
   dict.SetKey(kSettingPageRange, std::move(page_range_array));
 
   OnPrintPreview(dict);

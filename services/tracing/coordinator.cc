@@ -278,7 +278,6 @@ Coordinator::Coordinator(AgentRegistry* agent_registry,
     : task_runner_(base::SequencedTaskRunnerHandle::Get()),
       agent_registry_(agent_registry),
       on_disconnect_callback_(std::move(on_disconnect_callback)),
-      binding_(this),
       // USER_VISIBLE because the task posted from StopAndFlushInternal() is
       // required to stop tracing from the UI.
       // TODO(fdoray): Once we have support for dynamic priorities
@@ -295,7 +294,7 @@ Coordinator::~Coordinator() {
 }
 
 bool Coordinator::IsConnected() {
-  return !!binding_;
+  return receiver_.is_bound();
 }
 
 void Coordinator::Reset() {
@@ -324,14 +323,14 @@ void Coordinator::Reset() {
 
 void Coordinator::OnClientConnectionError() {
   Reset();
-  binding_.Close();
+  receiver_.reset();
   on_disconnect_callback_.Run();
 }
 void Coordinator::BindCoordinatorRequest(
-    mojom::CoordinatorRequest request,
+    mojo::PendingReceiver<mojom::Coordinator> receiver,
     const service_manager::BindSourceInfo& source_info) {
-  binding_.Bind(std::move(request));
-  binding_.set_connection_error_handler(base::BindRepeating(
+  receiver_.Bind(std::move(receiver));
+  receiver_.set_disconnect_handler(base::BindRepeating(
       &Coordinator::OnClientConnectionError, base::Unretained(this)));
 }
 

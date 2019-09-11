@@ -121,12 +121,23 @@ const char kHistogramNoServiceWorkerLoadSearch[] =
     "PageLoad.Clients.NoServiceWorker2.DocumentTiming."
     "NavigationToLoadEventFired.search";
 
+const char kHistogramServiceWorkerFirstContentfulPaintDocs[] =
+    "PageLoad.Clients.ServiceWorker2.PaintTiming."
+    "NavigationToFirstContentfulPaint.docs";
+const char kHistogramNoServiceWorkerFirstContentfulPaintDocs[] =
+    "PageLoad.Clients.NoServiceWorker2.PaintTiming."
+    "NavigationToFirstContentfulPaint.docs";
+
 }  // namespace internal
 
 namespace {
 
 bool IsInboxSite(const GURL& url) {
   return url.host_piece() == "inbox.google.com";
+}
+
+bool IsDocsSite(const GURL& url) {
+  return url.host_piece() == "docs.google.com";
 }
 
 bool IsForwardBackLoad(ui::PageTransition transition) {
@@ -166,18 +177,24 @@ void ServiceWorkerPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (!IsServiceWorkerControlled()) {
     if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
-            timing.paint_timing->first_contentful_paint, GetDelegate()) ||
-        !page_load_metrics::IsGoogleSearchResultUrl(GetDelegate().GetUrl())) {
+            timing.paint_timing->first_contentful_paint, GetDelegate())) {
       return;
     }
-    PAGE_LOAD_HISTOGRAM(
-        internal::kHistogramNoServiceWorkerFirstContentfulPaintSearch,
-        timing.paint_timing->first_contentful_paint.value());
-    PAGE_LOAD_HISTOGRAM(
-        internal::
-            kHistogramNoServiceWorkerParseStartToFirstContentfulPaintSearch,
-        timing.paint_timing->first_contentful_paint.value() -
-            timing.parse_timing->parse_start.value());
+
+    if (page_load_metrics::IsGoogleSearchResultUrl(GetDelegate().GetUrl())) {
+      PAGE_LOAD_HISTOGRAM(
+          internal::kHistogramNoServiceWorkerFirstContentfulPaintSearch,
+          timing.paint_timing->first_contentful_paint.value());
+      PAGE_LOAD_HISTOGRAM(
+          internal::
+              kHistogramNoServiceWorkerParseStartToFirstContentfulPaintSearch,
+          timing.paint_timing->first_contentful_paint.value() -
+              timing.parse_timing->parse_start.value());
+    } else if (IsDocsSite(GetDelegate().GetUrl())) {
+      PAGE_LOAD_HISTOGRAM(
+          internal::kHistogramNoServiceWorkerFirstContentfulPaintDocs,
+          timing.paint_timing->first_contentful_paint.value());
+    }
     return;
   }
   if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
@@ -223,6 +240,10 @@ void ServiceWorkerPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
         internal::kHistogramServiceWorkerParseStartToFirstContentfulPaintSearch,
         timing.paint_timing->first_contentful_paint.value() -
             timing.parse_timing->parse_start.value());
+  } else if (IsDocsSite(GetDelegate().GetUrl())) {
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramServiceWorkerFirstContentfulPaintDocs,
+        timing.paint_timing->first_contentful_paint.value());
   }
 }
 

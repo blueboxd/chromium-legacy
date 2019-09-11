@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_PERFORMANCE_MANAGER_TEST_HARNESS_H_
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_PERFORMANCE_MANAGER_TEST_HARNESS_H_
 
-#include "chrome/browser/performance_manager/performance_manager.h"
+#include "chrome/browser/performance_manager/performance_manager_impl.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/web_contents.h"
 
 namespace performance_manager {
 
-// A test harness that initializes PerformanceManager, plus the entire
+// A test harness that initializes PerformanceManagerImpl, plus the entire
 // RenderViewHost harness. Allows for creating full WebContents, and their
 // accompanying structures in the graph. The task environment is accessed
 // via content::RenderViewHostTestHarness::test_bundle().
@@ -31,7 +31,7 @@ class PerformanceManagerTestHarness : public ChromeRenderViewHostTestHarness {
   std::unique_ptr<content::WebContents> CreateTestWebContents();
 
  private:
-  std::unique_ptr<PerformanceManager> perf_man_;
+  std::unique_ptr<PerformanceManagerImpl> perf_man_;
 
   DISALLOW_COPY_AND_ASSIGN(PerformanceManagerTestHarness);
 };

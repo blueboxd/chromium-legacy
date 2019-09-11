@@ -31,6 +31,6 @@ TEST_F(ValidAppManifestTest, AllowUnrecognizedPermissions) {
   base::Value* permissions =
       manifest.FindKeyOfType("permissions", base::Value::Type::LIST);
   ASSERT_TRUE(permissions);
-  permissions->GetList().emplace_back("not-a-valid-permission");
+  permissions->Append("not-a-valid-permission");
   LoadAndExpectSuccess(ManifestData(std::move(manifest), ""));
 }

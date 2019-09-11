@@ -291,6 +291,19 @@ TEST_F(BrowserAccessibilityAuraLinuxTest, TestComplexHypertext) {
 
   g_object_unref(root_atk_object);
 
+  text1.SetName(text1_name + text1_name);
+  AXEventNotificationDetails event_bundle;
+  event_bundle.updates.resize(1);
+  event_bundle.updates[0].nodes.push_back(text1);
+  event_bundle.updates[0].nodes.push_back(root);
+  ASSERT_TRUE(manager->OnAccessibilityEvents(event_bundle));
+
+  // The hypertext offsets should reflect the new length of the static text.
+  verify_atk_link_text(combo_box_value.c_str(), 0, 28);
+  verify_atk_link_text(check_box_name.c_str(), 1, 44);
+  verify_atk_link_text(button_text_name.c_str(), 2, 45);
+  verify_atk_link_text(link_text_name.c_str(), 3, 46);
+
   manager.reset();
 }
 

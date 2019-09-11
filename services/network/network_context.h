@@ -101,8 +101,8 @@ class CorsURLLoaderFactory;
 //
 // When the network service is enabled, NetworkContexts are created through
 // NetworkService's mojo interface and are owned jointly by the NetworkService
-// and the NetworkContextPtr used to talk to them, and the NetworkContext is
-// destroyed when either one is torn down.
+// and the mojo::Remote<NetworkContext> used to talk to them, and the
+// NetworkContext is destroyed when either one is torn down.
 class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
     : public mojom::NetworkContext {
  public:
@@ -535,9 +535,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   // Owned by the URLRequestContext
   net::StaticHttpUserAgentSettings* user_agent_settings_ = nullptr;
-
-  // TODO(yhirano): Consult with switches::kDisableResourceScheduler.
-  constexpr static bool enable_resource_scheduler_ = true;
 
   // Pointed to by the TransportSecurityState (owned by the
   // URLRequestContext), and must be disconnected from it before it's destroyed.

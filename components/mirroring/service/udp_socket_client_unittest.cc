@@ -17,7 +17,7 @@
 #include "components/mirroring/service/fake_network_service.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/test/utility/net_utility.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/ip_endpoint.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,9 +31,9 @@ class UdpSocketClientTest : public ::testing::Test {
  public:
   UdpSocketClientTest() {
     network_context_ = std::make_unique<MockNetworkContext>(
-        mojo::MakeRequest(&network_context_ptr_));
+        network_context_remote_.BindNewPipeAndPassReceiver());
     udp_transport_client_ = std::make_unique<UdpSocketClient>(
-        media::cast::test::GetFreeLocalPort(), network_context_ptr_.get(),
+        media::cast::test::GetFreeLocalPort(), network_context_remote_.get(),
         base::OnceClosure());
   }
 
@@ -48,7 +48,7 @@ class UdpSocketClientTest : public ::testing::Test {
 
  protected:
   base::test::TaskEnvironment task_environment_;
-  network::mojom::NetworkContextPtr network_context_ptr_;
+  mojo::Remote<network::mojom::NetworkContext> network_context_remote_;
   std::unique_ptr<MockNetworkContext> network_context_;
   std::unique_ptr<UdpSocketClient> udp_transport_client_;
   std::unique_ptr<Packet> received_packet_;

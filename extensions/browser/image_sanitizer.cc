@@ -91,8 +91,9 @@ void ImageSanitizer::Start(
     return;
   }
 
-  connector->BindInterface(service_filter, &image_decoder_ptr_);
-  image_decoder_ptr_.set_connection_error_handler(
+  connector->Connect(service_filter,
+                     image_decoder_.BindNewPipeAndPassReceiver());
+  image_decoder_.set_disconnect_handler(
       base::BindOnce(&ImageSanitizer::ReportError, weak_factory_.GetWeakPtr(),
                      Status::kServiceError, base::FilePath()));
 
@@ -143,7 +144,7 @@ void ImageSanitizer::ImageFileRead(
     return;
   }
   const std::vector<uint8_t>& image_data = std::get<0>(read_and_delete_result);
-  image_decoder_ptr_->DecodeImage(
+  image_decoder_->DecodeImage(
       image_data, data_decoder::mojom::ImageCodec::DEFAULT,
       /*shrink_to_fit=*/false, kMaxImageCanvas, gfx::Size(),
       base::BindOnce(&ImageSanitizer::ImageDecoded, weak_factory_.GetWeakPtr(),
@@ -219,7 +220,7 @@ void ImageSanitizer::ReportError(Status status, const base::FilePath& path) {
 }
 
 void ImageSanitizer::CleanUp() {
-  image_decoder_ptr_.reset();
+  image_decoder_.reset();
   // It's important to clear the repeating callback as it may cause a circular
   // reference (the callback holds a ref to an object that has a ref to |this|)
   // that would cause a leak.

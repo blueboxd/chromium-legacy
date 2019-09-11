@@ -86,7 +86,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFactory {
   static bool HasSharedInstanceForTesting();
 
 #if defined(OS_CHROMEOS)
-  // Sets the BleScanParserPtr callback used in Get*() below.
+  // Sets the mojo::Remote<BleScanParser> callback used in Get*() below.
   static void SetBleScanParserCallback(BleScanParserCallback callback);
   // Returns a reference to a parser for BLE advertisement packets.
   // This will be an empty callback until something calls Set*() above.

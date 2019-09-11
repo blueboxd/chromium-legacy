@@ -68,7 +68,7 @@ void ListCapability<Option, Traits>::SaveTo(
   for (const Option& option : options_) {
     base::Value option_value(base::Value::Type::DICTIONARY);
     Traits::Save(option, &option_value);
-    options_list->GetList().emplace_back(std::move(option_value));
+    options_list->Append(std::move(option_value));
   }
 }
 
@@ -157,7 +157,7 @@ void SelectionCapability<Option, Traits>::SaveTo(base::Value* dict) const {
     if (base::checked_cast<int>(i) == default_idx_)
       option_value.SetKey(json::kKeyIsDefault, base::Value(true));
     Traits::Save(options_[i], &option_value);
-    options_list.GetList().emplace_back(std::move(option_value));
+    options_list.Append(std::move(option_value));
   }
   dict->SetKey(json::kKeyOption, std::move(options_list));
 }

@@ -142,7 +142,7 @@ class Section {
     result.SetKey("title", base::Value(title_));
     base::Value stats(base::Value::Type::LIST);
     for (const std::unique_ptr<StatBase>& stat : stats_)
-      stats.GetList().push_back(stat->ToValue());
+      stats.Append(stat->ToValue());
     result.SetKey("data", std::move(stats));
     result.SetKey("is_sensitive", base::Value(is_sensitive_));
     return result;
@@ -174,7 +174,7 @@ class SectionList {
   base::Value ToValue() const {
     base::Value result(base::Value::Type::LIST);
     for (const std::unique_ptr<Section>& section : sections_)
-      result.GetList().push_back(section->ToValue());
+      result.Append(section->ToValue());
     return result;
   }
 
@@ -607,10 +607,10 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
     description.Set(full_status.sync_protocol_error.error_description);
   }
 
-  actionable_error.GetList().push_back(error_type.ToValue());
-  actionable_error.GetList().push_back(action.ToValue());
-  actionable_error.GetList().push_back(url.ToValue());
-  actionable_error.GetList().push_back(description.ToValue());
+  actionable_error.Append(error_type.ToValue());
+  actionable_error.Append(action.ToValue());
+  actionable_error.Append(url.ToValue());
+  actionable_error.Append(description.ToValue());
   about_info->SetKey("actionable_error", std::move(actionable_error));
 
   about_info->SetKey("unrecoverable_error_detected",

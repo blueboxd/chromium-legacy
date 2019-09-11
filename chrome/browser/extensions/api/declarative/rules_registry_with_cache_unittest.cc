@@ -255,7 +255,7 @@ TEST_F(RulesRegistryWithCacheTest, DeclarativeRulesStored) {
   // 2. Test writing behavior.
   {
     base::Value value(base::Value::Type::LIST);
-    value.GetList().push_back(base::Value(true));
+    value.Append(base::Value(true));
     cache_delegate->UpdateRules(extension1_->id(), std::move(value));
   }
   EXPECT_TRUE(cache_delegate->GetDeclarativeRulesStored(extension1_->id()));
@@ -302,7 +302,7 @@ TEST_F(RulesRegistryWithCacheTest, EphemeralCacheIsEphemeral) {
   auto cache_delegate = std::make_unique<RulesCacheDelegate>(
       RulesCacheDelegate::Type::kEphemeral, false);
   base::Value value(base::Value::Type::LIST);
-  value.GetList().push_back(base::Value(true));
+  value.Append(base::Value(true));
   cache_delegate->UpdateRules(extension1_->id(), std::move(value));
   content::RunAllTasksUntilIdle();
   TestingValueStore* store = env_.GetExtensionSystem()->value_store();

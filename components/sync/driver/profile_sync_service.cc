@@ -1603,7 +1603,7 @@ void GetAllNodesRequestHelper::OnReceivedNodesForType(
   type_dict.SetKey("type", base::Value(ModelTypeToString(type)));
   type_dict.SetKey("nodes",
                    base::Value::FromUniquePtrValue(std::move(node_list)));
-  result_accumulator_->GetList().push_back(std::move(type_dict));
+  result_accumulator_->Append(std::move(type_dict));
 
   // Remember that this part of the request is satisfied.
   awaiting_types_.Remove(type);

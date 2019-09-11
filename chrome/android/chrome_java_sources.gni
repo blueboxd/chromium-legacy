@@ -386,6 +386,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/customtabs/CustomTabNavigationEventObserver.java",
   "java/src/org/chromium/chrome/browser/customtabs/CustomTabNightModeStateController.java",
   "java/src/org/chromium/chrome/browser/customtabs/CustomTabObserver.java",
+  "java/src/org/chromium/chrome/browser/customtabs/CustomTabSessionHandler.java",
   "java/src/org/chromium/chrome/browser/customtabs/CustomTabTabPersistencePolicy.java",
   "java/src/org/chromium/chrome/browser/customtabs/CustomTabTopBarDelegate.java",
   "java/src/org/chromium/chrome/browser/customtabs/CustomTabsClientFileProcessor.java",

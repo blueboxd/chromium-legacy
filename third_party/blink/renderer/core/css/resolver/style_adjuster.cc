@@ -305,7 +305,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
     // See https://drafts.csswg.org/css-display/#unbox-html
     // Some of these elements are handled with other adjustments above.
     if (IsA<HTMLBRElement>(element) || IsHTMLWBRElement(element) ||
-        IsHTMLMeterElement(element) || IsHTMLProgressElement(element) ||
+        IsA<HTMLMeterElement>(element) || IsHTMLProgressElement(element) ||
         IsA<HTMLCanvasElement>(element) || IsHTMLMediaElement(element) ||
         IsHTMLInputElement(element) || IsHTMLTextAreaElement(element) ||
         IsHTMLSelectElement(element)) {

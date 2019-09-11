@@ -400,6 +400,6 @@ class TemplateWriter(object):
       url = policy['url_schema']
     if (policy['type'] in ('dict', 'external') or
         'validation_schema' in policy or 'description_schema' in policy):
-      url = 'https://www.chromium.org/administrators/policy-list-3#' + policy[
-          'name']
+      url = ('https://cloud.google.com/docs/chrome-enterprise/policies/?policy='
+             + policy['name'])
     return schema_description_link_text.replace('$6', url) if url else ''

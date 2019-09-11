@@ -27,10 +27,10 @@ SafeJsonParserImpl::SafeJsonParserImpl(
       error_callback_(std::move(error_callback)) {
   // If no batch ID has been provided, use a random instance ID to guarantee the
   // connection is to a new service running in its own process.
-  connector->BindInterface(
+  connector->Connect(
       service_manager::ServiceFilter::ByNameWithId(
           mojom::kServiceName, batch_id.value_or(base::Token::CreateRandom())),
-      &json_parser_ptr_);
+      json_parser_.BindNewPipeAndPassReceiver());
 }
 
 SafeJsonParserImpl::~SafeJsonParserImpl() = default;
@@ -38,9 +38,9 @@ SafeJsonParserImpl::~SafeJsonParserImpl() = default;
 void SafeJsonParserImpl::Start() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  json_parser_ptr_.set_connection_error_handler(base::Bind(
+  json_parser_.set_disconnect_handler(base::Bind(
       &SafeJsonParserImpl::OnConnectionError, base::Unretained(this)));
-  json_parser_ptr_->Parse(
+  json_parser_->Parse(
       std::move(unsafe_json_),
       base::Bind(&SafeJsonParserImpl::OnParseDone, base::Unretained(this)));
 }
@@ -49,7 +49,7 @@ void SafeJsonParserImpl::OnConnectionError() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Shut down the utility process.
-  json_parser_ptr_.reset();
+  json_parser_.reset();
 
   ReportResults(base::nullopt,
                 "Connection error with the json parser process.");
@@ -60,7 +60,7 @@ void SafeJsonParserImpl::OnParseDone(base::Optional<base::Value> result,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Shut down the utility process.
-  json_parser_ptr_.reset();
+  json_parser_.reset();
 
   ReportResults(std::move(result), error.value_or(""));
 }

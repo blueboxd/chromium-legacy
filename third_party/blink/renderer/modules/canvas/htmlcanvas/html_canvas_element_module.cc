@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/canvas/htmlcanvas/html_canvas_element_module.h"
 
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
 #include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
 #include "third_party/blink/renderer/modules/canvas/htmlcanvas/canvas_context_creation_attributes_helpers.h"
@@ -66,6 +67,12 @@ OffscreenCanvas* HTMLCanvasElementModule::TransferControlToOffscreenInternal(
   OffscreenCanvas* offscreen_canvas =
       OffscreenCanvas::Create(canvas.width(), canvas.height());
   offscreen_canvas->SetFilterQuality(canvas.FilterQuality());
+
+  // If this canvas is cross-origin, then the associated offscreen canvas
+  // should prefer using the low-power GPU.
+  LocalFrame* frame = canvas.GetDocument().GetFrame();
+  if (!(frame && frame->IsCrossOriginSubframe()))
+    offscreen_canvas->AllowHighPerformancePowerPreference();
 
   DOMNodeId canvas_id = DOMNodeIds::IdForNode(&canvas);
   offscreen_canvas->SetPlaceholderCanvasId(canvas_id);

@@ -26,7 +26,11 @@ NFCReader* NFCReader::Create(ExecutionContext* context) {
 }
 
 NFCReader::NFCReader(ExecutionContext* context)
-    : ContextLifecycleObserver(context) {}
+    : ContextLifecycleObserver(context) {
+  // Call GetNFCProxy to create a proxy. This guarantees no allocation will
+  // be needed when calling HasPendingActivity later during gc tracing.
+  GetNfcProxy();
+}
 
 NFCReader::~NFCReader() = default;
 

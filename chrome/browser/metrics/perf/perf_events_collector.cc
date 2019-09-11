@@ -254,6 +254,10 @@ PerfCollector::~PerfCollector() = default;
 void PerfCollector::SetUp() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  // Create DebugdClientProvider to bind its private DBus connection to the
+  // current sequence.
+  debugd_client_provider_ = std::make_unique<DebugdClientProvider>();
+
   auto task_runner = base::SequencedTaskRunnerHandle::Get();
   base::PostTask(
       FROM_HERE,
@@ -401,8 +405,10 @@ std::unique_ptr<PerfOutputCall> PerfCollector::CreatePerfOutputCall(
     base::TimeDelta duration,
     const std::vector<std::string>& perf_args,
     PerfOutputCall::DoneCallback callback) {
-  return std::make_unique<PerfOutputCall>(duration, perf_args,
-                                          std::move(callback));
+  DCHECK(debugd_client_provider_.get());
+  return std::make_unique<PerfOutputCall>(
+      debugd_client_provider_->debug_daemon_client(), duration, perf_args,
+      std::move(callback));
 }
 
 void PerfCollector::OnPerfOutputComplete(

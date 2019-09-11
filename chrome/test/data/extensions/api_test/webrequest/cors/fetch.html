@@ -6,8 +6,8 @@
 <script>
 const hostname = 'cors.example.com';
 const origin = location.protocol + '//' + hostname + ':' + location.port;
-const path = '/extensions/api_test/webrequest/cors/accept';
-const url = origin + path;
+const path = location.search.substr('?path='.length);
+const url = origin + '/extensions/api_test/webrequest/cors/' + path;
 
 fetch(url);
 </script>

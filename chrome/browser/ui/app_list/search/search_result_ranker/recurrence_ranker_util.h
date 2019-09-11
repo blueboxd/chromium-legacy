@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_predictor.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker_config.pb.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/data_decoder/public/mojom/json_parser.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -58,7 +59,7 @@ class JsonConfigConverter {
  private:
   // Create or reuse a connection to the data decoder service for safe JSON
   // parsing.
-  data_decoder::mojom::JsonParser& GetJsonParser();
+  data_decoder::mojom::JsonParser* GetJsonParser();
 
   // Callback for parser.
   void OnJsonParsed(OnConfigLoadedCallback callback,
@@ -69,7 +70,7 @@ class JsonConfigConverter {
   std::string model_identifier_;
 
   service_manager::Connector* connector_;
-  data_decoder::mojom::JsonParserPtr json_parser_;
+  mojo::Remote<data_decoder::mojom::JsonParser> json_parser_;
 };
 
 }  // namespace app_list

@@ -14,6 +14,8 @@ from core import path_util
 path_util.AddTelemetryToPath()
 path_util.AddAndroidPylibToPath()
 
+from telemetry.story.typ_expectations import SYSTEM_CONDITION_TAGS
+
 from typ import expectations_parser as typ_expectations_parser
 
 
@@ -25,7 +27,8 @@ CLUSTER_TELEMETRY_BENCHMARKS = [
     benchmark_finders.GetBenchmarksInSubDirectory(CLUSTER_TELEMETRY_DIR)
 ]
 MOBILE_PREFIXES = {'android', 'mobile'}
-DESKTOP_PREFIXES = {'chromeos', 'desktop', 'linux', 'mac', 'win'}
+DESKTOP_PREFIXES = {
+    'chromeos', 'desktop', 'linux', 'mac', 'win', 'sierra', 'highsierra'}
 
 
 def is_desktop_tag(tag):
@@ -66,6 +69,19 @@ def validate_expectations_component_tags(test_expectations):
                "mobile and desktop condition tags") % e.lineno)
 
 
+def validate_tag_declaration_lists(tag_sets):
+  tags_set = set(reduce(lambda x, y: list(x) + list(y), tag_sets))
+  for tag in tags_set:
+    assert tag in SYSTEM_CONDITION_TAGS, (
+        "Tag %s is not in Telemetry's set of allowable condition tags, "
+        "either remove it from expectations.config or add it to Telemetry's "
+        "set of allowable tags." % tag)
+  for tag in SYSTEM_CONDITION_TAGS:
+    assert tag in tags_set, (
+        "Tag %s is not declared in expectations.config, "
+        "please declare it the top of the file" % tag)
+
+
 def main():
   benchmarks = benchmark_finders.GetAllBenchmarks()
   with open(path_util.GetExpectationsPath()) as fp:
@@ -75,6 +91,7 @@ def main():
   if ret:
     logging.error(msg)
     return ret
+  validate_tag_declaration_lists(test_expectations.tag_sets)
   validate_story_names(benchmarks, test_expectations)
   validate_expectations_component_tags(test_expectations)
   return 0

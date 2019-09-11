@@ -8,6 +8,7 @@
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/ui_devtools/switches.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/test_completion_callback.h"
@@ -41,13 +42,13 @@ TEST(UIDevToolsServerTest, MAYBE_ConnectionToViewsServer) {
   auto network_service =
       network::NetworkService::Create(std::move(network_service_request),
                                       /*netlog=*/nullptr);
-  network::mojom::NetworkContextPtr network_context_ptr;
+  mojo::Remote<network::mojom::NetworkContext> network_context_remote;
   network_service_ptr->CreateNetworkContext(
-      mojo::MakeRequest(&network_context_ptr),
+      network_context_remote.BindNewPipeAndPassReceiver(),
       network::mojom::NetworkContextParams::New());
 
   std::unique_ptr<UiDevToolsServer> server =
-      UiDevToolsServer::CreateForViews(network_context_ptr.get(), fake_port);
+      UiDevToolsServer::CreateForViews(network_context_remote.get(), fake_port);
   // Connect to the server socket.
   net::AddressList addr(
       net::IPEndPoint(net::IPAddress(127, 0, 0, 1), fake_port));

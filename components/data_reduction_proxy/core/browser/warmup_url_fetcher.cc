@@ -169,9 +169,9 @@ void WarmupURLFetcher::FetchWarmupURLNow(
 network::mojom::URLLoaderFactory*
 WarmupURLFetcher::GetNetworkServiceURLLoaderFactory(
     const DataReductionProxyServer& proxy_server) {
-  network::mojom::NetworkContextPtr context;
+  context_.reset();
   BindNetworkContext(create_custom_proxy_config_callback_.Run({proxy_server}),
-                     mojo::MakeRequest(&context_), user_agent_);
+                     context_.BindNewPipeAndPassReceiver(), user_agent_);
 
   auto factory_params = network::mojom::URLLoaderFactoryParams::New();
   factory_params->process_id = network::mojom::kBrowserProcessId;

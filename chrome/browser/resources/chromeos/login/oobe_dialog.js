@@ -55,11 +55,6 @@ Polymer({
       reflectToAttribute: true,
       observer: 'onfullScreenDialogChanged_',
     },
-
-    android: {
-      type: Boolean,
-      value: false,
-    },
   },
 
   focus: function() {

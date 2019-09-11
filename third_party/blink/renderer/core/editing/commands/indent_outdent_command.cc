@@ -55,7 +55,7 @@ static bool IsHTMLListOrBlockquoteElement(const Node* node) {
     return false;
   // TODO(yosin): We should check OL/UL element has "list-style-type" CSS
   // property to make sure they layout contents as list.
-  return IsHTMLUListElement(*element) || IsHTMLOListElement(*element) ||
+  return IsHTMLUListElement(*element) || IsA<HTMLOListElement>(*element) ||
          element->HasTagName(kBlockquoteTag);
 }
 
@@ -218,7 +218,7 @@ void IndentOutdentCommand::OutdentParagraph(EditingState* editing_state) {
     return;
 
   // Use InsertListCommand to remove the selection from the list
-  if (IsHTMLOListElement(*enclosing_element)) {
+  if (IsA<HTMLOListElement>(*enclosing_element)) {
     ApplyCommandToComposite(MakeGarbageCollected<InsertListCommand>(
                                 GetDocument(), InsertListCommand::kOrderedList),
                             editing_state);

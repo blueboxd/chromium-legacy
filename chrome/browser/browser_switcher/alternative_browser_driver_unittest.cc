@@ -43,7 +43,7 @@ base::ListValue UTF8VectorToListValue(
   base::ListValue out;
   out.GetList().reserve(src.size());
   for (base::StringPiece str : src)
-    out.GetList().push_back(base::Value(str));
+    out.Append(base::Value(str));
   return out;
 }
 

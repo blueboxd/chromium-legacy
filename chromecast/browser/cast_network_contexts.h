@@ -13,6 +13,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/proxy_config.mojom.h"
@@ -70,7 +71,7 @@ class CastNetworkContexts : public net::ProxyConfigService::Observer,
   // system NetworkContext, if the network service is enabled.
   void OnNetworkServiceCreated(network::mojom::NetworkService* network_service);
 
-  network::mojom::NetworkContextPtr CreateNetworkContext(
+  mojo::Remote<network::mojom::NetworkContext> CreateNetworkContext(
       content::BrowserContext* context,
       bool in_memory,
       const base::FilePath& relative_partition_path);
@@ -131,4 +132,4 @@ class CastNetworkContexts : public net::ProxyConfigService::Observer,
 }  // namespace shell
 }  // namespace chromecast
 
-#endif  // CHROMECAST_BROWSER_URL_REQUEST_CONTEXT_FACTORY_H_
+#endif  // CHROMECAST_BROWSER_CAST_NETWORK_CONTEXTS_H_

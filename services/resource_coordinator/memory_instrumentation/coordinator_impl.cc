@@ -95,14 +95,14 @@ CoordinatorImpl::ComputePidToServiceNamesMap() const {
 
 service_manager::Identity CoordinatorImpl::GetClientIdentityForCurrentRequest()
     const {
-  return bindings_.dispatch_context();
+  return receivers_.current_context();
 }
 
-void CoordinatorImpl::BindCoordinatorRequest(
-    mojom::CoordinatorRequest request,
+void CoordinatorImpl::BindCoordinatorReceiver(
+    mojo::PendingReceiver<mojom::Coordinator> receiver,
     const service_manager::BindSourceInfo& source_info) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  bindings_.AddBinding(this, std::move(request), source_info.identity);
+  receivers_.Add(this, std::move(receiver), source_info.identity);
 }
 
 void CoordinatorImpl::BindHeapProfilerHelperRequest(

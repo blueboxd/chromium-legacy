@@ -102,7 +102,8 @@ void MenuButtonController::OnMouseReleased(const ui::MouseEvent& event) {
       button()->HitTestPoint(event.location()) && !delegate()->InDrag()) {
     Activate(&event);
   } else {
-    button()->AnimateInkDrop(InkDropState::HIDDEN, &event);
+    if (button()->hide_ink_drop_when_showing_context_menu())
+      button()->AnimateInkDrop(InkDropState::HIDDEN, &event);
     ButtonController::OnMouseReleased(event);
   }
 }

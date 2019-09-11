@@ -27,6 +27,8 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/payments/content/payment_request.h"
+#include "components/payments/core/features.h"
+#include "components/payments/core/payments_experimental_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -246,10 +248,8 @@ void PaymentRequestDialogView::OnInitialized(
 
   HideProcessingSpinner();
 
-  if (request_->state()->are_requested_methods_supported() &&
-      observer_for_testing_) {
-    observer_for_testing_->OnDialogOpened();
-  }
+  if (request_->state()->are_requested_methods_supported())
+    OnDialogOpened();
 }
 
 void PaymentRequestDialogView::Pay() {
@@ -417,6 +417,23 @@ Profile* PaymentRequestDialogView::GetProfile() {
       request_->web_contents()->GetBrowserContext());
 }
 
+void PaymentRequestDialogView::OnDialogOpened() {
+  if (request_->spec()->request_shipping() &&
+      !request_->state()->selected_shipping_profile() &&
+      PaymentsExperimentalFeatures::IsEnabled(
+          features::kStrictHasEnrolledAutofillInstrument)) {
+    view_stack_->Push(
+        CreateViewAndInstallController(
+            ProfileListViewController::GetShippingProfileViewController(
+                request_->spec(), request_->state(), this),
+            &controller_map_),
+        /* animate = */ false);
+  }
+
+  if (observer_for_testing_)
+    observer_for_testing_->OnDialogOpened();
+}
+
 void PaymentRequestDialogView::ShowInitialPaymentSheet() {
   view_stack_->Push(CreateViewAndInstallController(
                         std::make_unique<PaymentSheetViewController>(
@@ -427,10 +444,8 @@ void PaymentRequestDialogView::ShowInitialPaymentSheet() {
   if (number_of_initialization_tasks_ > 0)
     return;
 
-  if (request_->state()->are_requested_methods_supported() &&
-      observer_for_testing_) {
-    observer_for_testing_->OnDialogOpened();
-  }
+  if (request_->state()->are_requested_methods_supported())
+    OnDialogOpened();
 }
 
 void PaymentRequestDialogView::SetupSpinnerOverlay() {

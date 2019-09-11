@@ -171,7 +171,7 @@ HeadlessRequestContextManager::CreateSystemContext(
   network_service->ConfigureHttpAuthPrefs(std::move(auth_params));
 
   network_service->CreateNetworkContext(
-      mojo::MakeRequest(&manager->system_context_),
+      manager->system_context_.InitWithNewPipeAndPassReceiver(),
       manager->CreateNetworkContextParams(/* is_system = */ true));
 
   return manager;
@@ -208,13 +208,13 @@ HeadlessRequestContextManager::~HeadlessRequestContextManager() {
     HeadlessProxyConfigMonitor::DeleteSoon(std::move(proxy_config_monitor_));
 }
 
-::network::mojom::NetworkContextPtr
+mojo::Remote<::network::mojom::NetworkContext>
 HeadlessRequestContextManager::CreateNetworkContext(
     bool in_memory,
     const base::FilePath& relative_partition_path) {
-  ::network::mojom::NetworkContextPtr network_context;
+  mojo::Remote<::network::mojom::NetworkContext> network_context;
   content::GetNetworkService()->CreateNetworkContext(
-      MakeRequest(&network_context),
+      network_context.BindNewPipeAndPassReceiver(),
       CreateNetworkContextParams(/* is_system = */ false));
   return network_context;
 }

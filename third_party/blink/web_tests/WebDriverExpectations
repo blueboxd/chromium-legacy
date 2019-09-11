@@ -172,3 +172,5 @@ crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/take_element_screenshot/
 
 # Sheriff 2019-09-10
 crbug.com/1000734 [ Linux ] external/wpt/webdriver/tests/take_screenshot/iframe.py>>test_source_origin[same_origin] [ Failure Pass ]
+# Sheriff 2019-09-11
+crbug.com/1000734 [ Linux ] external/wpt/webdriver/tests/take_screenshot/screenshot.py>>test_format_and_dimensions [ Failure Pass ]

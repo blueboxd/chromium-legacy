@@ -220,7 +220,7 @@ Value PolicyConversions::GetExtensionsPolicies() {
     extension_policies_data.SetKey("name", Value(extension->name()));
     extension_policies_data.SetKey("id", Value(extension->id()));
     extension_policies_data.SetKey("policies", std::move(extension_policies));
-    policies.GetList().push_back(std::move(extension_policies_data));
+    policies.Append(std::move(extension_policies_data));
   }
 #endif
   return policies;
@@ -297,7 +297,7 @@ Value PolicyConversions::GetDeviceLocalAccountPolicies() {
     current_account_policies_data.SetKey("name", Value(user_id));
     current_account_policies_data.SetKey("policies",
                                          std::move(current_account_policies));
-    policies.GetList().push_back(std::move(current_account_policies_data));
+    policies.Append(std::move(current_account_policies_data));
   }
 
   // Reset |user_policies_enabled_| setup.
@@ -365,9 +365,9 @@ Value PolicyConversions::CopyAndMaybeConvert(
   Value result(Value::Type::LIST);
   for (const auto& element : value_copy.GetList()) {
     if (element.is_dict()) {
-      result.GetList().emplace_back(Value(ConvertValueToJSON(element)));
+      result.Append(Value(ConvertValueToJSON(element)));
     } else {
-      result.GetList().push_back(element.Clone());
+      result.Append(element.Clone());
     }
   }
   return result;
@@ -452,7 +452,7 @@ Value PolicyConversions::GetPolicyValue(
     for (const auto& conflict : policy.conflicts) {
       base::Value conflicted_policy_value =
           GetPolicyValue(policy_name, conflict, errors, known_policy_schemas);
-      conflict_values.GetList().push_back(std::move(conflicted_policy_value));
+      conflict_values.Append(std::move(conflicted_policy_value));
     }
 
     value.SetKey("conflicts", std::move(conflict_values));
@@ -569,7 +569,7 @@ Value ArrayPolicyConversions::ToValue() {
   Value all_policies(Value::Type::LIST);
 
   if (profile()) {
-    all_policies.GetList().push_back(GetChromePolicies());
+    all_policies.Append(GetChromePolicies());
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     Value extension_policies = GetExtensionsPolicies();
@@ -589,7 +589,7 @@ Value ArrayPolicyConversions::ToValue() {
 
   Value identity_fields = GetIdentityFields();
   if (!identity_fields.is_none())
-    all_policies.GetList().push_back(std::move(identity_fields));
+    all_policies.Append(std::move(identity_fields));
 #endif  // defined(OS_CHROMEOS)
 
   return all_policies;

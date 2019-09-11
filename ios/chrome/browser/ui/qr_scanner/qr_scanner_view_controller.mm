@@ -24,10 +24,6 @@
 using base::UserMetricsAction;
 
 @interface QRScannerViewController () {
-  // The scanned result.
-  NSString* _result;
-  // Whether the scanned result should be immediately loaded.
-  BOOL _loadResultImmediately;
   // The transitioning delegate used for presenting and dismissing the QR
   // scanner.
   ScannerTransitioningDelegate* _transitioningDelegate;
@@ -87,8 +83,8 @@ using base::UserMetricsAction;
     // Post a notification announcing that a code was scanned. QR scanner will
     // be dismissed when the UIAccessibilityAnnouncementDidFinishNotification is
     // received.
-    _result = [result copy];
-    _loadResultImmediately = load;
+    self.result = [result copy];
+    self.loadResultImmediately = load;
     UIAccessibilityPostNotification(
         UIAccessibilityAnnouncementNotification,
         l10n_util::GetNSString(
@@ -100,6 +96,23 @@ using base::UserMetricsAction;
                 [self.queryLoader loadQuery:result immediately:load];
               }];
     }];
+  }
+}
+
+#pragma mark - Public methods
+
+- (UIViewController*)getViewControllerToPresent {
+  DCHECK(self.cameraController);
+  switch ([self.cameraController getAuthorizationStatus]) {
+    case AVAuthorizationStatusNotDetermined:
+    case AVAuthorizationStatusAuthorized:
+      _transitioningDelegate = [[ScannerTransitioningDelegate alloc] init];
+      [self setTransitioningDelegate:_transitioningDelegate];
+      return self;
+    case AVAuthorizationStatusRestricted:
+    case AVAuthorizationStatusDenied:
+      return scanner::DialogForCameraState(scanner::CAMERA_PERMISSION_DENIED,
+                                           nil);
   }
 }
 

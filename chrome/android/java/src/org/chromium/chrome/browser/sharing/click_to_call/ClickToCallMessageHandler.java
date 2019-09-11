@@ -10,6 +10,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.text.TextUtils;
 
 import org.chromium.base.BuildInfo;
@@ -127,9 +128,26 @@ public class ClickToCallMessageHandler {
      * Returns true if we should open the dialer straight away.
      */
     private static boolean shouldOpenDialer() {
-        // On Q and above, we never open the dialer directly. On pre-Q, we always open the dialer
-        // directly.
-        return !BuildInfo.isAtLeastQ() && FeatureUtilities.isClickToCallOpenDialerDirectlyEnabled();
+        if (!FeatureUtilities.isClickToCallOpenDialerDirectlyEnabled()) {
+            return false;
+        }
+
+        // On Android Q and above, we never open the dialer directly.
+        if (BuildInfo.isAtLeastQ()) {
+            return false;
+        }
+
+        // On Android N and below, we always open the dialer. If device is locked, we also show a
+        // notification. We can listen to ACTION_USER_PRESENT and remove this notification when
+        // device is unlocked.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            return true;
+        }
+
+        // On Android O and P, we open dialer only when device is unlocked since we cannot listen to
+        // ACTION_USER_PRESENT.
+        return DeviceConditions.isCurrentlyScreenOnAndUnlocked(
+                ContextUtils.getApplicationContext());
     }
 
     /**

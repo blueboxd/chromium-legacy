@@ -76,7 +76,8 @@ inline bool HTMLOptionsCollection::ElementMatches(
     return false;
   if (parent == &RootNode())
     return true;
-  return IsHTMLOptGroupElement(*parent) && parent->parentNode() == &RootNode();
+  return IsA<HTMLOptGroupElement>(*parent) &&
+         parent->parentNode() == &RootNode();
 }
 
 }  // namespace blink

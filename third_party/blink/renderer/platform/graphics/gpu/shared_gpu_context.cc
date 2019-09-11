@@ -58,6 +58,10 @@ static void CreateContextProviderOnMainThread(
   context_attributes.enable_raster_interface = true;
   context_attributes.support_grcontext = true;
 
+  // The shared GPU context should not trigger a switch to the high-performance
+  // GPU.
+  context_attributes.prefer_low_power_gpu = true;
+
   *gpu_compositing_disabled = Platform::Current()->IsGpuCompositingDisabled();
   if (*gpu_compositing_disabled && only_if_gpu_compositing) {
     waitable_event->Signal();

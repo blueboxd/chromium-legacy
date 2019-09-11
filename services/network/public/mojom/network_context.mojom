@@ -552,7 +552,7 @@ interface ClientCertificateResponder {
   ContinueWithCertificate(network.mojom.X509Certificate x509_certificate,
                           string provider_name,
                           array<uint16> algorithm_preferences,
-                          SSLPrivateKey ssl_private_key);
+                          pending_remote<SSLPrivateKey> ssl_private_key);
 
   // Affirmatively select no certificate (this is cached and can affect future
   // URLRequests). Does not cancel the URLRequest.

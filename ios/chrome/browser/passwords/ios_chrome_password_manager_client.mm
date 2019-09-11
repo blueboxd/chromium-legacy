@@ -161,6 +161,11 @@ PasswordStore* IOSChromePasswordManagerClient::GetProfilePasswordStore() const {
       .get();
 }
 
+PasswordStore* IOSChromePasswordManagerClient::GetAccountPasswordStore() const {
+  // AccountPasswordStore is currenly not supported on iOS.
+  return nullptr;
+}
+
 void IOSChromePasswordManagerClient::NotifyUserAutoSignin(
     std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
     const GURL& origin) {

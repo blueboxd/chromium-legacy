@@ -642,9 +642,9 @@ void Annotator::OnServerResponseReceived(
   ReportServerResponseSizeBytes(json_response->size());
 
   // Send JSON string to a dedicated service for safe parsing.
-  GetJsonParser().Parse(*json_response,
-                        base::BindOnce(&Annotator::OnResponseJsonParsed,
-                                       base::Unretained(this), request_keys));
+  GetJsonParser()->Parse(*json_response,
+                         base::BindOnce(&Annotator::OnResponseJsonParsed,
+                                        base::Unretained(this), request_keys));
 }
 
 void Annotator::OnResponseJsonParsed(
@@ -708,16 +708,16 @@ void Annotator::ProcessResults(
   }
 }
 
-data_decoder::mojom::JsonParser& Annotator::GetJsonParser() {
+data_decoder::mojom::JsonParser* Annotator::GetJsonParser() {
   if (!json_parser_) {
-    connector_->BindInterface(data_decoder::mojom::kServiceName,
-                              mojo::MakeRequest(&json_parser_));
-    json_parser_.set_connection_error_handler(base::BindOnce(
+    connector_->Connect(data_decoder::mojom::kServiceName,
+                        json_parser_.BindNewPipeAndPassReceiver());
+    json_parser_.set_disconnect_handler(base::BindOnce(
         [](Annotator* const annotator) { annotator->json_parser_.reset(); },
         base::Unretained(this)));
   }
 
-  return *json_parser_;
+  return json_parser_.get();
 }
 
 void Annotator::RemoveRequestInfo(

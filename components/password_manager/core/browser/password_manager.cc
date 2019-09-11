@@ -419,11 +419,11 @@ void PasswordManager::OnPasswordFormSubmittedNoChecks(
 }
 
 void PasswordManager::OnUserModifiedNonPasswordField(
-    password_manager::PasswordManagerDriver* driver,
+    PasswordManagerDriver* driver,
     int32_t renderer_id,
     const base::string16& value) {
-  // TODO(https://crbug.com/959776): Implemented processing |value| as possible
-  // username for username first flow.
+  possible_username_.emplace(GetSignonRealm(driver->GetLastCommittedURL()),
+                             renderer_id, value, base::Time::Now());
 }
 
 void PasswordManager::ShowManualFallbackForSaving(
@@ -624,8 +624,12 @@ PasswordFormManager* PasswordManager::ProvisionallySaveForm(
     return nullptr;
   }
 
-  if (!matched_manager->ProvisionallySave(submitted_form, driver))
+  const PossibleUsernameData* possible_username =
+      possible_username_ ? &possible_username_.value() : nullptr;
+  if (!matched_manager->ProvisionallySave(submitted_form, driver,
+                                          possible_username)) {
     return nullptr;
+  }
 
   // Set all other form managers to no submission state.
   for (const auto& manager : form_managers_) {

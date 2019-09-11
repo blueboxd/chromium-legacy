@@ -13,6 +13,7 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/network_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -63,7 +64,7 @@ class HSTSQueryTest : public testing::Test {
             base::ThreadTaskRunnerHandle::Get())),
         network_context_(std::make_unique<network::NetworkContext>(
             nullptr,
-            mojo::MakeRequest(&network_context_pipe_),
+            network_context_remote_.BindNewPipeAndPassReceiver(),
             request_context_->GetURLRequestContext(),
             /*cors_exempt_header_list=*/std::vector<std::string>())) {}
 
@@ -73,7 +74,7 @@ class HSTSQueryTest : public testing::Test {
   // Used by request_context_.
   base::test::SingleThreadTaskEnvironment task_environment_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
-  network::mojom::NetworkContextPtr network_context_pipe_;
+  mojo::Remote<network::mojom::NetworkContext> network_context_remote_;
   std::unique_ptr<network::NetworkContext> network_context_;
 
   DISALLOW_COPY_AND_ASSIGN(HSTSQueryTest);

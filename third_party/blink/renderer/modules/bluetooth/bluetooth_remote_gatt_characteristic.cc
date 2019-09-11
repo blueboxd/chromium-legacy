@@ -6,7 +6,9 @@
 
 #include <utility>
 
-#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -55,7 +57,7 @@ void BluetoothRemoteGATTCharacteristic::ContextDestroyed(ExecutionContext*) {
 }
 
 void BluetoothRemoteGATTCharacteristic::Dispose() {
-  client_bindings_.CloseAllBindings();
+  receivers_.Clear();
 }
 
 const WTF::AtomicString& BluetoothRemoteGATTCharacteristic::InterfaceName()
@@ -255,15 +257,15 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::startNotifications(
 
   mojom::blink::WebBluetoothService* service =
       device_->GetBluetooth()->Service();
-  mojom::blink::WebBluetoothCharacteristicClientAssociatedPtrInfo ptr_info;
-  auto request = mojo::MakeRequest(&ptr_info);
+  mojo::PendingAssociatedRemote<mojom::blink::WebBluetoothCharacteristicClient>
+      client;
   // See https://bit.ly/2S0zRAS for task types.
-  client_bindings_.AddBinding(
-      this, std::move(request),
+  receivers_.Add(
+      this, client.InitWithNewEndpointAndPassReceiver(),
       GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI));
 
   service->RemoteCharacteristicStartNotifications(
-      characteristic_->instance_id, std::move(ptr_info),
+      characteristic_->instance_id, std::move(client),
       WTF::Bind(&BluetoothRemoteGATTCharacteristic::NotificationsCallback,
                 WrapPersistent(this), WrapPersistent(resolver)));
 

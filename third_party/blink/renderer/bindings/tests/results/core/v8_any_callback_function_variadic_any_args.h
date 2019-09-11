@@ -33,11 +33,11 @@ class CORE_EXPORT V8AnyCallbackFunctionVariadicAnyArgs final : public CallbackFu
 
   // Performs "invoke".
   // https://heycam.github.io/webidl/#es-invoking-callback-functions
-  v8::Maybe<ScriptValue> Invoke(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, const Vector<ScriptValue>& arguments) WARN_UNUSED_RESULT;
+  v8::Maybe<ScriptValue> Invoke(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, const HeapVector<ScriptValue>& arguments) WARN_UNUSED_RESULT;
 
   // Performs "construct".
   // https://heycam.github.io/webidl/#construct-a-callback-function
-  v8::Maybe<ScriptValue> Construct(const Vector<ScriptValue>& arguments) WARN_UNUSED_RESULT;
+  v8::Maybe<ScriptValue> Construct(const HeapVector<ScriptValue>& arguments) WARN_UNUSED_RESULT;
 };
 
 }  // namespace blink

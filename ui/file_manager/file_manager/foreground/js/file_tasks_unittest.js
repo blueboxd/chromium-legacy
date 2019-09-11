@@ -31,9 +31,6 @@ const mockTaskHistory = /** @type {!TaskHistory} */ ({
 // Set up test components.
 function setUp() {
   // Mock LoadTimeData strings.
-  window.loadTimeData.data = {
-    DRIVE_FS_ENABLED: false,
-  };
   window.loadTimeData.getString = id => id;
 
   const mockTask = /** @type {!chrome.fileManagerPrivate.FileTask} */ ({

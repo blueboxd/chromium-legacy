@@ -29,6 +29,7 @@
 #include "media/base/audio_parameters.h"
 #include "media/base/media.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
@@ -76,7 +77,6 @@ constexpr base::TimeDelta kAudioRendererStartingCapacityEncrypted =
 CastContentRendererClient::CastContentRendererClient()
     : supported_profiles_(
           std::make_unique<media::SupportedCodecProfileLevelsMemo>()),
-      app_media_capabilities_observer_binding_(this),
       supported_bitstream_audio_codecs_(kBitstreamAudioCodecNone) {
 #if defined(OS_ANDROID)
   DCHECK(::media::MediaCodecUtil::IsMediaCodecAvailable())
@@ -98,9 +98,9 @@ CastContentRendererClient::~CastContentRendererClient() = default;
 void CastContentRendererClient::RenderThreadStarted() {
   // Register as observer for media capabilities
   content::RenderThread* thread = content::RenderThread::Get();
-  media::mojom::MediaCapsPtr media_caps;
-  thread->BindHostReceiver(mojo::MakeRequest(&media_caps));
-  media::mojom::MediaCapsObserverPtr proxy;
+  mojo::Remote<media::mojom::MediaCaps> media_caps;
+  thread->BindHostReceiver(media_caps.BindNewPipeAndPassReceiver());
+  mojo::PendingRemote<media::mojom::MediaCapsObserver> proxy;
   media_caps_observer_.reset(
       new media::MediaCapsObserverImpl(&proxy, supported_profiles_.get()));
   media_caps->AddObserver(std::move(proxy));
@@ -109,7 +109,8 @@ void CastContentRendererClient::RenderThreadStarted() {
   // Register to observe memory pressure changes
   chromecast::mojom::MemoryPressureControllerPtr memory_pressure_controller;
   thread->BindHostReceiver(mojo::MakeRequest(&memory_pressure_controller));
-  chromecast::mojom::MemoryPressureObserverPtr memory_pressure_proxy;
+  mojo::PendingRemote<chromecast::mojom::MemoryPressureObserver>
+      memory_pressure_proxy;
   memory_pressure_observer_.reset(
       new MemoryPressureObserverImpl(&memory_pressure_proxy));
   memory_pressure_controller->AddObserver(std::move(memory_pressure_proxy));
@@ -174,13 +175,12 @@ void CastContentRendererClient::RenderFrameCreated(
   // APIs. The objects' lifetimes are bound to the RenderFrame's lifetime.
   new OnLoadScriptInjector(render_frame);
 
-  if (!app_media_capabilities_observer_binding_.is_bound()) {
-    mojom::ApplicationMediaCapabilitiesObserverPtr observer;
-    app_media_capabilities_observer_binding_.Bind(mojo::MakeRequest(&observer));
-    mojom::ApplicationMediaCapabilitiesPtr app_media_capabilities;
+  if (!app_media_capabilities_observer_receiver_.is_bound()) {
+    mojo::Remote<mojom::ApplicationMediaCapabilities> app_media_capabilities;
     render_frame->GetRemoteInterfaces()->GetInterface(
-        mojo::MakeRequest(&app_media_capabilities));
-    app_media_capabilities->AddObserver(std::move(observer));
+        app_media_capabilities.BindNewPipeAndPassReceiver());
+    app_media_capabilities->AddObserver(
+        app_media_capabilities_observer_receiver_.BindNewPipeAndPassRemote());
   }
 
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)

@@ -247,15 +247,15 @@ TEST_F(SSLConfigServiceManagerPrefTest, H2ClientCertCoalescingPref) {
 
   auto patterns = std::make_unique<base::ListValue>();
   // Patterns expected to be canonicalized.
-  patterns->GetList().emplace_back(base::Value("canon.example"));
-  patterns->GetList().emplace_back(base::Value(".NonCanon.example"));
-  patterns->GetList().emplace_back(base::Value("Non-Canon.example"));
-  patterns->GetList().emplace_back(base::Value("127.0.0.1"));
-  patterns->GetList().emplace_back(base::Value("2147614986"));
+  patterns->Append(base::Value("canon.example"));
+  patterns->Append(base::Value(".NonCanon.example"));
+  patterns->Append(base::Value("Non-Canon.example"));
+  patterns->Append(base::Value("127.0.0.1"));
+  patterns->Append(base::Value("2147614986"));
   // Patterns expected to be skipped.
-  patterns->GetList().emplace_back(base::Value("???"));
-  patterns->GetList().emplace_back(base::Value("example.com/"));
-  patterns->GetList().emplace_back(base::Value("xn--hellö.com"));
+  patterns->Append(base::Value("???"));
+  patterns->Append(base::Value("example.com/"));
+  patterns->Append(base::Value("xn--hellö.com"));
   local_state.SetUserPref(prefs::kH2ClientCertCoalescingHosts,
                           std::move(patterns));
 

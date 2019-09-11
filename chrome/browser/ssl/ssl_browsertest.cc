@@ -1884,7 +1884,7 @@ class CertificateTransparencySSLUITest : public CertVerifierBrowserTest {
     std::unique_ptr<base::ListValue> policy_value =
         std::make_unique<base::ListValue>();
     for (const auto& value : list_values) {
-      policy_value->GetList().emplace_back(value);
+      policy_value->Append(value);
     }
     policy::PolicyMap policy_map;
     policy_map.Set(policy_name, policy::POLICY_LEVEL_MANDATORY,
@@ -2279,7 +2279,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithClientCert, TestWSSClientCert) {
   base::Value* filters = setting->SetKey("filters", base::ListValue());
   base::DictionaryValue filter = base::DictionaryValue();
   filter.SetString("ISSUER.CN", "pywebsocket");
-  filters->GetList().push_back(std::move(filter));
+  filters->Append(std::move(filter));
   HostContentSettingsMapFactory::GetForProfile(profile)
       ->SetWebsiteSettingDefaultScope(
           url, GURL(), CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
@@ -2381,7 +2381,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBrowserUseClientCertStore) {
   std::unique_ptr<base::DictionaryValue> setting =
       std::make_unique<base::DictionaryValue>();
   base::Value* filters = setting->SetKey("filters", base::ListValue());
-  filters->GetList().push_back(base::DictionaryValue());
+  filters->Append(base::DictionaryValue());
   HostContentSettingsMapFactory::GetForProfile(profile)
       ->SetWebsiteSettingDefaultScope(
           https_url, GURL(), CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
@@ -2417,7 +2417,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestClientAuthSigningFails) {
   std::unique_ptr<base::DictionaryValue> setting =
       std::make_unique<base::DictionaryValue>();
   base::Value* filters = setting->SetKey("filters", base::ListValue());
-  filters->GetList().push_back(base::DictionaryValue());
+  filters->Append(base::DictionaryValue());
   HostContentSettingsMapFactory::GetForProfile(profile)
       ->SetWebsiteSettingDefaultScope(
           https_url, GURL(), CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
@@ -2480,7 +2480,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestCertDBChangedFlushesClientAuthCache) {
   std::unique_ptr<base::DictionaryValue> setting =
       std::make_unique<base::DictionaryValue>();
   base::Value* filters = setting->SetKey("filters", base::ListValue());
-  filters->GetList().push_back(base::DictionaryValue());
+  filters->Append(base::DictionaryValue());
   HostContentSettingsMapFactory::GetForProfile(profile)
       ->SetWebsiteSettingDefaultScope(
           https_url, GURL(), CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,

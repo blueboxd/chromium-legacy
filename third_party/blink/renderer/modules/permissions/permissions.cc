@@ -248,7 +248,7 @@ ScriptPromise Permissions::revoke(ScriptState* script_state,
 
 ScriptPromise Permissions::requestAll(
     ScriptState* script_state,
-    const Vector<ScriptValue>& raw_permissions,
+    const HeapVector<ScriptValue>& raw_permissions,
     ExceptionState& exception_state) {
   Vector<PermissionDescriptorPtr> internal_permissions;
   Vector<int> caller_index_to_internal_index;

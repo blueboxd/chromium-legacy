@@ -152,19 +152,19 @@ class TaskEnvironment {
   };
 
   // List of traits that are valid inputs for the constructor below.
-  struct ValidTrait {
-    ValidTrait(TimeSource);
-    ValidTrait(MainThreadType);
-    ValidTrait(ThreadPoolExecutionMode);
-    ValidTrait(SubclassCreatesDefaultTaskRunner);
-    ValidTrait(ThreadingMode);
+  struct ValidTraits {
+    ValidTraits(TimeSource);
+    ValidTraits(MainThreadType);
+    ValidTraits(ThreadPoolExecutionMode);
+    ValidTraits(SubclassCreatesDefaultTaskRunner);
+    ValidTraits(ThreadingMode);
   };
 
   // Constructor accepts zero or more traits which customize the testing
   // environment.
   template <typename... TaskEnvironmentTraits,
             class CheckArgumentsAreValid = std::enable_if_t<
-                trait_helpers::AreValidTraits<ValidTrait,
+                trait_helpers::AreValidTraits<ValidTraits,
                                               TaskEnvironmentTraits...>::value>>
   NOINLINE explicit TaskEnvironment(TaskEnvironmentTraits... traits)
       : TaskEnvironment(

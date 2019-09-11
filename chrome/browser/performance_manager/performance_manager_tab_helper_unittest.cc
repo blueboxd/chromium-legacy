@@ -65,10 +65,10 @@ class PerformanceManagerTabHelperTest : public PerformanceManagerTestHarness {
   }
 };
 
-void CallOnGraphSync(PerformanceManager::GraphCallback callback) {
+void CallOnGraphSync(PerformanceManagerImpl::GraphImplCallback callback) {
   base::RunLoop run_loop;
 
-  PerformanceManager::GetInstance()->CallOnGraph(
+  PerformanceManagerImpl::GetInstance()->CallOnGraphImpl(
       FROM_HERE,
       base::BindLambdaForTesting([&run_loop, &callback](GraphImpl* graph) {
         std::move(callback).Run(graph);
@@ -196,7 +196,7 @@ TEST_F(PerformanceManagerTabHelperTest, FrameHierarchyReflectsToGraph) {
 
   size_t num_hosts = CountAllRenderProcessHosts();
 
-  PerformanceManager::GetInstance()->CallOnGraph(
+  PerformanceManagerImpl::GetInstance()->CallOnGraphImpl(
       FROM_HERE, base::BindLambdaForTesting([num_hosts](GraphImpl* graph) {
         EXPECT_GE(num_hosts, graph->GetAllProcessNodeImpls().size());
         EXPECT_EQ(0u, graph->GetAllFrameNodeImpls().size());

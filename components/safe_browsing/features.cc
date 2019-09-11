@@ -113,11 +113,11 @@ constexpr struct {
 // Adds the name and the enabled/disabled status of a given feature.
 void AddFeatureAndAvailability(const base::Feature* exp_feature,
                                base::ListValue* param_list) {
-  param_list->GetList().push_back(base::Value(exp_feature->name));
+  param_list->Append(base::Value(exp_feature->name));
   if (base::FeatureList::IsEnabled(*exp_feature)) {
-    param_list->GetList().push_back(base::Value("Enabled"));
+    param_list->Append(base::Value("Enabled"));
   } else {
-    param_list->GetList().push_back(base::Value("Disabled"));
+    param_list->Append(base::Value("Disabled"));
   }
 }
 }  // namespace

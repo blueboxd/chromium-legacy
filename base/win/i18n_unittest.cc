@@ -19,24 +19,24 @@ namespace i18n {
 
 // Tests that at least one user preferred UI language can be obtained.
 TEST(I18NTest, GetUserPreferredUILanguageList) {
-  std::vector<base::string16> languages;
+  std::vector<std::wstring> languages;
   EXPECT_TRUE(GetUserPreferredUILanguageList(&languages));
   EXPECT_FALSE(languages.empty());
   for (const auto& language : languages) {
     EXPECT_FALSE(language.empty());
     // Ensure there's no extra trailing 0 characters.
-    EXPECT_EQ(language.size(), wcslen(base::as_wcstr(language)));
+    EXPECT_EQ(language.size(), wcslen(language.c_str()));
   }
 }
 
 // Tests that at least one thread preferred UI language can be obtained.
 TEST(I18NTest, GetThreadPreferredUILanguageList) {
-  std::vector<base::string16> languages;
+  std::vector<std::wstring> languages;
   EXPECT_TRUE(GetThreadPreferredUILanguageList(&languages));
   EXPECT_FALSE(languages.empty());
   for (const auto& language : languages) {
     EXPECT_FALSE(language.empty());
-    EXPECT_EQ(language.size(), wcslen(base::as_wcstr(language)));
+    EXPECT_EQ(language.size(), wcslen(language.c_str()));
   }
 }
 

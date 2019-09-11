@@ -135,7 +135,7 @@ class CredentialsFilterTest : public SyncUsernameTestBase {
     fetcher_.SetNonFederated(matches);
     fetcher_.NotifyFetchCompleted();
 
-    form_manager_.ProvisionallySave(pending_.form_data, &driver_);
+    form_manager_.ProvisionallySave(pending_.form_data, &driver_, nullptr);
   }
 
  protected:

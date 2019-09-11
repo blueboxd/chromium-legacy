@@ -37,6 +37,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/runtime_data.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_messages.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
@@ -334,7 +335,10 @@ IgnoredAction::IgnoredAction(IgnoredAction&& rhs) = default;
 
 bool ExtraInfoSpec::InitFromValue(const base::ListValue& value,
                                   int* extra_info_spec) {
-  *extra_info_spec = 0;
+  *extra_info_spec = base::FeatureList::IsEnabled(
+                         extensions_features::kForceWebRequestExtraHeaders)
+                         ? EXTRA_HEADERS
+                         : 0;
   for (size_t i = 0; i < value.GetSize(); ++i) {
     std::string str;
     if (!value.GetString(i, &str))

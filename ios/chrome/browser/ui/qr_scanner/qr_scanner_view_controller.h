@@ -27,6 +27,11 @@
 
 - (instancetype)initWithCoder:(NSCoder*)coder NS_UNAVAILABLE;
 
+// Returns a view controller to be presented based on the camera state. Returns
+// |self| if the camera is available or an appropriate UIAlertController if
+// there was an error loading the camera.
+- (UIViewController*)getViewControllerToPresent;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_QR_SCANNER_QR_SCANNER_VIEW_CONTROLLER_H_

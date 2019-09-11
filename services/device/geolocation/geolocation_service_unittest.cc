@@ -11,6 +11,7 @@
 #include "chromeos/network/geolocation_handler.h"
 #endif
 #include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/network_change_notifier.h"
 #include "services/device/device_service_test_base.h"
 #include "services/device/geolocation/geolocation_provider_impl.h"
@@ -52,7 +53,8 @@ class GeolocationServiceUnitTest : public DeviceServiceTestBase {
     geolocation_control_->UserDidOptIntoLocationServices();
 
     connector()->BindInterface(mojom::kServiceName, &geolocation_context_);
-    geolocation_context_->BindGeolocation(MakeRequest(&geolocation_));
+    geolocation_context_->BindGeolocation(
+        geolocation_.BindNewPipeAndPassReceiver());
   }
 
   void TearDown() override {
@@ -79,7 +81,7 @@ class GeolocationServiceUnitTest : public DeviceServiceTestBase {
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   mojom::GeolocationControlPtr geolocation_control_;
   mojom::GeolocationContextPtr geolocation_context_;
-  mojom::GeolocationPtr geolocation_;
+  mojo::Remote<mojom::Geolocation> geolocation_;
   mojom::GeolocationConfigPtr geolocation_config_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationServiceUnitTest);

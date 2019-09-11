@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BLUETOOTH_BLUETOOTH_REMOTE_GATT_CHARACTERISTIC_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_BLUETOOTH_BLUETOOTH_REMOTE_GATT_CHARACTERISTIC_H_
 
-#include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
@@ -133,8 +133,8 @@ class BluetoothRemoteGATTCharacteristic final
   Member<BluetoothCharacteristicProperties> properties_;
   Member<DOMDataView> value_;
   Member<BluetoothDevice> device_;
-  mojo::AssociatedBindingSet<mojom::blink::WebBluetoothCharacteristicClient>
-      client_bindings_;
+  mojo::AssociatedReceiverSet<mojom::blink::WebBluetoothCharacteristicClient>
+      receivers_;
 };
 
 }  // namespace blink

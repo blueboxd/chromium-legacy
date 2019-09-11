@@ -31,10 +31,13 @@ import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountTrackerService;
 import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.signin.identitymanager.ClearAccountsAction;
 import org.chromium.components.signin.identitymanager.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.IdentityManager;
+import org.chromium.components.signin.identitymanager.PrimaryAccountMutator;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.signin.metrics.SigninReason;
+import org.chromium.components.signin.metrics.SignoutDelete;
 import org.chromium.components.signin.metrics.SignoutReason;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -191,6 +194,7 @@ public class SigninManager
     private final Context mContext;
     private final AccountTrackerService mAccountTrackerService;
     private final IdentityManager mIdentityManager;
+    private final PrimaryAccountMutator mPrimaryAccountMutator;
     private final AndroidSyncSettings mAndroidSyncSettings;
     private final ObserverList<SignInStateObserver> mSignInStateObservers = new ObserverList<>();
     private final ObserverList<SignInAllowedObserver> mSignInAllowedObservers =
@@ -245,6 +249,7 @@ public class SigninManager
         mNativeSigninManagerAndroid = nativeSigninManagerAndroid;
         mAccountTrackerService = accountTrackerService;
         mIdentityManager = identityManager;
+        mPrimaryAccountMutator = identityManager.getPrimaryAccountMutator();
         mAndroidSyncSettings = androidSyncSettings;
 
         mSigninAllowedByPolicy =
@@ -402,6 +407,7 @@ public class SigninManager
      * @param activity The activity used to launch UI prompts, or null for a forced signin.
      * @param callback Optional callback for when the sign-in process is finished.
      */
+    // TODO(crbug.com/1002056) SigninManager.Signin should use CoreAccountInfo as a parameter.
     public void signIn(
             Account account, @Nullable Activity activity, @Nullable SignInCallback callback) {
         if (account == null) {
@@ -431,6 +437,7 @@ public class SigninManager
     /**
      * Same as above but retrieves the Account object for the given accountName.
      */
+    // TODO(crbug.com/1002056) SigninManager.Signin should use CoreAccountInfo as a parameter.
     public void signIn(String accountName, @Nullable final Activity activity,
             @Nullable final SignInCallback callback) {
         AccountManagerFacade.get().getAccountFromName(
@@ -481,8 +488,13 @@ public class SigninManager
         // This method should be called at most once per sign-in flow.
         assert mSignInState != null;
 
-        if (!SigninManagerJni.get().setPrimaryAccount(
-                    mNativeSigninManagerAndroid, mSignInState.mAccount.name)) {
+        // TODO(crbug.com/1002056) When changing SignIn signature to use CoreAccountInfo, change the
+        // following line to use it instead of retrieving from IdentityManager.
+        if (!mPrimaryAccountMutator.setPrimaryAccount(
+                    mIdentityManager
+                            .findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
+                                    mSignInState.mAccount.name)
+                            .getId())) {
             Log.w(TAG, "Failed to set the PrimaryAccount in IdentityManager, aborting signin");
             abortSignIn();
             return;
@@ -524,7 +536,7 @@ public class SigninManager
      * Implements {@link IdentityManager.Observer}: take action when primary account is set.
      * Simply verify that the request is ongoing (mSignInState != null), as only SigninManager
      * should update IdentityManager. This is triggered by the call to
-     * SigninManagerJni.get().setPrimaryAccount.
+     * PrimaryAccountMutator.setPrimaryAccount
      */
     @VisibleForTesting
     @Override
@@ -616,7 +628,11 @@ public class SigninManager
 
         // User data will be wiped in disableSyncAndWipeData(), called from
         // onPrimaryAccountcleared().
-        SigninManagerJni.get().signOut(mNativeSigninManagerAndroid, signoutSource);
+        mPrimaryAccountMutator.clearPrimaryAccount(ClearAccountsAction.DEFAULT, signoutSource,
+                // Always use IGNORE_METRIC for the profile deletion argument. Chrome
+                // Android has just a single-profile which is never deleted upon
+                // sign-out.
+                SignoutDelete.IGNORE_METRIC);
     }
 
     /**
@@ -767,10 +783,6 @@ public class SigninManager
         boolean isSigninAllowedByPolicy(long nativeSigninManagerAndroid);
 
         boolean isForceSigninEnabled(long nativeSigninManagerAndroid);
-
-        boolean setPrimaryAccount(long nativeSigninManagerAndroid, String username);
-
-        void signOut(long nativeSigninManagerAndroid, @SignoutReason int reason);
 
         void clearLastSignedInUser(long nativeSigninManagerAndroid);
 

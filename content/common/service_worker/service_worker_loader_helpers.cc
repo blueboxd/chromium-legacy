@@ -128,8 +128,8 @@ ServiceWorkerLoaderHelpers::ComputeRedirectInfo(
           : net::URLRequest::NEVER_CHANGE_FIRST_PARTY_URL;
   return net::RedirectInfo::ComputeRedirectInfo(
       original_request.method, original_request.url,
-      original_request.site_for_cookies, first_party_url_policy,
-      original_request.referrer_policy,
+      original_request.request_initiator, original_request.site_for_cookies,
+      first_party_url_policy, original_request.referrer_policy,
       network::ComputeReferrer(original_request.referrer),
       response_head.headers->response_code(),
       original_request.url.Resolve(new_location),

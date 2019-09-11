@@ -1477,7 +1477,7 @@ TEST_F(CloudPolicyClientTest, UploadRealtimeReport) {
   event.SetStringPath("foo.prop3", "value3");
 
   base::Value event_list(base::Value::Type::LIST);
-  event_list.GetList().push_back(std::move(event));
+  event_list.Append(std::move(event));
 
   client_->UploadRealtimeReport(
       std::move(policy::RealtimeReportingJobConfiguration::BuildReport(

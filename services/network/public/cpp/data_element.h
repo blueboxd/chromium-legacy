@@ -167,8 +167,8 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) DataElement {
   // sent. This method triggers a chunked upload, which not all servers may
   // support, so SetToDataPipe should be used instead, unless talking with a
   // server known to support chunked uploads.
-  void SetToChunkedDataPipe(
-      mojom::ChunkedDataPipeGetterPtr chunked_data_pipe_getter);
+  void SetToChunkedDataPipe(mojo::PendingRemote<mojom::ChunkedDataPipeGetter>
+                                chunked_data_pipe_getter);
 
   // Takes ownership of the File, if this is of TYPE_RAW_FILE. The file is open
   // for reading (asynchronous reading on Windows).
@@ -180,7 +180,8 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) DataElement {
 
   // Takes ownership of the DataPipeGetter, if this is of
   // TYPE_CHUNKED_DATA_PIPE.
-  mojom::ChunkedDataPipeGetterPtrInfo ReleaseChunkedDataPipeGetter();
+  mojo::PendingRemote<mojom::ChunkedDataPipeGetter>
+  ReleaseChunkedDataPipeGetter();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BlobAsyncTransportStrategyTest, TestInvalidParams);
@@ -203,7 +204,7 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) DataElement {
   // For TYPE_DATA_PIPE.
   mojo::PendingRemote<mojom::DataPipeGetter> data_pipe_getter_;
   // For TYPE_CHUNKED_DATA_PIPE.
-  mojom::ChunkedDataPipeGetterPtrInfo chunked_data_pipe_getter_;
+  mojo::PendingRemote<mojom::ChunkedDataPipeGetter> chunked_data_pipe_getter_;
   uint64_t offset_;
   uint64_t length_;
   base::Time expected_modification_time_;

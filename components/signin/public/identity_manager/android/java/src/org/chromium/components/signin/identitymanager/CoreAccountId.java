@@ -6,46 +6,44 @@ package org.chromium.components.signin.identitymanager;
 
 import android.support.annotation.NonNull;
 
+import org.chromium.base.annotations.CalledByNative;
+
 /**
- * A wrapper around Gaia ID that represents a stable account identifier.
- *
- * This wrapper helps to make sure that code using accounts doesn't accidentally use account name in
- * place of Gaia ID and vice versa.
- *
+ * Represents the id of an account, which can be either a Gaia ID or email depending on the
+ * migration status within AccountTrackerService.
  * This class has a native counterpart called CoreAccountId.
  */
 public class CoreAccountId {
-    private final String mGaiaId;
+    private final String mId;
 
     /**
-     * Constructs a new CoreAccountId from a String representation of Gaia ID.
+     * Constructs a new CoreAccountId from a String representation of the account ID.
      */
-    public CoreAccountId(@NonNull String gaiaId) {
-        assert gaiaId != null;
-        // Check that a user email is not used by mistake.
-        assert !gaiaId.contains("@");
-
-        mGaiaId = gaiaId;
+    @CalledByNative
+    public CoreAccountId(@NonNull String id) {
+        assert id != null;
+        mId = id;
     }
 
-    public String getGaiaIdAsString() {
-        return mGaiaId;
+    @CalledByNative
+    public String getId() {
+        return mId;
     }
 
     @Override
     public String toString() {
-        return mGaiaId;
+        return mId;
     }
 
     @Override
     public int hashCode() {
-        return mGaiaId.hashCode();
+        return mId.hashCode();
     }
 
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof CoreAccountId)) return false;
         CoreAccountId other = (CoreAccountId) obj;
-        return mGaiaId.equals(other.mGaiaId);
+        return mId.equals(other.mId);
     }
 }

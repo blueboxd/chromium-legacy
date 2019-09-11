@@ -63,7 +63,8 @@ void SMILAnimationSandwich::UpdateTiming(double elapsed) {
     DCHECK(animation->HasValidTarget());
 
     if (animation->NeedsToProgress(elapsed)) {
-      animation->Progress(elapsed);
+      bool interval_restart = animation->CheckAndUpdateInterval(elapsed);
+      animation->UpdateActiveState(elapsed, interval_restart);
       active_.push_back(animation);
     } else if (animation->IsContributing(elapsed)) {
       active_.push_back(animation);
@@ -74,36 +75,28 @@ void SMILAnimationSandwich::UpdateTiming(double elapsed) {
 }
 
 SMILTime SMILAnimationSandwich::NextInterestingTime(
-    SMILTime document_time) const {
+    double presentation_time) const {
   SMILTime interesting_time = SMILTime::Indefinite();
-  for (const auto& it_animation : sandwich_) {
-    SVGSMILElement* animation = it_animation.Get();
-    interesting_time = std::min(interesting_time,
-                                animation->NextInterestingTime(document_time));
+  for (const auto& animation : sandwich_) {
+    interesting_time = std::min(
+        interesting_time, animation->NextInterestingTime(presentation_time));
   }
   return interesting_time;
 }
 
-SMILTime SMILAnimationSandwich::GetNextFireTime() const {
-  SMILTime earliest_fire_time = SMILTime::Unresolved();
-  for (const auto& it_animation : sandwich_) {
-    SVGSMILElement* animation = it_animation.Get();
-
-    SMILTime next_fire_time = animation->NextProgressTime();
-    if (next_fire_time.IsFinite())
-      earliest_fire_time = std::min(next_fire_time, earliest_fire_time);
+SMILTime SMILAnimationSandwich::NextProgressTime(
+    double presentation_time) const {
+  SMILTime earliest_progress_time = SMILTime::Unresolved();
+  for (const auto& animation : sandwich_) {
+    earliest_progress_time = std::min(
+        earliest_progress_time, animation->NextProgressTime(presentation_time));
   }
-  return earliest_fire_time;
+  return earliest_progress_time;
 }
 
 void SMILAnimationSandwich::UpdateSyncBases(double elapsed) {
-  for (auto& animation : active_) {
+  for (auto& animation : active_)
     animation->UpdateSyncBases();
-  }
-
-  for (auto& animation : active_) {
-    animation->UpdateNextProgressTime(elapsed);
-  }
 
   auto* it = active_.begin();
   while (it != active_.end()) {

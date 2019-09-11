@@ -13,7 +13,7 @@
 
 namespace performance_manager {
 class BrowserChildProcessWatcher;
-class PerformanceManager;
+class PerformanceManagerImpl;
 }  // namespace performance_manager
 
 class ChromeBrowserMainExtraPartsPerformanceManager
@@ -27,7 +27,8 @@ class ChromeBrowserMainExtraPartsPerformanceManager
   void PostCreateThreads() override;
   void PostMainMessageLoopRun() override;
 
-  std::unique_ptr<performance_manager::PerformanceManager> performance_manager_;
+  std::unique_ptr<performance_manager::PerformanceManagerImpl>
+      performance_manager_;
 
   std::unique_ptr<performance_manager::BrowserChildProcessWatcher>
       browser_child_process_watcher_;

@@ -358,7 +358,7 @@ void PerformanceResourceTiming::BuildJSONValue(V8ObjectBuilder& builder) const {
   builder.AddNumber("encodedBodySize", encodedBodySize());
   builder.AddNumber("decodedBodySize", decodedBodySize());
 
-  Vector<ScriptValue> server_timing;
+  HeapVector<ScriptValue> server_timing;
   server_timing.ReserveCapacity(server_timing_.size());
   for (unsigned i = 0; i < server_timing_.size(); i++) {
     server_timing.push_back(

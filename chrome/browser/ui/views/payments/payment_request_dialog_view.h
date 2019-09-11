@@ -183,6 +183,7 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   views::View* throbber_overlay_for_testing() { return throbber_overlay_; }
 
  private:
+  void OnDialogOpened();
   void ShowInitialPaymentSheet();
   void SetupSpinnerOverlay();
 

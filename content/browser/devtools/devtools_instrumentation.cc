@@ -130,16 +130,34 @@ void OnSignedExchangeReceived(
                    envelope, certificate, ssl_info, errors);
 }
 
+namespace inspector_will_send_navigation_request_event {
+std::unique_ptr<base::trace_event::TracedValue> Data(
+    const base::UnguessableToken& request_id) {
+  auto value = std::make_unique<base::trace_event::TracedValue>();
+  value->SetString("requestId", request_id.ToString());
+  return value;
+}
+}  // namespace inspector_will_send_navigation_request_event
+
 void OnSignedExchangeCertificateRequestSent(
     FrameTreeNode* frame_tree_node,
     const base::UnguessableToken& request_id,
     const base::UnguessableToken& loader_id,
     const network::ResourceRequest& request,
     const GURL& signed_exchange_url) {
+  // Make sure both back-ends yield the same timestamp.
+  auto timestamp = base::TimeTicks::Now();
   DispatchToAgents(frame_tree_node, &protocol::NetworkHandler::RequestSent,
                    request_id.ToString(), loader_id.ToString(), request,
                    protocol::Network::Initiator::TypeEnum::SignedExchange,
-                   signed_exchange_url);
+                   signed_exchange_url, timestamp);
+
+  auto value = std::make_unique<base::trace_event::TracedValue>();
+  value->SetString("requestId", request_id.ToString());
+  TRACE_EVENT_INSTANT_WITH_TIMESTAMP1(
+      "devtools.timeline", "ResourceWillSendRequest", TRACE_EVENT_SCOPE_PROCESS,
+      timestamp, "data",
+      inspector_will_send_navigation_request_event::Data(request_id));
 }
 
 void OnSignedExchangeCertificateResponseReceived(
@@ -356,9 +374,16 @@ bool WillCreateURLLoaderFactory(
 
 void OnNavigationRequestWillBeSent(
     const NavigationRequest& navigation_request) {
+  // Make sure both back-ends yield the same timestamp.
+  auto timestamp = base::TimeTicks::Now();
   DispatchToAgents(navigation_request.frame_tree_node(),
                    &protocol::NetworkHandler::NavigationRequestWillBeSent,
-                   navigation_request);
+                   navigation_request, timestamp);
+  TRACE_EVENT_INSTANT_WITH_TIMESTAMP1(
+      "devtools.timeline", "ResourceWillSendRequest", TRACE_EVENT_SCOPE_PROCESS,
+      timestamp, "data",
+      inspector_will_send_navigation_request_event::Data(
+          navigation_request.devtools_navigation_token()));
 }
 
 // Notify the provided agent host of a certificate error. Returns true if one of

@@ -1,7 +1,7 @@
 # Controlling Access to Powerful Web Platform Features
 
-_Author: [dominickn@chromium.org](mailto:dominickn@chromium.org)_  
-_Contributors: [rorymcclelland@chromium.org](mailto:rorymcclelland@chromium.org)_  
+_Author: [dominickn@chromium.org](mailto:dominickn@chromium.org)_
+_Contributors: [rorymcclelland@chromium.org](mailto:rorymcclelland@chromium.org)_
 
 # Overview
 
@@ -216,7 +216,7 @@ third permission request.
 ### Administrator policies may override prompts and enforce persistence
 
 Powerful new capabilities may be paired with
-[Chromium policies](https://www.chromium.org/administrators/policy-list-3)
+[Chromium policies](https://cloud.google.com/docs/chrome-enterprise/policies)
 which permit administrators to enforce persisted access to capabilities
 without prompts. Capabilities may also be restricted or blocked by such
 policies. This is in line with how many existing permissions have admin policy

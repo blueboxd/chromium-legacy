@@ -767,7 +767,7 @@ void HTMLSelectElement::RecalcListItems() const {
     // We should ignore nested optgroup elements. The HTML parser flatten
     // them.  However we need to ignore nested optgroups built by DOM APIs.
     // This behavior matches to IE and Firefox.
-    if (IsHTMLOptGroupElement(*current_html_element)) {
+    if (IsA<HTMLOptGroupElement>(*current_html_element)) {
       if (current_html_element->parentNode() != this) {
         current_element =
             ElementTraversal::NextSkippingChildren(*current_html_element, this);
@@ -1883,7 +1883,7 @@ HTMLOptionElement* HTMLSelectElement::SpatialNavigationFocusedOption() {
 
 String HTMLSelectElement::ItemText(const Element& element) const {
   String item_string;
-  if (auto* optgroup = ToHTMLOptGroupElementOrNull(element))
+  if (auto* optgroup = DynamicTo<HTMLOptGroupElement>(element))
     item_string = optgroup->GroupLabelText();
   else if (auto* option = ToHTMLOptionElementOrNull(element))
     item_string = option->TextIndentedToRespectGroupLabel();

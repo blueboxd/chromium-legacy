@@ -134,7 +134,7 @@ int WindowOrWorkerGlobalScope::setTimeout(
     EventTarget& event_target,
     V8Function* handler,
     int timeout,
-    const Vector<ScriptValue>& arguments) {
+    const HeapVector<ScriptValue>& arguments) {
   ExecutionContext* execution_context = event_target.GetExecutionContext();
   if (!IsAllowed(script_state, execution_context, false, g_empty_string))
     return 0;
@@ -154,7 +154,7 @@ int WindowOrWorkerGlobalScope::setTimeout(
     EventTarget& event_target,
     const StringOrTrustedScript& string_or_trusted_script,
     int timeout,
-    const Vector<ScriptValue>& arguments,
+    const HeapVector<ScriptValue>& arguments,
     ExceptionState& exception_state) {
   ExecutionContext* execution_context = event_target.GetExecutionContext();
   Document* document = execution_context->IsDocument()
@@ -173,7 +173,7 @@ int WindowOrWorkerGlobalScope::setTimeoutFromString(
     EventTarget& event_target,
     const String& handler,
     int timeout,
-    const Vector<ScriptValue>&) {
+    const HeapVector<ScriptValue>&) {
   ExecutionContext* execution_context = event_target.GetExecutionContext();
   if (!IsAllowed(script_state, execution_context, true, handler))
     return 0;
@@ -197,7 +197,7 @@ int WindowOrWorkerGlobalScope::setInterval(
     EventTarget& event_target,
     V8Function* handler,
     int timeout,
-    const Vector<ScriptValue>& arguments) {
+    const HeapVector<ScriptValue>& arguments) {
   ExecutionContext* execution_context = event_target.GetExecutionContext();
   if (!IsAllowed(script_state, execution_context, false, g_empty_string))
     return 0;
@@ -212,7 +212,7 @@ int WindowOrWorkerGlobalScope::setInterval(
     EventTarget& event_target,
     const StringOrTrustedScript& string_or_trusted_script,
     int timeout,
-    const Vector<ScriptValue>& arguments,
+    const HeapVector<ScriptValue>& arguments,
     ExceptionState& exception_state) {
   ExecutionContext* execution_context = event_target.GetExecutionContext();
   Document* document = execution_context->IsDocument()
@@ -231,7 +231,7 @@ int WindowOrWorkerGlobalScope::setIntervalFromString(
     EventTarget& event_target,
     const String& handler,
     int timeout,
-    const Vector<ScriptValue>&) {
+    const HeapVector<ScriptValue>&) {
   ExecutionContext* execution_context = event_target.GetExecutionContext();
   if (!IsAllowed(script_state, execution_context, true, handler))
     return 0;

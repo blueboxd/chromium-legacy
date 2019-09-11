@@ -88,7 +88,7 @@ void JSEventHandler::InvokeInternal(EventTarget& event_target,
   //   If an exception gets thrown by the callback, end these steps and allow
   //   the exception to propagate. (It will propagate to the DOM event dispatch
   //   logic, which will then report the exception.)
-  Vector<ScriptValue> arguments;
+  HeapVector<ScriptValue> arguments;
   ScriptState* script_state_of_listener =
       event_handler_->CallbackRelevantScriptState();
 

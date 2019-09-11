@@ -14,12 +14,12 @@ PerformanceManagerTestHarness::~PerformanceManagerTestHarness() = default;
 
 void PerformanceManagerTestHarness::SetUp() {
   Super::SetUp();
-  perf_man_ = PerformanceManager::Create();
+  perf_man_ = PerformanceManagerImpl::Create();
 }
 
 void PerformanceManagerTestHarness::TearDown() {
   // Have the performance manager destroy itself.
-  PerformanceManager::Destroy(std::move(perf_man_));
+  PerformanceManagerImpl::Destroy(std::move(perf_man_));
   task_environment()->RunUntilIdle();
 
   Super::TearDown();

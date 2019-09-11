@@ -79,16 +79,6 @@ class SMILTimeWithOrigin {
   Origin origin_;
 };
 
-struct SMILInterval {
-  DISALLOW_NEW();
-  SMILInterval() = default;
-  SMILInterval(const SMILTime& begin, const SMILTime& end)
-      : begin(begin), end(end) {}
-
-  SMILTime begin;
-  SMILTime end;
-};
-
 inline bool operator==(const SMILTime& a, const SMILTime& b) {
   return (a.IsUnresolved() && b.IsUnresolved()) || a.Value() == b.Value();
 }
@@ -128,6 +118,32 @@ inline SMILTime operator-(const SMILTime& a, const SMILTime& b) {
 // So multiplying times does not make too much sense but SMIL defines it for
 // duration * repeatCount
 SMILTime operator*(const SMILTime&, const SMILTime&);
+
+// An interval of SMILTimes.
+// "...the begin time of the interval is included in the interval, but the end
+// time is excluded from the interval."
+// (https://www.w3.org/TR/SMIL3/smil-timing.html#q101)
+struct SMILInterval {
+  DISALLOW_NEW();
+  SMILInterval() = default;
+  SMILInterval(const SMILTime& begin, const SMILTime& end)
+      : begin(begin), end(end) {}
+
+  bool IsResolved() const { return begin.IsFinite(); }
+  bool BeginsAfter(SMILTime time) const { return time < begin; }
+  bool BeginsBefore(SMILTime time) const { return !BeginsAfter(time); }
+  bool EndsAfter(SMILTime time) const {
+    DCHECK(IsResolved());
+    return time < end;
+  }
+  bool EndsBefore(SMILTime time) const { return !EndsAfter(time); }
+  bool Contains(SMILTime time) const {
+    return BeginsBefore(time) && EndsAfter(time);
+  }
+
+  SMILTime begin;
+  SMILTime end;
+};
 
 inline bool operator!=(const SMILInterval& a, const SMILInterval& b) {
   // Compare the "raw" values since the operator!= for SMILTime always return

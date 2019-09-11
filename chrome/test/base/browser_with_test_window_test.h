@@ -81,7 +81,7 @@ class BrowserWithTestWindowTest : public testing::Test {
 
     // TODO(alexclarke): Make content::BrowserTaskEnvironment::ValidTraits
     // imply this.
-    explicit ValidTraits(base::test::TaskEnvironment::ValidTrait);
+    explicit ValidTraits(base::test::TaskEnvironment::ValidTraits);
   };
 
   // Creates a BrowserWithTestWindowTest with zero or more traits. By default

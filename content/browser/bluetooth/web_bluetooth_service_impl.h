@@ -24,8 +24,10 @@
 #include "device/bluetooth/bluetooth_gatt_notify_session.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 
 namespace url {
@@ -62,9 +64,10 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
       public device::BluetoothAdapter::Observer {
  public:
   // |render_frame_host|: The RFH that owns this instance.
-  // |request|: The instance will be bound to this request's pipe.
-  WebBluetoothServiceImpl(RenderFrameHost* render_frame_host,
-                          blink::mojom::WebBluetoothServiceRequest request);
+  // |receiver|: The instance will be bound to this receiver's pipe.
+  WebBluetoothServiceImpl(
+      RenderFrameHost* render_frame_host,
+      mojo::PendingReceiver<blink::mojom::WebBluetoothService> receiver);
   ~WebBluetoothServiceImpl() override;
 
   void CrashRendererAndClosePipe(bad_message::BadMessageReason reason);
@@ -105,10 +108,11 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
 
   class ScanningClient {
    public:
-    ScanningClient(blink::mojom::WebBluetoothScanClientAssociatedPtr client,
-                   blink::mojom::WebBluetoothRequestLEScanOptionsPtr options,
-                   RequestScanningStartCallback callback,
-                   BluetoothDeviceScanningPromptController* prompt_controller);
+    ScanningClient(
+        mojo::AssociatedRemote<blink::mojom::WebBluetoothScanClient> client,
+        blink::mojom::WebBluetoothRequestLEScanOptionsPtr options,
+        RequestScanningStartCallback callback,
+        BluetoothDeviceScanningPromptController* prompt_controller);
     ~ScanningClient();
     bool SendEvent(blink::mojom::WebBluetoothScanResultPtr result);
 
@@ -140,7 +144,7 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
 
     bool disconnected_ = false;
     bool allow_send_event_ = false;
-    mojo::AssociatedInterfacePtr<blink::mojom::WebBluetoothScanClient> client_;
+    mojo::AssociatedRemote<blink::mojom::WebBluetoothScanClient> client_;
     blink::mojom::WebBluetoothRequestLEScanOptionsPtr options_;
     RequestScanningStartCallback callback_;
     BluetoothDeviceScanningPromptController* prompt_controller_;
@@ -190,7 +194,8 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
                      RequestDeviceCallback callback) override;
   void RemoteServerConnect(
       const blink::WebBluetoothDeviceId& device_id,
-      blink::mojom::WebBluetoothServerClientAssociatedPtrInfo client,
+      mojo::PendingAssociatedRemote<blink::mojom::WebBluetoothServerClient>
+          client,
       RemoteServerConnectCallback callback) override;
   void RemoteServerDisconnect(
       const blink::WebBluetoothDeviceId& device_id) override;
@@ -213,7 +218,8 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
       RemoteCharacteristicWriteValueCallback callback) override;
   void RemoteCharacteristicStartNotifications(
       const std::string& characteristic_instance_id,
-      blink::mojom::WebBluetoothCharacteristicClientAssociatedPtrInfo client,
+      mojo::PendingAssociatedRemote<
+          blink::mojom::WebBluetoothCharacteristicClient> client,
       RemoteCharacteristicStartNotificationsCallback callback) override;
   void RemoteCharacteristicStopNotifications(
       const std::string& characteristic_instance_id,
@@ -231,7 +237,8 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
       const std::vector<uint8_t>& value,
       RemoteDescriptorWriteValueCallback callback) override;
   void RequestScanningStart(
-      blink::mojom::WebBluetoothScanClientAssociatedPtrInfo client,
+      mojo::PendingAssociatedRemote<blink::mojom::WebBluetoothScanClient>
+          client,
       blink::mojom::WebBluetoothRequestLEScanOptionsPtr options,
       RequestScanningStartCallback callback) override;
 
@@ -241,13 +248,13 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
       device::BluetoothAdapter* adapter);
 
   void RequestScanningStartImpl(
-      blink::mojom::WebBluetoothScanClientAssociatedPtr client,
+      mojo::AssociatedRemote<blink::mojom::WebBluetoothScanClient> client,
       blink::mojom::WebBluetoothRequestLEScanOptionsPtr options,
       RequestScanningStartCallback callback,
       device::BluetoothAdapter* adapter);
 
   void OnStartDiscoverySession(
-      blink::mojom::WebBluetoothScanClientAssociatedPtr client,
+      mojo::AssociatedRemote<blink::mojom::WebBluetoothScanClient> client,
       blink::mojom::WebBluetoothRequestLEScanOptionsPtr options,
       std::unique_ptr<device::BluetoothDiscoverySession> session);
 
@@ -274,7 +281,7 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
   void OnCreateGATTConnectionSuccess(
       const blink::WebBluetoothDeviceId& device_id,
       base::TimeTicks start_time,
-      blink::mojom::WebBluetoothServerClientAssociatedPtr client,
+      mojo::AssociatedRemote<blink::mojom::WebBluetoothServerClient> client,
       RemoteServerConnectCallback callback,
       std::unique_ptr<device::BluetoothGattConnection> connection);
   void OnCreateGATTConnectionFailed(
@@ -299,7 +306,8 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
 
   // Callbacks for BluetoothRemoteGattCharacteristic::StartNotifySession.
   void OnStartNotifySessionSuccess(
-      blink::mojom::WebBluetoothCharacteristicClientAssociatedPtr client,
+      mojo::AssociatedRemote<blink::mojom::WebBluetoothCharacteristicClient>
+          client,
       RemoteCharacteristicStartNotificationsCallback callback,
       std::unique_ptr<device::BluetoothGattNotifySession> notify_session);
   void OnStartNotifySessionFailed(
@@ -414,10 +422,10 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
   // packets.
   bool accept_all_advertisements_ = false;
 
-  // The lifetime of this instance is exclusively managed by the RFH that
-  // owns it so we use a "Binding" as opposed to a "StrongBinding" which deletes
+  // The lifetime of this instance is exclusively managed by the RFH that owns
+  // it so we use a "Receiver" as opposed to a "SelfOwnedReceiver" which deletes
   // the service on pipe connection errors.
-  mojo::Binding<blink::mojom::WebBluetoothService> binding_;
+  mojo::Receiver<blink::mojom::WebBluetoothService> receiver_;
 
   base::WeakPtrFactory<WebBluetoothServiceImpl> weak_ptr_factory_{this};
 

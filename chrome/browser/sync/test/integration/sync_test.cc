@@ -29,7 +29,6 @@
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/test/integration/p2p_sync_refresher.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
@@ -568,7 +567,6 @@ bool SyncTest::SetupClients() {
   profiles_.resize(num_clients_);
   profile_delegates_.resize(num_clients_ + 1);  // + 1 for the verifier.
   clients_.resize(num_clients_);
-  sync_refreshers_.resize(num_clients_);
   fake_server_invalidation_observers_.resize(num_clients_);
 
   if (create_gaia_account_at_runtime_) {
@@ -864,20 +862,7 @@ bool SyncTest::SetupSync() {
     }
   }
 
-  // SyncRefresher is used instead of invalidations to notify other profiles to
-  // do a sync refresh on committed data sets. This is only needed when running
-  // tests against external live server, otherwise invalidation service is used.
-  // With external live servers, the profiles commit data on first sync cycle
-  // automatically after signing in. To avoid misleading sync commit
-  // notifications at start up, we start the SyncRefresher observers post
-  // client set up.
   if (UsingExternalServers()) {
-    for (int i = 0; i < num_clients_; ++i) {
-      DCHECK(!sync_refreshers_[i]);
-      sync_refreshers_[i] = std::make_unique<P2PSyncRefresher>(
-          GetProfile(i), clients_[i]->service());
-    }
-
     // OneClickSigninSyncStarter observer is created with a real user sign in.
     // It is deleted on certain conditions which are not satisfied by our tests,
     // and this causes the SigninTracker observer to stay hanging at shutdown.
@@ -923,7 +908,6 @@ void SyncTest::TearDownOnMainThread() {
   }
 
   // Delete things that unsubscribe in destructor before their targets are gone.
-  sync_refreshers_.clear();
   configuration_refresher_.reset();
 }
 

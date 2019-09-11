@@ -202,9 +202,8 @@ std::unique_ptr<net::UploadDataStream> CreateUploadDataStream(
       body->elements()->begin()->type() ==
           network::mojom::DataElementType::kChunkedDataPipe) {
     return std::make_unique<ChunkedDataPipeUploadDataStream>(
-        body, mojom::ChunkedDataPipeGetterPtr(
-                  const_cast<DataElement&>(body->elements()->front())
-                      .ReleaseChunkedDataPipeGetter()));
+        body, const_cast<DataElement&>(body->elements()->front())
+                  .ReleaseChunkedDataPipeGetter());
   }
 
   auto opened_file = opened_files.begin();
@@ -252,13 +251,14 @@ std::unique_ptr<net::UploadDataStream> CreateUploadDataStream(
 
 class SSLPrivateKeyInternal : public net::SSLPrivateKey {
  public:
-  SSLPrivateKeyInternal(const std::string& provider_name,
-                        const std::vector<uint16_t>& algorithm_preferences,
-                        mojom::SSLPrivateKeyPtr ssl_private_key)
+  SSLPrivateKeyInternal(
+      const std::string& provider_name,
+      const std::vector<uint16_t>& algorithm_preferences,
+      mojo::PendingRemote<mojom::SSLPrivateKey> ssl_private_key)
       : provider_name_(provider_name),
         algorithm_preferences_(algorithm_preferences),
         ssl_private_key_(std::move(ssl_private_key)) {
-    ssl_private_key_.set_connection_error_handler(
+    ssl_private_key_.set_disconnect_handler(
         base::BindOnce(&SSLPrivateKeyInternal::HandleSSLPrivateKeyError,
                        base::Unretained(this)));
   }
@@ -274,7 +274,7 @@ class SSLPrivateKeyInternal : public net::SSLPrivateKey {
             base::span<const uint8_t> input,
             net::SSLPrivateKey::SignCallback callback) override {
     std::vector<uint8_t> input_vector(input.begin(), input.end());
-    if (!ssl_private_key_ || ssl_private_key_.encountered_error()) {
+    if (!ssl_private_key_ || !ssl_private_key_.is_connected()) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::BindOnce(std::move(callback),
@@ -303,7 +303,7 @@ class SSLPrivateKeyInternal : public net::SSLPrivateKey {
 
   std::string provider_name_;
   std::vector<uint16_t> algorithm_preferences_;
-  mojom::SSLPrivateKeyPtr ssl_private_key_;
+  mojo::Remote<mojom::SSLPrivateKey> ssl_private_key_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLPrivateKeyInternal);
 };
@@ -1275,7 +1275,7 @@ void URLLoader::ContinueWithCertificate(
     const scoped_refptr<net::X509Certificate>& x509_certificate,
     const std::string& provider_name,
     const std::vector<uint16_t>& algorithm_preferences,
-    mojom::SSLPrivateKeyPtr ssl_private_key) {
+    mojo::PendingRemote<mojom::SSLPrivateKey> ssl_private_key) {
   client_cert_responder_receiver_.reset();
   auto key = base::MakeRefCounted<SSLPrivateKeyInternal>(
       provider_name, algorithm_preferences, std::move(ssl_private_key));

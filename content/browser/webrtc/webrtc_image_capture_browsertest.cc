@@ -219,8 +219,14 @@ IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureSucceedsBrowserTest, GrabFrame) {
   ASSERT_TRUE(RunImageCaptureTestCase("testCreateAndGrabFrameSucceeds()"));
 }
 
+// Flaky. crbug.com/998116
+#if defined(OS_LINUX)
+#define MAYBE_GetTrackCapabilities DISABLED_GetTrackCapabilities
+#else
+#define MAYBE_GetTrackCapabilities GetTrackCapabilities
+#endif
 IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureSucceedsBrowserTest,
-                       GetTrackCapabilities) {
+                       MAYBE_GetTrackCapabilities) {
   embedded_test_server()->StartAcceptingConnections();
   ASSERT_TRUE(RunImageCaptureTestCase("testCreateAndGetTrackCapabilities()"));
 }

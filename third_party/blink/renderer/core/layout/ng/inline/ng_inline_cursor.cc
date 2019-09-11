@@ -55,7 +55,8 @@ NGInlineCursor::NGInlineCursor(const LayoutBlockFlow& block_flow) {
   NOTREACHED();
 }
 
-NGInlineCursor::NGInlineCursor(const NGFragmentItems& items) {
+NGInlineCursor::NGInlineCursor(const NGFragmentItems& items)
+    : fragment_items_(&items) {
   SetRoot(items);
 }
 

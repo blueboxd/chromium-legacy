@@ -382,7 +382,7 @@ bool AXNodeObject::ComputeAccessibilityIsIgnored(
 }
 
 static bool IsListElement(Node* node) {
-  return IsHTMLUListElement(*node) || IsHTMLOListElement(*node) ||
+  return IsHTMLUListElement(*node) || IsA<HTMLOListElement>(*node) ||
          IsA<HTMLDListElement>(*node);
 }
 
@@ -598,16 +598,16 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (IsHTMLDivElement(*GetNode()))
     return ax::mojom::Role::kGenericContainer;
 
-  if (IsHTMLMeterElement(*GetNode()))
+  if (IsA<HTMLMeterElement>(*GetNode()))
     return ax::mojom::Role::kMeter;
 
   if (IsHTMLProgressElement(*GetNode()))
     return ax::mojom::Role::kProgressIndicator;
 
-  if (IsHTMLOutputElement(*GetNode()))
+  if (IsA<HTMLOutputElement>(*GetNode()))
     return ax::mojom::Role::kStatus;
 
-  if (IsHTMLParagraphElement(*GetNode()))
+  if (IsA<HTMLParagraphElement>(*GetNode()))
     return ax::mojom::Role::kParagraph;
 
   if (IsA<HTMLLabelElement>(*GetNode()))
@@ -1189,7 +1189,7 @@ AXRestriction AXNodeObject::Restriction() const {
     return kRestrictionNone;
 
   // An <optgroup> is not exposed directly in the AX tree.
-  if (IsHTMLOptGroupElement(elem))
+  if (IsA<HTMLOptGroupElement>(elem))
     return kRestrictionNone;
 
   // According to ARIA, all elements of the base markup can be disabled.
@@ -1723,7 +1723,7 @@ bool AXNodeObject::ValueForRange(float* out_value) const {
     return std::isfinite(*out_value);
   }
 
-  if (auto* meter = ToHTMLMeterElementOrNull(GetNode())) {
+  if (auto* meter = DynamicTo<HTMLMeterElement>(GetNode())) {
     *out_value = meter->value();
     return true;
   }
@@ -1769,7 +1769,7 @@ bool AXNodeObject::MaxValueForRange(float* out_value) const {
     return std::isfinite(*out_value);
   }
 
-  if (auto* meter = ToHTMLMeterElementOrNull(GetNode())) {
+  if (auto* meter = DynamicTo<HTMLMeterElement>(GetNode())) {
     *out_value = meter->max();
     return true;
   }
@@ -1802,7 +1802,7 @@ bool AXNodeObject::MinValueForRange(float* out_value) const {
     return std::isfinite(*out_value);
   }
 
-  if (auto* meter = ToHTMLMeterElementOrNull(GetNode())) {
+  if (auto* meter = DynamicTo<HTMLMeterElement>(GetNode())) {
     *out_value = meter->min();
     return true;
   }

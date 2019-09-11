@@ -33,7 +33,7 @@ public class SessionDataHolder {
     private final SparseArray<SessionData> mTaskIdToSessionData = new SparseArray<>();
 
     @Nullable
-    private SessionHandler mActiveContentHandler;
+    private SessionHandler mActiveSessionHandler;
 
     @Nullable
     private Callback<CustomTabsSessionToken> mSessionDisconnectCallback;
@@ -49,7 +49,7 @@ public class SessionDataHolder {
     private static class SessionData {
         public final CustomTabsSessionToken session;
 
-        // Content handlers can reside in Activities of different types, so we need to store the
+        // Session handlers can reside in Activities of different types, so we need to store the
         // Activity class to be able to route new intents into it.
         public final Class<? extends Activity> activityClass;
 
@@ -62,25 +62,25 @@ public class SessionDataHolder {
 
     /**
      * Sets the currently active {@link SessionHandler} in focus.
-     * @param contentHandler {@link SessionHandler} to set.
+     * @param sessionHandler {@link SessionHandler} to set.
      */
-    public void setActiveHandler(@NonNull SessionHandler contentHandler) {
-        mActiveContentHandler = contentHandler;
-        CustomTabsSessionToken session = contentHandler.getSession();
+    public void setActiveHandler(@NonNull SessionHandler sessionHandler) {
+        mActiveSessionHandler = sessionHandler;
+        CustomTabsSessionToken session = sessionHandler.getSession();
         if (session == null) return;
 
-        mTaskIdToSessionData.append(contentHandler.getTaskId(),
-                new SessionData(session, contentHandler.getActivityClass()));
+        mTaskIdToSessionData.append(sessionHandler.getTaskId(),
+                new SessionData(session, sessionHandler.getActivityClass()));
         ensureSessionCleanUpOnDisconnects();
     }
 
     /**
      * Notifies that given {@link SessionHandler} no longer has focus.
      */
-    public void removeActiveHandler(SessionHandler contentHandler) {
-        if (mActiveContentHandler == contentHandler) {
-            mActiveContentHandler = null;
-        } // else this contentHandler has already been replaced.
+    public void removeActiveHandler(SessionHandler sessionHandler) {
+        if (mActiveSessionHandler == sessionHandler) {
+            mActiveSessionHandler = null;
+        } // else this sessionHandler has already been replaced.
 
         // Intentionally not removing from mTaskIdToSessionData to handle cases when the task is
         // brought to foreground by a new intent - the CCT might not be able to call
@@ -129,10 +129,10 @@ public class SessionDataHolder {
      */
     @Nullable
     public SessionHandler getActiveHandler(@Nullable CustomTabsSessionToken session) {
-        if (mActiveContentHandler == null) return null;
-        CustomTabsSessionToken activeSession = mActiveContentHandler.getSession();
+        if (mActiveSessionHandler == null) return null;
+        CustomTabsSessionToken activeSession = mActiveSessionHandler.getSession();
         if (activeSession == null || !activeSession.equals(session)) return null;
-        return mActiveContentHandler;
+        return mActiveSessionHandler;
     }
 
     @Nullable
@@ -164,8 +164,8 @@ public class SessionDataHolder {
      */
     @Deprecated
     public String getCurrentUrlForActiveBrowserSession() {
-        if (mActiveContentHandler == null) return null;
-        return mActiveContentHandler.getCurrentUrl();
+        if (mActiveSessionHandler == null) return null;
+        return mActiveSessionHandler.getCurrentUrl();
     }
 
     /**
@@ -176,8 +176,8 @@ public class SessionDataHolder {
      */
     @Deprecated
     public String getPendingUrlForActiveBrowserSession() {
-        if (mActiveContentHandler == null) return null;
-        return mActiveContentHandler.getPendingUrl();
+        if (mActiveSessionHandler == null) return null;
+        return mActiveSessionHandler.getPendingUrl();
     }
 
     private void ensureSessionCleanUpOnDisconnects() {

@@ -22,6 +22,8 @@
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_render_widget_host.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 #include "ui/base/page_transition_types.h"
 
 namespace net {
@@ -286,6 +288,9 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   std::map<NavigationRequest*,
            mojom::NavigationClient::CommitFailedNavigationCallback>
       navigation_client_commit_failed_callback_;
+
+  mojo::PendingRemote<blink::mojom::WebBluetoothService>
+      dummy_web_bluetooth_service_remote_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRenderFrameHost);
 };

@@ -68,7 +68,7 @@ class GPUDevice final : public EventTargetWithInlineData,
   GPUAdapter* adapter() const;
 
   GPUBuffer* createBuffer(const GPUBufferDescriptor* descriptor);
-  WTF::Vector<ScriptValue> createBufferMapped(
+  HeapVector<ScriptValue> createBufferMapped(
       ScriptState* script_state,
       const GPUBufferDescriptor* descriptor,
       ExceptionState& exception_state);

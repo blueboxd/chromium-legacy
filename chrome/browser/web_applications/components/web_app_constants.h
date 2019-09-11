@@ -72,7 +72,11 @@ enum class InstallResultCode {
   kIntentToPlayStore = 11,
   // A web app has been disabled by device policy or by other reasons.
   kWebAppDisabled = 12,
-  kMaxValue = kWebAppDisabled
+  // The network request for the install URL was redirected.
+  kInstallURLRedirected = 13,
+  // The network request for the install URL failed or timed out.
+  kInstallURLLoadFailed = 14,
+  kMaxValue = kInstallURLLoadFailed
 };
 
 // Checks if InstallResultCode is not a failure.

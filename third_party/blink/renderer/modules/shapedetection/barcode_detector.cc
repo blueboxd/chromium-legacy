@@ -87,9 +87,9 @@ BarcodeDetector::BarcodeDetector(ExecutionContext* context,
   auto task_runner = context->GetTaskRunner(TaskType::kMiscPlatformAPI);
 
   BarcodeDetectorStatics::From(context)->CreateBarcodeDetection(
-      mojo::MakeRequest(&service_, task_runner),
+      service_.BindNewPipeAndPassReceiver(task_runner),
       std::move(barcode_detector_options));
-  service_.set_connection_error_handler(
+  service_.set_disconnect_handler(
       WTF::Bind(&BarcodeDetector::OnConnectionError, WrapWeakPersistent(this)));
 }
 

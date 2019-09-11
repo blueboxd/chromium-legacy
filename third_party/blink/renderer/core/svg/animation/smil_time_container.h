@@ -116,8 +116,8 @@ class SMILTimeContainer final
   void UpdateAnimationsAndScheduleFrameIfNeeded(double elapsed);
   void RemoveUnusedKeys();
   void UpdateIntervals(SMILTime);
-  SMILTime NextInterestingTime(SMILTime) const;
-  void UpdateAnimationTimings(SMILTime elapsed);
+  SMILTime NextInterestingTime(double elapsed) const;
+  void UpdateAnimationTimings(double elapsed);
   void ApplyAnimationValues(double elapsed);
   void ServiceOnNextFrame();
   void ScheduleWakeUp(double delay_time, FrameSchedulingState);

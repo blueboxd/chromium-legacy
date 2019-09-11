@@ -23,11 +23,12 @@ class UsbDeviceInfo;
 class PrefService;
 
 // This class is used to initialize a UsbDeviceIdsToUrlsMap from the
-// preference value for the WebUsbAllowDevicesForUrls policy. The map
-// provides an efficient method of checking if a particular device is allowed to
-// be used by the given requesting and embedding origins. Additionally, this
-// class also uses |pref_change_registrar_| to observe for changes to the
-// preference value so that the map can be updated accordingly.
+// preference value for the WebUsbAllowDevicesForUrls or
+// DeviceLoginScreenWebUsbAllowDevicesForUrls policy. The map provides an
+// efficient method of checking if a particular device is allowed to be used by
+// the given requesting and embedding origins. Additionally, this class also
+// uses |pref_change_registrar_| to observe for changes to the preference value
+// so that the map can be updated accordingly.
 class UsbPolicyAllowedDevices {
  public:
   // A map of device IDs to a set of origins stored in a std::pair. The device
@@ -41,8 +42,8 @@ class UsbPolicyAllowedDevices {
                std::set<std::pair<url::Origin, base::Optional<url::Origin>>>>;
 
   // Initializes |pref_change_registrar_| with |pref_service| and adds an
-  // an observer for the pref path |kManagedWebUsbAllowDevicesForUrls|.
-  explicit UsbPolicyAllowedDevices(PrefService* pref_service);
+  // an observer for the |pref_name|.
+  UsbPolicyAllowedDevices(PrefService* pref_service, const char* pref_name);
   ~UsbPolicyAllowedDevices();
 
   // Checks if |requesting_origin| (when embedded within |embedding_origin|) is
@@ -58,11 +59,12 @@ class UsbPolicyAllowedDevices {
 
  private:
   // Creates or updates the |usb_device_ids_to_urls_| map using the
-  // pref at the path |kManagedWebUsbAllowDevicesForUrls|. The existing map is
-  // cleared to ensure that previous pref settings are removed.
+  // pref at |pref_name_|. The existing map is cleared to ensure that previous
+  // pref settings are removed.
   void CreateOrUpdateMap();
 
   // Allow for this class to observe changes to the pref value.
+  const char* pref_name_;
   PrefChangeRegistrar pref_change_registrar_;
   UsbDeviceIdsToUrlsMap usb_device_ids_to_urls_;
 };

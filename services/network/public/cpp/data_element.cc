@@ -71,9 +71,10 @@ void DataElement::SetToDataPipe(
 }
 
 void DataElement::SetToChunkedDataPipe(
-    mojom::ChunkedDataPipeGetterPtr chunked_data_pipe_getter) {
+    mojo::PendingRemote<mojom::ChunkedDataPipeGetter>
+        chunked_data_pipe_getter) {
   type_ = mojom::DataElementType::kChunkedDataPipe;
-  chunked_data_pipe_getter_ = chunked_data_pipe_getter.PassInterface();
+  chunked_data_pipe_getter_ = std::move(chunked_data_pipe_getter);
 }
 
 base::File DataElement::ReleaseFile() {
@@ -100,7 +101,7 @@ mojo::PendingRemote<mojom::DataPipeGetter> DataElement::CloneDataPipeGetter()
   return clone;
 }
 
-mojom::ChunkedDataPipeGetterPtrInfo
+mojo::PendingRemote<mojom::ChunkedDataPipeGetter>
 DataElement::ReleaseChunkedDataPipeGetter() {
   DCHECK_EQ(mojom::DataElementType::kChunkedDataPipe, type_);
   return std::move(chunked_data_pipe_getter_);

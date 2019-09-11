@@ -34,7 +34,7 @@ namespace {
 std::string* g_event_source_name = nullptr;
 uint16_t g_category = 0;
 uint32_t g_event_id = 0;
-base::string16* g_user_sid = nullptr;
+std::wstring* g_user_sid = nullptr;
 
 }  // namespace
 
@@ -46,7 +46,7 @@ void SetEventSource(const std::string& name,
   g_category = category;
   g_event_id = event_id;
   DCHECK_EQ(nullptr, g_user_sid);
-  g_user_sid = new base::string16();
+  g_user_sid = new std::wstring();
   base::win::GetUserSidString(g_user_sid);
 }
 
@@ -102,7 +102,7 @@ EventLogMessage::~EventLogMessage() {
   }
   LPCSTR strings[1] = {message.data()};
   PSID user_sid = nullptr;
-  if (!::ConvertStringSidToSid(base::as_wcstr(*g_user_sid), &user_sid)) {
+  if (!::ConvertStringSidToSid(g_user_sid->c_str(), &user_sid)) {
     stream() << " !!ERROR GETTING USER SID!!";
   }
 

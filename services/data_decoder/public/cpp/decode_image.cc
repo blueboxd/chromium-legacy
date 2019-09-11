@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -16,16 +17,16 @@ namespace data_decoder {
 
 namespace {
 
-// Helper callback which owns an ImageDecoderPtr until invoked. This keeps the
-// ImageDecoder pipe open just long enough to dispatch a reply, at which point
-// the reply is forwarded to the wrapped |callback|.
-void OnDecodeImage(mojom::ImageDecoderPtr decoder,
+// Helper callback which owns a mojo::Remote<ImageDecoder> until invoked. This
+// keeps the ImageDecoder pipe open just long enough to dispatch a reply, at
+// which point the reply is forwarded to the wrapped |callback|.
+void OnDecodeImage(mojo::Remote<mojom::ImageDecoder> decoder,
                    mojom::ImageDecoder::DecodeImageCallback callback,
                    const SkBitmap& bitmap) {
   std::move(callback).Run(bitmap);
 }
 
-void OnDecodeImages(mojom::ImageDecoderPtr decoder,
+void OnDecodeImages(mojo::Remote<mojom::ImageDecoder> decoder,
                     mojom::ImageDecoder::DecodeAnimationCallback callback,
                     std::vector<mojom::AnimationFramePtr> bitmaps) {
   std::move(callback).Run(std::move(bitmaps));
@@ -40,12 +41,12 @@ void DecodeImage(service_manager::Connector* connector,
                  uint64_t max_size_in_bytes,
                  const gfx::Size& desired_image_frame_size,
                  mojom::ImageDecoder::DecodeImageCallback callback) {
-  mojom::ImageDecoderPtr decoder;
-  connector->BindInterface(mojom::kServiceName, &decoder);
+  mojo::Remote<mojom::ImageDecoder> decoder;
+  connector->Connect(mojom::kServiceName, decoder.BindNewPipeAndPassReceiver());
 
   // |call_once| runs |callback| on its first invocation.
   auto call_once = base::AdaptCallbackForRepeating(std::move(callback));
-  decoder.set_connection_error_handler(base::Bind(call_once, SkBitmap()));
+  decoder.set_disconnect_handler(base::Bind(call_once, SkBitmap()));
 
   mojom::ImageDecoder* raw_decoder = decoder.get();
   raw_decoder->DecodeImage(
@@ -59,12 +60,12 @@ void DecodeAnimation(service_manager::Connector* connector,
                      bool shrink_to_fit,
                      uint64_t max_size_in_bytes,
                      mojom::ImageDecoder::DecodeAnimationCallback callback) {
-  mojom::ImageDecoderPtr decoder;
-  connector->BindInterface(mojom::kServiceName, &decoder);
+  mojo::Remote<mojom::ImageDecoder> decoder;
+  connector->Connect(mojom::kServiceName, decoder.BindNewPipeAndPassReceiver());
 
   // |call_once| runs |callback| on its first invocation.
   auto call_once = base::AdaptCallbackForRepeating(std::move(callback));
-  decoder.set_connection_error_handler(base::Bind(
+  decoder.set_disconnect_handler(base::Bind(
       call_once, base::Passed(std::vector<mojom::AnimationFramePtr>())));
 
   mojom::ImageDecoder* raw_decoder = decoder.get();

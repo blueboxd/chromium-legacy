@@ -126,6 +126,7 @@ blink_modules_sources("peerconnection") {
 
   public_deps = [
     "//third_party/webrtc/api:ice_transport_factory",
+    "//third_party/webrtc/api:rtc_error",
     "//third_party/webrtc/api:scoped_refptr",
   ]
 }

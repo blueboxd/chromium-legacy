@@ -2040,6 +2040,19 @@
     ]
   },
 
+  "DeviceLoginScreenWebUsbAllowDevicesForUrls": {
+    "os": ["chromeos"],
+    "test_policy": { "DeviceLoginScreenWebUsbAllowDevicesForUrls": [{
+      "devices": [{"vendor_id": 1234, "product_id": 5678}],
+      "urls": ["https://google.com", "https://requesting.com,https://embedded.com"]
+    }]},
+    "pref_mappings": [
+      { "pref": "device_login_screen_webusb_allow_devices_for_urls",
+        "local_state": true
+      }
+    ]
+  },
+
   "WebUsbAskForUrls": {
     "os": ["win", "linux", "mac", "chromeos", "android"],
     "test_policy": { "WebUsbAskForUrls": ["[*.]google.com"] },

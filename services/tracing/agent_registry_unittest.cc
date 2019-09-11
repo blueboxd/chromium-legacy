@@ -30,14 +30,14 @@ class AgentRegistryTest : public testing::Test {
     message_loop_.reset();
   }
 
-  void RegisterAgent(mojom::AgentPtr agent,
+  void RegisterAgent(mojo::PendingRemote<mojom::Agent> agent,
                      const std::string& label,
                      mojom::TraceDataType type) {
     registry_->RegisterAgent(std::move(agent), label, type,
                              base::kNullProcessId);
   }
 
-  void RegisterAgent(mojom::AgentPtr agent) {
+  void RegisterAgent(mojo::PendingRemote<mojom::Agent> agent) {
     registry_->RegisterAgent(std::move(agent), "label",
                              mojom::TraceDataType::ARRAY, base::kNullProcessId);
   }
@@ -50,7 +50,7 @@ class AgentRegistryTest : public testing::Test {
 
 TEST_F(AgentRegistryTest, RegisterAgent) {
   MockAgent agent1;
-  RegisterAgent(agent1.CreateAgentPtr(), "TraceEvent",
+  RegisterAgent(agent1.CreateAgentRemote(), "TraceEvent",
                 mojom::TraceDataType::ARRAY);
   size_t num_agents = 0;
   registry_->ForAllAgents([&num_agents](AgentRegistry::AgentEntry* entry) {
@@ -61,7 +61,8 @@ TEST_F(AgentRegistryTest, RegisterAgent) {
   EXPECT_EQ(1u, num_agents);
 
   MockAgent agent2;
-  RegisterAgent(agent2.CreateAgentPtr(), "Power", mojom::TraceDataType::STRING);
+  RegisterAgent(agent2.CreateAgentRemote(), "Power",
+                mojom::TraceDataType::STRING);
   num_agents = 0;
   registry_->ForAllAgents([&num_agents](AgentRegistry::AgentEntry* entry) {
     num_agents++;
@@ -77,10 +78,10 @@ TEST_F(AgentRegistryTest, RegisterAgent) {
 TEST_F(AgentRegistryTest, UnregisterAgent) {
   base::RunLoop run_loop;
   MockAgent agent1;
-  RegisterAgent(agent1.CreateAgentPtr());
+  RegisterAgent(agent1.CreateAgentRemote());
   {
     MockAgent agent2;
-    RegisterAgent(agent2.CreateAgentPtr());
+    RegisterAgent(agent2.CreateAgentRemote());
     size_t num_agents = 0;
     registry_->ForAllAgents(
         [&num_agents](AgentRegistry::AgentEntry* entry) { num_agents++; });
@@ -98,7 +99,7 @@ TEST_F(AgentRegistryTest, UnregisterAgent) {
 TEST_F(AgentRegistryTest, AgentInitialization) {
   size_t num_calls = 0;
   MockAgent agent1;
-  RegisterAgent(agent1.CreateAgentPtr());
+  RegisterAgent(agent1.CreateAgentRemote());
   size_t num_initialized_agents = registry_->SetAgentInitializationCallback(
       base::BindRepeating(
           [](size_t* num_calls, tracing::AgentRegistry::AgentEntry* entry) {
@@ -112,7 +113,7 @@ TEST_F(AgentRegistryTest, AgentInitialization) {
 
   // The callback should be run on future agents, too.
   MockAgent agent2;
-  RegisterAgent(agent2.CreateAgentPtr());
+  RegisterAgent(agent2.CreateAgentRemote());
   EXPECT_EQ(2u, num_calls);
 }
 

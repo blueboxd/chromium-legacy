@@ -39,7 +39,6 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/test/not_implemented_network_url_loader_factory.h"
 #include "media/media_buildflags.h"
-#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace content {
@@ -408,8 +407,10 @@ void MockRenderProcessHost::Resume() {}
 
 mojom::Renderer* MockRenderProcessHost::GetRendererInterface() {
   if (!renderer_interface_) {
-    renderer_interface_.reset(new mojom::RendererAssociatedPtr);
-    mojo::MakeRequestAssociatedWithDedicatedPipe(renderer_interface_.get());
+    renderer_interface_ =
+        std::make_unique<mojo::AssociatedRemote<mojom::Renderer>>();
+    ignore_result(renderer_interface_
+                      ->BindNewEndpointAndPassDedicatedReceiverForTesting());
   }
   return renderer_interface_->get();
 }
@@ -514,7 +515,7 @@ void MockRenderProcessHost::OverrideBinderForTesting(
 }
 
 void MockRenderProcessHost::OverrideRendererInterfaceForTesting(
-    std::unique_ptr<mojo::AssociatedInterfacePtr<mojom::Renderer>>
+    std::unique_ptr<mojo::AssociatedRemote<mojom::Renderer>>
         renderer_interface) {
   renderer_interface_ = std::move(renderer_interface);
 }

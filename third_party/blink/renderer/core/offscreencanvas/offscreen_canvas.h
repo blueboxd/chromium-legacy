@@ -103,6 +103,10 @@ class CORE_EXPORT OffscreenCanvas final
     filter_quality_ = quality;
   }
 
+  void AllowHighPerformancePowerPreference() {
+    allow_high_performance_power_preference_ = true;
+  }
+
   // CanvasRenderingContextHost implementation.
   void FinalizeFrame() override {}
   void DetachContext() override { context_ = nullptr; }
@@ -199,6 +203,11 @@ class CORE_EXPORT OffscreenCanvas final
   bool needs_push_frame_ = false;
 
   SkFilterQuality filter_quality_ = kLow_SkFilterQuality;
+
+  // An offscreen canvas should only prefer the high-performance GPU if it is
+  // initialized by transferring control from an HTML canvas that is not
+  // cross-origin.
+  bool allow_high_performance_power_preference_ = false;
 
   // cc::FrameSinkId is broken into two integer components as this can be used
   // in transfer of OffscreenCanvas across threads

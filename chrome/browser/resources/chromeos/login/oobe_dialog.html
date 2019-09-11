@@ -58,7 +58,7 @@
     <link rel="stylesheet" href="oobe_dialog.css">
     <link rel="stylesheet" href="oobe_flex_layout.css">
     <style include="cr-shared-style"></style>
-    <div id="header-container" hidden="[[noHeader]]" android$="[[android]]">
+    <div id="header-container" hidden="[[noHeader]]">
       <div id="oobe-icon-div">
         <slot name="oobe-icon"></slot>
       </div>
@@ -77,7 +77,7 @@
       <slot name="footer"></slot>
     </div>
     <template is="dom-if" if="[[hasButtons]]">
-      <div id="oobe-bottom" hideShadow$="[[hideShadow]]" android$="[[android]]"
+      <div id="oobe-bottom" hideShadow$="[[hideShadow]]"
         no-buttons-padding$="[[noButtonsPadding]]"
           class="layout horizontal center">
         <slot name="bottom-buttons"></slot>

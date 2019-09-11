@@ -5,10 +5,7 @@
 package org.chromium.chrome.browser.sharing;
 
 import android.app.Notification;
-import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -29,41 +26,12 @@ import org.chromium.chrome.browser.notifications.NotificationUmaTracker.SystemNo
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 
-import java.util.HashSet;
-
 /**
  * Provides common functionality for handling sharing notifications.
  */
 public final class SharingNotificationUtil {
-    private static final String EXTRA_NOTIFICATION_TAG = "notification_tag";
-    private static final String EXTRA_NOTIFICATION_ID = "notification_id";
-    private static final String EXTRA_NOTIFICATION_TOKEN = "notification_token";
-    private static final int REQUEST_CODE_DISMISS = 100;
-
     // TODO(himanshujaju) - We have only two small icons, one for error and one for non error. We
     // could avoid passing them around.
-
-    private static HashSet<Integer> sDismissedSendingNotifications = new HashSet<>();
-    private static int sSendingNotificationCount;
-
-    /**
-     * Handles the action of a notification.
-     */
-    public static final class ActionReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            // Currently only dismiss is supported.
-            String tag = intent.getStringExtra(EXTRA_NOTIFICATION_TAG);
-            int id = intent.getIntExtra(EXTRA_NOTIFICATION_ID, -1);
-            int token = intent.getIntExtra(EXTRA_NOTIFICATION_TOKEN, -1);
-            if (tag == null || id == -1 || token == -1) {
-                return;
-            }
-
-            new NotificationManagerProxyImpl(context).cancel(tag, id);
-            sDismissedSendingNotifications.add(token);
-        }
-    }
 
     /**
      * Shows a notification with a configuration common to all sharing notifications.
@@ -120,25 +88,13 @@ public final class SharingNotificationUtil {
      * @param group The notification group.
      * @param id The notification id.
      * @param targetName The name of target device
-     * @return token of notification created to be used to call {@link #showSendErrorNotification}
      */
-    public static int showSendingNotification(
+    public static void showSendingNotification(
             @SystemNotificationType int type, String group, int id, String targetName) {
-        int token = sSendingNotificationCount;
-        sSendingNotificationCount++;
-
         Context context = ContextUtils.getApplicationContext();
         Resources resources = context.getResources();
-        PendingIntentProvider dismissIntent =
-                PendingIntentProvider.getBroadcast(context, REQUEST_CODE_DISMISS,
-                        new Intent(context, ActionReceiver.class)
-                                .putExtra(EXTRA_NOTIFICATION_TAG, group)
-                                .putExtra(EXTRA_NOTIFICATION_ID, id)
-                                .putExtra(EXTRA_NOTIFICATION_TOKEN, token),
-                        PendingIntent.FLAG_UPDATE_CURRENT);
         String contentTitle =
                 resources.getString(R.string.sharing_sending_notification_title, targetName);
-        String dismissTitle = resources.getString(R.string.sharing_dismiss_action);
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
                         .createChromeNotificationBuilder(/*preferCompat=*/true,
@@ -153,16 +109,12 @@ public final class SharingNotificationUtil {
                         .setSmallIcon(R.drawable.ic_devices_16dp)
                         .setProgress(/*max=*/0, /*percentage=*/0, true)
                         .setOngoing(true)
-                        .addAction(R.drawable.ic_cancel_circle, dismissTitle, dismissIntent,
-                                NotificationUmaTracker.ActionType.SHARING_DISMISS)
                         .setDefaults(Notification.DEFAULT_ALL);
         ChromeNotification notification = builder.buildChromeNotification();
 
         new NotificationManagerProxyImpl(context).notify(notification);
         NotificationUmaTracker.getInstance().onNotificationShown(
                 type, notification.getNotification());
-
-        return token;
     }
 
     /**
@@ -173,16 +125,11 @@ public final class SharingNotificationUtil {
      * @param id The notification id.
      * @param contentTitle The title of the notification.
      * @param contentText The text shown in the notification.
-     * @param token Token returned from {@link #showSendingNotification}.
      * @param tryAgainIntent PendingIntent to try sharing to same device again.
      */
     public static void showSendErrorNotification(@SystemNotificationType int type, String group,
-            int id, String contentTitle, String contentText, int token,
+            int id, String contentTitle, String contentText,
             @Nullable PendingIntentProvider tryAgainIntent) {
-        if (sDismissedSendingNotifications.remove(token)) {
-            return;
-        }
-
         Context context = ContextUtils.getApplicationContext();
         Resources resources = context.getResources();
         ChromeNotificationBuilder builder =

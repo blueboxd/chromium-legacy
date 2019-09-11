@@ -268,11 +268,11 @@ void InternalPopupMenu::WriteDocument(SharedBuffer* data) {
   const HeapVector<Member<HTMLElement>>& items = owner_element.GetListItems();
   for (; context.list_index_ < items.size(); ++context.list_index_) {
     Element& child = *items[context.list_index_];
-    if (!IsHTMLOptGroupElement(child.parentNode()))
+    if (!IsA<HTMLOptGroupElement>(child.parentNode()))
       context.FinishGroupIfNecessary();
     if (auto* option = ToHTMLOptionElementOrNull(child))
       AddOption(context, *option);
-    else if (auto* optgroup = ToHTMLOptGroupElementOrNull(child))
+    else if (auto* optgroup = DynamicTo<HTMLOptGroupElement>(child))
       AddOptGroup(context, *optgroup);
     else if (auto* hr = ToHTMLHRElementOrNull(child))
       AddSeparator(context, *hr);
@@ -534,11 +534,11 @@ void InternalPopupMenu::Update() {
   const HeapVector<Member<HTMLElement>>& items = owner_element_->GetListItems();
   for (; context.list_index_ < items.size(); ++context.list_index_) {
     Element& child = *items[context.list_index_];
-    if (!IsHTMLOptGroupElement(child.parentNode()))
+    if (!IsA<HTMLOptGroupElement>(child.parentNode()))
       context.FinishGroupIfNecessary();
     if (auto* option = ToHTMLOptionElementOrNull(child))
       AddOption(context, *option);
-    else if (auto* optgroup = ToHTMLOptGroupElementOrNull(child))
+    else if (auto* optgroup = DynamicTo<HTMLOptGroupElement>(child))
       AddOptGroup(context, *optgroup);
     else if (auto* hr = ToHTMLHRElementOrNull(child))
       AddSeparator(context, *hr);

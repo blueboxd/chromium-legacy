@@ -7,6 +7,11 @@
 
 #include <string>
 
+#include "build/build_config.h"
+#if defined(OS_ANDROID)
+#include "base/android/jni_android.h"
+#endif
+
 namespace signin_metrics {
 enum ProfileSignout : int;
 enum class SignoutDelete;
@@ -19,7 +24,7 @@ namespace signin {
 // PrimaryAccountMutator is the interface to set and clear the primary account
 // (see IdentityManager for more information).
 //
-// It is a pure interface that has concrete implementation on platform that
+// This interface has concrete implementations on platform that
 // support changing the signed-in state during the lifetime of the application.
 // On other platforms, there is no implementation, and no instance will be
 // available at runtime (thus accessors may return null).
@@ -27,14 +32,15 @@ class PrimaryAccountMutator {
  public:
   // Represents the options for handling the accounts known to the
   // IdentityManager upon calling ClearPrimaryAccount().
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.signin.identitymanager
   enum class ClearAccountsAction {
     kDefault,    // Default action based on internal policy.
     kKeepAll,    // Keep all accounts.
     kRemoveAll,  // Remove all accounts.
   };
 
-  PrimaryAccountMutator() = default;
-  virtual ~PrimaryAccountMutator() = default;
+  PrimaryAccountMutator();
+  virtual ~PrimaryAccountMutator();
 
   // PrimaryAccountMutator is non-copyable, non-moveable.
   PrimaryAccountMutator(PrimaryAccountMutator&& other) = delete;
@@ -78,6 +84,22 @@ class PrimaryAccountMutator {
       ClearAccountsAction action,
       signin_metrics::ProfileSignout source_metric,
       signin_metrics::SignoutDelete delete_metric) = 0;
+#endif
+
+#if defined(OS_ANDROID)
+  // Overloads for calls from java:
+  bool SetPrimaryAccount(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& account_id);
+
+  bool ClearPrimaryAccount(JNIEnv* env,
+                           jint action,
+                           jint source_metric,
+                           jint delete_metric);
+
+  base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
+
+  base::android::ScopedJavaGlobalRef<jobject> java_primary_account_mutator_;
 #endif
 };
 

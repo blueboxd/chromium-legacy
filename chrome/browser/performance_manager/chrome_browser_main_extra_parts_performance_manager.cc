@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "chrome/browser/performance_manager/browser_child_process_watcher.h"
-#include "chrome/browser/performance_manager/performance_manager.h"
+#include "chrome/browser/performance_manager/performance_manager_impl.h"
 #include "chrome/browser/performance_manager/performance_manager_tab_helper.h"
 #include "chrome/browser/performance_manager/render_process_user_data.h"
 
@@ -17,7 +17,7 @@ ChromeBrowserMainExtraPartsPerformanceManager::
     ~ChromeBrowserMainExtraPartsPerformanceManager() = default;
 
 void ChromeBrowserMainExtraPartsPerformanceManager::PostCreateThreads() {
-  performance_manager_ = performance_manager::PerformanceManager::Create();
+  performance_manager_ = performance_manager::PerformanceManagerImpl::Create();
   browser_child_process_watcher_ =
       std::make_unique<performance_manager::BrowserChildProcessWatcher>();
   browser_child_process_watcher_->Initialize();
@@ -39,6 +39,6 @@ void ChromeBrowserMainExtraPartsPerformanceManager::PostMainMessageLoopRun() {
   // frame nodes.
   performance_manager::RenderProcessUserData::DetachAndDestroyAll();
 
-  performance_manager::PerformanceManager::Destroy(
+  performance_manager::PerformanceManagerImpl::Destroy(
       std::move(performance_manager_));
 }

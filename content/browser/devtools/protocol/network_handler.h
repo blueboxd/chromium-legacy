@@ -157,12 +157,14 @@ class NetworkHandler : public DevToolsDomainHandler,
   void ApplyOverrides(net::HttpRequestHeaders* headers,
                       bool* skip_service_worker,
                       bool* disable_cache);
-  void NavigationRequestWillBeSent(const NavigationRequest& nav_request);
+  void NavigationRequestWillBeSent(const NavigationRequest& nav_request,
+                                   base::TimeTicks timestamp);
   void RequestSent(const std::string& request_id,
                    const std::string& loader_id,
                    const network::ResourceRequest& request,
                    const char* initiator_type,
-                   const base::Optional<GURL>& initiator_url);
+                   const base::Optional<GURL>& initiator_url,
+                   base::TimeTicks timestamp);
   void ResponseReceived(const std::string& request_id,
                         const std::string& loader_id,
                         const GURL& url,

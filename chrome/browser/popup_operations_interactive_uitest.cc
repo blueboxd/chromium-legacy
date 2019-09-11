@@ -109,7 +109,8 @@ IN_PROC_BROWSER_TEST_F(PopupOperationsTest, MAYBE_ChangeValue) {
 // OS_MACOSX: Missing automation provider support: http://crbug.com/1000752.
 #define MAYBE_OpenClosePopup DISABLED_OpenClosePopup
 #else
-#define MAYBE_OpenClosePopup OpenClosePopup
+// Temporary disabled due to flakiness: https://crbug.com/1002795.
+#define MAYBE_OpenClosePopup DISABLED_OpenClosePopup
 #endif
 
 // Clicking on a select element while another select element has its

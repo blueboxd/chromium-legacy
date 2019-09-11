@@ -179,8 +179,7 @@ bool WriteJSON(const base::FilePath& file_path,
     // Populate json dict node that contains Autofill Server requests per URL.
     if (urls_dict.find(url) == urls_dict.end())
       urls_dict[url] = std::make_unique<Value>(Value::ListStorage());
-    urls_dict[url]->GetList().push_back(
-        Value(std::move(request_response_node)));
+    urls_dict[url]->Append(Value(std::move(request_response_node)));
   }
 
   // Make json dict node that contains requests per domain.
@@ -285,7 +284,7 @@ TEST_P(AutofillCacheReplayerGETQueryDeathTest,
   std::string invalid_request_url = GetParam();
   urls_dict[invalid_request_url] =
       std::make_unique<Value>(Value::ListStorage());
-  urls_dict[invalid_request_url]->GetList().push_back(
+  urls_dict[invalid_request_url]->Append(
       Value(std::move(request_response_node)));
 
   // Make json dict node that contains requests per domain.

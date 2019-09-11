@@ -1,6 +1,0 @@
-specific_include_rules = {
-  # Until CallOnGraph is in the public interface, the impl needs GraphImpl
-  "webui_graph_dump_impl\.cc": [
-    "+chrome/browser/performance_manager/graph",
-  ],
-}

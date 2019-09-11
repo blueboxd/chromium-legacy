@@ -183,7 +183,7 @@ void MetadataTable::AddItem(const std::string& hashed_user_id,
   base::Value item(base::Value::Type::DICTIONARY);
   item.SetKey(kMetadataContentItemHashedUserIdKey, base::Value(hashed_user_id));
   item.SetKey(kMetadataContentItemComponentKey, base::Value(component_name));
-  installed_items_.GetList().emplace_back(std::move(item));
+  installed_items_.Append(std::move(item));
 }
 
 bool MetadataTable::DeleteItem(const std::string& hashed_user_id,

@@ -625,7 +625,7 @@ class MetadataDatabaseTest : public testing::TestWithParam<bool> {
 
  private:
   base::ScopedTempDir database_dir_;
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   std::unique_ptr<leveldb::Env> in_memory_env_;
   std::unique_ptr<MetadataDatabase> metadata_database_;

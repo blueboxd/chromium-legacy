@@ -92,12 +92,13 @@ TransitionalURLLoaderFactoryOwner::GetURLLoaderFactory() {
   DCHECK(!disallowed_in_process().IsSet());
 
   if (!shared_url_loader_factory_) {
-    core_->CreateNetworkContext(mojo::MakeRequest(&network_context_pipe_));
+    core_->CreateNetworkContext(
+        network_context_remote_.BindNewPipeAndPassReceiver());
     auto url_loader_factory_params =
         network::mojom::URLLoaderFactoryParams::New();
     url_loader_factory_params->process_id = mojom::kBrowserProcessId;
     url_loader_factory_params->is_corb_enabled = false;
-    network_context_pipe_->CreateURLLoaderFactory(
+    network_context_remote_->CreateURLLoaderFactory(
         mojo::MakeRequest(&url_loader_factory_),
         std::move(url_loader_factory_params));
     shared_url_loader_factory_ =
@@ -111,7 +112,7 @@ TransitionalURLLoaderFactoryOwner::GetURLLoaderFactory() {
 network::mojom::NetworkContext*
 TransitionalURLLoaderFactoryOwner::GetNetworkContext() {
   GetURLLoaderFactory();
-  return network_context_pipe_.get();
+  return network_context_remote_.get();
 }
 
 void TransitionalURLLoaderFactoryOwner::DisallowUsageInProcess() {

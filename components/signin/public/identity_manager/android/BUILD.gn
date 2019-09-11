@@ -9,13 +9,16 @@ android_library("java") {
     "//third_party/android_deps:com_android_support_support_annotations_java",
   ]
 
-  srcjar_deps =
-      [ "//components/signin/public/base:signin_metrics_enum_javagen" ]
+  srcjar_deps = [
+    "//components/signin/public/base:signin_metrics_enum_javagen",
+    "//components/signin/public/identity_manager:identity_manager_enum_javagen",
+  ]
 
   java_files = [
-    "java/src/org/chromium/components/signin/identitymanager/IdentityManager.java",
     "java/src/org/chromium/components/signin/identitymanager/CoreAccountId.java",
     "java/src/org/chromium/components/signin/identitymanager/CoreAccountInfo.java",
+    "java/src/org/chromium/components/signin/identitymanager/IdentityManager.java",
+    "java/src/org/chromium/components/signin/identitymanager/PrimaryAccountMutator.java",
   ]
 
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]

@@ -13,6 +13,7 @@
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/atomic_flag.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
@@ -54,7 +55,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TransitionalURLLoaderFactoryOwner {
   static base::AtomicFlag& disallowed_in_process();
 
   std::unique_ptr<Core> core_;  // deleted cross-thread
-  network::mojom::NetworkContextPtr network_context_pipe_;
+  mojo::Remote<network::mojom::NetworkContext> network_context_remote_;
   network::mojom::URLLoaderFactoryPtr url_loader_factory_;
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
       shared_url_loader_factory_;

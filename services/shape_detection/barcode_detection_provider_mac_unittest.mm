@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "services/shape_detection/barcode_detection_impl_mac_vision.h"
@@ -238,13 +239,12 @@ TEST_F(BarcodeDetectionProviderMacTest, HintFormats) {
   mojo::MakeStrongBinding(CreateBarcodeProviderMac(CreateVisionAPI()),
                           std::move(provider_request));
 
-  mojom::BarcodeDetectionPtr impl;
-  auto impl_request = mojo::MakeRequest(&impl);
   auto options = mojom::BarcodeDetectorOptions::New();
   options->formats = {mojom::BarcodeFormat::UNKNOWN};
 
   mojo::test::BadMessageObserver observer;
-  provider_ptr->CreateBarcodeDetection(std::move(impl_request),
+  mojo::Remote<mojom::BarcodeDetection> impl;
+  provider_ptr->CreateBarcodeDetection(impl.BindNewPipeAndPassReceiver(),
                                        std::move(options));
 
   EXPECT_EQ("Formats hint contains UNKNOWN BarcodeFormat.",

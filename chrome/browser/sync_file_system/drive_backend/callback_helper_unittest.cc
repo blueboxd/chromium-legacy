@@ -43,7 +43,7 @@ void VerifyCalledOnTaskRunner(base::TaskRunner* task_runner,
 }  // namespace
 
 TEST(DriveBackendCallbackHelperTest, BasicTest) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
 
   bool called = false;
   RelayCallbackToCurrentThread(
@@ -63,7 +63,7 @@ TEST(DriveBackendCallbackHelperTest, BasicTest) {
 }
 
 TEST(DriveBackendCallbackHelperTest, RunOnOtherThreadTest) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   base::Thread thread("WorkerThread");
   thread.Start();
 
@@ -91,7 +91,7 @@ TEST(DriveBackendCallbackHelperTest, RunOnOtherThreadTest) {
 }
 
 TEST(DriveBackendCallbackHelperTest, PassNullFunctionTest) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   base::Closure closure = RelayCallbackToCurrentThread(
       FROM_HERE,
       base::Closure());

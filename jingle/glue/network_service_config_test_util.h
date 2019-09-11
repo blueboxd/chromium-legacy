@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "jingle/glue/network_service_config.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/network_context.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -69,8 +70,8 @@ class NetworkServiceConfigTestUtil {
   NetworkContextGetter network_context_getter_;
   std::unique_ptr<network::NetworkContext>
       network_context_;  // lives on |net_runner_|
-  network::mojom::NetworkContextPtr
-      network_context_ptr_;  // lives on |mojo_runner_|
+  mojo::Remote<network::mojom::NetworkContext>
+      network_context_remote_;  // lives on |mojo_runner_|
   base::WeakPtrFactory<NetworkServiceConfigTestUtil> weak_ptr_factory_{
       this};  // lives on |mojo_runner_|
 };

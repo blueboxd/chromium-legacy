@@ -200,6 +200,11 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
     return Style().GetWritingMode();
   }
 
+  // TODO(yosin): We'll implement following functions.
+  bool IsLineBreak() const { return false; }
+  bool IsEllipsis() const { return false; }
+  bool IsSymbolMarker() const { return false; }
+
   const ShapeResultView* TextShapeResult() const;
 
   unsigned StartOffset() const;

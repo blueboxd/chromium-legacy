@@ -28,6 +28,7 @@
 #include "chromeos/login/auth/user_context.h"
 #include "components/user_manager/user.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/fingerprint.mojom.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
@@ -285,7 +286,7 @@ class ScreenLocker : public AuthStatusConsumer,
 
   scoped_refptr<input_method::InputMethodManager::State> saved_ime_state_;
 
-  device::mojom::FingerprintPtr fp_service_;
+  mojo::Remote<device::mojom::Fingerprint> fp_service_;
   mojo::Binding<device::mojom::FingerprintObserver>
       fingerprint_observer_binding_;
 

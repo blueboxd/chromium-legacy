@@ -24,14 +24,7 @@
 
 using base::UserMetricsAction;
 
-@interface ScannerViewController () {
-  // The scanned result.
-  NSString* _result;
-  // Whether the scanned result should be immediately loaded.
-  BOOL _loadResultImmediately;
-  // The transitioning delegate used for presenting and dismissing the scanner.
-  ScannerTransitioningDelegate* _transitioningDelegate;
-}
+@interface ScannerViewController ()
 
 @property(nonatomic, readwrite, weak) id<LoadQueryCommands> queryLoader;
 
@@ -160,21 +153,6 @@ using base::UserMetricsAction;
 
 #pragma mark - public methods
 
-- (UIViewController*)getViewControllerToPresent {
-  DCHECK(self.cameraController);
-  switch ([self.cameraController getAuthorizationStatus]) {
-    case AVAuthorizationStatusNotDetermined:
-    case AVAuthorizationStatusAuthorized:
-      _transitioningDelegate = [[ScannerTransitioningDelegate alloc] init];
-      [self setTransitioningDelegate:_transitioningDelegate];
-      return self;
-    case AVAuthorizationStatusRestricted:
-    case AVAuthorizationStatusDenied:
-      return scanner::DialogForCameraState(scanner::CAMERA_PERMISSION_DENIED,
-                                           nil);
-  }
-}
-
 - (void)dismissForReason:(scannerViewController::DismissalReason)reason
           withCompletion:(void (^)(void))completion {
   [self.presentationProvider dismissScannerViewController:self
@@ -252,7 +230,7 @@ using base::UserMetricsAction;
     [self dismissForReason:scannerViewController::SCAN_COMPLETE
             withCompletion:^{
               [self.queryLoader loadQuery:_result
-                              immediately:_loadResultImmediately];
+                              immediately:self.loadResultImmediately];
             }];
   }
 }

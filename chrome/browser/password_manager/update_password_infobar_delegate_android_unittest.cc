@@ -108,7 +108,7 @@ UpdatePasswordInfoBarDelegateTest::CreateTestFormManager() {
       &client_, driver_.AsWeakPtr(), observed_form_, &fetcher_,
       std::make_unique<password_manager::StubFormSaver>(),
       nullptr /* metrics_recorder */);
-  manager->ProvisionallySave(observed_form_, &driver_);
+  manager->ProvisionallySave(observed_form_, &driver_, nullptr);
   return manager;
 }
 

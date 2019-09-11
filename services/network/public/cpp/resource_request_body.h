@@ -78,8 +78,8 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequestBody
   // no web APIs that send uploads with unknown request body sizes, so this
   // method should only be used when talking to servers that are are known to
   // support chunked uploads.
-  void SetToChunkedDataPipe(
-      mojom::ChunkedDataPipeGetterPtr chunked_data_pipe_getter);
+  void SetToChunkedDataPipe(mojo::PendingRemote<mojom::ChunkedDataPipeGetter>
+                                chunked_data_pipe_getter);
 
   const std::vector<DataElement>* elements() const { return &elements_; }
   std::vector<DataElement>* elements_mutable() { return &elements_; }

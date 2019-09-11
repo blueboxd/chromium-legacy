@@ -15,6 +15,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -36,6 +37,7 @@ import org.chromium.components.signin.AccountTrackerService;
 import org.chromium.components.signin.identitymanager.CoreAccountId;
 import org.chromium.components.signin.identitymanager.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.IdentityManager;
+import org.chromium.components.signin.identitymanager.PrimaryAccountMutator;
 import org.chromium.components.signin.metrics.SignoutReason;
 import org.chromium.components.sync.AndroidSyncSettings;
 
@@ -53,6 +55,7 @@ public class SigninManagerTest {
 
     private AccountTrackerService mAccountTrackerService;
     private IdentityManager mIdentityManager;
+    private PrimaryAccountMutator mPrimaryAccountMutator;
     private SigninManager mSigninManager;
     private CoreAccountInfo mAccount;
 
@@ -66,7 +69,10 @@ public class SigninManagerTest {
 
         mAccountTrackerService = mock(AccountTrackerService.class);
 
-        mIdentityManager = new IdentityManager(0 /* nativeIdentityManager */);
+        mPrimaryAccountMutator = mock(PrimaryAccountMutator.class);
+
+        mIdentityManager =
+                spy(new IdentityManager(0 /* nativeIdentityManager */, mPrimaryAccountMutator));
 
         AndroidSyncSettings androidSyncSettings = mock(AndroidSyncSettings.class);
 
@@ -75,7 +81,7 @@ public class SigninManagerTest {
                 androidSyncSettings);
 
         mAccount = new CoreAccountInfo(new CoreAccountId("gaia-id-user"),
-                AccountManagerFacade.createAccountFromName("user@domain.com"));
+                AccountManagerFacade.createAccountFromName("user@domain.com"), "gaia-id-user");
     }
 
     @Test
@@ -186,8 +192,8 @@ public class SigninManagerTest {
             mIdentityManager.onPrimaryAccountCleared(mAccount);
             return null;
         })
-                .when(mNativeMock)
-                .signOut(anyLong(), anyInt());
+                .when(mPrimaryAccountMutator)
+                .clearPrimaryAccount(anyInt(), anyInt(), anyInt());
 
         mSigninManager.signOut(SignoutReason.SIGNOUT_TEST);
         assertTrue(mSigninManager.isOperationInProgress());
@@ -202,19 +208,25 @@ public class SigninManagerTest {
 
     @Test
     public void callbackNotifiedOnSignin() {
+        CoreAccountInfo account = new CoreAccountInfo(new CoreAccountId("test_at_gmail.com"),
+                new Account("test@gmail.com", AccountManagerFacade.GOOGLE_ACCOUNT_TYPE),
+                "test_at_gmail.com");
+
         // No need to seed accounts to the native code.
         doReturn(true).when(mAccountTrackerService).checkAndSeedSystemAccounts();
         // Request that policy is loaded. It will pause sign-in until onPolicyCheckedBeforeSignIn is
         // invoked.
         doNothing().when(mNativeMock).fetchAndApplyCloudPolicy(anyLong(), any(), any());
 
-        doReturn(true).when(mNativeMock).setPrimaryAccount(anyLong(), any());
+        doReturn(account)
+                .when(mIdentityManager)
+                .findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(any());
+        doReturn(true).when(mPrimaryAccountMutator).setPrimaryAccount(any());
         doNothing().when(mNativeMock).logInSignedInUser(anyLong());
 
         mSigninManager.onFirstRunCheckDone(); // Allow sign-in.
 
-        Account account = new Account("test@gmail.com", AccountManagerFacade.GOOGLE_ACCOUNT_TYPE);
-        mSigninManager.signIn(account, null, null);
+        mSigninManager.signIn(account.getAccount(), null, null);
         assertTrue(mSigninManager.isOperationInProgress());
         AtomicInteger callCount = new AtomicInteger(0);
         mSigninManager.runAfterOperationInProgress(callCount::incrementAndGet);

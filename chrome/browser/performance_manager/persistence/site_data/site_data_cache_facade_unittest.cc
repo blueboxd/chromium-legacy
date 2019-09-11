@@ -9,7 +9,7 @@
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
-#include "chrome/browser/performance_manager/performance_manager.h"
+#include "chrome/browser/performance_manager/performance_manager_impl.h"
 #include "chrome/browser/performance_manager/persistence/site_data/leveldb_site_data_store.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_factory.h"
 #include "chrome/browser/performance_manager/persistence/site_data/unittest_utils.h"
@@ -25,7 +25,7 @@ using SiteDataCacheFacadeTest = testing::TestWithPerformanceManager;
 TEST_F(SiteDataCacheFacadeTest, IsDataCacheRecordingForTesting) {
   // Create the SiteDataCacheFactory instance and pass it to the PM sequence for
   // ownership.
-  PerformanceManager::GetInstance()->CallOnGraph(
+  PerformanceManagerImpl::GetInstance()->CallOnGraphImpl(
       FROM_HERE,
       base::BindOnce(
           [](std::unique_ptr<SiteDataCacheFactory> site_data_cache_factory,

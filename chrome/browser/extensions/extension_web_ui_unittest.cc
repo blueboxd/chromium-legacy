@@ -183,7 +183,7 @@ TEST_F(ExtensionWebUITest, TestRemovingDuplicateEntriesForHosts) {
       base::Value newtab(base::Value::Type::DICTIONARY);
       newtab.SetKey("entry", base::Value(newtab_url.spec()));
       newtab.SetKey("active", base::Value(true));
-      newtab_list.GetList().push_back(std::move(newtab));
+      newtab_list.Append(std::move(newtab));
     }
     {
       base::Value newtab(base::Value::Type::DICTIONARY);
@@ -191,7 +191,7 @@ TEST_F(ExtensionWebUITest, TestRemovingDuplicateEntriesForHosts) {
           "entry",
           base::Value(extension->GetResourceURL("oldtab.html").spec()));
       newtab.SetKey("active", base::Value(true));
-      newtab_list.GetList().push_back(std::move(newtab));
+      newtab_list.Append(std::move(newtab));
     }
 
     all_overrides->SetKey("newtab", std::move(newtab_list));

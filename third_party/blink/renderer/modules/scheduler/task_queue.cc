@@ -54,7 +54,7 @@ AtomicString TaskQueue::priority() const {
 
 Task* TaskQueue::postTask(V8Function* function,
                           TaskQueuePostTaskOptions* options,
-                          const Vector<ScriptValue>& args) {
+                          const HeapVector<ScriptValue>& args) {
   // |task_runner_| will be nullptr when the context is destroyed, which
   // prevents us from scheduling tasks for detached documents.
   if (!task_runner_)

@@ -35,9 +35,9 @@
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
 #include "third_party/blink/renderer/modules/geolocation/geo_notifier.h"
+#include "third_party/blink/renderer/modules/geolocation/geolocation_position_error.h"
 #include "third_party/blink/renderer/modules/geolocation/geolocation_watchers.h"
 #include "third_party/blink/renderer/modules/geolocation/geoposition.h"
-#include "third_party/blink/renderer/modules/geolocation/position_error.h"
 #include "third_party/blink/renderer/modules/geolocation/position_options.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -173,7 +173,7 @@ class MODULES_EXPORT Geolocation final
   // Sends the given error to all notifiers, unless the error is not fatal and
   // the notifier is due to receive a cached position. Clears the oneshots,
   // and also  clears the watchers if the error is fatal.
-  void HandleError(PositionError*);
+  void HandleError(GeolocationPositionError*);
 
   // Connects to the Geolocation mojo service and starts polling for updates.
   void StartUpdating(GeoNotifier*);
@@ -184,15 +184,15 @@ class MODULES_EXPORT Geolocation final
   void QueryNextPosition();
 
   // Attempts to obtain a position for the given notifier, either by using
-  // the cached position or by requesting one from the Geolocation.
+  // the cached position or by requesting one from the Geolocation service.
   // Sets a fatal error if permission is denied or no position can be
   // obtained.
   void StartRequest(GeoNotifier*);
 
   bool HaveSuitableCachedPosition(const PositionOptions*);
 
-  // Record whether the origin trying to access Geolocation would be allowed
-  // to access a feature that can only be accessed by secure origins.
+  // Record whether the origin trying to access Geolocation would be
+  // allowed to access a feature that can only be accessed by secure origins.
   // See https://goo.gl/Y0ZkNV
   void RecordOriginTypeAccess() const;
 
@@ -209,10 +209,10 @@ class MODULES_EXPORT Geolocation final
   //
   // |HandleError(error)| and |MakeSuccessCallbacks| need to clear |one_shots_|
   // (and optionally |watchers_|) before invoking the callbacks, in order to
-  // avoid clearing notifiers added by calls to Geolocation methods from the
-  // callbacks. Thus, something else needs to make the notifiers being invoked
-  // alive with wrapper-tracing because V8 GC may run during the callbacks.
-  // |one_shots_being_invoked_| and |watchers_being_invoked_| perform
+  // avoid clearing notifiers added by calls to Geolocation methods
+  // from the callbacks. Thus, something else needs to make the notifiers being
+  // invoked alive with wrapper-tracing because V8 GC may run during the
+  // callbacks. |one_shots_being_invoked_| and |watchers_being_invoked_| perform
   // wrapper-tracing.
   // TODO(https://crbug.com/796145): Remove this hack once on-stack objects
   // get supported by either of wrapper-tracing or unified GC.

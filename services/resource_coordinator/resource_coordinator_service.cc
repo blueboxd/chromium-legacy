@@ -31,7 +31,7 @@ void ResourceCoordinatorService::OnStart() {
       std::make_unique<memory_instrumentation::CoordinatorImpl>(
           service_binding_.GetConnector());
   registry_.AddInterface(base::BindRepeating(
-      &memory_instrumentation::CoordinatorImpl::BindCoordinatorRequest,
+      &memory_instrumentation::CoordinatorImpl::BindCoordinatorReceiver,
       base::Unretained(memory_instrumentation_coordinator_.get())));
   registry_.AddInterface(base::BindRepeating(
       &memory_instrumentation::CoordinatorImpl::BindHeapProfilerHelperRequest,

@@ -320,7 +320,6 @@ std::string HashesToBase64String(const net::HashValueVector& hashes) {
 }  // namespace
 
 constexpr uint32_t NetworkContext::kMaxOutstandingRequestsPerProcess;
-constexpr bool NetworkContext::enable_resource_scheduler_;
 
 NetworkContext::PendingCertVerify::PendingCertVerify() = default;
 NetworkContext::PendingCertVerify::~PendingCertVerify() = default;
@@ -538,8 +537,7 @@ NetworkContext::NetworkContext(
 
   socket_factory_ = std::make_unique<SocketFactory>(
       url_request_context_->net_log(), url_request_context_);
-  resource_scheduler_ =
-      std::make_unique<ResourceScheduler>(enable_resource_scheduler_);
+  resource_scheduler_ = std::make_unique<ResourceScheduler>();
 
   origin_policy_manager_ = std::make_unique<OriginPolicyManager>(this);
 
@@ -568,8 +566,7 @@ NetworkContext::NetworkContext(
   // May be nullptr in tests.
   if (network_service_)
     network_service_->RegisterNetworkContext(this);
-  resource_scheduler_ =
-      std::make_unique<ResourceScheduler>(enable_resource_scheduler_);
+  resource_scheduler_ = std::make_unique<ResourceScheduler>();
 
   for (const auto& key : cors_exempt_header_list)
     cors_exempt_header_list_.insert(key);

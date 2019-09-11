@@ -51,10 +51,11 @@
 
 namespace blink {
 
-ScheduledAction* ScheduledAction::Create(ScriptState* script_state,
-                                         ExecutionContext* target,
-                                         V8Function* handler,
-                                         const Vector<ScriptValue>& arguments) {
+ScheduledAction* ScheduledAction::Create(
+    ScriptState* script_state,
+    ExecutionContext* target,
+    V8Function* handler,
+    const HeapVector<ScriptValue>& arguments) {
   if (!script_state->World().IsWorkerWorld()) {
     if (!BindingSecurity::ShouldAllowAccessToFrame(
             EnteredDOMWindow(script_state->GetIsolate()),
@@ -85,7 +86,7 @@ ScheduledAction* ScheduledAction::Create(ScriptState* script_state,
 
 ScheduledAction::ScheduledAction(ScriptState* script_state,
                                  V8Function* function,
-                                 const Vector<ScriptValue>& arguments)
+                                 const HeapVector<ScriptValue>& arguments)
     : script_state_(
           MakeGarbageCollected<ScriptStateProtectingContext>(script_state)),
       function_(function),
@@ -157,6 +158,7 @@ void ScheduledAction::Execute(ExecutionContext* context) {
 void ScheduledAction::Trace(blink::Visitor* visitor) {
   visitor->Trace(script_state_);
   visitor->Trace(function_);
+  visitor->Trace(arguments_);
 }
 
 void ScheduledAction::Execute(LocalFrame* frame) {

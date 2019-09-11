@@ -10,7 +10,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
-#include "chrome/browser/performance_manager/performance_manager.h"
+#include "chrome/browser/performance_manager/performance_manager_impl.h"
 #include "chrome/browser/performance_manager/persistence/site_data/non_recording_site_data_cache.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_impl.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_inspector.h"
@@ -55,7 +55,7 @@ void SiteDataCacheFactory::OnBrowserContextCreatedOnUIThread(
     DCHECK(browser_context->IsOffTheRecord());
     parent_context_id = parent_context->UniqueId();
   }
-  PerformanceManager::GetInstance()->CallOnGraph(
+  PerformanceManagerImpl::GetInstance()->CallOnGraphImpl(
       FROM_HERE, base::BindOnce(
                      [](SiteDataCacheFactory* factory,
                         const std::string& browser_context_id,
@@ -75,7 +75,7 @@ void SiteDataCacheFactory::OnBrowserContextDestroyedOnUIThread(
     content::BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(factory);
-  PerformanceManager::GetInstance()->CallOnGraph(
+  PerformanceManagerImpl::GetInstance()->CallOnGraphImpl(
       FROM_HERE, base::BindOnce(
                      [](SiteDataCacheFactory* factory,
                         const std::string& browser_context_id,
@@ -121,7 +121,7 @@ void SiteDataCacheFactory::IsDataCacheRecordingForTesting(
     const std::string& browser_context_id,
     base::OnceCallback<void(bool)> cb) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  PerformanceManager::GetInstance()->CallOnGraph(
+  PerformanceManagerImpl::GetInstance()->CallOnGraphImpl(
       FROM_HERE,
       base::BindOnce(
           [](SiteDataCacheFactory* factory,

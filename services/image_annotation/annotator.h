@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/data_decoder/public/mojom/json_parser.mojom.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -153,7 +154,7 @@ class Annotator : public mojom::Annotator {
 
   // Create or reuse a connection to the data decoder service for safe JSON
   // parsing.
-  data_decoder::mojom::JsonParser& GetJsonParser();
+  data_decoder::mojom::JsonParser* GetJsonParser();
 
   // Removes the given request, reassigning local processing if its associated
   // image processor had some ongoing.
@@ -232,7 +233,7 @@ class Annotator : public mojom::Annotator {
   mojo::BindingSet<mojom::Annotator> bindings_;
 
   // Should not be used directly; GetJsonParser() should be called instead.
-  data_decoder::mojom::JsonParserPtr json_parser_;
+  mojo::Remote<data_decoder::mojom::JsonParser> json_parser_;
 
   // A timer used to throttle server request frequency.
   base::RepeatingTimer server_request_timer_;

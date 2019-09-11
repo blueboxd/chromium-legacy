@@ -433,10 +433,6 @@ const char kOobeTimerInterval[] = "oobe-timer-interval";
 // TODO(984021): Remove when URL is sent by DMServer.
 const char kPublicAccountsSamlAclUrl[] = "public-accounts-saml-acl-url";
 
-// Url address of SAML provider for a SAML public session.
-// TODO(984021): Remove when URL is sent by DMServer.
-const char kPublicAccountsSamlUrl[] = "public-accounts-saml-url";
-
 // If set to "true", the profile requires policy during restart (policy load
 // must succeed, otherwise session restart should fail).
 const char kProfileRequiresPolicy[] = "profile-requires-policy";

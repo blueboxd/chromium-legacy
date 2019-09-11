@@ -133,7 +133,7 @@ void GeoLanguageProvider::BindIpGeolocationService() {
   ip_geolocation_provider->CreateGeolocation(
       static_cast<net::MutablePartialNetworkTrafficAnnotationTag>(
           partial_traffic_annotation),
-      mojo::MakeRequest(&geolocation_provider_));
+      geolocation_provider_.BindNewPipeAndPassReceiver());
   // No error handler required: If the connection is broken, QueryNextPosition
   // will bind it again.
 }
@@ -141,7 +141,7 @@ void GeoLanguageProvider::BindIpGeolocationService() {
 void GeoLanguageProvider::QueryNextPosition() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(background_sequence_checker_);
 
-  if (geolocation_provider_.encountered_error())
+  if (geolocation_provider_.is_bound() && !geolocation_provider_.is_connected())
     geolocation_provider_.reset();
   if (!geolocation_provider_.is_bound())
     BindIpGeolocationService();

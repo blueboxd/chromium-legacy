@@ -11745,6 +11745,7 @@ Called by update_net_error_codes.py.-->
   <int value="36" label="GET_CONTAINER_SSH_KEYS_FAILED"/>
   <int value="37" label="CONTAINER_EXPORT_IMPORT_CANCELLED"/>
   <int value="38" label="RESTART_ABORTED"/>
+  <int value="39" label="RESTART_FAILED_VM_STOPPED"/>
 </enum>
 
 <enum name="CrostiniSetupResult">
@@ -18039,6 +18040,7 @@ Called by update_net_error_codes.py.-->
   <int value="600" label="DomainsToCheckForMalwareOfUploadedContent"/>
   <int value="601" label="HSTSPolicyBypassList"/>
   <int value="602" label="ReportDeviceOsUpdateStatus"/>
+  <int value="603" label="DeviceLoginScreenWebUsbAllowDevicesForUrls"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -58777,7 +58779,8 @@ would be helpful to identify which type is being sent.
   <int value="7" label="Web app action share"/>
   <int value="8" label="Web app action open in Chrome"/>
   <int value="9" label="Offline content suggestion settings"/>
-  <int value="10" label="Sharing notification dismiss button"/>
+  <int value="10"
+      label="[Deprecated in M79] Sharing notification dismiss button"/>
   <int value="11" label="Sharing error notification try again button"/>
 </enum>
 
@@ -62582,6 +62585,8 @@ Full version information for the fingerprint enum values:
   <int value="10" label="NotValidManifestForWebApp"/>
   <int value="11" label="IntentToPlayStore"/>
   <int value="12" label="WebAppDisabled"/>
+  <int value="13" label="InstallURLRedirected"/>
+  <int value="14" label="InstallURLLoadFailed"/>
 </enum>
 
 <enum name="WebAppInstallSource">

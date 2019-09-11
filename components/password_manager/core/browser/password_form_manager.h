@@ -33,6 +33,7 @@ class PasswordFormMetricsRecorder;
 class PasswordGenerationState;
 class PasswordManagerClient;
 class PasswordManagerDriver;
+struct PossibleUsernameData;
 
 // This class helps with filling the observed form and with saving/updating the
 // stored information about it. It is aimed to replace PasswordFormManager and
@@ -87,8 +88,12 @@ class PasswordFormManager : public PasswordFormManagerInterface,
   // |submitted_form| and |driver|) then saves |submitted_form| to
   // |submitted_form_| field, sets |is_submitted| = true and returns true.
   // Otherwise returns false.
+  // If as a result of the parsing the username is not found, the
+  // |possible_username->value| is chosen as username if it looks like an
+  // username and came from the same domain as |submitted_form|.
   bool ProvisionallySave(const autofill::FormData& submitted_form,
-                         const PasswordManagerDriver* driver);
+                         const PasswordManagerDriver* driver,
+                         const PossibleUsernameData* possible_username);
 
   // If |submitted_form| is managed by *this then saves |submitted_form| to
   // |submitted_form_| field, sets |is_submitted| = true and returns true.

@@ -83,6 +83,12 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CiceroneClient : public DBusClient {
     virtual void OnPendingAppListUpdates(
         const vm_tools::cicerone::PendingAppListUpdatesSignal& signal) = 0;
 
+    // This is signaled from the container while a playbook is being applied
+    // via ApplyAnsiblePlaybook.
+    virtual void OnApplyAnsiblePlaybookProgress(
+        const vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal&
+            signal) = 0;
+
    protected:
     virtual ~Observer() = default;
   };
@@ -136,6 +142,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CiceroneClient : public DBusClient {
   // This should be true before expecting to recieve
   // PendingAppListUpdatesSignal.
   virtual bool IsPendingAppListUpdatesSignalConnected() = 0;
+
+  // This should be true prior to calling ApplyAnsiblePlaybook.
+  virtual bool IsApplyAnsiblePlaybookProgressSignalConnected() = 0;
 
   // Launches an application inside a running Container.
   // |callback| is called after the method call finishes.
@@ -236,6 +245,13 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CiceroneClient : public DBusClient {
   virtual void CancelImportLxdContainer(
       const vm_tools::cicerone::CancelImportLxdContainerRequest& request,
       DBusMethodCallback<vm_tools::cicerone::CancelImportLxdContainerResponse>
+          callback) = 0;
+
+  // Applies Ansible playbook.
+  // |callback| is called after the method call finishes.
+  virtual void ApplyAnsiblePlaybook(
+      const vm_tools::cicerone::ApplyAnsiblePlaybookRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::ApplyAnsiblePlaybookResponse>
           callback) = 0;
 
   // Registers |callback| to run when the Cicerone service becomes available.

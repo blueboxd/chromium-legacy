@@ -79,17 +79,16 @@ bool WebcamPrivateAPI::OpenSerialWebcam(
     return false;
 
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  device::mojom::SerialPortPtrInfo port_ptr_info;
+  device::mojom::SerialPortPtr port_ptr;
   auto* port_manager = api::SerialPortManager::Get(browser_context_);
   DCHECK(port_manager);
-  port_manager->GetPort(device_path, mojo::MakeRequest(&port_ptr_info));
+  port_manager->GetPort(device_path, mojo::MakeRequest(&port_ptr));
 
-  ViscaWebcam* visca_webcam = new ViscaWebcam;
-  visca_webcam->Open(
-      extension_id, std::move(port_ptr_info),
-      base::Bind(&WebcamPrivateAPI::OnOpenSerialWebcam,
-                 weak_ptr_factory_.GetWeakPtr(), extension_id, device_path,
-                 base::WrapRefCounted(visca_webcam), callback));
+  auto visca_webcam = base::MakeRefCounted<ViscaWebcam>();
+  visca_webcam->Open(extension_id, std::move(port_ptr),
+                     base::Bind(&WebcamPrivateAPI::OnOpenSerialWebcam,
+                                weak_ptr_factory_.GetWeakPtr(), extension_id,
+                                device_path, visca_webcam, callback));
   return true;
 }
 

@@ -14,9 +14,8 @@
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
-#include "chrome/browser/performance_manager/graph/graph_impl.h"
-#include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/browser/performance_manager/public/graph/graph.h"
+#include "chrome/browser/performance_manager/public/performance_manager.h"
 #include "chrome/browser/performance_manager/public/web_contents_proxy.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/favicon/core/favicon_service.h"
@@ -114,7 +113,7 @@ WebUIGraphDumpImpl::~WebUIGraphDumpImpl() {
 
 // static
 void WebUIGraphDumpImpl::CreateAndBind(mojom::WebUIGraphDumpRequest request,
-                                       GraphImpl* graph) {
+                                       Graph* graph) {
   std::unique_ptr<WebUIGraphDumpImpl> dump =
       std::make_unique<WebUIGraphDumpImpl>();
 

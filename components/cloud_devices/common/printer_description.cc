@@ -1323,7 +1323,7 @@ class PageRangeTraits : public ItemsTraits<kOptionPageRange> {
         interval.SetKey(kPageRangeStart, base::Value(option[i].start));
         if (option[i].end < kMaxPageNumber)
           interval.SetKey(kPageRangeEnd, base::Value(option[i].end));
-        list.GetList().emplace_back(std::move(interval));
+        list.Append(std::move(interval));
       }
       dict->SetKey(kPageRangeInterval, std::move(list));
     }

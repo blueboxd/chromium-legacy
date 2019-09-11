@@ -12,6 +12,7 @@
 
 #include "base/logging.h"
 #include "base/task/post_task.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/load_flags.h"
 #include "services/network/public/cpp/header_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -167,10 +168,11 @@ void ChromiumHttpConnection::Start() {
       !chunked_upload_content_type_.empty() && method_ == Method::POST;
   if (chunked_upload) {
     // Attach a chunked upload body.
-    network::mojom::ChunkedDataPipeGetterPtr data_pipe;
-    binding_set_.AddBinding(this, mojo::MakeRequest(&data_pipe));
+    mojo::PendingRemote<network::mojom::ChunkedDataPipeGetter> data_remote;
+    receiver_set_.Add(this, data_remote.InitWithNewPipeAndPassReceiver());
     resource_request->request_body = new network::ResourceRequestBody();
-    resource_request->request_body->SetToChunkedDataPipe(std::move(data_pipe));
+    resource_request->request_body->SetToChunkedDataPipe(
+        std::move(data_remote));
   }
 
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),

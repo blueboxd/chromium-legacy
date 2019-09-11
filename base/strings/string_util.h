@@ -269,6 +269,24 @@ inline const char16* as_u16cstr(const wchar_t* str) {
 inline const char16* as_u16cstr(WStringPiece str) {
   return reinterpret_cast<const char16*>(str.data());
 }
+
+// Utility functions to convert between base::WStringPiece and
+// base::StringPiece16.
+inline WStringPiece AsWStringPiece(StringPiece16 str) {
+  return WStringPiece(as_wcstr(str.data()), str.size());
+}
+
+inline StringPiece16 AsStringPiece16(WStringPiece str) {
+  return StringPiece16(as_u16cstr(str.data()), str.size());
+}
+
+inline std::wstring AsWString(StringPiece16 str) {
+  return std::wstring(as_wcstr(str.data()), str.size());
+}
+
+inline string16 AsString16(WStringPiece str) {
+  return string16(as_u16cstr(str.data()), str.size());
+}
 #endif  // defined(WCHAR_T_IS_UTF16)
 
 // Trims any whitespace from either end of the input string.

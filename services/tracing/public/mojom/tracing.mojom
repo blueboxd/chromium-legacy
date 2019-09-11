@@ -30,7 +30,7 @@ enum TraceDataType {
 // data to the service, we do not want to let an untrusted child process be able
 // to collect traces from other processes using the |Coordinator| interface.
 interface AgentRegistry {
-  RegisterAgent(Agent agent, string label, TraceDataType type,
+  RegisterAgent(pending_remote<Agent> agent, string label, TraceDataType type,
                 mojo_base.mojom.ProcessId pid);
 };
 

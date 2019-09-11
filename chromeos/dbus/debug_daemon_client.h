@@ -23,6 +23,10 @@
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
+namespace metrics {
+class DebugdClientProvider;
+}  // namespace metrics
+
 namespace chromeos {
 
 // A DbusLibraryError represents an error response received from D-Bus.
@@ -260,6 +264,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DebugDaemonClient
   static std::unique_ptr<DebugDaemonClient> Create();
 
  protected:
+  // For calling Init() in initiating a DebugDaemonClient instance for private
+  // connections.
+  friend class metrics::DebugdClientProvider;
+
   // Create() should be used instead.
   DebugDaemonClient();
 

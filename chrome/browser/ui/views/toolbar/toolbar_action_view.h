@@ -108,7 +108,6 @@ class ToolbarActionView : public views::MenuButton,
   void OnDragDone() override;
   void ViewHierarchyChanged(
       const views::ViewHierarchyChangedDetails& details) override;
-  void StateChanged(views::Button::ButtonState old_state) override;
 
   // ToolbarActionViewDelegateViews:
   views::View* GetAsView() override;

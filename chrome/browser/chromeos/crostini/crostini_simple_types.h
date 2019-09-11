@@ -62,7 +62,8 @@ enum class CrostiniResult {
   GET_CONTAINER_SSH_KEYS_FAILED = 36,
   CONTAINER_EXPORT_IMPORT_CANCELLED = 37,
   RESTART_ABORTED = 38,
-  kMaxValue = RESTART_ABORTED,
+  RESTART_FAILED_VM_STOPPED = 39,
+  kMaxValue = RESTART_FAILED_VM_STOPPED,
 };
 
 enum class InstallLinuxPackageProgressStatus {

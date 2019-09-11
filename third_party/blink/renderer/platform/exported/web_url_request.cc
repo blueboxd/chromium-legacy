@@ -49,6 +49,8 @@ using blink::mojom::FetchCacheMode;
 
 namespace blink {
 
+WebURLRequest::ExtraData::ExtraData() : render_frame_id_(MSG_ROUTING_NONE) {}
+
 // The purpose of this struct is to permit allocating a ResourceRequest on the
 // heap, which is otherwise disallowed by DISALLOW_NEW annotation on
 // ResourceRequest.

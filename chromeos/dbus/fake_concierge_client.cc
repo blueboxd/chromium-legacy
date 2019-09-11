@@ -18,6 +18,14 @@ FakeConciergeClient::FakeConciergeClient() {
 }
 FakeConciergeClient::~FakeConciergeClient() = default;
 
+void FakeConciergeClient::AddVmObserver(VmObserver* observer) {
+  vm_observer_list_.AddObserver(observer);
+}
+
+void FakeConciergeClient::RemoveVmObserver(VmObserver* observer) {
+  vm_observer_list_.RemoveObserver(observer);
+}
+
 void FakeConciergeClient::AddContainerObserver(ContainerObserver* observer) {
   container_observer_list_.AddObserver(observer);
 }
@@ -32,6 +40,14 @@ void FakeConciergeClient::AddDiskImageObserver(DiskImageObserver* observer) {
 
 void FakeConciergeClient::RemoveDiskImageObserver(DiskImageObserver* observer) {
   disk_image_observer_list_.RemoveObserver(observer);
+}
+
+bool FakeConciergeClient::IsVmStartedSignalConnected() {
+  return is_vm_started_signal_connected_;
+}
+
+bool FakeConciergeClient::IsVmStoppedSignalConnected() {
+  return is_vm_stopped_signal_connected_;
 }
 
 bool FakeConciergeClient::IsContainerStartupFailedSignalConnected() {

@@ -731,9 +731,10 @@ void SandboxedUnpacker::OnJSONRulesetIndexed(
 
 data_decoder::mojom::JsonParser* SandboxedUnpacker::GetJsonParserPtr() {
   DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
-  if (!json_parser_ptr_) {
-    connector_->BindInterface(data_decoder_service_filter_, &json_parser_ptr_);
-    json_parser_ptr_.set_connection_error_handler(base::BindOnce(
+  if (!json_parser_) {
+    connector_->Connect(data_decoder_service_filter_,
+                        json_parser_.BindNewPipeAndPassReceiver());
+    json_parser_.set_disconnect_handler(base::BindOnce(
         &SandboxedUnpacker::ReportFailure, this,
         SandboxedUnpackerFailureReason::
             UTILITY_PROCESS_CRASHED_WHILE_TRYING_TO_INSTALL,
@@ -743,7 +744,7 @@ data_decoder::mojom::JsonParser* SandboxedUnpacker::GetJsonParserPtr() {
             ASCIIToUTF16(". ") +
             l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALL_PROCESS_CRASHED)));
   }
-  return json_parser_ptr_.get();
+  return json_parser_.get();
 }
 
 void SandboxedUnpacker::ReportUnpackExtensionFailed(base::StringPiece error) {
@@ -1003,7 +1004,7 @@ void SandboxedUnpacker::Cleanup() {
   connector_.reset();
   image_sanitizer_.reset();
   json_file_sanitizer_.reset();
-  json_parser_ptr_.reset();
+  json_parser_.reset();
 }
 
 void SandboxedUnpacker::ParseJsonFile(

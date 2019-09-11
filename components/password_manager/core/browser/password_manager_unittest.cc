@@ -194,6 +194,7 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
                void(const autofill::FormsPredictionsMap&));
   MOCK_METHOD0(GetPasswordManager, PasswordManager*());
   MOCK_METHOD0(GetPasswordAutofillManager, PasswordAutofillManager*());
+  MOCK_CONST_METHOD0(GetLastCommittedURL, const GURL&());
 };
 
 // Invokes the password store consumer with a single copy of |form|.
@@ -3281,4 +3282,46 @@ TEST_F(PasswordManagerTest,
   EXPECT_EQ(password_field_id, form_generation_data.new_password_renderer_id);
 #endif
 }
+
+// Checks that username is saved on username first flow.
+TEST_F(PasswordManagerTest, UsernameFirstFlow) {
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+
+  PasswordForm form(MakeSimpleFormWithOnlyPasswordField());
+  // Simulate the user typed a username in username form.
+  const base::string16 username = ASCIIToUTF16("username1");
+  EXPECT_CALL(driver_, GetLastCommittedURL()).WillOnce(ReturnRef(form.origin));
+  manager()->OnUserModifiedNonPasswordField(&driver_, 1001 /* renderer_id */,
+                                            username /* value */);
+
+  // Simulate that a form which contains only 1 field which is password is added
+  // to the page.
+  manager()->OnPasswordFormsParsed(&driver_, {form} /* observed */);
+
+  EXPECT_CALL(client_, IsSavingAndFillingEnabled(form.origin))
+      .WillRepeatedly(Return(true));
+
+  // Simulate that the user typed password and submitted the password form.
+  const base::string16 password = ASCIIToUTF16("uniquepassword");
+  form.form_data.fields[0].value = password;
+  OnPasswordFormSubmitted(form);
+
+  std::unique_ptr<PasswordFormManagerForUI> form_manager_to_save;
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_))
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
+
+  // Simlates successful submission.
+  manager()->OnPasswordFormsRendered(&driver_, {} /* observed */, true);
+
+  // Simulate saving the form, as if the info bar was accepted.
+  PasswordForm saved_form;
+  EXPECT_CALL(*store_, AddLogin(_)).WillOnce(SaveArg<0>(&saved_form));
+  ASSERT_TRUE(form_manager_to_save);
+  form_manager_to_save->Save();
+
+  EXPECT_EQ(username, saved_form.username_value);
+  EXPECT_EQ(password, saved_form.password_value);
+}
+
 }  // namespace password_manager

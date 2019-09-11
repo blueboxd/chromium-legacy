@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/values.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/data_decoder/public/mojom/json_parser.mojom.h"
 #include "services/service_manager/public/cpp/service_filter.h"
 
@@ -90,7 +91,7 @@ class JsonFileSanitizer {
 
   std::set<base::FilePath> file_paths_;
   Callback callback_;
-  data_decoder::mojom::JsonParserPtr json_parser_ptr_;
+  mojo::Remote<data_decoder::mojom::JsonParser> json_parser_;
   base::WeakPtrFactory<JsonFileSanitizer> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(JsonFileSanitizer);

@@ -18,7 +18,7 @@
 #include "content/browser/speech/proto/google_streaming_api.pb.h"
 #include "google_apis/google_api_keys.h"
 #include "mojo/public/c/system/types.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -91,10 +91,11 @@ class SpeechRecognitionEngine::UpstreamLoader
                  SpeechRecognitionEngine* speech_recognition_engine)
       : speech_recognition_engine_(speech_recognition_engine) {
     // Attach a chunked upload body.
-    network::mojom::ChunkedDataPipeGetterPtr data_pipe;
-    binding_set_.AddBinding(this, mojo::MakeRequest(&data_pipe));
+    mojo::PendingRemote<network::mojom::ChunkedDataPipeGetter> data_remote;
+    receiver_set_.Add(this, data_remote.InitWithNewPipeAndPassReceiver());
     resource_request->request_body = new network::ResourceRequestBody();
-    resource_request->request_body->SetToChunkedDataPipe(std::move(data_pipe));
+    resource_request->request_body->SetToChunkedDataPipe(
+        std::move(data_remote));
     simple_url_loader_ = network::SimpleURLLoader::Create(
         std::move(resource_request), upstream_traffic_annotation);
     simple_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
@@ -219,7 +220,7 @@ class SpeechRecognitionEngine::UpstreamLoader
 
   SpeechRecognitionEngine* const speech_recognition_engine_;
   std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;
-  mojo::BindingSet<network::mojom::ChunkedDataPipeGetter> binding_set_;
+  mojo::ReceiverSet<network::mojom::ChunkedDataPipeGetter> receiver_set_;
 
   DISALLOW_COPY_AND_ASSIGN(UpstreamLoader);
 };

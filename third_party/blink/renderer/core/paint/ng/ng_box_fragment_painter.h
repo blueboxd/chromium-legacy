@@ -22,6 +22,7 @@ class HitTestLocation;
 class HitTestRequest;
 class HitTestResult;
 class NGFragmentItems;
+class NGInlineCursor;
 class NGPhysicalFragment;
 class ScopedPaintState;
 struct PaintInfo;
@@ -101,7 +102,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   void PaintTextChild(const NGPaintFragment&,
                       const PaintInfo&,
                       const PhysicalOffset& paint_offset);
-  void PaintTextItem(const NGFragmentItem& item,
+  void PaintTextItem(const NGInlineCursor& cursor,
                      const PaintInfo&,
                      const PhysicalOffset& paint_offset);
   MoveTo PaintBoxItem(const NGFragmentItem& item,

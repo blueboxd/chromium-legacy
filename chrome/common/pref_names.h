@@ -317,6 +317,7 @@ extern const char kLoginExtensionApiDataForNextLoginAttempt[];
 extern const char kSettingsShowBrowserBanner[];
 extern const char kSettingsShowOSBanner[];
 extern const char kSettingsShowAboutOSBanner[];
+extern const char kDeviceLoginScreenWebUsbAllowDevicesForUrls[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kShowHomeButton[];
 extern const char kSpeechRecognitionFilterProfanities[];

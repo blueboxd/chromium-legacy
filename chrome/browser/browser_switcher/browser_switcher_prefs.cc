@@ -33,7 +33,7 @@ void SetCachedRules(PrefService* prefs,
                     const std::vector<std::string>& rules) {
   base::ListValue rules_val;
   for (const auto& url : rules)
-    rules_val.GetList().push_back(base::Value(url));
+    rules_val.Append(base::Value(url));
   prefs->Set(pref_name, rules_val);
 }
 

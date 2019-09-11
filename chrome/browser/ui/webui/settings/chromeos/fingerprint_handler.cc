@@ -59,8 +59,8 @@ std::unique_ptr<base::DictionaryValue> GetFingerprintsInfo(
 
 FingerprintHandler::FingerprintHandler(Profile* profile)
     : profile_(profile), binding_(this), session_observer_(this) {
-  content::GetSystemConnector()->BindInterface(device::mojom::kServiceName,
-                                               &fp_service_);
+  content::GetSystemConnector()->Connect(
+      device::mojom::kServiceName, fp_service_.BindNewPipeAndPassReceiver());
   user_id_ = ProfileHelper::Get()->GetUserIdHashFromProfile(profile);
 }
 

@@ -91,11 +91,11 @@ void TracedProcessImpl::ConnectToTracingService(
   // Ensure the TraceEventAgent has been created.
   TraceEventAgent::GetInstance();
 
-  agent_registry_ =
-      tracing::mojom::AgentRegistryPtr(std::move(request->agent_registry));
-  agent_registry_.set_connection_error_handler(base::BindRepeating(
+  agent_registry_ = mojo::Remote<tracing::mojom::AgentRegistry>(
+      std::move(request->agent_registry));
+  agent_registry_.set_disconnect_handler(base::BindRepeating(
       [](TracedProcessImpl* traced_process) {
-        // If the AgentRegistryPtr connection closes, the tracing service
+        // If the AgentRegistry connection closes, the tracing service
         // has gone down and we'll start accepting new connections from it
         // again.
         base::AutoLock lock(traced_process->lock_);

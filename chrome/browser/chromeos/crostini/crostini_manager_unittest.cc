@@ -16,6 +16,8 @@
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/dbus/cicerone/cicerone_service.pb.h"
+#include "chromeos/dbus/concierge/service.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cicerone_client.h"
 #include "chromeos/dbus/fake_concierge_client.h"
@@ -1068,6 +1070,24 @@ TEST_F(CrostiniManagerRestartTest, UninstallThenRestart) {
 
   EXPECT_EQ(2, restart_crostini_callback_count_);
   EXPECT_EQ(1, remove_crostini_callback_count_);
+}
+
+TEST_F(CrostiniManagerRestartTest, VmStoppedDuringRestart) {
+  fake_cicerone_client_->set_send_container_started_signal(false);
+  restart_id_ = crostini_manager()->RestartCrostini(
+      kVmName, kContainerName,
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), run_loop()->QuitClosure()),
+      this);
+  run_loop()->RunUntilIdle();
+  EXPECT_TRUE(crostini_manager()->IsRestartPending(restart_id_));
+  EXPECT_EQ(0, restart_crostini_callback_count_);
+  vm_tools::concierge::VmStoppedSignal vm_stopped_signal;
+  vm_stopped_signal.set_owner_id(CryptohomeIdForProfile(profile()));
+  vm_stopped_signal.set_name(kVmName);
+  crostini_manager()->OnVmStopped(vm_stopped_signal);
+  EXPECT_FALSE(crostini_manager()->IsRestartPending(restart_id_));
+  EXPECT_EQ(1, restart_crostini_callback_count_);
 }
 
 class CrostiniManagerEnterpriseReportingTest

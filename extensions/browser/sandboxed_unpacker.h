@@ -22,6 +22,7 @@
 #include "extensions/browser/install/crx_install_error.h"
 #include "extensions/browser/json_file_sanitizer.h"
 #include "extensions/common/manifest.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/data_decoder/public/mojom/json_parser.mojom.h"
 #include "services/service_manager/public/cpp/service_filter.h"
 
@@ -294,8 +295,8 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   // data decoder operation use that process.
   const service_manager::ServiceFilter data_decoder_service_filter_;
 
-  // The JSONParser interface pointer from the data decoder service.
-  data_decoder::mojom::JsonParserPtr json_parser_ptr_;
+  // The JSONParser remote from the data decoder service.
+  mojo::Remote<data_decoder::mojom::JsonParser> json_parser_;
 
   // The ImageSanitizer used to clean-up images.
   std::unique_ptr<ImageSanitizer> image_sanitizer_;

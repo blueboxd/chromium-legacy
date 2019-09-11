@@ -35,13 +35,13 @@ function registerOriginListeners(
       onCompletedListener, {urls: [listeningUrlPattern]});
 }
 
-function registerHeaderInjectionListeners(extraInfoSpec) {
+function registerRequestHeaderInjectionListeners(extraInfoSpec) {
   const beforeSendHeadersListener = callbackPass(details => {
     details.requestHeaders.push({name: 'x-foo', value: 'trigger-preflight'});
-    return { requestHeaders: details.requestHeaders };
+    return {requestHeaders: details.requestHeaders};
   });
   chrome.webRequest.onBeforeSendHeaders.addListener(
-    beforeSendHeadersListener, {urls: [listeningUrlPattern]}, extraInfoSpec);
+      beforeSendHeadersListener, {urls: [listeningUrlPattern]}, extraInfoSpec);
 
   // If the 'x-foo' header is injected by |beforeSendHeadersListener| without
   // 'extraHeaders' and with OOR-CORS being enabled, it triggers CORS
@@ -66,6 +66,32 @@ function registerHeaderInjectionListeners(extraInfoSpec) {
   event.addListener(
       onCompletedOrErrorOccurredListener, {urls: [listeningUrlPattern]});
 }
+function registerResponseHeaderInjectionListeners(extraInfoSpec) {
+  const headersReceivedListener = details => {
+    details.responseHeaders.push(
+        {name: 'Access-Control-Allow-Origin', value: '*'});
+    return { responseHeaders: details.responseHeaders };
+  };
+  chrome.webRequest.onHeadersReceived.addListener(
+      headersReceivedListener, {urls: [listeningUrlPattern]}, extraInfoSpec);
+
+  // If the 'extraHeaders' is not specified and OOR-CORS is enabled, Chrome
+  // detects CORS failures before |headerReceivedListener| is called and injects
+  // fake headers to deceive the CORS checks.
+  const canInjectFakeCorsResponse =
+      extraInfoSpec.includes('extraHeaders') || getCorsMode() == 'blink';
+
+  const event = canInjectFakeCorsResponse ? chrome.webRequest.onCompleted :
+                                            chrome.webRequest.onErrorOccurred;
+
+  // Wait for the CORS request from the fetch.html to complete.
+  const onCompletedOrErrorOccurredListener = callbackPass(details => {
+    chrome.webRequest.onHeadersReceived.removeListener(headersReceivedListener);
+    event.removeListener(onCompletedOrErrorOccurredListener);
+  });
+  event.addListener(
+      onCompletedOrErrorOccurredListener, {urls: [listeningUrlPattern]});
+}
 
 runTests([
   function testOriginHeader() {
@@ -80,22 +106,38 @@ runTests([
     registerOriginListeners(['origin'], [], ['requestHeaders', 'extraHeaders']);
 
     // Wait for the navigation to complete.
-    navigateAndWait(
-        getServerURL('extensions/api_test/webrequest/cors/fetch.html'));
+    navigateAndWait(getServerURL(
+        'extensions/api_test/webrequest/cors/fetch.html?path=accept'));
   },
   function testCorsSensitiveHeaderInjectionWithoutExtraHeaders() {
-    registerHeaderInjectionListeners(['blocking', 'requestHeaders']);
+    registerRequestHeaderInjectionListeners(['blocking', 'requestHeaders']);
 
     // Wait for the navigation to complete.
-    navigateAndWait(
-        getServerURL('extensions/api_test/webrequest/cors/fetch.html'));
+    navigateAndWait(getServerURL(
+        'extensions/api_test/webrequest/cors/fetch.html?path=accept'));
   },
   function testCorsSensitiveHeaderInjectionWithExtraHeaders() {
-    registerHeaderInjectionListeners(
+    registerRequestHeaderInjectionListeners(
         ['blocking', 'requestHeaders', 'extraHeaders']);
 
     // Wait for the navigation to complete.
-    navigateAndWait(
-        getServerURL('extensions/api_test/webrequest/cors/fetch.html'));
+    navigateAndWait(getServerURL(
+        'extensions/api_test/webrequest/cors/fetch.html?path=accept'));
+  },
+  function testCorsResponseHeaderInjectionWithoutExtraHeaders() {
+    registerResponseHeaderInjectionListeners(
+        ['blocking', 'responseHeaders']);
+
+    // Wait for the navigation to complete.
+    navigateAndWait(getServerURL(
+        'extensions/api_test/webrequest/cors/fetch.html?path=reject'));
+  },
+  function testCorsResponseHeaderInjectionWithExtraHeaders() {
+    registerResponseHeaderInjectionListeners(
+        ['blocking', 'responseHeaders', 'extraHeaders']);
+
+    // Wait for the navigation to complete.
+    navigateAndWait(getServerURL(
+        'extensions/api_test/webrequest/cors/fetch.html?path=reject'));
   },
 ]);

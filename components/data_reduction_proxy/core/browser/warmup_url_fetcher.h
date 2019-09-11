@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/timer/timer.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/proxy_server.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
@@ -130,7 +131,7 @@ class WarmupURLFetcher {
 
   CreateCustomProxyConfigCallback create_custom_proxy_config_callback_;
   network::mojom::URLLoaderFactoryPtr url_loader_factory_;
-  network::mojom::NetworkContextPtr context_;
+  mojo::Remote<network::mojom::NetworkContext> context_;
 
   // Callback that should be executed when the fetching of the warmup URL is
   // completed.

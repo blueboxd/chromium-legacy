@@ -1393,11 +1393,10 @@ if (enable_java_templates) {
           ]
         }
 
-        _d8_path = "//third_party/r8/lib/d8.jar"
-        inputs += [ _d8_path ]
+        inputs += [ _r8_path ]
         args += [
-          "--d8-jar-path",
-          rebase_path(_d8_path, root_build_dir),
+          "--r8-jar-path",
+          rebase_path(_r8_path, root_build_dir),
         ]
       }
     }

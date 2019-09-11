@@ -291,7 +291,7 @@ bool HeadlessContentBrowserClient::ShouldEnableStrictSiteIsolation() {
   return browser_->options()->site_per_process;
 }
 
-::network::mojom::NetworkContextPtr
+mojo::Remote<::network::mojom::NetworkContext>
 HeadlessContentBrowserClient::CreateNetworkContext(
     content::BrowserContext* context,
     bool in_memory,

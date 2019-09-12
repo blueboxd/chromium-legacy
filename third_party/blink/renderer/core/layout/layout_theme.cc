@@ -720,25 +720,25 @@ Color LayoutTheme::SystemColor(CSSValueID css_value_id,
     case CSSValueID::kActivecaption:
       return 0xFFCCCCCC;
     case CSSValueID::kAppworkspace:
-      return 0xFFFFFFFF;
+      return color_scheme == WebColorScheme::kDark ? 0xFF000000 : 0xFFFFFFFF;
     case CSSValueID::kBackground:
       return 0xFF6363CE;
     case CSSValueID::kButtonface:
-      return 0xFFC0C0C0;
+      return color_scheme == WebColorScheme::kDark ? 0xFF404040 : 0xFFC0C0C0;
     case CSSValueID::kButtonhighlight:
       return 0xFFDDDDDD;
     case CSSValueID::kButtonshadow:
       return 0xFF888888;
     case CSSValueID::kButtontext:
-      return 0xFF000000;
+      return color_scheme == WebColorScheme::kDark ? 0xFFFFFFFF : 0xFF000000;
     case CSSValueID::kCaptiontext:
-      return 0xFF000000;
+      return color_scheme == WebColorScheme::kDark ? 0xFFFFFFFF : 0xFF000000;
     case CSSValueID::kGraytext:
       return 0xFF808080;
     case CSSValueID::kHighlight:
       return 0xFFB5D5FF;
     case CSSValueID::kHighlighttext:
-      return 0xFF000000;
+      return color_scheme == WebColorScheme::kDark ? 0xFFFFFFFF : 0xFF000000;
     case CSSValueID::kInactiveborder:
       return 0xFFFFFFFF;
     case CSSValueID::kInactivecaption:
@@ -746,19 +746,19 @@ Color LayoutTheme::SystemColor(CSSValueID css_value_id,
     case CSSValueID::kInactivecaptiontext:
       return 0xFF7F7F7F;
     case CSSValueID::kInfobackground:
-      return 0xFFFBFCC5;
+      return color_scheme == WebColorScheme::kDark ? 0xFFB46E32 : 0xFFFBFCC5;
     case CSSValueID::kInfotext:
-      return 0xFF000000;
+      return color_scheme == WebColorScheme::kDark ? 0xFFFFFFFF : 0xFF000000;
     case CSSValueID::kLinktext:
       return 0xFF0000EE;
     case CSSValueID::kMenu:
       return 0xFFC0C0C0;
     case CSSValueID::kMenutext:
-      return 0xFF000000;
+      return color_scheme == WebColorScheme::kDark ? 0xFFFFFFFF : 0xFF000000;
     case CSSValueID::kScrollbar:
       return 0xFFFFFFFF;
     case CSSValueID::kText:
-      return 0xFF000000;
+      return color_scheme == WebColorScheme::kDark ? 0xFFFFFFFF : 0xFF000000;
     case CSSValueID::kThreeddarkshadow:
       return 0xFF666666;
     case CSSValueID::kThreedface:
@@ -772,11 +772,11 @@ Color LayoutTheme::SystemColor(CSSValueID css_value_id,
     case CSSValueID::kVisitedtext:
       return 0xFF551A8B;
     case CSSValueID::kWindow:
-      return 0xFFFFFFFF;
+      return color_scheme == WebColorScheme::kDark ? 0xFF000000 : 0xFFFFFFFF;
     case CSSValueID::kWindowframe:
       return 0xFFCCCCCC;
     case CSSValueID::kWindowtext:
-      return 0xFF000000;
+      return color_scheme == WebColorScheme::kDark ? 0xFFFFFFFF : 0xFF000000;
     case CSSValueID::kInternalActiveListBoxSelection:
       return ActiveListBoxSelectionBackgroundColor();
     case CSSValueID::kInternalActiveListBoxSelectionText:

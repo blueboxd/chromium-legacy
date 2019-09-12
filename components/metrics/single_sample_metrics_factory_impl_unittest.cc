@@ -75,7 +75,7 @@ class SingleSampleMetricsFactoryImplTest : public testing::Test {
                                                  kBucketCount);
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   SingleSampleMetricsFactoryImpl* factory_;
   base::Thread thread_;
   size_t provider_count_ = 0;

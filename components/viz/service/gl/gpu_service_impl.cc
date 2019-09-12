@@ -49,7 +49,7 @@
 #include "media/gpu/ipc/service/gpu_video_decode_accelerator.h"
 #include "media/gpu/ipc/service/media_gpu_channel_manager.h"
 #include "media/mojo/services/mojo_video_encode_accelerator_provider.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLAssembleInterface.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
@@ -372,102 +372,109 @@ void GpuServiceImpl::RecordLogMessage(int severity,
 
 #if defined(OS_CHROMEOS)
 void GpuServiceImpl::CreateArcVideoDecodeAccelerator(
-    arc::mojom::VideoDecodeAcceleratorRequest vda_request) {
+    mojo::PendingReceiver<arc::mojom::VideoDecodeAccelerator> vda_receiver) {
   DCHECK(io_runner_->BelongsToCurrentThread());
   main_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
           &GpuServiceImpl::CreateArcVideoDecodeAcceleratorOnMainThread,
-          weak_ptr_, std::move(vda_request)));
+          weak_ptr_, std::move(vda_receiver)));
 }
 
 void GpuServiceImpl::CreateArcVideoEncodeAccelerator(
-    arc::mojom::VideoEncodeAcceleratorRequest vea_request) {
+    mojo::PendingReceiver<arc::mojom::VideoEncodeAccelerator> vea_receiver) {
   DCHECK(io_runner_->BelongsToCurrentThread());
   main_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
           &GpuServiceImpl::CreateArcVideoEncodeAcceleratorOnMainThread,
-          weak_ptr_, std::move(vea_request)));
+          weak_ptr_, std::move(vea_receiver)));
 }
 
 void GpuServiceImpl::CreateArcVideoProtectedBufferAllocator(
-    arc::mojom::VideoProtectedBufferAllocatorRequest pba_request) {
+    mojo::PendingReceiver<arc::mojom::VideoProtectedBufferAllocator>
+        pba_receiver) {
   DCHECK(io_runner_->BelongsToCurrentThread());
   main_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
           &GpuServiceImpl::CreateArcVideoProtectedBufferAllocatorOnMainThread,
-          weak_ptr_, std::move(pba_request)));
+          weak_ptr_, std::move(pba_receiver)));
 }
 
 void GpuServiceImpl::CreateArcProtectedBufferManager(
-    arc::mojom::ProtectedBufferManagerRequest pbm_request) {
+    mojo::PendingReceiver<arc::mojom::ProtectedBufferManager> pbm_receiver) {
   DCHECK(io_runner_->BelongsToCurrentThread());
   main_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
           &GpuServiceImpl::CreateArcProtectedBufferManagerOnMainThread,
-          weak_ptr_, std::move(pbm_request)));
+          weak_ptr_, std::move(pbm_receiver)));
 }
 
 void GpuServiceImpl::CreateArcVideoDecodeAcceleratorOnMainThread(
-    arc::mojom::VideoDecodeAcceleratorRequest vda_request) {
+    mojo::PendingReceiver<arc::mojom::VideoDecodeAccelerator> vda_receiver) {
   DCHECK(main_runner_->BelongsToCurrentThread());
-  mojo::MakeStrongBinding(std::make_unique<arc::GpuArcVideoDecodeAccelerator>(
-                              gpu_preferences_, protected_buffer_manager_),
-                          std::move(vda_request));
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<arc::GpuArcVideoDecodeAccelerator>(
+          gpu_preferences_, protected_buffer_manager_),
+      std::move(vda_receiver));
 }
 
 void GpuServiceImpl::CreateArcVideoEncodeAcceleratorOnMainThread(
-    arc::mojom::VideoEncodeAcceleratorRequest vea_request) {
+    mojo::PendingReceiver<arc::mojom::VideoEncodeAccelerator> vea_receiver) {
   DCHECK(main_runner_->BelongsToCurrentThread());
-  mojo::MakeStrongBinding(
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<arc::GpuArcVideoEncodeAccelerator>(gpu_preferences_),
-      std::move(vea_request));
+      std::move(vea_receiver));
 }
 
 void GpuServiceImpl::CreateArcVideoProtectedBufferAllocatorOnMainThread(
-    arc::mojom::VideoProtectedBufferAllocatorRequest pba_request) {
+    mojo::PendingReceiver<arc::mojom::VideoProtectedBufferAllocator>
+        pba_receiver) {
   DCHECK(main_runner_->BelongsToCurrentThread());
   auto gpu_arc_video_protected_buffer_allocator =
       arc::GpuArcVideoProtectedBufferAllocator::Create(
           protected_buffer_manager_);
   if (!gpu_arc_video_protected_buffer_allocator)
     return;
-  mojo::MakeStrongBinding(std::move(gpu_arc_video_protected_buffer_allocator),
-                          std::move(pba_request));
+  mojo::MakeSelfOwnedReceiver(
+      std::move(gpu_arc_video_protected_buffer_allocator),
+      std::move(pba_receiver));
 }
 
 void GpuServiceImpl::CreateArcProtectedBufferManagerOnMainThread(
-    arc::mojom::ProtectedBufferManagerRequest pbm_request) {
+    mojo::PendingReceiver<arc::mojom::ProtectedBufferManager> pbm_receiver) {
   DCHECK(main_runner_->BelongsToCurrentThread());
-  mojo::MakeStrongBinding(
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<arc::GpuArcProtectedBufferManagerProxy>(
           protected_buffer_manager_),
-      std::move(pbm_request));
+      std::move(pbm_receiver));
 }
 
 void GpuServiceImpl::CreateJpegDecodeAccelerator(
-    chromeos_camera::mojom::MjpegDecodeAcceleratorRequest jda_request) {
+    mojo::PendingReceiver<chromeos_camera::mojom::MjpegDecodeAccelerator>
+        jda_receiver) {
   DCHECK(io_runner_->BelongsToCurrentThread());
   chromeos_camera::MojoMjpegDecodeAcceleratorService::Create(
-      std::move(jda_request));
+      std::move(jda_receiver));
 }
 
 void GpuServiceImpl::CreateJpegEncodeAccelerator(
-    chromeos_camera::mojom::JpegEncodeAcceleratorRequest jea_request) {
+    mojo::PendingReceiver<chromeos_camera::mojom::JpegEncodeAccelerator>
+        jea_receiver) {
   DCHECK(io_runner_->BelongsToCurrentThread());
   chromeos_camera::MojoJpegEncodeAcceleratorService::Create(
-      std::move(jea_request));
+      std::move(jea_receiver));
 }
 #endif  // defined(OS_CHROMEOS)
 
 void GpuServiceImpl::CreateVideoEncodeAcceleratorProvider(
-    media::mojom::VideoEncodeAcceleratorProviderRequest vea_provider_request) {
+    mojo::PendingReceiver<media::mojom::VideoEncodeAcceleratorProvider>
+        vea_provider_receiver) {
   DCHECK(io_runner_->BelongsToCurrentThread());
   media::MojoVideoEncodeAcceleratorProvider::Create(
-      std::move(vea_provider_request),
+      std::move(vea_provider_receiver),
       base::BindRepeating(&media::GpuVideoEncodeAcceleratorFactory::CreateVEA),
       gpu_preferences_);
 }

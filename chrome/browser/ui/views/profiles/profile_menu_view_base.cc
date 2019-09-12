@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
 #include "build/build_config.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -30,6 +31,7 @@
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/controls/styled_label.h"
+#include "ui/views/layout/fill_layout.h"
 
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/profiles/profile_menu_view.h"
@@ -60,6 +62,32 @@ std::unique_ptr<views::BoxLayout> CreateBoxLayout(
   auto layout = std::make_unique<views::BoxLayout>(orientation);
   layout->set_cross_axis_alignment(cross_axis_alignment);
   return layout;
+}
+
+std::unique_ptr<views::View> CreateBorderedBoxView(
+    std::unique_ptr<views::View> children_container) {
+  constexpr int kOuterMargin = 16;
+  constexpr int kBorderThickness = 1;
+  constexpr int kCornerRadius = 8;
+  const SkColor kBorderColor =
+      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+          ui::NativeTheme::kColorId_MenuSeparatorColor);
+
+  // Add rounded rectangular border around children.
+  children_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
+  children_container->SetBorder(views::CreateRoundedRectBorder(
+      kBorderThickness, kCornerRadius, kBorderColor));
+
+  // Create outer view with margin.
+  // The outer view is needed because |BoxLayout| doesn't support outer
+  // margins.
+  auto outer_view = std::make_unique<views::View>();
+  outer_view->SetLayoutManager(std::make_unique<views::FillLayout>());
+  outer_view->SetBorder(views::CreateEmptyBorder(gfx::Insets(kOuterMargin)));
+  outer_view->AddChildView(std::move(children_container));
+
+  return outer_view;
 }
 
 }  // namespace
@@ -152,19 +180,28 @@ ProfileMenuViewBase::~ProfileMenuViewBase() {
 void ProfileMenuViewBase::SetIdentityInfo(const gfx::Image& image,
                                           const base::string16& title,
                                           const base::string16& subtitle) {
+  constexpr int kTopMargin = 16;
   constexpr int kImageToLabelSpacing = 4;
 
   identity_info_container_->RemoveAllChildViews(/*delete_children=*/true);
   identity_info_container_->SetLayoutManager(
       CreateBoxLayout(views::BoxLayout::Orientation::kVertical,
                       views::BoxLayout::CrossAxisAlignment::kCenter));
+  identity_info_container_->SetBorder(
+      views::CreateEmptyBorder(kTopMargin, 0, 0, 0));
 
   views::ImageView* image_view = identity_info_container_->AddChildView(
       std::make_unique<views::ImageView>());
-  image_view->SetImage(profiles::GetSizedAvatarIcon(
-                           image, /*is_rectangle=*/true, kIdentityImageSize,
-                           kIdentityImageSize, profiles::SHAPE_CIRCLE)
-                           .AsImageSkia());
+  // Fall back on |kUserAccountAvatarIcon| if |image| is empty. This can happen
+  // in tests and when the account image hasn't been fetched yet.
+  image_view->SetImage(
+      image.IsEmpty()
+          ? gfx::CreateVectorIcon(kUserAccountAvatarIcon, kIdentityImageSize,
+                                  kIdentityImageSize)
+          : profiles::GetSizedAvatarIcon(image, /*is_rectangle=*/true,
+                                         kIdentityImageSize, kIdentityImageSize,
+                                         profiles::SHAPE_CIRCLE)
+                .AsImageSkia());
 
   views::View* title_label =
       identity_info_container_->AddChildView(std::make_unique<views::Label>(
@@ -326,10 +363,14 @@ void ProfileMenuViewBase::Reset() {
       views::BoxLayout::Orientation::kVertical));
 
   // Create and add new component containers in the correct order.
+  auto bordered_box_container = std::make_unique<views::View>();
   identity_info_container_ =
-      components->AddChildView(std::make_unique<views::View>());
+      bordered_box_container->AddChildView(std::make_unique<views::View>());
   shortcut_features_container_ =
-      components->AddChildView(std::make_unique<views::View>());
+      bordered_box_container->AddChildView(std::make_unique<views::View>());
+  components->AddChildView(
+      CreateBorderedBoxView(std::move(bordered_box_container)));
+
   selectable_profiles_container_ =
       components->AddChildView(std::make_unique<views::View>());
 

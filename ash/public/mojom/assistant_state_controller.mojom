@@ -62,5 +62,5 @@ interface AssistantStateObserver {
 // which notifies changes of Assistant status and settings.
 interface AssistantStateController {
   // Add an observer.
-  AddMojomObserver(AssistantStateObserver observer);
+  AddMojomObserver(pending_remote<AssistantStateObserver> observer);
 };

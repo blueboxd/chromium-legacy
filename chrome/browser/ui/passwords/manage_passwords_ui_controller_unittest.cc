@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/passwords/credential_leak_dialog_controller.h"
 #include "chrome/browser/ui/passwords/credential_manager_dialog_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_icon_view.h"
@@ -62,20 +63,24 @@ using ::testing::SaveArg;
 
 namespace {
 
-// Number of dismissals that for sure supresses the bubble.
-const int kGreatDissmisalCount = 10;
+// A random URL.
+constexpr char kExampleUrl[] = "http://example.com";
 
-class DialogPromptMock : public AccountChooserPrompt,
-                         public AutoSigninFirstRunPrompt {
+// Number of dismissals that for sure suppresses the bubble.
+constexpr int kGreatDissmisalCount = 10;
+
+class CredentialManagementDialogPromptMock : public AccountChooserPrompt,
+                                             public AutoSigninFirstRunPrompt {
  public:
-  DialogPromptMock() = default;
-
   MOCK_METHOD0(ShowAccountChooser, void());
   MOCK_METHOD0(ShowAutoSigninPrompt, void());
   MOCK_METHOD0(ControllerGone, void());
+};
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(DialogPromptMock);
+class PasswordLeakDialogMock : public CredentialLeakPrompt {
+ public:
+  MOCK_METHOD0(ShowCredentialLeakPrompt, void());
+  MOCK_METHOD0(ControllerGone, void());
 };
 
 class TestManagePasswordsIconView : public ManagePasswordsIconView {
@@ -110,6 +115,8 @@ class TestManagePasswordsUIController : public ManagePasswordsUIController {
                AccountChooserPrompt*(CredentialManagerDialogController*));
   MOCK_METHOD1(CreateAutoSigninPrompt,
                AutoSigninFirstRunPrompt*(CredentialManagerDialogController*));
+  MOCK_METHOD1(CreateCredentialLeakPrompt,
+               CredentialLeakPrompt*(CredentialLeakDialogController*));
   MOCK_CONST_METHOD0(HasBrowserWindow, bool());
   MOCK_METHOD0(OnUpdateBubbleAndIconVisibility, void());
   using ManagePasswordsUIController::DidFinishNavigation;
@@ -118,11 +125,12 @@ class TestManagePasswordsUIController : public ManagePasswordsUIController {
   void UpdateBubbleAndIconVisibility() override;
   void SavePasswordInternal() override {}
   void NeverSavePasswordInternal() override;
+  void HidePasswordBubble() override;
   bool ShowAuthenticationDialog() override { return true; }
 
-  bool opened_bubble_;
-  bool opened_automatic_bubble_;
-  bool are_passwords_revealed_in_opened_bubble_;
+  bool opened_bubble_ = false;
+  bool opened_automatic_bubble_ = false;
+  bool are_passwords_revealed_in_opened_bubble_ = false;
 };
 
 TestManagePasswordsUIController::TestManagePasswordsUIController(
@@ -163,6 +171,15 @@ void TestManagePasswordsUIController::NeverSavePasswordInternal() {
   OnLoginsChanged(list);
 }
 
+void TestManagePasswordsUIController::HidePasswordBubble() {
+  opened_automatic_bubble_ = false;
+  are_passwords_revealed_in_opened_bubble_ = false;
+  if (std::exchange(opened_bubble_, false) &&
+      !web_contents()->IsBeingDestroyed()) {
+    OnBubbleHidden();
+  }
+}
+
 void CreateSmartBubbleFieldTrial() {
   using password_bubble_experiment::kSmartBubbleExperimentName;
   using password_bubble_experiment::kSmartBubbleThresholdParam;
@@ -190,7 +207,9 @@ class ManagePasswordsUIControllerTest : public ChromeRenderViewHostTestHarness {
   PasswordForm& test_federated_form() { return test_federated_form_; }
   FormData& submitted_form() { return submitted_form_; }
   FormData& observed_form() { return observed_form_; }
-  DialogPromptMock& dialog_prompt() { return dialog_prompt_; }
+  CredentialManagementDialogPromptMock& dialog_prompt() {
+    return dialog_prompt_;
+  }
   password_manager::PasswordManagerDriver& driver() { return driver_; }
 
   TestManagePasswordsUIController* controller() {
@@ -234,7 +253,7 @@ class ManagePasswordsUIControllerTest : public ChromeRenderViewHostTestHarness {
   FormData submitted_form_;
   FormData observed_form_;
   base::FieldTrialList field_trial_list_;
-  DialogPromptMock dialog_prompt_;
+  CredentialManagementDialogPromptMock dialog_prompt_;
 };
 
 void ManagePasswordsUIControllerTest::SetUp() {
@@ -278,7 +297,7 @@ void ManagePasswordsUIControllerTest::SetUp() {
   // We need to be on a "webby" URL for most tests.
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
   content::WebContentsTester::For(web_contents())
-      ->NavigateAndCommit(GURL("http://example.com"));
+      ->NavigateAndCommit(GURL(kExampleUrl));
 }
 
 void ManagePasswordsUIControllerTest::ExpectIconStateIs(
@@ -454,7 +473,7 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedBubbleCancelled) {
   // Test on the real controller.
   std::unique_ptr<content::WebContents> web_content(CreateTestWebContents());
   content::WebContentsTester::For(web_content.get())
-      ->NavigateAndCommit(GURL("http://example.com"));
+      ->NavigateAndCommit(GURL(kExampleUrl));
   ManagePasswordsUIController::CreateForWebContents(web_content.get());
   ManagePasswordsUIController* controller =
       ManagePasswordsUIController::FromWebContents(web_content.get());
@@ -677,7 +696,7 @@ TEST_F(ManagePasswordsUIControllerTest, AutomaticPasswordSave) {
 TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialLocal) {
   std::vector<std::unique_ptr<PasswordForm>> local_credentials;
   local_credentials.emplace_back(new PasswordForm(test_local_form()));
-  GURL origin("http://example.com");
+  GURL origin(kExampleUrl);
   CredentialManagerDialogController* dialog_controller = nullptr;
   EXPECT_CALL(*controller(), CreateAccountChooser(_))
       .WillOnce(
@@ -710,7 +729,7 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialLocal) {
 TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialLocalButFederated) {
   std::vector<std::unique_ptr<PasswordForm>> local_credentials;
   local_credentials.emplace_back(new PasswordForm(test_federated_form()));
-  GURL origin("http://example.com");
+  GURL origin(kExampleUrl);
   CredentialManagerDialogController* dialog_controller = nullptr;
   EXPECT_CALL(*controller(), CreateAccountChooser(_))
       .WillOnce(
@@ -743,7 +762,7 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialLocalButFederated) {
 TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialCancel) {
   std::vector<std::unique_ptr<PasswordForm>> local_credentials;
   local_credentials.emplace_back(new PasswordForm(test_local_form()));
-  GURL origin("http://example.com");
+  GURL origin(kExampleUrl);
   CredentialManagerDialogController* dialog_controller = nullptr;
   EXPECT_CALL(*controller(), CreateAccountChooser(_))
       .WillOnce(
@@ -769,7 +788,7 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialCancel) {
 TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialPrefetch) {
   std::vector<std::unique_ptr<PasswordForm>> local_credentials;
   local_credentials.emplace_back(new PasswordForm(test_local_form()));
-  GURL origin("http://example.com");
+  GURL origin(kExampleUrl);
 
   // Simulate requesting a credential during prefetch. The tab has no associated
   // browser. Nothing should happen.
@@ -785,7 +804,7 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialPSL) {
   test_local_form().is_public_suffix_match = true;
   std::vector<std::unique_ptr<PasswordForm>> local_credentials;
   local_credentials.emplace_back(new PasswordForm(test_local_form()));
-  GURL origin("http://example.com");
+  GURL origin(kExampleUrl);
   CredentialManagerDialogController* dialog_controller = nullptr;
   EXPECT_CALL(*controller(), CreateAccountChooser(_))
       .WillOnce(
@@ -1277,4 +1296,35 @@ TEST_F(ManagePasswordsUIControllerTest, AuthenticateUserToRevealPasswords) {
 #else
   EXPECT_TRUE(success);
 #endif
+}
+
+TEST_F(ManagePasswordsUIControllerTest, UpdateBubbleAfterLeakCheck) {
+  std::unique_ptr<PasswordFormManager> test_form_manager(CreateFormManager());
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+  controller()->OnUpdatePasswordSubmitted(std::move(test_form_manager));
+  EXPECT_TRUE(controller()->opened_automatic_bubble());
+
+  // Leak detection dialog hides the bubble.
+  PasswordLeakDialogMock dialog_prompt;
+  CredentialLeakDialogController* dialog_controller = nullptr;
+  EXPECT_CALL(*controller(), CreateCredentialLeakPrompt)
+      .WillOnce(DoAll(SaveArg<0>(&dialog_controller), Return(&dialog_prompt)));
+  EXPECT_CALL(dialog_prompt, ShowCredentialLeakPrompt);
+  controller()->OnCredentialLeak(
+      password_manager::CreateLeakType(password_manager::IsSaved(true),
+                                       password_manager::IsReused(true),
+                                       password_manager::IsSyncing(false)),
+      GURL(kExampleUrl));
+  // The bubble is gone.
+  EXPECT_FALSE(controller()->opened_bubble());
+
+  // Close the dialog.
+  EXPECT_CALL(dialog_prompt, ControllerGone);
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+  dialog_controller->OnAcceptDialog();
+
+  // The update bubble is back.
+  EXPECT_TRUE(controller()->opened_automatic_bubble());
+  ExpectIconAndControllerStateIs(
+      password_manager::ui::PENDING_PASSWORD_UPDATE_STATE);
 }

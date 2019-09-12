@@ -144,7 +144,7 @@ class FakeAssistantClient : public FakeClient {
   void RequestAssistantStateController(
       mojo::PendingReceiver<ash::mojom::AssistantStateController> receiver)
       override {
-    assistant_state_->BindRequest(std::move(receiver));
+    assistant_state_->BindReceiver(std::move(receiver));
   }
 
   ash::AssistantState* const assistant_state_;

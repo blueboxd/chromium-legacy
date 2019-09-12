@@ -110,7 +110,7 @@ class CastNetworkContexts : public net::ProxyConfigService::Observer,
   const std::vector<std::string> cors_exempt_headers_list_;
 
   // The system NetworkContext.
-  network::mojom::NetworkContextPtr system_network_context_;
+  mojo::Remote<network::mojom::NetworkContext> system_network_context_;
 
   // URLLoaderFactory backed by the NetworkContext returned by
   // GetSystemContext(), so consumers don't all need to create their own

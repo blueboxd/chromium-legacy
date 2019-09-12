@@ -31,6 +31,8 @@ namespace apps {
 // Each AppIconLoader instance is for only one icon size.
 class ArcIconOnceLoader : public ArcAppListPrefs::Observer {
  public:
+  // The constructor caller is responsible for calling StopObserver before
+  // destroying this.
   explicit ArcIconOnceLoader(Profile* profile);
   ~ArcIconOnceLoader() override;
 
@@ -57,6 +59,7 @@ class ArcIconOnceLoader : public ArcAppListPrefs::Observer {
   using SizeAndCompression = std::pair<int32_t, apps::mojom::IconCompression>;
 
   Profile* const profile_;
+  bool stop_observing_called_;
   std::map<SizeAndCompression, std::unique_ptr<SizeSpecificLoader>>
       size_specific_loaders_;
 

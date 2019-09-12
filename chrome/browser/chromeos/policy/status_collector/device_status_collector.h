@@ -301,8 +301,7 @@ class DeviceStatusCollector : public StatusCollector,
   void UpdateReportingSettings();
 
   // Callback invoked to update our cpu usage information.
-  void ReceiveCPUStatistics(const base::Time& timestamp,
-                            const std::string& statistics);
+  void ReceiveCPUStatistics(const std::string& statistics);
 
   // Callback for RuntimeProbe that samples probe live data. |callback| will
   // be called once all sampling is finished.
@@ -381,6 +380,9 @@ class DeviceStatusCollector : public StatusCollector,
     // Amount of free RAM (measures raw memory used by processes, not internal
     // memory waiting to be reclaimed by GC).
     int64_t bytes_of_ram_free;
+
+    // Sampling timestamp.
+    base::Time timestamp;
   };
 
   // Samples of resource usage (contains multiple samples taken

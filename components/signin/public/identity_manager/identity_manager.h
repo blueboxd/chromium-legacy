@@ -464,6 +464,8 @@ class IdentityManager : public KeyedService,
   FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
       JNIEnv* env,
       const base::android::JavaParamRef<jstring>& j_email) const;
+
+  void ReloadAccountsFromSystem(JNIEnv* env);
 #endif
 
  private:

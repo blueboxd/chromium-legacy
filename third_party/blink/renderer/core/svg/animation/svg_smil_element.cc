@@ -1057,7 +1057,7 @@ SMILTime SVGSMILElement::NextProgressTime(double presentation_time) const {
         return repeating_duration_end;
       return interval_.end;
     }
-    return presentation_time + 0.025;
+    return presentation_time;
   }
   return interval_.begin >= presentation_time ? interval_.begin
                                               : SMILTime::Unresolved();
@@ -1107,17 +1107,6 @@ bool SVGSMILElement::NeedsToProgress(double elapsed) {
     ResolveFirstInterval();
   }
   return true;
-}
-
-void SVGSMILElement::TriggerPendingEvents(double elapsed) {
-  if (GetActiveState() == kInactive)
-    ScheduleEvent(event_type_names::kBeginEvent);
-
-  if (CalculateAnimationRepeat(elapsed))
-    ScheduleEvent(event_type_names::kRepeatEvent);
-
-  if (GetActiveState() == kInactive || GetActiveState() == kFrozen)
-    ScheduleEvent(event_type_names::kEndEvent);
 }
 
 void SVGSMILElement::UpdateSyncBases() {

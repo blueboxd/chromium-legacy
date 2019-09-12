@@ -89,7 +89,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   // next interval. Returns true if the interval was restarted.
   bool CheckAndUpdateInterval(double elapsed);
   void UpdateActiveState(double elapsed, bool interval_restart);
-  void TriggerPendingEvents(double elapsed);
   void UpdateSyncBases();
 
   SMILTime NextInterestingTime(double elapsed) const;
@@ -290,8 +289,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
   Member<SMILTimeContainer> time_container_;
   unsigned document_order_index_;
-
-  Vector<unsigned> repeat_event_count_list_;
 
   mutable SMILTime cached_dur_;
   mutable SMILTime cached_repeat_dur_;

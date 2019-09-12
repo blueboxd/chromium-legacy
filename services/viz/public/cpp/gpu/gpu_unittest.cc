@@ -65,7 +65,8 @@ class TestGpuImpl : public mojom::Gpu {
 #endif  // defined(OS_CHROMEOS)
 
   void CreateVideoEncodeAcceleratorProvider(
-      media::mojom::VideoEncodeAcceleratorProviderRequest request) override {}
+      mojo::PendingReceiver<media::mojom::VideoEncodeAcceleratorProvider>
+          receiver) override {}
 
  private:
   bool request_will_succeed_ = true;

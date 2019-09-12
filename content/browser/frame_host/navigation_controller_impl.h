@@ -24,6 +24,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_type.h"
 #include "content/public/browser/reload_type.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 
 struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 
@@ -103,7 +104,8 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // navigation to the default src URL for the frame instead.
   bool StartHistoryNavigationInNewSubframe(
       RenderFrameHostImpl* render_frame_host,
-      mojom::NavigationClientAssociatedPtrInfo* navigation_client);
+      mojo::PendingAssociatedRemote<mojom::NavigationClient>*
+          navigation_client);
 
   // Navigates to a specified offset from the "current entry". Currently records
   // a histogram indicating whether the session history navigation would only

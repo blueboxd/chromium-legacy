@@ -11,7 +11,7 @@
 namespace content {
 
 NavigationClient::NavigationClient(RenderFrameImpl* render_frame)
-    : navigation_client_binding_(this), render_frame_(render_frame) {}
+    : render_frame_(render_frame) {}
 
 NavigationClient::~NavigationClient() {}
 
@@ -59,10 +59,11 @@ void NavigationClient::CommitFailedNavigation(
       std::move(subresource_loaders), std::move(callback));
 }
 
-void NavigationClient::Bind(mojom::NavigationClientAssociatedRequest request) {
-  navigation_client_binding_.Bind(
-      std::move(request), render_frame_->GetTaskRunner(
-                              blink::TaskType::kInternalNavigationAssociated));
+void NavigationClient::Bind(
+    mojo::PendingAssociatedReceiver<mojom::NavigationClient> receiver) {
+  navigation_client_receiver_.Bind(
+      std::move(receiver), render_frame_->GetTaskRunner(
+                               blink::TaskType::kInternalNavigationAssociated));
   SetDisconnectionHandler();
 }
 
@@ -72,12 +73,12 @@ void NavigationClient::MarkWasInitiatedInThisFrame() {
 }
 
 void NavigationClient::SetDisconnectionHandler() {
-  navigation_client_binding_.set_connection_error_handler(base::BindOnce(
+  navigation_client_receiver_.set_disconnect_handler(base::BindOnce(
       &NavigationClient::OnDroppedNavigation, base::Unretained(this)));
 }
 
 void NavigationClient::ResetDisconnectionHandler() {
-  navigation_client_binding_.set_connection_error_handler(base::DoNothing());
+  navigation_client_receiver_.set_disconnect_handler(base::DoNothing());
 }
 
 void NavigationClient::OnDroppedNavigation() {

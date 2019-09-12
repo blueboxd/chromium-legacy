@@ -14,8 +14,10 @@
 #include "chrome/browser/installable/installable_logging.h"
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/installable/installable_metrics.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/web_applications/test/service_worker_registration_waiter.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test_utils.h"
@@ -1483,7 +1485,7 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
   EXPECT_EQ(std::vector<InstallableStatusCode>(
                 {START_URL_NOT_VALID, MANIFEST_MISSING_NAME_OR_SHORT_NAME,
                  MANIFEST_DISPLAY_NOT_SUPPORTED, MANIFEST_MISSING_SUITABLE_ICON,
-                 NO_URL_FOR_SERVICE_WORKER, NO_ACCEPTABLE_ICON}),
+                 NO_ACCEPTABLE_ICON}),
             tester->errors());
 }
 
@@ -1507,7 +1509,6 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
                  GetErrorMessage(MANIFEST_MISSING_NAME_OR_SHORT_NAME),
                  GetErrorMessage(MANIFEST_DISPLAY_NOT_SUPPORTED),
                  GetErrorMessage(MANIFEST_MISSING_SUITABLE_ICON),
-                 GetErrorMessage(NO_URL_FOR_SERVICE_WORKER),
                  GetErrorMessage(NO_ACCEPTABLE_ICON)}),
             NavigateAndGetAllErrors(browser(),
                                     GetURLOfPageWithServiceWorkerAndManifest(
@@ -1525,4 +1526,27 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerAllowlistOriginBrowserTest,
   // While a non-allowlisted origin should not.
   ui_test_utils::NavigateToURL(browser(), GURL(kOtherInsecureOrigin));
   EXPECT_FALSE(InstallableManager::IsContentSecure(contents));
+}
+
+IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, NarrowServiceWorker) {
+  const GURL url =
+      embedded_test_server()->GetURL("/banners/scope_c/scope_c.html");
+  {
+    web_app::ServiceWorkerRegistrationWaiter registration_waiter(
+        browser()->profile(), url);
+    ui_test_utils::NavigateToURL(browser(), url);
+    registration_waiter.AwaitRegistration();
+  }
+  base::RunLoop run_loop;
+  std::unique_ptr<CallbackTester> tester(
+      new CallbackTester(run_loop.QuitClosure()));
+
+  InstallableParams params = GetWebAppParams();
+  params.wait_for_worker = false;
+
+  RunInstallableManager(browser(), tester.get(), params);
+  run_loop.Run();
+
+  EXPECT_EQ(std::vector<InstallableStatusCode>({NO_MATCHING_SERVICE_WORKER}),
+            tester->errors());
 }

@@ -2393,9 +2393,9 @@ void RenderFrameImpl::BindFrameNavigationControl(
 }
 
 void RenderFrameImpl::BindNavigationClient(
-    mojom::NavigationClientAssociatedRequest request) {
+    mojo::PendingAssociatedReceiver<mojom::NavigationClient> receiver) {
   navigation_client_impl_ = std::make_unique<NavigationClient>(this);
-  navigation_client_impl_->Bind(std::move(request));
+  navigation_client_impl_->Bind(std::move(receiver));
 }
 
 void RenderFrameImpl::OnBeforeUnload(bool is_reload) {
@@ -3043,8 +3043,7 @@ void RenderFrameImpl::LoadNavigationErrorPage(
     error_html = error_page_content.value();
   } else {
     GetContentClient()->renderer()->PrepareErrorPage(
-        this, error, document_loader->HttpMethod().Ascii(),
-        false /* ignoring_cache */, &error_html);
+        this, error, document_loader->HttpMethod().Ascii(), &error_html);
   }
 
   // Make sure we never show errors in view source mode.
@@ -3878,18 +3877,13 @@ void RenderFrameImpl::CommitFailedNavigationInternal(
     history_entry = PageStateToHistoryEntry(commit_params->page_state);
 
   std::string error_html;
-  if (error_page_content.has_value()) {
+  std::string* error_html_ptr = &error_html;
+  if (error_page_content) {
     error_html = error_page_content.value();
-    // We don't need the actual error page content, but still call this
-    // for any possible side effects.
-    GetContentClient()->renderer()->PrepareErrorPage(
-        this, error, navigation_params->http_method.Ascii(),
-        false /* ignoring_cache */, nullptr);
-  } else {
-    GetContentClient()->renderer()->PrepareErrorPage(
-        this, error, navigation_params->http_method.Ascii(),
-        false /* ignoring_cache */, &error_html);
+    error_html_ptr = nullptr;
   }
+  GetContentClient()->renderer()->PrepareErrorPage(
+      this, error, navigation_params->http_method.Ascii(), error_html_ptr);
 
   // Make sure we never show errors in view source mode.
   frame_->EnableViewSourceMode(false);
@@ -5082,7 +5076,7 @@ void RenderFrameImpl::RunScriptsAtDocumentReady(bool document_is_empty) {
     std::string error_html;
     GetContentClient()->renderer()->PrepareErrorPageForHttpStatusError(
         this, unreachable_url, document_loader->HttpMethod().Ascii(),
-        false /* ignoring_cache */, http_status_code, &error_html);
+        http_status_code, &error_html);
     // This call may run scripts, e.g. via the beforeunload event, and possibly
     // delete |this|.
     LoadNavigationErrorPage(document_loader,
@@ -7276,9 +7270,11 @@ void RenderFrameImpl::BeginNavigationInternal(
           initiator ? base::make_optional<base::Value>(std::move(*initiator))
                     : base::nullopt);
 
-  mojom::NavigationClientAssociatedPtrInfo navigation_client_info;
+  mojo::PendingAssociatedRemote<mojom::NavigationClient>
+      navigation_client_remote;
   if (IsPerNavigationMojoInterfaceEnabled()) {
-    BindNavigationClient(mojo::MakeRequest(&navigation_client_info));
+    BindNavigationClient(
+        navigation_client_remote.InitWithNewEndpointAndPassReceiver());
     navigation_client_impl_->MarkWasInitiatedInThisFrame();
   }
 
@@ -7297,7 +7293,7 @@ void RenderFrameImpl::BeginNavigationInternal(
                                  load_flags, has_download_sandbox_flag, from_ad,
                                  is_history_navigation_in_new_child_frame),
       std::move(begin_navigation_params), std::move(blob_url_token),
-      std::move(navigation_client_info), std::move(navigation_initiator));
+      std::move(navigation_client_remote), std::move(navigation_initiator));
 }
 
 void RenderFrameImpl::DecodeDataURL(

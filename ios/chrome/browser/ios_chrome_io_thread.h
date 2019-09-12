@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ios/components/io_thread/ios_io_thread.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
 class PrefService;
@@ -48,7 +49,7 @@ class IOSChromeIOThread : public io_thread::IOSIOThread {
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
       shared_url_loader_factory_;
 
-  network::mojom::NetworkContextPtr network_context_;
+  mojo::Remote<network::mojom::NetworkContext> network_context_;
   std::unique_ptr<web::NetworkContextOwner> network_context_owner_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSChromeIOThread);

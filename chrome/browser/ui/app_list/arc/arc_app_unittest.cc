@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "ash/public/cpp/app_list/app_list_config.h"
+#include "ash/public/cpp/shelf_model.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -51,6 +52,7 @@
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/arc/arc_prefs.h"
@@ -227,6 +229,8 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
       arc::SetArcAlwaysStartWithoutPlayStoreForTesting();
     }
 
+    model_ = std::make_unique<ash::ShelfModel>();
+
     extensions::ExtensionServiceTestBase::SetUp();
     InitializeExtensionService(ExtensionServiceInitParams());
     service_->Init();
@@ -235,14 +239,23 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
     arc_test_.SetUp(profile_.get());
     CreateBuilder();
 
+    CreateLauncherController()->Init();
+
     // Validating decoded content does not fit well for unit tests.
     ArcAppIcon::DisableSafeDecodingForTesting();
   }
 
   void TearDown() override {
+    launcher_controller_.reset();
     arc_test_.TearDown();
     ResetBuilder();
     extensions::ExtensionServiceTestBase::TearDown();
+  }
+
+  ChromeLauncherController* CreateLauncherController() {
+    launcher_controller_ = std::make_unique<ChromeLauncherController>(
+        profile_.get(), model_.get());
+    return launcher_controller_.get();
   }
 
  protected:
@@ -520,6 +533,8 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
   std::unique_ptr<FakeAppListModelUpdater> model_updater_;
   std::unique_ptr<test::TestAppListControllerDelegate> controller_;
   std::unique_ptr<ArcAppModelBuilder> builder_;
+  std::unique_ptr<ChromeLauncherController> launcher_controller_;
+  std::unique_ptr<ash::ShelfModel> model_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppModelBuilderTest);
 };

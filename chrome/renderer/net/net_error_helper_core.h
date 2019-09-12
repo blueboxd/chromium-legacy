@@ -112,8 +112,8 @@ class NetErrorHelperCore {
         const GURL& tracking_url,
         const std::string& tracking_request_body) = 0;
 
-    // Starts a reload of the page in the observed frame.
-    virtual void ReloadPage(bool bypass_cache) = 0;
+    // Starts a reload of the observed frame.
+    virtual void ReloadFrame() = 0;
 
     // Run the platform diagnostics too for the specified URL.
     virtual void DiagnoseError(const GURL& page_url) = 0;
@@ -169,7 +169,6 @@ class NetErrorHelperCore {
   void PrepareErrorPage(FrameType frame_type,
                         const error_page::Error& error,
                         bool is_failed_post,
-                        bool is_ignoring_cache,
                         std::string* error_html);
 
   // These methods handle tracking the actual state of the page.
@@ -278,7 +277,7 @@ class NetErrorHelperCore {
 
   error_page::Error GetUpdatedError(const ErrorPageInfo& error_info) const;
 
-  void Reload(bool bypass_cache);
+  void Reload();
   bool MaybeStartAutoReloadTimer();
   void StartAutoReloadTimer();
   void AutoReloadTimerFired();

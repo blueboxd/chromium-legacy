@@ -403,12 +403,6 @@ void AppListClientImpl::OnTemplateURLServiceChanged() {
   current_model_updater_->SetSearchEngineIsGoogle(is_google);
 }
 
-void AppListClientImpl::ShowAndSwitchToState(ash::AppListState state) {
-  if (!app_list_controller_)
-    return;
-  app_list_controller_->ShowAppListAndSwitchToState(state);
-}
-
 void AppListClientImpl::ShowAppList() {
   // This may not work correctly if the profile passed in is different from the
   // one the ash Shell is currently using.

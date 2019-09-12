@@ -65,7 +65,6 @@ WebViewIdentityManagerFactory::BuildServiceInstanceFor(
   // ChromeWebView's signin state.
   PrefService* pref_service = browser_state->GetPrefs();
   pref_service->ClearPref(prefs::kGoogleServicesAccountId);
-  pref_service->ClearPref(prefs::kGoogleServicesUserAccountId);
 
   IOSWebViewSigninClient* client =
       WebViewSigninClientFactory::GetForBrowserState(browser_state);

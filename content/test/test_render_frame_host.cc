@@ -29,6 +29,7 @@
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_render_widget_host.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
@@ -360,15 +361,18 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
   common_params->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
   common_params->has_user_gesture = has_user_gesture;
 
-  mojom::NavigationClientAssociatedPtr navigation_client_ptr;
+  mojo::PendingAssociatedRemote<mojom::NavigationClient>
+      navigation_client_remote;
   if (IsPerNavigationMojoInterfaceEnabled()) {
-    GetRemoteAssociatedInterfaces()->GetInterface(&navigation_client_ptr);
+    GetRemoteAssociatedInterfaces()->GetInterface(
+        navigation_client_remote.InitWithNewEndpointAndPassReceiver());
     BeginNavigation(std::move(common_params), std::move(begin_params),
-                    mojo::NullRemote(), navigation_client_ptr.PassInterface(),
+                    mojo::NullRemote(), std::move(navigation_client_remote),
                     mojo::NullRemote());
   } else {
     BeginNavigation(std::move(common_params), std::move(begin_params),
-                    mojo::NullRemote(), nullptr, mojo::NullRemote());
+                    mojo::NullRemote(), mojo::NullAssociatedRemote(),
+                    mojo::NullRemote());
   }
 }
 

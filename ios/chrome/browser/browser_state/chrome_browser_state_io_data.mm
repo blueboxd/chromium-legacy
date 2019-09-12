@@ -113,14 +113,6 @@ void ChromeBrowserStateIOData::InitializeOnUIThread(
 
   chrome_http_user_agent_settings_.reset(
       new IOSChromeHttpUserAgentSettings(pref_service));
-
-  // These members are used only for sign in, which is not enabled
-  // in incognito mode.  So no need to initialize them.
-  if (!IsOffTheRecord()) {
-    google_services_user_account_id_.Init(prefs::kGoogleServicesUserAccountId,
-                                          pref_service);
-    google_services_user_account_id_.MoveToSequence(io_task_runner);
-  }
 }
 
 ChromeBrowserStateIOData::AppRequestContext::AppRequestContext() {}
@@ -412,7 +404,6 @@ void ChromeBrowserStateIOData::ShutdownOnUIThread(
     std::unique_ptr<IOSChromeURLRequestContextGetterVector> context_getters) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
 
-  google_services_user_account_id_.Destroy();
   enable_referrers_.Destroy();
   enable_do_not_track_.Destroy();
   enable_metrics_.Destroy();

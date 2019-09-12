@@ -110,7 +110,7 @@ class BrowserState : public base::SupportsUserData {
       proto_database_provider_;
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
       shared_url_loader_factory_;
-  network::mojom::NetworkContextPtr network_context_;
+  mojo::Remote<network::mojom::NetworkContext> network_context_;
 
   // Owns the network::NetworkContext that backs |url_loader_factory_|. Created
   // on the UI thread, destroyed on the IO thread.

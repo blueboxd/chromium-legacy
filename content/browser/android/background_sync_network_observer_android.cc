@@ -8,6 +8,7 @@
 #include "base/task/post_task.h"
 #include "content/public/android/content_jni_headers/BackgroundSyncNetworkObserver_jni.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/service_worker_context.h"
 
 using base::android::JavaParamRef;
 
@@ -17,11 +18,11 @@ namespace content {
 scoped_refptr<BackgroundSyncNetworkObserverAndroid::Observer>
 BackgroundSyncNetworkObserverAndroid::Observer::Create(
     base::RepeatingCallback<void(network::mojom::ConnectionType)> callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   scoped_refptr<BackgroundSyncNetworkObserverAndroid::Observer> observer(
       new BackgroundSyncNetworkObserverAndroid::Observer(callback));
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  RunOrPostTaskOnThread(
+      FROM_HERE, BrowserThread::UI,
       base::BindOnce(&BackgroundSyncNetworkObserverAndroid::Observer::Init,
                      observer));
   return observer;
@@ -51,8 +52,8 @@ void BackgroundSyncNetworkObserverAndroid::Observer::
                                 const JavaParamRef<jobject>& jcaller,
                                 jint new_connection_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  RunOrPostTaskOnThread(
+      FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
       base::BindOnce(callback_, static_cast<network::mojom::ConnectionType>(
                                     new_connection_type)));
 }
@@ -60,13 +61,13 @@ void BackgroundSyncNetworkObserverAndroid::Observer::
 BackgroundSyncNetworkObserverAndroid::Observer::Observer(
     base::RepeatingCallback<void(network::mojom::ConnectionType)> callback)
     : callback_(callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 }
 
 BackgroundSyncNetworkObserverAndroid::BackgroundSyncNetworkObserverAndroid(
     const base::Closure& network_changed_callback)
     : BackgroundSyncNetworkObserver(network_changed_callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   observer_ = Observer::Create(
       base::Bind(&BackgroundSyncNetworkObserverAndroid::OnConnectionChanged,
@@ -74,7 +75,7 @@ BackgroundSyncNetworkObserverAndroid::BackgroundSyncNetworkObserverAndroid(
 }
 
 BackgroundSyncNetworkObserverAndroid::~BackgroundSyncNetworkObserverAndroid() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 }
 
 void BackgroundSyncNetworkObserverAndroid::RegisterWithNetworkConnectionTracker(

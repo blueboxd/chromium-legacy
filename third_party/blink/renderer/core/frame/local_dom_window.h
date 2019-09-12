@@ -247,11 +247,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   bool isSecureContext() const;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(animationend, kAnimationend)
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(animationiteration, kAnimationiteration)
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(animationstart, kAnimationstart)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(search, kSearch)
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(transitionend, kTransitionend)
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitanimationstart, kWebkitAnimationStart)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitanimationiteration,

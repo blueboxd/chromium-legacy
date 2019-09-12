@@ -101,12 +101,18 @@ template <class T>
 void HistogramController::SetHistogramMemory(
     T* host,
     base::WritableSharedMemoryRegion shared_region) {
-  content::mojom::ChildHistogramFetcherFactoryPtr
-      child_histogram_fetcher_factory;
-  content::mojom::ChildHistogramFetcherPtr child_histogram_fetcher;
-  content::BindInterface(host, &child_histogram_fetcher_factory);
+  mojo::PendingRemote<content::mojom::ChildHistogramFetcherFactory>
+      pending_child_histogram_fetcher_factory;
+  content::BindInterface(host, &pending_child_histogram_fetcher_factory);
+
+  mojo::Remote<content::mojom::ChildHistogramFetcherFactory>
+      child_histogram_fetcher_factory(
+          std::move(pending_child_histogram_fetcher_factory));
+  mojo::Remote<content::mojom::ChildHistogramFetcher> child_histogram_fetcher;
+
   child_histogram_fetcher_factory->CreateFetcher(
-      std::move(shared_region), mojo::MakeRequest(&child_histogram_fetcher));
+      std::move(shared_region),
+      child_histogram_fetcher.BindNewPipeAndPassReceiver());
   InsertChildHistogramFetcherInterface(host,
                                        std::move(child_histogram_fetcher));
 }
@@ -114,10 +120,11 @@ void HistogramController::SetHistogramMemory(
 template <class T>
 void HistogramController::InsertChildHistogramFetcherInterface(
     T* host,
-    content::mojom::ChildHistogramFetcherPtr child_histogram_fetcher) {
+    mojo::Remote<content::mojom::ChildHistogramFetcher>
+        child_histogram_fetcher) {
   // Broken pipe means remove this from the map. The map size is a proxy for
   // the number of known processes
-  child_histogram_fetcher.set_connection_error_handler(base::BindOnce(
+  child_histogram_fetcher.set_disconnect_handler(base::BindOnce(
       &HistogramController::RemoveChildHistogramFetcherInterface<T>,
       base::Unretained(this), base::Unretained(host)));
   GetChildHistogramFetcherMap<T>()[host] = std::move(child_histogram_fetcher);

@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
 
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/heap_compact.h"
 
 namespace blink {
 
@@ -40,6 +41,50 @@ void TestSupportingGC::ClearOutOldGarbage() {
 void TestSupportingGC::CompleteSweepingIfNeeded() {
   if (ThreadState::Current()->IsSweepingInProgress())
     ThreadState::Current()->CompleteSweep();
+}
+
+IncrementalMarkingTestDriver::~IncrementalMarkingTestDriver() {
+  if (thread_state_->IsIncrementalMarking())
+    FinishGC();
+}
+
+void IncrementalMarkingTestDriver::Start() {
+  thread_state_->IncrementalMarkingStart(
+      BlinkGC::GCReason::kForcedGCForTesting);
+}
+
+bool IncrementalMarkingTestDriver::SingleStep(BlinkGC::StackState stack_state) {
+  CHECK(thread_state_->IsIncrementalMarking());
+  if (thread_state_->GetGCState() ==
+      ThreadState::kIncrementalMarkingStepScheduled) {
+    thread_state_->IncrementalMarkingStep(stack_state);
+    return true;
+  }
+  return false;
+}
+
+void IncrementalMarkingTestDriver::FinishSteps(
+    BlinkGC::StackState stack_state) {
+  CHECK(thread_state_->IsIncrementalMarking());
+  while (SingleStep(stack_state)) {
+  }
+}
+
+void IncrementalMarkingTestDriver::FinishGC(bool complete_sweep) {
+  CHECK(thread_state_->IsIncrementalMarking());
+  FinishSteps(BlinkGC::StackState::kNoHeapPointersOnStack);
+  CHECK_EQ(ThreadState::kIncrementalMarkingFinalizeScheduled,
+           thread_state_->GetGCState());
+  thread_state_->RunScheduledGC(BlinkGC::StackState::kNoHeapPointersOnStack);
+  CHECK(!thread_state_->IsIncrementalMarking());
+  if (complete_sweep) {
+    thread_state_->CompleteSweep();
+  }
+}
+
+size_t IncrementalMarkingTestDriver::GetHeapCompactLastFixupCount() const {
+  HeapCompact* compaction = ThreadState::Current()->Heap().Compaction();
+  return compaction->LastFixupCountForTesting();
 }
 
 }  // namespace blink

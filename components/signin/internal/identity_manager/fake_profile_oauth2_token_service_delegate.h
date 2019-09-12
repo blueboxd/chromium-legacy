@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "build/build_config.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service_delegate.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -72,6 +73,10 @@ class FakeProfileOAuth2TokenServiceDelegate
 
   void IssueRefreshTokenForUser(const CoreAccountId& account_id,
                                 const std::string& token);
+
+#if defined(OS_ANDROID)
+  base::android::ScopedJavaLocalRef<jobject> GetJavaObject() override;
+#endif
 
   // Maps account ids to info.
   std::map<CoreAccountId, std::unique_ptr<AccountInfo>> refresh_tokens_;

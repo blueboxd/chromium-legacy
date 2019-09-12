@@ -506,8 +506,7 @@ class CrossSiteDocumentBlockingTestBase : public ContentBrowserTest {
 };
 
 enum class TestMode {
-  kWithoutOutOfBlinkCors,
-  kWithOutOfBlinkCors,
+  kWithCORBProtectionSniffing,
   kWithoutCORBProtectionSniffing,
 };
 class CrossSiteDocumentBlockingTest
@@ -516,17 +515,14 @@ class CrossSiteDocumentBlockingTest
  public:
   CrossSiteDocumentBlockingTest() {
     switch (GetParam()) {
-      case TestMode::kWithoutOutOfBlinkCors:
-        scoped_feature_list_.InitAndDisableFeature(
-            network::features::kOutOfBlinkCors);
-        break;
-      case TestMode::kWithOutOfBlinkCors:
+      case TestMode::kWithCORBProtectionSniffing:
         scoped_feature_list_.InitAndEnableFeature(
-            network::features::kOutOfBlinkCors);
+            network::features::kCORBProtectionSniffing);
         break;
       case TestMode::kWithoutCORBProtectionSniffing:
         scoped_feature_list_.InitAndDisableFeature(
             network::features::kCORBProtectionSniffing);
+        break;
     }
   }
   ~CrossSiteDocumentBlockingTest() override = default;
@@ -1479,13 +1475,10 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(WithoutOutOfBlinkCors,
-                         CrossSiteDocumentBlockingTest,
-                         ::testing::Values(TestMode::kWithoutOutOfBlinkCors));
-
-INSTANTIATE_TEST_SUITE_P(WithOutOfBlinkCors,
-                         CrossSiteDocumentBlockingTest,
-                         ::testing::Values(TestMode::kWithOutOfBlinkCors));
+INSTANTIATE_TEST_SUITE_P(
+    WithCORBProtectionSniffing,
+    CrossSiteDocumentBlockingTest,
+    ::testing::Values(TestMode::kWithCORBProtectionSniffing));
 
 INSTANTIATE_TEST_SUITE_P(
     WithoutCORBProtectionSniffing,

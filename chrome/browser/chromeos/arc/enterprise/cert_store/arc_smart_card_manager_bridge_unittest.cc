@@ -2,17 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <set>
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/chromeos/arc/enterprise/cert_store/arc_cert_installer.h"
 #include "chrome/browser/chromeos/arc/enterprise/cert_store/arc_smart_card_manager_bridge.h"
+#include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
 #include "chrome/common/net/x509_certificate_model_nss.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/session/arc_bridge_service.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/remote_commands/remote_commands_queue.h"
 #include "content/public/test/browser_task_environment.h"
 #include "crypto/rsa_private_key.h"
@@ -108,9 +113,29 @@ class MockArcCertInstaller : public ArcCertInstaller {
                        std::unique_ptr<policy::RemoteCommandsQueue> queue)
       : ArcCertInstaller(profile, std::move(queue)) {}
   MOCK_METHOD2(InstallArcCerts,
-               void(const std::vector<net::ScopedCERTCertificate>& certs,
-                    InstallArcCertsCallback callback));
+               std::set<std::string>(
+                   const std::vector<net::ScopedCERTCertificate>& certs,
+                   InstallArcCertsCallback callback));
 };
+
+class MockArcPolicyBridge : public ArcPolicyBridge {
+ public:
+  MockArcPolicyBridge(content::BrowserContext* context,
+                      ArcBridgeService* bridge_service,
+                      policy::PolicyService* policy_service)
+      : ArcPolicyBridge(context, bridge_service, policy_service) {}
+  MOCK_METHOD3(OnPolicyUpdated,
+               void(const policy::PolicyNamespace& ns,
+                    const policy::PolicyMap& previous,
+                    const policy::PolicyMap& current));
+};
+
+std::unique_ptr<KeyedService> BuildPolicyBridge(
+    ArcBridgeService* bridge_service,
+    content::BrowserContext* profile) {
+  return std::make_unique<MockArcPolicyBridge>(profile, bridge_service,
+                                               nullptr);
+}
 
 }  // namespace
 
@@ -123,8 +148,12 @@ class ArcSmartCardManagerBridgeTest : public testing::Test {
     provider_ = new FakeCertificateProvider();
     installer_ = new StrictMock<MockArcCertInstaller>(
         &profile_, std::make_unique<policy::RemoteCommandsQueue>());
+    policy_bridge_ = static_cast<MockArcPolicyBridge*>(
+        ArcPolicyBridge::GetFactory()->SetTestingFactoryAndUse(
+            &profile_,
+            base::BindRepeating(&BuildPolicyBridge, bridge_service_.get())));
     bridge_ = std::make_unique<ArcSmartCardManagerBridge>(
-        bridge_service_.get(), base::WrapUnique(provider_),
+        &profile_, bridge_service_.get(), base::WrapUnique(provider_),
         base::WrapUnique(installer_));
   }
 
@@ -136,16 +165,18 @@ class ArcSmartCardManagerBridgeTest : public testing::Test {
 
   FakeCertificateProvider* provider() { return provider_; }
   MockArcCertInstaller* installer() { return installer_; }
+  MockArcPolicyBridge* policy_bridge() { return policy_bridge_; }
   ArcSmartCardManagerBridge* bridge() { return bridge_.get(); }
 
  private:
   content::BrowserTaskEnvironment browser_task_environment_;
-  TestingProfile profile_;
 
   std::unique_ptr<ArcBridgeService> bridge_service_;
+  TestingProfile profile_;
 
   FakeCertificateProvider* provider_;  // Owned by |bridge_|.
   MockArcCertInstaller* installer_;    // Owned by |bridge_|.
+  MockArcPolicyBridge* policy_bridge_;  // Not owned.
 
   std::unique_ptr<ArcSmartCardManagerBridge> bridge_;
 
@@ -162,6 +193,7 @@ TEST_F(ArcSmartCardManagerBridgeTest, NoSmartCardTest) {
       .WillOnce(
           WithArg<1>(Invoke([](base::OnceCallback<void(bool result)> callback) {
             std::move(callback).Run(true);
+            return std::set<std::string>();
           })));
   bridge()->Refresh(base::BindOnce([](bool result) { EXPECT_TRUE(result); }));
 }
@@ -174,10 +206,12 @@ TEST_F(ArcSmartCardManagerBridgeTest, BasicSmartCardTest) {
   ASSERT_TRUE(provider()->SetCertificates(cert_names));
   EXPECT_CALL(*installer(),
               InstallArcCerts(EqualsClientCertIdentityList(cert_names), _))
-      .WillOnce(
-          WithArg<1>(Invoke([](base::OnceCallback<void(bool result)> callback) {
+      .WillOnce(WithArg<1>(
+          Invoke([&cert_names](base::OnceCallback<void(bool result)> callback) {
             std::move(callback).Run(true);
+            return std::set<std::string>(cert_names.begin(), cert_names.end());
           })));
+  EXPECT_CALL(*policy_bridge(), OnPolicyUpdated(_, _, _));
   bridge()->Refresh(base::BindOnce([](bool result) { EXPECT_TRUE(result); }));
 }
 

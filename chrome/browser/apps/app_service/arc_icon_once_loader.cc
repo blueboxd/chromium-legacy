@@ -133,14 +133,26 @@ void ArcIconOnceLoader::SizeSpecificLoader::OnIconUpdated(ArcAppIcon* icon) {
   }
 }
 
-ArcIconOnceLoader::ArcIconOnceLoader(Profile* profile) : profile_(profile) {
+ArcIconOnceLoader::ArcIconOnceLoader(Profile* profile)
+    : profile_(profile), stop_observing_called_(false) {
   ArcAppListPrefs::Get(profile)->AddObserver(this);
 }
 
-ArcIconOnceLoader::~ArcIconOnceLoader() = default;
+ArcIconOnceLoader::~ArcIconOnceLoader() {
+  // Check that somebody called StopObserving. We can't call StopObserving here
+  // in the destructor, because we need a ArcAppListPrefs* prefs, and for
+  // tests, the prefs pointer for a profile can change over time (e.g. by
+  // ArcAppListPrefsFactory::RecreateServiceInstanceForTesting).
+  //
+  // See also ArcApps::Shutdown.
+  DCHECK(stop_observing_called_);
+}
 
 void ArcIconOnceLoader::StopObserving(ArcAppListPrefs* prefs) {
-  prefs->RemoveObserver(this);
+  stop_observing_called_ = true;
+  if (prefs) {
+    prefs->RemoveObserver(this);
+  }
 }
 
 void ArcIconOnceLoader::LoadIcon(

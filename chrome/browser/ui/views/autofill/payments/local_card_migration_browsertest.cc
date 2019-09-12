@@ -951,10 +951,17 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTestForStatusChip,
                   ->GetVisible());
 }
 
+// TODO(crbug.com/999510): Crashes flakily on Linux.
+#if defined(OS_LINUX)
+#define MAYBE_ClickingOmniboxIconReshowsBubble \
+  DISABLED_ClickingOmniboxIconReshowsBubble
+#else
+#define MAYBE_ClickingOmniboxIconReshowsBubble ClickingOmniboxIconReshowsBubble
+#endif
 // Ensures that clicking on the credit card icon in the status chip reopens the
 // offer bubble after closing it.
 IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTestForStatusChip,
-                       ClickingOmniboxIconReshowsBubble) {
+                       MAYBE_ClickingOmniboxIconReshowsBubble) {
   base::HistogramTester histogram_tester;
 
   SaveLocalCard(kFirstCardNumber);

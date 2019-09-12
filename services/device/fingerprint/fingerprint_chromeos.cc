@@ -203,8 +203,10 @@ void FingerprintChromeOS::RequestType(RequestTypeCallback callback) {
 }
 
 void FingerprintChromeOS::AddFingerprintObserver(
-    mojom::FingerprintObserverPtr observer) {
-  observer.set_connection_error_handler(
+    mojo::PendingRemote<mojom::FingerprintObserver> pending_observer) {
+  mojo::Remote<mojom::FingerprintObserver> observer(
+      std::move(pending_observer));
+  observer.set_disconnect_handler(
       base::Bind(&FingerprintChromeOS::OnFingerprintObserverDisconnected,
                  base::Unretained(this), observer.get()));
   observers_.push_back(std::move(observer));

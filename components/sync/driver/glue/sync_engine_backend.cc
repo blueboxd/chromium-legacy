@@ -76,9 +76,13 @@ void RecordPerModelTypeInvalidation(int model_type, bool is_grouped) {
 bool ShouldEnableUSSNigori() {
   // USS implementation of Nigori is not compatible with Directory
   // implementations of Passwords and Bookmarks.
-  return base::FeatureList::IsEnabled(switches::kSyncUSSNigori) &&
-         base::FeatureList::IsEnabled(switches::kSyncUSSBookmarks) &&
-         base::FeatureList::IsEnabled(switches::kSyncUSSPasswords);
+  // |kSyncUSSNigori| should be checked last, since check itself has side
+  // effect (only clients, which have feature-flag checked participate in the
+  // study). Otherwise, we will have different amount of clients in control and
+  // experiment groups.
+  return base::FeatureList::IsEnabled(switches::kSyncUSSBookmarks) &&
+         base::FeatureList::IsEnabled(switches::kSyncUSSPasswords) &&
+         base::FeatureList::IsEnabled(switches::kSyncUSSNigori);
 }
 
 }  // namespace

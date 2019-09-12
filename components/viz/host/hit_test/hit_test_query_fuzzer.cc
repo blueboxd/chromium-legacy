@@ -22,8 +22,10 @@ void AddHitTestRegion(FuzzedDataProvider* fuzz,
   constexpr uint32_t kMaxDepthAllowed = 25;
   if (fuzz->remaining_bytes() < sizeof(viz::AggregatedHitTestRegion))
     return;
-  viz::FrameSinkId frame_sink_id(fuzz->ConsumeIntegral<uint32_t>(),
-                                 fuzz->ConsumeIntegral<uint32_t>());
+  viz::FrameSinkId frame_sink_id(fuzz->ConsumeIntegralInRange<uint32_t>(
+                                     1, std::numeric_limits<uint32_t>::max()),
+                                 fuzz->ConsumeIntegralInRange<uint32_t>(
+                                     1, std::numeric_limits<uint32_t>::max()));
   uint32_t flags = fuzz->ConsumeIntegral<uint32_t>();
   // The reasons' value is kNotAsyncHitTest if the flag's value is kHitTestAsk.
   uint32_t reasons = (flags & viz::HitTestRegionFlags::kHitTestAsk)

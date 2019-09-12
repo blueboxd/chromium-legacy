@@ -1426,6 +1426,7 @@ void ServiceWorkerGlobalScope::InitializeGlobalScope(
     mojom::blink::ServiceWorkerRegistrationObjectInfoPtr registration_info,
     mojom::blink::FetchHandlerExistence fetch_hander_existence) {
   DCHECK(IsContextThread());
+  DCHECK(!global_scope_initialized_);
 
   DCHECK(service_worker_host.is_valid());
   DCHECK(!service_worker_host_);
@@ -1442,21 +1443,24 @@ void ServiceWorkerGlobalScope::InitializeGlobalScope(
 
   SetFetchHandlerExistence(fetch_hander_existence);
 
+  global_scope_initialized_ = true;
   if (!pause_evaluation_)
     ReadyToRunWorkerScript();
 }
 
 void ServiceWorkerGlobalScope::PauseEvaluation() {
   DCHECK(IsContextThread());
+  DCHECK(!global_scope_initialized_);
+  DCHECK(!pause_evaluation_);
   pause_evaluation_ = true;
 }
 
 void ServiceWorkerGlobalScope::ResumeEvaluation() {
   DCHECK(IsContextThread());
   DCHECK(pause_evaluation_);
-  DCHECK_EQ(ScriptEvalState::kReadyToEvaluate, ScriptEvalState());
   pause_evaluation_ = false;
-  ReadyToRunWorkerScript();
+  if (global_scope_initialized_)
+    ReadyToRunWorkerScript();
 }
 
 void ServiceWorkerGlobalScope::DispatchInstallEvent(

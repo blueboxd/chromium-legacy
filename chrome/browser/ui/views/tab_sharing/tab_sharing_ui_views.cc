@@ -77,10 +77,15 @@ void SetContentsBorderVisible(content::WebContents* contents, bool visible) {
   Browser* browser = chrome::FindBrowserWithWebContents(contents);
   if (!browser)
     return;
+
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  if (!browser_view->contents_border_widget()) {
+    if (!visible)
+      return;
+    InitContentsBorderWidget(contents);
+  }
   views::Widget* contents_border_widget =
-      BrowserView::GetBrowserViewForBrowser(browser)->contents_border_widget();
-  if (!contents_border_widget)
-    return;
+      browser_view->contents_border_widget();
   if (visible)
     contents_border_widget->Show();
   else

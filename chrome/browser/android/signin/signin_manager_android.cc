@@ -165,13 +165,6 @@ void SigninManagerAndroid::ClearLastSignedInUser(JNIEnv* env) {
   ClearLastSignedInUserForProfile(profile_);
 }
 
-void SigninManagerAndroid::LogInSignedInUser(JNIEnv* env) {
-  // With the account consistency enabled let the account Reconcilor handles
-  // everything.
-  // TODO(https://crbug.com/930094): Determine the right long-term flow here.
-  identity_manager_->LegacyReloadAccountsFromSystem();
-}
-
 bool SigninManagerAndroid::IsSigninAllowed() const {
   return signin_allowed_.GetValue();
 }
@@ -218,21 +211,9 @@ void SigninManagerAndroid::RegisterPolicyWithAccount(
 
 void SigninManagerAndroid::FetchAndApplyCloudPolicy(
     JNIEnv* env,
-    const JavaParamRef<jstring>& j_username,
+    const base::android::JavaParamRef<jobject>& j_account_info,
     const base::android::JavaParamRef<jobject>& j_callback) {
-  std::string username =
-      base::android::ConvertJavaStringToUTF8(env, j_username);
-  DCHECK(!username.empty());
-  // TODO(bsazonov): Remove after migrating the sign-in flow to CoreAccountId.
-  // ExtractDomainName Dchecks that username is a valid email, in practice
-  // this checks that @ is present and is not the last character.
-  gaia::ExtractDomainName(username);
-  CoreAccountInfo account =
-      identity_manager_
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
-              username)
-          .value();
-
+  CoreAccountInfo account = ConvertFromJavaCoreAccountInfo(env, j_account_info);
   auto callback =
       base::BindOnce(base::android::RunRunnableAndroid,
                      base::android::ScopedJavaGlobalRef<jobject>(j_callback));
@@ -274,19 +255,13 @@ void SigninManagerAndroid::FetchPolicyBeforeSignIn(
 
 void SigninManagerAndroid::IsAccountManaged(
     JNIEnv* env,
-    const JavaParamRef<jstring>& j_username,
+    const JavaParamRef<jobject>& j_account_info,
     const JavaParamRef<jobject>& j_callback) {
+  CoreAccountInfo account = ConvertFromJavaCoreAccountInfo(env, j_account_info);
   base::android::ScopedJavaGlobalRef<jobject> callback(env, j_callback);
-  std::string username =
-      base::android::ConvertJavaStringToUTF8(env, j_username);
-
-  base::Optional<CoreAccountInfo> account =
-      identity_manager_
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
-              username);
 
   RegisterPolicyWithAccount(
-      account.value_or(CoreAccountInfo{}),
+      account,
       base::BindOnce(
           [](base::android::ScopedJavaGlobalRef<jobject> callback,
              const base::Optional<ManagementCredentials>& credentials) {

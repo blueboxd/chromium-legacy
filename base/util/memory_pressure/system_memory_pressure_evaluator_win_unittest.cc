@@ -146,7 +146,8 @@ class WinSystemMemoryPressureEvaluatorTest : public testing::Test {
               evaluator->CalculateCurrentPressureLevel());
   }
 
-  base::MessageLoopForUI message_loop_;
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::UI};
 };
 
 // Tests the fundamental direct calculation of memory pressure with automatic

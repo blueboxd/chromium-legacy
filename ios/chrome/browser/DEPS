@@ -107,6 +107,7 @@ include_rules = [
   "+ios/public/provider/components",
   "+ios/shared/chrome/browser",
   "+libxml/xmlwriter.h",
+  "+mojo/public/cpp/bindings",
   "+net",
   "+rlz/buildflags",
   "+services/metrics/public",

@@ -85,6 +85,8 @@ SMILTime SMILAnimationSandwich::NextProgressTime(
   for (const auto& animation : sandwich_) {
     earliest_progress_time = std::min(
         earliest_progress_time, animation->NextProgressTime(presentation_time));
+    if (earliest_progress_time <= presentation_time)
+      break;
   }
   return earliest_progress_time;
 }

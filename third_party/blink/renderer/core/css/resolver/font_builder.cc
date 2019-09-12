@@ -238,7 +238,8 @@ float FontBuilder::GetComputedSizeFromSpecifiedSize(
     float specified_size) {
   DCHECK(document_);
   float zoom_factor = effective_zoom;
-  // FIXME: Why is this here!!!!?!
+  // Apply the text zoom factor preference. The preference is exposed in
+  // accessibility settings in Chrome for Android to improve readability.
   if (LocalFrame* frame = document_->GetFrame())
     zoom_factor *= frame->TextZoomFactor();
 

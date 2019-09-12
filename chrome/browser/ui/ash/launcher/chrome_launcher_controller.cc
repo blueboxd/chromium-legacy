@@ -789,6 +789,45 @@ void ChromeLauncherController::UnpinAppWithID(const std::string& app_id) {
   model_->UnpinAppWithID(app_id);
 }
 
+void ChromeLauncherController::ReplacePinnedItem(
+    const std::string& old_app_id,
+    const std::string& new_app_id) {
+  if (!model_->IsAppPinned(old_app_id))
+    return;
+  const int index = model_->ItemIndexByAppID(old_app_id);
+
+  const ash::ShelfID new_shelf_id(new_app_id);
+  ash::ShelfItem item;
+  item.type = ash::TYPE_PINNED_APP;
+  item.id = new_shelf_id;
+
+  // Remove old_app at index and replace with new app.
+  model_->RemoveItemAt(index);
+  model_->AddAt(index, item);
+}
+
+void ChromeLauncherController::PinAppAtIndex(const std::string& app_id,
+                                             int target_index) {
+  if (target_index < 0)
+    return;
+
+  const ash::ShelfID new_shelf_id(app_id);
+  ash::ShelfItem item;
+  item.type = ash::TYPE_PINNED_APP;
+  item.id = new_shelf_id;
+
+  model_->AddAt(target_index, item);
+}
+
+int ChromeLauncherController::PinnedItemIndexByAppID(
+    const std::string& app_id) {
+  if (model_->IsAppPinned(app_id)) {
+    ash::ShelfID shelf_id(app_id);
+    return model_->ItemIndexByID(shelf_id);
+  }
+  return kInvalidIndex;
+}
+
 AppIconLoader* ChromeLauncherController::GetAppIconLoaderForApp(
     const std::string& app_id) {
   for (const auto& app_icon_loader : app_icon_loaders_) {

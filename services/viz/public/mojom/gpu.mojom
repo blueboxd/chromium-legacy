@@ -48,5 +48,6 @@ interface Gpu {
 
   // Creates a VideoEncodeAcceleratorProvider and binds it to |vea_provider|.
   CreateVideoEncodeAcceleratorProvider(
-      media.mojom.VideoEncodeAcceleratorProvider& vea_provider);
+      pending_receiver<media.mojom.VideoEncodeAcceleratorProvider>
+          vea_provider);
 };

@@ -1170,26 +1170,24 @@ void ChromeContentRendererClient::PrepareErrorPage(
     content::RenderFrame* render_frame,
     const blink::WebURLError& web_error,
     const std::string& http_method,
-    bool ignoring_cache,
     std::string* error_html) {
   NetErrorHelper::Get(render_frame)
       ->PrepareErrorPage(
           error_page::Error::NetError(web_error.url(), web_error.reason(),
                                       web_error.has_copy_in_cache()),
-          http_method == "POST", ignoring_cache, error_html);
+          http_method == "POST", error_html);
 }
 
 void ChromeContentRendererClient::PrepareErrorPageForHttpStatusError(
     content::RenderFrame* render_frame,
     const GURL& unreachable_url,
     const std::string& http_method,
-    bool ignoring_cache,
     int http_status,
     std::string* error_html) {
   NetErrorHelper::Get(render_frame)
       ->PrepareErrorPage(
           error_page::Error::HttpError(unreachable_url, http_status),
-          http_method == "POST", ignoring_cache, error_html);
+          http_method == "POST", error_html);
 }
 
 void ChromeContentRendererClient::GetErrorDescription(

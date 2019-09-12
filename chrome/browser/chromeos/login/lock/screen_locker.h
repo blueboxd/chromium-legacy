@@ -27,7 +27,7 @@
 #include "chromeos/login/auth/challenge_response_key.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/user_manager/user.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/fingerprint.mojom.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -287,8 +287,8 @@ class ScreenLocker : public AuthStatusConsumer,
   scoped_refptr<input_method::InputMethodManager::State> saved_ime_state_;
 
   mojo::Remote<device::mojom::Fingerprint> fp_service_;
-  mojo::Binding<device::mojom::FingerprintObserver>
-      fingerprint_observer_binding_;
+  mojo::Receiver<device::mojom::FingerprintObserver>
+      fingerprint_observer_receiver_{this};
 
   // ViewsScreenLocker instance in use.
   std::unique_ptr<ViewsScreenLocker> views_screen_locker_;

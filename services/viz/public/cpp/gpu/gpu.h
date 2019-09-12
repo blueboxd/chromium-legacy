@@ -46,7 +46,8 @@ class Gpu : public gpu::GpuChannelEstablishFactory {
       chromeos_camera::mojom::MjpegDecodeAcceleratorRequest jda_request);
 #endif  // defined(OS_CHROMEOS)
   void CreateVideoEncodeAcceleratorProvider(
-      media::mojom::VideoEncodeAcceleratorProviderRequest vea_provider_request);
+      mojo::PendingReceiver<media::mojom::VideoEncodeAcceleratorProvider>
+          vea_provider_receiver);
 
   // gpu::GpuChannelEstablishFactory:
   void EstablishGpuChannel(

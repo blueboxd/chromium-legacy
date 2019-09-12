@@ -953,10 +953,6 @@
         android:name="org.chromium.chrome.browser.browserservices.ClearDataDialogActivity"
         android:theme="@style/Theme.Chromium.ClearDataDialogActivity"/>
     <activity
-        android:exported="false"
-        android:name="org.chromium.chrome.browser.incognito.IncognitoDisclosureActivity"
-        android:theme="@style/Theme.Chromium.Activity.Fullscreen.Transparent"/>
-    <activity
         android:exported="true"
         android:name="org.chromium.chrome.browser.browserservices.ManageTrustedWebActivityDataActivity"
         android:theme="@style/Theme.Chromium.Activity.Fullscreen.Transparent">

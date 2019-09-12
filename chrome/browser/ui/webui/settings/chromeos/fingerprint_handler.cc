@@ -58,7 +58,7 @@ std::unique_ptr<base::DictionaryValue> GetFingerprintsInfo(
 }  // namespace
 
 FingerprintHandler::FingerprintHandler(Profile* profile)
-    : profile_(profile), binding_(this), session_observer_(this) {
+    : profile_(profile), session_observer_(this) {
   content::GetSystemConnector()->Connect(
       device::mojom::kServiceName, fp_service_.BindNewPipeAndPassReceiver());
   user_id_ = ProfileHelper::Get()->GetUserIdHashFromProfile(profile);
@@ -111,14 +111,12 @@ void FingerprintHandler::OnJavascriptAllowed() {
   if (SessionManager::Get())
     session_observer_.Add(SessionManager::Get());
 
-  device::mojom::FingerprintObserverPtr observer;
-  binding_.Bind(mojo::MakeRequest(&observer));
-  fp_service_->AddFingerprintObserver(std::move(observer));
+  fp_service_->AddFingerprintObserver(receiver_.BindNewPipeAndPassRemote());
 }
 
 void FingerprintHandler::OnJavascriptDisallowed() {
   session_observer_.RemoveAll();
-  binding_.Close();
+  receiver_.reset();
 }
 
 void FingerprintHandler::OnRestarted() {}

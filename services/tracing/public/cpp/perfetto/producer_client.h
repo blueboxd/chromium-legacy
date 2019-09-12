@@ -45,7 +45,7 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
 
   bool IsTracingActive() override;
 
-  void Connect(mojom::PerfettoServicePtr perfetto_service);
+  void Connect(mojo::PendingRemote<mojom::PerfettoService> perfetto_service);
 
   void set_in_process_shmem_arbiter(perfetto::SharedMemoryArbiter* arbiter) {
     DCHECK(!in_process_arbiter_);

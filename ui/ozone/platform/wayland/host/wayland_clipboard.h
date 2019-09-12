@@ -26,21 +26,24 @@ class WaylandClipboard : public PlatformClipboard {
 
   // PlatformClipboard.
   void OfferClipboardData(
+      ClipboardBuffer buffer,
       const PlatformClipboard::DataMap& data_map,
       PlatformClipboard::OfferDataClosure callback) override;
   void RequestClipboardData(
+      ClipboardBuffer buffer,
       const std::string& mime_type,
       PlatformClipboard::DataMap* data_map,
       PlatformClipboard::RequestDataClosure callback) override;
   void GetAvailableMimeTypes(
+      ClipboardBuffer buffer,
       PlatformClipboard::GetMimeTypesClosure callback) override;
-  bool IsSelectionOwner() override;
+  bool IsSelectionOwner(ClipboardBuffer buffer) override;
   void SetSequenceNumberUpdateCb(
       PlatformClipboard::SequenceNumberUpdateCb cb) override;
 
   void DataSourceCancelled();
   void SetData(const std::string& contents, const std::string& mime_type);
-  void UpdateSequenceNumber();
+  void UpdateSequenceNumber(ClipboardBuffer buffer);
 
  private:
   // Holds a temporary instance of the client's clipboard content

@@ -1534,12 +1534,6 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     disabled_features.emplace_back(features::kNativeSmb);
   }
 
-  if (IsDriveFsTest()) {
-    enabled_features.emplace_back(chromeos::features::kDriveFs);
-  } else {
-    disabled_features.emplace_back(chromeos::features::kDriveFs);
-  }
-
   if (IsArcTest()) {
     arc::SetArcAvailableCommandLineForTesting(command_line);
   }
@@ -1712,10 +1706,6 @@ bool FileManagerBrowserTestBase::GetTabletMode() const {
   return false;
 }
 
-bool FileManagerBrowserTestBase::GetEnableDriveFs() const {
-  return true;
-}
-
 bool FileManagerBrowserTestBase::GetEnableDocumentsProvider() const {
   return false;
 }
@@ -1824,11 +1814,6 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
       *output = "false";
     }
 
-    return;
-  }
-
-  if (name == "getDriveFsEnabled") {
-    *output = IsDriveFsTest() ? "true" : "false";
     return;
   }
 

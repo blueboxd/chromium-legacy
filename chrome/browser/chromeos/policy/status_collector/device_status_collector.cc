@@ -1203,11 +1203,10 @@ void DeviceStatusCollector::SampleResourceUsage() {
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       cpu_statistics_fetcher_,
       base::Bind(&DeviceStatusCollector::ReceiveCPUStatistics,
-                 weak_factory_.GetWeakPtr(), base::Time::Now()));
+                 weak_factory_.GetWeakPtr()));
 }
 
-void DeviceStatusCollector::ReceiveCPUStatistics(const base::Time& timestamp,
-                                                 const std::string& stats) {
+void DeviceStatusCollector::ReceiveCPUStatistics(const std::string& stats) {
   int cpu_usage_percent = 0;
   if (stats.empty()) {
     DLOG(WARNING) << "Unable to read CPU statistics";
@@ -1249,8 +1248,15 @@ void DeviceStatusCollector::ReceiveCPUStatistics(const base::Time& timestamp,
   }
 
   DCHECK_LE(cpu_usage_percent, 100);
+
+  // This timestamp is used in both ResourceUsage and SampledData for CPU
+  // termporary, which is expected to be same according to existing
+  // implementation.
+  const base::Time timestamp = base::Time::Now();
+
   ResourceUsage usage = {cpu_usage_percent,
-                         base::SysInfo::AmountOfAvailablePhysicalMemory()};
+                         base::SysInfo::AmountOfAvailablePhysicalMemory(),
+                         timestamp};
 
   resource_usage_.push_back(usage);
 
@@ -1260,7 +1266,7 @@ void DeviceStatusCollector::ReceiveCPUStatistics(const base::Time& timestamp,
     resource_usage_.pop_front();
 
   std::unique_ptr<SampledData> sample = std::make_unique<SampledData>();
-  sample->timestamp = base::Time::Now();
+  sample->timestamp = timestamp;
 
   if (report_power_status_) {
     runtime_probe::ProbeRequest request;
@@ -1695,9 +1701,30 @@ bool DeviceStatusCollector::GetHardwareStatus(
   // regular intervals. Unlike CPU temp and volume info these are not one-time
   // sampled values, hence the difference in logic.
   status->set_system_ram_total(base::SysInfo::AmountOfPhysicalMemory());
+  status->clear_cpu_utilization_infos();
+  status->clear_system_ram_free_infos();
+
+  // TODO(anqing): remove these two cleanup operations after fields
+  // 'system_ram_free_samples' and 'cpu_utilization_pct_samples' are deprecated.
   status->clear_system_ram_free_samples();
   status->clear_cpu_utilization_pct_samples();
+
   for (const ResourceUsage& usage : resource_usage_) {
+    const int64_t usage_timestamp = usage.timestamp.ToJavaTime();
+
+    em::CpuUtilizationInfo* cpu_utilization_info =
+        status->add_cpu_utilization_infos();
+    cpu_utilization_info->set_cpu_utilization_pct(usage.cpu_usage_percent);
+    cpu_utilization_info->set_timestamp(usage_timestamp);
+
+    em::SystemFreeRamInfo* system_ram_free_info =
+        status->add_system_ram_free_infos();
+    system_ram_free_info->set_size_in_bytes(usage.bytes_of_ram_free);
+    system_ram_free_info->set_timestamp(usage_timestamp);
+
+    // TODO(anqing): remove these two assignment operations after fields
+    // 'system_ram_free_samples' and 'cpu_utilization_pct_samples' are
+    // deprecated.
     status->add_cpu_utilization_pct_samples(usage.cpu_usage_percent);
     status->add_system_ram_free_samples(usage.bytes_of_ram_free);
   }

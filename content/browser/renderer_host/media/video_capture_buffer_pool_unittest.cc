@@ -93,7 +93,7 @@ class VideoCaptureBufferPoolTest
         new Buffer(pool_, std::move(buffer_handle), buffer_id));
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   int expected_dropped_id_;
   scoped_refptr<media::VideoCaptureBufferPool> pool_;
 

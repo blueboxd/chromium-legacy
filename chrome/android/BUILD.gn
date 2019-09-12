@@ -1203,6 +1203,7 @@ chrome_common_shared_library("libchrome") {
   if (enable_vr) {
     deps += [ "//chrome/browser/android/vr:module_factory" ]
   }
+  deps += [ "//chrome/android/features/test_dummy/internal:base_module_native" ]
 
   allow_partitions = true
   module_descs = chrome_modern_module_descs
@@ -1219,6 +1220,7 @@ chrome_common_shared_library("libchromefortest") {
     ":chrome_jni_for_test_registration($default_toolchain)",
     "//base/test:test_support",
     "//chrome:chrome_android_core",
+    "//chrome/android/features/test_dummy/internal:base_module_native",
     "//chrome/browser/android/metrics:ukm_utils_for_test",
     "//components/autofill_assistant/browser:test_support",
     "//components/crash/android:crash_android",
@@ -1466,6 +1468,8 @@ template("libmonochrome_apk_or_bundle_tmpl") {
     if (enable_vr) {
       deps += [ "//chrome/browser/android/vr:module_factory" ]
     }
+    deps +=
+        [ "//chrome/android/features/test_dummy/internal:base_module_native" ]
 
     is_monochrome = true
     allow_partitions = true

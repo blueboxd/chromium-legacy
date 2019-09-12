@@ -41,10 +41,9 @@ const char kGaiaCookieChangedTime[] = "gaia_cookie.changed_time";
 // double that should be converted into base::Time.
 const char kGaiaCookiePeriodicReportTime[] = "gaia_cookie.periodic_report_time";
 
-// Typically contains an obfuscated gaiaid and will match the value of
-// kGoogleServicesUserAccountId. Some platforms and legacy clients may have
+// Typically contains an obfuscated gaiaid. Some platforms may have
 // an email stored in this preference instead. This is transitional and will
-// eventually be fixed, allowing the removal of kGoogleServicesUserAccountId.
+// eventually be fixed.
 const char kGoogleServicesAccountId[] = "google.services.account_id";
 
 // The profile's hosted domain; empty if unset; kNoHostedDomainFound if there
@@ -67,10 +66,6 @@ const char kGoogleServicesLastUsername[] = "google.services.last_username";
 // will be annotated with this device id.
 const char kGoogleServicesSigninScopedDeviceId[] =
     "google.services.signin_scoped_device_id";
-
-// Obfuscated account ID that identifies the current user logged into sync and
-// other google services.
-const char kGoogleServicesUserAccountId[] = "google.services.user_account_id";
 
 // Local state pref containing a string regex that restricts which accounts
 // can be used to log in to chrome (e.g. "*@google.com"). If missing or blank,

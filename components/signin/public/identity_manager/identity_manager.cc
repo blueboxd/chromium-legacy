@@ -25,6 +25,7 @@
 #if defined(OS_ANDROID)
 #include "base/android/jni_string.h"
 #include "components/signin/internal/identity_manager/android/jni_headers/IdentityManager_jni.h"
+#include "components/signin/internal/identity_manager/android/jni_headers/IdentityMutator_jni.h"
 #include "components/signin/internal/identity_manager/oauth2_token_service_delegate_android.h"
 #elif !defined(OS_IOS)
 #include "components/signin/internal/identity_manager/mutable_profile_oauth2_token_service_delegate.h"
@@ -105,12 +106,17 @@ IdentityManager::IdentityManager(
     UpdateUnconsentedPrimaryAccount();
 
 #if defined(OS_ANDROID)
-  base::android::ScopedJavaLocalRef<jobject> java_primary_account_mutator =
-      primary_account_mutator_ ? primary_account_mutator_->GetJavaObject()
-                               : nullptr;
+  base::android::ScopedJavaLocalRef<jobject> java_identity_mutator =
+      primary_account_mutator_
+          ? Java_IdentityMutator_Constructor(
+                base::android::AttachCurrentThread(),
+                reinterpret_cast<intptr_t>(primary_account_mutator_.get()),
+                reinterpret_cast<intptr_t>(this))
+          : nullptr;
+
   java_identity_manager_ = Java_IdentityManager_create(
       base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this),
-      java_primary_account_mutator);
+      java_identity_mutator);
 #endif
 }
 
@@ -419,10 +425,7 @@ IdentityManager::LegacyGetAccountTrackerServiceJavaObject() {
 
 base::android::ScopedJavaLocalRef<jobject>
 IdentityManager::LegacyGetOAuth2TokenServiceJavaObject() {
-  OAuth2TokenServiceDelegateAndroid* delegate =
-      static_cast<OAuth2TokenServiceDelegateAndroid*>(
-          token_service_->GetDelegate());
-  return delegate->GetJavaObject();
+  return token_service_->GetDelegate()->GetJavaObject();
 }
 
 base::android::ScopedJavaLocalRef<jobject> IdentityManager::GetJavaObject() {
@@ -450,6 +453,10 @@ base::android::ScopedJavaLocalRef<jobject> IdentityManager::
   if (!account_info.has_value())
     return nullptr;
   return ConvertToJavaCoreAccountInfo(env, account_info.value());
+}
+
+void IdentityManager::ReloadAccountsFromSystem(JNIEnv* env) {
+  LegacyReloadAccountsFromSystem();
 }
 #endif
 

@@ -135,10 +135,10 @@ PrintMsg_PrintFrame_Params::~PrintMsg_PrintFrame_Params() {}
 PrintHostMsg_RequestPrintPreview_Params::
     PrintHostMsg_RequestPrintPreview_Params()
     : is_modifiable(false),
+      is_pdf(false),
       webnode_only(false),
       has_selection(false),
-      selection_only(false) {
-}
+      selection_only(false) {}
 
 PrintHostMsg_RequestPrintPreview_Params::
     ~PrintHostMsg_RequestPrintPreview_Params() {}

@@ -9,6 +9,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "components/policy/core/common/remote_commands/remote_command_job.h"
@@ -40,9 +41,11 @@ class ArcCertInstaller : public policy::RemoteCommandsQueue::Observer {
   using InstallArcCertsCallback = base::OnceCallback<void(bool result)>;
 
   // Install missing certificates via ARC remote commands.
+  //
+  // Return set of the names of certificates required being installed on ARC.
   // Return false via |callback| in case of any error, and true otherwise.
   // Made virtual for override in test.
-  virtual void InstallArcCerts(
+  virtual std::set<std::string> InstallArcCerts(
       const std::vector<net::ScopedCERTCertificate>& certs,
       InstallArcCertsCallback callback);
 
@@ -66,9 +69,6 @@ class ArcCertInstaller : public policy::RemoteCommandsQueue::Observer {
   // False if the installation failed.
   // The |pending_status_| is returned via |callback_|.
   bool pending_status_ = true;
-
-  // Names of certificates required to be installed on ARC.
-  std::set<std::string> required_cert_names_;
 
   // Names of certificates installed or pending to be installed on ARC.
   std::set<std::string> known_cert_names_;

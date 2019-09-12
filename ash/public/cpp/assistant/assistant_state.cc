@@ -6,6 +6,13 @@
 
 #include <ostream>
 #include <sstream>
+#include <utility>
+
+#include "ash/public/mojom/assistant_state_controller.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 
 namespace ash {
 namespace {
@@ -29,9 +36,9 @@ AssistantState::~AssistantState() {
   g_assistant_state = nullptr;
 }
 
-void AssistantState::BindRequest(
-    mojom::AssistantStateControllerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void AssistantState::BindReceiver(
+    mojo::PendingReceiver<mojom::AssistantStateController> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void AssistantState::NotifyStatusChanged(mojom::AssistantState state) {
@@ -39,8 +46,8 @@ void AssistantState::NotifyStatusChanged(mojom::AssistantState state) {
     return;
 
   UpdateAssistantStatus(state);
-  remote_observers_.ForAllPtrs(
-      [state](auto* observer) { observer->OnAssistantStatusChanged(state); });
+  for (auto& observer : remote_observers_)
+    observer->OnAssistantStatusChanged(state);
 }
 
 void AssistantState::NotifyFeatureAllowed(mojom::AssistantAllowedState state) {
@@ -48,9 +55,8 @@ void AssistantState::NotifyFeatureAllowed(mojom::AssistantAllowedState state) {
     return;
 
   UpdateFeatureAllowedState(state);
-  remote_observers_.ForAllPtrs([state](auto* observer) {
+  for (auto& observer : remote_observers_)
     observer->OnAssistantFeatureAllowedChanged(state);
-  });
 }
 
 void AssistantState::NotifyLocaleChanged(const std::string& locale) {
@@ -58,8 +64,8 @@ void AssistantState::NotifyLocaleChanged(const std::string& locale) {
     return;
 
   UpdateLocale(locale);
-  remote_observers_.ForAllPtrs(
-      [locale](auto* observer) { observer->OnLocaleChanged(locale); });
+  for (auto& observer : remote_observers_)
+    observer->OnLocaleChanged(locale);
 }
 
 void AssistantState::NotifyArcPlayStoreEnabledChanged(bool enabled) {
@@ -67,9 +73,8 @@ void AssistantState::NotifyArcPlayStoreEnabledChanged(bool enabled) {
     return;
 
   UpdateArcPlayStoreEnabled(enabled);
-  remote_observers_.ForAllPtrs([enabled](auto* observer) {
+  for (auto& observer : remote_observers_)
     observer->OnArcPlayStoreEnabledChanged(enabled);
-  });
 }
 
 void AssistantState::NotifyLockedFullScreenStateChanged(bool enabled) {
@@ -77,16 +82,17 @@ void AssistantState::NotifyLockedFullScreenStateChanged(bool enabled) {
     return;
 
   UpdateLockedFullScreenState(enabled);
-  remote_observers_.ForAllPtrs([enabled](auto* observer) {
+  for (auto& observer : remote_observers_)
     observer->OnLockedFullScreenStateChanged(enabled);
-  });
 }
 
 void AssistantState::AddMojomObserver(
-    mojom::AssistantStateObserverPtr observer) {
-  auto* observer_ptr = observer.get();
-  remote_observers_.AddPtr(std::move(observer));
-  InitializeObserverMojom(observer_ptr);
+    mojo::PendingRemote<mojom::AssistantStateObserver> pending_observer) {
+  auto remote =
+      mojo::Remote<mojom::AssistantStateObserver>(std::move(pending_observer));
+  mojom::AssistantStateObserver* observer = remote.get();
+  remote_observers_.Add(std::move(remote));
+  InitializeObserverMojom(observer);
 }
 
 }  // namespace ash

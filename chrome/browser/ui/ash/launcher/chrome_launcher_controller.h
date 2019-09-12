@@ -67,6 +67,9 @@ class ChromeLauncherController
       private app_list::AppListSyncableService::Observer,
       private sync_preferences::PrefServiceSyncableObserver {
  public:
+  // The value used for indicating that an index position doesn't exist.
+  static const int kInvalidIndex = -1;
+
   // Returns the single ChromeLauncherController instance.
   static ChromeLauncherController* instance() { return instance_; }
 
@@ -246,6 +249,17 @@ class ChromeLauncherController
   void PinAppWithID(const std::string& app_id);
   bool IsAppPinned(const std::string& app_id);
   void UnpinAppWithID(const std::string& app_id);
+
+  // Unpins app item with |old_app_id| and pins app |new_app_id| in its place.
+  void ReplacePinnedItem(const std::string& old_app_id,
+                         const std::string& new_app_id);
+
+  // Pins app with |app_id| at |target_index|.
+  void PinAppAtIndex(const std::string& app_id, int target_index);
+
+  // Converts |app_id| to shelf_id and calls ShelfModel function ItemIndexbyID
+  // to get index of item with id |app_id| or -1 if it's not pinned.
+  int PinnedItemIndexByAppID(const std::string& app_id);
 
   // Whether the controller supports a Show App Info flow.
   bool CanDoShowAppInfoFlow();

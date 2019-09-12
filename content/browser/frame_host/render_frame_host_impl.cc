@@ -141,6 +141,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/file_select_listener.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/page_visibility_state.h"
 #include "content/public/browser/permission_type.h"
@@ -249,11 +250,9 @@ int g_next_accessibility_reset_token = 1;
 bool g_allow_injecting_javascript = false;
 #endif
 
-// The (process id, routing id) pair that identifies one RenderFrame.
-typedef std::pair<int32_t, int32_t> RenderFrameHostID;
-typedef std::unordered_map<RenderFrameHostID,
+typedef std::unordered_map<GlobalFrameRoutingId,
                            RenderFrameHostImpl*,
-                           base::IntPairHash<RenderFrameHostID>>
+                           GlobalFrameRoutingIdHasher>
     RoutingIDFrameMap;
 base::LazyInstance<RoutingIDFrameMap>::DestructorAtExit g_routing_id_frame_map =
     LAZY_INSTANCE_INITIALIZER;
@@ -542,14 +541,14 @@ struct PendingNavigation {
   mojom::CommonNavigationParamsPtr common_params;
   mojom::BeginNavigationParamsPtr begin_navigation_params;
   scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory;
-  mojom::NavigationClientAssociatedPtrInfo navigation_client;
+  mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client;
   mojo::PendingRemote<blink::mojom::NavigationInitiator> navigation_initiator;
 
   PendingNavigation(
       mojom::CommonNavigationParamsPtr common_params,
       mojom::BeginNavigationParamsPtr begin_navigation_params,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-      mojom::NavigationClientAssociatedPtrInfo navigation_client,
+      mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
       mojo::PendingRemote<blink::mojom::NavigationInitiator>
           navigation_initiator);
 };
@@ -558,7 +557,7 @@ PendingNavigation::PendingNavigation(
     mojom::CommonNavigationParamsPtr common_params,
     mojom::BeginNavigationParamsPtr begin_navigation_params,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-    mojom::NavigationClientAssociatedPtrInfo navigation_client,
+    mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
     mojo::PendingRemote<blink::mojom::NavigationInitiator> navigation_initiator)
     : common_params(std::move(common_params)),
       begin_navigation_params(std::move(begin_navigation_params)),
@@ -758,7 +757,7 @@ RenderFrameHostImpl* RenderFrameHostImpl::FromID(int process_id,
                                                  int routing_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RoutingIDFrameMap* frames = g_routing_id_frame_map.Pointer();
-  auto it = frames->find(RenderFrameHostID(process_id, routing_id));
+  auto it = frames->find(GlobalFrameRoutingId(process_id, routing_id));
   return it == frames->end() ? NULL : it->second;
 }
 
@@ -857,7 +856,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
       commit_callback_interceptor_(nullptr) {
   GetProcess()->AddRoute(routing_id_, this);
   g_routing_id_frame_map.Get().emplace(
-      RenderFrameHostID(GetProcess()->GetID(), routing_id_), this);
+      GlobalFrameRoutingId(GetProcess()->GetID(), routing_id_), this);
   site_instance_->AddObserver(this);
   process_->AddObserver(this);
   GetSiteInstance()->IncrementActiveFrameCount();
@@ -1039,7 +1038,7 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
 
   GetProcess()->RemoveRoute(routing_id_);
   g_routing_id_frame_map.Get().erase(
-      RenderFrameHostID(GetProcess()->GetID(), routing_id_));
+      GlobalFrameRoutingId(GetProcess()->GetID(), routing_id_));
 
   // Null out the swapout timer; in crash dumps this member will be null only if
   // the dtor has run.  (It may also be null in tests.)
@@ -4180,7 +4179,7 @@ void RenderFrameHostImpl::BeginNavigation(
     mojom::CommonNavigationParamsPtr common_params,
     mojom::BeginNavigationParamsPtr begin_params,
     mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token,
-    mojom::NavigationClientAssociatedPtrInfo navigation_client,
+    mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
     mojo::PendingRemote<blink::mojom::NavigationInitiator>
         navigation_initiator) {
   if (frame_tree_node_->render_manager()->is_attaching_inner_delegate()) {
@@ -5943,11 +5942,11 @@ std::set<int> RenderFrameHostImpl::GetNavigationEntryIdsPendingCommit() {
   return result;
 }
 
-mojom::NavigationClientAssociatedPtr
+mojo::AssociatedRemote<mojom::NavigationClient>
 RenderFrameHostImpl::GetNavigationClientFromInterfaceProvider() {
-  mojom::NavigationClientAssociatedPtr navigation_client_ptr;
-  GetRemoteAssociatedInterfaces()->GetInterface(&navigation_client_ptr);
-  return navigation_client_ptr;
+  mojo::AssociatedRemote<mojom::NavigationClient> navigation_client_remote;
+  GetRemoteAssociatedInterfaces()->GetInterface(&navigation_client_remote);
+  return navigation_client_remote;
 }
 
 void RenderFrameHostImpl::NavigationRequestCancelled(

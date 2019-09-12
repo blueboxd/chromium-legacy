@@ -10,6 +10,7 @@
 #include "base/no_destructor.h"
 #include "base/process/process.h"
 #include "base/task/post_task.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/tracing/public/cpp/perfetto/shared_memory.h"
 #include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
@@ -29,12 +30,13 @@ ProducerClient::~ProducerClient() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void ProducerClient::Connect(mojom::PerfettoServicePtr perfetto_service) {
+void ProducerClient::Connect(
+    mojo::PendingRemote<mojom::PerfettoService> perfetto_service) {
   mojom::ProducerClientPtr client;
   auto client_request = mojo::MakeRequest(&client);
   mojom::ProducerHostPtrInfo host_info;
-  perfetto_service->ConnectToProducerHost(std::move(client),
-                                          mojo::MakeRequest(&host_info));
+  mojo::Remote<mojom::PerfettoService>(std::move(perfetto_service))
+      ->ConnectToProducerHost(std::move(client), mojo::MakeRequest(&host_info));
   task_runner()->GetOrCreateTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&ProducerClient::BindClientAndHostPipesOnSequence,

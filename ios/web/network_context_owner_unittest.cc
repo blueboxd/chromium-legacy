@@ -12,6 +12,7 @@
 #include "base/task/post_task.h"
 #include "ios/web/public/test/web_task_environment.h"
 #include "ios/web/public/thread/web_task_traits.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
@@ -34,7 +35,7 @@ class NetworkContextOwnerTest : public PlatformTest {
 
   void WatchForErrors() {
     ASSERT_TRUE(network_context_.is_bound());
-    network_context_.set_connection_error_handler(base::BindOnce(
+    network_context_.set_disconnect_handler(base::BindOnce(
         &NetworkContextOwnerTest::SawError, base::Unretained(this)));
   }
 
@@ -43,7 +44,7 @@ class NetworkContextOwnerTest : public PlatformTest {
   bool saw_connection_error_;
   WebTaskEnvironment task_environment_;
   scoped_refptr<net::TestURLRequestContextGetter> context_getter_;
-  network::mojom::NetworkContextPtr network_context_;
+  mojo::Remote<network::mojom::NetworkContext> network_context_;
   std::unique_ptr<NetworkContextOwner> network_context_owner_;
 };
 

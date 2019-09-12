@@ -2128,7 +2128,7 @@ void NavigationControllerImpl::NotifyUserActivation() {
 
 bool NavigationControllerImpl::StartHistoryNavigationInNewSubframe(
     RenderFrameHostImpl* render_frame_host,
-    mojom::NavigationClientAssociatedPtrInfo* navigation_client) {
+    mojo::PendingAssociatedRemote<mojom::NavigationClient>* navigation_client) {
   NavigationEntryImpl* entry =
       GetEntryWithUniqueID(render_frame_host->nav_entry_id());
   if (!entry)
@@ -2534,6 +2534,20 @@ void NavigationControllerImpl::NavigateToExistingPendingEntry(
                                 RestoreType::NONE);
 
     return;
+  }
+
+  // By design, a page in the BackForwardCache is alone in its BrowsingInstance.
+  // History navigation might try to reuse a specific SiteInstance, already used
+  // by a page in the cache. This must not happen. It would fail creating the
+  // RenderFrame, because only one main document can live there. For this
+  // reason, the BackForwardCache is flushed.
+  // TODO(arthursonzogni): Flushing the entire cache is a bit overkill, this can
+  // be refined to only delete the page (if any) using the same
+  // BrowsingInstance.
+  if (pending_entry_->site_instance()) {
+    SiteInstance* current = root->current_frame_host()->GetSiteInstance();
+    if (!current->IsRelatedSiteInstance(pending_entry_->site_instance()))
+      back_forward_cache_.Flush();
   }
 
   // If we were navigating to a slow-to-commit page, and the user performs

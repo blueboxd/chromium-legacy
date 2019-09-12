@@ -1366,6 +1366,44 @@ TEST_F(DeviceStatusCollectorTest, TestAvailableMemory) {
   EXPECT_GT(device_status_.system_ram_total(), 0);
 }
 
+TEST_F(DeviceStatusCollectorTest, TestSystemFreeRamInfo) {
+  const int sample_count =
+      static_cast<const int>(DeviceStatusCollector::kMaxResourceUsageSamples);
+  std::vector<int64_t> timestamp_lowerbounds;
+  std::vector<int64_t> timestamp_upperbounds;
+
+  // Refresh our samples. Sample more than kMaxHardwareSamples times to
+  // make sure that the code correctly caps the number of cached samples.
+  status_collector_->RefreshSampleResourceUsage();
+  base::RunLoop().RunUntilIdle();
+
+  for (int i = 0; i < sample_count; ++i) {
+    timestamp_lowerbounds.push_back(base::Time::Now().ToJavaTime());
+    status_collector_->RefreshSampleResourceUsage();
+    base::RunLoop().RunUntilIdle();
+    timestamp_upperbounds.push_back(base::Time::Now().ToJavaTime());
+  }
+  GetStatus();
+
+  EXPECT_TRUE(device_status_.has_system_ram_total());
+  EXPECT_GT(device_status_.system_ram_total(), 0);
+
+  EXPECT_EQ(sample_count, device_status_.system_ram_free_infos().size());
+  for (int i = 0; i < sample_count; ++i) {
+    // Make sure 0 < free RAM < total Ram.
+    EXPECT_GT(device_status_.system_ram_free_infos(i).size_in_bytes(), 0);
+    EXPECT_LT(device_status_.system_ram_free_infos(i).size_in_bytes(),
+              device_status_.system_ram_total());
+
+    // Make sure timestamp is in a valid range though we cannot inject specific
+    // test values.
+    EXPECT_GE(device_status_.system_ram_free_infos(i).timestamp(),
+              timestamp_lowerbounds[i]);
+    EXPECT_LE(device_status_.system_ram_free_infos(i).timestamp(),
+              timestamp_upperbounds[i]);
+  }
+}
+
 TEST_F(DeviceStatusCollectorTest, TestCPUSamples) {
   // Mock 100% CPU usage.
   std::string full_cpu_usage("cpu  500 0 500 0 0 0 0");
@@ -1413,6 +1451,79 @@ TEST_F(DeviceStatusCollectorTest, TestCPUSamples) {
       chromeos::kReportDeviceHardwareStatus, false);
   GetStatus();
   EXPECT_EQ(0, device_status_.cpu_utilization_pct_samples().size());
+}
+
+TEST_F(DeviceStatusCollectorTest, TestCPUInfos) {
+  // Mock 100% CPU usage.
+  std::string full_cpu_usage("cpu  500 0 500 0 0 0 0");
+  int64_t timestamp_lowerbound = base::Time::Now().ToJavaTime();
+  RestartStatusCollector(
+      base::BindRepeating(&GetEmptyVolumeInfo),
+      base::BindRepeating(&GetFakeCPUStatistics, full_cpu_usage),
+      base::BindRepeating(&GetEmptyCPUTempInfo),
+      base::BindRepeating(&GetEmptyAndroidStatus),
+      base::BindRepeating(&GetEmptyTpmStatus),
+      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
+      base::BindRepeating(&GetEmptyStatefulPartitionInfo));
+  // Force finishing tasks posted by ctor of DeviceStatusCollector.
+  content::RunAllTasksUntilIdle();
+  int64_t timestamp_upperbound = base::Time::Now().ToJavaTime();
+  GetStatus();
+  ASSERT_EQ(1, device_status_.cpu_utilization_infos().size());
+  EXPECT_EQ(100, device_status_.cpu_utilization_infos(0).cpu_utilization_pct());
+  EXPECT_GE(device_status_.cpu_utilization_infos(0).timestamp(),
+            timestamp_lowerbound);
+  EXPECT_LE(device_status_.cpu_utilization_infos(0).timestamp(),
+            timestamp_upperbound);
+
+  // Now sample CPU usage again (active usage counters will not increase
+  // so should show 0% cpu usage).
+  timestamp_lowerbound = base::Time::Now().ToJavaTime();
+  status_collector_->RefreshSampleResourceUsage();
+  base::RunLoop().RunUntilIdle();
+  timestamp_upperbound = base::Time::Now().ToJavaTime();
+  GetStatus();
+  ASSERT_EQ(2, device_status_.cpu_utilization_infos().size());
+  EXPECT_EQ(0, device_status_.cpu_utilization_infos(1).cpu_utilization_pct());
+  EXPECT_GE(device_status_.cpu_utilization_infos(1).timestamp(),
+            timestamp_lowerbound);
+  EXPECT_LE(device_status_.cpu_utilization_infos(1).timestamp(),
+            timestamp_upperbound);
+
+  // Now store a bunch of 0% cpu usage and make sure we cap the max number of
+  // samples.
+  const int sample_count =
+      static_cast<const int>(DeviceStatusCollector::kMaxResourceUsageSamples);
+  std::vector<int64_t> timestamp_lowerbounds;
+  std::vector<int64_t> timestamp_upperbounds;
+
+  for (int i = 0; i < sample_count; ++i) {
+    timestamp_lowerbounds.push_back(base::Time::Now().ToJavaTime());
+    status_collector_->RefreshSampleResourceUsage();
+    base::RunLoop().RunUntilIdle();
+    timestamp_upperbounds.push_back(base::Time::Now().ToJavaTime());
+  }
+  GetStatus();
+
+  // Should not be more than kMaxResourceUsageSamples, and they should all show
+  // the CPU is idle.
+  EXPECT_EQ(sample_count, device_status_.cpu_utilization_infos().size());
+  for (int i = 0; i < sample_count; ++i) {
+    EXPECT_EQ(device_status_.cpu_utilization_infos(i).cpu_utilization_pct(), 0);
+
+    // Make sure timestamp is in a valid range though we cannot inject specific
+    // test values.
+    EXPECT_GE(device_status_.cpu_utilization_infos(i).timestamp(),
+              timestamp_lowerbounds[i]);
+    EXPECT_LE(device_status_.cpu_utilization_infos(i).timestamp(),
+              timestamp_upperbounds[i]);
+  }
+
+  // Turning off hardware reporting should not report CPU utilization.
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceHardwareStatus, false);
+  GetStatus();
+  EXPECT_EQ(0, device_status_.cpu_utilization_infos().size());
 }
 
 TEST_F(DeviceStatusCollectorTest, TestCPUTemp) {

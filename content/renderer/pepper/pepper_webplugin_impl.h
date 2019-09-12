@@ -73,6 +73,7 @@ class PepperWebPluginImpl : public blink::WebPlugin {
   blink::WebURL LinkAtPosition(const blink::WebPoint& position) const override;
   bool GetPrintPresetOptionsFromDocument(
       blink::WebPrintPresetOptions* preset_options) override;
+  bool IsPdfPlugin() override;
   bool StartFind(const blink::WebString& search_text,
                  bool case_sensitive,
                  int identifier) override;

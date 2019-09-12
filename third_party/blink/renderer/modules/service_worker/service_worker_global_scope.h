@@ -542,10 +542,11 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   // an event should be aborted.
   std::unique_ptr<ServiceWorkerTimeoutTimer> timeout_timer_;
 
-  // InitializeGlobalScope() doesn't run the script when this flag is true.
-  // TODO(bashi): Consider merging this flag into
-  // WorkerGlobalScope::ScriptEvalState
+  // InitializeGlobalScope() pauses the top level script evaluation when this
+  // flag is true.
   bool pause_evaluation_ = false;
+  // ResumeEvaluation() evaluates the top level script when this flag is true.
+  bool global_scope_initialized_ = false;
 
   // Connected by the ServiceWorkerProviderHost in the browser process and by
   // the controllees. |controller_bindings_| should be destroyed before

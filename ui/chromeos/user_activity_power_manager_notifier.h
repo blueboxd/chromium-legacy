@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/power/power_manager_client.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/fingerprint.mojom.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -68,8 +68,8 @@ class UI_CHROMEOS_EXPORT UserActivityPowerManagerNotifier
   UserActivityDetector* detector_;  // not owned
 
   mojo::Remote<device::mojom::Fingerprint> fingerprint_;
-  mojo::Binding<device::mojom::FingerprintObserver>
-      fingerprint_observer_binding_;
+  mojo::Receiver<device::mojom::FingerprintObserver>
+      fingerprint_observer_receiver_{this};
 
   // Last time that the power manager was notified.
   base::TimeTicks last_notify_time_;

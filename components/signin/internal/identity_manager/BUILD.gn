@@ -22,8 +22,6 @@ source_set("identity_manager") {
     "diagnostics_provider_impl.h",
     "gaia_cookie_manager_service.cc",
     "gaia_cookie_manager_service.h",
-    "mutable_profile_oauth2_token_service_delegate.cc",
-    "mutable_profile_oauth2_token_service_delegate.h",
     "oauth2_token_service_delegate_android.cc",
     "oauth2_token_service_delegate_android.h",
     "oauth_multilogin_helper.cc",
@@ -73,6 +71,11 @@ source_set("identity_manager") {
 
   if (is_android) {
     deps += [ "//components/signin/core/browser/android:jni_headers" ]
+  } else {
+    sources += [
+      "mutable_profile_oauth2_token_service_delegate.cc",
+      "mutable_profile_oauth2_token_service_delegate.h",
+    ]
   }
 
   if (is_chromeos) {
@@ -117,7 +120,6 @@ source_set("unit_tests") {
     "account_info_util_unittest.cc",
     "account_tracker_service_unittest.cc",
     "gaia_cookie_manager_service_unittest.cc",
-    "mutable_profile_oauth2_token_service_delegate_unittest.cc",
     "oauth2_token_service_delegate_android_unittest.cc",
     "oauth_multilogin_helper_unittest.cc",
     "oauth_multilogin_token_fetcher_unittest.cc",
@@ -166,6 +168,10 @@ source_set("unit_tests") {
     configs += [ "//build/config/compiler:enable_arc" ]
 
     deps += [ "//components/signin/public/identity_manager/ios:test_support" ]
+  }
+
+  if (!is_android) {
+    sources += [ "mutable_profile_oauth2_token_service_delegate_unittest.cc" ]
   }
 }
 

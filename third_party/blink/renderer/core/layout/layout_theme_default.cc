@@ -70,6 +70,7 @@ bool LayoutThemeDefault::ThemeDrawsFocusRing(const ComputedStyle& style) const {
 Color LayoutThemeDefault::SystemColor(CSSValueID css_value_id,
                                       WebColorScheme color_scheme) const {
   constexpr Color kDefaultButtonGrayColor(0xffdddddd);
+  constexpr Color kDefaultButtonGrayColorDark(0xff444444);
   constexpr Color kDefaultMenuColor(0xfff7f7f7);
 
   if (css_value_id == CSSValueID::kButtonface) {
@@ -79,7 +80,12 @@ Color LayoutThemeDefault::SystemColor(CSSValueID css_value_id,
       else
         return Color(0x80, 0x80, 0x80);
     }
-    return kDefaultButtonGrayColor;
+    switch (color_scheme) {
+      case WebColorScheme::kLight:
+        return kDefaultButtonGrayColor;
+      case WebColorScheme::kDark:
+        return kDefaultButtonGrayColorDark;
+    }
   }
   if (css_value_id == CSSValueID::kMenu)
     return kDefaultMenuColor;

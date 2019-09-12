@@ -116,6 +116,9 @@ namespace http://www.w3.org/1999/xhtml
     property offsetTop
     property offsetWidth
     property onabort
+    property onanimationend
+    property onanimationiteration
+    property onanimationstart
     property onauxclick
     property onbeforecopy
     property onbeforecut
@@ -199,6 +202,7 @@ namespace http://www.w3.org/1999/xhtml
     property ontouchend
     property ontouchmove
     property ontouchstart
+    property ontransitionend
     property onvolumechange
     property onwaiting
     property onwebkitfullscreenchange
@@ -1214,6 +1218,9 @@ namespace http://www.w3.org/2000/svg
     property nonce
     property normalize
     property onabort
+    property onanimationend
+    property onanimationiteration
+    property onanimationstart
     property onauxclick
     property onbeforecopy
     property onbeforecut
@@ -1297,6 +1304,7 @@ namespace http://www.w3.org/2000/svg
     property ontouchend
     property ontouchmove
     property ontouchstart
+    property ontransitionend
     property onvolumechange
     property onwaiting
     property onwebkitfullscreenchange

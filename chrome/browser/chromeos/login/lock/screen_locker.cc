@@ -177,7 +177,7 @@ ScreenLocker::Delegate::~Delegate() = default;
 // ScreenLocker, public:
 
 ScreenLocker::ScreenLocker(const user_manager::UserList& users)
-    : users_(users), fingerprint_observer_binding_(this) {
+    : users_(users) {
   DCHECK(!screen_locker_);
   screen_locker_ = this;
 
@@ -190,9 +190,8 @@ ScreenLocker::ScreenLocker(const user_manager::UserList& users)
   content::GetSystemConnector()->Connect(
       device::mojom::kServiceName, fp_service_.BindNewPipeAndPassReceiver());
 
-  device::mojom::FingerprintObserverPtr observer;
-  fingerprint_observer_binding_.Bind(mojo::MakeRequest(&observer));
-  fp_service_->AddFingerprintObserver(std::move(observer));
+  fp_service_->AddFingerprintObserver(
+      fingerprint_observer_receiver_.BindNewPipeAndPassRemote());
 
   GetLoginScreenCertProviderService()->pin_dialog_manager()->AddPinDialogHost(
       &security_token_pin_dialog_host_ash_impl_);

@@ -82,6 +82,7 @@ void GatherInlineContainerFragmentsFromLinebox(
 void NGBoxFragmentBuilder::AddBreakBeforeChild(NGLayoutInputNode child,
                                                bool is_forced_break) {
   DCHECK(has_block_fragmentation_);
+  SetDidBreak();
   if (auto* child_inline_node = DynamicTo<NGInlineNode>(child)) {
     if (inline_break_tokens_.IsEmpty()) {
       // In some cases we may want to break before the first line, as a last
@@ -103,6 +104,7 @@ void NGBoxFragmentBuilder::AddBreakBeforeLine(int line_number) {
   DCHECK(has_block_fragmentation_);
   DCHECK_GT(line_number, 0);
   DCHECK_LE(unsigned(line_number), inline_break_tokens_.size());
+  SetDidBreak();
   int lines_to_remove = inline_break_tokens_.size() - line_number;
   if (lines_to_remove > 0) {
     // Remove widows that should be pushed to the next fragment. We'll also

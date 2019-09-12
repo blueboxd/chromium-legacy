@@ -199,11 +199,9 @@
     [MeasureAs=PrefixedMutationObserverConstructor] attribute MutationObserverConstructor WebKitMutationObserver;
 
     // Event handler attributes
-    attribute EventHandler onanimationend;
-    attribute EventHandler onanimationiteration;
-    attribute EventHandler onanimationstart;
     attribute EventHandler onsearch;
-    attribute EventHandler ontransitionend;
+
+    // TODO(crbug.com/999895): Move to global_event_handlers.idl
     attribute EventHandler onwebkitanimationend;
     attribute EventHandler onwebkitanimationiteration;
     attribute EventHandler onwebkitanimationstart;

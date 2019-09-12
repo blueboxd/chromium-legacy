@@ -1507,29 +1507,6 @@ TEST_F(MessageLoopTest, WmQuitIsIgnored) {
   EXPECT_TRUE(task_was_run);
 }
 
-TEST_F(MessageLoopTest, WmQuitIsNotIgnoredWithEnableWmQuit) {
-  MessageLoop loop(MessagePumpType::UI);
-  static_cast<MessageLoopForUI*>(&loop)->EnableWmQuit();
-
-  // Post a WM_QUIT message to the current thread.
-  ::PostQuitMessage(0);
-
-  // Post a task to the current thread, with a small delay to make it less
-  // likely that we process the posted task before looking for WM_* messages.
-  RunLoop run_loop;
-  loop.task_runner()->PostDelayedTask(FROM_HERE,
-                                      BindOnce(
-                                          [](OnceClosure closure) {
-                                            ADD_FAILURE();
-                                            std::move(closure).Run();
-                                          },
-                                          run_loop.QuitClosure()),
-                                      TestTimeouts::tiny_timeout());
-
-  // Run the loop. It should not result in ADD_FAILURE() getting called.
-  run_loop.Run();
-}
-
 TEST_F(MessageLoopTest, PostDelayedTask_SharedTimer_SubPump) {
   MessageLoop message_loop(MessagePumpType::UI);
 

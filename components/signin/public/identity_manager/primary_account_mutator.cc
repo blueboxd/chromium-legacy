@@ -8,17 +8,11 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_string.h"
-#include "components/signin/internal/identity_manager/android/jni_headers/PrimaryAccountMutator_jni.h"
 #endif
 
 namespace signin {
 
-PrimaryAccountMutator::PrimaryAccountMutator() {
-#if defined(OS_ANDROID)
-  java_primary_account_mutator_ = Java_PrimaryAccountMutator_Constructor(
-      base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this));
-#endif
-}
+PrimaryAccountMutator::PrimaryAccountMutator() {}
 
 PrimaryAccountMutator::~PrimaryAccountMutator() {}
 
@@ -37,13 +31,6 @@ bool PrimaryAccountMutator::ClearPrimaryAccount(JNIEnv* env,
       ClearAccountsAction::kDefault,
       static_cast<signin_metrics::ProfileSignout>(source_metric),
       static_cast<signin_metrics::SignoutDelete>(delete_metric));
-}
-
-base::android::ScopedJavaLocalRef<jobject>
-PrimaryAccountMutator::GetJavaObject() {
-  DCHECK(java_primary_account_mutator_);
-  return base::android::ScopedJavaLocalRef<jobject>(
-      java_primary_account_mutator_);
 }
 #endif
 

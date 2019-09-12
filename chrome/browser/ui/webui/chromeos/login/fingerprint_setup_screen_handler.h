@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/fingerprint.mojom.h"
 
@@ -77,7 +77,7 @@ class FingerprintSetupScreenHandler
   FingerprintSetupScreen* screen_ = nullptr;
 
   mojo::Remote<device::mojom::Fingerprint> fp_service_;
-  mojo::Binding<device::mojom::FingerprintObserver> binding_{this};
+  mojo::Receiver<device::mojom::FingerprintObserver> receiver_{this};
   int enrolled_finger_count_ = 0;
   bool enroll_session_started_ = false;
 

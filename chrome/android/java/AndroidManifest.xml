@@ -503,11 +503,6 @@ by a child template that "extends" this file.
           {% endfor %}
         {% endif %}
 
-        <activity android:name="org.chromium.chrome.browser.incognito.IncognitoDisclosureActivity"
-          android:theme="@style/Theme.Chromium.Activity.Fullscreen.Transparent"
-          android:exported="false">
-        </activity>
-
         <!-- ChromeTabbedActivity related -->
         <activity android:name="org.chromium.chrome.browser.ChromeTabbedActivity"
             android:theme="@style/Theme.Chromium.TabbedMode"

@@ -209,7 +209,6 @@ void AwContentRendererClient::PrepareErrorPage(
     content::RenderFrame* render_frame,
     const blink::WebURLError& error,
     const std::string& http_method,
-    bool ignoring_cache,
     std::string* error_html) {
   std::string err;
   if (error.reason() == net::ERR_TEMPORARILY_THROTTLED)

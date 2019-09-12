@@ -7,7 +7,7 @@ PASS WritableStream.prototype.locked should have standard properties
 PASS WritableStream.prototype.locked should be a getter
 PASS WritableStream.prototype.abort should have standard properties
 FAIL WritableStream.prototype.abort should be a method assert_equals: abort should take 1 arguments expected 1 but got 0
-FAIL WritableStream.prototype.close should have standard properties Cannot destructure property `configurable` of 'undefined' or 'null'.
+FAIL WritableStream.prototype.close should have standard properties Cannot destructure property 'configurable' of 'descriptor' as it is undefined.
 FAIL WritableStream.prototype.close should be a method Cannot read property 'writable' of undefined
 PASS WritableStream.prototype.getWriter should have standard properties
 PASS WritableStream.prototype.getWriter should be a method

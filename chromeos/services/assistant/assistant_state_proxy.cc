@@ -7,14 +7,16 @@
 #include <algorithm>
 #include <utility>
 
+#include "ash/public/mojom/assistant_state_controller.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
 namespace assistant {
 
 AssistantStateProxy::AssistantStateProxy()
-    : assistant_state_observer_binding_(this),
-      pref_connection_delegate_(std::make_unique<PrefConnectionDelegate>()) {}
+    : pref_connection_delegate_(std::make_unique<PrefConnectionDelegate>()) {}
 
 AssistantStateProxy::~AssistantStateProxy() {
   // Reset pref change registar.
@@ -28,9 +30,10 @@ void AssistantStateProxy::Init(mojom::ClientProxy* client) {
       remote_controller.InitWithNewPipeAndPassReceiver());
   assistant_state_controller_.Bind(std::move(remote_controller));
 
-  ash::mojom::AssistantStateObserverPtr ptr;
-  assistant_state_observer_binding_.Bind(mojo::MakeRequest(&ptr));
-  assistant_state_controller_->AddMojomObserver(std::move(ptr));
+  mojo::PendingRemote<ash::mojom::AssistantStateObserver> observer;
+  assistant_state_observer_receiver_.Bind(
+      observer.InitWithNewPipeAndPassReceiver());
+  assistant_state_controller_->AddMojomObserver(std::move(observer));
 
   // Connect to pref service.
   auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();

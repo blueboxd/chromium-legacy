@@ -11,15 +11,11 @@
    * @param {string} path Directory path (Downloads or Drive).
    */
   async function imageOpen(path) {
-    // File open events are not reported for legacy Drive.
-    if (path !== RootPath.DRIVE ||
-        await sendTestMessage({name: 'getDriveFsEnabled'}) === 'true') {
-      await sendTestMessage({
-        name: 'expectFileTask',
-        fileNames: [ENTRIES.image3.targetPath],
-        openType: 'launch'
-      });
-    }
+    await sendTestMessage({
+      name: 'expectFileTask',
+      fileNames: [ENTRIES.image3.targetPath],
+      openType: 'launch'
+    });
 
     // Open Files.App on |path|, add image3 to Downloads and Drive.
     const appId =
@@ -48,15 +44,11 @@
    * @param {string} path Directory path (Downloads or Drive).
    */
   async function imageOpenGalleryOpen(path) {
-    // File open events are not reported for legacy Drive.
-    if (path !== RootPath.DRIVE ||
-        await sendTestMessage({name: 'getDriveFsEnabled'}) === 'true') {
-      await sendTestMessage({
-        name: 'expectFileTask',
-        fileNames: [ENTRIES.image3.targetPath, ENTRIES.desktop.targetPath],
-        openType: 'launch'
-      });
-    }
+    await sendTestMessage({
+      name: 'expectFileTask',
+      fileNames: [ENTRIES.image3.targetPath, ENTRIES.desktop.targetPath],
+      openType: 'launch'
+    });
 
     const testImages = [ENTRIES.image3, ENTRIES.desktop];
 

@@ -30,6 +30,8 @@
 #include "content/public/browser/navigation_type.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/common/previews_state.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/proxy_server.h"
@@ -156,7 +158,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
       int current_history_list_length,
       bool override_user_agent,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-      mojom::NavigationClientAssociatedPtrInfo navigation_client,
+      mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
       mojo::PendingRemote<blink::mojom::NavigationInitiator>
           navigation_initiator,
       scoped_refptr<PrefetchedSignedExchangeCache>
@@ -449,7 +451,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // navigation in a subframe. This allows a browser-initiated NavigationRequest
   // to be canceled by the renderer.
   void SetNavigationClient(
-      mojom::NavigationClientAssociatedPtrInfo navigation_client,
+      mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
       int32_t associated_site_instance_id);
 
   // Whether the new document created by this navigation will be loaded from a
@@ -538,20 +540,21 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
  private:
   friend class NavigationRequestTest;
 
-  NavigationRequest(FrameTreeNode* frame_tree_node,
-                    mojom::CommonNavigationParamsPtr common_params,
-                    mojom::BeginNavigationParamsPtr begin_params,
-                    mojom::CommitNavigationParamsPtr commit_params,
-                    bool browser_initiated,
-                    bool from_begin_navigation,
-                    bool is_for_commit,
-                    const FrameNavigationEntry* frame_navigation_entry,
-                    NavigationEntryImpl* navitation_entry,
-                    std::unique_ptr<NavigationUIData> navigation_ui_data,
-                    mojom::NavigationClientAssociatedPtrInfo navigation_client,
-                    mojo::PendingRemote<blink::mojom::NavigationInitiator>
-                        navigation_initiator,
-                    RenderFrameHostImpl* rfh_restored_from_back_forward_cache);
+  NavigationRequest(
+      FrameTreeNode* frame_tree_node,
+      mojom::CommonNavigationParamsPtr common_params,
+      mojom::BeginNavigationParamsPtr begin_params,
+      mojom::CommitNavigationParamsPtr commit_params,
+      bool browser_initiated,
+      bool from_begin_navigation,
+      bool is_for_commit,
+      const FrameNavigationEntry* frame_navigation_entry,
+      NavigationEntryImpl* navitation_entry,
+      std::unique_ptr<NavigationUIData> navigation_ui_data,
+      mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
+      mojo::PendingRemote<blink::mojom::NavigationInitiator>
+          navigation_initiator,
+      RenderFrameHostImpl* rfh_restored_from_back_forward_cache);
 
   // NavigationURLLoaderDelegate implementation.
   void OnRequestRedirected(
@@ -682,8 +685,9 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // Binds the given error_handler to be called when an interface disconnection
   // happens on the renderer side.
   // Only used with PerNavigationMojoInterface enabled.
-  void HandleInterfaceDisconnection(mojom::NavigationClientAssociatedPtr*,
-                                    base::OnceClosure error_handler);
+  void HandleInterfaceDisconnection(
+      mojo::AssociatedRemote<mojom::NavigationClient>*,
+      base::OnceClosure error_handler);
 
   // When called, this NavigationRequest will no longer interpret the interface
   // disconnection on the renderer side as an AbortNavigation.
@@ -962,14 +966,14 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // case of a renderer initiated navigation. It is expected to be bound until
   // this navigation commits or is canceled.
   // Only valid when PerNavigationMojoInterface is enabled.
-  mojom::NavigationClientAssociatedPtr request_navigation_client_;
+  mojo::AssociatedRemote<mojom::NavigationClient> request_navigation_client_;
   base::Optional<int32_t> associated_site_instance_id_;
 
   // The NavigationClient interface used to commit the navigation. For now, this
   // is only used for same-site renderer-initiated navigation.
   // TODO(clamy, ahemery): Extend to all types of navigation.
   // Only valid when PerNavigationMojoInterface is enabled.
-  mojom::NavigationClientAssociatedPtr commit_navigation_client_;
+  mojo::AssociatedRemote<mojom::NavigationClient> commit_navigation_client_;
 
   // If set, any redirects to HTTP for this navigation will be upgraded to
   // HTTPS. This is used only on subframe navigations, when

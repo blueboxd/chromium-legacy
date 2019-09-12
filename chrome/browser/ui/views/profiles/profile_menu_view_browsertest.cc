@@ -24,12 +24,14 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/scoped_account_consistency.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/profiles/profile_menu_view.h"
@@ -42,6 +44,7 @@
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
@@ -560,3 +563,188 @@ IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest, SignedInNoUsername) {
 INSTANTIATE_TEST_SUITE_P(,
                          ProfileMenuViewExtensionsParamTest,
                          ::testing::Bool());
+
+/*- - - - - - - - - - Profile menu revamp browser tests - - - - - - - - - - -*/
+
+// This class is used to test the existence, the correct order and the call to
+// the correct action of the buttons in the profile menu. This is done by
+// advancing the focus to each button and simulating a click. It is expected
+// that each button records a histogram sample from
+// |ProfileMenuView::ActionableItem|.
+//
+// Subclasses have to implement |GetExpectedActionableItemAtIndex|. The test
+// itself should contain the setup and a call to |RunTest|. Example test suite
+// instantiation:
+//
+// class ProfileMenuClickTest_WithPrimaryAccount : public ProfileMenuClickTest {
+//   ...
+//   ProfileMenuView::ActionableItem GetExpectedActionableItemAtIndex(
+//      size_t index) override {
+//     return ...;
+//   }
+// };
+//
+// IN_PROC_BROWSER_TEST_P(ProfileMenuClickTest_WithPrimaryAccount,
+//  SetupAndRunTest) {
+//   ... /* setup primary account */
+//   RunTest();
+// }
+//
+// INSTANTIATE_TEST_SUITE_P(
+//   ,
+//   ProfileMenuClickTest_WithPrimaryAccount,
+//   ::testing::Range(0, num_of_actionable_items));
+//
+class ProfileMenuClickTest : public InProcessBrowserTest,
+                             public testing::WithParamInterface<size_t> {
+ public:
+  ProfileMenuClickTest() {
+    scoped_feature_list_.InitAndEnableFeature(features::kProfileMenuRevamp);
+  }
+
+  virtual ProfileMenuView::ActionableItem GetExpectedActionableItemAtIndex(
+      size_t index) = 0;
+
+  // This should be called in the test body.
+  void RunTest() {
+    ASSERT_NO_FATAL_FAILURE(OpenProfileMenu());
+    AdvanceFocus(/*count=*/GetParam() + 1);
+    ASSERT_TRUE(GetFocusedItem());
+    ClickFocusedItem();
+
+    histogram_tester_.ExpectUniqueSample(
+        "Profile.Menu.ClickedActionableItem",
+        GetExpectedActionableItemAtIndex(GetParam()), /*count=*/1);
+  }
+
+ private:
+  void OpenProfileMenu() {
+    BrowserView* browser_view =
+        BrowserView::GetBrowserViewForBrowser(browser());
+    views::View* avatar_button =
+        browser_view->toolbar()->GetAvatarToolbarButton();
+    DCHECK(avatar_button);
+
+    ui::MouseEvent e(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                     ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0);
+    avatar_button->OnMousePressed(e);
+
+    ASSERT_TRUE(ProfileMenuView::IsShowing());
+  }
+
+  void AdvanceFocus(int count) {
+    for (int i = 0; i < count; i++)
+      profile_menu_view()->GetFocusManager()->AdvanceFocus(/*reverse=*/false);
+  }
+
+  views::View* GetFocusedItem() {
+    return profile_menu_view()->GetFocusManager()->GetFocusedView();
+  }
+
+  void ClickFocusedItem() {
+    // Simulate a mouse click. Note: Buttons are either fired when pressed or
+    // when released, so the corresponding methods need to be called.
+    GetFocusedItem()->OnMousePressed(
+        ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                       ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
+    GetFocusedItem()->OnMouseReleased(
+        ui::MouseEvent(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(),
+                       ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
+  }
+
+  views::View* profile_menu_view() {
+    return ProfileMenuViewBase::GetBubbleForTesting();
+  }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+  base::HistogramTester histogram_tester_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProfileMenuClickTest);
+};
+
+class ProfileMenuClickTest_MultipleProfiles : public ProfileMenuClickTest {
+ public:
+  // List of actionable items in the correct order as they appear in the menu.
+  // If a new button is added to the menu, it should also be added to this list.
+  static constexpr ProfileMenuView::ActionableItem kOrderedActionableItems[6] =
+      {ProfileMenuView::ActionableItem::kPasswordsButton,
+       ProfileMenuView::ActionableItem::kCreditCardsButton,
+       ProfileMenuView::ActionableItem::kAddressesButton,
+       ProfileMenuView::ActionableItem::kOtherProfileButton,
+       ProfileMenuView::ActionableItem::kOtherProfileButton,
+       // The first button is added again to finish the cycle and test that
+       // there are no other buttons at the end.
+       ProfileMenuView::ActionableItem::kPasswordsButton};
+
+  ProfileMenuClickTest_MultipleProfiles() = default;
+
+  ProfileMenuView::ActionableItem GetExpectedActionableItemAtIndex(
+      size_t index) override {
+    return kOrderedActionableItems[index];
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ProfileMenuClickTest_MultipleProfiles);
+};
+
+// static
+constexpr ProfileMenuView::ActionableItem
+    ProfileMenuClickTest_MultipleProfiles::kOrderedActionableItems[];
+
+IN_PROC_BROWSER_TEST_P(ProfileMenuClickTest_MultipleProfiles, SetupAndRunTest) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  CreateTestingProfile(profile_manager->GenerateNextProfileDirectoryPath());
+  CreateTestingProfile(profile_manager->GenerateNextProfileDirectoryPath());
+  RunTest();
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    ProfileMenuClickTest_MultipleProfiles,
+    ::testing::Range(
+        size_t(0),
+        base::size(
+            ProfileMenuClickTest_MultipleProfiles::kOrderedActionableItems)));
+
+class ProfileMenuClickTest_WithPrimaryAccount : public ProfileMenuClickTest {
+ public:
+  // List of actionable items in the correct order as they appear in the menu.
+  // If a new button is added to the menu, it should also be added to this list.
+  static constexpr ProfileMenuView::ActionableItem kOrderedActionableItems[4] =
+      {ProfileMenuView::ActionableItem::kPasswordsButton,
+       ProfileMenuView::ActionableItem::kCreditCardsButton,
+       ProfileMenuView::ActionableItem::kAddressesButton,
+       // The first button is added again to finish the cycle and test that
+       // there are no other buttons at the end.
+       ProfileMenuView::ActionableItem::kPasswordsButton};
+
+  ProfileMenuClickTest_WithPrimaryAccount() = default;
+
+  ProfileMenuView::ActionableItem GetExpectedActionableItemAtIndex(
+      size_t index) override {
+    return kOrderedActionableItems[index];
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ProfileMenuClickTest_WithPrimaryAccount);
+};
+
+// static
+constexpr ProfileMenuView::ActionableItem
+    ProfileMenuClickTest_WithPrimaryAccount::kOrderedActionableItems[];
+
+IN_PROC_BROWSER_TEST_P(ProfileMenuClickTest_WithPrimaryAccount,
+                       SetupAndRunTest) {
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(browser()->profile());
+  ASSERT_FALSE(identity_manager->HasPrimaryAccount());
+  signin::MakePrimaryAccountAvailable(identity_manager, "primary@example.com");
+
+  RunTest();
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    ProfileMenuClickTest_WithPrimaryAccount,
+    ::testing::Range(
+        size_t(0),
+        base::size(
+            ProfileMenuClickTest_WithPrimaryAccount::kOrderedActionableItems)));

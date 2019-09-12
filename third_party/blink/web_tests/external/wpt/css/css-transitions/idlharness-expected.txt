@@ -17,11 +17,11 @@ PASS TransitionEvent interface: new TransitionEvent("transitionend") must inheri
 PASS TransitionEvent interface: new TransitionEvent("transitionend") must inherit property "pseudoElement" with the proper type
 FAIL HTMLElement interface: attribute ontransitionrun assert_true: The prototype object must have a property "ontransitionrun" expected true got false
 FAIL HTMLElement interface: attribute ontransitionstart assert_true: The prototype object must have a property "ontransitionstart" expected true got false
-FAIL HTMLElement interface: attribute ontransitionend assert_true: The prototype object must have a property "ontransitionend" expected true got false
+PASS HTMLElement interface: attribute ontransitionend
 FAIL HTMLElement interface: attribute ontransitioncancel assert_true: The prototype object must have a property "ontransitioncancel" expected true got false
 FAIL HTMLElement interface: document must inherit property "ontransitionrun" with the proper type assert_inherits: property "ontransitionrun" not found in prototype chain
 FAIL HTMLElement interface: document must inherit property "ontransitionstart" with the proper type assert_inherits: property "ontransitionstart" not found in prototype chain
-FAIL HTMLElement interface: document must inherit property "ontransitionend" with the proper type assert_inherits: property "ontransitionend" not found in prototype chain
+PASS HTMLElement interface: document must inherit property "ontransitionend" with the proper type
 FAIL HTMLElement interface: document must inherit property "ontransitioncancel" with the proper type assert_inherits: property "ontransitioncancel" not found in prototype chain
 FAIL Window interface: attribute ontransitionrun assert_own_property: The global object must have a property "ontransitionrun" expected property "ontransitionrun" missing
 FAIL Window interface: attribute ontransitionstart assert_own_property: The global object must have a property "ontransitionstart" expected property "ontransitionstart" missing
@@ -33,11 +33,11 @@ PASS Window interface: window must inherit property "ontransitionend" with the p
 FAIL Window interface: window must inherit property "ontransitioncancel" with the proper type assert_own_property: expected property "ontransitioncancel" missing
 FAIL Document interface: attribute ontransitionrun assert_true: The prototype object must have a property "ontransitionrun" expected true got false
 FAIL Document interface: attribute ontransitionstart assert_true: The prototype object must have a property "ontransitionstart" expected true got false
-FAIL Document interface: attribute ontransitionend assert_true: The prototype object must have a property "ontransitionend" expected true got false
+PASS Document interface: attribute ontransitionend
 FAIL Document interface: attribute ontransitioncancel assert_true: The prototype object must have a property "ontransitioncancel" expected true got false
 FAIL Document interface: document must inherit property "ontransitionrun" with the proper type assert_inherits: property "ontransitionrun" not found in prototype chain
 FAIL Document interface: document must inherit property "ontransitionstart" with the proper type assert_inherits: property "ontransitionstart" not found in prototype chain
-FAIL Document interface: document must inherit property "ontransitionend" with the proper type assert_inherits: property "ontransitionend" not found in prototype chain
+PASS Document interface: document must inherit property "ontransitionend" with the proper type
 FAIL Document interface: document must inherit property "ontransitioncancel" with the proper type assert_inherits: property "ontransitioncancel" not found in prototype chain
 Harness: the test ran to completion.
 

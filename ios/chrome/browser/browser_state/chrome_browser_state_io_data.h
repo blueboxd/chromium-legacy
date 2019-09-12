@@ -96,10 +96,6 @@ class ChromeBrowserStateIOData {
   content_settings::CookieSettings* GetCookieSettings() const;
   HostContentSettingsMap* GetHostContentSettingsMap() const;
 
-  StringPrefMember* google_services_account_id() const {
-    return &google_services_user_account_id_;
-  }
-
   net::TransportSecurityState* transport_security_state() const {
     return transport_security_state_.get();
   }
@@ -258,8 +254,6 @@ class ChromeBrowserStateIOData {
   // Data from the UI thread from the ChromeBrowserState, used to initialize
   // ChromeBrowserStateIOData. Deleted after lazy initialization.
   mutable std::unique_ptr<ProfileParams> profile_params_;
-
-  mutable StringPrefMember google_services_user_account_id_;
 
   // Member variables which are pointed to by the various context objects.
   mutable BooleanPrefMember enable_referrers_;

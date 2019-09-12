@@ -251,7 +251,7 @@ void ManagePasswordsUIController::OnCredentialLeak(
 
   // Hide the manage passwords bubble if currently shown.
   if (IsShowingBubble())
-    TabDialogs::FromWebContents(web_contents())->HideManagePasswordsBubble();
+    HidePasswordBubble();
   else
     ClearPopUpFlagForBubble();
 
@@ -493,6 +493,10 @@ void ManagePasswordsUIController::OnDialogHidden() {
 
 void ManagePasswordsUIController::OnLeakDialogHidden() {
   dialog_controller_.reset();
+  if (GetState() == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
+    bubble_status_ = BubbleStatus::SHOULD_POP_UP;
+    UpdateBubbleAndIconVisibility();
+  }
 }
 
 bool ManagePasswordsUIController::AuthenticateUser() {
@@ -522,6 +526,11 @@ void ManagePasswordsUIController::NeverSavePasswordInternal() {
       passwords_data_.form_manager();
   DCHECK(form_manager);
   form_manager->OnNeverClicked();
+}
+
+void ManagePasswordsUIController::HidePasswordBubble() {
+  if (TabDialogs* tab_dialogs = TabDialogs::FromWebContents(web_contents()))
+    tab_dialogs->HideManagePasswordsBubble();
 }
 
 void ManagePasswordsUIController::UpdateBubbleAndIconVisibility() {
@@ -585,7 +594,7 @@ void ManagePasswordsUIController::DidFinishNavigation(
 void ManagePasswordsUIController::OnVisibilityChanged(
     content::Visibility visibility) {
   if (visibility == content::Visibility::HIDDEN)
-    TabDialogs::FromWebContents(web_contents())->HideManagePasswordsBubble();
+    HidePasswordBubble();
 }
 
 // static
@@ -621,9 +630,7 @@ void ManagePasswordsUIController::WebContentsDestroyed() {
       GetPasswordStore(web_contents());
   if (password_store)
     password_store->RemoveObserver(this);
-  TabDialogs* tab_dialogs = TabDialogs::FromWebContents(web_contents());
-  if (tab_dialogs)
-    tab_dialogs->HideManagePasswordsBubble();
+  HidePasswordBubble();
 }
 
 void ManagePasswordsUIController::RequestAuthenticationAndReopenBubble() {

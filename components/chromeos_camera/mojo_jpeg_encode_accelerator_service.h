@@ -15,6 +15,7 @@
 #include "components/chromeos_camera/common/jpeg_encode_accelerator.mojom.h"
 #include "components/chromeos_camera/gpu_jpeg_encode_accelerator_factory.h"
 #include "components/chromeos_camera/jpeg_encode_accelerator.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace chromeos_camera {
 
@@ -25,7 +26,8 @@ class MojoJpegEncodeAcceleratorService
       public JpegEncodeAccelerator::Client {
  public:
   static void Create(
-      chromeos_camera::mojom::JpegEncodeAcceleratorRequest request);
+      mojo::PendingReceiver<chromeos_camera::mojom::JpegEncodeAccelerator>
+          receiver);
 
   ~MojoJpegEncodeAcceleratorService() override;
 

@@ -37,27 +37,26 @@ public class IdentityManager {
     }
 
     private long mNativeIdentityManager;
-    private PrimaryAccountMutator mPrimaryAccountMutator;
+    private IdentityMutator mIdentityMutator;
 
     private final ObserverList<Observer> mObservers = new ObserverList<>();
 
     /**
      * Called by native to create an instance of IdentityManager.
-     * @param primaryAccountMutator can be null if native's IdentityManager received a null
-     * PrimaryAccountMutator, this happens in tests.
+     * @param identityMutator can be null if native's IdentityManager received a null
+     * IdentityMutator, this happens in tests.
      */
     @CalledByNative
     static private IdentityManager create(
-            long nativeIdentityManager, @Nullable PrimaryAccountMutator primaryAccountMutator) {
+            long nativeIdentityManager, @Nullable IdentityMutator identityMutator) {
         assert nativeIdentityManager != 0;
-        return new IdentityManager(nativeIdentityManager, primaryAccountMutator);
+        return new IdentityManager(nativeIdentityManager, identityMutator);
     }
 
     @VisibleForTesting
-    public IdentityManager(
-            long nativeIdentityManager, PrimaryAccountMutator primaryAccountMutator) {
+    public IdentityManager(long nativeIdentityManager, IdentityMutator identityMutator) {
         mNativeIdentityManager = nativeIdentityManager;
-        mPrimaryAccountMutator = primaryAccountMutator;
+        mIdentityMutator = identityMutator;
     }
 
     /**
@@ -125,8 +124,8 @@ public class IdentityManager {
      * Returns pointer to the object used to change the signed-in state of the
      * primary account.
      */
-    public PrimaryAccountMutator getPrimaryAccountMutator() {
-        return mPrimaryAccountMutator;
+    public IdentityMutator getIdentityMutator() {
+        return mIdentityMutator;
     }
 
     @NativeMethods

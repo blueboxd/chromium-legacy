@@ -9,15 +9,18 @@
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "chromeos/dbus/biod/fake_biod_client.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {
 
 class FakeFingerprintObserver : public mojom::FingerprintObserver {
  public:
-  explicit FakeFingerprintObserver(mojom::FingerprintObserverRequest request)
-      : binding_(this, std::move(request)) {}
+  explicit FakeFingerprintObserver(
+      mojo::PendingReceiver<mojom::FingerprintObserver> receiver)
+      : receiver_(this, std::move(receiver)) {}
   ~FakeFingerprintObserver() override {}
 
   // mojom::FingerprintObserver
@@ -45,7 +48,7 @@ class FakeFingerprintObserver : public mojom::FingerprintObserver {
   int session_failures() { return session_failures_; }
 
  private:
-  mojo::Binding<mojom::FingerprintObserver> binding_;
+  mojo::Receiver<mojom::FingerprintObserver> receiver_;
   int enroll_scan_dones_ = 0;  // Count of enroll scan done signal received.
   int auth_scan_dones_ = 0;    // Count of auth scan done signal received.
   int restarts_ = 0;           // Count of restart signal received.
@@ -133,9 +136,10 @@ class FingerprintChromeOSTest : public testing::Test {
 };
 
 TEST_F(FingerprintChromeOSTest, FingerprintObserverTest) {
-  mojom::FingerprintObserverPtr proxy;
-  FakeFingerprintObserver observer(mojo::MakeRequest(&proxy));
-  fingerprint()->AddFingerprintObserver(std::move(proxy));
+  mojo::PendingRemote<mojom::FingerprintObserver> pending_observer;
+  FakeFingerprintObserver observer(
+      pending_observer.InitWithNewPipeAndPassReceiver());
+  fingerprint()->AddFingerprintObserver(std::move(pending_observer));
 
   GenerateRestartSignal();
   base::RunLoop().RunUntilIdle();

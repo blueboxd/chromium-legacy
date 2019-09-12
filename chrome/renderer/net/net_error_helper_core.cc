@@ -396,12 +396,9 @@ void TrackClickUMA(std::string type_id) {
 }  // namespace
 
 struct NetErrorHelperCore::ErrorPageInfo {
-  ErrorPageInfo(error_page::Error error,
-                bool was_failed_post,
-                bool was_ignoring_cache)
+  ErrorPageInfo(error_page::Error error, bool was_failed_post)
       : error(error),
         was_failed_post(was_failed_post),
-        was_ignoring_cache(was_ignoring_cache),
         needs_dns_updates(false),
         needs_load_navigation_corrections(false),
         is_finished_loading(false),
@@ -410,7 +407,6 @@ struct NetErrorHelperCore::ErrorPageInfo {
   // Information about the failed page load.
   error_page::Error error;
   bool was_failed_post;
-  bool was_ignoring_cache;
 
   // Information about the status of the error page.
 
@@ -673,7 +669,6 @@ void NetErrorHelperCore::OnFinishLoad(FrameType frame_type) {
 void NetErrorHelperCore::PrepareErrorPage(FrameType frame_type,
                                           const error_page::Error& error,
                                           bool is_failed_post,
-                                          bool is_ignoring_cache,
                                           std::string* error_html) {
   if (frame_type == MAIN_FRAME) {
     // If navigation corrections were needed before, that should have been
@@ -681,8 +676,7 @@ void NetErrorHelperCore::PrepareErrorPage(FrameType frame_type,
     DCHECK(!committed_error_page_info_ ||
            !committed_error_page_info_->needs_load_navigation_corrections);
 
-    pending_error_page_info_.reset(
-        new ErrorPageInfo(error, is_failed_post, is_ignoring_cache));
+    pending_error_page_info_.reset(new ErrorPageInfo(error, is_failed_post));
     pending_error_page_info_->navigation_correction_params.reset(
         new NavigationCorrectionParams(navigation_correction_params_));
     PrepareErrorPageForMainFrame(pending_error_page_info_.get(), error_html);
@@ -811,8 +805,7 @@ void NetErrorHelperCore::OnNavigationCorrectionsFetched(
 
   pending_error_page_info_.reset(
       new ErrorPageInfo(committed_error_page_info_->error,
-                        committed_error_page_info_->was_failed_post,
-                        committed_error_page_info_->was_ignoring_cache));
+                        committed_error_page_info_->was_failed_post));
   pending_error_page_info_->navigation_correction_response =
       ParseNavigationCorrectionResponse(corrections);
 
@@ -860,11 +853,10 @@ error_page::Error NetErrorHelperCore::GetUpdatedError(
       error_info.error.stale_copy_in_cache());
 }
 
-void NetErrorHelperCore::Reload(bool bypass_cache) {
-  if (!committed_error_page_info_) {
+void NetErrorHelperCore::Reload() {
+  if (!committed_error_page_info_)
     return;
-  }
-  delegate_->ReloadPage(bypass_cache);
+  delegate_->ReloadFrame();
 }
 
 bool NetErrorHelperCore::MaybeStartAutoReloadTimer() {
@@ -914,7 +906,7 @@ void NetErrorHelperCore::AutoReloadTimerFired() {
 
   auto_reload_count_++;
   auto_reload_in_flight_ = true;
-  Reload(committed_error_page_info_->was_ignoring_cache);
+  Reload();
 }
 
 void NetErrorHelperCore::PauseAutoReloadTimer() {
@@ -977,7 +969,7 @@ void NetErrorHelperCore::ExecuteButtonPress(Button button) {
     case RELOAD_BUTTON:
       RecordEvent(error_page::NETWORK_ERROR_PAGE_RELOAD_BUTTON_CLICKED);
       navigation_from_button_ = RELOAD_BUTTON;
-      Reload(false);
+      Reload();
       return;
     case MORE_BUTTON:
       // Visual effects on page are handled in Javascript code.

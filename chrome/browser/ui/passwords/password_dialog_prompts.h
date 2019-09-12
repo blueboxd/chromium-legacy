@@ -33,7 +33,10 @@ class AccountChooserPrompt {
   // element. The dialog should close.
   virtual void ControllerGone() = 0;
  protected:
+  AccountChooserPrompt() = default;
   virtual ~AccountChooserPrompt() = default;
+
+  DISALLOW_COPY_AND_ASSIGN(AccountChooserPrompt);
 };
 
 // A platform-independent interface for the autosignin promo.
@@ -46,7 +49,10 @@ class AutoSigninFirstRunPrompt {
   // element. The dialog should close.
   virtual void ControllerGone() = 0;
  protected:
+  AutoSigninFirstRunPrompt() = default;
   virtual ~AutoSigninFirstRunPrompt() = default;
+
+  DISALLOW_COPY_AND_ASSIGN(AutoSigninFirstRunPrompt);
 };
 
 // A platform-independent interface for the credentials leaked prompt.
@@ -60,7 +66,10 @@ class CredentialLeakPrompt {
   virtual void ControllerGone() = 0;
 
  protected:
+  CredentialLeakPrompt() = default;
   virtual ~CredentialLeakPrompt() = default;
+
+  DISALLOW_COPY_AND_ASSIGN(CredentialLeakPrompt);
 };
 
 // Factory function for AccountChooserPrompt on desktop platforms.

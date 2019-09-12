@@ -57,9 +57,7 @@ FingerprintSetupScreenHandler::FingerprintSetupScreenHandler(
 
   content::GetSystemConnector()->Connect(
       device::mojom::kServiceName, fp_service_.BindNewPipeAndPassReceiver());
-  device::mojom::FingerprintObserverPtr observer;
-  binding_.Bind(mojo::MakeRequest(&observer));
-  fp_service_->AddFingerprintObserver(std::move(observer));
+  fp_service_->AddFingerprintObserver(receiver_.BindNewPipeAndPassRemote());
 }
 
 FingerprintSetupScreenHandler::~FingerprintSetupScreenHandler() = default;

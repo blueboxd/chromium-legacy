@@ -19,8 +19,15 @@ WaylandClipboard::WaylandClipboard(
 WaylandClipboard::~WaylandClipboard() = default;
 
 void WaylandClipboard::OfferClipboardData(
+    ClipboardBuffer buffer,
     const PlatformClipboard::DataMap& data_map,
     PlatformClipboard::OfferDataClosure callback) {
+  // TODO(https://crbug.com/921950): Implement primary selection.
+  if (buffer != ClipboardBuffer::kCopyPaste) {
+    std::move(callback).Run();
+    return;
+  }
+
   if (!clipboard_data_source_) {
     clipboard_data_source_ = data_device_manager_->CreateSource();
     clipboard_data_source_->WriteToClipboard(data_map);
@@ -30,9 +37,16 @@ void WaylandClipboard::OfferClipboardData(
 }
 
 void WaylandClipboard::RequestClipboardData(
+    ClipboardBuffer buffer,
     const std::string& mime_type,
     PlatformClipboard::DataMap* data_map,
     PlatformClipboard::RequestDataClosure callback) {
+  // TODO(https://crbug.com/921950): Implement primary selection.
+  if (buffer != ClipboardBuffer::kCopyPaste) {
+    std::move(callback).Run({});
+    return;
+  }
+
   read_clipboard_closure_ = std::move(callback);
 
   DCHECK(data_map);
@@ -41,7 +55,11 @@ void WaylandClipboard::RequestClipboardData(
     SetData({}, mime_type);
 }
 
-bool WaylandClipboard::IsSelectionOwner() {
+bool WaylandClipboard::IsSelectionOwner(ClipboardBuffer buffer) {
+  // TODO(https://crbug.com/921950): Implement primary selection.
+  if (buffer != ClipboardBuffer::kCopyPaste)
+    return false;
+
   return !!clipboard_data_source_;
 }
 
@@ -53,7 +71,14 @@ void WaylandClipboard::SetSequenceNumberUpdateCb(
 }
 
 void WaylandClipboard::GetAvailableMimeTypes(
+    ClipboardBuffer buffer,
     PlatformClipboard::GetMimeTypesClosure callback) {
+  // TODO(https://crbug.com/921950): Implement primary selection.
+  if (buffer != ClipboardBuffer::kCopyPaste) {
+    std::move(callback).Run({});
+    return;
+  }
+
   std::move(callback).Run(data_device_->GetAvailableMimeTypes());
 }
 
@@ -79,9 +104,13 @@ void WaylandClipboard::SetData(const std::string& contents,
   data_map_ = nullptr;
 }
 
-void WaylandClipboard::UpdateSequenceNumber() {
+void WaylandClipboard::UpdateSequenceNumber(ClipboardBuffer buffer) {
+  // TODO(https://crbug.com/921950): Implement primary selection.
+  if (buffer != ClipboardBuffer::kCopyPaste)
+    return;
+
   if (!update_sequence_cb_.is_null())
-    update_sequence_cb_.Run();
+    update_sequence_cb_.Run(buffer);
 }
 
 }  // namespace ui

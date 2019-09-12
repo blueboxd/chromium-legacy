@@ -296,7 +296,16 @@ TEST_F(WorkerThreadTest, AsyncTerminate_ImmediatelyAfterStart) {
   EXPECT_EQ(ExitCode::kGracefullyTerminated, GetExitCode());
 }
 
-TEST_F(WorkerThreadTest, SyncTerminate_ImmediatelyAfterStart) {
+// Disabled due to flakiness: https://crbug.com/1003217.
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
+    defined(THREAD_SANITIZER) || defined(OS_WIN)
+#define MAYBE_SyncTerminate_ImmediatelyAfterStart \
+  DISABLED_SyncTerminate_ImmediatelyAfterStart
+#else
+#define MAYBE_SyncTerminate_ImmediatelyAfterStart \
+  SyncTerminate_ImmediatelyAfterStart
+#endif
+TEST_F(WorkerThreadTest, MAYBE_SyncTerminate_ImmediatelyAfterStart) {
   ExpectReportingCallsForWorkerPossiblyTerminatedBeforeInitialization();
   Start();
 

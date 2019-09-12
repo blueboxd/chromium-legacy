@@ -791,6 +791,77 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, WritesSitelistsToCacheFile) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
+                       PRE_CacheFileCorrectOnStartup) {
+  SetUseIeSitelist(true);
+  BrowserSwitcherServiceWin::SetIeemSitelistUrlForTesting(kAValidUrl);
+
+  content::URLLoaderInterceptor interceptor(
+      base::BindRepeating(&ReturnValidXml));
+
+  // Execute everything and check "cache.dat" file contents.
+  BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](base::FilePath cache_file_path, base::OnceClosure quit) {
+            base::ScopedAllowBlockingForTesting allow_blocking;
+            ASSERT_TRUE(base::PathExists(base::FilePath(cache_file_path)));
+            std::move(quit).Run();
+          },
+          cache_file_path(), run_loop.QuitClosure()),
+      action_timeout());
+  run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, CacheFileCorrectOnStartup) {
+  SetUseIeSitelist(true);
+  // Never refresh the sitelist. We want to check the state of cache.dat after
+  // startup, not after the sitelist is downloaded.
+  BrowserSwitcherServiceWin::SetFetchDelayForTesting(
+      base::TimeDelta::FromHours(24));
+  BrowserSwitcherServiceWin::SetIeemSitelistUrlForTesting(kAValidUrl);
+
+  content::URLLoaderInterceptor interceptor(
+      base::BindRepeating(&ReturnValidXml));
+
+  // Execute everything and check "cache.dat" file contents.
+  BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](base::FilePath cache_file_path,
+             base::FilePath sitelist_cache_file_path, base::OnceClosure quit) {
+            base::ScopedAllowBlockingForTesting allow_blocking;
+            base::File file(cache_file_path,
+                            base::File::FLAG_OPEN | base::File::FLAG_READ);
+            ASSERT_TRUE(file.IsValid());
+
+            const char expected_output[] =
+                "1\n"
+                "\n"
+                "\n"
+                "\n"
+                "\n"
+                "1\n"
+                "docs.google.com\n"
+                "0\n";
+
+            std::unique_ptr<char[]> buffer(new char[file.GetLength() + 1]);
+            buffer.get()[file.GetLength()] = '\0';
+            file.Read(0, buffer.get(), file.GetLength());
+            EXPECT_EQ(std::string(expected_output), std::string(buffer.get()));
+
+            std::move(quit).Run();
+          },
+          cache_file_path(), sitelist_cache_file_path(),
+          run_loop.QuitClosure()),
+      action_timeout());
+  run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
                        DeletesSitelistCacheOnStartup) {
   base::ScopedAllowBlockingForTesting allow_blocking;
 

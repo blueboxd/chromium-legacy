@@ -90,6 +90,7 @@ struct PrintHostMsg_RequestPrintPreview_Params {
   PrintHostMsg_RequestPrintPreview_Params();
   ~PrintHostMsg_RequestPrintPreview_Params();
   bool is_modifiable;
+  bool is_pdf;
   bool webnode_only;
   bool has_selection;
   bool selection_only;
@@ -214,6 +215,7 @@ IPC_STRUCT_TRAITS_END()
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 IPC_STRUCT_TRAITS_BEGIN(PrintHostMsg_RequestPrintPreview_Params)
   IPC_STRUCT_TRAITS_MEMBER(is_modifiable)
+  IPC_STRUCT_TRAITS_MEMBER(is_pdf)
   IPC_STRUCT_TRAITS_MEMBER(webnode_only)
   IPC_STRUCT_TRAITS_MEMBER(has_selection)
   IPC_STRUCT_TRAITS_MEMBER(selection_only)

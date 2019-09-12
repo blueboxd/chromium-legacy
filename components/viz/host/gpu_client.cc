@@ -175,10 +175,11 @@ void GpuClient::CreateJpegDecodeAccelerator(
 #endif  // defined(OS_CHROMEOS)
 
 void GpuClient::CreateVideoEncodeAcceleratorProvider(
-    media::mojom::VideoEncodeAcceleratorProviderRequest vea_provider_request) {
+    mojo::PendingReceiver<media::mojom::VideoEncodeAcceleratorProvider>
+        vea_provider_receiver) {
   if (auto* gpu_host = delegate_->EnsureGpuHost()) {
     gpu_host->gpu_service()->CreateVideoEncodeAcceleratorProvider(
-        std::move(vea_provider_request));
+        std::move(vea_provider_receiver));
   }
 }
 

@@ -16,7 +16,7 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/navigation_simulator.h"
-#include "mojo/public/cpp/bindings/associated_interface_request.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
@@ -344,8 +344,8 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   // cancellation coming from the renderer process side. This member interface
   // will never be bound.
   // Only used when PerNavigationMojoInterface is enabled.
-  mojo::AssociatedInterfaceRequest<mojom::NavigationClient>
-      navigation_client_request_;
+  mojo::PendingAssociatedReceiver<mojom::NavigationClient>
+      navigation_client_receiver_;
 
   base::WeakPtrFactory<NavigationSimulatorImpl> weak_factory_{this};
 };

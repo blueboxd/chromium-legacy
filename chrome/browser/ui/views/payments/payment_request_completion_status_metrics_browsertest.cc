@@ -496,8 +496,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest,
 using PaymentRequestInitiatedCompletionStatusMetricsTest =
     PaymentRequestBrowserTestBase;
 
+// Disabled due to flakiness: https://crbug.com/1003253.
 IN_PROC_BROWSER_TEST_F(PaymentRequestInitiatedCompletionStatusMetricsTest,
-                       Aborted_NotShown) {
+                       DISABLED_Aborted_NotShown) {
   base::HistogramTester histogram_tester;
   NavigateTo("/initiated_test.html");
 

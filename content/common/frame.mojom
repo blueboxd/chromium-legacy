@@ -424,7 +424,7 @@ interface FrameHost {
       CommonNavigationParams common_params,
       BeginNavigationParams begin_params,
       pending_remote<blink.mojom.BlobURLToken>? blob_url_token,
-      associated NavigationClient? navigation_client,
+      pending_associated_remote<NavigationClient>? navigation_client,
       pending_remote<blink.mojom.NavigationInitiator>? navigation_initiator);
 
   // Sent when a subresource response has started.

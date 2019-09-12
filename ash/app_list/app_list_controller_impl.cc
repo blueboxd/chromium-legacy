@@ -436,25 +436,6 @@ void AppListControllerImpl::GetAppInfoDialogBounds(
   std::move(callback).Run(bounds);
 }
 
-void AppListControllerImpl::ShowAppListAndSwitchToState(
-    ash::AppListState state) {
-  bool app_list_was_open = true;
-  if (!presenter_.IsVisible()) {
-    // TODO(calamity): This may cause the app list to show briefly before the
-    // state change. If this becomes an issue, add the ability to ash::Shell to
-    // load the app list without showing it.
-    ShowAppList();
-    app_list_was_open = false;
-  }
-
-  if (state == ash::AppListState::kInvalidState)
-    return;
-
-  app_list::ContentsView* contents_view =
-      presenter_.GetView()->app_list_main_view()->contents_view();
-  contents_view->SetActiveState(state, app_list_was_open /* animate */);
-}
-
 void AppListControllerImpl::ShowAppList() {
   presenter_.Show(GetDisplayIdToShowAppListOn(), base::TimeTicks());
 }

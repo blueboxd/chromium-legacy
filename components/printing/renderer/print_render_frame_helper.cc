@@ -57,6 +57,7 @@
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_navigation_control.h"
 #include "third_party/blink/public/web/web_plugin.h"
+#include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/public/web/web_plugin_document.h"
 #include "third_party/blink/public/web/web_print_params.h"
 #include "third_party/blink/public/web/web_print_preset_options.h"
@@ -350,6 +351,17 @@ bool IsPrintingNodeOrPdfFrame(const blink::WebLocalFrame* frame,
     return true;
   blink::WebPlugin* plugin = GetPlugin(frame);
   return plugin && plugin->SupportsPaginatedPrint();
+}
+
+bool IsPrintingPdf(blink::WebLocalFrame* frame, const blink::WebNode& node) {
+  blink::WebPlugin* plugin;
+  if (node.IsNull()) {
+    plugin = GetPlugin(frame);
+  } else {
+    blink::WebPluginContainer* plugin_container = node.PluginContainer();
+    plugin = plugin_container ? plugin_container->Plugin() : nullptr;
+  }
+  return plugin && plugin->IsPdfPlugin();
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -2176,9 +2188,11 @@ void PrintRenderFrameHelper::RequestPrintPreview(PrintPreviewRequestType type) {
   if (!weak_this)
     return;
   const bool is_modifiable = print_preview_context_.IsModifiable();
+  const bool is_pdf = print_preview_context_.IsPdf();
   const bool has_selection = print_preview_context_.HasSelection();
   PrintHostMsg_RequestPrintPreview_Params params;
   params.is_modifiable = is_modifiable;
+  params.is_pdf = is_pdf;
   params.has_selection = has_selection;
   switch (type) {
     case PRINT_PREVIEW_SCRIPTED: {
@@ -2301,6 +2315,7 @@ void PrintRenderFrameHelper::PrintPreviewContext::InitWithFrame(
   source_frame_.Reset(web_frame);
   source_node_.Reset();
   CalculateIsModifiable();
+  CalculateIsPdf();
 }
 
 void PrintRenderFrameHelper::PrintPreviewContext::InitWithNode(
@@ -2312,6 +2327,7 @@ void PrintRenderFrameHelper::PrintPreviewContext::InitWithNode(
   source_frame_.Reset(web_node.GetDocument().GetFrame());
   source_node_ = web_node;
   CalculateIsModifiable();
+  CalculateIsPdf();
 }
 
 void PrintRenderFrameHelper::PrintPreviewContext::OnPrintPreview() {
@@ -2435,6 +2451,11 @@ bool PrintRenderFrameHelper::PrintPreviewContext::IsModifiable() const {
   return is_modifiable_;
 }
 
+bool PrintRenderFrameHelper::PrintPreviewContext::IsPdf() const {
+  DCHECK(state_ != UNINITIALIZED);
+  return is_pdf_;
+}
+
 bool PrintRenderFrameHelper::PrintPreviewContext::HasSelection() {
   return IsModifiable() && source_frame()->HasSelection();
 }
@@ -2507,8 +2528,11 @@ void PrintRenderFrameHelper::PrintPreviewContext::ClearContext() {
 }
 
 void PrintRenderFrameHelper::PrintPreviewContext::CalculateIsModifiable() {
-  // The only kind of node we can print right now is a PDF node.
   is_modifiable_ = !IsPrintingNodeOrPdfFrame(source_frame(), source_node_);
+}
+
+void PrintRenderFrameHelper::PrintPreviewContext::CalculateIsPdf() {
+  is_pdf_ = IsPrintingPdf(source_frame(), source_node_);
 }
 
 void PrintRenderFrameHelper::SetPrintPagesParams(

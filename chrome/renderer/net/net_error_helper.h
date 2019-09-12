@@ -104,7 +104,6 @@ class NetErrorHelper
   // loaded immediately.
   void PrepareErrorPage(const error_page::Error& error,
                         bool is_failed_post,
-                        bool is_ignoring_cache,
                         std::string* error_html);
 
   // Returns whether a load for |url| in the |frame| the NetErrorHelper is
@@ -141,7 +140,7 @@ class NetErrorHelper
   void CancelFetchNavigationCorrections() override;
   void SendTrackingRequest(const GURL& tracking_url,
                            const std::string& tracking_request_body) override;
-  void ReloadPage(bool bypass_cache) override;
+  void ReloadFrame() override;
   void DiagnoseError(const GURL& page_url) override;
   void DownloadPageLater() override;
   void SetIsShowingDownloadButton(bool show) override;

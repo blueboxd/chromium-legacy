@@ -141,6 +141,27 @@ class LinkedObject : public GarbageCollected<LinkedObject> {
   Member<LinkedObject> next_;
 };
 
+// Test driver for incremental marking. Assumes that no stack handling is
+// required.
+class IncrementalMarkingTestDriver {
+ public:
+  explicit IncrementalMarkingTestDriver(ThreadState* thread_state)
+      : thread_state_(thread_state) {}
+  ~IncrementalMarkingTestDriver();
+
+  void Start();
+  bool SingleStep(BlinkGC::StackState stack_state =
+                      BlinkGC::StackState::kNoHeapPointersOnStack);
+  void FinishSteps(BlinkGC::StackState stack_state =
+                       BlinkGC::StackState::kNoHeapPointersOnStack);
+  void FinishGC(bool complete_sweep = true);
+
+  size_t GetHeapCompactLastFixupCount() const;
+
+ private:
+  ThreadState* const thread_state_;
+};
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_TEST_UTILITIES_H_

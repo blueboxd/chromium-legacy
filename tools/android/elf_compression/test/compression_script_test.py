@@ -2,16 +2,17 @@
 # Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Basic test for the compress_section script.
-
-Runs the script on a sample library and verifies that it still works.
-"""
+"""Tests for the compress_section script."""
 
 import os
 import pathlib
 import subprocess
+import sys
 import tempfile
 import unittest
+
+sys.path.append(str(pathlib.Path(__file__).resolve().parents[1]))
+import compress_section
 
 LIBRARY_CC_NAME = 'libtest.cc'
 OPENER_CC_NAME = 'library_opener.cc'
@@ -117,6 +118,28 @@ class CompressionScriptTest(unittest.TestCase):
     patched_library_path = self._RunScript(library_path)
     opener_output = self._RunOpener(opener_path, patched_library_path)
     self.assertEqual(opener_output, '1046506\n')
+
+  def testAlignUp(self):
+    """Tests for AlignUp method of the script."""
+    self.assertEqual(compress_section.AlignUp(1024, 1024), 1024)
+    self.assertEqual(compress_section.AlignUp(1023, 1024), 1024)
+    self.assertEqual(compress_section.AlignUp(1025, 1024), 2048)
+    self.assertEqual(compress_section.AlignUp(5555, 4096), 8192)
+
+  def testAlignDown(self):
+    """Tests for AlignDown method of the script."""
+    self.assertEqual(compress_section.AlignDown(1024, 1024), 1024)
+    self.assertEqual(compress_section.AlignDown(1023, 1024), 0)
+    self.assertEqual(compress_section.AlignDown(1025, 1024), 1024)
+    self.assertEqual(compress_section.AlignDown(5555, 4096), 4096)
+
+  def testMatchVaddrAlignment(self):
+    """Tests for MatchVaddrAlignment method of the script."""
+    self.assertEqual(compress_section.MatchVaddrAlignment(100, 100, 1024), 100)
+    self.assertEqual(compress_section.MatchVaddrAlignment(99, 100, 1024), 100)
+    self.assertEqual(compress_section.MatchVaddrAlignment(101, 100, 1024), 1124)
+    self.assertEqual(
+        compress_section.MatchVaddrAlignment(1024, 2049, 1024), 1025)
 
 
 if __name__ == '__main__':

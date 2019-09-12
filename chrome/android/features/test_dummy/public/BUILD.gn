@@ -8,3 +8,9 @@ android_library("java") {
   java_files =
       [ "java/src/org/chromium/chrome/features/test_dummy/TestDummy.java" ]
 }
+
+source_set("native") {
+  sources = [
+    "test_dummy.h",
+  ]
+}

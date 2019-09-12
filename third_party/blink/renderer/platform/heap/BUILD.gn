@@ -87,6 +87,20 @@ blink_platform_sources("heap") {
   ]
 }
 
+jumbo_source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "heap_test_utilities.cc",
+    "heap_test_utilities.h",
+  ]
+
+  deps = [
+    "//testing/gtest",
+    "//third_party/blink/public/mojom:mojom_platform_blink_headers",
+  ]
+}
+
 test("blink_heap_unittests") {
   deps = [
     ":blink_heap_unittests_sources",
@@ -112,8 +126,6 @@ jumbo_source_set("blink_heap_unittests_sources") {
     "heap_compact_test.cc",
     "heap_stats_collector_test.cc",
     "heap_test.cc",
-    "heap_test_utilities.cc",
-    "heap_test_utilities.h",
     "heap_thread_test.cc",
     "heap_traits_test.cc",
     "incremental_marking_test.cc",

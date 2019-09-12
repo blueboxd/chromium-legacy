@@ -23,6 +23,8 @@
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
 
+class BrowserContextKeyedServiceFactory;
+
 namespace base {
 class Value;
 }
@@ -107,6 +109,9 @@ class ArcPolicyBridge : public KeyedService,
   static ArcPolicyBridge* GetForBrowserContextForTesting(
       content::BrowserContext* context);
 
+  // Return the factory instance for this class.
+  static BrowserContextKeyedServiceFactory* GetFactory();
+
   base::WeakPtr<ArcPolicyBridge> GetWeakPtr();
 
   ArcPolicyBridge(content::BrowserContext* context,
@@ -173,6 +178,7 @@ class ArcPolicyBridge : public KeyedService,
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
   policy::PolicyService* policy_service_ = nullptr;
+
   bool is_managed_ = false;
 
   // HACK(b/73762796): A GUID that is regenerated whenever |this| is created,

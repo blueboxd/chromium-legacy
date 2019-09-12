@@ -911,9 +911,9 @@ ImageBitmap* ImageBitmap::Create(const void* pixel_data,
 
 void ImageBitmap::ResolvePromiseOnOriginalThread(
     ScriptPromiseResolver* resolver,
-    sk_sp<SkImage> skia_image,
     bool origin_clean,
-    std::unique_ptr<ParsedOptions> parsed_options) {
+    std::unique_ptr<ParsedOptions> parsed_options,
+    sk_sp<SkImage> skia_image) {
   if (!skia_image) {
     resolver->Reject(
         ScriptValue(resolver->GetScriptState(),
@@ -945,11 +945,10 @@ void ImageBitmap::ResolvePromiseOnOriginalThread(
 }
 
 void ImageBitmap::RasterizeImageOnBackgroundThread(
-    ScriptPromiseResolver* resolver,
     sk_sp<PaintRecord> paint_record,
     const IntRect& dst_rect,
-    bool origin_clean,
-    std::unique_ptr<ParsedOptions> parsed_options) {
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    WTF::CrossThreadOnceFunction<void(sk_sp<SkImage>)> callback) {
   DCHECK(!IsMainThread());
   SkImageInfo info =
       SkImageInfo::MakeN32Premul(dst_rect.Width(), dst_rect.Height());
@@ -959,14 +958,9 @@ void ImageBitmap::RasterizeImageOnBackgroundThread(
     paint_record->Playback(surface->getCanvas());
     skia_image = surface->makeImageSnapshot();
   }
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      Thread::MainThread()->GetTaskRunner();
   PostCrossThreadTask(
       *task_runner, FROM_HERE,
-      CrossThreadBindOnce(&ResolvePromiseOnOriginalThread,
-                          WrapCrossThreadPersistent(resolver),
-                          std::move(skia_image), origin_clean,
-                          WTF::Passed(std::move(parsed_options))));
+      CrossThreadBindOnce(std::move(callback), std::move(skia_image)));
 }
 
 ScriptPromise ImageBitmap::CreateAsync(ImageElementBase* image,
@@ -1017,11 +1011,13 @@ ScriptPromise ImageBitmap::CreateAsync(ImageElementBase* image,
       std::make_unique<ParsedOptions>(parsed_options);
   worker_pool::PostTask(
       FROM_HERE,
-      CrossThreadBindOnce(&RasterizeImageOnBackgroundThread,
-                          WrapCrossThreadPersistent(resolver),
-                          std::move(paint_record), draw_dst_rect,
-                          !image->WouldTaintOrigin(),
-                          WTF::Passed(std::move(passed_parsed_options))));
+      CrossThreadBindOnce(
+          &RasterizeImageOnBackgroundThread, std::move(paint_record),
+          draw_dst_rect, Thread::MainThread()->GetTaskRunner(),
+          CrossThreadBindOnce(&ResolvePromiseOnOriginalThread,
+                              WrapCrossThreadPersistent(resolver),
+                              !image->WouldTaintOrigin(),
+                              WTF::Passed(std::move(passed_parsed_options)))));
   return promise;
 }
 

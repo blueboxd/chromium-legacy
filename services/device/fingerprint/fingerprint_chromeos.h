@@ -11,6 +11,8 @@
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "chromeos/dbus/biod/biod_client.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/fingerprint/fingerprint_export.h"
 #include "services/device/public/mojom/fingerprint.mojom.h"
 
@@ -55,7 +57,8 @@ class SERVICES_DEVICE_FINGERPRINT_EXPORT FingerprintChromeOS
   void EndCurrentAuthSession(EndCurrentAuthSessionCallback callback) override;
   void DestroyAllRecords(DestroyAllRecordsCallback callback) override;
   void RequestType(RequestTypeCallback callback) override;
-  void AddFingerprintObserver(mojom::FingerprintObserverPtr observer) override;
+  void AddFingerprintObserver(mojo::PendingRemote<mojom::FingerprintObserver>
+                                  pending_observer) override;
 
  private:
   friend class FingerprintChromeOSTest;
@@ -90,7 +93,7 @@ class SERVICES_DEVICE_FINGERPRINT_EXPORT FingerprintChromeOS
   // Start next request of GetRecordsForUser.
   void StartNextRequest();
 
-  std::vector<mojom::FingerprintObserverPtr> observers_;
+  std::vector<mojo::Remote<mojom::FingerprintObserver>> observers_;
 
   // Saves record object path to label mapping for current GetRecordsForUser
   // request, and reset after the request is done.

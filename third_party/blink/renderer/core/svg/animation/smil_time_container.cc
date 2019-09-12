@@ -424,9 +424,11 @@ void SMILTimeContainer::UpdateAnimationsAndScheduleFrameIfNeeded(
   ApplyAnimationValues(elapsed);
 
   SMILTime next_progress_time = SMILTime::Unresolved();
-  for (auto& sandwich : scheduled_animations_) {
+  for (auto& sandwich : scheduled_animations_.Values()) {
     next_progress_time =
-        std::min(next_progress_time, sandwich.value->NextProgressTime(elapsed));
+        std::min(next_progress_time, sandwich->NextProgressTime(elapsed));
+    if (next_progress_time <= elapsed)
+      break;
   }
 
   if (!CanScheduleFrame(next_progress_time))
@@ -461,23 +463,15 @@ void SMILTimeContainer::RemoveUnusedKeys() {
 }
 
 void SMILTimeContainer::UpdateIntervals(SMILTime document_time) {
-  // This Shrink should free up the memory from the previous
-  // run in this loop. Otherwise it won't do anything.
   DCHECK(document_time.IsFinite());
   DCHECK(document_time >= 0.0);
   do {
     intervals_dirty_ = false;
-    active_sandwiches_.Shrink(0);
-    for (auto& entry : scheduled_animations_) {
-      auto* sandwich = entry.value.Get();
+
+    for (auto& sandwich : scheduled_animations_.Values())
       sandwich->UpdateTiming(document_time.Value());
 
-      if (!sandwich->IsEmpty()) {
-        active_sandwiches_.push_back(sandwich);
-      }
-    }
-
-    for (auto& sandwich : active_sandwiches_)
+    for (auto& sandwich : scheduled_animations_.Values())
       sandwich->UpdateSyncBases(document_time.Value());
   } while (intervals_dirty_);
 }
@@ -502,7 +496,6 @@ void SMILTimeContainer::UpdateAnimationTimings(double presentation_time) {
   if (intervals_dirty_)
     UpdateIntervals(latest_update_time_);
 
-  active_sandwiches_.ReserveCapacity(scheduled_animations_.size());
   while (latest_update_time_ < presentation_time) {
     const SMILTime interesting_time = NextInterestingTime(latest_update_time_);
     latest_update_time_ =
@@ -517,12 +510,11 @@ void SMILTimeContainer::ApplyAnimationValues(double elapsed) {
   prevent_scheduled_animations_changes_ = true;
 #endif
   HeapVector<Member<SVGSMILElement>> animations_to_apply;
-  for (auto& sandwich : active_sandwiches_) {
+  for (auto& sandwich : scheduled_animations_.Values()) {
     sandwich->UpdateActiveAnimationStack(elapsed);
     if (SVGSMILElement* animation = sandwich->ApplyAnimationValues())
       animations_to_apply.push_back(animation);
   }
-  active_sandwiches_.Shrink(0);
 
   if (animations_to_apply.IsEmpty()) {
 #if DCHECK_IS_ON()
@@ -568,7 +560,6 @@ void SMILTimeContainer::AdvanceFrameForTesting() {
 void SMILTimeContainer::Trace(blink::Visitor* visitor) {
   visitor->Trace(scheduled_animations_);
   visitor->Trace(owner_svg_element_);
-  visitor->Trace(active_sandwiches_);
 }
 
 }  // namespace blink

@@ -498,6 +498,7 @@ const char kHintLoadedCounts[] = "optimization_guide.hint_loaded_counts";
 
 // Deprecated 9/2019
 const char kGoogleServicesUsername[] = "google.services.username";
+const char kGoogleServicesUserAccountId[] = "google.services.user_account_id";
 
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
@@ -576,6 +577,7 @@ void RegisterProfilePrefsForMigration(
 
   registry->RegisterDictionaryPref(kHintLoadedCounts);
   registry->RegisterStringPref(kGoogleServicesUsername, std::string());
+  registry->RegisterStringPref(kGoogleServicesUserAccountId, std::string());
 }
 
 }  // namespace
@@ -1188,4 +1190,5 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 9/2019
   profile_prefs->ClearPref(kGoogleServicesUsername);
+  profile_prefs->ClearPref(kGoogleServicesUserAccountId);
 }

@@ -8,33 +8,37 @@
 
 cr.define('cr.ui.table', function() {
   /** @const */ const List = cr.ui.List;
-  /** @const */ const ListItem = cr.ui.ListItem;
 
   /**
    * Creates a new table list element.
-   * @param {Object=} opt_propertyBag Optional properties.
-   * @constructor
-   * @extends {cr.ui.List}
    */
-  const TableList = cr.ui.define('list');
-
-  TableList.prototype = {
-    __proto__: List.prototype,
-
-    table_: null,
-
+  class TableList extends cr.ui.List {
     /**
-     * Initializes the element.
+     * @param {Object=} opt_propertyBag Optional properties.
      */
-    decorate: function() {
-      List.prototype.decorate.apply(this);
-      this.className = 'list';
-    },
+    constructor(opt_propertyBag) {
+      super(opt_propertyBag);
+
+      /** @private {cr.ui.Table} */
+      this.table_ = null;
+
+      /**
+       * Actually defined and managed by cr.ui.List.
+       * @private {HTMLElement}
+       * */
+      this.afterFiller_;
+    }
+
+    static decorate(el) {
+      cr.ui.List.decorate(el);
+      el.__proto__ = TableList.prototype;
+      el.className = 'list';
+    }
 
     /**
      * Resizes columns. Called when column width changed.
      */
-    resize: function() {
+    resize() {
       if (this.needsFullRedraw_()) {
         this.redraw();
         return;
@@ -43,12 +47,12 @@ cr.define('cr.ui.table', function() {
         List.prototype.redraw.call(this);
       }  // Redraw items only.
       this.resizeCells_();
-    },
+    }
 
     /**
      * Updates width of cells.
      */
-    resizeCells_: function() {
+    resizeCells_() {
       const cm = this.table_.columnModel;
       for (let row = this.firstElementChild; row;
            row = row.nextElementSibling) {
@@ -62,12 +66,12 @@ cr.define('cr.ui.table', function() {
         row.style.width = cm.totalWidth + 'px';
       }
       this.afterFiller_.style.width = cm.totalWidth + 'px';
-    },
+    }
 
     /**
      * Redraws the viewport.
      */
-    redraw: function() {
+    redraw() {
       if (this.batchCount_ != 0) {
         return;
       }
@@ -75,7 +79,7 @@ cr.define('cr.ui.table', function() {
 
       List.prototype.redraw.call(this);
       this.resizeCells_();
-    },
+    }
 
     /**
      * Returns the height of after filler in the list.
@@ -83,19 +87,19 @@ cr.define('cr.ui.table', function() {
      * @return {number} The height of after filler.
      * @override
      */
-    getAfterFillerHeight: function(lastIndex) {
+    getAfterFillerHeight(lastIndex) {
       // If the list is empty set height to 1 to show horizontal
       // scroll bar.
       return lastIndex == 0 ?
           1 :
           cr.ui.List.prototype.getAfterFillerHeight.call(this, lastIndex);
-    },
+    }
 
     /**
      * Shows or hides vertical and horizontal scroll bars in the list.
      * @return {boolean} True if horizontal scroll bar changed.
      */
-    updateScrollbars_: function() {
+    updateScrollbars_() {
       const cm = this.table_.columnModel;
       const style = this.style;
       if (!cm || cm.size == 0) {
@@ -131,14 +135,14 @@ cr.define('cr.ui.table', function() {
         }
       }
       return changed;
-    },
+    }
 
     /**
      * Shows or hides vertical scroll bar.
      * @param {boolean} show True to show.
      * @return {boolean} True if visibility changed.
      */
-    showVerticalScrollBar_: function(show) {
+    showVerticalScrollBar_(show) {
       const style = this.style;
       if (show && style.overflowY == 'scroll') {
         return false;
@@ -148,34 +152,35 @@ cr.define('cr.ui.table', function() {
       }
       style.overflowY = show ? 'scroll' : 'hidden';
       return true;
-    },
+    }
 
     /**
      * @param {number} visibleHeight Height in pixels.
      * @return {boolean} True if all rows could be accomodiated in
      *                   visibleHeight pixels.
      */
-    areAllItemsVisible_: function(visibleHeight) {
+    areAllItemsVisible_(visibleHeight) {
       if (!this.dataModel || this.dataModel.length == 0) {
         return true;
       }
       return this.getItemTop(this.dataModel.length) <= visibleHeight;
-    },
+    }
 
     /**
      * Creates a new list item.
      * @param {*} dataItem The value to use for the item.
      * @return {!cr.ui.ListItem} The newly created list item.
      */
-    createItem: function(dataItem) {
-      return this.table_.getRenderFunction().call(null, dataItem, this.table_);
-    },
+    createItem(dataItem) {
+      return /** @type {!cr.ui.ListItem} */ (
+          this.table_.getRenderFunction().call(null, dataItem, this.table_));
+    }
 
     /**
      * Determines whether a full redraw is required.
      * @return {boolean}
      */
-    needsFullRedraw_: function() {
+    needsFullRedraw_() {
       const cm = this.table_.columnModel;
       const row = this.firstElementChild;
       // If the number of columns in the model has changed, a full redraw is
@@ -190,8 +195,8 @@ cr.define('cr.ui.table', function() {
         }
       }
       return false;
-    },
-  };
+    }
+  }
 
   /**
    * The table associated with the list.
@@ -199,5 +204,7 @@ cr.define('cr.ui.table', function() {
    */
   cr.defineProperty(TableList, 'table');
 
-  return {TableList: TableList};
+  return {
+    TableList: TableList,
+  };
 });

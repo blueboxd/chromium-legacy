@@ -26,7 +26,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/transferrable_url_loader.mojom.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_response_info.h"
@@ -99,7 +99,7 @@ class FakeNavigationClient : public mojom::NavigationClient {
   ~FakeNavigationClient() override = default;
 
  private:
-  // mojom::NavigationClientPtr implementation:
+  // mojom::NavigationClient implementation:
   void CommitNavigation(
       mojom::CommonNavigationParamsPtr common_params,
       mojom::CommitNavigationParamsPtr commit_params,
@@ -209,7 +209,7 @@ void ServiceWorkerRemoteProviderEndpoint::BindForWindow(
   // crash.
   blink::mojom::ServiceWorkerProviderInfoForClientPtr received_info;
   base::RunLoop loop(base::RunLoop::Type::kNestableTasksAllowed);
-  mojo::MakeStrongBinding(
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<FakeNavigationClient>(base::BindOnce(
           [](base::OnceClosure quit_closure,
              blink::mojom::ServiceWorkerProviderInfoForClientPtr* out_info,
@@ -218,7 +218,7 @@ void ServiceWorkerRemoteProviderEndpoint::BindForWindow(
             std::move(quit_closure).Run();
           },
           loop.QuitClosure(), &received_info)),
-      mojo::MakeRequest(&navigation_client_));
+      navigation_client_.BindNewPipeAndPassReceiver());
   navigation_client_->CommitNavigation(
       CreateCommonNavigationParams(), CreateCommitNavigationParams(),
       network::ResourceResponseHead(), mojo::ScopedDataPipeConsumerHandle(),

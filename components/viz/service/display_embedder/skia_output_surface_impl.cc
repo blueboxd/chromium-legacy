@@ -234,7 +234,12 @@ void SkiaOutputSurfaceImpl::MakePromiseSkImage(ImageContext* image_context) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(recorder_);
   DCHECK(!image_context->mailbox_holder().mailbox.IsZero());
-  DCHECK(!image_context->has_image());
+
+  images_in_current_paint_.push_back(
+      static_cast<ImageContextImpl*>(image_context));
+
+  if (image_context->has_image())
+    return;
 
   SkColorType color_type = ResourceFormatToClosestSkColorType(
       true /* gpu_compositing */, image_context->resource_format());
@@ -256,8 +261,6 @@ void SkiaOutputSurfaceImpl::MakePromiseSkImage(ImageContext* image_context) {
     resource_sync_tokens_.push_back(image_context->mailbox_holder().sync_token);
     image_context->mutable_mailbox_holder()->sync_token.Clear();
   }
-  images_in_current_paint_.push_back(
-      static_cast<ImageContextImpl*>(image_context));
 }
 
 sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromYUV(

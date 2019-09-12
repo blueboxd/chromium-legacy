@@ -161,45 +161,4 @@ void MessageLoop::SetTaskRunner(
   sequence_manager_->SetTaskRunner(task_runner);
 }
 
-#if !defined(OS_NACL)
-
-//------------------------------------------------------------------------------
-// MessageLoopForUI
-
-MessageLoopForUI::MessageLoopForUI(MessagePumpType type) : MessageLoop(type) {
-#if defined(OS_ANDROID)
-  DCHECK(type == MessagePumpType::UI || type == MessagePumpType::JAVA);
-#else
-  DCHECK_EQ(type, MessagePumpType::UI);
-#endif
-}
-
-#if defined(OS_IOS)
-void MessageLoopForUI::Attach() {
-  sequence_manager_->AttachToMessagePump();
-}
-#endif  // defined(OS_IOS)
-
-#if defined(OS_ANDROID)
-void MessageLoopForUI::Abort() {
-  static_cast<MessagePumpForUI*>(pump_)->Abort();
-}
-
-bool MessageLoopForUI::IsAborted() {
-  return static_cast<MessagePumpForUI*>(pump_)->IsAborted();
-}
-
-void MessageLoopForUI::QuitWhenIdle(base::OnceClosure callback) {
-  static_cast<MessagePumpForUI*>(pump_)->QuitWhenIdle(std::move(callback));
-}
-#endif  // defined(OS_ANDROID)
-
-#if defined(OS_WIN)
-void MessageLoopForUI::EnableWmQuit() {
-  static_cast<MessagePumpForUI*>(pump_)->EnableWmQuit();
-}
-#endif  // defined(OS_WIN)
-
-#endif  // !defined(OS_NACL)
-
 }  // namespace base

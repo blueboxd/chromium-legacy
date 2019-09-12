@@ -4365,7 +4365,8 @@ TEST_F(DisplayManagerTest, MirrorModeRestoreAfterResume) {
   EXPECT_TRUE(display_manager()->IsInMirrorMode());
 }
 
-TEST_F(DisplayManagerTest, SoftwareMirrorRotationForTablet) {
+// crbug.com/1003339
+TEST_F(DisplayManagerTest, DISABLED_SoftwareMirrorRotationForTablet) {
   UpdateDisplay("400x300,800x800");
   base::RunLoop().RunUntilIdle();
 

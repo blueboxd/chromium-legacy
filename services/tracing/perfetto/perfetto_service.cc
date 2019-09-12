@@ -71,16 +71,17 @@ perfetto::TracingService* PerfettoService::GetService() const {
   return service_.get();
 }
 
-void PerfettoService::BindRequest(mojom::PerfettoServiceRequest request,
-                                  uint32_t pid) {
-  bindings_.AddBinding(this, std::move(request), pid);
+void PerfettoService::BindReceiver(
+    mojo::PendingReceiver<mojom::PerfettoService> receiver,
+    uint32_t pid) {
+  receivers_.Add(this, std::move(receiver), pid);
 }
 
 void PerfettoService::ConnectToProducerHost(
     mojom::ProducerClientPtr producer_client,
     mojom::ProducerHostRequest producer_host_request) {
   auto new_producer = std::make_unique<ProducerHost>();
-  uint32_t producer_pid = bindings_.dispatch_context();
+  uint32_t producer_pid = receivers_.current_context();
   new_producer->Initialize(std::move(producer_client), service_.get(),
                            base::StrCat({mojom::kPerfettoProducerNamePrefix,
                                          base::NumberToString(producer_pid)}));

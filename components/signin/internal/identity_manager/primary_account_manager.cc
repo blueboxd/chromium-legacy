@@ -53,8 +53,6 @@ void PrimaryAccountManager::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kGoogleServicesLastUsername,
                                std::string());
   registry->RegisterStringPref(prefs::kGoogleServicesAccountId, std::string());
-  registry->RegisterStringPref(prefs::kGoogleServicesUserAccountId,
-                               std::string());
   registry->RegisterBooleanPref(prefs::kAutologinEnabled, true);
   registry->RegisterListPref(prefs::kReverseAutologinRejectedEmailList);
   registry->RegisterBooleanPref(prefs::kSigninAllowed, true);
@@ -78,7 +76,6 @@ void PrimaryAccountManager::Initialize(PrefService* local_state) {
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kClearTokenService)) {
     client_->GetPrefs()->ClearPref(prefs::kGoogleServicesAccountId);
-    client_->GetPrefs()->ClearPref(prefs::kGoogleServicesUserAccountId);
   }
 
   std::string pref_account_id =
@@ -143,13 +140,6 @@ void PrimaryAccountManager::SetAuthenticatedAccountInfo(
   // Gaia id of the signed in user.
   client_->GetPrefs()->SetString(prefs::kGoogleServicesAccountId,
                                  account_info.account_id.id);
-
-  // When this function is called from Initialize(), it's possible for
-  // |info.gaia| to be empty when migrating from a really old profile.
-  if (!account_info.gaia.empty()) {
-    client_->GetPrefs()->SetString(prefs::kGoogleServicesUserAccountId,
-                                   account_info.gaia);
-  }
 
   // Go ahead and update the last signed in account info here as well. Once a
   // user is signed in the corresponding preferences should match. Doing it here
@@ -295,7 +285,6 @@ void PrimaryAccountManager::OnSignoutDecisionReached(
   ClearAuthenticatedAccountInfo();
   client_->GetPrefs()->ClearPref(prefs::kGoogleServicesHostedDomain);
   client_->GetPrefs()->ClearPref(prefs::kGoogleServicesAccountId);
-  client_->GetPrefs()->ClearPref(prefs::kGoogleServicesUserAccountId);
 
   // Revoke all tokens before sending signed_out notification, because there
   // may be components that don't listen for token service events when the

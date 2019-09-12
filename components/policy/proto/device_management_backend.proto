@@ -840,6 +840,24 @@ message VolumeInfo {
   optional int64 storage_free = 3;
 }
 
+// Information about a single CPU utilization.
+message CpuUtilizationInfo {
+  // CPU utilization (0-100).
+  optional int32 cpu_utilization_pct = 1;
+  // The timestamp representing time at which the information was collected.
+  // [timestamp] is milliseconds since Epoch in UTC timezone (Java time).
+  optional int64 timestamp = 2;
+}
+
+// Information about a single free RAM.
+message SystemFreeRamInfo {
+  // Free RAM [in bytes] (unreliable due to GC).
+  optional int64 size_in_bytes = 1;
+  // The timestamp representing time at which the information was collected.
+  // [timestamp] is milliseconds since Epoch in UTC timezone (Java time).
+  optional int64 timestamp = 2;
+}
+
 // Information about a single CPU temperature channel.
 message CPUTempInfo {
   // Temperature channel label.
@@ -998,12 +1016,14 @@ message DeviceStatusReportRequest {
   repeated NetworkState network_states = 11;
 
   // Samples of CPU utilization (0-100), sampled once every 120 seconds.
+  // To deprecate: Use CpuUtilizationInfo instead.
   repeated int32 cpu_utilization_pct_samples = 12;
 
   // Total RAM on the device.
   optional int64 system_ram_total = 14;
 
   // Samples of free RAM [in bytes] (unreliable due to GC).
+  // To deprecate: Use SystemFreeRamInfo instead.
   repeated int64 system_ram_free_samples = 15;
 
   // Samples of CPU temperatures in Celsius, plus associated labels
@@ -1048,6 +1068,12 @@ message DeviceStatusReportRequest {
 
   // Stateful Partition Information for user data.
   optional StatefulPartitionInfo stateful_partition_info = 29;
+
+  // Samples of CPU utilization (0-100), sampled once every 120 seconds.
+  repeated CpuUtilizationInfo cpu_utilization_infos = 30;
+
+  // Samples of free RAM [in bytes] (unreliable due to GC).
+  repeated SystemFreeRamInfo system_ram_free_infos = 31;
 }
 
 message OsUpdateStatus {

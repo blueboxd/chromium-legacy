@@ -90,10 +90,15 @@ base::android::ScopedJavaLocalRef<jobject> ConvertToJavaCoreAccountId(
     JNIEnv* env,
     const CoreAccountId& account_id);
 
-// Constructs a C++ CoreAccountId from the provided java CoreAccountId
+// Constructs a C++ CoreAccountInfo from the provided Java CoreAccountInfo
+CoreAccountInfo ConvertFromJavaCoreAccountInfo(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& j_core_account_info);
+
+// Constructs a C++ CoreAccountId from the provided Java CoreAccountId
 CoreAccountId ConvertFromJavaCoreAccountId(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& j_core_account_id);
+    const base::android::JavaRef<jobject>& j_core_account_id);
 #endif
 
 #endif  // COMPONENTS_SIGNIN_PUBLIC_IDENTITY_MANAGER_ACCOUNT_INFO_H_

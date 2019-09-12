@@ -141,18 +141,15 @@ class CONTENT_EXPORT ContentRendererClient {
   // Note that |error_html| may be not written to in certain cases
   // (lack of information on the error code) so the caller should take care to
   // initialize it with a safe default before the call.
-  // TODO(dgozman): |ignoring_cache| is always false in these two methods.
   virtual void PrepareErrorPage(content::RenderFrame* render_frame,
                                 const blink::WebURLError& error,
                                 const std::string& http_method,
-                                bool ignoring_cache,
                                 std::string* error_html) {}
 
   virtual void PrepareErrorPageForHttpStatusError(
       content::RenderFrame* render_frame,
       const GURL& unreachable_url,
       const std::string& http_method,
-      bool ignoring_cache,
       int http_status,
       std::string* error_html) {}
 

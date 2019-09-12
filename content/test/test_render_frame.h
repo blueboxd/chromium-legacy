@@ -13,6 +13,7 @@
 #include "content/common/input/input_handler.mojom.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/renderer/render_frame_impl.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
@@ -93,7 +94,7 @@ class TestRenderFrame : public RenderFrameImpl {
   base::Optional<std::string> next_navigation_html_override_;
   mojom::FrameInputHandlerPtr frame_input_handler_;
 
-  mojom::NavigationClientAssociatedPtr mock_navigation_client_;
+  mojo::AssociatedRemote<mojom::NavigationClient> mock_navigation_client_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRenderFrame);
 };

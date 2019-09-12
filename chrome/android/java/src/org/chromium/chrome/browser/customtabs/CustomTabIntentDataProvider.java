@@ -34,7 +34,6 @@ import androidx.browser.trusted.TrustedWebActivityIntentBuilder;
 import androidx.browser.trusted.sharing.ShareData;
 import androidx.browser.trusted.sharing.ShareTarget;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
@@ -42,7 +41,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
@@ -289,7 +287,8 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
                 IntentUtils.safeGetIntExtra(intent, EXTRA_UI_TYPE, CustomTabsUiType.DEFAULT);
         mUiType = verifiedUiType(requestedUiType);
 
-        mIsIncognito = isIncognitoForPaymentsFlow(intent) || isValidExternalIncognitoIntent(intent);
+        // Currently incognito is only supported for payments.
+        mIsIncognito = isIncognitoForPaymentsFlow(intent);
 
         CustomTabColorSchemeParams params = getColorSchemeParams(intent, colorScheme);
         retrieveCustomButtons(intent, context);
@@ -493,36 +492,10 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     }
 
     private boolean isIncognitoForPaymentsFlow(Intent intent) {
-        return incognitoRequested(intent) && isTrustedIntent() && isOpenedByChrome()
-                && isForPaymentRequest();
-    }
-
-    public static boolean isValidExternalIncognitoIntent(Intent intent) {
-        if (!CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_INCOGNITO_CUSTOM_TABS)) {
-            return false;
-        }
-
-        if (!incognitoRequested(intent)) {
-            return false;
-        }
-
-        return isVerifiedFirstPartyIntent(intent)
-                || CommandLine.getInstance().hasSwitch(
-                           ChromeSwitches.ALLOW_INCOGNITO_CUSTOM_TABS_FROM_THIRD_PARTY);
-    }
-
-    private static boolean incognitoRequested(Intent intent) {
-        return IntentUtils.safeGetBooleanExtra(
+        boolean incognitoRequested = IntentUtils.safeGetBooleanExtra(
                 intent, IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false);
-    }
-
-    private static boolean isVerifiedFirstPartyIntent(Intent intent) {
-        CustomTabsSessionToken sessionToken =
-                CustomTabsSessionToken.getSessionTokenFromIntent(intent);
-        String packageNameFromSession =
-                CustomTabsConnection.getInstance().getClientPackageNameForSession(sessionToken);
-        return !TextUtils.isEmpty(packageNameFromSession)
-                && ExternalAuthUtils.getInstance().isGoogleSigned(packageNameFromSession);
+        return incognitoRequested && isTrustedIntent() && isOpenedByChrome()
+                && isForPaymentRequest();
     }
 
     /**

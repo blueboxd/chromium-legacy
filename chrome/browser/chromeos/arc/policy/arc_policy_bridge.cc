@@ -18,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/enterprise/cert_store/arc_smart_card_manager_bridge.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/developer_tools_policy_handler.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -44,6 +45,7 @@ namespace {
 
 constexpr char kArcCaCerts[] = "caCerts";
 constexpr char kPolicyCompliantJson[] = "{ \"policyCompliant\": true }";
+constexpr char kArcRequiredKeyPairs[] = "requiredKeyPairs";
 
 // invert_bool_value: If the Chrome policy and the ARC policy with boolean value
 // have opposite semantics, set this to true so the bool is inverted before
@@ -214,10 +216,24 @@ void AddOncCaCertsToPolicies(const policy::PolicyMap& policy_map,
   filtered_policies->Set(kArcCaCerts, std::move(ca_certs));
 }
 
-std::string GetFilteredJSONPolicies(const policy::PolicyMap& policy_map,
-                                    const PrefService* profile_prefs,
-                                    const std::string& guid,
-                                    bool is_affiliated) {
+void AddRequiredKeyPairs(const ArcSmartCardManagerBridge* smart_card_manager,
+                         base::DictionaryValue* filtered_policies) {
+  if (!smart_card_manager)
+    return;
+  std::unique_ptr<base::ListValue> cert_names(
+      std::make_unique<base::ListValue>());
+  for (const auto& name : smart_card_manager->get_required_cert_names()) {
+    cert_names->GetList().emplace_back(name);
+  }
+  filtered_policies->Set(kArcRequiredKeyPairs, std::move(cert_names));
+}
+
+std::string GetFilteredJSONPolicies(
+    const policy::PolicyMap& policy_map,
+    const PrefService* profile_prefs,
+    const std::string& guid,
+    bool is_affiliated,
+    const ArcSmartCardManagerBridge* smart_card_manager) {
   base::DictionaryValue filtered_policies;
   // Parse ArcPolicy as JSON string before adding other policies to the
   // dictionary.
@@ -274,6 +290,8 @@ std::string GetFilteredJSONPolicies(const policy::PolicyMap& policy_map,
     filtered_policies.RemoveKey("apkCacheEnabled");
 
   filtered_policies.SetString("guid", guid);
+
+  AddRequiredKeyPairs(smart_card_manager, &filtered_policies);
 
   std::string policy_json;
   JSONStringValueSerializer serializer(&policy_json);
@@ -352,6 +370,11 @@ ArcPolicyBridge* ArcPolicyBridge::GetForBrowserContext(
 ArcPolicyBridge* ArcPolicyBridge::GetForBrowserContextForTesting(
     content::BrowserContext* context) {
   return ArcPolicyBridgeFactory::GetForBrowserContextForTesting(context);
+}
+
+// static
+BrowserContextKeyedServiceFactory* ArcPolicyBridge::GetFactory() {
+  return ArcPolicyBridgeFactory::GetInstance();
 }
 
 base::WeakPtr<ArcPolicyBridge> ArcPolicyBridge::GetWeakPtr() {
@@ -542,9 +565,12 @@ std::string ArcPolicyBridge::GetCurrentJSONPolicies() const {
   const Profile* const profile = Profile::FromBrowserContext(context_);
   const user_manager::User* const user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+  const ArcSmartCardManagerBridge* smart_card_manager =
+      ArcSmartCardManagerBridge::GetForBrowserContext(context_);
 
   return GetFilteredJSONPolicies(policy_map, profile->GetPrefs(),
-                                 instance_guid_, user->IsAffiliated());
+                                 instance_guid_, user->IsAffiliated(),
+                                 smart_card_manager);
 }
 
 void ArcPolicyBridge::OnReportComplianceParseSuccess(

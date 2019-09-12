@@ -49,22 +49,6 @@ QUIC_FLAG(double, FLAGS_quic_bbr_rtt_variation_weight, 0.0f)
 // Congestion window gain for QUIC BBR during PROBE_BW phase.
 QUIC_FLAG(double, FLAGS_quic_bbr_cwnd_gain, 2.0f)
 
-// The default minimum duration for BBRv2-native probes, in milliseconds.
-QUIC_FLAG(int32_t, FLAGS_quic_bbr2_default_probe_bw_base_duration_ms, 2000)
-
-// The default upper bound of the random amount of BBRv2-native probes, in
-// milliseconds.
-QUIC_FLAG(int32_t, FLAGS_quic_bbr2_default_probe_bw_max_rand_duration_ms, 1000)
-
-// The default period for entering PROBE_RTT, in milliseconds.
-QUIC_FLAG(int32_t, FLAGS_quic_bbr2_default_probe_rtt_period_ms, 10000)
-
-// The default loss threshold for QUIC BBRv2, should be a value between 0 and 1.
-QUIC_FLAG(double, FLAGS_quic_bbr2_default_loss_threshold, 0.02)
-
-// The default minimum number of loss marking events to exit STARTUP.
-QUIC_FLAG(int32_t, FLAGS_quic_bbr2_default_startup_full_loss_count, 8)
-
 // If true, adjust congestion window when doing bandwidth resumption in BBR.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_fix_bbr_cwnd_in_bandwidth_resumption,

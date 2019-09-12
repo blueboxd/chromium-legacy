@@ -1899,6 +1899,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CachePagesWithBeacon) {
   EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
 }
 
+// Regression test for https://crbug.com/993337.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        NavigateToTwoPagesOnSameSite) {
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -1912,18 +1913,21 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // 2) Navigate to A2.
   EXPECT_TRUE(NavigateToURL(shell(), url_a2));
   RenderFrameHostImpl* rfh_a2 = current_frame_host();
+  RenderFrameDeletedObserver delete_rfh_a2(current_frame_host());
 
   // 3) Navigate to B1.
   EXPECT_TRUE(NavigateToURL(shell(), url_b1));
   EXPECT_TRUE(rfh_a2->is_in_back_forward_cache());
+  RenderFrameHostImpl* rfh_b1 = current_frame_host();
 
   // 4) Do a history navigation back to A1.
-  // TODO(https://crbug.com/993337): This causes "Check failed: !frame_widget_".
-  RenderProcessHost* process = rfh_a2->GetProcess();
-  RenderProcessHostWatcher crash_observer(
-      process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   web_contents()->GetController().GoToIndex(0);
-  crash_observer.Wait();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_TRUE(rfh_b1->is_in_back_forward_cache());
+
+  // As a result, rfh_a2 is deleted. The history navigation tried to restore an
+  // entry using the same BrowsingInstance. They both can't live together.
+  delete_rfh_a2.WaitUntilDeleted();
 }
 
 class GeolocationBackForwardCacheBrowserTest

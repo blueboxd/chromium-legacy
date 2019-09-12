@@ -23,7 +23,8 @@ import java.util.List;
  * UI for the photo chooser that shows on the Android platform as a result of
  * &lt;input type=file accept=image &gt; form element.
  */
-public class PhotoPickerDialog extends AlertDialog {
+public class PhotoPickerDialog
+        extends AlertDialog implements PhotoPickerToolbar.PhotoPickerToolbarDelegate {
     // Our context.
     private Context mContext;
 
@@ -89,7 +90,7 @@ public class PhotoPickerDialog extends AlertDialog {
         mListenerWrapper = new PhotoPickerListenerWrapper(listener);
 
         // Initialize the main content view.
-        mCategoryView = new PickerCategoryView(context, multiSelectionAllowed);
+        mCategoryView = new PickerCategoryView(context, multiSelectionAllowed, this);
         mCategoryView.initialize(this, mListenerWrapper, mimeTypes);
         setView(mCategoryView);
     }
@@ -117,6 +118,14 @@ public class PhotoPickerDialog extends AlertDialog {
                 }
             }, WindowAndroid.activityFromContext(mContext));
         }
+    }
+
+    /**
+     * Cancels the dialog in response to a back navigation.
+     */
+    @Override
+    public void onNavigationBackCallback() {
+        cancel();
     }
 
     @VisibleForTesting

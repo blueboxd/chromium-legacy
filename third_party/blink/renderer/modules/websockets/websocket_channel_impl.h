@@ -228,6 +228,8 @@ class MODULES_EXPORT WebSocketChannelImpl final
                         network::mojom::blink::WebSocketMessageType type,
                         const char* data,
                         size_t data_size);
+  String GetTextMessage(const Vector<base::span<const char>>& chunks,
+                        wtf_size_t size);
   void OnConnectionError(const base::Location& set_from,
                          uint32_t custom_reason,
                          const std::string& description);
@@ -243,6 +245,7 @@ class MODULES_EXPORT WebSocketChannelImpl final
 
   bool backpressure_ = false;
   bool receiving_message_type_is_text_ = false;
+  bool received_text_is_all_ascii_ = true;
   bool throttle_passed_ = false;
   bool has_initiated_opening_handshake_ = false;
   uint64_t sending_quota_ = 0;

@@ -74,6 +74,7 @@ const char kLastPromptedGoogleURL[] = "browser.last_prompted_google_url";
 
 // Deprecated 9/2019
 const char kGoogleServicesUsername[] = "google.services.username";
+const char kGoogleServicesUserAccountId[] = "google.services.user_account_id";
 }
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
@@ -184,6 +185,7 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterStringPref(kLastKnownGoogleURL, std::string());
   registry->RegisterStringPref(kLastPromptedGoogleURL, std::string());
   registry->RegisterStringPref(kGoogleServicesUsername, std::string());
+  registry->RegisterStringPref(kGoogleServicesUserAccountId, std::string());
 }
 
 // This method should be periodically pruned of year+ old migrations.
@@ -215,4 +217,5 @@ void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
 
   // Added 09/2019
   prefs->ClearPref(kGoogleServicesUsername);
+  prefs->ClearPref(kGoogleServicesUserAccountId);
 }

@@ -14,10 +14,14 @@
   display: none;
 }
 
-#oauth-enroll-step-contents {
-  color: #666;
+#oauth-enroll-step-contents,
+#oauth-enroll-step-contents > div {
   height: 100%;
   width: 100%;
+}
+
+#oauth-enroll-step-contents {
+  color: #666;
 }
 
 #step-error {
@@ -28,10 +32,10 @@
 
 #oauth-enroll-auth-view {
   display: block;
-  height: 560px;
+  height: 100%;
   overflow: hidden;
   padding: 0;
-  width: 768px;
+  width: 100%;
 }
 
 #oauth-enroll-learn-more-link {

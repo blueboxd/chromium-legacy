@@ -144,9 +144,22 @@ base::android::ScopedJavaLocalRef<jobject> ConvertToJavaCoreAccountId(
       env, base::android::ConvertUTF8ToJavaString(env, account_id.id));
 }
 
+CoreAccountInfo ConvertFromJavaCoreAccountInfo(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& j_core_account_info) {
+  CoreAccountInfo account;
+  account.account_id = ConvertFromJavaCoreAccountId(
+      env, signin::Java_CoreAccountInfo_getId(env, j_core_account_info));
+  account.gaia = base::android::ConvertJavaStringToUTF8(
+      signin::Java_CoreAccountInfo_getGaiaId(env, j_core_account_info));
+  account.email = base::android::ConvertJavaStringToUTF8(
+      signin::Java_CoreAccountInfo_getName(env, j_core_account_info));
+  return account;
+}
+
 CoreAccountId ConvertFromJavaCoreAccountId(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& j_core_account_id) {
+    const base::android::JavaRef<jobject>& j_core_account_id) {
   CoreAccountId id;
   id.id = base::android::ConvertJavaStringToUTF8(
       signin::Java_CoreAccountId_getId(env, j_core_account_id));

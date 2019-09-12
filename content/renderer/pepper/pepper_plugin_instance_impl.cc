@@ -2058,6 +2058,10 @@ bool PepperPluginInstanceImpl::GetPrintPresetOptionsFromDocument(
   return true;
 }
 
+bool PepperPluginInstanceImpl::IsPdfPlugin() {
+  return LoadPdfInterface();
+}
+
 bool PepperPluginInstanceImpl::CanRotateView() {
   if (!LoadPdfInterface() || module()->is_crashed())
     return false;

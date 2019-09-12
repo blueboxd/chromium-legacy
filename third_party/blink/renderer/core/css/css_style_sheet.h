@@ -215,6 +215,9 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
 
   void SetLoadCompleted(bool);
 
+  FRIEND_TEST_ALL_PREFIXES(
+      CSSStyleSheetTest,
+      GarbageCollectedShadowRootsRemovedFromAdoptedTreeScopes);
   FRIEND_TEST_ALL_PREFIXES(CSSStyleSheetTest,
                            CSSStyleSheetConstructionWithEmptyCSSStyleSheetInit);
   FRIEND_TEST_ALL_PREFIXES(
@@ -252,7 +255,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
 
   Member<Node> owner_node_;
   Member<CSSRule> owner_rule_;
-  HeapHashSet<Member<TreeScope>> adopted_tree_scopes_;
+  HeapHashSet<WeakMember<TreeScope>> adopted_tree_scopes_;
   Member<Document> associated_document_;
   HashSet<AtomicString> custom_element_tag_names_;
   Member<ScriptPromiseResolver> resolver_;

@@ -124,10 +124,6 @@ class AppListClientImpl
   // client is accessed or active user is changed.
   void UpdateProfile();
 
-  // Shows the app list if it isn't already showing and switches to |state|,
-  // unless it is |INVALID_STATE| (in which case, opens on the default state).
-  void ShowAndSwitchToState(ash::AppListState state);
-
   void ShowAppList();
 
   bool app_list_target_visibility() const {

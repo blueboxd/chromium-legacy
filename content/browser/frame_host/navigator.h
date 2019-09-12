@@ -13,6 +13,7 @@
 #include "content/common/content_export.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/public/browser/navigation_controller.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/web/web_triggering_event_info.h"
 #include "ui/base/window_open_disposition.h"
@@ -86,7 +87,8 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   // FrameNavigationEntry can't be found or the navigation fails.
   virtual bool StartHistoryNavigationInNewSubframe(
       RenderFrameHostImpl* render_frame_host,
-      mojom::NavigationClientAssociatedPtrInfo* navigation_client);
+      mojo::PendingAssociatedRemote<mojom::NavigationClient>*
+          navigation_client);
 
   // Navigation requests -------------------------------------------------------
 
@@ -150,7 +152,7 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       mojom::CommonNavigationParamsPtr common_params,
       mojom::BeginNavigationParamsPtr begin_params,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-      mojom::NavigationClientAssociatedPtrInfo navigation_client,
+      mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
       mojo::PendingRemote<blink::mojom::NavigationInitiator>
           navigation_initiator,
       scoped_refptr<PrefetchedSignedExchangeCache>

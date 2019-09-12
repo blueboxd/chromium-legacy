@@ -24,6 +24,7 @@
 #include "content/test/test_navigation_url_loader.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_web_contents.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/redirect_info.h"
@@ -1128,20 +1129,22 @@ bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
                        std::vector<ContentSecurityPolicy>(), base::nullopt);
 
   if (IsPerNavigationMojoInterfaceEnabled()) {
-    mojom::NavigationClientAssociatedPtr navigation_client_ptr;
-    navigation_client_request_ =
-        mojo::MakeRequestAssociatedWithDedicatedPipe(&navigation_client_ptr);
+    mojo::PendingAssociatedRemote<mojom::NavigationClient>
+        navigation_client_remote;
+    navigation_client_receiver_ =
+        navigation_client_remote.InitWithNewEndpointAndPassReceiver();
     render_frame_host_->frame_host_binding_for_testing()
         .impl()
         ->BeginNavigation(std::move(common_params), std::move(begin_params),
                           mojo::NullRemote(),
-                          navigation_client_ptr.PassInterface(),
+                          std::move(navigation_client_remote),
                           mojo::NullRemote());
   } else {
     render_frame_host_->frame_host_binding_for_testing()
         .impl()
         ->BeginNavigation(std::move(common_params), std::move(begin_params),
-                          mojo::NullRemote(), nullptr, mojo::NullRemote());
+                          mojo::NullRemote(), mojo::NullAssociatedRemote(),
+                          mojo::NullRemote());
   }
 
   NavigationRequest* request =

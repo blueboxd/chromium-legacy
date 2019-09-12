@@ -12,8 +12,8 @@
 namespace updater {
 
 TEST(UpdaterTestNetwork, NetworkFetcherWinHTTPFactory) {
-  base::test::TaskEnvironment task_environment(
-      base::test::TaskEnvironment::MainThreadType::UI);
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::SingleThreadTaskEnvironment::MainThreadType::UI);
   auto fetcher = base::MakeRefCounted<NetworkFetcherFactory>()->Create();
   EXPECT_NE(nullptr, fetcher.get());
 }

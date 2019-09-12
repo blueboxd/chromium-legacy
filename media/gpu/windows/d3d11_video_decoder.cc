@@ -136,7 +136,8 @@ D3D11VideoDecoder::~D3D11VideoDecoder() {
   // Explicitly destroy the decoder, since it can reference picture buffers.
   accelerated_video_decoder_.reset();
 
-  AddLifetimeProgressionStage(D3D11LifetimeProgression::kPlaybackSucceeded);
+  if (already_initialized_)
+    AddLifetimeProgressionStage(D3D11LifetimeProgression::kPlaybackSucceeded);
 }
 
 std::string D3D11VideoDecoder::GetDisplayName() const {
@@ -188,7 +189,6 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
                                    const WaitingCB& waiting_cb) {
   if (already_initialized_)
     AddLifetimeProgressionStage(D3D11LifetimeProgression::kPlaybackSucceeded);
-  already_initialized_ = true;
   AddLifetimeProgressionStage(D3D11LifetimeProgression::kInitializeStarted);
 
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -405,7 +405,8 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
 
 void D3D11VideoDecoder::AddLifetimeProgressionStage(
     D3D11LifetimeProgression stage) {
-  DCHECK(already_initialized_);
+  already_initialized_ =
+      (stage == D3D11LifetimeProgression::kInitializeSucceeded);
   const std::string uma_name("Media.D3D11.DecoderLifetimeProgression");
   base::UmaHistogramEnumeration(uma_name, stage);
 }

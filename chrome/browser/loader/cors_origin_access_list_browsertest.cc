@@ -43,16 +43,12 @@ const char kTestSubdomainHost[] = "subdomain.crossorigin.example.com";
 
 // Tests end to end functionality of CORS access origin allow lists.
 class CorsOriginAccessListBrowserTest : public InProcessBrowserTest {
- public:
-  CorsOriginAccessListBrowserTest() {
-    scoped_feature_list_.InitWithFeatures(
-        // Enabled features
-        {network::features::kOutOfBlinkCors},
-        // Disabled features
-        {});
-  }
-
  protected:
+  CorsOriginAccessListBrowserTest() {
+    // This test verifies if the CorsOriginAccessList works with OOR-CORS.
+    scoped_feature_list_.InitAndEnableFeature(
+        network::features::kOutOfBlinkCors);
+  }
   std::unique_ptr<content::TitleWatcher> CreateWatcher() {
     // Register all possible result strings here.
     std::unique_ptr<content::TitleWatcher> watcher =

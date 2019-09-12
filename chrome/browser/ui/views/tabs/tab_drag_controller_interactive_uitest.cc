@@ -2587,8 +2587,17 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
   EXPECT_FALSE(browser2->window()->IsMaximized());
 }
 
-IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
-                       DragBrowserWindowWhenMajorityOfBoundsInSecondDisplay) {
+// Crashes on ChromeOS. crbug.com/1003288
+#if defined(OS_CHROMEOS)
+#define MAYBE_DragBrowserWindowWhenMajorityOfBoundsInSecondDisplay \
+  DISABLED_CDragBrowserWindowWhenMajorityOfBoundsInSecondDisplay
+#else
+#define MAYBE_DragBrowserWindowWhenMajorityOfBoundsInSecondDisplay \
+  DragBrowserWindowWhenMajorityOfBoundsInSecondDisplay
+#endif
+IN_PROC_BROWSER_TEST_P(
+    DetachToBrowserInSeparateDisplayTabDragControllerTest,
+    MAYBE_DragBrowserWindowWhenMajorityOfBoundsInSecondDisplay) {
   // Set the browser's window bounds such that the majority of its bounds
   // resides in the second display.
   const std::pair<Display, Display> displays =

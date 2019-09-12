@@ -603,6 +603,8 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // |subtree_reflecting_layers_| list accordingly.
   void ResetSubtreeReflectedLayer();
 
+  bool IsHitTestableForCC() const { return visible_ && accept_events_; }
+
   const LayerType type_;
 
   Compositor* compositor_;

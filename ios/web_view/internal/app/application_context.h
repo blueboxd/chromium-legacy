@@ -12,6 +12,7 @@
 #include "base/no_destructor.h"
 #include "base/sequence_checker.h"
 #include "ios/web/public/init/network_context_owner.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
 namespace net {
@@ -88,7 +89,7 @@ class ApplicationContext {
   std::unique_ptr<WebViewIOThread> web_view_io_thread_;
   std::string application_locale_;
 
-  network::mojom::NetworkContextPtr network_context_;
+  mojo::Remote<network::mojom::NetworkContext> network_context_;
   network::mojom::URLLoaderFactoryPtr url_loader_factory_;
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
       shared_url_loader_factory_;

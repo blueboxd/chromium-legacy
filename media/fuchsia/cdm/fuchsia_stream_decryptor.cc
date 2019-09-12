@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/fuchsia/cdm/stream_processor_decryptor.h"
+#include "media/fuchsia/cdm/fuchsia_stream_decryptor.h"
 
 #include <fuchsia/media/cpp/fidl.h>
 #include <fuchsia/media/drm/cpp/fidl.h>
@@ -20,9 +20,9 @@
 namespace media {
 namespace {
 
-// Decryptor will copy decrypted data immediately once it's available. Client
-// just needs one buffer.
-const uint32_t kMaxUsedOutputFrames = 1;
+// FuchsiaClearStreamDecryptor copies decrypted data immediately once it's
+// available, so it doesn't need more than one output buffer.
+const size_t kMinOutputAudioOutputFrames = 1;
 
 std::string GetEncryptionMode(EncryptionMode mode) {
   switch (mode) {
@@ -87,29 +87,20 @@ fuchsia::media::FormatDetails GetFormatDetails(const DecryptConfig* config) {
 
 }  // namespace
 
-StreamProcessorDecryptor::StreamProcessorDecryptor(
+FuchsiaStreamDecryptorBase::FuchsiaStreamDecryptorBase(
     fuchsia::media::StreamProcessorPtr processor)
     : processor_(std::move(processor), this) {}
 
-StreamProcessorDecryptor::~StreamProcessorDecryptor() = default;
+FuchsiaStreamDecryptorBase::~FuchsiaStreamDecryptorBase() = default;
 
-void StreamProcessorDecryptor::Decrypt(scoped_refptr<DecoderBuffer> encrypted,
-                                       Decryptor::DecryptCB decrypt_cb) {
+void FuchsiaStreamDecryptorBase::DecryptInternal(
+    scoped_refptr<DecoderBuffer> encrypted) {
   DCHECK(!encrypted->end_of_stream()) << "EOS frame is always clear.";
-  DCHECK(!decrypt_cb_);
   DCHECK(!pending_encrypted_buffer_);
-
-  decrypt_cb_ = std::move(decrypt_cb);
 
   // Input buffer writer is not available. Wait.
   if (!input_writer_) {
     pending_encrypted_buffer_ = std::move(encrypted);
-    return;
-  }
-
-  if (!input_pool_->is_live()) {
-    DLOG(ERROR) << "Input buffer pool is dead.";
-    std::move(decrypt_cb_).Run(Decryptor::kError, nullptr);
     return;
   }
 
@@ -133,7 +124,7 @@ void StreamProcessorDecryptor::Decrypt(scoped_refptr<DecoderBuffer> encrypted,
     // TODO(yucliu): Handle large encrypted buffer correctly. For now, just
     // reject the decryption.
     DLOG(ERROR) << "Encrypted data size is too big.";
-    std::move(decrypt_cb_).Run(Decryptor::kError, nullptr);
+    OnError();
     return;
   }
 
@@ -143,25 +134,21 @@ void StreamProcessorDecryptor::Decrypt(scoped_refptr<DecoderBuffer> encrypted,
   auto input_packet = StreamProcessorHelper::IoPacket::CreateInput(
       index, encrypted->data_size(), encrypted->timestamp(),
       GetFormatDetails(decrypt_config),
-      base::BindOnce(&StreamProcessorDecryptor::OnInputPacketReleased,
+      base::BindOnce(&FuchsiaStreamDecryptorBase::OnInputPacketReleased,
                      base::Unretained(this), index));
 
   processor_.Process(std::move(input_packet));
 }
 
-void StreamProcessorDecryptor::CancelDecrypt() {
+void FuchsiaStreamDecryptorBase::ResetStream() {
   // Close current stream and drop all the cached decoder buffers.
-  // Keep input/output_pool_ to avoid buffer re-allocation.
+  // Keep input and output buffers to avoid buffer re-allocation.
   processor_.Reset();
   pending_encrypted_buffer_ = nullptr;
-
-  // Fire |decrypt_cb_| immediately as required by Decryptor::CancelDecrypt.
-  if (decrypt_cb_)
-    std::move(decrypt_cb_).Run(Decryptor::kSuccess, nullptr);
 }
 
 // StreamProcessorHelper::Client implementation:
-void StreamProcessorDecryptor::AllocateInputBuffers(
+void FuchsiaStreamDecryptorBase::AllocateInputBuffers(
     const fuchsia::media::StreamBufferConstraints& stream_constraints) {
   base::Optional<fuchsia::sysmem::BufferCollectionConstraints>
       buffer_constraints =
@@ -177,11 +164,95 @@ void StreamProcessorDecryptor::AllocateInputBuffers(
 
   input_pool_creator_->Create(
       std::move(buffer_constraints).value(),
-      base::BindOnce(&StreamProcessorDecryptor::OnInputBufferPoolAvailable,
+      base::BindOnce(&FuchsiaStreamDecryptorBase::OnInputBufferPoolCreated,
                      base::Unretained(this)));
 }
 
-void StreamProcessorDecryptor::AllocateOutputBuffers(
+void FuchsiaStreamDecryptorBase::OnInputPacketReleased(size_t index) {
+  input_writer_->Release(index);
+
+  if (!pending_encrypted_buffer_)
+    return;
+
+  // If there are pending decryption request, handle it now since we have
+  // available input buffers.
+  DecryptInternal(std::move(pending_encrypted_buffer_));
+}
+
+void FuchsiaStreamDecryptorBase::OnInputBufferPoolCreated(
+    std::unique_ptr<SysmemBufferPool> pool) {
+  if (!pool) {
+    DLOG(ERROR) << "Fail to allocate input buffer.";
+    OnError();
+    return;
+  }
+
+  input_pool_ = std::move(pool);
+
+  // Provide token before enabling writer. Tokens must be provided to
+  // StreamProcessor before getting the allocated buffers.
+  processor_.CompleteInputBuffersAllocation(input_pool_->TakeToken());
+
+  input_pool_->CreateWriter(base::BindOnce(
+      &FuchsiaStreamDecryptorBase::OnInputBufferPoolWriterCreated,
+      base::Unretained(this)));
+}
+
+void FuchsiaStreamDecryptorBase::OnInputBufferPoolWriterCreated(
+    std::unique_ptr<SysmemBufferWriter> writer) {
+  if (!writer) {
+    LOG(ERROR) << "Fail to enable input buffer writer";
+    OnError();
+    return;
+  }
+
+  DCHECK(!input_writer_);
+  input_writer_ = std::move(writer);
+
+  if (pending_encrypted_buffer_) {
+    DecryptInternal(std::move(pending_encrypted_buffer_));
+  }
+}
+
+std::unique_ptr<FuchsiaClearStreamDecryptor>
+FuchsiaClearStreamDecryptor::Create(
+    fuchsia::media::drm::ContentDecryptionModule* cdm) {
+  DCHECK(cdm);
+
+  fuchsia::media::drm::DecryptorParams params;
+  params.set_require_secure_mode(false);
+  params.mutable_input_details()->set_format_details_version_ordinal(0);
+  fuchsia::media::StreamProcessorPtr stream_processor;
+  cdm->CreateDecryptor(std::move(params), stream_processor.NewRequest());
+
+  return std::make_unique<FuchsiaClearStreamDecryptor>(
+      std::move(stream_processor));
+}
+
+FuchsiaClearStreamDecryptor::FuchsiaClearStreamDecryptor(
+    fuchsia::media::StreamProcessorPtr processor)
+    : FuchsiaStreamDecryptorBase(std::move(processor)) {}
+
+FuchsiaClearStreamDecryptor::~FuchsiaClearStreamDecryptor() = default;
+
+void FuchsiaClearStreamDecryptor::Decrypt(
+    scoped_refptr<DecoderBuffer> encrypted,
+    Decryptor::DecryptCB decrypt_cb) {
+  DCHECK(!decrypt_cb_);
+  decrypt_cb_ = std::move(decrypt_cb);
+
+  DecryptInternal(std::move(encrypted));
+}
+
+void FuchsiaClearStreamDecryptor::CancelDecrypt() {
+  ResetStream();
+
+  // Fire |decrypt_cb_| immediately as required by Decryptor::CancelDecrypt.
+  if (decrypt_cb_)
+    std::move(decrypt_cb_).Run(Decryptor::kSuccess, nullptr);
+}
+
+void FuchsiaClearStreamDecryptor::AllocateOutputBuffers(
     const fuchsia::media::StreamBufferConstraints& stream_constraints) {
   if (!stream_constraints.has_packet_count_for_client_max() ||
       !stream_constraints.has_packet_count_for_client_min()) {
@@ -190,10 +261,8 @@ void StreamProcessorDecryptor::AllocateOutputBuffers(
     return;
   }
 
-  size_t max_used_output_buffers = std::min(
-      kMaxUsedOutputFrames, stream_constraints.packet_count_for_client_max());
-  max_used_output_buffers = std::max(
-      max_used_output_buffers,
+  size_t max_used_output_buffers = std::max(
+      kMinOutputAudioOutputFrames,
       static_cast<size_t>(stream_constraints.packet_count_for_client_min()));
 
   output_pool_creator_ =
@@ -201,19 +270,19 @@ void StreamProcessorDecryptor::AllocateOutputBuffers(
 
   output_pool_creator_->Create(
       SysmemBufferReader::GetRecommendedConstraints(max_used_output_buffers),
-      base::BindOnce(&StreamProcessorDecryptor::OnOutputBufferPoolAvailable,
+      base::BindOnce(&FuchsiaClearStreamDecryptor::OnOutputBufferPoolCreated,
                      base::Unretained(this), max_used_output_buffers));
 }
 
-void StreamProcessorDecryptor::OnProcessEos() {
+void FuchsiaClearStreamDecryptor::OnProcessEos() {
   // Decryptor never pushes EOS frame.
   NOTREACHED();
 }
 
-void StreamProcessorDecryptor::OnOutputFormat(
+void FuchsiaClearStreamDecryptor::OnOutputFormat(
     fuchsia::media::StreamOutputFormat format) {}
 
-void StreamProcessorDecryptor::OnOutputPacket(
+void FuchsiaClearStreamDecryptor::OnOutputPacket(
     std::unique_ptr<StreamProcessorHelper::IoPacket> packet) {
   DCHECK(output_reader_);
   if (!output_pool_->is_live()) {
@@ -238,69 +307,18 @@ void StreamProcessorDecryptor::OnOutputPacket(
   std::move(decrypt_cb_).Run(Decryptor::kSuccess, std::move(clear_buffer));
 }
 
-void StreamProcessorDecryptor::OnNoKey() {
+void FuchsiaClearStreamDecryptor::OnNoKey() {
   if (decrypt_cb_)
     std::move(decrypt_cb_).Run(Decryptor::kNoKey, nullptr);
 }
 
-void StreamProcessorDecryptor::OnError() {
-  pending_encrypted_buffer_ = nullptr;
+void FuchsiaClearStreamDecryptor::OnError() {
+  ResetStream();
   if (decrypt_cb_)
     std::move(decrypt_cb_).Run(Decryptor::kError, nullptr);
-
-  processor_.Reset();
 }
 
-void StreamProcessorDecryptor::OnInputPacketReleased(size_t index) {
-  input_writer_->Release(index);
-
-  if (!pending_encrypted_buffer_)
-    return;
-
-  DCHECK(decrypt_cb_);
-
-  // If there're pending decryption request, handle it now since we have
-  // available input buffers.
-  Decrypt(std::move(pending_encrypted_buffer_), std::move(decrypt_cb_));
-}
-
-void StreamProcessorDecryptor::OnInputBufferPoolAvailable(
-    std::unique_ptr<SysmemBufferPool> pool) {
-  if (!pool) {
-    DLOG(ERROR) << "Fail to allocate input buffer.";
-    OnError();
-    return;
-  }
-
-  input_pool_ = std::move(pool);
-
-  // Provide token before enabling writer. Tokens must be provided to
-  // StreamProcessor before getting the allocated buffers.
-  processor_.CompleteInputBuffersAllocation(input_pool_->TakeToken());
-
-  input_pool_->CreateWriter(
-      base::BindOnce(&StreamProcessorDecryptor::OnInputBufferPoolWriter,
-                     base::Unretained(this)));
-}
-
-void StreamProcessorDecryptor::OnInputBufferPoolWriter(
-    std::unique_ptr<SysmemBufferWriter> writer) {
-  if (!writer) {
-    LOG(ERROR) << "Fail to enable input buffer writer";
-    OnError();
-    return;
-  }
-
-  DCHECK(!input_writer_);
-  input_writer_ = std::move(writer);
-
-  if (pending_encrypted_buffer_) {
-    DCHECK(decrypt_cb_);
-    Decrypt(std::move(pending_encrypted_buffer_), std::move(decrypt_cb_));
-  }
-}
-
-void StreamProcessorDecryptor::OnOutputBufferPoolAvailable(
+void FuchsiaClearStreamDecryptor::OnOutputBufferPoolCreated(
     size_t max_used_output_buffers,
     std::unique_ptr<SysmemBufferPool> pool) {
   if (!pool) {
@@ -316,12 +334,12 @@ void StreamProcessorDecryptor::OnOutputBufferPoolAvailable(
   processor_.CompleteOutputBuffersAllocation(max_used_output_buffers,
                                              output_pool_->TakeToken());
 
-  output_pool_->CreateReader(
-      base::BindOnce(&StreamProcessorDecryptor::OnOutputBufferPoolReader,
-                     base::Unretained(this)));
+  output_pool_->CreateReader(base::BindOnce(
+      &FuchsiaClearStreamDecryptor::OnOutputBufferPoolReaderCreated,
+      base::Unretained(this)));
 }
 
-void StreamProcessorDecryptor::OnOutputBufferPoolReader(
+void FuchsiaClearStreamDecryptor::OnOutputBufferPoolReaderCreated(
     std::unique_ptr<SysmemBufferReader> reader) {
   if (!reader) {
     LOG(ERROR) << "Fail to enable output buffer reader.";
@@ -331,21 +349,6 @@ void StreamProcessorDecryptor::OnOutputBufferPoolReader(
 
   DCHECK(!output_reader_);
   output_reader_ = std::move(reader);
-}
-
-std::unique_ptr<StreamProcessorDecryptor>
-StreamProcessorDecryptor::CreateAudioDecryptor(
-    fuchsia::media::drm::ContentDecryptionModule* cdm) {
-  DCHECK(cdm);
-
-  fuchsia::media::drm::DecryptorParams params;
-  params.set_require_secure_mode(false);
-  params.mutable_input_details()->set_format_details_version_ordinal(0);
-  fuchsia::media::StreamProcessorPtr stream_processor;
-  cdm->CreateDecryptor(std::move(params), stream_processor.NewRequest());
-
-  return std::make_unique<StreamProcessorDecryptor>(
-      std::move(stream_processor));
 }
 
 }  // namespace media

@@ -84,11 +84,8 @@ async function setUpFileEntrySet(volume) {
 async function openFileDialogClickOkButton(
     volume, name, useBrowserOpen = false) {
   const okButton = '.button-panel button.ok:enabled';
-  if (volume !== 'drive' ||
-      await sendTestMessage({name: 'getDriveFsEnabled'}) === 'true') {
-    await sendTestMessage(
-        {name: 'expectFileTask', fileNames: [name], openType: 'open'});
-  }
+  await sendTestMessage(
+      {name: 'expectFileTask', fileNames: [name], openType: 'open'});
   let closer = clickOpenFileDialogButton.bind(null, name, okButton);
 
   const entrySet = await setUpFileEntrySet(volume);
@@ -114,11 +111,8 @@ async function openFileDialogClickOkButton(
 async function saveFileDialogClickOkButton(volume, name) {
   const caller = getCaller();
 
-  if (volume !== 'drive' ||
-      await sendTestMessage({name: 'getDriveFsEnabled'}) === 'true') {
-    await sendTestMessage(
-        {name: 'expectFileTask', fileNames: [name], openType: 'saveAs'});
-  }
+  await sendTestMessage(
+      {name: 'expectFileTask', fileNames: [name], openType: 'saveAs'});
 
   let closer = async (appId) => {
     const okButton = '.button-panel button.ok:enabled';
@@ -375,11 +369,7 @@ testcase.openFileDialogDriveFromBrowser = async () => {
   const url = new URL(
       await openFileDialogClickOkButton('drive', TEST_DRIVE_FILE, true));
 
-  const isDriveFsEnabled =
-      await sendTestMessage({name: 'getDriveFsEnabled'}) === 'true';
-
-  chrome.test.assertEq(
-      url.protocol, isDriveFsEnabled ? 'file:' : 'externalfile:');
+  chrome.test.assertEq(url.protocol, 'file:');
   chrome.test.assertTrue(
       url.pathname.endsWith(`/root/${TEST_DRIVE_FILE}`), url.pathname);
 };

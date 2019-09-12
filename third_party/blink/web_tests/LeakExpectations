@@ -24,6 +24,8 @@ crbug.com/859640 http/tests/devtools/tracing/timeline-style/timeline-style-recal
 crbug.com/755625 external/wpt/beacon/beacon-error.window.html [ Leak ]
 crbug.com/651742 external/wpt/content-security-policy/connect-src/connect-src-beacon-allowed.sub.html [ Leak ]
 
+crbug.com/1003224 http/tests/clipboard/async-write-image-read-image.html [ Leak ]
+
 # -----------------------------------------------------------------
 # Flakily leaks
 # -----------------------------------------------------------------

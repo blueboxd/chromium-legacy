@@ -97,7 +97,7 @@ CastNetworkContexts::~CastNetworkContexts() {
 network::mojom::NetworkContext* CastNetworkContexts::GetSystemContext() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!system_network_context_ || system_network_context_.encountered_error()) {
+  if (!system_network_context_ || !system_network_context_.is_connected()) {
     // This should call into OnNetworkServiceCreated(), which will re-create
     // the network service, if needed. There's a chance that it won't be
     // invoked, if the NetworkContext has encountered an error but the
@@ -167,8 +167,9 @@ void CastNetworkContexts::OnNetworkServiceCreated(
 
   // The system NetworkContext must be created first, since it sets
   // |primary_network_context| to true.
-  network_service->CreateNetworkContext(MakeRequest(&system_network_context_),
-                                        CreateSystemNetworkContextParams());
+  network_service->CreateNetworkContext(
+      system_network_context_.BindNewPipeAndPassReceiver(),
+      CreateSystemNetworkContextParams());
 }
 
 void CastNetworkContexts::OnLocaleUpdate() {

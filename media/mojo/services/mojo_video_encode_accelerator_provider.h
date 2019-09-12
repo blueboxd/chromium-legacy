@@ -26,10 +26,11 @@ class MEDIA_MOJO_EXPORT MojoVideoEncodeAcceleratorProvider
       MojoVideoEncodeAcceleratorService::
           CreateAndInitializeVideoEncodeAcceleratorCallback;
 
-  static void Create(mojom::VideoEncodeAcceleratorProviderRequest request,
-                     const CreateAndInitializeVideoEncodeAcceleratorCallback&
-                         create_vea_callback,
-                     const gpu::GpuPreferences& gpu_preferences);
+  static void Create(
+      mojo::PendingReceiver<mojom::VideoEncodeAcceleratorProvider> receiver,
+      const CreateAndInitializeVideoEncodeAcceleratorCallback&
+          create_vea_callback,
+      const gpu::GpuPreferences& gpu_preferences);
 
   MojoVideoEncodeAcceleratorProvider(
       const CreateAndInitializeVideoEncodeAcceleratorCallback&

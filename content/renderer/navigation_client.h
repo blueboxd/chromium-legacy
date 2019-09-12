@@ -6,7 +6,8 @@
 #define CONTENT_RENDERER_NAVIGATION_CLIENT_H_
 
 #include "content/common/navigation_client.mojom.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 
 namespace content {
 
@@ -43,7 +44,7 @@ class NavigationClient : mojom::NavigationClient {
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders,
       CommitFailedNavigationCallback callback) override;
 
-  void Bind(mojom::NavigationClientAssociatedRequest request);
+  void Bind(mojo::PendingAssociatedReceiver<mojom::NavigationClient> receiver);
 
   // See NavigationState::was_initiated_in_this_frame for details.
   void MarkWasInitiatedInThisFrame();
@@ -59,7 +60,8 @@ class NavigationClient : mojom::NavigationClient {
   void SetDisconnectionHandler();
   void ResetDisconnectionHandler();
 
-  mojo::AssociatedBinding<mojom::NavigationClient> navigation_client_binding_;
+  mojo::AssociatedReceiver<mojom::NavigationClient> navigation_client_receiver_{
+      this};
   RenderFrameImpl* render_frame_;
   bool was_initiated_in_this_frame_ = false;
 };

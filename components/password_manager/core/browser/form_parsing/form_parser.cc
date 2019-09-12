@@ -947,6 +947,13 @@ std::unique_ptr<PasswordForm> AssemblePasswordForm(
   result->only_for_fallback = significant_fields.is_fallback;
   result->submission_event = form_data.submission_event;
 
+  for (const FormFieldData& field : form_data.fields) {
+    if (field.form_control_type == "password" &&
+        (field.properties_mask & FieldPropertiesFlags::AUTOFILLED)) {
+      result->form_has_autofilled_value = true;
+    }
+  }
+
   // Set data related to specific fields.
   SetFields(significant_fields, result.get());
   return result;

@@ -57,7 +57,8 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                    bool was_within_same_document) override;
   bool StartHistoryNavigationInNewSubframe(
       RenderFrameHostImpl* render_frame_host,
-      mojom::NavigationClientAssociatedPtrInfo* navigation_client) override;
+      mojo::PendingAssociatedRemote<mojom::NavigationClient>* navigation_client)
+      override;
   void Navigate(std::unique_ptr<NavigationRequest> request,
                 ReloadType reload_type,
                 RestoreType restore_type) override;
@@ -97,7 +98,7 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       mojom::CommonNavigationParamsPtr common_params,
       mojom::BeginNavigationParamsPtr begin_params,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-      mojom::NavigationClientAssociatedPtrInfo navigation_client,
+      mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
       mojo::PendingRemote<blink::mojom::NavigationInitiator>
           navigation_initiator,
       scoped_refptr<PrefetchedSignedExchangeCache>

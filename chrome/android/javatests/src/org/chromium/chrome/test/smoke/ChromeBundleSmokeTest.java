@@ -21,8 +21,10 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.chrome.test.pagecontroller.rules.ChromeUiApplicationTestRule;
 import org.chromium.chrome.test.pagecontroller.rules.ChromeUiAutomatorTestRule;
+import org.chromium.chrome.test.pagecontroller.utils.IUi2Locator;
 import org.chromium.chrome.test.pagecontroller.utils.Ui2Locators;
 import org.chromium.chrome.test.pagecontroller.utils.UiAutomatorUtils;
+import org.chromium.chrome.test.pagecontroller.utils.UiLocatorHelper;
 
 /** Smoke Test for Chrome bundles. */
 @SmallTest
@@ -46,18 +48,34 @@ public class ChromeBundleSmokeTest {
         mChromeUiRule.launchIntoNewTabPageOnFirstRun();
     }
 
-    @Test
-    public void testModuleInstall() {
-        // Send intent that makes Chrome install the test dummy module.
+    private void runTestActivity(int testCase) {
+        // This intent will trigger installation of the module if not present.
         Context context = InstrumentationRegistry.getContext();
         Intent intent = new Intent();
         intent.setComponent(new ComponentName(mPackageName, TARGET_ACTIVITY));
-        intent.putExtra("test_case", 0); // Test case EXECUTE_JAVA.
+        intent.putExtra("test_case", testCase);
         intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);
 
-        // Wait for done dialog to show up.
-        Assert.assertTrue(UiAutomatorUtils.getInstance().getLocatorHelper().isOnScreen(
-                Ui2Locators.withText("Test Case 0: done")));
+        final String prefixText = "Test Case " + testCase + ": ";
+        IUi2Locator locator = Ui2Locators.withTextContaining(prefixText);
+
+        // Wait for result dialog to show up.
+        UiLocatorHelper locatorHelper = UiAutomatorUtils.getInstance().getLocatorHelper();
+        Assert.assertTrue(locatorHelper.isOnScreen(locator));
+
+        // Ensure the dialog text indicates a pass.
+        final String passText = prefixText + "pass";
+        Assert.assertEquals(locatorHelper.getOneTextImmediate(locator, null), passText);
+    }
+
+    @Test
+    public void testModuleJavaCodeExecution() {
+        runTestActivity(0); // Test case EXECUTE_JAVA.
+    }
+
+    @Test
+    public void testModuleNativeCodeExecution() {
+        runTestActivity(1); // Test case EXECUTE_NATIVE.
     }
 }

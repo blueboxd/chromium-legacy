@@ -158,6 +158,9 @@ class ManagePasswordsUIController
   virtual void SavePasswordInternal();
   virtual void NeverSavePasswordInternal();
 
+  // Hides the bubble if opened. Mocked in the tests.
+  virtual void HidePasswordBubble();
+
   // Called when a PasswordForm is autofilled, when a new PasswordForm is
   // submitted, or when a navigation occurs to update the visibility of the
   // manage passwords icon and bubble.

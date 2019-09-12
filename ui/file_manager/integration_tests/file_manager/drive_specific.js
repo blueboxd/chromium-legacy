@@ -81,9 +81,6 @@ testcase.driveOpenSidebarOffline = async () => {
  * "shared-with-me" should be shown.
  */
 testcase.driveOpenSidebarSharedWithMe = async () => {
-  const isDriveFsEnabled =
-      await sendTestMessage({name: 'getDriveFsEnabled'}) === 'true';
-
   // Open Files app on Drive containing "Shared with me" file entries.
   const appId = await setupAndWaitUntilReady(
       RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET.concat([
@@ -111,9 +108,7 @@ testcase.driveOpenSidebarSharedWithMe = async () => {
 
   // Wait until the breadcrumb path is updated.
   await remoteCall.waitUntilCurrentDirectoryIsChanged(
-      appId,
-      isDriveFsEnabled ? '/Shared with me/Shared Directory' :
-                         '/My Drive/Shared Directory');
+      appId, '/Shared with me/Shared Directory');
 
   // Verify the file list.
   await remoteCall.waitForFiles(
@@ -280,50 +275,6 @@ testcase.drivePressCtrlAFromSearch = async () => {
   await remoteCall.waitForElement(appId, ['body:not(.check-select)']);
 };
 
-/**
- * Pin hello.txt in the old Drive client.
- */
-testcase.PRE_driveMigratePinnedFile = async () => {
-  const appId = await setupAndWaitUntilReady(RootPath.DRIVE);
-  await remoteCall.callRemoteTestUtil('selectFile', appId, ['hello.txt']);
-  await remoteCall.waitForElement(appId, ['.table-row[selected]']);
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'fakeMouseRightClick', appId, ['.table-row[selected]']));
-
-  // Wait menu to appear and click on toggle pinned.
-  await remoteCall.waitForElement(appId, '#file-context-menu:not([hidden])');
-  await remoteCall.waitAndClickElement(
-      appId, '[command="#toggle-pinned"]:not([hidden]):not([disabled])');
-
-  // Wait the toggle pinned async action to finish, so the next call to display
-  // context menu is after the action has finished.
-  await remoteCall.waitForElement(appId, '#file-context-menu[hidden]');
-  // TODO(crbug.com/953616): Change wait for a deterministic option.
-  await wait(100);
-
-  // Open context menu again.
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'fakeEvent', appId, ['#file-list', 'contextmenu']));
-
-  // Check: File is pinned.
-  await remoteCall.waitForElement(appId, '[command="#toggle-pinned"][checked]');
-};
-
-/**
- * Verify hello.txt is still pinned after migrating to DriveFS.
- */
-testcase.driveMigratePinnedFile = async () => {
-  // After enabling DriveFS, ensure the file is still pinned.
-  const appId = await setupAndWaitUntilReady(RootPath.DRIVE);
-  await remoteCall.callRemoteTestUtil('selectFile', appId, ['hello.txt']);
-  await remoteCall.waitForElement(appId, ['.table-row[selected]']);
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'fakeMouseRightClick', appId, ['.table-row[selected]']));
-
-  await remoteCall.waitForElement(appId, '#file-context-menu:not([hidden])');
-  await remoteCall.waitForElement(appId, '[command="#toggle-pinned"][checked]');
-};
-
 // Match the way the production version formats dates.
 function formatDate(date) {
   const padAndConvert = i => {
@@ -382,100 +333,6 @@ testcase.driveBackupPhotos = async () => {
   // DCIM in the removable storage.
   const files = TestEntryInfo.getExpectedRows([ENTRIES.image3]);
   await remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true});
-};
-
-/**
- * Create some dirty files in Drive.
- *
- * Create /root/never-sync.txt and /root/A/never-sync.txt. These files will
- * never complete syncing to the fake drive service so will remain dirty
- * forever.
- */
-testcase.PRE_driveRecoverDirtyFiles = async () => {
-  // Open Files app on downloads.
-  const appId = await setupAndWaitUntilReady(
-      RootPath.DOWNLOADS, [ENTRIES.neverSync], [ENTRIES.directoryA]);
-
-  // Select never-sync.txt.
-  chrome.test.assertTrue(
-      await remoteCall.callRemoteTestUtil(
-          'selectFile', appId, ['never-sync.txt']),
-      'selectFile failed');
-
-  // Copy it.
-  chrome.test.assertTrue(
-      await remoteCall.callRemoteTestUtil(
-          'fakeKeyDown', appId, ['#file-list', 'c', true, false, false]),
-      'copy failed');
-
-  // Navigate to My Drive.
-  await remoteCall.navigateWithDirectoryTree(
-      appId, '/root', 'My Drive', 'drive');
-
-  // Paste.
-  chrome.test.assertTrue(
-      await remoteCall.callRemoteTestUtil(
-          'fakeKeyDown', appId, ['#file-list', 'v', true, false, false]),
-      'paste failed');
-
-  // Wait for the paste to complete.
-  let expectedEntryRows = [
-    ENTRIES.neverSync.getExpectedRow(),
-    ENTRIES.directoryA.getExpectedRow(),
-  ];
-  await remoteCall.waitForFiles(
-      appId, expectedEntryRows, {ignoreLastModifiedTime: true});
-
-  // Navigate to My Drive/A.
-  await remoteCall.navigateWithDirectoryTree(
-      appId, '/root/A', 'My Drive', 'drive');
-
-  // Paste.
-  chrome.test.assertTrue(
-      await remoteCall.callRemoteTestUtil(
-          'fakeKeyDown', appId, ['#file-list', 'v', true, false, false]),
-      'paste failed');
-
-  // Wait for the paste to complete.
-  expectedEntryRows = [ENTRIES.neverSync.getExpectedRow()];
-  await remoteCall.waitForFiles(
-      appId, expectedEntryRows, {ignoreLastModifiedTime: true});
-};
-
-/**
- * Verify that when enabling DriveFS, the dirty files are recovered to
- * Downloads/Recovered files from Google Drive. The directory structure should
- * be flattened with uniquified names:
- * - never-sync.txt
- * - never-sync (1).txt
- */
-testcase.driveRecoverDirtyFiles = async () => {
-  // After enabling DriveFS, ensure the dirty files have been
-  // recovered into Downloads.
-  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, [], []);
-
-  // Wait for the Recovered files directory to be in Downloads.
-  let expectedEntryRows = [
-    ENTRIES.neverSync.getExpectedRow(),
-    ['Recovered files from Google Drive', '--', 'Folder'],
-  ];
-  await remoteCall.waitForFiles(
-      appId, expectedEntryRows, {ignoreLastModifiedTime: true});
-
-  // Navigate to the recovered files directory.
-  await remoteCall.navigateWithDirectoryTree(
-      appId, '/Downloads/Recovered files from Google Drive',
-      'My files/Downloads');
-
-  // Ensure it contains never-sync.txt and never-sync (1).txt.
-  const uniquifiedNeverSync = ENTRIES.neverSync.getExpectedRow();
-  uniquifiedNeverSync[0] = 'never-sync (1).txt';
-  expectedEntryRows = [
-    ENTRIES.neverSync.getExpectedRow(),
-    uniquifiedNeverSync,
-  ];
-  await remoteCall.waitForFiles(
-      appId, expectedEntryRows, {ignoreLastModifiedTime: true});
 };
 
 /**

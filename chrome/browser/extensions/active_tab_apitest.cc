@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -30,7 +29,6 @@
 #include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "services/network/public/cpp/features.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/extension_tab_util_delegate_chromeos.h"
@@ -40,51 +38,24 @@
 namespace extensions {
 namespace {
 
-enum class TestMode {
-  kWithBlinkCors,
-  kWithOutOfBlinkCors,
-};
-
-class ExtensionActiveTabTest : public ExtensionApiTest,
-                               public testing::WithParamInterface<TestMode> {
+class ExtensionActiveTabTest : public ExtensionApiTest {
  public:
   ExtensionActiveTabTest() = default;
 
   // ExtensionApiTest override:
-  void SetUp() override {
-    std::vector<base::Feature> enabled_features;
-    std::vector<base::Feature> disabled_features;
-    if (ShouldEnableOutOfBlinkCors()) {
-      enabled_features.push_back(network::features::kOutOfBlinkCors);
-    } else {
-      disabled_features.push_back(network::features::kOutOfBlinkCors);
-    }
-    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
-    ExtensionApiTest::SetUp();
-  }
-
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
 
     // Map all hosts to localhost.
     host_resolver()->AddRule("*", "127.0.0.1");
-
-    ASSERT_EQ(ShouldEnableOutOfBlinkCors(),
-              base::FeatureList::IsEnabled(network::features::kOutOfBlinkCors));
   }
 
  private:
-  bool ShouldEnableOutOfBlinkCors() const {
-    TestMode mode = GetParam();
-    return mode == TestMode::kWithOutOfBlinkCors;
-  }
-
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionActiveTabTest);
 };
 
-IN_PROC_BROWSER_TEST_P(ExtensionActiveTabTest, ActiveTab) {
+IN_PROC_BROWSER_TEST_F(ExtensionActiveTabTest, ActiveTab) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   ExtensionTestMessageListener background_page_ready("ready",
@@ -177,7 +148,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionActiveTabTest, ActiveTab) {
   }
 }
 
-IN_PROC_BROWSER_TEST_P(ExtensionActiveTabTest, ActiveTabCors) {
+IN_PROC_BROWSER_TEST_F(ExtensionActiveTabTest, ActiveTabCors) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   ExtensionTestMessageListener background_page_ready("ready",
@@ -208,13 +179,6 @@ IN_PROC_BROWSER_TEST_P(ExtensionActiveTabTest, ActiveTabCors) {
     EXPECT_TRUE(catcher.GetNextResult()) << message_;
   }
 }
-
-INSTANTIATE_TEST_SUITE_P(WithBlinkCors,
-                         ExtensionActiveTabTest,
-                         testing::Values(TestMode::kWithBlinkCors));
-INSTANTIATE_TEST_SUITE_P(WithOutOfBlinkCors,
-                         ExtensionActiveTabTest,
-                         testing::Values(TestMode::kWithOutOfBlinkCors));
 
 // Tests the behavior of activeTab and its relation to an extension's ability to
 // xhr file urls and inject scripts in file frames.

@@ -59,7 +59,9 @@ public class AppIndexingUtil {
                 @Override
                 public void onPageLoadFinished(final Tab tab, String url) {
                     extractCopylessPasteMetadata(tab);
-                    getAppIndexingReporter().reportWebPageView(url, tab.getTitle());
+                    if (!SysUtils.isLowEndDevice()) {
+                        getAppIndexingReporter().reportWebPageView(url, tab.getTitle());
+                    }
                 }
             };
         }

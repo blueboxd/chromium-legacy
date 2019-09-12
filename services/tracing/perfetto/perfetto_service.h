@@ -9,7 +9,7 @@
 #include <set>
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/tracing/perfetto/consumer_host.h"
@@ -36,7 +36,8 @@ class PerfettoService : public mojom::PerfettoService {
   static bool ParsePidFromProducerName(const std::string& producer_name,
                                        base::ProcessId* pid);
 
-  void BindRequest(mojom::PerfettoServiceRequest request, uint32_t pid);
+  void BindReceiver(mojo::PendingReceiver<mojom::PerfettoService> receiver,
+                    uint32_t pid);
 
   // mojom::PerfettoService implementation.
   void ConnectToProducerHost(mojom::ProducerClientPtr producer_client,
@@ -71,12 +72,12 @@ class PerfettoService : public mojom::PerfettoService {
   }
 
  private:
-  void BindOnSequence(mojom::PerfettoServiceRequest request);
+  void BindOnSequence(mojo::PendingReceiver<mojom::PerfettoService> receiver);
   void CreateServiceOnSequence();
 
   PerfettoTaskRunner perfetto_task_runner_;
   std::unique_ptr<perfetto::TracingService> service_;
-  mojo::BindingSet<mojom::PerfettoService, uint32_t> bindings_;
+  mojo::ReceiverSet<mojom::PerfettoService, uint32_t> receivers_;
   mojo::StrongBindingSet<mojom::ProducerHost> producer_bindings_;
   std::set<ConsumerHost::TracingSession*> tracing_sessions_;  // Not owned.
   std::set<base::ProcessId> active_service_pids_;

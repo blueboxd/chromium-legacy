@@ -40,7 +40,7 @@ ArcCertInstaller::~ArcCertInstaller() {
   queue_->RemoveObserver(this);
 }
 
-void ArcCertInstaller::InstallArcCerts(
+std::set<std::string> ArcCertInstaller::InstallArcCerts(
     const std::vector<net::ScopedCERTCertificate>& certificates,
     InstallArcCertsCallback callback) {
   VLOG(1) << "ArcCertInstaller::InstallArcCerts";
@@ -52,7 +52,7 @@ void ArcCertInstaller::InstallArcCerts(
     pending_status_ = true;
   }
 
-  required_cert_names_.clear();
+  std::set<std::string> required_cert_names;
   callback_ = std::move(callback);
 
   for (const auto& nss_cert : certificates) {
@@ -64,14 +64,15 @@ void ArcCertInstaller::InstallArcCerts(
 
     std::string cert_name =
         x509_certificate_model::GetCertNameOrNickname(nss_cert.get());
+    required_cert_names.insert(cert_name);
 
     InstallArcCert(cert_name, nss_cert);
   }
 
-  // Cleanup |known_cert_names_| according to |required_cert_names_|.
+  // Cleanup |known_cert_names_| according to |required_cert_names|.
   for (auto it = known_cert_names_.begin(); it != known_cert_names_.end();) {
     auto cert_name = it++;
-    if (!required_cert_names_.count(*cert_name))
+    if (!required_cert_names.count(*cert_name))
       known_cert_names_.erase(cert_name);
   }
 
@@ -79,13 +80,14 @@ void ArcCertInstaller::InstallArcCerts(
     std::move(callback_).Run(pending_status_);
     pending_status_ = true;
   }
+
+  return required_cert_names;
 }
 
 void ArcCertInstaller::InstallArcCert(
     const std::string& name,
     const net::ScopedCERTCertificate& nss_cert) {
   VLOG(1) << "ArcCertInstaller::InstallArcCert " << name;
-  required_cert_names_.insert(name);
 
   // Do not install certificate if already exists.
   if (known_cert_names_.count(name))
@@ -134,8 +136,8 @@ void ArcCertInstaller::OnJobFinished(policy::RemoteCommandJob* command) {
   }
 
   // If the cert installation is failed, save the status and remove from the
-  // |known_cert_names_| to be able to re-try the installation when the
-  // |Refresh| is called again.
+  // |known_cert_names_|. Use the |pending_status_| to notify clients should
+  // re-try installation.
   if (command->status() != policy::RemoteCommandJob::Status::SUCCEEDED) {
     LOG(ERROR) << "Failed to install certificate "
                << pending_commands_[command->unique_id()];

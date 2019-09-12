@@ -436,6 +436,7 @@ class PrintRenderFrameHelper
     int GetNextPageNumber();
     bool IsRendering() const;
     bool IsModifiable() const;
+    bool IsPdf() const;
     bool HasSelection();
     bool IsLastPageOfPrintReadyMetafile() const;
     bool IsFinalPageRendered() const;
@@ -474,6 +475,8 @@ class PrintRenderFrameHelper
 
     void CalculateIsModifiable();
 
+    void CalculateIsPdf();
+
     // Specifies what to render for print preview.
     FrameReference source_frame_;
     blink::WebNode source_node_;
@@ -492,6 +495,10 @@ class PrintRenderFrameHelper
 
     // True, if the document source is modifiable. e.g. HTML and not PDF.
     bool is_modifiable_ = true;
+
+    // True, if the document source is a PDF. Used to distinguish from
+    // other plugins such as Flash.
+    bool is_pdf_ = false;
 
     // Specifies the total number of pages in the print ready metafile.
     int print_ready_metafile_page_count_ = 0;

@@ -159,15 +159,11 @@
   async function audioOpenMultipleTracksDrive() {
     const tracks = [ENTRIES.beautiful, ENTRIES.newlyAdded];
 
-    // File open events are not reported for legacy Drive.
-    if (await sendTestMessage({name: 'getDriveFsEnabled'}) === 'true') {
-      await sendTestMessage({
-        name: 'expectFileTask',
-        fileNames:
-            [ENTRIES.beautiful.targetPath, ENTRIES.newlyAdded.targetPath],
-        openType: 'launch'
-      });
-    }
+    await sendTestMessage({
+      name: 'expectFileTask',
+      fileNames: [ENTRIES.beautiful.targetPath, ENTRIES.newlyAdded.targetPath],
+      openType: 'launch'
+    });
 
     // Open Files.App on Drive, add the audio files to Drive.
     const appId = await setupAndWaitUntilReady(RootPath.DRIVE, [], tracks);

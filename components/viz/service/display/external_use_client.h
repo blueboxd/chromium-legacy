@@ -63,9 +63,10 @@ class VIZ_SERVICE_EXPORT ExternalUseClient {
     }
 
     base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info() { return ycbcr_info_; }
-    void set_ycbcr_info(const gpu::VulkanYCbCrInfo& ycbcr_info) {
+    void set_ycbcr_info(
+        const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info) {
       DCHECK(!image_);
-      *ycbcr_info_ = ycbcr_info;
+      ycbcr_info_ = ycbcr_info;
     }
 
     bool has_image() { return !!image_; }

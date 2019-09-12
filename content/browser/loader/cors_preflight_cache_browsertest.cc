@@ -9,7 +9,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/thread_annotations.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -34,10 +33,7 @@ const base::string16 kTestDone = base::string16(base::ASCIIToUTF16("DONE"));
 // Tests end to end behaviors on CORS preflight and its cache.
 class CorsPreflightCacheBrowserTest : public ContentBrowserTest {
  protected:
-  CorsPreflightCacheBrowserTest() {
-    scoped_feature_list_.InitWithFeatures({network::features::kOutOfBlinkCors},
-                                          {});
-  }
+  CorsPreflightCacheBrowserTest() = default;
   ~CorsPreflightCacheBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
@@ -84,7 +80,6 @@ class CorsPreflightCacheBrowserTest : public ContentBrowserTest {
     return response;
   }
 
-  base::test::ScopedFeatureList scoped_feature_list_;
   net::EmbeddedTestServer cross_origin_test_server_;
   base::Lock lock_;
 
@@ -104,6 +99,7 @@ IN_PROC_BROWSER_TEST_F(CorsPreflightCacheBrowserTest, Default) {
   EXPECT_EQ(1u, options_count());
   EXPECT_EQ(1u, get_count());
 
+  // Make another fetch request, and OPTIONS request hits the preflight cache.
   std::unique_ptr<TitleWatcher> watcher2 =
       std::make_unique<TitleWatcher>(shell()->web_contents(), kTestDone);
   EXPECT_TRUE(NavigateToURL(
@@ -113,13 +109,16 @@ IN_PROC_BROWSER_TEST_F(CorsPreflightCacheBrowserTest, Default) {
   EXPECT_EQ(1u, options_count());
   EXPECT_EQ(2u, get_count());
 
+  // Make another fetch request with reload cache mode, and it should not hit
+  // the preflight cache. Only OOR-CORS mode take the cache mode count in.
   std::unique_ptr<TitleWatcher> watcher3 =
       std::make_unique<TitleWatcher>(shell()->web_contents(), kTestDone);
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL(base::StringPrintf(
                    "%s?;%d;reload", kTestPath, cross_origin_port()))));
   EXPECT_EQ(kTestDone, watcher3->WaitAndGetTitle());
-  EXPECT_EQ(2u, options_count());
+  EXPECT_EQ(network::features::ShouldEnableOutOfBlinkCors() ? 2u : 1u,
+            options_count());
   EXPECT_EQ(3u, get_count());
 }
 

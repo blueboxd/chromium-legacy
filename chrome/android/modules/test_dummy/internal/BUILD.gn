@@ -13,3 +13,16 @@ android_library("java") {
     "//chrome/android/modules/test_dummy/public:java",
   ]
 }
+
+source_set("native") {
+  sources = [
+    "entrypoints.cc",
+  ]
+
+  deps = [
+    "//chrome/android/features/test_dummy/public:native",
+  ]
+
+  # Test dummy native entrypoints belong in the partition.
+  cflags = [ "-fsymbol-partition=libtest_dummy.so" ]
+}

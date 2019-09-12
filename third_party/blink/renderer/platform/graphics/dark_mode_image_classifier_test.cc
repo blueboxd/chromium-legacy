@@ -54,32 +54,9 @@ class FakeImageForCacheTest : public Image {
 
 class DarkModeImageClassifierTest : public testing::Test {
  public:
-  // Loads the image from |file_name|, computes features into |features|,
-  // and returns the classification result.
-  bool GetFeaturesAndClassification(
-      const String& file_name,
-      DarkModeImageClassifier::Features* features) {
-    CHECK(features);
+  // Loads the image from |file_name|.
+  scoped_refptr<BitmapImage> GetImage(const String& file_name) {
     SCOPED_TRACE(file_name);
-    scoped_refptr<BitmapImage> image = LoadImage(file_name);
-    DarkModeImageClassifier dark_mode_image_classifier;
-    dark_mode_image_classifier.SetImageType(
-        DarkModeImageClassifier::ImageType::kBitmap);
-    auto features_or_null = dark_mode_image_classifier.GetFeatures(
-        image.get(), FloatRect(0, 0, image->width(), image->height()));
-    CHECK(features_or_null.has_value());
-    (*features) = features_or_null.value();
-    DarkModeClassification result =
-        dark_mode_generic_classifier_.ClassifyWithFeatures(*features);
-    return result == DarkModeClassification::kApplyFilter;
-  }
-
-  DarkModeGenericClassifier* classifier() {
-    return &dark_mode_generic_classifier_;
-  }
-
- protected:
-  scoped_refptr<BitmapImage> LoadImage(const String& file_name) {
     String file_path = test::BlinkWebTestsDir() + file_name;
     scoped_refptr<SharedBuffer> image_data = test::ReadFromFile(file_path);
     EXPECT_TRUE(image_data.get() && image_data.get()->size());
@@ -89,8 +66,37 @@ class DarkModeImageClassifierTest : public testing::Test {
     return image;
   }
 
+  // Computes features into |features|.
+  void GetFeatures(scoped_refptr<BitmapImage> image,
+                   DarkModeImageClassifier::Features* features) {
+    CHECK(features);
+    dark_mode_image_classifier_.SetImageType(
+        DarkModeImageClassifier::ImageType::kBitmap);
+    auto features_or_null = dark_mode_image_classifier_.GetFeatures(
+        image.get(), FloatRect(0, 0, image->width(), image->height()));
+    CHECK(features_or_null.has_value());
+    (*features) = features_or_null.value();
+  }
+
+  // Returns the classification result.
+  bool GetClassification(const DarkModeImageClassifier::Features features) {
+    DarkModeClassification result =
+        dark_mode_generic_classifier_.ClassifyWithFeatures(features);
+    return result == DarkModeClassification::kApplyFilter;
+  }
+
+  DarkModeImageClassifier* image_classifier() {
+    return &dark_mode_image_classifier_;
+  }
+
+  DarkModeGenericClassifier* generic_classifier() {
+    return &dark_mode_generic_classifier_;
+  }
+
+ protected:
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform_;
+  DarkModeImageClassifier dark_mode_image_classifier_;
   DarkModeGenericClassifier dark_mode_generic_classifier_;
 };
 
@@ -102,9 +108,13 @@ TEST_F(DarkModeImageClassifierTest, FeaturesAndClassification) {
   // Color Buckets Ratio: Low
   // Decision Tree: Apply
   // Neural Network: NA
-  EXPECT_TRUE(GetFeaturesAndClassification("/images/resources/grid-large.png",
-                                           &features));
-  EXPECT_EQ(classifier()->ClassifyUsingDecisionTreeForTesting(features),
+
+  // The data members of DarkModeImageClassifier have to be reset for every
+  // image as the same classifier object is used for all the tests.
+  image_classifier()->ResetDataMembersToDefaults();
+  GetFeatures(GetImage("/images/resources/grid-large.png"), &features);
+  EXPECT_TRUE(GetClassification(features));
+  EXPECT_EQ(generic_classifier()->ClassifyUsingDecisionTreeForTesting(features),
             DarkModeClassification::kApplyFilter);
   EXPECT_FALSE(features.is_colorful);
   EXPECT_FALSE(features.is_svg);
@@ -117,9 +127,10 @@ TEST_F(DarkModeImageClassifierTest, FeaturesAndClassification) {
   // Color Buckets Ratio: Medium
   // Decision Tree: Can't Decide
   // Neural Network: Apply
-  EXPECT_FALSE(GetFeaturesAndClassification("/images/resources/apng08-ref.png",
-                                            &features));
-  EXPECT_EQ(classifier()->ClassifyUsingDecisionTreeForTesting(features),
+  image_classifier()->ResetDataMembersToDefaults();
+  GetFeatures(GetImage("/images/resources/apng08-ref.png"), &features);
+  EXPECT_FALSE(GetClassification(features));
+  EXPECT_EQ(generic_classifier()->ClassifyUsingDecisionTreeForTesting(features),
             DarkModeClassification::kNotClassified);
   EXPECT_FALSE(features.is_colorful);
   EXPECT_FALSE(features.is_svg);
@@ -132,9 +143,10 @@ TEST_F(DarkModeImageClassifierTest, FeaturesAndClassification) {
   // Color Buckets Ratio: Low
   // Decision Tree: Apply
   // Neural Network: NA.
-  EXPECT_TRUE(GetFeaturesAndClassification(
-      "/images/resources/twitter_favicon.ico", &features));
-  EXPECT_EQ(classifier()->ClassifyUsingDecisionTreeForTesting(features),
+  image_classifier()->ResetDataMembersToDefaults();
+  GetFeatures(GetImage("/images/resources/twitter_favicon.ico"), &features);
+  EXPECT_TRUE(GetClassification(features));
+  EXPECT_EQ(generic_classifier()->ClassifyUsingDecisionTreeForTesting(features),
             DarkModeClassification::kApplyFilter);
   EXPECT_TRUE(features.is_colorful);
   EXPECT_FALSE(features.is_svg);
@@ -147,9 +159,11 @@ TEST_F(DarkModeImageClassifierTest, FeaturesAndClassification) {
   // Color Buckets Ratio: High
   // Decision Tree: Do Not Apply
   // Neural Network: NA.
-  EXPECT_FALSE(GetFeaturesAndClassification(
-      "/images/resources/blue-wheel-srgb-color-profile.png", &features));
-  EXPECT_EQ(classifier()->ClassifyUsingDecisionTreeForTesting(features),
+  image_classifier()->ResetDataMembersToDefaults();
+  GetFeatures(GetImage("/images/resources/blue-wheel-srgb-color-profile.png"),
+              &features);
+  EXPECT_FALSE(GetClassification(features));
+  EXPECT_EQ(generic_classifier()->ClassifyUsingDecisionTreeForTesting(features),
             DarkModeClassification::kDoNotApplyFilter);
   EXPECT_TRUE(features.is_colorful);
   EXPECT_FALSE(features.is_svg);
@@ -162,9 +176,10 @@ TEST_F(DarkModeImageClassifierTest, FeaturesAndClassification) {
   // Color Buckets Ratio: Medium
   // Decision Tree: Apply
   // Neural Network: NA.
-  EXPECT_TRUE(GetFeaturesAndClassification(
-      "/images/resources/ycbcr-444-float.jpg", &features));
-  EXPECT_EQ(classifier()->ClassifyUsingDecisionTreeForTesting(features),
+  image_classifier()->ResetDataMembersToDefaults();
+  GetFeatures(GetImage("/images/resources/ycbcr-444-float.jpg"), &features);
+  EXPECT_TRUE(GetClassification(features));
+  EXPECT_EQ(generic_classifier()->ClassifyUsingDecisionTreeForTesting(features),
             DarkModeClassification::kApplyFilter);
   EXPECT_TRUE(features.is_colorful);
   EXPECT_FALSE(features.is_svg);
@@ -199,6 +214,43 @@ TEST_F(DarkModeImageClassifierTest, Caching) {
             DarkModeClassification::kApplyFilter);
 
   EXPECT_EQ(image->GetMapSize(), 3);
+}
+
+TEST_F(DarkModeImageClassifierTest, BlocksCount) {
+  scoped_refptr<BitmapImage> image =
+      GetImage("/images/resources/grid-large.png");
+  DarkModeImageClassifier::Features features;
+  image_classifier()->ResetDataMembersToDefaults();
+
+  // When the horizontal and vertical blocks counts are lesser than the
+  // image dimensions, they should remain unaltered.
+  image_classifier()->SetHorizontalBlocksCount((int)(image->width() - 1));
+  image_classifier()->SetVerticalBlocksCount((int)(image->height() - 1));
+  GetFeatures(image, &features);
+  EXPECT_EQ(image_classifier()->HorizontalBlocksCount(),
+            (int)(image->width() - 1));
+  EXPECT_EQ(image_classifier()->VerticalBlocksCount(),
+            (int)(image->height() - 1));
+
+  // When the horizontal and vertical blocks counts are lesser than the
+  // image dimensions, they should remain unaltered.
+  image_classifier()->SetHorizontalBlocksCount((int)(image->width()));
+  image_classifier()->SetVerticalBlocksCount((int)(image->height()));
+  GetFeatures(image, &features);
+  EXPECT_EQ(image_classifier()->HorizontalBlocksCount(),
+            (int)(image->width()));
+  EXPECT_EQ(image_classifier()->VerticalBlocksCount(),
+            (int)(image->height()));
+
+  // When the horizontal and vertical blocks counts are greater than the
+  // image dimensions, they should be reduced.
+  image_classifier()->SetHorizontalBlocksCount((int)(image->width() + 1));
+  image_classifier()->SetVerticalBlocksCount((int)(image->height() + 1));
+  GetFeatures(image, &features);
+  EXPECT_EQ(image_classifier()->HorizontalBlocksCount(),
+            floor(image->width()));
+  EXPECT_EQ(image_classifier()->VerticalBlocksCount(),
+            floor(image->height()));
 }
 
 }  // namespace blink

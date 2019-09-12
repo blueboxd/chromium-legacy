@@ -10,9 +10,12 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_namespace.h"
 #include "net/cert/x509_util_nss.h"
 
 namespace arc {
@@ -49,10 +52,16 @@ ArcSmartCardManagerBridge* ArcSmartCardManagerBridge::GetForBrowserContext(
   return ArcSmartCardManagerBridgeFactory::GetForBrowserContext(context);
 }
 
+// static
+BrowserContextKeyedServiceFactory* ArcSmartCardManagerBridge::GetFactory() {
+  return ArcSmartCardManagerBridgeFactory::GetInstance();
+}
+
 ArcSmartCardManagerBridge::ArcSmartCardManagerBridge(
     content::BrowserContext* context,
     ArcBridgeService* bridge_service)
     : ArcSmartCardManagerBridge(
+          context,
           bridge_service,
           chromeos::CertificateProviderServiceFactory::GetForBrowserContext(
               context)
@@ -60,10 +69,12 @@ ArcSmartCardManagerBridge::ArcSmartCardManagerBridge(
           std::make_unique<ArcCertInstaller>(context)) {}
 
 ArcSmartCardManagerBridge::ArcSmartCardManagerBridge(
+    content::BrowserContext* context,
     ArcBridgeService* bridge_service,
     std::unique_ptr<chromeos::CertificateProvider> certificate_provider,
     std::unique_ptr<ArcCertInstaller> installer)
-    : arc_bridge_service_(bridge_service),
+    : context_(context),
+      arc_bridge_service_(bridge_service),
       certificate_provider_(std::move(certificate_provider)),
       installer_(std::move(installer)),
       weak_ptr_factory_(this) {
@@ -103,7 +114,17 @@ void ArcSmartCardManagerBridge::DidGetCerts(
 
     certificates.push_back(std::move(nss_cert));
   }
-  installer_->InstallArcCerts(std::move(certificates), std::move(callback));
+  std::set<std::string> new_required_cert_names =
+      installer_->InstallArcCerts(std::move(certificates), std::move(callback));
+  if (required_cert_names_ != new_required_cert_names) {
+    required_cert_names_ = new_required_cert_names;
+    ArcPolicyBridge* const policy_bridge =
+        ArcPolicyBridge::GetForBrowserContext(context_);
+    if (policy_bridge) {
+      policy_bridge->OnPolicyUpdated(policy::PolicyNamespace(),
+                                     policy::PolicyMap(), policy::PolicyMap());
+    }
+  }
 }
 
 }  // namespace arc

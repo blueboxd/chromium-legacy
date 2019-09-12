@@ -21,7 +21,7 @@ namespace web {
 NetworkContextOwner::NetworkContextOwner(
     net::URLRequestContextGetter* request_context,
     const std::vector<std::string>& cors_exempt_header_list,
-    network::mojom::NetworkContextPtr* network_context_client)
+    mojo::Remote<network::mojom::NetworkContext>* network_context_client)
     : request_context_(request_context) {
   DCHECK_CURRENTLY_ON(WebThread::UI);
   base::PostTask(
@@ -30,7 +30,7 @@ NetworkContextOwner::NetworkContextOwner(
                      // This is safe, since |this| will be deleted on the IO
                      // thread, which would have to happen afterwards.
                      base::Unretained(this), cors_exempt_header_list,
-                     mojo::MakeRequest(network_context_client)));
+                     network_context_client->BindNewPipeAndPassReceiver()));
 }
 
 NetworkContextOwner::~NetworkContextOwner() {

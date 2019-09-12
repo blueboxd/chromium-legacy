@@ -31,12 +31,10 @@ class ShellContentRendererClient : public ContentRendererClient {
   void PrepareErrorPage(RenderFrame* render_frame,
                         const blink::WebURLError& error,
                         const std::string& http_method,
-                        bool ignoring_cache,
                         std::string* error_html) override;
   void PrepareErrorPageForHttpStatusError(content::RenderFrame* render_frame,
                                           const GURL& unreachable_url,
                                           const std::string& http_method,
-                                          bool ignoring_cache,
                                           int http_status,
                                           std::string* error_html) override;
 

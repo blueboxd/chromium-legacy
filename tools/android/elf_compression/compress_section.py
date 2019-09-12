@@ -43,6 +43,48 @@ OBJCOPY_PATH = pathlib.Path(__file__).resolve().parents[3].joinpath(
     'third_party/llvm-build/Release+Asserts/bin/llvm-objcopy')
 
 
+def AlignUp(addr, page_size=ADDRESS_ALIGN):
+  """Rounds up given address to be aligned to page_size.
+
+  Args:
+    addr: int. Virtual address to be aligned.
+    page_size: int. Page size to be used for the alignment.
+  """
+  if addr % page_size != 0:
+    addr += page_size - (addr % page_size)
+  return addr
+
+
+def AlignDown(addr, page_size=ADDRESS_ALIGN):
+  """Round down given address to be aligned to page_size.
+
+  Args:
+    addr: int. Virtual address to be aligned.
+    page_size: int. Page size to be used for the alignment.
+  """
+  return addr - addr % page_size
+
+
+def MatchVaddrAlignment(vaddr, offset, align=ADDRESS_ALIGN):
+  """Align vaddr to comply with ELF standard binary alignment.
+
+  Increases vaddr until the following is true:
+    vaddr % align == offset % align
+
+  Args:
+    vaddr: virtual address to be aligned.
+    offset: file offset to be aligned.
+    align: alignment value.
+
+  Returns:
+    Aligned virtual address, bigger or equal than the vaddr.
+  """
+  delta = offset % align - vaddr % align
+  if delta < 0:
+    delta += align
+  return vaddr + delta
+
+
 def _SetupLogging():
   logging.basicConfig(
       format='%(asctime)s %(filename)s:%(lineno)s %(levelname)s] %(message)s',
@@ -79,7 +121,7 @@ def _FileRangeToVirtualAddressRange(data, l, r):
   """
   elf = elf_headers.ElfHeader(data)
   for phdr in elf.GetPhdrs():
-    if phdr.p_type == elf_headers.ProgramHeader.Type.PT_LOAD.value:
+    if phdr.p_type == elf_headers.ProgramHeader.Type.PT_LOAD:
       # Current version of the prototype only supports ranges which are fully
       # contained inside one LOAD segment. It should cover most of the common
       # cases.
@@ -100,9 +142,8 @@ def _CopyRangeIntoCompressedSection(data, l, r):
   virtual_l, virtual_r = _FileRangeToVirtualAddressRange(data, l, r)
   # LOAD segments borders are being rounded to the page size so we have to
   # shrink [l, r) so corresponding virtual addresses are aligned.
-  if virtual_l % ADDRESS_ALIGN != 0:
-    l += ADDRESS_ALIGN - (virtual_l % ADDRESS_ALIGN)
-  r -= virtual_r % ADDRESS_ALIGN
+  l += AlignUp(virtual_l) - virtual_l
+  r -= virtual_r - AlignDown(virtual_r)
   if l >= r:
     raise RuntimeError('Range collapsed after aligning by page size')
 
@@ -134,6 +175,68 @@ def _CopyRangeIntoCompressedSection(data, l, r):
       data[:] = bytearray(f.read())
 
 
+def _FindNewVaddr(phdrs):
+  """Returns the virt address that is safe to use for insertion of new data."""
+  max_vaddr = 0
+  # Strictly speaking it should be sufficient to look through only LOAD
+  # segments, but better be safe than sorry.
+  for phdr in phdrs:
+    max_vaddr = max(max_vaddr, phdr.p_vaddr + phdr.p_memsz)
+  # When the mapping occurs end address is increased to be a multiple
+  # of page size. To ensure compatibility with anything relying on this
+  # behaviour we take this increase into account.
+  max_vaddr = AlignUp(max_vaddr)
+  return max_vaddr
+
+
+def _MovePhdrToTheEnd(data):
+  """Moves Phdrs to the end of the file and adjusts all references to it."""
+  elf_hdr = elf_headers.ElfHeader(data)
+
+  # If program headers are already in the end of the file, nothing to do.
+  if elf_hdr.e_phoff + elf_hdr.e_phnum * elf_hdr.e_phentsize == len(data):
+    return
+
+  new_phoff = len(data)
+  unaligned_new_vaddr = _FindNewVaddr(elf_hdr.GetPhdrs())
+  new_vaddr = MatchVaddrAlignment(unaligned_new_vaddr, new_phoff)
+  # Since we moved the PHDR section to the end of the file, we need to create a
+  # new LOAD segment to load it in.
+  new_filesz = (elf_hdr.e_phnum + 1) * elf_hdr.e_phentsize
+  elf_hdr.AddPhdr(
+      elf_headers.ProgramHeader.Create(
+          elf_hdr.byte_order,
+          p_type=elf_headers.ProgramHeader.Type.PT_LOAD,
+          p_flags=elf_headers.ProgramHeader.Flags.PF_R,
+          p_offset=new_phoff,
+          p_vaddr=new_vaddr,
+          p_paddr=new_vaddr,
+          p_filesz=new_filesz,
+          p_memsz=new_filesz,
+          p_align=ADDRESS_ALIGN,
+      ))
+
+  # PHDR segment if it exists should point to the new location.
+  for phdr in elf_hdr.GetPhdrs():
+    if phdr.p_type == elf_headers.ProgramHeader.Type.PT_PHDR:
+      phdr.p_offset = new_phoff
+      phdr.p_vaddr = new_vaddr
+      phdr.p_paddr = new_vaddr
+      phdr.p_filesz = new_filesz
+      phdr.p_memsz = new_filesz
+      phdr.p_align = ADDRESS_ALIGN
+
+  # We need to replace the previous phdr placement with zero bytes to fail
+  # fast if dynamic linker doesn't like the new program header.
+  previous_phdr_size = (elf_hdr.e_phnum - 1) * elf_hdr.e_phentsize
+  data[elf_hdr.e_phoff:elf_hdr.e_phoff +
+       previous_phdr_size] = [0] * previous_phdr_size
+
+  # Updating ELF header to point to the new location.
+  elf_hdr.e_phoff = new_phoff
+  elf_hdr.PatchData(data)
+
+
 def main():
   _SetupLogging()
   args = _ParseArguments()
@@ -143,6 +246,7 @@ def main():
     data = bytearray(data)
 
   _CopyRangeIntoCompressedSection(data, args.left_range, args.right_range)
+  _MovePhdrToTheEnd(data)
 
   with open(args.output, 'wb') as f:
     f.write(data)

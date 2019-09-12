@@ -34,7 +34,7 @@ import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.identitymanager.ClearAccountsAction;
 import org.chromium.components.signin.identitymanager.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.IdentityManager;
-import org.chromium.components.signin.identitymanager.PrimaryAccountMutator;
+import org.chromium.components.signin.identitymanager.IdentityMutator;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.signin.metrics.SigninReason;
 import org.chromium.components.signin.metrics.SignoutDelete;
@@ -132,6 +132,12 @@ public class SigninManager
         boolean mBlockedOnAccountSeeding;
 
         /**
+         * Contains the full Core account info, which can be retrieved only once account seeding is
+         * complete
+         */
+        CoreAccountInfo mCoreAccountInfo;
+
+        /**
          * @param account The account to sign in to.
          * @param activity Reference to the UI to use for dialogs. Null means forced signin.
          * @param callback Called when the sign-in process finishes or is cancelled. Can be null.
@@ -194,7 +200,7 @@ public class SigninManager
     private final Context mContext;
     private final AccountTrackerService mAccountTrackerService;
     private final IdentityManager mIdentityManager;
-    private final PrimaryAccountMutator mPrimaryAccountMutator;
+    private final IdentityMutator mIdentityMutator;
     private final AndroidSyncSettings mAndroidSyncSettings;
     private final ObserverList<SignInStateObserver> mSignInStateObservers = new ObserverList<>();
     private final ObserverList<SignInAllowedObserver> mSignInAllowedObservers =
@@ -249,7 +255,7 @@ public class SigninManager
         mNativeSigninManagerAndroid = nativeSigninManagerAndroid;
         mAccountTrackerService = accountTrackerService;
         mIdentityManager = identityManager;
-        mPrimaryAccountMutator = identityManager.getPrimaryAccountMutator();
+        mIdentityMutator = identityManager.getIdentityMutator();
         mAndroidSyncSettings = androidSyncSettings;
 
         mSigninAllowedByPolicy =
@@ -465,6 +471,14 @@ public class SigninManager
             Log.w(TAG, "Ignoring sign in progress request as no pending sign in.");
             return;
         }
+        // TODO(crbug.com/1002056) When changing SignIn signature to use CoreAccountInfo, change the
+        // following line to use it instead of retrieving from IdentityManager.
+        mSignInState.mCoreAccountInfo =
+                mIdentityManager.findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
+                        mSignInState.mAccount.name);
+
+        // CoreAccountInfo must be set and valid to progress
+        assert mSignInState.mCoreAccountInfo != null;
 
         if (mSignInState.isActivityInvisible()) {
             abortSignIn();
@@ -472,7 +486,7 @@ public class SigninManager
         }
 
         Log.d(TAG, "Checking if account has policy management enabled");
-        fetchAndApplyCloudPolicy(mSignInState.mAccount.name, this::onPolicyFetchedBeforeSignIn);
+        fetchAndApplyCloudPolicy(mSignInState.mCoreAccountInfo, this::onPolicyFetchedBeforeSignIn);
     }
 
     @VisibleForTesting
@@ -486,15 +500,9 @@ public class SigninManager
 
     private void finishSignIn() {
         // This method should be called at most once per sign-in flow.
-        assert mSignInState != null;
+        assert mSignInState != null && mSignInState.mCoreAccountInfo != null;
 
-        // TODO(crbug.com/1002056) When changing SignIn signature to use CoreAccountInfo, change the
-        // following line to use it instead of retrieving from IdentityManager.
-        if (!mPrimaryAccountMutator.setPrimaryAccount(
-                    mIdentityManager
-                            .findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
-                                    mSignInState.mAccount.name)
-                            .getId())) {
+        if (!mIdentityMutator.setPrimaryAccount(mSignInState.mCoreAccountInfo.getId())) {
             Log.w(TAG, "Failed to set the PrimaryAccount in IdentityManager, aborting signin");
             abortSignIn();
             return;
@@ -502,15 +510,16 @@ public class SigninManager
 
         // Cache the signed-in account name. This must be done after the native call, otherwise
         // sync tries to start without being signed in natively and crashes.
-        ChromeSigninController.get().setSignedInAccountName(mSignInState.mAccount.name);
-        enableSync(mSignInState.mAccount);
+        ChromeSigninController.get().setSignedInAccountName(
+                mSignInState.mCoreAccountInfo.getName());
+        enableSync(mSignInState.mCoreAccountInfo.getAccount());
 
         if (mSignInState.mCallback != null) {
             mSignInState.mCallback.onSignInComplete();
         }
 
         // Trigger token requests via native.
-        logInSignedInUser();
+        mIdentityMutator.reloadAccountsFromSystem();
 
         if (mSignInState.isInteractive()) {
             // If signin was a user action, record that it succeeded.
@@ -536,7 +545,7 @@ public class SigninManager
      * Implements {@link IdentityManager.Observer}: take action when primary account is set.
      * Simply verify that the request is ongoing (mSignInState != null), as only SigninManager
      * should update IdentityManager. This is triggered by the call to
-     * PrimaryAccountMutator.setPrimaryAccount
+     * IdentityMutator.setPrimaryAccount
      */
     @VisibleForTesting
     @Override
@@ -628,7 +637,7 @@ public class SigninManager
 
         // User data will be wiped in disableSyncAndWipeData(), called from
         // onPrimaryAccountcleared().
-        mPrimaryAccountMutator.clearPrimaryAccount(ClearAccountsAction.DEFAULT, signoutSource,
+        mIdentityMutator.clearPrimaryAccount(ClearAccountsAction.DEFAULT, signoutSource,
                 // Always use IGNORE_METRIC for the profile deletion argument. Chrome
                 // Android has just a single-profile which is never deleted upon
                 // sign-out.
@@ -640,11 +649,6 @@ public class SigninManager
      */
     public String getManagementDomain() {
         return SigninManagerJni.get().getManagementDomain(mNativeSigninManagerAndroid);
-    }
-
-    @VisibleForTesting
-    void logInSignedInUser() {
-        SigninManagerJni.get().logInSignedInUser(mNativeSigninManagerAndroid);
     }
 
     public void clearLastSignedInUser() {
@@ -731,8 +735,14 @@ public class SigninManager
      * @param callback The callback that will receive true if the account is managed, false
      *                 otherwise.
      */
+    // TODO(crbug.com/1002408) Update API to use CoreAccountInfo instead of email
     public void isAccountManaged(String email, final Callback<Boolean> callback) {
-        SigninManagerJni.get().isAccountManaged(mNativeSigninManagerAndroid, email, callback);
+        assert email != null;
+        CoreAccountInfo account =
+                mIdentityManager.findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
+                        email);
+        assert account != null;
+        SigninManagerJni.get().isAccountManaged(mNativeSigninManagerAndroid, account, callback);
     }
 
     public static String extractDomainName(String email) {
@@ -750,9 +760,9 @@ public class SigninManager
         return !ExternalAuthUtils.getInstance().isGooglePlayServicesMissing(context);
     }
 
-    private void fetchAndApplyCloudPolicy(String username, final Runnable callback) {
+    private void fetchAndApplyCloudPolicy(CoreAccountInfo account, final Runnable callback) {
         SigninManagerJni.get().fetchAndApplyCloudPolicy(
-                mNativeSigninManagerAndroid, username, callback);
+                mNativeSigninManagerAndroid, account, callback);
     }
 
     private void stopApplyingCloudPolicy() {
@@ -786,19 +796,17 @@ public class SigninManager
 
         void clearLastSignedInUser(long nativeSigninManagerAndroid);
 
-        void logInSignedInUser(long nativeSigninManagerAndroid);
-
         String extractDomainName(String email);
 
         boolean isMobileIdentityConsistencyEnabled();
 
         void fetchAndApplyCloudPolicy(
-                long nativeSigninManagerAndroid, String username, Runnable callback);
+                long nativeSigninManagerAndroid, CoreAccountInfo account, Runnable callback);
 
         void stopApplyingCloudPolicy(long nativeSigninManagerAndroid);
 
-        void isAccountManaged(
-                long nativeSigninManagerAndroid, String username, Callback<Boolean> callback);
+        void isAccountManaged(long nativeSigninManagerAndroid, CoreAccountInfo account,
+                Callback<Boolean> callback);
 
         String getManagementDomain(long nativeSigninManagerAndroid);
 

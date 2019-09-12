@@ -35,7 +35,7 @@ class NetworkContextOwner : public net::URLRequestContextGetterObserver {
   NetworkContextOwner(
       net::URLRequestContextGetter* request_context,
       const std::vector<std::string>& cors_exempt_header_list,
-      network::mojom::NetworkContextPtr* network_context_client);
+      mojo::Remote<network::mojom::NetworkContext>* network_context_client);
 
   ~NetworkContextOwner() override;
 

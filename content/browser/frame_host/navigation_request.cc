@@ -603,8 +603,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
       frame_tree_node, std::move(common_params), std::move(navigation_params),
       std::move(commit_params), browser_initiated,
       false /* from_begin_navigation */, false /* is_for_commit */, frame_entry,
-      entry, std::move(navigation_ui_data), nullptr, mojo::NullRemote(),
-      rfh_restored_from_back_forward_cache));
+      entry, std::move(navigation_ui_data), mojo::NullAssociatedRemote(),
+      mojo::NullRemote(), rfh_restored_from_back_forward_cache));
 
   if (frame_entry) {
     navigation_request->blob_url_loader_factory_ =
@@ -637,7 +637,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
     int current_history_list_length,
     bool override_user_agent,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-    mojom::NavigationClientAssociatedPtrInfo navigation_client,
+    mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
     mojo::PendingRemote<blink::mojom::NavigationInitiator> navigation_initiator,
     scoped_refptr<PrefetchedSignedExchangeCache>
         prefetched_signed_exchange_cache) {
@@ -763,9 +763,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
       std::move(commit_params), !is_renderer_initiated,
       false /* from_begin_navigation */, true /* is_for_commit */,
       entry ? entry->GetFrameEntry(frame_tree_node) : nullptr, entry,
-      nullptr /* navigation_ui_data */,
-      mojom::NavigationClientAssociatedPtrInfo(), mojo::NullRemote(),
-      nullptr /* rfh_restored_from_back_forward_cache */));
+      nullptr /* navigation_ui_data */, mojo::NullAssociatedRemote(),
+      mojo::NullRemote(), nullptr /* rfh_restored_from_back_forward_cache */));
 
   // Update the state of the NavigationRequest to match the fact that the
   // navigation just committed.
@@ -787,7 +786,7 @@ NavigationRequest::NavigationRequest(
     const FrameNavigationEntry* frame_entry,
     NavigationEntryImpl* entry,
     std::unique_ptr<NavigationUIData> navigation_ui_data,
-    mojom::NavigationClientAssociatedPtrInfo navigation_client,
+    mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
     mojo::PendingRemote<blink::mojom::NavigationInitiator> navigation_initiator,
     RenderFrameHostImpl* rfh_restored_from_back_forward_cache)
     : frame_tree_node_(frame_tree_node),
@@ -807,8 +806,8 @@ NavigationRequest::NavigationRequest(
       net_error_(net::OK),
       expected_render_process_host_id_(ChildProcessHost::kInvalidUniqueID),
       devtools_navigation_token_(base::UnguessableToken::Create()),
-      request_navigation_client_(nullptr),
-      commit_navigation_client_(nullptr),
+      request_navigation_client_(mojo::NullAssociatedRemote()),
+      commit_navigation_client_(mojo::NullAssociatedRemote()),
       rfh_restored_from_back_forward_cache_(
           rfh_restored_from_back_forward_cache) {
   DCHECK(browser_initiated || common_params_->initiator_origin.has_value());
@@ -2199,7 +2198,7 @@ void NavigationRequest::CommitErrorPage(
   // consistent with the URL being requested.
   commit_params_->origin_to_commit =
       url::Origin::Create(common_params_->url).DeriveNewOpaqueOrigin();
-  if (IsPerNavigationMojoInterfaceEnabled() && request_navigation_client_ &&
+  if (IsPerNavigationMojoInterfaceEnabled() &&
       request_navigation_client_.is_bound()) {
     if (associated_site_instance_id_ ==
         render_frame_host_->GetSiteInstance()->GetId()) {
@@ -2267,7 +2266,7 @@ void NavigationRequest::CommitNavigation() {
 
   frame_tree_node_->TransferNavigationRequestOwnership(render_frame_host_);
 
-  if (IsPerNavigationMojoInterfaceEnabled() && request_navigation_client_ &&
+  if (IsPerNavigationMojoInterfaceEnabled() &&
       request_navigation_client_.is_bound()) {
     if (associated_site_instance_id_ ==
         render_frame_host_->GetSiteInstance()->GetId()) {
@@ -2622,19 +2621,17 @@ void NavigationRequest::OnRendererAbortedNavigation() {
 }
 
 void NavigationRequest::HandleInterfaceDisconnection(
-    mojom::NavigationClientAssociatedPtr* navigation_client,
+    mojo::AssociatedRemote<mojom::NavigationClient>* navigation_client,
     base::OnceClosure error_handler) {
-  navigation_client->set_connection_error_handler(std::move(error_handler));
+  navigation_client->set_disconnect_handler(std::move(error_handler));
 }
 
 void NavigationRequest::IgnoreInterfaceDisconnection() {
-  return request_navigation_client_.set_connection_error_handler(
-      base::DoNothing());
+  return request_navigation_client_.set_disconnect_handler(base::DoNothing());
 }
 
 void NavigationRequest::IgnoreCommitInterfaceDisconnection() {
-  return commit_navigation_client_.set_connection_error_handler(
-      base::DoNothing());
+  return commit_navigation_client_.set_disconnect_handler(base::DoNothing());
 }
 
 bool NavigationRequest::IsSameDocument() const {
@@ -3082,7 +3079,7 @@ void NavigationRequest::UpdateStateFollowingRedirect(
 }
 
 void NavigationRequest::SetNavigationClient(
-    mojom::NavigationClientAssociatedPtrInfo navigation_client,
+    mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
     int32_t associated_site_instance_id) {
   DCHECK(from_begin_navigation_ ||
          common_params_->is_history_navigation_in_new_child_frame);
@@ -3090,7 +3087,7 @@ void NavigationRequest::SetNavigationClient(
   if (!navigation_client.is_valid())
     return;
 
-  request_navigation_client_ = mojom::NavigationClientAssociatedPtr();
+  request_navigation_client_.reset();
   request_navigation_client_.Bind(std::move(navigation_client));
 
   // Binds the OnAbort callback

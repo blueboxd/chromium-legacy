@@ -18,7 +18,8 @@ class ContentDecryptionModule;
 }  // namespace fuchsia
 
 namespace media {
-class StreamProcessorDecryptor;
+
+class FuchsiaClearStreamDecryptor;
 
 class FuchsiaDecryptor : public Decryptor {
  public:
@@ -48,7 +49,7 @@ class FuchsiaDecryptor : public Decryptor {
  private:
   fuchsia::media::drm::ContentDecryptionModule* const cdm_;
 
-  std::unique_ptr<StreamProcessorDecryptor> audio_decryptor_;
+  std::unique_ptr<FuchsiaClearStreamDecryptor> audio_decryptor_;
 
   DISALLOW_COPY_AND_ASSIGN(FuchsiaDecryptor);
 };

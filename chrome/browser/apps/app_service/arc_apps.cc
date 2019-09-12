@@ -162,8 +162,8 @@ void ArcApps::Shutdown() {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
   if (prefs) {
     prefs->RemoveObserver(this);
-    arc_icon_once_loader_.StopObserving(prefs);
   }
+  arc_icon_once_loader_.StopObserving(prefs);
 }
 
 void ArcApps::Connect(apps::mojom::SubscriberPtr subscriber,

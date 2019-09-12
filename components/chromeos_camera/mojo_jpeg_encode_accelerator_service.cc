@@ -23,7 +23,7 @@
 #include "components/chromeos_camera/dmabuf_utils.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/linux/native_pixmap_dmabuf.h"
@@ -56,9 +56,11 @@ media::VideoPixelFormat ToVideoPixelFormat(uint32_t fourcc_fmt) {
 
 // static
 void MojoJpegEncodeAcceleratorService::Create(
-    chromeos_camera::mojom::JpegEncodeAcceleratorRequest request) {
+    mojo::PendingReceiver<chromeos_camera::mojom::JpegEncodeAccelerator>
+        receiver) {
   auto* jpeg_encoder = new MojoJpegEncodeAcceleratorService();
-  mojo::MakeStrongBinding(base::WrapUnique(jpeg_encoder), std::move(request));
+  mojo::MakeSelfOwnedReceiver(base::WrapUnique(jpeg_encoder),
+                              std::move(receiver));
 }
 
 MojoJpegEncodeAcceleratorService::MojoJpegEncodeAcceleratorService()

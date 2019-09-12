@@ -147,7 +147,6 @@ class SMILTimeContainer final
   TaskRunnerTimer<SMILTimeContainer> animation_policy_once_timer_;
 
   AnimationsMap scheduled_animations_;
-  HeapVector<Member<SMILAnimationSandwich>> active_sandwiches_;
 
   Member<SVGSVGElement> owner_svg_element_;
 

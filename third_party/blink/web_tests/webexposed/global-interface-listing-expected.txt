@@ -1603,6 +1603,9 @@ interface Document : Node
     getter links
     getter onabort
     getter onactivateinvisible
+    getter onanimationend
+    getter onanimationiteration
+    getter onanimationstart
     getter onauxclick
     getter onbeforeactivate
     getter onbeforecopy
@@ -1695,6 +1698,7 @@ interface Document : Node
     getter ontouchend
     getter ontouchmove
     getter ontouchstart
+    getter ontransitionend
     getter onvisibilitychange
     getter onvolumechange
     getter onwaiting
@@ -1794,6 +1798,9 @@ interface Document : Node
     setter linkColor
     setter onabort
     setter onactivateinvisible
+    setter onanimationend
+    setter onanimationiteration
+    setter onanimationstart
     setter onauxclick
     setter onbeforeactivate
     setter onbeforecopy
@@ -1886,6 +1893,7 @@ interface Document : Node
     setter ontouchend
     setter ontouchmove
     setter ontouchstart
+    setter ontransitionend
     setter onvisibilitychange
     setter onvolumechange
     setter onwaiting
@@ -2926,6 +2934,9 @@ interface HTMLElement : Element
     getter offsetWidth
     getter onabort
     getter onactivateinvisible
+    getter onanimationend
+    getter onanimationiteration
+    getter onanimationstart
     getter onauxclick
     getter onbeforeactivate
     getter onblur
@@ -3006,6 +3017,7 @@ interface HTMLElement : Element
     getter ontouchend
     getter ontouchmove
     getter ontouchstart
+    getter ontransitionend
     getter onvolumechange
     getter onwaiting
     getter onwheel
@@ -3034,6 +3046,9 @@ interface HTMLElement : Element
     setter nonce
     setter onabort
     setter onactivateinvisible
+    setter onanimationend
+    setter onanimationiteration
+    setter onanimationstart
     setter onauxclick
     setter onbeforeactivate
     setter onblur
@@ -3114,6 +3129,7 @@ interface HTMLElement : Element
     setter ontouchend
     setter ontouchmove
     setter ontouchstart
+    setter ontransitionend
     setter onvolumechange
     setter onwaiting
     setter onwheel
@@ -6527,6 +6543,9 @@ interface SVGElement : Element
     getter nonce
     getter onabort
     getter onactivateinvisible
+    getter onanimationend
+    getter onanimationiteration
+    getter onanimationstart
     getter onauxclick
     getter onbeforeactivate
     getter onblur
@@ -6607,6 +6626,7 @@ interface SVGElement : Element
     getter ontouchend
     getter ontouchmove
     getter ontouchstart
+    getter ontransitionend
     getter onvolumechange
     getter onwaiting
     getter onwheel
@@ -6620,6 +6640,9 @@ interface SVGElement : Element
     setter nonce
     setter onabort
     setter onactivateinvisible
+    setter onanimationend
+    setter onanimationiteration
+    setter onanimationstart
     setter onauxclick
     setter onbeforeactivate
     setter onblur
@@ -6700,6 +6723,7 @@ interface SVGElement : Element
     setter ontouchend
     setter ontouchmove
     setter ontouchstart
+    setter ontransitionend
     setter onvolumechange
     setter onwaiting
     setter onwheel

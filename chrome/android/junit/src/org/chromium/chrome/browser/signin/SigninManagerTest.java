@@ -37,7 +37,7 @@ import org.chromium.components.signin.AccountTrackerService;
 import org.chromium.components.signin.identitymanager.CoreAccountId;
 import org.chromium.components.signin.identitymanager.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.IdentityManager;
-import org.chromium.components.signin.identitymanager.PrimaryAccountMutator;
+import org.chromium.components.signin.identitymanager.IdentityMutator;
 import org.chromium.components.signin.metrics.SignoutReason;
 import org.chromium.components.sync.AndroidSyncSettings;
 
@@ -55,7 +55,7 @@ public class SigninManagerTest {
 
     private AccountTrackerService mAccountTrackerService;
     private IdentityManager mIdentityManager;
-    private PrimaryAccountMutator mPrimaryAccountMutator;
+    private IdentityMutator mIdentityMutator;
     private SigninManager mSigninManager;
     private CoreAccountInfo mAccount;
 
@@ -69,10 +69,10 @@ public class SigninManagerTest {
 
         mAccountTrackerService = mock(AccountTrackerService.class);
 
-        mPrimaryAccountMutator = mock(PrimaryAccountMutator.class);
+        mIdentityMutator = mock(IdentityMutator.class);
 
         mIdentityManager =
-                spy(new IdentityManager(0 /* nativeIdentityManager */, mPrimaryAccountMutator));
+                spy(new IdentityManager(0 /* nativeIdentityManager */, mIdentityMutator));
 
         AndroidSyncSettings androidSyncSettings = mock(AndroidSyncSettings.class);
 
@@ -192,7 +192,7 @@ public class SigninManagerTest {
             mIdentityManager.onPrimaryAccountCleared(mAccount);
             return null;
         })
-                .when(mPrimaryAccountMutator)
+                .when(mIdentityMutator)
                 .clearPrimaryAccount(anyInt(), anyInt(), anyInt());
 
         mSigninManager.signOut(SignoutReason.SIGNOUT_TEST);
@@ -221,8 +221,8 @@ public class SigninManagerTest {
         doReturn(account)
                 .when(mIdentityManager)
                 .findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(any());
-        doReturn(true).when(mPrimaryAccountMutator).setPrimaryAccount(any());
-        doNothing().when(mNativeMock).logInSignedInUser(anyLong());
+        doReturn(true).when(mIdentityMutator).setPrimaryAccount(any());
+        doNothing().when(mIdentityMutator).reloadAccountsFromSystem();
 
         mSigninManager.onFirstRunCheckDone(); // Allow sign-in.
 

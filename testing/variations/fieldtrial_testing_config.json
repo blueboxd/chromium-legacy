@@ -468,6 +468,21 @@
             ]
         }
     ],
+    "AndroidPasswordManagerOnboarding": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PasswordManagerOnboardingAndroid"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidSpellChecker": [
         {
             "platforms": [
@@ -5264,6 +5279,8 @@
     "ServiceWorkerOnUI": [
         {
             "platforms": [
+                "android",
+                "android_webview",
                 "chromeos",
                 "linux",
                 "mac",

@@ -341,10 +341,9 @@ void NetErrorHelper::NetworkStateChanged(bool enabled) {
 
 void NetErrorHelper::PrepareErrorPage(const error_page::Error& error,
                                       bool is_failed_post,
-                                      bool is_ignoring_cache,
                                       std::string* error_html) {
   core_->PrepareErrorPage(GetFrameType(render_frame()), error, is_failed_post,
-                          is_ignoring_cache, error_html);
+                          error_html);
 }
 
 bool NetErrorHelper::ShouldSuppressErrorPage(const GURL& url) {
@@ -545,10 +544,8 @@ void NetErrorHelper::SendTrackingRequest(
       network::SimpleURLLoader::kMaxBoundedStringDownloadSize);
 }
 
-void NetErrorHelper::ReloadPage(bool bypass_cache) {
-  render_frame()->GetWebFrame()->StartReload(
-      bypass_cache ? blink::WebFrameLoadType::kReloadBypassingCache
-                   : blink::WebFrameLoadType::kReload);
+void NetErrorHelper::ReloadFrame() {
+  render_frame()->GetWebFrame()->StartReload(blink::WebFrameLoadType::kReload);
 }
 
 void NetErrorHelper::DiagnoseError(const GURL& page_url) {

@@ -59,7 +59,6 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
 
   // Optional overrides for each File Manager test extension type.
   virtual bool GetTabletMode() const;
-  virtual bool GetEnableDriveFs() const;
   virtual bool GetEnableDocumentsProvider() const;
   virtual bool GetEnableArc() const;
   virtual bool GetEnableFormatDialog() const;
@@ -86,9 +85,6 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
 
   // Returns true if the test runs in tablet mode.
   bool IsTabletModeTest() const { return GetTabletMode(); }
-
-  // Returns true if the test requires DriveFS.
-  bool IsDriveFsTest() const { return GetEnableDriveFs(); }
 
   // Returns true if the test requires Android documents providers.
   bool IsDocumentsProviderTest() const { return GetEnableDocumentsProvider(); }

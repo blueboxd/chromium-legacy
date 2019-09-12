@@ -66,6 +66,28 @@ class ElfEntry(object):
         continue
       setattr(self, field_name, kwargs[field_name])
 
+  def ToBytes(self):
+    """Returns byte representation of ELF entry."""
+    bytearr = bytearray()
+    for field_name, field_size in self._fields:
+      field_bytes = getattr(self, field_name).to_bytes(
+          field_size, byteorder=self.byte_order)
+      bytearr.extend(field_bytes)
+    return bytearr
+
+  @classmethod
+  def Create(cls, byte_order, **kwargs):
+    """Static wrapper around ApplyKwargs method.
+
+    Args:
+      byte_order: str. Either 'little' for little endian or 'big' for big
+        endian.
+      **kwargs: will be passed directly to the ApplyKwargs method.
+    """
+    obj = cls(byte_order)
+    obj.ApplyKwargs(**kwargs)
+    return obj
+
   @classmethod
   def FromBytes(cls, byte_order, data, offset):
     """Static wrapper around ParseBytes method.
@@ -92,6 +114,11 @@ class ProgramHeader(ElfEntry):
     PT_NOTE = 4
     PT_SHLIB = 5
     PT_PHDR = 6
+
+  class Flags(enum.IntFlag):
+    PF_X = 1
+    PF_W = 2
+    PF_R = 4
 
   def __init__(self, byte_order):
     """ProgramHeader constructor.
@@ -238,3 +265,36 @@ class ElfHeader(ElfEntry):
   def GetPhdrs(self):
     """Returns the list of file's program headers."""
     return self.phdrs
+
+  def AddPhdr(self, phdr):
+    """Adds a new ProgramHeader entry correcting the e_phnum variable.
+
+    Args:
+      phdr: ProgramHeader. Instance of ProgramHeader to add.
+    """
+    self.phdrs.append(phdr)
+    self.e_phnum += 1
+
+  def PatchData(self, data):
+    """Patches the given data array to reflect all changes made to the header.
+
+    This method doesn't completely rewrite the data, instead it patches
+    inplace. Not only the ElfHeader is patched but all of its ProgramHeader
+    as well.
+
+    The important limitation is that this method doesn't take changes of sizes
+    and offsets into account. As example, if new ProgramHeader is added, this
+    method will override whatever data is located under its placement so the
+    user has to move the headers to the end beforehand or the user mustn't
+    change header's size.
+
+    Args:
+      data: bytearray. The data array to be patched.
+    """
+    elf_bytes = self.ToBytes()
+    data[:len(elf_bytes)] = elf_bytes
+    current_offset = self.e_phoff
+    for phdr in self.GetPhdrs():
+      phdr_bytes = phdr.ToBytes()
+      data[current_offset:current_offset + len(phdr_bytes)] = phdr_bytes
+      current_offset += self.e_phentsize

@@ -23,6 +23,7 @@
 #include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
@@ -93,7 +94,7 @@ class ServiceWorkerRemoteProviderEndpoint {
   // do the same thing by establishing a
   // blink::mojom::EmbeddedWorkerInstanceClient connection if in the future we
   // really need to make |host_remote_| and |client_receiver_| usable for it.
-  mojom::NavigationClientPtr navigation_client_;
+  mojo::Remote<mojom::NavigationClient> navigation_client_;
   // Bound with content::ServiceWorkerProviderHost. The provider host will be
   // removed asynchronously when this remote is closed.
   mojo::AssociatedRemote<blink::mojom::ServiceWorkerContainerHost> host_remote_;

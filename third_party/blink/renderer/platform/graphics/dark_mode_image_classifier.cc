@@ -33,7 +33,9 @@ const float kMinOpaquePixelPercentageForForeground = 0.2;
 }  // namespace
 
 DarkModeImageClassifier::DarkModeImageClassifier()
-    : pixels_to_sample_(kPixelsToSample) {}
+    : pixels_to_sample_(kPixelsToSample),
+      blocks_count_horizontal_(kBlocksCount1D),
+      blocks_count_vertical_(kBlocksCount1D) {}
 
 DarkModeClassification DarkModeImageClassifier::Classify(
     Image* image,
@@ -41,15 +43,6 @@ DarkModeClassification DarkModeImageClassifier::Classify(
   DarkModeClassification result = image->GetDarkModeClassification(src_rect);
   if (result != DarkModeClassification::kNotClassified)
     return result;
-
-  // TODO(v.paturi): This is a limitation that arises because of the way
-  // GetSamples() is implemented. Try to get rid of this limitation.
-  if (src_rect.Width() <= kBlocksCount1D ||
-      src_rect.Height() <= kBlocksCount1D) {
-    result = DarkModeClassification::kDoNotApplyFilter;
-    image->AddDarkModeClassification(src_rect, result);
-    return result;
-  }
 
   result = image->CheckTypeSpecificConditionsForDarkMode(src_rect, this);
   if (result != DarkModeClassification::kNotClassified) {
@@ -77,6 +70,12 @@ DarkModeImageClassifier::GetFeatures(Image* image, const FloatRect& src_rect) {
   if (pixels_to_sample_ > src_rect.Width() * src_rect.Height())
     pixels_to_sample_ = src_rect.Width() * src_rect.Height();
 
+  if (blocks_count_horizontal_ > src_rect.Width())
+    blocks_count_horizontal_ = floor(src_rect.Width());
+
+  if (blocks_count_vertical_ > src_rect.Height())
+    blocks_count_vertical_ = floor(src_rect.Height());
+
   float transparency_ratio;
   float background_ratio;
   Vector<SkColor> sampled_pixels;
@@ -97,26 +96,30 @@ void DarkModeImageClassifier::GetSamples(const SkBitmap& bitmap,
                                          Vector<SkColor>* sampled_pixels,
                                          float* transparency_ratio,
                                          float* background_ratio) {
-  int pixels_per_block = pixels_to_sample_ / (kBlocksCount1D * kBlocksCount1D);
+  int pixels_per_block =
+      pixels_to_sample_ / (blocks_count_horizontal_ * blocks_count_vertical_);
 
   int transparent_pixels = 0;
   int opaque_pixels = 0;
   int blocks_count = 0;
 
-  Vector<int> horizontal_grid(kBlocksCount1D + 1);
-  Vector<int> vertical_grid(kBlocksCount1D + 1);
-  for (int block = 0; block <= kBlocksCount1D; block++) {
-    horizontal_grid[block] = static_cast<int>(
-        round(block * bitmap.width() / static_cast<float>(kBlocksCount1D)));
-    vertical_grid[block] = static_cast<int>(
-        round(block * bitmap.height() / static_cast<float>(kBlocksCount1D)));
+  Vector<int> horizontal_grid(blocks_count_horizontal_ + 1);
+  Vector<int> vertical_grid(blocks_count_vertical_ + 1);
+
+  for (int block = 0; block <= blocks_count_horizontal_; block++) {
+    horizontal_grid[block] = static_cast<int>(round(
+        block * bitmap.width() / static_cast<float>(blocks_count_horizontal_)));
+  }
+  for (int block = 0; block <= blocks_count_vertical_; block++) {
+    vertical_grid[block] = static_cast<int>(round(
+        block * bitmap.height() / static_cast<float>(blocks_count_vertical_)));
   }
 
   sampled_pixels->clear();
   Vector<IntRect> foreground_blocks;
 
-  for (int y = 0; y < kBlocksCount1D; y++) {
-    for (int x = 0; x < kBlocksCount1D; x++) {
+  for (int y = 0; y < blocks_count_vertical_; y++) {
+    for (int x = 0; x < blocks_count_horizontal_; x++) {
       IntRect block(horizontal_grid[x], vertical_grid[y],
                     horizontal_grid[x + 1] - horizontal_grid[x],
                     vertical_grid[y + 1] - vertical_grid[y]);
@@ -237,6 +240,12 @@ float DarkModeImageClassifier::ComputeColorBucketsRatio(
   const float max_buckets[] = {16, 4096};
   return static_cast<float>(buckets.size()) /
          max_buckets[color_mode == ColorMode::kColor];
+}
+
+void DarkModeImageClassifier::ResetDataMembersToDefaults() {
+  pixels_to_sample_ = kPixelsToSample;
+  blocks_count_horizontal_ = kBlocksCount1D;
+  blocks_count_vertical_ = kBlocksCount1D;
 }
 
 }  // namespace blink

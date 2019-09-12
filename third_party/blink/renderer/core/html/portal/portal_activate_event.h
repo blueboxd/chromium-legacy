@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_PORTAL_ACTIVATE_EVENT_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_PORTAL_ACTIVATE_EVENT_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PORTAL_PORTAL_ACTIVATE_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PORTAL_PORTAL_ACTIVATE_EVENT_H_
 
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -101,4 +101,4 @@ class CORE_EXPORT PortalActivateEvent : public Event {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_PORTAL_ACTIVATE_EVENT_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PORTAL_PORTAL_ACTIVATE_EVENT_H_

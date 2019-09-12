@@ -19,8 +19,6 @@ from telemetry.timeline import bounds
 from telemetry.timeline import model as model_module
 from telemetry.timeline import tracing_config
 
-from telemetry.value import list_of_scalar_values
-
 
 BLINK_PERF_BASE_DIR = os.path.join(path_util.GetChromiumSrcDir(),
                                    'third_party', 'blink', 'perf_tests')
@@ -309,9 +307,7 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
       if cpu_times:
         avg = sum(cpu_times)/len(cpu_times)
       print 'avg', '{0:.10f}'.format(avg), unit
-      results.AddValue(list_of_scalar_values.ListOfScalarValues(
-          results.current_page, name=trace_event_name, units=unit,
-          values=cpu_times))
+      results.AddMeasurement(trace_event_name, unit, cpu_times)
       print
     print '\n'
 
@@ -342,8 +338,7 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
       units = parts[-1]
       metric = page.name.split('.')[0].replace('/', '_')
       if values:
-        results.AddValue(list_of_scalar_values.ListOfScalarValues(
-            results.current_page, metric, units, values))
+        results.AddMeasurement(metric, units, values)
       else:
         raise legacy_page_test.MeasurementFailure('Empty test results')
 

@@ -79,6 +79,8 @@ source_set("web_applications_test_support") {
   testonly = true
 
   sources = [
+    "test/service_worker_registration_waiter.cc",
+    "test/service_worker_registration_waiter.h",
     "test/test_app_registrar.cc",
     "test/test_app_registrar.h",
     "test/test_data_retriever.cc",

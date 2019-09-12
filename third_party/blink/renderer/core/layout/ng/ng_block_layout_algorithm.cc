@@ -523,7 +523,6 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
       if (NGLayoutInputNode next = child.NextSibling()) {
         container_builder_.AddBreakBeforeChild(next,
                                                /* is_forced_break */ true);
-        container_builder_.SetDidBreak();
       }
       break;
     } else {
@@ -1645,7 +1644,6 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
         if (NGLayoutInputNode next = child.NextSibling()) {
           container_builder_.AddBreakBeforeChild(next,
                                                  /* is_forced_break */ true);
-          container_builder_.SetDidBreak();
         }
       }
     }
@@ -2057,7 +2055,6 @@ bool NGBlockLayoutAlgorithm::BreakBeforeChild(
   // Drop the fragment on the floor and retry at the start of the next
   // fragmentainer.
   container_builder_.AddBreakBeforeChild(child, break_type == ForcedBreak);
-  container_builder_.SetDidBreak();
   if (break_type == ForcedBreak) {
     container_builder_.SetHasForcedBreak();
   } else {

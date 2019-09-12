@@ -131,6 +131,7 @@
 #include "chrome/browser/signin/chrome_signin_proxying_url_loader_factory.h"
 #include "chrome/browser/signin/chrome_signin_url_loader_throttle.h"
 #include "chrome/browser/signin/header_modification_delegate_on_ui_thread_impl.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/site_isolation/site_isolation_policy.h"
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
 #include "chrome/browser/speech/tts_controller_delegate_impl.h"
@@ -251,7 +252,7 @@
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
 #include "components/security_interstitials/content/origin_policy_ui.h"
-#include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/startup_metric_utils/browser/startup_metric_host_impl.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
@@ -4592,11 +4593,9 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
         base::CreateSingleThreadTaskRunner({BrowserThread::UI})));
   }
 
-  bool is_off_the_record = profile->IsOffTheRecord();
-  bool is_signed_in = !is_off_the_record &&
-                      !profile->GetPrefs()
-                           ->GetString(prefs::kGoogleServicesUserAccountId)
-                           .empty();
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+  bool is_signed_in = identity_manager && identity_manager->HasPrimaryAccount();
 
   chrome::mojom::DynamicParams dynamic_params = {
       profile->GetPrefs()->GetBoolean(prefs::kForceGoogleSafeSearch),
@@ -4605,7 +4604,7 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
       variations::VariationsHttpHeaderProvider::GetInstance()
           ->GetClientDataHeader(is_signed_in)};
   result.push_back(std::make_unique<GoogleURLLoaderThrottle>(
-      is_off_the_record, std::move(dynamic_params)));
+      profile->IsOffTheRecord(), std::move(dynamic_params)));
 
   result.push_back(std::make_unique<ProtocolHandlerThrottle>(
       ProtocolHandlerRegistryFactory::GetForBrowserContext(browser_context)));

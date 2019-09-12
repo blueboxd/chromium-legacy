@@ -69,6 +69,52 @@ class ElfHeaderTest(unittest.TestCase):
     self.assertEqual(load_phdr.p_vaddr, 0x1000)
     self.assertEqual(load_phdr.p_paddr, 0x1000)
 
+  def testElfHeaderNoopPatching(self):
+    """Patching the ELF without any changes."""
+    with open(self.library_path, 'rb') as f:
+      data = bytearray(f.read())
+    data_copy = data[:]
+    elf = elf_headers.ElfHeader(data)
+    elf.PatchData(data)
+    self.assertEqual(data, data_copy)
+
+  def testElfHeaderPatchingAndParsing(self):
+    """Patching the ELF and validating that it worked."""
+    with open(self.library_path, 'rb') as f:
+      data = bytearray(f.read())
+    elf = elf_headers.ElfHeader(data)
+    # Changing some values.
+    elf.e_ehsize = 42
+    elf.GetPhdrs()[0].p_align = 1
+    elf.GetPhdrs()[0].p_filesz = 10
+    elf.PatchData(data)
+
+    updated_elf = elf_headers.ElfHeader(data)
+    # Validating all of the ELF header fields.
+    self.assertEqual(updated_elf.e_type, elf.e_type)
+    self.assertEqual(updated_elf.e_entry, elf.e_entry)
+    self.assertEqual(updated_elf.e_phoff, elf.e_phoff)
+    self.assertEqual(updated_elf.e_shoff, elf.e_shoff)
+    self.assertEqual(updated_elf.e_flags, elf.e_flags)
+    self.assertEqual(updated_elf.e_ehsize, 42)
+    self.assertEqual(updated_elf.e_phentsize, elf.e_phentsize)
+    self.assertEqual(updated_elf.e_phnum, elf.e_phnum)
+    self.assertEqual(updated_elf.e_shentsize, elf.e_shentsize)
+    self.assertEqual(updated_elf.e_shnum, elf.e_shnum)
+    self.assertEqual(updated_elf.e_shstrndx, elf.e_shstrndx)
+
+    # Validating all of the fields of the first segment.
+    load_phdr = elf.GetPhdrs()[0]
+    updated_load_phdr = updated_elf.GetPhdrs()[0]
+
+    self.assertEqual(updated_load_phdr.p_offset, load_phdr.p_offset)
+    self.assertEqual(updated_load_phdr.p_vaddr, load_phdr.p_vaddr)
+    self.assertEqual(updated_load_phdr.p_paddr, load_phdr.p_paddr)
+    self.assertEqual(updated_load_phdr.p_filesz, 10)
+    self.assertEqual(updated_load_phdr.p_memsz, load_phdr.p_memsz)
+    self.assertEqual(updated_load_phdr.p_flags, load_phdr.p_flags)
+    self.assertEqual(updated_load_phdr.p_align, 1)
+
 
 if __name__ == '__main__':
   unittest.main()

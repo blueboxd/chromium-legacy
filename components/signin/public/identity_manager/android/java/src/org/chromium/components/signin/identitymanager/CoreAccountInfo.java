@@ -62,6 +62,7 @@ public class CoreAccountInfo {
     /**
      * Returns a unique identifier of the current account.
      */
+    @CalledByNative
     public CoreAccountId getId() {
         return mId;
     }
@@ -69,6 +70,7 @@ public class CoreAccountInfo {
     /**
      * Returns a name of the current account.
      */
+    @CalledByNative
     public String getName() {
         return mAccount.name;
     }
@@ -76,6 +78,7 @@ public class CoreAccountInfo {
     /**
      * Returns the string representation of the Gaia ID
      */
+    @CalledByNative
     public String getGaiaId() {
         return mGaiaId;
     }

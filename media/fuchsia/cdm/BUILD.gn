@@ -13,8 +13,8 @@ source_set("cdm") {
     "fuchsia_cdm_provider.h",
     "fuchsia_decryptor.cc",
     "fuchsia_decryptor.h",
-    "stream_processor_decryptor.cc",
-    "stream_processor_decryptor.h",
+    "fuchsia_stream_decryptor.cc",
+    "fuchsia_stream_decryptor.h",
   ]
 
   public_deps = [

@@ -210,7 +210,8 @@ void WaylandDataDevice::OnDataOffer(void* data,
                                     wl_data_offer* offer) {
   auto* self = static_cast<WaylandDataDevice*>(data);
 
-  self->connection_->clipboard()->UpdateSequenceNumber();
+  self->connection_->clipboard()->UpdateSequenceNumber(
+      ClipboardBuffer::kCopyPaste);
 
   DCHECK(!self->new_offer_);
   self->new_offer_ = std::make_unique<WaylandDataOffer>(offer);

@@ -192,6 +192,9 @@ void BrowserSwitcherServiceWin::LoadRulesFromPrefs() {
   if (prefs().UseIeSitelist())
     sitelist()->SetIeemSitelist(
         ParsedXml(prefs().GetCachedIeemSitelist(), base::nullopt));
+  if (!prefs().IsEnabled())
+    return;
+  SavePrefsToFile();
 }
 
 void BrowserSwitcherServiceWin::OnAllRulesetsParsed() {

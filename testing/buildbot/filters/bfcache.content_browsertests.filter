@@ -18,14 +18,6 @@
 # Document expects javascript to run again from the beginning.
 -WebContentsImplBrowserTest.JavaScriptDialogsInMainAndSubframes
 
-# render_view_impl.cc. Check failed: !frame_widget_.
-# https://crbug.com/999846
--NavigationControllerBrowserTest.PageStateAfterForwardInCompetingFrames
--NavigationControllerBrowserTest.PageStateWithIframeAfterForwardInCompetingFrames
--NavigationControllerHistoryInterventionBrowserTest.NoUserActivationSetSkipOnBackForwardCrossSite
--NavigationControllerHistoryInterventionBrowserTest.NoUserActivationSetSkipOnBackForwardCrossSite
--RenderFrameHostManagerTest.BackForwardNotStale
-
 # Javascript dialog is shown from a page in the BackForwardCache.
 # https://crbug.com/999847
 -NavigationControllerBrowserTest.NoDialogsFromSwappedOutFrames

@@ -302,13 +302,11 @@ testcase.zipFileOpenDownloadsEncryptedCancelPassphrase = async () => {
  * Tests zip file open (aka unzip) from Google Drive.
  */
 testcase.zipFileOpenDrive = async () => {
-  if (await sendTestMessage({name: 'getDriveFsEnabled'}) === 'true') {
-    await sendTestMessage({
-      name: 'expectFileTask',
-      fileNames: [ENTRIES.zipArchive.targetPath],
-      openType: 'launch'
-    });
-  }
+  await sendTestMessage({
+    name: 'expectFileTask',
+    fileNames: [ENTRIES.zipArchive.targetPath],
+    openType: 'launch'
+  });
 
   // Open Files app on Drive containing a zip file.
   const appId =
@@ -435,13 +433,11 @@ testcase.zipCreateFileDownloads = async () => {
  * Tests creating a zip file on Drive.
  */
 testcase.zipCreateFileDrive = async () => {
-  if (await sendTestMessage({name: 'getDriveFsEnabled'}) === 'true') {
-    await sendTestMessage({
-      name: 'expectFileTask',
-      fileNames: [ENTRIES.photos.targetPath],
-      openType: 'launch'
-    });
-  }
+  await sendTestMessage({
+    name: 'expectFileTask',
+    fileNames: [ENTRIES.photos.targetPath],
+    openType: 'launch'
+  });
 
   // Open Files app on Drive containing ENTRIES.photos.
   const appId =

@@ -144,13 +144,14 @@ class PLATFORM_EXPORT CanvasResource
   CanvasResourceProvider* Provider() { return provider_.get(); }
   base::WeakPtr<CanvasResourceProvider> WeakProvider() { return provider_; }
 
+  const base::PlatformThreadId owning_thread_id_;
+
  private:
   // Sync token that was provided when resource was released
   gpu::SyncToken sync_token_for_release_;
   base::WeakPtr<CanvasResourceProvider> provider_;
   SkFilterQuality filter_quality_;
   CanvasColorParams color_params_;
-  blink::PlatformThreadId thread_of_origin_;
 #if DCHECK_IS_ON()
   bool did_call_on_destroy_ = false;
 #endif
@@ -474,7 +475,6 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
   const bool is_origin_top_left_;
   const bool is_accelerated_;
   const GLenum texture_target_;
-  const base::PlatformThreadId owning_thread_id_;
   const scoped_refptr<base::SingleThreadTaskRunner> owning_thread_task_runner_;
 
   OwningThreadData owning_thread_data_;
@@ -599,7 +599,6 @@ class PLATFORM_EXPORT CanvasResourceSwapChain final : public CanvasResource {
   const base::WeakPtr<WebGraphicsContext3DProviderWrapper>
       context_provider_wrapper_;
   const IntSize size_;
-  const base::PlatformThreadId owning_thread_id_;
   gpu::Mailbox front_buffer_mailbox_;
   gpu::Mailbox back_buffer_mailbox_;
   GLuint front_buffer_texture_id_ = 0u;

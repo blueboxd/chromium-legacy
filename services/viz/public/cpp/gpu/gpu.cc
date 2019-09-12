@@ -64,9 +64,10 @@ class Gpu::GpuPtrIO {
 #endif  // defined(OS_CHROMEOS)
 
   void CreateVideoEncodeAcceleratorProvider(
-      media::mojom::VideoEncodeAcceleratorProviderRequest request) {
+      mojo::PendingReceiver<media::mojom::VideoEncodeAcceleratorProvider>
+          receiver) {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-    gpu_ptr_->CreateVideoEncodeAcceleratorProvider(std::move(request));
+    gpu_ptr_->CreateVideoEncodeAcceleratorProvider(std::move(receiver));
   }
 
  private:
@@ -296,12 +297,13 @@ void Gpu::CreateJpegDecodeAccelerator(
 #endif  // defined(OS_CHROMEOS)
 
 void Gpu::CreateVideoEncodeAcceleratorProvider(
-    media::mojom::VideoEncodeAcceleratorProviderRequest vea_provider_request) {
+    mojo::PendingReceiver<media::mojom::VideoEncodeAcceleratorProvider>
+        vea_provider_receiver) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   io_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&GpuPtrIO::CreateVideoEncodeAcceleratorProvider,
                                 base::Unretained(gpu_.get()),
-                                std::move(vea_provider_request)));
+                                std::move(vea_provider_receiver)));
 }
 
 void Gpu::EstablishGpuChannel(gpu::GpuChannelEstablishedCallback callback) {

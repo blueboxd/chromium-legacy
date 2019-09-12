@@ -564,17 +564,9 @@ void InstallableManager::CheckServiceWorker() {
   DCHECK(!worker_->fetched);
   DCHECK(!manifest().IsEmpty());
 
-  if (!manifest().start_url.is_valid()) {
-    worker_->has_worker = false;
-    worker_->error = NO_URL_FOR_SERVICE_WORKER;
-    worker_->fetched = true;
-    WorkOnTask();
-    return;
-  }
-
-  // Check to see if there is a service worker for the manifest's start url.
+  // Check to see if there is a service worker for the manifest's scope.
   service_worker_context_->CheckHasServiceWorker(
-      manifest().start_url,
+      manifest().scope,
       base::BindOnce(&InstallableManager::OnDidCheckHasServiceWorker,
                      weak_factory_.GetWeakPtr()));
 }
@@ -659,10 +651,8 @@ void InstallableManager::OnIconFetched(const GURL icon_url,
 
 void InstallableManager::OnRegistrationCompleted(const GURL& pattern) {
   // If the scope doesn't match we keep waiting.
-  if (!content::ServiceWorkerContext::ScopeMatches(pattern,
-                                                   manifest().start_url)) {
+  if (!content::ServiceWorkerContext::ScopeMatches(pattern, manifest().scope))
     return;
-  }
 
   bool was_active = task_queue_.HasCurrent();
 

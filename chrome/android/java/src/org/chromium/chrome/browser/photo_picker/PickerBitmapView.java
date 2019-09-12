@@ -139,8 +139,9 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
 
     @Override
     public void onClick() {
-        if (mBitmapDetails == null)
+        if (mBitmapDetails == null) {
             return; // Clicks are disabled until initialize() has been called.
+        }
 
         if (isGalleryTile()) {
             mCategoryView.showGallery();
@@ -173,6 +174,8 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
 
     @Override
     public void onSelectionStateChange(List<PickerBitmap> selectedItems) {
+        super.onSelectionStateChange(selectedItems);
+
         // If the user cancels the dialog before this object has initialized,
         // the SelectionDelegate will try to notify us that all selections have
         // been cleared. However, we don't need to process that message and, in
@@ -186,12 +189,6 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
 
         boolean selected = selectedItems.contains(mBitmapDetails);
         boolean checked = super.isChecked();
-
-        // In single-selection mode, the list needs to be updated to account for items that were
-        // checked before but no longer are (because something else was selected).
-        if (!mCategoryView.isMultiSelectAllowed() && !selected && checked) {
-            super.toggle();
-        }
 
         boolean needsResize = selected != checked;
         int size = selected && !checked ? mCategoryView.getImageSize() - 2 * mBorder

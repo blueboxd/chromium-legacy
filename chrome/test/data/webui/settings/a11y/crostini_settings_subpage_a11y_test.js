@@ -15,7 +15,7 @@ AccessibilityTest.define('CrostiniAccessibilityTest', {
   /** @override */
   name: 'CROSTINI',
   /** @override */
-  axeOptions: SettingsAccessibilityTest.axeOptionsExcludeLinkInTextBlock,
+  axeOptions: SettingsAccessibilityTest.axeOptions,
   /** @override */
   setup: function() {
     settings.router.navigateTo(settings.routes.CROSTINI);

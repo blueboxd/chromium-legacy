@@ -45,8 +45,6 @@ class SigninManagerAndroid : public KeyedService {
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
-  void LogInSignedInUser(JNIEnv* env);
-
   void ClearLastSignedInUser(JNIEnv* env);
 
   jboolean IsSigninAllowedByPolicy(JNIEnv* env) const;
@@ -57,14 +55,15 @@ class SigninManagerAndroid : public KeyedService {
   // the policy if necessary.
   void FetchAndApplyCloudPolicy(
       JNIEnv* env,
-      const base::android::JavaParamRef<jstring>& username,
+      const base::android::JavaParamRef<jobject>& j_account_info,
       const base::android::JavaParamRef<jobject>& j_callback);
 
   void StopApplyingCloudPolicy(JNIEnv* env);
 
-  void IsAccountManaged(JNIEnv* env,
-                        const base::android::JavaParamRef<jstring>& j_username,
-                        const base::android::JavaParamRef<jobject>& j_callback);
+  void IsAccountManaged(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& j_account_info,
+      const base::android::JavaParamRef<jobject>& j_callback);
 
   base::android::ScopedJavaLocalRef<jstring> GetManagementDomain(JNIEnv* env);
 

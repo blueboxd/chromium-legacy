@@ -143,7 +143,7 @@ class ServiceListener : public service_manager::mojom::ServiceManagerListener {
   void OnProcessConnected(
       mojom::TracedProcessPtr traced_process,
       uint32_t pid,
-      mojom::PerfettoServiceRequest service_request,
+      mojo::PendingReceiver<mojom::PerfettoService> service_receiver,
       mojo::PendingReceiver<mojom::AgentRegistry> registry_receiver) {
     auto result = connected_pids_.insert(pid);
     if (!result.second) {
@@ -152,8 +152,8 @@ class ServiceListener : public service_manager::mojom::ServiceManagerListener {
     }
 
     connected_pids_.insert(pid);
-    PerfettoService::GetInstance()->BindRequest(std::move(service_request),
-                                                pid);
+    PerfettoService::GetInstance()->BindReceiver(std::move(service_receiver),
+                                                 pid);
     agent_registry_->BindAgentRegistryReceiver(std::move(registry_receiver));
   }
 

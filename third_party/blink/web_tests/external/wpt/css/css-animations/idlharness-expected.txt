@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 70 tests; 61 PASS, 9 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 70 tests; 67 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface CSSRule: original interface defined
 PASS Partial interface mixin GlobalEventHandlers: original interface mixin defined
@@ -54,17 +54,17 @@ PASS CSSKeyframesRule interface: keyframes must inherit property "findRule(CSSOM
 PASS CSSKeyframesRule interface: calling findRule(CSSOMString) on keyframes with too few arguments must throw TypeError
 PASS CSSRule interface: keyframes must inherit property "KEYFRAMES_RULE" with the proper type
 PASS CSSRule interface: keyframes must inherit property "KEYFRAME_RULE" with the proper type
-FAIL HTMLElement interface: attribute onanimationstart assert_true: The prototype object must have a property "onanimationstart" expected true got false
-FAIL HTMLElement interface: attribute onanimationiteration assert_true: The prototype object must have a property "onanimationiteration" expected true got false
-FAIL HTMLElement interface: attribute onanimationend assert_true: The prototype object must have a property "onanimationend" expected true got false
+PASS HTMLElement interface: attribute onanimationstart
+PASS HTMLElement interface: attribute onanimationiteration
+PASS HTMLElement interface: attribute onanimationend
 FAIL HTMLElement interface: attribute onanimationcancel assert_true: The prototype object must have a property "onanimationcancel" expected true got false
 PASS Window interface: attribute onanimationstart
 PASS Window interface: attribute onanimationiteration
 PASS Window interface: attribute onanimationend
 FAIL Window interface: attribute onanimationcancel assert_own_property: The global object must have a property "onanimationcancel" expected property "onanimationcancel" missing
-FAIL Document interface: attribute onanimationstart assert_true: The prototype object must have a property "onanimationstart" expected true got false
-FAIL Document interface: attribute onanimationiteration assert_true: The prototype object must have a property "onanimationiteration" expected true got false
-FAIL Document interface: attribute onanimationend assert_true: The prototype object must have a property "onanimationend" expected true got false
+PASS Document interface: attribute onanimationstart
+PASS Document interface: attribute onanimationiteration
+PASS Document interface: attribute onanimationend
 FAIL Document interface: attribute onanimationcancel assert_true: The prototype object must have a property "onanimationcancel" expected true got false
 PASS CSSRule interface: constant KEYFRAMES_RULE on interface object
 PASS CSSRule interface: constant KEYFRAMES_RULE on interface prototype object

@@ -51,16 +51,19 @@ class MockClipboardClient {
     data_types_[mime_type] =
         std::vector<uint8_t>(object_data, object_data + object_map.size());
 
-    delegate_->OfferClipboardData(data_types_, std::move(callback));
+    delegate_->OfferClipboardData(ClipboardBuffer::kCopyPaste, data_types_,
+                                  std::move(callback));
   }
 
   void ReadData(const std::string& mime_type,
                 PlatformClipboard::RequestDataClosure callback) {
-    delegate_->RequestClipboardData(mime_type, &data_types_,
-                                    std::move(callback));
+    delegate_->RequestClipboardData(ClipboardBuffer::kCopyPaste, mime_type,
+                                    &data_types_, std::move(callback));
   }
 
-  bool IsSelectionOwner() { return delegate_->IsSelectionOwner(); }
+  bool IsSelectionOwner() {
+    return delegate_->IsSelectionOwner(ClipboardBuffer::kCopyPaste);
+  }
 
  private:
   PlatformClipboard* delegate_ = nullptr;

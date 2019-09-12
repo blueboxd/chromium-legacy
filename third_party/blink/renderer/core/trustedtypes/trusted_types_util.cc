@@ -290,9 +290,12 @@ String GetStringFromTrustedHTML(const String& string,
   }
 
   if (result->toString().IsNull()) {
-    TrustedTypeFail(kTrustedHTMLAssignmentAndDefaultPolicyFailed,
-                    execution_context, exception_state, string);
-    return g_empty_string;
+    if (TrustedTypeFail(kTrustedHTMLAssignmentAndDefaultPolicyFailed,
+                        execution_context, exception_state, string)) {
+      return g_empty_string;
+    } else {
+      return string;
+    }
   }
 
   return result->toString();
@@ -346,9 +349,12 @@ String GetStringFromTrustedScript(const String& potential_script,
   }
 
   if (result->toString().IsNull()) {
-    TrustedTypeFail(kTrustedScriptAssignmentAndDefaultPolicyFailed,
-                    execution_context, exception_state, potential_script);
-    return g_empty_string;
+    if (TrustedTypeFail(kTrustedScriptAssignmentAndDefaultPolicyFailed,
+                        execution_context, exception_state, potential_script)) {
+      return g_empty_string;
+    } else {
+      return potential_script;
+    }
   }
 
   return result->toString();
@@ -390,9 +396,12 @@ String GetStringFromTrustedScriptURL(
   }
 
   if (result->toString().IsNull()) {
-    TrustedTypeFail(kTrustedScriptURLAssignmentAndDefaultPolicyFailed,
-                    execution_context, exception_state, string);
-    return g_empty_string;
+    if (TrustedTypeFail(kTrustedScriptURLAssignmentAndDefaultPolicyFailed,
+                        execution_context, exception_state, string)) {
+      return g_empty_string;
+    } else {
+      return string;
+    }
   }
 
   return result->toString();
@@ -430,9 +439,12 @@ String GetStringFromTrustedURL(USVStringOrTrustedURL string_or_trusted_url,
   }
 
   if (result->toString().IsNull()) {
-    TrustedTypeFail(kTrustedURLAssignmentAndDefaultPolicyFailed,
-                    execution_context, exception_state, string);
-    return g_empty_string;
+    if (TrustedTypeFail(kTrustedURLAssignmentAndDefaultPolicyFailed,
+                        execution_context, exception_state, string)) {
+      return g_empty_string;
+    } else {
+      return string;
+    }
   }
 
   return result->toString();

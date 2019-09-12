@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_frame.h"
-#include "media/fuchsia/cdm/stream_processor_decryptor.h"
+#include "media/fuchsia/cdm/fuchsia_stream_decryptor.h"
 
 namespace media {
 
@@ -35,7 +35,7 @@ void FuchsiaDecryptor::Decrypt(StreamType stream_type,
   }
 
   if (!audio_decryptor_)
-    audio_decryptor_ = StreamProcessorDecryptor::CreateAudioDecryptor(cdm_);
+    audio_decryptor_ = FuchsiaClearStreamDecryptor::Create(cdm_);
 
   audio_decryptor_->Decrypt(std::move(encrypted), decrypt_cb);
 }
@@ -54,7 +54,6 @@ void FuchsiaDecryptor::InitializeAudioDecoder(const AudioDecoderConfig& config,
 
 void FuchsiaDecryptor::InitializeVideoDecoder(const VideoDecoderConfig& config,
                                               const DecoderInitCB& init_cb) {
-  NOTIMPLEMENTED();
   init_cb.Run(false);
 }
 
@@ -69,18 +68,16 @@ void FuchsiaDecryptor::DecryptAndDecodeAudio(
 void FuchsiaDecryptor::DecryptAndDecodeVideo(
     scoped_refptr<DecoderBuffer> encrypted,
     const VideoDecodeCB& video_decode_cb) {
-  NOTIMPLEMENTED();
+  NOTREACHED();
   video_decode_cb.Run(Status::kError, nullptr);
 }
 
 void FuchsiaDecryptor::ResetDecoder(StreamType stream_type) {
-  DCHECK_EQ(stream_type, StreamType::kVideo);
-  NOTIMPLEMENTED();
+  NOTREACHED();
 }
 
 void FuchsiaDecryptor::DeinitializeDecoder(StreamType stream_type) {
-  DCHECK_EQ(stream_type, StreamType::kVideo);
-  NOTIMPLEMENTED();
+  NOTREACHED();
 }
 
 bool FuchsiaDecryptor::CanAlwaysDecrypt() {

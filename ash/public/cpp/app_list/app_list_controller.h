@@ -164,9 +164,6 @@ class ASH_PUBLIC_EXPORT AppListController {
   virtual void GetAppInfoDialogBounds(
       GetAppInfoDialogBoundsCallback callback) = 0;
 
-  // Shows the app list and switches to |state|.
-  virtual void ShowAppListAndSwitchToState(ash::AppListState state) = 0;
-
   // Shows the app list.
   virtual void ShowAppList() = 0;
 

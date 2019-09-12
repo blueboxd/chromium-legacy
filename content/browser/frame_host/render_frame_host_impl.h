@@ -58,6 +58,7 @@
 #include "content/public/common/transferrable_url_loader.mojom.h"
 #include "media/mojo/mojom/interface_factory.mojom.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -921,9 +922,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool was_granted_media_access() { return was_granted_media_access_; }
 
   // Request a new NavigationClient interface from the renderer and returns the
-  // ownership of the AssociatedPtr. This is intended for use by the
+  // ownership of the mojo::AssociatedRemote. This is intended for use by the
   // NavigationRequest. Only used with PerNavigationMojoInterface enabled.
-  mojom::NavigationClientAssociatedPtr
+  mojo::AssociatedRemote<mojom::NavigationClient>
   GetNavigationClientFromInterfaceProvider();
 
   // Called to signify the RenderFrameHostImpl that one of its ongoing
@@ -1344,7 +1345,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojom::CommonNavigationParamsPtr common_params,
       mojom::BeginNavigationParamsPtr begin_params,
       mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token,
-      mojom::NavigationClientAssociatedPtrInfo navigation_client,
+      mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
       mojo::PendingRemote<blink::mojom::NavigationInitiator>
           navigation_initiator) override;
   void SubresourceResponseStarted(const GURL& url,

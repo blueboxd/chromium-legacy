@@ -534,7 +534,6 @@ crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-colspan-002.htm
 crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-colspan-003.html [ Failure ]
 crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-rowcol-001.html [ Failure ]
 crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-rowcol-002.html [ Failure ]
-crbug.com/377847 external/wpt/css/css-tables/subpixel-collapsed-borders-002.html [ Failure ]
 crbug.com/377847 external/wpt/css/css-tables/subpixel-collapsed-borders-003.html [ Failure ]
 crbug.com/377847 external/wpt/css/css-tables/subpixel-table-cell-height-001.html [ Failure ]
 crbug.com/377847 external/wpt/css/css-tables/subpixel-table-cell-width-001.html [ Failure ]
@@ -671,9 +670,6 @@ crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 # Layout team disagrees with the spec for this particular test.
 crbug.com/591099 external/wpt/css/css-ui/text-overflow-015.html [ Failure ]
 
-# Fails only on Linux bots. Pass on all other bots and on local Linux.
-crbug.com/985620 [ Linux ] fast/text/zwnj-disables-kerning.html [ Failure ]
-
 # ====== Layout team owned tests to here ======
 
 # ====== LayoutNG-only failures from here ======
@@ -730,7 +726,7 @@ crbug.com/591099 fast/multicol/vertical-lr/float-edge.html [ Failure ]
 crbug.com/591099 fast/multicol/vertical-lr/float-paginate.html [ Failure ]
 crbug.com/591099 fast/multicol/vertical-lr/nested-columns.html [ Failure ]
 crbug.com/591099 fast/multicol/vertical-lr/unsplittable-inline-block.html [ Failure ]
-crbug.com/591099 fast/text/ellipsis-with-self-painting-layer.html [ Failure ]
+crbug.com/591099 [ Win ] fast/text/ellipsis-with-self-painting-layer.html [ Failure ]
 
 # LayoutNG failures that needs to be triaged
 crbug.com/591099 fast/text/selection/selection-rect-line-height-too-small.html [ Failure ]
@@ -741,7 +737,6 @@ crbug.com/591099 external/wpt/css/css-rhythm/line-height-step-writing-mode-vrl-0
 crbug.com/591099 external/wpt/css/css-text/hyphens/hyphens-out-of-flow-002.html [ Failure ]
 crbug.com/591099 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-vertical.html [ Failure ]
 crbug.com/591099 fast/css-intrinsic-dimensions/width-avoid-floats.html [ Failure ]
-crbug.com/591099 fast/multicol/span/overflow-on-multicol.html [ Failure ]
 crbug.com/591099 fast/selectors/shadow-host-div-with-span.html [ Failure ]
 crbug.com/591099 fast/selectors/shadow-host-div-with-text.html [ Failure ]
 crbug.com/591099 fast/text/selection/inline-block-in-selection-root.html [ Failure ]
@@ -759,8 +754,10 @@ crbug.com/591099 editing/selection/paint-hyphen.html [ Failure Pass ]
 crbug.com/591099 external/wpt/dom/ranges/Range-compareBoundaryPoints.html [ Timeout Failure Pass ]
 crbug.com/591099 external/wpt/dom/ranges/Range-set.html [ Failure Timeout ]
 crbug.com/591099 external/wpt/encoding/legacy-mb-korean/euc-kr/euckr-decode-ksc_5601.html [ Timeout Failure Pass ]
-crbug.com/591099 fast/text/international/shape-across-elements-simple.html [ Failure ]
-crbug.com/591099 fast/text/word-space-monospace.html [ Failure ]
+crbug.com/591099 [ Mac ] fast/text/international/shape-across-elements-simple.html [ Failure ]
+crbug.com/591099 [ Win ] fast/text/international/shape-across-elements-simple.html [ Failure ]
+crbug.com/591099 [ Mac ] fast/text/word-space-monospace.html [ Failure ]
+crbug.com/591099 [ Win ] fast/text/word-space-monospace.html [ Failure ]
 crbug.com/591099 [ Fuchsia ] editing/selection/4402375.html [ Failure ]
 crbug.com/591099 [ Fuchsia ] fast/block/float/centered-float-avoidance-complexity.html [ Failure Timeout ]
 crbug.com/591099 [ Fuchsia ] fast/block/float/float-in-float-painting.html [ Failure ]
@@ -1348,7 +1345,6 @@ crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/mu
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-breaking-nobackground-003.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-breaking-nobackground-004.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-breaking-nobackground-005.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-br-inside-avoidcolumn-001.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-clip-001.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-clip-002.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-collapsing-001.xht [ Failure ]
@@ -2081,7 +2077,6 @@ crbug.com/995106 external/wpt/css/css-lists/inline-list-with-table-child.html [ 
 ## https://test-results.appspot.com/data/layout_results/linux-blink-rel/1237/webkit_layout_tests%20%28with%20patch%29/layout-test-results/results.html
 crbug.com/891427 virtual/threaded/animations/responsive/viewport-unit-transform-responsive.html [ Timeout ]
 crbug.com/891427 virtual/threaded/animations/responsive/viewport-unit-translate-responsive.html [ Timeout ]
-crbug.com/891427 fast/replaced/replaced-breaking.html [ Failure ]
 crbug.com/891427 virtual/android/fullscreen/rendering/backdrop-video.html [ Failure ]
 crbug.com/891427 virtual/android/url-bar/bottom-and-top-fixed-sticks-to-top.html [ Failure ]
 ## Next 4 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_chromium_rel_ng/216317
@@ -3024,8 +3019,6 @@ crbug.com/713587 external/wpt/css/css-ui/caret-color-006.html [ Skip ]
 #crbug.com/626703 [ Win ] external/wpt/css/css-flexbox/flex-minimum-width-flex-items-003.xht [ Failure ]
 #crbug.com/626703 [ Win ] external/wpt/css/css-flexbox/flexbox_flex-natural-mixed-basis-auto.html [ Failure ]
 #crbug.com/626703 external/wpt/css/css-cascade/revert-val-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-htb-in-vrl-001.xht [ Failure ]
-crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-htb-in-vrl-004.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-htb-in-vrl-013.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-vlr-in-htb-008.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-vlr-in-htb-020.xht [ Failure ]
@@ -3567,8 +3560,6 @@ crbug.com/626703 external/wpt/html/semantics/document-metadata/the-link-element/
 crbug.com/626703 external/wpt/svg/interact/manual/event-attribute-001-manual.svg [ Skip ]
 crbug.com/626703 external/wpt/css/css-values/vh-support-atviewport.html [ Failure ]
 crbug.com/626703 external/wpt/css/CSS2/text/white-space-nowrap-attribute-001.xht [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/CSS2/text/white-space-bidirectionality-001.xht [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/CSS2/text/white-space-bidirectionality-001.xht [ Failure ]
 
 crbug.com/626703 external/wpt/css/css-text/white-space/pre-wrap-012.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/white-space/pre-wrap-014.html [ Failure ]
@@ -6154,12 +6145,6 @@ crbug.com/919204 external/wpt/scroll-to-text-fragment/scroll-to-text-fragment.ht
 
 crbug.com/999209 virtual/lazyload-image/http/tests/lazyload/style-dimension.html [ Timeout ]
 
-# Disable tests with expectation mismatch
-crbug.com/999473 external/wpt/streams/writable-streams/properties.any.sharedworker.html [ Pass Failure ]
-crbug.com/999473 external/wpt/streams/writable-streams/properties.any.serviceworker.html [ Pass Failure ]
-crbug.com/999473 external/wpt/streams/writable-streams/properties.any.html [ Pass Failure ]
-crbug.com/999473 external/wpt/streams/writable-streams/properties.any.worker.html [ Pass Failure ]
-
 crbug.com/1000051 [ Mac ] virtual/audio-service/media/controls/volume-slider.html [ Failure Timeout Pass ]
 
 # Sheriff 2019-09-03
@@ -6228,3 +6213,6 @@ crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-targe
 crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-target-snap-001.html [ Failure ]
 crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-target-snap-002.html [ Failure ]
 crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-target-snap-003.html [ Failure ]
+
+# Sheriff 2019-09-12
+crbug.com/1003268 [ Win10 ] fast/harness/internals-observe-gc.html [ Failure ]

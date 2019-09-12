@@ -3975,17 +3975,6 @@ The site does NOT gain access to the camera. The camera images are only visible 
          Show original
       </message>
 
-      <!-- Incognito disclosure dialog -->
-      <message name="IDS_INCOGNITO_DISCLOSURE_TITLE" desc="Title of incognito disclosure dialog." translateable="false">
-         Warning
-      </message>
-      <message name="IDS_INCOGNITO_DISCLOSURE_TEXT" desc="Text for incognito disclosure dialog." translateable="false">
-         You are about to open an Incognito Custom Tab, while having other incognito tabs active.\n\nIncognito Custom Tabs share the same profile, so you risk giving access to your Incognito data.
-      </message>
-      <message name="IDS_INCOGNITO_DISCLOSURE_CHECKBOX_TEXT" desc="Text for checkbox inviting to close incognito tabs in incognito disclosure dialog." translateable="false">
-         Close other incognito tabs
-      </message>
-
       <!-- Autofill Assistant preferences -->
       <message name="IDS_PREFS_AUTOFILL_ASSISTANT_TITLE" desc="Title for the Autofill Assistant preferences screen. [CHAR-LIMIT=32]">
         Google Assistant in Chrome

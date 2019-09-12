@@ -66,6 +66,8 @@
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
 
 namespace blink {
 
@@ -887,12 +889,22 @@ void WebSocketChannelImpl::ConsumeDataFrame(
     return;
   }
 
+  // TODO(yoichio): Do this after EndReadData by reading |message_chunks_|
+  // instead.
+  if (receiving_message_type_is_text_ && received_text_is_all_ascii_) {
+    for (size_t i = 0; i < size; i++) {
+      if (!IsASCII(data[i])) {
+        received_text_is_all_ascii_ = false;
+        break;
+      }
+    }
+  }
+
   if (!fin) {
     message_chunks_.Append(base::make_span(data, size));
     return;
   }
 
-  const wtf_size_t message_size = static_cast<wtf_size_t>(message_size_so_far);
   Vector<base::span<const char>> chunks = message_chunks_.GetView();
   if (size > 0) {
     chunks.push_back(base::make_span(data, size));
@@ -904,20 +916,8 @@ void WebSocketChannelImpl::ConsumeDataFrame(
                                     false, chunks);
 
   if (receiving_message_type_is_text_) {
-    Vector<char> flatten;
-    base::span<const char> span;
-    if (chunks.size() > 1) {
-      flatten.ReserveCapacity(message_size);
-      for (const auto& chunk : chunks) {
-        flatten.Append(chunk.data(), static_cast<wtf_size_t>(chunk.size()));
-      }
-      span = base::make_span(flatten.data(), flatten.size());
-    } else if (chunks.size() == 1) {
-      span = chunks[0];
-    }
-    String message = span.size() > 0
-                         ? String::FromUTF8(span.data(), span.size())
-                         : g_empty_string;
+    String message = GetTextMessage(
+        chunks, static_cast<wtf_size_t>(message_size_so_far + size));
     if (message.IsNull()) {
       FailAsError("Could not decode a text frame as UTF-8.");
     } else {
@@ -927,6 +927,47 @@ void WebSocketChannelImpl::ConsumeDataFrame(
     client_->DidReceiveBinaryMessage(chunks);
   }
   message_chunks_.Clear();
+  received_text_is_all_ascii_ = true;
+}
+
+String WebSocketChannelImpl::GetTextMessage(
+    const Vector<base::span<const char>>& chunks,
+    wtf_size_t size) {
+  DCHECK(receiving_message_type_is_text_);
+
+  if (size == 0) {
+    return g_empty_string;
+  }
+
+  // We can skip UTF8 encoding if received text contains only ASCII.
+  // We do this in order to avoid constructing a temporary buffer.
+  if (received_text_is_all_ascii_) {
+    LChar* buffer;
+    scoped_refptr<StringImpl> string_impl =
+        StringImpl::CreateUninitialized(size, buffer);
+    size_t index = 0;
+    for (const auto& chunk : chunks) {
+      DCHECK_LE(index + chunk.size(), size);
+      memcpy(buffer + index, chunk.data(), chunk.size());
+      index += chunk.size();
+    }
+    DCHECK_EQ(index, size);
+    return String(std::move(string_impl));
+  }
+
+  Vector<char> flatten;
+  base::span<const char> span;
+  if (chunks.size() > 1) {
+    flatten.ReserveCapacity(size);
+    for (const auto& chunk : chunks) {
+      flatten.Append(chunk.data(), static_cast<wtf_size_t>(chunk.size()));
+    }
+    span = base::make_span(flatten.data(), flatten.size());
+  } else if (chunks.size() == 1) {
+    span = chunks[0];
+  }
+  DCHECK_EQ(span.size(), size);
+  return String::FromUTF8(span.data(), span.size());
 }
 
 void WebSocketChannelImpl::OnConnectionError(const base::Location& set_from,

@@ -28,15 +28,11 @@
    * @param {string} path Directory path to be tested.
    */
   async function videoOpen(path) {
-    // File open events are not reported for legacy Drive.
-    if (path !== RootPath.DRIVE ||
-        await sendTestMessage({name: 'getDriveFsEnabled'}) === 'true') {
-      await sendTestMessage({
-        name: 'expectFileTask',
-        fileNames: ['world.ogv'],
-        openType: 'launch'
-      });
-    }
+    await sendTestMessage({
+      name: 'expectFileTask',
+      fileNames: ['world.ogv'],
+      openType: 'launch',
+    });
 
     const appId = await setupAndWaitUntilReady(path);
 

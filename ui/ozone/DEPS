@@ -8,6 +8,7 @@ include_rules = [
   "-ui/base/ime/init",
   "+ui/display",
   "+ui/events",
+  "+ui/base/clipboard/clipboard_buffer.h",
   "+ui/base/cursor",
   "+ui/gfx",
   "+ui/gl",

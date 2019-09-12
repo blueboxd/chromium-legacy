@@ -15,8 +15,8 @@
 #include "base/observer_list.h"
 #include "chromeos/services/assistant/pref_connection_delegate.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace chromeos {
 namespace assistant {
@@ -49,9 +49,10 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantStateProxy
 
   void OnPrefServiceConnected(std::unique_ptr<::PrefService> pref_service);
 
-  ash::mojom::AssistantStateControllerPtr assistant_state_controller_;
-  mojo::Binding<ash::mojom::AssistantStateObserver>
-      assistant_state_observer_binding_;
+  mojo::Remote<ash::mojom::AssistantStateController>
+      assistant_state_controller_;
+  mojo::Receiver<ash::mojom::AssistantStateObserver>
+      assistant_state_observer_receiver_{this};
 
   std::unique_ptr<PrefService> pref_service_;
 

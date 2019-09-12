@@ -109,7 +109,8 @@ void TracedProcessImpl::ConnectToTracingService(
   }
 
   PerfettoTracedProcess::Get()->producer_client()->Connect(
-      tracing::mojom::PerfettoServicePtr(std::move(request->perfetto_service)));
+      mojo::PendingRemote<tracing::mojom::PerfettoService>(
+          std::move(request->perfetto_service)));
 }
 
 void TracedProcessImpl::GetCategories(std::set<std::string>* category_set) {

@@ -10,18 +10,21 @@ import org.chromium.components.signin.metrics.SignoutDelete;
 import org.chromium.components.signin.metrics.SignoutReason;
 
 /**
- * PrimaryAccountMutator is the interface to set and clear the primary account (see IdentityManager
- * for more information).
+ * IdentityMutator is the write interface of IdentityManager, see identity_manager.h and
+ * primary_account_mutator.h for more information.
  */
-public class PrimaryAccountMutator {
-    private static final String TAG = "PrimaryAccountMuta";
+public class IdentityMutator {
+    private static final String TAG = "IdentityMutator";
 
     private final long mNativePrimaryAccountMutator;
+    private final long mNativeIdentityManager;
 
     @CalledByNative
-    private PrimaryAccountMutator(long nativePrimaryAccountMutator) {
+    private IdentityMutator(long nativePrimaryAccountMutator, long nativeIdentityManager) {
         assert nativePrimaryAccountMutator != 0;
+        assert nativeIdentityManager != 0;
         mNativePrimaryAccountMutator = nativePrimaryAccountMutator;
+        mNativeIdentityManager = nativeIdentityManager;
     }
 
     /**
@@ -33,8 +36,7 @@ public class PrimaryAccountMutator {
      *   - there is not already a primary account set.
      */
     public boolean setPrimaryAccount(CoreAccountId accountId) {
-        return PrimaryAccountMutatorJni.get().setPrimaryAccount(
-                mNativePrimaryAccountMutator, accountId);
+        return IdentityMutatorJni.get().setPrimaryAccount(mNativePrimaryAccountMutator, accountId);
     }
 
     /**
@@ -43,8 +45,16 @@ public class PrimaryAccountMutator {
      */
     public boolean clearPrimaryAccount(@ClearAccountsAction int action,
             @SignoutReason int sourceMetric, @SignoutDelete int deleteMetric) {
-        return PrimaryAccountMutatorJni.get().clearPrimaryAccount(
+        return IdentityMutatorJni.get().clearPrimaryAccount(
                 mNativePrimaryAccountMutator, action, sourceMetric, deleteMetric);
+    }
+
+    /**
+     * Reloads the accounts in the token service from the system accounts. This API calls
+     * ProfileOAuth2TokenServiceDelegate::ReloadAccountsFromSystem.
+     */
+    public void reloadAccountsFromSystem() {
+        IdentityMutatorJni.get().reloadAccountsFromSystem(mNativeIdentityManager);
     }
 
     @NativeMethods
@@ -53,5 +63,6 @@ public class PrimaryAccountMutator {
         public boolean clearPrimaryAccount(long nativePrimaryAccountMutator,
                 @ClearAccountsAction int action, @SignoutReason int sourceMetric,
                 @SignoutDelete int deleteMetric);
+        public void reloadAccountsFromSystem(long nativeIdentityManager);
     }
 }

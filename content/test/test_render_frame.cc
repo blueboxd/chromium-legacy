@@ -19,6 +19,7 @@
 #include "content/public/test/mock_render_thread.h"
 #include "content/renderer/input/frame_input_handler_impl.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/data_url.h"
 #include "services/network/public/cpp/resource_response.h"
@@ -159,7 +160,7 @@ class MockFrameHost : public mojom::FrameHost {
       mojom::CommonNavigationParamsPtr common_params,
       mojom::BeginNavigationParamsPtr begin_params,
       mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token,
-      mojom::NavigationClientAssociatedPtrInfo,
+      mojo::PendingAssociatedRemote<mojom::NavigationClient>,
       mojo::PendingRemote<blink::mojom::NavigationInitiator>) override {}
 
   void SubresourceResponseStarted(const GURL& url,
@@ -281,8 +282,10 @@ void TestRenderFrame::Navigate(const network::ResourceResponseHead& head,
                      mojo::NullRemote() /* prefetch_loader_factory */,
                      base::UnguessableToken::Create(), base::DoNothing());
   } else {
+    mock_navigation_client_.reset();
     BindNavigationClient(
-        mojo::MakeRequestAssociatedWithDedicatedPipe(&mock_navigation_client_));
+        mock_navigation_client_
+            .BindNewEndpointAndPassDedicatedReceiverForTesting());
     CommitPerNavigationMojoInterfaceNavigation(
         std::move(common_params), std::move(commit_params), head,
         mojo::ScopedDataPipeConsumerHandle(),
@@ -313,8 +316,10 @@ void TestRenderFrame::NavigateWithError(
                            false /* has_stale_copy_in_cache */, error_code,
                            error_page_content, nullptr, base::DoNothing());
   } else {
+    mock_navigation_client_.reset();
     BindNavigationClient(
-        mojo::MakeRequestAssociatedWithDedicatedPipe(&mock_navigation_client_));
+        mock_navigation_client_
+            .BindNewEndpointAndPassDedicatedReceiverForTesting());
     mock_navigation_client_->CommitFailedNavigation(
         std::move(common_params), std::move(commit_params),
         false /* has_stale_copy_in_cache */, error_code, error_page_content,

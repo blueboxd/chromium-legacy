@@ -46,11 +46,10 @@ gpu::mojom::blink::MailboxPtr SharedBitmapIdToGpuMailboxPtr(
 CanvasResource::CanvasResource(base::WeakPtr<CanvasResourceProvider> provider,
                                SkFilterQuality filter_quality,
                                const CanvasColorParams& color_params)
-    : provider_(std::move(provider)),
+    : owning_thread_id_(base::PlatformThread::CurrentId()),
+      provider_(std::move(provider)),
       filter_quality_(filter_quality),
-      color_params_(color_params) {
-  thread_of_origin_ = Thread::Current()->ThreadId();
-}
+      color_params_(color_params) {}
 
 CanvasResource::~CanvasResource() {
 #if DCHECK_IS_ON()
@@ -59,7 +58,7 @@ CanvasResource::~CanvasResource() {
 }
 
 void CanvasResource::OnDestroy() {
-  if (thread_of_origin_ != Thread::Current()->ThreadId()) {
+  if (owning_thread_id_ != base::PlatformThread::CurrentId()) {
     // Destroyed on wrong thread. This can happen when the thread of origin was
     // torn down, in which case the GPU context owning any underlying resources
     // no longer exists.
@@ -710,7 +709,6 @@ CanvasResourceSharedImage::CanvasResourceSharedImage(
                     context_provider_wrapper_->ContextProvider()
                         ->GetCapabilities())
               : GL_TEXTURE_2D),
-      owning_thread_id_(base::PlatformThread::CurrentId()),
       owning_thread_task_runner_(Thread::Current()->GetTaskRunner()) {
   if (!context_provider_wrapper_)
     return;
@@ -1301,8 +1299,7 @@ CanvasResourceSwapChain::CanvasResourceSwapChain(
     SkFilterQuality filter_quality)
     : CanvasResource(std::move(provider), filter_quality, color_params),
       context_provider_wrapper_(std::move(context_provider_wrapper)),
-      size_(size),
-      owning_thread_id_(base::PlatformThread::CurrentId()) {
+      size_(size) {
   if (!context_provider_wrapper_)
     return;
 

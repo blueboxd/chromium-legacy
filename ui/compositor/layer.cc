@@ -651,7 +651,7 @@ void Layer::SetAcceptEvents(bool accept_events) {
   if (accept_events_ == accept_events)
     return;
   accept_events_ = accept_events;
-  cc_layer_->SetHitTestable(visible_ && accept_events_);
+  cc_layer_->SetHitTestable(IsHitTestableForCC());
 }
 
 bool Layer::GetTargetVisibility() const {
@@ -776,7 +776,7 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
   cc_layer_->SetTransformOrigin(gfx::Point3F());
   cc_layer_->SetContentsOpaque(fills_bounds_opaquely_);
   cc_layer_->SetIsDrawable(type_ != LAYER_NOT_DRAWN);
-  cc_layer_->SetHitTestable(visible_ && accept_events_);
+  cc_layer_->SetHitTestable(IsHitTestableForCC());
   cc_layer_->SetHideLayerAndSubtree(!visible_);
   cc_layer_->SetBackdropFilterQuality(backdrop_filter_quality_);
   cc_layer_->SetElementId(cc::ElementId(cc_layer_->id()));
@@ -1416,7 +1416,7 @@ void Layer::SetVisibilityFromAnimation(bool visible,
 
   visible_ = visible;
   cc_layer_->SetHideLayerAndSubtree(!visible_);
-  cc_layer_->SetHitTestable(visible_ && accept_events_);
+  cc_layer_->SetHitTestable(IsHitTestableForCC());
 }
 
 void Layer::SetBrightnessFromAnimation(float brightness,
@@ -1544,9 +1544,7 @@ void Layer::CreateCcLayer() {
   cc_layer_->SetContentsOpaque(true);
   cc_layer_->SetSafeOpaqueBackgroundColor(SK_ColorWHITE);
   cc_layer_->SetIsDrawable(type_ != LAYER_NOT_DRAWN);
-  // TODO(sunxd): Allow ui::Layers to set if they accept events or not. See
-  // https://crbug.com/924294.
-  cc_layer_->SetHitTestable(type_ != LAYER_NOT_DRAWN);
+  cc_layer_->SetHitTestable(IsHitTestableForCC());
   cc_layer_->SetLayerClient(weak_ptr_factory_.GetWeakPtr());
   cc_layer_->SetElementId(cc::ElementId(cc_layer_->id()));
   RecomputePosition();

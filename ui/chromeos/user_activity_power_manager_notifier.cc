@@ -46,7 +46,7 @@ power_manager::UserActivityType GetUserActivityTypeForEvent(
 UserActivityPowerManagerNotifier::UserActivityPowerManagerNotifier(
     UserActivityDetector* detector,
     service_manager::Connector* connector)
-    : detector_(detector), fingerprint_observer_binding_(this) {
+    : detector_(detector) {
   detector_->AddObserver(this);
   ui::DeviceDataManager::GetInstance()->AddObserver(this);
   chromeos::PowerManagerClient::Get()->AddObserver(this);
@@ -57,9 +57,8 @@ UserActivityPowerManagerNotifier::UserActivityPowerManagerNotifier(
     // I.e., when user tried to use fingerprint to unlock.
     connector->Connect(device::mojom::kServiceName,
                        fingerprint_.BindNewPipeAndPassReceiver());
-    device::mojom::FingerprintObserverPtr observer;
-    fingerprint_observer_binding_.Bind(mojo::MakeRequest(&observer));
-    fingerprint_->AddFingerprintObserver(std::move(observer));
+    fingerprint_->AddFingerprintObserver(
+        fingerprint_observer_receiver_.BindNewPipeAndPassRemote());
   }
 }
 

@@ -159,7 +159,7 @@ class DomDistillerStoreTest : public testing::Test {
     return data;
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   EntryMap db_model_;
   EntryMap sync_model_;

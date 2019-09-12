@@ -96,9 +96,10 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) MediaRemoter final
   void StartDataStreams(
       mojo::ScopedDataPipeConsumerHandle audio_pipe,
       mojo::ScopedDataPipeConsumerHandle video_pipe,
-      media::mojom::RemotingDataStreamSenderRequest audio_sender_request,
-      media::mojom::RemotingDataStreamSenderRequest video_sender_request)
-      override;
+      mojo::PendingReceiver<media::mojom::RemotingDataStreamSender>
+          audio_sender_receiver,
+      mojo::PendingReceiver<media::mojom::RemotingDataStreamSender>
+          video_sender_receiver) override;
   void SendMessageToSink(const std::vector<uint8_t>& message) override;
   void EstimateTransmissionCapacity(
       media::mojom::Remoter::EstimateTransmissionCapacityCallback callback)

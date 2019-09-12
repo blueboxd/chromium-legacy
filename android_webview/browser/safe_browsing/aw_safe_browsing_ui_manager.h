@@ -1,10 +1,6 @@
 // Copyright (c) 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// The Safe Browsing service is responsible for downloading anti-phishing and
-// anti-malware tables and checking urls against them. This is android_webview
-// specific ui_manager.
 
 #ifndef ANDROID_WEBVIEW_BROWSER_SAFE_BROWSING_AW_SAFE_BROWSING_UI_MANAGER_H_
 #define ANDROID_WEBVIEW_BROWSER_SAFE_BROWSING_AW_SAFE_BROWSING_UI_MANAGER_H_
@@ -24,6 +20,9 @@ class SafeBrowsingNetworkContext;
 
 namespace android_webview {
 
+// The Safe Browsing service is responsible for checking URLs against
+// anti-phishing and anti-malware tables. This is an Android WebView-specific UI
+// manager.
 class AwSafeBrowsingUIManager : public safe_browsing::BaseUIManager {
  public:
   class UIManagerClient {

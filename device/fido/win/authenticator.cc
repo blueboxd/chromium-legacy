@@ -4,7 +4,6 @@
 
 #include "device/fido/win/authenticator.h"
 
-#include <Combaseapi.h>
 #include <windows.h>
 #include <utility>
 #include <vector>
@@ -24,24 +23,24 @@
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/win/type_conversions.h"
+#include "device/fido/win/webauthn_api.h"
 #include "third_party/microsoft_webauthn/webauthn.h"
 
 namespace device {
 
 // static
-bool WinWebAuthnApiAuthenticator::
-    IsUserVerifyingPlatformAuthenticatorAvailable() {
+bool WinWebAuthnApiAuthenticator::IsUserVerifyingPlatformAuthenticatorAvailable(
+    WinWebAuthnApi* api) {
   BOOL result;
-  WinWebAuthnApi* api = WinWebAuthnApi::GetDefault();
-  return api->IsAvailable() &&
+  return api && api->IsAvailable() &&
          api->IsUserVerifyingPlatformAuthenticatorAvailable(&result) == S_OK &&
          result == TRUE;
 }
 
-WinWebAuthnApiAuthenticator::WinWebAuthnApiAuthenticator(HWND current_window)
-    : FidoAuthenticator(),
-      current_window_(current_window),
-      win_api_(WinWebAuthnApi::GetDefault()) {
+WinWebAuthnApiAuthenticator::WinWebAuthnApiAuthenticator(
+    HWND current_window,
+    WinWebAuthnApi* win_api)
+    : current_window_(current_window), win_api_(win_api) {
   CHECK(win_api_->IsAvailable());
   CoCreateGuid(&cancellation_id_);
 }

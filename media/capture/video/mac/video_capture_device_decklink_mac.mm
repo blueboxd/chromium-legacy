@@ -260,9 +260,6 @@ HRESULT DeckLinkCaptureDelegate::VideoInputFrameArrived(
   media::VideoPixelFormat pixel_format =
       media::PIXEL_FORMAT_UNKNOWN;
   switch (video_frame->GetPixelFormat()) {
-    case bmdFormat8BitYUV:  // A.k.a. '2vuy';
-      pixel_format = media::PIXEL_FORMAT_UYVY;
-      break;
     case bmdFormat8BitARGB:
       pixel_format = media::PIXEL_FORMAT_ARGB;
       break;

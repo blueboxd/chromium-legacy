@@ -184,14 +184,14 @@ constexpr int kUnifiedDetailedViewTitleRowHeight = 64;
 class TrayConstants {
  public:
   static int hit_region_padding() {
-    return UseNewDenseShelfUi() ? kHitRegionPaddingDense : kHitRegionPadding;
+    return UseNewHotseatShelfUi() ? kHitRegionPaddingDense : kHitRegionPadding;
   }
 
  private:
-  static bool UseNewDenseShelfUi() {
-    static bool use_new_dense_shelf_ui =
-        chromeos::switches::ShouldShowShelfDenseClamshell();
-    return use_new_dense_shelf_ui;
+  static bool UseNewHotseatShelfUi() {
+    static bool use_new_hotseat_shelf_ui =
+        chromeos::switches::ShouldShowShelfHotseat();
+    return use_new_hotseat_shelf_ui;
   }
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(TrayConstants);

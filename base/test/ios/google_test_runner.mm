@@ -5,7 +5,6 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
-#include "base/logging.h"
 #import "base/test/ios/google_test_runner_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -18,12 +17,15 @@
 @implementation GoogleTestRunner
 
 - (void)testRunGoogleTests {
+  self.continueAfterFailure = false;
+
   id appDelegate = UIApplication.sharedApplication.delegate;
-  DCHECK([appDelegate conformsToProtocol:@protocol(GoogleTestRunnerDelegate)]);
+  XCTAssertTrue(
+      [appDelegate conformsToProtocol:@protocol(GoogleTestRunnerDelegate)]);
 
   id<GoogleTestRunnerDelegate> runnerDelegate =
       static_cast<id<GoogleTestRunnerDelegate>>(appDelegate);
-  DCHECK(runnerDelegate.supportsRunningGoogleTests);
+  XCTAssertTrue(runnerDelegate.supportsRunningGoogleTests);
   XCTAssertTrue([runnerDelegate runGoogleTests] == 0);
 }
 

@@ -12,6 +12,7 @@ import android.text.TextUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.sync.SyncAndServicesPreferences;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
@@ -83,7 +84,8 @@ public final class FirstRunSignInProcessor {
                     openSignInSettings(activity);
                 } else if (ChromeFeatureList.isEnabled(
                                    ChromeFeatureList.SYNC_MANUAL_START_ANDROID)) {
-                    ProfileSyncService.get().setFirstSetupComplete();
+                    ProfileSyncService.get().setFirstSetupComplete(
+                            SyncFirstSetupCompleteSource.BASIC_FLOW);
                 }
                 setFirstRunFlowSignInComplete(true);
             }

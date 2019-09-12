@@ -19293,6 +19293,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_Signin_ShowAdvancedSyncSettings">
+  <owner>triploblastic@chromium.org</owner>
+  <owner>bsazonov@chromium.org</owner>
+  <description>
+    Recorded when advanced turn on sync flow is started.
+  </description>
+</action>
+
 <action name="Signin_Signin_Succeed">
   <owner>gogerald@chromium.org</owner>
   <description>Recorded when user sign in was successful.</description>

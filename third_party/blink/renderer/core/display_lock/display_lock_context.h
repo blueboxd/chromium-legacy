@@ -66,6 +66,7 @@ class CORE_EXPORT DisplayLockContext final
   enum StyleType {
     kStyleUpdateNotRequired,
     kStyleUpdateSelf,
+    kStyleUpdatePseudoElements,
     kStyleUpdateChildren,
     kStyleUpdateDescendants
   };

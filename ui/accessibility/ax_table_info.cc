@@ -5,6 +5,7 @@
 #include "ui/accessibility/ax_table_info.h"
 
 #include "ui/accessibility/ax_constants.mojom.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_tree.h"

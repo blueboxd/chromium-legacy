@@ -87,7 +87,8 @@ class WifiDataProviderCommonWithMock : public WifiDataProviderCommon {
 class GeolocationWifiDataProviderCommonTest : public testing::Test {
  public:
   GeolocationWifiDataProviderCommonTest()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
+      : task_environment_(
+            base::test::SingleThreadTaskEnvironment::MainThreadType::UI),
         wifi_data_callback_(base::DoNothing()) {}
 
   void TearDownProvider() {
@@ -127,7 +128,7 @@ class GeolocationWifiDataProviderCommonTest : public testing::Test {
   }
 
  protected:
-  const base::test::TaskEnvironment task_environment_;
+  const base::test::SingleThreadTaskEnvironment task_environment_;
   WifiDataProviderManager::WifiDataUpdateCallback wifi_data_callback_;
   scoped_refptr<WifiDataProviderCommonWithMock> provider_;
 

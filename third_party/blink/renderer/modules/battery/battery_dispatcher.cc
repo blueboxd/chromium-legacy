@@ -47,8 +47,9 @@ void BatteryDispatcher::UpdateBatteryStatus(
 void BatteryDispatcher::StartListening(LocalFrame* frame) {
   DCHECK(!monitor_.is_bound());
   // See https://bit.ly/2S0zRAS for task types.
-  Platform::Current()->GetInterfaceProvider()->GetInterface(mojo::MakeRequest(
-      &monitor_, frame->GetTaskRunner(TaskType::kMiscPlatformAPI)));
+  Platform::Current()->GetInterfaceProvider()->GetInterface(
+      monitor_.BindNewPipeAndPassReceiver(
+          frame->GetTaskRunner(TaskType::kMiscPlatformAPI)));
   QueryNextStatus();
 }
 

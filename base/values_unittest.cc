@@ -1221,7 +1221,7 @@ TEST(ValuesTest, Basic) {
   DictionaryValue new_bookmark;
   new_bookmark.SetKey("name", Value("Froogle"));
   new_bookmark.SetKey("url", Value("http://froogle.com"));
-  toolbar_bookmarks->GetList().push_back(std::move(new_bookmark));
+  toolbar_bookmarks->Append(std::move(new_bookmark));
 
   Value* bookmark_list = settings.FindPath("global.toolbar.bookmarks");
   ASSERT_TRUE(bookmark_list);

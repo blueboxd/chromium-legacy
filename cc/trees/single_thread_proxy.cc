@@ -26,8 +26,8 @@
 #include "cc/trees/render_frame_metadata_observer.h"
 #include "cc/trees/scoped_abort_remaining_swap_promises.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
+#include "components/viz/common/frame_timing_details.h"
 #include "components/viz/common/gpu/context_provider.h"
-#include "ui/gfx/presentation_feedback.h"
 
 namespace cc {
 
@@ -529,13 +529,12 @@ void SingleThreadProxy::NotifyImageDecodeRequestFinished() {
 void SingleThreadProxy::DidPresentCompositorFrameOnImplThread(
     uint32_t frame_token,
     std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
-    const gfx::PresentationFeedback& feedback) {
+    const viz::FrameTimingDetails& details) {
   layer_tree_host_->DidPresentCompositorFrame(frame_token, std::move(callbacks),
-                                              feedback);
+                                              details.presentation_feedback);
 
   if (scheduler_on_impl_thread_) {
-    scheduler_on_impl_thread_->DidPresentCompositorFrame(frame_token,
-                                                         feedback.timestamp);
+    scheduler_on_impl_thread_->DidPresentCompositorFrame(frame_token, details);
   }
 }
 

@@ -89,6 +89,10 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
   FormAssociated* ToFormAssociatedOrNull() override { return this; }
   void AssociateWith(HTMLFormElement*) override;
 
+  // Returns true if this object started to load something, and finished
+  // the loading regardless of success or failure.
+  bool DidFinishLoading() const;
+
  private:
   void ParseAttribute(const AttributeModificationParams&) override;
   bool IsPresentationAttribute(const QualifiedName&) const override;

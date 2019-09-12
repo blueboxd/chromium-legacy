@@ -1304,9 +1304,11 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest, WinMakeCredential) {
   NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title1.html"));
 
-  device::ScopedFakeWinWebAuthnApi fake_api;
+  device::FakeWinWebAuthnApi fake_api;
   fake_api.set_is_uvpaa(true);
   fake_api.set_hresult(S_OK);
+  auto* virtual_device_factory = InjectVirtualFidoDeviceFactory();
+  virtual_device_factory->set_win_webauthn_api(&fake_api);
 
   base::Optional<std::string> result = ExecuteScriptAndExtractPrefixedString(
       shell()->web_contents(),
@@ -1318,7 +1320,9 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest, WinMakeCredential) {
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
                        WinMakeCredentialReturnCodeFailure) {
   NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title1.html"));
-  device::ScopedFakeWinWebAuthnApi fake_api;
+  device::FakeWinWebAuthnApi fake_api;
+  auto* virtual_device_factory = InjectVirtualFidoDeviceFactory();
+  virtual_device_factory->set_win_webauthn_api(&fake_api);
 
   // Errors documented for WebAuthNGetErrorName() in <webauthn.h>.
   const std::map<HRESULT, std::string> errors{
@@ -1353,8 +1357,10 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest, WinGetAssertion) {
   NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title1.html"));
 
-  device::ScopedFakeWinWebAuthnApi fake_api;
+  device::FakeWinWebAuthnApi fake_api;
   fake_api.set_hresult(S_OK);
+  auto* virtual_device_factory = InjectVirtualFidoDeviceFactory();
+  virtual_device_factory->set_win_webauthn_api(&fake_api);
 
   base::Optional<std::string> result = ExecuteScriptAndExtractPrefixedString(
       shell()->web_contents(), BuildGetCallWithParameters(GetParameters()),
@@ -1374,7 +1380,9 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest, WinGetAssertion) {
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
                        WinGetAssertionReturnCodeFailure) {
   NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title1.html"));
-  device::ScopedFakeWinWebAuthnApi fake_api;
+  device::FakeWinWebAuthnApi fake_api;
+  auto* virtual_device_factory = InjectVirtualFidoDeviceFactory();
+  virtual_device_factory->set_win_webauthn_api(&fake_api);
 
   // Errors documented for WebAuthNGetErrorName() in <webauthn.h>.
   const std::set<HRESULT> errors{

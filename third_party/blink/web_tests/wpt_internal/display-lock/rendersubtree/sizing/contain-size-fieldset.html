@@ -4,8 +4,9 @@
 <title>Display Locking: fieldset with legend and size containment, sized by display lock</title>
 <link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
-<link rel="match" href="fieldset-empty-ref.html">
+<link rel="match" href="contain-size-fieldset-ref.html">
 <script src="/common/reftest-wait.js"></script>
+<script src="../resources/utils.js"></script>
 
 <style>
 #border {
@@ -13,7 +14,7 @@
   width: min-content;
 }
 #container {
-  contain: style layout size;
+  content-size: 123px 234px;
 }
 </style>
 
@@ -27,7 +28,7 @@
 <script>
 async function runTest() {
   const container = document.getElementById("container");
-  await container.displayLock.acquire({ timeout: Infinity, size: [123, 234] });
+  await setInvisible(container);
   takeScreenshot();
 }
 

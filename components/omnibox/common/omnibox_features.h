@@ -44,6 +44,7 @@ extern const base::Feature kUIExperimentShowPlaceholderWhenCaretShowing;
 extern const base::Feature kSpeculativeServiceWorkerStartOnQueryInput;
 extern const base::Feature kDocumentProvider;
 extern const base::Feature kOnDeviceHeadProvider;
+extern const base::Feature kAutocompleteTitles;
 extern const base::Feature kOmniboxPopupShortcutIconsInZeroState;
 extern const base::Feature kOmniboxMaterialDesignWeatherIcons;
 extern const base::Feature kOmniboxDisableInstantExtendedLimit;

@@ -334,8 +334,9 @@ void WebViewImpl::HandleMouseLeave(LocalFrame& main_frame,
 
 void WebViewImpl::HandleMouseDown(LocalFrame& main_frame,
                                   const WebMouseEvent& event) {
-  // Save the popup so we can close it if needed after sending the event to
-  // the element.
+  // If there is a popup open, close it as the user is clicking on the page
+  // (outside of the popup). We also save it so we can prevent a click on an
+  // element from immediately reopening the same popup.
   //
   // The popup would not be destroyed in this stack normally as it is owned by
   // closership from the RenderWidget, which is owned by the browser via the
@@ -346,6 +347,8 @@ void WebViewImpl::HandleMouseDown(LocalFrame& main_frame,
   scoped_refptr<WebPagePopupImpl> page_popup;
   if (event.button == WebMouseEvent::Button::kLeft) {
     page_popup = page_popup_;
+    CancelPagePopup();
+    DCHECK(!page_popup_);
   }
 
   // Take capture on a mouse down on a plugin so we can send it mouse events.
@@ -375,13 +378,11 @@ void WebViewImpl::HandleMouseDown(LocalFrame& main_frame,
         main_frame.GetEventHandler().TakeLastMouseDownGestureToken();
   }
 
-  // If there is a popup open and it is the same as the one we had before
-  // sending the event to the element it means that the user is clicking outside
-  // of the popup or on the element which was owning the current opened popup.
   if (page_popup_ && page_popup &&
       page_popup_->HasSamePopupClient(page_popup.get())) {
+    // That click triggered a page popup that is the same as the one we just
+    // closed.  It needs to be closed.
     CancelPagePopup();
-    DCHECK(!page_popup_);
   }
 
   // Dispatch the contextmenu event regardless of if the click was swallowed.
@@ -547,14 +548,11 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
                 targeted_event);
       }
 
-      // If there is a popup open and it is the same as the one we had before
-      // sending the event to the element it means that the user is tapping
-      // outside of the popup or on the element which was owning the current
-      // opened popup.
       if (page_popup_ && last_hidden_page_popup_ &&
           page_popup_->HasSamePopupClient(last_hidden_page_popup_.get())) {
+        // The tap triggered a page popup that is the same as the one we just
+        // closed. It needs to be closed.
         CancelPagePopup();
-        DCHECK(!page_popup_);
       }
       // Don't have this value persist outside of a single tap gesture, plus
       // we're done with it now.
@@ -581,11 +579,14 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
       // Touch pinch zoom and scroll on the page (outside of a popup) must hide
       // the popup. In case of a touch scroll or pinch zoom, this function is
       // called with GestureTapDown rather than a GSB/GSU/GSE or GPB/GPU/GPE.
-      // Save the popup so we can prevent the following GestureTap from
-      // immediately reopening the same popup and close it if needed then.
+      // When we close a popup because of a GestureTapDown, we also save it so
+      // we can prevent the following GestureTap from immediately reopening the
+      // same popup.
       // This value should not persist outside of a gesture, so is cleared by
       // GestureTap (where it is used) and by GestureCancel.
       last_hidden_page_popup_ = page_popup_;
+      CancelPagePopup();
+      DCHECK(!page_popup_);
       event_result =
           MainFrameImpl()->GetFrame()->GetEventHandler().HandleGestureEvent(
               targeted_event);

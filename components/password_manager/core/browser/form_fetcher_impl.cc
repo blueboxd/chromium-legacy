@@ -29,39 +29,6 @@ namespace password_manager {
 
 namespace {
 
-struct SplitMatches {
-  std::vector<std::unique_ptr<PasswordForm>> non_federated;
-  std::vector<std::unique_ptr<PasswordForm>> federated;
-  std::vector<std::unique_ptr<PasswordForm>> blacklisted;
-};
-
-// Partitions |results| into |-- non federated -|- federated -|- blacklisted --|
-// and returns result.
-SplitMatches SplitResults(std::vector<std::unique_ptr<PasswordForm>> results) {
-  const auto first_blacklisted = std::partition(
-      results.begin(), results.end(),
-      [](const auto& form) { return !form->blacklisted_by_user; });
-
-  const auto first_federated =
-      std::partition(results.begin(), first_blacklisted, [](const auto& form) {
-        return form->federation_origin.opaque();  // False means federated.
-      });
-
-  // Ignore PSL matches for blacklisted entries.
-  const auto first_blacklisted_psl = std::partition(
-      first_blacklisted, results.end(),
-      [](const auto& form) { return !form->is_public_suffix_match; });
-
-  SplitMatches matches;
-  matches.non_federated.assign(std::make_move_iterator(results.begin()),
-                               std::make_move_iterator(first_federated));
-  matches.federated.assign(std::make_move_iterator(first_federated),
-                           std::make_move_iterator(first_blacklisted));
-  matches.blacklisted.assign(std::make_move_iterator(first_blacklisted),
-                             std::make_move_iterator(first_blacklisted_psl));
-  return matches;
-}
-
 // Create a vector of const PasswordForm from a vector of
 // unique_ptr<PasswordForm> by applying get() item-wise.
 std::vector<const PasswordForm*> MakeWeakCopies(
@@ -252,10 +219,7 @@ void FormFetcherImpl::ProcessPasswordStoreResults(
     std::vector<std::unique_ptr<PasswordForm>> results) {
   DCHECK_EQ(State::WAITING, state_);
   state_ = State::NOT_WAITING;
-  SplitMatches matches = SplitResults(std::move(results));
-  federated_ = std::move(matches.federated);
-  non_federated_ = std::move(matches.non_federated);
-  blacklisted_ = std::move(matches.blacklisted);
+  SplitResults(std::move(results));
 
   password_manager_util::FindBestMatches(
       MakeWeakCopies(non_federated_), form_digest_.scheme,
@@ -263,6 +227,25 @@ void FormFetcherImpl::ProcessPasswordStoreResults(
 
   for (auto* consumer : consumers_)
     consumer->OnFetchCompleted();
+}
+
+void FormFetcherImpl::SplitResults(
+    std::vector<std::unique_ptr<PasswordForm>> forms) {
+  blacklisted_.clear();
+  non_federated_.clear();
+  federated_.clear();
+  for (auto& form : forms) {
+    if (form->blacklisted_by_user) {
+      // Ignore PSL matches for blacklisted entries.
+      if (!form->is_public_suffix_match) {
+        blacklisted_.push_back(std::move(form));
+      }
+    } else if (form->IsFederatedCredential()) {
+      federated_.push_back(std::move(form));
+    } else {
+      non_federated_.push_back(std::move(form));
+    }
+  }
 }
 
 }  // namespace password_manager

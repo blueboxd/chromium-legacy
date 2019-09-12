@@ -59,6 +59,12 @@ MultiDeviceSetupDialog* MultiDeviceSetupDialog::Get() {
   return current_instance_;
 }
 
+// static
+void MultiDeviceSetupDialog::SetInstanceForTesting(
+    MultiDeviceSetupDialog* instance) {
+  current_instance_ = instance;
+}
+
 void MultiDeviceSetupDialog::AddOnCloseCallback(base::OnceClosure callback) {
   on_close_callbacks_.push_back(std::move(callback));
 }

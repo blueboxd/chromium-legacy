@@ -45,10 +45,10 @@ constexpr int kMinFindWndDistanceFromSelection = 5;
 class FindBrowserListObserver : public BrowserListObserver {
  public:
   FindBrowserListObserver() {
-    // Can't use base::ScopedObserver because BrowserListObserver isn't derived
-    // from Observer. Not that this object will ever be destructed anyway.
     BrowserList::AddObserver(this);
   }
+
+  ~FindBrowserListObserver() override { BrowserList::RemoveObserver(this); }
 
   static void EnsureInstance() {
     static base::NoDestructor<FindBrowserListObserver> the_instance;

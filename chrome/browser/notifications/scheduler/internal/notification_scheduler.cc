@@ -89,6 +89,114 @@ class InitHelper {
   DISALLOW_COPY_AND_ASSIGN(InitHelper);
 };
 
+// Helper class to display multiple notifications, and invoke a callback when
+// finished.
+class DisplayHelper {
+ public:
+  // Invoked with the total number of notification shown when all the display
+  // flows are done.
+  using FinishCallback = base::OnceCallback<void(int)>;
+  DisplayHelper(const std::set<std::string>& guids,
+                NotificationSchedulerContext* context,
+                FinishCallback finish_callback)
+      : guids_(guids),
+        context_(context),
+        finish_callback_(std::move(finish_callback)),
+        shown_count_(0) {
+    if (guids_.empty()) {
+      std::move(finish_callback_).Run(0);
+      return;
+    }
+
+    for (const auto& guid : guids) {
+      context_->notification_manager()->DisplayNotification(
+          guid, base::BindOnce(&DisplayHelper::BeforeDisplay,
+                               weak_ptr_factory_.GetWeakPtr(), guid));
+    }
+  }
+
+  ~DisplayHelper() = default;
+
+ private:
+  void BeforeDisplay(const std::string& guid,
+                     std::unique_ptr<NotificationEntry> entry) {
+    if (!entry) {
+      DLOG(ERROR) << "Notification entry is null";
+      MaybeFinish(guid, false /*shown*/);
+      return;
+    }
+
+    // Inform the client to update notification data.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&DisplayHelper::NotifyClientBeforeDisplay,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(entry)));
+  }
+
+  void NotifyClientBeforeDisplay(std::unique_ptr<NotificationEntry> entry) {
+    auto* client = context_->client_registrar()->GetClient(entry->type);
+    if (!client) {
+      MaybeFinish(entry->guid, false /*shown*/);
+      return;
+    }
+
+    // Detach the notification data for client to rewrite.
+    auto notification_data =
+        std::make_unique<NotificationData>(std::move(entry->notification_data));
+    client->BeforeShowNotification(
+        std::move(notification_data),
+        base::BindOnce(&DisplayHelper::AfterClientUpdateData,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(entry)));
+  }
+
+  void AfterClientUpdateData(
+      std::unique_ptr<NotificationEntry> entry,
+      std::unique_ptr<NotificationData> updated_notification_data) {
+    if (!updated_notification_data) {
+      stats::LogNotificationLifeCycleEvent(
+          stats::NotificationLifeCycleEvent::kClientCancel, entry->type);
+      MaybeFinish(entry->guid, false /*shown*/);
+      return;
+    }
+
+    // Tracks user impression on the notification to be shown.
+    context_->impression_tracker()->AddImpression(
+        entry->type, entry->guid, entry->schedule_params.impression_mapping,
+        updated_notification_data->custom_data);
+
+    stats::LogNotificationShow(*updated_notification_data, entry->type);
+
+    // Show the notification in UI.
+    auto system_data = std::make_unique<DisplayAgent::SystemData>();
+    system_data->type = entry->type;
+    system_data->guid = entry->guid;
+    context_->display_agent()->ShowNotification(
+        std::move(updated_notification_data), std::move(system_data));
+
+    MaybeFinish(entry->guid, true /*shown*/);
+  }
+
+  // Called when notification display flow is finished. Invokes
+  // |finish_callback_| when all display flows are done.
+  void MaybeFinish(const std::string& guid, bool shown) {
+    if (base::Contains(guids_, guid) && shown) {
+      shown_count_++;
+    }
+    guids_.erase(guid);
+    if (guids_.empty() && finish_callback_) {
+      std::move(finish_callback_).Run(shown_count_);
+    }
+  }
+
+  std::set<std::string> guids_;
+  NotificationSchedulerContext* context_;
+  FinishCallback finish_callback_;
+  int shown_count_;
+  base::WeakPtrFactory<DisplayHelper> weak_ptr_factory_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(DisplayHelper);
+};
+
 // Implementation of NotificationScheduler.
 class NotificationSchedulerImpl : public NotificationScheduler,
                                   public ImpressionHistoryTracker::Delegate {
@@ -103,13 +211,11 @@ class NotificationSchedulerImpl : public NotificationScheduler,
  private:
   // NotificationScheduler implementation.
   void Init(InitCallback init_callback) override {
-    auto helper = std::make_unique<InitHelper>();
-    auto* helper_ptr = helper.get();
-    helper_ptr->Init(
-        context_.get(), this,
-        base::BindOnce(&NotificationSchedulerImpl::OnInitialized,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(helper),
-                       std::move(init_callback)));
+    init_helper_ = std::make_unique<InitHelper>();
+    init_helper_->Init(context_.get(), this,
+                       base::BindOnce(&NotificationSchedulerImpl::OnInitialized,
+                                      weak_ptr_factory_.GetWeakPtr(),
+                                      std::move(init_callback)));
   }
 
   void Schedule(
@@ -137,10 +243,9 @@ class NotificationSchedulerImpl : public NotificationScheduler,
                                                         std::move(callback));
   }
 
-  void OnInitialized(std::unique_ptr<InitHelper>,
-                     InitCallback init_callback,
-                     bool success) {
+  void OnInitialized(InitCallback init_callback, bool success) {
     // TODO(xingliu): Tear down internal components if initialization failed.
+    init_helper_.reset();
     std::move(init_callback).Run(success);
     NotifyClientsAfterInit(success);
   }
@@ -181,72 +286,13 @@ class NotificationSchedulerImpl : public NotificationScheduler,
     context_->impression_tracker()->AnalyzeImpressionHistory();
 
     // Show notifications.
-    FindNotificationToShow(task_start_time_);
-
-    // Schedule the next background task based on scheduled notifications.
-    ScheduleBackgroundTask();
-
-    stats::LogBackgroundTaskEvent(stats::BackgroundTaskEvent::kFinish);
-    std::move(callback).Run(false /*need_reschedule*/);
+    FindNotificationToShow(task_start_time_, std::move(callback));
   }
 
   void OnStopTask(SchedulerTaskTime task_time) override {
     stats::LogBackgroundTaskEvent(stats::BackgroundTaskEvent::kStopByOS);
     task_start_time_ = task_time;
     ScheduleBackgroundTask();
-  }
-
-  // TODO(xingliu): Tracks each display flow, and call finish callback and
-  // schedule background task after everything is done.
-  void BeforeDisplay(std::unique_ptr<NotificationEntry> entry) {
-    if (!entry) {
-      DLOG(ERROR) << "Notification entry is null";
-      return;
-    }
-
-    // Inform the client to update notification data.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&NotificationSchedulerImpl::NotifyClientBeforeDisplay,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(entry)));
-  }
-
-  void NotifyClientBeforeDisplay(std::unique_ptr<NotificationEntry> entry) {
-    auto* client = context_->client_registrar()->GetClient(entry->type);
-    if (!client)
-      return;
-
-    // Detach the notification data for client to rewrite.
-    auto notification_data =
-        std::make_unique<NotificationData>(std::move(entry->notification_data));
-    client->BeforeShowNotification(
-        std::move(notification_data),
-        base::BindOnce(&NotificationSchedulerImpl::AfterClientUpdateData,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(entry)));
-  }
-
-  void AfterClientUpdateData(
-      std::unique_ptr<NotificationEntry> entry,
-      std::unique_ptr<NotificationData> updated_notification_data) {
-    if (!updated_notification_data) {
-      stats::LogNotificationLifeCycleEvent(
-          stats::NotificationLifeCycleEvent::kClientCancel, entry->type);
-      return;
-    }
-
-    // Tracks user impression on the notification to be shown.
-    context_->impression_tracker()->AddImpression(
-        entry->type, entry->guid, entry->schedule_params.impression_mapping,
-        updated_notification_data->custom_data);
-
-    stats::LogNotificationShow(*updated_notification_data, entry->type);
-
-    // Show the notification in UI.
-    auto system_data = std::make_unique<DisplayAgent::SystemData>();
-    system_data->type = entry->type;
-    system_data->guid = entry->guid;
-    context_->display_agent()->ShowNotification(
-        std::move(updated_notification_data), std::move(system_data));
   }
 
   // ImpressionHistoryTracker::Delegate implementation.
@@ -256,7 +302,8 @@ class NotificationSchedulerImpl : public NotificationScheduler,
   }
 
   // TODO(xingliu): Remove |task_start_time|.
-  void FindNotificationToShow(SchedulerTaskTime task_start_time) {
+  void FindNotificationToShow(SchedulerTaskTime task_start_time,
+                              TaskFinishedCallback task_finish_callback) {
     DisplayDecider::Results results;
     ScheduledNotificationManager::Notifications notifications;
     context_->notification_manager()->GetAllNotifications(&notifications);
@@ -270,12 +317,22 @@ class NotificationSchedulerImpl : public NotificationScheduler,
     context_->display_decider()->FindNotificationsToShow(
         std::move(notifications), std::move(client_states), &results);
 
-    for (const auto& guid : results) {
-      context_->notification_manager()->DisplayNotification(
-          guid, base::BindOnce(&NotificationSchedulerImpl::BeforeDisplay,
-                               weak_ptr_factory_.GetWeakPtr()));
-    }
-    stats::LogBackgroundTaskNotificationShown(results.size());
+    display_helper_ = std::make_unique<DisplayHelper>(
+        results, context_.get(),
+        base::BindOnce(&NotificationSchedulerImpl::AfterNotificationsShown,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       std::move(task_finish_callback)));
+  }
+
+  void AfterNotificationsShown(TaskFinishedCallback task_finish_callback,
+                               int shown_count) {
+    stats::LogBackgroundTaskNotificationShown(shown_count);
+
+    // Schedule the next background task based on scheduled notifications.
+    ScheduleBackgroundTask();
+
+    stats::LogBackgroundTaskEvent(stats::BackgroundTaskEvent::kFinish);
+    std::move(task_finish_callback).Run(false /*need_reschedule*/);
   }
 
   void ScheduleBackgroundTask() {
@@ -316,6 +373,8 @@ class NotificationSchedulerImpl : public NotificationScheduler,
   }
 
   std::unique_ptr<NotificationSchedulerContext> context_;
+  std::unique_ptr<InitHelper> init_helper_;
+  std::unique_ptr<DisplayHelper> display_helper_;
 
   // The start time of the background task. SchedulerTaskTime::kUnknown if
   // currently not running in a background task.

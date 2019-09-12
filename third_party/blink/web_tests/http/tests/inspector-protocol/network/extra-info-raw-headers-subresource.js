@@ -4,7 +4,8 @@
 
   await dp.Network.enable();
 
-  const setCookieUrl = 'https://cookie.test:8443/inspector-protocol/network/resources/set-cookie-samesitenone.php';
+  const setCookieUrl = 'https://cookie.test:8443/inspector-protocol/network/resources/set-cookie.php?cookie='
+      + encodeURIComponent('name=value; Secure; SameSite=None; HttpOnly');
   const firstPartyUrl = 'https://cookie.test:8443/inspector-protocol/network/resources/hello-world.html';
   const thirdPartyUrl = 'https://thirdparty.test:8443/inspector-protocol/network/resources/hello-world.html';
 

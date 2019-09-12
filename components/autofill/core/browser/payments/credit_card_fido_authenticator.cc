@@ -238,8 +238,7 @@ void CreditCardFIDOAuthenticator::OnDidMakeCredential(
 
 void CreditCardFIDOAuthenticator::OnDidGetOptChangeResult(
     AutofillClient::PaymentsRpcResult result,
-    bool user_is_opted_in,
-    base::Value creation_options) {
+    payments::PaymentsClient::OptChangeResponseDetails& response) {
   DCHECK(current_flow_ == OPT_IN_WITHOUT_CHALLENGE_FLOW ||
          current_flow_ == OPT_OUT_FLOW ||
          current_flow_ == OPT_IN_WITH_CHALLENGE_FLOW);
@@ -250,15 +249,19 @@ void CreditCardFIDOAuthenticator::OnDidGetOptChangeResult(
     return;
   }
 
-  // If response contains |creation_options| and the last opt-in attempt did not
-  // include a challenge, then invoke WebAuthn registration prompt. Otherwise,
-  // set pref to enable FIDO Authentication for card unmask and end the flow.
-  if (creation_options.is_dict() &&
-      current_flow_ == OPT_IN_WITHOUT_CHALLENGE_FLOW) {
-    Register(std::move(creation_options));
-  } else {
+  // Update user preference to keep in sync with server.
+  if (response.user_is_opted_in.has_value()) {
     ::autofill::prefs::SetCreditCardFIDOAuthEnabled(
-        autofill_client_->GetPrefs(), user_is_opted_in);
+        autofill_client_->GetPrefs(), response.user_is_opted_in.value());
+  }
+
+  // If response contains |creation_options| and the last opt-in attempt did not
+  // include a challenge, then invoke WebAuthn registration prompt. Otherwise
+  // end the flow.
+  if (response.fido_creation_options.has_value() &&
+      current_flow_ == OPT_IN_WITHOUT_CHALLENGE_FLOW) {
+    Register(std::move(response.fido_creation_options.value()));
+  } else {
     current_flow_ = NONE_FLOW;
   }
 }

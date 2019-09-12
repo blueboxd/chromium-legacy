@@ -153,7 +153,7 @@ TEST_F(PaymentRequestIOSPaymentInstrumentLauncherTest,
   std::string jef_stringified_data;
   base::JSONWriter::Write(jef_data, &jef_stringified_data);
   base::Value jef_data_list(base::Value::Type::LIST);
-  jef_data_list.GetList().emplace_back(jef_stringified_data);
+  jef_data_list.Append(jef_stringified_data);
 
   // Bob data...
   base::Value bob_data(base::Value::Type::DICTIONARY);
@@ -161,7 +161,7 @@ TEST_F(PaymentRequestIOSPaymentInstrumentLauncherTest,
   std::string bob_stringified_data;
   base::JSONWriter::Write(bob_data, &bob_stringified_data);
   base::Value bob_data_list(base::Value::Type::LIST);
-  bob_data_list.GetList().emplace_back(bob_stringified_data);
+  bob_data_list.Append(bob_stringified_data);
 
   // Alice data...
   base::Value alice_data_list(base::Value::Type::LIST);

@@ -48,7 +48,8 @@ class NetworkTimeTrackerTest : public ::testing::Test {
   ~NetworkTimeTrackerTest() override {}
 
   NetworkTimeTrackerTest()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
+      : task_environment_(
+            base::test::SingleThreadTaskEnvironment::MainThreadType::IO),
         field_trial_test_(new FieldTrialTest()),
         clock_(new base::SimpleTestClock),
         tick_clock_(new base::SimpleTestTickClock),
@@ -155,7 +156,7 @@ class NetworkTimeTrackerTest : public ::testing::Test {
   }
 
  protected:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<FieldTrialTest> field_trial_test_;
   base::TimeDelta resolution_;
   base::TimeDelta latency_;

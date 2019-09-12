@@ -12,7 +12,8 @@
 namespace base {
 namespace test {
 
-// Matchers for base::Callback and base::Closure.
+// Matchers for base::{Once,Repeating}Callback and
+// base::{Once,Repeating}Closure.
 
 MATCHER(IsNullCallback, "a null callback") {
   return (arg.is_null());

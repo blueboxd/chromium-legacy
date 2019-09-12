@@ -16,12 +16,6 @@ message WebAppIconInfoProto {
   required int32 size_in_px = 2;
 }
 
-// TODO(loyso): Move this enum to components/sync/protocol/sync_enums.proto.
-enum LaunchContainerProto {
-  TAB = 1;
-  WINDOW = 2;
-}
-
 // A set to track simultaneous installs and uninstalls from multiple install
 // sources.
 message SourcesProto {
@@ -32,24 +26,29 @@ message SourcesProto {
   required bool default = 5;
 }
 
-// WebApp class data.
-// This should be a superset for WebAppSpecifics in
+// WebApp class data. This should be a superset for WebAppSpecifics in
 // components/sync/protocol/web_app_specifics.proto
 message WebAppProto {
-  // app_id is the client tag for sync system.
-  required string app_id = 1;
-  required string launch_url = 2;
-  required string name = 3;
-  required LaunchContainerProto launch_container = 4;
-  optional uint32 theme_color = 5;
+  // Keep in sync with WebAppSpecifics::LaunchContainer.
+  enum LaunchContainer {
+    TAB = 1;
+    WINDOW = 2;
+  }
+
+  // app_id is a hash of launch_url. app_id is the client tag for sync system.
+  // app_id is the storage key in ModelTypeStore.
+  required string launch_url = 1;
+  required string name = 2;
+  required LaunchContainer launch_container = 3;
+  optional uint32 theme_color = 4;
 
   // Local data members, not to be synced:
-  optional string description = 6;
-  optional string scope = 7;
+  optional string description = 5;
+  optional string scope = 6;
 
-  required SourcesProto sources = 8;
-  required bool is_locally_installed = 9;
+  required SourcesProto sources = 7;
+  required bool is_locally_installed = 8;
 
   // A list of icon infos.
-  repeated WebAppIconInfoProto icons = 10;
+  repeated WebAppIconInfoProto icons = 9;
 }

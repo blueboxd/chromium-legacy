@@ -45,7 +45,7 @@ class DataDecoderService : public service_manager::Service {
       mojo::PendingReceiver<mojom::BundledExchangesParserFactory> receiver);
   void BindImageDecoder(mojo::PendingReceiver<mojom::ImageDecoder> receiver);
   void BindJsonParser(mojo::PendingReceiver<mojom::JsonParser> receiver);
-  void BindXmlParser(mojom::XmlParserRequest request);
+  void BindXmlParser(mojo::PendingReceiver<mojom::XmlParser> receiver);
 
 #ifdef OS_CHROMEOS
   void BindBleScanParser(mojo::PendingReceiver<mojom::BleScanParser> receiver);

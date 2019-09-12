@@ -30,6 +30,7 @@
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"

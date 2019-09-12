@@ -9,10 +9,12 @@
 #include "chrome/browser/ui/views/extensions/extensions_menu_view.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/hover_button.h"
+#include "chrome/browser/ui/views/hover_button_controller.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/menu_button_controller.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/style/typography.h"
 
 const char ExtensionsMenuButton::kClassName[] = "ExtensionsMenuButton";
 
@@ -20,17 +22,14 @@ ExtensionsMenuButton::ExtensionsMenuButton(
     Browser* browser,
     ExtensionsMenuItemView* parent,
     ToolbarActionViewController* controller)
-    : HoverButton(this,
-                  ExtensionsMenuView::CreateFixedSizeIconView(),
-                  base::string16(),
-                  base::string16(),
-                  std::make_unique<views::View>(),
-                  true,
-                  true),
+    : views::LabelButton(this, base::string16(), views::style::CONTEXT_BUTTON),
       browser_(browser),
       parent_(parent),
       controller_(controller) {
-  set_auto_compute_tooltip(false);
+  SetInkDropMode(InkDropMode::ON);
+  SetButtonController(std::make_unique<HoverButtonController>(
+      this, this,
+      std::make_unique<views::Button::DefaultButtonControllerDelegate>(this)));
   controller_->SetDelegate(this);
   UpdateState();
 }
@@ -39,6 +38,10 @@ ExtensionsMenuButton::~ExtensionsMenuButton() = default;
 
 const char* ExtensionsMenuButton::GetClassName() const {
   return kClassName;
+}
+
+SkColor ExtensionsMenuButton::GetInkDropBaseColor() const {
+  return HoverButton::GetInkDropColor(this);
 }
 
 void ExtensionsMenuButton::ButtonPressed(Button* sender,
@@ -66,14 +69,12 @@ content::WebContents* ExtensionsMenuButton::GetCurrentWebContents() const {
 }
 
 void ExtensionsMenuButton::UpdateState() {
-  DCHECK_EQ(views::ImageView::kViewClassName, icon_view()->GetClassName());
-  static_cast<views::ImageView*>(icon_view())
-      ->SetImage(controller_
-                     ->GetIcon(GetCurrentWebContents(),
-                               icon_view()->GetPreferredSize())
-                     .AsImageSkia());
-  SetTitleTextWithHintRange(controller_->GetActionName(),
-                            gfx::Range::InvalidRange());
+  SetImage(Button::STATE_NORMAL,
+           controller_
+               ->GetIcon(GetCurrentWebContents(),
+                         ExtensionsMenuView::kExtensionsMenuIconSize)
+               .AsImageSkia());
+  SetText(controller_->GetActionName());
   SetTooltipText(controller_->GetTooltip(GetCurrentWebContents()));
   SetEnabled(controller_->IsEnabled(GetCurrentWebContents()));
 }

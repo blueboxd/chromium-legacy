@@ -31,6 +31,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"

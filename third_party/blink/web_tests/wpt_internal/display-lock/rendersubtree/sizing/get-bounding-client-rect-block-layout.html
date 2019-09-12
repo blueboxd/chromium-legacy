@@ -7,44 +7,75 @@
 
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
+<script src="../resources/utils.js"></script>
 
-<style>
-div {
-  contain: style layout;
-}
-</style>
 <body>
 <script>
 const BODY_WIDTH = document.body.getBoundingClientRect().width;
-const ACQUIRE_WIDTH = 33;
-const ACQUIRE_HEIGHT = 44;
+const CONTENT_WIDTH = 33;
+const CONTENT_HEIGHT = 44;
 
 async_test(async(t) => {
   let container = document.createElement("div");
-  container.style = "width: min-content;";
   let child = document.createElement("div");
   container.appendChild(child);
   document.body.appendChild(container);
-  await container.displayLock.acquire({ timeout: Infinity, size: [ACQUIRE_WIDTH, ACQUIRE_HEIGHT] });
+  container.style = "content-size: ${CONTENT_WIDTH}px ${CONTENT_HEIGHT}px;";
+  await setInvisible(container);
 
   let rect = container.getBoundingClientRect();
-  t.step(() => assert_equals(rect.width, ACQUIRE_WIDTH,
-    "Locked element with min-content uses width from acquire()"));
-  t.step(() => assert_equals(rect.height, ACQUIRE_HEIGHT,
-    "Locked element with min-content uses height from acquire()"));
+  t.step(() => assert_equals(rect.width, CONTENT_WIDTH,
+    "Locked element uses width from content-size"));
+  t.step(() => assert_equals(rect.height, CONTENT_HEIGHT,
+    "Locked element uses height from content-size"));
 
   rect = child.getBoundingClientRect();
-  t.step(() => assert_equals(rect.width, ACQUIRE_WIDTH,
-    "Child of locked element with min-content uses width from acquire()"));
+  t.step(() => assert_equals(rect.width, CONTENT_WIDTH,
+    "Child of locked element with no content uses width from content-size"));
+  t.step(() => assert_equals(rect.height, 0,
+    "Child of locked element with no content has zero height"));
+
+  child.style = "width: 100px; height: 200px;";
+  rect = container.getBoundingClientRect();
+  t.step(() => assert_equals(rect.width, CONTENT_WIDTH,
+    "Locked element with sized child uses width from content-size"));
+  t.step(() => assert_equals(rect.height, CONTENT_HEIGHT,
+    "Locked element with sized child uses height from content-size"));
+  rect = child.getBoundingClientRect();
+  t.step(() => assert_equals(rect.width, 100,
+    "Child of locked element uses width from style"));
+  t.step(() => assert_equals(rect.height, 200,
+    "Child of locked element uses height from style"));
+
+  t.done();
+}, "getBoundingClientRect");
+
+async_test(async(t) => {
+  let container = document.createElement("div");
+  let child = document.createElement("div");
+  container.appendChild(child);
+  document.body.appendChild(container);
+  container.style = "width: min-content; content-size: ${CONTENT_WIDTH}px ${CONTENT_HEIGHT}px;";
+  await setInvisible(container);
+
+  let rect = container.getBoundingClientRect();
+  t.step(() => assert_equals(rect.width, CONTENT_WIDTH,
+    "Locked element with min-content uses width from content-size"));
+  t.step(() => assert_equals(rect.height, CONTENT_HEIGHT,
+    "Locked element with min-content uses height from content-size"));
+
+  rect = child.getBoundingClientRect();
+  t.step(() => assert_equals(rect.width, CONTENT_WIDTH,
+    "Child of locked element with min-content & no content uses width from content-size"));
   t.step(() => assert_equals(rect.height, 0,
     "Child of locked element with min-content & no content has zero height"));
 
   child.style = "width: 100px; height: 200px;";
   rect = container.getBoundingClientRect();
-  t.step(() => assert_equals(rect.width, ACQUIRE_WIDTH,
-    "Locked element with min-content and sized child uses width from acquire()"));
-  t.step(() => assert_equals(rect.height, ACQUIRE_HEIGHT,
-    "Locked element with min-content and sized child uses height from acquire()"));
+  t.step(() => assert_equals(rect.width, CONTENT_WIDTH,
+    "Locked element with min-content and sized child uses width from content-size"));
+  t.step(() => assert_equals(rect.height, CONTENT_HEIGHT,
+    "Locked element with min-content and sized child uses height from content-size"));
   rect = child.getBoundingClientRect();
   t.step(() => assert_equals(rect.width, 100,
     "Child of locked element with min-content uses width from style"));
@@ -56,58 +87,40 @@ async_test(async(t) => {
 
 async_test(async(t) => {
   let container = document.createElement("div");
-  document.body.appendChild(container);
-  await container.displayLock.acquire({ timeout: Infinity, size: [ACQUIRE_WIDTH, ACQUIRE_HEIGHT] });
-  let rect = container.getBoundingClientRect();
-
-  t.step(() => assert_equals(rect.width, BODY_WIDTH,
-    "Locked element uses width from body"));
-  t.step(() => assert_equals(rect.height, ACQUIRE_HEIGHT,
-    "Locked element uses height from acquire()"));
-
-  await container.displayLock.acquire({ timeout: Infinity, size: [55, 66] });
-  rect = container.getBoundingClientRect();
-  t.step(() => assert_equals(rect.width, BODY_WIDTH,
-    "After re-acquire, locked element still uses width from body"));
-  t.step(() => assert_equals(rect.height, 66,
-    "After re-acquire, locked element uses height from the last acquire()"));
-  t.done();
-}, "getBoundingClientRect with re-acquire");
-
-async_test(async (t) => {
-  let container = document.createElement("div");
-  container.style = "width: 11px; height: 22px;";
   let child = document.createElement("div");
   container.appendChild(child);
   document.body.appendChild(container);
-
-  await container.displayLock.acquire({ timeout: Infinity, size: [ACQUIRE_WIDTH, ACQUIRE_HEIGHT] });
-
+  container.style = "content-size: ${CONTENT_WIDTH}px ${CONTENT_HEIGHT}px;";
+  await setInvisible(container);
   let rect = container.getBoundingClientRect();
-  t.step(() => assert_equals(rect.width, 11,
-    "Styled locked element uses width from style"));
-  t.step(() => assert_equals(rect.height, 22,
-    "Styled locked element uses height from style"));
-  rect = child.getBoundingClientRect();
-  t.step(() => assert_equals(rect.width, 11,
-    "Child of styled locked element uses width from locked element's style"));
-  t.step(() => assert_equals(rect.height, 0,
-    "Child of styled locked element with no content has zero height"));
 
-  container.style = "";
+  t.step(() => assert_equals(rect.width, CONTENT_WIDTH,
+    "Locked element uses width from content-size"));
+  t.step(() => assert_equals(rect.height, CONTENT_HEIGHT,
+    "Locked element uses height from content-size"));
+
+  rect = child.getBoundingClientRect();
+  t.step(() => assert_equals(rect.width, CONTENT_WIDTH,
+    "Child of locked element with no content uses width from content-size"));
+  t.step(() => assert_equals(rect.height, 0,
+    "Child of locked element with no content has zero height"));
+
+  container.style = "content-size: 55px 66px;";
   rect = container.getBoundingClientRect();
-  t.step(() => assert_equals(rect.width, BODY_WIDTH,
-    "Unstyled locked element uses width from body"));
-  t.step(() => assert_equals(rect.height, ACQUIRE_HEIGHT,
-    "Unstyled locked element uses height given in acquire()"));
+  t.step(() => assert_equals(rect.width, 55,
+    "After content-size change, locked element usese width from newest content-size"));
+  t.step(() => assert_equals(rect.height, 66,
+    "After content-sizechange , locked element uses height from newest content-size"));
 
   rect = child.getBoundingClientRect();
-  t.step(() => assert_equals(rect.width, BODY_WIDTH,
-    "Child of unstyled locked element uses width from locked element's width"));
+  t.step(() => assert_equals(rect.width, 55,
+    "Child of locked element with no content uses width from neweest content-size"));
   t.step(() => assert_equals(rect.height, 0,
-    "Child of unstyled locked element with no content has zero height"));
+    "Child of locked element with no content has zero height"));
+
+
   t.done();
-}, "getBoundingClientRect with styled width & height");
+}, "getBoundingClientRect with changed content-size");
 </script>
 </body>
 </html>

@@ -411,7 +411,19 @@ let ACMatchClassification;
  */
 let AutocompleteMatch;
 
-/** @type {function(!Array<!AutocompleteMatch>):void} */
+/** @enum {number} */
+let AutocompleteResultStatus;
+
+/**
+ * @typedef {{
+ *   input: string,
+ *   matches: !Array<!AutocompleteMatch>,
+ *   status: !AutocompleteResultStatus
+ * }}
+ */
+let AutocompleteResult;
+
+/** @type {function(!AutocompleteResult):void} */
 window.chrome.embeddedSearch.searchBox.onqueryautocompletedone;
 
 /**************************** Translated Strings *****************************/

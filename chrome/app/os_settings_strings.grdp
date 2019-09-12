@@ -39,7 +39,7 @@
     Preferred search engine
   </message>
   <message name="IDS_OS_SETTINGS_SEARCH_ENGINE_TOOLTIP" desc="Tooltip in OS settings explaining that search engine is used in both the Chrome browser and the Chrome OS app launcher.">
-    Used by Chrome browser and <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> launcher
+    Used by Chrome browser and <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> Launcher
   </message>
 
   <!-- Files Page (OS settings) -->

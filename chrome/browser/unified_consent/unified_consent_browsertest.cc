@@ -46,7 +46,8 @@ class UnifiedConsentBrowserTest : public SyncTest {
   }
 
   void FinishSyncSetup(int client_id) {
-    GetSyncService(client_id)->GetUserSettings()->SetFirstSetupComplete();
+    GetSyncService(client_id)->GetUserSettings()->SetFirstSetupComplete(
+        syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
     sync_blocker_.reset();
     ASSERT_TRUE(GetClient(client_id)->AwaitSyncSetupCompletion());
   }

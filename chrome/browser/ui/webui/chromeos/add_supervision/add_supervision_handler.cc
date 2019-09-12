@@ -31,10 +31,10 @@ namespace chromeos {
 AddSupervisionHandler::AddSupervisionHandler(
     add_supervision::mojom::AddSupervisionHandlerRequest request,
     content::WebUI* web_ui,
+    signin::IdentityManager* identity_manager,
     Delegate* delegate)
     : web_ui_(web_ui),
-      identity_manager_(
-          IdentityManagerFactory::GetForProfile(Profile::FromWebUI(web_ui))),
+      identity_manager_(identity_manager),
       binding_(this, std::move(request)),
       delegate_(delegate) {}
 

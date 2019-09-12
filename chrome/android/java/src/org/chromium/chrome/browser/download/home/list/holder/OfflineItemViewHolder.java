@@ -99,14 +99,20 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
 
         // Push 'thumbnail' state.
         if (mThumbnail != null) {
-            mThumbnail.setImageResizer(
-                    new BitmapResizer(mThumbnail, Filters.fromOfflineItem(offlineItem)));
-            mThumbnail.setAsyncImageDrawable((consumer, width, height) -> {
-                return properties.get(ListProperties.PROVIDER_VISUALS)
-                        .getVisuals(offlineItem, width, height, (id, visuals) -> {
-                            consumer.onResult(onThumbnailRetrieved(visuals));
-                        });
-            }, offlineItem.id);
+            if (offlineItem.ignoreVisuals) {
+                mThumbnail.setVisibility(View.GONE);
+                mThumbnail.setImageDrawable(null);
+            } else {
+                mThumbnail.setVisibility(View.VISIBLE);
+                mThumbnail.setImageResizer(
+                        new BitmapResizer(mThumbnail, Filters.fromOfflineItem(offlineItem)));
+                mThumbnail.setAsyncImageDrawable((consumer, width, height) -> {
+                    return properties.get(ListProperties.PROVIDER_VISUALS)
+                            .getVisuals(offlineItem, width, height, (id, visuals) -> {
+                                consumer.onResult(onThumbnailRetrieved(visuals));
+                            });
+                }, offlineItem.id);
+            }
         }
 
         mCanRename = mRenameCallback != null && offlineItem.canRename;

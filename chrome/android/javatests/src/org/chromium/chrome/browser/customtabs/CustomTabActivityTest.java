@@ -2703,8 +2703,10 @@ public class CustomTabActivityTest {
     private void checkPageLoadMetrics(boolean allowMetrics)
             throws InterruptedException, TimeoutException {
         final AtomicReference<Long> firstContentfulPaintMs = new AtomicReference<>(-1L);
+        final AtomicReference<Long> largestContentfulPaintMs = new AtomicReference<>(-1L);
         final AtomicReference<Long> activityStartTimeMs = new AtomicReference<>(-1L);
         final AtomicReference<Long> loadEventStartMs = new AtomicReference<>(-1L);
+        final AtomicReference<Float> layoutShiftScore = new AtomicReference<>(-1f);
         final AtomicReference<Boolean> sawNetworkQualityEstimates = new AtomicReference<>(false);
 
         CustomTabsCallback cb = new CustomTabsCallback() {
@@ -2721,6 +2723,12 @@ public class CustomTabActivityTest {
                     sawNetworkQualityEstimates.set(true);
                 }
 
+                float layoutShiftScoreValue =
+                        args.getFloat(PageLoadMetrics.LAYOUT_SHIFT_SCORE, -1f);
+                if (layoutShiftScoreValue >= 0f) {
+                    layoutShiftScore.set(layoutShiftScoreValue);
+                }
+
                 long navigationStart = args.getLong(PageLoadMetrics.NAVIGATION_START, -1);
                 if (navigationStart == -1) {
                     // Untested metric callback.
@@ -2735,6 +2743,13 @@ public class CustomTabActivityTest {
                 if (firstContentfulPaint > 0) {
                     Assert.assertTrue(firstContentfulPaint <= (current - navigationStart));
                     firstContentfulPaintMs.set(firstContentfulPaint);
+                }
+
+                long largestContentfulPaint =
+                        args.getLong(PageLoadMetrics.LARGEST_CONTENTFUL_PAINT, -1);
+                if (largestContentfulPaint > 0) {
+                    Assert.assertTrue(largestContentfulPaint <= (current - navigationStart));
+                    largestContentfulPaintMs.set(largestContentfulPaint);
                 }
 
                 long loadEventStart = args.getLong(PageLoadMetrics.LOAD_EVENT_START, -1);
@@ -2772,6 +2787,25 @@ public class CustomTabActivityTest {
                 // Expected.
             }
             assertEquals(-1L, (long) firstContentfulPaintMs.get());
+
+            try {
+                CriteriaHelper.pollInstrumentationThread(() -> largestContentfulPaintMs.get() > 0);
+            } catch (AssertionError e) {
+                // Expected.
+            }
+            assertEquals(-1L, (long) largestContentfulPaintMs.get());
+        }
+
+        // Navigate to a new page, as metrics like LCP are only reported at the end of the page load
+        // lifetime.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            final CustomTabActivity activity = mCustomTabActivityTestRule.getActivity();
+            activity.getComponent().resolveNavigationController().navigate("about:blank");
+        });
+
+        if (allowMetrics) {
+            CriteriaHelper.pollInstrumentationThread(() -> largestContentfulPaintMs.get() > 0);
+            CriteriaHelper.pollInstrumentationThread(() -> layoutShiftScore.get() != -1f);
         }
     }
 

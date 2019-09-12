@@ -124,7 +124,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   OpaqueBrowserFrameViewLayout* layout() { return layout_; }
 
  private:
-  friend class HostedAppOpaqueBrowserFrameViewTest;
+  friend class WebAppOpaqueBrowserFrameViewTest;
 
   // Creates and returns a FrameCaptionButton with |this| as its listener.
   // Memory is owned by the caller.

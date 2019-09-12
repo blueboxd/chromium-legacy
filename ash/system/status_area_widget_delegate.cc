@@ -206,7 +206,7 @@ void StatusAreaWidgetDelegate::SetBorderOnChild(views::View* child,
 
   // TODO: ensure that this is set in tablet mode, only when dense shelf
   // threshold is met. (just make this variable a member of ShelfConfig)
-  if (is_child_on_edge && chromeos::switches::ShouldShowShelfDenseClamshell())
+  if (is_child_on_edge && chromeos::switches::ShouldShowShelfHotseat())
     right_edge = kPaddingBetweenWidgetAndRightScreenEdge;
 
   // Swap edges if alignment is not horizontal (bottom-to-top).

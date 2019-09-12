@@ -1980,6 +1980,8 @@ void HTMLSelectElement::ProvisionalSelectionChanged(unsigned list_index) {
 void HTMLSelectElement::ShowPopup() {
   if (PopupIsVisible())
     return;
+  if (GetDocument().GetPage()->GetChromeClient().HasOpenedPopup())
+    return;
   if (!GetLayoutObject() || !GetLayoutObject()->IsMenuList())
     return;
   if (VisibleBoundsInVisualViewport().IsEmpty())

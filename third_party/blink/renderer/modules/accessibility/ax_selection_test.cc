@@ -1615,6 +1615,33 @@ TEST_F(AccessibilitySelectionTest, SelectionWithEqualBaseAndExtent) {
       builder.SetBase(ax_position).SetExtent(ax_position).Build();
 }
 
+TEST_F(AccessibilitySelectionTest, InvalidSelectionOnAShadowRoot) {
+  GetPage().GetSettings().SetScriptEnabled(true);
+  SetBodyInnerHTML(R"HTML(
+		<div id="container">
+		</div>	
+	)HTML");
+  Element* const script_element =
+      GetDocument().CreateRawElement(html_names::kScriptTag);
+  script_element->setTextContent(R"SCRIPT(
+      var container = document.getElementById("container");
+			var shadow = container.attachShadow({mode: 'open'});
+			var button = document.createElement("button");
+			button.id = "button";
+			shadow.appendChild(button);
+      )SCRIPT");
+  GetDocument().body()->AppendChild(script_element);
+  UpdateAllLifecyclePhasesForTest();
+
+  Node* shadow_root = GetElementById("container")->GetShadowRoot();
+  const Position base = Position::EditingPositionOf(shadow_root, 0);
+  const Position extent = Position::EditingPositionOf(shadow_root, 1);
+
+  const auto selection =
+      SelectionInDOMTree::Builder().SetBaseAndExtent(base, extent).Build();
+  EXPECT_FALSE(AXSelection::FromSelection(selection).IsValid());
+}
+
 //
 // Declarative tests.
 //

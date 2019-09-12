@@ -282,6 +282,7 @@ ManagedDisplayInfo::ManagedDisplayInfo()
       touch_support_(Display::TouchSupport::UNKNOWN),
       device_scale_factor_(1.0f),
       device_dpi_(kDpi96),
+      panel_orientation_(display::PanelOrientation::kNormal),
       overscan_insets_in_dip_(0, 0, 0, 0),
       zoom_factor_(1.f),
       refresh_rate_(60.f),
@@ -303,6 +304,7 @@ ManagedDisplayInfo::ManagedDisplayInfo(int64_t id,
       touch_support_(Display::TouchSupport::UNKNOWN),
       device_scale_factor_(1.0f),
       device_dpi_(kDpi96),
+      panel_orientation_(display::PanelOrientation::kNormal),
       overscan_insets_in_dip_(0, 0, 0, 0),
       zoom_factor_(1.f),
       refresh_rate_(60.f),
@@ -350,6 +352,7 @@ void ManagedDisplayInfo::Copy(const ManagedDisplayInfo& native_info) {
   DCHECK(!native_info.bounds_in_native_.IsEmpty());
   bounds_in_native_ = native_info.bounds_in_native_;
   device_dpi_ = native_info.device_dpi_;
+  panel_orientation_ = native_info.panel_orientation_,
   size_in_pixel_ = native_info.size_in_pixel_;
   is_aspect_preserving_scaling_ = native_info.is_aspect_preserving_scaling_;
   display_modes_ = native_info.display_modes_;

@@ -225,7 +225,8 @@
           $i18n{pluginVmPageTitle}
         </div>
       </a>
-      <cr-button id="advancedButton" aria-active-attribute="aria-expanded"
+      <cr-button id="advancedButton"
+          aria-expanded$="[[boolToString_(advancedOpened)]]"
           on-click="onAdvancedButtonToggle_">
         <span>$i18n{advancedPageTitle}</span>
         <iron-icon icon="[[arrowState_(advancedOpened)]]">

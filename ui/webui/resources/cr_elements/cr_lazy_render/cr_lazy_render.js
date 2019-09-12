@@ -22,7 +22,7 @@ Polymer({
   /** @private {?Element} */
   child_: null,
 
-  /** @private {?Element} */
+  /** @private {?Element|?TemplateInstanceBase} */
   instance_: null,
 
   /**
@@ -54,7 +54,7 @@ Polymer({
     });
     const parentNode = this.parentNode;
     if (parentNode && !this.child_) {
-      this.instance_ = new TemplateClass({});
+      this.instance_ = new TemplateClass();
       this.child_ = this.instance_.root.firstElementChild;
       parentNode.insertBefore(this.instance_.root, this);
     }

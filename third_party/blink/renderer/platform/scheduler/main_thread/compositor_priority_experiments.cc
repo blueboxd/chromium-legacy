@@ -11,8 +11,6 @@
 namespace blink {
 namespace scheduler {
 
-using QueuePriority = base::sequence_manager::TaskQueue::QueuePriority;
-
 CompositorPriorityExperiments::CompositorPriorityExperiments(
     MainThreadSchedulerImpl* scheduler)
     : scheduler_(scheduler),
@@ -38,6 +36,9 @@ CompositorPriorityExperiments::GetExperimentFromFeatureList() {
   } else if (base::FeatureList::IsEnabled(
                  kVeryHighPriorityForCompositingAfterDelay)) {
     return Experiment::kVeryHighPriorityForCompositingAfterDelay;
+  } else if (base::FeatureList::IsEnabled(
+                 kVeryHighPriorityForCompositingBudget)) {
+    return Experiment::kVeryHighPriorityForCompositingBudget;
   } else {
     return Experiment::kNone;
   }
@@ -62,6 +63,8 @@ QueuePriority CompositorPriorityExperiments::GetCompositorPriority() const {
       return alternating_compositor_priority_;
     case Experiment::kVeryHighPriorityForCompositingAfterDelay:
       return delay_compositor_priority_;
+    case Experiment::kVeryHighPriorityForCompositingBudget:
+      return budget_compositor_priority_;
     case Experiment::kNone:
       NOTREACHED();
       return QueuePriority::kNormalPriority;
@@ -82,6 +85,18 @@ void CompositorPriorityExperiments::OnMainThreadSchedulerInitialized() {
   if (experiment_ == Experiment::kVeryHighPriorityForCompositingAfterDelay) {
     PostPrioritizeCompositingAfterDelayTask();
   }
+  if (experiment_ == Experiment::kVeryHighPriorityForCompositingBudget) {
+    budget_pool_controller_.reset(new CompositorBudgetPoolController(
+        this, scheduler_, scheduler_->CompositorTaskQueue().get(),
+        &scheduler_->tracing_controller_,
+        base::TimeDelta::FromMilliseconds(
+            kInitialCompositorBudgetInMilliseconds.Get()),
+        kCompositorBudgetRecoveryRate.Get()));
+  }
+}
+
+void CompositorPriorityExperiments::OnMainThreadSchedulerShutdown() {
+  budget_pool_controller_.reset();
 }
 
 void CompositorPriorityExperiments::PostPrioritizeCompositingAfterDelayTask() {
@@ -94,7 +109,8 @@ void CompositorPriorityExperiments::PostPrioritizeCompositingAfterDelayTask() {
 
 void CompositorPriorityExperiments::OnTaskCompleted(
     MainThreadTaskQueue* queue,
-    QueuePriority current_compositor_priority) {
+    QueuePriority current_compositor_priority,
+    MainThreadTaskQueue::TaskTiming* task_timing) {
   if (!queue)
     return;
 
@@ -134,9 +150,79 @@ void CompositorPriorityExperiments::OnTaskCompleted(
           scheduler_->OnCompositorPriorityExperimentUpdateCompositorPriority();
       }
       return;
+    case Experiment::kVeryHighPriorityForCompositingBudget:
+      budget_pool_controller_->OnTaskCompleted(queue, task_timing);
+      return;
     case Experiment::kNone:
       return;
   }
+}
+
+void CompositorPriorityExperiments::OnBudgetExhausted() {
+  // Compositor will still be allowed to run tasks if the budget is exhausted
+  // if there is no other higher priority work to be done. If a compositor task
+  // is run while the budget is exhausted it will still deplete the budget which
+  // will keep it at a normal priority for longer.
+  budget_compositor_priority_ = QueuePriority::kNormalPriority;
+  scheduler_->OnCompositorPriorityExperimentUpdateCompositorPriority();
+}
+
+void CompositorPriorityExperiments::OnBudgetReplenished() {
+  budget_compositor_priority_ = QueuePriority::kVeryHighPriority;
+  scheduler_->OnCompositorPriorityExperimentUpdateCompositorPriority();
+}
+
+CompositorPriorityExperiments::CompositorBudgetPoolController::
+    CompositorBudgetPoolController(
+        CompositorPriorityExperiments* experiment,
+        MainThreadSchedulerImpl* scheduler,
+        MainThreadTaskQueue* compositor_queue,
+        TraceableVariableController* tracing_controller,
+        base::TimeDelta min_budget,
+        double budget_recovery_rate)
+    : experiment_(experiment), tick_clock_(scheduler->GetTickClock()) {
+  DCHECK_EQ(compositor_queue->queue_type(),
+            MainThreadTaskQueue::QueueType::kCompositor);
+  base::TimeTicks now = scheduler->GetTickClock()->NowTicks();
+
+  compositor_budget_pool_.reset(new CPUTimeBudgetPool(
+      "CompositorBudgetPool", this, tracing_controller, now));
+  compositor_budget_pool_->SetMinBudgetLevelToRun(now, min_budget);
+  compositor_budget_pool_->SetTimeBudgetRecoveryRate(now, budget_recovery_rate);
+  compositor_budget_pool_->AddQueue(now, compositor_queue);
+}
+
+CompositorPriorityExperiments::CompositorBudgetPoolController::
+    ~CompositorBudgetPoolController() = default;
+
+void CompositorPriorityExperiments::CompositorBudgetPoolController::
+    UpdateQueueSchedulingLifecycleState(base::TimeTicks now, TaskQueue* queue) {
+  UpdateCompositorBudgetState(now);
+}
+
+void CompositorPriorityExperiments::CompositorBudgetPoolController::
+    UpdateCompositorBudgetState(base::TimeTicks now) {
+  bool is_exhausted =
+      !compositor_budget_pool_->CanRunTasksAt(now, false /* is_wake_up */);
+  if (is_exhausted_ == is_exhausted)
+    return;
+
+  is_exhausted_ = is_exhausted;
+  if (is_exhausted_) {
+    experiment_->OnBudgetExhausted();
+    return;
+  }
+  experiment_->OnBudgetReplenished();
+}
+
+void CompositorPriorityExperiments::CompositorBudgetPoolController::
+    OnTaskCompleted(MainThreadTaskQueue* queue,
+                    MainThreadTaskQueue::TaskTiming* task_timing) {
+  if (queue->queue_type() == MainThreadTaskQueue::QueueType::kCompositor) {
+    compositor_budget_pool_->RecordTaskRunTime(queue, task_timing->start_time(),
+                                               task_timing->end_time());
+  }
+  UpdateCompositorBudgetState(task_timing->end_time());
 }
 
 }  // namespace scheduler

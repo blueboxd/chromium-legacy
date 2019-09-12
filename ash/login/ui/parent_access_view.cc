@@ -32,6 +32,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/session_manager/session_manager_types.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event.h"

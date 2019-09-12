@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enum_util.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/gfx/transform.h"
 
@@ -199,7 +200,11 @@ bool IsNodeIdIntListAttribute(ax::mojom::IntListAttribute attr) {
   return false;
 }
 
-AXNodeData::AXNodeData() = default;
+AXNodeData::AXNodeData()
+    : role(ax::mojom::Role::kUnknown),
+      state(static_cast<uint32_t>(ax::mojom::State::kNone)),
+      actions(static_cast<uint32_t>(ax::mojom::Action::kNone)) {}
+
 AXNodeData::~AXNodeData() = default;
 
 AXNodeData::AXNodeData(const AXNodeData& other) {

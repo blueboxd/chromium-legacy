@@ -52,7 +52,8 @@ class GeolocationServiceUnitTest : public DeviceServiceTestBase {
     connector()->BindInterface(mojom::kServiceName, &geolocation_control_);
     geolocation_control_->UserDidOptIntoLocationServices();
 
-    connector()->BindInterface(mojom::kServiceName, &geolocation_context_);
+    connector()->Connect(mojom::kServiceName,
+                         geolocation_context_.BindNewPipeAndPassReceiver());
     geolocation_context_->BindGeolocation(
         geolocation_.BindNewPipeAndPassReceiver());
   }
@@ -80,7 +81,7 @@ class GeolocationServiceUnitTest : public DeviceServiceTestBase {
 
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   mojom::GeolocationControlPtr geolocation_control_;
-  mojom::GeolocationContextPtr geolocation_context_;
+  mojo::Remote<mojom::GeolocationContext> geolocation_context_;
   mojo::Remote<mojom::Geolocation> geolocation_;
   mojom::GeolocationConfigPtr geolocation_config_;
 

@@ -135,9 +135,7 @@ std::string GetNewTabBackgroundTilingCSS(
 }  // namespace
 
 NTPResourceCache::NTPResourceCache(Profile* profile)
-    : profile_(profile),
-      is_swipe_tracking_from_scroll_events_enabled_(false),
-      theme_observer_(this) {
+    : profile_(profile), is_swipe_tracking_from_scroll_events_enabled_(false) {
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(
                      ThemeServiceFactory::GetForProfile(profile)));

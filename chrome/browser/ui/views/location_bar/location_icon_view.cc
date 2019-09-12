@@ -19,6 +19,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/l10n/l10n_util.h"

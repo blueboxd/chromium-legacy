@@ -169,8 +169,7 @@ void PaintedScrollbarLayer::UpdateInternalContentScale() {
 
 bool PaintedScrollbarLayer::Update() {
   {
-    base::AutoReset<bool> ignore_set_needs_commit(&ignore_set_needs_commit_,
-                                                  true);
+    auto ignore_set_needs_commit = IgnoreSetNeedsCommit();
     Layer::Update();
     UpdateInternalContentScale();
   }

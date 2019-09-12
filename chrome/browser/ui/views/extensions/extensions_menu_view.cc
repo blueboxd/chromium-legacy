@@ -31,8 +31,9 @@ namespace {
 ExtensionsMenuView* g_extensions_dialog = nullptr;
 
 constexpr int EXTENSIONS_SETTINGS_ID = 42;
-
 }  // namespace
+
+constexpr gfx::Size ExtensionsMenuView::kExtensionsMenuIconSize;
 
 ExtensionsMenuView::ExtensionsMenuView(
     views::View* anchor_view,
@@ -80,6 +81,13 @@ int ExtensionsMenuView::GetDialogButtons() const {
 
 bool ExtensionsMenuView::ShouldSnapFrameWidth() const {
   return true;
+}
+
+gfx::Size ExtensionsMenuView::CalculatePreferredSize() const {
+  const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
+                        DISTANCE_BUBBLE_PREFERRED_WIDTH) -
+                    margins().width();
+  return gfx::Size(width, GetHeightForWidth(width));
 }
 
 void ExtensionsMenuView::Repopulate() {
@@ -266,7 +274,7 @@ ExtensionsMenuView::CreateFixedSizeIconView() {
   // Note that this size is larger than the 16dp extension icons as it needs to
   // accommodate 24dp click-to-script badging and surrounding shadows.
   auto image_view = std::make_unique<views::ImageView>();
-  image_view->SetPreferredSize(gfx::Size(28, 28));
+  image_view->SetPreferredSize(kExtensionsMenuIconSize);
   return image_view;
 }
 

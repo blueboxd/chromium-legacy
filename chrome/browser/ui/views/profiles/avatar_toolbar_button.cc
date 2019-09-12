@@ -30,9 +30,7 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/signin/public/identity_manager/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/color_palette.h"
@@ -76,20 +74,17 @@ bool IsGenericProfile(const ProfileAttributesEntry& entry) {
 
 AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
     : ToolbarButton(nullptr),
-      browser_(browser),
-      profile_(browser_->profile()),
 #if !defined(OS_CHROMEOS)
-      error_controller_(this, profile_),
+      error_controller_(this, browser->profile()),
 #endif  // !defined(OS_CHROMEOS)
-      browser_list_observer_(this),
-      profile_observer_(this),
-      identity_manager_observer_(this) {
+      browser_(browser),
+      profile_(browser_->profile()) {
   profile_observer_.Add(
       &g_browser_process->profile_manager()->GetProfileAttributesStorage());
 
   State state = GetState();
   if (state == State::kIncognitoProfile) {
-    browser_list_observer_.Add(BrowserList::GetInstance());
+    BrowserList::AddObserver(this);
   } else if (state != State::kGuestSession) {
     signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(profile_);
@@ -131,14 +126,13 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
   UpdateText();
 
   md_observer_.Add(ui::MaterialDesignController::GetInstance());
-
-  personal_data_manager_ = autofill::PersonalDataManagerFactory::GetForProfile(
-      profile_->GetOriginalProfile());
-  personal_data_manager_->AddObserver(this);
+  personal_data_manager_observer_.Add(
+      autofill::PersonalDataManagerFactory::GetForProfile(
+          profile_->GetOriginalProfile()));
 }
 
 AvatarToolbarButton::~AvatarToolbarButton() {
-  personal_data_manager_->RemoveObserver(this);
+  BrowserList::RemoveObserver(this);
 }
 
 void AvatarToolbarButton::UpdateIcon() {

@@ -29,6 +29,10 @@ media_subcomponent_deps = [
   "//media/video",
 ]
 
+if (is_fuchsia) {
+  media_subcomponent_deps += [ "//media/fuchsia/cdm" ]
+}
+
 declare_args() {
   # Allows distributions to link pulseaudio directly (DT_NEEDED) instead of
   # using dlopen. This helps with automated detection of ABI mismatches and

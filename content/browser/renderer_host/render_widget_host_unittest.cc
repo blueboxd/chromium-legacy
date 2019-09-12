@@ -1902,9 +1902,9 @@ TEST_F(RenderWidgetHostTest, InflightEventCountResetsAfterRebind) {
   SimulateKeyboardEvent(WebInputEvent::kRawKeyDown);
 
   EXPECT_EQ(1u, host_->in_flight_event_count());
-  mojom::WidgetPtr widget;
+  mojo::PendingRemote<mojom::Widget> widget;
   std::unique_ptr<MockWidgetImpl> widget_impl =
-      std::make_unique<MockWidgetImpl>(mojo::MakeRequest(&widget));
+      std::make_unique<MockWidgetImpl>(widget.InitWithNewPipeAndPassReceiver());
   host_->SetWidget(std::move(widget));
   EXPECT_EQ(0u, host_->in_flight_event_count());
 }
@@ -1920,9 +1920,9 @@ TEST_F(RenderWidgetHostTest, ForceEnableZoomShouldUpdateAfterRebind) {
   host_->ExpectForceEnableZoom(true);
 
   // Rebind should also update to the latest force_enable_zoom state.
-  mojom::WidgetPtr widget;
+  mojo::PendingRemote<mojom::Widget> widget;
   std::unique_ptr<MockWidgetImpl> widget_impl =
-      std::make_unique<MockWidgetImpl>(mojo::MakeRequest(&widget));
+      std::make_unique<MockWidgetImpl>(widget.InitWithNewPipeAndPassReceiver());
   host_->SetWidget(std::move(widget));
 
   SCOPED_TRACE("force_enable_zoom is true after rebind.");

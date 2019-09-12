@@ -458,11 +458,14 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // We close all sessions when certificate database is changed.
   void OnCertDBChanged() override;
 
-  bool require_confirmation() const { return require_confirmation_; }
+  bool is_quic_known_to_work_on_current_network() const {
+    return is_quic_known_to_work_on_current_network_;
+  }
 
   bool allow_server_migration() const { return params_.allow_server_migration; }
 
-  void set_require_confirmation(bool require_confirmation);
+  void set_is_quic_known_to_work_on_current_network(
+      bool is_quic_known_to_work_on_current_network);
 
   // It returns the amount of time waiting job should be delayed.
   base::TimeDelta GetTimeDelayForWaitingJob(
@@ -577,7 +580,12 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
                                const quic::QuicServerId& server_id,
                                bool was_session_active);
 
-  bool require_confirmation_;
+  // Whether QUIC is known to work on current network. This is true when QUIC is
+  // expected to work in general, rather than whether QUIC was broken / recently
+  // broken when used with a particular server. That information is stored in
+  // the broken alternative service map in HttpServerProperties.
+  bool is_quic_known_to_work_on_current_network_;
+
   NetLog* net_log_;
   HostResolver* host_resolver_;
   ClientSocketFactory* client_socket_factory_;

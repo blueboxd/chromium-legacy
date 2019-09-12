@@ -6,6 +6,7 @@ import("//ui/webui/resources/tools/js_modulizer.gni")
 
 js_modulizer("modulize") {
   input_files = [
+    "cr_action_menu_test.js",
     "cr_button_tests.js",
     "cr_checkbox_test.js",
     "cr_container_shadow_behavior_test.js",
@@ -16,6 +17,7 @@ js_modulizer("modulize") {
     "cr_icon_button_tests.js",
     "cr_icon_button_focus_tests.js",
     "cr_input_test.js",
+    "cr_lazy_render_tests.js",
     "cr_link_row_tests.js",
     "cr_radio_button_test.js",
     "cr_radio_group_test.js",
@@ -27,6 +29,8 @@ js_modulizer("modulize") {
     "cr_view_manager_test.js",
   ]
   namespace_rewrites = [
+    "cr.isMac|isMac",
+    "cr.isWindows|isWindows",
     "MockInteractions.blur|blur",
     "MockInteractions.downAndUp|downAndUp",
     "MockInteractions.keyDownOn|keyDownOn",

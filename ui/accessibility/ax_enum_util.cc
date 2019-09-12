@@ -431,6 +431,8 @@ const char* ToString(ax::mojom::Role role) {
       return "figure";
     case ax::mojom::Role::kFooter:
       return "footer";
+    case ax::mojom::Role::kFooterAsNonLandmark:
+      return "footerAsNonLandmark";
     case ax::mojom::Role::kForm:
       return "form";
     case ax::mojom::Role::kGenericContainer:
@@ -445,6 +447,10 @@ const char* ToString(ax::mojom::Role role) {
       return "grid";
     case ax::mojom::Role::kGroup:
       return "group";
+    case ax::mojom::Role::kHeader:
+      return "header";
+    case ax::mojom::Role::kHeaderAsNonLandmark:
+      return "headerAsNonLandmark";
     case ax::mojom::Role::kHeading:
       return "heading";
     case ax::mojom::Role::kIframe:
@@ -789,6 +795,8 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kFigure;
   if (0 == strcmp(role, "footer"))
     return ax::mojom::Role::kFooter;
+  if (0 == strcmp(role, "footerAsNonLandmark"))
+    return ax::mojom::Role::kFooterAsNonLandmark;
   if (0 == strcmp(role, "form"))
     return ax::mojom::Role::kForm;
   if (0 == strcmp(role, "genericContainer"))
@@ -805,6 +813,10 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kGroup;
   if (0 == strcmp(role, "heading"))
     return ax::mojom::Role::kHeading;
+  if (0 == strcmp(role, "header"))
+    return ax::mojom::Role::kHeader;
+  if (0 == strcmp(role, "headerAsNonLandmark"))
+    return ax::mojom::Role::kHeaderAsNonLandmark;
   if (0 == strcmp(role, "iframe"))
     return ax::mojom::Role::kIframe;
   if (0 == strcmp(role, "iframePresentational"))

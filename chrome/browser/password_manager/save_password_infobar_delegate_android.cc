@@ -27,7 +27,9 @@
 // static
 void SavePasswordInfoBarDelegate::Create(
     content::WebContents* web_contents,
-    std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save) {
+    std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
+    std::unique_ptr<password_manager::SavingFlowMetricsRecorder>
+        saving_flow_recorder) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   syncer::SyncService* sync_service =
@@ -36,10 +38,10 @@ void SavePasswordInfoBarDelegate::Create(
       password_bubble_experiment::IsSmartLockUser(sync_service);
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
-  infobar_service->AddInfoBar(
-      std::make_unique<SavePasswordInfoBar>(base::WrapUnique(
-          new SavePasswordInfoBarDelegate(web_contents, std::move(form_to_save),
-                                          is_smartlock_branding_enabled))));
+  infobar_service->AddInfoBar(std::make_unique<SavePasswordInfoBar>(
+      base::WrapUnique(new SavePasswordInfoBarDelegate(
+          web_contents, std::move(form_to_save), is_smartlock_branding_enabled,
+          std::move(saving_flow_recorder)))));
 }
 
 SavePasswordInfoBarDelegate::~SavePasswordInfoBarDelegate() {
@@ -47,15 +49,19 @@ SavePasswordInfoBarDelegate::~SavePasswordInfoBarDelegate() {
   if (auto* recorder = form_to_save_->GetMetricsRecorder()) {
     recorder->RecordUIDismissalReason(infobar_response_);
   }
+  saving_flow_recorder_->SetFlowResult(infobar_response_);
 }
 
 SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
     content::WebContents* web_contents,
     std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
-    bool is_smartlock_branding_enabled)
+    bool is_smartlock_branding_enabled,
+    std::unique_ptr<password_manager::SavingFlowMetricsRecorder>
+        saving_flow_recorder)
     : PasswordManagerInfoBarDelegate(),
       form_to_save_(std::move(form_to_save)),
-      infobar_response_(password_manager::metrics_util::NO_DIRECT_INTERACTION) {
+      infobar_response_(password_manager::metrics_util::NO_DIRECT_INTERACTION),
+      saving_flow_recorder_(std::move(saving_flow_recorder)) {
   base::string16 message;
   PasswordTitleType type =
       form_to_save_->GetPendingCredentials().federation_origin.opaque()

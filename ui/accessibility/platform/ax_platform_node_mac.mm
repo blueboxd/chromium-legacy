@@ -121,6 +121,7 @@ RoleMap BuildRoleMap() {
       {ax::mojom::Role::kFigcaption, NSAccessibilityGroupRole},
       {ax::mojom::Role::kFigure, NSAccessibilityGroupRole},
       {ax::mojom::Role::kFooter, NSAccessibilityGroupRole},
+      {ax::mojom::Role::kFooterAsNonLandmark, NSAccessibilityGroupRole},
       {ax::mojom::Role::kForm, NSAccessibilityGroupRole},
       {ax::mojom::Role::kGenericContainer, NSAccessibilityGroupRole},
       {ax::mojom::Role::kGraphicsDocument, NSAccessibilityGroupRole},
@@ -130,6 +131,8 @@ RoleMap BuildRoleMap() {
       // a list as of 10.12.6, so following WebKit and using table role:
       {ax::mojom::Role::kGrid, NSAccessibilityTableRole},  // crbug.com/753925
       {ax::mojom::Role::kGroup, NSAccessibilityGroupRole},
+      {ax::mojom::Role::kHeader, NSAccessibilityGroupRole},
+      {ax::mojom::Role::kHeaderAsNonLandmark, NSAccessibilityGroupRole},
       {ax::mojom::Role::kHeading, @"AXHeading"},
       {ax::mojom::Role::kIframe, NSAccessibilityGroupRole},
       {ax::mojom::Role::kIframePresentational, NSAccessibilityGroupRole},
@@ -238,6 +241,7 @@ RoleMap BuildSubroleMap() {
       {ax::mojom::Role::kFooter, @"AXLandmarkContentInfo"},
       {ax::mojom::Role::kForm, @"AXLandmarkForm"},
       {ax::mojom::Role::kGraphicsDocument, @"AXDocument"},
+      {ax::mojom::Role::kHeader, @"AXLandmarkBanner"},
       {ax::mojom::Role::kLog, @"AXApplicationLog"},
       {ax::mojom::Role::kMain, @"AXLandmarkMain"},
       {ax::mojom::Role::kMarquee, @"AXApplicationMarquee"},

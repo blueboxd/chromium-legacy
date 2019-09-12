@@ -42,9 +42,9 @@ class UpdateScreenUnitTest : public testing::Test {
       const std::unique_ptr<UpdateScreen>& update_screen,
       bool available,
       bool critical) {
-    UpdateEngineClient::Status update_engine_status;
-    update_engine_status.status =
-        UpdateEngineClient::UPDATE_STATUS_CHECKING_FOR_UPDATE;
+    update_engine::StatusResult update_engine_status;
+    update_engine_status.set_current_operation(
+        update_engine::Operation::CHECKING_FOR_UPDATE);
     fake_update_engine_client_->NotifyObserversThatStatusChanged(
         update_engine_status);
 
@@ -53,9 +53,9 @@ class UpdateScreenUnitTest : public testing::Test {
                                 "critical if one is not even available.";
       update_screen->set_ignore_update_deadlines_for_testing(true);
     }
-    update_engine_status.status =
-        available ? UpdateEngineClient::UPDATE_STATUS_UPDATE_AVAILABLE
-                  : UpdateEngineClient::UPDATE_STATUS_IDLE;
+    update_engine_status.set_current_operation(
+        available ? update_engine::Operation::UPDATE_AVAILABLE
+                  : update_engine::Operation::IDLE);
 
     fake_update_engine_client_->NotifyObserversThatStatusChanged(
         update_engine_status);
@@ -182,9 +182,9 @@ TEST_F(UpdateScreenUnitTest, HandleCriticalUpdateError) {
 
   EXPECT_FALSE(last_screen_result_.has_value());
 
-  UpdateEngineClient::Status update_engine_status;
-  update_engine_status.status =
-      UpdateEngineClient::UPDATE_STATUS_REPORTING_ERROR_EVENT;
+  update_engine::StatusResult update_engine_status;
+  update_engine_status.set_current_operation(
+      update_engine::Operation::REPORTING_ERROR_EVENT);
   fake_update_engine_client_->NotifyObserversThatStatusChanged(
       update_engine_status);
 

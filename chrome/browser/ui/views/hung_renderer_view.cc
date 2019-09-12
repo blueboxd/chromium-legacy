@@ -31,9 +31,7 @@
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/result_codes.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -65,7 +63,7 @@ HungRendererDialogView* HungRendererDialogView::g_instance_ = nullptr;
 // HungPagesTableModel, public:
 
 HungPagesTableModel::HungPagesTableModel(Delegate* delegate)
-    : delegate_(delegate), process_observer_(this), widget_observer_(this) {}
+    : delegate_(delegate) {}
 
 HungPagesTableModel::~HungPagesTableModel() {}
 

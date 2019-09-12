@@ -25,6 +25,7 @@
 #include "ui/base/class_property.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -98,6 +99,13 @@ class DesktopNativeWidgetTopLevelHandler : public aura::WindowObserver {
     init_params.type = full_screen ? Widget::InitParams::TYPE_WINDOW
                                    : is_menu ? Widget::InitParams::TYPE_MENU
                                              : Widget::InitParams::TYPE_POPUP;
+#if defined(OS_WIN)
+    // For menus, on Windows versions that support drop shadow remove
+    // the standard frame in order to keep just the shadow.
+    if (features::IsFormControlsRefreshEnabled() &&
+        init_params.type == Widget::InitParams::TYPE_MENU)
+      init_params.remove_standard_frame = true;
+#endif
     init_params.bounds = bounds;
     init_params.ownership = Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET;
     init_params.layer_type = ui::LAYER_NOT_DRAWN;

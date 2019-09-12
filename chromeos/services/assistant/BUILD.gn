@@ -163,6 +163,7 @@ source_set("tests") {
 
   if (enable_cros_libassistant) {
     sources += [
+      "platform/audio_input_impl_unittest.cc",
       "platform/audio_output_provider_impl_unittest.cc",
       "platform/network_provider_impl_unittest.cc",
       "platform/power_manager_provider_impl_unittest.cc",
@@ -173,6 +174,7 @@ source_set("tests") {
       "//chromeos/dbus",
       "//chromeos/services/network_config/public/mojom",
       "//libassistant/shared/public",
+      "//services/audio/public/cpp:test_support",
       "//services/device/public/cpp:test_support",
     ]
   }

@@ -54,17 +54,17 @@ void FakeUpdateEngineClient::RebootAfterUpdate() {
   reboot_after_update_call_count_++;
 }
 
-UpdateEngineClient::Status FakeUpdateEngineClient::GetLastStatus() {
+update_engine::StatusResult FakeUpdateEngineClient::GetLastStatus() {
   if (status_queue_.empty())
     return default_status_;
 
-  UpdateEngineClient::Status last_status = status_queue_.front();
+  update_engine::StatusResult last_status = status_queue_.front();
   status_queue_.pop();
   return last_status;
 }
 
 void FakeUpdateEngineClient::NotifyObserversThatStatusChanged(
-    const UpdateEngineClient::Status& status) {
+    const update_engine::StatusResult& status) {
   for (auto& observer : observers_)
     observer.UpdateStatusChanged(status);
 }
@@ -107,7 +107,7 @@ void FakeUpdateEngineClient::SetUpdateOverCellularOneTimePermission(
 }
 
 void FakeUpdateEngineClient::set_default_status(
-    const UpdateEngineClient::Status& status) {
+    const update_engine::StatusResult& status) {
   default_status_ = status;
 }
 

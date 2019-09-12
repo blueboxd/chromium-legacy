@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
+#include "third_party/blink/public/mojom/feature_policy/policy_value.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_info.h"

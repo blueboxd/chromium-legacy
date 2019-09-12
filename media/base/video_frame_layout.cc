@@ -43,7 +43,6 @@ std::vector<VideoFrameLayout::Plane> PlanesFromStrides(
 // static
 size_t VideoFrameLayout::NumPlanes(VideoPixelFormat format) {
   switch (format) {
-    case PIXEL_FORMAT_UYVY:
     case PIXEL_FORMAT_YUY2:
     case PIXEL_FORMAT_ARGB:
     case PIXEL_FORMAT_XRGB:

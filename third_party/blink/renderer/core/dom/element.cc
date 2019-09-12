@@ -2737,14 +2737,32 @@ void Element::RecalcStyle(const StyleRecalcChange change) {
   // display locking can happen..
   display_lock_style_scope.DidUpdateSelfStyle();
 
+  if (!display_lock_style_scope.ShouldUpdateChildStyle()) {
+    if (child_change.RecalcChildren()) {
+      // If we should've calculated the style for children but was blocked,
+      // notify so that we'd come back.
+      // Note that the if-clause wouldn't catch cases where
+      // ChildNeedsStyleRecalc() is true but child_change.RecalcChildren() is
+      // false. Since we are retaining the child dirty bit, that case is
+      // automatically handled without needing to notify it here.
+      display_lock_style_scope.NotifyUpdateWasBlocked(
+          DisplayLockContext::kStyleUpdateDescendants);
+
+    } else if (child_change.TraversePseudoElements(*this)) {
+      display_lock_style_scope.NotifyUpdateWasBlocked(
+          DisplayLockContext::kStyleUpdatePseudoElements);
+    }
+    if (HasCustomStyleCallbacks())
+      DidRecalcStyle(child_change);
+    return;
+  }
+
   if (child_change.TraversePseudoElements(*this)) {
     UpdatePseudoElement(kPseudoIdBackdrop, child_change);
     UpdatePseudoElement(kPseudoIdBefore, child_change);
   }
 
-  const bool should_update_child_style =
-      display_lock_style_scope.ShouldUpdateChildStyle();
-  if (child_change.TraverseChildren(*this) && should_update_child_style) {
+  if (child_change.TraverseChildren(*this)) {
     SelectorFilterParentScope filter_scope(*this);
     if (ShadowRoot* root = GetShadowRoot()) {
       if (child_change.TraverseChild(*root))
@@ -2765,20 +2783,9 @@ void Element::RecalcStyle(const StyleRecalcChange change) {
       UpdateFirstLetterPseudoElement(StyleUpdatePhase::kRecalc);
   }
 
-  if (should_update_child_style) {
     ClearChildNeedsStyleRecalc();
     // We've updated all the children that needs an update (might be 0).
     display_lock_style_scope.DidUpdateChildStyle();
-  } else if (child_change.RecalcChildren()) {
-    // If we should've calculated the style for children but was blocked,
-    // notify so that we'd come back.
-    // Note that the if-clause wouldn't catch cases where
-    // ChildNeedsStyleRecalc() is true but child_change.RecalcChildren() is
-    // false. Since we are retaining the child dirty bit, that case is
-    // automatically handled without needing to notify it here.
-    display_lock_style_scope.NotifyUpdateWasBlocked(
-        DisplayLockContext::kStyleUpdateDescendants);
-  }
 
   if (HasCustomStyleCallbacks())
     DidRecalcStyle(child_change);

@@ -71,6 +71,8 @@ class AdvancedProtectionStatusManager
                            AdvancedProtectionDisabledAfterSignin);
   FRIEND_TEST_ALL_PREFIXES(AdvancedProtectionStatusManagerTest,
                            StartupAfterLongWaitRefreshesImmediately);
+  FRIEND_TEST_ALL_PREFIXES(AdvancedProtectionStatusManagerTest,
+                           TracksUnconsentedPrimaryAccount);
 
   void Initialize();
 
@@ -85,8 +87,8 @@ class AdvancedProtectionStatusManager
   void UnsubscribeFromSigninEvents();
 
   // IdentityManager::Observer implementations.
-  void OnPrimaryAccountSet(const CoreAccountInfo& account_info) override;
-  void OnPrimaryAccountCleared(const CoreAccountInfo& account_info) override;
+  void OnUnconsentedPrimaryAccountChanged(
+      const CoreAccountInfo& account_info) override;
   void OnExtendedAccountInfoUpdated(const AccountInfo& info) override;
   void OnExtendedAccountInfoRemoved(const AccountInfo& info) override;
 
@@ -110,7 +112,7 @@ class AdvancedProtectionStatusManager
   // Sets |last_refresh_| to now and persists it.
   void UpdateLastRefreshTime();
 
-  bool IsPrimaryAccount(const CoreAccountInfo& account_info);
+  bool IsUnconsentedPrimaryAccount(const CoreAccountInfo& account_info);
 
   // Decodes |id_token| to get advanced protection status.
   void OnGetIDToken(const std::string& account_id, const std::string& id_token);
@@ -118,9 +120,9 @@ class AdvancedProtectionStatusManager
   // Only called in tests.
   void SetMinimumRefreshDelay(const base::TimeDelta& delay);
 
-  // Gets the account ID of the primary account of |profile_|.
+  // Gets the account ID of the unconsented primary account of |profile_|.
   // Returns an empty string if user is not signed in.
-  std::string GetPrimaryAccountId() const;
+  std::string GetUnconsentedPrimaryAccountId() const;
 
   // Only called in tests to set a customized minimum delay.
   AdvancedProtectionStatusManager(PrefService* pref_service,

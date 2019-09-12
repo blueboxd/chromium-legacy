@@ -674,7 +674,8 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
         // button.
         CHECK(value);
         self.syncSetupService->PrepareForFirstSyncSetup();
-        self.syncSetupService->SetFirstSetupComplete();
+        self.syncSetupService->SetFirstSetupComplete(
+            syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
       }
       break;
     case IdentityItemType:

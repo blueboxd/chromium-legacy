@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL The second autofocus element wins if the first autofocus element was disconnected and reconnected before flushing the autofocus candidates. assert_equals: expected Element node <input autofocus="" id="i2"></input> but got Element node <input autofocus="" id="i1"></input>
-Harness: the test ran to completion.
-

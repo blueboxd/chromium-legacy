@@ -11,7 +11,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "content/public/browser/system_connector.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_filter.h"
@@ -36,9 +35,9 @@ void BatteryMetrics::StartRecording() {
 
   // Don't create a long lived BatteryMonitor on windows. crbug.com/794105.
 #if !defined(OS_WIN)
-  content::GetSystemConnector()->BindInterface(
+  content::GetSystemConnector()->Connect(
       service_manager::ServiceFilter::ByName(device::mojom::kServiceName),
-      mojo::MakeRequest(&battery_monitor_));
+      battery_monitor_.BindNewPipeAndPassReceiver());
   QueryNextStatus();
 #endif  // !defined(OS_WIN)
 }

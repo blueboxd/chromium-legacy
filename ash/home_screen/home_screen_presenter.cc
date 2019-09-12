@@ -8,11 +8,13 @@
 
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/home_screen/home_screen_delegate.h"
+#include "ash/wm/window_util.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
+#include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animator.h"
@@ -93,6 +95,20 @@ void HomeScreenPresenter::ScheduleOverviewModeAnimation(bool start,
         base::NullCallback());
 
     overview_animation_metrics_reporter_->Start(start);
+  }
+
+  // Hide all transient child windows in the app list (e.g. uninstall dialog)
+  // before starting the overview mode transition, and restore them when
+  // reshowing the app list.
+  aura::Window* app_list_window =
+      controller_->delegate()->GetHomeScreenWindow();
+  if (app_list_window) {
+    for (auto* child : wm::GetTransientChildren(app_list_window)) {
+      if (start)
+        child->Hide();
+      else
+        child->Show();
+    }
   }
 
   controller_->delegate()->UpdateYPositionAndOpacityForHomeLauncher(

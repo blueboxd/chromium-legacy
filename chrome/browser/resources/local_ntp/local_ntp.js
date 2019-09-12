@@ -41,6 +41,12 @@ const ACMatchClassificationStyle = {
   DIM: 1 << 2,
 };
 
+/** @enum {number} */
+const AutocompleteResultStatus = {
+  SUCCESS: 0,
+  SKIPPED: 1,
+};
+
 /** @typedef {{inline: string, text: string}} */
 let RealboxOutput;
 
@@ -1025,11 +1031,16 @@ function onMostVisitedChange() {
   reloadTiles();
 }
 
-/** @param {!Array<!AutocompleteMatch>} matches */
-function onQueryAutocompleteDone(matches) {
+/** @param {!AutocompleteResult} result */
+function onQueryAutocompleteDone(result) {
+  if (result.status === AutocompleteResultStatus.SKIPPED ||
+      result.input !== lastOutput.text) {
+    return;  // Stale or skipped result; ignore.
+  }
+
   const realboxMatchesEl = document.createElement('div');
 
-  for (const [i, match] of matches.entries()) {
+  for (const [i, match] of result.matches.entries()) {
     const matchEl = document.createElement('a');
     matchEl.href = match.destinationUrl;
 
@@ -1068,10 +1079,11 @@ function onQueryAutocompleteDone(matches) {
 
     realboxMatchesEl.append(matchEl);
   }
-  // TODO(crbug.com/996516): this should probably not select the first match by
-  // default in the case of zero-suggest. One easy (but possibly imperfect) way
-  // would be to check if ($(IDS.REALBOX).value) {...}.
-  realboxMatchesEl.firstElementChild.classList.add(CLASSES.SELECTED);
+
+  const hasMatches = result.matches.length > 0;
+  if (hasMatches) {
+    realboxMatchesEl.firstElementChild.classList.add(CLASSES.SELECTED);
+  }
 
   $(IDS.REALBOX_MATCHES).remove();
   realboxMatchesEl.id = IDS.REALBOX_MATCHES;
@@ -1079,7 +1091,6 @@ function onQueryAutocompleteDone(matches) {
   const realboxWrapper = $(IDS.REALBOX_INPUT_WRAPPER);
   realboxWrapper.appendChild(realboxMatchesEl);
 
-  const hasMatches = matches.length > 0;
   realboxWrapper.classList.toggle(CLASSES.SHOW_MATCHES, hasMatches);
 
   if (hasMatches) {
@@ -1088,14 +1099,14 @@ function onQueryAutocompleteDone(matches) {
     // If the user is deleting content, don't quickly re-suggest the same
     // output.
     if (!isDeleting) {
-      const first = matches[0];
+      const first = result.matches[0];
       if (first.allowedToBeDefaultMatch && first.inlineAutocompletion) {
         updateRealboxOutput({inline: first.inlineAutocompletion});
       }
     }
   }
 
-  autocompleteMatches = matches;
+  autocompleteMatches = result.matches;
 }
 
 /** @param {!Event} e */

@@ -42,6 +42,7 @@ class TabModalConfirmDialogViews : public TabModalConfirmDialog,
   bool Cancel() override;
   bool Accept() override;
   bool Close() override;
+  bool ShouldShowCloseButton() const override;
 
   // views::WidgetDelegate:
   views::View* GetContentsView() override;

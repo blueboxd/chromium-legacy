@@ -133,8 +133,10 @@ void MediaRemoter::Start() {
 void MediaRemoter::StartDataStreams(
     mojo::ScopedDataPipeConsumerHandle audio_pipe,
     mojo::ScopedDataPipeConsumerHandle video_pipe,
-    media::mojom::RemotingDataStreamSenderRequest audio_sender_request,
-    media::mojom::RemotingDataStreamSenderRequest video_sender_request) {
+    mojo::PendingReceiver<media::mojom::RemotingDataStreamSender>
+        audio_sender_receiver,
+    mojo::PendingReceiver<media::mojom::RemotingDataStreamSender>
+        video_sender_receiver) {
   if (state_ != REMOTING_STARTED)
     return;  // Stop() was called before.
   DCHECK(cast_environment_);
@@ -143,7 +145,7 @@ void MediaRemoter::StartDataStreams(
       audio_config_.codec == Codec::CODEC_AUDIO_REMOTE) {
     audio_sender_ = std::make_unique<RemotingSender>(
         cast_environment_, transport_, audio_config_, std::move(audio_pipe),
-        std::move(audio_sender_request),
+        std::move(audio_sender_receiver),
         base::BindOnce(&MediaRemoter::OnRemotingDataStreamError,
                        base::Unretained(this)));
   }
@@ -151,7 +153,7 @@ void MediaRemoter::StartDataStreams(
       video_config_.codec == Codec::CODEC_VIDEO_REMOTE) {
     video_sender_ = std::make_unique<RemotingSender>(
         cast_environment_, transport_, video_config_, std::move(video_pipe),
-        std::move(video_sender_request),
+        std::move(video_sender_receiver),
         base::BindOnce(&MediaRemoter::OnRemotingDataStreamError,
                        base::Unretained(this)));
   }

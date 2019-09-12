@@ -1,18 +1,20 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "ui/accessibility/ax_language_detection.h"
-#include "base/command_line.h"
-#include "ui/accessibility/accessibility_switches.h"
-#include "ui/accessibility/ax_node.h"
-#include "ui/accessibility/ax_tree.h"
 
 #include <stddef.h>
 #include <stdint.h>
 
 #include <memory>
 
+#include "base/command_line.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/accessibility_switches.h"
+#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_node.h"
+#include "ui/accessibility/ax_tree.h"
 
 namespace ui {
 

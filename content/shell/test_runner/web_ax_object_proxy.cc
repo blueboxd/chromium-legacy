@@ -185,6 +185,8 @@ std::string RoleToString(ax::mojom::Role role) {
       return result.append("Figure");
     case ax::mojom::Role::kFooter:
       return result.append("Footer");
+    case ax::mojom::Role::kFooterAsNonLandmark:
+      return result.append("FooterAsNonLandmark");
     case ax::mojom::Role::kForm:
       return result.append("Form");
     case ax::mojom::Role::kGenericContainer:
@@ -199,6 +201,10 @@ std::string RoleToString(ax::mojom::Role role) {
       return result.append("Grid");
     case ax::mojom::Role::kGroup:
       return result.append("Group");
+    case ax::mojom::Role::kHeader:
+      return result.append("Header");
+    case ax::mojom::Role::kHeaderAsNonLandmark:
+      return result.append("HeaderAsNonLandmark");
     case ax::mojom::Role::kHeading:
       return result.append("Heading");
     case ax::mojom::Role::kIgnored:

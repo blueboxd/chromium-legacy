@@ -114,7 +114,7 @@ void CookieControlsController::AddObserver(CookieControlsView* obs) {
   observers_.AddObserver(obs);
 }
 
-void CookieControlsController::RemoveObserver(const CookieControlsView* obs) {
+void CookieControlsController::RemoveObserver(CookieControlsView* obs) {
   observers_.RemoveObserver(obs);
 }
 

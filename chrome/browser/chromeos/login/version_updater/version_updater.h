@@ -45,7 +45,7 @@ class VersionUpdater : public UpdateEngineClient::Observer,
   struct UpdateInfo {
     UpdateInfo();
 
-    UpdateEngineClient::Status status = UpdateEngineClient::Status();
+    update_engine::StatusResult status;
 
     // Estimated time left, in seconds.
     int estimated_time_left_in_secs = 0;
@@ -114,17 +114,17 @@ class VersionUpdater : public UpdateEngineClient::Observer,
   }
 
   base::OneShotTimer* GetRebootTimerForTesting();
-  void UpdateStatusChangedForTesting(const UpdateEngineClient::Status& status);
+  void UpdateStatusChangedForTesting(const update_engine::StatusResult& status);
 
  private:
   void RequestUpdateCheck();
 
   // UpdateEngineClient::Observer implementation:
-  void UpdateStatusChanged(const UpdateEngineClient::Status& status) override;
+  void UpdateStatusChanged(const update_engine::StatusResult& status) override;
 
   // Updates downloading stats (remaining time and downloading
   // progress), which are stored in update_info_.
-  void UpdateDownloadingStats(const UpdateEngineClient::Status& status);
+  void UpdateDownloadingStats(const update_engine::StatusResult& status);
 
   // NetworkPortalDetector::Observer implementation:
   void OnPortalDetectionCompleted(

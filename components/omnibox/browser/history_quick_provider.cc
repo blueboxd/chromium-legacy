@@ -229,14 +229,6 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
                                    &inline_autocomplete_offset),
           client()->GetSchemeClassifier(), &inline_autocomplete_offset);
 
-  // Set |inline_autocompletion| and |allowed_to_be_default_match| if possible.
-  if (inline_autocomplete_offset != base::string16::npos) {
-    match.inline_autocompletion =
-        match.fill_into_edit.substr(inline_autocomplete_offset);
-    match.allowed_to_be_default_match =
-        AutocompleteMatch::AllowedToBeDefault(autocomplete_input_, match);
-  }
-
   // HistoryQuick classification diverges from relevance scoring. Specifically,
   // 1) All occurrences of the input contribute to relevance; e.g. for the input
   // 'pre', the suggestion 'pre prefix' will be scored higher than 'pre suffix'.
@@ -275,6 +267,17 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
   match.description_class = ClassifyTermMatches(
       description_terms, match.description.size(), ACMatchClassification::MATCH,
       ACMatchClassification::NONE);
+
+  // Set |inline_autocompletion| and |allowed_to_be_default_match| if possible.
+  if (inline_autocomplete_offset != base::string16::npos) {
+    match.inline_autocompletion =
+        match.fill_into_edit.substr(inline_autocomplete_offset);
+    match.allowed_to_be_default_match =
+        AutocompleteMatch::AllowedToBeDefault(autocomplete_input_, match);
+  } else {
+    auto title = match.description + base::UTF8ToUTF16(" - ") + match.contents;
+    match.TryAutocompleteWithTitle(title, autocomplete_input_);
+  }
 
   match.RecordAdditionalInfo("typed count", info.typed_count());
   match.RecordAdditionalInfo("visit count", info.visit_count());

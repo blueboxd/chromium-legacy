@@ -505,6 +505,7 @@ class PortalHitTestBrowserTest : public PortalBrowserTest,
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PortalBrowserTest::SetUpCommandLine(command_line);
+    IsolateAllSitesForTesting(command_line);
     const bool use_viz_hit_test_surface_layer = GetParam();
     if (use_viz_hit_test_surface_layer) {
       feature_list_.InitAndEnableFeature(
@@ -600,6 +601,91 @@ IN_PROC_BROWSER_TEST_P(PortalHitTestBrowserTest, DispatchInputEvent) {
   // Check that the click event was only received by the main frame.
   EXPECT_EQ(true, EvalJs(main_frame, "clicked"));
   EXPECT_EQ(false, EvalJs(portal_frame, "clicked"));
+}
+
+// Tests that input events performed over on OOPIF inside a portal are targeted
+// to the portal's parent.
+IN_PROC_BROWSER_TEST_P(PortalHitTestBrowserTest, NoInputToOOPIFInPortal) {
+  if (features::IsVizHitTestingSurfaceLayerEnabled()) {
+    // TODO(1002228): Enable this test for the VizHitTestSurfaceLayer case once
+    // this issue is fixed.
+    LOG(WARNING) << "Skipping test due to crbug.com/1002228";
+    return;
+  }
+
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
+
+  // Create portal and wait for navigation.
+  // In the case of crbug.com/1002228 , this does not appear to reproduce if the
+  // portal element is too small, so we give it an explicit size.
+  Portal* portal = nullptr;
+  PortalCreatedObserver portal_created_observer(main_frame);
+  GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(ExecJs(main_frame,
+                     JsReplace("var portal = document.createElement('portal');"
+                               "portal.src = $1;"
+                               "portal.style.width = '500px';"
+                               "portal.style.height = '500px';"
+                               "portal.style.border = 'solid';"
+                               "document.body.appendChild(portal);",
+                               a_url)));
+  portal = portal_created_observer.WaitUntilPortalCreated();
+  WebContentsImpl* portal_contents = portal->GetPortalContents();
+  RenderFrameHostImpl* portal_frame = portal_contents->GetMainFrame();
+  TestNavigationObserver navigation_observer(portal_contents);
+  navigation_observer.Wait();
+  WaitForHitTestData(portal_frame);
+
+  // Add an out-of-process iframe to the portal.
+  GURL b_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  TestNavigationObserver iframe_navigation_observer(portal_contents);
+  EXPECT_TRUE(ExecJs(portal_frame,
+                     JsReplace("var iframe = document.createElement('iframe');"
+                               "iframe.src = $1;"
+                               "document.body.appendChild(iframe);",
+                               b_url)));
+  iframe_navigation_observer.Wait();
+  EXPECT_EQ(b_url, iframe_navigation_observer.last_navigation_url());
+  RenderFrameHostImpl* portal_iframe =
+      portal_frame->child_at(0)->current_frame_host();
+  EXPECT_TRUE(static_cast<RenderWidgetHostViewBase*>(portal_iframe->GetView())
+                  ->IsRenderWidgetHostViewChildFrame());
+  RenderWidgetHostViewChildFrame* oopif_view =
+      static_cast<RenderWidgetHostViewChildFrame*>(portal_iframe->GetView());
+  EXPECT_NE(portal_frame->GetSiteInstance(), portal_iframe->GetSiteInstance());
+  WaitForHitTestData(portal_iframe);
+
+  FailOnInputEvent no_input_to_portal_frame(
+      portal_frame->GetRenderWidgetHost());
+  FailOnInputEvent no_input_to_oopif(portal_iframe->GetRenderWidgetHost());
+  EXPECT_TRUE(ExecJs(main_frame,
+                     "var clicked = false;"
+                     "portal.onmousedown = _ => clicked = true;"));
+  EXPECT_TRUE(ExecJs(portal_frame,
+                     "var clicked = false;"
+                     "document.body.onmousedown = _ => clicked = true;"));
+  EXPECT_TRUE(ExecJs(portal_iframe,
+                     "var clicked = false;"
+                     "document.body.onmousedown = _ => clicked = true;"));
+
+  // Route the mouse event.
+  gfx::Point root_location =
+      oopif_view->TransformPointToRootCoordSpace(gfx::Point(5, 5));
+  InputEventAckWaiter waiter(main_frame->GetRenderWidgetHost(),
+                             blink::WebInputEvent::kMouseDown);
+  SimulateRoutedMouseEvent(web_contents_impl, blink::WebInputEvent::kMouseDown,
+                           blink::WebPointerProperties::Button::kLeft,
+                           root_location);
+  waiter.Wait();
+
+  // Check that the click event was only received by the main frame.
+  EXPECT_EQ(true, EvalJs(main_frame, "clicked"));
+  EXPECT_EQ(false, EvalJs(portal_frame, "clicked"));
+  EXPECT_EQ(false, EvalJs(portal_iframe, "clicked"));
 }
 
 // Tests that async hit testing does not target portals.

@@ -48,7 +48,7 @@ class CookieControlsController {
   int GetBlockedDomainCount();
 
   void AddObserver(CookieControlsView* obs);
-  void RemoveObserver(const CookieControlsView* obs);
+  void RemoveObserver(CookieControlsView* obs);
 
  private:
   // The observed WebContents changes during the lifetime of the

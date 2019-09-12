@@ -311,7 +311,8 @@ void SyncInternalsMessageHandler::HandleRequestStart(
   // If the service was previously stopped via StopAndClear(), then the
   // "first-setup-complete" bit was also cleared, and now the service wouldn't
   // fully start up. So set that too.
-  service->GetUserSettings()->SetFirstSetupComplete();
+  service->GetUserSettings()->SetFirstSetupComplete(
+      syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
 }
 
 void SyncInternalsMessageHandler::HandleRequestStopKeepData(

@@ -771,11 +771,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "drag-to-pin-tabs",
-    "owners": ["chrome-desktop-ui-seattle@google.com", "cyan", "tbergquist"],
-    "expiry_milestone": 82
-  },
-  {
     "name": "draw-vertically-edge-to-edge",
     "owners": [ "chrome-android-app@chromium.org" ],
     "expiry_milestone": 88
@@ -1393,11 +1388,6 @@
   {
     "name": "enable-media-session-service",
     "owners": [ "beccahughes", "media-dev" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable_messages_web_push",
-    "owners": [ "azeemarshad", "jlklein", "khorimoto" ],
     "expiry_milestone": 76
   },
   {
@@ -2539,6 +2529,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "omnibox-autocomplete-titles",
+    "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "omnibox-disable-instant-extended-limit",
     "owners": [ "pnoland", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 80
@@ -2938,13 +2933,8 @@
     "expiry_milestone": 80
   },
   {
-    "name": "shelf-dense-clamshell",
-    "owners": [ "manucornet", "mmourgos" ],
-    "expiry_milestone": 82
-  },
-  {
     "name": "shelf-hotseat",
-    "owners": [ "manucornet", "newcomer" ],
+    "owners": [ "manucornet", "mmourgos", "newcomer" ],
     "expiry_milestone": 82
   },
   {

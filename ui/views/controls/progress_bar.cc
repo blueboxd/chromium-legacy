@@ -14,6 +14,7 @@
 #include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/canvas.h"

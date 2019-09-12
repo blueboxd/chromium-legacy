@@ -14,9 +14,14 @@ package sync_pb;
 // WebApp data. This should be a subset of WebAppProto in
 // chrome/browser/web_applications/proto/web_app.proto
 message WebAppSpecifics {
-  // app_id is the client tag for sync system.
-  optional string app_id = 1;
-  optional string launch_url = 2;
-  optional string name = 3;
+  // Keep in sync with WebAppProto::LaunchContainer.
+  enum LaunchContainer {
+    TAB = 1;
+    WINDOW = 2;
+  }
+
+  optional string launch_url = 1;
+  optional string name = 2;
+  optional LaunchContainer launch_container = 3;
   optional uint32 theme_color = 4;
 }

@@ -65,31 +65,32 @@ RenderWidgetHelper* RenderWidgetHelper::FromProcessHostID(
   return (ci == g_widget_helpers.Get().end())? NULL : ci->second;
 }
 
-void RenderWidgetHelper::CreateNewWidget(int opener_id,
-                                         mojom::WidgetPtr widget,
-                                         int* route_id) {
+void RenderWidgetHelper::CreateNewWidget(
+    int opener_id,
+    mojo::PendingRemote<mojom::Widget> widget,
+    int* route_id) {
   *route_id = GetNextRoutingID();
 
   base::PostTask(FROM_HERE, {BrowserThread::UI},
                  base::BindOnce(&RenderWidgetHelper::OnCreateWidgetOnUI, this,
-                                opener_id, *route_id, widget.PassInterface()));
+                                opener_id, *route_id, std::move(widget)));
 }
 
-void RenderWidgetHelper::CreateNewFullscreenWidget(int opener_id,
-                                                   mojom::WidgetPtr widget,
-                                                   int* route_id) {
+void RenderWidgetHelper::CreateNewFullscreenWidget(
+    int opener_id,
+    mojo::PendingRemote<mojom::Widget> widget,
+    int* route_id) {
   *route_id = GetNextRoutingID();
   base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&RenderWidgetHelper::OnCreateFullscreenWidgetOnUI, this,
-                     opener_id, *route_id, widget.PassInterface()));
+                     opener_id, *route_id, std::move(widget)));
 }
 
-void RenderWidgetHelper::OnCreateWidgetOnUI(int32_t opener_id,
-                                            int32_t route_id,
-                                            mojom::WidgetPtrInfo widget_info) {
-  mojom::WidgetPtr widget;
-  widget.Bind(std::move(widget_info));
+void RenderWidgetHelper::OnCreateWidgetOnUI(
+    int32_t opener_id,
+    int32_t route_id,
+    mojo::PendingRemote<mojom::Widget> widget) {
   RenderViewHostImpl* host = RenderViewHostImpl::FromID(
       render_process_id_, opener_id);
   if (host)
@@ -99,9 +100,7 @@ void RenderWidgetHelper::OnCreateWidgetOnUI(int32_t opener_id,
 void RenderWidgetHelper::OnCreateFullscreenWidgetOnUI(
     int32_t opener_id,
     int32_t route_id,
-    mojom::WidgetPtrInfo widget_info) {
-  mojom::WidgetPtr widget;
-  widget.Bind(std::move(widget_info));
+    mojo::PendingRemote<mojom::Widget> widget) {
   RenderViewHostImpl* host = RenderViewHostImpl::FromID(
       render_process_id_, opener_id);
   if (host)

@@ -149,7 +149,8 @@ PermissionDescriptorPtr ParsePermission(ScriptState* script_state,
     return CreatePermissionDescriptor(PermissionName::PERIODIC_BACKGROUND_SYNC);
   }
   if (name == "wake-lock") {
-    if (!RuntimeEnabledFeatures::WakeLockEnabled()) {
+    if (!RuntimeEnabledFeatures::WakeLockEnabled(
+            ExecutionContext::From(script_state))) {
       exception_state.ThrowTypeError("Wake Lock is not enabled.");
       return nullptr;
     }

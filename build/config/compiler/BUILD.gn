@@ -1527,10 +1527,19 @@ config("default_warnings") {
           # TODO(https://crbug.com/999886): Clean up, enable.
           "-Wno-final-dtor-non-final-class",
         ]
+
         cflags_c += [
           # TODO(https://crbug.com/995993): Clean up and enable.
           "-Wno-implicit-fallthrough",
         ]
+
+        if (llvm_force_head_revision) {
+          cflags += [
+            # TODO(https://crbug.com/1002945): Evaluate and possibly enable.
+            "-Wno-error=sizeof-array-div",
+          ]
+        }
+
       }
     }
   }
@@ -1924,7 +1933,7 @@ if (is_win) {
   }
 
   if (is_mac || is_ios) {
-    if (symbol_level == 2) {
+    if (symbol_level > 0) {
       # Mac dead code stripping requires symbols.
       common_optimize_on_ldflags += [ "-Wl,-dead_strip" ]
     }

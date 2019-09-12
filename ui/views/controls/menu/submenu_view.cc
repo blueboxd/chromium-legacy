@@ -8,6 +8,7 @@
 #include <numeric>
 
 #include "base/compiler_specific.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/compositor/paint_recorder.h"

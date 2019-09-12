@@ -2153,10 +2153,18 @@ enum class EnterTabSwitcherSnapshotResult {
   // It is however unnecessary for off-the-record BrowserState (as the code
   // is not invoked) and has undesired side-effect (cause all regular tabs
   // to reload, see http://crbug.com/821753 for details).
-
-  const BOOL disableWebUsageDuringRemoval =
+  BOOL disableWebUsageDuringRemoval =
       !browserState->IsOffTheRecord() &&
       IsRemoveDataMaskSet(removeMask, BrowsingDataRemoveMask::REMOVE_SITE_DATA);
+  BOOL showActivityIndicator = NO;
+
+  if (@available(iOS 13, *)) {
+    // TODO(crbug.com/632772): Visited links don't clearing doesn't require
+    // disabling web usage with iOS 13. Stop disabling web usage once iOS 12
+    // is not supported.
+    showActivityIndicator = disableWebUsageDuringRemoval;
+    disableWebUsageDuringRemoval = NO;
+  }
 
   ProceduralBlock removeBrowsingDataBlock = ^{
     if (disableWebUsageDuringRemoval) {
@@ -2165,6 +2173,10 @@ enum class EnterTabSwitcherSnapshotResult {
       DCHECK([NSThread isMainThread]);
       self.interfaceProvider.mainInterface.userInteractionEnabled = NO;
       self.interfaceProvider.incognitoInterface.userInteractionEnabled = NO;
+    } else if (showActivityIndicator) {
+      // Show activity overlay so users know that clear browsing data is in
+      // progress.
+      [self.mainBVC.dispatcher showActivityOverlay:YES];
     }
 
     BrowsingDataRemoverFactory::GetForBrowserState(browserState)
@@ -2172,6 +2184,16 @@ enum class EnterTabSwitcherSnapshotResult {
                    // Activates browsing and enables web views.
                    // Must be called only on the main thread.
                    DCHECK([NSThread isMainThread]);
+                   if (showActivityIndicator) {
+                     // User interaction still needs to be disabled as a way to
+                     // force reload all the web states and to reset NTPs.
+                     self.interfaceProvider.mainInterface
+                         .userInteractionEnabled = NO;
+                     self.interfaceProvider.incognitoInterface
+                         .userInteractionEnabled = NO;
+
+                     [self.mainBVC.dispatcher showActivityOverlay:NO];
+                   }
                    self.interfaceProvider.mainInterface.userInteractionEnabled =
                        YES;
                    self.interfaceProvider.incognitoInterface

@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "components/dbus/menu/menu.h"
 #include "components/history/core/browser/history_types.h"
+#include "components/history/core/browser/top_sites.h"
 #include "components/history/core/browser/top_sites_observer.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sessions/core/tab_restore_service.h"
@@ -26,10 +27,6 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/x/x11_types.h"
-
-namespace history {
-class TopSites;
-}
 
 namespace ui {
 class Accelerator;
@@ -160,7 +157,8 @@ class GlobalMenuBarX11 : public AvatarMenuObserver,
 
   std::unique_ptr<AvatarMenu> avatar_menu_;
 
-  ScopedObserver<history::TopSites, history::TopSitesObserver> scoped_observer_;
+  ScopedObserver<history::TopSites, history::TopSitesObserver> scoped_observer_{
+      this};
 
   // Maps from history item command ID to HistoryItem data.
   std::map<int, std::unique_ptr<HistoryItem>> history_items_;

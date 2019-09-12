@@ -37,7 +37,6 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/common/omnibox_features.h"
-#include "components/search_engines/template_url_service.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
@@ -200,9 +199,7 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
       saved_selection_for_focus_change_(gfx::Range::InvalidRange()),
       location_bar_view_(location_bar),
       latency_histogram_state_(NOT_ACTIVE),
-      friendly_suggestion_text_prefix_length_(0),
-      scoped_compositor_observer_(this),
-      scoped_template_url_service_observer_(this) {
+      friendly_suggestion_text_prefix_length_(0) {
   SetID(VIEW_ID_OMNIBOX);
   SetFontList(font_list);
 

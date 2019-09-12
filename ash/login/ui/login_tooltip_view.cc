@@ -5,6 +5,7 @@
 #include "ash/login/ui/login_tooltip_view.h"
 
 #include "ash/login/ui/views_utils.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 

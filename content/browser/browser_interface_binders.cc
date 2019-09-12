@@ -17,6 +17,7 @@
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom.h"
+#include "third_party/blink/public/mojom/locks/lock_manager.mojom.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 #include "third_party/blink/public/mojom/speech/speech_synthesis.mojom.h"
 #include "third_party/blink/public/mojom/webaudio/audio_context_manager.mojom.h"
@@ -47,6 +48,9 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
 
   map->Add<blink::mojom::ScreenEnumeration>(
       base::BindRepeating(&ScreenEnumerationImpl::Create));
+
+  map->Add<blink::mojom::LockManager>(base::BindRepeating(
+      &RenderFrameHostImpl::CreateLockManager, base::Unretained(host)));
 }
 
 void PopulateBinderMapWithContext(
@@ -86,6 +90,9 @@ void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
 void PopulateBinderMapWithContext(
     DedicatedWorkerHost* host,
     service_manager::BinderMapWithContext<const url::Origin&>* map) {
+  map->Add<blink::mojom::LockManager>(
+      base::BindRepeating(&RenderProcessHost::CreateLockManager,
+                          base::Unretained(host->GetProcessHost())));
 }
 
 void PopulateBinderMap(DedicatedWorkerHost* host,
@@ -115,6 +122,9 @@ void PopulateBinderMapWithContext(
   map->Add<blink::mojom::FileSystemManager>(
       base::BindRepeating(&RenderProcessHost::BindFileSystemManager,
                           base::Unretained(host->GetProcessHost())));
+  map->Add<blink::mojom::LockManager>(
+      base::BindRepeating(&RenderProcessHost::CreateLockManager,
+                          base::Unretained(host->GetProcessHost())));
 }
 
 void PopulateBinderMap(SharedWorkerHost* host,
@@ -134,6 +144,9 @@ void PopulateServiceWorkerBinders(ServiceWorkerProviderHost* host,
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   map->Add<blink::mojom::ScreenEnumeration>(
       base::BindRepeating(&ScreenEnumerationImpl::Create));
+
+  map->Add<blink::mojom::LockManager>(base::BindRepeating(
+      &ServiceWorkerProviderHost::CreateLockManager, base::Unretained(host)));
 }
 
 void PopulateBinderMapWithContext(

@@ -21,6 +21,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/test/mock_widget_impl.h"
 #include "ipc/ipc_test_sink.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 
@@ -57,9 +58,9 @@ class TextInputClientMacTest : public testing::Test {
     RenderProcessHost* rph =
         process_factory_.CreateRenderProcessHost(&browser_context_, nullptr);
     int32_t routing_id = rph->GetNextRoutingID();
-    mojom::WidgetPtr widget;
-    mock_widget_impl_ =
-        std::make_unique<MockWidgetImpl>(mojo::MakeRequest(&widget));
+    mojo::PendingRemote<mojom::Widget> widget;
+    mock_widget_impl_ = std::make_unique<MockWidgetImpl>(
+        widget.InitWithNewPipeAndPassReceiver());
 
     widget_.reset(new RenderWidgetHostImpl(&delegate_, rph, routing_id,
                                            std::move(widget), false));

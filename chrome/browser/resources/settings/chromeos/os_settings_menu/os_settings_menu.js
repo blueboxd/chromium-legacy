@@ -108,4 +108,13 @@ Polymer({
     const submenu = /** @type {IronCollapseElement} */ (this.$.advancedSubmenu);
     return submenu.opened;
   },
+
+  /**
+   * @param {boolean} bool
+   * @return {string}
+   * @private
+   */
+  boolToString_: function(bool) {
+    return bool.toString();
+  },
 });

@@ -1702,6 +1702,7 @@
     },
     {
       name: "WakeLock",
+      origin_trial_feature_name: "WakeLock",
       status: "experimental",
     },
     {

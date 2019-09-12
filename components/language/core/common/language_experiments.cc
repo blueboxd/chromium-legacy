@@ -20,8 +20,6 @@ const base::Feature kOverrideTranslateTriggerInIndia{
     "OverrideTranslateTriggerInIndia", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kExplicitLanguageAsk{"ExplicitLanguageAsk",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kImprovedGeoLanguageData{"ImprovedGeoLanguageData",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kUseFluentLanguageModel {
   "UseFluentLanguageModel",
 #if defined(OS_IOS)

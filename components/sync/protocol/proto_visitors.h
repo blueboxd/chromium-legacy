@@ -1123,9 +1123,9 @@ VISIT_PROTO_FIELDS(const sync_pb::WalletSyncFlags& proto) {
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::WebAppSpecifics& proto) {
-  VISIT(app_id);
   VISIT(launch_url);
   VISIT(name);
+  VISIT_ENUM(launch_container);
   VISIT(theme_color);
 }
 

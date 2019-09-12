@@ -90,6 +90,7 @@
 #include "media/media_buildflags.h"
 #include "media/renderers/audio_renderer_impl.h"
 #include "media/video/gpu_video_accelerator_factories.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/data_url.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
@@ -508,7 +509,7 @@ void RenderViewImpl::Initialize(
     // RenderWidget for a remote main frame.
     render_widget_ = RenderWidget::CreateForFrame(
         params->main_frame_widget_routing_id, compositor_deps,
-        params->visual_properties.screen_info,
+        page_properties(), params->visual_properties.screen_info,
         params->visual_properties.display_mode,
         /*is_undead=*/params->main_frame_routing_id == MSG_ROUTING_NONE,
         params->never_visible);
@@ -1424,9 +1425,9 @@ WebView* RenderViewImpl::CreateView(
 
 blink::WebPagePopup* RenderViewImpl::CreatePopup(
     blink::WebLocalFrame* creator) {
-  mojom::WidgetPtr widget_channel;
-  mojom::WidgetRequest widget_channel_request =
-      mojo::MakeRequest(&widget_channel);
+  mojo::PendingRemote<mojom::Widget> widget_channel;
+  mojo::PendingReceiver<mojom::Widget> widget_channel_receiver =
+      widget_channel.InitWithNewPipeAndPassReceiver();
 
   // Do a synchronous IPC to obtain a routing ID.
   int32_t widget_routing_id = MSG_ROUTING_NONE;
@@ -1452,9 +1453,10 @@ blink::WebPagePopup* RenderViewImpl::CreatePopup(
 
   RenderWidget* popup_widget = RenderWidget::CreateForPopup(
       widget_routing_id, view_render_widget->compositor_deps(),
-      view_render_widget->screen_info(), blink::kWebDisplayModeUndefined,
+      page_properties(), view_render_widget->screen_info(),
+      blink::kWebDisplayModeUndefined,
       /*hidden=*/false,
-      /*never_visible=*/false, std::move(widget_channel_request));
+      /*never_visible=*/false, std::move(widget_channel_receiver));
 
   // The returned WebPagePopup is self-referencing, so the pointer here is not
   // an owning pointer. It is de-referenced by calling Close().

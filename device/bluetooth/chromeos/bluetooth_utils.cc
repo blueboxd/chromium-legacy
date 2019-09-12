@@ -84,6 +84,14 @@ BluetoothAdapter::DeviceList FilterUnknownDevices(
       continue;
     }
 
+    // Always filter out phones. There is no intended use case or Bluetooth
+    // profile in this context.
+    if (base::FeatureList::IsEnabled(
+            chromeos::features::kBluetoothPhoneFilter) &&
+        device->GetDeviceType() == BluetoothDeviceType::PHONE) {
+      continue;
+    }
+
     switch (device->GetType()) {
       // Device with invalid bluetooth transport is filtered out.
       case BLUETOOTH_TRANSPORT_INVALID:

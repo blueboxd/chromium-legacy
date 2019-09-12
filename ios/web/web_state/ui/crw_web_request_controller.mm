@@ -34,6 +34,7 @@
 #error "This file requires ARC support."
 #endif
 
+using web::wk_navigation_util::ExtractTargetURL;
 using web::wk_navigation_util::ExtractUrlFromPlaceholderUrl;
 using web::wk_navigation_util::IsPlaceholderUrl;
 using web::wk_navigation_util::IsRestoreSessionUrl;
@@ -305,15 +306,25 @@ enum class BackForwardNavigationType {
   ui::PageTransition transition =
       [self.navigationHandler pageTransitionFromNavigationType:navigationType];
 
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
-      navigationType == WKNavigationTypeBackForward &&
-      self.webView.backForwardList.currentItem) {
-    web::NavigationItem* currentItem = [[CRWNavigationItemHolder
-        holderForBackForwardListItem:self.webView.backForwardList.currentItem]
-        navigationItem];
-    if (currentItem) {
-      transition = ui::PageTransitionFromInt(transition |
-                                             currentItem->GetTransitionType());
+  WKBackForwardListItem* currentItem = self.webView.backForwardList.currentItem;
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() && currentItem) {
+    // SlimNav target redirect pages should default to a RELOAD transition,
+    // because transition state is not persisted on restore.
+    GURL targetURL;
+    if (navigationType == WKNavigationTypeOther &&
+        IsRestoreSessionUrl(net::GURLWithNSURL(currentItem.URL)) &&
+        ExtractTargetURL(net::GURLWithNSURL(currentItem.URL), &targetURL) &&
+        targetURL == URL) {
+      DCHECK(ui::PageTransitionIsRedirect(transition));
+      transition = ui::PAGE_TRANSITION_RELOAD;
+    } else if (navigationType == WKNavigationTypeBackForward) {
+      web::NavigationItem* currentItem = [[CRWNavigationItemHolder
+          holderForBackForwardListItem:self.webView.backForwardList.currentItem]
+          navigationItem];
+      if (currentItem) {
+        transition = ui::PageTransitionFromInt(
+            transition | currentItem->GetTransitionType());
+      }
     }
   }
 

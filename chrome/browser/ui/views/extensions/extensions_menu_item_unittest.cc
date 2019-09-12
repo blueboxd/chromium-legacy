@@ -74,12 +74,13 @@ class ExtensionsMenuItemViewTest : public BrowserWithTestWindowTest {
 };
 
 TEST_F(ExtensionsMenuItemViewTest, UpdatesToDisplayCorrectActionTitle) {
-  EXPECT_EQ(primary_button()->title()->GetText(), initial_extension_name_);
+  EXPECT_EQ(primary_button()->label_text_for_testing(),
+            initial_extension_name_);
 
   base::string16 extension_name = base::ASCIIToUTF16("Extension Name");
   controller_->SetActionName(extension_name);
 
-  EXPECT_EQ(primary_button()->title()->GetText(), extension_name);
+  EXPECT_EQ(primary_button()->label_text_for_testing(), extension_name);
 }
 
 TEST_F(ExtensionsMenuItemViewTest, NotifyClickExecutesAction) {

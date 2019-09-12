@@ -296,4 +296,65 @@
     await countAndCheckLatestA11yMessage(
         appId, ++a11yMsgCount, 'Removed all entries from selection.');
   };
+
+  /**
+   * Tests the deletion of one or multiple items. After deletion, one of the
+   * remaining items should have the lead, but shouldn't be in check-select
+   * mode.
+   */
+  testcase.fileListDeleteMultipleFiles = async () => {
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
+
+    // Select first 2 items.
+    await remoteCall.waitAndClickElement(
+        appId, '#file-list [file-name="world.ogv"]');
+    await remoteCall.waitAndClickElement(
+        appId, '#file-list [file-name="hello.txt"]', {shift: true});
+
+    // Delete item and confirm delete.
+    await remoteCall.waitAndClickElement(appId, '#delete-button');
+    await remoteCall.waitAndClickElement(
+        appId, '.files-confirm-dialog .cr-dialog-ok');
+
+    // Wait for completion of file deletion.
+    await remoteCall.waitForElementLost(
+        appId, '#file-list [file-name="world.ogv"]');
+    await remoteCall.waitForElementLost(
+        appId, '#file-list [file-name="hello.txt"]');
+
+    // Check: no selection state.
+    await remoteCall.waitForElementLost(appId, 'body.check-select');
+
+    // Check: lead state of last item.
+    let item = await remoteCall.waitForElement(
+        appId, '#file-list [file-name="My Desktop Background.png"]');
+    chrome.test.assertTrue('lead' in item.attributes);
+
+    // Check: selected state of last item.
+    chrome.test.assertTrue('selected' in item.attributes);
+
+
+    // Select and delete first item.
+    await remoteCall.waitAndClickElement(
+        appId, '#file-list [file-name="photos"]');
+    await remoteCall.waitAndClickElement(appId, '#delete-button');
+    await remoteCall.waitAndClickElement(
+        appId, '.files-confirm-dialog .cr-dialog-ok');
+
+    // Wait for file deletion.
+    await remoteCall.waitForElementLost(
+        appId, '#file-list [file-name="photos"]');
+
+    // Check: no selection state.
+    await remoteCall.waitForElementLost(appId, 'body.check-select');
+
+    // Check: lead state of first item.
+    item = await remoteCall.waitForElement(
+        appId, '#file-list [file-name="Beautiful Song.ogg"]');
+    chrome.test.assertTrue('lead' in item.attributes);
+
+    // Check: selected state of first item.
+    chrome.test.assertTrue('selected' in item.attributes);
+  };
 })();

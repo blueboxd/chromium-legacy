@@ -6,19 +6,15 @@
 <link rel="help" href="https://github.com/WICG/display-locking">
 <link rel="match" href="selection-ref.html">
 <script src="/common/reftest-wait.js"></script>
+<script src="resources/utils.js"></script>
+
 <style>
-  div {
-    contain: style layout;
-  }
   #userSelectNone {
     user-select: none;
   }
 </style>
-<div id="neighbor">
-  neighbor
-</div>
 <div id="container">
-  <div>
+  <div id="notLocked">
     not locked!
   </div>
   <div id="nonActivatable">
@@ -33,14 +29,18 @@
 </div>
 <script>
 async function runTest() {
-  // TODO(rakina): make this use rendersubtree once sizing is implemented.
-  await container.displayLock.acquire({ timeout: Infinity, activatable: true, size: [100, 100] });
-  await nonActivatable.displayLock.acquire({ timeout: Infinity, activatable: false, size: [20, 20] });
-  await userSelectNone.displayLock.acquire({ timeout: Infinity, activatable: true, size: [30, 30] });
-  await nested.displayLock.acquire({ timeout: Infinity, activatable: true, size: [40, 40] });
+  container.style = "content-size: 100px 100px;"
+  nonActivatable.style = "content-size: 20px 20px;"
+  userSelectNone.style = "content-size: 30px 30px;"
+  nested.style = "content-size: 40px 40px;"
+  await setInvisibleActivatable(container);
+  await setInvisible(nonActivatable);
+  await setInvisibleActivatable(userSelectNone);
+  await setInvisibleActivatable(nested);
+
   window.getSelection().removeAllRanges();
   const selectionRange = document.createRange();
-  selectionRange.setStart(neighbor.firstChild, 4);
+  selectionRange.setStart(notLocked.firstChild, 4);
   selectionRange.setEnd(nested.firstChild, 7);
   window.getSelection().addRange(selectionRange);
   requestAnimationFrame(takeScreenshot);

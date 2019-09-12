@@ -207,9 +207,11 @@ jboolean ProfileSyncServiceAndroid::IsFirstSetupComplete(
 
 void ProfileSyncServiceAndroid::SetFirstSetupComplete(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
+    const JavaParamRef<jobject>& obj,
+    jint source) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  sync_service_->GetUserSettings()->SetFirstSetupComplete();
+  sync_service_->GetUserSettings()->SetFirstSetupComplete(
+      static_cast<syncer::SyncFirstSetupCompleteSource>(source));
 }
 
 ScopedJavaLocalRef<jintArray> ProfileSyncServiceAndroid::GetActiveDataTypes(

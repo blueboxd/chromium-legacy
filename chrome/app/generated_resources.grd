@@ -4449,7 +4449,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
-      <message name="IDS_HOSTED_APPMENU_TOOLTIP">
+      <message name="IDS_WEB_APP_MENU_BUTTON_TOOLTIP">
         Customize and control <ph name="APP_NAME">$1<ex>GMail</ex></ph>
       </message>
 

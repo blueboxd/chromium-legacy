@@ -39,36 +39,86 @@
 
 namespace cc {
 
+struct SameSizeAsLayer : public base::RefCounted<SameSizeAsLayer> {
+ private:
+  SameSizeAsLayer();
+  virtual ~SameSizeAsLayer();
+
+  void* pointers[2];
+  struct {
+    LayerList children;
+    gfx::Rect update_rect;
+    gfx::Size bounds;
+    gfx::Rect clip_rect;
+    scoped_refptr<PictureLayer> mask_layer;
+    int layer_id;
+    float opacity;
+    SkBlendMode blend_mode;
+    unsigned bitfields;
+    int sorting_context_id;
+    gfx::PointF position;
+    gfx::Transform transform;
+    gfx::Point3F transform_origin;
+    SkColor background_color;
+    FilterOperations filters[2];
+    base::Optional<gfx::RRectF> backdrop_filter_bounds;
+    ElementId backdrop_mask_element_id;
+    gfx::PointF filters_origin;
+    float backdrop_filter_quality;
+    gfx::RoundedCornersF corner_radii;
+    gfx::ScrollOffset scroll_offset;
+    gfx::Size scroll_container_bounds;
+    int mirror_count;
+    uint32_t main_thread_scrolling_reasons;
+    Region non_fast_scrollable_region;
+    TouchActionRegion touch_action_region;
+    ElementId element_id;
+    base::WeakPtr<LayerClient> client;
+    std::unique_ptr<base::trace_event::TracedValue> debug_info;
+    base::RepeatingCallback<void()> did_scroll_callback;
+    std::vector<std::unique_ptr<viz::CopyOutputRequest>> copy_requests;
+  } inputs;
+  int int_fields[7];
+  gfx::Vector2dF offset;
+  unsigned bitfields;
+  SkColor safe_opaque_background_color;
+  int owner_node_id;
+  uint64_t compositing_reasons;
+};
+
+static_assert(sizeof(Layer) == sizeof(SameSizeAsLayer),
+              "Layer should stay small");
+
 base::AtomicSequenceNumber g_next_layer_id;
 
 Layer::Inputs::Inputs(int layer_id)
-    : layer_id(layer_id),
-      masks_to_bounds(false),
-      mask_layer(nullptr),
+    : mask_layer(nullptr),
+      layer_id(layer_id),
       opacity(1.f),
       blend_mode(SkBlendMode::kSrcOver),
+      masks_to_bounds(false),
       is_root_for_isolated_group(false),
       hit_testable(false),
       contents_opaque(false),
       is_drawable(false),
       double_sided(true),
       should_flatten_transform(true),
-      sorting_context_id(0),
       use_parent_backface_visibility(false),
-      background_color(0),
-      backdrop_filter_quality(1.0f),
-      corner_radii({0, 0, 0, 0}),
       is_fast_rounded_corner(false),
       scrollable(false),
       is_scrollbar(false),
       user_scrollable_horizontal(true),
       user_scrollable_vertical(true),
-      main_thread_scrolling_reasons(
-          MainThreadScrollingReason::kNotScrollingOnMain),
       has_will_change_transform_hint(false),
       trilinear_filtering(false),
       hide_layer_and_subtree(false),
-      mirror_count(0) {}
+      sorting_context_id(0),
+      background_color(0),
+      backdrop_filter_quality(1.0f),
+      corner_radii({0, 0, 0, 0}),
+      mirror_count(0),
+      main_thread_scrolling_reasons(
+          MainThreadScrollingReason::kNotScrollingOnMain) {}
 
 Layer::Inputs::~Inputs() = default;
 
@@ -77,18 +127,18 @@ scoped_refptr<Layer> Layer::Create() {
 }
 
 Layer::Layer()
-    : ignore_set_needs_commit_(false),
-      paint_count_(0),
-      parent_(nullptr),
+    : parent_(nullptr),
       layer_tree_host_(nullptr),
       // Layer IDs start from 1.
       inputs_(g_next_layer_id.GetNext() + 1),
+      paint_count_(0),
       num_descendants_that_draw_content_(0),
       transform_tree_index_(TransformTree::kInvalidNodeId),
       effect_tree_index_(EffectTree::kInvalidNodeId),
       clip_tree_index_(ClipTree::kInvalidNodeId),
       scroll_tree_index_(ScrollTree::kInvalidNodeId),
       property_tree_sequence_number_(-1),
+      ignore_set_needs_commit_(false),
       should_flatten_screen_space_transform_from_property_tree_(false),
       draws_content_(false),
       should_check_backface_visibility_(false),
@@ -101,8 +151,8 @@ Layer::Layer()
       has_clip_node_(false),
       subtree_has_copy_request_(false),
       safe_opaque_background_color_(0),
-      compositing_reasons_(0),
-      owner_node_id_(0) {}
+      owner_node_id_(0),
+      compositing_reasons_(0) {}
 
 Layer::~Layer() {
   // Our parent should be holding a reference to us so there should be no
@@ -336,25 +386,6 @@ void Layer::SetBounds(const gfx::Size& size) {
     auto& scroll_tree = layer_tree_host_->property_trees()->scroll_tree;
     if (auto* scroll_node = scroll_tree.Node(scroll_tree_index_))
       scroll_node->bounds = inputs_.bounds;
-    else
-      SetPropertyTreesNeedRebuild();
-  }
-
-  SetNeedsCommit();
-}
-
-void Layer::SetSnapContainerData(base::Optional<SnapContainerData> data) {
-  DCHECK(IsPropertyChangeAllowed());
-  if (snap_container_data() == data)
-    return;
-  inputs_.snap_container_data = std::move(data);
-  if (!layer_tree_host_)
-    return;
-
-  if (scrollable() && !layer_tree_host_->IsUsingLayerLists()) {
-    auto& scroll_tree = layer_tree_host_->property_trees()->scroll_tree;
-    if (auto* scroll_node = scroll_tree.Node(scroll_tree_index_))
-      scroll_node->snap_container_data = inputs_.snap_container_data;
     else
       SetPropertyTreesNeedRebuild();
   }

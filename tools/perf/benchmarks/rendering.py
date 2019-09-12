@@ -12,6 +12,30 @@ from telemetry.timeline import chrome_trace_category_filter
 from telemetry.web_perf import timeline_based_measurement
 
 
+RENDERING_BENCHMARK_UMA = [
+    'Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin4',
+    'Event.Latency.ScrollUpdate.Touch.TimeToScrollUpdateSwapBegin4',
+    'Event.Latency.ScrollBegin.Wheel.TimeToScrollUpdateSwapBegin4',
+    'Event.Latency.ScrollUpdate.Wheel.TimeToScrollUpdateSwapBegin4',
+    'Graphics.Smoothness.Checkerboarding.CompositorAnimation',
+    'Graphics.Smoothness.Checkerboarding.MainThreadAnimation',
+    'Graphics.Smoothness.Checkerboarding.PinchZoom',
+    'Graphics.Smoothness.Checkerboarding.RAF',
+    'Graphics.Smoothness.Checkerboarding.TouchScroll',
+    'Graphics.Smoothness.Checkerboarding.Video',
+    'Graphics.Smoothness.Checkerboarding.WheelScroll',
+    'Graphics.Smoothness.Throughput.MainThread.MainThreadAnimation',
+    'Graphics.Smoothness.Throughput.MainThread.PinchZoom',
+    'Graphics.Smoothness.Throughput.MainThread.RAF',
+    'Graphics.Smoothness.Throughput.MainThread.TouchScroll',
+    'Graphics.Smoothness.Throughput.MainThread.WheelScroll',
+    'Graphics.Smoothness.Throughput.CompositorThread.CompositorAnimation',
+    'Graphics.Smoothness.Throughput.CompositorThread.PinchZoom',
+    'Graphics.Smoothness.Throughput.CompositorThread.TouchScroll',
+    'Graphics.Smoothness.Throughput.CompositorThread.WheelScroll',
+]
+
+
 class _RenderingBenchmark(perf_benchmark.PerfBenchmark):
   @classmethod
   def AddBenchmarkCommandLineArgs(cls, parser):
@@ -32,26 +56,7 @@ class _RenderingBenchmark(perf_benchmark.PerfBenchmark):
     category_filter = chrome_trace_category_filter.CreateLowOverheadFilter()
     options = timeline_based_measurement.Options(category_filter)
     options.config.chrome_trace_config.EnableUMAHistograms(
-        'Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin4',
-        'Event.Latency.ScrollUpdate.Touch.TimeToScrollUpdateSwapBegin4',
-        'Event.Latency.ScrollBegin.Wheel.TimeToScrollUpdateSwapBegin4',
-        'Event.Latency.ScrollUpdate.Wheel.TimeToScrollUpdateSwapBegin4',
-        'Graphics.Smoothness.Checkerboarding.CompositorAnimation',
-        'Graphics.Smoothness.Checkerboarding.MainThreadAnimation',
-        'Graphics.Smoothness.Checkerboarding.PinchZoom',
-        'Graphics.Smoothness.Checkerboarding.RAF',
-        'Graphics.Smoothness.Checkerboarding.TouchScroll',
-        'Graphics.Smoothness.Checkerboarding.Video',
-        'Graphics.Smoothness.Checkerboarding.WheelScroll',
-        'Graphics.Smoothness.Throughput.MainThread.MainThreadAnimation',
-        'Graphics.Smoothness.Throughput.MainThread.PinchZoom',
-        'Graphics.Smoothness.Throughput.MainThread.RAF',
-        'Graphics.Smoothness.Throughput.MainThread.TouchScroll',
-        'Graphics.Smoothness.Throughput.MainThread.WheelScroll',
-        'Graphics.Smoothness.Throughput.CompositorThread.CompositorAnimation',
-        'Graphics.Smoothness.Throughput.CompositorThread.PinchZoom',
-        'Graphics.Smoothness.Throughput.CompositorThread.TouchScroll',
-        'Graphics.Smoothness.Throughput.CompositorThread.WheelScroll')
+        *RENDERING_BENCHMARK_UMA)
     options.SetTimelineBasedMetrics(['renderingMetric', 'umaMetric'])
     return options
 

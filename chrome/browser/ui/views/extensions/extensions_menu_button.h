@@ -10,9 +10,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/ui/views/extensions/extension_context_menu_controller.h"
-#include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view_delegate_views.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
+#include "ui/views/controls/button/label_button.h"
 
 class ExtensionsMenuItemView;
 
@@ -20,7 +20,7 @@ namespace views {
 class Button;
 }  // namespace views
 
-class ExtensionsMenuButton : public HoverButton,
+class ExtensionsMenuButton : public views::LabelButton,
                              public views::ButtonListener,
                              public ToolbarActionViewDelegateViews {
  public:
@@ -29,11 +29,13 @@ class ExtensionsMenuButton : public HoverButton,
                        ToolbarActionViewController* controller);
   ~ExtensionsMenuButton() override;
 
-  // Update pin button icon, color, tooltip, and visibility based on pinned
-  // state.
-  void UpdatePinButton();
-
   static const char kClassName[];
+
+  SkColor GetInkDropBaseColor() const override;
+
+  const base::string16& label_text_for_testing() const {
+    return label()->GetText();
+  }
 
  private:
   // views::ButtonListener:

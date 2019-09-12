@@ -167,7 +167,7 @@ void MediaInternalsAudioFocusHelper::DidGetAudioFocusRequestList(
     std::string id_string = session->request_id.value().ToString();
     base::DictionaryValue media_session_data;
     media_session_data.SetKey(kAudioFocusIdKey, base::Value(id_string));
-    stack_data.GetList().push_back(std::move(media_session_data));
+    stack_data.Append(std::move(media_session_data));
 
     request_state_.emplace(id_string, session.Clone());
 

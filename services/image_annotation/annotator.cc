@@ -454,7 +454,7 @@ std::string Annotator::FormatJsonRequest(
                              base::Value(base::Value::Type::DICTIONARY));
 
     base::Value engine_params_list(base::Value::Type::LIST);
-    engine_params_list.GetList().push_back(std::move(ocr_engine_params));
+    engine_params_list.Append(std::move(ocr_engine_params));
 
     // Also add a description annotations request if the image is within model
     // policy.
@@ -464,7 +464,7 @@ std::string Annotator::FormatJsonRequest(
       // Add preferred description language if it has been specified.
       if (!it->desc_lang_tag.empty()) {
         base::Value desc_lang_list(base::Value::Type::LIST);
-        desc_lang_list.GetList().push_back(base::Value(it->desc_lang_tag));
+        desc_lang_list.Append(base::Value(it->desc_lang_tag));
 
         desc_params.SetKey("preferredLanguages", std::move(desc_lang_list));
       }
@@ -472,7 +472,7 @@ std::string Annotator::FormatJsonRequest(
       base::Value engine_params(base::Value::Type::DICTIONARY);
       engine_params.SetKey("descriptionParameters", std::move(desc_params));
 
-      engine_params_list.GetList().push_back(std::move(engine_params));
+      engine_params_list.Append(std::move(engine_params));
     }
     ReportImageRequestIncludesDesc(it->desc_requested);
 
@@ -482,7 +482,7 @@ std::string Annotator::FormatJsonRequest(
     image_request.SetKey("imageBytes", base::Value(std::move(base64_data)));
     image_request.SetKey("engineParameters", std::move(engine_params_list));
 
-    image_request_list.GetList().push_back(std::move(image_request));
+    image_request_list.Append(std::move(image_request));
   }
 
   base::Value request(base::Value::Type::DICTIONARY);

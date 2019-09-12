@@ -16,6 +16,7 @@
 #include "content/common/content_export.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/widget.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/load_states.h"
 
 class GURL;
@@ -132,12 +133,13 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // happen in response to ShowCreatedWidget.
   virtual void CreateNewWidget(int32_t render_process_id,
                                int32_t widget_route_id,
-                               mojom::WidgetPtr widget) {}
+                               mojo::PendingRemote<mojom::Widget> widget) {}
 
   // Creates a full screen RenderWidget. Similar to above.
-  virtual void CreateNewFullscreenWidget(int32_t render_process_id,
-                                         int32_t widget_route_id,
-                                         mojom::WidgetPtr widget) {}
+  virtual void CreateNewFullscreenWidget(
+      int32_t render_process_id,
+      int32_t widget_route_id,
+      mojo::PendingRemote<mojom::Widget> widget) {}
 
   // Show the newly created widget with the specified bounds.
   // The widget is identified by the route_id passed to CreateNewWidget.

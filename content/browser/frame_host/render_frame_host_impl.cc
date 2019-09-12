@@ -174,12 +174,9 @@
 #include "media/mojo/services/media_interface_provider.h"
 #include "media/mojo/services/media_metrics_provider.h"
 #include "media/mojo/services/video_decode_perf_history.h"
-#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -889,8 +886,9 @@ RenderFrameHostImpl::RenderFrameHostImpl(
                                     weak_ptr_factory_.GetWeakPtr())));
 
   if (widget_routing_id != MSG_ROUTING_NONE) {
-    mojom::WidgetPtr widget;
-    GetRemoteInterfaces()->GetInterface(&widget);
+    mojo::PendingRemote<mojom::Widget> widget;
+    GetRemoteInterfaces()->GetInterface(
+        widget.InitWithNewPipeAndPassReceiver());
 
     if (!parent_) {
       // For main frames, the RenderWidgetHost is owned by the RenderViewHost.
@@ -1949,8 +1947,9 @@ void RenderFrameHostImpl::SetRenderFrameCreated(bool created) {
   }
 
   if (created && GetLocalRenderWidgetHost()) {
-    mojom::WidgetPtr widget;
-    GetRemoteInterfaces()->GetInterface(&widget);
+    mojo::PendingRemote<mojom::Widget> widget;
+    GetRemoteInterfaces()->GetInterface(
+        widget.InitWithNewPipeAndPassReceiver());
     GetLocalRenderWidgetHost()->SetWidget(std::move(widget));
     GetLocalRenderWidgetHost()->SetFrameInputHandler(
         frame_input_handler_.get());
@@ -6429,6 +6428,12 @@ void RenderFrameHostImpl::GetFileSystemManager(
                                 std::move(receiver)));
 }
 
+void RenderFrameHostImpl::CreateLockManager(
+    mojo::PendingReceiver<blink::mojom::LockManager> receiver) {
+  GetProcess()->CreateLockManager(GetLastCommittedOrigin(),
+                                  std::move(receiver));
+}
+
 void RenderFrameHostImpl::GetAuthenticator(
     mojo::PendingReceiver<blink::mojom::Authenticator> receiver) {
 #if !defined(OS_ANDROID)
@@ -7032,11 +7037,6 @@ void RenderFrameHostImpl::SendCommitNavigation(
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token) {
-  // TODO(lfg): Temporary to debug https://crbug.com/996337.
-  if (common_params->url.SchemeIsCryptographic() &&
-      response_head.ssl_info.has_value() && !response_head.ssl_info->cert) {
-    base::debug::DumpWithoutCrashing();
-  }
   if (navigation_client) {
     navigation_client->CommitNavigation(
         std::move(common_params), std::move(commit_params), response_head,

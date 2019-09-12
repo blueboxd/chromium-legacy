@@ -53,10 +53,6 @@ class ExtensionsMenuItemView : public views::View,
   ExtensionsMenuButton* primary_action_button_for_testing();
 
  private:
-  // views::Button:
-  void OnMouseEntered(const ui::MouseEvent& event) override;
-  void OnMouseExited(const ui::MouseEvent& event) override;
-
   ExtensionsMenuButton* const primary_action_button_;
 
   std::unique_ptr<ToolbarActionViewController> controller_;

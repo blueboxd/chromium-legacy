@@ -76,6 +76,7 @@ ACTIVE_STORIES = set([
     'load:news:irctc',
     'load:news:wikipedia:2018',
     'intent:coldish:bbc',
+    'Speedometer2',
 ])
 
 

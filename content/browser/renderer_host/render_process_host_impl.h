@@ -494,7 +494,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void DelayProcessShutdownForUnload(const base::TimeDelta& timeout);
 
   // Binds |receiver| to the FileSystemManager instance owned by the render
-  // process host, and is used by workers via RendererInterfaceBinders.
+  // process host, and is used by workers via BrowserInterfaceBroker.
   void BindFileSystemManager(
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver) override;
@@ -502,6 +502,13 @@ class CONTENT_EXPORT RenderProcessHostImpl
   FileSystemManagerImpl* GetFileSystemManagerForTesting() {
     return file_system_manager_impl_.get();
   }
+
+  // Binds |receiver| to the LockManager instance owned by
+  // |storage_partition_impl_|, and is used by frames and workers via
+  // BrowserInterfaceBroker.
+  void CreateLockManager(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::LockManager> receiver) override;
 
   // Adds a CORB (Cross-Origin Read Blocking) exception for |process_id|.  The
   // exception will be removed when the corresponding RenderProcessHostImpl is

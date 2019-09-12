@@ -38,6 +38,9 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationController {
   // Notifies the MediaNotificationController that a media button was pressed on
   // the MediaNotificationView.
   virtual void LogMediaSessionActionButtonPressed(const std::string& id) = 0;
+
+ protected:
+  virtual ~MediaNotificationController() = default;
 };
 
 }  // namespace media_message_center

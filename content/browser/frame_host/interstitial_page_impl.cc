@@ -792,15 +792,17 @@ Visibility InterstitialPageImpl::GetVisibility() {
   return Visibility::OCCLUDED;
 }
 
-void InterstitialPageImpl::CreateNewWidget(int32_t render_process_id,
-                                           int32_t route_id,
-                                           mojom::WidgetPtr widget) {
+void InterstitialPageImpl::CreateNewWidget(
+    int32_t render_process_id,
+    int32_t route_id,
+    mojo::PendingRemote<mojom::Widget> widget) {
   NOTREACHED() << "InterstitialPage does not support showing drop-downs.";
 }
 
-void InterstitialPageImpl::CreateNewFullscreenWidget(int32_t render_process_id,
-                                                     int32_t route_id,
-                                                     mojom::WidgetPtr widget) {
+void InterstitialPageImpl::CreateNewFullscreenWidget(
+    int32_t render_process_id,
+    int32_t route_id,
+    mojo::PendingRemote<mojom::Widget> widget) {
   NOTREACHED()
       << "InterstitialPage does not support showing full screen popups.";
 }

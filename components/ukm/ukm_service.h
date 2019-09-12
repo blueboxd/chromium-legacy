@@ -121,6 +121,8 @@ class UkmService : public UkmRecorderImpl {
   // ukm::UkmRecorderImpl:
   bool ShouldRestrictToWhitelistedEntries() const override;
 
+  void SetInitializationCompleteCallbackForTesting(base::OnceClosure callback);
+
   // A weak pointer to the PrefService used to read and write preferences.
   PrefService* pref_service_;
 
@@ -153,6 +155,9 @@ class UkmService : public UkmRecorderImpl {
 
   bool initialize_started_ = false;
   bool initialize_complete_ = false;
+
+  // A callback invoked when initialization of the service is complete.
+  base::OnceClosure initialization_complete_callback_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

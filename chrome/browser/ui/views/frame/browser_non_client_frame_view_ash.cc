@@ -33,19 +33,20 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
@@ -173,8 +174,8 @@ void BrowserNonClientFrameViewAsh::Init() {
 
   frame_header_ = CreateFrameHeader();
 
-  if (browser_view()->IsBrowserTypeHostedApp())
-    SetUpForHostedApp();
+  if (browser_view()->IsBrowserTypeWebApp())
+    SetUpForWebApp();
 
   browser_view()->immersive_mode_controller()->AddObserver(this);
   ash::SplitViewNotifier::Get()->AddObserver(this);
@@ -222,10 +223,9 @@ int BrowserNonClientFrameViewAsh::GetTopInset(bool restored) const {
   Browser* browser = browser_view()->browser();
 
   int header_height = frame_header_->GetHeaderHeight();
-  if (hosted_app_button_container()) {
-    header_height =
-        std::max(header_height,
-                 hosted_app_button_container()->GetPreferredSize().height());
+  if (web_app_frame_toolbar()) {
+    header_height = std::max(
+        header_height, web_app_frame_toolbar()->GetPreferredSize().height());
   }
   if (browser_view()->IsTabStripVisible())
     return header_height - browser_view()->GetTabStripHeight();
@@ -245,11 +245,11 @@ void BrowserNonClientFrameViewAsh::UpdateFrameColor() {
   if (!UsePackagedAppHeaderStyle(browser_view()->browser())) {
     active_color = GetFrameColor(kActive);
     inactive_color = GetFrameColor(kInactive);
-  } else if (browser_view()->IsBrowserTypeHostedApp()) {
+  } else if (browser_view()->IsBrowserTypeWebApp()) {
     active_color = browser_view()->browser()->app_controller()->GetThemeColor();
   } else if (!browser_view()->browser()->deprecated_is_app()) {
     // TODO(crbug.com/836128): Remove when System Web Apps flag is removed, as
-    // the above Hosted App branch will render the theme color.
+    // the above web-app branch will render the theme color.
     active_color =
         base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)
             ? SK_ColorWHITE
@@ -295,7 +295,7 @@ SkColor BrowserNonClientFrameViewAsh::GetCaptionColor(
   SkColor active_color =
       views::FrameCaptionButton::GetButtonColor(ash::kDefaultFrameColor);
 
-  // Hosted apps apply a theme color if specified by the extension.
+  // Web apps apply a theme color if specified by the extension.
   Browser* browser = browser_view()->browser();
   base::Optional<SkColor> theme_color =
       browser->app_controller()->GetThemeColor();
@@ -305,7 +305,7 @@ SkColor BrowserNonClientFrameViewAsh::GetCaptionColor(
   if (active)
     return active_color;
 
-  // Add the container for extra hosted app buttons (e.g app menu button).
+  // Add the container for extra web-app buttons (e.g app menu button).
   const float inactive_alpha_ratio =
       views::FrameCaptionButton::GetInactiveButtonColorAlphaRatio();
   return SkColorSetA(active_color, inactive_alpha_ratio * SK_AlphaOPAQUE);
@@ -410,8 +410,8 @@ void BrowserNonClientFrameViewAsh::Layout() {
 
   if (profile_indicator_icon_)
     LayoutProfileIndicator();
-  if (hosted_app_button_container()) {
-    hosted_app_button_container()->LayoutInContainer(
+  if (web_app_frame_toolbar()) {
+    web_app_frame_toolbar()->LayoutInContainer(
         0, caption_button_container_->x(), 0, painted_height);
   }
 
@@ -510,8 +510,8 @@ void BrowserNonClientFrameViewAsh::OnTabletModeToggled(bool enabled) {
   const bool should_show_caption_buttons = ShouldShowCaptionButtons();
   caption_button_container_->SetVisible(should_show_caption_buttons);
   caption_button_container_->UpdateCaptionButtonState(true /*=animate*/);
-  if (hosted_app_button_container())
-    hosted_app_button_container()->SetVisible(should_show_caption_buttons);
+  if (web_app_frame_toolbar())
+    web_app_frame_toolbar()->SetVisible(should_show_caption_buttons);
 
   if (enabled) {
     // Enter immersive mode if the feature is enabled and the widget is not
@@ -545,8 +545,8 @@ void BrowserNonClientFrameViewAsh::OnTabletModeToggled(bool enabled) {
 // TabIconViewModel:
 
 bool BrowserNonClientFrameViewAsh::ShouldTabIconViewAnimate() const {
-  // Hosted apps use their app icon and shouldn't show a throbber.
-  if (browser_view()->IsBrowserTypeHostedApp())
+  // Web apps use their app icon and shouldn't show a throbber.
+  if (browser_view()->IsBrowserTypeWebApp())
     return false;
 
   // This function is queried during the creation of the window as the
@@ -612,8 +612,8 @@ void BrowserNonClientFrameViewAsh::OnImmersiveRevealStarted() {
   // their layers.
   auto* container = browser_view()->top_container();
   container->AddChildViewAt(caption_button_container_, 0);
-  if (hosted_app_button_container())
-    container->AddChildViewAt(hosted_app_button_container(), 0);
+  if (web_app_frame_toolbar())
+    container->AddChildViewAt(web_app_frame_toolbar(), 0);
   if (back_button_)
     container->AddChildViewAt(back_button_, 0);
 
@@ -622,8 +622,8 @@ void BrowserNonClientFrameViewAsh::OnImmersiveRevealStarted() {
 
 void BrowserNonClientFrameViewAsh::OnImmersiveRevealEnded() {
   AddChildViewAt(caption_button_container_, 0);
-  if (hosted_app_button_container())
-    AddChildViewAt(hosted_app_button_container(), 0);
+  if (web_app_frame_toolbar())
+    AddChildViewAt(web_app_frame_toolbar(), 0);
   if (back_button_)
     AddChildViewAt(back_button_, 0);
   Layout();
@@ -671,8 +671,8 @@ int BrowserNonClientFrameViewAsh::GetTabStripRightInset() const {
   int inset = 0;
   if (ShouldShowCaptionButtons())
     inset += caption_button_container_->GetPreferredSize().width();
-  if (hosted_app_button_container())
-    inset += hosted_app_button_container()->GetPreferredSize().width();
+  if (web_app_frame_toolbar())
+    inset += web_app_frame_toolbar()->GetPreferredSize().width();
   return inset;
 }
 
@@ -694,8 +694,8 @@ bool BrowserNonClientFrameViewAsh::ShouldPaint() const {
 void BrowserNonClientFrameViewAsh::OnOverviewOrSplitviewModeChanged() {
   const bool should_show_caption_buttons = ShouldShowCaptionButtons();
   caption_button_container_->SetVisible(should_show_caption_buttons);
-  if (hosted_app_button_container())
-    hosted_app_button_container()->SetVisible(should_show_caption_buttons);
+  if (web_app_frame_toolbar())
+    web_app_frame_toolbar()->SetVisible(should_show_caption_buttons);
 
   // The entire frame should be repainted for v1 apps, since its visibility can
   // change (see also ShouldPaint()). Do not invoke this on normal browser
@@ -723,16 +723,16 @@ BrowserNonClientFrameViewAsh::CreateFrameHeader() {
   return header;
 }
 
-void BrowserNonClientFrameViewAsh::SetUpForHostedApp() {
+void BrowserNonClientFrameViewAsh::SetUpForWebApp() {
   Browser* browser = browser_view()->browser();
   if (!browser->app_controller()->HasTitlebarToolbar())
     return;
 
-  // Add the container for extra hosted app buttons (e.g app menu button).
-  set_hosted_app_button_container(new HostedAppButtonContainer(
+  // Add the container for extra web app buttons (e.g app menu button).
+  set_web_app_frame_toolbar(new WebAppFrameToolbarView(
       frame(), browser_view(), GetCaptionColor(kActive),
       GetCaptionColor(kInactive)));
-  AddChildView(hosted_app_button_container());
+  AddChildView(web_app_frame_toolbar());
 }
 
 void BrowserNonClientFrameViewAsh::UpdateTopViewInset() {

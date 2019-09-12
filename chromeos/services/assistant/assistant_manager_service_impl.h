@@ -26,6 +26,7 @@
 #include "libassistant/shared/public/device_state_listener.h"
 #include "libassistant/shared/public/media_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
@@ -91,7 +92,7 @@ class AssistantManagerServiceImpl
   // |service| owns this class and must outlive this class.
   AssistantManagerServiceImpl(
       mojom::Client* client,
-      device::mojom::BatteryMonitorPtr battery_monitor,
+      mojo::PendingRemote<device::mojom::BatteryMonitor> battery_monitor,
       Service* service,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           url_loader_factory_info);

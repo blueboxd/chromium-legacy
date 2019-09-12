@@ -421,8 +421,6 @@ class DeviceStatusCollectorTest : public testing::Test {
     TestingDeviceStatusCollector::RegisterProfilePrefs(
         profile_pref_service_.registry());
 
-    owner_settings_service_.set_ignore_profile_creation_notification(true);
-
     // Set up a fake local state for KioskAppManager.
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
     chromeos::KioskAppManager::RegisterPrefs(local_state_.registry());
@@ -2005,24 +2003,23 @@ TEST_F(DeviceStatusCollectorTest, ReportOsUpdateStatus) {
   MockAutoLaunchKioskAppWithRequiredPlatformVersion(
       fake_kiosk_device_local_account_, "1235");
 
-  chromeos::UpdateEngineClient::Status update_status;
-  update_status.status = chromeos::UpdateEngineClient::UPDATE_STATUS_IDLE;
+  update_engine::StatusResult update_status;
+  update_status.set_current_operation(update_engine::Operation::IDLE);
 
   GetStatus();
   ASSERT_TRUE(device_status_.has_os_update_status());
   EXPECT_EQ(em::OsUpdateStatus::OS_IMAGE_DOWNLOAD_NOT_STARTED,
             device_status_.os_update_status().update_status());
 
-  const chromeos::UpdateEngineClient::UpdateStatusOperation kUpdateEngineOps[] =
-      {
-          chromeos::UpdateEngineClient::UPDATE_STATUS_DOWNLOADING,
-          chromeos::UpdateEngineClient::UPDATE_STATUS_VERIFYING,
-          chromeos::UpdateEngineClient::UPDATE_STATUS_FINALIZING,
-      };
+  const update_engine::Operation kUpdateEngineOps[] = {
+      update_engine::Operation::DOWNLOADING,
+      update_engine::Operation::VERIFYING,
+      update_engine::Operation::FINALIZING,
+  };
 
   for (size_t i = 0; i < base::size(kUpdateEngineOps); ++i) {
-    update_status.status = kUpdateEngineOps[i];
-    update_status.new_version = "1235.1.2";
+    update_status.set_current_operation(kUpdateEngineOps[i]);
+    update_status.set_new_version("1235.1.2");
     update_engine_client_->PushLastStatus(update_status);
 
     GetStatus();
@@ -2036,8 +2033,8 @@ TEST_F(DeviceStatusCollectorTest, ReportOsUpdateStatus) {
         device_status_.os_update_status().new_required_platform_version());
   }
 
-  update_status.status =
-      chromeos::UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT;
+  update_status.set_current_operation(
+      update_engine::Operation::UPDATED_NEED_REBOOT);
   update_engine_client_->PushLastStatus(update_status);
   GetStatus();
   ASSERT_TRUE(device_status_.has_os_update_status());
@@ -2067,9 +2064,9 @@ TEST_F(DeviceStatusCollectorTest, ReportLastCheckedTimestamp) {
   const int64 kLastCheckedTimes[] = {10, 20, 30};
 
   for (size_t i = 0; i < base::size(kLastCheckedTimes); ++i) {
-    chromeos::UpdateEngineClient::Status update_status;
-    update_status.new_version = kDefaultPlatformVersion;
-    update_status.last_checked_time = kLastCheckedTimes[i];
+    update_engine::StatusResult update_status;
+    update_status.set_new_version(kDefaultPlatformVersion);
+    update_status.set_last_checked_time(kLastCheckedTimes[i]);
     update_engine_client_->PushLastStatus(update_status);
 
     GetStatus();

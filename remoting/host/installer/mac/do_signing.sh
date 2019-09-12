@@ -208,9 +208,6 @@ usage() {
   echo "Usage: ${ME} -o output_dir -i input_dir "\
       "[-c codesign_id] [-p productsign_id] [-k keychain]" >&2
   echo >&2
-  echo "Usage (legacy): ${ME} output_dir input_dir [keychain codesign_id"\
-      "[productsign_id]]" >&2
-  echo >&2
   echo "  Sign the binaries using the specified <codesign_id>, build" >&2
   echo "  the installer, and then sign the installer using the given" >&2
   echo "  <productsign_id>." >&2
@@ -228,7 +225,6 @@ main() {
   local productsign_id=""
   local keychain=""
 
-  local opt_count=${#}
   local OPTNAME OPTIND OPTARG
   while getopts ":o:i:c:p:k:h" OPTNAME; do
     case ${OPTNAME} in
@@ -252,46 +248,11 @@ main() {
         exit 0
         ;;
       * )
-        err "Invalid command-line option: ${OPTARG}"
-        usage
-        exit 1
+        err "Ignoring invalid command-line option: ${OPTARG}"
         ;;
     esac
   done
   shift $(($OPTIND - 1))
-
-  # The opts need to be either all "flag-style" or all "position-style", not
-  # both. If there are any leftover opts at this point, it should be all the
-  # original ones (i.e. all positional).
-  # TODO(mmoss): The positional handling is legacy and can go away once the
-  # signing system has been migrated to using flags, which provides more
-  # flexibility for adding/removing opts if needed. b/31931170
-  if [[ ${#} -ne 0 ]]; then
-    if [[ ${opt_count} -ne ${#} ]]; then
-      err "Please use all flag opts, or all positional opts, not both."
-      usage
-      exit 1
-    fi
-    if [[ ${#} < 2 ]]; then
-      err "Too few positional opts."
-      usage
-      exit 1
-    fi
-    output_dir="$(shell_safe_path "${1}")"
-    input_dir="$(shell_safe_path "${2}")"
-    keychain=""
-    if [[ ${#} -ge 3 ]]; then
-      keychain="$(shell_safe_path "${3}")"
-    fi
-    codesign_id=""
-    if [[ ${#} -ge 4 ]]; then
-      codesign_id="${4}"
-    fi
-    productsign_id=""
-    if [[ ${#} -ge 5 ]]; then
-      productsign_id="${5}"
-    fi
-  fi
 
   if [[ -z "${output_dir}" || -z "${input_dir}" ]]; then
     err "output_dir and input_dir are required."

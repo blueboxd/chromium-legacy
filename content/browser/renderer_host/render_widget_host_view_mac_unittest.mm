@@ -49,6 +49,7 @@
 #include "content/test/test_render_view_host.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/service/image_transport_surface.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -340,9 +341,10 @@ class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
   static MockRenderWidgetHostImpl* Create(RenderWidgetHostDelegate* delegate,
                                           RenderProcessHost* process,
                                           int32_t routing_id) {
-    mojom::WidgetPtr widget;
+    mojo::PendingRemote<mojom::Widget> widget;
     std::unique_ptr<MockWidgetImpl> widget_impl =
-        std::make_unique<MockWidgetImpl>(mojo::MakeRequest(&widget));
+        std::make_unique<MockWidgetImpl>(
+            widget.InitWithNewPipeAndPassReceiver());
 
     return new MockRenderWidgetHostImpl(delegate, process, routing_id,
                                         std::move(widget_impl),
@@ -361,7 +363,7 @@ class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
                            RenderProcessHost* process,
                            int32_t routing_id,
                            std::unique_ptr<MockWidgetImpl> widget_impl,
-                           mojom::WidgetPtr widget)
+                           mojo::PendingRemote<mojom::Widget> widget)
       : RenderWidgetHostImpl(delegate,
                              process,
                              routing_id,

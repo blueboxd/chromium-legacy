@@ -809,7 +809,8 @@ TEST_F(HttpStreamFactoryTest, QuicProxyMarkedAsBad) {
 
     auto session =
         std::make_unique<HttpNetworkSession>(session_params, session_context);
-    session->quic_stream_factory()->set_require_confirmation(false);
+    session->quic_stream_factory()
+        ->set_is_quic_known_to_work_on_current_network(true);
 
     StaticSocketDataProvider socket_data1;
     socket_data1.set_connect_data(
@@ -2370,7 +2371,8 @@ class HttpStreamFactoryBidirectionalQuicTest
     session_context.ssl_config_service = ssl_config_service_.get();
     session_context.client_socket_factory = &socket_factory_;
     session_.reset(new HttpNetworkSession(params_, session_context));
-    session_->quic_stream_factory()->set_require_confirmation(false);
+    session_->quic_stream_factory()
+        ->set_is_quic_known_to_work_on_current_network(true);
   }
 
   void AddQuicAlternativeService() {

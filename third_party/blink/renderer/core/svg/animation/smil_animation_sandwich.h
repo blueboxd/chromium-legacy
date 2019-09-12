@@ -48,10 +48,12 @@ struct PriorityCompare {
   double elapsed_;
 };
 
+// This class implements/helps with implementing the "sandwich model" from SMIL.
+// https://www.w3.org/TR/SMIL3/smil-animation.html#animationNS-AnimationSandwichModel
 class SMILAnimationSandwich : public GarbageCollected<SMILAnimationSandwich> {
  public:
   using ScheduledVector = HeapVector<Member<SVGSMILElement>>;
-  explicit SMILAnimationSandwich();
+  SMILAnimationSandwich();
 
   void Schedule(SVGSMILElement* animation);
   void Unschedule(SVGSMILElement* animation);
@@ -59,6 +61,7 @@ class SMILAnimationSandwich : public GarbageCollected<SMILAnimationSandwich> {
 
   void UpdateTiming(double elapsed);
   void UpdateSyncBases(double elapsed);
+  void UpdateActiveAnimationStack(double elapsed);
   SVGSMILElement* ApplyAnimationValues();
 
   SMILTime NextInterestingTime(double presentation_time) const;
@@ -69,8 +72,17 @@ class SMILAnimationSandwich : public GarbageCollected<SMILAnimationSandwich> {
   void Trace(blink::Visitor*);
 
  private:
-  // The list stored here is always sorted.
+  // Results are accumulated to the first animation element that animates and
+  // contributes to a particular element/attribute pair. We refer to this as
+  // the "result element".
+  SVGSMILElement* ResultElement() const;
+
+  // All the animation (really: timed) elements that make up the sandwich,
+  // sorted according to priority.
   ScheduledVector sandwich_;
+  // The currently active animation elements in the sandwich. Retains the
+  // ordering of elements from |sandwich_| when created. This is the animation
+  // elements from which the animation value is computed.
   ScheduledVector active_;
 };
 

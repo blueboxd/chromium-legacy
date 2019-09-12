@@ -70,14 +70,8 @@ class CORE_EXPORT LayoutShiftTracker {
   void TimerFired(TimerBase*) {}
   std::unique_ptr<TracedValue> PerFrameTraceData(double score_delta,
                                                  bool input_detected) const;
-  float RegionGranularityScale(const IntRect& viewport) const;
   double SubframeWeightingFactor() const;
-  WebVector<gfx::Rect> ConvertIntRectsToGfxRects(
-      const Vector<IntRect>& int_rects,
-      double granularity_scale);
-  void SetLayoutShiftRects(const Vector<IntRect>& int_rects,
-                           double granularity_scale,
-                           bool using_sweep_line);
+  void SetLayoutShiftRects(const Vector<IntRect>& int_rects);
   void UpdateInputTimestamp(base::TimeTicks timestamp);
 
   // This owns us.
@@ -110,10 +104,7 @@ class CORE_EXPORT LayoutShiftTracker {
   PointerdownPendingData pointerdown_pending_data_;
 
   // The per-animation-frame impact region.
-  Region region_;
-
-  // Experimental impact region implementation using sweep-line algorithm.
-  LayoutShiftRegion region_experimental_;
+  LayoutShiftRegion region_;
 
   // Tracks the short period after an input event during which we ignore shifts
   // for the purpose of cumulative scoring, and report them to the web perf API

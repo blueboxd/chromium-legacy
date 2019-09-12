@@ -91,7 +91,7 @@ class DefaultObserver : public SettingsObserver {
     // Event for StorageArea.
     {
       auto args = std::make_unique<base::ListValue>();
-      args->GetList().push_back(changes->Clone());
+      args->Append(changes->Clone());
       auto event = std::make_unique<Event>(
           NamespaceToEventHistogram(settings_namespace),
           base::StringPrintf("storage.%s.onChanged", namespace_string.c_str()),

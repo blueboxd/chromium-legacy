@@ -79,9 +79,9 @@ def run_script(argv, funcs):
 
 
 def run_command(argv, env=None, cwd=None):
-  print 'Running %r in %r (env: %r)' % (argv, cwd, env)
+  print('Running %r in %r (env: %r)' % (argv, cwd, env))
   rc = test_env.run_command(argv, env=env, cwd=cwd)
-  print 'Command %r returned exit code %d' % (argv, rc)
+  print('Command %r returned exit code %d' % (argv, rc))
   return rc
 
 
@@ -117,7 +117,7 @@ def parse_common_test_results(json_results, test_separator='/'):
   def convert_trie_to_flat_paths(trie, prefix=None):
     # Also see blinkpy.web_tests.layout_package.json_results_generator
     result = {}
-    for name, data in trie.iteritems():
+    for name, data in trie.items():
       if prefix:
         name = prefix + test_separator + name
       if len(data) and not 'actual' in data and not 'expected' in data:
@@ -141,7 +141,7 @@ def parse_common_test_results(json_results, test_separator='/'):
   passing_statuses = ('PASS', 'SLOW', 'NEEDSREBASELINE')
 
   for test, result in convert_trie_to_flat_paths(
-      json_results['tests']).iteritems():
+      json_results['tests']).items():
     key = 'unexpected_' if result.get('is_unexpected') else ''
     data = result['actual']
     actual_results = data.split()
@@ -200,7 +200,7 @@ def get_gtest_summary_passes(output):
   mapping = {}
 
   for cur_iteration_data in output.get('per_iteration_data', []):
-    for test_fullname, results in cur_iteration_data.iteritems():
+    for test_fullname, results in cur_iteration_data.items():
       # Results is a list with one entry per test try. Last one is the final
       # result.
       last_result = results[-1]
@@ -355,13 +355,13 @@ class BaseIsolatedScriptArgsAdapter(object):
     valid = True
     try:
       env['CHROME_HEADLESS'] = '1'
-      print 'Running command: %s\nwith env: %r' % (
-          ' '.join(cmd), env)
+      print('Running command: %s\nwith env: %r' % (
+          ' '.join(cmd), env))
       if self.options.xvfb:
         exit_code = xvfb.run_executable(cmd, env)
       else:
         exit_code = test_env.run_command(cmd, env=env)
-      print 'Command returned exit code %d' % exit_code
+      print('Command returned exit code %d' % exit_code)
       return exit_code
     except Exception:
       traceback.print_exc()

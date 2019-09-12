@@ -166,21 +166,6 @@ void LayeredNetworkDelegate::OnPACScriptErrorInternal(
     const base::string16& error) {
 }
 
-NetworkDelegate::AuthRequiredResponse LayeredNetworkDelegate::OnAuthRequired(
-    URLRequest* request,
-    const AuthChallengeInfo& auth_info,
-    AuthCallback callback,
-    AuthCredentials* credentials) {
-  OnAuthRequiredInternal(request, auth_info, credentials);
-  return nested_network_delegate_->NotifyAuthRequired(
-      request, auth_info, std::move(callback), credentials);
-}
-
-void LayeredNetworkDelegate::OnAuthRequiredInternal(
-    URLRequest* request,
-    const AuthChallengeInfo& auth_info,
-    AuthCredentials* credentials) {}
-
 bool LayeredNetworkDelegate::OnCanGetCookies(const URLRequest& request,
                                              const CookieList& cookie_list,
                                              bool allowed_from_caller) {

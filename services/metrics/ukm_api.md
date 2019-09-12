@@ -10,7 +10,7 @@ Any events and metrics you collect need to be documented in [//tools/metrics/ukm
 
 ### Required Details
 
-* Metric `owner`: This the email of someone who can answer questions about how this metric is recorded, what it means, and how it should be used. Can include multiple people.
+* Metric `owner`: the email of someone who can answer questions about how this metric is recorded, what it means, and how it should be used. Can include multiple people.
 * A `summary` of the event about which you are recording details, including a description of when the event will be recorded.
 * For each metric in the event: a `summary` of the data and what it means.
 * The `enum` type if the metric is enumerated. The enum uses the [//tools/metrics/histograms/enums.xml](https://cs.chromium.org/chromium/src/tools/metrics/histograms/enums.xml) file for definitions. Note this is the same file for UMA histogram definitions so these can ideally be reused.
@@ -93,9 +93,10 @@ tag as above but including "metrics.OtherMetricName" in the fields list. There
 is no event name included as the metric must always be in the same event.
 
 The metric to act as a key must also have `<aggregation>`, `<history>`, and
-`<statistics>` tags with a valid statistic (currently only `<enumeration>` is
-supported). However, since generating statistics for this "key" metric isn't
-likely to be useful on its own, add `export=False` to its `<statistics>` tag.
+`<statistics>` tags with a valid statistic (currently only `<enumeration>`
+metrics are supported as keys). However, since generating statistics for this
+"key" metric isn't likely to be useful on its own, add `export=False` to its
+`<statistics>` tag.
 
 ```xml
 <event name="Memory.Experimental">
@@ -190,7 +191,7 @@ ukm::builders::MyEvent(source_id)
 
 ### Get A ukm::SourceId
 
-UKM identifies navigations by their source ID and you'll need to associate and ID with your event in order to tie it to a main frame URL.  Preferrably, get an existing ID for the navigation from another object.
+UKM identifies navigations by their source ID and you'll need to associate an ID with your event in order to tie it to a main frame URL.  Preferably, get an existing ID for the navigation from another object.
 
 The main method for doing this is by getting a navigation ID:
 

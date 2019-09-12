@@ -89,13 +89,14 @@ class CastRemotingConnector::RemotingBridge : public media::mojom::Remoter {
   void StartDataStreams(
       mojo::ScopedDataPipeConsumerHandle audio_pipe,
       mojo::ScopedDataPipeConsumerHandle video_pipe,
-      media::mojom::RemotingDataStreamSenderRequest audio_sender_request,
-      media::mojom::RemotingDataStreamSenderRequest video_sender_request)
-      final {
+      mojo::PendingReceiver<media::mojom::RemotingDataStreamSender>
+          audio_sender_receiver,
+      mojo::PendingReceiver<media::mojom::RemotingDataStreamSender>
+          video_sender_receiver) final {
     if (connector_) {
       connector_->StartRemotingDataStreams(
           this, std::move(audio_pipe), std::move(video_pipe),
-          std::move(audio_sender_request), std::move(video_sender_request));
+          std::move(audio_sender_receiver), std::move(video_sender_receiver));
     }
   }
   void Stop(RemotingStopReason reason) final {
@@ -381,8 +382,10 @@ void CastRemotingConnector::StartRemotingDataStreams(
     RemotingBridge* bridge,
     mojo::ScopedDataPipeConsumerHandle audio_pipe,
     mojo::ScopedDataPipeConsumerHandle video_pipe,
-    media::mojom::RemotingDataStreamSenderRequest audio_sender_request,
-    media::mojom::RemotingDataStreamSenderRequest video_sender_request) {
+    mojo::PendingReceiver<media::mojom::RemotingDataStreamSender>
+        audio_sender_receiver,
+    mojo::PendingReceiver<media::mojom::RemotingDataStreamSender>
+        video_sender_receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Refuse to start if there is no remoting route available, or if remoting is
@@ -392,27 +395,27 @@ void CastRemotingConnector::StartRemotingDataStreams(
   // Also, if neither audio nor video pipe was provided, or if a request for a
   // RemotingDataStreamSender was not provided for a data pipe, error-out early.
   if ((!audio_pipe.is_valid() && !video_pipe.is_valid()) ||
-      (audio_pipe.is_valid() && !audio_sender_request.is_pending()) ||
-      (video_pipe.is_valid() && !video_sender_request.is_pending())) {
+      (audio_pipe.is_valid() && !audio_sender_receiver.is_valid()) ||
+      (video_pipe.is_valid() && !video_sender_receiver.is_valid())) {
     StopRemoting(active_bridge_, RemotingStopReason::DATA_SEND_FAILED, false);
     return;
   }
 
   if (deprecated_remoter_) {
     DCHECK(!remoter_);
-    const bool want_audio = audio_sender_request.is_pending();
-    const bool want_video = video_sender_request.is_pending();
+    const bool want_audio = audio_sender_receiver.is_valid();
+    const bool want_video = video_sender_receiver.is_valid();
     deprecated_remoter_->StartDataStreams(
         want_audio, want_video,
         base::BindOnce(&CastRemotingConnector::OnDataStreamsStarted,
                        weak_factory_.GetWeakPtr(), std::move(audio_pipe),
-                       std::move(video_pipe), std::move(audio_sender_request),
-                       std::move(video_sender_request)));
+                       std::move(video_pipe), std::move(audio_sender_receiver),
+                       std::move(video_sender_receiver)));
   } else {
     DCHECK(remoter_);
     remoter_->StartDataStreams(std::move(audio_pipe), std::move(video_pipe),
-                               std::move(audio_sender_request),
-                               std::move(video_sender_request));
+                               std::move(audio_sender_receiver),
+                               std::move(video_sender_receiver));
   }
 }
 

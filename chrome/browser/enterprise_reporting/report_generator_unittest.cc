@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -142,6 +143,7 @@ class ReportGeneratorTest : public ::testing::Test {
 
   std::vector<std::unique_ptr<em::ChromeDesktopReportRequest>>
   GenerateRequests() {
+    histogram_tester_ = std::make_unique<base::HistogramTester>();
     base::RunLoop run_loop;
     std::vector<std::unique_ptr<em::ChromeDesktopReportRequest>> rets;
     generator_.Generate(base::BindLambdaForTesting(
@@ -153,6 +155,7 @@ class ReportGeneratorTest : public ::testing::Test {
           run_loop.Quit();
         }));
     run_loop.Run();
+    VerifyMetrics(rets);
     return rets;
   }
 
@@ -190,6 +193,12 @@ class ReportGeneratorTest : public ::testing::Test {
     }
   }
 
+  void VerifyMetrics(
+      std::vector<std::unique_ptr<em::ChromeDesktopReportRequest>>& rets) {
+    histogram_tester_->ExpectUniqueSample(
+        "Enterprise.CloudReportingRequestCount", rets.size(), 1);
+  }
+
   TestingProfileManager* profile_manager() { return &profile_manager_; }
   ReportGenerator* generator() { return &generator_; }
 
@@ -198,6 +207,7 @@ class ReportGeneratorTest : public ::testing::Test {
 
   content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager profile_manager_;
+  std::unique_ptr<base::HistogramTester> histogram_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(ReportGeneratorTest);
 };

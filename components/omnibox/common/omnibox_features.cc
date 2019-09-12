@@ -257,6 +257,11 @@ const base::Feature kSpeculativeServiceWorkerStartOnQueryInput{
 const base::Feature kDocumentProvider{"OmniboxDocumentProvider",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature used to autocomplete bookmark, history, and document suggestions when
+// the user input is a prefix of their titles, as opposed to their URLs.
+const base::Feature kAutocompleteTitles{"OmniboxAutocompleteTitles",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature to replace the standard ZeroSuggest with icons for most visited sites
 // and collections (bookmarks, history, recent tabs, reading list). Only
 // available on iOS.

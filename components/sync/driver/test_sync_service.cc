@@ -74,7 +74,10 @@ void TestSyncService::SetAuthError(const GoogleServiceAuthError& auth_error) {
 }
 
 void TestSyncService::SetFirstSetupComplete(bool first_setup_complete) {
-  user_settings_.SetFirstSetupComplete(first_setup_complete);
+  if (first_setup_complete)
+    user_settings_.SetFirstSetupComplete();
+  else
+    user_settings_.ClearFirstSetupComplete();
 }
 
 void TestSyncService::SetPreferredDataTypes(const ModelTypeSet& types) {

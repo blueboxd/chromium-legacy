@@ -103,7 +103,7 @@ class DomDistillerServiceTest : public testing::Test {
   }
 
  protected:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   // store is owned by service_.
   DomDistillerStoreInterface* store_;
   MockDistillerFactory* distiller_factory_;

@@ -16,6 +16,7 @@
 #include "base/optional.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
+#include "chromeos/dbus/update_engine/update_engine.pb.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/update_engine/dbus-constants.h"
 
@@ -24,44 +25,6 @@ namespace chromeos {
 // UpdateEngineClient is used to communicate with the update engine.
 class COMPONENT_EXPORT(CHROMEOS_DBUS) UpdateEngineClient : public DBusClient {
  public:
-  // Edges for state machine
-  //    IDLE->CHECKING_FOR_UPDATE
-  //    CHECKING_FOR_UPDATE->IDLE
-  //    CHECKING_FOR_UPDATE->UPDATE_AVAILABLE
-  //    CHECKING_FOR_UPDATE->NEED_PERMISSION_TO_UPDATE
-  //    ...
-  //    FINALIZING->UPDATE_NEED_REBOOT
-  // Any state can transition to REPORTING_ERROR_EVENT and then on to IDLE.
-  enum UpdateStatusOperation {
-    UPDATE_STATUS_ERROR = -1,
-    UPDATE_STATUS_IDLE = 0,
-    UPDATE_STATUS_CHECKING_FOR_UPDATE,
-    UPDATE_STATUS_UPDATE_AVAILABLE,
-    // User permission is needed to download an update on a cellular connection.
-    UPDATE_STATUS_NEED_PERMISSION_TO_UPDATE,
-    UPDATE_STATUS_DOWNLOADING,
-    UPDATE_STATUS_VERIFYING,
-    UPDATE_STATUS_FINALIZING,
-    UPDATE_STATUS_UPDATED_NEED_REBOOT,
-    UPDATE_STATUS_REPORTING_ERROR_EVENT,
-    UPDATE_STATUS_ATTEMPTING_ROLLBACK,
-  };
-
-  // The status of the ongoing update attempt.
-  struct Status {
-    UpdateStatusOperation status = UPDATE_STATUS_IDLE;
-    // 0.0 - 1.0
-    double download_progress = 0.0;
-    // As reported by std::time().
-    int64_t last_checked_time = 0;
-    std::string new_version;
-    // Valid during DOWNLOADING, in bytes.
-    int64_t new_size = 0;
-    // True if the update is actually a rollback and the device will be wiped
-    // when rebooted.
-    bool is_rollback = false;
-  };
-
   // The result code used for RequestUpdateCheck().
   enum UpdateCheckResult {
     UPDATE_RESULT_SUCCESS,
@@ -75,7 +38,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) UpdateEngineClient : public DBusClient {
     virtual ~Observer() {}
 
     // Called when the status is updated.
-    virtual void UpdateStatusChanged(const Status& status) {}
+    virtual void UpdateStatusChanged(
+        const update_engine::StatusResult& status) {}
 
     // Called when the user's one time permission on update over cellular
     // connection has been granted.
@@ -120,7 +84,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) UpdateEngineClient : public DBusClient {
   //
   // Ideally, the D-Bus client should be state-less, but there are clients
   // that need this information.
-  virtual Status GetLastStatus() = 0;
+  virtual update_engine::StatusResult GetLastStatus() = 0;
 
   // Changes the current channel of the device to the target
   // channel. If the target channel is a less stable channel than the

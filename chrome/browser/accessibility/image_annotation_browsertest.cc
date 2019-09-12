@@ -32,6 +32,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_enum_util.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_tree.h"
 #include "url/gurl.h"
 

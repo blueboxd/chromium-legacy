@@ -556,8 +556,8 @@ float SVGAnimateElement::CalculateDistance(const String& from_string,
 
 void SVGAnimateElement::WillChangeAnimationTarget() {
   SVGAnimationElement::WillChangeAnimationTarget();
-  if (targetElement())
-    ClearAnimatedType();
+  // Should be cleared by the above.
+  DCHECK(!animated_value_);
 }
 
 void SVGAnimateElement::DidChangeAnimationTarget() {

@@ -11,7 +11,8 @@
 //
 // $ out/release/viz_perftests --gtest_filter="*RendererPerfTest*" \
 //    --use-gpu-in-tests --test-launcher-timeout=300000 \
-//    --perf-test-time-ms=240000
+//    --perf-test-time-ms=240000 --disable_discard_framebuffer=1 \
+//    --use_virtualized_gl_contexts=1
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -115,6 +116,7 @@ std::unique_ptr<RenderPass> CreateTestRootRenderPass() {
   const gfx::Transform transform_to_root_target;
   std::unique_ptr<RenderPass> pass = RenderPass::Create();
   pass->SetNew(id, output_rect, damage_rect, transform_to_root_target);
+  pass->has_transparent_background = false;
   return pass;
 }
 

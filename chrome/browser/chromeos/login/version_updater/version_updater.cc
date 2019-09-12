@@ -121,7 +121,7 @@ base::OneShotTimer* VersionUpdater::GetRebootTimerForTesting() {
 }
 
 void VersionUpdater::UpdateStatusChangedForTesting(
-    const UpdateEngineClient::Status& status) {
+    const update_engine::StatusResult& status) {
   UpdateStatusChanged(status);
 }
 
@@ -141,38 +141,39 @@ void VersionUpdater::RequestUpdateCheck() {
 }
 
 void VersionUpdater::UpdateStatusChanged(
-    const UpdateEngineClient::Status& status) {
+    const update_engine::StatusResult& status) {
   update_info_.status = status;
 
   if (update_info_.is_checking_for_update &&
-      status.status > UpdateEngineClient::UPDATE_STATUS_CHECKING_FOR_UPDATE &&
-      status.status != UpdateEngineClient::UPDATE_STATUS_ERROR &&
-      status.status !=
-          UpdateEngineClient::UPDATE_STATUS_REPORTING_ERROR_EVENT) {
+      status.current_operation() >
+          update_engine::Operation::CHECKING_FOR_UPDATE &&
+      status.current_operation() != update_engine::Operation::ERROR &&
+      status.current_operation() !=
+          update_engine::Operation::REPORTING_ERROR_EVENT) {
     update_info_.is_checking_for_update = false;
   }
   if (ignore_idle_status_ &&
-      status.status > UpdateEngineClient::UPDATE_STATUS_IDLE) {
+      status.current_operation() > update_engine::Operation::IDLE) {
     ignore_idle_status_ = false;
   }
 
-  switch (status.status) {
-    case UpdateEngineClient::UPDATE_STATUS_CHECKING_FOR_UPDATE:
+  switch (status.current_operation()) {
+    case update_engine::Operation::CHECKING_FOR_UPDATE:
       break;
-    case UpdateEngineClient::UPDATE_STATUS_UPDATE_AVAILABLE:
+    case update_engine::Operation::UPDATE_AVAILABLE:
       update_info_.progress = kBeforeDownloadProgress;
       update_info_.progress_message =
           l10n_util::GetStringUTF16(IDS_UPDATE_AVAILABLE);
       update_info_.show_estimated_time_left = false;
       update_info_.progress_unavailable = false;
       break;
-    case UpdateEngineClient::UPDATE_STATUS_DOWNLOADING:
+    case update_engine::Operation::DOWNLOADING:
       if (!is_downloading_update_) {
         is_downloading_update_ = true;
 
         download_start_time_ = download_last_time_ = tick_clock_->NowTicks();
-        download_start_progress_ = status.download_progress;
-        download_last_progress_ = status.download_progress;
+        download_start_progress_ = status.progress();
+        download_last_progress_ = status.progress();
         is_download_average_speed_computed_ = false;
         download_average_speed_ = 0.0;
         update_info_.progress_message =
@@ -181,67 +182,70 @@ void VersionUpdater::UpdateStatusChanged(
       }
       UpdateDownloadingStats(status);
       break;
-    case UpdateEngineClient::UPDATE_STATUS_VERIFYING:
+    case update_engine::Operation::VERIFYING:
       update_info_.progress = kBeforeVerifyingProgress;
       update_info_.progress_message =
           l10n_util::GetStringUTF16(IDS_UPDATE_VERIFYING);
       update_info_.show_estimated_time_left = false;
       break;
-    case UpdateEngineClient::UPDATE_STATUS_FINALIZING:
+    case update_engine::Operation::FINALIZING:
       update_info_.progress = kBeforeFinalizingProgress;
       update_info_.progress_message =
           l10n_util::GetStringUTF16(IDS_UPDATE_FINALIZING);
       update_info_.show_estimated_time_left = false;
       break;
-    case UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT:
+    case update_engine::Operation::UPDATED_NEED_REBOOT:
       update_info_.progress = kProgressComplete;
       update_info_.show_estimated_time_left = false;
       update_info_.progress_unavailable = false;
       break;
-    case UpdateEngineClient::UPDATE_STATUS_NEED_PERMISSION_TO_UPDATE:
+    case update_engine::Operation::NEED_PERMISSION_TO_UPDATE:
       VLOG(1) << "Update requires user permission to proceed.";
       update_info_.state = State::STATE_REQUESTING_USER_PERMISSION;
-      update_info_.update_version = status.new_version;
-      update_info_.update_size = status.new_size;
+      update_info_.update_version = status.new_version();
+      update_info_.update_size = status.new_size();
       update_info_.requires_permission_for_cellular = true;
       update_info_.progress_unavailable = false;
 
       DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
       break;
-    case UpdateEngineClient::UPDATE_STATUS_ATTEMPTING_ROLLBACK:
+    case update_engine::Operation::ATTEMPTING_ROLLBACK:
       VLOG(1) << "Attempting rollback";
       break;
-    case UpdateEngineClient::UPDATE_STATUS_IDLE:
+    case update_engine::Operation::IDLE:
       // Exit update only if update engine was in non-idle status before.
       // Otherwise, it's possible that the update request has not yet been
       // started.
       if (!ignore_idle_status_)
         StartExitUpdate(Result::UPDATE_NOT_REQUIRED);
       break;
-    case UpdateEngineClient::UPDATE_STATUS_ERROR:
-    case UpdateEngineClient::UPDATE_STATUS_REPORTING_ERROR_EVENT:
+    case update_engine::Operation::DISABLED:
+    case update_engine::Operation::ERROR:
+    case update_engine::Operation::REPORTING_ERROR_EVENT:
       break;
+    default:
+      NOTREACHED();
   }
 
   delegate_->UpdateInfoChanged(update_info_);
 }
 
 void VersionUpdater::UpdateDownloadingStats(
-    const UpdateEngineClient::Status& status) {
+    const update_engine::StatusResult& status) {
   base::TimeTicks download_current_time = tick_clock_->NowTicks();
   if (download_current_time >= download_last_time_ + kMinTimeStep) {
     // Estimate downloading rate.
     double progress_delta =
-        std::max(status.download_progress - download_last_progress_, 0.0);
+        std::max(status.progress() - download_last_progress_, 0.0);
     double time_delta =
         (download_current_time - download_last_time_).InSecondsF();
-    double download_rate = status.new_size * progress_delta / time_delta;
+    double download_rate = status.new_size() * progress_delta / time_delta;
 
     download_last_time_ = download_current_time;
-    download_last_progress_ = status.download_progress;
+    download_last_progress_ = status.progress();
 
     // Estimate time left.
-    double progress_left = std::max(1.0 - status.download_progress, 0.0);
+    double progress_left = std::max(1.0 - status.progress(), 0.0);
     if (!is_download_average_speed_computed_) {
       download_average_speed_ = download_rate;
       is_download_average_speed_computed_ = true;
@@ -251,11 +255,11 @@ void VersionUpdater::UpdateDownloadingStats(
         (1.0 - kDownloadSpeedSmoothFactor) * download_average_speed_;
     if (download_average_speed_ < kDownloadAverageSpeedDropBound) {
       time_delta = (download_current_time - download_start_time_).InSecondsF();
-      download_average_speed_ =
-          status.new_size *
-          (status.download_progress - download_start_progress_) / time_delta;
+      download_average_speed_ = status.new_size() *
+                                (status.progress() - download_start_progress_) /
+                                time_delta;
     }
-    double work_left = progress_left * status.new_size;
+    double work_left = progress_left * status.new_size();
     // time_left is in seconds.
     double time_left = work_left / download_average_speed_;
     // |time_left| may be large enough or even +infinity. So we must
@@ -267,7 +271,7 @@ void VersionUpdater::UpdateDownloadingStats(
   }
 
   int download_progress =
-      static_cast<int>(status.download_progress * kDownloadProgressIncrement);
+      static_cast<int>(status.progress() * kDownloadProgressIncrement);
   update_info_.progress = kBeforeDownloadProgress + download_progress;
 }
 

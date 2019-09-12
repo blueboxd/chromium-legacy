@@ -5,6 +5,7 @@
 #include "ash/system/tray/actionable_view.h"
 
 #include "ash/system/tray/tray_popup_utils.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"

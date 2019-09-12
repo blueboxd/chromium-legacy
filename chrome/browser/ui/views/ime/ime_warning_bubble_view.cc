@@ -92,8 +92,7 @@ ImeWarningBubbleView::ImeWarningBubbleView(
     : extension_(extension),
       browser_view_(browser_view),
       browser_(browser_view->browser()),
-      response_callback_(callback),
-      toolbar_actions_bar_observer_(this) {
+      response_callback_(callback) {
   container_ = browser_view_->toolbar()->browser_actions();
   toolbar_actions_bar_ = container_->toolbar_actions_bar();
   BrowserList::AddObserver(this);

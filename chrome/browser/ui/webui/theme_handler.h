@@ -10,6 +10,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/native_theme/native_theme_observer.h"
 
 class Profile;
@@ -53,7 +54,8 @@ class ThemeHandler : public content::WebUIMessageHandler,
 
   content::NotificationRegistrar registrar_;
 
-  ScopedObserver<ui::NativeTheme, ThemeHandler> theme_observer_;
+  ScopedObserver<ui::NativeTheme, ui::NativeThemeObserver> theme_observer_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(ThemeHandler);
 };

@@ -13,6 +13,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/ui/views/chrome_web_dialog_view.h"
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_handler_utils.h"
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_metrics_recorder.h"
@@ -55,22 +57,6 @@ const char kAddSupervisionDefaultURL[] =
     "https://families.google.com/supervision/setup";
 const char kAddSupervisionFlowType[] = "1";
 const char kAddSupervisionSwitch[] = "add-supervision-url";
-
-// Returns the URL of the Add Supervision flow from the command-line switch,
-// or the default value if it's not defined.
-GURL GetAddSupervisionURL() {
-  std::string url;
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(kAddSupervisionSwitch)) {
-    url = command_line->GetSwitchValueASCII(kAddSupervisionSwitch);
-  } else {
-    url = kAddSupervisionDefaultURL;
-  }
-  const GURL result(url);
-  DCHECK(result.is_valid()) << "Invalid URL \"" << url << "\" for switch \""
-                            << kAddSupervisionSwitch << "\"";
-  return result;
-}
 
 }  // namespace
 
@@ -144,6 +130,9 @@ SystemWebDialogDelegate* AddSupervisionDialog::GetInstance() {
 
 // AddSupervisionUI implementations.
 
+// static
+signin::IdentityManager* AddSupervisionUI::test_identity_manager_ = nullptr;
+
 AddSupervisionUI::AddSupervisionUI(content::WebUI* web_ui)
     : ui::MojoWebUIController(web_ui) {
   // Register the Mojo API handler.
@@ -151,17 +140,46 @@ AddSupervisionUI::AddSupervisionUI(content::WebUI* web_ui)
       &AddSupervisionUI::BindAddSupervisionHandler, base::Unretained(this)));
 
   // Set up the basic page framework.
-  SetupResources();
+  SetUpResources();
 }
 
-void AddSupervisionUI::SetupResources() {
+AddSupervisionUI::~AddSupervisionUI() = default;
+
+bool AddSupervisionUI::CloseDialog() {
+  bool showing_confirm_dialog = MaybeShowConfirmSignoutDialog();
+  if (!showing_confirm_dialog) {
+    // We aren't showing the confirm dialog, so close the AddSupervisionDialog.
+    AddSupervisionDialog::Close();
+  }
+  return !showing_confirm_dialog;
+}
+
+// static
+void AddSupervisionUI::SetUpForTest(signin::IdentityManager* identity_manager) {
+  test_identity_manager_ = identity_manager;
+}
+
+void AddSupervisionUI::BindAddSupervisionHandler(
+    add_supervision::mojom::AddSupervisionHandlerRequest request) {
+  signin::IdentityManager* identity_manager =
+      test_identity_manager_
+          ? test_identity_manager_
+          : IdentityManagerFactory::GetForProfile(Profile::FromWebUI(web_ui()));
+
+  mojo_api_handler_ = std::make_unique<AddSupervisionHandler>(
+      std::move(request), web_ui(), identity_manager, this);
+}
+
+void AddSupervisionUI::SetUpResources() {
   Profile* profile = Profile::FromWebUI(web_ui());
   std::unique_ptr<content::WebUIDataSource> source(
       content::WebUIDataSource::Create(chrome::kChromeUIAddSupervisionHost));
 
   // Initialize supervision URL from the command-line arguments (if provided).
   supervision_url_ = GetAddSupervisionURL();
-  DCHECK(supervision_url_.DomainIs("google.com"));
+  if (!allow_non_google_url_for_tests_) {
+    DCHECK(supervision_url_.DomainIs("google.com"));
+  }
 
   // Forward data to the WebUI.
   source->AddResourcePath("post_message_api.js",
@@ -201,21 +219,24 @@ void AddSupervisionUI::SetupResources() {
   content::WebUIDataSource::Add(profile, source.release());
 }
 
-AddSupervisionUI::~AddSupervisionUI() = default;
-
-bool AddSupervisionUI::CloseDialog() {
-  bool showing_confirm_dialog = MaybeShowConfirmSignoutDialog();
-  if (!showing_confirm_dialog) {
-    // We aren't showing the confirm dialog, so close the AddSupervisionDialog.
-    AddSupervisionDialog::Close();
+// Returns the URL of the Add Supervision flow from the command-line switch,
+// or the default value if it's not defined.
+GURL AddSupervisionUI::GetAddSupervisionURL() {
+  std::string url;
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(kAddSupervisionSwitch)) {
+    url = command_line->GetSwitchValueASCII(kAddSupervisionSwitch);
+    // The URL should only be set on the command line for testing purposes,
+    // which may include pointing to a non-google URL (i.e. http://localhost/).
+    // Therefore, we allow non-Google URLs in this instance.
+    allow_non_google_url_for_tests_ = true;
+  } else {
+    url = kAddSupervisionDefaultURL;
   }
-  return !showing_confirm_dialog;
-}
-
-void AddSupervisionUI::BindAddSupervisionHandler(
-    add_supervision::mojom::AddSupervisionHandlerRequest request) {
-  mojo_api_handler_ = std::make_unique<AddSupervisionHandler>(
-      std::move(request), web_ui(), this);
+  const GURL result(url);
+  DCHECK(result.is_valid()) << "Invalid URL \"" << url << "\" for switch \""
+                            << kAddSupervisionSwitch << "\"";
+  return result;
 }
 
 }  // namespace chromeos

@@ -7,6 +7,7 @@
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf_focus_cycler.h"
+#include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -222,6 +223,7 @@ ScrollableShelfView::ScrollableShelfView(ShelfModel* model, Shelf* shelf)
 
 ScrollableShelfView::~ScrollableShelfView() {
   Shell::Get()->RemoveShellObserver(this);
+  GetShelf()->tooltip()->set_shelf_tooltip_delegate(nullptr);
 }
 
 void ScrollableShelfView::Init() {
@@ -253,6 +255,8 @@ void ScrollableShelfView::Init() {
   layer()->SetMaskLayer(gradient_layer_delegate_->layer());
 
   focus_search_ = std::make_unique<ScrollableShelfFocusSearch>(this);
+
+  GetShelf()->tooltip()->set_shelf_tooltip_delegate(shelf_view_);
 }
 
 void ScrollableShelfView::OnFocusRingActivationChanged(bool activated) {

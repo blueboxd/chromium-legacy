@@ -50,8 +50,9 @@ bool TestSyncUserSettings::IsFirstSetupComplete() const {
   return first_setup_complete_;
 }
 
-void TestSyncUserSettings::SetFirstSetupComplete() {
-  SetFirstSetupComplete(true);
+void TestSyncUserSettings::SetFirstSetupComplete(
+    SyncFirstSetupCompleteSource source) {
+  SetFirstSetupComplete();
 }
 
 bool TestSyncUserSettings::IsSyncEverythingEnabled() const {
@@ -146,8 +147,12 @@ bool TestSyncUserSettings::SetDecryptionPassphrase(
   return false;
 }
 
-void TestSyncUserSettings::SetFirstSetupComplete(bool first_setup_complete) {
-  first_setup_complete_ = first_setup_complete;
+void TestSyncUserSettings::SetFirstSetupComplete() {
+  first_setup_complete_ = true;
+}
+
+void TestSyncUserSettings::ClearFirstSetupComplete() {
+  first_setup_complete_ = false;
 }
 
 void TestSyncUserSettings::SetPassphraseRequired(bool required) {

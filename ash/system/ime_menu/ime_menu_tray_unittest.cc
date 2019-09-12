@@ -15,6 +15,7 @@
 #include "ash/test/ash_test_base.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/text_input_flags.h"

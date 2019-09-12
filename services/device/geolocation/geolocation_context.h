@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/device/public/mojom/geolocation.mojom.h"
 #include "services/device/public/mojom/geolocation_context.mojom.h"
 #include "services/device/public/mojom/geoposition.mojom.h"
@@ -25,8 +26,8 @@ class GeolocationContext : public mojom::GeolocationContext {
   GeolocationContext();
   ~GeolocationContext() override;
 
-  // Creates GeolocationContext that is strongly bound to |request|.
-  static void Create(mojom::GeolocationContextRequest request);
+  // Creates GeolocationContext that is strongly bound to |receiver|.
+  static void Create(mojo::PendingReceiver<mojom::GeolocationContext> receiver);
 
   // mojom::GeolocationContext implementation:
   void BindGeolocation(

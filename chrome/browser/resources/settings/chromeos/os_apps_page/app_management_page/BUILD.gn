@@ -169,6 +169,7 @@ js_library("router") {
     ":actions",
     ":constants",
     ":store_client",
+    "../../..:route",
   ]
 }
 
@@ -211,6 +212,7 @@ js_library("uninstall_button") {
     ":util",
     "//ui/webui/resources/cr_elements/cr_button:cr_button",
     "//ui/webui/resources/cr_elements/policy:cr_tooltip_icon",
+    "//ui/webui/resources/js:i18n_behavior",
   ]
 }
 

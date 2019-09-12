@@ -44,8 +44,7 @@ class VersionUpdaterCros : public VersionUpdater,
 
  private:
   // UpdateEngineClient::Observer implementation.
-  void UpdateStatusChanged(
-      const chromeos::UpdateEngineClient::Status& status) override;
+  void UpdateStatusChanged(const update_engine::StatusResult& status) override;
 
   // Callback from UpdateEngineClient::RequestUpdateCheck().
   void OnUpdateCheck(chromeos::UpdateEngineClient::UpdateCheckResult result);
@@ -69,7 +68,7 @@ class VersionUpdaterCros : public VersionUpdater,
   StatusCallback callback_;
 
   // Last state received via UpdateStatusChanged().
-  chromeos::UpdateEngineClient::UpdateStatusOperation last_operation_;
+  update_engine::Operation last_operation_;
 
   // True if an update check should be scheduled when the update engine is idle.
   bool check_for_update_when_idle_;

@@ -11,7 +11,7 @@
 #include "base/test/task_environment.h"
 #include "chromeos/services/assistant/fake_client.h"
 #include "chromeos/services/assistant/platform/power_manager_provider_impl.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,12 +20,10 @@ namespace assistant {
 
 class FakeBatteryMonitor : device::mojom::BatteryMonitor {
  public:
-  FakeBatteryMonitor() : binding_(this) {}
+  FakeBatteryMonitor() {}
 
-  device::mojom::BatteryMonitorPtr CreateInterfacePtrAndBind() {
-    device::mojom::BatteryMonitorPtr ptr;
-    binding_.Bind(mojo::MakeRequest(&ptr));
-    return ptr;
+  mojo::PendingRemote<device::mojom::BatteryMonitor> CreateRemoteAndBind() {
+    return receiver_.BindNewPipeAndPassRemote();
   }
 
   void QueryNextStatus(QueryNextStatusCallback callback) override {
@@ -53,7 +51,7 @@ class FakeBatteryMonitor : device::mojom::BatteryMonitor {
   device::mojom::BatteryStatusPtr battery_status_;
   QueryNextStatusCallback callback_;
 
-  mojo::Binding<device::mojom::BatteryMonitor> binding_;
+  mojo::Receiver<device::mojom::BatteryMonitor> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeBatteryMonitor);
 };
@@ -69,7 +67,7 @@ class SystemProviderImplTest : public testing::Test {
     system_provider_impl_ = std::make_unique<SystemProviderImpl>(
         std::make_unique<PowerManagerProviderImpl>(
             &fake_client_, task_environment_.GetMainThreadTaskRunner()),
-        battery_monitor_.CreateInterfacePtrAndBind());
+        battery_monitor_.CreateRemoteAndBind());
     FlushForTesting();
   }
 

@@ -42,10 +42,16 @@ class CreditCardCVCAuthenticator
       creation_options = std::move(v);
       return *this;
     }
+    CVCAuthenticationResponse& with_request_options(
+        base::Optional<base::Value> v) {
+      request_options = std::move(v);
+      return *this;
+    }
     bool did_succeed = false;
     const CreditCard* card = nullptr;
     base::string16 cvc = base::string16();
     base::Optional<base::Value> creation_options = base::nullopt;
+    base::Optional<base::Value> request_options = base::nullopt;
   };
   class Requester {
    public:

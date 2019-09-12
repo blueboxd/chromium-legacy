@@ -67,7 +67,7 @@ class PRINTING_EXPORT CupsConnection {
   http_encryption_t cups_encryption_;
   bool blocking_;
 
-  std::unique_ptr<http_t, HttpDeleter> cups_http_;
+  ScopedHttpPtr cups_http_;
 
   DISALLOW_COPY_AND_ASSIGN(CupsConnection);
 };

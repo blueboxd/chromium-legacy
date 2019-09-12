@@ -19,8 +19,6 @@ namespace features {
 
 extern const base::Feature kAnimatedAvatarButton;
 
-extern const base::Feature kDragToPinTabs;
-
 extern const base::Feature kEvDetailsInPageInfo;
 
 extern const base::Feature kExtensionsToolbarMenu;

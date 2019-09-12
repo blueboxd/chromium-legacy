@@ -35,22 +35,6 @@ TEST_F(AXFragmentRootTest, TestUIAGetFragmentRoot) {
   EXPECT_EQ(expected_fragment_root.Get(), actual_fragment_root.Get());
 }
 
-TEST_F(AXFragmentRootTest, TestUIAGetRuntimeId) {
-  AXNodeData root;
-  Init(root);
-  InitFragmentRoot();
-
-  ComPtr<IRawElementProviderFragmentRoot> fragment_root_provider =
-      GetFragmentRoot();
-  ComPtr<IRawElementProviderFragment> fragment_provider;
-  fragment_root_provider.As(&fragment_provider);
-
-  base::win::ScopedSafearray runtime_id;
-  EXPECT_HRESULT_SUCCEEDED(
-      fragment_provider->GetRuntimeId(runtime_id.Receive()));
-  EXPECT_EQ(runtime_id.Get(), nullptr);
-}
-
 TEST_F(AXFragmentRootTest, TestUIAElementProviderFromPoint) {
   AXNodeData root_data;
   root_data.id = 1;

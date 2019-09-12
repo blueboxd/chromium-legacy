@@ -117,6 +117,29 @@ enum class OnboardingUIDismissalReason {
   kMaxValue = kDismissed,
 };
 
+// Metrics: "PasswordManager.Onboarding.ResultOfSavingFlow"
+// Metrics: "PasswordManager.Onboarding.ResultOfSavingFlowAfterOnboarding"
+// Enum recording the result of the combined saving flow consisting of the
+// potentially shown onboarding dialog and the save infobar.
+// Needs to stay in sync with the PasswordManagerOnboardingResultOfSavingFlow
+// enum in enums.xml.
+//
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class OnboardingResultOfSavingFlow {
+  // Possible infobar responses from the |UIDismissalReason| enum.
+  kInfobarNoDirectInteraction = 0,
+  kInfobarClickedSave = 1,
+  kInfobarClickedCancel = 2,
+  kInfobarClickedNever = 3,
+  // The rejecting button on the onboarding dialog was pressed, e.g. "Cancel".
+  kOnboardingRejected = 4,
+  // The onboarding dialog was dismissed, e.g. by pressing the back button, or
+  // opening a new tab.
+  kOnboardingDismissed = 5,
+  kMaxValue = kOnboardingDismissed,
+};
+
 enum FormDeserializationStatus {
   LOGIN_DATABASE_SUCCESS,
   LOGIN_DATABASE_FAILURE,
@@ -447,6 +470,13 @@ void LogOnboardingState(OnboardingState state);
 
 // Log the |reason| a user dismissed the onboarding UI.
 void LogOnboardingUIDismissalReason(OnboardingUIDismissalReason reason);
+
+// Log the |result| of the password saving flow.
+void LogResultOfSavingFlow(OnboardingResultOfSavingFlow result);
+
+// Log the |result| of the password saving flow if the onboarding was shown in
+// the process.
+void LogResultOfOnboardingSavingFlow(OnboardingResultOfSavingFlow result);
 
 // Log the appropriate display disposition.
 void LogUIDisplayDisposition(UIDisplayDisposition disposition);

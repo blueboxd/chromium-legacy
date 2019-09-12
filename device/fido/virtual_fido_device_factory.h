@@ -48,7 +48,7 @@ class VirtualFidoDeviceFactory : public device::FidoDiscoveryFactory {
   FidoTransportProtocol transport_ =
       FidoTransportProtocol::kUsbHumanInterfaceDevice;
   VirtualCtap2Device::Config ctap2_config_;
-  scoped_refptr<VirtualFidoDevice::State> state_;
+  scoped_refptr<VirtualFidoDevice::State> state_ = new VirtualFidoDevice::State;
   DISALLOW_COPY_AND_ASSIGN(VirtualFidoDeviceFactory);
 };
 

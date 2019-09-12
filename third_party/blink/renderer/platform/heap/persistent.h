@@ -64,7 +64,10 @@ class PersistentBase {
     return result;
   }
 
-  void Clear() { AssignSafe(nullptr); }
+  void Clear() {
+    // Note that this also frees up related data in the backend.
+    AssignSafe(nullptr);
+  }
 
   T* Get() const {
     CheckPointer();

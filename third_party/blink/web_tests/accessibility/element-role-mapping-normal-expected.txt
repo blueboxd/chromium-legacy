@@ -51,7 +51,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 AXRole: AXWebArea
     AXRole: AXGenericContainer
-        AXRole: AXBanner
+        AXRole: AXHeader
             AXRole: AXStaticText "This is a Header for this page"
                 AXRole: AXInlineTextBox "This is a Header for this page"
         AXRole: AXHeading "Heading"
@@ -95,7 +95,7 @@ AXRole: AXWebArea
                 AXRole: AXInlineTextBox "b"
         AXRole: AXMain
             AXRole: AXArticle
-                AXRole: AXGenericContainer
+                AXRole: AXHeaderAsNonLandmark
                     AXRole: AXHeading "Most important heading here"
                         AXRole: AXStaticText "Most important heading here"
                             AXRole: AXInlineTextBox "Most important heading here"
@@ -106,7 +106,7 @@ AXRole: AXWebArea
                     AXRole: AXStaticText "Google Chrome is a free, open-source web browser developed by Google, released in 2008."
                         AXRole: AXInlineTextBox "Google Chrome is a free, open-source web browser developed by Google, "
                         AXRole: AXInlineTextBox "released in 2008."
-                AXRole: AXGenericContainer
+                AXRole: AXFooterAsNonLandmark
                     AXRole: AXParagraph
                         AXRole: AXStaticText "Footer in article"
                             AXRole: AXInlineTextBox "Footer in article"
@@ -141,14 +141,14 @@ element
                 AXRole: AXInlineTextBox "
 "
         AXRole: AXRegion
-            AXRole: AXGenericContainer
+            AXRole: AXHeaderAsNonLandmark
                 AXRole: AXHeading "Most important heading here"
                     AXRole: AXStaticText "Most important heading here"
                         AXRole: AXInlineTextBox "Most important heading here"
             AXRole: AXParagraph
                 AXRole: AXStaticText "Section"
                     AXRole: AXInlineTextBox "Section"
-            AXRole: AXGenericContainer
+            AXRole: AXFooterAsNonLandmark
                 AXRole: AXParagraph
                     AXRole: AXStaticText "Footer in section"
                         AXRole: AXInlineTextBox "Footer in section"

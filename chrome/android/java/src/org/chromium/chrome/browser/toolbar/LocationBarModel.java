@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
+import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -397,7 +398,9 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
 
         switch (securityLevel) {
             case ConnectionSecurityLevel.NONE:
-                return isSmallDevice ? 0 : R.drawable.omnibox_info;
+                return isSmallDevice && !SearchEngineLogoUtils.shouldShowSearchEngineLogo()
+                        ? 0
+                        : R.drawable.omnibox_info;
             case ConnectionSecurityLevel.HTTP_SHOW_WARNING:
                 return R.drawable.omnibox_info;
             case ConnectionSecurityLevel.DANGEROUS:

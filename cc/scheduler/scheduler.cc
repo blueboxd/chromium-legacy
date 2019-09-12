@@ -196,10 +196,10 @@ void Scheduler::DidPrepareTiles() {
   state_machine_.DidPrepareTiles();
 }
 
-void Scheduler::DidPresentCompositorFrame(uint32_t frame_token,
-                                          base::TimeTicks presentation_time) {
-  compositor_timing_history_->DidPresentCompositorFrame(frame_token,
-                                                        presentation_time);
+void Scheduler::DidPresentCompositorFrame(
+    uint32_t frame_token,
+    const viz::FrameTimingDetails& details) {
+  compositor_timing_history_->DidPresentCompositorFrame(frame_token, details);
 }
 
 void Scheduler::DidLoseLayerTreeFrameSink() {

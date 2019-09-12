@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "build/build_config.h"
 #include "ui/base/l10n/l10n_util_win.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/win/hwnd_message_handler.h"
@@ -108,6 +109,15 @@ void CalculateWindowStylesFromInitParams(
       break;
     case Widget::InitParams::TYPE_MENU:
       *style |= WS_POPUP;
+      if (features::IsFormControlsRefreshEnabled() &&
+          params.remove_standard_frame) {
+        // If the platform doesn't support drop shadow, decorate the Window
+        // with just a border.
+        if (ui::win::IsAeroGlassEnabled())
+          *style |= WS_THICKFRAME;
+        else
+          *style |= WS_BORDER;
+      }
       break;
     case Widget::InitParams::TYPE_TOOLTIP:
       *style |= WS_POPUP;

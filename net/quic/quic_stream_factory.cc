@@ -1079,7 +1079,7 @@ QuicStreamFactory::QuicStreamFactory(
     quic::QuicRandom* random_generator,
     quic::QuicClock* clock,
     const QuicParams& params)
-    : require_confirmation_(true),
+    : is_quic_known_to_work_on_current_network_(false),
       net_log_(net_log),
       host_resolver_(host_resolver),
       client_socket_factory_(client_socket_factory),
@@ -1232,21 +1232,37 @@ QuicStreamFactory::~QuicStreamFactory() {
   }
 }
 
-void QuicStreamFactory::set_require_confirmation(bool require_confirmation) {
-  require_confirmation_ = require_confirmation;
+void QuicStreamFactory::set_is_quic_known_to_work_on_current_network(
+    bool is_quic_known_to_work_on_current_network) {
+  is_quic_known_to_work_on_current_network_ =
+      is_quic_known_to_work_on_current_network;
   if (!(local_address_ == IPEndPoint())) {
-    http_server_properties_->SetSupportsQuic(!require_confirmation,
-                                             local_address_.address());
+    if (is_quic_known_to_work_on_current_network_) {
+      http_server_properties_->SetLastLocalAddressWhenQuicWorked(
+          local_address_.address());
+    } else {
+      http_server_properties_->ClearLastLocalAddressWhenQuicWorked();
+    }
   }
 }
 
 base::TimeDelta QuicStreamFactory::GetTimeDelayForWaitingJob(
     const quic::QuicServerId& server_id,
     const NetworkIsolationKey& network_isolation_key) {
-  if (require_confirmation_) {
-    IPAddress last_address;
+  // If |is_quic_known_to_work_on_current_network_| is false, then one of the
+  // following is true:
+  // 1) This is startup and QuicStreamFactory::CreateSession() and
+  // ConfigureSocket() have yet to be called, and it is not yet known
+  // if the current network is the last one where QUIC worked.
+  // 2) Startup has been completed, and QUIC has not been used
+  // successfully since startup, or on this network before.
+  if (!is_quic_known_to_work_on_current_network_) {
+    // If |need_to_check_persisted_supports_quic_| is false, this is case 1)
+    // above. If HasLastLocalAddressWhenQuicWorked() is also true, then there's
+    // a chance the current network is the last one on which QUIC worked. So
+    // only delay the request if there's no chance that is the case.
     if (!need_to_check_persisted_supports_quic_ ||
-        !http_server_properties_->GetSupportsQuic(&last_address)) {
+        !http_server_properties_->HasLastLocalAddressWhenQuicWorked()) {
       return base::TimeDelta();
     }
   }
@@ -1486,7 +1502,7 @@ void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
   auto iter = active_jobs_.find(job->key().session_key());
   DCHECK(iter != active_jobs_.end());
   if (rv == OK) {
-    set_require_confirmation(false);
+    set_is_quic_known_to_work_on_current_network(true);
 
     auto session_it = active_sessions_.find(job->key().session_key());
     CHECK(session_it != active_sessions_.end());
@@ -1627,7 +1643,7 @@ void QuicStreamFactory::OnIPAddressChanged() {
   if (params_.migrate_sessions_on_network_change_v2)
     return;
 
-  set_require_confirmation(true);
+  set_is_quic_known_to_work_on_current_network(false);
   if (params_.close_sessions_on_ip_change) {
     CloseAllSessions(ERR_NETWORK_CHANGED, quic::QUIC_IP_ADDRESS_CHANGED);
   } else {
@@ -1677,7 +1693,7 @@ void QuicStreamFactory::OnNetworkMadeDefault(NetworkHandle network) {
     ++it;
     session->OnNetworkMadeDefault(network, scoped_event_log.net_log());
   }
-  set_require_confirmation(true);
+  set_is_quic_known_to_work_on_current_network(false);
 }
 
 void QuicStreamFactory::OnNetworkDisconnected(NetworkHandle network) {
@@ -1804,14 +1820,13 @@ int QuicStreamFactory::ConfigureSocket(DatagramClientSocket* socket,
   socket->GetLocalAddress(&local_address_);
   if (need_to_check_persisted_supports_quic_) {
     need_to_check_persisted_supports_quic_ = false;
-    IPAddress last_address;
-    if (http_server_properties_->GetSupportsQuic(&last_address) &&
-        last_address == local_address_.address()) {
-      require_confirmation_ = false;
+    if (http_server_properties_->WasLastLocalAddressWhenQuicWorked(
+            local_address_.address())) {
+      is_quic_known_to_work_on_current_network_ = true;
       // Clear the persisted IP address, in case the network no longer supports
       // QUIC so the next restart will require confirmation. It will be
       // re-persisted when the first job completes successfully.
-      http_server_properties_->SetSupportsQuic(false, last_address);
+      http_server_properties_->ClearLastLocalAddressWhenQuicWorked();
     }
   }
 
@@ -1910,7 +1925,7 @@ int QuicStreamFactory::CreateSession(
 
   // Wait for handshake confirmation before allowing streams to be created if
   // either this session or the factory require confirmation.
-  if (require_confirmation_)
+  if (!is_quic_known_to_work_on_current_network_)
     require_confirmation = true;
 
   *session = new QuicChromiumClientSession(

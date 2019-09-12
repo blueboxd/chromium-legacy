@@ -103,7 +103,7 @@ class AutomaticRebootManager : public PowerManagerClient::Observer,
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
   // UpdateEngineClient::Observer:
-  void UpdateStatusChanged(const UpdateEngineClient::Status& status) override;
+  void UpdateStatusChanged(const update_engine::StatusResult& status) override;
 
   // ui::UserActivityObserver:
   void OnUserActivity(const ui::Event* event) override;

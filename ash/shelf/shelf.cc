@@ -17,6 +17,7 @@
 #include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_observer.h"
+#include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
@@ -82,7 +83,8 @@ class Shelf::AutoHideEventHandler : public ui::EventHandler {
 
 Shelf::Shelf()
     : shelf_locking_manager_(this),
-      shelf_focus_cycler_(std::make_unique<ShelfFocusCycler>(this)) {}
+      shelf_focus_cycler_(std::make_unique<ShelfFocusCycler>(this)),
+      tooltip_(std::make_unique<ShelfTooltipManager>(this)) {}
 
 Shelf::~Shelf() = default;
 
@@ -187,6 +189,7 @@ void Shelf::SetAlignment(ShelfAlignment alignment) {
   alignment_ = alignment;
   // The ShelfWidget notifies the ShelfView of the alignment change.
   shelf_widget_->OnShelfAlignmentChanged();
+  tooltip_->Close();
   shelf_layout_manager_->LayoutShelf();
   Shell::Get()->NotifyShelfAlignmentChanged(GetWindow()->GetRootWindow());
 }

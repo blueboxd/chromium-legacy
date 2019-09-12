@@ -439,7 +439,7 @@ TEST(ExtensionL10nUtil, LocalizeManifestWithNameDescriptionFileHandlerTitle) {
   base::DictionaryValue handler;
   handler.SetString(keys::kActionDefaultTitle, "__MSG_file_handler_title__");
   auto handlers = std::make_unique<base::ListValue>();
-  handlers->GetList().push_back(std::move(handler));
+  handlers->Append(std::move(handler));
   manifest.Set(keys::kFileBrowserHandlers, std::move(handlers));
 
   std::string error;

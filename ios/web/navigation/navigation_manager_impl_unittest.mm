@@ -2108,7 +2108,7 @@ TEST_P(NavigationManagerTest, Restore) {
   EXPECT_EQ(1, navigation_manager()->GetLastCommittedItemIndex());
   EXPECT_EQ(urls[1], navigation_manager()->GetLastCommittedItem()->GetURL());
 
-  for (size_t i = 0; i < items.size(); ++i) {
+  for (size_t i = 0; i < base::size(urls); ++i) {
     EXPECT_EQ(urls[i], navigation_manager()->GetItemAtIndex(i)->GetURL());
   }
 

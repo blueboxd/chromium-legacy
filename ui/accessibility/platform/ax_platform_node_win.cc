@@ -3731,7 +3731,7 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_PROPERTY_VALUE);
 
   constexpr LONG kFirstKnownUiaPropertyId = UIA_RuntimeIdPropertyId;
-  constexpr LONG kLastKnownUiaPropertyId = UIA_HeadingLevelPropertyId;
+  constexpr LONG kLastKnownUiaPropertyId = UIA_IsDialogPropertyId;
   if (property_id >= kFirstKnownUiaPropertyId &&
       property_id <= kLastKnownUiaPropertyId) {
     base::UmaHistogramSparse("Accessibility.WinAPIs.GetPropertyValue",
@@ -4473,6 +4473,7 @@ int AXPlatformNodeWin::MSAARole() {
       return ROLE_SYSTEM_GROUPING;
 
     case ax::mojom::Role::kBanner:
+    case ax::mojom::Role::kHeader:
       return ROLE_SYSTEM_GROUPING;
 
     case ax::mojom::Role::kBlockquote:
@@ -4622,6 +4623,10 @@ int AXPlatformNodeWin::MSAARole() {
       return ROLE_SYSTEM_GROUPING;
 
     case ax::mojom::Role::kFeed:
+      return ROLE_SYSTEM_GROUPING;
+
+    case ax::mojom::Role::kFooterAsNonLandmark:
+    case ax::mojom::Role::kHeaderAsNonLandmark:
       return ROLE_SYSTEM_GROUPING;
 
     case ax::mojom::Role::kForm:
@@ -5045,6 +5050,7 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
 
   switch (GetData().role) {
     case ax::mojom::Role::kBanner:
+    case ax::mojom::Role::kHeader:
       // CORE-AAM recommends LANDMARK instead of HEADER.
       ia2_role = IA2_ROLE_LANDMARK;
       break;
@@ -5135,6 +5141,10 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
       break;
     case ax::mojom::Role::kFigcaption:
       ia2_role = IA2_ROLE_CAPTION;
+      break;
+    case ax::mojom::Role::kFooterAsNonLandmark:
+    case ax::mojom::Role::kHeaderAsNonLandmark:
+      ia2_role = IA2_ROLE_SECTION;
       break;
     case ax::mojom::Role::kForm:
       ia2_role = IA2_ROLE_FORM;
@@ -5262,6 +5272,7 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
       return L"group";
 
     case ax::mojom::Role::kBanner:
+    case ax::mojom::Role::kHeader:
       return L"banner";
 
     case ax::mojom::Role::kBlockquote:
@@ -5411,6 +5422,10 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
       return L"description";
 
     case ax::mojom::Role::kFigure:
+      return L"group";
+
+    case ax::mojom::Role::kFooterAsNonLandmark:
+    case ax::mojom::Role::kHeaderAsNonLandmark:
       return L"group";
 
     case ax::mojom::Role::kForm:
@@ -5903,6 +5918,7 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
       return UIA_GroupControlTypeId;
 
     case ax::mojom::Role::kBanner:
+    case ax::mojom::Role::kHeader:
       return UIA_GroupControlTypeId;
 
     case ax::mojom::Role::kBlockquote:
@@ -6052,6 +6068,10 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
       return UIA_TextControlTypeId;
 
     case ax::mojom::Role::kFigure:
+      return UIA_GroupControlTypeId;
+
+    case ax::mojom::Role::kFooterAsNonLandmark:
+    case ax::mojom::Role::kHeaderAsNonLandmark:
       return UIA_GroupControlTypeId;
 
     case ax::mojom::Role::kForm:
@@ -6402,6 +6422,7 @@ base::Optional<LONG> AXPlatformNodeWin::ComputeUIALandmarkType() const {
     case ax::mojom::Role::kComplementary:
     case ax::mojom::Role::kContentInfo:
     case ax::mojom::Role::kFooter:
+    case ax::mojom::Role::kHeader:
       return UIA_CustomLandmarkTypeId;
 
     case ax::mojom::Role::kForm:

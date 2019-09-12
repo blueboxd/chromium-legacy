@@ -8,6 +8,8 @@
 #include <string>
 
 #include "base/macros.h"
+#include "build/buildflag.h"
+#include "chrome/common/buildflags.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 
@@ -18,6 +20,9 @@ class TerminalSource : public content::URLDataSource {
 
  private:
   std::string GetSource() override;
+#if !BUILDFLAG(OPTIMIZE_WEBUI)
+  bool AllowCaching() override;
+#endif
 
   void StartDataRequest(
       const std::string& path,

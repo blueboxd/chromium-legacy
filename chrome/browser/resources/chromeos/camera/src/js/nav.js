@@ -45,6 +45,13 @@ cca.nav.setup = function(views) {
       .forEach(
           (element) => cca.util.makeUnfocusableByMouse(
               /** @type {!HTMLElement} */ (element)));
+  document.body.addEventListener('keydown', (e) => {
+    if (e.key === 'Tab') {
+      cca.state.set('tab-navigation', true);
+    }
+  });
+  document.body.addEventListener(
+      'pointerdown', () => cca.state.set('tab-navigation', false));
 };
 
 /**

@@ -16,6 +16,8 @@
 #include "media/remoting/proto_utils.h"
 #include "media/remoting/receiver.h"
 #include "media/remoting/renderer_controller.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace media {
@@ -28,11 +30,12 @@ class TestStreamSender final : public mojom::RemotingDataStreamSender {
   using SendFrameToSinkCallback =
       base::Callback<void(const std::vector<uint8_t>& data,
                           DemuxerStream::Type type)>;
-  TestStreamSender(mojom::RemotingDataStreamSenderRequest request,
-                   mojo::ScopedDataPipeConsumerHandle handle,
-                   DemuxerStream::Type type,
-                   const SendFrameToSinkCallback& callback)
-      : binding_(this, std::move(request)),
+  TestStreamSender(
+      mojo::PendingReceiver<mojom::RemotingDataStreamSender> receiver,
+      mojo::ScopedDataPipeConsumerHandle handle,
+      DemuxerStream::Type type,
+      const SendFrameToSinkCallback& callback)
+      : receiver_(this, std::move(receiver)),
         data_pipe_reader_(std::move(handle)),
         type_(type),
         send_frame_to_sink_cb_(callback) {}
@@ -57,7 +60,7 @@ class TestStreamSender final : public mojom::RemotingDataStreamSender {
     next_frame_data_.resize(0);
   }
 
-  mojo::Binding<RemotingDataStreamSender> binding_;
+  mojo::Receiver<RemotingDataStreamSender> receiver_;
   MojoDataPipeReader data_pipe_reader_;
   const DemuxerStream::Type type_;
   const SendFrameToSinkCallback send_frame_to_sink_cb_;
@@ -84,19 +87,20 @@ class TestRemoter final : public mojom::Remoter {
 
   void Start() override { source_->OnStarted(); }
 
-  void StartDataStreams(
-      mojo::ScopedDataPipeConsumerHandle audio_pipe,
-      mojo::ScopedDataPipeConsumerHandle video_pipe,
-      mojom::RemotingDataStreamSenderRequest audio_sender_request,
-      mojom::RemotingDataStreamSenderRequest video_sender_request) override {
+  void StartDataStreams(mojo::ScopedDataPipeConsumerHandle audio_pipe,
+                        mojo::ScopedDataPipeConsumerHandle video_pipe,
+                        mojo::PendingReceiver<mojom::RemotingDataStreamSender>
+                            audio_sender_receiver,
+                        mojo::PendingReceiver<mojom::RemotingDataStreamSender>
+                            video_sender_receiver) override {
     if (audio_pipe.is_valid()) {
       audio_stream_sender_.reset(new TestStreamSender(
-          std::move(audio_sender_request), std::move(audio_pipe),
+          std::move(audio_sender_receiver), std::move(audio_pipe),
           DemuxerStream::AUDIO, send_frame_to_sink_cb_));
     }
     if (video_pipe.is_valid()) {
       video_stream_sender_.reset(new TestStreamSender(
-          std::move(video_sender_request), std::move(video_pipe),
+          std::move(video_sender_receiver), std::move(video_pipe),
           DemuxerStream::VIDEO, send_frame_to_sink_cb_));
     }
   }

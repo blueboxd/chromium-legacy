@@ -37,8 +37,7 @@ enum VideoPixelFormat {
       6,  // 12bpp with Y plane followed by a 2x2 interleaved UV plane.
   PIXEL_FORMAT_NV21 =
       7,  // 12bpp with Y plane followed by a 2x2 interleaved VU plane.
-  PIXEL_FORMAT_UYVY =
-      8,  // 16bpp interleaved 2x1 U, 1x1 Y, 2x1 V, 1x1 Y samples.
+  /* PIXEL_FORMAT_UYVY = 8,  Deprecated */
   PIXEL_FORMAT_YUY2 =
       9,  // 16bpp interleaved 1x1 Y, 2x1 U, 1x1 Y, 2x1 V samples.
   PIXEL_FORMAT_ARGB = 10,   // 32bpp BGRA (byte-order), 1 plane.

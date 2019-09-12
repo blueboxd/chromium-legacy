@@ -24,24 +24,19 @@ using ::testing::StrictMock;
 
 namespace net {
 
-namespace {
-
 // Subclass of NetworkChangeNotifierWin that overrides functions so that no
-// Windows API networking functions are ever called.
+// Windows API networking function results effect tests.
 class TestNetworkChangeNotifierWin : public NetworkChangeNotifierWin {
  public:
-  TestNetworkChangeNotifierWin() {}
+  TestNetworkChangeNotifierWin() {
+    last_computed_connection_type_ = NetworkChangeNotifier::CONNECTION_UNKNOWN;
+    last_announced_offline_ = false;
+  }
 
   ~TestNetworkChangeNotifierWin() override {
     // This is needed so we don't try to stop watching for IP address changes,
     // as we never actually started.
     set_is_watching(false);
-  }
-
-  // From NetworkChangeNotifierWin.
-  NetworkChangeNotifier::ConnectionType RecomputeCurrentConnectionType()
-      const override {
-    return NetworkChangeNotifier::CONNECTION_UNKNOWN;
   }
 
   // From NetworkChangeNotifierWin.
@@ -79,8 +74,6 @@ bool ExitMessageLoopAndReturnFalse() {
   base::RunLoop::QuitCurrentWhenIdleDeprecated();
   return false;
 }
-
-}  // namespace
 
 class NetworkChangeNotifierWinTest : public TestWithTaskEnvironment {
  public:

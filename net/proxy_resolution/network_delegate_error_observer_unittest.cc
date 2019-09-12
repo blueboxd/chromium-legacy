@@ -58,12 +58,6 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   void OnPACScriptError(int line_number, const base::string16& error) override {
     got_pac_error_ = true;
   }
-  AuthRequiredResponse OnAuthRequired(URLRequest* request,
-                                      const AuthChallengeInfo& auth_info,
-                                      AuthCallback callback,
-                                      AuthCredentials* credentials) override {
-    return AUTH_REQUIRED_RESPONSE_NO_ACTION;
-  }
   bool OnCanGetCookies(const URLRequest& request,
                        const CookieList& cookie_list,
                        bool allowed_from_caller) override {

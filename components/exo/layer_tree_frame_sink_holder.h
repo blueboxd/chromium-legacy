@@ -14,6 +14,10 @@
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/resources/release_callback.h"
 
+namespace viz {
+struct FrameTimingDetails;
+}
+
 namespace cc {
 class LayerTreeFrameSink;
 }
@@ -54,8 +58,8 @@ class LayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient,
   void SetTreeActivationCallback(base::RepeatingClosure callback) override {}
   void DidReceiveCompositorFrameAck() override;
   void DidPresentCompositorFrame(
-      uint32_t presentation_token,
-      const gfx::PresentationFeedback& feedback) override;
+      uint32_t frame_token,
+      const viz::FrameTimingDetails& details) override;
   void DidLoseLayerTreeFrameSink() override;
   void OnDraw(const gfx::Transform& transform,
               const gfx::Rect& viewport,

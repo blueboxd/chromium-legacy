@@ -81,6 +81,7 @@
 #include "pdf/pdf_features.h"
 #include "services/network/public/cpp/features.h"
 #include "ui/accessibility/ax_enum_util.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/base/clipboard/clipboard.h"

@@ -5,22 +5,19 @@
 #ifndef MEDIA_FUCHSIA_CDM_FUCHSIA_CDM_FACTORY_H_
 #define MEDIA_FUCHSIA_CDM_FUCHSIA_CDM_FACTORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/media_export.h"
-#include "media/fuchsia/mojom/fuchsia_cdm_provider.mojom.h"
-
-namespace service_manager {
-class InterfaceProvider;
-}
+#include "media/fuchsia/cdm/fuchsia_cdm_provider.h"
 
 namespace media {
 
 class MEDIA_EXPORT FuchsiaCdmFactory : public CdmFactory {
  public:
   // |interface_provider| must outlive this class.
-  explicit FuchsiaCdmFactory(
-      service_manager::InterfaceProvider* interface_provider);
+  explicit FuchsiaCdmFactory(std::unique_ptr<FuchsiaCdmProvider> provider);
   ~FuchsiaCdmFactory() final;
 
   // CdmFactory implementation.
@@ -34,8 +31,7 @@ class MEDIA_EXPORT FuchsiaCdmFactory : public CdmFactory {
               const CdmCreatedCB& cdm_created_cb) final;
 
  private:
-  service_manager::InterfaceProvider* const interface_provider_;
-  media::mojom::FuchsiaCdmProviderPtr cdm_provider_;
+  std::unique_ptr<FuchsiaCdmProvider> cdm_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(FuchsiaCdmFactory);
 };

@@ -171,7 +171,7 @@ Polymer({
    * @return {!HTMLDialogElement}
    */
   getDialog: function() {
-    return this.$.dialog;
+    return /** @type {!HTMLDialogElement} */ (this.$.dialog);
   },
 
   /** @private */

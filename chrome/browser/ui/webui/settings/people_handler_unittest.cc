@@ -1308,8 +1308,9 @@ TEST_F(PeopleHandlerTest, DashboardClearWhileSettingsOpen_ConfirmSoon) {
         NotifySyncStateChanged();
       });
   EXPECT_CALL(*mock_sync_service_->GetMockUserSettings(),
-              SetFirstSetupComplete())
-      .WillOnce([&]() {
+              SetFirstSetupComplete(
+                  syncer::SyncFirstSetupCompleteSource::ADVANCED_FLOW_CONFIRM))
+      .WillOnce([&](syncer::SyncFirstSetupCompleteSource) {
         ON_CALL(*mock_sync_service_->GetMockUserSettings(),
                 IsFirstSetupComplete())
             .WillByDefault(Return(true));
@@ -1373,9 +1374,11 @@ TEST_F(PeopleHandlerTest, DashboardClearWhileSettingsOpen_ConfirmLater) {
         NotifySyncStateChanged();
       });
   if (!browser_defaults::kSyncAutoStarts) {
-    EXPECT_CALL(*mock_sync_service_->GetMockUserSettings(),
-                SetFirstSetupComplete())
-        .WillOnce([&]() {
+    EXPECT_CALL(
+        *mock_sync_service_->GetMockUserSettings(),
+        SetFirstSetupComplete(
+            syncer::SyncFirstSetupCompleteSource::ADVANCED_FLOW_CONFIRM))
+        .WillOnce([&](syncer::SyncFirstSetupCompleteSource) {
           ON_CALL(*mock_sync_service_->GetMockUserSettings(),
                   IsFirstSetupComplete())
               .WillByDefault(Return(true));

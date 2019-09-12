@@ -10,6 +10,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/csp/source_list_directive.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"

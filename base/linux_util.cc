@@ -148,6 +148,11 @@ char g_linux_distro[kDistroSize] =
     "Unknown";
 #endif
 
+// This function is only supposed to be used in tests. The declaration in the
+// header file is guarded by "#if defined(UNIT_TEST)" so that they can be used
+// by tests but not non-test code. However, this .cc file is compiled as part
+// of "base" where "UNIT_TEST" is not defined. So we need to specify
+// "BASE_EXPORT" here again so that they are visible to tests.
 BASE_EXPORT std::string GetKeyValueFromOSReleaseFileForTesting(
     const std::string& input,
     const char* key) {

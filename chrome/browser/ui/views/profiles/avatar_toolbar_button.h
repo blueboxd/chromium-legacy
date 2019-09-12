@@ -17,6 +17,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/material_design/material_design_controller_observer.h"
 #include "ui/events/event.h"
 
@@ -108,10 +109,12 @@ class AvatarToolbarButton : public ToolbarButton,
   void ShowHighlightAnimation();
   void HideHighlightAnimation();
 
+#if !defined(OS_CHROMEOS)
+  AvatarButtonErrorController error_controller_;
+#endif  // !defined(OS_CHROMEOS)
+
   Browser* const browser_;
   Profile* const profile_;
-
-  autofill::PersonalDataManager* personal_data_manager_;
 
   // Whether the avatar highlight animation is visible. If true, hide avatar
   // button sync paused/error state and update highlight color.
@@ -128,18 +131,19 @@ class AvatarToolbarButton : public ToolbarButton,
   // We cannot show the animation before we fetch the new avatar.
   bool waiting_for_image_to_show_user_email_ = false;
 
-#if !defined(OS_CHROMEOS)
-  AvatarButtonErrorController error_controller_;
-#endif  // !defined(OS_CHROMEOS)
-  ScopedObserver<BrowserList, BrowserListObserver> browser_list_observer_;
-  ScopedObserver<ProfileAttributesStorage, AvatarToolbarButton>
-      profile_observer_;
-  ScopedObserver<signin::IdentityManager, AvatarToolbarButton>
-      identity_manager_observer_;
-  ScopedObserver<ui::MaterialDesignController, AvatarToolbarButton>
+  ScopedObserver<ProfileAttributesStorage, ProfileAttributesStorage::Observer>
+      profile_observer_{this};
+  ScopedObserver<signin::IdentityManager, signin::IdentityManager::Observer>
+      identity_manager_observer_{this};
+  ScopedObserver<ui::MaterialDesignController,
+                 ui::MaterialDesignControllerObserver>
       md_observer_{this};
+  ScopedObserver<autofill::PersonalDataManager,
+                 autofill::PersonalDataManagerObserver>
+      personal_data_manager_observer_{this};
 
   base::WeakPtrFactory<AvatarToolbarButton> weak_ptr_factory_{this};
+
   DISALLOW_COPY_AND_ASSIGN(AvatarToolbarButton);
 };
 

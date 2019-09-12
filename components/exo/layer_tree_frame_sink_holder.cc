@@ -8,6 +8,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "components/exo/surface_tree_host.h"
+#include "components/viz/common/frame_timing_details.h"
 #include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "components/viz/common/resources/returned_resource.h"
 
@@ -134,10 +135,12 @@ void LayerTreeFrameSinkHolder::DidReceiveCompositorFrameAck() {
 }
 
 void LayerTreeFrameSinkHolder::DidPresentCompositorFrame(
-    uint32_t presentation_token,
-    const gfx::PresentationFeedback& feedback) {
-  if (surface_tree_host_)
-    surface_tree_host_->DidPresentCompositorFrame(presentation_token, feedback);
+    uint32_t frame_token,
+    const viz::FrameTimingDetails& details) {
+  if (surface_tree_host_) {
+    surface_tree_host_->DidPresentCompositorFrame(
+        frame_token, details.presentation_feedback);
+  }
 }
 
 void LayerTreeFrameSinkHolder::DidLoseLayerTreeFrameSink() {

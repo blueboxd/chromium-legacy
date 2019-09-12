@@ -9,7 +9,12 @@
 #include "base/callback.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
+#include "device/fido/features.h"
 #include "device/fido/fido_discovery_factory.h"
+
+#if defined(OS_WIN)
+#include "device/fido/win/webauthn_api.h"
+#endif  // defined(OS_WIN)
 
 namespace content {
 
@@ -96,6 +101,13 @@ AuthenticatorRequestClientDelegate::GetDiscoveryFactory() {
 #if defined(OS_MACOSX)
     discovery_factory_->set_mac_touch_id_info(GetTouchIdAuthenticatorConfig());
 #endif  // defined(OS_MACOSX)
+
+#if defined(OS_WIN)
+    if (base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi)) {
+      discovery_factory_->set_win_webauthn_api(
+          device::WinWebAuthnApi::GetDefault());
+    }
+#endif  // defined(OS_WIN)
   }
   return discovery_factory_.get();
 #endif

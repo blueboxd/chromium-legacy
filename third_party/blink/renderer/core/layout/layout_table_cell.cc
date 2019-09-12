@@ -1061,6 +1061,8 @@ void LayoutTableCell::UpdateCollapsedBorderValues() const {
     }
   } else {
     Table()->InvalidateCollapsedBordersForAllCellsIfNeeded();
+    if (Section())
+      Section()->RecalcCellsIfNeeded();
     if (collapsed_border_values_valid_)
       return;
 

@@ -40,14 +40,13 @@ class VersionUpdaterUnitTest : public testing::Test {
  public:
   VersionUpdaterUnitTest() : local_state_(TestingBrowserProcess::GetGlobal()) {}
 
-  void SetUpdateEngineStatus(UpdateEngineClient::UpdateStatusOperation status) {
-    UpdateEngineClient::Status update_engine_status;
-    update_engine_status.status = status;
-    fake_update_engine_client_->NotifyObserversThatStatusChanged(
-        update_engine_status);
+  void SetUpdateEngineStatus(update_engine::Operation operation) {
+    update_engine::StatusResult status;
+    status.set_current_operation(operation);
+    fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
   }
 
-  void SetStatusWithChecks(UpdateEngineClient::UpdateStatusOperation status) {
+  void SetStatusWithChecks(update_engine::Operation operation) {
     testing::MockFunction<void(int check_point_name)> check;
     {
       testing::InSequence s;
@@ -56,7 +55,7 @@ class VersionUpdaterUnitTest : public testing::Test {
       EXPECT_CALL(check, Call(checks_count_));
     }
 
-    SetUpdateEngineStatus(status);
+    SetUpdateEngineStatus(operation);
     check.Call(checks_count_);
     ++checks_count_;
   }
@@ -139,13 +138,13 @@ TEST_F(VersionUpdaterUnitTest, HandlesNoUpdate) {
   // Verify that the DUT checks for an update.
   EXPECT_EQ(fake_update_engine_client_->request_update_check_call_count(), 1);
 
-  SetStatusWithChecks(UpdateEngineClient::UPDATE_STATUS_CHECKING_FOR_UPDATE);
+  SetStatusWithChecks(update_engine::Operation::CHECKING_FOR_UPDATE);
 
   // No updates are available.
   EXPECT_CALL(*mock_delegate_,
               FinishExitUpdate(VersionUpdater::Result::UPDATE_NOT_REQUIRED))
       .Times(1);
-  SetStatusWithChecks(UpdateEngineClient::UPDATE_STATUS_IDLE);
+  SetStatusWithChecks(update_engine::Operation::IDLE);
 }
 
 TEST_F(VersionUpdaterUnitTest, HandlesAvailableUpdate) {
@@ -156,19 +155,19 @@ TEST_F(VersionUpdaterUnitTest, HandlesAvailableUpdate) {
   // Verify that the DUT checks for an update.
   EXPECT_EQ(fake_update_engine_client_->request_update_check_call_count(), 1);
 
-  SetStatusWithChecks(UpdateEngineClient::UPDATE_STATUS_IDLE);
+  SetStatusWithChecks(update_engine::Operation::IDLE);
 
-  SetStatusWithChecks(UpdateEngineClient::UPDATE_STATUS_CHECKING_FOR_UPDATE);
+  SetStatusWithChecks(update_engine::Operation::CHECKING_FOR_UPDATE);
 
-  SetStatusWithChecks(UpdateEngineClient::UPDATE_STATUS_UPDATE_AVAILABLE);
+  SetStatusWithChecks(update_engine::Operation::UPDATE_AVAILABLE);
 
-  SetStatusWithChecks(UpdateEngineClient::UPDATE_STATUS_DOWNLOADING);
+  SetStatusWithChecks(update_engine::Operation::DOWNLOADING);
 
-  SetStatusWithChecks(UpdateEngineClient::UPDATE_STATUS_VERIFYING);
+  SetStatusWithChecks(update_engine::Operation::VERIFYING);
 
-  SetStatusWithChecks(UpdateEngineClient::UPDATE_STATUS_FINALIZING);
+  SetStatusWithChecks(update_engine::Operation::FINALIZING);
 
-  SetStatusWithChecks(UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT);
+  SetStatusWithChecks(update_engine::Operation::UPDATED_NEED_REBOOT);
 
   EXPECT_EQ(fake_update_engine_client_->reboot_after_update_call_count(), 0);
   version_updater_->RebootAfterUpdate();
@@ -184,11 +183,11 @@ TEST_F(VersionUpdaterUnitTest, HandlesCancelUpdateOnUpdateAvailable) {
   // Verify that the DUT checks for an update.
   EXPECT_EQ(fake_update_engine_client_->request_update_check_call_count(), 1);
 
-  SetStatusWithChecks(UpdateEngineClient::UPDATE_STATUS_IDLE);
+  SetStatusWithChecks(update_engine::Operation::IDLE);
 
-  SetStatusWithChecks(UpdateEngineClient::UPDATE_STATUS_CHECKING_FOR_UPDATE);
+  SetStatusWithChecks(update_engine::Operation::CHECKING_FOR_UPDATE);
 
-  SetStatusWithChecks(UpdateEngineClient::UPDATE_STATUS_UPDATE_AVAILABLE);
+  SetStatusWithChecks(update_engine::Operation::UPDATE_AVAILABLE);
 
   EXPECT_CALL(*mock_delegate_,
               FinishExitUpdate(VersionUpdater::Result::UPDATE_NOT_REQUIRED))
@@ -206,13 +205,13 @@ TEST_F(VersionUpdaterUnitTest, HandlesCancelUpdateOnDownloading) {
   // Verify that the DUT checks for an update.
   EXPECT_EQ(fake_update_engine_client_->request_update_check_call_count(), 1);
 
-  SetStatusWithChecks(UpdateEngineClient::UPDATE_STATUS_IDLE);
+  SetStatusWithChecks(update_engine::Operation::IDLE);
 
-  SetStatusWithChecks(UpdateEngineClient::UPDATE_STATUS_CHECKING_FOR_UPDATE);
+  SetStatusWithChecks(update_engine::Operation::CHECKING_FOR_UPDATE);
 
-  SetStatusWithChecks(UpdateEngineClient::UPDATE_STATUS_UPDATE_AVAILABLE);
+  SetStatusWithChecks(update_engine::Operation::UPDATE_AVAILABLE);
 
-  SetStatusWithChecks(UpdateEngineClient::UPDATE_STATUS_DOWNLOADING);
+  SetStatusWithChecks(update_engine::Operation::DOWNLOADING);
 
   EXPECT_CALL(*mock_delegate_,
               FinishExitUpdate(VersionUpdater::Result::UPDATE_NOT_REQUIRED))
@@ -230,13 +229,13 @@ TEST_F(VersionUpdaterUnitTest, HandleUpdateError) {
   // Verify that the DUT checks for an update.
   EXPECT_EQ(fake_update_engine_client_->request_update_check_call_count(), 1);
 
-  SetStatusWithChecks(UpdateEngineClient::UPDATE_STATUS_IDLE);
+  SetStatusWithChecks(update_engine::Operation::IDLE);
 
-  SetStatusWithChecks(UpdateEngineClient::UPDATE_STATUS_CHECKING_FOR_UPDATE);
+  SetStatusWithChecks(update_engine::Operation::CHECKING_FOR_UPDATE);
 
-  SetStatusWithChecks(UpdateEngineClient::UPDATE_STATUS_UPDATE_AVAILABLE);
+  SetStatusWithChecks(update_engine::Operation::UPDATE_AVAILABLE);
 
-  SetStatusWithChecks(UpdateEngineClient::UPDATE_STATUS_REPORTING_ERROR_EVENT);
+  SetStatusWithChecks(update_engine::Operation::REPORTING_ERROR_EVENT);
 
   EXPECT_CALL(*mock_delegate_,
               FinishExitUpdate(VersionUpdater::Result::UPDATE_ERROR))

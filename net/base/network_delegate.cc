@@ -132,15 +132,6 @@ void NetworkDelegate::NotifyPACScriptError(int line_number,
   OnPACScriptError(line_number, error);
 }
 
-NetworkDelegate::AuthRequiredResponse NetworkDelegate::NotifyAuthRequired(
-    URLRequest* request,
-    const AuthChallengeInfo& auth_info,
-    AuthCallback callback,
-    AuthCredentials* credentials) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return OnAuthRequired(request, auth_info, std::move(callback), credentials);
-}
-
 bool NetworkDelegate::CanGetCookies(const URLRequest& request,
                                     const CookieList& cookie_list,
                                     bool allowed_from_caller) {

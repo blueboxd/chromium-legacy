@@ -85,6 +85,16 @@ void LogOnboardingUIDismissalReason(OnboardingUIDismissalReason reason) {
                                 reason);
 }
 
+void LogResultOfSavingFlow(OnboardingResultOfSavingFlow result) {
+  base::UmaHistogramEnumeration("PasswordManager.Onboarding.ResultOfSavingFlow",
+                                result);
+}
+
+void LogResultOfOnboardingSavingFlow(OnboardingResultOfSavingFlow result) {
+  base::UmaHistogramEnumeration(
+      "PasswordManager.Onboarding.ResultOfSavingFlowAfterOnboarding", result);
+}
+
 void LogUIDisplayDisposition(UIDisplayDisposition disposition) {
   base::UmaHistogramEnumeration("PasswordBubble.DisplayDisposition",
                                 disposition, NUM_DISPLAY_DISPOSITIONS);

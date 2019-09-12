@@ -545,7 +545,7 @@ class SearchBoxBindings : public gin::Wrappable<SearchBoxBindings> {
 
   // Handlers for JS functions.
   static void Paste(const std::string& text);
-  static void QueryAutocomplete(const std::string& input);
+  static void QueryAutocomplete(const base::string16& input);
   static void StopAutocomplete(bool clear_result);
   static void StartCapturingKeyStrokes();
   static void StopCapturingKeyStrokes();
@@ -604,7 +604,7 @@ void SearchBoxBindings::Paste(const std::string& text) {
 }
 
 // static
-void SearchBoxBindings::QueryAutocomplete(const std::string& input) {
+void SearchBoxBindings::QueryAutocomplete(const base::string16& input) {
   SearchBox* search_box = GetSearchBoxForCurrentContext();
   if (!search_box)
     return;
@@ -1345,9 +1345,13 @@ void SearchBoxExtension::DispatchDeleteCustomLinkResult(
 
 void SearchBoxExtension::DispatchQueryAutocompleteResult(
     blink::WebLocalFrame* frame,
-    const std::vector<chrome::mojom::AutocompleteMatchPtr>& matches) {
+    chrome::mojom::AutocompleteResultPtr result) {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey("input", result->input);
+  dict.SetDoubleKey("status", static_cast<double>(result->status));
+
   base::Value list(base::Value::Type::LIST);
-  for (const chrome::mojom::AutocompleteMatchPtr& match : matches) {
+  for (const chrome::mojom::AutocompleteMatchPtr& match : result->matches) {
     base::Value dict(base::Value::Type::DICTIONARY);
     dict.SetBoolKey("allowedToBeDefaultMatch",
                     match->allowed_to_be_default_match);
@@ -1378,8 +1382,10 @@ void SearchBoxExtension::DispatchQueryAutocompleteResult(
     dict.SetStringKey("type", match->type);
     list.Append(std::move(dict));
   }
+  dict.SetKey("matches", std::move(list));
+
   std::string json;
-  base::JSONWriter::Write(list, &json);
+  base::JSONWriter::Write(dict, &json);
   Dispatch(frame, blink::WebString::FromUTF8(base::StringPrintf(
                       kDispatchQueryAutocompleteResult, json.c_str())));
 }

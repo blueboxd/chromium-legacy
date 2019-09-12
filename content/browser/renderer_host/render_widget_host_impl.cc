@@ -340,11 +340,12 @@ base::LazyInstance<UnboundWidgetInputHandler>::Leaky g_unbound_input_handler =
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostImpl
 
-RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
-                                           RenderProcessHost* process,
-                                           int32_t routing_id,
-                                           mojom::WidgetPtr widget,
-                                           bool hidden)
+RenderWidgetHostImpl::RenderWidgetHostImpl(
+    RenderWidgetHostDelegate* delegate,
+    RenderProcessHost* process,
+    int32_t routing_id,
+    mojo::PendingRemote<mojom::Widget> widget,
+    bool hidden)
     : delegate_(delegate),
       process_(process),
       routing_id_(routing_id),
@@ -3093,12 +3094,14 @@ void RenderWidgetHostImpl::SetInputTargetClient(
   input_target_client_ = std::move(input_target_client);
 }
 
-void RenderWidgetHostImpl::SetWidget(mojom::WidgetPtr widget) {
-  if (widget) {
+void RenderWidgetHostImpl::SetWidget(
+    mojo::PendingRemote<mojom::Widget> widget_remote) {
+  if (widget_remote) {
     // If we have a bound handler ensure that we destroy the old input router.
     if (widget_input_handler_.is_bound())
       SetupInputRouter();
 
+    mojo::Remote<mojom::Widget> widget(std::move(widget_remote));
     widget->SetupWidgetInputHandler(
         widget_input_handler_.BindNewPipeAndPassReceiver(),
         input_router_->BindNewHost());

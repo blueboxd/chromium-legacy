@@ -2842,6 +2842,7 @@ jumbo_split_static_library("browser") {
       "password_manager/save_password_infobar_delegate_android.h",
       "password_manager/touch_to_fill_controller.cc",
       "password_manager/touch_to_fill_controller.h",
+      "password_manager/touch_to_fill_view.h",
       "password_manager/update_password_infobar_delegate_android.cc",
       "password_manager/update_password_infobar_delegate_android.h",
       "payments/android/can_make_payment_query_android.cc",
@@ -5817,6 +5818,11 @@ if (is_android) {
   java_cpp_enum("sharing_send_message_result_generated_enum") {
     sources = [
       "sharing/sharing_send_message_result.h",
+    ]
+  }
+  java_cpp_enum("sharing_dialog_type_generated_enum") {
+    sources = [
+      "sharing/sharing_metrics.h",
     ]
   }
 }

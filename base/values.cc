@@ -58,7 +58,7 @@ std::unique_ptr<Value> CopyListWithoutEmptyChildren(const Value& list) {
   for (const auto& entry : list.GetList()) {
     std::unique_ptr<Value> child_copy = CopyWithoutEmptyChildren(entry);
     if (child_copy)
-      copy.GetList().push_back(std::move(*child_copy));
+      copy.Append(std::move(*child_copy));
   }
   return copy.GetList().empty() ? nullptr
                                 : std::make_unique<Value>(std::move(copy));

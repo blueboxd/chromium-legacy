@@ -65,69 +65,6 @@ class ResizeObserver {
 
 /**
  * @see
- * https://www.polymer-project.org/2.0/docs/api/namespaces/Polymer.RenderStatus
- * Queue a function call to be run before the next render.
- * @param {!Element} element The element on which the function call is made.
- * @param {!function()} fn The function called on next render.
- * @param {...*} args The function arguments.
- * TODO(rbpotter): Remove this once it is added to Closure Compiler itself.
- */
-Polymer.RenderStatus.beforeNextRender = function(element, fn, args) {};
-
-/**
- * @see
- * https://polymer-library.polymer-project.org/2.0/api/namespaces/Polymer.Templatize
- * @constructor
- * TODO(rbpotter): Remove this once it is added to Closure Compiler itself.
- */
-Polymer.Templatize = function() {};
-
-/**
- * @param {!HTMLTemplateElement} template
- * @param {Object=} owner
- * @param {Object=} options
- * @return {!Function}
- * TODO(rbpotter): Remove this once it is added to Closure Compiler itself.
- */
-Polymer.Templatize.templatize = function(template, owner, options) {};
-
-/**
- * @see
- * https://www.webcomponents.org/element/@polymer/iron-iconset-svg
- * Polymer iconset of SVGs.
- * @implements {Polymer.Iconset}
- * @constructor
- * TODO(rbpotter): Remove this once it is added to Closure Compiler itself.
- */
-Polymer.IronIconsetSvg = function() {};
-
-/**
- * Added to IronIconsetSvg in chromium.patch.
- * @param {string} iconName Name of the icon to apply.
- * @param {boolean} targetIsRTL Whether the target element is RTL.
- * @return {Element} Returns an installable clone of the SVG element
- *     matching `id`.
- * TODO(rbpotter): Remove this once it is added to Closure Compiler itself.
- */
-Polymer.IronIconsetSvg.prototype.createIcon = function(iconName, targetIsRTL) {};
-
-/**
- * @see
- * https://polymer-library.polymer-project.org/2.0/api/elements/Polymer.DomIf
- * @constructor
- */
-Polymer.DomIf = function() {};
-
-/**
- * @param {!HTMLTemplateElement} template
- * @return {!HTMLElement}
- * TODO(dpapad): Figure out if there is a better way to type-check Polymer2
- * while still using legacy Polymer1 syntax.
- */
-Polymer.DomIf._contentForTemplate = function(template) {};
-
-/**
- * @see
  * https://github.com/tc39/proposal-bigint
  * This supports wrapping and operating on arbitrarily large integers.
  *

@@ -57,8 +57,7 @@ class VirtualFidoDeviceDiscovery
   DISALLOW_COPY_AND_ASSIGN(VirtualFidoDeviceDiscovery);
 };
 
-VirtualFidoDeviceFactory::VirtualFidoDeviceFactory()
-    : state_(new VirtualFidoDevice::State) {}
+VirtualFidoDeviceFactory::VirtualFidoDeviceFactory() = default;
 VirtualFidoDeviceFactory::~VirtualFidoDeviceFactory() = default;
 
 void VirtualFidoDeviceFactory::SetSupportedProtocol(

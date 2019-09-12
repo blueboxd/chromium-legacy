@@ -87,8 +87,8 @@ class FakeAudioWorkerTest : public testing::Test {
   }
 
  protected:
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::TimeSource::MOCK_TIME};
   AudioParameters params_;
   FakeAudioWorker fake_worker_;
   base::TimeDelta time_between_callbacks_;

@@ -165,8 +165,8 @@ void VersionUpdaterCros::CheckForUpdate(const StatusCallback& callback,
   if (!update_engine_client->HasObserver(this))
     update_engine_client->AddObserver(this);
 
-  if (update_engine_client->GetLastStatus().status !=
-      UpdateEngineClient::UPDATE_STATUS_IDLE) {
+  if (update_engine_client->GetLastStatus().current_operation() !=
+      update_engine::Operation::IDLE) {
     check_for_update_when_idle_ = true;
     return;
   }
@@ -259,7 +259,7 @@ void VersionUpdaterCros::OnGetEolStatus(
 
 VersionUpdaterCros::VersionUpdaterCros(content::WebContents* web_contents)
     : context_(web_contents ? web_contents->GetBrowserContext() : nullptr),
-      last_operation_(UpdateEngineClient::UPDATE_STATUS_IDLE),
+      last_operation_(update_engine::Operation::IDLE),
       check_for_update_when_idle_(false) {}
 
 VersionUpdaterCros::~VersionUpdaterCros() {
@@ -269,64 +269,65 @@ VersionUpdaterCros::~VersionUpdaterCros() {
 }
 
 void VersionUpdaterCros::UpdateStatusChanged(
-    const UpdateEngineClient::Status& status) {
+    const update_engine::StatusResult& status) {
   Status my_status = UPDATED;
   int progress = 0;
-  std::string version = status.new_version;
-  int64_t size = status.new_size;
+  std::string version = status.new_version();
+  int64_t size = status.new_size();
   base::string16 message;
 
   // If the updater is currently idle, just show the last operation (unless it
   // was previously checking for an update -- in that case, the system is
   // up to date now).  See http://crbug.com/120063 for details.
-  UpdateEngineClient::UpdateStatusOperation operation_to_show = status.status;
-  if (status.status == UpdateEngineClient::UPDATE_STATUS_IDLE &&
-      last_operation_ !=
-      UpdateEngineClient::UPDATE_STATUS_CHECKING_FOR_UPDATE) {
+  update_engine::Operation operation_to_show = status.current_operation();
+  if (status.current_operation() == update_engine::Operation::IDLE &&
+      last_operation_ != update_engine::Operation::CHECKING_FOR_UPDATE) {
     operation_to_show = last_operation_;
   }
 
   switch (operation_to_show) {
-    case UpdateEngineClient::UPDATE_STATUS_ERROR:
-    case UpdateEngineClient::UPDATE_STATUS_REPORTING_ERROR_EVENT:
-    case UpdateEngineClient::UPDATE_STATUS_ATTEMPTING_ROLLBACK:
+    case update_engine::Operation::IDLE:
+    case update_engine::Operation::DISABLED:
+    case update_engine::Operation::ERROR:
+    case update_engine::Operation::REPORTING_ERROR_EVENT:
+    case update_engine::Operation::ATTEMPTING_ROLLBACK:
       // This path previously used the FAILED status and IDS_UPGRADE_ERROR, but
       // the update engine reports errors for some conditions that shouldn't
       // actually be displayed as errors to users: http://crbug.com/146919.
       // Just use the UPDATED status instead.
       break;
-    case UpdateEngineClient::UPDATE_STATUS_CHECKING_FOR_UPDATE:
+    case update_engine::Operation::CHECKING_FOR_UPDATE:
       my_status = CHECKING;
       break;
-    case UpdateEngineClient::UPDATE_STATUS_DOWNLOADING:
-      progress = static_cast<int>(round(status.download_progress * 100));
+    case update_engine::Operation::DOWNLOADING:
+      progress = static_cast<int>(round(status.progress() * 100));
       FALLTHROUGH;
-    case UpdateEngineClient::UPDATE_STATUS_UPDATE_AVAILABLE:
+    case update_engine::Operation::UPDATE_AVAILABLE:
       my_status = UPDATING;
       break;
-    case UpdateEngineClient::UPDATE_STATUS_NEED_PERMISSION_TO_UPDATE:
+    case update_engine::Operation::NEED_PERMISSION_TO_UPDATE:
       my_status = NEED_PERMISSION_TO_UPDATE;
       break;
-    case UpdateEngineClient::UPDATE_STATUS_VERIFYING:
-    case UpdateEngineClient::UPDATE_STATUS_FINALIZING:
+    case update_engine::Operation::VERIFYING:
+    case update_engine::Operation::FINALIZING:
       // Once the download is finished, keep the progress at 100; it shouldn't
       // go down while the status is the same.
       progress = 100;
       my_status = UPDATING;
       break;
-    case UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT:
+    case update_engine::Operation::UPDATED_NEED_REBOOT:
       my_status = NEARLY_UPDATED;
       break;
     default:
-      break;
+      NOTREACHED();
   }
 
-  callback_.Run(my_status, progress, status.is_rollback, version, size,
-                message);
-  last_operation_ = status.status;
+  callback_.Run(my_status, progress, status.is_enterprise_rollback(), version,
+                size, message);
+  last_operation_ = status.current_operation();
 
   if (check_for_update_when_idle_ &&
-      status.status == UpdateEngineClient::UPDATE_STATUS_IDLE) {
+      status.current_operation() == update_engine::Operation::IDLE) {
     CheckForUpdate(callback_, VersionUpdater::PromoteCallback());
   }
 }

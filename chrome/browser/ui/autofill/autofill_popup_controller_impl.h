@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
 #include "chrome/browser/ui/autofill/popup_controller_common.h"
 #include "components/autofill/core/browser/ui/popup_types.h"
-#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 

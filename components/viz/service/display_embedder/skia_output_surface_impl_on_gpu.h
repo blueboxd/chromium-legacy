@@ -263,6 +263,9 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   gl::GLApi* api_ = nullptr;
   bool supports_alpha_ = false;
 
+  // Micro-optimization to get to issuing GPU SwapBuffers as soon as possible.
+  std::vector<std::unique_ptr<SkDeferredDisplayList>> destroy_after_swap_;
+
   THREAD_CHECKER(thread_checker_);
 
   base::WeakPtr<SkiaOutputSurfaceImplOnGpu> weak_ptr_;

@@ -52,6 +52,7 @@ def _Spawn(args):
       '-s', isolated_hash,
       '--dump-json', json_file,
       '-d', 'os', args.swarming_os,
+      '--tags=purpose:user-debug-run-swarmed',
   ]
   if args.target_os == 'fuchsia':
     trigger_args += [

@@ -514,6 +514,7 @@ class MetaBuildWrapper(object):
           '-I', isolate_server,
           '--namespace', namespace,
           '-S', swarming_server,
+          '--tags=purpose:user-debug-mb',
       ] + dimensions
     self._AddBaseSoftware(cmd)
     if self.args.extra_args:

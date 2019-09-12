@@ -70,7 +70,7 @@ const char kTestPageUrl[] = "/credit_card_upload_form_address_and_cc.html";
   base::DictionaryValue waitForDict = base::DictionaryValue();
   waitForDict.SetKey("type", base::Value("waitFor"));
   base::Value assertions = base::Value(base::Value::Type::LIST);
-  assertions.GetList().emplace_back(base::Value(
+  assertions.Append(base::Value(
       "return document.getElementsByName(\"name_address\")[0].value == \"Jane "
       "Smith\";"));
   waitForDict.SetKey("assertions", std::move(assertions));

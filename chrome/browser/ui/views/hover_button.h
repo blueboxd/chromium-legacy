@@ -64,6 +64,8 @@ class HoverButton : public views::LabelButton,
 
   ~HoverButton() override;
 
+  static SkColor GetInkDropColor(const views::View* view);
+
   // views::LabelButton:
   void SetBorder(std::unique_ptr<views::Border> b) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;

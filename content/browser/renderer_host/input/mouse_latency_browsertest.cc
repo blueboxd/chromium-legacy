@@ -29,6 +29,7 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace {
@@ -77,7 +78,7 @@ class TracingRenderWidgetHost : public RenderWidgetHostImpl {
   TracingRenderWidgetHost(RenderWidgetHostDelegate* delegate,
                           RenderProcessHost* process,
                           int32_t routing_id,
-                          mojom::WidgetPtr widget,
+                          mojo::PendingRemote<mojom::Widget> widget,
                           bool hidden)
       : RenderWidgetHostImpl(delegate,
                              process,
@@ -139,7 +140,7 @@ class TracingRenderWidgetHostFactory : public RenderWidgetHostFactory {
       RenderWidgetHostDelegate* delegate,
       RenderProcessHost* process,
       int32_t routing_id,
-      mojom::WidgetPtr widget_interface,
+      mojo::PendingRemote<mojom::Widget> widget_interface,
       bool hidden) override {
     return std::make_unique<TracingRenderWidgetHost>(
         delegate, process, routing_id, std::move(widget_interface), hidden);

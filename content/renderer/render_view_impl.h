@@ -36,6 +36,7 @@
 #include "content/renderer/render_widget.h"
 #include "content/renderer/render_widget_delegate.h"
 #include "ipc/ipc_platform_file.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
@@ -143,6 +144,11 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // Returns the RenderWidget for this RenderView.
   RenderWidget* GetWidget();
   const RenderWidget* GetWidget() const;
+
+  // Returns a |page_properties| interface. The lifetime is scoped to
+  // the RenderViewImpl.
+  PageProperties* page_properties() { return &page_properties_; }
+  const PageProperties* page_properties() const { return &page_properties_; }
 
   const WebPreferences& webkit_preferences() const {
     return webkit_preferences_;
@@ -563,6 +569,10 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // Whether the preferred size may have changed and |UpdatePreferredSize| needs
   // to be called.
   bool needs_preferred_size_update_ = true;
+
+  // Properties about the page that are of interest to subframes. These persist
+  // across main-frame navigations.
+  PageProperties page_properties_;
 
   // Loading state -------------------------------------------------------------
 

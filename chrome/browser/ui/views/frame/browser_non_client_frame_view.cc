@@ -15,8 +15,8 @@
 #include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/theme_resources.h"
@@ -133,7 +133,7 @@ bool BrowserNonClientFrameView::EverHasVisibleBackgroundTabShapes() const {
 }
 
 bool BrowserNonClientFrameView::CanDrawStrokes() const {
-  // Hosted apps should not draw strokes, as they don't have a tab strip.
+  // Web apps should not draw strokes, as they don't have a tab strip.
   return !browser_view_->browser()->app_controller();
 }
 
@@ -163,10 +163,10 @@ SkColor BrowserNonClientFrameView::GetFrameColor(
 }
 
 void BrowserNonClientFrameView::UpdateFrameColor() {
-  // Only hosted app windows support dynamic frame colors set by HTML meta tags.
-  if (!hosted_app_button_container_)
+  // Only web-app windows support dynamic frame colors set by HTML meta tags.
+  if (!web_app_frame_toolbar_)
     return;
-  hosted_app_button_container_->UpdateCaptionColors();
+  web_app_frame_toolbar_->UpdateCaptionColors();
   SchedulePaint();
 }
 
@@ -210,11 +210,11 @@ void BrowserNonClientFrameView::UpdateMinimumSize() {}
 
 void BrowserNonClientFrameView::Layout() {
   // BrowserView updates most UI visibility on layout based on fullscreen
-  // state. However, it doesn't have access to hosted_app_button_container_. Do
+  // state. However, it doesn't have access to |web_app_frame_toolbar_|. Do
   // it here. This is necessary since otherwise the visibility of ink drop
   // layers won't be updated; see crbug.com/964215.
-  if (hosted_app_button_container_)
-    hosted_app_button_container_->SetVisible(!frame_->IsFullscreen());
+  if (web_app_frame_toolbar_)
+    web_app_frame_toolbar_->SetVisible(!frame_->IsFullscreen());
 
   NonClientFrameView::Layout();
 }
@@ -230,19 +230,19 @@ void BrowserNonClientFrameView::VisibilityChanged(views::View* starting_from,
 }
 
 int BrowserNonClientFrameView::NonClientHitTest(const gfx::Point& point) {
-  if (hosted_app_button_container_) {
-    int hosted_app_component =
-        views::GetHitTestComponent(hosted_app_button_container_, point);
-    if (hosted_app_component != HTNOWHERE)
-      return hosted_app_component;
-  }
+  if (!web_app_frame_toolbar_)
+    return HTNOWHERE;
+  int web_app_component =
+      views::GetHitTestComponent(web_app_frame_toolbar_, point);
+  if (web_app_component != HTNOWHERE)
+    return web_app_component;
 
   return HTNOWHERE;
 }
 
 void BrowserNonClientFrameView::ResetWindowControls() {
-  if (hosted_app_button_container_)
-    hosted_app_button_container_->UpdateStatusIconsVisibility();
+  if (web_app_frame_toolbar_)
+    web_app_frame_toolbar_->UpdateStatusIconsVisibility();
 }
 
 bool BrowserNonClientFrameView::ShouldPaintAsActive(
@@ -278,7 +278,7 @@ gfx::ImageSkia BrowserNonClientFrameView::GetFrameOverlayImage(
 }
 
 void BrowserNonClientFrameView::ChildPreferredSizeChanged(views::View* child) {
-  if (browser_view()->initialized() && child == hosted_app_button_container_)
+  if (browser_view()->initialized() && child == web_app_frame_toolbar_)
     Layout();
 }
 
@@ -287,8 +287,8 @@ void BrowserNonClientFrameView::PaintAsActiveChanged(bool active) {
   // the new tab button) needs to be recalculated.
   browser_view_->tabstrip()->FrameColorsChanged();
 
-  if (hosted_app_button_container_)
-    hosted_app_button_container_->SetPaintAsActive(active);
+  if (web_app_frame_toolbar_)
+    web_app_frame_toolbar_->SetPaintAsActive(active);
 
   // Changing the activation state may change the visible frame color.
   SchedulePaint();

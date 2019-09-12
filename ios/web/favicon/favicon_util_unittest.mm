@@ -33,9 +33,9 @@ TEST_F(FaviconUtilTest, ExtractFaviconURLMultipleFavicons) {
   favicon3.SetKey("sizes", base::Value("werfxw"));
   std::unique_ptr<base::ListValue> favicons =
       std::make_unique<base::ListValue>();
-  favicons->GetList().push_back(std::move(favicon));
-  favicons->GetList().push_back(std::move(favicon2));
-  favicons->GetList().push_back(std::move(favicon3));
+  favicons->Append(std::move(favicon));
+  favicons->Append(std::move(favicon2));
+  favicons->Append(std::move(favicon3));
   base::DictionaryValue dictionnary;
   dictionnary.Set({"favicons"}, std::move(favicons));
 
@@ -74,9 +74,9 @@ TEST_F(FaviconUtilTest, ExtractFaviconURLNoRel) {
   favicon3.SetKey("rel", base::Value("apple-touch-icon-precomposed"));
   std::unique_ptr<base::ListValue> favicons =
       std::make_unique<base::ListValue>();
-  favicons->GetList().push_back(std::move(favicon));
-  favicons->GetList().push_back(std::move(favicon2));
-  favicons->GetList().push_back(std::move(favicon3));
+  favicons->Append(std::move(favicon));
+  favicons->Append(std::move(favicon2));
+  favicons->Append(std::move(favicon3));
   base::DictionaryValue dictionnary;
   dictionnary.Set({"favicons"}, std::move(favicons));
 
@@ -102,9 +102,9 @@ TEST_F(FaviconUtilTest, ExtractFaviconURLIntRel) {
   favicon3.SetKey("rel", base::Value("apple-touch-icon-precomposed"));
   std::unique_ptr<base::ListValue> favicons =
       std::make_unique<base::ListValue>();
-  favicons->GetList().push_back(std::move(favicon));
-  favicons->GetList().push_back(std::move(favicon2));
-  favicons->GetList().push_back(std::move(favicon3));
+  favicons->Append(std::move(favicon));
+  favicons->Append(std::move(favicon2));
+  favicons->Append(std::move(favicon3));
   base::DictionaryValue dictionnary;
   dictionnary.Set({"favicons"}, std::move(favicons));
 
@@ -129,9 +129,9 @@ TEST_F(FaviconUtilTest, ExtractFaviconURLNoHref) {
   favicon3.SetKey("rel", base::Value("apple-touch-icon-precomposed"));
   std::unique_ptr<base::ListValue> favicons =
       std::make_unique<base::ListValue>();
-  favicons->GetList().push_back(std::move(favicon));
-  favicons->GetList().push_back(std::move(favicon2));
-  favicons->GetList().push_back(std::move(favicon3));
+  favicons->Append(std::move(favicon));
+  favicons->Append(std::move(favicon2));
+  favicons->Append(std::move(favicon3));
   base::DictionaryValue dictionnary;
   dictionnary.Set({"favicons"}, std::move(favicons));
 
@@ -176,8 +176,8 @@ TEST_F(FaviconUtilTest, ExtractFaviconURLSizesCorrectAndGarbage) {
   favicon2.SetKey("sizes", base::Value("sgxer 30x40"));
   std::unique_ptr<base::ListValue> favicons =
       std::make_unique<base::ListValue>();
-  favicons->GetList().push_back(std::move(favicon));
-  favicons->GetList().push_back(std::move(favicon2));
+  favicons->Append(std::move(favicon));
+  favicons->Append(std::move(favicon2));
   base::DictionaryValue dictionnary;
   dictionnary.Set({"favicons"}, std::move(favicons));
 
@@ -214,8 +214,8 @@ TEST_F(FaviconUtilTest, ExtractFaviconURLSizesPartiallyCorrect) {
   favicon2.SetKey("sizes", base::Value("x40"));
   std::unique_ptr<base::ListValue> favicons =
       std::make_unique<base::ListValue>();
-  favicons->GetList().push_back(std::move(favicon));
-  favicons->GetList().push_back(std::move(favicon2));
+  favicons->Append(std::move(favicon));
+  favicons->Append(std::move(favicon2));
   base::DictionaryValue dictionnary;
   dictionnary.Set({"favicons"}, std::move(favicons));
 

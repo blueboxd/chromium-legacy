@@ -44,7 +44,8 @@ JNI_OfflineItemBridge_createOfflineItemAndMaybeAddToList(
       static_cast<jint>(item.pending_state), item.is_resumable,
       item.allow_metered, item.received_bytes, item.progress.value,
       item.progress.max.value_or(-1), static_cast<jint>(item.progress.unit),
-      item.time_remaining_ms, item.is_dangerous, item.can_rename);
+      item.time_remaining_ms, item.is_dangerous, item.can_rename,
+      item.ignore_visuals);
 }
 
 }  // namespace

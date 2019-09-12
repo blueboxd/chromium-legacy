@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/safe_browsing/telemetry/telemetry_service.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/simple_download_manager_coordinator.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "content/public/browser/download_manager.h"
 
@@ -57,20 +58,18 @@ enum class ApkDownloadTelemetryOutcome {
 // the perspective of this class:
 // 1. Downloading off-market APKs. See: go/zurkon-v1-referrer-dd
 
-class AndroidTelemetryService : public download::DownloadItem::Observer,
-                                public content::DownloadManager::Observer,
-                                public TelemetryService {
+class AndroidTelemetryService
+    : public download::DownloadItem::Observer,
+      public download::SimpleDownloadManagerCoordinator::Observer,
+      public TelemetryService {
  public:
   AndroidTelemetryService(SafeBrowsingService* sb_service, Profile* profile);
   ~AndroidTelemetryService() override;
 
-  // content::DownloadManager::Observer.
-  // Called when a new download is created.
-  void OnDownloadCreated(content::DownloadManager* manager,
-                         download::DownloadItem* item) override;
+  // download::SimpleDownloadManagerCoordinator::Observer.
+  void OnDownloadCreated(download::DownloadItem* item) override;
 
-  // download::DownloadItem::Observer
-  // Called when the state of a download item changes.
+  // download::DownloadItem::Observer.
   void OnDownloadUpdated(download::DownloadItem* download) override;
 
  private:

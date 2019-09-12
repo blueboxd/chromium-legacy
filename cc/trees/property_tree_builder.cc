@@ -739,7 +739,6 @@ void PropertyTreeBuilderContext::AddScrollNodeIfNeeded(
     node.user_scrollable_vertical = layer->GetUserScrollableVertical();
     node.element_id = layer->element_id();
     node.transform_id = data_for_children->transform_tree_parent;
-    node.snap_container_data = layer->snap_container_data();
 
     node_id = scroll_tree_.Insert(node, parent_id);
     data_for_children->scroll_tree_parent = node_id;

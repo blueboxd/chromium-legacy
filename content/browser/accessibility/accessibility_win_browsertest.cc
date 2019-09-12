@@ -3520,6 +3520,53 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestAccNavigateInTables) {
   accessible_cell.Reset();
 }
 
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestTreegridIsIATable) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLoadComplete);
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL(
+                                 "/accessibility/aria/aria-treegrid.html")));
+  waiter.WaitForNotification();
+
+  Microsoft::WRL::ComPtr<IAccessible> document(GetRendererAccessible());
+  std::vector<base::win::ScopedVariant> document_children =
+      GetAllAccessibleChildren(document.Get());
+  // There are two treegrids in this test file. Use only the first one.
+  ASSERT_EQ(2u, document_children.size());
+
+  Microsoft::WRL::ComPtr<IAccessible2> table;
+  ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
+      GetAccessibleFromVariant(document.Get(), document_children[0].AsInput())
+          .Get(),
+      &table));
+  LONG role = 0;
+  ASSERT_HRESULT_SUCCEEDED(table->role(&role));
+  ASSERT_EQ(ROLE_SYSTEM_OUTLINE, role);
+
+  // Retrieve the first cell.
+  Microsoft::WRL::ComPtr<IAccessibleTable2> table2;
+  Microsoft::WRL::ComPtr<IUnknown> cell;
+  Microsoft::WRL::ComPtr<IAccessible2> cell1;
+  EXPECT_HRESULT_SUCCEEDED(table.CopyTo(IID_PPV_ARGS(&table2)));
+  EXPECT_HRESULT_SUCCEEDED(table2->get_cellAt(0, 0, &cell));
+  EXPECT_HRESULT_SUCCEEDED(cell.CopyTo(IID_PPV_ARGS(&cell1)));
+
+  base::win::ScopedVariant childid_self(CHILDID_SELF);
+  Microsoft::WRL::ComPtr<IAccessibleTableCell> accessible_cell;
+  LONG row_index = -1;
+  LONG column_index = -1;
+  EXPECT_HRESULT_SUCCEEDED(cell1->role(&role));
+  EXPECT_EQ(ROLE_SYSTEM_CELL, role);
+  EXPECT_HRESULT_SUCCEEDED(cell1.CopyTo(IID_PPV_ARGS(&accessible_cell)));
+  EXPECT_HRESULT_SUCCEEDED(accessible_cell->get_rowIndex(&row_index));
+  EXPECT_HRESULT_SUCCEEDED(accessible_cell->get_columnIndex(&column_index));
+  EXPECT_EQ(0, row_index);
+  EXPECT_EQ(0, column_index);
+  accessible_cell.Reset();
+}
+
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestScrollTo) {
   LoadInitialAccessibilityTreeFromHtml(
       R"HTML(<!DOCTYPE html>

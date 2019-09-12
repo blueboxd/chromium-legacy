@@ -14,7 +14,7 @@
 
 class BrowserFrame;
 class BrowserView;
-class HostedAppButtonContainer;
+class WebAppFrameToolbarView;
 
 // A specialization of the NonClientFrameView object that provides additional
 // Browser-specific methods.
@@ -127,8 +127,8 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   int NonClientHitTest(const gfx::Point& point) override;
   void ResetWindowControls() override;
 
-  HostedAppButtonContainer* hosted_app_button_container_for_testing() {
-    return hosted_app_button_container_;
+  WebAppFrameToolbarView* web_app_frame_toolbar_for_testing() {
+    return web_app_frame_toolbar_;
   }
 
  protected:
@@ -155,15 +155,15 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   void OnProfileHighResAvatarLoaded(
       const base::FilePath& profile_path) override;
 
-  void set_hosted_app_button_container(
-      HostedAppButtonContainer* hosted_app_button_container) {
-    hosted_app_button_container_ = hosted_app_button_container;
+  void set_web_app_frame_toolbar(
+      WebAppFrameToolbarView* web_app_frame_toolbar) {
+    web_app_frame_toolbar_ = web_app_frame_toolbar;
   }
-  HostedAppButtonContainer* hosted_app_button_container() {
-    return hosted_app_button_container_;
+  WebAppFrameToolbarView* web_app_frame_toolbar() {
+    return web_app_frame_toolbar_;
   }
-  const HostedAppButtonContainer* hosted_app_button_container() const {
-    return hosted_app_button_container_;
+  const WebAppFrameToolbarView* web_app_frame_toolbar() const {
+    return web_app_frame_toolbar_;
   }
 
  private:
@@ -188,8 +188,8 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // The BrowserView hosted within this View.
   BrowserView* browser_view_;
 
-  // Menu button and page status icons. Only used by hosted app windows.
-  HostedAppButtonContainer* hosted_app_button_container_ = nullptr;
+  // Menu button and page status icons. Only used by web-app windows.
+  WebAppFrameToolbarView* web_app_frame_toolbar_ = nullptr;
 
   ScopedObserver<TabStrip, BrowserNonClientFrameView> tab_strip_observer_;
 

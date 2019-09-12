@@ -418,6 +418,14 @@ class UnmaskCardRequest : public PaymentsRequest {
         "fido_creation_options", base::Value::Type::DICTIONARY);
     if (creation_options)
       response_details_.fido_creation_options = creation_options->Clone();
+
+    const auto* request_options = response.FindKeyOfType(
+        "fido_request_options", base::Value::Type::DICTIONARY);
+    if (request_options)
+      response_details_.fido_request_options = request_options->Clone();
+
+    const auto* token = response.FindStringKey("card_authorization_token");
+    response_details_.card_authorization_token = token ? *token : std::string();
   }
 
   bool IsResponseComplete() override {
@@ -443,7 +451,9 @@ class OptChangeRequest : public PaymentsRequest {
  public:
   OptChangeRequest(
       const PaymentsClient::OptChangeRequestDetails& request_details,
-      OptChangeCallback callback,
+      base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
+                              PaymentsClient::OptChangeResponseDetails&)>
+          callback,
       const bool full_sync_enabled)
       : request_details_(request_details),
         callback_(std::move(callback)),
@@ -478,6 +488,12 @@ class OptChangeRequest : public PaymentsRequest {
           std::move(request_details_.fido_authenticator_response));
     }
 
+    if (!request_details_.card_authorization_token.empty()) {
+      request_dict.SetKey(
+          "card_authorization_token",
+          base::Value(request_details_.card_authorization_token));
+    }
+
     std::string request_content;
     base::JSONWriter::Write(request_dict, &request_content);
     VLOG(3) << "autofillauthoptchange request body: " << request_content;
@@ -488,28 +504,34 @@ class OptChangeRequest : public PaymentsRequest {
     const auto* user_is_opted_in =
         response.FindKeyOfType("user_is_opted_in", base::Value::Type::BOOLEAN);
     if (user_is_opted_in)
-      user_is_opted_in_ = user_is_opted_in->GetBool();
+      response_details_.user_is_opted_in = user_is_opted_in->GetBool();
 
     const auto* fido_creation_options = response.FindKeyOfType(
         "fido_creation_options", base::Value::Type::DICTIONARY);
     if (fido_creation_options)
-      fido_creation_options_ = fido_creation_options->Clone();
+      response_details_.fido_creation_options = fido_creation_options->Clone();
+
+    const auto* fido_request_options = response.FindKeyOfType(
+        "fido_request_options", base::Value::Type::DICTIONARY);
+    if (fido_request_options)
+      response_details_.fido_request_options = fido_request_options->Clone();
   }
 
-  bool IsResponseComplete() override { return user_is_opted_in_.has_value(); }
+  bool IsResponseComplete() override {
+    return response_details_.user_is_opted_in.has_value();
+  }
 
   void RespondToDelegate(AutofillClient::PaymentsRpcResult result) override {
-    std::move(callback_).Run(
-        result, user_is_opted_in_.value_or(!request_details_.opt_in),
-        std::move(fido_creation_options_));
+    std::move(callback_).Run(result, response_details_);
   }
 
  private:
   PaymentsClient::OptChangeRequestDetails request_details_;
-  OptChangeCallback callback_;
+  base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
+                          PaymentsClient::OptChangeResponseDetails&)>
+      callback_;
   const bool full_sync_enabled_;
-  base::Optional<bool> user_is_opted_in_;
-  base::Value fido_creation_options_;
+  PaymentsClient::OptChangeResponseDetails response_details_;
 
   DISALLOW_COPY_AND_ASSIGN(OptChangeRequest);
 };
@@ -966,6 +988,12 @@ operator=(const PaymentsClient::UnmaskResponseDetails& other) {
   } else {
     fido_creation_options.reset();
   }
+  if (other.fido_request_options.has_value()) {
+    fido_request_options = other.fido_request_options->Clone();
+  } else {
+    fido_request_options.reset();
+  }
+  card_authorization_token = other.card_authorization_token;
   return *this;
 }
 
@@ -975,8 +1003,27 @@ PaymentsClient::OptChangeRequestDetails::OptChangeRequestDetails(
   app_locale = other.app_locale;
   opt_in = other.opt_in;
   fido_authenticator_response = other.fido_authenticator_response.Clone();
+  card_authorization_token = other.card_authorization_token;
 }
 PaymentsClient::OptChangeRequestDetails::~OptChangeRequestDetails() {}
+
+PaymentsClient::OptChangeResponseDetails::OptChangeResponseDetails() {}
+PaymentsClient::OptChangeResponseDetails::OptChangeResponseDetails(
+    const OptChangeResponseDetails& other) {
+  user_is_opted_in = other.user_is_opted_in;
+
+  if (other.fido_creation_options.has_value()) {
+    fido_creation_options = other.fido_creation_options->Clone();
+  } else {
+    fido_creation_options.reset();
+  }
+  if (other.fido_request_options.has_value()) {
+    fido_request_options = other.fido_request_options->Clone();
+  } else {
+    fido_request_options.reset();
+  }
+}
+PaymentsClient::OptChangeResponseDetails::~OptChangeResponseDetails() {}
 
 PaymentsClient::UploadRequestDetails::UploadRequestDetails() {}
 PaymentsClient::UploadRequestDetails::UploadRequestDetails(
@@ -1025,8 +1072,11 @@ void PaymentsClient::UnmaskCard(
       /*authenticate=*/true);
 }
 
-void PaymentsClient::OptChange(const OptChangeRequestDetails request_details,
-                               OptChangeCallback callback) {
+void PaymentsClient::OptChange(
+    const OptChangeRequestDetails request_details,
+    base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
+                            PaymentsClient::OptChangeResponseDetails&)>
+        callback) {
   IssueRequest(std::make_unique<OptChangeRequest>(
                    request_details, std::move(callback),
                    account_info_getter_->IsSyncFeatureEnabled()),

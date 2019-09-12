@@ -51,8 +51,7 @@ class PRINTING_EXPORT CupsOptionProvider {
 class PRINTING_EXPORT CupsPrinter : public CupsOptionProvider {
  public:
   // Create a printer with a connection defined by |http| and |dest|.
-  CupsPrinter(http_t* http,
-              std::unique_ptr<cups_dest_t, DestinationDeleter> dest);
+  CupsPrinter(http_t* http, ScopedDestination dest);
 
   CupsPrinter(CupsPrinter&& printer);
 
@@ -126,10 +125,10 @@ class PRINTING_EXPORT CupsPrinter : public CupsOptionProvider {
   http_t* const cups_http_;
 
   // information to identify a printer
-  std::unique_ptr<cups_dest_t, DestinationDeleter> destination_;
+  ScopedDestination destination_;
 
   // opaque object containing printer attributes and options
-  mutable std::unique_ptr<cups_dinfo_t, DestInfoDeleter> dest_info_;
+  mutable ScopedDestInfo dest_info_;
 
   DISALLOW_COPY_AND_ASSIGN(CupsPrinter);
 };

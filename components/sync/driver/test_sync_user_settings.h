@@ -27,7 +27,7 @@ class TestSyncUserSettings : public SyncUserSettings {
   void SetSyncAllowedByPlatform(bool allowed) override;
 
   bool IsFirstSetupComplete() const override;
-  void SetFirstSetupComplete() override;
+  void SetFirstSetupComplete(SyncFirstSetupCompleteSource source) override;
 
   bool IsSyncEverythingEnabled() const override;
   UserSelectableTypeSet GetSelectedTypes() const override;
@@ -50,7 +50,8 @@ class TestSyncUserSettings : public SyncUserSettings {
   void SetEncryptionPassphrase(const std::string& passphrase) override;
   bool SetDecryptionPassphrase(const std::string& passphrase) override;
 
-  void SetFirstSetupComplete(bool first_setup_complete);
+  void SetFirstSetupComplete();
+  void ClearFirstSetupComplete();
   void SetEncryptEverythingAllowed(bool allowed);
   void SetPassphraseRequired(bool required);
   void SetPassphraseRequiredForDecryption(bool required);

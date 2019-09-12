@@ -28,7 +28,7 @@ WebAppMenuModel::~WebAppMenuModel() {}
 void WebAppMenuModel::Build() {
   if (CreateActionToolbarOverflowMenu())
     AddSeparator(ui::UPPER_SEPARATOR);
-  AddItemWithStringId(IDC_HOSTED_APP_MENU_APP_INFO,
+  AddItemWithStringId(IDC_WEB_APP_MENU_APP_INFO,
                       IDS_APP_CONTEXT_MENU_SHOW_INFO);
   int app_info_index = GetItemCount() - 1;
   SetMinorText(app_info_index, web_app::AppBrowserController::FormatUrlOrigin(

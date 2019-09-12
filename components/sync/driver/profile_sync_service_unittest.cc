@@ -448,7 +448,8 @@ TEST_F(ProfileSyncServiceTest, DisabledByPolicyBeforeInitThenPolicyRemoved) {
 
   // Once we mark first setup complete again (it was cleared by the policy) and
   // sign in, sync starts up.
-  service()->GetUserSettings()->SetFirstSetupComplete();
+  service()->GetUserSettings()->SetFirstSetupComplete(
+      syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
   SignIn();
   EXPECT_EQ(SyncService::TransportState::ACTIVE,
             service()->GetTransportState());

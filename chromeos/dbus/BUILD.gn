@@ -30,6 +30,7 @@ component("dbus") {
     ":runtime_probe_proto",
     ":seneschal_proto",
     ":smbprovider_proto",
+    ":update_engine_proto",
     ":vm_applications_apps_proto",
     ":vm_plugin_dispatcher_proto",
     "//base",
@@ -307,6 +308,14 @@ proto_library("smbprovider_proto") {
   ]
 
   proto_out_dir = "chromeos/dbus/smbprovider"
+}
+
+proto_library("update_engine_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/update_engine/update_engine.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/update_engine"
 }
 
 proto_library("vm_applications_apps_proto") {

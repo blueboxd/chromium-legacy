@@ -76,6 +76,7 @@
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/core/html/portal/document_portals.h"
 #include "third_party/blink/renderer/core/html/portal/html_portal_element.h"
+#include "third_party/blink/renderer/core/html/portal/portal_contents.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
@@ -325,9 +326,9 @@ void LocalFrameView::ForAllChildViewsAndPlugins(const Function& function) {
   }
 
   if (Document* document = frame_->GetDocument()) {
-    for (HTMLPortalElement* portal :
+    for (PortalContents* portal :
          DocumentPortals::From(*document).GetPortals()) {
-      if (Frame* frame = portal->ContentFrame())
+      if (Frame* frame = portal->GetFrame())
         function(*frame->View());
     }
   }
@@ -3939,12 +3940,11 @@ bool LocalFrameView::UpdateViewportIntersectionsForSubtree(
         child->View()->UpdateViewportIntersectionsForSubtree(flags);
   }
 
-  for (HTMLPortalElement* portal :
+  for (PortalContents* portal :
        DocumentPortals::From(*frame_->GetDocument()).GetPortals()) {
-    if (portal->ContentFrame()) {
+    if (Frame* frame = portal->GetFrame()) {
       needs_occlusion_tracking |=
-          portal->ContentFrame()->View()->UpdateViewportIntersectionsForSubtree(
-              flags);
+          frame->View()->UpdateViewportIntersectionsForSubtree(flags);
     }
   }
 

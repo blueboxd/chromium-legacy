@@ -336,7 +336,7 @@ std::unique_ptr<base::DictionaryValue> GetDictionaryFromArray(
           break;
         }
         case base::Value::Type::LIST:  // Just append to the list.
-          entry->GetList().emplace_back(*value);
+          entry->Append(*value);
           break;
         default:
           NOTREACHED();  // We never put other Values here.

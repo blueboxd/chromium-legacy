@@ -88,7 +88,8 @@ class ManageProfileHandler : public settings::SettingsPageUIHandler,
   Profile* profile_;
 
   // Used to observe profile avatar updates.
-  ScopedObserver<ProfileAttributesStorage, ManageProfileHandler> observer_;
+  ScopedObserver<ProfileAttributesStorage, ProfileAttributesStorage::Observer>
+      observer_{this};
 
   // For generating weak pointers to itself for callbacks.
   base::WeakPtrFactory<ManageProfileHandler> weak_factory_{this};

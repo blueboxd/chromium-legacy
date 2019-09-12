@@ -63,6 +63,14 @@ AutocompleteMatch TitledUrlMatchToAutocompleteMatch(
       ACMatchClassification::MATCH | ACMatchClassification::URL,
       ACMatchClassification::URL);
 
+  match.description = titled_url_match.node->GetTitledUrlNodeTitle();
+  base::TrimWhitespace(match.description, base::TRIM_LEADING,
+                       &match.description);
+  auto description_terms = FindTermMatches(input.text(), match.description);
+  match.description_class = ClassifyTermMatches(
+      description_terms, match.description.length(),
+      ACMatchClassification::MATCH, ACMatchClassification::NONE);
+
   // The inline_autocomplete_offset should be adjusted based on the formatting
   // applied to |fill_into_edit|.
   size_t inline_autocomplete_offset = URLPrefix::GetInlineAutocompleteOffset(
@@ -82,14 +90,10 @@ AutocompleteMatch TitledUrlMatchToAutocompleteMatch(
         match.fill_into_edit.substr(inline_autocomplete_offset);
     match.allowed_to_be_default_match =
         AutocompleteMatch::AllowedToBeDefault(input, match);
+  } else {
+    auto title = match.description + base::UTF8ToUTF16(" - ") + match.contents;
+    match.TryAutocompleteWithTitle(title, input);
   }
-  match.description = titled_url_match.node->GetTitledUrlNodeTitle();
-  base::TrimWhitespace(match.description, base::TRIM_LEADING,
-                       &match.description);
-  auto description_terms = FindTermMatches(input.text(), match.description);
-  match.description_class = ClassifyTermMatches(
-      description_terms, match.description.length(),
-      ACMatchClassification::MATCH, ACMatchClassification::NONE);
 
   return match;
 }

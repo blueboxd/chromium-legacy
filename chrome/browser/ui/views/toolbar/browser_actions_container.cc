@@ -36,6 +36,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "extensions/common/feature_switch.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"

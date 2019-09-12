@@ -21,6 +21,7 @@ import html_report
 import models
 
 _NDJSON_FILENAME = 'supersize_diff.ndjson'
+_TEXT_FILENAME = 'supersize_diff.txt'
 _HTML_REPORT_BASE_URL = (
     'https://storage.googleapis.com/chrome-supersize/viewer.html?load_url=')
 _MAX_DEX_METHOD_COUNT_INCREASE = 50
@@ -187,6 +188,9 @@ def main():
   logging.info('Creating Supersize diff')
   supersize_diff_lines, delta_size_info = _CreateSupersizeDiff(
       args.apk_name, args.before_dir, args.after_dir)
+  supersize_text_path = os.path.join(args.staging_dir, _TEXT_FILENAME)
+  with open(supersize_text_path, 'w') as f:
+    describe.WriteLines(supersize_diff_lines, f.write)
 
   changed_symbols = delta_size_info.raw_symbols.WhereDiffStatusIs(
       models.DIFF_STATUS_UNCHANGED).Inverted()
@@ -268,7 +272,7 @@ PASSING:
       },
       {
           'name': '>>> SuperSize Text Diff <<<',
-          'lines': supersize_diff_lines,
+          'url': '{{' + _TEXT_FILENAME + '}}',
       },
       {
           'name': '>>> Supersize HTML Diff <<<',
@@ -278,11 +282,39 @@ PASSING:
   # Remove empty diffs (Mutable Constants or Dex Method).
   links_json = [o for o in links_json if o.get('lines') or o.get('url')]
 
+  binary_size_listings = []
+  for delta in size_deltas:
+    if delta.actual == 0:
+      continue
+    listing = {
+        'name': delta.name,
+        'delta': '{} {}'.format(delta.actual, delta.units),
+        'allowed': delta.IsAllowable(),
+    }
+    binary_size_listings.append(listing)
+
+  binary_size_extras = [
+      {
+          'text': 'Supersize HTML Diff',
+          'url': _HTML_REPORT_BASE_URL + '{{' + _NDJSON_FILENAME + '}}',
+      },
+      {
+          'text': 'SuperSize Text Diff',
+          'url': '{{' + _TEXT_FILENAME + '}}',
+      },
+  ]
+
+  binary_size_plugin_json = {
+      'listings': binary_size_listings,
+      'extras': binary_size_extras,
+  }
+
   results_json = {
       'status_code': status_code,
       'summary': summary,
-      'archive_filenames': [_NDJSON_FILENAME],
+      'archive_filenames': [_NDJSON_FILENAME, _TEXT_FILENAME],
       'links': links_json,
+      'gerrit_plugin_details': binary_size_plugin_json,
   }
 
   with open(args.results_path, 'w') as f:

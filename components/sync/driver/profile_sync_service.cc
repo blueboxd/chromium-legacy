@@ -865,7 +865,8 @@ void ProfileSyncService::OnEngineInitialized(
   if (start_behavior_ == AUTO_START &&
       !user_settings_->IsFirstSetupComplete()) {
     // This will trigger a configure if it completes setup.
-    user_settings_->SetFirstSetupComplete();
+    user_settings_->SetFirstSetupComplete(
+        SyncFirstSetupCompleteSource::ENGINE_INITIALIZED_WITH_AUTO_START);
   } else if (CanConfigureDataTypes(/*bypass_setup_in_progress_check=*/false)) {
     // Datatype downloads on restart are generally due to newly supported
     // datatypes (although it's also possible we're picking up where a failed

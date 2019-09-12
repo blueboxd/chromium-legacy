@@ -32,11 +32,15 @@
         style="@style/AsyncImageView"
         tools:ignore="ContentDescription" />
 
-    <org.chromium.chrome.browser.download.home.view.SelectionView
-        android:id="@+id/selection"
-        style="@style/DownloadItemSelectionView"
+    <!-- Add a spacer so that even if the thumbnail is hidden the other elements
+         are still spaced correctly.  This view matches the padding of the
+         thumbnail. -->
+    <Space
+        android:layout_width="10dp"
+        android:layout_height="114dp"
         app:layout_column="0"
-        app:layout_row="0"/>
+        app:layout_row="0"
+        app:layout_rowSpan="4" />
 
     <Space
         android:layout_width="wrap_content"
@@ -107,4 +111,20 @@
             android:paddingTop="12dp"
             app:layout_column="3"
             app:layout_row="0" />
+
+    <!-- Wrap this in a FrameLayout so that if the thumbnail is hidden this view
+         does not negatively affect layout.  The FrameLayout spans the whole
+         parent so it will not impact the rest of the views. -->
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        app:layout_gravity="fill"
+        app:layout_column="0"
+        app:layout_row="0"
+        app:layout_columnSpan="4"
+        app:layout_rowSpan="4">
+        <org.chromium.chrome.browser.download.home.view.SelectionView
+            android:id="@+id/selection"
+            style="@style/DownloadItemSelectionView"/>
+    </FrameLayout>
 </android.support.v7.widget.GridLayout>

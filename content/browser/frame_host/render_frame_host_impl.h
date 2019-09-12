@@ -1037,6 +1037,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void GetSpeechSynthesis(
       mojo::PendingReceiver<blink::mojom::SpeechSynthesis> receiver);
 
+  void CreateLockManager(
+      mojo::PendingReceiver<blink::mojom::LockManager> receiver);
+
   // https://mikewest.github.io/corpp/#initialize-embedder-policy-for-global
   network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy()
       const {

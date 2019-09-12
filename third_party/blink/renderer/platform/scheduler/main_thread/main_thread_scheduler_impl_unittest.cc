@@ -3832,6 +3832,77 @@ TEST_P(VeryHighPriorityForCompositingAfterDelayExperimentTest,
   EXPECT_EQ(UseCase::kNone, CurrentUseCase());
 }
 
+class VeryHighPriorityForCompositingBudgetExperimentTest
+    : public MainThreadSchedulerImplTest {
+ public:
+  VeryHighPriorityForCompositingBudgetExperimentTest()
+      : MainThreadSchedulerImplTest({kVeryHighPriorityForCompositingBudget},
+                                    {}) {}
+};
+
+INSTANTIATE_TEST_SUITE_P(,
+                         VeryHighPriorityForCompositingBudgetExperimentTest,
+                         testing::Values(AntiStarvationLogic::kEnabled,
+                                         AntiStarvationLogic::kDisabled),
+                         GetTestNameSuffix);
+
+TEST_P(VeryHighPriorityForCompositingBudgetExperimentTest,
+       TestCompositorPolicy_CompositorPriorityVeryHighToNormal) {
+  Vector<String> run_order;
+  PostTestTasks(&run_order, "I1 D1 C1 D2 C2 P1");
+  EnableIdleTasks();
+  base::RunLoop().RunUntilIdle();
+
+  // Compositor is at kVeryHighPriority Initially.
+  EXPECT_THAT(run_order,
+              testing::ElementsAre("P1", "C1", "C2", "D1", "D2", "I1"));
+  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
+
+  // 1000ms compositor task will exhaust the budget.
+  RunSlowCompositorTask();
+
+  run_order.clear();
+  PostTestTasks(&run_order, "I1 D1 C1 D2 C2 P1");
+  EnableIdleTasks();
+  base::RunLoop().RunUntilIdle();
+
+  // Compositor is now at kVeryHighPriority, compositing tasks will run
+  // before default tasks.
+  EXPECT_THAT(run_order,
+              testing::ElementsAre("P1", "D1", "C1", "D2", "C2", "I1"));
+  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
+}
+
+TEST_P(VeryHighPriorityForCompositingBudgetExperimentTest,
+       TestCompositorPolicy_CompositorPriorityNormalToVeryHigh) {
+  // 1000ms compositor task will exhaust the budget.
+  RunSlowCompositorTask();
+
+  Vector<String> run_order;
+  PostTestTasks(&run_order, "I1 D1 C1 D2 C2 P1");
+  EnableIdleTasks();
+  base::RunLoop().RunUntilIdle();
+
+  // Compositor is at kNormalPriority, it will inteleave with default tasks.
+  EXPECT_THAT(run_order,
+              testing::ElementsAre("P1", "D1", "C1", "D2", "C2", "I1"));
+  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
+
+  // Recover the budget.
+  AdvanceTimeWithTask(12);
+
+  run_order.clear();
+  PostTestTasks(&run_order, "I1 D1 C1 D2 C2 P1");
+  EnableIdleTasks();
+  base::RunLoop().RunUntilIdle();
+
+  // Compositor is now at kVeryHighPriority, compositing tasks will run
+  // before default tasks.
+  EXPECT_THAT(run_order,
+              testing::ElementsAre("P1", "C1", "C2", "D1", "D2", "I1"));
+  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
+}
+
 }  // namespace main_thread_scheduler_impl_unittest
 }  // namespace scheduler
 }  // namespace blink

@@ -904,8 +904,9 @@ public class CustomTabsConnection {
         if (referrer == null) return ParallelRequestStatus.FAILURE_INVALID_REFERRER;
         if (policy < 0 || policy > ReferrerPolicy.LAST) policy = ReferrerPolicy.DEFAULT;
 
-        if (url.toString().equals("") || !isValid(url))
+        if (url.toString().equals("") || !isValid(url)) {
             return ParallelRequestStatus.FAILURE_INVALID_URL;
+        }
         if (!canDoParallelRequest(session, referrer)) {
             return ParallelRequestStatus.FAILURE_INVALID_REFERRER_FOR_SESSION;
         }
@@ -1141,20 +1142,16 @@ public class CustomTabsConnection {
     }
 
     /**
-     * Notifies the application of a page load metric for a single metric.
+     * Creates a Bundle with a value for navigation start and the specified page load metric.
      *
-     * TODD(lizeb): Move this to a proper method in {@link CustomTabsCallback} once one is
-     * available.
-     *
-     * @param session Session identifier.
      * @param metricName Name of the page load metric.
      * @param navigationStartTick Absolute navigation start time, as TimeTicks taken from native.
      * @param offsetMs Offset in ms from navigationStart for the page load metric.
      *
-     * @return Whether the metric has been dispatched to the client.
+     * @return A Bundle containing navigation start and the page load metric.
      */
-    boolean notifySinglePageLoadMetric(CustomTabsSessionToken session, String metricName,
-            long navigationStartTick, long offsetMs) {
+    Bundle createBundleWithNavigationStartAndPageLoadMetric(
+            String metricName, long navigationStartTick, long offsetMs) {
         if (!mNativeTickOffsetUsComputed) {
             // Compute offset from time ticks to uptimeMillis.
             mNativeTickOffsetUsComputed = true;
@@ -1170,8 +1167,24 @@ public class CustomTabsConnection {
         // SystemClock.uptimeMillis() value.
         args.putLong(PageLoadMetrics.NAVIGATION_START,
                 (navigationStartTick - mNativeTickOffsetUs) / 1000);
+        return args;
+    }
 
-        return notifyPageLoadMetrics(session, args);
+    /**
+     * Notifies the application of a page load metric for a single metric.
+     *
+     * @param session Session identifier.
+     * @param metricName Name of the page load metric.
+     * @param navigationStartTick Absolute navigation start time, as TimeTicks taken from native.
+     * @param offsetMs Offset in ms from navigationStart for the page load metric.
+     *
+     * @return Whether the metric has been dispatched to the client.
+     */
+    boolean notifySinglePageLoadMetric(CustomTabsSessionToken session, String metricName,
+            long navigationStartTick, long offsetMs) {
+        return notifyPageLoadMetrics(session,
+                createBundleWithNavigationStartAndPageLoadMetric(
+                        metricName, navigationStartTick, offsetMs));
     }
 
     /**

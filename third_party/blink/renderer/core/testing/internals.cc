@@ -847,7 +847,7 @@ void Internals::endColorChooser(Element* element) {
 bool Internals::hasAutofocusRequest(Document* document) {
   if (!document)
     document = document_;
-  return document->AutofocusElement();
+  return document->HasAutofocusCandidates();
 }
 
 bool Internals::hasAutofocusRequest() {

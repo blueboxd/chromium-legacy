@@ -505,6 +505,10 @@ if (is_android) {
       "//testing/android/native_test:native_test_support",
     ]
 
+    data_deps = [
+      "//testing/buildbot/filters:android_browsertests_filters",
+    ]
+
     sources = [
       "../browser/engagement/important_sites_util_browsertest.cc",
       "../browser/payments/has_enrolled_instrument_browsertest.cc",
@@ -2275,11 +2279,12 @@ if (!is_android) {
         "../browser/ui/views/extensions/extension_dialog_bounds_browsertest.cc",
         "../browser/ui/views/frame/browser_frame_ash_browsertest.cc",
         "../browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc",
-        "../browser/ui/views/frame/hosted_app_ash_interactive_ui_test.cc",
         "../browser/ui/views/frame/immersive_mode_controller_ash_browsertest.cc",
         "../browser/ui/views/frame/top_controls_slide_controller_chromeos_browsertest.cc",
         "../browser/ui/views/plugin_vm/plugin_vm_launcher_view_browsertest.cc",
+        "../browser/ui/views/web_apps/web_app_ash_interactive_ui_test.cc",
         "../browser/ui/webui/chromeos/add_supervision/add_supervision_metrics_recorder_browsertest.cc",
+        "../browser/ui/webui/chromeos/add_supervision/add_supervision_ui_browsertest.cc",
         "../browser/ui/webui/chromeos/login/discover/discover_browser_test.cc",
         "../browser/ui/webui/chromeos/login/discover/discover_browser_test.h",
         "../browser/ui/webui/chromeos/login/discover/modules/discover_module_launch_help_app_test.cc",
@@ -5391,7 +5396,6 @@ if (!is_android) {
       "../browser/password_manager/password_manager_interactive_test_base.cc",
       "../browser/password_manager/password_manager_interactive_test_base.h",
       "../browser/password_manager/password_manager_interactive_uitest.cc",
-      "../browser/popup_operations_interactive_uitest.cc",
       "../browser/renderer_context_menu/render_view_context_menu_browsertest_util.cc",
       "../browser/renderer_context_menu/render_view_context_menu_browsertest_util.h",
       "../browser/resource_coordinator/tab_metrics_logger_interactive_uitest.cc",

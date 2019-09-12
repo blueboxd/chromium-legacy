@@ -276,21 +276,6 @@ inline float Font::TabWidth(const SimpleFontData* font_data,
   return base_tab_width ? base_tab_width : GetFontDescription().LetterSpacing();
 }
 
-inline float Font::TabWidth(const SimpleFontData* font_data,
-                            const TabSize& tab_size,
-                            float position) const {
-  float base_tab_width = TabWidth(font_data, tab_size);
-  float distance_to_tab_stop = base_tab_width - fmodf(position, base_tab_width);
-
-  // Let the minimum width be the half of the space width so that it's always
-  // recognizable.  if the distance to the next tab stop is less than that,
-  // advance an additional tab stop.
-  if (distance_to_tab_stop < font_data->SpaceWidth() / 2)
-    distance_to_tab_stop += base_tab_width;
-
-  return distance_to_tab_stop;
-}
-
 }  // namespace blink
 
 #endif

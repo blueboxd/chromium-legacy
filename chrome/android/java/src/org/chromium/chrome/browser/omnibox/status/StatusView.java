@@ -21,6 +21,7 @@ import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.view.TouchDelegate;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -130,7 +131,7 @@ public class StatusView extends LinearLayout {
         //
         // Note: this will be compacted once we start using LayoutTransition with StatusView.
 
-        boolean isIconHidden = mIconView.getVisibility() == View.GONE;
+        boolean isIconHidden = mIconView.getVisibility() == View.GONE || mIconView.getAlpha() == 0f;
 
         if (!wantIconHidden && (isIconHidden || mAnimatingStatusIconHide)) {
             // Action 1: animate showing, if icon was either hidden or hiding.
@@ -280,10 +281,13 @@ public class StatusView extends LinearLayout {
      */
     void setStatusIconDescription(@StringRes int descriptionRes) {
         String description = null;
+        int importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO;
         if (descriptionRes != 0) {
             description = getResources().getString(descriptionRes);
+            importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES;
         }
         mIconView.setContentDescription(description);
+        mIconView.setImportantForAccessibility(importantForAccessibility);
     }
 
     /**
@@ -418,5 +422,14 @@ public class StatusView extends LinearLayout {
     // change. Do not depend on this method when creating new code.
     View getSecurityButton() {
         return mIconView;
+    }
+
+    /**
+     * @return The width of the status icon including start/end margins.
+     */
+    int getStatusIconWidth() {
+        ViewGroup.MarginLayoutParams lp =
+                (ViewGroup.MarginLayoutParams) mIconView.getLayoutParams();
+        return lp.getMarginStart() + mIconView.getMeasuredWidth() + lp.getMarginEnd();
     }
 }

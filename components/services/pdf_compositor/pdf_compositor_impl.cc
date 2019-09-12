@@ -46,6 +46,9 @@ PdfCompositorImpl::PdfCompositorImpl(
   if (receiver)
     receiver_.Bind(std::move(receiver));
 
+  if (!initialize_environment)
+    return;
+
 #if defined(OS_WIN)
   // Initialize direct write font proxy so skia can use it.
   content::InitializeDWriteFontProxy();
@@ -54,9 +57,6 @@ PdfCompositorImpl::PdfCompositorImpl(
   // Hook up blink's codecs so skia can call them.
   SkGraphics::SetImageGeneratorFromEncodedDataFactory(
       blink::WebImageGenerator::CreateAsSkImageGenerator);
-
-  if (!initialize_environment)
-    return;
 
 #if defined(OS_POSIX) && !defined(OS_ANDROID)
   content::UtilityThread::Get()->EnsureBlinkInitializedWithSandboxSupport();

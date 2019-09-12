@@ -129,4 +129,48 @@
     // Reset the scroller dimensions.
     content.setAttribute("style","height:" + originalDivHeight + "px");
   },"Test infinite scrolling when content is extended dynamically.");
+
+  promise_test (async () => {
+    scroller.scrollTop = 0;
+    const SCROLL_TOP = 100;
+
+    const down_arrow_x = scrollerRect.right - BUTTON_WIDTH / 2;
+    const down_arrow_y = scrollerRect.bottom - SCROLL_CORNER - BUTTON_WIDTH / 2;
+
+    // Keep the mouse pressed on the down arrow.
+    await mouseMoveTo(down_arrow_x, down_arrow_y);
+    await mouseDownAt(down_arrow_x, down_arrow_y);
+
+    // Wait for a bit for the autoscroll to start. In the call below, the first 250ms
+    // is spent waiting for the autoscroll to start. After 250ms, autoscroll initiates
+    // with a velocity of 800px/sec. So, in the remaining time (of 250ms), the duration
+    // should be enough to take the scroller beyond the expected threshold (SCROLL_TOP).
+    // Note that the expected SCROLL_TOP here is 100px. If scrolling crosses this value,
+    // it should suffice as proof that autoscrolling works as expected.
+    await waitForMs(500);
+    await waitFor(() => { return scroller.scrollTop >= SCROLL_TOP; },
+    `scroller.scrollTop = ${scroller.scrollTop} never reached ${SCROLL_TOP}`);
+
+    // Without releasing the mouse, move away from the arrow.
+    await mouseMoveTo(down_arrow_x, down_arrow_y - 20);
+
+    // Now that the mouse is away, record the scrolltop and ensure that no scrolling happens.
+    const current_scrolltop = scroller.scrollTop;
+    await conditionHolds(() => { return current_scrolltop == scroller.scrollTop; },
+    `Condition did not hold [scroller.scrollTop = ${scroller.scrollTop}]`);
+
+    // Now move back on the arrow and verify that auto-scrolling starts immediately. There
+    // should not be the 250ms pause before starting autoscroll since the mouse was never released.
+    await mouseMoveTo(down_arrow_x, down_arrow_y);
+
+    // Allow some time for queued GSU's to fire.
+    await waitFor(() => { return scroller.scrollTop >= current_scrolltop; },
+    `Animation did not restart [scroller.scrollTop = ${scroller.scrollTop}]`);
+
+    // TODO(arakeri): This was supposed to be mouseUpAt (because the mouse should be released at
+    // end of the test). However, due to crbug.com/979408, the mouseUpAt API can't be used reliably.
+    // Once the bug is fixed, the line below needs to be updated. The point of using mouseClickOn
+    // for now is to ensure that we get a pointerup at the end of the test.
+    await mouseClickOn(down_arrow_x, down_arrow_y);
+  },"Test autoscroll play/pause when pointer moves in and out of arrow bounds.");
 </script>

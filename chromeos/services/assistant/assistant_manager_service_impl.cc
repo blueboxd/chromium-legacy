@@ -127,7 +127,7 @@ ash::mojom::AssistantTimerState GetTimerState(
 
 AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     mojom::Client* client,
-    device::mojom::BatteryMonitorPtr battery_monitor,
+    mojo::PendingRemote<device::mojom::BatteryMonitor> battery_monitor,
     Service* service,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         url_loader_factory_info)

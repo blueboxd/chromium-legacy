@@ -16,6 +16,7 @@
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/common/content_features.h"
 #include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/browser.h"

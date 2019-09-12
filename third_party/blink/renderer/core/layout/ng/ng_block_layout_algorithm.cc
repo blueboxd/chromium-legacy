@@ -366,8 +366,8 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
   child_percentage_size_ = CalculateChildPercentageSize(
       ConstraintSpace(), Node(), child_available_size_);
   replaced_child_percentage_size_ = CalculateReplacedChildPercentageSize(
-      ConstraintSpace(), Node(), border_box_size, border_scrollbar_padding_,
-      border_padding_);
+      ConstraintSpace(), Node(), child_available_size_,
+      border_scrollbar_padding_, border_padding_);
 
   // All of the above calculations with border_scrollbar_padding_ shouldn't
   // include the table cell's intrinsic padding. We can now add this.

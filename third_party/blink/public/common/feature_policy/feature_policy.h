@@ -15,7 +15,8 @@
 #include "base/macros.h"
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/common/feature_policy/policy_value.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-forward.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-forward.h"
 #include "url/origin.h"
 
 namespace blink {

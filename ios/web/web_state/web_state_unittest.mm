@@ -381,6 +381,9 @@ TEST_P(WebStateTest, RestoreLargeSession) {
         EXPECT_EQ("http://www.0.com/", last_committed_item->GetURL());
         EXPECT_EQ("http://www.0.com/", web_state_ptr->GetLastCommittedURL());
         EXPECT_EQ(0, navigation_manager->GetLastCommittedItemIndex());
+        EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
+            navigation_manager->GetLastCommittedItem()->GetTransitionType(),
+            ui::PAGE_TRANSITION_RELOAD));
       } else {
         EXPECT_EQ("", web_state_ptr->GetLastCommittedURL());
         EXPECT_EQ(-1, navigation_manager->GetLastCommittedItemIndex());
@@ -423,6 +426,10 @@ TEST_P(WebStateTest, RestoreLargeSession) {
            !web_state_ptr->IsLoading() &&
            web_state_ptr->GetLoadingProgress() == 1.0;
   }));
+
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
+      navigation_manager->GetLastCommittedItem()->GetTransitionType(),
+      ui::PAGE_TRANSITION_RELOAD));
 }
 
 // Verifies that calling WebState::Stop() does not stop the session restoration.

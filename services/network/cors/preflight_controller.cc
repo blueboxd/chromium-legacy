@@ -85,8 +85,7 @@ std::unique_ptr<ResourceRequest> CreatePreflightRequest(
   preflight_request->referrer_policy = request.referrer_policy;
 
   preflight_request->credentials_mode = mojom::CredentialsMode::kOmit;
-  preflight_request->load_flags =
-      RetrieveCacheFlags(request.load_flags) | net::LOAD_BYPASS_PROXY;
+  preflight_request->load_flags = RetrieveCacheFlags(request.load_flags);
   preflight_request->fetch_window_id = request.fetch_window_id;
   preflight_request->render_frame_id = request.render_frame_id;
 

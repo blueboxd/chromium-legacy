@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/feature_list.h"
+#include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -129,6 +130,7 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
       fill_into_edit(match.fill_into_edit),
       inline_autocompletion(match.inline_autocompletion),
       allowed_to_be_default_match(match.allowed_to_be_default_match),
+      is_navigational_title_match(match.is_navigational_title_match),
       destination_url(match.destination_url),
       stripped_destination_url(match.stripped_destination_url),
       image_dominant_color(match.image_dominant_color),
@@ -182,6 +184,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   fill_into_edit = match.fill_into_edit;
   inline_autocompletion = match.inline_autocompletion;
   allowed_to_be_default_match = match.allowed_to_be_default_match;
+  is_navigational_title_match = match.is_navigational_title_match;
   destination_url = match.destination_url;
   stripped_destination_url = match.stripped_destination_url;
   image_dominant_color = match.image_dominant_color;
@@ -1142,8 +1145,10 @@ void AutocompleteMatch::UpgradeMatchWithPropertiesFrom(
       fill_into_edit == duplicate_match.fill_into_edit &&
       duplicate_match.allowed_to_be_default_match) {
     allowed_to_be_default_match = true;
-    if (inline_autocompletion.empty())
+    if (inline_autocompletion.empty()) {
       inline_autocompletion = duplicate_match.inline_autocompletion;
+      is_navigational_title_match = duplicate_match.is_navigational_title_match;
+    }
   }
 
   // And always absorb the higher relevance score of duplicates.
@@ -1151,6 +1156,36 @@ void AutocompleteMatch::UpgradeMatchWithPropertiesFrom(
     RecordAdditionalInfo(kACMatchPropertyScoreBoostedFrom, relevance);
     relevance = duplicate_match.relevance;
   }
+}
+
+void AutocompleteMatch::TryAutocompleteWithTitle(
+    const base::string16& title,
+    const AutocompleteInput& input) {
+  if (!base::FeatureList::IsEnabled(omnibox::kAutocompleteTitles))
+    return;
+
+  const base::string16 lower_text{base::i18n::ToLower(title)};
+  const base::string16 lower_input_text{base::i18n::ToLower(input.text())};
+
+  if (!base::StartsWith(lower_text, lower_input_text,
+                        base::CompareCase::SENSITIVE)) {
+    return;
+  }
+
+  // For exact matches, promote the relevance to out-score verbatim
+  // search-what-you-typed matches.
+  if (lower_text == lower_input_text) {
+    relevance =
+        std::max(relevance, SearchProvider::kNonURLVerbatimRelevance + 10);
+    RecordAdditionalInfo("title match", "full");
+  } else
+    RecordAdditionalInfo("title match", "prefix");
+
+  fill_into_edit = title;
+  inline_autocompletion = fill_into_edit.substr(lower_input_text.length());
+  allowed_to_be_default_match =
+      inline_autocompletion.empty() || !input.prevent_inline_autocomplete();
+  is_navigational_title_match = true;
 }
 
 #if DCHECK_IS_ON()

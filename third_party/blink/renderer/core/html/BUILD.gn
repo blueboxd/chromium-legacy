@@ -505,6 +505,8 @@ blink_core_sources("html") {
     "portal/dom_window_portal_host.h",
     "portal/html_portal_element.cc",
     "portal/html_portal_element.h",
+    "portal/portal_contents.cc",
+    "portal/portal_contents.h",
     "portal/portal_host.cc",
     "portal/portal_host.h",
     "portal/portal_post_message_helper.cc",

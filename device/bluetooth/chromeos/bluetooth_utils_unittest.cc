@@ -245,6 +245,17 @@ TEST_F(
                                   0u /* num_expected_remaining_devices */);
 }
 
+TEST_F(BluetoothUtilsTest,
+       TestFilterBluetoothDeviceList_FilterKnown_RemoveAppearancePhone) {
+  auto* mock_bluetooth_device =
+      AddMockBluetoothDeviceToAdapter(BLUETOOTH_TRANSPORT_DUAL);
+  ON_CALL(*mock_bluetooth_device, GetDeviceType)
+      .WillByDefault(testing::Return(BluetoothDeviceType::PHONE));
+
+  VerifyFilterBluetoothDeviceList(BluetoothFilterType::KNOWN,
+                                  0u /* num_expected_remaining_devices */);
+}
+
 TEST_F(BluetoothUtilsTest, TestGetBlockedLongTermKeys_ListIncludesBadLtks) {
   // One nibble too long, one nibble too short, and one nibble just right.
   std::string hex_key_1 = "000000000000000000000000000012345";

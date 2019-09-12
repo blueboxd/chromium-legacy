@@ -367,11 +367,6 @@ class FidoRequestHandlerTest : public ::testing::Test {
   test::FakeFidoDiscovery* discovery_;
   test::FakeFidoDiscovery* ble_discovery_;
   FakeHandlerCallbackReceiver cb_;
-
-#if defined(OS_WIN)
-  device::ScopedFakeWinWebAuthnApi win_webauthn_api_ =
-      device::ScopedFakeWinWebAuthnApi::MakeUnavailable();
-#endif  // defined(OS_WIN)
 };
 
 TEST_F(FidoRequestHandlerTest, TestSingleDeviceSuccess) {
@@ -711,9 +706,11 @@ TEST_F(FidoRequestHandlerTest, EmbedderNotifiedWhenAuthenticatorIdChanges) {
 
 #if defined(OS_WIN)
 TEST_F(FidoRequestHandlerTest, TransportAvailabilityOfWindowsAuthenticator) {
+  FakeWinWebAuthnApi api;
+  fake_discovery_factory_.set_win_webauthn_api(&api);
   for (const bool api_available : {false, true}) {
     SCOPED_TRACE(::testing::Message() << "api_available=" << api_available);
-    win_webauthn_api_.set_available(api_available);
+    api.set_available(api_available);
 
     TestObserver observer;
     ForgeNextHidDiscovery();

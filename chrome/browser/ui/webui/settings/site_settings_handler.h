@@ -15,12 +15,12 @@
 #include "chrome/browser/permissions/chooser_context_base.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ppapi/buildflags/buildflags.h"
 
-class HostContentSettingsMap;
 class Profile;
 
 class PrefChangeRegistrar;
@@ -254,11 +254,12 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   std::string clearing_origin_;
 
   // Change observer for content settings.
-  ScopedObserver<HostContentSettingsMap, content_settings::Observer> observer_;
+  ScopedObserver<HostContentSettingsMap, content_settings::Observer> observer_{
+      this};
 
   // Change observer for chooser permissions.
   ScopedObserver<ChooserContextBase, ChooserContextBase::PermissionObserver>
-      chooser_observer_;
+      chooser_observer_{this};
 
   // Change observer for prefs.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;

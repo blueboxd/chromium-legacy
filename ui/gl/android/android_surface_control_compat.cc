@@ -13,8 +13,10 @@
 #include "base/android/build_info.h"
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
+#include "base/debug/crash_logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/color_space.h"
 
@@ -433,8 +435,17 @@ void SurfaceControl::Transaction::SetDamageRect(const Surface& surface,
 void SurfaceControl::Transaction::SetColorSpace(
     const Surface& surface,
     const gfx::ColorSpace& color_space) {
+  auto data_space = ColorSpaceToADataSpace(color_space);
+
+  // Log the data space in crash keys for debugging crbug.com/997592.
+  static auto* kCrashKey = base::debug::AllocateCrashKeyString(
+      "data_space_for_buffer", base::debug::CrashKeySize::Size256);
+  auto crash_key_value = base::NumberToString(data_space);
+  base::debug::ScopedCrashKeyString scoped_crash_key(kCrashKey,
+                                                     crash_key_value);
+
   SurfaceControlMethods::Get().ASurfaceTransaction_setBufferDataSpaceFn(
-      transaction_, surface.surface(), ColorSpaceToADataSpace(color_space));
+      transaction_, surface.surface(), data_space);
 }
 
 void SurfaceControl::Transaction::SetOnCompleteCb(

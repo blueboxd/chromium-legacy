@@ -5,6 +5,7 @@
 #ifndef DEVICE_FIDO_WIN_FAKE_WEBAUTHN_API_H_
 #define DEVICE_FIDO_WIN_FAKE_WEBAUTHN_API_H_
 
+#include "base/component_export.h"
 #include "device/fido/public_key_credential_descriptor.h"
 #include "device/fido/public_key_credential_rp_entity.h"
 #include "device/fido/public_key_credential_user_entity.h"
@@ -12,7 +13,7 @@
 
 namespace device {
 
-class FakeWinWebAuthnApi : public WinWebAuthnApi {
+class COMPONENT_EXPORT(DEVICE_FIDO) FakeWinWebAuthnApi : public WinWebAuthnApi {
  public:
   FakeWinWebAuthnApi();
   ~FakeWinWebAuthnApi() override;
@@ -53,32 +54,15 @@ class FakeWinWebAuthnApi : public WinWebAuthnApi {
   int Version() override;
 
  private:
+  static WEBAUTHN_CREDENTIAL_ATTESTATION FakeAttestation();
+  static WEBAUTHN_ASSERTION FakeAssertion();
+
   bool is_available_ = true;
   bool is_uvpaa_ = false;
   int version_ = WEBAUTHN_API_VERSION_2;
-  WEBAUTHN_CREDENTIAL_ATTESTATION attestation_;
-  WEBAUTHN_ASSERTION assertion_;
+  WEBAUTHN_CREDENTIAL_ATTESTATION attestation_ = FakeAttestation();
+  WEBAUTHN_ASSERTION assertion_ = FakeAssertion();
   HRESULT result_ = S_OK;
-};
-
-// ScopedFakeWinWebAuthnApi overrides the value returned
-// by WinWebAuthnApi::GetDefault() with itself for the duration of its
-// lifetime.
-class ScopedFakeWinWebAuthnApi : public FakeWinWebAuthnApi {
- public:
-  // MakeUnavailable() returns a ScopedFakeWinWebAuthnApi that simulates a
-  // system where the native WebAuthn API is unavailable.
-  //
-  // Tests that instantiate a FidoDiscoveryFactory and FidoRequestHandler
-  // should instantiate a ScopedFakeWinWebAuthnApi with this method to avoid
-  // invoking the real Windows WebAuthn API on systems where it is available.
-  // Note that individual tests can call set_available(true) prior to
-  // instantiating the FidoRequestHandler in order to make the fake simulate an
-  // available API.
-  static ScopedFakeWinWebAuthnApi MakeUnavailable();
-
-  ScopedFakeWinWebAuthnApi();
-  ~ScopedFakeWinWebAuthnApi() override;
 };
 
 }  // namespace device

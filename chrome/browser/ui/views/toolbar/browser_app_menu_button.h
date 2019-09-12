@@ -15,12 +15,9 @@
 #include "chrome/browser/ui/toolbar/app_menu_icon_controller.h"
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
 #include "components/feature_engagement/buildflags.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/material_design/material_design_controller_observer.h"
 #include "ui/views/view.h"
-
-namespace ui {
-class MaterialDesignController;
-}
 
 class ToolbarView;
 enum class InProductHelpFeature;

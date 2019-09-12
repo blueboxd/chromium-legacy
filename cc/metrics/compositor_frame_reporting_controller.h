@@ -15,6 +15,10 @@
 #include "cc/metrics/compositor_frame_reporter.h"
 #include "cc/metrics/frame_sequence_tracker.h"
 
+namespace viz {
+struct FrameTimingDetails;
+}
+
 namespace cc {
 class RollingTimeDeltaHistory;
 
@@ -54,8 +58,9 @@ class CC_EXPORT CompositorFrameReportingController {
   virtual void DidActivate();
   virtual void DidSubmitCompositorFrame(uint32_t frame_token);
   virtual void DidNotProduceFrame();
-  virtual void DidPresentCompositorFrame(uint32_t frame_token,
-                                         base::TimeTicks presentation_time);
+  virtual void DidPresentCompositorFrame(
+      uint32_t frame_token,
+      const viz::FrameTimingDetails& details);
 
   virtual void AddActiveTracker(FrameSequenceTrackerType type);
   virtual void RemoveActiveTracker(FrameSequenceTrackerType type);

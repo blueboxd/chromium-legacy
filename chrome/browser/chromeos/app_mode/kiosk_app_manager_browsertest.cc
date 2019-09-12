@@ -269,6 +269,7 @@ class KioskAppManagerTest : public InProcessBrowserTest {
   }
 
   void TearDownOnMainThread() override {
+    owner_settings_service_.reset();
     settings_helper_.RestoreRealDeviceSettingsProvider();
   }
 

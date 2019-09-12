@@ -308,8 +308,8 @@ class DistillerTest : public testing::Test {
   }
 
  protected:
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::UI};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::UI};
   std::unique_ptr<DistillerImpl> distiller_;
   std::unique_ptr<DistilledArticleProto> article_proto_;
   std::vector<ArticleDistillationUpdate> in_sequence_updates_;

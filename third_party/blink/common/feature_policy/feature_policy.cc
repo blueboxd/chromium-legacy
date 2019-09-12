@@ -9,6 +9,7 @@
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 
 namespace blink {
 namespace {

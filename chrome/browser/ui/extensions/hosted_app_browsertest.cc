@@ -1630,7 +1630,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, AppInfoOpensPageInfo) {
   GetPageInfoDialogCreatedCallbackForTesting() = base::BindOnce(
       [](bool* dialog_created) { *dialog_created = true; }, &dialog_created);
 
-  chrome::ExecuteCommand(app_browser, IDC_HOSTED_APP_MENU_APP_INFO);
+  chrome::ExecuteCommand(app_browser, IDC_WEB_APP_MENU_APP_INFO);
 
   EXPECT_TRUE(dialog_created);
 

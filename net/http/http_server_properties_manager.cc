@@ -184,7 +184,7 @@ HttpServerPropertiesManager::~HttpServerPropertiesManager() {
 
 void HttpServerPropertiesManager::ReadPrefs(
     std::unique_ptr<HttpServerProperties::ServerInfoMap>* server_info_map,
-    IPAddress* last_quic_address,
+    IPAddress* last_local_address_when_quic_worked,
     std::unique_ptr<QuicServerInfoMap>* quic_server_info_map,
     std::unique_ptr<BrokenAlternativeServiceList>*
         broken_alternative_service_list,
@@ -231,7 +231,8 @@ void HttpServerPropertiesManager::ReadPrefs(
     return;
   }
 
-  ReadSupportsQuic(*http_server_properties_dict, last_quic_address);
+  ReadLastLocalAddressWhenQuicWorked(*http_server_properties_dict,
+                                     last_local_address_when_quic_worked);
 
   *server_info_map = std::make_unique<HttpServerProperties::ServerInfoMap>();
   *quic_server_info_map = std::make_unique<QuicServerInfoMap>(
@@ -574,9 +575,9 @@ bool HttpServerPropertiesManager::ParseAlternativeServiceInfo(
   return true;
 }
 
-void HttpServerPropertiesManager::ReadSupportsQuic(
+void HttpServerPropertiesManager::ReadLastLocalAddressWhenQuicWorked(
     const base::DictionaryValue& http_server_properties_dict,
-    IPAddress* last_quic_address) {
+    IPAddress* last_local_address_when_quic_worked) {
   const base::DictionaryValue* supports_quic_dict = nullptr;
   if (!http_server_properties_dict.GetDictionaryWithoutPathExpansion(
           kSupportsQuicKey, &supports_quic_dict)) {
@@ -594,7 +595,7 @@ void HttpServerPropertiesManager::ReadSupportsQuic(
   std::string address;
   if (!supports_quic_dict->GetStringWithoutPathExpansion(kAddressKey,
                                                          &address) ||
-      !last_quic_address->AssignFromIPLiteral(address)) {
+      !last_local_address_when_quic_worked->AssignFromIPLiteral(address)) {
     DVLOG(1) << "Malformed SupportsQuic";
   }
 }
@@ -667,7 +668,7 @@ void HttpServerPropertiesManager::AddToQuicServerInfoMap(
 void HttpServerPropertiesManager::WriteToPrefs(
     const HttpServerProperties::ServerInfoMap& server_info_map,
     const GetCannonicalSuffix& get_canonical_suffix,
-    const IPAddress& last_quic_address,
+    const IPAddress& last_local_address_when_quic_worked,
     const QuicServerInfoMap& quic_server_info_map,
     const BrokenAlternativeServiceList& broken_alternative_service_list,
     const RecentlyBrokenAlternativeServices&
@@ -730,8 +731,8 @@ void HttpServerPropertiesManager::WriteToPrefs(
 
   http_server_properties_dict.SetInteger(kVersionKey, kVersionNumber);
 
-  if (last_quic_address.IsValid())
-    SaveSupportsQuicToPrefs(last_quic_address, &http_server_properties_dict);
+  SaveLastLocalAddressWhenQuicWorkedToPrefs(last_local_address_when_quic_worked,
+                                            &http_server_properties_dict);
 
   SaveQuicServerInfoMapToServerPrefs(quic_server_info_map,
                                      &http_server_properties_dict);
@@ -784,15 +785,16 @@ void HttpServerPropertiesManager::SaveAlternativeServiceToServerPrefs(
       kAlternativeServiceKey, std::move(alternative_service_list));
 }
 
-void HttpServerPropertiesManager::SaveSupportsQuicToPrefs(
-    const IPAddress& last_quic_address,
+void HttpServerPropertiesManager::SaveLastLocalAddressWhenQuicWorkedToPrefs(
+    const IPAddress& last_local_address_when_quic_worked,
     base::DictionaryValue* http_server_properties_dict) {
-  if (!last_quic_address.IsValid())
+  if (!last_local_address_when_quic_worked.IsValid())
     return;
 
   auto supports_quic_dict = std::make_unique<base::DictionaryValue>();
   supports_quic_dict->SetBoolean(kUsedQuicKey, true);
-  supports_quic_dict->SetString(kAddressKey, last_quic_address.ToString());
+  supports_quic_dict->SetString(kAddressKey,
+                                last_local_address_when_quic_worked.ToString());
   http_server_properties_dict->SetWithoutPathExpansion(
       kSupportsQuicKey, std::move(supports_quic_dict));
 }
@@ -920,18 +922,18 @@ void HttpServerPropertiesManager::OnHttpServerPropertiesLoaded() {
     return;
 
   std::unique_ptr<HttpServerProperties::ServerInfoMap> server_info_map;
-  IPAddress last_quic_address;
+  IPAddress last_local_address_when_quic_worked;
   std::unique_ptr<QuicServerInfoMap> quic_server_info_map;
   std::unique_ptr<BrokenAlternativeServiceList> broken_alternative_service_list;
   std::unique_ptr<RecentlyBrokenAlternativeServices>
       recently_broken_alternative_services;
 
-  ReadPrefs(&server_info_map, &last_quic_address, &quic_server_info_map,
-            &broken_alternative_service_list,
+  ReadPrefs(&server_info_map, &last_local_address_when_quic_worked,
+            &quic_server_info_map, &broken_alternative_service_list,
             &recently_broken_alternative_services);
 
   std::move(on_prefs_loaded_callback_)
-      .Run(std::move(server_info_map), last_quic_address,
+      .Run(std::move(server_info_map), last_local_address_when_quic_worked,
            std::move(quic_server_info_map),
            std::move(broken_alternative_service_list),
            std::move(recently_broken_alternative_services));

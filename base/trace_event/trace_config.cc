@@ -163,7 +163,7 @@ void TraceConfig::ProcessFilterConfig::ToDict(Value* dict) const {
   std::set<base::ProcessId> ordered_set(included_process_ids_.begin(),
                                         included_process_ids_.end());
   for (auto process_id : ordered_set)
-    list->GetList().emplace_back(static_cast<int>(process_id));
+    list->Append(static_cast<int>(process_id));
 }
 
 bool TraceConfig::ProcessFilterConfig::IsEnabled(

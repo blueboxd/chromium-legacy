@@ -40,6 +40,9 @@ class Event;
 class MouseEvent;
 enum class DomCode;
 
+// Key used to store keyboard 'group' values in Event::Properties
+constexpr char kPropertyKeyboardGroup[] = "_keyevent_kbd_group_";
+
 // Returns a ui::Event wrapping a native event. Ownership of the returned value
 // is transferred to the caller.
 EVENTS_EXPORT std::unique_ptr<Event> EventFromNative(

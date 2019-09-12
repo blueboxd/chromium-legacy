@@ -13,7 +13,10 @@
 #include "base/trace_event/trace_event.h"
 #include "base/win/core_winrt_util.h"
 #include "base/win/windows_version.h"
+#include "skia/ext/skia_utils_win.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/gfx/geometry/safe_integer_conversions.h"
 
 namespace ui {
 
@@ -120,31 +123,59 @@ std::string GetCaptionSizeString(ClosedCaptionSize caption_size) {
   }
 }
 
-// Translates a Windows::Media::ClosedCaptioning::ClosedCaptionColor to a CSS
-// color string.
-std::string GetCssColor(ClosedCaptionColor caption_color) {
+// Translates a Windows::Media::ClosedCaptioning::ClosedCaptionOpacity to an
+// SkAlpha value.
+SkAlpha GetCaptionOpacity(ClosedCaptionOpacity caption_opacity) {
+  switch (caption_opacity) {
+    case ClosedCaptionOpacity_ZeroPercent:
+      return SK_AlphaTRANSPARENT;
+    case ClosedCaptionOpacity_TwentyFivePercent:
+      return gfx::ToRoundedInt(SK_AlphaOPAQUE * 0.25);
+    case ClosedCaptionOpacity_SeventyFivePercent:
+      return gfx::ToRoundedInt(SK_AlphaOPAQUE * 0.75);
+    case ClosedCaptionOpacity_OneHundredPercent:
+    case ClosedCaptionOpacity_Default:
+    default:
+      return SK_AlphaOPAQUE;
+  }
+}
+
+// Translates a Windows::Media::ClosedCaptioning::ClosedCaptionColor to an
+// SkColor value.
+SkColor GetCaptionColor(ClosedCaptionColor caption_color) {
   switch (caption_color) {
     case ClosedCaptionColor_Black:
-      return "black";
+      return SK_ColorBLACK;
     case ClosedCaptionColor_Red:
-      return "red";
+      return SK_ColorRED;
     case ClosedCaptionColor_Green:
-      return "green";
+      return SK_ColorGREEN;
     case ClosedCaptionColor_Blue:
-      return "blue";
+      return SK_ColorBLUE;
     case ClosedCaptionColor_Yellow:
-      return "yellow";
+      return SK_ColorYELLOW;
     case ClosedCaptionColor_Magenta:
-      return "magenta";
+      return SK_ColorMAGENTA;
     case ClosedCaptionColor_Cyan:
-      return "cyan";
+      return SK_ColorCYAN;
     case ClosedCaptionColor_White:
-      return "white";
+      return SK_ColorWHITE;
     case ClosedCaptionColor_Default:
+    default:
       // We shouldn't override with OS Styling for Default case.
       NOTREACHED();
-      return std::string();
+      return SK_ColorWHITE;
   }
+}
+
+// Translates a Windows::Media::ClosedCaptioning::ClosedCaptionColor and a
+// Windows::Media::ClosedCaptioning::ClosedCaptionOpacity to an RGBA CSS color
+// string.
+std::string GetCssColorWithAlpha(ClosedCaptionColor caption_color,
+                                 ClosedCaptionOpacity caption_opacity) {
+  const SkAlpha opacity = GetCaptionOpacity(caption_opacity);
+  const SkColor color = GetCaptionColor(caption_color);
+  return color_utils::SkColorToRgbaString(SkColorSetA(color, opacity));
 }
 
 base::Optional<CaptionStyle> InitializeFromSystemSettings() {
@@ -213,11 +244,48 @@ base::Optional<CaptionStyle> InitializeFromSystemSettings() {
     return base::nullopt;
   }
 
+  ClosedCaptionOpacity font_opacity = ClosedCaptionOpacity_Default;
+  hr = closed_caption_properties_statics->get_FontOpacity(&font_opacity);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to retrieve Font Opacity"
+                << ", HRESULT: 0x" << std::hex << hr;
+    LogCapStyleWinError(__LINE__, hr);
+    return base::nullopt;
+  }
+
   ClosedCaptionColor background_color = ClosedCaptionColor_Default;
   hr =
       closed_caption_properties_statics->get_BackgroundColor(&background_color);
   if (FAILED(hr)) {
     DLOG(ERROR) << "Failed to retrieve Background Color"
+                << ", HRESULT: 0x" << std::hex << hr;
+    LogCapStyleWinError(__LINE__, hr);
+    return base::nullopt;
+  }
+
+  ClosedCaptionOpacity background_opacity = ClosedCaptionOpacity_Default;
+  hr = closed_caption_properties_statics->get_BackgroundOpacity(
+      &background_opacity);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to retrieve Background Opacity"
+                << ", HRESULT: 0x" << std::hex << hr;
+    LogCapStyleWinError(__LINE__, hr);
+    return base::nullopt;
+  }
+
+  ClosedCaptionColor region_color = ClosedCaptionColor_Default;
+  hr = closed_caption_properties_statics->get_RegionColor(&region_color);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to retrieve Region Color"
+                << ", HRESULT: 0x" << std::hex << hr;
+    LogCapStyleWinError(__LINE__, hr);
+    return base::nullopt;
+  }
+
+  ClosedCaptionOpacity region_opacity = ClosedCaptionOpacity_Default;
+  hr = closed_caption_properties_statics->get_RegionOpacity(&region_opacity);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to retrieve Region Opacity"
                 << ", HRESULT: 0x" << std::hex << hr;
     LogCapStyleWinError(__LINE__, hr);
     return base::nullopt;
@@ -239,12 +307,19 @@ base::Optional<CaptionStyle> InitializeFromSystemSettings() {
         AddCSSImportant(GetEdgeEffectString(edge_effect));
   }
 
-  if (font_color != ClosedCaptionColor_Default)
-    caption_style.text_color = AddCSSImportant(GetCssColor(font_color));
+  if (font_color != ClosedCaptionColor_Default) {
+    caption_style.text_color =
+        AddCSSImportant(GetCssColorWithAlpha(font_color, font_opacity));
+  }
 
   if (background_color != ClosedCaptionColor_Default) {
-    caption_style.background_color =
-        AddCSSImportant(GetCssColor(background_color));
+    caption_style.background_color = AddCSSImportant(
+        GetCssColorWithAlpha(background_color, background_opacity));
+  }
+
+  if (region_color != ClosedCaptionColor_Default) {
+    caption_style.window_color =
+        AddCSSImportant(GetCssColorWithAlpha(region_color, region_opacity));
   }
 
   return caption_style;

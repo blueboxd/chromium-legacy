@@ -95,4 +95,13 @@ Polymer({
     chrome.metricsPrivate.recordUserAction(
         'SettingsMenu_ExtensionsLinkClicked');
   },
+
+  /**
+   * @param {boolean} bool
+   * @return {string}
+   * @private
+   */
+  boolToString_: function(bool) {
+    return bool.toString();
+  },
 });

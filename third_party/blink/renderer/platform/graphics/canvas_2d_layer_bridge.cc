@@ -124,6 +124,8 @@ void Canvas2DLayerBridge::StartRecording() {
 
   if (resource_host_)
     resource_host_->RestoreCanvasMatrixClipStack(canvas);
+
+  recording_pixel_count_ = 0;
 }
 
 void Canvas2DLayerBridge::ResetResourceProvider() {
@@ -729,7 +731,7 @@ void Canvas2DLayerBridge::FinalizeFrame() {
 
   ++frames_since_last_commit_;
   if (frames_since_last_commit_ >= 2) {
-    FlushRecording();
+    ResourceProvider()->FlushSkia();
     if (IsAccelerated() && !rate_limiter_) {
       // Make sure the GPU is never more than two animation frames behind.
       constexpr unsigned kMaxCanvasAnimationBacklog = 2;

@@ -8,6 +8,7 @@
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button_delegate.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/views/animation/ink_drop_impl.h"
 

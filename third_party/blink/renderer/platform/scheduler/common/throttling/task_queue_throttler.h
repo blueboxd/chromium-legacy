@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/common/cancelable_closure_holder.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/budget_pool.h"
+#include "third_party/blink/renderer/platform/scheduler/common/throttling/budget_pool_controller.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/cpu_time_budget_pool.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/wake_up_budget_pool.h"
 #include "third_party/blink/renderer/platform/scheduler/common/tracing_helper.h"
@@ -43,33 +44,6 @@ class WakeUpBudgetPool;
 // kAllTasks, and overrides previous kNewTasksOnly block if any, which may
 // unblock some tasks.
 enum class QueueBlockType { kAllTasks, kNewTasksOnly };
-
-// Interface for BudgetPool to interact with TaskQueueThrottler.
-class PLATFORM_EXPORT BudgetPoolController {
- public:
-  virtual ~BudgetPoolController() = default;
-
-  // To be used by BudgetPool only, use BudgetPool::{Add,Remove}Queue
-  // methods instead.
-  virtual void AddQueueToBudgetPool(base::sequence_manager::TaskQueue* queue,
-                                    BudgetPool* budget_pool) = 0;
-  virtual void RemoveQueueFromBudgetPool(
-      base::sequence_manager::TaskQueue* queue,
-      BudgetPool* budget_pool) = 0;
-
-  // Deletes the budget pool.
-  virtual void UnregisterBudgetPool(BudgetPool* budget_pool) = 0;
-
-  // Ensure that an appropriate type of the fence is installed and schedule
-  // a pump for this queue when needed.
-  virtual void UpdateQueueSchedulingLifecycleState(
-      base::TimeTicks now,
-      base::sequence_manager::TaskQueue* queue) = 0;
-
-  // Returns true if the |queue| is throttled (i.e. added to TaskQueueThrottler
-  // and throttling is not disabled).
-  virtual bool IsThrottled(base::sequence_manager::TaskQueue* queue) const = 0;
-};
 
 // The job of the TaskQueueThrottler is to control when tasks posted on
 // throttled queues get run. The TaskQueueThrottler:

@@ -14,6 +14,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/service_worker_context.h"
 #include "url/origin.h"
 
 namespace content {
@@ -141,7 +142,7 @@ void PaymentManager::SetUserHint(const std::string& user_hint) {
 void PaymentManager::EnableDelegations(
     const std::vector<payments::mojom::PaymentDelegation>& delegations,
     PaymentManager::EnableDelegationsCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   payment_app_context_->payment_app_database()->EnablePaymentAppDelegations(
       scope_, delegations, std::move(callback));

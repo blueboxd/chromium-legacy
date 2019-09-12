@@ -299,10 +299,6 @@ class StatusMediator {
 
     public void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
             boolean isSearchEngineGoogle, String searchEngineUrl) {
-        mModel.set(StatusProperties.STATUS_ICON, null);
-        mModel.set(StatusProperties.STATUS_ICON_RES, 0);
-        mModel.set(StatusProperties.STATUS_ICON_TINT_RES, 0);
-
         mIsSearchEngineGoogle = isSearchEngineGoogle;
         updateLocationBarIcon();
     }
@@ -319,6 +315,9 @@ class StatusMediator {
      *     - not shown if URL is focused.
      */
     private void updateLocationBarIcon() {
+        // Update the accessibility description before continuing since we need it either way.
+        mModel.set(StatusProperties.STATUS_ICON_DESCRIPTION_RES, getAccessibilityDescriptionRes());
+
         // When the search engine logo should be shown, but the engine isn't Google. In this case,
         // we download the icon on the fly.
         boolean showFocused = mUrlHasFocus && mShowStatusIconWhenUrlFocused;
@@ -338,14 +337,14 @@ class StatusMediator {
         if (SearchEngineLogoUtils.shouldShowSearchEngineLogo()
                 && (showFocused || showUnfocusedNewTabPage || showUnfocusedSearchResultsPage)) {
             mShouldCancelCustomFavicon = false;
-            mModel.set(StatusProperties.STATUS_ICON_TINT_RES, /* no tint */ 0);
+            mModel.set(StatusProperties.STATUS_ICON_TINT_RES, 0);
             if (mIsSearchEngineGoogle) {
                 mModel.set(StatusProperties.STATUS_ICON_RES,
                         SearchEngineLogoUtils.shouldShowSearchLoupeEverywhere()
                                 ? R.drawable.omnibox_search
                                 : R.drawable.ic_logo_googleg_24dp);
             } else {
-                mModel.set(StatusProperties.STATUS_ICON_RES, R.drawable.omnibox_search);
+                mModel.set(StatusProperties.STATUS_ICON_RES, R.drawable.ic_search);
                 if (!SearchEngineLogoUtils.shouldShowSearchLoupeEverywhere()) {
                     SearchEngineLogoUtils.getSearchEngineLogoFavicon(
                             Profile.getLastUsedProfile().getOriginalProfile(), mResources,
@@ -362,7 +361,6 @@ class StatusMediator {
 
         int icon = 0;
         int tint = 0;
-        int description = 0;
         int toast = 0;
 
         mIsSecurityButtonShown = false;
@@ -371,13 +369,11 @@ class StatusMediator {
                 icon = mFirstSuggestionIsSearchQuery ? R.drawable.omnibox_search
                                                      : R.drawable.ic_omnibox_page;
                 tint = mNavigationIconTintRes;
-                description = R.string.accessibility_toolbar_btn_site_info;
             }
         } else if (mSecurityIconRes != 0) {
             mIsSecurityButtonShown = true;
             icon = mSecurityIconRes;
             tint = mSecurityIconTintRes;
-            description = mSecurityIconDescriptionRes;
             toast = R.string.menu_page_info;
         }
 
@@ -388,7 +384,21 @@ class StatusMediator {
 
         mModel.set(StatusProperties.STATUS_ICON_RES, icon);
         mModel.set(StatusProperties.STATUS_ICON_TINT_RES, tint);
-        mModel.set(StatusProperties.STATUS_ICON_DESCRIPTION_RES, description);
         mModel.set(StatusProperties.STATUS_ICON_ACCESSIBILITY_TOAST_RES, toast);
+    }
+
+    /** Return the resource id for the accessibility description or 0 if none apply. */
+    private int getAccessibilityDescriptionRes() {
+        if (mUrlHasFocus) {
+            if (SearchEngineLogoUtils.shouldShowSearchEngineLogo()) {
+                return 0;
+            } else if (mShowStatusIconWhenUrlFocused) {
+                return R.string.accessibility_toolbar_btn_site_info;
+            }
+        } else if (mSecurityIconRes != 0) {
+            return mSecurityIconDescriptionRes;
+        }
+
+        return 0;
     }
 }

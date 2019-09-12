@@ -502,9 +502,6 @@ extern const char kMemlogStackModePseudo[];
 extern const char kDownloadAutoResumptionNativeName[];
 extern const char kDownloadAutoResumptionNativeDescription[];
 
-extern const char kDragToPinTabsName[];
-extern const char kDragToPinTabsDescription[];
-
 extern const char kEnableNewDownloadBackendName[];
 extern const char kEnableNewDownloadBackendDescription[];
 
@@ -816,6 +813,9 @@ extern const char kOfferStoreUnmaskedWalletCardsDescription[];
 extern const char kOmniboxAlternateMatchDescriptionSeparatorName[];
 extern const char kOmniboxAlternateMatchDescriptionSeparatorDescription[];
 
+extern const char kOmniboxAutocompleteTitlesName[];
+extern const char kOmniboxAutocompleteTitlesDescription[];
+
 extern const char kOmniboxDisableInstantExtendedLimitName[];
 extern const char kOmniboxDisableInstantExtendedLimitDescription[];
 
@@ -1069,9 +1069,6 @@ extern const char kSharingDeviceRegistrationDescription[];
 
 extern const char kSharingUseDeviceInfoName[];
 extern const char kSharingUseDeviceInfoDescription[];
-
-extern const char kShelfDenseClamshellName[];
-extern const char kShelfDenseClamshellDescription[];
 
 extern const char kShelfHotseatName[];
 extern const char kShelfHotseatDescription[];

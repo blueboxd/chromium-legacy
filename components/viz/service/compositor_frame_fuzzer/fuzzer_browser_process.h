@@ -58,6 +58,8 @@ class FuzzerBrowserProcess {
 
   ParentLocalSurfaceIdAllocator lsi_allocator_;
 
+  FrameTokenGenerator next_frame_token_;
+
   DISALLOW_COPY_AND_ASSIGN(FuzzerBrowserProcess);
 };
 

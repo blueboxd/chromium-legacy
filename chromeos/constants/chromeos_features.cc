@@ -39,6 +39,10 @@ const base::Feature kAutoScreenBrightness{"AutoScreenBrightness",
 const base::Feature kBluetoothAggressiveAppearanceFilter{
     "BluetoothAggressiveAppearanceFilter", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disables more filtering out of phones from the Bluetooth UI.
+const base::Feature kBluetoothPhoneFilter{"BluetoothPhoneFilter",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Feature containing param to block provided long term keys.
 const base::Feature kBlueZLongTermKeyBlocklist{
     "BlueZLongTermKeyBlocklist", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -92,11 +96,6 @@ const base::Feature kEnableFileManagerFormatDialog{
 // Enable the piex-wasm module for raw image preview image extraction.
 const base::Feature kEnableFileManagerPiexWasm{
     "PiexWasm", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables or disables web push for background notifications in
-// Android Messages Integration on Chrome OS.
-const base::Feature kEnableMessagesWebPush{"EnableMessagesWebPush",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the next generation file manager.
 const base::Feature kFilesNG{"FilesNG", base::FEATURE_DISABLED_BY_DEFAULT};

@@ -389,7 +389,7 @@ class CourierRendererTest : public testing::Test {
     RunPendingTasks();
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<RendererController> controller_;
   std::unique_ptr<RendererClientImpl> render_client_;
   std::unique_ptr<FakeMediaResource> media_resource_;

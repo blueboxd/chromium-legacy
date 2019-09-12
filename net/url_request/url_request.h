@@ -843,7 +843,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // These functions delegate to |delegate_|.  See URLRequest::Delegate for the
   // meaning of these functions.
   void NotifyAuthRequired(std::unique_ptr<AuthChallengeInfo> auth_info);
-  void NotifyAuthRequiredComplete(NetworkDelegate::AuthRequiredResponse result);
   void NotifyCertificateRequested(SSLCertRequestInfo* cert_request_info);
   void NotifySSLCertificateError(int net_error,
                                  const SSLInfo& ssl_info,
@@ -969,13 +968,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // messages to network delegate.
   // TODO(battre): Remove this. http://crbug.com/89049
   bool has_notified_completion_;
-
-  // Authentication data used by the NetworkDelegate for this request,
-  // if one is present. |auth_credentials_| may be filled in when calling
-  // |NotifyAuthRequired| on the NetworkDelegate. |auth_info_| holds
-  // the authentication challenge being handled by |NotifyAuthRequired|.
-  AuthCredentials auth_credentials_;
-  std::unique_ptr<AuthChallengeInfo> auth_info_;
 
   int64_t received_response_content_length_;
 

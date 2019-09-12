@@ -4,7 +4,7 @@
     "main and CQ ios-simulator.",
     "Note: Xcode 10 requires Mac OS 10.13.4 or higher, hence 'host os'."
   ],
-  "xcode build version": "11m392r",
+  "xcode build version": "11a419c",
   "gn_args": [
     "goma_dir=\"$(goma_dir)\"",
     "is_component_build=false",

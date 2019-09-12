@@ -69,7 +69,7 @@ void MetricsServiceClient::UpdateRunningServices() {
     update_running_services_.Run();
 }
 
-bool MetricsServiceClient::IsMetricsReportingForceEnabled() {
+bool MetricsServiceClient::IsMetricsReportingForceEnabled() const {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kForceEnableMetricsReporting);
 }

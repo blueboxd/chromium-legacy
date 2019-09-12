@@ -42,7 +42,7 @@ class NET_EXPORT_PRIVATE HttpServerPropertiesManager {
   // |recently_broken_alternative_services|, which may be null.
   using OnPrefsLoadedCallback = base::OnceCallback<void(
       std::unique_ptr<HttpServerProperties::ServerInfoMap> server_info_map,
-      const IPAddress& last_quic_address,
+      const IPAddress& last_local_address_when_quic_worked,
       std::unique_ptr<QuicServerInfoMap> quic_server_info_map,
       std::unique_ptr<BrokenAlternativeServiceList>
           broken_alternative_service_list,
@@ -81,7 +81,7 @@ class NET_EXPORT_PRIVATE HttpServerPropertiesManager {
   // simpler API.
   void ReadPrefs(
       std::unique_ptr<HttpServerProperties::ServerInfoMap>* server_info_map,
-      IPAddress* last_quic_address,
+      IPAddress* last_local_address_when_quic_worked,
       std::unique_ptr<QuicServerInfoMap>* quic_server_info_map,
       std::unique_ptr<BrokenAlternativeServiceList>*
           broken_alternative_service_list,
@@ -106,7 +106,7 @@ class NET_EXPORT_PRIVATE HttpServerPropertiesManager {
   void WriteToPrefs(
       const HttpServerProperties::ServerInfoMap& server_info_map,
       const GetCannonicalSuffix& get_canonical_suffix,
-      const IPAddress& last_quic_address,
+      const IPAddress& last_local_address_when_quic_worked,
       const QuicServerInfoMap& quic_server_info_map,
       const BrokenAlternativeServiceList& broken_alternative_service_list,
       const RecentlyBrokenAlternativeServices&
@@ -157,8 +157,9 @@ class NET_EXPORT_PRIVATE HttpServerPropertiesManager {
       const base::DictionaryValue& server_dict,
       HttpServerProperties::ServerInfo* server_info);
 
-  void ReadSupportsQuic(const base::DictionaryValue& server_dict,
-                        IPAddress* last_quic_address);
+  void ReadLastLocalAddressWhenQuicWorked(
+      const base::DictionaryValue& server_dict,
+      IPAddress* last_local_address_when_quic_worked);
   void ParseNetworkStats(const url::SchemeHostPort& server,
                          const base::DictionaryValue& server_dict,
                          HttpServerProperties::ServerInfo* server_info);
@@ -173,8 +174,8 @@ class NET_EXPORT_PRIVATE HttpServerPropertiesManager {
   void SaveAlternativeServiceToServerPrefs(
       const AlternativeServiceInfoVector& alternative_service_info_vector,
       base::DictionaryValue* server_pref_dict);
-  void SaveSupportsQuicToPrefs(
-      const IPAddress& last_quic_address,
+  void SaveLastLocalAddressWhenQuicWorkedToPrefs(
+      const IPAddress& last_local_address_when_quic_worked,
       base::DictionaryValue* http_server_properties_dict);
   void SaveNetworkStatsToServerPrefs(
       const ServerNetworkStats& server_network_stats,

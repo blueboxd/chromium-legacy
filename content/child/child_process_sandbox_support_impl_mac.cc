@@ -21,8 +21,8 @@ namespace content {
 
 WebSandboxSupportMac::WebSandboxSupportMac(
     service_manager::Connector* connector) {
-  connector->BindInterface(content::mojom::kSystemServiceName,
-                           mojo::MakeRequest(&sandbox_support_));
+  connector->Connect(content::mojom::kSystemServiceName,
+                     sandbox_support_.BindNewPipeAndPassReceiver());
   sandbox_support_->GetSystemColors(base::BindOnce(
       &WebSandboxSupportMac::OnGotSystemColors, base::Unretained(this)));
 }

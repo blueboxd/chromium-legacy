@@ -141,9 +141,9 @@ class CreditCardFIDOAuthenticator
       MakeCredentialAuthenticatorResponsePtr attestation_response);
 
   // Sets prefstore to enable credit card authentication if rpc was successful.
-  void OnDidGetOptChangeResult(AutofillClient::PaymentsRpcResult result,
-                               bool user_is_opted_in,
-                               base::Value creation_options = base::Value());
+  void OnDidGetOptChangeResult(
+      AutofillClient::PaymentsRpcResult result,
+      payments::PaymentsClient::OptChangeResponseDetails& response);
 
   // The callback invoked from the WebAuthn offer dialog when it is accepted or
   // declined/cancelled.

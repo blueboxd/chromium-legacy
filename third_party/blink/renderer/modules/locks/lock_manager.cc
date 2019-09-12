@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "mojo/public/cpp/bindings/associated_receiver.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_lock_granted_callback.h"
@@ -227,10 +227,10 @@ ScriptPromise LockManager::request(ScriptState* script_state,
   }
 
   if (!service_.is_bound()) {
-    if (auto* provider = context->GetInterfaceProvider()) {
-      provider->GetInterface(service_.BindNewPipeAndPassReceiver(
-          context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
-    }
+    context->GetBrowserInterfaceBroker().GetInterface(
+        service_.BindNewPipeAndPassReceiver(
+            context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
+
     if (!service_.is_bound()) {
       exception_state.ThrowTypeError("Service not available.");
       return ScriptPromise();
@@ -347,10 +347,10 @@ ScriptPromise LockManager::query(ScriptState* script_state,
   }
 
   if (!service_.is_bound()) {
-    if (auto* provider = context->GetInterfaceProvider()) {
-      provider->GetInterface(service_.BindNewPipeAndPassReceiver(
-          context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
-    }
+    context->GetBrowserInterfaceBroker().GetInterface(
+        service_.BindNewPipeAndPassReceiver(
+            context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
+
     if (!service_.is_bound()) {
       exception_state.ThrowTypeError("Service not available.");
       return ScriptPromise();

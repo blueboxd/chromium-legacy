@@ -7,6 +7,7 @@
 #include "chrome/browser/media/webrtc/desktop_media_list.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_list_view.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_picker_views.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
 #include "ui/native_theme/native_theme.h"

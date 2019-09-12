@@ -52,6 +52,7 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"

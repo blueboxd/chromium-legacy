@@ -107,6 +107,10 @@ using ::testing::AtLeast;
 using ::testing::_;
 using media::VideoFrame;
 
+namespace viz {
+struct FrameTimingDetails;
+}
+
 namespace cc {
 namespace {
 
@@ -237,7 +241,7 @@ class LayerTreeHostImplTest : public testing::Test,
   void DidPresentCompositorFrameOnImplThread(
       uint32_t frame_token,
       std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
-      const gfx::PresentationFeedback& feedback) override {}
+      const viz::FrameTimingDetails& details) override {}
   void NotifyAnimationWorkletStateChange(AnimationWorkletMutationState state,
                                          ElementListType tree_type) override {}
   void NotifyPaintWorkletStateChange(

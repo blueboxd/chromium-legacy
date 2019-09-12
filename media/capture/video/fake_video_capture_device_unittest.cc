@@ -200,7 +200,7 @@ class FakeVideoCaptureDeviceTestBase : public ::testing::Test {
 
   const VideoCaptureFormat& last_format() const { return last_format_; }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<VideoCaptureDeviceDescriptors> descriptors_;
   std::unique_ptr<base::RunLoop> run_loop_;
   std::unique_ptr<MockVideoCaptureDeviceClient> client_;

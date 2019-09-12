@@ -7029,7 +7029,15 @@ class ForceNetworkInProcessTest
 };
 
 IN_PROC_BROWSER_TEST_P(ForceNetworkInProcessTest, IsRespected) {
-  ASSERT_EQ(content::IsInProcessNetworkService(), GetParam());
+  bool expected_in_process = GetParam();
+
+  // When run with --enable-features=NetworkServiceInProcess, the Network
+  // Service will always be in process. This configuration is used on some
+  // bots - see https://crbug.com/1002752.
+  expected_in_process |=
+      base::FeatureList::IsEnabled(features::kNetworkServiceInProcess);
+
+  ASSERT_EQ(expected_in_process, content::IsInProcessNetworkService());
 }
 
 INSTANTIATE_TEST_SUITE_P(

@@ -5,6 +5,7 @@
 #include "ui/views/accessibility/ax_widget_obj_wrapper.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"

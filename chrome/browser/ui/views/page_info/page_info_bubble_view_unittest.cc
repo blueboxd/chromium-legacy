@@ -38,6 +38,7 @@
 #include "services/device/public/cpp/test/fake_usb_device_manager.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/events/event_utils.h"

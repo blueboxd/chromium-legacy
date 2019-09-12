@@ -9,6 +9,7 @@
 #include "base/no_destructor.h"
 #include "base/value_conversions.h"
 #include "base/values.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 
 namespace ui {
 

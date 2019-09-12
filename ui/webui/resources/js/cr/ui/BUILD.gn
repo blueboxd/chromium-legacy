@@ -269,13 +269,19 @@ js_library("tree") {
 js_modulizer("modulize") {
   input_files = [
     "focus_outline_manager.js",
+    "focus_row.js",
     "focus_without_ink.js",
+  ]
+  namespace_rewrites = [
+    "cr.ui.FocusRow|FocusRow",
+    "cr.ui.FocusRowDelegate|FocusRowDelegate",
   ]
 }
 
 js_type_check("ui_resources_modules") {
   deps = [
     ":focus_outline_manager.m",
+    ":focus_row.m",
     ":focus_without_ink.m",
   ]
 }
@@ -283,6 +289,18 @@ js_type_check("ui_resources_modules") {
 js_library("focus_outline_manager.m") {
   sources = [
     "$root_gen_dir/ui/webui/resources/js/cr/ui/focus_outline_manager.m.js",
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("focus_row.m") {
+  deps = [
+    "../..:assert.m",
+    "../..:event_tracker.m",
+    "../..:util.m",
+  ]
+  sources = [
+    "$root_gen_dir/ui/webui/resources/js/cr/ui/focus_row.m.js",
   ]
   extra_deps = [ ":modulize" ]
 }

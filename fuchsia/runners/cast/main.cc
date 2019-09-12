@@ -10,12 +10,19 @@
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
 #include "build/buildflag.h"
+#include "fuchsia/base/init_logging.h"
 #include "fuchsia/runners/buildflags.h"
 #include "fuchsia/runners/cast/cast_runner.h"
 
 int main(int argc, char** argv) {
   base::SingleThreadTaskExecutor io_task_executor(base::MessagePumpType::IO);
   base::RunLoop run_loop;
+
+  base::CommandLine::Init(argc, argv);
+  if (!cr_fuchsia::InitLoggingFromCommandLine(
+          *base::CommandLine::ForCurrentProcess())) {
+    return 1;
+  }
 
   fuchsia::web::ContextFeatureFlags features =
       fuchsia::web::ContextFeatureFlags::NETWORK |

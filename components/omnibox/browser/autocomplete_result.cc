@@ -400,7 +400,7 @@ void AutocompleteResult::AppendDedicatedPedalMatches(
   for (auto& match : matches_) {
     // We do not want to deal with pedals of pedals, or pedals among
     // exclusive tail suggestions.
-    if (match.pedal || match.type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL)
+    if (match.pedal || match.type == ACMatchType::SEARCH_SUGGEST_TAIL)
       continue;
     OmniboxPedal* const pedal = provider->FindPedalMatch(match.contents);
     if (pedal)

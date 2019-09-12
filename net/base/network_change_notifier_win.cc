@@ -119,8 +119,9 @@ NetworkChangeNotifierWin::NetworkChangeCalculatorParamsWin() {
 // experiments I ran... However none of them correctly returned "offline" when
 // executing 'ipconfig /release'.
 //
+// static
 NetworkChangeNotifier::ConnectionType
-NetworkChangeNotifierWin::RecomputeCurrentConnectionType() const {
+NetworkChangeNotifierWin::RecomputeCurrentConnectionType() {
   EnsureWinsockInit();
 
   // The following code was adapted from:
@@ -194,8 +195,7 @@ void NetworkChangeNotifierWin::RecomputeCurrentConnectionTypeOnBlockingSequence(
   // thread is stopped in this object's destructor.
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&NetworkChangeNotifierWin::RecomputeCurrentConnectionType,
-                     base::Unretained(this)),
+      base::BindOnce(&NetworkChangeNotifierWin::RecomputeCurrentConnectionType),
       std::move(reply_callback));
 }
 

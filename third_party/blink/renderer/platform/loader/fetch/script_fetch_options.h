@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_SCRIPT_FETCH_OPTIONS_H_
 
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cross_origin_attribute_value.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"

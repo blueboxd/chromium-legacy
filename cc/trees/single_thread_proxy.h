@@ -17,6 +17,7 @@
 
 namespace viz {
 class BeginFrameSource;
+struct FrameTimingDetails;
 }
 
 namespace cc {
@@ -130,7 +131,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void DidPresentCompositorFrameOnImplThread(
       uint32_t frame_token,
       std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
-      const gfx::PresentationFeedback& feedback) override;
+      const viz::FrameTimingDetails& details) override;
   void NotifyAnimationWorkletStateChange(
       AnimationWorkletMutationState state,
       ElementListType element_list_type) override;

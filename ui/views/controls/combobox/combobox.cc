@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/models/combobox_model.h"

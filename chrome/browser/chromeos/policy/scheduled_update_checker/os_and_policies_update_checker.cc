@@ -81,9 +81,8 @@ void OsAndPoliciesUpdateChecker::DefaultNetworkChanged(
 void OsAndPoliciesUpdateChecker::ScheduleUpdateCheck() {
   // If an update was downloaded but not applied then update engine won't do
   // anything. Move straight to the policy state.
-  if (update_engine_client_->GetLastStatus().status ==
-      chromeos::UpdateEngineClient::UpdateStatusOperation::
-          UPDATE_STATUS_UPDATED_NEED_REBOOT) {
+  if (update_engine_client_->GetLastStatus().current_operation() ==
+      update_engine::Operation::UPDATED_NEED_REBOOT) {
     RefreshPolicies(true /* update_check_result */);
     return;
   }
@@ -138,17 +137,16 @@ void OsAndPoliciesUpdateChecker::StartUpdateCheck() {
 }
 
 void OsAndPoliciesUpdateChecker::UpdateStatusChanged(
-    const chromeos::UpdateEngineClient::Status& status) {
+    const update_engine::StatusResult& status) {
   // Only ignore idle state if it is the first and only non-error state in the
   // state machine.
   if (ignore_idle_status_ &&
-      status.status > chromeos::UpdateEngineClient::UPDATE_STATUS_IDLE) {
+      status.current_operation() > update_engine::Operation::IDLE) {
     ignore_idle_status_ = false;
   }
 
-  switch (status.status) {
-    case chromeos::UpdateEngineClient::UpdateStatusOperation::
-        UPDATE_STATUS_IDLE:
+  switch (status.current_operation()) {
+    case update_engine::Operation::IDLE:
       if (!ignore_idle_status_) {
         // No update to download or an error occured mid-way of an existing
         // update download.
@@ -158,38 +156,32 @@ void OsAndPoliciesUpdateChecker::UpdateStatusChanged(
       }
       break;
 
-    case chromeos::UpdateEngineClient::UpdateStatusOperation::
-        UPDATE_STATUS_UPDATED_NEED_REBOOT:
+    case update_engine::Operation::UPDATED_NEED_REBOOT:
       // Refresh policies after the update check is finished successfully or
       // unsuccessfully.
       RefreshPolicies(true /* update_check_result */);
       break;
 
-    case chromeos::UpdateEngineClient::UpdateStatusOperation::
-        UPDATE_STATUS_ERROR:
-    case chromeos::UpdateEngineClient::UpdateStatusOperation::
-        UPDATE_STATUS_NEED_PERMISSION_TO_UPDATE:
-    case chromeos::UpdateEngineClient::UpdateStatusOperation::
-        UPDATE_STATUS_REPORTING_ERROR_EVENT:
+    case update_engine::Operation::ERROR:
+    case update_engine::Operation::DISABLED:
+    case update_engine::Operation::NEED_PERMISSION_TO_UPDATE:
+    case update_engine::Operation::REPORTING_ERROR_EVENT:
       update_check_task_executor_.ScheduleRetry(
           base::BindOnce(&OsAndPoliciesUpdateChecker::StartUpdateCheck,
                          base::Unretained(this)));
       break;
 
-    case chromeos::UpdateEngineClient::UpdateStatusOperation::
-        UPDATE_STATUS_FINALIZING:
-    case chromeos::UpdateEngineClient::UpdateStatusOperation::
-        UPDATE_STATUS_VERIFYING:
-    case chromeos::UpdateEngineClient::UpdateStatusOperation::
-        UPDATE_STATUS_DOWNLOADING:
-    case chromeos::UpdateEngineClient::UpdateStatusOperation::
-        UPDATE_STATUS_UPDATE_AVAILABLE:
-    case chromeos::UpdateEngineClient::UpdateStatusOperation::
-        UPDATE_STATUS_CHECKING_FOR_UPDATE:
-    case chromeos::UpdateEngineClient::UpdateStatusOperation::
-        UPDATE_STATUS_ATTEMPTING_ROLLBACK:
+    case update_engine::Operation::FINALIZING:
+    case update_engine::Operation::VERIFYING:
+    case update_engine::Operation::DOWNLOADING:
+    case update_engine::Operation::UPDATE_AVAILABLE:
+    case update_engine::Operation::CHECKING_FOR_UPDATE:
+    case update_engine::Operation::ATTEMPTING_ROLLBACK:
       // Do nothing on intermediate states.
       break;
+
+    default:
+      NOTREACHED();
   }
 }
 

@@ -11,10 +11,12 @@
 #include "components/version_info/version_info.h"
 #include "content/public/common/user_agent.h"
 #include "content/public/common/web_preferences.h"
+#include "fuchsia/engine/browser/url_request_rewrite_rules_manager.h"
 #include "fuchsia/engine/browser/web_engine_browser_context.h"
 #include "fuchsia/engine/browser/web_engine_browser_main_parts.h"
 #include "fuchsia/engine/browser/web_engine_devtools_manager_delegate.h"
 #include "fuchsia/engine/common.h"
+#include "fuchsia/engine/common/web_engine_url_loader_throttle.h"
 #include "fuchsia/engine/switches.h"
 
 WebEngineContentBrowserClient::WebEngineContentBrowserClient(
@@ -103,4 +105,29 @@ void WebEngineContentBrowserClient::AppendExtraCommandLineSwitches(
           switches::kDisableSoftwareVideoDecoders)) {
     command_line->AppendSwitch(switches::kDisableSoftwareVideoDecoders);
   }
+}
+
+std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
+WebEngineContentBrowserClient::CreateURLLoaderThrottles(
+    const network::ResourceRequest& request,
+    content::BrowserContext* browser_context,
+    const base::RepeatingCallback<content::WebContents*()>& wc_getter,
+    content::NavigationUIData* navigation_ui_data,
+    int frame_tree_node_id) {
+  if (frame_tree_node_id == content::RenderFrameHost::kNoFrameTreeNodeId) {
+    // TODO(crbug.com/976975): Add support for service workers.
+    return {};
+  }
+
+  UrlRequestRewriteRulesManager* adapter =
+      UrlRequestRewriteRulesManager::ForFrameTreeNodeId(frame_tree_node_id);
+  if (!adapter) {
+    // No popup support for rules rewriter.
+    return {};
+  }
+
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles;
+  throttles.emplace_back(std::make_unique<WebEngineURLLoaderThrottle>(
+      UrlRequestRewriteRulesManager::ForFrameTreeNodeId(frame_tree_node_id)));
+  return throttles;
 }

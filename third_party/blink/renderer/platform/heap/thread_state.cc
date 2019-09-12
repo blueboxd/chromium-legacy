@@ -217,7 +217,7 @@ void ThreadState::RunTerminationGC() {
   // Do thread local GC's as long as the count of thread local Persistents
   // changes and is above zero.
   int old_count = -1;
-  int current_count = GetPersistentRegion()->NumberOfPersistents();
+  int current_count = GetPersistentRegion()->NodesInUse();
   DCHECK_GE(current_count, 0);
   while (current_count != old_count) {
     CollectGarbage(BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
@@ -227,7 +227,7 @@ void ThreadState::RunTerminationGC() {
     // instantiated while running the termination GC.
     ReleaseStaticPersistentNodes();
     old_count = current_count;
-    current_count = GetPersistentRegion()->NumberOfPersistents();
+    current_count = GetPersistentRegion()->NodesInUse();
   }
 
   // We should not have any persistents left when getting to this point,
@@ -235,17 +235,17 @@ void ThreadState::RunTerminationGC() {
   // RegisterAsStaticReference. Clearing out all the Persistents will avoid
   // stale pointers and gets them reported as nullptr dereferences.
   if (current_count) {
-    for (size_t i = 0; i < kMaxTerminationGCLoops &&
-                       GetPersistentRegion()->NumberOfPersistents();
+    for (size_t i = 0;
+         i < kMaxTerminationGCLoops && GetPersistentRegion()->NodesInUse();
          i++) {
-      GetPersistentRegion()->PrepareForThreadStateTermination();
+      GetPersistentRegion()->PrepareForThreadStateTermination(this);
       CollectGarbage(BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
                      BlinkGC::kEagerSweeping,
                      BlinkGC::GCReason::kThreadTerminationGC);
     }
   }
 
-  CHECK(!GetPersistentRegion()->NumberOfPersistents());
+  CHECK(!GetPersistentRegion()->NodesInUse());
 
   // All of pre-finalizers should be consumed.
   DCHECK(ordered_pre_finalizers_.empty());
@@ -326,19 +326,18 @@ void ThreadState::VisitPersistents(Visitor* visitor) {
         Heap().stats_collector(),
         ThreadHeapStatsCollector::kVisitCrossThreadPersistents);
     ProcessHeap::CrossThreadPersistentMutex().AssertAcquired();
-    ProcessHeap::GetCrossThreadPersistentRegion().TracePersistentNodes(visitor);
+    ProcessHeap::GetCrossThreadPersistentRegion().TraceNodes(visitor);
   }
   {
     ThreadHeapStatsCollector::Scope inner_stats_scope(
         Heap().stats_collector(), ThreadHeapStatsCollector::kVisitPersistents);
-    persistent_region_->TracePersistentNodes(visitor);
+    persistent_region_->TraceNodes(visitor);
   }
 }
 
 void ThreadState::VisitWeakPersistents(Visitor* visitor) {
-  ProcessHeap::GetCrossThreadWeakPersistentRegion().TracePersistentNodes(
-      visitor);
-  weak_persistent_region_->TracePersistentNodes(visitor);
+  ProcessHeap::GetCrossThreadWeakPersistentRegion().TraceNodes(visitor);
+  weak_persistent_region_->TraceNodes(visitor);
 }
 
 ThreadState::GCSnapshotInfo::GCSnapshotInfo(wtf_size_t num_object_types)
@@ -981,12 +980,12 @@ void ThreadState::ReleaseStaticPersistentNodes() {
 
   PersistentRegion* persistent_region = GetPersistentRegion();
   for (PersistentNode* it : static_persistents)
-    persistent_region->ReleasePersistentNode(it);
+    persistent_region->ReleaseNode(it);
 }
 
 void ThreadState::FreePersistentNode(PersistentRegion* persistent_region,
                                      PersistentNode* persistent_node) {
-  persistent_region->FreePersistentNode(persistent_node);
+  persistent_region->FreeNode(persistent_node);
   // Do not allow static persistents to be freed before
   // they're all released in releaseStaticPersistentNodes().
   //

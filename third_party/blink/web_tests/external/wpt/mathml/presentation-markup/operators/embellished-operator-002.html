@@ -11,6 +11,7 @@
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
 <script src="/mathml/support/feature-detection.js"></script>
+<script src="/mathml/support/box-navigation.js"></script>
 <style>
   /* Default spacing of operator 'X' is 0.2777777777777778em so quite different
      from the measured/specified 0em and 1em. */
@@ -42,7 +43,7 @@
 </style>
 <script>
   function spaceBeforeElement(element) {
-      var mnBefore = element.previousElementSibling;
+      var mnBefore = previousInFlowSibling(element);
       return element.getBoundingClientRect().left - mnBefore.getBoundingClientRect().right;
   }
 
@@ -346,7 +347,6 @@
       <mn>X</mn>
       <mn class="oof1">0</mn><mn class="oof2">1</mn><mn class="nobox">2</mn>
       <maction class="testedElement" actiontype="statusline">
-        <mn class="oof1">0</mn><mn class="oof2">1</mn><mn class="nobox">2</mn>
         <mo lspace="2em" rspace="0em">X</mo>
         <mn class="oof1">0</mn><mn class="oof2">1</mn><mn class="nobox">2</mn>
         <mn>STATUS MESSAGE</mn>
@@ -363,7 +363,6 @@
       <mn>X</mn>
       <mn class="oof1">0</mn><mn class="oof2">1</mn><mn class="nobox">2</mn>
       <semantics class="testedElement">
-        <mn class="oof1">0</mn><mn class="oof2">1</mn><mn class="nobox">2</mn>
         <mo lspace="2em" rspace="0em">X</mo>
         <mn class="oof1">0</mn><mn class="oof2">1</mn><mn class="nobox">2</mn>
         <annotation>TEXT ANNOTATION</annotation>
@@ -639,7 +638,6 @@
       <mn>X</mn>
       <mn class="oof1">0</mn><mn class="oof2">1</mn><mn class="nobox">2</mn>
       <maction class="testedElement" actiontype="statusline">
-        <mn class="oof1">0</mn><mn class="oof2">1</mn><mn class="nobox">2</mn>
         <mn>X</mn>
         <mn class="oof1">0</mn><mn class="oof2">1</mn><mn class="nobox">2</mn>
         <mo lspace="2em" rspace="0em">STATUS MESSAGE</mo>
@@ -656,7 +654,6 @@
       <mn>X</mn>
       <mn class="oof1">0</mn><mn class="oof2">1</mn><mn class="nobox">2</mn>
       <semantics class="testedElement">
-        <mn class="oof1">0</mn><mn class="oof2">1</mn><mn class="nobox">2</mn>
         <mrow>
           <mn class="oof1">0</mn><mn class="oof2">1</mn><mn class="nobox">2</mn>
           <mn>X</mn>

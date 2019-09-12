@@ -583,7 +583,13 @@ This file contains the strings for ash.
         Notifications
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NOTIFICATIONS_TOGGLE_TOOLTIP" desc="The tooltip text of the button that toggles Do-not-disturb state for notifications">
-        Toggle Do not disturb
+        Toggle Do not disturb. <ph name="STATE_TEXT">$1<ex>Do not disturb is on.</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NOTIFICATIONS_DO_NOT_DISTURB_ON_STATE" desc="The tooltip text indicating that Do-not-disturb mode is on.">
+        Do not disturb is on.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NOTIFICATIONS_DO_NOT_DISTURB_OFF_STATE" desc="The tooltip text indicating that Do-not-disturb mode is off.">
+        Do not disturb is off.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NOTIFICATIONS_SETTINGS_ON_TOOLTIP" desc="The tooltip text of the button that shows notification settings. Used when all notifications are enabled.">
         Show notification settings. Notifications are on

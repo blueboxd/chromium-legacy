@@ -38,6 +38,12 @@ std::string TerminalSource::GetSource() {
   return chrome::kChromeUITerminalHost;
 }
 
+#if !BUILDFLAG(OPTIMIZE_WEBUI)
+bool TerminalSource::AllowCaching() {
+  return false;
+}
+#endif
+
 void TerminalSource::StartDataRequest(
     const std::string& path,
     const content::WebContents::Getter& wc_getter,

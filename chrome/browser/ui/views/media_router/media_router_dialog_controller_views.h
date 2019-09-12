@@ -13,6 +13,7 @@
 #include "chrome/browser/media/router/media_router_dialog_controller.h"
 #include "chrome/browser/ui/media_router/media_router_ui_service.h"
 #include "chrome/browser/ui/views/media_router/media_router_views_ui.h"
+#include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace media_router {
@@ -65,7 +66,8 @@ class MediaRouterDialogControllerViews
 
   base::RepeatingClosure dialog_creation_callback_;
 
-  ScopedObserver<views::Widget, views::WidgetObserver> scoped_widget_observer_;
+  ScopedObserver<views::Widget, views::WidgetObserver> scoped_widget_observer_{
+      this};
 
   // Service that provides MediaRouterActionController. It outlives |this|.
   MediaRouterUIService* const media_router_ui_service_;

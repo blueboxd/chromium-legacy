@@ -745,29 +745,10 @@ TEST_F(ModelTypeWorkerTest, ReceiveUpdates) {
 TEST_F(ModelTypeWorkerTest, ReceiveUpdates_NoDuplicateHash) {
   NormalInitialize();
 
-  base::HistogramTester histograms;
-
   TriggerPartialUpdateFromServer(10, kTag1, kValue1, kTag2, kValue2);
   TriggerPartialUpdateFromServer(10, kTag3, kValue3);
 
-  // No duplicates in either of the partial updates.
-  histograms.ExpectUniqueSample(
-      "Sync.DuplicateClientTagHashInGetUpdatesResponse.PREFERENCE",
-      /*sample=*/false, /*count=*/2);
-
   ApplyUpdates();
-
-  // No duplicate across the partial updates either.
-  histograms.ExpectUniqueSample(
-      "Sync.DuplicateClientTagHashInApplyPendingUpdates.PREFERENCE",
-      /*sample=*/false, /*count=*/1);
-  histograms.ExpectUniqueSample(
-      "Sync.DuplicateServerIdInApplyPendingUpdates.PREFERENCE",
-      /*sample=*/false, /*count=*/1);
-  histograms.ExpectUniqueSample(
-      "Sync.DuplicateClientTagHashWithDifferentServerIdsInApplyPendingUpdates."
-      "PREFERENCE",
-      /*sample=*/false, /*count=*/1);
 
   // Make sure all the updates arrived, in order.
   ASSERT_EQ(1u, processor()->GetNumUpdateResponses());
@@ -785,28 +766,10 @@ TEST_F(ModelTypeWorkerTest, ReceiveUpdates_NoDuplicateHash) {
 TEST_F(ModelTypeWorkerTest, ReceiveUpdates_DuplicateHashWithinPartialUpdate) {
   NormalInitialize();
 
-  base::HistogramTester histograms;
-
   // Note that kTag1 appears twice.
   TriggerPartialUpdateFromServer(10, kTag1, kValue1, kTag1, kValue2);
 
-  // There was a duplicate.
-  histograms.ExpectUniqueSample(
-      "Sync.DuplicateClientTagHashInGetUpdatesResponse.PREFERENCE",
-      /*sample=*/true, /*count=*/1);
-
   ApplyUpdates();
-
-  histograms.ExpectUniqueSample(
-      "Sync.DuplicateClientTagHashInApplyPendingUpdates.PREFERENCE",
-      /*sample=*/true, /*count=*/1);
-  histograms.ExpectUniqueSample(
-      "Sync.DuplicateServerIdInApplyPendingUpdates.PREFERENCE",
-      /*sample=*/true, /*count=*/1);
-  histograms.ExpectUniqueSample(
-      "Sync.DuplicateClientTagHashWithDifferentServerIdsInApplyPendingUpdates."
-      "PREFERENCE",
-      /*sample=*/false, /*count=*/1);
 
   // Make sure the duplicate entry got de-duped, and the last one won.
   ASSERT_EQ(1u, processor()->GetNumUpdateResponses());
@@ -821,30 +784,11 @@ TEST_F(ModelTypeWorkerTest, ReceiveUpdates_DuplicateHashWithinPartialUpdate) {
 TEST_F(ModelTypeWorkerTest, ReceiveUpdates_DuplicateHashAcrossPartialUpdates) {
   NormalInitialize();
 
-  base::HistogramTester histograms;
-
   // Note that kTag1 appears in both partial updates.
   TriggerPartialUpdateFromServer(10, kTag1, kValue1);
   TriggerPartialUpdateFromServer(10, kTag1, kValue2);
 
-  // Neither of the two partial updates contained duplicates.
-  histograms.ExpectUniqueSample(
-      "Sync.DuplicateClientTagHashInGetUpdatesResponse.PREFERENCE",
-      /*sample=*/false, /*count=*/2);
-
   ApplyUpdates();
-
-  // But there was a duplicate across the two partial updates.
-  histograms.ExpectUniqueSample(
-      "Sync.DuplicateClientTagHashInApplyPendingUpdates.PREFERENCE",
-      /*sample=*/true, /*count=*/1);
-  histograms.ExpectUniqueSample(
-      "Sync.DuplicateServerIdInApplyPendingUpdates.PREFERENCE",
-      /*sample=*/true, /*count=*/1);
-  histograms.ExpectUniqueSample(
-      "Sync.DuplicateClientTagHashWithDifferentServerIdsInApplyPendingUpdates."
-      "PREFERENCE",
-      /*sample=*/false, /*count=*/1);
 
   // Make sure the duplicate entry got de-duped, and the last one won.
   ASSERT_EQ(1u, processor()->GetNumUpdateResponses());
@@ -859,7 +803,6 @@ TEST_F(ModelTypeWorkerTest, ReceiveUpdates_DuplicateHashAcrossPartialUpdates) {
 TEST_F(ModelTypeWorkerTest,
        ReceiveUpdates_EmptyHashNotConsideredDuplicateIfForDistinctServerIds) {
   NormalInitialize();
-  base::HistogramTester histograms;
   // First create two entities with different tags, so they get assigned
   // different server ids.
   SyncEntity entity1 = server()->UpdateFromServer(
@@ -877,24 +820,7 @@ TEST_F(ModelTypeWorkerTest,
       server()->GetProgress(), server()->GetContext(), {&entity1, &entity2},
       status_controller());
 
-  // No duplicates in either of the partial updates.
-  histograms.ExpectUniqueSample(
-      "Sync.DuplicateClientTagHashInGetUpdatesResponse.PREFERENCE",
-      /*sample=*/false, /*count=*/1);
-
   ApplyUpdates();
-
-  // No duplicate server ids, but duplicate client tag hashes.
-  histograms.ExpectUniqueSample(
-      "Sync.DuplicateClientTagHashInApplyPendingUpdates.PREFERENCE",
-      /*sample=*/false, /*count=*/1);
-  histograms.ExpectUniqueSample(
-      "Sync.DuplicateServerIdInApplyPendingUpdates.PREFERENCE",
-      /*sample=*/false, /*count=*/1);
-  histograms.ExpectUniqueSample(
-      "Sync.DuplicateClientTagHashWithDifferentServerIdsInApplyPendingUpdates."
-      "PREFERENCE",
-      /*sample=*/false, /*count=*/1);
 
   // Make sure the empty client tag hashes did *not* get de-duped.
   ASSERT_EQ(1u, processor()->GetNumUpdateResponses());
@@ -910,8 +836,6 @@ TEST_F(ModelTypeWorkerTest,
 TEST_F(ModelTypeWorkerTest, ReceiveUpdates_MultipleDuplicateHashes) {
   NormalInitialize();
 
-  base::HistogramTester histograms;
-
   TriggerPartialUpdateFromServer(10, kTag1, kValue3);
   TriggerPartialUpdateFromServer(10, kTag2, kValue3);
   TriggerPartialUpdateFromServer(10, kTag3, kValue3);
@@ -921,23 +845,7 @@ TEST_F(ModelTypeWorkerTest, ReceiveUpdates_MultipleDuplicateHashes) {
 
   TriggerPartialUpdateFromServer(10, kTag1, kValue1);
 
-  // None of the partial updates contained duplicates.
-  histograms.ExpectUniqueSample(
-      "Sync.DuplicateClientTagHashInGetUpdatesResponse.PREFERENCE",
-      /*sample=*/false, /*count=*/6);
-
   ApplyUpdates();
-
-  histograms.ExpectUniqueSample(
-      "Sync.DuplicateClientTagHashInApplyPendingUpdates.PREFERENCE",
-      /*sample=*/true, /*count=*/1);
-  histograms.ExpectUniqueSample(
-      "Sync.DuplicateServerIdInApplyPendingUpdates.PREFERENCE",
-      /*sample=*/true, /*count=*/1);
-  histograms.ExpectUniqueSample(
-      "Sync.DuplicateClientTagHashWithDifferentServerIdsInApplyPendingUpdates."
-      "PREFERENCE",
-      /*sample=*/false, /*count=*/1);
 
   // Make sure the duplicate entries got de-duped, and the last one won.
   ASSERT_EQ(1u, processor()->GetNumUpdateResponses());
@@ -962,8 +870,6 @@ TEST_F(ModelTypeWorkerTest,
   // emitted. This scenario is considered a bug on the server.
   NormalInitialize();
 
-  base::HistogramTester histograms;
-
   // First create two entities with different tags, so they get assigned
   // different server ids.
   SyncEntity entity1 = server()->UpdateFromServer(
@@ -979,24 +885,7 @@ TEST_F(ModelTypeWorkerTest,
       server()->GetProgress(), server()->GetContext(), {&entity1, &entity2},
       status_controller());
 
-  // No duplicates in either of the partial updates.
-  histograms.ExpectUniqueSample(
-      "Sync.DuplicateClientTagHashInGetUpdatesResponse.PREFERENCE",
-      /*sample=*/true, /*count=*/1);
-
   ApplyUpdates();
-
-  // No duplicate server ids, but duplicate client tag hashes.
-  histograms.ExpectUniqueSample(
-      "Sync.DuplicateClientTagHashInApplyPendingUpdates.PREFERENCE",
-      /*sample=*/true, /*count=*/1);
-  histograms.ExpectUniqueSample(
-      "Sync.DuplicateServerIdInApplyPendingUpdates.PREFERENCE",
-      /*sample=*/false, /*count=*/1);
-  histograms.ExpectUniqueSample(
-      "Sync.DuplicateClientTagHashWithDifferentServerIdsInApplyPendingUpdates."
-      "PREFERENCE",
-      /*sample=*/true, /*count=*/1);
 
   // Make sure the first update has been discarded.
   ASSERT_EQ(1u, processor()->GetNumUpdateResponses());

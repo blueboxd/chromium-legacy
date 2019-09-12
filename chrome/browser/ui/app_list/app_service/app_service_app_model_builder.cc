@@ -29,10 +29,6 @@ bool ShouldShowInLauncher(const apps::AppUpdate& update) {
 
 }  // namespace
 
-// static
-apps::AppServiceProxy*
-    AppServiceAppModelBuilder::app_service_proxy_for_testing_ = nullptr;
-
 // Folder items are created by the Ash process and their existence is
 // communicated to chrome via the AppListClient. Therefore, Crostini has an
 // observer that listens for the creation of its folder, and updates the
@@ -78,19 +74,9 @@ AppServiceAppModelBuilder::~AppServiceAppModelBuilder() {
   }
 }
 
-// static
-apps::AppServiceProxy* AppServiceAppModelBuilder::SetAppServiceProxyForTesting(
-    apps::AppServiceProxy* proxy) {
-  apps::AppServiceProxy* old = app_service_proxy_for_testing_;
-  app_service_proxy_for_testing_ = proxy;
-  return old;
-}
-
 void AppServiceAppModelBuilder::BuildModel() {
   apps::AppServiceProxy* proxy =
-      app_service_proxy_for_testing_
-          ? app_service_proxy_for_testing_
-          : apps::AppServiceProxyFactory::GetForProfile(profile());
+      apps::AppServiceProxyFactory::GetForProfile(profile());
   if (proxy) {
     proxy->AppRegistryCache().ForEachApp(
         [this](const apps::AppUpdate& update) { OnAppUpdate(update); });

@@ -284,7 +284,7 @@ class GeolocationNetworkProviderTest : public testing::Test {
     }
   }
 
-  const base::test::TaskEnvironment task_environment_;
+  const base::test::SingleThreadTaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   const scoped_refptr<MockWifiDataProvider> wifi_data_provider_;
   FakePositionCache position_cache_;

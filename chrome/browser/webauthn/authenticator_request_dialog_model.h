@@ -48,7 +48,6 @@ class AuthenticatorRequestDialogModel {
     // The UX flow has not started yet, the dialog should still be hidden.
     kNotStarted,
 
-    kWelcomeScreen,
     kTransportSelection,
 
     // The request errored out before completing. Error will only be sent
@@ -176,8 +175,8 @@ class AuthenticatorRequestDialogModel {
     return ephemeral_state_.selected_authenticator_id_;
   }
 
-  // Starts the UX flow, by either showing the welcome screen, the transport
-  // selection screen, or the guided flow for them most likely transport.
+  // Starts the UX flow, by either showing the transport selection screen or
+  // the guided flow for them most likely transport.
   //
   // Valid action when at step: kNotStarted.
   void StartFlow(
@@ -193,13 +192,13 @@ class AuthenticatorRequestDialogModel {
   // transport selection screen if the transport could not be uniquely
   // identified.
   //
-  // Valid action when at step: kNotStarted, kWelcomeScreen.
+  // Valid action when at step: kNotStarted.
   void StartGuidedFlowForMostLikelyTransportOrShowTransportSelection();
 
   // Requests that the step-by-step wizard flow commence, guiding the user
   // through using the Secutity Key with the given |transport|.
   //
-  // Valid action when at step: kNotStarted, kWelcomeScreen,
+  // Valid action when at step: kNotStarted.
   // kTransportSelection, and steps where the other transports menu is shown,
   // namely, kUsbInsertAndActivate, kBleActivate, kCableActivate.
   void StartGuidedFlowForTransport(
@@ -216,9 +215,9 @@ class AuthenticatorRequestDialogModel {
   //     then advanced to the flow to turn on Bluetooth automatically.
   //  -- Otherwise advanced to the manual Bluetooth power on flow.
   //
-  // Valid action when at step: kNotStarted, kWelcomeScreen,
-  // kTransportSelection, and steps where the other transports menu is shown,
-  // namely, kUsbInsertAndActivate, kBleActivate, kCableActivate.
+  // Valid action when at step: kNotStarted, kTransportSelection, and steps
+  // where the other transports menu is shown, namely, kUsbInsertAndActivate,
+  // kBleActivate, kCableActivate.
   void EnsureBleAdapterIsPoweredBeforeContinuingWithStep(Step step);
 
   // Continues with the BLE/caBLE flow now that the Bluetooth adapter is

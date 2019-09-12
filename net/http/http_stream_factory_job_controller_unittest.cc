@@ -714,7 +714,7 @@ TEST_F(JobControllerReconsiderProxyAfterErrorTest,
 
   // Enable delayed TCP and set time delay for waiting job.
   QuicStreamFactory* quic_stream_factory = session_->quic_stream_factory();
-  quic_stream_factory->set_require_confirmation(false);
+  quic_stream_factory->set_is_quic_known_to_work_on_current_network(true);
   ServerNetworkStats stats1;
   stats1.srtt = base::TimeDelta::FromSeconds(100);
   session_->http_server_properties()->SetServerNetworkStats(
@@ -1716,7 +1716,7 @@ TEST_F(HttpStreamFactoryJobControllerTest, HostResolutionHang) {
 
   // Enable delayed TCP and set time delay for waiting job.
   QuicStreamFactory* quic_stream_factory = session_->quic_stream_factory();
-  quic_stream_factory->set_require_confirmation(false);
+  quic_stream_factory->set_is_quic_known_to_work_on_current_network(true);
   ServerNetworkStats stats1;
   stats1.srtt = base::TimeDelta::FromMicroseconds(10);
   session_->http_server_properties()->SetServerNetworkStats(
@@ -1790,7 +1790,7 @@ TEST_F(HttpStreamFactoryJobControllerTest, DelayedTCP) {
 
   // Enable delayed TCP and set time delay for waiting job.
   QuicStreamFactory* quic_stream_factory = session_->quic_stream_factory();
-  quic_stream_factory->set_require_confirmation(false);
+  quic_stream_factory->set_is_quic_known_to_work_on_current_network(true);
   ServerNetworkStats stats1;
   stats1.srtt = base::TimeDelta::FromMicroseconds(10);
   session_->http_server_properties()->SetServerNetworkStats(
@@ -1854,7 +1854,7 @@ TEST_F(HttpStreamFactoryJobControllerTest, ResumeMainJobLaterCanceled) {
 
   // Enable delayed TCP and set time delay for waiting job.
   QuicStreamFactory* quic_stream_factory = session_->quic_stream_factory();
-  quic_stream_factory->set_require_confirmation(false);
+  quic_stream_factory->set_is_quic_known_to_work_on_current_network(true);
   ServerNetworkStats stats1;
   stats1.srtt = base::TimeDelta::FromMicroseconds(10);
   session_->http_server_properties()->SetServerNetworkStats(
@@ -1933,7 +1933,7 @@ TEST_F(HttpStreamFactoryJobControllerTest, DelayedTCPWithLargeSrtt) {
 
   // Enable delayed TCP and set time delay for waiting job.
   QuicStreamFactory* quic_stream_factory = session_->quic_stream_factory();
-  quic_stream_factory->set_require_confirmation(false);
+  quic_stream_factory->set_is_quic_known_to_work_on_current_network(true);
   ServerNetworkStats stats1;
   stats1.srtt = base::TimeDelta::FromSeconds(100);
   session_->http_server_properties()->SetServerNetworkStats(
@@ -1994,7 +1994,7 @@ TEST_F(HttpStreamFactoryJobControllerTest,
 
   // Enable delayed TCP and set time delay for waiting job.
   QuicStreamFactory* quic_stream_factory = session_->quic_stream_factory();
-  quic_stream_factory->set_require_confirmation(false);
+  quic_stream_factory->set_is_quic_known_to_work_on_current_network(true);
   ServerNetworkStats stats1;
   stats1.srtt = base::TimeDelta::FromMicroseconds(10);
   session_->http_server_properties()->SetServerNetworkStats(
@@ -2117,7 +2117,7 @@ TEST_F(HttpStreamFactoryJobControllerTest, DelayedTCPAlternativeProxy) {
 
   // Enable delayed TCP and set time delay for waiting job.
   QuicStreamFactory* quic_stream_factory = session_->quic_stream_factory();
-  quic_stream_factory->set_require_confirmation(false);
+  quic_stream_factory->set_is_quic_known_to_work_on_current_network(true);
   ServerNetworkStats stats1;
   stats1.srtt = base::TimeDelta::FromMicroseconds(10);
   session_->http_server_properties()->SetServerNetworkStats(
@@ -2188,7 +2188,7 @@ TEST_F(HttpStreamFactoryJobControllerTest, FailAlternativeProxy) {
 
   // Enable delayed TCP and set time delay for waiting job.
   QuicStreamFactory* quic_stream_factory = session_->quic_stream_factory();
-  quic_stream_factory->set_require_confirmation(false);
+  quic_stream_factory->set_is_quic_known_to_work_on_current_network(true);
   ServerNetworkStats stats1;
   stats1.srtt = base::TimeDelta::FromMicroseconds(300 * 1000);
   session_->http_server_properties()->SetServerNetworkStats(
@@ -2241,7 +2241,7 @@ TEST_F(HttpStreamFactoryJobControllerTest,
 
   // Enable delayed TCP and set time delay for waiting job.
   QuicStreamFactory* quic_stream_factory = session_->quic_stream_factory();
-  quic_stream_factory->set_require_confirmation(false);
+  quic_stream_factory->set_is_quic_known_to_work_on_current_network(true);
   ServerNetworkStats stats1;
   stats1.srtt = base::TimeDelta::FromMicroseconds(300 * 1000);
   session_->http_server_properties()->SetServerNetworkStats(

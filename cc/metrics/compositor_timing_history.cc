@@ -1062,9 +1062,9 @@ void CompositorTimingHistory::DidReceiveCompositorFrameAck() {
 
 void CompositorTimingHistory::DidPresentCompositorFrame(
     uint32_t frame_token,
-    base::TimeTicks presentation_time) {
-  compositor_frame_reporting_controller_->DidPresentCompositorFrame(
-      frame_token, presentation_time);
+    const viz::FrameTimingDetails& details) {
+  compositor_frame_reporting_controller_->DidPresentCompositorFrame(frame_token,
+                                                                    details);
 }
 
 void CompositorTimingHistory::SetTreePriority(TreePriority priority) {

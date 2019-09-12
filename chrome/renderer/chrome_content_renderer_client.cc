@@ -139,6 +139,7 @@
 #include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/public/web/web_plugin_params.h"
 #include "third_party/blink/public/web/web_security_policy.h"
+#include "third_party/blink/public/web/web_view.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -713,12 +714,13 @@ bool ChromeContentRendererClient::DeferMediaLoad(
     content::RenderFrame* render_frame,
     bool has_played_media_before,
     base::OnceClosure closure) {
-  // Don't allow autoplay/autoload of media resources in a RenderFrame that is
-  // hidden and has never played any media before.  We want to allow future
-  // loads even when hidden to allow playlist-like functionality.
+  // Don't allow autoplay/autoload of media resources in a page that is hidden
+  // and has never played any media before.  We want to allow future loads even
+  // when hidden to allow playlist-like functionality.
   //
   // NOTE: This is also used to defer media loading for prerender.
-  if ((render_frame->IsHidden() && !has_played_media_before) ||
+  if ((render_frame->GetRenderView()->GetWebView()->IsHidden() &&
+       !has_played_media_before) ||
       prerender::PrerenderHelper::IsPrerendering(render_frame)) {
     new MediaLoadDeferrer(render_frame, std::move(closure));
     return true;

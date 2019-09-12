@@ -18,9 +18,9 @@ SandboxSupportMacImpl::SandboxSupportMacImpl() = default;
 SandboxSupportMacImpl::~SandboxSupportMacImpl() = default;
 
 void SandboxSupportMacImpl::BindRequest(
-    mojom::SandboxSupportMacRequest request,
+    mojo::PendingReceiver<mojom::SandboxSupportMac> receiver,
     const service_manager::BindSourceInfo& source_info) {
-  bindings_.AddBinding(this, std::move(request));
+  receivers_.Add(this, std::move(receiver));
 }
 
 void SandboxSupportMacImpl::GetSystemColors(GetSystemColorsCallback callback) {

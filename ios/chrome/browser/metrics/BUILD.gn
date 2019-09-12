@@ -166,6 +166,8 @@ source_set("metrics_internal") {
     "size_class_recorder_private.h",
     "tab_usage_recorder.h",
     "tab_usage_recorder.mm",
+    "user_interface_style_recorder.h",
+    "user_interface_style_recorder.mm",
   ]
   deps = [
     ":metrics",

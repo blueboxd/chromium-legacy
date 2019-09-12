@@ -402,10 +402,10 @@ void HTMLCanvasElement::FinalizeFrame() {
   if (resource_provider)
     resource_provider->ReleaseLockedImages();
 
-  // Low-latency 2d canvases will produce their frames after the resource gets
-  // single buffered
-  if (context_ && !(Is2d() && LowLatencyEnabled()))
-    context_->FinalizeFrame();
+  if (canvas2d_bridge_) {
+    if (!LowLatencyEnabled())
+      canvas2d_bridge_->FinalizeFrame();
+  }
 
   if (LowLatencyEnabled() && !dirty_rect_.IsEmpty()) {
     if (GetOrCreateCanvasResourceProvider(kPreferAcceleration)) {
@@ -419,8 +419,8 @@ void HTMLCanvasElement::FinalizeFrame() {
           context_->ProvideBackBufferToResourceProvider();
       }
 
-      if (Is2d()) {
-        context_->FinalizeFrame();
+      if (canvas2d_bridge_) {
+        canvas2d_bridge_->FlushRecording();
       } else {
         DCHECK(Is3d());
         if (!webgl_overlay_enabled)

@@ -6,6 +6,7 @@
 
 #include "base/test/scoped_feature_list.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
+#import "ios/chrome/browser/ui/fullscreen/test/fullscreen_model_test_util.h"
 #include "ios/web/common/features.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -35,6 +36,7 @@ class FullscreenWebViewResizerTest : public PlatformTest {
     _model.SetScrollViewHeight(700);
     _model.SetScrollViewIsScrolling(true);
     _model.SetYContentOffset(10);
+    _model.ResetForNavigation();
 
     // WebState view setup.
     CGRect superviewFrame = CGRectMake(0, 0, kViewWidth, kViewHeight);
@@ -68,7 +70,7 @@ TEST_F(FullscreenWebViewResizerTest, UpdateWebState) {
   EXPECT_TRUE(CGRectEqualToRect(fullInsetFrame, _webStateView.frame));
 
   // Scroll the view then update the resizer.
-  _model.SetYContentOffset(50);
+  SimulateFullscreenUserScrollForProgress(&_model, 0.0);
   ASSERT_EQ(0, _model.progress());
   [resizer updateForCurrentState];
   CGRect smallInsetFrame = CGRectMake(0, kTopToolbarCollapsedHeight, kViewWidth,

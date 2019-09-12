@@ -637,7 +637,7 @@ void V8EmbedderGraphBuilder::VisitBlinkRoots() {
         std::unique_ptr<Graph::Node>(new EmbedderRootNode("Blink roots"))));
     EnsureRootState(root);
     ParentScope parent(this, root);
-    ThreadState::Current()->GetPersistentRegion()->TracePersistentNodes(this);
+    ThreadState::Current()->GetPersistentRegion()->TraceNodes(this);
   }
   {
     EmbedderNode* root =
@@ -646,7 +646,7 @@ void V8EmbedderGraphBuilder::VisitBlinkRoots() {
     EnsureRootState(root);
     ParentScope parent(this, root);
     MutexLocker persistent_lock(ProcessHeap::CrossThreadPersistentMutex());
-    ProcessHeap::GetCrossThreadPersistentRegion().TracePersistentNodes(this);
+    ProcessHeap::GetCrossThreadPersistentRegion().TraceNodes(this);
   }
 }
 

@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.customtabs.CustomTabAppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentUtils;
+import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBrowserControlsState;
@@ -600,12 +601,16 @@ public class WebappActivity extends SingleTabActivity {
 
                     updateToolbarCloseButtonVisibility();
 
-                    if (!WebappScopePolicy.isUrlInScope(
-                                scopePolicy(), mWebappInfo, navigation.getUrl())) {
+                    boolean isNavigationInScope = WebappScopePolicy.isUrlInScope(
+                            scopePolicy(), mWebappInfo, navigation.getUrl());
+                    if (!isNavigationInScope) {
                         // Briefly show the toolbar for off-scope navigations.
                         getFullscreenManager()
                                 .getBrowserVisibilityDelegate()
                                 .showControlsTransient();
+                    }
+                    if (mWebappInfo.isForWebApk()) {
+                        WebApkUma.recordNavigation(isNavigationInScope);
                     }
                 }
             }

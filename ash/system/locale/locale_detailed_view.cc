@@ -18,6 +18,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"

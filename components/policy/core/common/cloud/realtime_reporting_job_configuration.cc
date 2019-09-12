@@ -73,12 +73,8 @@ bool RealtimeReportingJobConfiguration::AddReport(base::Value report) {
     return false;
 
   // Move context keys to the payload.  It is possible to add multiple reports
-  // to the payload in which case the context values are the same.  Only add
-  // any new values not already present.
-  for (const auto& item : context->DictItems()) {
-    if (!payload_.FindKey(item.first))
-      payload_.SetKey(item.first, item.second.Clone());
-  }
+  // to the payload in which case the context values are the same.
+  payload_.MergeDictionary(&*context);
 
   // Append event_list to the payload.
   base::Value::ListStorage& to = payload_.FindListKey(kEventsKey)->GetList();

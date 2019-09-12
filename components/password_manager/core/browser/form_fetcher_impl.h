@@ -68,6 +68,10 @@ class FormFetcherImpl : public FormFetcher,
       std::vector<std::unique_ptr<autofill::PasswordForm>> forms) override;
 
  private:
+  // Splits |results| into |federated_|, |non_federated_| and |blacklisted_|.
+  void SplitResults(
+      std::vector<std::unique_ptr<autofill::PasswordForm>> results);
+
   // Processes password form results and forwards them to the |consumers_|.
   void ProcessPasswordStoreResults(
       std::vector<std::unique_ptr<autofill::PasswordForm>> results);

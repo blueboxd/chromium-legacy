@@ -10,15 +10,15 @@
  */
 class OpenPdfParamsParser {
   /**
-   * @param {function(Object)} postMessageCallback
+   * @param {function(string):void} getNamedDestinationCallback
    *     Function called to fetch information for a named destination.
    */
-  constructor(postMessageCallback) {
+  constructor(getNamedDestinationCallback) {
     /** @private {!Array<!Object>} */
     this.outstandingRequests_ = [];
 
-    /** @private {!function(Object)} */
-    this.postMessageCallback_ = postMessageCallback;
+    /** @private {!function(string):void} */
+    this.getNamedDestinationCallback_ = getNamedDestinationCallback;
   }
 
   /**
@@ -181,10 +181,7 @@ class OpenPdfParamsParser {
 
     if (params.page === undefined && 'nameddest' in urlParams) {
       this.outstandingRequests_.push({callback: callback, params: params});
-      this.postMessageCallback_({
-        type: 'getNamedDestination',
-        namedDestination: urlParams['nameddest']
-      });
+      this.getNamedDestinationCallback_(urlParams['nameddest']);
     } else {
       callback(params);
     }

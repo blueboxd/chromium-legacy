@@ -475,7 +475,7 @@ TEST_F('BookmarksFocusTest', 'MAYBE_All', function() {
       commandManager.assertLastCommand(Command.DELETE, ['2', '3']);
     });
 
-    test('iron-list does not steal focus on enter', function() {
+    test('iron-list does not steal focus on enter', async () => {
       // Iron-list attempts to focus the whole <bookmarks-item> when pressing
       // enter on the menu button. This checks that we block this behavior
       // during keydown on <bookmarks-list>.

@@ -1499,6 +1499,23 @@
         }
       },
       {
+        "isolate_name": "python3_smoketest",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "python3_smoketest",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "none",
+              "os": "Mac-10.10"
+            }
+          ]
+        }
+      },
+      {
         "isolate_name": "telemetry_gpu_unittests",
         "merge": {
           "args": [],
@@ -3052,6 +3069,23 @@
         }
       },
       {
+        "isolate_name": "python3_smoketest",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "python3_smoketest",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "none",
+              "os": "Mac-10.11"
+            }
+          ]
+        }
+      },
+      {
         "isolate_name": "telemetry_gpu_unittests",
         "merge": {
           "args": [],
@@ -4594,6 +4628,23 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "metrics_python_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.12.6"
+            }
+          ]
+        }
+      },
+      {
+        "isolate_name": "python3_smoketest",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "python3_smoketest",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6203,6 +6254,23 @@
         }
       },
       {
+        "isolate_name": "python3_smoketest",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "python3_smoketest",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "none",
+              "os": "Mac-10.13.6"
+            }
+          ]
+        }
+      },
+      {
         "isolate_name": "telemetry_gpu_unittests",
         "merge": {
           "args": [],
@@ -7738,6 +7806,23 @@
           ],
           "hard_timeout": 960,
           "shards": 2
+        }
+      },
+      {
+        "isolate_name": "python3_smoketest",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "python3_smoketest",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "none",
+              "os": "Mac-10.13.6"
+            }
+          ]
         }
       },
       {
@@ -9337,6 +9422,23 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "metrics_python_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "none",
+              "os": "Mac-10.13.6"
+            }
+          ]
+        }
+      },
+      {
+        "isolate_name": "python3_smoketest",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "python3_smoketest",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [

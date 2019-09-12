@@ -18,6 +18,7 @@
 #include "chrome/test/chromedriver/chrome/js.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
+#include "chrome/test/chromedriver/net/timeout.h"
 #include "chrome/test/chromedriver/session.h"
 #include "third_party/webdriver/atoms.h"
 
@@ -157,8 +158,7 @@ Status ScrollElementRegionIntoViewHelper(
     middle.Offset(region.Width() / 2, region.Height() / 2);
     status = VerifyElementClickable(
         frame, web_view, clickable_element_id, middle);
-    if (status.code() == kUnknownError &&
-        status.message().find("is not clickable") != std::string::npos) {
+    if (status.code() == kElementClickIntercepted) {
       // Clicking at the target location isn't reaching the target element.
       // One possible cause is a scroll event handler has shifted the element.
       // Try again to get the updated location of the target element.
@@ -174,8 +174,15 @@ Status ScrollElementRegionIntoViewHelper(
       }
       middle = tmp_location;
       middle.Offset(region.Width() / 2, region.Height() / 2);
-      status =
-          VerifyElementClickable(frame, web_view, clickable_element_id, middle);
+      Timeout response_timeout(base::TimeDelta::FromSeconds(1));
+      do {
+        status =
+         VerifyElementClickable(frame, web_view, clickable_element_id, middle);
+        if (status.code() == kElementClickIntercepted)
+          base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
+        else
+          break;
+      } while (!response_timeout.IsExpired());
     }
     if (status.IsError())
       return status;

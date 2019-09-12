@@ -6,6 +6,7 @@
 
 #include "base/containers/stack.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_util.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/hit_test/hit_test_region_list.h"
@@ -32,48 +33,43 @@ bool CheckChildCount(int32_t child_count, size_t child_count_max) {
 }
 
 const std::string GetFlagNames(uint32_t flag) {
-  std::string names = "";
-  uint32_t mask = 1;
+  std::vector<base::StringPiece> names;
 
-  while (flag) {
-    std::string name = "";
-    switch (flag & mask) {
-      case kHitTestMine:
-        name = "Mine";
-        break;
-      case kHitTestIgnore:
-        name = "Ignore";
-        break;
-      case kHitTestChildSurface:
-        name = "ChildSurface";
-        break;
-      case kHitTestAsk:
-        name = "Ask";
-        break;
-      case kHitTestMouse:
-        name = "Mouse";
-        break;
-      case kHitTestTouch:
-        name = "Touch";
-        break;
-      case kHitTestNotActive:
-        name = "NotActive";
-        break;
-      case kHitTestDebug:
-        name = "Debug";
-        break;
-      case 0:
-        break;
-    }
-    if (!name.empty()) {
-      names += names.empty() ? name : ", " + name;
-    }
+  if (flag & kHitTestMine)
+    names.emplace_back("Mine");
+  if (flag & kHitTestIgnore)
+    names.emplace_back("Ignore");
+  if (flag & kHitTestChildSurface)
+    names.emplace_back("ChildSurface");
+  if (flag & kHitTestAsk)
+    names.emplace_back("Ask");
+  if (flag & kHitTestMouse)
+    names.emplace_back("Mouse");
+  if (flag & kHitTestTouch)
+    names.emplace_back("Touch");
+  if (flag & kHitTestNotActive)
+    names.emplace_back("NotActive");
+  if (flag & kHitTestDebug)
+    names.emplace_back("Debug");
 
-    flag &= ~mask;
-    mask <<= 1;
-  }
+  return base::JoinString(std::move(names), ", ");
+}
 
-  return names;
+const std::string GetAsyncHitTestReasons(uint32_t async_hit_test_reasons) {
+  std::vector<base::StringPiece> reasons;
+
+  if (async_hit_test_reasons & kOverlappedRegion)
+    reasons.emplace_back("OverlappedRegion");
+  if (async_hit_test_reasons & kIrregularClip)
+    reasons.emplace_back("IrregularClip");
+  if (async_hit_test_reasons & kRegionNotActive)
+    reasons.emplace_back("RegionNotActive");
+  if (async_hit_test_reasons & kPerspectiveTransform)
+    reasons.emplace_back("PerspectiveTransform");
+  if (async_hit_test_reasons & kUseDrawQuadData)
+    reasons.emplace_back("UseDrawQuadData");
+
+  return reasons.empty() ? "None" : base::JoinString(std::move(reasons), ", ");
 }
 
 }  // namespace
@@ -398,6 +394,8 @@ std::string HitTestQuery::PrintHitTestData() const {
     oss << tabs << "Index: " << i << '\n';
     oss << tabs << "Children: " << htr.child_count << '\n';
     oss << tabs << "Flags: " << GetFlagNames(htr.flags) << '\n';
+    oss << tabs << "AsyncHitTestReasons: "
+        << GetAsyncHitTestReasons(htr.async_hit_test_reasons) << '\n';
     oss << tabs << "Frame Sink Id: " << htr.frame_sink_id.ToString() << '\n';
     oss << tabs << "Rect: " << htr.rect.ToString() << '\n';
     oss << tabs << "Transform:" << '\n';

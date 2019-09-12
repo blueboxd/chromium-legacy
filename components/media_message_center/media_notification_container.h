@@ -24,6 +24,9 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationContainer {
 
   // Called when MediaNotificationView's foreground color changes.
   virtual void OnForegoundColorChanged(SkColor color) = 0;
+
+ protected:
+  virtual ~MediaNotificationContainer() = default;
 };
 
 }  // namespace media_message_center

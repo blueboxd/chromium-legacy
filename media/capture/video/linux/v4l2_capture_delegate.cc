@@ -70,7 +70,6 @@ struct {
     {V4L2_PIX_FMT_Z16, PIXEL_FORMAT_Y16, 1},
     {V4L2_PIX_FMT_INVZ, PIXEL_FORMAT_Y16, 1},
     {V4L2_PIX_FMT_YUYV, PIXEL_FORMAT_YUY2, 1},
-    {V4L2_PIX_FMT_UYVY, PIXEL_FORMAT_UYVY, 1},
     {V4L2_PIX_FMT_RGB24, PIXEL_FORMAT_RGB24, 1},
     // MJPEG is usually sitting fairly low since we don't want to have to
     // decode. However, it is needed for large resolutions due to USB bandwidth

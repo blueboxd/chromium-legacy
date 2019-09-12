@@ -96,9 +96,8 @@ class UpgradeDetectorChromeosTest : public ::testing::Test {
   void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
   void NotifyUpdateReadyToInstall() {
-    chromeos::UpdateEngineClient::Status status;
-    status.status =
-        chromeos::UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT;
+    update_engine::StatusResult status;
+    status.set_current_operation(update_engine::Operation::UPDATED_NEED_REBOOT);
     fake_update_engine_client_->set_default_status(status);
     fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
   }

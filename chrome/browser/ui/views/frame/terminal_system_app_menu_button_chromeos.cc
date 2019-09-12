@@ -13,7 +13,7 @@
 
 TerminalSystemAppMenuButton::TerminalSystemAppMenuButton(
     BrowserView* browser_view)
-    : HostedAppMenuButton(browser_view) {}
+    : WebAppMenuButton(browser_view) {}
 
 TerminalSystemAppMenuButton::~TerminalSystemAppMenuButton() {}
 

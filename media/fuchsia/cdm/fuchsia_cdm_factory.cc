@@ -4,23 +4,21 @@
 
 #include "media/fuchsia/cdm/fuchsia_cdm_factory.h"
 
-#include <fuchsia/media/drm/cpp/fidl.h>
-
 #include "base/bind.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_config.h"
 #include "media/base/key_systems.h"
 #include "media/cdm/aes_decryptor.h"
 #include "media/fuchsia/cdm/fuchsia_cdm.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "media/fuchsia/cdm/fuchsia_cdm_provider.h"
 #include "url/origin.h"
 
 namespace media {
 
 FuchsiaCdmFactory::FuchsiaCdmFactory(
-    service_manager::InterfaceProvider* interface_provider)
-    : interface_provider_(interface_provider) {
-  DCHECK(interface_provider_);
+    std::unique_ptr<FuchsiaCdmProvider> cdm_provider)
+    : cdm_provider_(std::move(cdm_provider)) {
+  DCHECK(cdm_provider_);
 }
 
 FuchsiaCdmFactory::~FuchsiaCdmFactory() = default;
@@ -48,9 +46,6 @@ void FuchsiaCdmFactory::Create(
     std::move(bound_cdm_created_cb).Run(std::move(cdm), "");
     return;
   }
-
-  if (!cdm_provider_)
-    interface_provider_->GetInterface(mojo::MakeRequest(&cdm_provider_));
 
   fuchsia::media::drm::ContentDecryptionModulePtr cdm_ptr;
   cdm_provider_->CreateCdmInterface(key_system, cdm_ptr.NewRequest());

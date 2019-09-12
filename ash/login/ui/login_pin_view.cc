@@ -17,6 +17,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/dom/dom_code.h"

@@ -348,10 +348,9 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
   // Notifies status update from |fake_update_engine_client_| and runs scheduled
   // tasks to ensure that the pending policy refresh completes.
   void NotifyUpdateCheckStatus(
-      chromeos::UpdateEngineClient::UpdateStatusOperation
-          update_status_operation) {
-    chromeos::UpdateEngineClient::Status status = {};
-    status.status = update_status_operation;
+      update_engine::Operation update_status_operation) {
+    update_engine::StatusResult status;
+    status.set_current_operation(update_status_operation);
     fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
     task_environment_.RunUntilIdle();
   }
@@ -430,9 +429,7 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
     task_environment_.FastForwardBy(small_delay);
 
     // Simulate update check succeeding.
-    NotifyUpdateCheckStatus(
-        chromeos::UpdateEngineClient::UpdateStatusOperation::
-            UPDATE_STATUS_UPDATED_NEED_REBOOT);
+    NotifyUpdateCheckStatus(update_engine::Operation::UPDATED_NEED_REBOOT);
     if (!CheckStats(expected_update_checks, expected_update_check_requests,
                     expected_update_check_completions)) {
       return false;
@@ -447,9 +444,7 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
       task_environment_.FastForwardBy(base::TimeDelta::FromDays(1));
 
       // Simulate update check succeeding.
-      NotifyUpdateCheckStatus(
-          chromeos::UpdateEngineClient::UpdateStatusOperation::
-              UPDATE_STATUS_UPDATED_NEED_REBOOT);
+      NotifyUpdateCheckStatus(update_engine::Operation::UPDATED_NEED_REBOOT);
       if (!CheckStats(expected_update_checks, expected_update_check_requests,
                       expected_update_check_completions)) {
         return false;
@@ -578,9 +573,7 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
     expected_update_check_completions += 1;
     task_environment_.FastForwardBy(small_delay);
     // Simulate update check succeeding.
-    NotifyUpdateCheckStatus(
-        chromeos::UpdateEngineClient::UpdateStatusOperation::
-            UPDATE_STATUS_UPDATED_NEED_REBOOT);
+    NotifyUpdateCheckStatus(update_engine::Operation::UPDATED_NEED_REBOOT);
     if (!CheckStats(expected_update_checks, expected_update_check_requests,
                     expected_update_check_completions)) {
       ADD_FAILURE()
@@ -641,8 +634,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckIfWeeklyUpdateCheckIsScheduled) {
   expected_update_check_completions += 1;
   task_environment_.FastForwardBy(small_delay);
   // Simulate update check succeeding.
-  NotifyUpdateCheckStatus(chromeos::UpdateEngineClient::UpdateStatusOperation::
-                              UPDATE_STATUS_UPDATED_NEED_REBOOT);
+  NotifyUpdateCheckStatus(update_engine::Operation::UPDATED_NEED_REBOOT);
   EXPECT_TRUE(CheckStats(expected_update_checks, expected_update_check_requests,
                          expected_update_check_completions));
 
@@ -652,8 +644,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckIfWeeklyUpdateCheckIsScheduled) {
   expected_update_check_completions += 1;
   task_environment_.FastForwardBy(base::TimeDelta::FromDays(7));
   // Simulate update check succeeding.
-  NotifyUpdateCheckStatus(chromeos::UpdateEngineClient::UpdateStatusOperation::
-                              UPDATE_STATUS_UPDATED_NEED_REBOOT);
+  NotifyUpdateCheckStatus(update_engine::Operation::UPDATED_NEED_REBOOT);
   EXPECT_TRUE(CheckStats(expected_update_checks, expected_update_check_requests,
                          expected_update_check_completions));
 }
@@ -692,8 +683,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckIfMonthlyUpdateCheckIsScheduled) {
   expected_update_check_completions += 1;
   task_environment_.FastForwardBy(small_delay);
   // Simulate update check succeeding.
-  NotifyUpdateCheckStatus(chromeos::UpdateEngineClient::UpdateStatusOperation::
-                              UPDATE_STATUS_UPDATED_NEED_REBOOT);
+  NotifyUpdateCheckStatus(update_engine::Operation::UPDATED_NEED_REBOOT);
   EXPECT_TRUE(CheckStats(expected_update_checks, expected_update_check_requests,
                          expected_update_check_completions));
 
@@ -712,8 +702,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckIfMonthlyUpdateCheckIsScheduled) {
   EXPECT_GT(second_update_check_delay, update_checker_internal::kInvalidDelay);
   task_environment_.FastForwardBy(second_update_check_delay);
   // Simulate update check succeeding.
-  NotifyUpdateCheckStatus(chromeos::UpdateEngineClient::UpdateStatusOperation::
-                              UPDATE_STATUS_UPDATED_NEED_REBOOT);
+  NotifyUpdateCheckStatus(update_engine::Operation::UPDATED_NEED_REBOOT);
   EXPECT_TRUE(CheckStats(expected_update_checks, expected_update_check_requests,
                          expected_update_check_completions));
 }
@@ -747,8 +736,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckMonthlyRolloverLogic) {
       std::move(policy_and_next_update_check_time.first));
   task_environment_.FastForwardBy(delay_from_now);
   // Simulate update check succeeding.
-  NotifyUpdateCheckStatus(chromeos::UpdateEngineClient::UpdateStatusOperation::
-                              UPDATE_STATUS_UPDATED_NEED_REBOOT);
+  NotifyUpdateCheckStatus(update_engine::Operation::UPDATED_NEED_REBOOT);
   EXPECT_TRUE(CheckStats(expected_update_checks, expected_update_check_requests,
                          expected_update_check_completions));
 
@@ -777,9 +765,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckMonthlyRolloverLogic) {
     expected_update_check_completions += 1;
     task_environment_.FastForwardBy(small_delay);
     // Simulate update check succeeding.
-    NotifyUpdateCheckStatus(
-        chromeos::UpdateEngineClient::UpdateStatusOperation::
-            UPDATE_STATUS_UPDATED_NEED_REBOOT);
+    NotifyUpdateCheckStatus(update_engine::Operation::UPDATED_NEED_REBOOT);
     EXPECT_TRUE(CheckStats(expected_update_checks,
                            expected_update_check_requests,
                            expected_update_check_completions));
@@ -844,9 +830,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckRetryLogicEventualSuccess) {
     expected_update_check_completions += 1;
     task_environment_.FastForwardBy(small_delay);
     // Simulate update check succeeding.
-    NotifyUpdateCheckStatus(
-        chromeos::UpdateEngineClient::UpdateStatusOperation::
-            UPDATE_STATUS_UPDATED_NEED_REBOOT);
+    NotifyUpdateCheckStatus(update_engine::Operation::UPDATED_NEED_REBOOT);
     EXPECT_TRUE(CheckStats(expected_update_checks,
                            expected_update_check_requests,
                            expected_update_check_completions));
@@ -923,8 +907,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckRetryLogicUpdateCheckFailure) {
   int expected_update_check_requests = 1;
   int expected_update_check_completions = 0;
   task_environment_.FastForwardBy(delay_from_now);
-  NotifyUpdateCheckStatus(
-      chromeos::UpdateEngineClient::UpdateStatusOperation::UPDATE_STATUS_ERROR);
+  NotifyUpdateCheckStatus(update_engine::Operation::ERROR);
   EXPECT_TRUE(CheckStats(expected_update_checks, expected_update_check_requests,
                          expected_update_check_completions));
 
@@ -938,8 +921,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckRetryLogicUpdateCheckFailure) {
     task_environment_.FastForwardBy(
         update_checker_internal::kOsAndPoliciesUpdateCheckerRetryTime);
     // Simulate update check failing.
-    NotifyUpdateCheckStatus(chromeos::UpdateEngineClient::
-                                UpdateStatusOperation::UPDATE_STATUS_ERROR);
+    NotifyUpdateCheckStatus(update_engine::Operation::ERROR);
     EXPECT_TRUE(CheckStats(expected_update_checks,
                            expected_update_check_requests,
                            expected_update_check_completions));
@@ -986,8 +968,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest,
   int expected_update_check_completions = 0;
   task_environment_.FastForwardBy(delay_from_now);
   // Simulate update check succeeding.
-  NotifyUpdateCheckStatus(
-      chromeos::UpdateEngineClient::UpdateStatusOperation::UPDATE_STATUS_ERROR);
+  NotifyUpdateCheckStatus(update_engine::Operation::ERROR);
   EXPECT_TRUE(CheckStats(expected_update_checks, expected_update_check_requests,
                          expected_update_check_completions));
 
@@ -1001,8 +982,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest,
     expected_update_check_requests += 1;
     task_environment_.FastForwardBy(
         update_checker_internal::kOsAndPoliciesUpdateCheckerRetryTime);
-    NotifyUpdateCheckStatus(chromeos::UpdateEngineClient::
-                                UpdateStatusOperation::UPDATE_STATUS_ERROR);
+    NotifyUpdateCheckStatus(update_engine::Operation::ERROR);
     EXPECT_TRUE(CheckStats(expected_update_checks,
                            expected_update_check_requests,
                            expected_update_check_completions));
@@ -1014,8 +994,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest,
   expected_update_check_completions += 1;
   task_environment_.FastForwardBy(
       update_checker_internal::kOsAndPoliciesUpdateCheckerRetryTime);
-  NotifyUpdateCheckStatus(chromeos::UpdateEngineClient::UpdateStatusOperation::
-                              UPDATE_STATUS_UPDATED_NEED_REBOOT);
+  NotifyUpdateCheckStatus(update_engine::Operation::UPDATED_NEED_REBOOT);
   EXPECT_TRUE(CheckStats(expected_update_checks, expected_update_check_requests,
                          expected_update_check_completions));
 }
@@ -1052,8 +1031,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckNewPolicyWithPendingUpdateCheck) {
       std::move(policy_and_next_update_check_time.first));
   expected_update_check_completions += 1;
   // Simulate update check succeeding.
-  NotifyUpdateCheckStatus(chromeos::UpdateEngineClient::UpdateStatusOperation::
-                              UPDATE_STATUS_UPDATED_NEED_REBOOT);
+  NotifyUpdateCheckStatus(update_engine::Operation::UPDATED_NEED_REBOOT);
   EXPECT_TRUE(CheckStats(expected_update_checks, expected_update_check_requests,
                          expected_update_check_completions));
 
@@ -1064,8 +1042,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckNewPolicyWithPendingUpdateCheck) {
   expected_update_check_completions += 1;
   task_environment_.FastForwardBy(delay_from_now);
   // Simulate update check succeeding.
-  NotifyUpdateCheckStatus(chromeos::UpdateEngineClient::UpdateStatusOperation::
-                              UPDATE_STATUS_UPDATED_NEED_REBOOT);
+  NotifyUpdateCheckStatus(update_engine::Operation::UPDATED_NEED_REBOOT);
   EXPECT_TRUE(CheckStats(expected_update_checks, expected_update_check_requests,
                          expected_update_check_completions));
 }
@@ -1127,8 +1104,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckNoNetworkTimeoutScenario) {
       base::TimeDelta::FromDays(1) -
       update_checker_internal::kWaitForNetworkTimeout);
   // Simulate update check succeeding.
-  NotifyUpdateCheckStatus(chromeos::UpdateEngineClient::UpdateStatusOperation::
-                              UPDATE_STATUS_UPDATED_NEED_REBOOT);
+  NotifyUpdateCheckStatus(update_engine::Operation::UPDATED_NEED_REBOOT);
   EXPECT_TRUE(CheckStats(expected_update_checks, expected_update_check_requests,
                          expected_update_check_completions));
 }
@@ -1172,8 +1148,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckNoNetworkDelayScenario) {
   expected_update_check_requests += 1;
   expected_update_check_completions += 1;
   // Simulate update check succeeding.
-  NotifyUpdateCheckStatus(chromeos::UpdateEngineClient::UpdateStatusOperation::
-                              UPDATE_STATUS_UPDATED_NEED_REBOOT);
+  NotifyUpdateCheckStatus(update_engine::Operation::UPDATED_NEED_REBOOT);
   EXPECT_TRUE(CheckStats(expected_update_checks, expected_update_check_requests,
                          expected_update_check_completions));
 }
@@ -1204,8 +1179,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckWakeLockAcquireAndRelease) {
   task_environment_.RunUntilIdle();
 
   // Simulate update check succeeding.
-  NotifyUpdateCheckStatus(chromeos::UpdateEngineClient::UpdateStatusOperation::
-                              UPDATE_STATUS_UPDATED_NEED_REBOOT);
+  NotifyUpdateCheckStatus(update_engine::Operation::UPDATED_NEED_REBOOT);
 
   base::Optional<int> active_wake_locks_after_update_check;
   wake_lock_provider_.GetActiveWakeLocksForTests(

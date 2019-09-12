@@ -28,7 +28,6 @@ GPU_CONDITIONS = ['amd', 'arm', 'broadcom', 'hisilicon', 'intel', 'imagination',
 WIN_CONDITIONS = ['xp', 'vista', 'win7', 'win8', 'win10']
 MAC_CONDITIONS = ['leopard', 'snowleopard', 'lion', 'mountainlion',
                   'mavericks', 'yosemite', 'sierra', 'highsierra', 'mojave']
-# These aren't expanded out into "lollipop", "marshmallow", etc.
 ANDROID_CONDITIONS = ['android-lollipop', 'android-marshmallow',
                       'anroid-nougat', 'android-oreo', 'android-pie',
                       'android-10', 'android-kitkat']
@@ -202,6 +201,25 @@ class GpuTestExpectationsValidation(unittest.TestCase):
               errors += CheckTestExpectationPatternsForConflicts(f.read(),
                 os.path.basename(f.name))
     assert not errors, errors
+
+  def testExpectationsFilesCanBeParsed(self):
+    webgl_conformance_test_class = (
+        webgl_conformance_integration_test.WebGLConformanceIntegrationTest)
+    for test_case in _FindTestCases():
+      if 'gpu_tests.gpu_integration_test_unittest' not in test_case.__module__:
+        for webgl_version in xrange(
+            1, 2 + (test_case == webgl_conformance_test_class)):
+          _ = list(
+              test_case.GenerateGpuTests(
+                  gpu_helper.GetMockArgs(
+                      webgl_version=('%d.0.0' % webgl_version))))
+          if test_case.ExpectationsFiles():
+            with open(test_case.ExpectationsFiles()[0]) as f:
+              test_expectations = expectations_parser.TestExpectations()
+              ret, err = test_expectations.parse_tagged_list(f.read(), f.name)
+              assert not ret, (
+                  'There was an error parsing %s, the error is:\n\t%s' %
+                  (os.path.basename(f.name), err))
 
   def testWebglTestPathsExist(self):
     webgl_test_class = (

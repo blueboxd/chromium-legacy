@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_ui.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "content/public/test/test_web_ui.h"
 
 namespace chromeos {
@@ -49,10 +50,12 @@ class AddSupervisionMetricsRecorderTest : public InProcessBrowserTest {
   }
 
   void NotifySupervisionEnabled() {
+    signin::IdentityTestEnvironment identity_test_env;
     add_supervision::mojom::AddSupervisionHandlerRequest request;
     AddSupervisionUI add_supervision_ui(&test_web_ui_);
     AddSupervisionHandler add_supervision_handler(
-        std::move(request), &test_web_ui_, &add_supervision_ui);
+        std::move(request), &test_web_ui_, identity_test_env.identity_manager(),
+        &add_supervision_ui);
     add_supervision_handler.NotifySupervisionEnabled();
   }
 

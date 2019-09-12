@@ -93,7 +93,7 @@ TEST_F(AdvancedProtectionStatusManagerTest, NotSignedInOnStartUp) {
   AdvancedProtectionStatusManager aps_manager(
       &pref_service_, identity_test_env_.identity_manager(),
       base::TimeDelta() /*no min delay*/);
-  ASSERT_TRUE(aps_manager.GetPrimaryAccountId().empty());
+  ASSERT_TRUE(aps_manager.GetUnconsentedPrimaryAccountId().empty());
 
   // If user's not signed-in. No refresh is required.
   EXPECT_FALSE(aps_manager.is_under_advanced_protection());
@@ -117,7 +117,7 @@ TEST_F(AdvancedProtectionStatusManagerTest,
       &pref_service_, identity_test_env_.identity_manager(),
       base::TimeDelta() /*no min delay*/);
   base::RunLoop().RunUntilIdle();
-  ASSERT_FALSE(aps_manager.GetPrimaryAccountId().empty());
+  ASSERT_FALSE(aps_manager.GetUnconsentedPrimaryAccountId().empty());
 
   // Waits for access token request and respond with an error without advanced
   // protection set.
@@ -148,7 +148,7 @@ TEST_F(AdvancedProtectionStatusManagerTest,
       &pref_service_, identity_test_env_.identity_manager(),
       base::TimeDelta() /*no min delay*/);
   base::RunLoop().RunUntilIdle();
-  ASSERT_FALSE(aps_manager.GetPrimaryAccountId().empty());
+  ASSERT_FALSE(aps_manager.GetUnconsentedPrimaryAccountId().empty());
 
   // Waits for access token request and respond with an error without advanced
   // protection set.
@@ -178,7 +178,7 @@ TEST_F(AdvancedProtectionStatusManagerTest, SignedInLongTimeAgoNotUnderAP) {
   AdvancedProtectionStatusManager aps_manager(
       &pref_service_, identity_test_env_.identity_manager(),
       base::TimeDelta() /*no min delay*/);
-  ASSERT_FALSE(aps_manager.GetPrimaryAccountId().empty());
+  ASSERT_FALSE(aps_manager.GetUnconsentedPrimaryAccountId().empty());
   base::RunLoop().RunUntilIdle();
   // Waits for access token request and respond with a token without advanced
   // protection set.
@@ -231,7 +231,7 @@ TEST_F(AdvancedProtectionStatusManagerTest, AlreadySignedInAndUnderAP) {
   AdvancedProtectionStatusManager aps_manager(
       &pref_service_, identity_test_env_.identity_manager(),
       base::TimeDelta() /*no min delay*/);
-  ASSERT_FALSE(aps_manager.GetPrimaryAccountId().empty());
+  ASSERT_FALSE(aps_manager.GetUnconsentedPrimaryAccountId().empty());
   ASSERT_TRUE(aps_manager.is_under_advanced_protection());
 
   // A refresh is scheduled in the future.
@@ -269,7 +269,7 @@ TEST_F(AdvancedProtectionStatusManagerTest, StayInAdvancedProtection) {
   AdvancedProtectionStatusManager aps_manager(
       &pref_service_, identity_test_env_.identity_manager(),
       base::TimeDelta() /*no min delay*/);
-  ASSERT_FALSE(aps_manager.GetPrimaryAccountId().empty());
+  ASSERT_FALSE(aps_manager.GetUnconsentedPrimaryAccountId().empty());
   ASSERT_TRUE(aps_manager.is_under_advanced_protection());
 
   // Simulate gets refresh token.
@@ -289,7 +289,7 @@ TEST_F(AdvancedProtectionStatusManagerTest, SignInAndSignOutEvent) {
       &pref_service_, identity_test_env_.identity_manager(),
       base::TimeDelta() /*no min delay*/);
   ASSERT_FALSE(aps_manager.is_under_advanced_protection());
-  ASSERT_TRUE(aps_manager.GetPrimaryAccountId().empty());
+  ASSERT_TRUE(aps_manager.GetUnconsentedPrimaryAccountId().empty());
 
   SignIn("test@test.com",
          /* is_under_advanced_protection = */ true);
@@ -310,7 +310,7 @@ TEST_F(AdvancedProtectionStatusManagerTest, AccountRemoval) {
       &pref_service_, identity_test_env_.identity_manager(),
       base::TimeDelta() /*no min delay*/);
   ASSERT_FALSE(aps_manager.is_under_advanced_protection());
-  ASSERT_TRUE(aps_manager.GetPrimaryAccountId().empty());
+  ASSERT_TRUE(aps_manager.GetUnconsentedPrimaryAccountId().empty());
 
   std::string account_id = SignIn("test@test.com",
                                   /* is_under_advanced_protection = */ false);
@@ -381,7 +381,7 @@ TEST_F(AdvancedProtectionStatusManagerTest,
   AdvancedProtectionStatusManager aps_manager(
       &pref_service_, identity_test_env_.identity_manager(),
       base::TimeDelta() /*no min delay*/);
-  ASSERT_FALSE(aps_manager.GetPrimaryAccountId().empty());
+  ASSERT_FALSE(aps_manager.GetUnconsentedPrimaryAccountId().empty());
   ASSERT_TRUE(aps_manager.is_under_advanced_protection());
   EXPECT_TRUE(aps_manager.IsRefreshScheduled());
 
@@ -393,5 +393,30 @@ TEST_F(AdvancedProtectionStatusManagerTest,
 
   aps_manager.UnsubscribeFromSigninEvents();
 }
+
+// On ChromeOS, there is no unconsented primary account. We can only track the
+// primary account.
+#if !defined(OS_CHROMEOS)
+TEST_F(AdvancedProtectionStatusManagerTest, TracksUnconsentedPrimaryAccount) {
+  AdvancedProtectionStatusManager aps_manager(
+      &pref_service_, identity_test_env_.identity_manager(),
+      base::TimeDelta() /*no min delay*/);
+  ASSERT_FALSE(aps_manager.is_under_advanced_protection());
+  ASSERT_TRUE(aps_manager.GetUnconsentedPrimaryAccountId().empty());
+
+  // Sign in, but don't set this as the primary account.
+  AccountInfo account_info =
+      identity_test_env_.MakeAccountAvailable("test@test.com");
+  account_info.is_under_advanced_protection = true;
+  identity_test_env_.SetCookieAccounts(
+      {{account_info.email, account_info.gaia}});
+  identity_test_env_.UpdateAccountInfoForAccount(account_info);
+
+  EXPECT_TRUE(aps_manager.is_under_advanced_protection());
+  EXPECT_TRUE(aps_manager.IsRefreshScheduled());
+
+  aps_manager.UnsubscribeFromSigninEvents();
+}
+#endif
 
 }  // namespace safe_browsing

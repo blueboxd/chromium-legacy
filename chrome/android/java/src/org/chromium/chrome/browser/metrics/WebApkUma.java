@@ -306,6 +306,13 @@ public class WebApkUma {
     }
 
     /**
+     * Records whether a WebAPK navigation is within the WebAPK's scope.
+     */
+    public static void recordNavigation(boolean isNavigationInScope) {
+        RecordHistogram.recordBooleanHistogram("WebApk.Navigation.InScope", isNavigationInScope);
+    }
+
+    /**
      * Log necessary disk usage and cache size UMAs when WebAPK installation fails.
      */
     public static void logSpaceUsageUMAWhenInstallationFails() {

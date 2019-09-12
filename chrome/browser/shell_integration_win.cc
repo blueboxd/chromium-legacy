@@ -43,6 +43,7 @@
 #include "chrome/browser/policy/policy_path_parser.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_shortcut_win.h"
 #include "chrome/browser/win/settings_app_monitor.h"
 #include "chrome/browser/win/util_win_service.h"
 #include "chrome/common/chrome_constants.h"
@@ -67,16 +68,6 @@ base::string16 GetProfileIdFromPath(const base::FilePath& profile_path) {
   // Return empty string if profile_path is empty
   if (profile_path.empty())
     return base::string16();
-
-  base::FilePath default_user_data_dir;
-  // Return empty string if profile_path is in default user data
-  // dir and is the default profile.
-  if (chrome::GetDefaultUserDataDirectory(&default_user_data_dir) &&
-      profile_path.DirName() == default_user_data_dir &&
-      profile_path.BaseName().value() ==
-          base::ASCIIToUTF16(chrome::kInitialProfile)) {
-    return base::string16();
-  }
 
   // Get joined basenames of user data dir and profile.
   base::string16 basenames = profile_path.DirName().BaseName().value() +
@@ -142,21 +133,6 @@ base::string16 GetExpectedAppId(const base::CommandLine& command_line,
   DCHECK(!app_name.empty());
 
   return win::GetAppModelIdForProfile(app_name, profile_path);
-}
-
-void MigrateTaskbarPinsCallback() {
-  // Get full path of chrome.
-  base::FilePath chrome_exe;
-  if (!base::PathService::Get(base::FILE_EXE, &chrome_exe))
-    return;
-
-  base::FilePath pins_path;
-  if (!base::PathService::Get(base::DIR_TASKBAR_PINS, &pins_path)) {
-    NOTREACHED();
-    return;
-  }
-
-  win::MigrateShortcutsInPathInternal(chrome_exe, pins_path);
 }
 
 // Windows treats a given scheme as an Internet scheme only if its registry
@@ -516,6 +492,16 @@ void IsPinnedToTaskbarHelper::OnIsPinnedToTaskbarResult(
   delete this;
 }
 
+void MigrateChromeAndChromeProxyShortcuts(
+    const base::FilePath& chrome_exe,
+    const base::FilePath& chrome_proxy_path,
+    const base::FilePath& shortcut_path) {
+  win::MigrateShortcutsInPathInternal(chrome_exe, shortcut_path);
+
+  // Migrate any pinned PWA shortcuts in taskbar directory.
+  win::MigrateShortcutsInPathInternal(chrome_proxy_path, shortcut_path);
+}
+
 }  // namespace
 
 bool SetAsDefaultBrowser() {
@@ -724,9 +710,44 @@ void MigrateTaskbarPins() {
   // This needs to happen (e.g. so that the appid is fixed and the
   // run-time Chrome icon is merged with the taskbar shortcut), but it is not an
   // urgent task.
+  base::FilePath taskbar_path;
+  if (!base::PathService::Get(base::DIR_TASKBAR_PINS, &taskbar_path)) {
+    NOTREACHED();
+    return;
+  }
+
+  // Migrate any pinned shortcuts in ImplicitApps sub-directories.
+  base::FilePath implicit_apps_path;
+  if (!base::PathService::Get(base::DIR_IMPLICIT_APP_SHORTCUTS,
+                              &implicit_apps_path)) {
+    NOTREACHED();
+    return;
+  }
+
   base::CreateCOMSTATaskRunner(
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT})
-      ->PostTask(FROM_HERE, base::BindOnce(&MigrateTaskbarPinsCallback));
+      ->PostTask(FROM_HERE, base::BindOnce(&MigrateTaskbarPinsCallback,
+                                           taskbar_path, implicit_apps_path));
+}
+
+void MigrateTaskbarPinsCallback(const base::FilePath& taskbar_path,
+                                const base::FilePath& implicit_apps_path) {
+  // Get full path of chrome.
+  base::FilePath chrome_exe;
+  if (!base::PathService::Get(base::FILE_EXE, &chrome_exe))
+    return;
+  base::FilePath chrome_proxy_path(web_app::GetChromeProxyPath());
+
+  MigrateChromeAndChromeProxyShortcuts(chrome_exe, chrome_proxy_path,
+                                       taskbar_path);
+  base::FileEnumerator directory_enum(implicit_apps_path, /*recursive=*/false,
+                                      base::FileEnumerator::DIRECTORIES);
+  for (base::FilePath implicit_app_sub_directory = directory_enum.Next();
+       !implicit_app_sub_directory.empty();
+       implicit_app_sub_directory = directory_enum.Next()) {
+    MigrateChromeAndChromeProxyShortcuts(chrome_exe, chrome_proxy_path,
+                                         implicit_app_sub_directory);
+  }
 }
 
 void GetIsPinnedToTaskbarState(
@@ -785,6 +806,8 @@ int MigrateShortcutsInPathInternal(const base::FilePath& chrome_exe,
     // |updated_properties|.
     base::win::ShortcutProperties updated_properties;
 
+    base::string16 current_app_id;
+
     // Validate the existing app id for the shortcut.
     Microsoft::WRL::ComPtr<IPropertyStore> property_store;
     propvariant.Reset();
@@ -802,7 +825,8 @@ int MigrateShortcutsInPathInternal(const base::FilePath& chrome_exe,
             updated_properties.set_app_id(expected_app_id);
           break;
         case VT_LPWSTR:
-          if (expected_app_id != base::string16(propvariant.get().pwszVal))
+          current_app_id = base::string16(propvariant.get().pwszVal);
+          if (expected_app_id != current_app_id)
             updated_properties.set_app_id(expected_app_id);
           break;
         default:
@@ -816,7 +840,7 @@ int MigrateShortcutsInPathInternal(const base::FilePath& chrome_exe,
     // |default_chromium_model_id|).
     base::string16 default_chromium_model_id(
         ShellUtil::GetBrowserModelId(is_per_user_install));
-    if (expected_app_id == default_chromium_model_id) {
+    if (current_app_id == default_chromium_model_id) {
       propvariant.Reset();
       if (property_store->GetValue(PKEY_AppUserModel_IsDualMode,
                                    propvariant.Receive()) != S_OK) {

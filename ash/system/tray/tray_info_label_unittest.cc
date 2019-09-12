@@ -9,6 +9,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/test/ash_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 

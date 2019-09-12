@@ -17,9 +17,6 @@ extern const base::Feature kUseHeuristicLanguageModel;
 // Android.
 extern const base::Feature kExplicitLanguageAsk;
 
-// The feature that enables the use of improved geo-language data from ULP.
-extern const base::Feature kImprovedGeoLanguageData;
-
 // This feature controls the activation of the experiment to trigger Translate
 // in India on English pages independent of the user's UI language. The params
 // associated with the experiment dictate which model is used to determine the

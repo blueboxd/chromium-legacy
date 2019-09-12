@@ -92,12 +92,12 @@ class GeolocationServiceTest : public RenderViewHostImplTestHarness {
     geolocation_overrider_ =
         std::make_unique<device::ScopedGeolocationOverrider>(kMockLatitude,
                                                              kMockLongitude);
-    GetSystemConnector()->BindInterface(device::mojom::kServiceName,
-                                        mojo::MakeRequest(&context_ptr_));
+    GetSystemConnector()->Connect(device::mojom::kServiceName,
+                                  context_.BindNewPipeAndPassReceiver());
   }
 
   void TearDown() override {
-    context_ptr_.reset();
+    context_.reset();
     geolocation_overrider_.reset();
     service_manager_context_.reset();
     browser_context_.reset();
@@ -120,7 +120,7 @@ class GeolocationServiceTest : public RenderViewHostImplTestHarness {
     embedded_rfh = navigation_simulator->GetFinalRenderFrameHost();
 
     service_.reset(new GeolocationServiceImpl(
-        context_ptr_.get(), permission_controller_.get(), embedded_rfh));
+        context_.get(), permission_controller_.get(), embedded_rfh));
     service_->Bind(mojo::MakeRequest(&service_ptr_));
   }
 
@@ -143,7 +143,7 @@ class GeolocationServiceTest : public RenderViewHostImplTestHarness {
   std::unique_ptr<PermissionControllerImpl> permission_controller_;
   std::unique_ptr<GeolocationServiceImpl> service_;
   GeolocationServicePtr service_ptr_;
-  device::mojom::GeolocationContextPtr context_ptr_;
+  mojo::Remote<device::mojom::GeolocationContext> context_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationServiceTest);
 };

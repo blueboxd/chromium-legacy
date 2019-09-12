@@ -4,9 +4,10 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import android.content.Intent;
 import android.net.Uri;
-import android.os.Bundle;
+
+import androidx.browser.trusted.sharing.ShareData;
+import androidx.browser.trusted.sharing.ShareTarget;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -16,13 +17,10 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.webapk.lib.common.WebApkConstants;
-import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
-import org.chromium.webapk.test.WebApkTestHelper;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Tests WebApkShareTargetUtil.
@@ -31,25 +29,62 @@ import java.util.ArrayList;
 @Config(manifest = Config.NONE,
         shadows = {WebApkShareTargetUtilTest.WebApkShareTargetUtilShadow.class})
 public class WebApkShareTargetUtilTest {
-    private static final String WEBAPK_PACKAGE_NAME = "org.chromium.webapk.test_package";
+    /**
+     * Builder class for {@link WebApkInfo.ShareTarget}
+     */
+    public class ShareTargetBuilder {
+        private String mAction;
+        private @ShareTarget.RequestMethod String mMethod;
+        private @ShareTarget.EncodingType String mEncodingType;
+        private String mParamTitle;
+        private String mParamText;
+        private List<String> mParamFileNames = new ArrayList<>();
+        private List<String[]> mParamFileAccepts = new ArrayList<>();
 
-    // Android Manifest meta data for {@link PACKAGE_NAME}.
-    private static final String START_URL = "https://www.google.com/scope/a_is_for_apple";
+        public ShareTargetBuilder(String action) {
+            mAction = action;
+        }
 
-    private void registerWebApk(Bundle shareTargetBundle) {
-        Bundle appBundle = new Bundle();
-        appBundle.putString(WebApkMetaDataKeys.START_URL, START_URL);
-        WebApkTestHelper.registerWebApkWithMetaData(
-                WEBAPK_PACKAGE_NAME, appBundle, new Bundle[] {shareTargetBundle});
-    }
+        public void setMethod(@ShareTarget.RequestMethod String method) {
+            mMethod = method;
+        }
 
-    private static Intent createBasicShareIntent() {
-        Intent intent = new Intent();
-        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WEBAPK_PACKAGE_NAME);
-        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_SELECTED_SHARE_TARGET_ACTIVITY_CLASS_NAME,
-                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0));
-        intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
-        return intent;
+        public void setEncodingType(@ShareTarget.EncodingType String encodingType) {
+            mEncodingType = encodingType;
+        }
+
+        public void setParamTitle(String paramTitle) {
+            mParamTitle = paramTitle;
+        }
+
+        public void setParamText(String paramText) {
+            mParamText = paramText;
+        }
+
+        public void addParamFile(String name, String[] accepts) {
+            mParamFileNames.add(name);
+            mParamFileAccepts.add(accepts);
+        }
+
+        public void setParamFiles(List<String> names, List<String[]> accepts) {
+            mParamFileNames = names;
+            mParamFileAccepts = accepts;
+        }
+
+        WebApkInfo.ShareTarget build() {
+            String[] paramFileNames = null;
+            if (mParamFileNames != null) {
+                paramFileNames = mParamFileNames.toArray(new String[0]);
+            }
+            String[][] paramFileAccepts = null;
+            if (mParamFileAccepts != null) {
+                paramFileAccepts = mParamFileAccepts.toArray(new String[0][]);
+            }
+            return new WebApkInfo.ShareTarget(mAction, mParamTitle, mParamText, null,
+                    ShareTarget.METHOD_POST.equalsIgnoreCase(mMethod),
+                    ShareTarget.ENCODING_TYPE_MULTIPART.equalsIgnoreCase(mEncodingType),
+                    paramFileNames, paramFileAccepts);
+        }
     }
 
     private static void assertPostData(WebApkShareTargetUtil.PostData postData, String[] names,
@@ -87,6 +122,9 @@ public class WebApkShareTargetUtilTest {
         }
     }
 
+    /**
+     * Shadow class for {@link WebApkShareTargetUtil} which mocks out ContentProvider queries.
+     */
     @Implements(WebApkShareTargetUtil.class)
     public static class WebApkShareTargetUtilShadow extends WebApkShareTargetUtil {
         @Implementation
@@ -114,27 +152,16 @@ public class WebApkShareTargetUtilTest {
      */
     @Test
     public void testGET() {
-        Bundle shareActivityBundle = new Bundle();
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "GET");
-        shareActivityBundle.putString(
-                WebApkMetaDataKeys.SHARE_ENCTYPE, "application/x-www-form-urlencoded");
-        registerWebApk(shareActivityBundle);
+        ShareTargetBuilder shareTargetBuilder = new ShareTargetBuilder("/share.html");
+        shareTargetBuilder.setMethod(ShareTarget.METHOD_GET);
+        shareTargetBuilder.setEncodingType(ShareTarget.ENCODING_TYPE_URL_ENCODED);
 
-        Intent intent = createBasicShareIntent();
-        WebApkInfo infoWithShareMethodGet = WebApkInfo.create(intent);
+        ShareData shareData = new ShareData(null /* title */, null /* title */, null /* uris */);
 
-        Assert.assertEquals(null,
-                WebApkShareTargetUtilShadow.computePostData(
-                        infoWithShareMethodGet.shareTarget(), infoWithShareMethodGet.shareData()));
+        Assert.assertEquals(null, computePostData(shareTargetBuilder.build(), shareData));
 
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "POST");
-        registerWebApk(shareActivityBundle);
-        // recreating the WebApkInfo because the shareActivityBundle used for registerWebApk() has
-        // changed
-        WebApkInfo infoWithShareMethodPost = WebApkInfo.create(intent);
-
-        Assert.assertNotEquals(null, computePostData(infoWithShareMethodPost));
+        shareTargetBuilder.setMethod(ShareTarget.METHOD_POST);
+        Assert.assertNotNull(computePostData(shareTargetBuilder.build(), shareData));
     }
 
     /**
@@ -143,22 +170,16 @@ public class WebApkShareTargetUtilTest {
      */
     @Test
     public void testPostUrlEncoded() throws UnsupportedEncodingException {
-        Bundle shareActivityBundle = new Bundle();
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_TITLE, "title");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_TEXT, "text");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "POST");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
+        ShareTargetBuilder shareTargetBuilder = new ShareTargetBuilder("/share.html");
+        shareTargetBuilder.setMethod(ShareTarget.METHOD_POST);
+        shareTargetBuilder.setEncodingType(ShareTarget.ENCODING_TYPE_URL_ENCODED);
+        shareTargetBuilder.setParamTitle("title");
+        shareTargetBuilder.setParamText("text");
 
-        shareActivityBundle.putString(
-                WebApkMetaDataKeys.SHARE_ENCTYPE, "application/x-www-form-urlencoded");
-        registerWebApk(shareActivityBundle);
+        ShareData shareData = new ShareData("extra_subject", "extra_text", null /* uris */);
 
-        Intent intent = createBasicShareIntent();
-        intent.putExtra(Intent.EXTRA_SUBJECT, "extra_subject");
-        intent.putExtra(Intent.EXTRA_TEXT, "extra_text");
-        WebApkInfo info = WebApkInfo.create(intent);
-
-        WebApkShareTargetUtilShadow.PostData postData = computePostData(info);
+        WebApkShareTargetUtil.PostData postData =
+                computePostData(shareTargetBuilder.build(), shareData);
 
         assertPostData(postData, new String[] {"title", "text"}, new boolean[] {false, false},
                 new String[] {"extra_subject", "extra_text"}, new String[] {"", ""},
@@ -171,21 +192,16 @@ public class WebApkShareTargetUtilTest {
      */
     @Test
     public void testPostMultipartWithNoNamesNoAccepts() {
-        Bundle shareActivityBundle = new Bundle();
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "POST");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ENCTYPE, "multipart/form-data");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
-        // Note that names and accepts are not specified
-        registerWebApk(shareActivityBundle);
+        ShareTargetBuilder shareTargetBuilder = new ShareTargetBuilder("/share.html");
+        shareTargetBuilder.setMethod(ShareTarget.METHOD_POST);
+        shareTargetBuilder.setEncodingType(ShareTarget.ENCODING_TYPE_MULTIPART);
 
-        Intent intent = createBasicShareIntent();
         ArrayList<Uri> uris = new ArrayList<>();
         uris.add(Uri.parse("mock-uri-1"));
-        intent.putExtra(Intent.EXTRA_STREAM, uris);
+        ShareData shareData = new ShareData(null /* title */, null /* text */, uris);
 
-        WebApkInfo info = WebApkInfo.create(intent);
-
-        WebApkShareTargetUtilShadow.PostData postData = computePostData(info);
+        WebApkShareTargetUtil.PostData postData =
+                computePostData(shareTargetBuilder.build(), shareData);
 
         assertPostData(postData, new String[] {}, new boolean[] {}, new String[] {},
                 new String[] {}, new String[] {});
@@ -197,19 +213,13 @@ public class WebApkShareTargetUtilTest {
      */
     @Test
     public void testPostMultipartWithNoFilesNorText() {
-        Bundle shareActivityBundle = new Bundle();
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "POST");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ENCTYPE, "multipart/form-data");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_NAMES, "[\"name\"]");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_ACCEPTS, "[[\"image/*\"]]");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
-        registerWebApk(shareActivityBundle);
+        ShareTargetBuilder shareTargetBuilder = new ShareTargetBuilder("/share.html");
+        shareTargetBuilder.setMethod(ShareTarget.METHOD_POST);
+        shareTargetBuilder.setEncodingType(ShareTarget.ENCODING_TYPE_MULTIPART);
+        shareTargetBuilder.addParamFile("name", new String[] {"image/*"});
 
-        Intent intent = createBasicShareIntent();
-        // Intent.EXTRA_STREAM is not specified.
-        WebApkInfo info = WebApkInfo.create(intent);
-
-        WebApkShareTargetUtilShadow.PostData postData = computePostData(info);
+        WebApkShareTargetUtil.PostData postData = computePostData(shareTargetBuilder.build(),
+                new ShareData(null /* title */, null /* text */, null /* uris */));
 
         assertPostData(postData, new String[] {}, new boolean[] {}, new String[] {},
                 new String[] {}, new String[] {});
@@ -217,22 +227,17 @@ public class WebApkShareTargetUtilTest {
 
     @Test
     public void testPostMultipartWithFiles() {
-        Bundle shareActivityBundle = new Bundle();
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "POST");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ENCTYPE, "multipart/form-data");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_NAMES, "[\"name\"]");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_ACCEPTS, "[[\"image/*\"]]");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
-        registerWebApk(shareActivityBundle);
+        ShareTargetBuilder shareTargetBuilder = new ShareTargetBuilder("/share.html");
+        shareTargetBuilder.setMethod(ShareTarget.METHOD_POST);
+        shareTargetBuilder.setEncodingType(ShareTarget.ENCODING_TYPE_MULTIPART);
+        shareTargetBuilder.addParamFile("name", new String[] {"image/*"});
 
-        Intent intent = createBasicShareIntent();
         ArrayList<Uri> uris = new ArrayList<>();
         uris.add(Uri.parse("mock-uri-2"));
-        intent.putExtra(Intent.EXTRA_STREAM, uris);
+        ShareData shareData = new ShareData(null /* title */, null /* text */, uris);
 
-        WebApkInfo info = WebApkInfo.create(intent);
-
-        WebApkShareTargetUtilShadow.PostData postData = computePostData(info);
+        WebApkShareTargetUtil.PostData postData =
+                computePostData(shareTargetBuilder.build(), shareData);
 
         assertPostData(postData, new String[] {"name"}, new boolean[] {true},
                 new String[] {"mock-uri-2"}, new String[] {"file-name-for-mock-uri-2"},
@@ -241,25 +246,18 @@ public class WebApkShareTargetUtilTest {
 
     @Test
     public void testPostMultipartWithTexts() {
-        Bundle shareActivityBundle = new Bundle();
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "POST");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ENCTYPE, "multipart/form-data");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_NAMES, "[\"name\"]");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_ACCEPTS, "[[\"image/*\"]]");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_TEXT, "share-text");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_TITLE, "share-title");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_URL, "share-url");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
+        ShareTargetBuilder shareTargetBuilder = new ShareTargetBuilder("/share.html");
+        shareTargetBuilder.setMethod(ShareTarget.METHOD_POST);
+        shareTargetBuilder.setEncodingType(ShareTarget.ENCODING_TYPE_MULTIPART);
+        shareTargetBuilder.addParamFile("name", new String[] {"image/*"});
+        shareTargetBuilder.setParamText("share-text");
+        shareTargetBuilder.setParamTitle("share-title");
 
-        registerWebApk(shareActivityBundle);
+        ShareData shareData =
+                new ShareData("shared_subject_value", "shared_text_value", null /* uris */);
 
-        Intent intent = createBasicShareIntent();
-        intent.putExtra(Intent.EXTRA_SUBJECT, "shared_subject_value");
-        intent.putExtra(Intent.EXTRA_TEXT, "shared_text_value");
-
-        WebApkInfo info = WebApkInfo.create(intent);
-
-        WebApkShareTargetUtilShadow.PostData postData = computePostData(info);
+        WebApkShareTargetUtil.PostData postData =
+                computePostData(shareTargetBuilder.build(), shareData);
 
         assertPostData(postData, new String[] {"share-title", "share-text"},
                 new boolean[] {false, false},
@@ -269,25 +267,17 @@ public class WebApkShareTargetUtilTest {
 
     @Test
     public void testPostMultipartWithTextsOnlyTarget() {
-        Bundle shareActivityBundle = new Bundle();
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "POST");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ENCTYPE, "multipart/form-data");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_NAMES, "[]");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_ACCEPTS, "[]");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_TEXT, "share-text");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_TITLE, "share-title");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_URL, "share-url");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
+        ShareTargetBuilder shareTargetBuilder = new ShareTargetBuilder("/share.html");
+        shareTargetBuilder.setMethod(ShareTarget.METHOD_POST);
+        shareTargetBuilder.setEncodingType(ShareTarget.ENCODING_TYPE_MULTIPART);
+        shareTargetBuilder.setParamText("share-text");
+        shareTargetBuilder.setParamTitle("share-title");
 
-        registerWebApk(shareActivityBundle);
+        ShareData shareData =
+                new ShareData("shared_subject_value", "shared_text_value", null /* uris */);
 
-        Intent intent = createBasicShareIntent();
-        intent.putExtra(Intent.EXTRA_SUBJECT, "shared_subject_value");
-        intent.putExtra(Intent.EXTRA_TEXT, "shared_text_value");
-
-        WebApkInfo info = WebApkInfo.create(intent);
-
-        WebApkShareTargetUtilShadow.PostData postData = computePostData(info);
+        WebApkShareTargetUtil.PostData postData =
+                computePostData(shareTargetBuilder.build(), shareData);
 
         assertPostData(postData, new String[] {"share-title", "share-text"},
                 new boolean[] {false, false},
@@ -297,29 +287,19 @@ public class WebApkShareTargetUtilTest {
 
     @Test
     public void testPostMultipartWithFileAndTexts() {
-        Bundle shareActivityBundle = new Bundle();
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "POST");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ENCTYPE, "multipart/form-data");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_NAMES, "[\"name\"]");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_ACCEPTS, "[[\"image/*\"]]");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_TEXT, "share-text");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_TITLE, "share-title");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_URL, "share-url");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
-
-        registerWebApk(shareActivityBundle);
-
-        Intent intent = createBasicShareIntent();
-        intent.putExtra(Intent.EXTRA_SUBJECT, "shared_subject_value");
-        intent.putExtra(Intent.EXTRA_TEXT, "shared_text_value");
+        ShareTargetBuilder shareTargetBuilder = new ShareTargetBuilder("/share.html");
+        shareTargetBuilder.setMethod(ShareTarget.METHOD_POST);
+        shareTargetBuilder.setEncodingType(ShareTarget.ENCODING_TYPE_MULTIPART);
+        shareTargetBuilder.addParamFile("name", new String[] {"image/*"});
+        shareTargetBuilder.setParamText("share-text");
+        shareTargetBuilder.setParamTitle("share-title");
 
         ArrayList<Uri> uris = new ArrayList<>();
         uris.add(Uri.parse("mock-uri-3"));
-        intent.putExtra(Intent.EXTRA_STREAM, uris);
+        ShareData shareData = new ShareData("shared_subject_value", "shared_text_value", uris);
 
-        WebApkInfo info = WebApkInfo.create(intent);
-
-        WebApkShareTargetUtilShadow.PostData postData = computePostData(info);
+        WebApkShareTargetUtil.PostData postData =
+                computePostData(shareTargetBuilder.build(), shareData);
 
         assertPostData(postData, new String[] {"share-title", "share-text", "name"},
                 new boolean[] {false, false, true},
@@ -334,25 +314,18 @@ public class WebApkShareTargetUtilTest {
      */
     @Test
     public void testPostMultipartSharedTextFileMimeTypeNotInAccepts() {
-        Bundle shareActivityBundle = new Bundle();
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "POST");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ENCTYPE, "multipart/form-data");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_NAMES, "[\"name\"]");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_ACCEPTS, "[[\"image/*\"]]");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_TEXT, "share-text");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
-
-        registerWebApk(shareActivityBundle);
-
-        Intent intent = createBasicShareIntent();
+        ShareTargetBuilder shareTargetBuilder = new ShareTargetBuilder("/share.html");
+        shareTargetBuilder.setMethod(ShareTarget.METHOD_POST);
+        shareTargetBuilder.setEncodingType(ShareTarget.ENCODING_TYPE_MULTIPART);
+        shareTargetBuilder.addParamFile("name", new String[] {"image/*"});
+        shareTargetBuilder.setParamText("share-text");
 
         ArrayList<Uri> uris = new ArrayList<>();
         uris.add(Uri.parse("text-file-mock-uri"));
-        intent.putExtra(Intent.EXTRA_STREAM, uris);
+        ShareData shareData = new ShareData(null /* title */, null /* text */, uris);
 
-        WebApkInfo info = WebApkInfo.create(intent);
-
-        WebApkShareTargetUtilShadow.PostData postData = computePostData(info);
+        WebApkShareTargetUtil.PostData postData =
+                computePostData(shareTargetBuilder.build(), shareData);
 
         assertPostData(postData, new String[] {"share-text"}, new boolean[] {true},
                 new String[] {"text-file-mock-uri"}, new String[] {""},
@@ -365,28 +338,20 @@ public class WebApkShareTargetUtilTest {
      */
     @Test
     public void testPostMultipartSharedTextFileMimeTypeNotInAcceptsMultiple() {
-        Bundle shareActivityBundle = new Bundle();
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "POST");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ENCTYPE, "multipart/form-data");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_NAMES, "[\"name\"]");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_ACCEPTS, "[[\"image/*\"]]");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_TEXT, "share-text");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
-
-        registerWebApk(shareActivityBundle);
-
-        Intent intent = createBasicShareIntent();
+        ShareTargetBuilder shareTargetBuilder = new ShareTargetBuilder("/share.html");
+        shareTargetBuilder.setMethod(ShareTarget.METHOD_POST);
+        shareTargetBuilder.setEncodingType(ShareTarget.ENCODING_TYPE_MULTIPART);
+        shareTargetBuilder.addParamFile("name", new String[] {"image/*"});
+        shareTargetBuilder.setParamText("share-text");
 
         ArrayList<Uri> uris = new ArrayList<>();
         uris.add(Uri.parse("text-file-mock-uri"));
         uris.add(Uri.parse("text-file-mock-uri2"));
         uris.add(Uri.parse("text-file-mock-uri3"));
+        ShareData shareData = new ShareData(null /* title */, null /* text */, uris);
 
-        intent.putExtra(Intent.EXTRA_STREAM, uris);
-
-        WebApkInfo info = WebApkInfo.create(intent);
-
-        WebApkShareTargetUtilShadow.PostData postData = computePostData(info);
+        WebApkShareTargetUtil.PostData postData =
+                computePostData(shareTargetBuilder.build(), shareData);
 
         assertPostData(postData, new String[] {"share-text"}, new boolean[] {true},
                 new String[] {"text-file-mock-uri"}, new String[] {""},
@@ -400,26 +365,18 @@ public class WebApkShareTargetUtilTest {
      */
     @Test
     public void testPostMultipartSharedTextFileAndSharedSelection() {
-        Bundle shareActivityBundle = new Bundle();
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "POST");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ENCTYPE, "multipart/form-data");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_NAMES, "[\"name\"]");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_ACCEPTS, "[[\"image/*\"]]");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_TEXT, "share-text");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
-
-        registerWebApk(shareActivityBundle);
-
-        Intent intent = createBasicShareIntent();
-        intent.putExtra(Intent.EXTRA_TEXT, "shared_text_value");
+        ShareTargetBuilder shareTargetBuilder = new ShareTargetBuilder("/share.html");
+        shareTargetBuilder.setMethod(ShareTarget.METHOD_POST);
+        shareTargetBuilder.setEncodingType(ShareTarget.ENCODING_TYPE_MULTIPART);
+        shareTargetBuilder.addParamFile("name", new String[] {"image/*"});
+        shareTargetBuilder.setParamText("share-text");
 
         ArrayList<Uri> uris = new ArrayList<>();
         uris.add(Uri.parse("text-file-mock-uri"));
-        intent.putExtra(Intent.EXTRA_STREAM, uris);
+        ShareData shareData = new ShareData(null /* title */, "shared_text_value", uris);
 
-        WebApkInfo info = WebApkInfo.create(intent);
-
-        WebApkShareTargetUtilShadow.PostData postData = computePostData(info);
+        WebApkShareTargetUtil.PostData postData =
+                computePostData(shareTargetBuilder.build(), shareData);
 
         assertPostData(postData, new String[] {"share-text"}, new boolean[] {false},
                 new String[] {"shared_text_value"}, new String[] {""}, new String[] {"text/plain"});
@@ -431,26 +388,18 @@ public class WebApkShareTargetUtilTest {
      */
     @Test
     public void testPostMultipartSharedTextFileMimeTypeInAccepts() {
-        Bundle shareActivityBundle = new Bundle();
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "POST");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ENCTYPE, "multipart/form-data");
-        shareActivityBundle.putString(
-                WebApkMetaDataKeys.SHARE_PARAM_NAMES, "[\"share-text-file\"]");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_ACCEPTS, "[[\"text/*\"]]");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_TEXT, "share-text");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
-
-        registerWebApk(shareActivityBundle);
-
-        Intent intent = createBasicShareIntent();
+        ShareTargetBuilder shareTargetBuilder = new ShareTargetBuilder("/share.html");
+        shareTargetBuilder.setMethod(ShareTarget.METHOD_POST);
+        shareTargetBuilder.setEncodingType(ShareTarget.ENCODING_TYPE_MULTIPART);
+        shareTargetBuilder.addParamFile("share-text-file", new String[] {"text/*"});
+        shareTargetBuilder.setParamText("share-text");
 
         ArrayList<Uri> uris = new ArrayList<>();
         uris.add(Uri.parse("text-mock-uri"));
-        intent.putExtra(Intent.EXTRA_STREAM, uris);
+        ShareData shareData = new ShareData(null /* title */, null /* text */, uris);
 
-        WebApkInfo info = WebApkInfo.create(intent);
-
-        WebApkShareTargetUtilShadow.PostData postData = computePostData(info);
+        WebApkShareTargetUtil.PostData postData =
+                computePostData(shareTargetBuilder.build(), shareData);
 
         assertPostData(postData, new String[] {"share-text-file"}, new boolean[] {true},
                 new String[] {"text-mock-uri"}, new String[] {"file-name-for-text-mock-uri"},
@@ -463,26 +412,17 @@ public class WebApkShareTargetUtilTest {
      */
     @Test
     public void testPostMultipartSharedTextSelectionNoParamTextPlainInAccepts() {
-        Bundle shareActivityBundle = new Bundle();
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "POST");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ENCTYPE, "multipart/form-data");
-        shareActivityBundle.putString(
-                WebApkMetaDataKeys.SHARE_PARAM_NAMES, "[\"share-text-file\"]");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_ACCEPTS, "[[\"text/*\"]]");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
-
-        registerWebApk(shareActivityBundle);
-
-        Intent intent = createBasicShareIntent();
-        intent.putExtra(Intent.EXTRA_TEXT, "shared_text_value");
+        ShareTargetBuilder shareTargetBuilder = new ShareTargetBuilder("/share.html");
+        shareTargetBuilder.setMethod(ShareTarget.METHOD_POST);
+        shareTargetBuilder.setEncodingType(ShareTarget.ENCODING_TYPE_MULTIPART);
+        shareTargetBuilder.addParamFile("share-text-file", new String[] {"text/*"});
 
         ArrayList<Uri> uris = new ArrayList<>();
         uris.add(Uri.parse("text-mock-uri"));
-        intent.putExtra(Intent.EXTRA_STREAM, uris);
+        ShareData shareData = new ShareData(null /* title */, "shared_text_value", uris);
 
-        WebApkInfo info = WebApkInfo.create(intent);
-
-        WebApkShareTargetUtilShadow.PostData postData = computePostData(info);
+        WebApkShareTargetUtil.PostData postData =
+                computePostData(shareTargetBuilder.build(), shareData);
 
         assertPostData(postData, new String[] {"share-text-file", "share-text-file"},
                 new boolean[] {false, true}, new String[] {"shared_text_value", "text-mock-uri"},
@@ -496,27 +436,18 @@ public class WebApkShareTargetUtilTest {
      */
     @Test
     public void testPostMultipartSharedTextSelectionHasParamText() {
-        Bundle shareActivityBundle = new Bundle();
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "POST");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ENCTYPE, "multipart/form-data");
-        shareActivityBundle.putString(
-                WebApkMetaDataKeys.SHARE_PARAM_NAMES, "[\"share-text-file\"]");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_ACCEPTS, "[[\"text/*\"]]");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_TEXT, "share-text");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
-
-        registerWebApk(shareActivityBundle);
-
-        Intent intent = createBasicShareIntent();
-        intent.putExtra(Intent.EXTRA_TEXT, "shared_text_value");
+        ShareTargetBuilder shareTargetBuilder = new ShareTargetBuilder("/share.html");
+        shareTargetBuilder.setMethod(ShareTarget.METHOD_POST);
+        shareTargetBuilder.setEncodingType(ShareTarget.ENCODING_TYPE_MULTIPART);
+        shareTargetBuilder.addParamFile("share-text-file", new String[] {"text/*"});
+        shareTargetBuilder.setParamText("share-text");
 
         ArrayList<Uri> uris = new ArrayList<>();
         uris.add(Uri.parse("text-mock-uri"));
-        intent.putExtra(Intent.EXTRA_STREAM, uris);
+        ShareData shareData = new ShareData(null /* title */, "shared_text_value", uris);
 
-        WebApkInfo info = WebApkInfo.create(intent);
-
-        WebApkShareTargetUtilShadow.PostData postData = computePostData(info);
+        WebApkShareTargetUtil.PostData postData =
+                computePostData(shareTargetBuilder.build(), shareData);
 
         assertPostData(postData, new String[] {"share-text", "share-text-file"},
                 new boolean[] {false, true}, new String[] {"shared_text_value", "text-mock-uri"},
@@ -533,26 +464,17 @@ public class WebApkShareTargetUtilTest {
      */
     @Test
     public void testPostMultipartSharedTextSelectionNoParamTextPlainNotInAccepts() {
-        Bundle shareActivityBundle = new Bundle();
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "POST");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ENCTYPE, "multipart/form-data");
-        shareActivityBundle.putString(
-                WebApkMetaDataKeys.SHARE_PARAM_NAMES, "[\"share-text-file\"]");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_ACCEPTS, "[[\"image/*\"]]");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
-
-        registerWebApk(shareActivityBundle);
-
-        Intent intent = createBasicShareIntent();
-        intent.putExtra(Intent.EXTRA_TEXT, "shared_text_value");
+        ShareTargetBuilder shareTargetBuilder = new ShareTargetBuilder("/share.html");
+        shareTargetBuilder.setMethod(ShareTarget.METHOD_POST);
+        shareTargetBuilder.setEncodingType(ShareTarget.ENCODING_TYPE_MULTIPART);
+        shareTargetBuilder.addParamFile("share-text-file", new String[] {"image/*"});
 
         ArrayList<Uri> uris = new ArrayList<>();
         uris.add(Uri.parse("mock-uri"));
-        intent.putExtra(Intent.EXTRA_STREAM, uris);
+        ShareData shareData = new ShareData(null /* title */, "shared_text_value", uris);
 
-        WebApkInfo info = WebApkInfo.create(intent);
-
-        WebApkShareTargetUtilShadow.PostData postData = computePostData(info);
+        WebApkShareTargetUtil.PostData postData =
+                computePostData(shareTargetBuilder.build(), shareData);
 
         assertPostData(postData, new String[] {"share-text-file"}, new boolean[] {true},
                 new String[] {"mock-uri"}, new String[] {"file-name-for-mock-uri"},
@@ -561,29 +483,22 @@ public class WebApkShareTargetUtilTest {
 
     @Test
     public void testPostMultipartWithFileAndInValidParamNames() {
-        Bundle shareActivityBundle = new Bundle();
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "POST");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ENCTYPE, "multipart/form-data");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_NAMES, "not a array");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_ACCEPTS, "[[\"image/*\"]]");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_TEXT, "share-text");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_TITLE, "share-title");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_URL, "share-url");
-        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
+        List<String[]> paramFileAccepts = new ArrayList<>();
+        paramFileAccepts.add(new String[] {"image/*"});
 
-        registerWebApk(shareActivityBundle);
-
-        Intent intent = createBasicShareIntent();
-        intent.putExtra(Intent.EXTRA_SUBJECT, "shared_subject_value");
-        intent.putExtra(Intent.EXTRA_TEXT, "shared_text_value");
+        ShareTargetBuilder shareTargetBuilder = new ShareTargetBuilder("/share.html");
+        shareTargetBuilder.setMethod(ShareTarget.METHOD_POST);
+        shareTargetBuilder.setEncodingType(ShareTarget.ENCODING_TYPE_MULTIPART);
+        shareTargetBuilder.setParamFiles(null, paramFileAccepts);
+        shareTargetBuilder.setParamText("share-text");
+        shareTargetBuilder.setParamTitle("share-title");
 
         ArrayList<Uri> uris = new ArrayList<>();
         uris.add(Uri.parse("mock-uri"));
-        intent.putExtra(Intent.EXTRA_STREAM, uris);
+        ShareData shareData = new ShareData("shared_subject_value", "shared_text_value", uris);
 
-        WebApkInfo info = WebApkInfo.create(intent);
-
-        WebApkShareTargetUtilShadow.PostData postData = computePostData(info);
+        WebApkShareTargetUtil.PostData postData =
+                computePostData(shareTargetBuilder.build(), shareData);
 
         // with invalid name parameter from Android manifest, we ignore the file sharing part.
         assertPostData(postData, new String[] {"share-title", "share-text"},
@@ -592,7 +507,15 @@ public class WebApkShareTargetUtilTest {
                 new String[] {"text/plain", "text/plain"});
     }
 
-    private WebApkShareTargetUtil.PostData computePostData(WebApkInfo info) {
-        return WebApkShareTargetUtilShadow.computePostData(info.shareTarget(), info.shareData());
+    private WebApkShareTargetUtil.PostData computePostData(
+            WebApkInfo.ShareTarget shareTarget, ShareData shareData) {
+        WebApkInfo.ShareData webApkShareData = new WebApkInfo.ShareData();
+        webApkShareData.subject = shareData.title;
+        webApkShareData.text = shareData.text;
+        if (shareData.uris != null) {
+            webApkShareData.files = new ArrayList(shareData.uris);
+        }
+
+        return WebApkShareTargetUtil.computePostData(shareTarget, webApkShareData);
     }
 }

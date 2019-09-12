@@ -1236,14 +1236,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // prevent interaction with the web page.
   // TODO(crbug.com/637093): This coordinator should be managed by the
   // coordinator used to present BrowserViewController, when implemented.
-  if (active) {
-    [self.activityOverlayCoordinator stop];
-    self.activityOverlayCoordinator = nil;
-  } else if (!self.activityOverlayCoordinator) {
-    self.activityOverlayCoordinator =
-        [[ActivityOverlayCoordinator alloc] initWithBaseViewController:self];
-    [self.activityOverlayCoordinator start];
-  }
+  [self showActivityOverlay:!active];
 
   if (self.browserState) {
     ActiveStateManager* active_state_manager =
@@ -3803,6 +3796,13 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }];
 }
 
+- (void)updateForFullscreenMinViewportInsets:(UIEdgeInsets)minViewportInsets
+                           maxViewportInsets:(UIEdgeInsets)maxViewportInsets {
+  FullscreenController* controller =
+      FullscreenControllerFactory::GetForBrowserState(self.browserState);
+  [self updateForFullscreenProgress:controller->GetProgress()];
+}
+
 #pragma mark - FullscreenUIElement helpers
 
 // Returns the height difference between the fully expanded and fully collapsed
@@ -4385,6 +4385,17 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (void)sendTabToSelf:(SendTabToSelfCommand*)command {
   [self sendTabToSelfTargetDeviceID:[command targetDeviceID]
                    targetDeviceName:[command targetDeviceName]];
+}
+
+- (void)showActivityOverlay:(BOOL)shown {
+  if (!shown) {
+    [self.activityOverlayCoordinator stop];
+    self.activityOverlayCoordinator = nil;
+  } else if (!self.activityOverlayCoordinator) {
+    self.activityOverlayCoordinator =
+        [[ActivityOverlayCoordinator alloc] initWithBaseViewController:self];
+    [self.activityOverlayCoordinator start];
+  }
 }
 
 #pragma mark - FindInPageResponseDelegate

@@ -758,7 +758,7 @@ public class FeatureUtilities {
     private static class GridTabSwitcherUtil {
         // Field trial parameter for the minimum Android SDK version to enable zooming animation.
         private static final String MIN_SDK_PARAM = "zooming-min-sdk-version";
-        private static final int DEFAULT_MIN_SDK = Build.VERSION_CODES.M;
+        private static final int DEFAULT_MIN_SDK = Build.VERSION_CODES.O;
 
         // Field trial parameter for the minimum physical memory size to enable zooming animation.
         private static final String MIN_MEMORY_MB_PARAM = "zooming-min-memory-mb";

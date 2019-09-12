@@ -353,7 +353,7 @@ void JSONTraceExporter::SetTraceStatsMetadata(
     buf_dict->SetInteger("abi_violations", buf_stats.abi_violations());
     buf_dict->SetInteger("trace_writer_packet_loss",
                          buf_stats.trace_writer_packet_loss());
-    buf_list->GetList().push_back(std::move(buf_value));
+    buf_list->Append(std::move(buf_value));
   }
   dict->SetList("buffer_stats", std::move(buf_list));
   metadata_->SetDictionary("perfetto_trace_stats", std::move(dict));

@@ -250,6 +250,8 @@ target(link_target_type, "renderer") {
     "p2p/socket_client_impl.h",
     "p2p/socket_dispatcher.cc",
     "p2p/socket_dispatcher.h",
+    "page_properties.cc",
+    "page_properties.h",
     "peripheral_content_heuristic.cc",
     "peripheral_content_heuristic.h",
     "queue_message_swap_promise.cc",
@@ -568,7 +570,7 @@ target(link_target_type, "renderer") {
       "renderer_main_platform_delegate_fuchsia.cc",
     ]
 
-    deps += [ "//media/fuchsia/cdm" ]
+    deps += [ "//media/fuchsia/cdm/client" ]
   }
 
   if (enable_media_remoting) {

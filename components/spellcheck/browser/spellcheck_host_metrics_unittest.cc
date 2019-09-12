@@ -27,7 +27,7 @@ class SpellcheckHostMetricsTest : public testing::Test {
   void RecordWordCountsForTesting() { metrics_->RecordWordCounts(); }
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<SpellCheckHostMetrics> metrics_;
 };
 

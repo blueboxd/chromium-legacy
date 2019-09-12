@@ -115,6 +115,11 @@ int BrowserControllerImpl::GetTopControlsHeight() {
 #endif
 }
 
+bool BrowserControllerImpl::DoBrowserControlsShrinkRendererSize(
+    const content::WebContents* web_contents) {
+  return true;
+}
+
 void BrowserControllerImpl::DidFirstVisuallyNonEmptyPaint() {
   for (auto& observer : observers_)
     observer.FirstContentfulPaint();

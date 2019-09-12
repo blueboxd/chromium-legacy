@@ -192,6 +192,7 @@ enum Role {
   kFigcaption,
   kFigure,
   kFooter,
+  kFooterAsNonLandmark,
   kForm,
   kGenericContainer,
   // --------------------------------------------------------------
@@ -204,6 +205,8 @@ enum Role {
   // --------------------------------------------------------------
   kGrid,
   kGroup,
+  kHeader,
+  kHeaderAsNonLandmark,
   kHeading,
   kIframe,
   kIframePresentational,

@@ -431,11 +431,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       _webView, webView, messageRouter);
 
   if (_webView) {
-    // TODO(crbug.com/956516): Use removeScriptMessageHandlerForName:webView:
-    // for |kScriptMessageName| and let CRWContextMenuController unregister its
-    // own callback.
-    [messageRouter removeAllScriptMessageHandlersForWebView:_webView];
-
     [_webView stopLoading];
     [_webView removeFromSuperview];
   }

@@ -13,6 +13,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/native_theme/native_theme_observer.h"
 
 class Profile;
@@ -24,10 +25,6 @@ class Value;
 
 namespace content {
 class RenderProcessHost;
-}
-
-namespace ui {
-class NativeTheme;
 }
 
 // This class keeps a cache of NTP resources (HTML and CSS) so we don't have to
@@ -97,7 +94,8 @@ class NTPResourceCache : public content::NotificationObserver,
   // Set based on platform_util::IsSwipeTrackingFromScrollEventsEnabled.
   bool is_swipe_tracking_from_scroll_events_enabled_;
 
-  ScopedObserver<ui::NativeTheme, NTPResourceCache> theme_observer_;
+  ScopedObserver<ui::NativeTheme, ui::NativeThemeObserver> theme_observer_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(NTPResourceCache);
 };

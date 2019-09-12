@@ -111,7 +111,8 @@ def PrintUsage():
   tool_list = ''
   for (tool, info) in _TOOLS:
     if not _HIDDEN in info:
-      tool_list += '    %-12s %s\n' % (tool, info[_FACTORY]().ShortDescription())
+      tool_list += '    %-12s %s\n' % (
+          tool, info[_FACTORY]().ShortDescription())
 
   print("""GRIT - the Google Resource and Internationalization Tool
 
@@ -263,4 +264,9 @@ def Main(args):
 
 
 if __name__ == '__main__':
-  sys.exit(Main(sys.argv[1:]))
+  sys.path.append(os.path.abspath(
+      os.path.join(os.path.dirname(__file__), '..', '..', 'diagnosis')))
+  import crbug_1001171
+
+  with crbug_1001171.DumpStateOnLookupError():
+    sys.exit(Main(sys.argv[1:]))

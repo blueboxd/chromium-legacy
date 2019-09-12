@@ -63,7 +63,7 @@ ImageBitmapRenderingContextBase::GetImageAndResetInternal() {
 
   SkBitmap black_bitmap;
   black_bitmap.allocN32Pixels(copy_image->width(), copy_image->height());
-  black_bitmap.eraseColor(SkColorSetRGB(0, 0, 0));
+  black_bitmap.eraseARGB(0, 0, 0, 0);
   image_layer_bridge_->SetImage(
       StaticBitmapImage::Create(SkImage::MakeFromBitmap(black_bitmap)));
 

@@ -9,6 +9,7 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_manager_onboarding.h"
 
 class ChromePasswordManagerClient;
 
@@ -62,6 +63,9 @@ class OnboardingDialogView {
   // Needed for prompting the user the save their password, as well as
   // retrieving web_contents and setting prefs.
   ChromePasswordManagerClient* client_;
+
+  std::unique_ptr<password_manager::SavingFlowMetricsRecorder>
+      saving_flow_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(OnboardingDialogView);
 };

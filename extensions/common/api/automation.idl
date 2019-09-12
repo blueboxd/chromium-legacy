@@ -164,6 +164,7 @@
     figcaption,
     figure,
     footer,
+    footerAsNonLandmark,
     form,
     genericContainer,
     // --------------------------------------------------------------
@@ -176,6 +177,8 @@
     // --------------------------------------------------------------
     grid,
     group,
+    header,
+    headerAsNonLandmark,
     heading,
     iframe,
     iframePresentational,

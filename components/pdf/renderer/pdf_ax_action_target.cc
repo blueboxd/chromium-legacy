@@ -5,6 +5,7 @@
 #include "components/pdf/renderer/pdf_ax_action_target.h"
 
 #include "components/pdf/renderer/pdf_accessibility_tree.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 
 namespace pdf {
 

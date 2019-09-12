@@ -20,6 +20,7 @@ namespace assistant {
 class AudioInputProviderImpl : public assistant_client::AudioInputProvider {
  public:
   AudioInputProviderImpl(mojom::Client* client,
+                         chromeos::PowerManagerClient* power_manager_client,
                          const std::string& input_device_id,
                          const std::string& hotword_device_id);
   ~AudioInputProviderImpl() override;

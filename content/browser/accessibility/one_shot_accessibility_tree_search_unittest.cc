@@ -153,6 +153,20 @@ TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest,
   EXPECT_EQ(1, search.GetMatchAtIndex(2)->GetId());
 }
 
+TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest, BackwardsWrapFromRoot) {
+  OneShotAccessibilityTreeSearch search(tree_->GetRoot());
+  search.SetDirection(OneShotAccessibilityTreeSearch::BACKWARDS);
+  search.SetResultLimit(100);
+  search.SetCanWrapToLastElement(true);
+  ASSERT_EQ(6U, search.CountMatches());
+  EXPECT_EQ(1, search.GetMatchAtIndex(0)->GetId());
+  EXPECT_EQ(6, search.GetMatchAtIndex(1)->GetId());
+  EXPECT_EQ(5, search.GetMatchAtIndex(2)->GetId());
+  EXPECT_EQ(4, search.GetMatchAtIndex(3)->GetId());
+  EXPECT_EQ(3, search.GetMatchAtIndex(4)->GetId());
+  EXPECT_EQ(2, search.GetMatchAtIndex(5)->GetId());
+}
+
 TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest,
        ForwardsWithStartNodeAndScope) {
   OneShotAccessibilityTreeSearch search(tree_->GetFromID(4));

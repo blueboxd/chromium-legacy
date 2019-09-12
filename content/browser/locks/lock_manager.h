@@ -26,8 +26,8 @@ class LockManager : public base::RefCountedThreadSafe<LockManager>,
  public:
   LockManager();
 
-  void CreateService(mojo::PendingReceiver<blink::mojom::LockManager> receiver,
-                     const url::Origin& origin);
+  void CreateService(const url::Origin& origin,
+                     mojo::PendingReceiver<blink::mojom::LockManager> receiver);
 
   // Request a lock. When the lock is acquired, |callback| will be invoked with
   // a LockHandle.

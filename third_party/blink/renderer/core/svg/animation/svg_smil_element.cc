@@ -270,8 +270,6 @@ static inline void ClearTimesWithDynamicOrigins(
 }
 
 void SVGSMILElement::Reset() {
-  ClearAnimatedType();
-
   active_state_ = kInactive;
   is_waiting_for_first_interval_ = true;
   interval_ = {SMILTime::Unresolved(), SMILTime::Unresolved()};

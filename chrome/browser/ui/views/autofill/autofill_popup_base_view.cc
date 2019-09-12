@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "components/strings/grit/components_strings.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"

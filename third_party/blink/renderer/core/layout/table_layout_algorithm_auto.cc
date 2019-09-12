@@ -234,8 +234,13 @@ static bool ShouldScaleColumnsForParent(LayoutTable* table) {
     // use ~infinity to make sure we use all available size in the containing
     // block. However, this just doesn't work if this is a flex or grid item, so
     // disallow scaling in that case.
-    if (cb->IsFlexibleBoxIncludingNG() || cb->IsLayoutGrid())
+    const bool is_deprecated_webkit_box =
+        (cb->StyleRef().Display() == EDisplay::kWebkitBox ||
+         cb->StyleRef().Display() == EDisplay::kWebkitInlineBox);
+    if ((!is_deprecated_webkit_box && cb->IsFlexibleBoxIncludingNG()) ||
+        cb->IsLayoutGrid()) {
       return false;
+    }
     cb = cb->ContainingBlock();
   }
   return true;

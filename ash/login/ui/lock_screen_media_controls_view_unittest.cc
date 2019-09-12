@@ -17,6 +17,7 @@
 #include "components/media_message_center/media_controls_progress_view.h"
 #include "services/media_session/public/cpp/test/test_media_controller.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/paint_vector_icon.h"

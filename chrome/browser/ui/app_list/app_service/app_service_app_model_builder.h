@@ -11,10 +11,6 @@
 
 class AppListControllerDelegate;
 
-namespace apps {
-class AppServiceProxy;
-}
-
 class AppServiceAppModelBuilder : public AppListModelBuilder,
                                   public apps::AppRegistryCache::Observer {
  public:
@@ -22,13 +18,8 @@ class AppServiceAppModelBuilder : public AppListModelBuilder,
 
   ~AppServiceAppModelBuilder() override;
 
-  static apps::AppServiceProxy* SetAppServiceProxyForTesting(
-      apps::AppServiceProxy* proxy);
-
  private:
   class CrostiniFolderObserver;
-
-  static apps::AppServiceProxy* app_service_proxy_for_testing_;
 
   // AppListModelBuilder overrides:
   void BuildModel() override;

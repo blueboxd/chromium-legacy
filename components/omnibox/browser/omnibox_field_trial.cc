@@ -644,7 +644,8 @@ bool OmniboxFieldTrial::IsReverseAnswersEnabled() {
 
 bool OmniboxFieldTrial::IsShortBookmarkSuggestionsEnabled() {
   return base::FeatureList::IsEnabled(
-      omnibox::kOmniboxShortBookmarkSuggestions);
+             omnibox::kOmniboxShortBookmarkSuggestions) ||
+         base::FeatureList::IsEnabled(omnibox::kAutocompleteTitles);
 }
 
 bool OmniboxFieldTrial::IsTabSwitchSuggestionsEnabled() {

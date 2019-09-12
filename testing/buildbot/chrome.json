@@ -2364,14 +2364,14 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "chrome.tests"
             }
           ],
           "optional_dimensions": {
             "300": [
               {
-                "os": "Mac-10.14.3"
+                "os": "Mac-10.14.4"
               }
             ],
             "600": [

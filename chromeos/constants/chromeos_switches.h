@@ -180,7 +180,6 @@ extern const char kRedirectLibassistantLogging[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kRegulatoryLabelDir[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kRlzPingDelay[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kSamlPasswordChangeUrl[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kShelfDenseClamshell[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kShelfHoverPreviews[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kShelfHotseat[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kShelfScrollable[];
@@ -223,10 +222,8 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsSigninFrameClientCertsEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 bool IsSigninFrameClientCertUserSelectionEnabled();
 
-// Returns true if we should show a smaller, denser shelf in clamshell mode.
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool ShouldShowShelfDenseClamshell();
-
-// Returns true if we should show the modular shelf with the hotseat UI.
+// Returns true if we should show the modular shelf with the hotseat UI and
+// a smaller shelf in clamshell mode.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool ShouldShowShelfHotseat();
 
 // Returns true if we should show window previews when hovering over an app

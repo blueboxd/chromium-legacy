@@ -20,6 +20,7 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/mock_widget_impl.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -142,9 +143,10 @@ TEST_F(RenderWidgetHostViewMacEditCommandHelperWithTaskEnvTest,
 
   @autoreleasepool {
     int32_t routing_id = process_host->GetNextRoutingID();
-    mojom::WidgetPtr widget;
+    mojo::PendingRemote<mojom::Widget> widget;
     std::unique_ptr<MockWidgetImpl> widget_impl =
-        std::make_unique<MockWidgetImpl>(mojo::MakeRequest(&widget));
+        std::make_unique<MockWidgetImpl>(
+            widget.InitWithNewPipeAndPassReceiver());
 
     RenderWidgetHostImpl* render_widget = new RenderWidgetHostImpl(
         &delegate, process_host, routing_id, std::move(widget), false);

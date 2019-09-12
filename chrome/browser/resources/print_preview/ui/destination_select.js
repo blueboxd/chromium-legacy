@@ -76,7 +76,7 @@ Polymer({
     }
     // </if>
     iconSetAndIcon = iconSetAndIcon || icon.split(':');
-    const iconset = /** @type {!Polymer.IronIconsetSvg} */ (
+    const iconset = /** @type {!IronIconsetSvgElement} */ (
         this.meta_.byKey(iconSetAndIcon[0]));
     return getSelectDropdownBackground(iconset, iconSetAndIcon[1], this);
   },

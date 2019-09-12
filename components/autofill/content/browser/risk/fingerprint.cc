@@ -243,7 +243,7 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
   bool waiting_on_plugins_;
   device::mojom::Geoposition geoposition_;
   mojo::Remote<device::mojom::Geolocation> geolocation_;
-  device::mojom::GeolocationContextPtr geolocation_context_;
+  mojo::Remote<device::mojom::GeolocationContext> geolocation_context_;
 
   // Timer to enforce a maximum timeout before the |callback_| is called, even
   // if not all asynchronous data has been loaded.
@@ -314,8 +314,8 @@ FingerprintDataLoader::FingerprintDataLoader(
 
   // Load geolocation data.
   DCHECK(connector);
-  connector->BindInterface(device::mojom::kServiceName,
-                           mojo::MakeRequest(&geolocation_context_));
+  connector->Connect(device::mojom::kServiceName,
+                     geolocation_context_.BindNewPipeAndPassReceiver());
   geolocation_context_->BindGeolocation(
       geolocation_.BindNewPipeAndPassReceiver());
   geolocation_->SetHighAccuracy(false);

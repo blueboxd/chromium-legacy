@@ -61,7 +61,8 @@ class ProfileSyncServiceAndroid : public syncer::SyncServiceObserver {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
   void SetFirstSetupComplete(JNIEnv* env,
-                             const base::android::JavaParamRef<jobject>& obj);
+                             const base::android::JavaParamRef<jobject>& obj,
+                             jint source);
   base::android::ScopedJavaLocalRef<jintArray> GetActiveDataTypes(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);

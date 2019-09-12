@@ -191,7 +191,7 @@ class SearchBox : public content::RenderFrameObserver,
 
   // Queries the autocomplete backend for realbox results for |input| as a
   // search term. Handled by |QueryAutocompleteResult|.
-  void QueryAutocomplete(const std::string& input);
+  void QueryAutocomplete(const base::string16& input);
 
   // Cancels the current autocomplete query. Clears the result set if
   // |clear_result| is true.
@@ -225,8 +225,7 @@ class SearchBox : public content::RenderFrameObserver,
   GURL GetURLForMostVisitedItem(InstantRestrictedID item_id) const;
 
   // Asynchronous callback for autocomplete query results. Sends to renderer.
-  void QueryAutocompleteResult(
-      std::vector<chrome::mojom::AutocompleteMatchPtr> matches);
+  void QueryAutocompleteResult(chrome::mojom::AutocompleteResultPtr result);
 
   // The connection to the EmbeddedSearch service in the browser process.
   chrome::mojom::EmbeddedSearchAssociatedPtr embedded_search_service_;

@@ -241,7 +241,7 @@ class ProtoToJSONRuleConverter {
 
     for (const proto::DomainListItem& item : input_rule_.domains()) {
       if (item.exclude() == exclude_value)
-        domains.GetList().emplace_back(item.domain());
+        domains.Append(item.domain());
     }
 
     // Omit empty domain list.
@@ -344,7 +344,7 @@ class ProtoToJSONRuleConverter {
           break;
       }
 
-      resource_types.GetList().emplace_back(dnr_api::ToString(resource_type));
+      resource_types.Append(dnr_api::ToString(resource_type));
     }
 
     CHECK(json_rule_.SetPath({kRuleConditionKey, kResourceTypesKey},
@@ -449,7 +449,7 @@ class DNRJsonRuleOutputStream : public subresource_filter::RuleOutputStream {
 
     CHECK(error.empty());
     CHECK(json_rule_value.is_dict());
-    output_rules_list_.GetList().push_back(std::move(json_rule_value));
+    output_rules_list_.Append(std::move(json_rule_value));
     ++rule_id_;
     return true;
   }

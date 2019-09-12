@@ -537,8 +537,9 @@ void AutomaticRebootManagerBasicTest::VerifyGracePeriod(
 }
 
 void AutomaticRebootManagerBasicTest::SetUpdateStatusNeedReboot() {
-  UpdateEngineClient::Status client_status;
-  client_status.status = UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT;
+  update_engine::StatusResult client_status;
+  client_status.set_current_operation(
+      update_engine::Operation::UPDATED_NEED_REBOOT);
   update_engine_client_->set_default_status(client_status);
 }
 

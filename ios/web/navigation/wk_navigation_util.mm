@@ -136,8 +136,8 @@ void CreateRestoreSessionUrl(
   restored_titles.GetList().reserve(new_size);
   for (auto it = begin; it != end; ++it) {
     NavigationItem* item = (*it).get();
-    restored_urls.GetList().push_back(base::Value(item->GetURL().spec()));
-    restored_titles.GetList().push_back(base::Value(item->GetTitle()));
+    restored_urls.Append(base::Value(item->GetURL().spec()));
+    restored_titles.Append(base::Value(item->GetTitle()));
   }
   base::Value session(base::Value::Type::DICTIONARY);
   int offset = new_last_committed_item_index + 1 - new_size;

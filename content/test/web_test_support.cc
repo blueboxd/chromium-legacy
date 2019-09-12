@@ -93,13 +93,15 @@ RenderViewImpl* CreateWebViewTestProxy(CompositorDependencies* compositor_deps,
 std::unique_ptr<RenderWidget> CreateRenderWidgetForFrame(
     int32_t routing_id,
     CompositorDependencies* compositor_deps,
+    PageProperties* page_properties,
     const ScreenInfo& screen_info,
     blink::WebDisplayMode display_mode,
     bool swapped_out,
     bool never_visible,
     mojo::PendingReceiver<mojom::Widget> widget_receiver) {
   return std::make_unique<test_runner::WebWidgetTestProxy>(
-      routing_id, compositor_deps, screen_info, display_mode, swapped_out,
+      routing_id, compositor_deps, page_properties, screen_info, display_mode,
+      swapped_out,
       /*hidden=*/true, never_visible, std::move(widget_receiver));
 }
 

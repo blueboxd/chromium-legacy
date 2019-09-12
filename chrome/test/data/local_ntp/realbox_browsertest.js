@@ -22,6 +22,12 @@ test.realbox.CLASSES = {
   SHOW_MATCHES: 'show-matches',
 };
 
+/** @enum {number} */
+test.realbox.AutocompleteResultStatus = {
+  SUCCESS: 0,
+  SKIPPED: 1,
+};
+
 /**
  * @param {string} name
  * @param {!ClipboardEvent}
@@ -138,7 +144,8 @@ test.realbox.testReplyWithMatches = function() {
   assertEquals('hello world', test.realbox.queries[0]);
 
   const matches = [test.realbox.getSearchMatch(), test.realbox.getUrlMatch()];
-  chrome.embeddedSearch.searchBox.onqueryautocompletedone(matches);
+  chrome.embeddedSearch.searchBox.onqueryautocompletedone(
+      {input: test.realbox.realboxEl.value, matches});
 
   assertTrue(test.realbox.wrapperEl.classList.contains(
       test.realbox.CLASSES.SHOW_MATCHES));
@@ -161,7 +168,10 @@ test.realbox.testReplyWithInlineAutocompletion = function() {
     contents: 'hello ',
     inlineAutocompletion: 'world',
   });
-  chrome.embeddedSearch.searchBox.onqueryautocompletedone([match]);
+  chrome.embeddedSearch.searchBox.onqueryautocompletedone({
+    input: test.realbox.realboxEl.value,
+    matches: [match],
+  });
 
   assertTrue(test.realbox.wrapperEl.classList.contains(
       test.realbox.CLASSES.SHOW_MATCHES));
@@ -188,7 +198,10 @@ test.realbox.testDeleteWithInlineAutocompletion = function() {
     contents: 'supercal',
     inlineAutocompletion: 'ifragilisticexpialidocious',
   });
-  chrome.embeddedSearch.searchBox.onqueryautocompletedone([match]);
+  chrome.embeddedSearch.searchBox.onqueryautocompletedone({
+    input: test.realbox.realboxEl.value,
+    matches: [match],
+  });
 
   const realboxValue = test.realbox.realboxEl.value;
   assertEquals('supercalifragilisticexpialidocious', realboxValue);
@@ -198,7 +211,10 @@ test.realbox.testDeleteWithInlineAutocompletion = function() {
 
   match.contents = 'superca';
   match.inlineAutocompletion = 'lifragilisticexpialidocious';
-  chrome.embeddedSearch.searchBox.onqueryautocompletedone([match]);
+  chrome.embeddedSearch.searchBox.onqueryautocompletedone({
+    input: test.realbox.realboxEl.value,
+    matches: [match],
+  });
 
   // Ensure that removing characters from input doesn't just inline autocomplete
   // to the same contents on backspace/cut/etc.
@@ -209,7 +225,10 @@ test.realbox.testDeleteWithInlineAutocompletion = function() {
 
   match.contents = 'super';
   match.inlineAutocompletion = 'califragilisticexpialidocious';
-  chrome.embeddedSearch.searchBox.onqueryautocompletedone([match]);
+  chrome.embeddedSearch.searchBox.onqueryautocompletedone({
+    input: test.realbox.realboxEl.value,
+    matches: [match],
+  });
   assertEquals('super', test.realbox.realboxEl.value);
 };
 
@@ -217,11 +236,15 @@ test.realbox.testTypeInlineAutocompletion = function() {
   test.realbox.realboxEl.value = 'what are the';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
 
-  chrome.embeddedSearch.searchBox.onqueryautocompletedone(
-      [test.realbox.getSearchMatch({
+  chrome.embeddedSearch.searchBox.onqueryautocompletedone({
+    input: test.realbox.realboxEl.value,
+    matches: [
+      test.realbox.getSearchMatch({
         contents: 'what are the',
         inlineAutocompletion: 'se strawberries',
-      })]);
+      }),
+    ],
+  });
 
   assertEquals('what are these strawberries', test.realbox.realboxEl.value);
   assertEquals('what are the'.length, test.realbox.realboxEl.selectionStart);
@@ -241,19 +264,22 @@ test.realbox.testTypeInlineAutocompletion = function() {
     }
   });
 
-  // test.realbox.realboxEl.value = 'what are the';
-
   // Pretend the user typed the next character of the inline autocompletion.
   const keyEvent =
       new KeyboardEvent('keydown', {bubbles: true, cancelable: true, key: 's'});
   test.realbox.realboxEl.dispatchEvent(keyEvent);
   assertTrue(keyEvent.defaultPrevented);
 
-  chrome.embeddedSearch.searchBox.onqueryautocompletedone(
-      [test.realbox.getSearchMatch({
+  chrome.embeddedSearch.searchBox.onqueryautocompletedone({
+    input: test.realbox.realboxEl.value,
+    matches: [
+      test.realbox.getSearchMatch({
         contents: 'what are thes',
         inlineAutocompletion: 'e strawberries',
-      })]);
+      }),
+    ],
+  });
+
 
   assertEquals('what are these strawberries', test.realbox.realboxEl.value);
   assertEquals('what are thes'.length, test.realbox.realboxEl.selectionStart);
@@ -267,16 +293,20 @@ test.realbox.testResultsPreserveCursorPosition = function() {
   test.realbox.realboxEl.value = 'z';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
 
-  chrome.embeddedSearch.searchBox.onqueryautocompletedone(
-      [test.realbox.getSearchMatch({contents: 'z'})]);
+  chrome.embeddedSearch.searchBox.onqueryautocompletedone({
+    input: test.realbox.realboxEl.value,
+    matches: [test.realbox.getSearchMatch({contents: 'z'})],
+  });
 
   test.realbox.realboxEl.value = 'az';
   test.realbox.realboxEl.selectionStart = 1;
   test.realbox.realboxEl.selectionEnd = 1;
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
 
-  chrome.embeddedSearch.searchBox.onqueryautocompletedone(
-      [test.realbox.getSearchMatch({contents: 'az'})]);
+  chrome.embeddedSearch.searchBox.onqueryautocompletedone({
+    input: test.realbox.realboxEl.value,
+    matches: [test.realbox.getSearchMatch({contents: 'az'})],
+  });
 
   assertEquals(1, test.realbox.realboxEl.selectionStart);
   assertEquals(1, test.realbox.realboxEl.selectionEnd);
@@ -292,8 +322,10 @@ test.realbox.testCopySearchResultFails = function() {
   test.realbox.realboxEl.value = 'skittles!';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
 
-  chrome.embeddedSearch.searchBox.onqueryautocompletedone(
-      [test.realbox.getSearchMatch({contents: 'skittles!'})]);
+  chrome.embeddedSearch.searchBox.onqueryautocompletedone({
+    input: test.realbox.realboxEl.value,
+    matches: [test.realbox.getSearchMatch({contents: 'skittles!'})],
+  });
 
   test.realbox.realboxEl.setSelectionRange(0, 'skittles!'.length);
 
@@ -306,12 +338,14 @@ test.realbox.testCopyUrlSucceeds = function() {
   test.realbox.realboxEl.value = 'go';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
 
-  chrome.embeddedSearch.searchBox.onqueryautocompletedone(
-      [test.realbox.getUrlMatch({
-        contents: 'go',
-        inlineAutocompletion: 'ogle.com',
-        destinationUrl: 'https://www.google.com/',
-      })]);
+  chrome.embeddedSearch.searchBox.onqueryautocompletedone({
+    input: test.realbox.realboxEl.value,
+    matches: [test.realbox.getUrlMatch({
+      contents: 'go',
+      inlineAutocompletion: 'ogle.com',
+      destinationUrl: 'https://www.google.com/',
+    })]
+  });
 
   assertEquals('google.com', test.realbox.realboxEl.value);
 
@@ -322,4 +356,62 @@ test.realbox.testCopyUrlSucceeds = function() {
   assertTrue(copyEvent.defaultPrevented);
   assertEquals(
       'https://www.google.com/', copyEvent.clipboardData.getData('text/plain'));
+};
+
+test.realbox.testStaleAutocompleteResult = function() {
+  assertEquals('', test.realbox.realboxEl.value);
+  chrome.embeddedSearch.searchBox.onqueryautocompletedone({
+    input: test.realbox.realboxEl.value + 'a',  // Simulate stale response.
+    matches: [test.realbox.getSearchMatch(), test.realbox.getUrlMatch()],
+  });
+};
+
+test.realbox.testAutocompleteResultStatus = function() {
+  test.realbox.realboxEl.value = 'g';
+  test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
+
+  test.realbox.realboxEl.value += 'o';
+  test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
+
+  chrome.embeddedSearch.searchBox.onqueryautocompletedone({
+    input: test.realbox.realboxEl.value,
+    matches: [],
+    status: test.realbox.AutocompleteResultStatus.SKIPPED,
+  });
+  assertEquals(0, $(test.realbox.IDS.REALBOX_MATCHES).children.length);
+
+  let RESULTS = [test.realbox.getSearchMatch(), test.realbox.getUrlMatch()];
+  chrome.embeddedSearch.searchBox.onqueryautocompletedone({
+    input: test.realbox.realboxEl.value,
+    matches: RESULTS,
+    status: test.realbox.AutocompleteResultStatus.SUCCESS,
+  });
+
+  const matchesEl = $(test.realbox.IDS.REALBOX_MATCHES);
+  assertEquals(RESULTS.length, matchesEl.children.length);
+
+  test.realbox.realboxEl.value += 'o';
+  test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
+
+  test.realbox.realboxEl.value += 'g';
+  test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
+
+  chrome.embeddedSearch.searchBox.onqueryautocompletedone({
+    input: test.realbox.realboxEl.value,
+    matches: [],
+    status: test.realbox.AutocompleteResultStatus.SKIPPED,
+  });
+
+  // Checks to see that the matches UI wasn't re-rendered.
+  assertTrue(matchesEl === $(test.realbox.IDS.REALBOX_MATCHES));
+
+  chrome.embeddedSearch.searchBox.onqueryautocompletedone({
+    input: test.realbox.realboxEl.value,
+    matches: RESULTS,
+    status: test.realbox.AutocompleteResultStatus.SUCCESS,
+  });
+
+  const newMatchesEl = $(test.realbox.IDS.REALBOX_MATCHES);
+  assertEquals(RESULTS.length, newMatchesEl.children.length);
+  assertFalse(matchesEl === newMatchesEl);
 };

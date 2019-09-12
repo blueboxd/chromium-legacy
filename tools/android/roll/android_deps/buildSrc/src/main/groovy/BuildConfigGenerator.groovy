@@ -250,6 +250,14 @@ class BuildConfigGenerator extends DefaultTask {
                 // Target has AIDL, but we don't support it yet: http://crbug.com/644439
                 sb.append('  ignore_aidl = true\n')
                 break
+            case 'com_android_support_mediarouter_v7':
+                sb.append('  # https://crbug.com/1000382\n')
+                sb.append('  proguard_configs = ["support_mediarouter.flags"]\n')
+                break
+            case 'androidx_mediarouter_mediarouter':
+                sb.append('  # https://crbug.com/1000382\n')
+                sb.append('  proguard_configs = ["androidx_mediarouter.flags"]\n')
+                break
             case 'androidx_transition_transition':
                 // Not specified in the POM, compileOnly dependency not supposed to be used unless
                 // the library is present: b/70887421

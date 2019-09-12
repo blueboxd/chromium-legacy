@@ -16,6 +16,7 @@ import android.support.annotation.IntDef;
 import android.util.Log;
 import android.webkit.WebSettings;
 
+import org.chromium.android_webview.settings.DarkModePreferences;
 import org.chromium.android_webview.settings.ForceDarkMode;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
@@ -61,6 +62,15 @@ public class AwSettings {
 
     @ForceDarkMode
     private int mForceDarkMode = ForceDarkMode.FORCE_DARK_AUTO;
+
+    public static final int FORCE_DARK_ONLY = DarkModePreferences.FORCE_DARK_ONLY;
+    public static final int MEDIA_QUERY_ONLY = DarkModePreferences.MEDIA_QUERY_ONLY;
+    // This option requires RuntimeEnabledFeatures::MetaColorSchemeEnabled()
+    public static final int PREFER_MEDIA_QUERY_OVER_FORCE_DARK =
+            DarkModePreferences.PREFER_MEDIA_QUERY_OVER_FORCE_DARK;
+
+    @DarkModePreferences
+    private int mDarkModePreferences = DarkModePreferences.PREFER_MEDIA_QUERY_OVER_FORCE_DARK;
 
     // This class must be created on the UI thread. Afterwards, it can be
     // used from any thread. Internally, the class uses a message queue
@@ -1707,6 +1717,29 @@ public class AwSettings {
         synchronized (mAwSettingsLock) {
             if (mForceDarkMode != forceDarkMode) {
                 mForceDarkMode = forceDarkMode;
+                mEventHandler.updateWebkitPreferencesLocked();
+            }
+        }
+    }
+
+    @DarkModePreferences
+    public int getDarkModePreferences() {
+        synchronized (mAwSettingsLock) {
+            return getDarkModePreferencesLocked();
+        }
+    }
+
+    @CalledByNative
+    @DarkModePreferences
+    public int getDarkModePreferencesLocked() {
+        assert Thread.holdsLock(mAwSettingsLock);
+        return mDarkModePreferences;
+    }
+
+    public void setDarkModePreferences(@DarkModePreferences int darkModePreferences) {
+        synchronized (mAwSettingsLock) {
+            if (mDarkModePreferences != darkModePreferences) {
+                mDarkModePreferences = darkModePreferences;
                 mEventHandler.updateWebkitPreferencesLocked();
             }
         }

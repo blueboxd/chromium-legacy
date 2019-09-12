@@ -16,7 +16,7 @@ std::unique_ptr<RenderWidgetHostImpl> RenderWidgetHostFactory::Create(
     RenderWidgetHostDelegate* delegate,
     RenderProcessHost* process,
     int32_t routing_id,
-    mojom::WidgetPtr widget_interface,
+    mojo::PendingRemote<mojom::Widget> widget_interface,
     bool hidden) {
   if (factory_) {
     return factory_->CreateRenderWidgetHost(

@@ -747,7 +747,7 @@ void CastContentBrowserClient::ExposeInterfacesToRenderer(
   }
 
   registry->AddInterface(
-      base::Bind(&MemoryPressureControllerImpl::AddBinding,
+      base::Bind(&MemoryPressureControllerImpl::AddReceiver,
                  base::Unretained(memory_pressure_controller_.get())),
       base::ThreadTaskRunnerHandle::Get());
 #endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)

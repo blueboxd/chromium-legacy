@@ -113,10 +113,10 @@ var tests = [
     var viewport = new Viewport(mockWindow, mockSizer, 0, 1, 0);
     viewport.setViewportChangedCallback(mockCallback.callback);
 
-    var paramsParser = new OpenPdfParamsParser(function(message) {
-      if (message.namedDestination == 'US')
+    var paramsParser = new OpenPdfParamsParser(function(destination) {
+      if (destination == 'US')
         paramsParser.onNamedDestinationReceived(0);
-      else if (message.namedDestination == 'UY')
+      else if (destination == 'UY')
         paramsParser.onNamedDestinationReceived(2);
       else
         paramsParser.onNamedDestinationReceived(-1);

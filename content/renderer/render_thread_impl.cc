@@ -121,6 +121,8 @@
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
 #include "media/video/gpu_video_accelerator_factories.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "net/base/net_errors.h"
@@ -510,10 +512,11 @@ class ResourceUsageReporterImpl : public content::mojom::ResourceUsageReporter {
   DISALLOW_COPY_AND_ASSIGN(ResourceUsageReporterImpl);
 };
 
-void CreateResourceUsageReporter(base::WeakPtr<RenderThread> thread,
-                                 mojom::ResourceUsageReporterRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<ResourceUsageReporterImpl>(thread),
-                          std::move(request));
+void CreateResourceUsageReporter(
+    base::WeakPtr<RenderThread> thread,
+    mojo::PendingReceiver<mojom::ResourceUsageReporter> receiver) {
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<ResourceUsageReporterImpl>(thread), std::move(receiver));
 }
 
 }  // namespace

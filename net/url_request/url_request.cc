@@ -1015,58 +1015,11 @@ void URLRequest::SetPriority(RequestPriority priority) {
 
 void URLRequest::NotifyAuthRequired(
     std::unique_ptr<AuthChallengeInfo> auth_info) {
-  NetworkDelegate::AuthRequiredResponse rv =
-      NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;
-  auth_info_ = std::move(auth_info);
-  DCHECK(auth_info_);
-  if (network_delegate_) {
-    OnCallToDelegate(NetLogEventType::NETWORK_DELEGATE_AUTH_REQUIRED);
-    rv = network_delegate_->NotifyAuthRequired(
-        this, *auth_info_.get(),
-        base::BindOnce(&URLRequest::NotifyAuthRequiredComplete,
-                       base::Unretained(this)),
-        &auth_credentials_);
-    if (rv == NetworkDelegate::AUTH_REQUIRED_RESPONSE_IO_PENDING)
-      return;
-  }
-
-  NotifyAuthRequiredComplete(rv);
-}
-
-void URLRequest::NotifyAuthRequiredComplete(
-    NetworkDelegate::AuthRequiredResponse result) {
-  OnCallToDelegateComplete();
-
+  DCHECK(auth_info);
   // Check that there are no callbacks to already canceled requests.
   DCHECK_NE(URLRequestStatus::CANCELED, status_.status());
 
-  // NotifyAuthRequired may be called multiple times, such as
-  // when an authentication attempt fails. Clear out the data
-  // so it can be reset on another round.
-  AuthCredentials credentials = auth_credentials_;
-  auth_credentials_ = AuthCredentials();
-  std::unique_ptr<AuthChallengeInfo> auth_info;
-  auth_info.swap(auth_info_);
-
-  switch (result) {
-    case NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION:
-      // Defer to the URLRequest::Delegate, since the NetworkDelegate
-      // didn't take an action.
-      delegate_->OnAuthRequired(this, *auth_info.get());
-      break;
-
-    case NetworkDelegate::AUTH_REQUIRED_RESPONSE_SET_AUTH:
-      SetAuth(credentials);
-      break;
-
-    case NetworkDelegate::AUTH_REQUIRED_RESPONSE_CANCEL_AUTH:
-      CancelAuth();
-      break;
-
-    case NetworkDelegate::AUTH_REQUIRED_RESPONSE_IO_PENDING:
-      NOTREACHED();
-      break;
-  }
+  delegate_->OnAuthRequired(this, *auth_info.get());
 }
 
 void URLRequest::NotifyCertificateRequested(

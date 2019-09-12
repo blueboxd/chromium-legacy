@@ -25,10 +25,10 @@ DictionaryValue GenerateDict() {
   root.SetStringKey("String", "Foo");
 
   ListValue list;
-  list.GetList().emplace_back(2.718);
-  list.GetList().emplace_back(false);
-  list.GetList().emplace_back(123);
-  list.GetList().emplace_back("Bar");
+  list.Append(2.718);
+  list.Append(false);
+  list.Append(123);
+  list.Append("Bar");
   root.SetKey("List", std::move(list));
 
   return root;

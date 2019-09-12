@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_context.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/material_design/material_design_controller_observer.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/point.h"
@@ -48,7 +49,6 @@ class TabHoverCardBubbleView;
 class TabStripController;
 class TabStripObserver;
 class TabStripLayoutHelper;
-class ViewObserver;
 
 namespace gfx {
 class Rect;

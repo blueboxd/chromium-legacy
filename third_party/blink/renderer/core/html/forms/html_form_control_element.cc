@@ -214,17 +214,29 @@ const AtomicString& HTMLFormControlElement::autocapitalize() const {
   return g_empty_atom;
 }
 
-static bool ShouldAutofocusOnAttach(const HTMLFormControlElement* element) {
+// The first algorithm in
+// https://html.spec.whatwg.org/C/#the-autofocus-attribute
+static bool ShouldAutofocus(const HTMLFormControlElement* element) {
+  // When an element with the autofocus attribute specified is inserted into a
+  // document, run the following steps:
+  if (!element->isConnected())
+    return false;
   if (!element->IsAutofocusable())
     return false;
 
+  // 1. If the user has indicated (for example, by starting to type in a form
+  // control) that they do not wish focus to be changed, then optionally return.
+
+  // We don't implement this optional step. If other browsers have such
+  // behavior, we should follow it or standardize it.
+
+  // 2. Let target be the element's node document.
   Document& doc = element->GetDocument();
 
-  // The rest of this function implements part of the autofocus algorithm in the
-  // spec:
-  // https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#autofocusing-a-form-control:-the-autofocus-attribute
+  // 3. If target's browsing context is null, then return.
 
-  // Step 4 of the spec algorithm above.
+  // 4. If target's active sandboxing flag set has the sandboxed automatic
+  // features browsing context flag, then return.
   if (doc.IsSandboxed(WebSandboxFlags::kAutomaticFeatures)) {
     doc.AddConsoleMessage(ConsoleMessage::Create(
         mojom::ConsoleMessageSource::kSecurity,
@@ -234,9 +246,10 @@ static bool ShouldAutofocusOnAttach(const HTMLFormControlElement* element) {
     return false;
   }
 
-  // TODO(mustaq): Add Step 5 checks.
-
-  // Step 6 of the spec algorithm above.
+  // 5. Let topDocument be the active document of target's browsing context's
+  // top-level browsing context.
+  // 6. If target's origin is not the same as the origin of topDocument,
+  // then return.
   if (!doc.IsInMainFrame() &&
       !doc.TopFrameOrigin()->CanAccess(doc.GetSecurityOrigin())) {
     doc.AddConsoleMessage(ConsoleMessage::Create(
@@ -246,6 +259,7 @@ static bool ShouldAutofocusOnAttach(const HTMLFormControlElement* element) {
     return false;
   }
 
+  // Will call Document::EnqueueAutofocusCandidate() with |element|.
   return true;
 }
 
@@ -259,11 +273,6 @@ void HTMLFormControlElement::AttachLayoutTree(AttachContext& context) {
   // to the base class's attachLayoutTree() because that can sometimes do a
   // close on the layoutObject.
   GetLayoutObject()->UpdateFromElement();
-
-  // FIXME: Autofocus handling should be moved to insertedInto according to
-  // the standard.
-  if (ShouldAutofocusOnAttach(this))
-    GetDocument().SetAutofocusElement(this);
 }
 
 void HTMLFormControlElement::DidMoveToNewDocument(Document& old_document) {
@@ -275,6 +284,9 @@ Node::InsertionNotificationRequest HTMLFormControlElement::InsertedInto(
     ContainerNode& insertion_point) {
   HTMLElement::InsertedInto(insertion_point);
   ListedElement::InsertedInto(insertion_point);
+
+  if (ShouldAutofocus(this))
+    GetDocument().TopDocument().EnqueueAutofocusCandidate(*this);
   return kInsertionDone;
 }
 

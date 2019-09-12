@@ -25,7 +25,7 @@ base::ListValue GetInterfacesForCapability(
 
   base::ListValue interface_names;
   for (const auto& interface_name : it->second) {
-    interface_names.GetList().emplace_back(base::Value(interface_name));
+    interface_names.Append(base::Value(interface_name));
   }
 
   return interface_names;

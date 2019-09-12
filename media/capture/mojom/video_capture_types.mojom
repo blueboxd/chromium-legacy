@@ -21,7 +21,6 @@ enum VideoCapturePixelFormat {
   I444,
   NV12,
   NV21,
-  UYVY,
   YUY2,
   ARGB,
   XRGB,

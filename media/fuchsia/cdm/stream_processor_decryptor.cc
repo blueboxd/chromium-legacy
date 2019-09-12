@@ -14,8 +14,8 @@
 #include "media/base/decrypt_config.h"
 #include "media/base/encryption_pattern.h"
 #include "media/base/subsample_entry.h"
-#include "media/filters/fuchsia/sysmem_buffer_reader.h"
-#include "media/filters/fuchsia/sysmem_buffer_writer.h"
+#include "media/fuchsia/common/sysmem_buffer_reader.h"
+#include "media/fuchsia/common/sysmem_buffer_writer.h"
 
 namespace media {
 namespace {

@@ -68,6 +68,7 @@ class ScrollOffset;
 namespace viz {
 class CompositorFrame;
 class CompositorFrameMetadata;
+struct FrameTimingDetails;
 }  // namespace viz
 
 namespace cc {
@@ -159,7 +160,7 @@ class LayerTreeHostImplClient {
   virtual void DidPresentCompositorFrameOnImplThread(
       uint32_t frame_token,
       std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
-      const gfx::PresentationFeedback& feedback) = 0;
+      const viz::FrameTimingDetails& details) = 0;
 
   // Returns whether the main-thread is expected to receive a BeginMainFrame.
   virtual bool IsBeginMainFrameExpected() = 0;
@@ -493,7 +494,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   void DidReceiveCompositorFrameAck() override;
   void DidPresentCompositorFrame(
       uint32_t frame_token,
-      const gfx::PresentationFeedback& feedback) override;
+      const viz::FrameTimingDetails& details) override;
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
   void SetMemoryPolicy(const ManagedMemoryPolicy& policy) override;

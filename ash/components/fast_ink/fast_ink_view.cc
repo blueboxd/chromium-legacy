@@ -15,6 +15,7 @@
 #include "cc/base/math_util.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
+#include "components/viz/common/frame_timing_details.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -230,10 +231,10 @@ class FastInkView::LayerTreeFrameSinkHolder
       view_->DidReceiveCompositorFrameAck();
   }
   void DidPresentCompositorFrame(
-      uint32_t presentation_token,
-      const gfx::PresentationFeedback& feedback) override {
+      uint32_t frame_token,
+      const viz::FrameTimingDetails& details) override {
     if (view_)
-      view_->DidPresentCompositorFrame(feedback);
+      view_->DidPresentCompositorFrame(details.presentation_feedback);
   }
   void DidLoseLayerTreeFrameSink() override {
     exported_resources_.clear();

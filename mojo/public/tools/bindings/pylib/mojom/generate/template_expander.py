@@ -4,13 +4,8 @@
 
 # Based on third_party/WebKit/Source/build/scripts/template_expander.py.
 
-import codecs
 import os.path
 import sys
-
-# Cache the ascii codec to ensure pickle can find it at jinja2 import time.
-# See https://crbug.com/997598#c5 for context.
-codecs.lookup('ascii')
 
 _current_dir = os.path.dirname(os.path.realpath(__file__))
 # jinja2 is in chromium's third_party directory

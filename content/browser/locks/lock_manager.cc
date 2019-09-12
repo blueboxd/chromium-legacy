@@ -308,8 +308,8 @@ class LockManager::OriginState {
 };
 
 void LockManager::CreateService(
-    mojo::PendingReceiver<blink::mojom::LockManager> receiver,
-    const url::Origin& origin) {
+    const url::Origin& origin,
+    mojo::PendingReceiver<blink::mojom::LockManager> receiver) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // TODO(jsbell): This should reflect the 'environment id' from HTML,

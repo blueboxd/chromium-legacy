@@ -11,7 +11,6 @@
 #include "android_webview/browser/aw_feature_list.h"
 #include "android_webview/browser/aw_metrics_log_uploader.h"
 #include "android_webview/browser_jni_headers/AwMetricsServiceClient_jni.h"
-#include "android_webview/common/aw_switches.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -184,7 +183,8 @@ bool AwMetricsServiceClient::IsConsentGiven() const {
 
 bool AwMetricsServiceClient::IsReportingEnabled() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return EnabledStateProvider::IsReportingEnabled() && is_in_sample_;
+  return IsMetricsReportingForceEnabled() ||
+         (EnabledStateProvider::IsReportingEnabled() && is_in_sample_);
 }
 
 metrics::MetricsService* AwMetricsServiceClient::GetMetricsService() {

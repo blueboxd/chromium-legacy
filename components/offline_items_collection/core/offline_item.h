@@ -122,6 +122,12 @@ struct OfflineItem {
   // Whether or not this item can be renamed.
   bool can_rename;
 
+  // Whether or not to bother querying for visuals.  Querying is not guaranteed
+  // to return anything, but if this is |true| the UI layers can make
+  // optimizations without waiting for the asynchronous query for visual
+  // information.
+  bool ignore_visuals;
+
   // TODO(dtrainor): Build out custom per-item icon support.
 
   // Content Metadata.

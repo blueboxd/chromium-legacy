@@ -18,6 +18,7 @@
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"

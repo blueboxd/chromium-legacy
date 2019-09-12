@@ -1465,10 +1465,10 @@ TEST_F(CloudPolicyClientTest, UploadRealtimeReport) {
                  base::Unretained(&callback_observer_));
 
   base::Value context(base::Value::Type::DICTIONARY);
-  context.SetStringPath("gaiaEmail", "name@gmail.com");
-  context.SetStringPath("userAgent", "User-Agent");
-  context.SetStringPath("profileName", "Profile 1");
-  context.SetStringPath("profilePath", "C:\\User Data\\Profile 1");
+  context.SetStringPath("profile.gaiaEmail", "name@gmail.com");
+  context.SetStringPath("browser.userAgent", "User-Agent");
+  context.SetStringPath("profile.profileName", "Profile 1");
+  context.SetStringPath("profile.profilePath", "C:\\User Data\\Profile 1");
 
   base::Value event;
   event.SetStringPath("time", "2019-05-22T13:01:45Z");
@@ -1511,6 +1511,80 @@ TEST_F(CloudPolicyClientTest, UploadRealtimeReport) {
   EXPECT_EQ(base::Value::Type::LIST, events->type());
   base::span<const base::Value> list = events->GetList();
   EXPECT_EQ(1u, list.size());
+}
+
+TEST_F(CloudPolicyClientTest, RealtimeReportMerge) {
+  auto config = std::make_unique<RealtimeReportingJobConfiguration>(
+      client_.get(), DMAuth::FromDMToken(kDMToken),
+      RealtimeReportingJobConfiguration::Callback());
+
+  // Add one report to the config.
+  {
+    base::Value context(base::Value::Type::DICTIONARY);
+    context.SetStringPath("profile.gaiaEmail", "name@gmail.com");
+    context.SetStringPath("browser.userAgent", "User-Agent");
+    context.SetStringPath("profile.profileName", "Profile 1");
+    context.SetStringPath("profile.profilePath", "C:\\User Data\\Profile 1");
+
+    base::Value event;
+    event.SetStringPath("time", "2019-09-10T20:01:45Z");
+    event.SetStringPath("foo.prop1", "value1");
+    event.SetStringPath("foo.prop2", "value2");
+    event.SetStringPath("foo.prop3", "value3");
+
+    base::Value events(base::Value::Type::LIST);
+    events.GetList().push_back(std::move(event));
+
+    base::Value report(base::Value::Type::DICTIONARY);
+    report.SetPath(RealtimeReportingJobConfiguration::kEventListKey,
+                   std::move(events));
+    report.SetPath(RealtimeReportingJobConfiguration::kContextKey,
+                   std::move(context));
+
+    ASSERT_TRUE(config->AddReport(std::move(report)));
+  }
+
+  // Add a second report to the config with a different context.
+  {
+    base::Value context(base::Value::Type::DICTIONARY);
+    context.SetStringPath("profile.gaiaEmail", "name2@gmail.com");
+    context.SetStringPath("browser.userAgent", "User-Agent2");
+    context.SetStringPath("browser.version", "1.0.0.0");
+
+    base::Value event;
+    event.SetStringPath("time", "2019-09-10T20:02:45Z");
+    event.SetStringPath("foo.prop1", "value1");
+    event.SetStringPath("foo.prop2", "value2");
+    event.SetStringPath("foo.prop3", "value3");
+
+    base::Value events(base::Value::Type::LIST);
+    events.GetList().push_back(std::move(event));
+
+    base::Value report(base::Value::Type::DICTIONARY);
+    report.SetPath(RealtimeReportingJobConfiguration::kEventListKey,
+                   std::move(events));
+    report.SetPath(RealtimeReportingJobConfiguration::kContextKey,
+                   std::move(context));
+
+    ASSERT_TRUE(config->AddReport(std::move(report)));
+  }
+
+  // The second config should trump the first.
+  DeviceManagementService::JobConfiguration* job_config = config.get();
+  base::Optional<base::Value> payload =
+      base::JSONReader::Read(job_config->GetPayload());
+  ASSERT_TRUE(payload);
+
+  ASSERT_EQ("name2@gmail.com", *payload->FindStringPath("profile.gaiaEmail"));
+  ASSERT_EQ("User-Agent2", *payload->FindStringPath("browser.userAgent"));
+  ASSERT_EQ("Profile 1", *payload->FindStringPath("profile.profileName"));
+  ASSERT_EQ("C:\\User Data\\Profile 1",
+            *payload->FindStringPath("profile.profilePath"));
+  ASSERT_EQ("1.0.0.0", *payload->FindStringPath("browser.version"));
+  ASSERT_EQ(2u,
+            payload->FindListPath(RealtimeReportingJobConfiguration::kEventsKey)
+                ->GetList()
+                .size());
 }
 #endif
 

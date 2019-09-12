@@ -93,7 +93,6 @@ class GPU_IPC_SERVICE_EXPORT SharedImageStub
   bool MakeContextCurrent();
   ContextResult MakeContextCurrentAndCreateFactory();
   void OnError();
-  void OnSyncTokenReleased(const Mailbox& mailbox);
 
   // Wait on the sync token if any and destroy the shared image.
   void DestroySharedImage(const Mailbox& mailbox, const SyncToken& sync_token);

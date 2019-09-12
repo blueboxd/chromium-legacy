@@ -13,7 +13,6 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.content_public.browser.ViewEventSink;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ActivityWindowAndroid;
@@ -72,8 +71,11 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
 
         mNativeBrowserController = nativeCreateBrowserController(profile.getNativeProfile());
         mWebContents = nativeGetWebContents(mNativeBrowserController);
-        mContentView = ContentView.createContentView(context, mWebContents);
-        ViewAndroidDelegate viewAndroidDelegate = new ViewAndroidDelegate(mContentViewRenderView) {
+        mTopControlsContainerView =
+                new TopControlsContainerView(context, mWebContents, mContentViewRenderView);
+        mContentView = ContentView.createContentView(
+                context, mWebContents, mTopControlsContainerView.getEventOffsetHandler());
+        ViewAndroidDelegate viewAndroidDelegate = new ViewAndroidDelegate(mContentView) {
             @Override
             public void onTopControlsChanged(int topControlsOffsetY, int topContentOffsetY) {
                 mTopControlsContainerView.onTopControlsChanged(
@@ -89,8 +91,6 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
                 new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT,
                         FrameLayout.LayoutParams.UNSPECIFIED_GRAVITY));
 
-        mTopControlsContainerView =
-                new TopControlsContainerView(context, mWebContents, mContentViewRenderView);
         nativeSetTopControlsContainerView(
                 mNativeBrowserController, mTopControlsContainerView.getNativeHandle());
         mContentView.addView(mTopControlsContainerView,

@@ -18,7 +18,7 @@ class RendererController;
 class FakeRemotingDataStreamSender : public mojom::RemotingDataStreamSender {
  public:
   FakeRemotingDataStreamSender(
-      mojom::RemotingDataStreamSenderRequest request,
+      mojo::PendingReceiver<mojom::RemotingDataStreamSender> receiver,
       mojo::ScopedDataPipeConsumerHandle consumer_handle);
   ~FakeRemotingDataStreamSender() override;
 
@@ -37,7 +37,7 @@ class FakeRemotingDataStreamSender : public mojom::RemotingDataStreamSender {
 
   void OnFrameRead(bool success);
 
-  mojo::Binding<RemotingDataStreamSender> binding_;
+  mojo::Binding<RemotingDataStreamSender> receiver_;
   MojoDataPipeReader data_pipe_reader_;
 
   std::vector<uint8_t> next_frame_data_;
@@ -56,11 +56,12 @@ class FakeRemoter final : public mojom::Remoter {
 
   // mojom::Remoter implementations.
   void Start() override;
-  void StartDataStreams(
-      mojo::ScopedDataPipeConsumerHandle audio_pipe,
-      mojo::ScopedDataPipeConsumerHandle video_pipe,
-      mojom::RemotingDataStreamSenderRequest audio_sender_request,
-      mojom::RemotingDataStreamSenderRequest video_sender_request) override;
+  void StartDataStreams(mojo::ScopedDataPipeConsumerHandle audio_pipe,
+                        mojo::ScopedDataPipeConsumerHandle video_pipe,
+                        mojo::PendingReceiver<mojom::RemotingDataStreamSender>
+                            audio_sender_receiver,
+                        mojo::PendingReceiver<mojom::RemotingDataStreamSender>
+                            video_sender_receiver) override;
   void Stop(mojom::RemotingStopReason reason) override;
   void SendMessageToSink(const std::vector<uint8_t>& message) override;
   void EstimateTransmissionCapacity(

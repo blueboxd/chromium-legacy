@@ -168,7 +168,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
                        RenderProcessHost* process,
                        int32_t routing_id,
-                       mojom::WidgetPtr widget_interface,
+                       mojo::PendingRemote<mojom::Widget> widget_interface,
                        bool hidden);
 
   ~RenderWidgetHostImpl() override;
@@ -688,7 +688,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // Indicate the frame input handler is now available.
   void SetFrameInputHandler(mojom::FrameInputHandler*);
-  void SetWidget(mojom::WidgetPtr widget);
+  void SetWidget(mojo::PendingRemote<mojom::Widget> widget_remote);
 
   viz::mojom::InputTargetClient* input_target_client() {
     return input_target_client_.get();

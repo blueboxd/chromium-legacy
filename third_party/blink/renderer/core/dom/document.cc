@@ -201,6 +201,7 @@
 #include "third_party/blink/renderer/core/html/html_html_element.h"
 #include "third_party/blink/renderer/core/html/html_link_element.h"
 #include "third_party/blink/renderer/core/html/html_meta_element.h"
+#include "third_party/blink/renderer/core/html/html_object_element.h"
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
 #include "third_party/blink/renderer/core/html/html_script_element.h"
 #include "third_party/blink/renderer/core/html/html_title_element.h"
@@ -214,7 +215,7 @@
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/core/html/plugin_document.h"
 #include "third_party/blink/renderer/core/html/portal/document_portals.h"
-#include "third_party/blink/renderer/core/html/portal/html_portal_element.h"
+#include "third_party/blink/renderer/core/html/portal/portal_contents.h"
 #include "third_party/blink/renderer/core/html/window_name_collection.h"
 #include "third_party/blink/renderer/core/html_element_factory.h"
 #include "third_party/blink/renderer/core/html_element_type_helpers.h"
@@ -325,6 +326,25 @@ static WeakDocumentSet& liveDocumentSet();
 #endif
 
 namespace blink {
+
+namespace {
+
+// Returns true if any of <object> ancestors don't start loading or are loading
+// plugins/frames/images. If there are no <object> ancestors, this function
+// returns false.
+bool IsInIndeterminateObjectAncestor(const Element* element) {
+  if (!element->isConnected())
+    return false;
+  for (; element; element = element->ParentOrShadowHostElement()) {
+    if (const auto* object = DynamicTo<HTMLObjectElement>(element)) {
+      if (!object->DidFinishLoading())
+        return true;
+    }
+  }
+  return false;
+}
+
+}  // namespace
 
 using namespace html_names;
 
@@ -550,19 +570,6 @@ static bool AcceptsEditingFocus(const Element& element) {
 uint64_t Document::global_tree_version_ = 0;
 
 static bool g_threaded_parsing_enabled_for_testing = true;
-
-// This doesn't work with non-Document ExecutionContext.
-static void RunAutofocusTask(ExecutionContext* context) {
-  // Document lifecycle check is done in Element::focus()
-  if (!context)
-    return;
-
-  Document* document = To<Document>(context);
-  if (Element* element = document->AutofocusElement()) {
-    document->SetAutofocusElement(nullptr);
-    element->focus();
-  }
-}
 
 class Document::NetworkStateObserver final
     : public GarbageCollectedFinalized<Document::NetworkStateObserver>,
@@ -1037,7 +1044,6 @@ Document::Document(const DocumentInit& initializer,
       printing_(kNotPrinting),
       compatibility_mode_(kNoQuirksMode),
       compatibility_mode_locked_(false),
-      has_autofocused_(false),
       last_focus_type_(kWebFocusTypeNone),
       had_keyboard_event_(false),
       clear_focused_element_timer_(
@@ -3316,7 +3322,7 @@ void Document::Shutdown() {
 
   hover_element_ = nullptr;
   active_element_ = nullptr;
-  autofocus_element_ = nullptr;
+  autofocus_candidates_.clear();
 
   if (focused_element_.Get()) {
     Element* old_focused_element = focused_element_;
@@ -4008,9 +4014,9 @@ static bool AllDescendantsAreComplete(Document* document) {
     if (child->IsLoading())
       return false;
   }
-  for (HTMLPortalElement* portal :
-       DocumentPortals::From(*document).GetPortals()) {
-    if (portal->ContentFrame() && portal->ContentFrame()->IsLoading())
+  for (PortalContents* portal : DocumentPortals::From(*document).GetPortals()) {
+    auto* frame = portal->GetFrame();
+    if (frame && frame->IsLoading())
       return false;
   }
   return true;
@@ -7405,6 +7411,8 @@ void Document::CancelPostAnimationFrame(int id) {
 }
 
 void Document::RunPostAnimationFrameCallbacks() {
+  FlushAutofocusCandidates();
+
   bool was_throttled = current_frame_is_throttled_;
   current_frame_is_throttled_ = false;
   if (was_throttled || !scripted_animation_controller_)
@@ -7740,19 +7748,140 @@ bool Document::SetPseudoStateForTesting(Element& element,
   return true;
 }
 
-void Document::SetAutofocusElement(Element* element) {
-  if (!element) {
-    autofocus_element_ = nullptr;
+void Document::EnqueueAutofocusCandidate(Element& element) {
+  // https://html.spec.whatwg.org/C#the-autofocus-attribute
+  // 7. If topDocument's autofocus processed flag is false, then remove the
+  // element from topDocument's autofocus candidates, and append the element
+  // to topDocument's autofocus candidates.
+  if (autofocus_processed_flag_)
+    return;
+  wtf_size_t index = autofocus_candidates_.Find(&element);
+  if (index != WTF::kNotFound)
+    autofocus_candidates_.EraseAt(index);
+  autofocus_candidates_.push_back(element);
+}
+
+bool Document::HasAutofocusCandidates() const {
+  return autofocus_candidates_.size() > 0;
+}
+
+// https://html.spec.whatwg.org/C/#flush-autofocus-candidates
+void Document::FlushAutofocusCandidates() {
+  // 1. If topDocument's autofocus processed flag is true, then return.
+  if (autofocus_processed_flag_)
+    return;
+
+  // 3. If candidates is empty, then return.
+  if (autofocus_candidates_.IsEmpty())
+    return;
+
+  // 4. If topDocument's focused area is not topDocument itself, or
+  //    topDocument's URL's fragment is not empty, then:
+  //  1. Empty candidates.
+  //  2. Set topDocument's autofocus processed flag to true.
+  //  3. Return.
+  if (AdjustedFocusedElement()) {
+    autofocus_candidates_.clear();
+    autofocus_processed_flag_ = true;
+    AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kRendering,
+                               mojom::ConsoleMessageLevel::kInfo,
+                               "Autofocus processing was blocked because a "
+                               "document already has a focused element."));
     return;
   }
-  if (has_autofocused_)
+  if (HasNonEmptyFragment()) {
+    autofocus_candidates_.clear();
+    autofocus_processed_flag_ = true;
+    AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kRendering,
+                               mojom::ConsoleMessageLevel::kInfo,
+                               "Autofocus processing was blocked because a "
+                               "document's URL has a fragment '#" +
+                                   Url().FragmentIdentifier() + "'."));
     return;
-  has_autofocused_ = true;
-  DCHECK(!autofocus_element_);
-  autofocus_element_ = element;
-  GetTaskRunner(TaskType::kUserInteraction)
-      ->PostTask(FROM_HERE,
-                 WTF::Bind(&RunAutofocusTask, WrapWeakPersistent(this)));
+  }
+
+  // 5. While candidates is not empty:
+  while (!autofocus_candidates_.IsEmpty()) {
+    // 5.1. Let element be candidates[0].
+    Element& element = *autofocus_candidates_[0];
+
+    // 5.2. Let doc be element's node document.
+    Document* doc = &element.GetDocument();
+
+    // 5.3. If doc is not fully active, then remove element from candidates,
+    // and continue.
+    // 5.4. If doc's browsing context's top-level browsing context is not same
+    // as topDocument's browsing context, then remove element from candidates,
+    // and continue.
+    if (&doc->TopDocument() != this) {
+      autofocus_candidates_.EraseAt(0);
+      continue;
+    }
+
+    // The element is in the fallback content of an OBJECT of which
+    // fallback state is not fixed yet.
+    // TODO(tkent): Standardize this behavior.
+    if (IsInIndeterminateObjectAncestor(&element)) {
+      GetPage()->Animator().ScheduleVisualUpdate(GetFrame());
+      return;
+    }
+
+    // 5.5. If doc's script-blocking style sheet counter is greater than 0,
+    // then return.
+    // TODO(tkent): Is this necessary? WPT spin-by-blocking-style-sheet.html
+    // doesn't hit this condition, and FlushAutofocusCandidates() is not called
+    // until the stylesheet is loaded.
+    StyleEngine& engine = GetStyleEngine();
+    if (engine.HasPendingScriptBlockingSheets() ||
+        engine.HasPendingRenderBlockingSheets()) {
+      return;
+    }
+
+    // 5.6. Remove element from candidates.
+    autofocus_candidates_.EraseAt(0);
+
+    // 5.7. Let inclusiveAncestorDocuments be a list consisting of doc, plus
+    // the active documents of each of doc's browsing context's ancestor
+    // browsing contexts.
+    // 5.8. If URL's fragment of any Document in inclusiveAncestorDocuments
+    // is not empty, then continue.
+    if (doc != this) {
+      for (HTMLFrameOwnerElement* frameOwner = doc->LocalOwner();
+           !doc->HasNonEmptyFragment() && frameOwner;
+           frameOwner = doc->LocalOwner()) {
+        doc = &frameOwner->GetDocument();
+      }
+      if (doc->HasNonEmptyFragment()) {
+        AddConsoleMessage(
+            ConsoleMessage::Create(mojom::ConsoleMessageSource::kRendering,
+                                   mojom::ConsoleMessageLevel::kInfo,
+                                   "Autofocus processing was blocked because a "
+                                   "document's URL has a fragment '#" +
+                                       doc->Url().FragmentIdentifier() + "'."));
+        continue;
+      }
+      DCHECK_EQ(doc, this);
+    }
+
+    // 9. If element is a focusable area, then:
+    if (element.IsFocusable()) {
+      // 9.1. Empty candidates.
+      autofocus_candidates_.clear();
+      // 9.2. Set topDocument's autofocus processed flag to true.
+      autofocus_processed_flag_ = true;
+      // 9.3. Run the focusing steps for element.
+      element.focus();
+    } else {
+      // TODO(tkent): Show a console message, and fix LocalNTP*Test.*
+      // in browser_tests.
+    }
+  }
+}
+
+bool Document::HasNonEmptyFragment() const {
+  return !Url().FragmentIdentifier().IsEmpty();
 }
 
 Element* Document::ActiveElement() const {
@@ -8095,7 +8224,7 @@ void Document::Trace(Visitor* visitor) {
   visitor->Trace(imports_controller_);
   visitor->Trace(doc_type_);
   visitor->Trace(implementation_);
-  visitor->Trace(autofocus_element_);
+  visitor->Trace(autofocus_candidates_);
   visitor->Trace(focused_element_);
   visitor->Trace(sequential_focus_navigation_starting_point_);
   visitor->Trace(hover_element_);

@@ -566,7 +566,7 @@ int WorkerGlobalScope::requestAnimationFrame(V8FrameRequestCallback* callback,
   auto* frame_callback =
       MakeGarbageCollected<FrameRequestCallbackCollection::V8FrameCallback>(
           callback);
-  frame_callback->SetUseLegacyTimeBase(true);
+  frame_callback->SetUseLegacyTimeBase(false);
 
   int ret = animation_frame_provider_->RegisterCallback(frame_callback);
 

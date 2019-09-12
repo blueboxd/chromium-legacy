@@ -869,6 +869,7 @@ blink_python_runner("make_core_generated_feature_policy_helper") {
   inputs = scripts_for_json5_files + [
              "../build/scripts/make_feature_policy_helper.py",
              "./feature_policy/feature_policy_features.json5",
+             "../platform/runtime_enabled_features.json5",
              "../build/scripts/templates/feature_policy_helper.cc.tmpl",
            ]
   outputs = [

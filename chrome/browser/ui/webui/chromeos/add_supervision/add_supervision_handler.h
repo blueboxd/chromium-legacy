@@ -41,6 +41,7 @@ class AddSupervisionHandler
   AddSupervisionHandler(
       add_supervision::mojom::AddSupervisionHandlerRequest request,
       content::WebUI* web_ui,
+      signin::IdentityManager* identity_manager,
       Delegate* delegate);
   ~AddSupervisionHandler() override;
 

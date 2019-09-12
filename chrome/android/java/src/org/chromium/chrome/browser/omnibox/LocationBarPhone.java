@@ -25,6 +25,9 @@ public class LocationBarPhone extends LocationBarLayout {
     private static final int ACTION_BUTTON_TOUCH_OVERFLOW_LEFT = 15;
 
     private View mFirstVisibleFocusedView;
+    private View mUrlBar;
+    private View mStatusView;
+    private View mIconView;
 
     private Runnable mKeyboardResizeModeTask;
 
@@ -41,8 +44,9 @@ public class LocationBarPhone extends LocationBarLayout {
 
         // Assign the first visible view here only if it hasn't been set by the DSE icon experiment.
         // See onNativeLibrary ready for when this variable is set for the DSE icon case.
-        mFirstVisibleFocusedView = mFirstVisibleFocusedView == null ? findViewById(R.id.url_bar)
-                                                                    : mFirstVisibleFocusedView;
+        mUrlBar = findViewById(R.id.url_bar);
+        mFirstVisibleFocusedView =
+                mFirstVisibleFocusedView == null ? mUrlBar : mFirstVisibleFocusedView;
 
         Rect delegateArea = new Rect();
         mUrlActionContainer.getHitRect(delegateArea);
@@ -61,9 +65,15 @@ public class LocationBarPhone extends LocationBarLayout {
         super.updateSearchEngineStatusIcon(
                 shouldShowSearchEngineLogo, isSearchEngineGoogle, searchEngineUrl);
 
-        // The search logo will be the first visible view when the google logo is showing.
+        // The search engine icon will be the first visible focused view when it's showing.
         if (mShouldShowSearchEngineLogo) {
-            mFirstVisibleFocusedView = findViewById(R.id.location_bar_status);
+            mStatusView = findViewById(R.id.location_bar_status);
+            mIconView = mStatusView.findViewById(R.id.location_bar_status_icon);
+            mFirstVisibleFocusedView = mStatusView;
+
+            // When the search engine icon is enabled, icons are translations into the parent view's
+            // padding area. Set clip padding to false to prevent them from getting clipped.
+            if (SearchEngineLogoUtils.shouldShowSearchEngineLogo()) setClipToPadding(false);
         }
         setShowIconsWhenUrlFocused(shouldShowSearchEngineLogo);
     }
@@ -73,6 +83,85 @@ public class LocationBarPhone extends LocationBarLayout {
      */
     public View getFirstViewVisibleWhenFocused() {
         return mFirstVisibleFocusedView;
+    }
+
+    /**
+     * Calculates the offset required for the focused LocationBar to appear as it's still unfocused
+     * so it can animate to a focused state.
+     *
+     * @param hasFocus True if the LocationBar has focus, this will be true between the focus
+     *                 animation starting and the unfocus animation starting.
+     * @return The offset for the location bar when showing the dse icon.
+     */
+    public int getLocationBarOffsetForFocusAnimation(boolean hasFocus) {
+        if (mStatusView == null) return 0;
+
+        // No offset is required if the experiment is disabled.
+        if (!SearchEngineLogoUtils.shouldShowSearchEngineLogo()) return 0;
+
+        // On non-NTP pages, there will always be an icon when unfocused.
+        if (mToolbarDataProvider.getNewTabPageForCurrentTab() == null) return 0;
+
+        // This offset is only required when the focus animation is running.
+        if (!hasFocus) return 0;
+
+        // The offset is only required when the fakebox on the NTP is showing.
+        if (mToolbarDataProvider.getNewTabPageForCurrentTab() != null
+                && !mToolbarDataProvider.getNewTabPageForCurrentTab().isLocationBarShownInNTP()) {
+            return 0;
+        }
+
+        // We're on the NTP with the fakebox showing.
+        // The value returned changes based on if the layout is LTR OR RTL.
+        // For LTR, the value is negative because we are making space on the left-hand side.
+        // For RTL, the value is positive because we are pushing the icon further to the
+        // right-hand side.
+        int offset = mStatusViewCoordinator.getStatusIconWidth();
+        return getLayoutDirection() == LAYOUT_DIRECTION_RTL ? offset : -offset;
+    }
+
+    /**
+     * Function used to position the url bar inside the location bar during omnibox animation.
+     *
+     * @param urlExpansionPercent The current expansion percent, 1 is fully focused and 0 is
+     *                            completely unfocused.
+     *  @param hasFocus True if the LocationBar has focus, this will be true between the focus
+     *                 animation starting and the unfocus animation starting.
+     *  @return The X translation for the URL bar, used in the toolbar animation.
+     */
+    public float getUrlBarTranslationXForToolbarAnimation(
+            float urlExpansionPercent, boolean hasFocus) {
+        // This will be called before status view is ready.
+        if (mStatusView == null) return 0;
+
+        // No offset is required if the experiment is disabled.
+        if (!SearchEngineLogoUtils.shouldShowSearchEngineLogo()) return 0;
+
+        // Only apply the below offset if the unfocus animation is running.
+        if (hasFocus) return 0;
+
+        // Only apply the below offset if we're transitioning between the fakebox and locationbar.
+        if (mToolbarDataProvider.getNewTabPageForCurrentTab() == null
+                || !mToolbarDataProvider.getNewTabPageForCurrentTab().isLocationBarShownInNTP()) {
+            return 0;
+        }
+
+        // When:
+        // 1. unfocusing the LocationBar on the NTP.
+        // 2. scrolling the fakebox to the LocationBar on the NTP.
+        // The status icon and the URL bar text overlap in the animation.
+        //
+        // This branch calculates the negative distance the URL bar needs to travel to completely
+        // overlap the status icon and end up in a state that matches the fakebox.
+        float overStatusIconTranslation =
+                -(1f - urlExpansionPercent) * (mStatusViewCoordinator.getStatusIconWidth());
+        // The value returned changes based on if the layout is LTR or RTL.
+        // For LTR, the value is negative because the status icon is left of the url bar on the
+        // x/y plane.
+        // For RTL, the value is positive because the status icon is right of the url bar on the
+        // x/y plane.
+        boolean isRtl = getLayoutDirection() == LAYOUT_DIRECTION_RTL;
+        return isRtl ? -overStatusIconTranslation : overStatusIconTranslation;
     }
 
     /**
@@ -163,6 +252,7 @@ public class LocationBarPhone extends LocationBarLayout {
     protected void updateButtonVisibility() {
         super.updateButtonVisibility();
         updateMicButtonVisibility(mUrlFocusChangePercent);
+        updateStatusButtonVisibility(mUrlFocusChangePercent);
     }
 
     @Override
@@ -174,6 +264,20 @@ public class LocationBarPhone extends LocationBarLayout {
     public void setShowIconsWhenUrlFocused(boolean showIcon) {
         super.setShowIconsWhenUrlFocused(showIcon);
         mStatusViewCoordinator.setShowIconsWhenUrlFocused(showIcon);
+    }
+
+    /**
+     * Updates the display of the status button.
+     *
+     * @param urlFocusChangePercent The completion percentage of the URL focus change animation.
+     */
+    private void updateStatusButtonVisibility(float urlFocusChangePercent) {
+        if (mIconView == null || !SearchEngineLogoUtils.shouldShowSearchEngineLogo()) return;
+
+        if (mToolbarDataProvider.getNewTabPageForCurrentTab() != null
+                && mToolbarDataProvider.getNewTabPageForCurrentTab().isLocationBarShownInNTP()) {
+            mIconView.setAlpha(urlFocusChangePercent);
+        }
     }
 
     /**

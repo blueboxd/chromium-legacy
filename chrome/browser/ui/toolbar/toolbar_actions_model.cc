@@ -34,7 +34,6 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/pref_names.h"
@@ -53,10 +52,7 @@ ToolbarActionsModel::ToolbarActionsModel(
           extensions::ExtensionActionManager::Get(profile_)),
       actions_initialized_(false),
       highlight_type_(HIGHLIGHT_NONE),
-      has_active_bubble_(false),
-      extension_action_observer_(this),
-      extension_registry_observer_(this),
-      load_error_reporter_observer_(this) {
+      has_active_bubble_(false) {
   extensions::ExtensionSystem::Get(profile_)->ready().Post(
       FROM_HERE, base::BindOnce(&ToolbarActionsModel::OnReady,
                                 weak_ptr_factory_.GetWeakPtr()));

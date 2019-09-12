@@ -12,54 +12,7 @@
 
 namespace device {
 
-namespace {
-
-WEBAUTHN_CREDENTIAL_ATTESTATION FakeAttestation() {
-  WEBAUTHN_CREDENTIAL_ATTESTATION attestation = {};
-  attestation.dwVersion = WEBAUTHN_CREDENTIAL_ATTESTATION_VERSION_1;
-  attestation.cbAuthenticatorData =
-      sizeof(test_data::kCtap2MakeCredentialAuthData);
-  attestation.pbAuthenticatorData = reinterpret_cast<PBYTE>(
-      const_cast<uint8_t*>(device::test_data::kCtap2MakeCredentialAuthData));
-  attestation.cbAttestation =
-      sizeof(test_data::kPackedAttestationStatementCBOR);
-  attestation.pbAttestation = reinterpret_cast<PBYTE>(
-      const_cast<uint8_t*>(device::test_data::kPackedAttestationStatementCBOR));
-  attestation.cbAttestationObject = 0;
-  attestation.cbCredentialId = 0;
-  attestation.pwszFormatType = L"packed";
-  attestation.dwAttestationDecodeType = 0;
-  return attestation;
-}
-
-WEBAUTHN_ASSERTION FakeAssertion() {
-  WEBAUTHN_CREDENTIAL credential = {};
-  // No constant macro available because 1 is the current version
-  credential.dwVersion = 1;
-  credential.cbId = sizeof(test_data::kCredentialId);
-  credential.pbId =
-      reinterpret_cast<PBYTE>(const_cast<uint8_t*>(test_data::kCredentialId));
-  credential.pwszCredentialType = L"public-key";
-
-  WEBAUTHN_ASSERTION assertion = {};
-  // No constant macro available because 1 is the current version
-  assertion.dwVersion = 1;
-  assertion.cbAuthenticatorData = sizeof(test_data::kTestSignAuthenticatorData);
-  assertion.pbAuthenticatorData = reinterpret_cast<PBYTE>(
-      const_cast<uint8_t*>(test_data::kTestSignAuthenticatorData));
-  assertion.cbSignature = sizeof(test_data::kCtap2GetAssertionSignature);
-  assertion.pbSignature = reinterpret_cast<PBYTE>(
-      const_cast<uint8_t*>(test_data::kCtap2GetAssertionSignature));
-  assertion.Credential = credential;
-  assertion.pbUserId = NULL;
-  assertion.cbUserId = 0;
-  return assertion;
-}
-
-}  // namespace
-
-FakeWinWebAuthnApi::FakeWinWebAuthnApi()
-    : attestation_(FakeAttestation()), assertion_(FakeAssertion()) {}
+FakeWinWebAuthnApi::FakeWinWebAuthnApi() = default;
 FakeWinWebAuthnApi::~FakeWinWebAuthnApi() = default;
 
 bool FakeWinWebAuthnApi::IsAvailable() const {
@@ -137,19 +90,48 @@ int FakeWinWebAuthnApi::Version() {
   return version_;
 }
 
-ScopedFakeWinWebAuthnApi::ScopedFakeWinWebAuthnApi() : FakeWinWebAuthnApi() {
-  WinWebAuthnApi::SetDefaultForTesting(this);
-}
-
-ScopedFakeWinWebAuthnApi::~ScopedFakeWinWebAuthnApi() {
-  WinWebAuthnApi::ClearDefaultForTesting();
+// static
+WEBAUTHN_CREDENTIAL_ATTESTATION FakeWinWebAuthnApi::FakeAttestation() {
+  WEBAUTHN_CREDENTIAL_ATTESTATION attestation = {};
+  attestation.dwVersion = WEBAUTHN_CREDENTIAL_ATTESTATION_VERSION_1;
+  attestation.cbAuthenticatorData =
+      sizeof(test_data::kCtap2MakeCredentialAuthData);
+  attestation.pbAuthenticatorData = reinterpret_cast<PBYTE>(
+      const_cast<uint8_t*>(device::test_data::kCtap2MakeCredentialAuthData));
+  attestation.cbAttestation =
+      sizeof(test_data::kPackedAttestationStatementCBOR);
+  attestation.pbAttestation = reinterpret_cast<PBYTE>(
+      const_cast<uint8_t*>(device::test_data::kPackedAttestationStatementCBOR));
+  attestation.cbAttestationObject = 0;
+  attestation.cbCredentialId = 0;
+  attestation.pwszFormatType = L"packed";
+  attestation.dwAttestationDecodeType = 0;
+  return attestation;
 }
 
 // static
-ScopedFakeWinWebAuthnApi ScopedFakeWinWebAuthnApi::MakeUnavailable() {
-  ScopedFakeWinWebAuthnApi api;
-  api.set_available(false);
-  return api;
+WEBAUTHN_ASSERTION FakeWinWebAuthnApi::FakeAssertion() {
+  WEBAUTHN_CREDENTIAL credential = {};
+  // No constant macro available because 1 is the current version
+  credential.dwVersion = 1;
+  credential.cbId = sizeof(test_data::kCredentialId);
+  credential.pbId =
+      reinterpret_cast<PBYTE>(const_cast<uint8_t*>(test_data::kCredentialId));
+  credential.pwszCredentialType = L"public-key";
+
+  WEBAUTHN_ASSERTION assertion = {};
+  // No constant macro available because 1 is the current version
+  assertion.dwVersion = 1;
+  assertion.cbAuthenticatorData = sizeof(test_data::kTestSignAuthenticatorData);
+  assertion.pbAuthenticatorData = reinterpret_cast<PBYTE>(
+      const_cast<uint8_t*>(test_data::kTestSignAuthenticatorData));
+  assertion.cbSignature = sizeof(test_data::kCtap2GetAssertionSignature);
+  assertion.pbSignature = reinterpret_cast<PBYTE>(
+      const_cast<uint8_t*>(test_data::kCtap2GetAssertionSignature));
+  assertion.Credential = credential;
+  assertion.pbUserId = nullptr;
+  assertion.cbUserId = 0;
+  return assertion;
 }
 
 }  // namespace device

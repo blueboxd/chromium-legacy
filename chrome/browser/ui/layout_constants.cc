@@ -39,9 +39,9 @@ int GetLayoutConstant(LayoutConstant constant) {
       return touch_ui ? 36 : 28;
     case BOOKMARK_BAR_NTP_HEIGHT:
       return touch_ui ? GetLayoutConstant(BOOKMARK_BAR_HEIGHT) : 39;
-    case HOSTED_APP_MENU_BUTTON_SIZE:
+    case WEB_APP_MENU_BUTTON_SIZE:
       return 24;
-    case HOSTED_APP_PAGE_ACTION_ICON_SIZE:
+    case WEB_APP_PAGE_ACTION_ICON_SIZE:
       // We must limit the size of icons in the title bar to avoid vertically
       // stretching the container view.
       return 16;

@@ -926,7 +926,7 @@ TEST_F(PaintCanvasVideoRendererTest, ContextLost) {
   gpu::MailboxHolder holders[VideoFrame::kMaxPlanes] = {gpu::MailboxHolder(
       gpu::Mailbox::Generate(), gpu::SyncToken(), GL_TEXTURE_RECTANGLE_ARB)};
   auto video_frame = VideoFrame::WrapNativeTextures(
-      PIXEL_FORMAT_UYVY, holders, base::Bind(MailboxHoldersReleased), size,
+      PIXEL_FORMAT_NV12, holders, base::Bind(MailboxHoldersReleased), size,
       gfx::Rect(size), size, kNoTimestamp);
 
   cc::PaintFlags flags;

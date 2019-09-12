@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/values.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/data_decoder/public/mojom/xml_parser.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -31,7 +32,7 @@ class SafeXmlParser {
                      const base::Optional<std::string>& error);
 
   XmlParserCallback callback_;
-  mojom::XmlParserPtr xml_parser_ptr_;
+  mojo::Remote<mojom::XmlParser> xml_parser_;
   SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(SafeXmlParser);
@@ -46,21 +47,20 @@ SafeXmlParser::SafeXmlParser(service_manager::Connector* connector,
 
   // If no batch ID has been provided, use a random instance ID to guarantee the
   // connection is to a new service running in its own process.
-  connector->BindInterface(
+  connector->Connect(
       service_manager::ServiceFilter::ByNameWithId(
           mojom::kServiceName,
           batch_id.is_zero() ? base::Token::CreateRandom() : batch_id),
-      &xml_parser_ptr_);
+      xml_parser_.BindNewPipeAndPassReceiver());
 
-  // Unretained(this) is safe as the xml_parser_ptr_ is owned by this class.
-  xml_parser_ptr_.set_connection_error_handler(base::BindOnce(
+  // Unretained(this) is safe as the xml_parser_ is owned by this class.
+  xml_parser_.set_disconnect_handler(base::BindOnce(
       &SafeXmlParser::ReportResults, base::Unretained(this),
       /*parsed_xml=*/base::nullopt,
       base::make_optional(
           std::string("Connection error with the XML parser process."))));
-  xml_parser_ptr_->Parse(
-      unsafe_xml,
-      base::BindOnce(&SafeXmlParser::ReportResults, base::Unretained(this)));
+  xml_parser_->Parse(unsafe_xml, base::BindOnce(&SafeXmlParser::ReportResults,
+                                                base::Unretained(this)));
 }
 
 SafeXmlParser::~SafeXmlParser() = default;

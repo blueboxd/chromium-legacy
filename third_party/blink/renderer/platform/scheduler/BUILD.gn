@@ -42,6 +42,7 @@ blink_platform_sources("scheduler") {
     "common/thread_scheduler_impl.h",
     "common/throttling/budget_pool.cc",
     "common/throttling/budget_pool.h",
+    "common/throttling/budget_pool_controller.h",
     "common/throttling/cpu_time_budget_pool.cc",
     "common/throttling/cpu_time_budget_pool.h",
     "common/throttling/task_queue_throttler.cc",

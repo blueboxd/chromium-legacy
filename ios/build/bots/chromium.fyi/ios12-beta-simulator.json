@@ -3,7 +3,7 @@
     "Run tests on iOS12beta track on 64-bit iOS 12 simulators.",
     "Note: Xcode 11 requires OSX 10.14.3 hence 'host os'"
   ],
-  "xcode build version": "11m392r",
+  "xcode build version": "11a419c",
   "gn_args": [
     "goma_dir=\"$(goma_dir)\"",
     "is_component_build=false",

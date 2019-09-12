@@ -73,7 +73,7 @@ class ResetScreen : public BaseScreen, public UpdateEngineClient::Observer {
   void OnUserAction(const std::string& action_id) override;
 
   // UpdateEngineClient::Observer implementation:
-  void UpdateStatusChanged(const UpdateEngineClient::Status& status) override;
+  void UpdateStatusChanged(const update_engine::StatusResult& status) override;
 
   void OnRollbackCheck(bool can_rollback);
   void OnTPMFirmwareUpdateAvailableCheck(

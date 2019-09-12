@@ -2,7 +2,7 @@
   "comments": [
     "Runs tests on 64-bit iOS 11.4 and 12.2 and 13.0 tests"
   ],
-  "xcode build version": "11m392r",
+  "xcode build version": "11a419c",
   "gn_args": [
     "goma_dir=\"$(goma_dir)\"",
     "is_component_build=false",

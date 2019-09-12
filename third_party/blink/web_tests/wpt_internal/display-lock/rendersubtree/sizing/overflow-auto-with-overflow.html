@@ -6,6 +6,7 @@
 <link rel="help" href="https://github.com/WICG/display-locking">
 <link rel="match" href="overflow-auto-with-overflow-ref.html">
 <script src="/common/reftest-wait.js"></script>
+<script src="../resources/utils.js"></script>
 
 <style>
 #border {
@@ -13,7 +14,7 @@
   width: max-content;
 }
 #container {
-  contain: style layout;
+  content-size: 12px 34px;
   height: 100px;
   overflow: auto;
 }
@@ -37,7 +38,7 @@
 <script>
 async function runTest() {
   const container = document.getElementById("container");
-  await container.displayLock.acquire({ timeout: Infinity, size: [12, 34] });
+  await setInvisible(container);
   takeScreenshot();
 }
 

@@ -55,6 +55,7 @@
 #include "third_party/blink/renderer/core/editing/serializers/serialization.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/html_link_element.h"
@@ -64,6 +65,7 @@
 #include "third_party/blink/renderer/core/html/imports/html_import_loader.h"
 #include "third_party/blink/renderer/core/html/portal/document_portals.h"
 #include "third_party/blink/renderer/core/html/portal/html_portal_element.h"
+#include "third_party/blink/renderer/core/html/portal/portal_contents.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/inspector/dom_editor.h"
 #include "third_party/blink/renderer/core/inspector/dom_patch_support.h"
@@ -2281,10 +2283,10 @@ protocol::Response InspectorDOMAgent::getFrameOwner(
       break;
   }
   if (!frame) {
-    for (HTMLPortalElement* portal :
+    for (PortalContents* portal :
          DocumentPortals::From(*inspected_frames_->Root()->GetDocument())
              .GetPortals()) {
-      frame = portal->ContentFrame();
+      frame = portal->GetFrame();
       if (IdentifiersFactory::FrameId(frame) == frame_id)
         break;
     }

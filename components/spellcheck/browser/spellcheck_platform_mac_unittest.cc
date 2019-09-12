@@ -49,8 +49,8 @@ class SpellcheckPlatformMacTest: public testing::Test {
                                   base::Unretained(this)));
   }
 
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::UI};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::UI};
   spellcheck_platform::ScopedEnglishLanguageForTest scoped_language_;
 };
 

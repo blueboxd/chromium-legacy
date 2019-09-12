@@ -81,7 +81,7 @@ Polymer({
   getBackgroundImages_: function() {
     const icon =
         this.getSettingValue('duplexShortEdge') ? 'short-edge' : 'long-edge';
-    const iconset = /** @type {!Polymer.IronIconsetSvg} */ (
+    const iconset = /** @type {!IronIconsetSvgElement} */ (
         this.meta_.byKey('print-preview'));
     return getSelectDropdownBackground(iconset, icon, this);
   },

@@ -138,7 +138,7 @@ class SearchTabHelper : public content::WebContentsObserver,
   void OnRevertThemeChanges() override;
   void OnConfirmThemeChanges() override;
   void QueryAutocomplete(
-      const std::string& input,
+      const base::string16& input,
       chrome::mojom::EmbeddedSearch::QueryAutocompleteCallback callback)
       override;
   void StopAutocomplete(bool clear_result) override;

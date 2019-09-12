@@ -7,7 +7,6 @@
 #include <memory>
 #include "base/logging.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/ui/cookie_controls/cookie_controls_controller.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"

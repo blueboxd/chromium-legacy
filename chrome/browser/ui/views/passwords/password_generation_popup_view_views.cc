@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/views/autofill/view_util.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"

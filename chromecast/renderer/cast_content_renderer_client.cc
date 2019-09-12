@@ -30,6 +30,7 @@
 #include "media/base/media.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
@@ -107,8 +108,10 @@ void CastContentRendererClient::RenderThreadStarted() {
 
 #if !defined(OS_ANDROID)
   // Register to observe memory pressure changes
-  chromecast::mojom::MemoryPressureControllerPtr memory_pressure_controller;
-  thread->BindHostReceiver(mojo::MakeRequest(&memory_pressure_controller));
+  mojo::Remote<chromecast::mojom::MemoryPressureController>
+      memory_pressure_controller;
+  thread->BindHostReceiver(
+      memory_pressure_controller.BindNewPipeAndPassReceiver());
   mojo::PendingRemote<chromecast::mojom::MemoryPressureObserver>
       memory_pressure_proxy;
   memory_pressure_observer_.reset(

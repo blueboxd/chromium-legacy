@@ -2459,22 +2459,36 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
     // the parent menu item and not to the right.
     const bool layout_is_rtl = base::i18n::IsRTL();
     const bool create_on_right = prefer_leading != layout_is_rtl;
+
+    const int width_with_right_inset =
+        menu_config.touchable_menu_width + border_and_shadow_insets.right();
+    const int x_max = monitor_bounds.right() - width_with_right_inset;
+    const int x_left = item_bounds.x() - width_with_right_inset;
+    const int x_right = item_bounds.right() - border_and_shadow_insets.left();
     if (create_on_right) {
-      x = item_bounds.right() - border_and_shadow_insets.left();
-      if (monitor_bounds.width() != 0 && (x + menu_config.touchable_menu_width -
-                                              border_and_shadow_insets.right() >
-                                          monitor_bounds.right())) {
+      x = x_right;
+      if (monitor_bounds.width() == 0 || x_right <= x_max) {
+        // Enough room on the right, show normally.
+        x = x_right;
+      } else if (x_left >= monitor_bounds.x()) {
+        // Enough room on the left, show there.
         *is_leading = prefer_leading;
-        x = item_bounds.x() - menu_config.touchable_menu_width -
-            border_and_shadow_insets.right();
+        x = x_left;
+      } else {
+        // No room on either side. Flush the menu to the right edge.
+        x = x_max;
       }
     } else {
-      x = item_bounds.x() - menu_config.touchable_menu_width -
-          border_and_shadow_insets.right();
-      if (monitor_bounds.width() != 0 && x < monitor_bounds.x()) {
+      if (monitor_bounds.width() == 0 || x_left >= monitor_bounds.x()) {
+        // Enough room on the left, show normally.
+        x = x_left;
+      } else if (x_right <= x_max) {
+        // Enough room on the right, show there.
         *is_leading = !prefer_leading;
-        x = item_bounds.x() + menu_config.touchable_menu_width -
-            border_and_shadow_insets.left();
+        x = x_right;
+      } else {
+        // No room on either side. Flush the menu to the left edge.
+        x = monitor_bounds.x();
       }
     }
     y = item_bounds.y() - border_and_shadow_insets.top() -

@@ -538,6 +538,17 @@ const char* ProtoEnumToString(
 }
 
 const char* ProtoEnumToString(
+    sync_pb::WebAppSpecifics::LaunchContainer launch_container) {
+  ASSERT_ENUM_BOUNDS(sync_pb::WebAppSpecifics, LaunchContainer, TAB, WINDOW);
+  switch (launch_container) {
+    ENUM_CASE(sync_pb::WebAppSpecifics, TAB);
+    ENUM_CASE(sync_pb::WebAppSpecifics, WINDOW);
+  }
+  NOTREACHED();
+  return "";
+}
+
+const char* ProtoEnumToString(
     sync_pb::WifiConfigurationSpecificsData::SecurityType security_type) {
   ASSERT_ENUM_BOUNDS(sync_pb::WifiConfigurationSpecificsData, SecurityType,
                      SECURITY_TYPE_UNSPECIFIED, SECURITY_TYPE_PSK);

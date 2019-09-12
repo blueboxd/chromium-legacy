@@ -105,6 +105,12 @@ bool TabModalConfirmDialogViews::Close() {
   return true;
 }
 
+// Tab-modal confirmation dialogs should not show an "X" close button in the top
+// right corner. They should only have yes/no buttons.
+bool TabModalConfirmDialogViews::ShouldShowCloseButton() const {
+  return false;
+}
+
 int TabModalConfirmDialogViews::GetDefaultDialogButton() const {
   base::Optional<int> default_button = delegate_->GetDefaultDialogButton();
   return default_button.value_or(DialogDelegate::GetDefaultDialogButton());

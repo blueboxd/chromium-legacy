@@ -74,11 +74,15 @@ class TabSharingUIViews : public TabSharingUI,
   void CreateInfobarForWebContents(content::WebContents* contents);
   void RemoveInfobarsForAllTabs();
 
+  void CreateTabCaptureIndicator();
+
   std::map<content::WebContents*, infobars::InfoBar*> infobars_;
+  content::DesktopMediaID shared_tab_media_id_;
   const base::string16 app_name_;
   content::WebContents* shared_tab_;
   base::string16 shared_tab_name_;
   Profile* profile_;
+  std::unique_ptr<content::MediaStreamUI> tab_capture_indicator_ui_;
 
   content::MediaStreamUI::SourceCallback source_callback_;
   base::OnceClosure stop_callback_;

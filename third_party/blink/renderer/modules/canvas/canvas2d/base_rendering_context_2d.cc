@@ -1597,9 +1597,6 @@ ImageData* BaseRenderingContext2D::getImageData(
   WTF::ArrayBufferContents contents;
 
   const CanvasColorParams& color_params = ColorParams();
-  // Deferred offscreen canvases might have recorded commands, make sure
-  // that those get drawn here
-  FinalizeFrame();
   scoped_refptr<StaticBitmapImage> snapshot = GetImage(kPreferNoAcceleration);
 
   if (!StaticBitmapImage::ConvertToArrayBufferContents(
@@ -1607,6 +1604,8 @@ ImageData* BaseRenderingContext2D::getImageData(
     exception_state.ThrowRangeError("Out of memory at ImageData creation");
     return nullptr;
   }
+
+  NeedsFinalizeFrame();
 
   // Convert pixels to proper storage format if needed
   if (PixelFormat() != kRGBA8CanvasPixelFormat) {

@@ -341,7 +341,7 @@ class PickleWriter final : public TracedValue::Writer {
             stack.push_back(cur_dict);
             cur_dict = cur_dict->SetKey(ReadKeyName(it), std::move(new_dict));
           } else {
-            cur_list->GetList().push_back(std::move(new_dict));
+            cur_list->Append(std::move(new_dict));
             // |new_dict| is invalidated at this point, so |cur_dict| needs to
             // be reset.
             cur_dict = &cur_list->GetList().back();
@@ -369,7 +369,7 @@ class PickleWriter final : public TracedValue::Writer {
             cur_list = cur_dict->SetKey(ReadKeyName(it), std::move(new_list));
             cur_dict = nullptr;
           } else {
-            cur_list->GetList().push_back(std::move(new_list));
+            cur_list->Append(std::move(new_list));
             stack.push_back(cur_list);
             // |cur_list| is invalidated at this point by the Append, so it
             // needs to be reset.
@@ -383,7 +383,7 @@ class PickleWriter final : public TracedValue::Writer {
           if (cur_dict) {
             cur_dict->SetBoolKey(ReadKeyName(it), value);
           } else {
-            cur_list->GetList().emplace_back(value);
+            cur_list->Append(value);
           }
         } break;
 
@@ -393,7 +393,7 @@ class PickleWriter final : public TracedValue::Writer {
           if (cur_dict) {
             cur_dict->SetIntKey(ReadKeyName(it), value);
           } else {
-            cur_list->GetList().emplace_back(value);
+            cur_list->Append(value);
           }
         } break;
 
@@ -403,7 +403,7 @@ class PickleWriter final : public TracedValue::Writer {
           if (cur_dict) {
             cur_dict->SetDoubleKey(ReadKeyName(it), value);
           } else {
-            cur_list->GetList().emplace_back(value);
+            cur_list->Append(value);
           }
         } break;
 
@@ -413,7 +413,7 @@ class PickleWriter final : public TracedValue::Writer {
           if (cur_dict) {
             cur_dict->SetStringKey(ReadKeyName(it), std::move(value));
           } else {
-            cur_list->GetList().emplace_back(std::move(value));
+            cur_list->Append(std::move(value));
           }
         } break;
 

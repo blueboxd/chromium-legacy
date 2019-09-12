@@ -4,6 +4,8 @@
 
 #include "chromeos/services/assistant/platform/audio_input_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
@@ -52,12 +54,14 @@ media::ChannelLayout GetChannelLayout(
 
 class DspHotwordStateManager : public AudioInputImpl::HotwordStateManager {
  public:
-  DspHotwordStateManager(scoped_refptr<base::SequencedTaskRunner> task_runner,
-                         AudioInputImpl* input)
+  DspHotwordStateManager(AudioInputImpl* input,
+                         scoped_refptr<base::SequencedTaskRunner> task_runner,
+                         chromeos::PowerManagerClient* power_manager_client)
       : AudioInputImpl::HotwordStateManager(input),
         task_runner_(task_runner),
-        weak_factory_(this) {
+        power_manager_client_(power_manager_client) {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
+    DCHECK(power_manager_client_);
   }
 
   // HotwordStateManager overrides:
@@ -77,7 +81,7 @@ class DspHotwordStateManager : public AudioInputImpl::HotwordStateManager {
     // recognized hotword and started a conversation. We intentionally
     // avoid using |NotifyUserActivity| because it is not suitable for
     // this case according to the Platform team.
-    chromeos::PowerManagerClient::Get()->NotifyWakeNotification();
+    power_manager_client_->NotifyWakeNotification();
   }
 
   // Runs on main thread.
@@ -144,10 +148,11 @@ class DspHotwordStateManager : public AudioInputImpl::HotwordStateManager {
     base::UmaHistogramEnumeration("Assistant.DspHotwordDetection", status);
   }
 
-  StreamState stream_state_ = StreamState::HOTWORD;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  chromeos::PowerManagerClient* power_manager_client_;
+  StreamState stream_state_ = StreamState::HOTWORD;
   base::OneShotTimer second_phase_timer_;
-  base::WeakPtrFactory<DspHotwordStateManager> weak_factory_;
+  base::WeakPtrFactory<DspHotwordStateManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DspHotwordStateManager);
 };
@@ -185,15 +190,24 @@ void AudioInputImpl::HotwordStateManager::RecreateAudioInputStream() {
   input_->RecreateAudioInputStream(/*use_dsp=*/false);
 }
 
-AudioInputImpl::AudioInputImpl(mojom::Client* client,
-                               const std::string& device_id,
-                               const std::string& hotword_device_id)
+AudioInputImpl::AudioInputImpl(
+    mojom::Client* client,
+    chromeos::PowerManagerClient* power_manager_client,
+    const std::string& device_id,
+    const std::string& hotword_device_id)
     : client_(client),
+      power_manager_client_(power_manager_client),
+      power_manager_client_observer_(this),
       task_runner_(base::SequencedTaskRunnerHandle::Get()),
       device_id_(device_id),
       hotword_device_id_(hotword_device_id),
       weak_factory_(this) {
   DETACH_FROM_SEQUENCE(observer_sequence_checker_);
+
+  DCHECK(power_manager_client);
+  power_manager_client_observer_.Add(power_manager_client);
+  power_manager_client->GetSwitchStates(base::BindOnce(
+      &AudioInputImpl::OnSwitchStatesReceived, weak_factory_.GetWeakPtr()));
 
   RecreateStateManager();
   if (features::IsStereoAudioInputEnabled())
@@ -209,8 +223,8 @@ AudioInputImpl::~AudioInputImpl() {
 
 void AudioInputImpl::RecreateStateManager() {
   if (IsHotwordAvailable()) {
-    state_manager_ =
-        std::make_unique<DspHotwordStateManager>(task_runner_, this);
+    state_manager_ = std::make_unique<DspHotwordStateManager>(
+        this, task_runner_, power_manager_client_);
   } else {
     state_manager_ = std::make_unique<HotwordStateManager>(this);
   }
@@ -319,6 +333,19 @@ void AudioInputImpl::RemoveObserver(
     // Reset the sequence checker since assistant may call from different thread
     // after restart.
     DETACH_FROM_SEQUENCE(observer_sequence_checker_);
+  }
+}
+
+void AudioInputImpl::LidEventReceived(
+    chromeos::PowerManagerClient::LidState state,
+    const base::TimeTicks& timestamp) {
+  // Lid switch event still gets fired during system suspend, which enables
+  // us to stop DSP recording correctly when user closes lid after the device
+  // goes to sleep.
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  if (state != lid_state_) {
+    lid_state_ = state;
+    UpdateRecordingState();
   }
 }
 
@@ -447,6 +474,10 @@ bool AudioInputImpl::IsHotwordAvailable() {
   return features::IsDspHotwordEnabled() && !hotword_device_id_.empty();
 }
 
+bool AudioInputImpl::IsRecordingForTesting() const {
+  return !!source_;
+}
+
 void AudioInputImpl::StartRecording() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!source_);
@@ -464,13 +495,31 @@ void AudioInputImpl::StopRecording() {
   }
 }
 
+void AudioInputImpl::OnSwitchStatesReceived(
+    base::Optional<chromeos::PowerManagerClient::SwitchStates> switch_states) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  if (switch_states.has_value()) {
+    lid_state_ = switch_states->lid_state;
+    UpdateRecordingState();
+  }
+}
+
 void AudioInputImpl::UpdateRecordingState() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   bool should_start;
   {
     base::AutoLock lock(lock_);
-    should_start = (default_on_ || mic_open_) && observers_.size() > 0;
+
+    switch (lid_state_) {
+      case chromeos::PowerManagerClient::LidState::OPEN:
+      case chromeos::PowerManagerClient::LidState::NOT_PRESENT:
+        should_start = (default_on_ || mic_open_) && observers_.size() > 0;
+        break;
+      case chromeos::PowerManagerClient::LidState::CLOSED:
+        should_start = false;
+        break;
+    }
   }
 
   if (!source_ && should_start)

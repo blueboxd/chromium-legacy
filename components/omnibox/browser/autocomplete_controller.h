@@ -136,6 +136,7 @@ class AutocompleteController : public AutocompleteProviderListener,
   KeywordProvider* keyword_provider() const { return keyword_provider_; }
   SearchProvider* search_provider() const { return search_provider_; }
 
+  const AutocompleteInput& input() const { return input_; }
   const AutocompleteResult& result() const { return result_; }
   bool done() const { return done_; }
   const Providers& providers() const { return providers_; }

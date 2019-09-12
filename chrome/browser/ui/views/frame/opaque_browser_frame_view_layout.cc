@@ -13,7 +13,7 @@
 #include "base/numerics/ranges.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
+#include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "ui/gfx/font.h"
 #include "ui/views/controls/button/image_button.h"
@@ -146,14 +146,13 @@ int OpaqueBrowserFrameViewLayout::NonClientTopHeight(bool restored) const {
   const int caption_button_height = DefaultCaptionButtonY(restored) +
                                     kCaptionButtonHeight +
                                     kCaptionButtonBottomPadding;
-  int hosted_app_button_height = 0;
-  if (hosted_app_button_container_) {
-    hosted_app_button_height =
-        hosted_app_button_container_->GetPreferredSize().height() +
-        kVerticalPadding;
+  int web_app_button_height = 0;
+  if (web_app_frame_toolbar_) {
+    web_app_button_height =
+        web_app_frame_toolbar_->GetPreferredSize().height() + kVerticalPadding;
   }
   return std::max(std::max(icon_height, caption_button_height),
-                  hosted_app_button_height) +
+                  web_app_button_height) +
          kContentEdgeShadowThickness;
 }
 
@@ -300,7 +299,7 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar() {
   bool should_show_title = delegate_->ShouldShowWindowTitle() && window_title_;
   int icon_y = 0;
 
-  if (should_show_icon || should_show_title || hosted_app_button_container_) {
+  if (should_show_icon || should_show_title || web_app_frame_toolbar_) {
     use_hidden_icon_location = false;
 
     // Our frame border has a different "3D look" than Windows'.  Theirs has
@@ -322,18 +321,17 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar() {
     const int y = unavailable_px_at_top + (available_height - icon_height) / 2;
     icon_y = y;
 
-    if (hosted_app_button_container_)
+    if (web_app_frame_toolbar_)
       available_space_leading_x_ = y - kIconLeftSpacing;
     window_icon_bounds_ =
         gfx::Rect(available_space_leading_x_ + kIconLeftSpacing, y, size, size);
     available_space_leading_x_ += size + kIconLeftSpacing;
     minimum_size_for_buttons_ += size + kIconLeftSpacing;
 
-    if (hosted_app_button_container_) {
-      available_space_trailing_x_ =
-          hosted_app_button_container_->LayoutInContainer(
-              available_space_leading_x_, available_space_trailing_x_, 0,
-              available_height);
+    if (web_app_frame_toolbar_) {
+      available_space_trailing_x_ = web_app_frame_toolbar_->LayoutInContainer(
+          available_space_leading_x_, available_space_trailing_x_, 0,
+          available_height);
     }
   }
 
@@ -346,8 +344,7 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar() {
       window_title_->SetText(delegate_->GetWindowTitle());
 
       // Extra space between icon and title.
-      int extra_space =
-          hosted_app_button_container_ ? icon_y - kIconTitleSpacing : 0;
+      int extra_space = web_app_frame_toolbar_ ? icon_y - kIconTitleSpacing : 0;
       int text_width = std::max(
           0, available_space_trailing_x_ - kCaptionSpacing -
                  available_space_leading_x_ - kIconTitleSpacing - extra_space);
@@ -545,10 +542,9 @@ void OpaqueBrowserFrameViewLayout::SetView(int id, views::View* view) {
       }
       window_title_ = static_cast<views::Label*>(view);
       break;
-    case VIEW_ID_HOSTED_APP_BUTTON_CONTAINER:
-      DCHECK_EQ(view->GetClassName(), HostedAppButtonContainer::kViewClassName);
-      hosted_app_button_container_ =
-          static_cast<HostedAppButtonContainer*>(view);
+    case VIEW_ID_WEB_APP_FRAME_TOOLBAR:
+      DCHECK_EQ(view->GetClassName(), WebAppFrameToolbarView::kViewClassName);
+      web_app_frame_toolbar_ = static_cast<WebAppFrameToolbarView*>(view);
       break;
     default:
       NOTREACHED() << "Unknown view id " << id;

@@ -24,7 +24,7 @@ class SyncUserSettingsMock : public SyncUserSettings {
   MOCK_METHOD1(SetSyncAllowedByPlatform, void(bool));
 
   MOCK_CONST_METHOD0(IsFirstSetupComplete, bool());
-  MOCK_METHOD0(SetFirstSetupComplete, void());
+  MOCK_METHOD1(SetFirstSetupComplete, void(SyncFirstSetupCompleteSource));
 
   MOCK_CONST_METHOD0(IsSyncEverythingEnabled, bool());
   MOCK_CONST_METHOD0(GetSelectedTypes, UserSelectableTypeSet());

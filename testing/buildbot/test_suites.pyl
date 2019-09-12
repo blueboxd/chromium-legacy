@@ -208,7 +208,7 @@
       'bf_cache_android_browsertests': {
         'args': [
           '--enable-features=BackForwardCache',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.browser_tests.filter'
+          '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.android_browsertests.filter'
         ],
         'swarming': {
           'shards': 10,
@@ -218,7 +218,7 @@
       'bf_cache_content_shell_test_apk': {
         'args': [
           '--enable-features=BackForwardCache',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.browser_tests.filter'
+          '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.content_shell_test_apk.filter'
         ],
         'swarming': {
           'shards': 10,
@@ -228,7 +228,7 @@
       'bf_cache_chrome_public_test_apk': {
         'args': [
           '--enable-features=BackForwardCache',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.browser_tests.filter'
+          '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.chrome_public_test_apk.filter'
         ],
         'swarming': {
           'shards': 10,
@@ -2732,6 +2732,7 @@
       'flatbuffers_unittests': {},
       'grit_python_unittests': {},
       'metrics_python_tests': {},
+      'python3_smoketest': {},
       'telemetry_gpu_unittests': {
         'swarming': {
           'idempotent': False,  # https://crbug.com/549140

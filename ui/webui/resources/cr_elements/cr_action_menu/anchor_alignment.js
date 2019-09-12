@@ -6,7 +6,7 @@
  * @enum {number}
  * @const
  */
-const AnchorAlignment = {
+/* #export */ const AnchorAlignment = {
   BEFORE_START: -2,
   AFTER_START: -1,
   CENTER: 0,

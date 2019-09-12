@@ -15,12 +15,12 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace gfx {
-struct PresentationFeedback;
 class Transform;
 }
 
 namespace viz {
 class BeginFrameSource;
+struct FrameTimingDetails;
 struct HitTestRegionList;
 }
 
@@ -57,11 +57,10 @@ class CC_EXPORT LayerTreeFrameSinkClient {
   // so that frames are submitted only at the rate it can handle them.
   virtual void DidReceiveCompositorFrameAck() = 0;
 
-  // See ui/gfx/presentation_feedback.h for details on args. |time| is always
-  // non-zero.
+  // See components/viz/common/frame_timing_details.h for details on args.
   virtual void DidPresentCompositorFrame(
-      uint32_t presentation_token,
-      const gfx::PresentationFeedback& feedback) = 0;
+      uint32_t frame_token,
+      const viz::FrameTimingDetails& details) = 0;
 
   // The LayerTreeFrameSink is lost when the viz::ContextProviders held by it
   // encounter an error. In this case the LayerTreeFrameSink (and the

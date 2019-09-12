@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "chrome/services/cups_proxy/fake_cups_proxy_service_delegate.h"
+#include "chrome/services/cups_proxy/public/cpp/cups_util.h"
 #include "chrome/services/cups_proxy/public/cpp/ipp_messages.h"
 #include "printing/backend/cups_ipp_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -194,6 +195,22 @@ TEST_F(IppValidatorTest, UnknownAttribute) {
   // Ensure resulting validated IPP request doesn't contain fake_attr_name.
   ipp_t* ipp = result->ipp.get();
   EXPECT_FALSE(ippFindAttribute(ipp, fake_attr_name.c_str(), IPP_TAG_TEXT));
+}
+
+TEST_F(IppValidatorTest, IppDataVerification) {
+  auto request = GetBasicIppRequest();
+
+  // Should fail since the data too short to be a valid document.
+  request->data = {0x0};
+  EXPECT_FALSE(RunValidateIppRequest(request));
+
+  // Valid PDF.
+  request->data = {pdf_magic_bytes.begin(), pdf_magic_bytes.end()};
+  EXPECT_TRUE(RunValidateIppRequest(request));
+
+  // Valid PS.
+  request->data = {ps_magic_bytes.begin(), ps_magic_bytes.end()};
+  EXPECT_TRUE(RunValidateIppRequest(request));
 }
 
 // TODO(crbug.com/945409): Test IPP validation.

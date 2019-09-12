@@ -811,6 +811,9 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
     case ax::mojom::Role::kFooter:
       message_id = IDS_AX_ROLE_FOOTER;
       break;
+    case ax::mojom::Role::kFooterAsNonLandmark:
+      // No role description.
+      break;
     case ax::mojom::Role::kForm:
       // No role description.
       break;
@@ -830,6 +833,12 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
       message_id = IDS_AX_ROLE_TABLE;
       break;
     case ax::mojom::Role::kGroup:
+      // No role description.
+      break;
+    case ax::mojom::Role::kHeader:
+      message_id = IDS_AX_ROLE_BANNER;
+      break;
+    case ax::mojom::Role::kHeaderAsNonLandmark:
       // No role description.
       break;
     case ax::mojom::Role::kHeading:

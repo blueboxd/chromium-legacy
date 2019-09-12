@@ -67,7 +67,6 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
   switch (format) {
     case PIXEL_FORMAT_ARGB:
     case PIXEL_FORMAT_XRGB:
-    case PIXEL_FORMAT_UYVY:
     case PIXEL_FORMAT_ABGR:
       DCHECK_EQ(num_textures, 1);
       // This maps VideoPixelFormat back to GMB BufferFormat

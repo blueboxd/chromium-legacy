@@ -59,8 +59,8 @@ void NotifyAndTerminate(bool fast_path, RebootPolicy reboot_policy) {
     // or else signal the session manager to log out.
     chromeos::UpdateEngineClient* update_engine_client =
         chromeos::DBusThreadManager::Get()->GetUpdateEngineClient();
-    if (update_engine_client->GetLastStatus().status ==
-            chromeos::UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT ||
+    if (update_engine_client->GetLastStatus().current_operation() ==
+            update_engine::Operation::UPDATED_NEED_REBOOT ||
         reboot_policy == RebootPolicy::kForceReboot) {
       update_engine_client->RebootAfterUpdate();
     } else if (chrome::IsAttemptingShutdown()) {

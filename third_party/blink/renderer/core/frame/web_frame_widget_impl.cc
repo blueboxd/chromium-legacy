@@ -662,11 +662,13 @@ void WebFrameWidgetImpl::HandleMouseLeave(LocalFrame& main_frame,
 void WebFrameWidgetImpl::HandleMouseDown(LocalFrame& main_frame,
                                          const WebMouseEvent& event) {
   WebViewImpl* view_impl = View();
-  // Save the popup so we can close it if needed after sending the event to
-  // the element.
+  // If there is a popup open, close it as the user is clicking on the page
+  // (outside of the popup). We also save it so we can prevent a click on an
+  // element from immediately reopening the same popup.
   scoped_refptr<WebPagePopupImpl> page_popup;
   if (event.button == WebMouseEvent::Button::kLeft) {
     page_popup = view_impl->GetPagePopup();
+    view_impl->CancelPagePopup();
   }
 
   // Take capture on a mouse down on a plugin so we can send it mouse events.
@@ -698,11 +700,10 @@ void WebFrameWidgetImpl::HandleMouseDown(LocalFrame& main_frame,
         main_frame.GetEventHandler().TakeLastMouseDownGestureToken();
   }
 
-  // If there is a popup open and it is the same as the one we had before
-  // sending the event to the element it means that the user is clicking outside
-  // of the popup or on the element which was owning the current opened popup.
   if (view_impl->GetPagePopup() && page_popup &&
       view_impl->GetPagePopup()->HasSamePopupClient(page_popup.get())) {
+    // That click triggered a page popup that is the same as the one we just
+    // closed.  It needs to be closed.
     view_impl->CancelPagePopup();
   }
 

@@ -89,6 +89,9 @@ without changes to the corresponding grd file. -->
       <include name="IDR_WEBUI_JS_CR_UI_FOCUS_OUTLINE_MANAGER_M_JS"
                file="${root_gen_dir}/ui/webui/resources/js/cr/ui/focus_outline_manager.m.js"
                use_base_dir="false" type="BINDATA" compress="gzip" />
+      <include name="IDR_WEBUI_JS_CR_UI_FOCUS_ROW_M_JS"
+               file="${root_gen_dir}/ui/webui/resources/js/cr/ui/focus_row.m.js"
+               use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_WEBUI_JS_CR_UI_FOCUS_WITHOUT_INK_M_JS"
                file="${root_gen_dir}/ui/webui/resources/js/cr/ui/focus_without_ink.m.js"
                use_base_dir="false" type="BINDATA" compress="gzip" />

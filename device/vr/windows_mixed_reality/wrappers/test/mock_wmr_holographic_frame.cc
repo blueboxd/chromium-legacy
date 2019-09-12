@@ -52,6 +52,15 @@ MockWMRHolographicFrame::TryGetRenderingParameters(const WMRCameraPose* pose) {
 }
 
 bool MockWMRHolographicFrame::TryPresentUsingCurrentPrediction() {
+  // A dummy frame is created when a session first starts to retrieve
+  // information about the headset. Submitting this frame should not notify
+  // the test hook.
+  static bool first_frame = true;
+  if (first_frame) {
+    first_frame = false;
+    return true;
+  }
+
   // If we don't actually have a texture to submit, don't try.
   if (!backbuffer_texture_)
     return false;

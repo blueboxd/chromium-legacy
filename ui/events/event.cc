@@ -28,6 +28,7 @@
 
 #if defined(USE_X11)
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"  // nogncheck
+#include "ui/events/x/events_x_utils.h"                     // nogncheck
 #include "ui/gfx/x/x11.h"                                   // nogncheck
 #elif defined(USE_OZONE)
 #include "ui/events/ozone/layout/keyboard_layout_engine.h"  // nogncheck
@@ -200,6 +201,12 @@ const char* Event::GetName() const {
 
 void Event::SetProperties(const Properties& properties) {
   properties_ = std::make_unique<Properties>(properties);
+}
+
+void Event::SetProperty(const char* key, const std::vector<uint8_t>& values) {
+  if (!properties_)
+    properties_ = std::make_unique<Properties>();
+  properties_->insert_or_assign(key, values);
 }
 
 CancelModeEvent* Event::AsCancelModeEvent() {
@@ -890,6 +897,9 @@ KeyEvent::KeyEvent(const PlatformEvent& native_event, int event_flags)
 
 #if defined(USE_X11)
   NormalizeFlags();
+  // Attach keyboard group to Event::properties
+  uint8_t group = XkbGroupForCoreState(native_event->xkey.state);
+  SetProperty(ui::kPropertyKeyboardGroup, {group});
 #endif
 #if defined(OS_WIN)
   // Only Windows has native character events.

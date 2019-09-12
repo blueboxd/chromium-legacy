@@ -101,6 +101,7 @@
 #include "content/browser/histogram_controller.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
+#include "content/browser/locks/lock_manager.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/media/midi_host.h"
@@ -1907,6 +1908,14 @@ void RenderProcessHostImpl::BindFileSystemManager(
       base::BindOnce(&FileSystemManagerImpl::BindReceiver,
                      base::Unretained(file_system_manager_impl_.get()),
                      std::move(receiver)));
+}
+
+void RenderProcessHostImpl::CreateLockManager(
+    const url::Origin& origin,
+    mojo::PendingReceiver<blink::mojom::LockManager> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  storage_partition_impl_->GetLockManager()->CreateService(origin,
+                                                           std::move(receiver));
 }
 
 void RenderProcessHostImpl::CancelProcessShutdownDelayForUnload() {

@@ -41,8 +41,9 @@ FeaturePodButton* QuietModeFeaturePodController::CreateButton() {
       !Shell::Get()->session_controller()->IsScreenLocked());
   button_->SetLabel(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NOTIFICATIONS_LABEL));
-  button_->SetIconTooltip(l10n_util::GetStringUTF16(
-      IDS_ASH_STATUS_TRAY_NOTIFICATIONS_TOGGLE_TOOLTIP));
+  button_->SetIconTooltip(l10n_util::GetStringFUTF16(
+      IDS_ASH_STATUS_TRAY_NOTIFICATIONS_TOGGLE_TOOLTIP,
+      GetQuietModeStateTooltip()));
   button_->ShowDetailedViewArrow();
   NotifierSettingsController::Get()->AddNotifierSettingsObserver(this);
   OnQuietModeChanged(MessageCenter::Get()->IsQuietMode());
@@ -72,6 +73,9 @@ SystemTrayItemUmaType QuietModeFeaturePodController::GetUmaType() const {
 
 void QuietModeFeaturePodController::OnQuietModeChanged(bool in_quiet_mode) {
   button_->SetToggled(in_quiet_mode);
+  button_->SetIconTooltip(l10n_util::GetStringFUTF16(
+      IDS_ASH_STATUS_TRAY_NOTIFICATIONS_TOGGLE_TOOLTIP,
+      GetQuietModeStateTooltip()));
 
   if (in_quiet_mode) {
     button_->SetSubLabel(l10n_util::GetStringUTF16(
@@ -107,6 +111,13 @@ void QuietModeFeaturePodController::OnNotifiersUpdated(
     button_->SetLabelTooltip(l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_NOTIFICATIONS_SETTINGS_ON_TOOLTIP));
   }
+}
+
+base::string16 QuietModeFeaturePodController::GetQuietModeStateTooltip() {
+  return l10n_util::GetStringUTF16(
+      MessageCenter::Get()->IsQuietMode()
+          ? IDS_ASH_STATUS_TRAY_NOTIFICATIONS_DO_NOT_DISTURB_ON_STATE
+          : IDS_ASH_STATUS_TRAY_NOTIFICATIONS_DO_NOT_DISTURB_OFF_STATE);
 }
 
 }  // namespace ash

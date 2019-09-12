@@ -146,7 +146,7 @@ class MetricsServiceClient {
   void UpdateRunningServices();
 
   // Checks if the user has forced metrics collection on via the override flag.
-  bool IsMetricsReportingForceEnabled();
+  bool IsMetricsReportingForceEnabled() const;
 
  private:
   base::Closure update_running_services_;

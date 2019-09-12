@@ -1603,7 +1603,7 @@ STDMETHODIMP BrowserAccessibilityComWin::InternalQueryInterface(
       return E_NOINTERFACE;
     }
   } else if (iid == IID_IAccessibleTable || iid == IID_IAccessibleTable2) {
-    if (ia_role != ROLE_SYSTEM_TABLE) {
+    if (!ui::IsTableLike(accessibility->owner()->GetRole())) {
       *object = nullptr;
       return E_NOINTERFACE;
     }

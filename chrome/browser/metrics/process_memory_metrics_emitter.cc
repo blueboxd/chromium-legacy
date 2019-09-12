@@ -15,12 +15,12 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/tab_footprint_aggregator.h"
-#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
-#include "chrome/browser/performance_manager/graph/graph_impl.h"
-#include "chrome/browser/performance_manager/graph/graph_impl_operations.h"
-#include "chrome/browser/performance_manager/graph/page_node_impl.h"
-#include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "chrome/browser/performance_manager/performance_manager_impl.h"
+#include "chrome/browser/performance_manager/public/graph/frame_node.h"
+#include "chrome/browser/performance_manager/public/graph/graph.h"
+#include "chrome/browser/performance_manager/public/graph/graph_operations.h"
+#include "chrome/browser/performance_manager/public/graph/page_node.h"
+#include "chrome/browser/performance_manager/public/graph/process_node.h"
+#include "chrome/browser/performance_manager/public/performance_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/audio_service_info.h"
 #include "content/public/browser/render_process_host.h"
@@ -587,7 +587,7 @@ void ProcessMemoryMetricsEmitter::FetchAndEmitProcessMemoryMetrics() {
       base::SequencedTaskRunnerHandle::Get(),
       scoped_refptr<ProcessMemoryMetricsEmitter>(this));
 
-  performance_manager::PerformanceManagerImpl::CallOnGraphImpl(
+  performance_manager::PerformanceManager::CallOnGraph(
       FROM_HERE,
       base::BindOnce(&ProcessMemoryMetricsEmitter::GetProcessToPageInfoMap,
                      std::move(callback2)));
@@ -856,50 +856,50 @@ namespace {
 
 // Returns true iff the given |process| is responsible for hosting the
 // main-frame of the given |page|.
-bool HostsMainFrame(performance_manager::ProcessNodeImpl* process,
-                    performance_manager::PageNodeImpl* page) {
-  performance_manager::FrameNodeImpl* main_frame = page->GetMainFrameNodeImpl();
+bool HostsMainFrame(const performance_manager::ProcessNode* process,
+                    const performance_manager::PageNode* page) {
+  const performance_manager::FrameNode* main_frame = page->GetMainFrameNode();
   if (main_frame == nullptr) {
     // |process| can't host a frame that doesn't exist.
     return false;
   }
 
-  return main_frame->process_node() == process;
+  return main_frame->GetProcessNode() == process;
 }
 
 }  // namespace
 
 void ProcessMemoryMetricsEmitter::GetProcessToPageInfoMap(
     GetProcessToPageInfoMapCallback callback,
-    performance_manager::GraphImpl* graph) {
+    performance_manager::Graph* graph) {
   std::vector<ProcessInfo> process_infos;
-  std::vector<performance_manager::ProcessNodeImpl*> process_nodes =
-      graph->GetAllProcessNodeImpls();
+  std::vector<const performance_manager::ProcessNode*> process_nodes =
+      graph->GetAllProcessNodes();
   for (auto* process_node : process_nodes) {
-    if (process_node->process_id() == base::kNullProcessId)
+    if (process_node->GetProcessId() == base::kNullProcessId)
       continue;
 
     ProcessInfo process_info;
-    process_info.pid = process_node->process_id();
-    process_info.launch_time = process_node->launch_time();
+    process_info.pid = process_node->GetProcessId();
+    process_info.launch_time = process_node->GetLaunchTime();
 
-    base::flat_set<performance_manager::PageNodeImpl*> page_nodes =
-        performance_manager::GraphImplOperations::GetAssociatedPageNodes(
+    base::flat_set<const performance_manager::PageNode*> page_nodes =
+        performance_manager::GraphOperations::GetAssociatedPageNodes(
             process_node);
-    for (performance_manager::PageNodeImpl* page_node : page_nodes) {
-      if (page_node->ukm_source_id() == ukm::kInvalidSourceId)
+    for (const performance_manager::PageNode* page_node : page_nodes) {
+      if (page_node->GetUkmSourceID() == ukm::kInvalidSourceId)
         continue;
 
       PageInfo page_info;
-      page_info.ukm_source_id = page_node->ukm_source_id();
+      page_info.ukm_source_id = page_node->GetUkmSourceID();
       page_info.tab_id =
-          performance_manager::NodeBase::GetSerializationId(page_node);
+          performance_manager::Node::GetSerializationId(page_node);
       page_info.hosts_main_frame = HostsMainFrame(process_node, page_node);
-      page_info.is_visible = page_node->is_visible();
+      page_info.is_visible = page_node->IsVisible();
       page_info.time_since_last_visibility_change =
-          page_node->TimeSinceLastVisibilityChange();
+          page_node->GetTimeSinceLastVisibilityChange();
       page_info.time_since_last_navigation =
-          page_node->TimeSinceLastNavigation();
+          page_node->GetTimeSinceLastNavigation();
       process_info.page_infos.push_back(std::move(page_info));
     }
     process_infos.push_back(std::move(process_info));

@@ -10,7 +10,6 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync_preferences/pref_service_syncable.h"
-#include "components/unified_consent/feature.h"
 #include "components/unified_consent/unified_consent_metrics.h"
 #include "components/unified_consent/unified_consent_service.h"
 #include "ios/chrome/browser/application_context.h"
@@ -66,12 +65,6 @@ UnifiedConsentServiceFactory::BuildServiceInstanceFor(
 
   // Record settings for pre- and post-UnifiedConsent users.
   unified_consent::metrics::RecordSettingsHistogram(user_pref_service);
-
-  if (!unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    unified_consent::UnifiedConsentService::RollbackIfNeeded(user_pref_service,
-                                                             sync_service);
-    return nullptr;
-  }
 
   // List of synced prefs that can be configured during the settings opt-in
   // flow.

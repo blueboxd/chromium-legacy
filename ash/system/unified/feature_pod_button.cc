@@ -11,6 +11,7 @@
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
 #include "ash/system/unified/unified_system_tray_view.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"

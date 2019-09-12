@@ -29,8 +29,6 @@ namespace printing {
 
 namespace {
 
-using ScopedCupsOption = std::unique_ptr<cups_option_t, OptionDeleter>;
-
 // convert from a ColorMode setting to a print-color-mode value from PWG 5100.13
 const char* GetColorModelForMode(int color_mode) {
   const char* mode_string;

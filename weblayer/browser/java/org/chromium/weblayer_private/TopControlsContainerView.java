@@ -41,6 +41,9 @@ class TopControlsContainerView extends FrameLayout {
     private View mView;
 
     private ContentViewRenderView mContentViewRenderView;
+    private WebContents mWebContents;
+    private EventOffsetHandler mEventOffsetHandler;
+    private int mTopContentOffset;
 
     // True if scrolling.
     private boolean mInTopControlsScroll;
@@ -54,6 +57,19 @@ class TopControlsContainerView extends FrameLayout {
             Context context, WebContents webContents, ContentViewRenderView contentViewRenderView) {
         super(context);
         mContentViewRenderView = contentViewRenderView;
+        mWebContents = webContents;
+        mEventOffsetHandler =
+                new EventOffsetHandler(new EventOffsetHandler.EventOffsetHandlerDelegate() {
+                    @Override
+                    public float getTop() {
+                        return mTopContentOffset;
+                    }
+
+                    @Override
+                    public void setCurrentTouchEventOffsets(float top) {
+                        mWebContents.getEventForwarder().setCurrentTouchEventOffsets(0, top);
+                    }
+                });
         mNativeTopControlsContainerView = nativeCreateTopControlsContainerView(
                 webContents, contentViewRenderView.getNativeHandle());
     }
@@ -65,6 +81,10 @@ class TopControlsContainerView extends FrameLayout {
 
     public long getNativeHandle() {
         return mNativeTopControlsContainerView;
+    }
+
+    public EventOffsetHandler getEventOffsetHandler() {
+        return mEventOffsetHandler;
     }
 
     /**
@@ -105,8 +125,7 @@ class TopControlsContainerView extends FrameLayout {
             return;
         }
         if (!mInTopControlsScroll) prepareForTopControlsScroll();
-        nativeSetTopControlsOffset(
-                mNativeTopControlsContainerView, topControlsOffsetY, topContentOffsetY);
+        setTopControlsOffset(topControlsOffsetY, topContentOffsetY);
     }
 
     @SuppressLint("NewApi") // Used on O+, invalidateChildInParent used for previous versions.
@@ -172,8 +191,14 @@ class TopControlsContainerView extends FrameLayout {
 
     private void finishTopControlsScroll(int topContentOffsetY) {
         mInTopControlsScroll = false;
-        nativeSetTopControlsOffset(mNativeTopControlsContainerView, 0, topContentOffsetY);
+        setTopControlsOffset(0, topContentOffsetY);
         mContentViewRenderView.postOnAnimation(() -> showTopControls());
+    }
+
+    private void setTopControlsOffset(int topControlsOffsetY, int topContentOffsetY) {
+        mTopContentOffset = topContentOffsetY;
+        nativeSetTopControlsOffset(
+                mNativeTopControlsContainerView, topControlsOffsetY, topContentOffsetY);
     }
 
     private void prepareForTopControlsScroll() {

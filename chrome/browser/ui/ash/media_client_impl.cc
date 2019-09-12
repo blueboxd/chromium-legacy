@@ -138,7 +138,7 @@ MediaCaptureState GetMediaCaptureStateOfAllWebContents(
 
 MediaClientImpl::MediaClientImpl() {
   MediaCaptureDevicesDispatcher::GetInstance()->AddObserver(this);
-  BrowserList::GetInstance()->AddObserver(this);
+  BrowserList::AddObserver(this);
 
   DCHECK(!g_media_client);
   g_media_client = this;
@@ -151,7 +151,7 @@ MediaClientImpl::~MediaClientImpl() {
     media_controller_->SetClient(nullptr);
 
   MediaCaptureDevicesDispatcher::GetInstance()->RemoveObserver(this);
-  BrowserList::GetInstance()->RemoveObserver(this);
+  BrowserList::RemoveObserver(this);
 }
 
 // static

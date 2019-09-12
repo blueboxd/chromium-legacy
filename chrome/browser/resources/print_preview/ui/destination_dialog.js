@@ -287,12 +287,6 @@ Polymer({
 
   show: function() {
     this.$.dialog.showModal();
-    // Note: Manually focusing here instead of using autofocus, as it is
-    // currently not possible to validate refocusing of the search input if
-    // autofocus is used. See https://crbug.com/985637 and
-    // https://crbug.com/985636. Autofocus can be restored when one or both of
-    // these issues are resolved.
-    this.$.searchBox.focus();
     this.loadingDestinations_ = this.destinationStore === undefined ||
         this.destinationStore.isPrintDestinationSearchInProgress;
     this.metrics_.record(

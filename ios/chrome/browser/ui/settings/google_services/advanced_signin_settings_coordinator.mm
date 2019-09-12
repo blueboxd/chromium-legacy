@@ -147,7 +147,8 @@ typedef NS_ENUM(NSInteger, AdvancedSigninSettingsCoordinatorResult) {
         // FirstSetupComplete flag should be only turned on when the user agrees
         // to start Sync.
         syncSetupService->PrepareForFirstSyncSetup();
-        syncSetupService->SetFirstSetupComplete();
+        syncSetupService->SetFirstSetupComplete(
+            syncer::SyncFirstSetupCompleteSource::ADVANCED_FLOW_CONFIRM);
       }
       break;
     }

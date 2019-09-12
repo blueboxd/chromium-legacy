@@ -163,6 +163,11 @@ void Usage(const base::FilePath& me) {
 "                              only if uploads are enabled for the database\n"
 #if defined(OS_CHROMEOS)
 "      --use-cros-crash-reporter\n"
+"                              pass crash reports to /sbin/crash_reporter\n"
+"                              instead of storing them in the database\n"
+"      --minidump-dir-for-tests=TEST_MINIDUMP_DIR\n"
+"                              causes /sbin/crash_reporter to leave dumps in\n"
+"                              this directory instead of the normal location\n"
 #endif  // OS_CHROMEOS
 "      --help                  display this help and exit\n"
 "      --version               output version information and exit\n",
@@ -197,6 +202,7 @@ struct Options {
   bool upload_gzip;
 #if defined(OS_CHROMEOS)
   bool use_cros_crash_reporter;
+  base::FilePath minidump_dir_for_tests;
 #endif  // OS_CHROMEOS
 };
 
@@ -571,6 +577,7 @@ int HandlerMain(int argc,
     kOptionURL,
 #if defined(OS_CHROMEOS)
     kOptionUseCrosCrashReporter,
+    kOptionMinidumpDirForTests,
 #endif  // OS_CHROMEOS
 
     // Standard options.
@@ -642,6 +649,10 @@ int HandlerMain(int argc,
       no_argument,
       nullptr,
       kOptionUseCrosCrashReporter},
+    {"minidump_dir_for_tests",
+      required_argument,
+      nullptr,
+      kOptionMinidumpDirForTests},
 #endif  // OS_CHROMEOS
     {"help", no_argument, nullptr, kOptionHelp},
     {"version", no_argument, nullptr, kOptionVersion},
@@ -789,6 +800,11 @@ int HandlerMain(int argc,
         options.use_cros_crash_reporter = true;
         break;
       }
+      case kOptionMinidumpDirForTests: {
+        options.minidump_dir_for_tests = base::FilePath(
+            ToolSupport::CommandLineArgumentToFilePathStringType(optarg));
+        break;
+      }
 #endif  // OS_CHROMEOS
       case kOptionHelp: {
         Usage(me);
@@ -923,10 +939,16 @@ int HandlerMain(int argc,
 
 #if defined(OS_CHROMEOS)
   if (options.use_cros_crash_reporter) {
-    exception_handler = std::make_unique<CrosCrashReportExceptionHandler>(
+    auto cros_handler = std::make_unique<CrosCrashReportExceptionHandler>(
         database.get(),
         &options.annotations,
         user_stream_sources);
+
+    if (!options.minidump_dir_for_tests.empty()) {
+      cros_handler->SetDumpDir(options.minidump_dir_for_tests);
+    }
+
+    exception_handler = std::move(cros_handler);
   } else {
     exception_handler = std::make_unique<CrashReportExceptionHandler>(
         database.get(),

@@ -19,9 +19,9 @@
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
-#include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -67,17 +67,17 @@ BrowserNonClientFrameViewMac::BrowserNonClientFrameViewMac(
                             *show_fullscreen_toolbar_)];
   }
 
-  if (browser_view->IsBrowserTypeHostedApp()) {
+  if (browser_view->IsBrowserTypeWebApp()) {
     if (browser_view->browser()->app_controller()->HasTitlebarToolbar()) {
-      set_hosted_app_button_container(new HostedAppButtonContainer(
-          frame, browser_view, GetCaptionColor(kActive),
-          GetCaptionColor(kInactive), kHostedAppMenuMargin));
-      AddChildView(hosted_app_button_container());
+      set_web_app_frame_toolbar(
+          AddChildView(std::make_unique<WebAppFrameToolbarView>(
+              frame, browser_view, GetCaptionColor(kActive),
+              GetCaptionColor(kInactive), kHostedAppMenuMargin)));
     }
 
     DCHECK(browser_view->ShouldShowWindowTitle());
-    window_title_ = new views::Label(browser_view->GetWindowTitle());
-    AddChildView(window_title_);
+    window_title_ = AddChildView(
+        std::make_unique<views::Label>(browser_view->GetWindowTitle()));
   }
 }
 
@@ -128,11 +128,11 @@ gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForTabStripRegion(
 }
 
 int BrowserNonClientFrameViewMac::GetTopInset(bool restored) const {
-  if (hosted_app_button_container()) {
-    DCHECK(browser_view()->IsBrowserTypeHostedApp());
+  if (web_app_frame_toolbar()) {
+    DCHECK(browser_view()->IsBrowserTypeWebApp());
     if (ShouldHideTopUIForFullscreen())
       return 0;
-    return hosted_app_button_container()->GetPreferredSize().height() +
+    return web_app_frame_toolbar()->GetPreferredSize().height() +
            kHostedAppMenuMargin * 2;
   }
 
@@ -298,7 +298,7 @@ gfx::Size BrowserNonClientFrameViewMac::GetMinimumSize() const {
 
 void BrowserNonClientFrameViewMac::OnPaint(gfx::Canvas* canvas) {
   if (!browser_view()->IsBrowserTypeNormal() &&
-      !browser_view()->IsBrowserTypeHostedApp()) {
+      !browser_view()->IsBrowserTypeWebApp()) {
     return;
   }
 
@@ -321,8 +321,8 @@ void BrowserNonClientFrameViewMac::Layout() {
   int leading_x = kFramePaddingLeft;
   int trailing_x = width();
 
-  if (hosted_app_button_container()) {
-    trailing_x = hosted_app_button_container()->LayoutInContainer(
+  if (web_app_frame_toolbar()) {
+    trailing_x = web_app_frame_toolbar()->LayoutInContainer(
         leading_x, trailing_x, 0, available_height);
 
     const int title_padding = base::checked_cast<int>(

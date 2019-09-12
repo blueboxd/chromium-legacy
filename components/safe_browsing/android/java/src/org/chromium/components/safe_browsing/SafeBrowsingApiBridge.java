@@ -7,6 +7,7 @@ package org.chromium.components.safe_browsing;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.metrics.RecordHistogram;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -90,10 +91,19 @@ public final class SafeBrowsingApiBridge {
     @CalledByNative
     private static boolean startAllowlistLookup(
             SafeBrowsingApiHandler handler, String uri, int threatType) {
-        return handler.startAllowlistLookup(uri, threatType);
+        long allowlistLookupStartTime = System.currentTimeMillis();
+        boolean matched = handler.startAllowlistLookup(uri, threatType);
+        recordAllowlistLookupTimeInMs(System.currentTimeMillis() - allowlistLookupStartTime);
+        return matched;
     }
 
     private static native boolean nativeAreLocalBlacklistsEnabled();
     private static native void nativeOnUrlCheckDone(
             long callbackId, int resultStatus, String metadata, long checkDelta);
+
+    // Histograms
+    private static void recordAllowlistLookupTimeInMs(long lookupTimeInMs) {
+        RecordHistogram.recordTimesHistogram(
+                "SB2.RemoteCall.LocalAllowlistLookupTime", lookupTimeInMs);
+    }
 }

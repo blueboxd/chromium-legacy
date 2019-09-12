@@ -1012,10 +1012,12 @@ void CanvasResourceSharedImage::SetGLFilterIfNeeded() {
       !WeakProvider())
     return;
 
-  ContextGL()->BindTexture(TextureTarget(), GetTextureIdForReadAccess());
-  ContextGL()->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GLFilter());
-  ContextGL()->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GLFilter());
-  ContextGL()->BindTexture(TextureTarget(), 0u);
+  ContextGL()->BindTexture(texture_target_, GetTextureIdForReadAccess());
+  ContextGL()->TexParameteri(texture_target_, GL_TEXTURE_MIN_FILTER,
+                             GLFilter());
+  ContextGL()->TexParameteri(texture_target_, GL_TEXTURE_MAG_FILTER,
+                             GLFilter());
+  ContextGL()->BindTexture(texture_target_, 0u);
   owning_thread_data().mailbox_needs_new_sync_token = true;
   owning_thread_data().needs_gl_filter_reset = false;
   Provider()->NotifyTexParamsModified(this);

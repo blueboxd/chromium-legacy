@@ -66,6 +66,8 @@ class ReportGenerator {
   void OnPluginsReady(const std::vector<content::WebPluginInfo>& plugins);
   void OnBasicRequestReady();
 
+  void Response();
+
   ProfileReportGenerator profile_report_generator_;
 
   ReportCallback callback_;

@@ -195,10 +195,6 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
                                      Parameters&&... parameters) {
     MutexLocker lock(ThreadSetMutex());
     for (WorkerThread* thread : WorkerThreads()) {
-      // Skip threads which aren't started yet. The scheduler and task runners
-      // are available only after Start() is called.
-      if (!thread->worker_scheduler_)
-        continue;
       PostCrossThreadTask(
           *thread->GetTaskRunner(task_type), FROM_HERE,
           CrossThreadBindOnce(function, WTF::CrossThreadUnretained(thread),
@@ -232,6 +228,7 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   // function can be called on both the main thread and the worker thread.
   // You must not call this after Terminate() is called.
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType type) {
+    DCHECK(worker_scheduler_);
     return worker_scheduler_->GetTaskRunner(type);
   }
 
@@ -279,7 +276,11 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   FRIEND_TEST_ALL_PREFIXES(WorkerThreadTest,
                            Terminate_WhileDebuggerTaskIsRunning);
 
+  // Contains threads which are created but haven't started.
+  static HashSet<WorkerThread*>& InitializingWorkerThreads();
+  // Contains threads which have started.
   static HashSet<WorkerThread*>& WorkerThreads();
+  // This mutex guards both WorkerThreads() and InitializingWorkerThreads().
   static Mutex& ThreadSetMutex();
 
   // Represents the state of this worker thread.

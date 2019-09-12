@@ -521,6 +521,7 @@ class KioskTest : public OobeBaseTest {
   }
 
   void TearDownOnMainThread() override {
+    owner_settings_service_.reset();
     settings_helper_.RestoreRealDeviceSettingsProvider();
     AppLaunchController::SetNetworkTimeoutCallbackForTesting(NULL);
     AppLaunchSigninScreen::SetUserManagerForTesting(NULL);

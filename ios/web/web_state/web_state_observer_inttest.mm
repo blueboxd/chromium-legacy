@@ -697,16 +697,9 @@ ACTION_P4(VerifyRestorationStartedContext, web_state, url, context, nav_id) {
     EXPECT_TRUE((*context)->HasUserGesture());
   }
   ui::PageTransition actual_transition = (*context)->GetPageTransition();
-  if (GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    // TODO(crbug.com/877671): restoration navigation should be reload.
-    EXPECT_TRUE(PageTransitionTypeIncludingQualifiersIs(
-        ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT, actual_transition))
-        << "Got unexpected transition: " << actual_transition;
-  } else {
-    EXPECT_TRUE(PageTransitionCoreTypeIs(
-        ui::PageTransition::PAGE_TRANSITION_RELOAD, actual_transition))
-        << "Got unexpected transition: " << actual_transition;
-  }
+  EXPECT_TRUE(PageTransitionCoreTypeIs(
+      ui::PageTransition::PAGE_TRANSITION_RELOAD, actual_transition))
+      << "Got unexpected transition: " << actual_transition;
   EXPECT_FALSE((*context)->IsSameDocument());
   EXPECT_FALSE((*context)->HasCommitted());
   EXPECT_FALSE((*context)->IsDownload());
@@ -750,16 +743,9 @@ ACTION_P5(VerifyRestorationFinishedContext,
     EXPECT_TRUE((*context)->HasUserGesture());
   }
   ui::PageTransition actual_transition = (*context)->GetPageTransition();
-  if (GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    // TODO(crbug.com/877671): restoration navigation should be reload.
-    EXPECT_TRUE(PageTransitionTypeIncludingQualifiersIs(
-        ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT, actual_transition))
-        << "Got unexpected transition: " << actual_transition;
-  } else {
-    EXPECT_TRUE(PageTransitionCoreTypeIs(
-        ui::PageTransition::PAGE_TRANSITION_RELOAD, actual_transition))
-        << "Got unexpected transition: " << actual_transition;
-  }
+  EXPECT_TRUE(PageTransitionCoreTypeIs(
+      ui::PageTransition::PAGE_TRANSITION_RELOAD, actual_transition))
+      << "Got unexpected transition: " << actual_transition;
   EXPECT_FALSE((*context)->IsSameDocument());
   EXPECT_TRUE((*context)->HasCommitted());
   EXPECT_FALSE((*context)->IsDownload());

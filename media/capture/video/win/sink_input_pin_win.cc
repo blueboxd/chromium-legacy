@@ -77,12 +77,6 @@ bool SinkInputPin::IsMediaTypeValid(const AM_MEDIA_TYPE* media_type) {
     resulting_format_.pixel_format = PIXEL_FORMAT_YUY2;
     return true;
   }
-  // This format is added after http:/crbug.com/508413.
-  if (sub_type == MEDIASUBTYPE_UYVY &&
-      pvi->bmiHeader.biCompression == MAKEFOURCC('U', 'Y', 'V', 'Y')) {
-    resulting_format_.pixel_format = PIXEL_FORMAT_UYVY;
-    return true;
-  }
   if (sub_type == MEDIASUBTYPE_MJPG &&
       pvi->bmiHeader.biCompression == MAKEFOURCC('M', 'J', 'P', 'G')) {
     resulting_format_.pixel_format = PIXEL_FORMAT_MJPEG;

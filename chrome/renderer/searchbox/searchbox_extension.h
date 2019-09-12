@@ -39,7 +39,7 @@ class SearchBoxExtension {
                                              bool success);
   static void DispatchQueryAutocompleteResult(
       blink::WebLocalFrame* frame,
-      const std::vector<chrome::mojom::AutocompleteMatchPtr>& matches);
+      chrome::mojom::AutocompleteResultPtr result);
   static void DispatchInputCancel(blink::WebLocalFrame* frame);
   static void DispatchInputStart(blink::WebLocalFrame* frame);
   static void DispatchKeyCaptureChange(blink::WebLocalFrame* frame);

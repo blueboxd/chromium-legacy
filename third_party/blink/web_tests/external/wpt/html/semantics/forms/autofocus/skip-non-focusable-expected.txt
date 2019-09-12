@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-FAIL Non-focusable autofocus element is skipped. assert_equals: expected Element node <select autofocus=""></select> but got Element node <body><textarea autofocus="" disabled=""></textarea>
-<sel...
-Harness: the test ran to completion.
-

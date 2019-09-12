@@ -52,6 +52,17 @@ struct AutocompleteMatch {
   bool swap_contents_and_description;
 };
 
+enum AutocompleteResultStatus {
+  SUCCESS = 0,
+  SKIPPED = 1,
+};
+
+struct AutocompleteResult {
+  mojo_base.mojom.String16 input;
+  array<AutocompleteMatch> matches;
+  AutocompleteResultStatus status;
+};
+
 // Browser interface to support embedded search. Render frames connect to this
 // interface to query browser data, such as the most visited pages.
 // See http://dev.chromium.org/embeddedsearch
@@ -164,7 +175,8 @@ interface EmbeddedSearch {
   ConfirmThemeChanges();
 
   // Gets autocomplete matches from the browser.
-  QueryAutocomplete(string input) => (array<AutocompleteMatch> matches);
+  QueryAutocomplete(mojo_base.mojom.String16 input) =>
+        (AutocompleteResult result);
 
   // Cancels the current autocomplete query. Clears the result set if
   // |clear_result| is true.

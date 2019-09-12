@@ -218,9 +218,19 @@ class CreditCardFIDOAuthenticatorTest : public testing::Test {
   // Mocks an OptChange response from Payments Client.
   void OptChange(AutofillClient::PaymentsRpcResult result,
                  bool user_is_opted_in,
-                 base::Value creation_options = base::Value()) {
-    fido_authenticator_->OnDidGetOptChangeResult(result, user_is_opted_in,
-                                                 std::move(creation_options));
+                 bool include_creation_options = false,
+                 bool include_request_options = false) {
+    payments::PaymentsClient::OptChangeResponseDetails response;
+    response.user_is_opted_in = user_is_opted_in;
+    if (include_creation_options) {
+      response.fido_creation_options =
+          GetTestCreationOptions(kTestChallenge, kTestRelyingPartyId);
+    }
+    if (include_request_options) {
+      response.fido_request_options = GetTestRequestOptions(
+          kTestChallenge, kTestRelyingPartyId, kTestCredentialId);
+    }
+    fido_authenticator_->OnDidGetOptChangeResult(result, response);
   }
 
  protected:
@@ -494,8 +504,7 @@ TEST_F(CreditCardFIDOAuthenticatorTest,
 
   // Mock payments response with challenge to invoke enrollment flow.
   OptChange(AutofillClient::PaymentsRpcResult::SUCCESS,
-            /*user_is_opted_in=*/false,
-            GetTestCreationOptions(kTestChallenge, kTestRelyingPartyId));
+            /*user_is_opted_in=*/false, /*include_creation_options=*/true);
   EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::OPT_IN_WITH_CHALLENGE_FLOW,
             fido_authenticator_->current_flow());
   EXPECT_FALSE(fido_authenticator_->IsUserOptedIn());

@@ -42,6 +42,8 @@ class ASH_EXPORT QuietModeFeaturePodController
       const std::vector<NotifierMetadata>& notifiers) override;
 
  private:
+  base::string16 GetQuietModeStateTooltip();
+
   UnifiedSystemTrayController* const tray_controller_;
 
   FeaturePodButton* button_ = nullptr;

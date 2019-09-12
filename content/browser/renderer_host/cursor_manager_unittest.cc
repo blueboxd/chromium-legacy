@@ -16,6 +16,7 @@
 #include "content/test/mock_render_widget_host_delegate.h"
 #include "content/test/mock_widget_impl.h"
 #include "content/test/test_render_view_host.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // CursorManager is only instantiated on Aura and Mac.
@@ -51,9 +52,10 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   static MockRenderWidgetHost* Create(RenderWidgetHostDelegate* delegate,
                                       RenderProcessHost* process,
                                       int32_t routing_id) {
-    mojom::WidgetPtr widget;
+    mojo::PendingRemote<mojom::Widget> widget;
     std::unique_ptr<MockWidgetImpl> widget_impl =
-        std::make_unique<MockWidgetImpl>(mojo::MakeRequest(&widget));
+        std::make_unique<MockWidgetImpl>(
+            widget.InitWithNewPipeAndPassReceiver());
 
     return new MockRenderWidgetHost(delegate, process, routing_id,
                                     std::move(widget_impl), std::move(widget));
@@ -64,7 +66,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
                        RenderProcessHost* process,
                        int routing_id,
                        std::unique_ptr<MockWidgetImpl> widget_impl,
-                       mojom::WidgetPtr widget)
+                       mojo::PendingRemote<mojom::Widget> widget)
       : RenderWidgetHostImpl(delegate,
                              process,
                              routing_id,

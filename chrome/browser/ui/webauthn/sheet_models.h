@@ -60,23 +60,6 @@ class AuthenticatorSheetModelBase
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorSheetModelBase);
 };
 
-// The initial sheet shown when the UX flow starts.
-class AuthenticatorWelcomeSheetModel : public AuthenticatorSheetModelBase {
- public:
-  using AuthenticatorSheetModelBase::AuthenticatorSheetModelBase;
-
- private:
-  // AuthenticatorSheetModelBase:
-  const gfx::VectorIcon& GetStepIllustration(
-      ImageColorScheme color_scheme) const override;
-  base::string16 GetStepTitle() const override;
-  base::string16 GetStepDescription() const override;
-  bool IsAcceptButtonVisible() const override;
-  bool IsAcceptButtonEnabled() const override;
-  base::string16 GetAcceptButtonLabel() const override;
-  void OnAccept() override;
-};
-
 // The sheet shown for selecting the transport over which the security key
 // should be accessed.
 class AuthenticatorTransportSelectorSheetModel

@@ -36,7 +36,7 @@ class FakePaintedScrollbarLayer : public PaintedScrollbarLayer {
 
   void PushPropertiesTo(LayerImpl* layer) override;
 
-  std::unique_ptr<base::AutoReset<bool>> IgnoreSetNeedsCommit();
+  using PaintedScrollbarLayer::IgnoreSetNeedsCommit;
 
   size_t push_properties_count() const { return push_properties_count_; }
   void reset_push_properties_count() { push_properties_count_ = 0; }

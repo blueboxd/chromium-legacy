@@ -724,7 +724,7 @@ void StoreExternalDisplayMirrorInfo(PrefService* pref_service) {
   const std::set<int64_t>& external_display_mirror_info =
       GetDisplayManager()->external_display_mirror_info();
   for (const auto& id : external_display_mirror_info)
-    pref_data->GetList().emplace_back(base::Value(base::NumberToString(id)));
+    pref_data->Append(base::Value(base::NumberToString(id)));
 }
 
 // Stores mixed mirror mode parameters. Clear the preferences if
@@ -745,7 +745,7 @@ void StoreDisplayMixedMirrorModeParams(
 
   base::ListValue mirroring_destination_ids_value;
   for (const auto& id : mixed_params->destination_ids) {
-    mirroring_destination_ids_value.GetList().emplace_back(
+    mirroring_destination_ids_value.Append(
         base::Value(base::NumberToString(id)));
   }
   pref_data->SetKey(kMirroringDestinationIds,

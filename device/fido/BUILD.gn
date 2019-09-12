@@ -224,6 +224,8 @@ component("fido") {
       "win/authenticator.h",
       "win/discovery.cc",
       "win/discovery.h",
+      "win/fake_webauthn_api.cc",
+      "win/fake_webauthn_api.h",
       "win/logging.cc",
       "win/logging.h",
       "win/type_conversions.cc",
@@ -360,13 +362,6 @@ source_set("test_support") {
       "mac/fake_touch_id_context.mm",
       "mac/scoped_touch_id_test_environment.h",
       "mac/scoped_touch_id_test_environment.mm",
-    ]
-  }
-
-  if (is_win) {
-    sources += [
-      "win/fake_webauthn_api.cc",
-      "win/fake_webauthn_api.h",
     ]
   }
 }

@@ -419,36 +419,40 @@ void RenderWidget::InstallCreateForFrameHook(
 std::unique_ptr<RenderWidget> RenderWidget::CreateForFrame(
     int32_t widget_routing_id,
     CompositorDependencies* compositor_deps,
+    PageProperties* page_properties,
     const ScreenInfo& screen_info,
     blink::WebDisplayMode display_mode,
     bool is_undead,
     bool never_visible) {
   if (g_create_render_widget_for_frame) {
     return g_create_render_widget_for_frame(
-        widget_routing_id, compositor_deps, screen_info, display_mode,
-        is_undead, never_visible, mojo::NullReceiver());
+        widget_routing_id, compositor_deps, page_properties, screen_info,
+        display_mode, is_undead, never_visible, mojo::NullReceiver());
   }
 
   return std::make_unique<RenderWidget>(
-      widget_routing_id, compositor_deps, screen_info, display_mode, is_undead,
+      widget_routing_id, compositor_deps, page_properties, screen_info,
+      display_mode, is_undead,
       /*hidden=*/true, never_visible, mojo::NullReceiver());
 }
 
 RenderWidget* RenderWidget::CreateForPopup(
     int32_t widget_routing_id,
     CompositorDependencies* compositor_deps,
+    PageProperties* page_properties,
     const ScreenInfo& screen_info,
     blink::WebDisplayMode display_mode,
     bool hidden,
     bool never_visible,
     mojo::PendingReceiver<mojom::Widget> widget_receiver) {
-  return new RenderWidget(widget_routing_id, compositor_deps, screen_info,
-                          display_mode, /*is_undead=*/false, hidden,
-                          never_visible, std::move(widget_receiver));
+  return new RenderWidget(widget_routing_id, compositor_deps, page_properties,
+                          screen_info, display_mode, /*is_undead=*/false,
+                          hidden, never_visible, std::move(widget_receiver));
 }
 
 RenderWidget::RenderWidget(int32_t widget_routing_id,
                            CompositorDependencies* compositor_deps,
+                           PageProperties* page_properties,
                            const ScreenInfo& screen_info,
                            blink::WebDisplayMode display_mode,
                            bool is_undead,
@@ -457,6 +461,7 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
                            mojo::PendingReceiver<mojom::Widget> widget_receiver)
     : routing_id_(widget_routing_id),
       compositor_deps_(compositor_deps),
+      page_properties_(page_properties),
       is_hidden_(hidden),
       compositor_never_visible_(never_visible),
       display_mode_(display_mode),
@@ -467,6 +472,7 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
       widget_receiver_(this, std::move(widget_receiver)) {
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
   DCHECK(RenderThread::IsMainThread());
+  DCHECK(page_properties);
 
   // In tests there may not be a RenderThreadImpl.
   if (RenderThreadImpl::current()) {
@@ -810,8 +816,6 @@ void RenderWidget::OnSynchronizeVisualProperties(
       delegate()->ApplyAutoResizeLimitsForWidget(min_auto_size, max_auto_size);
     } else if (auto_resize_mode_changed) {
       delegate()->DisableAutoResizeForWidget();
-      if (visual_properties.new_size.IsEmpty())
-        return;
     }
 
     browser_controls_shrink_blink_size_ =
@@ -3811,6 +3815,15 @@ void RenderWidget::DisableAutoResizeForTesting(const gfx::Size& new_size) {
   visual_properties.visible_viewport_size = visible_viewport_size_;
   visual_properties.is_fullscreen_granted = is_fullscreen_granted_;
   visual_properties.display_mode = display_mode_;
+
+  if (new_size.IsEmpty()) {
+    // The |new_size| is empty when resetting auto resize in between tests. In
+    // this case the current size should just be preserved.
+    visual_properties.new_size = size_;
+  } else {
+    visual_properties.new_size = new_size;
+  }
+
   OnSynchronizeVisualProperties(visual_properties);
 }
 

@@ -78,7 +78,7 @@ class InMemoryContentStoreTest : public testing::Test {
 
 // Tests whether saving and then loading a single article works as expected.
 TEST_F(InMemoryContentStoreTest, SaveAndLoadSingleArticle) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   const ArticleEntry entry = CreateEntry("test-id", "url1", "url2", "url3");
   const DistilledArticleProto stored_proto =
       CreateDistilledArticleForEntry(entry);
@@ -101,7 +101,7 @@ TEST_F(InMemoryContentStoreTest, SaveAndLoadSingleArticle) {
 // Tests that loading articles which have never been stored, yields a callback
 // where success is false.
 TEST_F(InMemoryContentStoreTest, LoadNonExistentArticle) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   const ArticleEntry entry = CreateEntry("bogus-id", "url1", "url2", "url3");
   store_->LoadContent(entry,
                       base::Bind(&InMemoryContentStoreTest::OnLoadCallback,
@@ -114,7 +114,7 @@ TEST_F(InMemoryContentStoreTest, LoadNonExistentArticle) {
 // of save and store does not matter when the total number of articles does not
 // exceed |kDefaultMaxNumCachedEntries|.
 TEST_F(InMemoryContentStoreTest, SaveAndLoadMultipleArticles) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   // Store first article.
   const ArticleEntry first_entry = CreateEntry("first", "url1", "url2", "url3");
   const DistilledArticleProto first_stored_proto =
@@ -162,7 +162,7 @@ TEST_F(InMemoryContentStoreTest, SaveAndLoadMultipleArticles) {
 // Verifies that the content store does not store unlimited number of articles,
 // but expires the oldest ones when the limit for number of articles is reached.
 TEST_F(InMemoryContentStoreTest, SaveAndLoadMoreThanMaxArticles) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
 
   // Create a new store with only |kMaxNumArticles| articles as the limit.
   const int kMaxNumArticles = 3;
@@ -239,7 +239,7 @@ TEST_F(InMemoryContentStoreTest, SaveAndLoadMoreThanMaxArticles) {
 
 // Tests whether saving and then loading a single article works as expected.
 TEST_F(InMemoryContentStoreTest, LookupArticleByURL) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   const ArticleEntry entry = CreateEntry("test-id", "url1", "url2", "url3");
   const DistilledArticleProto stored_proto =
       CreateDistilledArticleForEntry(entry);
@@ -275,7 +275,7 @@ TEST_F(InMemoryContentStoreTest, LookupArticleByURL) {
 // Verifies that the content store does not store unlimited number of articles,
 // but expires the oldest ones when the limit for number of articles is reached.
 TEST_F(InMemoryContentStoreTest, LoadArticleByURLAfterExpungedFromCache) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
 
   // Create a new store with only |kMaxNumArticles| articles as the limit.
   const int kMaxNumArticles = 1;

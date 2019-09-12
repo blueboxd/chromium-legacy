@@ -22,7 +22,7 @@ enum ViewID {
   VIEW_ID_CLOSE_BUTTON,
   VIEW_ID_WINDOW_ICON,
   VIEW_ID_WINDOW_TITLE,
-  VIEW_ID_HOSTED_APP_BUTTON_CONTAINER,
+  VIEW_ID_WEB_APP_FRAME_TOOLBAR,
 
   // Tabs within a window/tab strip, counting from the left.
   VIEW_ID_TAB_0,

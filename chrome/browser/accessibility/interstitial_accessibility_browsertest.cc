@@ -15,6 +15,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 
 class InterstitialAccessibilityBrowserTest : public InProcessBrowserTest {
  public:

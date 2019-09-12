@@ -561,7 +561,7 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
     test_params_.quic_params.idle_connection_timeout =
         base::TimeDelta::FromSeconds(500);
     Initialize();
-    factory_->set_require_confirmation(false);
+    factory_->set_is_quic_known_to_work_on_current_network(true);
     ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
     crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
     crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -942,7 +942,7 @@ TEST_P(QuicStreamFactoryTest, Create) {
 
 TEST_P(QuicStreamFactoryTest, CreateZeroRtt) {
   Initialize();
-  factory_->set_require_confirmation(false);
+  factory_->set_is_quic_known_to_work_on_current_network(true);
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
@@ -1031,7 +1031,7 @@ TEST_P(QuicStreamFactoryTest, RequireConfirmation) {
   host_resolver_->rules()->AddIPLiteralRule(host_port_pair_.host(),
                                             "192.168.0.1", "");
   Initialize();
-  factory_->set_require_confirmation(true);
+  factory_->set_is_quic_known_to_work_on_current_network(false);
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
@@ -1049,13 +1049,12 @@ TEST_P(QuicStreamFactoryTest, RequireConfirmation) {
                 /*cert_verify_flags=*/0, url_, net_log_, &net_error_details_,
                 failed_on_default_network_callback_, callback_.callback()));
 
-  IPAddress last_address;
-  EXPECT_FALSE(http_server_properties_->GetSupportsQuic(&last_address));
+  EXPECT_FALSE(http_server_properties_->HasLastLocalAddressWhenQuicWorked());
 
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
       quic::QuicSession::HANDSHAKE_CONFIRMED);
 
-  EXPECT_TRUE(http_server_properties_->GetSupportsQuic(&last_address));
+  EXPECT_TRUE(http_server_properties_->HasLastLocalAddressWhenQuicWorked());
 
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
@@ -1072,8 +1071,9 @@ TEST_P(QuicStreamFactoryTest, DontRequireConfirmationFromSameIP) {
   host_resolver_->rules()->AddIPLiteralRule(host_port_pair_.host(),
                                             "192.168.0.1", "");
   Initialize();
-  factory_->set_require_confirmation(true);
-  http_server_properties_->SetSupportsQuic(true, IPAddress(192, 0, 2, 33));
+  factory_->set_is_quic_known_to_work_on_current_network(false);
+  http_server_properties_->SetLastLocalAddressWhenQuicWorked(
+      IPAddress(192, 0, 2, 33));
 
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -1092,8 +1092,7 @@ TEST_P(QuicStreamFactoryTest, DontRequireConfirmationFromSameIP) {
                   failed_on_default_network_callback_, callback_.callback()),
               IsOk());
 
-  IPAddress last_address;
-  EXPECT_FALSE(http_server_properties_->GetSupportsQuic(&last_address));
+  EXPECT_FALSE(http_server_properties_->HasLastLocalAddressWhenQuicWorked());
 
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
@@ -1104,7 +1103,7 @@ TEST_P(QuicStreamFactoryTest, DontRequireConfirmationFromSameIP) {
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
       quic::QuicSession::HANDSHAKE_CONFIRMED);
 
-  EXPECT_TRUE(http_server_properties_->GetSupportsQuic(&last_address));
+  EXPECT_TRUE(http_server_properties_->HasLastLocalAddressWhenQuicWorked());
 }
 
 TEST_P(QuicStreamFactoryTest, CachedInitialRtt) {
@@ -2302,15 +2301,14 @@ TEST_P(QuicStreamFactoryTest, CloseSessionsOnIPAddressChanged) {
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
   EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
 
-  IPAddress last_address;
-  EXPECT_TRUE(http_server_properties_->GetSupportsQuic(&last_address));
+  EXPECT_TRUE(http_server_properties_->HasLastLocalAddressWhenQuicWorked());
   // Change the IP address and verify that stream saw the error and the active
   // session is closed.
   NotifyIPAddressChanged();
   EXPECT_EQ(ERR_NETWORK_CHANGED,
             stream->ReadResponseHeaders(callback_.callback()));
-  EXPECT_TRUE(factory_->require_confirmation());
-  EXPECT_FALSE(http_server_properties_->GetSupportsQuic(&last_address));
+  EXPECT_FALSE(factory_->is_quic_known_to_work_on_current_network());
+  EXPECT_FALSE(http_server_properties_->HasLastLocalAddressWhenQuicWorked());
   // Check no active session exists for the destination.
   EXPECT_FALSE(HasActiveSession(host_port_pair_));
 
@@ -2483,13 +2481,12 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChangedWithConnectionMigration) {
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
-  IPAddress last_address;
-  EXPECT_TRUE(http_server_properties_->GetSupportsQuic(&last_address));
+  EXPECT_TRUE(http_server_properties_->HasLastLocalAddressWhenQuicWorked());
 
   // Change the IP address and verify that the connection is unaffected.
   NotifyIPAddressChanged();
-  EXPECT_FALSE(factory_->require_confirmation());
-  EXPECT_TRUE(http_server_properties_->GetSupportsQuic(&last_address));
+  EXPECT_TRUE(factory_->is_quic_known_to_work_on_current_network());
+  EXPECT_TRUE(http_server_properties_->HasLastLocalAddressWhenQuicWorked());
 
   // Attempting a new request to the same origin uses the same connection.
   QuicStreamRequest request2(factory_.get());
@@ -9420,7 +9417,7 @@ TEST_P(QuicStreamFactoryTest, OnCertDBChanged) {
   // Change the CA cert and verify that stream saw the event.
   factory_->OnCertDBChanged();
 
-  EXPECT_FALSE(factory_->require_confirmation());
+  EXPECT_TRUE(factory_->is_quic_known_to_work_on_current_network());
   EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
   EXPECT_FALSE(HasActiveSession(host_port_pair_));
 
@@ -9531,7 +9528,7 @@ TEST_P(QuicStreamFactoryTest, CryptoConfigWhenProofIsInvalid) {
 
 TEST_P(QuicStreamFactoryTest, EnableNotLoadFromDiskCache) {
   Initialize();
-  factory_->set_require_confirmation(false);
+  factory_->set_is_quic_known_to_work_on_current_network(true);
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
@@ -9739,7 +9736,7 @@ TEST_P(QuicStreamFactoryTest, StartCertVerifyJob) {
 
 TEST_P(QuicStreamFactoryTest, YieldAfterPackets) {
   Initialize();
-  factory_->set_require_confirmation(false);
+  factory_->set_is_quic_known_to_work_on_current_network(true);
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   QuicStreamFactoryPeer::SetYieldAfterPackets(factory_.get(), 0);
@@ -9787,7 +9784,7 @@ TEST_P(QuicStreamFactoryTest, YieldAfterPackets) {
 
 TEST_P(QuicStreamFactoryTest, YieldAfterDuration) {
   Initialize();
-  factory_->set_require_confirmation(false);
+  factory_->set_is_quic_known_to_work_on_current_network(true);
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   QuicStreamFactoryPeer::SetYieldAfterDuration(
@@ -10561,7 +10558,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterHostResolutionCallbackAsyncAsync) {
   host_resolver_->set_ondemand_mode(true);
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::ZERO_RTT);
-  factory_->set_require_confirmation(true);
+  factory_->set_is_quic_known_to_work_on_current_network(false);
 
   MockQuicData socket_data(version_);
   socket_data.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
@@ -10650,7 +10647,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterHostResolutionCallbackSyncAsync) {
   host_resolver_->set_synchronous_mode(true);
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::ZERO_RTT);
-  factory_->set_require_confirmation(true);
+  factory_->set_is_quic_known_to_work_on_current_network(false);
 
   MockQuicData socket_data(version_);
   socket_data.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
@@ -10907,7 +10904,7 @@ TEST_P(QuicStreamFactoryTest,
 
   // Set an address in resolver for asynchronous return.
   host_resolver_->set_ondemand_mode(true);
-  factory_->set_require_confirmation(true);
+  factory_->set_is_quic_known_to_work_on_current_network(false);
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::ZERO_RTT);
   host_resolver_->rules()->AddIPLiteralRule(host_port_pair_.host(),
@@ -10975,7 +10972,7 @@ TEST_P(QuicStreamFactoryTest,
 
   // Set an address in resolver for asynchronous return.
   host_resolver_->set_ondemand_mode(true);
-  factory_->set_require_confirmation(true);
+  factory_->set_is_quic_known_to_work_on_current_network(false);
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::ZERO_RTT);
   host_resolver_->rules()->AddIPLiteralRule(host_port_pair_.host(),
@@ -11115,7 +11112,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleAsyncResolveAsyncNoMatch) {
 
   // Set an address in resolver for asynchronous return.
   host_resolver_->set_ondemand_mode(true);
-  factory_->set_require_confirmation(true);
+  factory_->set_is_quic_known_to_work_on_current_network(false);
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::ZERO_RTT);
   host_resolver_->rules()->AddIPLiteralRule(host_port_pair_.host(),
@@ -11192,7 +11189,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceResolveAsyncStaleAsyncNoMatch) {
 
   // Set an address in resolver for asynchronous return.
   host_resolver_->set_ondemand_mode(true);
-  factory_->set_require_confirmation(true);
+  factory_->set_is_quic_known_to_work_on_current_network(false);
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::ZERO_RTT);
   host_resolver_->rules()->AddIPLiteralRule(host_port_pair_.host(),
@@ -11543,7 +11540,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceResolveAsyncErrorStaleAsync) {
   // Add asynchronous failure in host resolver.
   host_resolver_->set_ondemand_mode(true);
   host_resolver_->rules()->AddSimulatedFailure(host_port_pair_.host());
-  factory_->set_require_confirmation(true);
+  factory_->set_is_quic_known_to_work_on_current_network(false);
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::ZERO_RTT);
 
@@ -11596,7 +11593,7 @@ TEST_P(QuicStreamFactoryTest,
 
   // Add asynchronous failure to host resolver.
   host_resolver_->set_ondemand_mode(true);
-  factory_->set_require_confirmation(true);
+  factory_->set_is_quic_known_to_work_on_current_network(false);
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::ZERO_RTT);
   host_resolver_->rules()->AddSimulatedFailure(host_port_pair_.host());
@@ -11768,7 +11765,7 @@ TEST_P(QuicStreamFactoryTest, StaleNetworkFailedBeforeHandshake) {
 
   // Set an address in resolver for asynchronous return.
   host_resolver_->set_ondemand_mode(true);
-  factory_->set_require_confirmation(true);
+  factory_->set_is_quic_known_to_work_on_current_network(false);
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::ZERO_RTT);
   host_resolver_->rules()->AddIPLiteralRule(host_port_pair_.host(),
@@ -11838,7 +11835,7 @@ TEST_P(QuicStreamFactoryTest, ConfigInitialRttForHandshake) {
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::COLD_START_WITH_CHLO_SENT);
   Initialize();
-  factory_->set_require_confirmation(true);
+  factory_->set_is_quic_known_to_work_on_current_network(false);
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 

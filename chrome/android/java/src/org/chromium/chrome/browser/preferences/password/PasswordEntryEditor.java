@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.preferences.password;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.InputType;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -18,18 +19,19 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.widget.ChromeTextInputLayout;
 import org.chromium.ui.widget.Toast;
 
 /**
  * Password entry editor that allows editing passwords stored in Chrome.
  */
-public class PasswordEntryEditor extends Fragment {
 
+public class PasswordEntryEditor extends Fragment {
     private EditText mSiteText;
     private EditText mUsernameText;
     private EditText mPasswordText;
     private ImageButton mViewPasswordButton;
-
+    private ChromeTextInputLayout mPasswordLabel;
     private boolean mViewButtonPressed;
     static final String VIEW_BUTTON_PRESSED = "viewButtonPressed";
     public static final String CREDENTIAL_URL = "credentialUrl";
@@ -50,6 +52,7 @@ public class PasswordEntryEditor extends Fragment {
         mSiteText = (EditText) view.findViewById(R.id.site_edit);
         mUsernameText = (EditText) view.findViewById(R.id.username_edit);
         mPasswordText = (EditText) view.findViewById(R.id.password_edit);
+        mPasswordLabel = (ChromeTextInputLayout) view.findViewById(R.id.password_label);
         mViewPasswordButton = view.findViewById(R.id.password_entry_editor_view_password);
         mSiteText.setText(getArguments().getString(CREDENTIAL_URL));
         mUsernameText.setText(getArguments().getString(CREDENTIAL_NAME));
@@ -80,7 +83,7 @@ public class PasswordEntryEditor extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_save_edited_password) {
-            getActivity().finish();
+            saveChanges();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -122,6 +125,17 @@ public class PasswordEntryEditor extends Fragment {
             ReauthenticationManager.displayReauthenticationFragment(
                     R.string.lockscreen_description_view, R.id.password_entry_editor,
                     getFragmentManager(), ReauthenticationManager.ReauthScope.ONE_AT_A_TIME);
+        }
+    }
+
+    private void saveChanges() {
+        String password = mPasswordText.getText().toString();
+        if (TextUtils.isEmpty(password)) {
+            mPasswordLabel.setError(getContext().getString(
+                    R.string.pref_edit_dialog_field_required_validation_message));
+        } else {
+            // TODO(crbug.com/377410): Save the changes if everything was ok.
+            getActivity().finish();
         }
     }
 

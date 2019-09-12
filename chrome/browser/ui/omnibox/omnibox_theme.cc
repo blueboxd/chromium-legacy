@@ -53,23 +53,18 @@ SkColor GetOmniboxColor(OmniboxPart part,
     dark = !dark;
 
   switch (part) {
-    case OmniboxPart::LOCATION_BAR_BACKGROUND: {
-      const bool hovered = state == OmniboxPartState::HOVERED;
-      return dark ? (hovered ? SkColorSetRGB(0x2F, 0x33, 0x36)
-                             : SkColorSetRGB(0x28, 0x2C, 0x2F))
-                  : (hovered ? gfx::kGoogleGrey200 : gfx::kGoogleGrey100);
-    }
+    case OmniboxPart::LOCATION_BAR_BACKGROUND:
+      if (state == OmniboxPartState::HOVERED) {
+        return color_utils::BlendTowardMaxContrast(
+            GetOmniboxColor(part, tint, OmniboxPartState::NORMAL), 0x0a);
+      }
+      return dark ? SkColorSetRGB(0x28, 0x2C, 0x2F) : gfx::kGoogleGrey100;
     case OmniboxPart::LOCATION_BAR_SECURITY_CHIP:
       return GetSecurityChipColor(tint, state);
     case OmniboxPart::LOCATION_BAR_SELECTED_KEYWORD:
       return dark ? gfx::kGoogleGrey100 : gfx::kGoogleBlue600;
     case OmniboxPart::RESULTS_BACKGROUND: {
-      // High contrast mode needs a darker base - Grey 800 with 16% white
-      // overlaid on it (see below) is hard to produce good contrast ratios
-      // against with colors other than white.
-      const SkColor dark_base_color =
-          high_contrast ? gfx::kGoogleGrey900 : gfx::kGoogleGrey800;
-      const SkColor base_color = dark ? dark_base_color : SK_ColorWHITE;
+      const SkColor base_color = dark ? gfx::kGoogleGrey900 : SK_ColorWHITE;
       // The spec calls for transparent black (or white) overlays for hover
       // (10%) and select (16%). Pre-blend these with the background for the
       // best text AA result.
@@ -80,19 +75,19 @@ SkColor GetOmniboxColor(OmniboxPart part,
     case OmniboxPart::LOCATION_BAR_CLEAR_ALL:
     case OmniboxPart::LOCATION_BAR_TEXT_DEFAULT:
     case OmniboxPart::RESULTS_TEXT_DEFAULT:
-      return dark ? gfx::kGoogleGrey100 : gfx::kGoogleGrey900;
+      return dark ? SK_ColorWHITE : gfx::kGoogleGrey900;
 
     case OmniboxPart::LOCATION_BAR_TEXT_DIMMED:
-      return dark ? gfx::kGoogleGrey500 : gfx::kGoogleGrey600;
     case OmniboxPart::RESULTS_ICON:
     case OmniboxPart::RESULTS_TEXT_DIMMED:
       // This is a pre-lightened (or darkened) variant of the base text color.
-      return dark ? gfx::kGoogleGrey400 : gfx::kGoogleGrey700;
+      return dark ? SkColorSetRGB(0x8D, 0x93, 0x99)
+                  : SkColorSetRGB(0x6B, 0x6F, 0x74);
 
     case OmniboxPart::RESULTS_TEXT_URL:
       if (high_contrast)
-        return dark ? gfx::kGoogleBlue300 : gfx::kGoogleBlue700;
-      return dark ? gfx::kGoogleBlue300 : gfx::kGoogleBlue600;
+        return dark ? gfx::kGoogleBlue200 : gfx::kGoogleBlue900;
+      return dark ? gfx::kGoogleBlue300 : gfx::kGoogleBlue800;
 
     case OmniboxPart::LOCATION_BAR_BUBBLE_OUTLINE:
       if (OmniboxFieldTrial::IsExperimentalKeywordModeEnabled())

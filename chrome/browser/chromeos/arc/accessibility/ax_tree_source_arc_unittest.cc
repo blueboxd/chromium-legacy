@@ -11,6 +11,7 @@
 #include "extensions/browser/api/automation_internal/automation_event_router.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/platform/ax_android_constants.h"
 
 namespace arc {

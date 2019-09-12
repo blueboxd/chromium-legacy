@@ -300,7 +300,8 @@ enum AuthenticationState {
     // to start Sync.
     SyncSetupService* syncSetupService =
         SyncSetupServiceFactory::GetForBrowserState(_browserState);
-    syncSetupService->SetFirstSetupComplete();
+    syncSetupService->SetFirstSetupComplete(
+        syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
     syncSetupService->CommitSyncChanges();
   }
   [self acceptSignInAndShowAccountsSettings:_unifiedConsentCoordinator

@@ -165,13 +165,14 @@ void PowerButtonMenuView::CreateItems() {
 
     const SessionControllerImpl* const session_controller =
         Shell::Get()->session_controller();
-    if (session_controller->CanLockScreen() &&
-        !session_controller->IsScreenLocked()) {
-      lock_screen_item_ = new PowerButtonMenuItemView(
-          this, kSystemPowerButtonMenuLockScreenIcon,
-          l10n_util::GetStringUTF16(
-              IDS_ASH_POWER_BUTTON_MENU_LOCK_SCREEN_BUTTON));
-      AddChildView(lock_screen_item_);
+    if (!session_controller->IsScreenLocked()) {
+      if (session_controller->CanLockScreen()) {
+        lock_screen_item_ = new PowerButtonMenuItemView(
+            this, kSystemPowerButtonMenuLockScreenIcon,
+            l10n_util::GetStringUTF16(
+                IDS_ASH_POWER_BUTTON_MENU_LOCK_SCREEN_BUTTON));
+        AddChildView(lock_screen_item_);
+      }
 
       feedback_item_ = new PowerButtonMenuItemView(
           this, kSystemPowerButtonMenuFeedbackIcon,
@@ -188,9 +189,9 @@ void PowerButtonMenuView::Layout() {
   gfx::Rect power_off_rect(rect);
   const int y_offset =
       kMenuItemVerticalPadding - PowerButtonMenuItemView::kItemBorderThickness;
-  const int power_off_x_offset = kMenuItemHorizontalPadding -
-                                 PowerButtonMenuItemView::kItemBorderThickness;
-  power_off_rect.Offset(power_off_x_offset, y_offset);
+  int x_offset = kMenuItemHorizontalPadding -
+                 PowerButtonMenuItemView::kItemBorderThickness;
+  power_off_rect.Offset(x_offset, y_offset);
   power_off_item_->SetBoundsRect(power_off_rect);
 
   if (sign_out_item_) {
@@ -198,25 +199,22 @@ void PowerButtonMenuView::Layout() {
     const int padding_between_items_with_border =
         kPaddingBetweenMenuItems -
         2 * PowerButtonMenuItemView::kItemBorderThickness;
-    const int sign_out_x_offset = power_off_x_offset + item_size.width() +
-                                  padding_between_items_with_border;
-    sign_out_rect.Offset(sign_out_x_offset, y_offset);
+    x_offset += item_size.width() + padding_between_items_with_border;
+    sign_out_rect.Offset(x_offset, y_offset);
     sign_out_item_->SetBoundsRect(sign_out_rect);
 
     if (lock_screen_item_) {
       gfx::Rect lock_screen_rect(rect);
-      const int lock_screen_x_offset = sign_out_x_offset + item_size.width() +
-                                       padding_between_items_with_border;
-      lock_screen_rect.Offset(lock_screen_x_offset, y_offset);
+      x_offset += item_size.width() + padding_between_items_with_border;
+      lock_screen_rect.Offset(x_offset, y_offset);
       lock_screen_item_->SetBoundsRect(lock_screen_rect);
+    }
 
-      if (feedback_item_) {
-        gfx::Rect feedback_rect(rect);
-        feedback_rect.Offset(lock_screen_x_offset + item_size.width() +
-                                 padding_between_items_with_border,
-                             y_offset);
-        feedback_item_->SetBoundsRect(feedback_rect);
-      }
+    if (feedback_item_) {
+      gfx::Rect feedback_rect(rect);
+      x_offset += item_size.width() + padding_between_items_with_border;
+      feedback_rect.Offset(x_offset, y_offset);
+      feedback_item_->SetBoundsRect(feedback_rect);
     }
   }
 }

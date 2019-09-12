@@ -23,7 +23,7 @@ class UkmRecorder;
 }
 
 namespace performance_manager {
-class GraphImpl;
+class Graph;
 }
 
 extern const base::Feature kMemoryMetricsOldTiming;
@@ -89,7 +89,7 @@ class ProcessMemoryMetricsEmitter
   using GetProcessToPageInfoMapCallback =
       base::OnceCallback<void(std::vector<ProcessInfo>)>;
   static void GetProcessToPageInfoMap(GetProcessToPageInfoMapCallback callback,
-                                      performance_manager::GraphImpl* graph);
+                                      performance_manager::Graph* graph);
 
   // The results of each request are cached. When both requests are finished,
   // the results are collated.

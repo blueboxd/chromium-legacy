@@ -116,8 +116,8 @@ TEST_F(VersionUpdaterCrosTest, TwoOverlappingSetChannelRequests) {
   version_updater_->SetChannel("beta-channel", true);
 
   {
-    UpdateEngineClient::Status status;
-    status.status = UpdateEngineClient::UPDATE_STATUS_IDLE;
+    update_engine::StatusResult status;
+    status.set_current_operation(update_engine::Operation::IDLE);
     fake_update_engine_client_->set_default_status(status);
     fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
   }
@@ -130,9 +130,9 @@ TEST_F(VersionUpdaterCrosTest, TwoOverlappingSetChannelRequests) {
   EXPECT_EQ(1, fake_update_engine_client_->request_update_check_call_count());
 
   {
-    UpdateEngineClient::Status status;
-    status.status = UpdateEngineClient::UPDATE_STATUS_DOWNLOADING;
-    status.download_progress = 0.1;
+    update_engine::StatusResult status;
+    status.set_current_operation(update_engine::Operation::DOWNLOADING);
+    status.set_progress(0.1);
     fake_update_engine_client_->set_default_status(status);
     fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
   }
@@ -142,8 +142,9 @@ TEST_F(VersionUpdaterCrosTest, TwoOverlappingSetChannelRequests) {
   // DOWNLOADING -> REPORTING_ERROR_EVENT transition since target channel is not
   // equal to downloading channel now.
   {
-    UpdateEngineClient::Status status;
-    status.status = UpdateEngineClient::UPDATE_STATUS_REPORTING_ERROR_EVENT;
+    update_engine::StatusResult status;
+    status.set_current_operation(
+        update_engine::Operation::REPORTING_ERROR_EVENT);
     fake_update_engine_client_->set_default_status(status);
     fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
   }
@@ -155,8 +156,8 @@ TEST_F(VersionUpdaterCrosTest, TwoOverlappingSetChannelRequests) {
   // REPORTING_ERROR_EVENT -> IDLE transition, update check should be
   // automatically scheduled.
   {
-    UpdateEngineClient::Status status;
-    status.status = UpdateEngineClient::UPDATE_STATUS_IDLE;
+    update_engine::StatusResult status;
+    status.set_current_operation(update_engine::Operation::IDLE);
     fake_update_engine_client_->set_default_status(status);
     fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
   }

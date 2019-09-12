@@ -92,6 +92,7 @@
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
+#include "components/viz/common/frame_timing_details.h"
 #include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
@@ -117,7 +118,6 @@
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
-#include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
@@ -1982,21 +1982,23 @@ void LayerTreeHostImpl::DidReceiveCompositorFrameAck() {
 
 void LayerTreeHostImpl::DidPresentCompositorFrame(
     uint32_t frame_token,
-    const gfx::PresentationFeedback& feedback) {
-  frame_trackers_.NotifyFramePresented(frame_token, feedback);
+    const viz::FrameTimingDetails& details) {
+  frame_trackers_.NotifyFramePresented(frame_token,
+                                       details.presentation_feedback);
   PresentationTimeCallbackBuffer::PendingCallbacks activated =
       presentation_time_callbacks_.PopPendingCallbacks(frame_token);
 
   // Update compositor frame latency and smoothness stats only for frames
   // that caused on-screen damage.
   if (!activated.frame_time.is_null()) {
-    frame_metrics_.AddFrameDisplayed(activated.frame_time, feedback.timestamp);
+    frame_metrics_.AddFrameDisplayed(activated.frame_time,
+                                     details.presentation_feedback.timestamp);
   }
 
   // Send all the main-thread callbacks to the client in one batch. The client
   // is in charge of posting them to the main thread.
   client_->DidPresentCompositorFrameOnImplThread(
-      frame_token, std::move(activated.main_thread_callbacks), feedback);
+      frame_token, std::move(activated.main_thread_callbacks), details);
 }
 
 void LayerTreeHostImpl::DidNotNeedBeginFrame() {

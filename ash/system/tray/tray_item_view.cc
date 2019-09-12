@@ -7,6 +7,7 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/shelf.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"

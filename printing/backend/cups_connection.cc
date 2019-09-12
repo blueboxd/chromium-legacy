@@ -47,12 +47,10 @@ class DestinationEnumerator {
   void store_dest(cups_dest_t* dest) { dests_.emplace_back(dest); }
 
   // Returns the collected destinations.
-  std::vector<std::unique_ptr<cups_dest_t, DestinationDeleter>>& get_dests() {
-    return dests_;
-  }
+  std::vector<ScopedDestination>& get_dests() { return dests_; }
 
  private:
-  std::vector<std::unique_ptr<cups_dest_t, DestinationDeleter>> dests_;
+  std::vector<ScopedDestination> dests_;
 
   DISALLOW_COPY_AND_ASSIGN(DestinationEnumerator);
 };
@@ -139,8 +137,8 @@ std::unique_ptr<CupsPrinter> CupsConnection::GetPrinter(
   if (!dest)
     return nullptr;
 
-  return std::make_unique<CupsPrinter>(
-      cups_http_.get(), std::unique_ptr<cups_dest_t, DestinationDeleter>(dest));
+  return std::make_unique<CupsPrinter>(cups_http_.get(),
+                                       ScopedDestination(dest));
 }
 
 bool CupsConnection::GetJobs(const std::vector<std::string>& printer_ids,

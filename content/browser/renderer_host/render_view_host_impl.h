@@ -29,6 +29,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/render_view_host.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/load_states.h"
 #include "third_party/blink/public/web/web_ax_enums.h"
 #include "third_party/blink/public/web/web_console_message.h"
@@ -180,10 +181,12 @@ class CONTENT_EXPORT RenderViewHostImpl
   }
 
   // Creates a new RenderWidget with the given route id.
-  void CreateNewWidget(int32_t route_id, mojom::WidgetPtr widget);
+  void CreateNewWidget(int32_t route_id,
+                       mojo::PendingRemote<mojom::Widget> widget);
 
   // Creates a full screen RenderWidget.
-  void CreateNewFullscreenWidget(int32_t route_id, mojom::WidgetPtr widget);
+  void CreateNewFullscreenWidget(int32_t route_id,
+                                 mojo::PendingRemote<mojom::Widget> widget);
 
   // Send RenderViewReady to observers once the process is launched, but not
   // re-entrantly.

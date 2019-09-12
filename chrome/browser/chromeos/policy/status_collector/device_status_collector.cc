@@ -1745,7 +1745,7 @@ bool DeviceStatusCollector::GetOsUpdateStatus(
   os_update_status->set_new_required_platform_version(
       required_platfrom_version.GetString());
 
-  const chromeos::UpdateEngineClient::Status update_engine_status =
+  const update_engine::StatusResult update_engine_status =
       chromeos::DBusThreadManager::Get()
           ->GetUpdateEngineClient()
           ->GetLastStatus();
@@ -1761,7 +1761,7 @@ bool DeviceStatusCollector::GetOsUpdateStatus(
   // As the timestamp precision return from UpdateEngine is in seconds (see
   // time_t). It should be converted to milliseconds before being reported.
   const base::Time last_checked_timestamp =
-      base::Time::FromTimeT(update_engine_status.last_checked_time);
+      base::Time::FromTimeT(update_engine_status.last_checked_time());
 
   os_update_status->set_last_checked_timestamp(
       last_checked_timestamp.ToJavaTime());
@@ -1771,24 +1771,24 @@ bool DeviceStatusCollector::GetOsUpdateStatus(
     return true;
   }
 
-  if (update_engine_status.status ==
-          chromeos::UpdateEngineClient::UPDATE_STATUS_DOWNLOADING ||
-      update_engine_status.status ==
-          chromeos::UpdateEngineClient::UPDATE_STATUS_VERIFYING ||
-      update_engine_status.status ==
-          chromeos::UpdateEngineClient::UPDATE_STATUS_FINALIZING) {
+  if (update_engine_status.current_operation() ==
+          update_engine::Operation::DOWNLOADING ||
+      update_engine_status.current_operation() ==
+          update_engine::Operation::VERIFYING ||
+      update_engine_status.current_operation() ==
+          update_engine::Operation::FINALIZING) {
     os_update_status->set_update_status(
         em::OsUpdateStatus::OS_IMAGE_DOWNLOAD_IN_PROGRESS);
     os_update_status->set_new_platform_version(
-        update_engine_status.new_version);
-  } else if (update_engine_status.status ==
-             chromeos::UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
+        update_engine_status.new_version());
+  } else if (update_engine_status.current_operation() ==
+             update_engine::Operation::UPDATED_NEED_REBOOT) {
     os_update_status->set_update_status(
         em::OsUpdateStatus::OS_UPDATE_NEED_REBOOT);
     // Note the new_version could be a dummy "0.0.0.0" for some edge cases,
     // e.g. update engine is somehow restarted without a reboot.
     os_update_status->set_new_platform_version(
-        update_engine_status.new_version);
+        update_engine_status.new_version());
   } else {
     os_update_status->set_update_status(
         em::OsUpdateStatus::OS_IMAGE_DOWNLOAD_NOT_STARTED);

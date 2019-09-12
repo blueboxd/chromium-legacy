@@ -93,9 +93,18 @@ js_library("toolbar_manager") {
   ]
 }
 
+js_library("controller") {
+  deps = [
+    ":viewport",
+    "//ui/webui/resources/js:load_time_data",
+    "//ui/webui/resources/js/cr:event_target",
+  ]
+}
+
 js_type_check("pdf_resources") {
   deps = [
     ":browser_api",
+    ":controller",
     ":gesture_detector",
     ":metrics",
     ":navigator",

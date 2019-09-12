@@ -308,9 +308,9 @@ IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestConnectedNetworkNoWelcome) {
 
 // Check that when configuration has ONC and EULA, we get to update screen.
 IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, MAYBE_TestAcceptEula) {
-  UpdateEngineClient::Status status;
-  status.status = UpdateEngineClient::UPDATE_STATUS_DOWNLOADING;
-  status.download_progress = 0.1;
+  update_engine::StatusResult status;
+  status.set_current_operation(update_engine::Operation::DOWNLOADING);
+  status.set_progress(0.1);
   fake_update_engine_client_->set_default_status(status);
 
   LoadConfiguration();

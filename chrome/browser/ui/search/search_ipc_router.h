@@ -157,7 +157,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
     virtual void OnConfirmThemeChanges() = 0;
 
     virtual void QueryAutocomplete(
-        const std::string& input,
+        const base::string16& input,
         chrome::mojom::EmbeddedSearch::QueryAutocompleteCallback callback) = 0;
 
     virtual void StopAutocomplete(bool clear_result) = 0;
@@ -307,7 +307,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
   void RevertThemeChanges() override;
   void ConfirmThemeChanges() override;
   void QueryAutocomplete(
-      const std::string& input,
+      const base::string16& input,
       chrome::mojom::EmbeddedSearch::QueryAutocompleteCallback callback)
       override;
   void StopAutocomplete(bool clear_result) override;

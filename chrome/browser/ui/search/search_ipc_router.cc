@@ -441,10 +441,12 @@ void SearchIPCRouter::ConfirmThemeChanges() {
 }
 
 void SearchIPCRouter::QueryAutocomplete(
-    const std::string& input,
+    const base::string16& input,
     chrome::mojom::EmbeddedSearch::QueryAutocompleteCallback callback) {
   if (!policy_->ShouldProcessQueryAutocomplete(is_active_tab_)) {
-    std::move(callback).Run(std::vector<chrome::mojom::AutocompleteMatchPtr>());
+    std::move(callback).Run(chrome::mojom::AutocompleteResult::New(
+        input, std::vector<chrome::mojom::AutocompleteMatchPtr>(),
+        chrome::mojom::AutocompleteResultStatus::SKIPPED));
     return;
   }
 

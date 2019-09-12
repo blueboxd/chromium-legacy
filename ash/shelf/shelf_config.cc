@@ -11,7 +11,7 @@
 namespace ash {
 
 ShelfConfig::ShelfConfig()
-    : is_dense_(chromeos::switches::ShouldShowShelfDenseClamshell()),
+    : is_dense_(chromeos::switches::ShouldShowShelfHotseat()),
       shelf_size_(56),
       shelf_size_dense_(48),
       shelf_button_icon_size_(44),

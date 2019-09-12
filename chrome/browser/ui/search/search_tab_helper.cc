@@ -125,6 +125,13 @@ SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
 SearchTabHelper::~SearchTabHelper() {
   if (instant_service_)
     instant_service_->RemoveObserver(this);
+  if (query_autocomplete_callback_) {
+    std::move(query_autocomplete_callback_)
+        .Run(chrome::mojom::AutocompleteResult::New(
+            autocomplete_controller_->input().text(),
+            std::vector<chrome::mojom::AutocompleteMatchPtr>(),
+            chrome::mojom::AutocompleteResultStatus::SKIPPED));
+  }
 }
 
 void SearchTabHelper::OmniboxInputStateChanged() {
@@ -423,10 +430,13 @@ void SearchTabHelper::FileSelectionCanceled(void* params) {
 }
 
 void SearchTabHelper::OnResultChanged(bool default_result_changed) {
-  if (!autocomplete_controller_ || !autocomplete_controller_->done() ||
-      !query_autocomplete_callback_) {
+  if (!autocomplete_controller_) {
+    NOTREACHED();
     return;
   }
+
+  if (!autocomplete_controller_->done() || !query_autocomplete_callback_)
+    return;
 
   std::vector<chrome::mojom::AutocompleteMatchPtr> matches;
   for (const AutocompleteMatch& match : autocomplete_controller_->result()) {
@@ -455,7 +465,11 @@ void SearchTabHelper::OnResultChanged(bool default_result_changed) {
     mojom_match->type = AutocompleteMatchType::ToString(match.type);
     matches.push_back(std::move(mojom_match));
   }
-  std::move(query_autocomplete_callback_).Run(std::move(matches));
+
+  std::move(query_autocomplete_callback_)
+      .Run(chrome::mojom::AutocompleteResult::New(
+          autocomplete_controller_->input().text(), std::move(matches),
+          chrome::mojom::AutocompleteResultStatus::SUCCESS));
 }
 
 void SearchTabHelper::OnSelectLocalBackgroundImage() {
@@ -540,10 +554,12 @@ void SearchTabHelper::OnConfirmThemeChanges() {
 }
 
 void SearchTabHelper::QueryAutocomplete(
-    const std::string& input,
+    const base::string16& input,
     chrome::mojom::EmbeddedSearch::QueryAutocompleteCallback callback) {
   if (!search::DefaultSearchProviderIsGoogle(profile())) {
-    std::move(callback).Run(std::vector<chrome::mojom::AutocompleteMatchPtr>());
+    std::move(callback).Run(chrome::mojom::AutocompleteResult::New(
+        input, std::vector<chrome::mojom::AutocompleteMatchPtr>(),
+        chrome::mojom::AutocompleteResultStatus::SKIPPED));
     return;
   }
 
@@ -559,10 +575,17 @@ void SearchTabHelper::QueryAutocomplete(
         providers);
   }
 
+  if (query_autocomplete_callback_) {
+    std::move(query_autocomplete_callback_)
+        .Run(chrome::mojom::AutocompleteResult::New(
+            input, std::vector<chrome::mojom::AutocompleteMatchPtr>(),
+            chrome::mojom::AutocompleteResultStatus::SKIPPED));
+    autocomplete_controller_->Stop(/*clear_results=*/false);
+  }
   query_autocomplete_callback_ = std::move(callback);
 
   AutocompleteInput autocomplete_input(
-      base::UTF8ToUTF16(input), metrics::OmniboxEventProto::NTP_REALBOX,
+      input, metrics::OmniboxEventProto::NTP_REALBOX,
       ChromeAutocompleteSchemeClassifier(profile()));
   autocomplete_input.set_from_omnibox_focus(input.empty());
   autocomplete_controller_->Start(autocomplete_input);

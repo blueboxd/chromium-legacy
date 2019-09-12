@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/system/sys_info.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/services/assistant/media_session/assistant_media_session.h"
 #include "chromeos/services/assistant/platform/power_manager_provider_impl.h"
 #include "chromeos/services/assistant/public/features.h"
@@ -79,14 +80,16 @@ void PlatformApiImpl::DummyAuthProvider::Reset() {}
 PlatformApiImpl::PlatformApiImpl(
     mojom::Client* client,
     AssistantMediaSession* media_session,
-    device::mojom::BatteryMonitorPtr battery_monitor,
+    mojo::PendingRemote<device::mojom::BatteryMonitor> battery_monitor,
     scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> background_task_runner,
     std::string pref_locale)
     : audio_input_provider_(client,
+                            chromeos::PowerManagerClient::Get(),
                             media::AudioDeviceDescription::kDefaultDeviceId,
                             /*hotword_device_id=*/std::string()),
       audio_output_provider_(client,
+                             chromeos::PowerManagerClient::Get(),
                              media_session,
                              background_task_runner,
                              media::AudioDeviceDescription::kDefaultDeviceId),

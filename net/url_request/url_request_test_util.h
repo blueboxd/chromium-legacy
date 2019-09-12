@@ -269,11 +269,6 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   bool GetLoadTimingInfoBeforeRedirect(
       LoadTimingInfo* load_timing_info_before_redirect) const;
 
-  // Same as GetLoadTimingInfoBeforeRedirect, except for calls to
-  // AuthRequiredResponse.
-  bool GetLoadTimingInfoBeforeAuth(
-      LoadTimingInfo* load_timing_info_before_auth) const;
-
   // Will redirect once to the given URL when the next set of headers are
   // received.
   void set_redirect_on_headers_received_url(
@@ -365,11 +360,6 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   void OnCompleted(URLRequest* request, bool started, int net_error) override;
   void OnURLRequestDestroyed(URLRequest* request) override;
   void OnPACScriptError(int line_number, const base::string16& error) override;
-  NetworkDelegate::AuthRequiredResponse OnAuthRequired(
-      URLRequest* request,
-      const AuthChallengeInfo& auth_info,
-      AuthCallback callback,
-      AuthCredentials* credentials) override;
   bool OnCanGetCookies(const URLRequest& request,
                        const CookieList& cookie_list,
                        bool allowed_from_caller) override;
@@ -418,9 +408,6 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
 
   LoadTimingInfo load_timing_info_before_redirect_;
   bool has_load_timing_info_before_redirect_;
-
-  LoadTimingInfo load_timing_info_before_auth_;
-  bool has_load_timing_info_before_auth_;
 
   bool experimental_cookie_features_enabled_;           // false by default
   bool cancel_request_with_policy_violating_referrer_;  // false by default

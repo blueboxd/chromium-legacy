@@ -4,6 +4,7 @@
 
 #include "android_webview/browser/aw_metrics_service_client.h"
 
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
@@ -11,6 +12,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
+#include "components/metrics/metrics_switches.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,7 +25,7 @@ const char kTestClientId[] = "01234567-89ab-40cd-80ef-0123456789ab";
 
 class TestClient : public AwMetricsServiceClient {
  public:
-  TestClient() {}
+  TestClient() : in_sample_(true) {}
   ~TestClient() override {}
 
   bool IsRecordingActive() {
@@ -32,11 +34,13 @@ class TestClient : public AwMetricsServiceClient {
       return service->recording_active();
     return false;
   }
+  void SetInSample(bool value) { in_sample_ = value; }
 
  protected:
   bool IsInSample() override { return true; }
 
  private:
+  bool in_sample_;
   DISALLOW_COPY_AND_ASSIGN(TestClient);
 };
 
@@ -123,6 +127,24 @@ TEST_F(AwMetricsServiceClientTest, TestSetConsentFalseClearsClientId) {
   client->SetHaveMetricsConsent(false);
   ASSERT_FALSE(client->IsRecordingActive());
   ASSERT_FALSE(prefs->HasPrefPath(metrics::prefs::kMetricsClientID));
+}
+
+TEST_F(AwMetricsServiceClientTest, TestCanForceEnableMetrics) {
+  auto prefs = CreateTestPrefs();
+  auto client = CreateAndInitTestClient(prefs.get());
+
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      metrics::switches::kForceEnableMetricsReporting);
+
+  // Flip everything to false; flag should have higher precedence.
+  client->SetHaveMetricsConsent(false);
+  client->SetInSample(false);
+  ASSERT_TRUE(client->IsReportingEnabled());
+
+  // Flip things to true just to double-check everything still works.
+  client->SetHaveMetricsConsent(true);
+  client->SetInSample(true);
+  ASSERT_TRUE(client->IsReportingEnabled());
 }
 
 }  // namespace android_webview

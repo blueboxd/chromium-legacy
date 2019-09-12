@@ -14,6 +14,9 @@ let DocumentDimensions;
 /** @typedef {{x: number, y: number}} */
 let Point;
 
+/** @typedef {{x: (number|undefined), y: (number|undefined)}} */
+let PartialPoint;
+
 /** @typedef {{width: number, height: number}} */
 let Size;
 
@@ -1166,7 +1169,9 @@ class Viewport {
         this.fittingType_ == FittingType.FIT_TO_HEIGHT);
   }
 
-  /** @param {!Point} point The position to which to scroll the viewport. */
+  /**
+   * @param {!PartialPoint} point The position to which to scroll the viewport.
+   */
   scrollTo(point) {
     let changed = false;
     const newPosition = this.position;

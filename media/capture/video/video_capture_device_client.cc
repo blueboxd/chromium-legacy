@@ -292,10 +292,6 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
       DCHECK(!chopped_width && !chopped_height);
       fourcc_format = libyuv::FOURCC_YUY2;
       break;
-    case PIXEL_FORMAT_UYVY:
-      DCHECK(!chopped_width && !chopped_height);
-      fourcc_format = libyuv::FOURCC_UYVY;
-      break;
     case PIXEL_FORMAT_RGB24:
 // Linux RGB24 defines red at lowest byte address,
 // see http://linuxtv.org/downloads/v4l-dvb-apis/packed-rgb.html.

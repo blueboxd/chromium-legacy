@@ -14,6 +14,15 @@
       return {requestExtraInfo, responseExtraInfo};
     }
 
+    async jsNavigateWithExtraInfo(url) {
+      const requestExtraInfoPromise = this._dp.Network.onceRequestWillBeSentExtraInfo();
+      const responseExtraInfoPromise = this._dp.Network.onceResponseReceivedExtraInfo();
+      await this._session.evaluate(`window.location.href = '${url}'`);
+      const requestExtraInfo = await requestExtraInfoPromise;
+      const responseExtraInfo = await responseExtraInfoPromise;
+      return {requestExtraInfo, responseExtraInfo};
+    }
+
     async fetchWithExtraInfo(url) {
       const requestExtraInfoPromise = this._dp.Network.onceRequestWillBeSentExtraInfo();
       const responseExtraInfoPromise = this._dp.Network.onceResponseReceivedExtraInfo();

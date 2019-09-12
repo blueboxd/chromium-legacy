@@ -40,6 +40,7 @@
 #include "cc/trees/proxy_main.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "components/viz/common/frame_timing_details.h"
 #include "components/viz/service/display/skia_output_surface.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/fake_output_surface.h"
@@ -356,10 +357,10 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
 
   void DidPresentCompositorFrame(
       uint32_t presentation_token,
-      const gfx::PresentationFeedback& feedback) override {
-    LayerTreeHostImpl::DidPresentCompositorFrame(presentation_token, feedback);
-    test_hooks_->DidReceivePresentationTimeOnThread(this, presentation_token,
-                                                    feedback);
+      const viz::FrameTimingDetails& details) override {
+    LayerTreeHostImpl::DidPresentCompositorFrame(presentation_token, details);
+    test_hooks_->DidReceivePresentationTimeOnThread(
+        this, presentation_token, details.presentation_feedback);
   }
   AnimationHost* animation_host() const {
     return static_cast<AnimationHost*>(mutator_host());

@@ -147,7 +147,6 @@
 #include "content/renderer/worker/dedicated_worker_host_factory_client.h"
 #include "crypto/sha2.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/data_url.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -1466,7 +1465,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   // RenderFrame.
   render_view->render_widget_ = RenderWidget::CreateForFrame(
       params->main_frame_widget_routing_id, compositor_deps,
-      params->visual_properties.screen_info,
+      render_view->page_properties(), params->visual_properties.screen_info,
       params->visual_properties.display_mode,
       /*is_undead=*/params->main_frame_routing_id == MSG_ROUTING_NONE,
       params->never_visible);
@@ -1686,7 +1685,8 @@ void RenderFrameImpl::CreateFrame(
     // local root with a new compositing, painting, and input coordinate
     // space/context.
     std::unique_ptr<RenderWidget> render_widget = RenderWidget::CreateForFrame(
-        widget_params.routing_id, compositor_deps, screen_info_from_main_frame,
+        widget_params.routing_id, compositor_deps,
+        render_view->page_properties(), screen_info_from_main_frame,
         blink::kWebDisplayModeUndefined,
         /*is_undead=*/false, /*never_visible=*/false);
 
@@ -2126,9 +2126,9 @@ RenderWidgetFullscreenPepper* RenderFrameImpl::CreatePepperFullscreenContainer(
   if (main_frame->IsWebLocalFrame())
     main_frame_url = main_frame->ToWebLocalFrame()->GetDocument().Url();
 
-  mojom::WidgetPtr widget_channel;
-  mojom::WidgetRequest widget_channel_request =
-      mojo::MakeRequest(&widget_channel);
+  mojo::PendingRemote<mojom::Widget> widget_channel;
+  mojo::PendingReceiver<mojom::Widget> widget_channel_receiver =
+      widget_channel.InitWithNewPipeAndPassReceiver();
 
   // Synchronous IPC to obtain a routing id for the fullscreen widget.
   int32_t fullscreen_widget_routing_id = MSG_ROUTING_NONE;
@@ -2146,9 +2146,10 @@ RenderWidgetFullscreenPepper* RenderFrameImpl::CreatePepperFullscreenContainer(
   // web ScreenInfo or the original ScreenInfo here.
   RenderWidgetFullscreenPepper* widget = RenderWidgetFullscreenPepper::Create(
       fullscreen_widget_routing_id, std::move(show_callback),
-      GetLocalRootRenderWidget()->compositor_deps(), plugin,
-      std::move(main_frame_url), GetLocalRootRenderWidget()->GetWebScreenInfo(),
-      std::move(widget_channel_request));
+      GetLocalRootRenderWidget()->compositor_deps(),
+      render_view()->page_properties(), plugin, std::move(main_frame_url),
+      GetLocalRootRenderWidget()->GetWebScreenInfo(),
+      std::move(widget_channel_receiver));
   // TODO(nick): The show() handshake seems like unnecessary complexity here,
   // since there's no real delay between CreateFullscreenWidget and
   // ShowCreatedFullscreenWidget. Would it be simpler to have the

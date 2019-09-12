@@ -72,9 +72,6 @@ enum SuggestRequestsHistogramValue {
   MAX_SUGGEST_REQUEST_HISTOGRAM_VALUE
 };
 
-// The verbatim score for an input which is not an URL.
-const int kNonURLVerbatimRelevance = 1300;
-
 // Increments the appropriate value in the histogram by one.
 void LogOmniboxSuggestRequest(
     SuggestRequestsHistogramValue request_value) {

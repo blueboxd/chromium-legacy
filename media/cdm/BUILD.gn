@@ -23,6 +23,7 @@ source_set("cdm") {
     "//media/base/android",
 
     "//media/filters",
+    "//media/fuchsia/cdm",
   ]
 
   sources = [

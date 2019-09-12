@@ -178,6 +178,9 @@ class MockRenderProcessHost : public RenderProcessHost {
       override {}
   void BindIndexedDB(mojo::PendingReceiver<blink::mojom::IDBFactory> receiver,
                      const url::Origin& origin) override;
+  void CreateLockManager(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::LockManager> receiver) override {}
   void CleanupCorbExceptionForPluginUponDestruction() override;
 
   // IPC::Sender via RenderProcessHost.

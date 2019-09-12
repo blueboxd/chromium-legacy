@@ -339,8 +339,10 @@ bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
     UpdatePasswordInfoBarDelegate::Create(web_contents(),
                                           std::move(form_to_save));
   } else {
-    SavePasswordInfoBarDelegate::Create(web_contents(),
-                                        std::move(form_to_save));
+    auto saving_flow_recorder(
+        std::make_unique<password_manager::SavingFlowMetricsRecorder>());
+    SavePasswordInfoBarDelegate::Create(web_contents(), std::move(form_to_save),
+                                        std::move(saving_flow_recorder));
   }
 #endif  // !defined(OS_ANDROID)
   return true;
@@ -917,11 +919,15 @@ void ChromePasswordManagerClient::GenerationElementLostFocus() {
     popup_controller_->GenerationElementLostFocus();
 }
 
+#if defined(OS_ANDROID)
 void ChromePasswordManagerClient::OnOnboardingSuccessful(
-    std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save) {
-  PromptUserToSaveOrUpdatePassword(std::move(form_to_save),
-                                   /* is_password_update */ false);
+    std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
+    std::unique_ptr<password_manager::SavingFlowMetricsRecorder>
+        saving_flow_recorder) {
+  SavePasswordInfoBarDelegate::Create(web_contents(), std::move(form_to_save),
+                                      std::move(saving_flow_recorder));
 }
+#endif  // defined(OS_ANDROID)
 
 const GURL& ChromePasswordManagerClient::GetMainFrameURL() const {
   return web_contents()->GetVisibleURL();

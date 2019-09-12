@@ -147,7 +147,7 @@ void DeviceService::OnStart() {
   registry_.AddInterface<mojom::GeolocationConfig>(base::BindRepeating(
       &DeviceService::BindGeolocationConfigRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::GeolocationContext>(base::Bind(
-      &DeviceService::BindGeolocationContextRequest, base::Unretained(this)));
+      &DeviceService::BindGeolocationContextReceiver, base::Unretained(this)));
   registry_.AddInterface<mojom::GeolocationControl>(base::Bind(
       &DeviceService::BindGeolocationControlRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::PowerMonitor>(base::Bind(
@@ -180,7 +180,7 @@ void DeviceService::OnStart() {
           ->CreateInterfaceFactory<mojom::VibrationManager>());
 #else
   registry_.AddInterface<mojom::BatteryMonitor>(base::Bind(
-      &DeviceService::BindBatteryMonitorRequest, base::Unretained(this)));
+      &DeviceService::BindBatteryMonitorReceiver, base::Unretained(this)));
   registry_.AddInterface<mojom::HidManager>(base::Bind(
       &DeviceService::BindHidManagerRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::NFCProvider>(base::Bind(
@@ -230,9 +230,9 @@ void DeviceService::OnBindInterface(
 }
 
 #if !defined(OS_ANDROID)
-void DeviceService::BindBatteryMonitorRequest(
-    mojom::BatteryMonitorRequest request) {
-  BatteryMonitorImpl::Create(std::move(request));
+void DeviceService::BindBatteryMonitorReceiver(
+    mojo::PendingReceiver<mojom::BatteryMonitor> receiver) {
+  BatteryMonitorImpl::Create(std::move(receiver));
 }
 
 void DeviceService::BindHidManagerRequest(mojom::HidManagerRequest request) {
@@ -285,9 +285,9 @@ void DeviceService::BindGeolocationConfigRequest(
   GeolocationConfig::Create(std::move(request));
 }
 
-void DeviceService::BindGeolocationContextRequest(
-    mojom::GeolocationContextRequest request) {
-  GeolocationContext::Create(std::move(request));
+void DeviceService::BindGeolocationContextReceiver(
+    mojo::PendingReceiver<mojom::GeolocationContext> receiver) {
+  GeolocationContext::Create(std::move(receiver));
 }
 
 void DeviceService::BindGeolocationControlRequest(

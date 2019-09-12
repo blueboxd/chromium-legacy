@@ -170,6 +170,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   CanvasResourceProvider* ResourceProvider() const;
   void FlushRecording();
 
+  PaintRecorder* getRecorder() { return recorder_.get(); }
   sk_sp<cc::PaintRecord> getLastRecord() { return last_recording_; }
 
  private:
@@ -194,6 +195,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   int frames_since_last_commit_ = 0;
   bool have_recorded_draw_commands_;
   bool is_hidden_;
+  // See the implementation of DisableDeferral() for more information.
   bool is_deferral_enabled_;
   bool software_rendering_while_hidden_;
   bool hibernation_scheduled_ = false;
@@ -203,6 +205,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   const AccelerationMode acceleration_mode_;
   const CanvasColorParams color_params_;
   const IntSize size_;
+  base::CheckedNumeric<int> recording_pixel_count_;
 
   enum SnapshotState {
     kInitialSnapshotState,

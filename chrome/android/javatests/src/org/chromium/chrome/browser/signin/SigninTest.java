@@ -28,6 +28,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.preferences.MainPreferences;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -344,7 +345,9 @@ public class SigninTest {
         // in the resume of the Main activity, but we forcefully do this here.
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> ProfileSyncService.get().setFirstSetupComplete());
+                ()
+                        -> ProfileSyncService.get().setFirstSetupComplete(
+                                SyncFirstSetupCompleteSource.BASIC_FLOW));
         prefActivity.finish();
 
         // Verify that signin succeeded.

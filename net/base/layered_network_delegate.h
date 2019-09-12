@@ -71,10 +71,6 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
   void OnCompleted(URLRequest* request, bool started, int net_error) final;
   void OnURLRequestDestroyed(URLRequest* request) final;
   void OnPACScriptError(int line_number, const base::string16& error) final;
-  AuthRequiredResponse OnAuthRequired(URLRequest* request,
-                                      const AuthChallengeInfo& auth_info,
-                                      AuthCallback callback,
-                                      AuthCredentials* credentials) final;
   bool OnCanGetCookies(const URLRequest& request,
                        const CookieList& cookie_list,
                        bool allowed_from_caller) final;
@@ -153,10 +149,6 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
                                       const net::CanonicalCookie& cookie,
                                       CookieOptions* options,
                                       bool allowed_from_caller);
-
-  virtual void OnAuthRequiredInternal(URLRequest* request,
-                                      const AuthChallengeInfo& auth_info,
-                                      AuthCredentials* credentials);
 
   // If this returns false, it short circuits the corresponding call in any
   // nested NetworkDelegates.

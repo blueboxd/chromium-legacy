@@ -671,7 +671,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
       };
 
   // For testing purposes, assume we get en-US localized strings.
-  TestLocalizedLandmarkType(0, ax::mojom::Role::kBanner, "header",
+  TestLocalizedLandmarkType(0, ax::mojom::Role::kHeader, "header",
                             base::ASCIIToUTF16("banner"));
   TestLocalizedLandmarkType(1, ax::mojom::Role::kComplementary, "aside",
                             base::ASCIIToUTF16("complementary"));
@@ -710,6 +710,8 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
       "<audio controls></audio>"
       "<details></details>"
       "<figure></figure>"
+      "<footer></footer>"
+      "<header></header>"
       "<input>"
       "<input type='color'>"
       "<input type='date'>"
@@ -728,7 +730,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
 
   BrowserAccessibility* root = GetManager()->GetRoot();
   ASSERT_NE(nullptr, root);
-  ASSERT_EQ(16u, root->PlatformChildCount());
+  ASSERT_EQ(18u, root->PlatformChildCount());
 
   auto TestLocalizedRoleDescription =
       [root](int child_index,
@@ -745,19 +747,21 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   TestLocalizedRoleDescription(1, base::ASCIIToUTF16("audio"));
   TestLocalizedRoleDescription(2, base::ASCIIToUTF16("details"));
   TestLocalizedRoleDescription(3, base::ASCIIToUTF16("figure"));
-  TestLocalizedRoleDescription(4, base::ASCIIToUTF16(""));
-  TestLocalizedRoleDescription(5, base::ASCIIToUTF16("color picker"));
-  TestLocalizedRoleDescription(6, base::ASCIIToUTF16("date picker"));
+  TestLocalizedRoleDescription(4, base::ASCIIToUTF16("footer"));
+  TestLocalizedRoleDescription(5, base::ASCIIToUTF16("header"));
+  TestLocalizedRoleDescription(6, base::ASCIIToUTF16(""));
+  TestLocalizedRoleDescription(7, base::ASCIIToUTF16("color picker"));
+  TestLocalizedRoleDescription(8, base::ASCIIToUTF16("date picker"));
   TestLocalizedRoleDescription(
-      7, base::ASCIIToUTF16("local date and time picker"));
-  TestLocalizedRoleDescription(8, base::ASCIIToUTF16("email"));
-  TestLocalizedRoleDescription(9, base::ASCIIToUTF16("telephone"));
-  TestLocalizedRoleDescription(10, base::ASCIIToUTF16("url"));
-  TestLocalizedRoleDescription(11, base::ASCIIToUTF16("week picker"));
-  TestLocalizedRoleDescription(12, base::ASCIIToUTF16("meter"));
-  TestLocalizedRoleDescription(13, base::ASCIIToUTF16("output"));
-  TestLocalizedRoleDescription(14, base::ASCIIToUTF16("time"));
-  TestLocalizedRoleDescription(15, base::ASCIIToUTF16("content information"));
+      9, base::ASCIIToUTF16("local date and time picker"));
+  TestLocalizedRoleDescription(10, base::ASCIIToUTF16("email"));
+  TestLocalizedRoleDescription(11, base::ASCIIToUTF16("telephone"));
+  TestLocalizedRoleDescription(12, base::ASCIIToUTF16("url"));
+  TestLocalizedRoleDescription(13, base::ASCIIToUTF16("week picker"));
+  TestLocalizedRoleDescription(14, base::ASCIIToUTF16("meter"));
+  TestLocalizedRoleDescription(15, base::ASCIIToUTF16("output"));
+  TestLocalizedRoleDescription(16, base::ASCIIToUTF16("time"));
+  TestLocalizedRoleDescription(17, base::ASCIIToUTF16("content information"));
 }
 
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,

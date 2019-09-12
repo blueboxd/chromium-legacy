@@ -217,7 +217,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   EXPECT_CALL(*data_type_manager, Configure(_, _));
   ON_CALL(*data_type_manager, state())
       .WillByDefault(Return(DataTypeManager::CONFIGURED));
-  sync_service()->GetUserSettings()->SetFirstSetupComplete();
+  sync_service()->GetUserSettings()->SetFirstSetupComplete(
+      syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
 
   // This should have fully enabled sync.
   EXPECT_TRUE(sync_service()->IsSyncFeatureEnabled());
@@ -645,7 +646,8 @@ TEST_F(ProfileSyncServiceStartupTest, FullStartupSequenceFirstTime) {
   // configuring the data types. Just marking the initial setup as complete
   // isn't enough though, because setup is still considered in progress (we
   // haven't released the setup-in-progress handle).
-  sync_service()->GetUserSettings()->SetFirstSetupComplete();
+  sync_service()->GetUserSettings()->SetFirstSetupComplete(
+      syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
   EXPECT_EQ(SyncService::TransportState::PENDING_DESIRED_CONFIGURATION,
             sync_service()->GetTransportState());
   EXPECT_TRUE(sync_service()->IsSyncFeatureEnabled());

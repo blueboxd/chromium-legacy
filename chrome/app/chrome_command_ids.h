@@ -70,11 +70,11 @@
 
 #define IDC_OPEN_IN_PWA_WINDOW          34053
 
-// Hosted app commands
+// Web app window commands
 #define IDC_COPY_URL                    34060
 #define IDC_OPEN_IN_CHROME              34061
 #define IDC_SITE_SETTINGS               34062
-#define IDC_HOSTED_APP_MENU_APP_INFO    34063
+#define IDC_WEB_APP_MENU_APP_INFO    34063
 
 #if defined(OS_CHROMEOS)
 // Terminal system app commands

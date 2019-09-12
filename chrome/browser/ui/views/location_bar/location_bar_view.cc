@@ -90,6 +90,7 @@
 #include "extensions/common/feature_switch.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/dragdrop/drag_drop_types.h"

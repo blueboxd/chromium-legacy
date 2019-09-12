@@ -13,19 +13,20 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_layout.h"
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_platform_specific.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/new_tab_button.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -183,10 +184,10 @@ void OpaqueBrowserFrameView::InitViews() {
   web_app::AppBrowserController* controller =
       browser_view()->browser()->app_controller();
   if (controller && controller->HasTitlebarToolbar()) {
-    set_hosted_app_button_container(new HostedAppButtonContainer(
-        frame(), browser_view(), GetCaptionColor(kActive),
-        GetCaptionColor(kInactive)));
-    AddChildView(hosted_app_button_container());
+    set_web_app_frame_toolbar(
+        AddChildView(std::make_unique<WebAppFrameToolbarView>(
+            frame(), browser_view(), GetCaptionColor(kActive),
+            GetCaptionColor(kInactive))));
   }
 }
 

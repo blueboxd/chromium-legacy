@@ -32450,6 +32450,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="Page Control Drag"/>
 </enum>
 
+<enum name="IOSUserInterfaceStyle">
+  <int value="0" label="Unspecified"/>
+  <int value="1" label="Light"/>
+  <int value="2" label="Dark"/>
+</enum>
+
 <enum name="IOSWKWebViewLinkPreviewAction">
   <summary>
     This enum is used to track the user actions that occur when previewing links
@@ -37234,6 +37240,7 @@ from previous Chrome versions.
   <int value="1421620678" label="simple-clear-browsing-data-support-string"/>
   <int value="1427905064" label="CreditCardAutofillTouchBar:enabled"/>
   <int value="1431050645" label="PayWithGoogleV1:disabled"/>
+  <int value="1431934725" label="OmniboxAutocompleteTitles:disabled"/>
   <int value="1434515920" label="ReaderModeInCCT:enabled"/>
   <int value="1435251818" label="AutofillNoLocalSaveOnUploadSuccess:enabled"/>
   <int value="1437413720" label="CooperativeScheduling:disabled"/>
@@ -37517,6 +37524,7 @@ from previous Chrome versions.
   <int value="1831593339" label="stop-in-background:disabled"/>
   <int value="1831835753" label="MaterialDesignIncognitoNTP:enabled"/>
   <int value="1832552562" label="EnableVirtualKeyboardUkm:enabled"/>
+  <int value="1834968807" label="OmniboxAutocompleteTitles:enabled"/>
   <int value="1835523483" label="OmniboxUIExperimentSwapTitleAndUrl:enabled"/>
   <int value="1838990777" label="V8Future:enabled"/>
   <int value="1839740266" label="LocationHardReload:disabled"/>
@@ -46987,6 +46995,15 @@ Called by update_net_trust_anchors.py.-->
 <enum name="PasswordManagerOfferedAndroidCredentials">
   <int value="0" label="None from Android"/>
   <int value="1" label="1+ from Android"/>
+</enum>
+
+<enum name="PasswordManagerOnboardingResultOfSavingFlow">
+  <int value="0" label="Infobar: No direct interaction"/>
+  <int value="1" label="Infobar: Clicked 'Save'"/>
+  <int value="2" label="Infobar: Clicked 'X'"/>
+  <int value="3" label="Infobar: Clicked 'Never'"/>
+  <int value="4" label="Onboarding: Rejected"/>
+  <int value="5" label="Onboarding: Dismissed"/>
 </enum>
 
 <enum name="PasswordManagerOnboardingState">
@@ -58456,6 +58473,15 @@ would be helpful to identify which type is being sent.
 <enum name="SyncFeatureOrTransport">
   <int value="0" label="Full Sync feature."/>
   <int value="1" label="Sync transport only."/>
+</enum>
+
+<enum name="SyncFirstSetupCompleteSource">
+  <summary>Possible flows where the FirstSetupComplete bit was set.</summary>
+  <int value="0" label="Basic Flow"/>
+  <int value="1" label="Confirm Clicked In Advanced Flow"/>
+  <int value="2" label="Sync Turned On After Interrupted Advanced Flow"/>
+  <int value="3" label="Sync Left Off After Interrupted Advanced Flow"/>
+  <int value="4" label="Engine Initialized With Auto Start"/>
 </enum>
 
 <enum name="SyncFSConflictResolutionPolicy">

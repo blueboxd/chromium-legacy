@@ -5,6 +5,8 @@
 
 """Sets environment variables needed to run a chromium unit test."""
 
+from __future__ import print_function
+
 import io
 import os
 import signal
@@ -167,12 +169,12 @@ def symbolize_snippets_in_json(cmd, env):
     p = subprocess.Popen(symbolize_command, stderr=subprocess.PIPE, env=env)
     (_, stderr) = p.communicate()
   except OSError as e:
-    print >> sys.stderr, 'Exception while symbolizing snippets: %s' % e
+    print('Exception while symbolizing snippets: %s' % e, file=sys.stderr)
     raise
 
   if p.returncode != 0:
-    print >> sys.stderr, "Error: failed to symbolize snippets in JSON:\n"
-    print >> sys.stderr, stderr
+    print("Error: failed to symbolize snippets in JSON:\n", file=sys.stderr)
+    print(stderr, file=sys.stderr)
     raise subprocess.CalledProcessError(p.returncode, symbolize_command)
 
 
@@ -185,7 +187,7 @@ def run_command_with_output(argv, stdoutfile, env=None, cwd=None):
   Returns:
     integer returncode of the subprocess.
   """
-  print('Running %r in %r (env: %r)' % (argv, cwd, env))
+  print(('Running %r in %r (env: %r)' % (argv, cwd, env)))
   assert stdoutfile
   with io.open(stdoutfile, 'wb') as writer, \
       io.open(stdoutfile, 'rb', 1) as reader:
@@ -199,7 +201,7 @@ def run_command_with_output(argv, stdoutfile, env=None, cwd=None):
       time.sleep(0.1)
     # Read the remaining.
     sys.stdout.write(reader.read())
-    print('Command %r returned exit code %d' % (argv, process.returncode))
+    print(('Command %r returned exit code %d' % (argv, process.returncode)))
     return process.returncode
 
 
@@ -213,7 +215,7 @@ def run_command(argv, env=None, cwd=None, log=True):
     integer returncode of the subprocess.
   """
   if log:
-    print('Running %r in %r (env: %r)' % (argv, cwd, env))
+    print(('Running %r in %r (env: %r)' % (argv, cwd, env)))
   process = _popen(argv, env=env, cwd=cwd, stderr=subprocess.STDOUT)
   forward_signals([process])
   return wait_with_signals(process)
@@ -228,12 +230,12 @@ def run_command_output_to_handle(argv, file_handle, env=None, cwd=None):
   Returns:
     integer returncode of the subprocess.
   """
-  print('Running %r in %r (env: %r)' % (argv, cwd, env))
+  print(('Running %r in %r (env: %r)' % (argv, cwd, env)))
   process = _popen(
       argv, env=env, cwd=cwd, stderr=file_handle, stdout=file_handle)
   forward_signals([process])
   exit_code = wait_with_signals(process)
-  print('Command returned exit code %d' % exit_code)
+  print(('Command returned exit code %d' % exit_code))
   return exit_code
 
 
@@ -342,11 +344,11 @@ def run_executable(cmd, env, stdoutfile=None):
       if env_var_name in env:
           env_to_print[env_var_name] = env[env_var_name]
 
-  print('Additional test environment:\n%s\n'
+  print(('Additional test environment:\n%s\n'
         'Command: %s\n' % (
         '\n'.join('    %s=%s' %
-            (k, v) for k, v in sorted(env_to_print.iteritems())),
-        ' '.join(cmd)))
+            (k, v) for k, v in sorted(env_to_print.items())),
+        ' '.join(cmd))))
   sys.stdout.flush()
   env.update(extra_env or {})
   try:
@@ -371,7 +373,7 @@ def run_executable(cmd, env, stdoutfile=None):
     else:
       return run_command(cmd, env=env, log=False)
   except OSError:
-    print >> sys.stderr, 'Failed to start %s' % cmd
+    print('Failed to start %s' % cmd, file=sys.stderr)
     raise
 
 

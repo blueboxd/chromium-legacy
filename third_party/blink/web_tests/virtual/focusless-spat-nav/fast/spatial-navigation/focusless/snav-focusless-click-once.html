@@ -40,6 +40,7 @@
 
   promise_test(async () => {
     await snav.rAF();
+    await snav.rAF();
     eventSender.keyDown('Enter');
     await snav.rAF();
     assert_equals(buttonClicked,

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "cc/test/fake_compositor_frame_reporting_controller.h"
+#include "components/viz/common/frame_timing_details.h"
 
 namespace cc {
 FakeCompositorFrameReportingController::FakeCompositorFrameReportingController(
@@ -48,11 +49,14 @@ void FakeCompositorFrameReportingController::DidActivate() {
 void FakeCompositorFrameReportingController::DidSubmitCompositorFrame(
     uint32_t frame_token) {
   CompositorFrameReportingController::DidSubmitCompositorFrame(frame_token);
-  CompositorFrameReportingController::DidPresentCompositorFrame(
-      frame_token, base::TimeTicks::Now());
+
+  viz::FrameTimingDetails details;
+  details.presentation_feedback.timestamp = base::TimeTicks::Now();
+  CompositorFrameReportingController::DidPresentCompositorFrame(frame_token,
+                                                                details);
 }
 
 void FakeCompositorFrameReportingController::DidPresentCompositorFrame(
     uint32_t frame_token,
-    base::TimeTicks presentation_time) {}
+    const viz::FrameTimingDetails& details) {}
 }  // namespace cc

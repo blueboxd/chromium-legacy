@@ -116,6 +116,18 @@ TEST_F('CrElementsIconButtonV3Test', 'All', function() {
 });
 
 // eslint-disable-next-line no-var
+var CrElementsLazyRenderV3Test = class extends CrElementsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test?module=cr_elements/cr_lazy_render_tests.m.js';
+  }
+};
+
+TEST_F('CrElementsLazyRenderV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
 var CrElementsLinkRowV3Test = class extends CrElementsV3BrowserTest {
   /** @override */
   get browsePreload() {

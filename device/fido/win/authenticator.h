@@ -5,6 +5,7 @@
 #ifndef DEVICE_FIDO_WIN_AUTHENTICATOR_H_
 #define DEVICE_FIDO_WIN_AUTHENTICATOR_H_
 
+#include <Combaseapi.h>
 #include <memory>
 #include <string>
 
@@ -14,9 +15,10 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "device/fido/fido_authenticator.h"
-#include "device/fido/win/webauthn_api.h"
 
 namespace device {
+
+class WinWebAuthnApi;
 
 // WinWebAuthnApiAuthenticator forwards WebAuthn requests to external
 // authenticators via the native Windows WebAuthentication API
@@ -29,13 +31,14 @@ class COMPONENT_EXPORT(DEVICE_FIDO) WinWebAuthnApiAuthenticator
  public:
   // This method is safe to call without checking
   // WinWebAuthnApi::IsAvailable().
-  static bool IsUserVerifyingPlatformAuthenticatorAvailable();
+  static bool IsUserVerifyingPlatformAuthenticatorAvailable(
+      WinWebAuthnApi* api);
 
   // Instantiates an authenticator that uses the default WinWebAuthnApi.
   //
   // Callers must ensure that WinWebAuthnApi::IsAvailable() returns true
   // before creating instances of this class.
-  WinWebAuthnApiAuthenticator(HWND current_window);
+  WinWebAuthnApiAuthenticator(HWND current_window, WinWebAuthnApi* win_api_);
   ~WinWebAuthnApiAuthenticator() override;
 
   // SupportsCredProtectExtension returns whether the native API supports the

@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -104,7 +105,7 @@ std::unique_ptr<TabSharingUI> TabSharingUI::Create(
 
 TabSharingUIViews::TabSharingUIViews(const content::DesktopMediaID& media_id,
                                      base::string16 app_name)
-    : app_name_(std::move(app_name)) {
+    : shared_tab_media_id_(media_id), app_name_(std::move(app_name)) {
   shared_tab_ = content::WebContents::FromRenderFrameHost(
       content::RenderFrameHost::FromID(
           media_id.web_contents_id.render_process_id,
@@ -126,6 +127,7 @@ gfx::NativeViewId TabSharingUIViews::OnStarted(
   stop_callback_ = std::move(stop_callback);
   CreateInfobarsForAllTabs();
   SetContentsBorderVisible(shared_tab_, true);
+  CreateTabCaptureIndicator();
   return 0;
 }
 
@@ -264,4 +266,15 @@ void TabSharingUIViews::RemoveInfobarsForAllTabs() {
   }
 
   infobars_.clear();
+}
+
+void TabSharingUIViews::CreateTabCaptureIndicator() {
+  const blink::MediaStreamDevice device(
+      blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE,
+      shared_tab_media_id_.ToString(), std::string());
+  tab_capture_indicator_ui_ = MediaCaptureDevicesDispatcher::GetInstance()
+                                  ->GetMediaStreamCaptureIndicator()
+                                  ->RegisterMediaStream(shared_tab_, {device});
+  tab_capture_indicator_ui_->OnStarted(
+      base::OnceClosure(), content::MediaStreamUI::SourceCallback());
 }

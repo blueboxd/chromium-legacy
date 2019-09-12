@@ -53,6 +53,7 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierWin
 
  private:
   friend class NetworkChangeNotifierWinTest;
+  friend class TestNetworkChangeNotifierWin;
 
   // NetworkChangeNotifier methods:
   ConnectionType GetCurrentConnectionType() const override;
@@ -63,7 +64,7 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierWin
 
   // Does the actual work to determine the current connection type.
   // It is not thread safe, see crbug.com/324913.
-  virtual ConnectionType RecomputeCurrentConnectionType() const;
+  static ConnectionType RecomputeCurrentConnectionType();
 
   // Calls RecomputeCurrentConnectionTypeImpl on the DNS sequence and runs
   // |reply_callback| with the type on the calling sequence.

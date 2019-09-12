@@ -431,6 +431,21 @@ void HTMLObjectElement::AssociateWith(HTMLFormElement* form) {
   AssociateByParser(form);
 }
 
+bool HTMLObjectElement::DidFinishLoading() const {
+  if (!isConnected())
+    return false;
+  if (OwnedPlugin())
+    return true;
+  if (auto* frame = ContentFrame()) {
+    if (!frame->IsLoading())
+      return true;
+  }
+  if (ImageLoader() && !HasPendingActivity() && IsImageType())
+    return true;
+
+  return UseFallbackContent();
+}
+
 const HTMLObjectElement* ToHTMLObjectElementFromListedElement(
     const ListedElement* element) {
   SECURITY_DCHECK(!element || !element->IsFormControlElement());

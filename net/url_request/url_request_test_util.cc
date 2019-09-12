@@ -40,13 +40,12 @@ const int kStageBeforeURLRequest = 1 << 0;
 const int kStageBeforeStartTransaction = 1 << 1;
 const int kStageStartTransaction = 1 << 2;
 const int kStageHeadersReceived = 1 << 3;
-const int kStageAuthRequired = 1 << 4;
-const int kStageBeforeRedirect = 1 << 5;
-const int kStageResponseStarted = 1 << 6;
-const int kStageCompletedSuccess = 1 << 7;
-const int kStageCompletedError = 1 << 8;
-const int kStageURLRequestDestroyed = 1 << 9;
-const int kStageDestruction = 1 << 10;
+const int kStageBeforeRedirect = 1 << 4;
+const int kStageResponseStarted = 1 << 5;
+const int kStageCompletedSuccess = 1 << 6;
+const int kStageCompletedError = 1 << 7;
+const int kStageURLRequestDestroyed = 1 << 8;
+const int kStageDestruction = 1 << 9;
 
 }  // namespace
 
@@ -364,7 +363,6 @@ TestNetworkDelegate::TestNetworkDelegate()
       total_network_bytes_received_(0),
       total_network_bytes_sent_(0),
       has_load_timing_info_before_redirect_(false),
-      has_load_timing_info_before_auth_(false),
       experimental_cookie_features_enabled_(false),
       cancel_request_with_policy_violating_referrer_(false),
       will_be_intercepted_on_next_error_(false),
@@ -382,12 +380,6 @@ bool TestNetworkDelegate::GetLoadTimingInfoBeforeRedirect(
     LoadTimingInfo* load_timing_info_before_redirect) const {
   *load_timing_info_before_redirect = load_timing_info_before_redirect_;
   return has_load_timing_info_before_redirect_;
-}
-
-bool TestNetworkDelegate::GetLoadTimingInfoBeforeAuth(
-    LoadTimingInfo* load_timing_info_before_auth) const {
-  *load_timing_info_before_auth = load_timing_info_before_auth_;
-  return has_load_timing_info_before_auth_;
 }
 
 void TestNetworkDelegate::InitRequestStatesIfNew(int request_id) {
@@ -413,8 +405,7 @@ int TestNetworkDelegate::OnBeforeURLRequest(URLRequest* request,
       kStageBeforeStartTransaction |
       kStageResponseStarted |  // data: URLs do not trigger sending headers
       kStageBeforeRedirect |   // a delegate can trigger a redirection
-      kStageCompletedError |   // request canceled by delegate
-      kStageAuthRequired;      // Auth can come next for FTP requests
+      kStageCompletedError;    // request canceled by delegate
   created_requests_++;
   return OK;
 }
@@ -483,7 +474,6 @@ int TestNetworkDelegate::OnHeadersReceived(
   next_states_[req_id] =
       kStageBeforeRedirect |
       kStageResponseStarted |
-      kStageAuthRequired |
       kStageCompletedError;  // e.g. proxy resolution problem
 
   // Basic authentication sends a second request from the URLRequestHttpJob
@@ -614,33 +604,6 @@ void TestNetworkDelegate::OnURLRequestDestroyed(URLRequest* request) {
 
 void TestNetworkDelegate::OnPACScriptError(int line_number,
                                            const base::string16& error) {
-}
-
-NetworkDelegate::AuthRequiredResponse TestNetworkDelegate::OnAuthRequired(
-    URLRequest* request,
-    const AuthChallengeInfo& auth_info,
-    AuthCallback callback,
-    AuthCredentials* credentials) {
-  load_timing_info_before_auth_ = LoadTimingInfo();
-  request->GetLoadTimingInfo(&load_timing_info_before_auth_);
-  has_load_timing_info_before_auth_ = true;
-  EXPECT_FALSE(load_timing_info_before_auth_.request_start_time.is_null());
-  EXPECT_FALSE(load_timing_info_before_auth_.request_start.is_null());
-
-  int req_id = request->identifier();
-  InitRequestStatesIfNew(req_id);
-  event_order_[req_id] += "OnAuthRequired\n";
-  EXPECT_TRUE(next_states_[req_id] & kStageAuthRequired) <<
-      event_order_[req_id];
-  next_states_[req_id] =
-      kStageBeforeStartTransaction |
-      kStageAuthRequired |  // For example, proxy auth followed by server auth.
-      kStageHeadersReceived |  // Request canceled by delegate simulates empty
-                               // response.
-      kStageResponseStarted |  // data: URLs do not trigger sending headers
-      kStageBeforeRedirect |   // a delegate can trigger a redirection
-      kStageCompletedError;    // request cancelled before callback
-  return NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;
 }
 
 bool TestNetworkDelegate::OnCanGetCookies(const URLRequest& request,

@@ -200,8 +200,9 @@ void WKBasedNavigationManagerImpl::AddPendingItem(
   // When reloading an target url redirect page, re-use the target url as the
   // current item url.
   GURL target_url;
-  if (ui::PageTransitionCoreTypeIs(navigation_type,
-                                   ui::PAGE_TRANSITION_RELOAD) &&
+  if (navigation_type & ui::PAGE_TRANSITION_RELOAD &&
+      !(navigation_type & ui::PAGE_TRANSITION_FORWARD_BACK) &&
+      initiation_type == NavigationInitiationType::BROWSER_INITIATED &&
       web::wk_navigation_util::IsRestoreSessionUrl(current_item_url) &&
       web::wk_navigation_util::ExtractTargetURL(current_item_url,
                                                 &target_url)) {

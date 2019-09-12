@@ -185,19 +185,20 @@ void UpdateScreen::DelayErrorMessage() {
 
 void UpdateScreen::UpdateInfoChanged(
     const VersionUpdater::UpdateInfo& update_info) {
-  const UpdateEngineClient::Status& status = update_info.status;
+  const update_engine::StatusResult& status = update_info.status;
   hide_progress_on_exit_ = false;
   bool need_refresh_view = true;
-  switch (status.status) {
-    case UpdateEngineClient::UPDATE_STATUS_CHECKING_FOR_UPDATE:
-      // Do nothing in this case, we don't want to notify the user of the
+  switch (status.current_operation()) {
+    case update_engine::Operation::CHECKING_FOR_UPDATE:
+      // Do nothing in these cases, we don't want to notify the user of the
       // check unless there is an update.
-    case UpdateEngineClient::UPDATE_STATUS_ATTEMPTING_ROLLBACK:
-    case UpdateEngineClient::UPDATE_STATUS_IDLE:
+    case update_engine::Operation::ATTEMPTING_ROLLBACK:
+    case update_engine::Operation::DISABLED:
+    case update_engine::Operation::IDLE:
       need_refresh_view = false;
       break;
-    case UpdateEngineClient::UPDATE_STATUS_UPDATE_AVAILABLE:
-    case UpdateEngineClient::UPDATE_STATUS_DOWNLOADING:
+    case update_engine::Operation::UPDATE_AVAILABLE:
+    case update_engine::Operation::DOWNLOADING:
       MakeSureScreenIsShown();
       if (!is_critical_checked_) {
         // Because update engine doesn't send UPDATE_STATUS_UPDATE_AVAILABLE we
@@ -205,20 +206,20 @@ void UpdateScreen::UpdateInfoChanged(
         // notification.
         is_critical_checked_ = true;
         if (!HasCriticalUpdate()) {
-          VLOG(1) << "Non-critical update available: " << status.new_version;
+          VLOG(1) << "Non-critical update available: " << status.new_version();
           hide_progress_on_exit_ = true;
           ExitUpdate(Result::UPDATE_NOT_REQUIRED);
         } else {
-          VLOG(1) << "Critical update available: " << status.new_version;
+          VLOG(1) << "Critical update available: " << status.new_version();
         }
       }
       break;
-    case UpdateEngineClient::UPDATE_STATUS_VERIFYING:
-    case UpdateEngineClient::UPDATE_STATUS_FINALIZING:
-    case UpdateEngineClient::UPDATE_STATUS_NEED_PERMISSION_TO_UPDATE:
+    case update_engine::Operation::VERIFYING:
+    case update_engine::Operation::FINALIZING:
+    case update_engine::Operation::NEED_PERMISSION_TO_UPDATE:
       MakeSureScreenIsShown();
       break;
-    case UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT:
+    case update_engine::Operation::UPDATED_NEED_REBOOT:
       MakeSureScreenIsShown();
       if (HasCriticalUpdate()) {
         version_updater_->RebootAfterUpdate();
@@ -227,8 +228,8 @@ void UpdateScreen::UpdateInfoChanged(
         ExitUpdate(Result::UPDATE_NOT_REQUIRED);
       }
       break;
-    case UpdateEngineClient::UPDATE_STATUS_ERROR:
-    case UpdateEngineClient::UPDATE_STATUS_REPORTING_ERROR_EVENT:
+    case update_engine::Operation::ERROR:
+    case update_engine::Operation::REPORTING_ERROR_EVENT:
       // Ignore update errors for non-critical updates to prevent blocking the
       // user from getting to login screen during OOBE if the pending update is
       // not critical.
@@ -239,6 +240,8 @@ void UpdateScreen::UpdateInfoChanged(
       }
       need_refresh_view = false;
       break;
+    default:
+      NOTREACHED();
   }
   if (need_refresh_view)
     RefreshView(update_info);

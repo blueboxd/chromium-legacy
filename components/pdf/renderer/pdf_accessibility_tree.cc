@@ -16,6 +16,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/null_ax_action_target.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect_conversions.h"

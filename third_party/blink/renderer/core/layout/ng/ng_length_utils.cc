@@ -1098,15 +1098,24 @@ namespace {
 
 // Implements the common part of the child percentage size calculation. Deals
 // with how percentages are propagated from parent to child in quirks mode.
-LogicalSize AdjustChildPercentageSizeForQuirksAndFlex(
-    const NGConstraintSpace& space,
-    const NGBlockNode node,
-    LogicalSize child_percentage_size,
-    LayoutUnit parent_percentage_block_size) {
+LogicalSize AdjustChildPercentageSize(const NGConstraintSpace& space,
+                                      const NGBlockNode node,
+                                      LogicalSize child_percentage_size,
+                                      LayoutUnit parent_percentage_block_size) {
   // Flex items may have a fixed block-size, but children shouldn't resolve
   // their percentages against this.
-  if (space.IsFixedBlockSize() && space.IsFixedBlockSizeIndefinite()) {
+  if (space.IsFixedBlockSizeIndefinite()) {
+    DCHECK(space.IsFixedBlockSize());
     DCHECK(node.IsFlexItem());
+    child_percentage_size.block_size = kIndefiniteSize;
+    return child_percentage_size;
+  }
+
+  bool is_table_cell_in_measure_phase =
+      space.IsTableCell() && !space.IsFixedBlockSize();
+  // A table-cell during the "measure" phase forces its descendants to have an
+  // indefinite percentage resolution size.
+  if (is_table_cell_in_measure_phase) {
     child_percentage_size.block_size = kIndefiniteSize;
     return child_percentage_size;
   }
@@ -1126,68 +1135,50 @@ LogicalSize AdjustChildPercentageSizeForQuirksAndFlex(
 LogicalSize CalculateChildPercentageSize(
     const NGConstraintSpace& space,
     const NGBlockNode node,
-    const LogicalSize& child_available_size) {
+    const LogicalSize child_available_size) {
   // Anonymous block or spaces should pass the percent size straight through.
   if (space.IsAnonymous() || node.IsAnonymousBlock())
     return space.PercentageResolutionSize();
-
-  LogicalSize child_percentage_size = child_available_size;
-
-  bool is_table_cell_in_measure_phase =
-      space.IsTableCell() && !space.IsFixedBlockSize();
-
-  // Table cells which are measuring their content, force their children to
-  // have an indefinite percentage resolution size.
-  if (is_table_cell_in_measure_phase) {
-    child_percentage_size.block_size = kIndefiniteSize;
-    return child_percentage_size;
-  }
 
   // Table cell children don't apply the "percentage-quirk". I.e. if their
   // percentage resolution block-size is indefinite, they don't pass through
   // their parent's percentage resolution block-size.
   if (space.TableCellChildLayoutMode() !=
       NGTableCellChildLayoutMode::kNotTableCellChild)
-    return child_percentage_size;
+    return child_available_size;
 
-  return AdjustChildPercentageSizeForQuirksAndFlex(
-      space, node, child_percentage_size,
-      space.PercentageResolutionBlockSize());
+  return AdjustChildPercentageSize(space, node, child_available_size,
+                                   space.PercentageResolutionBlockSize());
 }
 
 LogicalSize CalculateReplacedChildPercentageSize(
     const NGConstraintSpace& space,
     const NGBlockNode node,
-    LogicalSize border_box_size,
+    const LogicalSize child_available_size,
     const NGBoxStrut& border_scrollbar_padding,
     const NGBoxStrut& border_padding) {
   // Anonymous block or spaces should pass the percent size straight through.
   if (space.IsAnonymous() || node.IsAnonymousBlock())
     return space.ReplacedPercentageResolutionSize();
 
-  bool has_resolvable_block_size = !node.Style().LogicalHeight().IsAuto() ||
-                                   !node.Style().LogicalMinHeight().IsAuto();
-
-  bool is_table_cell_in_layout_phase =
-      space.IsTableCell() && space.IsFixedBlockSize();
-
-  // Table cells in the "layout" phase have a fixed block-size. However
-  // replaced children should resolve their percentages against the size given
-  // in the "measure" phase.
+  // Replaced descendants of a table-cell which has a definite block-size,
+  // always resolve their percentages against this size (even during the
+  // "layout" pass where the fixed block-size may be different).
   //
-  // To handle this we recalculate the border-box block-size, ignoring the
-  // fixed size constraint.
-  if (is_table_cell_in_layout_phase && has_resolvable_block_size) {
-    border_box_size.block_size =
-        ComputeBlockSizeForFragmentInternal(space, node.Style(), border_padding,
-                                            /* content_size */ kIndefiniteSize);
+  // This ensures that between the table-cell "measure" and "layout" passes
+  // the replaced descendants remain the same size.
+  const ComputedStyle& style = node.Style();
+  if (space.IsTableCell() && style.LogicalHeight().IsFixed()) {
+    LayoutUnit block_size = ComputeBlockSizeForFragmentInternal(
+        space, style, border_padding, kIndefiniteSize /* content_size */);
+    DCHECK_NE(block_size, kIndefiniteSize);
+    return {child_available_size.inline_size,
+            (block_size - border_scrollbar_padding.BlockSum())
+                .ClampNegativeToZero()};
   }
 
-  LogicalSize child_percentage_size =
-      ShrinkAvailableSize(border_box_size, border_scrollbar_padding);
-
-  return AdjustChildPercentageSizeForQuirksAndFlex(
-      space, node, child_percentage_size,
+  return AdjustChildPercentageSize(
+      space, node, child_available_size,
       space.ReplacedPercentageResolutionBlockSize());
 }
 

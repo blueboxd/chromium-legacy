@@ -8,6 +8,10 @@
 #include "cc/trees/layer_tree_host_impl.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 
+namespace viz {
+struct FrameTimingDetails;
+}
+
 namespace cc {
 
 class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
@@ -43,7 +47,7 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
   void DidPresentCompositorFrameOnImplThread(
       uint32_t frame_token,
       std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
-      const gfx::PresentationFeedback& feedback) override {}
+      const viz::FrameTimingDetails& details) override {}
 
   void NotifyAnimationWorkletStateChange(AnimationWorkletMutationState state,
                                          ElementListType tree_type) override {}

@@ -14,6 +14,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.sync.SyncAndServicesPreferences;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
@@ -143,7 +144,8 @@ public class SigninFragment extends SigninFragmentBase {
                                     SyncAndServicesPreferences.createArguments(true));
                         } else if (ChromeFeatureList.isEnabled(
                                            ChromeFeatureList.SYNC_MANUAL_START_ANDROID)) {
-                            ProfileSyncService.get().setFirstSetupComplete();
+                            ProfileSyncService.get().setFirstSetupComplete(
+                                    SyncFirstSetupCompleteSource.BASIC_FLOW);
                         }
 
                         recordSigninCompletedHistogramAccountInfo();

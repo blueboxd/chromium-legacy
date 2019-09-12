@@ -11,10 +11,12 @@ import("//testing/test.gni")
 # Integration helpers for commonly used fuchsia.* APIs.
 source_set("base") {
   sources = [
+    "init_logging.cc",
     "mem_buffer_util.cc",
     "string_util.cc",
   ]
   public = [
+    "init_logging.h",
     "mem_buffer_util.h",
     "string_util.h",
   ]
@@ -73,6 +75,8 @@ source_set("test_support") {
     "test_devtools_list_fetcher.h",
     "test_navigation_listener.cc",
     "test_navigation_listener.h",
+    "url_request_rewrite_test_util.cc",
+    "url_request_rewrite_test_util.h",
   ]
   public_deps = [
     ":base",

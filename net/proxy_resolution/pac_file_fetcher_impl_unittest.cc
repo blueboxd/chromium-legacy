@@ -174,14 +174,6 @@ class BasicNetworkDelegate : public NetworkDelegateImpl {
   void OnPACScriptError(int line_number, const base::string16& error) override {
   }
 
-  NetworkDelegate::AuthRequiredResponse OnAuthRequired(
-      URLRequest* request,
-      const AuthChallengeInfo& auth_info,
-      AuthCallback callback,
-      AuthCredentials* credentials) override {
-    return NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;
-  }
-
   bool OnCanGetCookies(const URLRequest& request,
                        const CookieList& cookie_list,
                        bool allowed_from_caller) override {

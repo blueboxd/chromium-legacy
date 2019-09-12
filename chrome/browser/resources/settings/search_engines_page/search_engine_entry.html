@@ -42,7 +42,10 @@
 
     <div class="list-item" focus-row-container>
       <div id="name-column">
-        <site-favicon favicon-url="[[engine.iconURL]]"></site-favicon>
+        <site-favicon
+            favicon-url="[[engine.iconURL]]"
+            url="[[engine.url]]">
+        </site-favicon>
         <div>[[engine.displayName]]</div>
       </div>
       <div id="keyword-column"><div>[[engine.keyword]]</div></div>

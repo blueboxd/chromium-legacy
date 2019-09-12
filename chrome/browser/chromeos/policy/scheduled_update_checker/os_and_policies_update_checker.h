@@ -86,8 +86,7 @@ class OsAndPoliciesUpdateChecker
   void StartUpdateCheck();
 
   // UpdateEngineClient::Observer overrides.
-  void UpdateStatusChanged(
-      const chromeos::UpdateEngineClient::Status& status) override;
+  void UpdateStatusChanged(const update_engine::StatusResult& status) override;
 
   // Tells whether starting an update check succeeded or not.
   void OnUpdateCheckStarted(

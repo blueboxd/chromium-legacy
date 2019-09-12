@@ -9,6 +9,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event.h"

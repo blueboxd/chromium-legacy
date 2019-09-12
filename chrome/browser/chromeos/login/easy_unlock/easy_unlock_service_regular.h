@@ -115,8 +115,6 @@ class EasyUnlockServiceRegular
       const std::set<std::string>& public_keys_before_sync,
       const std::set<std::string>& public_keys_after_sync);
 
-  void OnForceSyncCompleted(bool success);
-
   // proximity_auth::ScreenlockBridge::Observer implementation:
   void OnScreenDidLock(proximity_auth::ScreenlockBridge::LockHandler::ScreenType
                            screen_type) override;
@@ -124,12 +122,6 @@ class EasyUnlockServiceRegular
       proximity_auth::ScreenlockBridge::LockHandler::ScreenType screen_type)
       override;
   void OnFocusedUserChanged(const AccountId& account_id) override;
-
-  // Called after a cryptohome RemoveKey or RefreshKey operation to set the
-  // proper hardlock state if the operation is successful.
-  void SetHardlockAfterKeyOperation(
-      EasyUnlockScreenlockStateHandler::HardlockState state_on_success,
-      bool success);
 
   // Refreshes the ChromeOS cryptohome keys if the user has reauthed recently.
   // Otherwise, hardlock the device.

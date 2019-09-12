@@ -10,6 +10,7 @@
 
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"

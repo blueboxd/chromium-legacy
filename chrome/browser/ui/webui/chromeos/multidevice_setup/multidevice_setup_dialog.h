@@ -31,6 +31,8 @@ class MultiDeviceSetupDialog : public SystemWebDialogDelegate {
   // nullptr.
   static MultiDeviceSetupDialog* Get();
 
+  static void SetInstanceForTesting(MultiDeviceSetupDialog* instance);
+
   // Registers a callback which will be called when the dialog is closed.
   void AddOnCloseCallback(base::OnceClosure callback);
 

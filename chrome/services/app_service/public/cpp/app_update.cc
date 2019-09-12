@@ -59,8 +59,6 @@ void AppUpdate::Merge(apps::mojom::App* state, const apps::mojom::App* delta) {
     state->version = delta->version;
   }
   if (!delta->additional_search_terms.empty()) {
-    DCHECK(state->permissions.empty() ||
-           (delta->permissions.size() == state->permissions.size()));
     state->additional_search_terms.clear();
     CloneStrings(delta->additional_search_terms,
                  &state->additional_search_terms);

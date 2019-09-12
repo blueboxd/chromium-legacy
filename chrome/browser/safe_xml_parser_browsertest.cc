@@ -84,7 +84,6 @@ class SafeXmlParserTest : public InProcessBrowserTest {
     EXPECT_EQ(*expected_value, *actual_value);
   }
 
-  data_decoder::mojom::XmlParserPtr xml_parser_ptr_;
   TestServiceManagerListener listener_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeXmlParserTest);

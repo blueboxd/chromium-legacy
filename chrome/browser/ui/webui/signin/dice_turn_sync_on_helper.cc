@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -104,7 +105,6 @@ class TokensLoadedCallbackRunner : public signin::IdentityManager::Observer {
                              KeyedServiceShutdownNotifier* shutdown_notifier,
                              base::OnceClosure callback)
       : identity_manager_(identity_manager),
-        scoped_identity_manager_observer_(this),
         callback_(std::move(callback)),
         shutdown_subscription_(shutdown_notifier->Subscribe(
             base::Bind(&TokensLoadedCallbackRunner::OnShutdown,
@@ -122,11 +122,13 @@ class TokensLoadedCallbackRunner : public signin::IdentityManager::Observer {
   void OnShutdown() { delete this; }
 
   signin::IdentityManager* identity_manager_;
-  ScopedObserver<signin::IdentityManager, TokensLoadedCallbackRunner>
-      scoped_identity_manager_observer_;
+  ScopedObserver<signin::IdentityManager, signin::IdentityManager::Observer>
+      scoped_identity_manager_observer_{this};
   base::OnceClosure callback_;
   std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
       shutdown_subscription_;
+
+  DISALLOW_COPY_AND_ASSIGN(TokensLoadedCallbackRunner);
 };
 
 }  // namespace
@@ -490,7 +492,8 @@ void DiceTurnSyncOnHelper::FinishSyncSetupAndDelete(
     case LoginUIService::SYNC_WITH_DEFAULT_SETTINGS: {
       syncer::SyncService* sync_service = GetSyncService();
       if (sync_service)
-        sync_service->GetUserSettings()->SetFirstSetupComplete();
+        sync_service->GetUserSettings()->SetFirstSetupComplete(
+            syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
       if (consent_service)
         consent_service->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
       break;

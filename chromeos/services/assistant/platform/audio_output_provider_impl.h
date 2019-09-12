@@ -32,6 +32,7 @@ class AudioOutputProviderImpl : public assistant_client::AudioOutputProvider {
  public:
   AudioOutputProviderImpl(
       mojom::Client* client,
+      chromeos::PowerManagerClient* power_manager_client,
       AssistantMediaSession* media_session,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
       const std::string& device_id);

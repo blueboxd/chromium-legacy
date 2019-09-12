@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/models/combobox_model.h"

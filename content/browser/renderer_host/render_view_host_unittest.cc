@@ -30,6 +30,7 @@
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/filename_util.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "ui/base/page_transition_types.h"
@@ -84,9 +85,9 @@ TEST_F(RenderViewHostTest, FilterAbout) {
 TEST_F(RenderViewHostTest, CreateFullscreenWidget) {
   int32_t routing_id = process()->GetNextRoutingID();
 
-  mojom::WidgetPtr widget;
+  mojo::PendingRemote<mojom::Widget> widget;
   std::unique_ptr<MockWidgetImpl> widget_impl =
-      std::make_unique<MockWidgetImpl>(mojo::MakeRequest(&widget));
+      std::make_unique<MockWidgetImpl>(widget.InitWithNewPipeAndPassReceiver());
   test_rvh()->CreateNewFullscreenWidget(routing_id, std::move(widget));
 }
 

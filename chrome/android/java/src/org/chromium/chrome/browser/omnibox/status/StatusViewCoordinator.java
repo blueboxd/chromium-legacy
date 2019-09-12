@@ -204,4 +204,11 @@ public class StatusViewCoordinator implements View.OnClickListener {
         mMediator.updateSearchEngineStatusIcon(
                 shouldShowSearchEngineLogo, isSearchEngineGoogle, searchEngineUrl);
     }
+
+    /**
+     * @return Width of the status icon including start/end margins.
+     */
+    public int getStatusIconWidth() {
+        return mStatusView.getStatusIconWidth();
+    }
 }

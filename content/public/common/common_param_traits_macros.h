@@ -28,6 +28,7 @@
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_security_style.h"
 #include "third_party/blink/public/platform/web_url_request.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_relative_bounds.h"

@@ -525,7 +525,6 @@ crbug.com/874695 paint/invalidation/filters/filter-repaint-on-accelerated-layer.
 crbug.com/874695 plugins/plugin-document-back-forward.html [ Slow ]
 crbug.com/874695 pointer-lock/locked-element-iframe-removed-from-dom.html [ Slow ]
 crbug.com/874695 printing/webgl-oversized-printing.html [ Slow ]
-crbug.com/874695 sensor/magnetometer.html [ Slow ]
 crbug.com/874695 storage/websql/change-version.html [ Slow ]
 crbug.com/874695 storage/websql/executesql-accepts-only-one-statement.html [ Slow ]
 crbug.com/874695 storage/websql/open-database-creation-callback.html [ Slow ]

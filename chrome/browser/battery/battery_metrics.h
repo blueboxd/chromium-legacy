@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
 #include "services/device/public/mojom/battery_status.mojom.h"
 
@@ -38,7 +39,7 @@ class BatteryMetrics {
   base::Optional<float> last_recorded_battery_level_;
 
   // The battery monitor backend for the device Chrome is running on.
-  device::mojom::BatteryMonitorPtr battery_monitor_;
+  mojo::Remote<device::mojom::BatteryMonitor> battery_monitor_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

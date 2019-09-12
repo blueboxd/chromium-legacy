@@ -6,6 +6,7 @@
 <link rel="help" href="https://github.com/WICG/display-locking">
 <link rel="match" href="contain-size-replaced-ref.html">
 <script src="/common/reftest-wait.js"></script>
+<script src="../resources/utils.js"></script>
 
 <style>
 #border {
@@ -13,7 +14,7 @@
   width: max-content;
 }
 img {
-  contain: style layout size;
+  content-size: none;
 }
 </style>
 
@@ -24,7 +25,7 @@ img {
 <script>
 async function runTest() {
   const element = document.getElementById("element");
-  await element.displayLock.acquire({ timeout: Infinity, size: [12, 34] });
+  await setInvisible(element);
   takeScreenshot();
 }
 

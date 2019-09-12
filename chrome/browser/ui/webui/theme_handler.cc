@@ -16,14 +16,12 @@
 #include "chrome/grit/theme_resources.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
-#include "ui/native_theme/native_theme.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // ThemeHandler
 
-ThemeHandler::ThemeHandler() : theme_observer_(this) {}
-
-ThemeHandler::~ThemeHandler() {}
+ThemeHandler::ThemeHandler() = default;
+ThemeHandler::~ThemeHandler() = default;
 
 void ThemeHandler::RegisterMessages() {
   // These are not actual message registrations, but can't be done in the

@@ -210,11 +210,12 @@ void AutomaticRebootManager::SuspendDone(
 }
 
 void AutomaticRebootManager::UpdateStatusChanged(
-    const UpdateEngineClient::Status& status) {
+    const update_engine::StatusResult& status) {
   // Ignore repeated notifications that a reboot is necessary. This is important
   // so that only the time of the first notification is taken into account and
   // repeated notifications do not postpone the reboot request and grace period.
-  if (status.status != UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT ||
+  if (status.current_operation() !=
+          update_engine::Operation::UPDATED_NEED_REBOOT ||
       !boot_time_ || update_reboot_needed_time_) {
     return;
   }

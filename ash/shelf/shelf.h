@@ -40,6 +40,7 @@ class StatusAreaWidget;
 class ShelfObserver;
 class TrayBackgroundView;
 class WorkAreaInsets;
+class ShelfTooltipManager;
 
 // Controller for the shelf state. One per display, because each display might
 // have different shelf alignment, autohide, etc. Exists for the lifetime of the
@@ -182,6 +183,8 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   }
   int auto_hide_lock() const { return auto_hide_lock_; }
 
+  ShelfTooltipManager* tooltip() { return tooltip_.get(); }
+
  protected:
   // ShelfLayoutManagerObserver:
   void WillDeleteShelfLayoutManager() override;
@@ -232,6 +235,8 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   // Used by ScopedAutoHideLock to maintain the state of the lock for auto-hide
   // shelf.
   int auto_hide_lock_ = 0;
+
+  std::unique_ptr<ShelfTooltipManager> tooltip_;
 
   DISALLOW_COPY_AND_ASSIGN(Shelf);
 };

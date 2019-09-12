@@ -17,6 +17,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/theme_resources.h"
 #include "extensions/grit/extensions_browser_resources.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/resource/resource_bundle.h"
 

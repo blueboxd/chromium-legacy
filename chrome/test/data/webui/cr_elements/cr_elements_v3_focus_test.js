@@ -29,6 +29,18 @@ var CrElementsV3FocusTest = class extends PolymerInteractiveUITest {
 };
 
 // eslint-disable-next-line no-var
+var CrElementsActionMenuV3Test = class extends CrElementsV3FocusTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test?module=cr_elements/cr_action_menu_test.m.js';
+  }
+};
+
+TEST_F('CrElementsActionMenuV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
 var CrElementsCheckboxV3Test = class extends CrElementsV3FocusTest {
   /** @override */
   get browsePreload() {

@@ -278,8 +278,7 @@ GLuint ImportVideoFrameSingleMailbox(gpu::gles2::GLES2Interface* gl,
          PIXEL_FORMAT_XRGB == video_frame->format() ||
          PIXEL_FORMAT_RGB24 == video_frame->format() ||
          PIXEL_FORMAT_ABGR == video_frame->format() ||
-         PIXEL_FORMAT_NV12 == video_frame->format() ||
-         PIXEL_FORMAT_UYVY == video_frame->format())
+         PIXEL_FORMAT_NV12 == video_frame->format())
       << "Format: " << VideoPixelFormatToString(video_frame->format());
 
   const gpu::MailboxHolder& mailbox_holder = video_frame->mailbox_holder(0);
@@ -1024,7 +1023,6 @@ void PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
       break;
 
     case PIXEL_FORMAT_NV21:
-    case PIXEL_FORMAT_UYVY:
     case PIXEL_FORMAT_YUY2:
     case PIXEL_FORMAT_ARGB:
     case PIXEL_FORMAT_XRGB:

@@ -6,14 +6,15 @@
 <link rel="help" href="https://github.com/WICG/display-locking">
 <link rel="match" href="layout-replaced-ref.html">
 <script src="/common/reftest-wait.js"></script>
+<script src="../resources/utils.js"></script>
 
 <style>
 #border {
   border: 1px solid blue;
   width: max-content;
 }
-img {
-  contain: style layout;
+#element {
+  content-size: 12px 34px;
 }
 </style>
 
@@ -24,7 +25,7 @@ img {
 <script>
 async function runTest() {
   const element = document.getElementById("element");
-  await element.displayLock.acquire({ timeout: Infinity, size: [12, 34] });
+  await setInvisible(element);
   takeScreenshot();
 }
 

@@ -233,6 +233,12 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
 
 HoverButton::~HoverButton() {}
 
+// static
+SkColor HoverButton::GetInkDropColor(const views::View* view) {
+  return views::style::GetColor(*view, views::style::CONTEXT_BUTTON,
+                                views::style::STYLE_SECONDARY);
+}
+
 void HoverButton::SetBorder(std::unique_ptr<views::Border> b) {
   LabelButton::SetBorder(std::move(b));
   // Make sure the minimum size is correct according to the layout (if any).
@@ -295,8 +301,7 @@ void HoverButton::StateChanged(ButtonState old_state) {
 }
 
 SkColor HoverButton::GetInkDropBaseColor() const {
-  return views::style::GetColor(*this, views::style::CONTEXT_BUTTON,
-                                views::style::STYLE_SECONDARY);
+  return GetInkDropColor(this);
 }
 
 std::unique_ptr<views::InkDrop> HoverButton::CreateInkDrop() {

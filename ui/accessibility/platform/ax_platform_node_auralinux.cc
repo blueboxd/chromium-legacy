@@ -2313,6 +2313,7 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
     case ax::mojom::Role::kAudio:
       return ATK_ROLE_AUDIO;
     case ax::mojom::Role::kBanner:
+    case ax::mojom::Role::kHeader:
       return ATK_ROLE_LANDMARK;
     case ax::mojom::Role::kBlockquote:
       return ATK_ROLE_BLOCK_QUOTE;
@@ -2429,6 +2430,8 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
     case ax::mojom::Role::kFeed:
       return ATK_ROLE_PANEL;
     case ax::mojom::Role::kGenericContainer:
+    case ax::mojom::Role::kFooterAsNonLandmark:
+    case ax::mojom::Role::kHeaderAsNonLandmark:
       return ATK_ROLE_SECTION;
     case ax::mojom::Role::kGraphicsDocument:
       return ATK_ROLE_DOCUMENT_FRAME;

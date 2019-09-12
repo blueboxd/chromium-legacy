@@ -22,7 +22,7 @@
 #include "ui/aura/window_observer.h"
 
 namespace {
-class HostedAppNonClientFrameViewAshTest;
+class WebAppNonClientFrameViewAshTest;
 }
 
 class ProfileIndicatorIcon;
@@ -141,11 +141,11 @@ class BrowserNonClientFrameViewAsh
                            V1BackButton);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
                            ToggleTabletModeOnMinimizedWindow);
-  FRIEND_TEST_ALL_PREFIXES(HostedAppNonClientFrameViewAshTest,
+  FRIEND_TEST_ALL_PREFIXES(WebAppNonClientFrameViewAshTest,
                            ActiveStateOfButtonMatchesWidget);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
                            RestoreMinimizedBrowserUpdatesCaption);
-  FRIEND_TEST_ALL_PREFIXES(ImmersiveModeControllerAshHostedAppBrowserTest,
+  FRIEND_TEST_ALL_PREFIXES(ImmersiveModeControllerAshWebAppBrowserTest,
                            FrameLayoutToggleTabletMode);
   FRIEND_TEST_ALL_PREFIXES(HomeLauncherBrowserNonClientFrameViewAshTest,
                            TabletModeBrowserCaptionButtonVisibility);
@@ -157,7 +157,7 @@ class BrowserNonClientFrameViewAsh
   FRIEND_TEST_ALL_PREFIXES(NonHomeLauncherBrowserNonClientFrameViewAshTest,
                            HeaderHeightForSnappedBrowserInSplitView);
 
-  friend class HostedAppNonClientFrameViewAshTest;
+  friend class WebAppNonClientFrameViewAshTest;
 
   // Returns whether the caption buttons should be visible. They are hidden, for
   // example, in overview mode and tablet mode.
@@ -178,12 +178,12 @@ class BrowserNonClientFrameViewAsh
   // Creates the frame header for the browser window.
   std::unique_ptr<ash::FrameHeader> CreateFrameHeader();
 
-  // Creates views and does other setup for a hosted app.
-  void SetUpForHostedApp();
+  // Creates views and does other setup for a web app.
+  void SetUpForWebApp();
 
-  // Triggers the hosted app origin and icon animations, assumes the hosted
-  // app UI elements exist.
-  void StartHostedAppAnimation();
+  // Triggers the web-app origin and icon animations, assumes the web-app UI
+  // elements exist.
+  void StartWebAppAnimation();
 
   // Updates the kTopViewInset window property after a layout.
   void UpdateTopViewInset();

@@ -26,6 +26,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "content/public/test/test_utils.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/accessibility/ax_event_manager.h"

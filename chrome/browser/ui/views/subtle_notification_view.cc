@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font_list.h"

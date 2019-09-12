@@ -76,8 +76,7 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
   void OnRelaunchNotificationPeriodPrefChanged() override;
 
   // chromeos::UpdateEngineClient::Observer implementation.
-  void UpdateStatusChanged(
-      const chromeos::UpdateEngineClient::Status& status) override;
+  void UpdateStatusChanged(const update_engine::StatusResult& status) override;
   void OnUpdateOverCellularOneTimePermissionGranted() override;
 
   // Triggers NotifyOnUpgrade if thresholds have been changed.

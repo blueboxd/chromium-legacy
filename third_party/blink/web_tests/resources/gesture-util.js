@@ -387,6 +387,13 @@ function elementCenter(element) {
   };
 }
 
+// Waits for 'time' ms before resolving the promise.
+function waitForMs(time) {
+  return new Promise((resolve) => {
+    window.setTimeout(function() { resolve(); }, time);
+  });
+}
+
 // Requests an animation frame.
 function raf() {
   return new Promise((resolve) => {

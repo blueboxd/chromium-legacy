@@ -61,6 +61,7 @@
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"

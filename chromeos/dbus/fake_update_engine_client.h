@@ -32,7 +32,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeUpdateEngineClient
   void RebootAfterUpdate() override;
   void Rollback() override;
   void CanRollbackCheck(const RollbackCheckCallback& callback) override;
-  Status GetLastStatus() override;
+  update_engine::StatusResult GetLastStatus() override;
   void SetChannel(const std::string& target_channel,
                   bool is_powerwash_allowed) override;
   void GetChannel(bool get_current_channel,
@@ -44,23 +44,24 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeUpdateEngineClient
       const std::string& target_version,
       int64_t target_size,
       const UpdateOverCellularOneTimePermissionCallback& callback) override;
-  // Pushes UpdateEngineClient::Status in the queue to test changing status.
+  // Pushes update_engine::StatusResult in the queue to test changing status.
   // GetLastStatus() returns the status set by this method in FIFO order.
   // See set_default_status().
-  void PushLastStatus(const UpdateEngineClient::Status& status) {
+  void PushLastStatus(const update_engine::StatusResult& status) {
     status_queue_.push(status);
   }
 
   // Sends status change notification.
   void NotifyObserversThatStatusChanged(
-      const UpdateEngineClient::Status& status);
+      const update_engine::StatusResult& status);
 
   // Notifies observers that the user's one time permission is granted.
   void NotifyUpdateOverCellularOneTimePermissionGranted();
 
-  // Sets the default UpdateEngineClient::Status. GetLastStatus() returns the
+  // Sets the default update_engine::StatusResult. GetLastStatus() returns the
   // value set here if |status_queue_| is empty.
-  void set_default_status(const UpdateEngineClient::Status& status);
+
+  void set_default_status(const update_engine::StatusResult& status);
 
   // Sets a value returned by RequestUpdateCheck().
   void set_update_check_result(
@@ -88,8 +89,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeUpdateEngineClient
 
  private:
   base::ObserverList<Observer>::Unchecked observers_;
-  base::queue<UpdateEngineClient::Status> status_queue_;
-  UpdateEngineClient::Status default_status_;
+  base::queue<update_engine::StatusResult> status_queue_;
+  update_engine::StatusResult default_status_;
   UpdateEngineClient::UpdateCheckResult update_check_result_;
   bool can_rollback_stub_result_;
   int reboot_after_update_call_count_;

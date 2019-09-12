@@ -21,7 +21,6 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/font_list_async.h"
 #include "content/public/browser/web_ui.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_urls.h"
 
@@ -39,7 +38,7 @@ const char kAdvancedFontSettingsExtensionId[] =
 namespace settings {
 
 FontHandler::FontHandler(content::WebUI* webui)
-    : extension_registry_observer_(this), profile_(Profile::FromWebUI(webui)) {
+    : profile_(Profile::FromWebUI(webui)) {
 #if defined(OS_MACOSX)
   // Perform validation for saved fonts.
   settings_utils::ValidateSavedFonts(profile_->GetPrefs());

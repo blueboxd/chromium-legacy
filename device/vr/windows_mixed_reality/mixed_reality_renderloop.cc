@@ -252,7 +252,15 @@ bool MixedRealityRenderLoop::StartRuntime() {
   if (FAILED(hr))
     return false;
 
-  return holographic_space_->TrySetDirect3D11Device(device);
+  if (!holographic_space_->TrySetDirect3D11Device(device))
+    return false;
+
+  // Go through one initial dummy frame to update the display info and notify
+  // the device of the correct values before it sends the initial info to the
+  // renderer. The frame must be submitted because WMR requires frames to be
+  // submitted in the order they're created.
+  GetNextFrameData();
+  return SubmitCompositedFrame();
 }
 
 void MixedRealityRenderLoop::StopRuntime() {

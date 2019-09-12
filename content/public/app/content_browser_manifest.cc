@@ -168,7 +168,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
               "navigation:shared_worker", "renderer",
               std::set<const char*>{
                   "blink.mojom.CacheStorage", "blink.mojom.IDBFactory",
-                  "blink.mojom.LockManager",
                   "blink.mojom.NativeFileSystemManager",
                   "blink.mojom.NotificationService",
                   "blink.mojom.PermissionService",
@@ -185,7 +184,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.CacheStorage",
                   "blink.mojom.DedicatedWorkerHostFactory",
                   "blink.mojom.IDBFactory",
-                  "blink.mojom.LockManager",
                   "blink.mojom.NativeFileSystemManager",
                   "blink.mojom.NotificationService",
                   "blink.mojom.PermissionService",
@@ -203,7 +201,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
               std::set<const char*>{
                   "blink.mojom.CacheStorage", "blink.mojom.CookieStore",
                   "blink.mojom.ContentIndexService", "blink.mojom.IDBFactory",
-                  "blink.mojom.LockManager",
                   "blink.mojom.NativeFileSystemManager",
                   "blink.mojom.NotificationService",
                   "blink.mojom.PermissionService",
@@ -234,7 +231,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.IDBFactory",
                   "blink.mojom.InsecureInputService",
                   "blink.mojom.KeyboardLockService",
-                  "blink.mojom.LockManager",
                   "blink.mojom.MediaDevicesDispatcherHost",
                   "blink.mojom.MediaStreamDispatcherHost",
                   "blink.mojom.MediaSessionService",

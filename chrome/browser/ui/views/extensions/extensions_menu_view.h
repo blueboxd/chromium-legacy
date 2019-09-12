@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/button.h"
 
@@ -26,6 +27,8 @@ class ExtensionsMenuView : public views::ButtonListener,
                            public views::BubbleDialogDelegateView,
                            public ToolbarActionsModel::Observer {
  public:
+  static constexpr gfx::Size kExtensionsMenuIconSize = gfx::Size(28, 28);
+
   ExtensionsMenuView(views::View* anchor_view,
                      Browser* browser,
                      ExtensionsContainer* extensions_container);
@@ -47,6 +50,10 @@ class ExtensionsMenuView : public views::ButtonListener,
   bool ShouldShowCloseButton() const override;
   int GetDialogButtons() const override;
   bool ShouldSnapFrameWidth() const override;
+  // TODO(crbug.com/1003072): This override is copied from PasswordItemsView to
+  // contrain the width. It would be nice to have a unified way of getting the
+  // preferred size to not duplicate the code.
+  gfx::Size CalculatePreferredSize() const override;
 
   // ToolbarActionsModel::Observer:
   void OnToolbarActionAdded(const ToolbarActionsModel::ActionId& item,

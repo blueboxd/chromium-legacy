@@ -491,19 +491,15 @@ void SharedImageStub::DestroySharedImage(const Mailbox& mailbox,
                                          const SyncToken& sync_token) {
   // If there is no sync token, we don't need to wait.
   if (!sync_token.HasData()) {
-    OnSyncTokenReleased(mailbox);
+    OnDestroySharedImage(mailbox);
     return;
   }
 
-  auto done_cb = base::BindOnce(&SharedImageStub::OnSyncTokenReleased,
+  auto done_cb = base::BindOnce(&SharedImageStub::OnDestroySharedImage,
                                 weak_factory_.GetWeakPtr(), mailbox);
   channel_->scheduler()->ScheduleTask(
       gpu::Scheduler::Task(sequence_, std::move(done_cb),
                            std::vector<gpu::SyncToken>({sync_token})));
-}
-
-void SharedImageStub::OnSyncTokenReleased(const Mailbox& mailbox) {
-  factory_->DestroySharedImage(mailbox);
 }
 
 }  // namespace gpu

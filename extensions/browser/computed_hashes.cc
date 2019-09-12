@@ -159,7 +159,7 @@ void ComputedHashes::Writer::AddHashes(const base::FilePath& relative_path,
   for (const auto& hash : hashes) {
     std::string encoded;
     base::Base64Encode(hash, &encoded);
-    block_hashes->GetList().emplace_back(std::move(encoded));
+    block_hashes->Append(std::move(encoded));
   }
 
   auto dict = std::make_unique<base::DictionaryValue>();

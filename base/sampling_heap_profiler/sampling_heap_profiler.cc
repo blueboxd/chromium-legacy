@@ -179,7 +179,6 @@ void SamplingHeapProfiler::SampleAdded(
   if (UNLIKELY(base::ThreadLocalStorage::HasBeenDestroyed()))
     return;
   DCHECK(PoissonAllocationSampler::ScopedMuteThreadSamples::IsMuted());
-  AutoLock lock(mutex_);
   Sample sample(size, total, ++last_sample_ordinal_);
   sample.allocator = type;
   using CaptureMode = trace_event::AllocationContextTracker::CaptureMode;
@@ -191,6 +190,7 @@ void SamplingHeapProfiler::SampleAdded(
   } else {
     CaptureNativeStack(context, &sample);
   }
+  AutoLock lock(mutex_);
   RecordString(sample.context);
   samples_.emplace(address, std::move(sample));
 }
@@ -210,6 +210,8 @@ void SamplingHeapProfiler::CaptureMixedStack(const char* context,
   CHECK_LE(backtrace.frame_count, kMaxStackEntries);
   std::vector<void*> stack;
   stack.reserve(backtrace.frame_count);
+
+  AutoLock lock(mutex_);  // Needed for RecordString call.
   for (int i = base::checked_cast<int>(backtrace.frame_count) - 1; i >= 0;
        --i) {
     const base::trace_event::StackFrame& frame = backtrace.frames[i];

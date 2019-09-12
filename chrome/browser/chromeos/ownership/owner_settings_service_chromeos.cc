@@ -19,13 +19,14 @@
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_provider.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "chromeos/tpm/tpm_token_loader.h"
@@ -35,9 +36,6 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/common/content_switches.h"
 #include "crypto/nss_key_util.h"
 #include "crypto/nss_util.h"
@@ -204,10 +202,6 @@ OwnerSettingsServiceChromeOS::OwnerSettingsServiceChromeOS(
   if (device_settings_service_)
     device_settings_service_->AddObserver(this);
 
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_PROFILE_CREATED,
-                 content::Source<Profile>(profile_));
-
   if (!user_manager::UserManager::IsInitialized()) {
     // interactive_ui_tests does not set user manager.
     waiting_for_easy_unlock_operation_finshed_ = false;
@@ -217,10 +211,17 @@ OwnerSettingsServiceChromeOS::OwnerSettingsServiceChromeOS(
   UserSessionManager::GetInstance()->WaitForEasyUnlockKeyOpsFinished(
       base::Bind(&OwnerSettingsServiceChromeOS::OnEasyUnlockKeyOpsFinished,
                  weak_factory_.GetWeakPtr()));
+  // The ProfileManager may be null in unit tests.
+  if (g_browser_process->profile_manager())
+    g_browser_process->profile_manager()->AddObserver(this);
 }
 
 OwnerSettingsServiceChromeOS::~OwnerSettingsServiceChromeOS() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  // The ProfileManager may be null in unit tests.
+  if (g_browser_process->profile_manager())
+    g_browser_process->profile_manager()->RemoveObserver(this);
 
   if (device_settings_service_)
     device_settings_service_->RemoveObserver(this);
@@ -349,20 +350,12 @@ bool OwnerSettingsServiceChromeOS::CommitTentativeDeviceSettings(
   return true;
 }
 
-void OwnerSettingsServiceChromeOS::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void OwnerSettingsServiceChromeOS::OnProfileAdded(Profile* profile) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(chrome::NOTIFICATION_PROFILE_CREATED, type);
-
-  Profile* profile = content::Source<Profile>(source).ptr();
-  if (profile != profile_) {
-    NOTREACHED();
+  if (profile != profile_)
     return;
-  }
 
-  waiting_for_profile_creation_ = false;
+  g_browser_process->profile_manager()->RemoveObserver(this);
   ReloadKeypair();
 }
 
@@ -693,10 +686,16 @@ void OwnerSettingsServiceChromeOS::ReloadKeypairImpl(const base::Callback<
          const scoped_refptr<PrivateKey>& private_key)>& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (waiting_for_profile_creation_ || waiting_for_tpm_token_ ||
-      waiting_for_easy_unlock_operation_finshed_) {
+  // The profile may not be fully created yet: abort, and wait till it is. The
+  // ProfileManager may be null in unit tests, in which case we can assume the
+  // profile is valid.
+  if (g_browser_process->profile_manager() &&
+      !g_browser_process->profile_manager()->IsValidProfile(profile_)) {
     return;
   }
+
+  if (waiting_for_tpm_token_ || waiting_for_easy_unlock_operation_finshed_)
+    return;
 
   bool rv = base::PostTask(
       FROM_HERE, {BrowserThread::IO},

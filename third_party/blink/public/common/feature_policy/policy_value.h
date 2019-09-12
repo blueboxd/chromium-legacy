@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/public/common/common_export.h"
-#include "third_party/blink/public/mojom/feature_policy/policy_value.mojom.h"
+#include "third_party/blink/public/mojom/feature_policy/policy_value.mojom-forward.h"
 
 namespace blink {
 
@@ -25,9 +25,8 @@ class BLINK_COMMON_EXPORT PolicyValue {
   explicit PolicyValue(mojom::PolicyValueType);
 
   explicit PolicyValue(bool bool_value);
-  explicit PolicyValue(
-      double double_value,
-      mojom::PolicyValueType type = mojom::PolicyValueType::kDecDouble);
+  explicit PolicyValue(double double_value);
+  PolicyValue(double double_value, mojom::PolicyValueType type);
 
   // A 'max' PolicyValue is the most permissive value for the policy.
   static PolicyValue CreateMaxPolicyValue(mojom::PolicyValueType type);
@@ -45,9 +44,8 @@ class BLINK_COMMON_EXPORT PolicyValue {
   // PolicyValue setters.
   // Note the getters also DCHECKs that the type is correct.
   void SetBoolValue(bool bool_value);
-  void SetDoubleValue(
-      double double_value,
-      mojom::PolicyValueType type = mojom::PolicyValueType::kDecDouble);
+  void SetDoubleValue(double double_value);
+  void SetDoubleValue(double double_value, mojom::PolicyValueType type);
 
   // Operater overrides
   PolicyValue& operator=(const PolicyValue& rhs);

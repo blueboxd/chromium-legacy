@@ -232,8 +232,8 @@ TEST_F(CredentialManagerUtilTest, ParseFederations) {
   // Build example valid |providers| list.
   std::unique_ptr<base::ListValue> list_ptr =
       std::make_unique<base::ListValue>();
-  list_ptr->GetList().emplace_back(kTestWebOrigin);
-  list_ptr->GetList().emplace_back("https://google.com");
+  list_ptr->Append(kTestWebOrigin);
+  list_ptr->Append("https://google.com");
   json.SetList(kCredentialRequestProvidersKey, std::move(list_ptr));
   std::vector<GURL> federations;
 
@@ -244,8 +244,8 @@ TEST_F(CredentialManagerUtilTest, ParseFederations) {
 
   // ParseFederations should skip invalid URLs.
   list_ptr = std::make_unique<base::ListValue>();
-  list_ptr->GetList().emplace_back(kTestWebOrigin);
-  list_ptr->GetList().emplace_back("not a valid url");
+  list_ptr->Append(kTestWebOrigin);
+  list_ptr->Append("not a valid url");
   json.SetList(kCredentialRequestProvidersKey, std::move(list_ptr));
   EXPECT_TRUE(ParseFederations(json, &federations));
   EXPECT_THAT(federations, testing::ElementsAre(GURL(kTestWebOrigin)));

@@ -387,8 +387,9 @@ void Service::CreateAssistantManagerService() {
 
   DCHECK(client_);
 
-  device::mojom::BatteryMonitorPtr battery_monitor;
-  client_->RequestBatteryMonitor(mojo::MakeRequest(&battery_monitor));
+  mojo::PendingRemote<device::mojom::BatteryMonitor> battery_monitor;
+  client_->RequestBatteryMonitor(
+      battery_monitor.InitWithNewPipeAndPassReceiver());
 
   // |assistant_manager_service_| is only created once.
   DCHECK(url_loader_factory_info_);

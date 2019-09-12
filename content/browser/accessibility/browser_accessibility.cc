@@ -18,6 +18,7 @@
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/common/accessibility_messages.h"
 #include "content/public/common/content_client.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_tree_id.h"
@@ -1181,7 +1182,8 @@ BrowserAccessibility::CreatePositionAt(int offset,
 BrowserAccessibilityPosition::AXPositionInstance
 BrowserAccessibility::CreatePositionForSelectionAt(int offset) const {
   BrowserAccessibilityPositionInstance position =
-      CreatePositionAt(offset)->AsLeafTextPosition();
+      CreatePositionAt(offset, ax::mojom::TextAffinity::kDownstream)
+          ->AsLeafTextPosition();
   if (position->GetAnchor() &&
       position->GetAnchor()->GetRole() == ax::mojom::Role::kInlineTextBox) {
     return position->CreateParentPosition();
@@ -1826,6 +1828,7 @@ base::string16 BrowserAccessibility::GetLocalizedStringForLandmarkType() const {
 
   switch (data.role) {
     case ax::mojom::Role::kBanner:
+    case ax::mojom::Role::kHeader:
       return content_client->GetLocalizedString(IDS_AX_ROLE_BANNER);
 
     case ax::mojom::Role::kComplementary:
@@ -1885,6 +1888,14 @@ base::string16 BrowserAccessibility::GetLocalizedStringForRoleDescription()
 
     case ax::mojom::Role::kFigure:
       return content_client->GetLocalizedString(IDS_AX_ROLE_FIGURE);
+
+    case ax::mojom::Role::kFooter:
+    case ax::mojom::Role::kFooterAsNonLandmark:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_FOOTER);
+
+    case ax::mojom::Role::kHeader:
+    case ax::mojom::Role::kHeaderAsNonLandmark:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_HEADER);
 
     case ax::mojom::Role::kMeter:
       return content_client->GetLocalizedString(IDS_AX_ROLE_METER);

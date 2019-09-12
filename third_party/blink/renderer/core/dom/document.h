@@ -821,8 +821,8 @@ class CORE_EXPORT Document : public ContainerNode,
   bool SetPseudoStateForTesting(Element& element,
                                 const String& pseudo,
                                 bool matches);
-  void SetAutofocusElement(Element*);
-  Element* AutofocusElement() const { return autofocus_element_.Get(); }
+  void EnqueueAutofocusCandidate(Element&);
+  bool HasAutofocusCandidates() const;
   void SetSequentialFocusNavigationStartingPoint(Node*);
   Element* SequentialFocusNavigationStartingPoint(WebFocusType) const;
 
@@ -1720,6 +1720,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void ClearFocusedElementSoon();
   void ClearFocusedElementTimerFired(TimerBase*);
+  void FlushAutofocusCandidates();
+  bool HasNonEmptyFragment() const;
 
   bool HaveScriptBlockingStylesheetsLoaded() const;
 
@@ -1828,11 +1830,14 @@ class CORE_EXPORT Document : public ContainerNode,
   };
   Vector<PendingJavascriptUrl> pending_javascript_urls_;
 
-  bool has_autofocused_;
+  // https://html.spec.whatwg.org/C/#autofocus-processed-flag
+  bool autofocus_processed_flag_ = false;
   WebFocusType last_focus_type_;
   bool had_keyboard_event_;
   TaskRunnerTimer<Document> clear_focused_element_timer_;
-  Member<Element> autofocus_element_;
+  // https://html.spec.whatwg.org/C/#autofocus-candidates
+  // We implement this as a Vector because its maximum size is typically 1.
+  HeapVector<Member<Element>> autofocus_candidates_;
   Member<Element> focused_element_;
   Member<Range> sequential_focus_navigation_starting_point_;
   Member<Element> hover_element_;

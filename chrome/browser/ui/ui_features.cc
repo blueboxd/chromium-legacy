@@ -11,11 +11,6 @@ namespace features {
 const base::Feature kAnimatedAvatarButton{"AnimatedAvatarButton",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables tabs to change pinned state when dragging in the tabstrip.
-// https://crbug.com/965681
-const base::Feature kDragToPinTabs{"DragToPinTabs",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables showing the EV certificate details in the Page Info bubble.
 const base::Feature kEvDetailsInPageInfo{"EvDetailsInPageInfo",
                                          base::FEATURE_ENABLED_BY_DEFAULT};

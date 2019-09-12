@@ -155,7 +155,7 @@ void HttpServerProperties::Clear(base::OnceClosure callback) {
   server_info_map_.Clear();
   broken_alternative_services_.Clear();
   canonical_alt_svc_map_.clear();
-  last_quic_address_ = IPAddress();
+  last_local_address_when_quic_worked_ = IPAddress();
   quic_server_info_map_.Clear();
   canonical_server_info_map_.clear();
 
@@ -606,24 +606,33 @@ HttpServerProperties::GetAlternativeServiceInfoAsValue() const {
   return std::move(dict_list);
 }
 
-bool HttpServerProperties::GetSupportsQuic(IPAddress* last_address) const {
-  if (last_quic_address_.empty())
-    return false;
-
-  *last_address = last_quic_address_;
-  return true;
+bool HttpServerProperties::WasLastLocalAddressWhenQuicWorked(
+    const IPAddress& local_address) const {
+  return !last_local_address_when_quic_worked_.empty() &&
+         last_local_address_when_quic_worked_ == local_address;
 }
 
-void HttpServerProperties::SetSupportsQuic(bool used_quic,
-                                           const IPAddress& address) {
-  IPAddress new_quic_address;
-  if (used_quic)
-    new_quic_address = address;
+bool HttpServerProperties::HasLastLocalAddressWhenQuicWorked() const {
+  return !last_local_address_when_quic_worked_.empty();
+}
 
-  if (new_quic_address == last_quic_address_)
+void HttpServerProperties::SetLastLocalAddressWhenQuicWorked(
+    IPAddress last_local_address_when_quic_worked) {
+  DCHECK(!last_local_address_when_quic_worked.empty());
+  if (last_local_address_when_quic_worked_ ==
+      last_local_address_when_quic_worked) {
+    return;
+  }
+
+  last_local_address_when_quic_worked_ = last_local_address_when_quic_worked;
+  MaybeQueueWriteProperties();
+}
+
+void HttpServerProperties::ClearLastLocalAddressWhenQuicWorked() {
+  if (last_local_address_when_quic_worked_.empty())
     return;
 
-  last_quic_address_ = new_quic_address;
+  last_local_address_when_quic_worked_ = IPAddress();
   MaybeQueueWriteProperties();
 }
 
@@ -906,7 +915,7 @@ const std::string* HttpServerProperties::GetCanonicalSuffix(
 
 void HttpServerProperties::OnPrefsLoaded(
     std::unique_ptr<ServerInfoMap> server_info_map,
-    const IPAddress& last_quic_address,
+    const IPAddress& last_local_address_when_quic_worked,
     std::unique_ptr<QuicServerInfoMap> quic_server_info_map,
     std::unique_ptr<BrokenAlternativeServiceList>
         broken_alternative_service_list,
@@ -920,7 +929,7 @@ void HttpServerProperties::OnPrefsLoaded(
   // service fields).
   if (server_info_map) {
     OnServerInfoLoaded(std::move(server_info_map));
-    OnSupportsQuicLoaded(last_quic_address);
+    OnLastLocalAddressWhenQuicWorkedLoaded(last_local_address_when_quic_worked);
     OnQuicServerInfoMapLoaded(std::move(quic_server_info_map));
     if (recently_broken_alternative_services) {
       DCHECK(broken_alternative_service_list);
@@ -1011,8 +1020,9 @@ void HttpServerProperties::OnServerInfoLoaded(
   }
 }
 
-void HttpServerProperties::OnSupportsQuicLoaded(const IPAddress& last_address) {
-  last_quic_address_ = last_address;
+void HttpServerProperties::OnLastLocalAddressWhenQuicWorkedLoaded(
+    const IPAddress& last_local_address_when_quic_worked) {
+  last_local_address_when_quic_worked_ = last_local_address_when_quic_worked;
 }
 
 void HttpServerProperties::OnQuicServerInfoMapLoaded(
@@ -1082,7 +1092,7 @@ void HttpServerProperties::WriteProperties(base::OnceClosure callback) const {
       server_info_map_,
       base::BindRepeating(&HttpServerProperties::GetCanonicalSuffix,
                           base::Unretained(this)),
-      last_quic_address_, quic_server_info_map_,
+      last_local_address_when_quic_worked_, quic_server_info_map_,
       broken_alternative_services_.broken_alternative_service_list(),
       broken_alternative_services_.recently_broken_alternative_services(),
       std::move(callback));

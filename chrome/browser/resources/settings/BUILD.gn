@@ -180,5 +180,5 @@ js_library("search_settings") {
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:search_highlight_utils",
   ]
-  externs_list = [ "$externs_path/pending.js" ]
+  externs_list = [ "$externs_path/pending_polymer.js" ]
 }

@@ -697,13 +697,13 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
   // whole page's banner/contentInfo but as a generic container role.
   if (GetNode()->HasTagName(kHeaderTag)) {
     if (IsDescendantOfElementType(GetLandmarkRolesNotAllowed()))
-      return ax::mojom::Role::kGenericContainer;
-    return ax::mojom::Role::kBanner;
+      return ax::mojom::Role::kHeaderAsNonLandmark;
+    return ax::mojom::Role::kHeader;
   }
 
   if (GetNode()->HasTagName(kFooterTag)) {
     if (IsDescendantOfElementType(GetLandmarkRolesNotAllowed()))
-      return ax::mojom::Role::kGenericContainer;
+      return ax::mojom::Role::kFooterAsNonLandmark;
     return ax::mojom::Role::kFooter;
   }
 

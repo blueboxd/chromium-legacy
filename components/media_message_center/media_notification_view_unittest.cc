@@ -20,6 +20,7 @@
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/message_center/message_center.h"

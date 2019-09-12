@@ -28,6 +28,7 @@
 #include "ash/shelf/shelf_controller.h"
 #include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shelf/shelf_menu_model_adapter.h"
+#include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -302,7 +303,6 @@ ShelfView::ShelfView(ShelfModel* model, Shelf* shelf)
       shelf_(shelf),
       view_model_(std::make_unique<views::ViewModel>()),
       bounds_animator_(std::make_unique<views::BoundsAnimator>(this)),
-      tooltip_(this),
       focus_search_(std::make_unique<ShelfFocusSearch>(this)) {
   DCHECK(model_);
   DCHECK(shelf_);
@@ -325,6 +325,10 @@ ShelfView::~ShelfView() {
   Shell::Get()->RemoveShellObserver(this);
   bounds_animator_->RemoveObserver(this);
   model_->RemoveObserver(this);
+
+  // Resets the shelf tooltip delegate when the main shelf gets destroyed.
+  if (!is_overflow_mode())
+    shelf_->tooltip()->set_shelf_tooltip_delegate(nullptr);
 }
 
 int ShelfView::GetSizeOfAppIcons(int count, bool with_overflow) {
@@ -369,6 +373,10 @@ void ShelfView::Init() {
   AddChildView(overflow_button_);
 
   // We'll layout when our bounds change.
+
+  // Add the main shelf view as ShelfTooltipDelegate.
+  if (!is_overflow_mode())
+    shelf_->tooltip()->set_shelf_tooltip_delegate(this);
 }
 
 gfx::Rect ShelfView::GetIdealBoundsOfItemIcon(const ShelfID& id) {
@@ -410,7 +418,7 @@ void ShelfView::UpdateVisibleShelfItemBoundsUnion() {
   for (int i = std::max(0, first_visible_index_); i <= last_visible_index_;
        ++i) {
     const views::View* child = view_model_->view_at(i);
-    if (ShouldShowTooltipForView(child))
+    if (ShouldShowTooltipForChildView(child))
       visible_shelf_item_bounds_union_.Union(child->GetMirroredBounds());
   }
   // Also include the overflow button if it is visible.
@@ -420,26 +428,73 @@ void ShelfView::UpdateVisibleShelfItemBoundsUnion() {
   }
 }
 
+bool ShelfView::ShouldShowTooltipForView(const views::View* view) const {
+  if (!view || !view->parent())
+    return false;
+
+  if (view->parent() == this)
+    return ShouldShowTooltipForChildView(view);
+
+  if (view->parent() != overflow_shelf())
+    return false;
+
+  return overflow_shelf() &&
+         overflow_shelf()->ShouldShowTooltipForChildView(view);
+}
+
 bool ShelfView::ShouldHideTooltip(const gfx::Point& cursor_location) const {
+  // There are thin gaps between launcher buttons but the tooltip shouldn't hide
+  // in the gaps, but the tooltip should hide if the mouse moved totally outside
+  // of the buttons area.
+
   return !visible_shelf_item_bounds_union_.Contains(cursor_location);
 }
 
-bool ShelfView::ShouldShowTooltipForView(const views::View* view) const {
-  if (view == overflow_button_)
-    return true;
-  // Don't show a tooltip for a view that's currently being dragged.
-  if (view == drag_view_)
-    return false;
+const std::vector<aura::Window*> ShelfView::GetOpenWindowsForView(
+    views::View* view) {
+  std::vector<aura::Window*> window_list =
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
+  std::vector<aura::Window*> open_windows;
+  const ShelfItem* item = ShelfItemForView(view);
 
-  return ShelfItemForView(view) && !IsShowingMenuForView(view);
+  // The concept of a list of open windows doesn't make sense for something
+  // that isn't an app shortcut: return an empty list.
+  if (!item)
+    return open_windows;
+
+  for (auto* window : window_list) {
+    const std::string window_app_id =
+        ShelfID::Deserialize(window->GetProperty(kShelfIDKey)).app_id;
+    if (window_app_id == item->id.app_id) {
+      // TODO: In the very first version we only show one window. Add the proper
+      // UI to show all windows for a given open app.
+      open_windows.push_back(window);
+    }
+  }
+  return open_windows;
 }
 
 base::string16 ShelfView::GetTitleForView(const views::View* view) const {
-  if (view == overflow_button_)
-    return overflow_button_->GetAccessibleName();
+  if (view->parent() == this)
+    return GetTitleForChildView(view);
 
-  const ShelfItem* item = ShelfItemForView(view);
-  return item ? item->title : base::string16();
+  if (view->parent() == overflow_shelf())
+    return overflow_shelf()->GetTitleForChildView(view);
+
+  return base::string16();
+}
+
+views::View* ShelfView::GetViewForEvent(const ui::Event& event) {
+  if (event.target() == GetWidget()->GetNativeWindow())
+    return this;
+
+  ShelfView* overflow_shelf_view = overflow_shelf();
+  if (overflow_shelf_view &&
+      (event.target() == overflow_shelf_view->GetWidget()->GetNativeWindow())) {
+    return overflow_shelf_view;
+  }
+
+  return nullptr;
 }
 
 void ShelfView::ToggleOverflowBubble() {
@@ -608,7 +663,7 @@ View* ShelfView::GetTooltipHandlerForPoint(const gfx::Point& point) {
     gfx::Point point_in_child_coords(point);
     ConvertPointToTarget(this, child, &point_in_child_coords);
     if (child->HitTestPoint(point_in_child_coords) &&
-        ShouldShowTooltipForView(child)) {
+        ShouldShowTooltipForChildView(child)) {
       return child;
     }
   }
@@ -853,30 +908,6 @@ void ShelfView::UpdateDragIconProxyByLocation(
 
 bool ShelfView::IsDraggedView(const views::View* view) const {
   return drag_view_ == view;
-}
-
-const std::vector<aura::Window*> ShelfView::GetOpenWindowsForShelfView(
-    views::View* view) {
-  std::vector<aura::Window*> window_list =
-      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
-  std::vector<aura::Window*> open_windows;
-  const ShelfItem* item = ShelfItemForView(view);
-
-  // The concept of a list of open windows doesn't make sense for something
-  // that isn't an app shortcut: return an empty list.
-  if (!item)
-    return open_windows;
-
-  for (auto* window : window_list) {
-    const std::string window_app_id =
-        ShelfID::Deserialize(window->GetProperty(kShelfIDKey)).app_id;
-    if (window_app_id == item->id.app_id) {
-      // TODO: In the very first version we only show one window. Add the proper
-      // UI to show all windows for a given open app.
-      open_windows.push_back(window);
-    }
-  }
-  return open_windows;
 }
 
 views::View* ShelfView::FindFirstFocusableChild() {
@@ -2082,8 +2113,8 @@ void ShelfView::ShelfItemRemoved(int model_index, const ShelfItem& old_item) {
     AnimateToIdealBounds();
   }
 
-  if (view == tooltip_.GetCurrentAnchorView())
-    tooltip_.Close();
+  if (view == shelf_->tooltip()->GetCurrentAnchorView())
+    shelf_->tooltip()->Close();
 }
 
 void ShelfView::ShelfItemChanged(int model_index, const ShelfItem& old_item) {
@@ -2179,7 +2210,6 @@ void ShelfView::OnShelfAlignmentChanged(aura::Window* root_window) {
     if (i >= first_visible_index_ && i <= last_visible_index_)
       view_model_->view_at(i)->Layout();
   }
-  tooltip_.Close();
   if (overflow_bubble_)
     overflow_bubble_->Hide();
 
@@ -2416,6 +2446,25 @@ bool ShelfView::ShouldHandleGestures(const ui::GestureEvent& event) const {
   }
 
   return true;
+}
+
+base::string16 ShelfView::GetTitleForChildView(const views::View* view) const {
+  if (view == overflow_button_)
+    return overflow_button_->GetAccessibleName();
+
+  const ShelfItem* item = ShelfItemForView(view);
+  return item ? item->title : base::string16();
+}
+
+bool ShelfView::ShouldShowTooltipForChildView(
+    const views::View* child_view) const {
+  if (child_view == overflow_button_)
+    return true;
+  // Don't show a tooltip for a view that's currently being dragged.
+  if (child_view == drag_view_)
+    return false;
+
+  return ShelfItemForView(child_view) && !IsShowingMenuForView(child_view);
 }
 
 }  // namespace ash

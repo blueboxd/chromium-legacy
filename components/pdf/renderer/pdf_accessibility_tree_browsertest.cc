@@ -15,6 +15,7 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace pdf {

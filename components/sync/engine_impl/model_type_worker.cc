@@ -15,7 +15,6 @@
 #include "base/format_macros.h"
 #include "base/guid.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -198,7 +197,6 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
     }
   }
 
-  std::vector<std::string> client_tag_hashes;
   for (const sync_pb::SyncEntity* update_entity : applicable_updates) {
     if (update_entity->deleted()) {
       status->increment_num_tombstone_updates_downloaded_by(1);
@@ -211,9 +209,6 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
     switch (PopulateUpdateResponseData(cryptographer_.get(), type_,
                                        *update_entity, response_data.get())) {
       case SUCCESS:
-        if (!response_data->entity->client_tag_hash.empty()) {
-          client_tag_hashes.push_back(response_data->entity->client_tag_hash);
-        }
         pending_updates_.push_back(std::move(response_data));
         break;
       case DECRYPTION_PENDING:
@@ -225,10 +220,6 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
         break;
     }
   }
-  std::string suffix = ModelTypeToHistogramSuffix(type_);
-  base::UmaHistogramBoolean(
-      "Sync.DuplicateClientTagHashInGetUpdatesResponse." + suffix,
-      ContainsDuplicate(std::move(client_tag_hashes)));
 
   debug_info_emitter_->EmitUpdateCountersUpdate();
   return SyncerError(SyncerError::SYNCER_OK);
@@ -407,41 +398,19 @@ void ModelTypeWorker::ApplyPendingUpdates() {
            << base::StringPrintf("Delivering %" PRIuS " applicable updates.",
                                  pending_updates_.size());
 
-  const bool contains_duplicate_server_ids =
-      ContainsDuplicateServerID(pending_updates_);
-  const bool contains_duplicate_client_tag_hashes =
-      ContainsDuplicateClientTagHash(pending_updates_);
-
   // Having duplicates should be rare, so only do the de-duping if
   // we've actually detected one.
 
   // Deduplicate updates first based on server ids.
-  if (contains_duplicate_server_ids) {
+  if (ContainsDuplicateServerID(pending_updates_)) {
     DeduplicatePendingUpdatesBasedOnServerId();
   }
 
   // Check for duplicate client tag hashes after removing duplicate server
-  // ids.
-  const bool contains_duplicate_client_tag_hashes_after_deduping_server_ids =
-      ContainsDuplicateClientTagHash(pending_updates_);
-
-  // Deduplicate updates based on client tag hashes.
-  if (contains_duplicate_client_tag_hashes_after_deduping_server_ids) {
+  // ids, and deduplicate updates based on client tag hashes if necessary.
+  if (ContainsDuplicateClientTagHash(pending_updates_)) {
     DeduplicatePendingUpdatesBasedOnClientTagHash();
   }
-
-  std::string suffix = ModelTypeToHistogramSuffix(type_);
-  base::UmaHistogramBoolean(
-      "Sync.DuplicateClientTagHashInApplyPendingUpdates." + suffix,
-      contains_duplicate_client_tag_hashes);
-  base::UmaHistogramBoolean(
-      "Sync.DuplicateServerIdInApplyPendingUpdates." + suffix,
-      contains_duplicate_server_ids);
-  base::UmaHistogramBoolean(
-      "Sync."
-      "DuplicateClientTagHashWithDifferentServerIdsInApplyPendingUpdates." +
-          suffix,
-      contains_duplicate_client_tag_hashes_after_deduping_server_ids);
 
   int num_updates_applied = pending_updates_.size();
   model_type_processor_->OnUpdateReceived(model_type_state_,

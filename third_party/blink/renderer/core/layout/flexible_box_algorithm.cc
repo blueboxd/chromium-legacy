@@ -592,6 +592,12 @@ bool FlexLayoutAlgorithm::ShouldApplyMinSizeAutoForChild(
   if (!min.IsAuto())
     return false;
 
+  // webkit-box treats min-size: auto as 0.
+  if (StyleRef().Display() == EDisplay::kWebkitBox ||
+      StyleRef().Display() == EDisplay::kWebkitInlineBox) {
+    return false;
+  }
+
   return !child.ShouldApplySizeContainment() &&
          !child.DisplayLockInducesSizeContainment() &&
          MainAxisOverflowForChild(child) == EOverflow::kVisible;

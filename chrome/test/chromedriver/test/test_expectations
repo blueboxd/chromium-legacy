@@ -48,10 +48,6 @@ _OS_NEGATIVE_FILTER['mac'] = [
     # Test 'WindowTest.testSetsTheSizeOfTheCurrentWindowFromIframe' passes while it is run
     # standalone and fails in a test suit run
     'WindowTest.testSetsTheSizeOfTheCurrentWindowFromIframe',
-
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2856
-    'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInANestedFrameThatIsOutOfView',
-    'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInANestedFrame',
 ]
 
 _OS_NEGATIVE_FILTER['android:chrome'] = [

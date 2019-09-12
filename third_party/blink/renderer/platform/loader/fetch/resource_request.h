@@ -35,25 +35,24 @@
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/network/public/mojom/cors.mojom-blink.h"
-#include "services/network/public/mojom/fetch_api.mojom-blink.h"
-#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
-#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
+#include "services/network/public/mojom/cors.mojom-blink-forward.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
+#include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 #include "third_party/blink/public/platform/web_url_request.h"
-#include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/network/http_header_map.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/weborigin/referrer.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 
 class EncodedFormData;
+struct Referrer;
 
 // A ResourceRequest is a "request" object for ResourceLoader. Conceptually
 // it is https://fetch.spec.whatwg.org/#concept-request, but it contains

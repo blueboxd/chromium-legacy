@@ -7,6 +7,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
 #include "content/public/browser/notification_service.h"
 
@@ -17,10 +18,12 @@ PinnedTabService::PinnedTabService(Profile* profile) : profile_(profile) {
   for (Browser* browser : *BrowserList::GetInstance())
     OnBrowserAdded(browser);
 
-  browser_list_observer_.Add(BrowserList::GetInstance());
+  BrowserList::AddObserver(this);
 }
 
-PinnedTabService::~PinnedTabService() {}
+PinnedTabService::~PinnedTabService() {
+  BrowserList::RemoveObserver(this);
+}
 
 void PinnedTabService::Observe(int type,
                                const content::NotificationSource& source,

@@ -1,6 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
   <!-- Polymer 3.0 Elements -->
+  <include name="IDR_CR_ELEMENTS_ACTION_LINK_CSS_M_JS"
+         file="${root_gen_dir}/ui/webui/resources/cr_elements/action_link_css.m.js"
+         use_base_dir="false"
+         type="BINDATA"
+         compress="gzip" />
+  <include name="IDR_CR_ELEMENTS_CR_ACTION_MENU_ANCHOR_ALIGNMENT_M_JS"
+         file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_action_menu/anchor_alignment.m.js"
+         use_base_dir="false"
+         type="BINDATA"
+         compress="gzip" />
+  <include name="IDR_CR_ELEMENTS_CR_ACTION_MENU_M_JS"
+         file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_action_menu/cr_action_menu.m.js"
+         use_base_dir="false"
+         type="BINDATA"
+         compress="gzip" />
   <include name="IDR_CR_ELEMENTS_CR_BUTTON_M_JS"
          file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_button/cr_button.m.js"
          use_base_dir="false"
@@ -48,6 +63,11 @@
          compress="gzip" />
   <include name="IDR_CR_ELEMENTS_CR_INPUT_STYLE_CSS_M_JS"
          file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_input/cr_input_style_css.m.js"
+         use_base_dir="false"
+         type="BINDATA"
+         compress="gzip" />
+  <include name="IDR_CR_ELEMENTS_CR_LAZY_RENDER_M_JS"
+         file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js"
          use_base_dir="false"
          type="BINDATA"
          compress="gzip" />

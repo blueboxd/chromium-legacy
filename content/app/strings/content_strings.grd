@@ -450,6 +450,9 @@ below:
       <message name="IDS_AX_ROLE_TOGGLE_BUTTON" desc="Accessibility role description for a toggle button">
         toggle button
       </message>
+      <message name="IDS_AX_ROLE_HEADER" desc="Accessibility role description for header">
+        header
+      </message>
       <message name="IDS_AX_ROLE_HEADING" desc="Accessibility role description for headings">
         heading
       </message>

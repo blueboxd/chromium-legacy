@@ -224,7 +224,7 @@ class DisplayPrefsTest : public AshTestBase {
     base::ListValue* pref_data = update.Get();
     pref_data->Clear();
     for (const auto& id : external_display_mirror_info)
-      pref_data->GetList().emplace_back(base::Value(base::NumberToString(id)));
+      pref_data->Append(base::Value(base::NumberToString(id)));
   }
 
   std::string GetRegisteredDisplayPlacementStr(

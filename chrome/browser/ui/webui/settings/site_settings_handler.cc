@@ -41,7 +41,6 @@
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
@@ -311,8 +310,6 @@ void LogAllSitesAction(AllSitesAction action) {
 
 SiteSettingsHandler::SiteSettingsHandler(Profile* profile)
     : profile_(profile),
-      observer_(this),
-      chooser_observer_(this),
       pref_change_registrar_(nullptr) {}
 
 SiteSettingsHandler::~SiteSettingsHandler() {

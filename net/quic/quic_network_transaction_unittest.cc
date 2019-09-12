@@ -671,7 +671,8 @@ class QuicNetworkTransactionTest
     session_context_.net_log = net_log_.bound().net_log();
 
     session_.reset(new HttpNetworkSession(session_params_, session_context_));
-    session_->quic_stream_factory()->set_require_confirmation(false);
+    session_->quic_stream_factory()
+        ->set_is_quic_known_to_work_on_current_network(true);
     SpdySessionPoolPeer spdy_pool_peer(session_->spdy_session_pool());
     spdy_pool_peer.SetEnableSendingInitialData(false);
   }
@@ -2518,7 +2519,8 @@ TEST_P(QuicNetworkTransactionTest, GoAwayWithConnectionMigrationOnPortsOnly) {
                                            "");
 
   CreateSession();
-  session_->quic_stream_factory()->set_require_confirmation(true);
+  session_->quic_stream_factory()->set_is_quic_known_to_work_on_current_network(
+      false);
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
@@ -2601,7 +2603,8 @@ TEST_P(QuicNetworkTransactionTest, QuicFailsOnBothNetworksWhileTCPSucceeds) {
                                            "");
 
   CreateSession();
-  session_->quic_stream_factory()->set_require_confirmation(true);
+  session_->quic_stream_factory()->set_is_quic_known_to_work_on_current_network(
+      false);
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
@@ -2715,7 +2718,8 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPSucceeds) {
                                            "");
 
   CreateSession();
-  session_->quic_stream_factory()->set_require_confirmation(true);
+  session_->quic_stream_factory()->set_is_quic_known_to_work_on_current_network(
+      false);
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
@@ -2852,7 +2856,8 @@ TEST_P(QuicNetworkTransactionTest,
                                            "");
 
   CreateSession();
-  session_->quic_stream_factory()->set_require_confirmation(true);
+  session_->quic_stream_factory()->set_is_quic_known_to_work_on_current_network(
+      false);
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
@@ -2989,7 +2994,8 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPHanging) {
                                            "");
 
   CreateSession();
-  session_->quic_stream_factory()->set_require_confirmation(true);
+  session_->quic_stream_factory()->set_is_quic_known_to_work_on_current_network(
+      false);
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
@@ -4961,7 +4967,8 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
                                            "");
 
   CreateSession();
-  session_->quic_stream_factory()->set_require_confirmation(true);
+  session_->quic_stream_factory()->set_is_quic_known_to_work_on_current_network(
+      false);
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
@@ -5172,7 +5179,8 @@ TEST_P(QuicNetworkTransactionTest,
                                            "");
 
   CreateSession();
-  session_->quic_stream_factory()->set_require_confirmation(true);
+  session_->quic_stream_factory()->set_is_quic_known_to_work_on_current_network(
+      false);
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
@@ -5235,7 +5243,8 @@ TEST_P(QuicNetworkTransactionTest,
                                            "");
 
   CreateSession();
-  session_->quic_stream_factory()->set_require_confirmation(true);
+  session_->quic_stream_factory()->set_is_quic_known_to_work_on_current_network(
+      false);
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
@@ -5293,7 +5302,8 @@ TEST_P(QuicNetworkTransactionTest, RstSteamErrorHandling) {
                                            "");
 
   CreateSession();
-  session_->quic_stream_factory()->set_require_confirmation(true);
+  session_->quic_stream_factory()->set_is_quic_known_to_work_on_current_network(
+      false);
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
@@ -5354,7 +5364,8 @@ TEST_P(QuicNetworkTransactionTest, RstSteamBeforeHeaders) {
                                            "");
 
   CreateSession();
-  session_->quic_stream_factory()->set_require_confirmation(true);
+  session_->quic_stream_factory()->set_is_quic_known_to_work_on_current_network(
+      false);
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
@@ -5510,7 +5521,8 @@ TEST_P(QuicNetworkTransactionTest, DelayTCPOnStartWithQuicSupportOnSameIP) {
   // Set QUIC support on the last IP address, which is same with the local IP
   // address. Require confirmation mode will be turned off immediately when
   // local IP address is sorted out after we configure the UDP socket.
-  http_server_properties_->SetSupportsQuic(true, IPAddress(192, 0, 2, 33));
+  http_server_properties_->SetLastLocalAddressWhenQuicWorked(
+      IPAddress(192, 0, 2, 33));
 
   MockQuicData mock_quic_data(version_);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
@@ -5536,7 +5548,8 @@ TEST_P(QuicNetworkTransactionTest, DelayTCPOnStartWithQuicSupportOnSameIP) {
 
   CreateSession();
   // QuicStreamFactory by default requires confirmation on construction.
-  session_->quic_stream_factory()->set_require_confirmation(true);
+  session_->quic_stream_factory()->set_is_quic_known_to_work_on_current_network(
+      false);
 
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
@@ -5567,7 +5580,8 @@ TEST_P(QuicNetworkTransactionTest,
   // Set QUIC support on the last IP address, which is different with the local
   // IP address. Require confirmation mode will remain when local IP address is
   // sorted out after we configure the UDP socket.
-  http_server_properties_->SetSupportsQuic(true, IPAddress(1, 2, 3, 4));
+  http_server_properties_->SetLastLocalAddressWhenQuicWorked(
+      IPAddress(1, 2, 3, 4));
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
@@ -5596,7 +5610,8 @@ TEST_P(QuicNetworkTransactionTest,
   // No HTTP data is mocked as TCP job will be delayed and never starts.
 
   CreateSession();
-  session_->quic_stream_factory()->set_require_confirmation(true);
+  session_->quic_stream_factory()->set_is_quic_known_to_work_on_current_network(
+      false);
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
   // Stall host resolution so that QUIC job could not proceed and unblocks TCP.
@@ -5647,7 +5662,8 @@ TEST_P(QuicNetworkTransactionTest, NetErrorDetailsSetBeforeHandshake) {
   // Require handshake confirmation to ensure that no QUIC streams are
   // created, and to ensure that the TCP job does not wait for the QUIC
   // job to fail before it starts.
-  session_->quic_stream_factory()->set_require_confirmation(true);
+  session_->quic_stream_factory()->set_is_quic_known_to_work_on_current_network(
+      false);
 
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::COLD_START);
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
@@ -6892,7 +6908,8 @@ class QuicNetworkTransactionWithDestinationTest
     session_context.http_server_properties = &http_server_properties_;
 
     session_.reset(new HttpNetworkSession(session_params, session_context));
-    session_->quic_stream_factory()->set_require_confirmation(true);
+    session_->quic_stream_factory()
+        ->set_is_quic_known_to_work_on_current_network(false);
   }
 
   void TearDown() override {

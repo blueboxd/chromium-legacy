@@ -90,14 +90,6 @@ class AXFragmentRootPlatformNodeWin : public AXPlatformNodeWin,
     return S_OK;
   }
 
-  STDMETHOD(GetRuntimeId)(SAFEARRAY** runtime_id) {
-    UIA_VALIDATE_CALL_1_ARG(runtime_id);
-
-    // UIA obtains a runtime ID for a fragment root from the associated HWND.
-    *runtime_id = nullptr;
-    return S_OK;
-  }
-
   //
   // IRawElementProviderFragmentRoot methods.
   //

@@ -61,9 +61,9 @@ TEST(JSONWriterTest, NestedTypes) {
   ListValue list;
   DictionaryValue inner_dict;
   inner_dict.SetIntKey("inner int", 10);
-  list.GetList().push_back(std::move(inner_dict));
-  list.GetList().emplace_back(Value::Type::LIST);
-  list.GetList().emplace_back(true);
+  list.Append(std::move(inner_dict));
+  list.Append(Value(Value::Type::LIST));
+  list.Append(true);
   root_dict.SetKey("list", std::move(list));
 
   // Test the pretty-printer.
@@ -121,11 +121,11 @@ TEST(JSONWriterTest, BinaryValues) {
   EXPECT_TRUE(output_js.empty());
 
   ListValue binary_list;
-  binary_list.GetList().emplace_back(kBufferSpan);
-  binary_list.GetList().emplace_back(5);
-  binary_list.GetList().emplace_back(kBufferSpan);
-  binary_list.GetList().emplace_back(2);
-  binary_list.GetList().emplace_back(kBufferSpan);
+  binary_list.Append(Value(kBufferSpan));
+  binary_list.Append(5);
+  binary_list.Append(Value(kBufferSpan));
+  binary_list.Append(2);
+  binary_list.Append(Value(kBufferSpan));
   EXPECT_FALSE(JSONWriter::Write(binary_list, &output_js));
   EXPECT_TRUE(JSONWriter::WriteWithOptions(
       binary_list, JSONWriter::OPTIONS_OMIT_BINARY_VALUES, &output_js));

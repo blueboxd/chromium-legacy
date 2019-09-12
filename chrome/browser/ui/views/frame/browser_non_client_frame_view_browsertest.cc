@@ -154,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppNonClientFrameViewBrowserTest,
   EXPECT_EQ(nullptr, BrowserView::GetBrowserViewForBrowser(app_browser)
                          ->frame()
                          ->GetFrameView()
-                         ->hosted_app_button_container_for_testing());
+                         ->web_app_frame_toolbar_for_testing());
 }
 
 // Checks that the title bar for hosted app windows is hidden when in fullscreen

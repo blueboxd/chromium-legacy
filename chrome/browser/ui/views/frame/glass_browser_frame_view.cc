@@ -14,11 +14,11 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 #include "chrome/browser/ui/views/tabs/new_tab_button.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/win/titlebar_config.h"
 #include "content/public/browser/web_contents.h"
@@ -115,12 +115,12 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
       browser_view->browser()->app_controller();
   if (controller && controller->HasTitlebarToolbar()) {
     // TODO(alancutter): Avoid snapshotting GetCaptionColor() values here and
-    // call it on demand in HostedAppButtonContainer::UpdateIconsColor() via a
+    // call it on demand in WebAppFrameToolbarView::UpdateIconsColor() via a
     // delegate interface.
-    set_hosted_app_button_container(new HostedAppButtonContainer(
-        frame, browser_view, GetCaptionColor(kActive),
-        GetCaptionColor(kInactive)));
-    AddChildView(hosted_app_button_container());
+    set_web_app_frame_toolbar(
+        AddChildView(std::make_unique<WebAppFrameToolbarView>(
+            frame, browser_view, GetCaptionColor(kActive),
+            GetCaptionColor(kInactive))));
   }
 
   minimize_button_ =
@@ -493,14 +493,13 @@ int GlassBrowserFrameView::TopAreaHeight(bool restored) const {
 int GlassBrowserFrameView::TitlebarMaximizedVisualHeight() const {
   int maximized_height =
       display::win::ScreenWin::GetSystemMetricsInDIP(SM_CYCAPTION);
-  if (hosted_app_button_container()) {
+  if (web_app_frame_toolbar()) {
     // Adding 2px of vertical padding puts at least 1 px of space on the top and
     // bottom of the element.
     constexpr int kVerticalPadding = 2;
-    maximized_height =
-        std::max(maximized_height,
-                 hosted_app_button_container()->GetPreferredSize().height() +
-                     kVerticalPadding);
+    maximized_height = std::max(
+        maximized_height, web_app_frame_toolbar()->GetPreferredSize().height() +
+                              kVerticalPadding);
   }
   return maximized_height;
 }
@@ -541,8 +540,8 @@ bool GlassBrowserFrameView::IsToolbarVisible() const {
 }
 
 bool GlassBrowserFrameView::ShowCustomIcon() const {
-  // Hosted app windows don't include the window icon as per UI mocks.
-  return !hosted_app_button_container() && ShouldCustomDrawSystemTitlebar() &&
+  // Web-app windows don't include the window icon as per UI mocks.
+  return !web_app_frame_toolbar() && ShouldCustomDrawSystemTitlebar() &&
          browser_view()->ShouldShowWindowIcon();
 }
 
@@ -669,8 +668,8 @@ void GlassBrowserFrameView::LayoutTitleBar() {
     next_leading_x = window_icon_bounds.right() + kIconTitleSpacing;
   }
 
-  if (hosted_app_button_container()) {
-    next_trailing_x = hosted_app_button_container()->LayoutInContainer(
+  if (web_app_frame_toolbar()) {
+    next_trailing_x = web_app_frame_toolbar()->LayoutInContainer(
         next_leading_x, next_trailing_x, window_top, titlebar_visual_height);
   }
 

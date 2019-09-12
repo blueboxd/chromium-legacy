@@ -27,6 +27,12 @@ namespace cups_proxy {
 // Note: This is assumed to be stable.
 static const size_t kHttpMaxBufferSize = 2048;
 
+// PDF and PostScript document format identifiers.
+constexpr std::array<uint8_t, 5> pdf_magic_bytes = {0x25, 0x50, 0x44, 0x46,
+                                                    0x2d};  // { %PDF- }
+constexpr std::array<uint8_t, 4> ps_magic_bytes = {0x25, 0x21, 0x50,
+                                                   0x53};  // { %!PS }
+
 // Expects |request| to be an IPP_OP_GET_PRINTERS IPP request. This function
 // creates an appropriate IPP response referencing |printers|.
 // TODO(crbug.com/945409): Expand testing suite.

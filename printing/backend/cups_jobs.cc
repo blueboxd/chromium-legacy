@@ -114,8 +114,6 @@ constexpr std::array<const char* const, 5> kPrinterInfo{
     {kPrinterMakeAndModel, kIppVersionsSupported, kIppFeaturesSupported,
      kDocumentFormatSupported, kPwgRasterDocumentResolutionSupported}};
 
-using ScopedHttpPtr = std::unique_ptr<http_t, HttpDeleter>;
-
 // Converts an IPP attribute |attr| to the appropriate JobState enum.
 CupsJob::JobState ToJobState(ipp_attribute_t* attr) {
   DCHECK_EQ(IPP_TAG_ENUM, ippGetValueTag(attr));

@@ -25,6 +25,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_observer.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "url/gurl.h"
 
@@ -160,10 +161,11 @@ class CONTENT_EXPORT InterstitialPageImpl : public InterstitialPage,
       BrowserContext* browser_context) const override;
   void CreateNewWidget(int32_t render_process_id,
                        int32_t route_id,
-                       mojom::WidgetPtr widget) override;
-  void CreateNewFullscreenWidget(int32_t render_process_id,
-                                 int32_t route_id,
-                                 mojom::WidgetPtr widget) override;
+                       mojo::PendingRemote<mojom::Widget> widget) override;
+  void CreateNewFullscreenWidget(
+      int32_t render_process_id,
+      int32_t route_id,
+      mojo::PendingRemote<mojom::Widget> widget) override;
   void ShowCreatedWidget(int process_id,
                          int route_id,
                          const gfx::Rect& initial_rect) override;

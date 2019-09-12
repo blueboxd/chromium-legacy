@@ -6,6 +6,7 @@
 <link rel="help" href="https://github.com/WICG/display-locking">
 <link rel="match" href="writing-modes-ref.html">
 <script src="/common/reftest-wait.js"></script>
+<script src="../resources/utils.js"></script>
 
 <style>
 .verticalrl {
@@ -23,7 +24,7 @@
 }
 .box {
   background: lightblue;
-  contain: style layout;
+  content-size: 12px 34px;
   border-color: blue;
   border-style: solid;
   border-width: 1px 2px 3px 4px;
@@ -67,7 +68,7 @@ async function runTest() {
   const items = document.getElementsByClassName("box");
   const promises = []
   for (let i = 0; i < items.length; ++i) {
-    promises.push(items[i].displayLock.acquire({ timeout: Infinity, size: [12, 34] }));
+    promises.push(setInvisible(items[i]));
   }
   await Promise.all(promises);
   takeScreenshot();

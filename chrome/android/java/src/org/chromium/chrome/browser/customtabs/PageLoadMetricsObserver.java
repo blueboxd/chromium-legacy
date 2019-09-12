@@ -53,6 +53,19 @@ public class PageLoadMetricsObserver implements PageLoadMetrics.Observer {
     }
 
     @Override
+    public void onLargestContentfulPaint(WebContents webContents, long navigationId,
+            long navigationStartTick, long largestContentfulPaintMs,
+            long largestContentfulPaintSize) {
+        if (webContents != mTab.getWebContents()) return;
+
+        Bundle args = mConnection.createBundleWithNavigationStartAndPageLoadMetric(
+                PageLoadMetrics.LARGEST_CONTENTFUL_PAINT, navigationStartTick,
+                largestContentfulPaintMs);
+        args.putLong(PageLoadMetrics.LARGEST_CONTENTFUL_PAINT_SIZE, largestContentfulPaintSize);
+        mConnection.notifyPageLoadMetrics(mSession, args);
+    }
+
+    @Override
     public void onLoadEventStart(WebContents webContents, long navigationId,
             long navigationStartTick, long loadEventStartMs) {
         if (webContents != mTab.getWebContents()) return;
@@ -75,6 +88,28 @@ public class PageLoadMetricsObserver implements PageLoadMetrics.Observer {
         args.putLong(PageLoadMetrics.REQUEST_START, requestStartMs);
         args.putLong(PageLoadMetrics.SEND_START, sendStartMs);
         args.putLong(PageLoadMetrics.SEND_END, sendEndMs);
+        mConnection.notifyPageLoadMetrics(mSession, args);
+    }
+
+    @Override
+    public void onFirstInputDelay(
+            WebContents webContents, long navigationId, long firstInputDelayMs) {
+        if (webContents != mTab.getWebContents()) return;
+
+        Bundle args = new Bundle();
+        args.putLong(PageLoadMetrics.FIRST_INPUT_DELAY, firstInputDelayMs);
+        mConnection.notifyPageLoadMetrics(mSession, args);
+    }
+
+    @Override
+    public void onLayoutShiftScore(WebContents webContents, long navigationId,
+            float layoutShiftScoreBeforeInputOrScroll, float layoutShiftScoreOverall) {
+        if (webContents != mTab.getWebContents()) return;
+
+        Bundle args = new Bundle();
+        args.putFloat(PageLoadMetrics.LAYOUT_SHIFT_SCORE, layoutShiftScoreOverall);
+        args.putFloat(PageLoadMetrics.LAYOUT_SHIFT_SCORE_BEFORE_INPUT_OR_SCROLL,
+                layoutShiftScoreBeforeInputOrScroll);
         mConnection.notifyPageLoadMetrics(mSession, args);
     }
 }

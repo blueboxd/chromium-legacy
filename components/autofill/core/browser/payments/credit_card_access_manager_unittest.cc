@@ -228,12 +228,7 @@ class CreditCardAccessManagerTest : public testing::Test {
     payments::PaymentsClient::UnmaskResponseDetails response;
 #if !defined(OS_IOS)
     if (fido_opt_in) {
-      response.fido_creation_options =
-          base::Value(base::Value::Type::DICTIONARY);
-      response.fido_creation_options->SetKey("relying_party_id",
-                                             base::Value(kGooglePaymentsRpid));
-      response.fido_creation_options->SetKey("challenge",
-                                             base::Value(kTestChallenge));
+      response.fido_creation_options = GetTestCreationOptions();
     }
 #endif
     full_card_request->OnDidGetRealPan(result,
@@ -242,6 +237,29 @@ class CreditCardAccessManagerTest : public testing::Test {
   }
 
 #if !defined(OS_IOS)
+  base::Value GetTestRequestOptions() {
+    base::Value request_options = base::Value(base::Value::Type::DICTIONARY);
+    request_options.SetKey("challenge", base::Value(kTestChallenge));
+    request_options.SetKey("relying_party_id",
+                           base::Value(kGooglePaymentsRpid));
+
+    base::Value key_info(base::Value::Type::DICTIONARY);
+    key_info.SetKey("credential_id", base::Value(kCredentialId));
+    request_options.SetKey("key_info", base::Value(base::Value::Type::LIST));
+    request_options.FindKeyOfType("key_info", base::Value::Type::LIST)
+        ->GetList()
+        .push_back(std::move(key_info));
+    return request_options;
+  }
+
+  base::Value GetTestCreationOptions() {
+    base::Value creation_options = base::Value(base::Value::Type::DICTIONARY);
+    creation_options.SetKey("challenge", base::Value(kTestChallenge));
+    creation_options.SetKey("relying_party_id",
+                            base::Value(kGooglePaymentsRpid));
+    return creation_options;
+  }
+
   void SetUserOptedIn(bool user_is_opted_in) {
     scoped_feature_list_.InitAndEnableFeature(
         features::kAutofillCreditCardAuthentication);
@@ -267,9 +285,17 @@ class CreditCardAccessManagerTest : public testing::Test {
   // Mocks an OptChange response from Payments Client.
   void OptChange(AutofillClient::PaymentsRpcResult result,
                  bool user_is_opted_in,
-                 base::Value creation_options = base::Value()) {
-    GetFIDOAuthenticator()->OnDidGetOptChangeResult(
-        result, user_is_opted_in, std::move(creation_options));
+                 bool include_creation_options = false,
+                 bool include_request_options = false) {
+    payments::PaymentsClient::OptChangeResponseDetails response;
+    response.user_is_opted_in = user_is_opted_in;
+    if (include_creation_options) {
+      response.fido_creation_options = GetTestCreationOptions();
+    }
+    if (include_request_options) {
+      response.fido_request_options = GetTestRequestOptions();
+    }
+    GetFIDOAuthenticator()->OnDidGetOptChangeResult(result, response);
   }
 
   TestCreditCardFIDOAuthenticator* GetFIDOAuthenticator() {

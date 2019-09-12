@@ -853,16 +853,16 @@ TEST_F(HttpServerPropertiesManagerTest, OnDefaultNetworkChangedWithBrokenOnly) {
       alternative_service, NetworkIsolationKey()));
 }
 
-TEST_F(HttpServerPropertiesManagerTest, SupportsQuic) {
+TEST_F(HttpServerPropertiesManagerTest, LastLocalAddressWhenQuicWorked) {
   InitializePrefs();
 
-  IPAddress address;
-  EXPECT_FALSE(http_server_props_->GetSupportsQuic(&address));
-
   IPAddress actual_address(127, 0, 0, 1);
-  http_server_props_->SetSupportsQuic(true, actual_address);
+  EXPECT_FALSE(http_server_props_->HasLastLocalAddressWhenQuicWorked());
+  EXPECT_FALSE(
+      http_server_props_->WasLastLocalAddressWhenQuicWorked(actual_address));
+  http_server_props_->SetLastLocalAddressWhenQuicWorked(actual_address);
   // Another task should not be scheduled.
-  http_server_props_->SetSupportsQuic(true, actual_address);
+  http_server_props_->SetLastLocalAddressWhenQuicWorked(actual_address);
 
   // Run the task.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
@@ -870,11 +870,11 @@ TEST_F(HttpServerPropertiesManagerTest, SupportsQuic) {
   FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
-  EXPECT_TRUE(http_server_props_->GetSupportsQuic(&address));
-  EXPECT_EQ(actual_address, address);
+  EXPECT_TRUE(
+      http_server_props_->WasLastLocalAddressWhenQuicWorked(actual_address));
 
   // Another task should not be scheduled.
-  http_server_props_->SetSupportsQuic(true, actual_address);
+  http_server_props_->SetLastLocalAddressWhenQuicWorked(actual_address);
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
   EXPECT_EQ(0u, GetPendingMainThreadTaskCount());
 }
@@ -974,7 +974,7 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   http_server_props_->MarkAlternativeServiceBroken(broken_alternative_service,
                                                    NetworkIsolationKey());
   http_server_props_->SetSupportsSpdy(spdy_server, NetworkIsolationKey(), true);
-  http_server_props_->SetSupportsQuic(true, actual_address);
+  http_server_props_->SetLastLocalAddressWhenQuicWorked(actual_address);
   ServerNetworkStats stats;
   stats.srtt = base::TimeDelta::FromMicroseconds(10);
   http_server_props_->SetServerNetworkStats(spdy_server, NetworkIsolationKey(),
@@ -993,9 +993,8 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   EXPECT_TRUE(http_server_props_->SupportsRequestPriority(
       spdy_server, NetworkIsolationKey()));
   EXPECT_TRUE(HasAlternativeService(spdy_server, NetworkIsolationKey()));
-  IPAddress address;
-  EXPECT_TRUE(http_server_props_->GetSupportsQuic(&address));
-  EXPECT_EQ(actual_address, address);
+  EXPECT_TRUE(
+      http_server_props_->WasLastLocalAddressWhenQuicWorked(actual_address));
   const ServerNetworkStats* stats1 = http_server_props_->GetServerNetworkStats(
       spdy_server, NetworkIsolationKey());
   EXPECT_EQ(10, stats1->srtt.ToInternalValue());
@@ -1021,7 +1020,7 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   EXPECT_FALSE(http_server_props_->SupportsRequestPriority(
       spdy_server, NetworkIsolationKey()));
   EXPECT_FALSE(HasAlternativeService(spdy_server, NetworkIsolationKey()));
-  EXPECT_FALSE(http_server_props_->GetSupportsQuic(&address));
+  EXPECT_FALSE(http_server_props_->HasLastLocalAddressWhenQuicWorked());
   const ServerNetworkStats* stats2 = http_server_props_->GetServerNetworkStats(
       spdy_server, NetworkIsolationKey());
   EXPECT_EQ(nullptr, stats2);
@@ -1031,7 +1030,7 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
 
 // https://crbug.com/444956: Add 200 alternative_service servers followed by
 // supports_quic and verify we have read supports_quic from prefs.
-TEST_F(HttpServerPropertiesManagerTest, BadSupportsQuic) {
+TEST_F(HttpServerPropertiesManagerTest, BadLastLocalAddressWhenQuicWorked) {
   std::unique_ptr<base::ListValue> servers_list =
       std::make_unique<base::ListValue>();
 
@@ -1086,10 +1085,9 @@ TEST_F(HttpServerPropertiesManagerTest, BadSupportsQuic) {
     EXPECT_EQ(i, alternative_service_info_vector[0].alternative_service().port);
   }
 
-  // Verify SupportsQuic.
-  IPAddress address;
-  ASSERT_TRUE(http_server_props_->GetSupportsQuic(&address));
-  EXPECT_EQ("127.0.0.1", address.ToString());
+  // Verify WasLastLocalAddressWhenQuicWorked.
+  ASSERT_TRUE(http_server_props_->WasLastLocalAddressWhenQuicWorked(
+      IPAddress::IPv4Localhost()));
 }
 
 TEST_F(HttpServerPropertiesManagerTest, UpdatePrefsWithCache) {
@@ -1149,7 +1147,7 @@ TEST_F(HttpServerPropertiesManagerTest, UpdatePrefsWithCache) {
 
   // #6: Set SupportsQuic.
   IPAddress actual_address(127, 0, 0, 1);
-  http_server_props_->SetSupportsQuic(true, actual_address);
+  http_server_props_->SetLastLocalAddressWhenQuicWorked(actual_address);
 
   base::Time time_before_prefs_update = base::Time::Now();
 
@@ -1512,7 +1510,7 @@ TEST_F(HttpServerPropertiesManagerTest, PersistAdvertisedVersionsToPref) {
 
   // #5: Set SupportsQuic.
   IPAddress actual_address(127, 0, 0, 1);
-  http_server_props_->SetSupportsQuic(true, actual_address);
+  http_server_props_->SetLastLocalAddressWhenQuicWorked(actual_address);
 
   // Update Prefs.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
@@ -1631,7 +1629,7 @@ TEST_F(HttpServerPropertiesManagerTest,
 
   // Set SupportsQuic.
   IPAddress actual_address(127, 0, 0, 1);
-  http_server_props_->SetSupportsQuic(true, actual_address);
+  http_server_props_->SetLastLocalAddressWhenQuicWorked(actual_address);
 
   // Update Prefs.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
@@ -1981,7 +1979,8 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   // Verify supports QUIC.
   //
   IPAddress actual_address(127, 0, 0, 1);
-  EXPECT_TRUE(http_server_props_->GetSupportsQuic(&actual_address));
+  EXPECT_TRUE(
+      http_server_props_->WasLastLocalAddressWhenQuicWorked(actual_address));
   EXPECT_EQ(4, pref_delegate_->GetAndClearNumPrefUpdates());
 }
 

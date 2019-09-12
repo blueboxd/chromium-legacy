@@ -121,11 +121,14 @@ function PDFViewer(browserApi) {
   /** @private {boolean} */
   this.canSerializeDocument_ = false;
 
+  /** @private {!EventTracker} */
+  this.tracker_ = new EventTracker();
+
   PDFMetrics.record(PDFMetrics.UserAction.DOCUMENT_OPENED);
 
   // Parse open pdf parameters.
   this.paramsParser_ = new OpenPdfParamsParser(
-      message => this.pluginController_.postMessage(message));
+      destination => this.pluginController_.getNamedDestination(destination));
   const toolbarEnabled =
       this.paramsParser_.getUiUrlParams(this.originalUrl_).toolbar &&
       !this.isPrintPreview_;
@@ -166,7 +169,7 @@ function PDFViewer(browserApi) {
       () => this.currentController_.afterZoom());
   this.viewport_.setUserInitiatedCallback(
       userInitiated => this.setUserInitiated_(userInitiated));
-  window.addEventListener('beforeunload', () => this.viewport_.resetTracker());
+  window.addEventListener('beforeunload', () => this.resetTrackers_());
 
   // Create the plugin object dynamically so we can set its src. The plugin
   // element is sized to fill the entire window and is set to be fixed
@@ -208,9 +211,19 @@ function PDFViewer(browserApi) {
 
   $('content').appendChild(this.plugin_);
 
-  this.pluginController_ =
-      new PluginController(this.plugin_, this, this.viewport_);
-  this.inkController_ = new InkController(this, this.viewport_);
+  this.pluginController_ = new PluginController(
+      this.plugin_, this.viewport_, () => this.isUserInitiatedEvent_,
+      () => this.loaded);
+  this.tracker_.add(
+      this.pluginController_.getEventTarget(), 'plugin-message',
+      e => this.handlePluginMessage_(e));
+  this.inkController_ = new InkController(this.viewport_);
+  this.tracker_.add(
+      this.inkController_.getEventTarget(), 'stroke-added',
+      () => chrome.mimeHandlerPrivate.setShowBeforeUnloadDialog(true));
+  this.tracker_.add(
+      this.inkController_.getEventTarget(), 'set-annotation-undo-state',
+      e => this.setAnnotationUndoState_(e));
   this.currentController_ = this.pluginController_;
 
   // Setup the button event listeners.
@@ -422,7 +435,7 @@ PDFViewer.prototype = {
         return;
       case 65:  // 'a' key.
         if (e.ctrlKey || e.metaKey) {
-          this.pluginController_.postMessage({type: 'selectAll'});
+          this.pluginController_.selectAll();
           // Since we do selection ourselves.
           e.preventDefault();
         }
@@ -647,8 +660,8 @@ PDFViewer.prototype = {
   },
 
   /**
-   * @return {Promise} Resolved when the load state reaches LOADED,
-   *     rejects on FAILED.
+   * @return {Promise} Resolved when the load state reaches LOADED, rejects on
+   *     FAILED.
    */
   get loaded() {
     return this.loaded_.promise;
@@ -720,12 +733,9 @@ PDFViewer.prototype = {
 
   /** @private */
   sendBackgroundColorForPrintPreview_: function() {
-    this.pluginController_.postMessage({
-      type: 'backgroundColorChanged',
-      backgroundColor: this.dark_ ?
-          PDFViewer.PRINT_PREVIEW_DARK_BACKGROUND_COLOR :
-          PDFViewer.PRINT_PREVIEW_BACKGROUND_COLOR,
-    });
+    this.pluginController_.backgroundColorChanged(
+        this.dark_ ? PDFViewer.PRINT_PREVIEW_DARK_BACKGROUND_COLOR :
+                     PDFViewer.PRINT_PREVIEW_BACKGROUND_COLOR);
   },
 
   /**
@@ -769,8 +779,7 @@ PDFViewer.prototype = {
    * @private
    */
   onPasswordSubmitted_: function(event) {
-    this.pluginController_.postMessage(
-        {type: 'getPasswordComplete', password: event.detail.password});
+    this.pluginController_.getPasswordComplete(event.detail.password);
   },
 
   /**
@@ -926,9 +935,13 @@ PDFViewer.prototype = {
 
     switch (message.data.type.toString()) {
       case 'getSelectedText':
+        this.pluginController_.getSelectedText();
+        break;
       case 'print':
+        this.pluginController_.print();
+        break;
       case 'selectAll':
-        this.pluginController_.postMessage(message.data);
+        this.pluginController_.selectAll();
         break;
     }
   },
@@ -936,18 +949,20 @@ PDFViewer.prototype = {
   /**
    * Handle scripting messages specific to print preview.
    *
-   * @param {MessageObject} message the message to handle.
+   * @param {!Event} messageEvent the message to handle.
    * @return {boolean} true if the message was handled, false otherwise.
    * @private
    */
-  handlePrintPreviewScriptingMessage_: function(message) {
+  handlePrintPreviewScriptingMessage_: function(messageEvent) {
     if (!this.isPrintPreview_) {
       return false;
     }
 
-    switch (message.data.type.toString()) {
+    const messageData = /** @type {!MessageData} */ (messageEvent.data);
+    switch (messageData.type.toString()) {
       case 'loadPreviewPage':
-        this.pluginController_.postMessage(message.data);
+        this.pluginController_.loadPreviewPage(
+            messageData.url, messageData.index);
         return true;
       case 'resetPrintPreviewMode':
         this.setLoadState_(LoadState.LOADING);
@@ -972,34 +987,27 @@ PDFViewer.prototype = {
           saveButton.parentNode.removeChild(saveButton);
         }
 
-        this.pageIndicator_.pageLabels = message.data.pageNumbers;
+        this.pageIndicator_.pageLabels = messageData.pageNumbers;
 
-        this.pluginController_.postMessage({
-          type: 'resetPrintPreviewMode',
-          url: message.data.url,
-          grayscale: message.data.grayscale,
-          // If the PDF isn't modifiable we send 0 as the page count so that no
-          // blank placeholder pages get appended to the PDF.
-          pageCount:
-              (message.data.modifiable ? message.data.pageNumbers.length : 0)
-        });
+        this.pluginController_.resetPrintPreviewMode(
+            /** @type {!PrintPreviewParams} */ (messageData));
         return true;
       case 'sendKeyEvent':
-        this.handleKeyEvent_(DeserializeKeyEvent(message.data.keyEvent));
+        this.handleKeyEvent_(DeserializeKeyEvent(messageData.keyEvent));
         return true;
       case 'hideToolbars':
         this.toolbarManager_.resetKeyboardNavigationAndHideToolbars();
         return true;
       case 'darkModeChanged':
-        this.dark_ = message.data.darkMode;
+        this.dark_ = messageData.darkMode;
         if (this.isPrintPreview_) {
           this.sendBackgroundColorForPrintPreview_();
         }
         return true;
       case 'scrollPosition':
         const position = this.viewport_.position;
-        position.y += message.data.y;
-        position.x += message.data.x;
+        position.y += messageData.y;
+        position.x += messageData.x;
         this.viewport.position = position;
         return true;
     }
@@ -1049,6 +1057,51 @@ PDFViewer.prototype = {
    */
   get bookmarks() {
     return this.bookmarks_;
+  },
+
+  /**
+   * @param {!CustomEvent<MessageData>} e
+   * @private
+   */
+  handlePluginMessage_: function(e) {
+    const data = e.detail;
+    switch (data.type.toString()) {
+      case 'beep':
+        this.handleBeep();
+        return;
+      case 'documentDimensions':
+        this.setDocumentDimensions(data);
+        return;
+      case 'getPassword':
+        this.handlePasswordRequest();
+        return;
+      case 'getSelectedTextReply':
+        this.handleSelectedTextReply(data.selectedText);
+        return;
+      case 'loadProgress':
+        this.updateProgress(data.progress);
+        return;
+      case 'navigate':
+        this.handleNavigate(data.url, data.disposition);
+        return;
+      case 'printPreviewLoaded':
+        this.handlePrintPreviewLoaded();
+        return;
+      case 'metadata':
+        this.setDocumentMetadata(
+            data.title, data.bookmarks, data.canSerializeDocument);
+        return;
+      case 'setIsSelecting':
+        this.setIsSelecting(data.isSelecting);
+        return;
+      case 'getNamedDestinationReply':
+        this.paramsParser_.onNamedDestinationReceived(data.pageNumber);
+        return;
+      case 'formFocusChange':
+        this.setIsFormFieldFocused(data.focused);
+        return;
+    }
+    assertNotReached('Unknown message type received: ' + data.type);
   },
 
   /**
@@ -1273,14 +1326,20 @@ PDFViewer.prototype = {
     this.updateAnnotationAvailable_();
   },
 
-  setHasUnsavedChanges: function() {
-    // Warn the user if they attempt to close the window without saving.
-    chrome.mimeHandlerPrivate.setShowBeforeUnloadDialog(true);
+  /**
+   * @param {!CustomEvent<{canUndo: boolean, canRedo: boolean}>} e
+   * @private
+   */
+  setAnnotationUndoState_(e) {
+    this.toolbar_.canUndoAnnotation = e.detail.canUndo;
+    this.toolbar_.canRedoAnnotation = e.detail.canRedo;
   },
 
-  /** @param {UndoState} state */
-  setAnnotationUndoState(state) {
-    this.toolbar_.canUndoAnnotation = state.canUndo;
-    this.toolbar_.canRedoAnnotation = state.canRedo;
-  },
+  /** @private */
+  resetTrackers_() {
+    this.viewport_.resetTracker();
+    if (this.tracker_) {
+      this.tracker_.removeAll();
+    }
+  }
 };

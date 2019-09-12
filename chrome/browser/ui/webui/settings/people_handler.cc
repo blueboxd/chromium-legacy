@@ -44,7 +44,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/user_selectable_type.h"
-#include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_utils.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/unified_consent/feature.h"
@@ -261,11 +260,7 @@ const char PeopleHandler::kDonePageStatus[] = "done";
 const char PeopleHandler::kPassphraseFailedPageStatus[] = "passphraseFailed";
 
 PeopleHandler::PeopleHandler(Profile* profile)
-    : profile_(profile),
-      configuring_sync_(false),
-      identity_manager_observer_(this),
-      sync_service_observer_(this) {
-}
+    : profile_(profile), configuring_sync_(false) {}
 
 PeopleHandler::~PeopleHandler() {
   // Early exit if running unit tests (no actual WebUI is attached).
@@ -1154,7 +1149,8 @@ void PeopleHandler::MarkFirstSetupComplete() {
 
   // We're done configuring, so notify SyncService that it is OK to start
   // syncing.
-  service->GetUserSettings()->SetFirstSetupComplete();
+  service->GetUserSettings()->SetFirstSetupComplete(
+      syncer::SyncFirstSetupCompleteSource::ADVANCED_FLOW_CONFIRM);
   FireWebUIListener("sync-settings-saved");
 }
 

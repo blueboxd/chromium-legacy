@@ -9,6 +9,8 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "ui/views/widget/root_view.h"
 
+class ToolbarView;
+
 namespace ui {
 class OSExchangeData;
 }

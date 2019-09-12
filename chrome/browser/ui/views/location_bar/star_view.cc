@@ -22,7 +22,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/views/widget/widget_observer.h"
 
 namespace {
 
@@ -47,8 +46,7 @@ StarView::StarView(CommandUpdater* command_updater,
                    Browser* browser,
                    PageActionIconView::Delegate* delegate)
     : PageActionIconView(command_updater, IDC_BOOKMARK_THIS_TAB, delegate),
-      browser_(browser),
-      bookmark_promo_observer_(this) {
+      browser_(browser) {
   SetID(VIEW_ID_STAR_BUTTON);
   SetToggled(false);
 }

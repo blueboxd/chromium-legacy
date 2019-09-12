@@ -364,6 +364,9 @@ android_aar_prebuilt("androidx_mediarouter_mediarouter_java") {
     ":androidx_palette_palette_java",
     ":androidx_recyclerview_recyclerview_java",
   ]
+
+  # https://crbug.com/1000382
+  proguard_configs = [ "androidx_mediarouter.flags" ]
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -618,6 +621,9 @@ android_aar_prebuilt("com_android_support_mediarouter_v7_java") {
     ":com_android_support_recyclerview_v7_java",
     ":com_android_support_support_media_compat_java",
   ]
+
+  # https://crbug.com/1000382
+  proguard_configs = [ "support_mediarouter.flags" ]
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.

@@ -447,10 +447,8 @@ const char kRlzPingDelay[] = "rlz-ping-delay";
 // TODO(941489): Remove when the bug is fixed.
 const char kSamlPasswordChangeUrl[] = "saml-password-change-url";
 
-// Smaller, denser shelf in clamshell mode.
-const char kShelfDenseClamshell[] = "shelf-dense-clamshell";
-
-// New modular design for the shelf with apps separated into a hotseat UI.
+// New modular design for the shelf with apps separated into a hotseat UI and
+// smaller shelf in clamshell mode.
 const char kShelfHotseat[] = "shelf-hotseat";
 
 // App window previews when hovering over the shelf.
@@ -545,11 +543,6 @@ bool IsSigninFrameClientCertsEnabled() {
 bool IsSigninFrameClientCertUserSelectionEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       kDisableSigninFrameClientCertUserSelection);
-}
-
-bool ShouldShowShelfDenseClamshell() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      kShelfDenseClamshell);
 }
 
 bool ShouldShowShelfHotseat() {

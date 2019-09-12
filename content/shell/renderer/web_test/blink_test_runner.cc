@@ -277,8 +277,16 @@ void BlinkTestRunner::EnableAutoResizeMode(const WebSize& min_size,
 
 void BlinkTestRunner::DisableAutoResizeMode(const WebSize& new_size) {
   content::DisableAutoResizeMode(render_view(), new_size);
-  if (!new_size.IsEmpty())
-    ForceResizeRenderView(render_view(), new_size);
+  ForceResizeRenderView(render_view(), new_size);
+}
+
+void BlinkTestRunner::ResetAutoResizeMode() {
+  // An empty size indicates to keep the size as is. Resetting races with the
+  // browser setting up the new test (one is a mojo IPC (OnSetTestConfiguration)
+  // and one is legacy (OnReset)) so we can not clobber the size here.
+  content::DisableAutoResizeMode(render_view(), gfx::Size());
+  // Does not call ForceResizeRenderView() here intentionally. This is between
+  // tests, and the next test will set up a size.
 }
 
 void BlinkTestRunner::NavigateSecondaryWindow(const GURL& url) {

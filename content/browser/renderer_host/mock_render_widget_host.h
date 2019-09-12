@@ -14,6 +14,7 @@
 #include "content/public/common/input_event_ack_state.h"
 #include "content/test/mock_widget_impl.h"
 #include "content/test/mock_widget_input_handler.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 
 namespace viz {
@@ -90,7 +91,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
                        RenderProcessHost* process,
                        int routing_id,
                        std::unique_ptr<MockWidgetImpl> widget_impl,
-                       mojom::WidgetPtr widget);
+                       mojo::PendingRemote<mojom::Widget> widget);
 
   std::unique_ptr<MockWidgetImpl> widget_impl_;
 

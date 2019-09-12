@@ -21,7 +21,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button_delegate.h"
 #include "ash/shelf/shelf_button_pressed_metric_tracker.h"
-#include "ash/shelf/shelf_tooltip_manager.h"
+#include "ash/shelf/shelf_tooltip_delegate.h"
 #include "ash/shell_observer.h"
 #include "ash/system/model/virtual_keyboard_model.h"
 #include "base/macros.h"
@@ -112,6 +112,7 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
                              public views::ContextMenuController,
                              public views::BoundsAnimatorObserver,
                              public app_list::ApplicationDragAndDropHost,
+                             public ShelfTooltipDelegate,
                              public ash::TabletModeObserver,
                              public VirtualKeyboardModel::Observer {
  public:
@@ -158,17 +159,13 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // for showing tooltips without stuttering over gaps.
   void UpdateVisibleShelfItemBoundsUnion();
 
-  // Returns true if the mouse cursor exits the area for launcher tooltip.
-  // There are thin gaps between launcher buttons but the tooltip shouldn't hide
-  // in the gaps, but the tooltip should hide if the mouse moved totally outside
-  // of the buttons area.
-  bool ShouldHideTooltip(const gfx::Point& cursor_location) const;
-
-  // Returns true if a tooltip should be shown for the shelf item |view|.
-  bool ShouldShowTooltipForView(const views::View* view) const;
-
-  // Returns the title of the shelf item |view|.
-  base::string16 GetTitleForView(const views::View* view) const;
+  // ShelfTooltipDelegate:
+  bool ShouldShowTooltipForView(const views::View* view) const override;
+  bool ShouldHideTooltip(const gfx::Point& cursor_location) const override;
+  const std::vector<aura::Window*> GetOpenWindowsForView(
+      views::View* view) override;
+  base::string16 GetTitleForView(const views::View* view) const override;
+  views::View* GetViewForEvent(const ui::Event& event) override;
 
   // Toggles the overflow menu.
   void ToggleOverflowBubble();
@@ -266,11 +263,6 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // True if the current |drag_view_| is the given |drag_view|.
   bool IsDraggedView(const views::View* drag_view) const;
 
-  // Returns the list of open windows that correspond to the app represented by
-  // this shelf view.
-  const std::vector<aura::Window*> GetOpenWindowsForShelfView(
-      views::View* view);
-
   // The three methods below return the first or last focusable child of the
   // set including both the main shelf and the overflow shelf it it's showing.
   // - The first focusable child is either the home button, or the back
@@ -298,6 +290,11 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // Returns the overflow shelf. This can be called on either the main shelf
   // or the overflow shelf. Returns nullptr if the overflow shelf isn't visible.
   ShelfView* overflow_shelf() {
+    return const_cast<ShelfView*>(
+        const_cast<const ShelfView*>(this)->overflow_shelf());
+  }
+
+  const ShelfView* overflow_shelf() const {
     if (is_overflow_mode())
       return this;
     return IsShowingOverflowBubble()
@@ -549,6 +546,12 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
 
   bool ShouldHandleGestures(const ui::GestureEvent& event) const;
 
+  // Different from GetTitleForView, |view| here must be a child view.
+  base::string16 GetTitleForChildView(const views::View* view) const;
+
+  // Different from ShouldShowTooltipForView, |view| here must be a child view.
+  bool ShouldShowTooltipForChildView(const views::View* child_view) const;
+
   // The model; owned by Launcher.
   ShelfModel* model_;
 
@@ -577,8 +580,6 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   std::unique_ptr<OverflowBubble> overflow_bubble_;
 
   OverflowBubble* owner_overflow_bubble_ = nullptr;
-
-  ShelfTooltipManager tooltip_;
 
   // Pointer device that initiated the current drag operation. If there is no
   // current dragging operation, this is NONE.

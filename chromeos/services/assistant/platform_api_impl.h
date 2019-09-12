@@ -19,6 +19,7 @@
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "libassistant/shared/public/platform_api.h"
 #include "libassistant/shared/public/platform_auth.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
 
 namespace chromeos {
@@ -33,7 +34,7 @@ class PlatformApiImpl : public assistant_client::PlatformApi,
   PlatformApiImpl(
       mojom::Client* client,
       AssistantMediaSession* media_session,
-      device::mojom::BatteryMonitorPtr battery_monitor,
+      mojo::PendingRemote<device::mojom::BatteryMonitor> battery_monitor,
       scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> background_task_runner,
       std::string pref_locale);

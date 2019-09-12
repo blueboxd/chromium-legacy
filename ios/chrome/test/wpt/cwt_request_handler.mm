@@ -331,7 +331,7 @@ base::Value CWTRequestHandler::GetAllTabIds() {
   base::Value id_list(base::Value::Type::LIST);
   NSArray* tab_ids = [CWTWebDriverAppInterface tabIDs];
   for (NSString* tab_id in tab_ids) {
-    id_list.GetList().push_back(base::Value(base::SysNSStringToUTF8(tab_id)));
+    id_list.Append(base::Value(base::SysNSStringToUTF8(tab_id)));
   }
   return id_list;
 }

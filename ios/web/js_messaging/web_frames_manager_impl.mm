@@ -51,12 +51,12 @@ void WebFramesManagerImpl::OnWebViewUpdated(
   DCHECK(old_web_view != new_web_view);
   if (old_web_view) {
     RemoveAllWebFrames();
-    [message_router
-        removeScriptMessageHandlerForName:kFrameBecameAvailableMessageName
-                                  webView:old_web_view];
-    [message_router
-        removeScriptMessageHandlerForName:kFrameBecameUnavailableMessageName
-                                  webView:old_web_view];
+    // TODO(crbug.com/956516): ScriptMessageHandlers should all be removed
+    // manually using |removeScriptMessageHandlerForName|, however this is not
+    // possible because of the cases where the webviewconfiguration is purged,
+    // in these cases the message router is deleted and it will not have
+    // message handlers for the web view.
+    [message_router removeAllScriptMessageHandlersForWebView:old_web_view];
   }
 
   // |this| is captured inside callbacks for JS messages, so the owner of

@@ -886,7 +886,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("fileListFocusFirstItem"),
                       TestCase("fileListSelectLastFocusedItem"),
                       TestCase("fileListKeyboardSelectionA11y"),
-                      TestCase("fileListMouseSelectionA11y")));
+                      TestCase("fileListMouseSelectionA11y"),
+                      TestCase("fileListDeleteMultipleFiles")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Crostini, /* crostini.js */

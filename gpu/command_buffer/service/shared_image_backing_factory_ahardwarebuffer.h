@@ -63,6 +63,15 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryAHB
                      const gfx::Size& size,
                      viz::ResourceFormat format) const;
 
+  std::unique_ptr<SharedImageBacking> MakeBacking(
+      const Mailbox& mailbox,
+      viz::ResourceFormat format,
+      const gfx::Size& size,
+      const gfx::ColorSpace& color_space,
+      uint32_t usage,
+      bool is_thread_safe,
+      base::span<const uint8_t> pixel_data);
+
   struct FormatInfo {
     FormatInfo();
     ~FormatInfo();

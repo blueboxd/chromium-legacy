@@ -388,13 +388,15 @@ void TestWebContents::CreateNewWindow(
     bool has_user_gesture,
     SessionStorageNamespace* session_storage_namespace) {}
 
-void TestWebContents::CreateNewWidget(int32_t render_process_id,
-                                      int32_t route_id,
-                                      mojom::WidgetPtr widget) {}
+void TestWebContents::CreateNewWidget(
+    int32_t render_process_id,
+    int32_t route_id,
+    mojo::PendingRemote<mojom::Widget> widget) {}
 
-void TestWebContents::CreateNewFullscreenWidget(int32_t render_process_id,
-                                                int32_t route_id,
-                                                mojom::WidgetPtr widget) {}
+void TestWebContents::CreateNewFullscreenWidget(
+    int32_t render_process_id,
+    int32_t route_id,
+    mojo::PendingRemote<mojom::Widget> widget) {}
 
 void TestWebContents::ShowCreatedWindow(int process_id,
                                         int route_id,

@@ -59,7 +59,7 @@ function observerDepsDefined(args) {
 
 /**
  * Returns background images (icon and dropdown arrow) for use in a md-select.
- * @param {!Polymer.IronIconsetSvg} iconset The iconset the icon is in.
+ * @param {!IronIconsetSvgElement} iconset The iconset the icon is in.
  * @param {string} iconName The icon name
  * @param {!HTMLElement} el The element that contains the select.
  * @return {string} String containing inlined SVG of the icon and

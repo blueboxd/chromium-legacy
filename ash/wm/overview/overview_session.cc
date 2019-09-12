@@ -628,7 +628,7 @@ OverviewSession::UpdateGridAtLocationYPositionAndOpacity(
       callback.Run(settings.get());
     }
     window->SetTransform(
-        gfx::Transform(1.f, 0.f, 0.f, 1.f, 0.f, static_cast<float>(new_y)));
+        gfx::Transform(1.f, 0.f, 0.f, 1.f, 0.f, static_cast<float>(-new_y)));
     window->layer()->SetOpacity(opacity);
     return settings;
   }

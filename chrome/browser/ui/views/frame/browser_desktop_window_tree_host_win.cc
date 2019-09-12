@@ -393,9 +393,9 @@ void BrowserDesktopWindowTreeHostWin::OnProfileWasRemoved(
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserDesktopWindowTreeHostWin, private:
 bool BrowserDesktopWindowTreeHostWin::IsOpaqueHostedAppFrame() const {
-  // TODO(https://crbug.com/868239): Support Windows 7 Aero glass for hosted app
+  // TODO(https://crbug.com/868239): Support Windows 7 Aero glass for web-app
   // window titlebar controls.
-  return browser_view_->IsBrowserTypeHostedApp() &&
+  return browser_view_->IsBrowserTypeWebApp() &&
          base::win::GetVersion() < base::win::Version::WIN10;
 }
 

@@ -43,6 +43,9 @@ cr.define('bookmarks', function() {
       },
 
       /** @private */
+      canPaste_: Boolean,
+
+      /** @private */
       globalCanEdit_: Boolean,
     },
 
@@ -53,9 +56,7 @@ cr.define('bookmarks', function() {
       assert(CommandManager.instance_ == null);
       CommandManager.instance_ = this;
 
-      this.watch('globalCanEdit_', function(state) {
-        return state.prefs.canEdit;
-      });
+      this.watch('globalCanEdit_', state => state.prefs.canEdit);
       this.updateFromStore();
 
       /** @private {!Map<Command, cr.ui.KeyboardShortcutList>} */
@@ -214,8 +215,9 @@ cr.define('bookmarks', function() {
     isCommandVisible_: function(command, itemIds) {
       switch (command) {
         case Command.EDIT:
-        case Command.PASTE:
           return itemIds.size == 1 && this.globalCanEdit_;
+        case Command.PASTE:
+          return this.globalCanEdit_;
         case Command.CUT:
         case Command.COPY:
           return itemIds.size >= 1 && this.globalCanEdit_;
@@ -274,7 +276,7 @@ cr.define('bookmarks', function() {
         case Command.IMPORT:
           return this.globalCanEdit_;
         case Command.PASTE:
-          return true;  // TODO(hcarmona): Add check for CanPasteFromClipboard.
+          return this.canPaste_;
         default:
           return true;
       }
@@ -800,6 +802,19 @@ cr.define('bookmarks', function() {
       cr.toastManager.getInstance().showForStringPieces(pieces, canUndo);
     },
 
+    /**
+     * @param {number} targetId
+     * @private
+     */
+    updateCanPaste_: function(targetId) {
+      return new Promise(resolve => {
+        chrome.bookmarkManagerPrivate.canPaste(`${targetId}`, result => {
+          this.canPaste_ = result;
+          resolve();
+        });
+      });
+    },
+
     ////////////////////////////////////////////////////////////////////////////
     // Event handlers:
 
@@ -807,7 +822,8 @@ cr.define('bookmarks', function() {
      * @param {Event} e
      * @private
      */
-    onOpenCommandMenu_: function(e) {
+    onOpenCommandMenu_: async function(e) {
+      await this.updateCanPaste_(e.detail.source);
       if (e.detail.targetElement) {
         this.openCommandMenuAtElement(e.detail.targetElement, e.detail.source);
       } else {

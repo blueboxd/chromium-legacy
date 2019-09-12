@@ -21,6 +21,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -33,7 +34,7 @@ namespace {
 // |render_process_host|.
 ProcessResourceUsage* CreateRendererResourcesSampler(
     content::RenderProcessHost* render_process_host) {
-  content::mojom::ResourceUsageReporterPtr service;
+  mojo::PendingRemote<content::mojom::ResourceUsageReporter> service;
   BindInterface(render_process_host, &service);
   return new ProcessResourceUsage(std::move(service));
 }

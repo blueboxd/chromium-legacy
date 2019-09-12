@@ -30,7 +30,6 @@
 #include <utility>
 
 #include "mojo/public/cpp/bindings/struct_traits.h"
-#include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"

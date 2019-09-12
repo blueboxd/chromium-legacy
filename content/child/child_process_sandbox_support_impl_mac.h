@@ -10,6 +10,7 @@
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "content/common/sandbox_support_mac.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/platform/mac/web_sandbox_support.h"
 
 namespace service_manager {
@@ -33,7 +34,7 @@ class WebSandboxSupportMac : public blink::WebSandboxSupport {
  private:
   void OnGotSystemColors(base::ReadOnlySharedMemoryRegion region);
 
-  mojom::SandboxSupportMacPtr sandbox_support_;
+  mojo::Remote<mojom::SandboxSupportMac> sandbox_support_;
   base::ReadOnlySharedMemoryMapping color_map_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSandboxSupportMac);

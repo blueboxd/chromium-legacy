@@ -67,6 +67,7 @@ OfflineItem OfflineItemConversions::CreateOfflineItem(
   item.description = page.snippet;
   item.attribution = page.attribution;
 
+  // TODO(carlosk): Set item.ignore_visuals here to the right thing.
   return item;
 }
 

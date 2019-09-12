@@ -102,7 +102,8 @@ void DummyFunction(const LocationProvider* provider,
 class GeolocationProviderTest : public testing::Test {
  protected:
   GeolocationProviderTest()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
+      : task_environment_(
+            base::test::SingleThreadTaskEnvironment::MainThreadType::UI),
         arbitrator_(new FakeLocationProvider) {
     provider()->SetArbitratorForTesting(base::WrapUnique(arbitrator_));
   }
@@ -128,7 +129,7 @@ class GeolocationProviderTest : public testing::Test {
   // test completes.
   base::ShadowingAtExitManager at_exit_;
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   base::ThreadChecker thread_checker_;
 

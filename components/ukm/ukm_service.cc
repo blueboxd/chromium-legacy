@@ -225,6 +225,9 @@ void UkmService::FinishedInitTask() {
   DVLOG(1) << "UkmService::FinishedInitTask";
   initialize_complete_ = true;
   scheduler_->InitTaskComplete();
+  if (initialization_complete_callback_) {
+    std::move(initialization_complete_callback_).Run();
+  }
 }
 
 void UkmService::RotateLog() {
@@ -266,6 +269,15 @@ void UkmService::BuildAndStoreLog() {
 
 bool UkmService::ShouldRestrictToWhitelistedEntries() const {
   return restrict_to_whitelist_entries_;
+}
+
+void UkmService::SetInitializationCompleteCallbackForTesting(base::OnceClosure callback) {
+  if (initialize_complete_) {
+    std::move(callback).Run();
+  } else {
+    // Store the callback to be invoked when initialization is complete later.
+    initialization_complete_callback_ = std::move(callback);
+  }
 }
 
 }  // namespace ukm

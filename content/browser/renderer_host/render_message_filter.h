@@ -25,6 +25,7 @@
 #include "content/public/common/widget_type.h"
 #include "gpu/config/gpu_info.h"
 #include "ipc/message_filter.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -80,10 +81,10 @@ class CONTENT_EXPORT RenderMessageFilter
   // mojom::RenderMessageFilter:
   void GenerateRoutingID(GenerateRoutingIDCallback routing_id) override;
   void CreateNewWidget(int32_t opener_id,
-                       mojom::WidgetPtr widget,
+                       mojo::PendingRemote<mojom::Widget> widget,
                        CreateNewWidgetCallback callback) override;
   void CreateFullscreenWidget(int opener_id,
-                              mojom::WidgetPtr widget,
+                              mojo::PendingRemote<mojom::Widget> widget,
                               CreateFullscreenWidgetCallback callback) override;
   void HasGpuProcess(HasGpuProcessCallback callback) override;
 #if defined(OS_LINUX)

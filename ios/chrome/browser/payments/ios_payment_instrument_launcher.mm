@@ -78,7 +78,7 @@ bool IOSPaymentInstrumentLauncher::LaunchIOSPaymentInstrument(
   // implementation.
   base::Value method_names(base::Value::Type::LIST);
   for (auto const& pair : payment_request->stringified_method_data())
-    method_names.GetList().emplace_back(pair.first);
+    method_names.Append(pair.first);
 
   base::Value params_to_payment_app(base::Value::Type::DICTIONARY);
   params_to_payment_app.SetKey(kMethodNames, std::move(method_names));
@@ -188,7 +188,7 @@ base::Value IOSPaymentInstrumentLauncher::SerializeMethodData(
       // We insert the stringified data, not the JSON object and only if the
       // corresponding JSON object is valid.
       if (base::JSONReader::Read(data_it))
-        data_list.GetList().emplace_back(data_it);
+        data_list.Append(data_it);
     }
     method_data.SetKey(map_it.first, std::move(data_list));
   }
@@ -216,11 +216,11 @@ base::Value IOSPaymentInstrumentLauncher::SerializeCertificateChain(
     base::Value byte_array(base::Value::Type::LIST);
     byte_array.GetList().reserve(cert_string.size());
     for (const char byte : cert_string)
-      byte_array.GetList().emplace_back(byte);
+      byte_array.Append(byte);
 
     base::Value cert_chain_dict(base::Value::Type::DICTIONARY);
     cert_chain_dict.SetKey(kCertificate, std::move(byte_array));
-    cert_chain_list.GetList().push_back(std::move(cert_chain_dict));
+    cert_chain_list.Append(std::move(cert_chain_dict));
   }
 
   return cert_chain_list;
@@ -231,7 +231,7 @@ base::Value IOSPaymentInstrumentLauncher::SerializeModifiers(
   base::Value modifiers(base::Value::Type::LIST);
   size_t numModifiers = details.modifiers.size();
   for (size_t i = 0; i < numModifiers; ++i) {
-    modifiers.GetList().push_back(base::Value::FromUniquePtrValue(
+    modifiers.Append(base::Value::FromUniquePtrValue(
         details.modifiers[i].ToDictionaryValue()));
   }
   return modifiers;

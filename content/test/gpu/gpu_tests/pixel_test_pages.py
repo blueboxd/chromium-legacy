@@ -1169,6 +1169,7 @@ class PixelTestPages(object):
       '--disable-features=D3D11VideoDecoder']
 
     tolerance_dc = 5
+    tolerance_dc_vp9 = 15
 
     return [
       PixelTestPage(
@@ -1412,7 +1413,7 @@ class PixelTestPages(object):
         test_rect=[0, 0, 240, 135],
         revision=0, # Golden image revision is not used
         browser_args=browser_args,
-        tolerance=tolerance_dc,
+        tolerance=tolerance_dc_vp9,
         expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
 
       PixelTestPage(
@@ -1421,7 +1422,7 @@ class PixelTestPages(object):
         browser_args=browser_args_DXVA,
         test_rect=[0, 0, 240, 135],
         revision=0, # Golden image revision is not used
-        tolerance=tolerance_dc,
+        tolerance=tolerance_dc_vp9,
         expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
 
       PixelTestPage(
@@ -1431,7 +1432,7 @@ class PixelTestPages(object):
         revision=0, # Golden image revision is not used
         browser_args=browser_args,
         other_args={'zero_copy': True},
-        tolerance=tolerance_dc,
+        tolerance=tolerance_dc_vp9,
         expected_colors=[
           {
             'comment': 'top left video, yellow',
@@ -1466,7 +1467,7 @@ class PixelTestPages(object):
         revision=0, # Golden image revision is not used
         browser_args=browser_args_YUY2,
         other_args={'expect_yuy2': True},
-        tolerance=tolerance_dc,
+        tolerance=tolerance_dc_vp9,
         expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
 
       PixelTestPage(

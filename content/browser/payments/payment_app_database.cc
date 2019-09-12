@@ -411,7 +411,7 @@ void PaymentAppDatabase::DidFindRegistrationToEnablePaymentAppDelegations(
     EnableDelegationsCallback callback,
     blink::ServiceWorkerStatusCode status,
     scoped_refptr<ServiceWorkerRegistration> registration) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (status != blink::ServiceWorkerStatusCode::kOk) {
     std::move(callback).Run(PaymentHandlerStatus::NO_ACTIVE_WORKER);
     return;
@@ -432,7 +432,7 @@ void PaymentAppDatabase::DidGetPaymentAppInfoToEnableDelegations(
     const GURL& pattern,
     const std::vector<std::string>& data,
     blink::ServiceWorkerStatusCode status) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (status != blink::ServiceWorkerStatusCode::kOk) {
     std::move(callback).Run(PaymentHandlerStatus::NOT_FOUND);
     return;
@@ -479,7 +479,7 @@ void PaymentAppDatabase::DidGetPaymentAppInfoToEnableDelegations(
 void PaymentAppDatabase::DidEnablePaymentAppDelegations(
     EnableDelegationsCallback callback,
     blink::ServiceWorkerStatusCode status) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   return std::move(callback).Run(
       status == blink::ServiceWorkerStatusCode::kOk
           ? PaymentHandlerStatus::SUCCESS

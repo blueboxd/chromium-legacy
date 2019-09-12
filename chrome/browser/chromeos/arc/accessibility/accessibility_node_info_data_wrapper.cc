@@ -8,6 +8,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/arc/accessibility/ax_tree_source_arc.h"
 #include "components/exo/wm_helper.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/platform/ax_android_constants.h"
 
 namespace arc {

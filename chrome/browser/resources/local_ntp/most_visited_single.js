@@ -56,7 +56,6 @@ const CLASSES = {
   REORDERING: 'reordering',
   MAC_CHROMEOS: 'mac-chromeos',  // Reduces font weight for MacOS and ChromeOS.
   // Material Design classes.
-  MD_EMPTY_TILE: 'md-empty-tile',
   MD_FALLBACK_LETTER: 'md-fallback-letter',
   MD_ICON: 'md-icon',
   MD_ADD_ICON: 'md-add-icon',
@@ -96,8 +95,6 @@ const TileVisualType = {
   ICON_REAL: 1,
   ICON_COLOR: 2,
   ICON_DEFAULT: 3,
-  THUMBNAIL: 7,
-  THUMBNAIL_FAILED: 8,
 };
 
 /**
@@ -148,8 +145,8 @@ const MD_TILE_WIDTH = 112;
 const MD_NUM_TILES_ALWAYS_VISIBLE = 6;
 
 /**
- * The origin of this request, i.e. 'https://www.google.TLD' for the remote NTP,
- * or 'chrome-search://local-ntp' for the local NTP.
+ * The origin of this request, i.e. 'chrome-search://local-ntp' for the local
+ * NTP.
  * @const {string}
  */
 const DOMAIN_ORIGIN = '{{ORIGIN}}';
@@ -899,9 +896,8 @@ function removeAllOldTiles() {
 }
 
 /**
- * Called when all tiles have finished loading (successfully or not), including
- * their thumbnail images, and we are ready to show the new tiles and drop the
- * old ones.
+ * Called when all tiles have finished loading (successfully or not), and we are
+ * ready to show the new tiles and drop the old ones.
  */
 function swapInNewTiles() {
   // Store the tiles on the current closure.
@@ -919,7 +915,7 @@ function swapInNewTiles() {
       'tileSource': -1,
       'tileTitleSource': -1
     };
-    tiles.appendChild(renderMaterialDesignTile(data));
+    tiles.appendChild(renderTile(data));
   }
 
   const parent = document.querySelector('#' + IDS.MOST_VISITED);
@@ -993,7 +989,7 @@ function updateTileVisibility() {
 /**
  * Handler for the 'show' message from the host page, called when it wants to
  * add a suggestion tile.
- * @param {?MostVisitedData} args Data for the tile to be rendered.
+ * @param {!MostVisitedData} args Data for the tile to be rendered.
  */
 function addTile(args) {
   if (!isFinite(args.rid)) {
@@ -1121,31 +1117,15 @@ function setupReorder(tile) {
 }
 
 /**
- * Renders a MostVisited tile to the DOM.
- * @param {?MostVisitedData} data Object containing rid, url, title, favicon,
- *     thumbnail, and optionally isAddButton. isAddButton is true if you want to
- *     construct an add custom link button. data is null if you want to
- *     construct an empty tile. isAddButton can only be set if custom links is
+ * Renders a MostVisited tile (i.e. shortcut) to the DOM.
+ * @param {!MostVisitedData} data Object containing rid, url, title, favicon,
+ *     and optionally isAddButton. isAddButton is true if you want to construct
+ *     an add custom link button, and can only be set if custom links is
  *     enabled.
- */
-function renderTile(data) {
-  return renderMaterialDesignTile(data);
-}
-
-/**
- * Renders a MostVisited tile with Material Design styles.
- * @param {?MostVisitedData} data Object containing rid, url, title, favicon,
- *     and optionally isAddButton. isAddButton is if you want to construct an
- *     add custom link button. data is null if you want to construct an empty
- *     tile.
  * @return {Element}
  */
-function renderMaterialDesignTile(data) {
+function renderTile(data) {
   const mdTile = document.createElement('a');
-  if (data == null) {
-    mdTile.className = CLASSES.MD_EMPTY_TILE;
-    return mdTile;
-  }
   mdTile.className = CLASSES.MD_TILE;
 
   // The tile will be appended to |tiles|.
@@ -1318,7 +1298,7 @@ function init() {
   // Create a new DOM element to hold the tiles. The tiles will be added
   // one-by-one via addTile, and the whole thing will be inserted into the page
   // in swapInNewTiles, after the parent has sent us the 'show' message, and all
-  // thumbnails and favicons have loaded.
+  // favicons have loaded.
   tiles = document.createElement('div');
 
   // Parse query arguments.

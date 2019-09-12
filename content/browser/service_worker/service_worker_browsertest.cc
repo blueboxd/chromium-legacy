@@ -3911,7 +3911,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerURLLoaderThrottleTest,
   // Ensure the service worker did not see a fetch event for the PlzRedirect
   // URL, since throttles should have redirected before interception.
   base::Value list(base::Value::Type::LIST);
-  list.GetList().emplace_back(redirect_url.spec());
+  list.Append(redirect_url.spec());
   EXPECT_EQ(list, EvalJs(shell()->web_contents()->GetMainFrame(), script));
 
   SetBrowserClientForTesting(old_content_browser_client);

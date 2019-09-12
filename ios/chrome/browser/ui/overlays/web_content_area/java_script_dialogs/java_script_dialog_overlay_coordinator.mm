@@ -75,8 +75,11 @@
       presentViewController:self.alertViewController
                    animated:animated
                  completion:^{
-                   weakSelf.delegate->OverlayUIDidFinishPresentation(
-                       weakSelf.request);
+                   __typeof__(self) strongSelf = weakSelf;
+                   if (!strongSelf)
+                     return;
+                   strongSelf.delegate->OverlayUIDidFinishPresentation(
+                       strongSelf.request);
                  }];
   self.started = YES;
 }

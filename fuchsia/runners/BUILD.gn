@@ -101,6 +101,7 @@ executable("cast_runner_exe") {
     ":cast_runner_core",
     ":common",
     "//base",
+    "//fuchsia/base",
   ]
   visibility = [ ":*" ]
 }
@@ -214,6 +215,7 @@ executable("web_runner_exe") {
   deps = [
     ":common",
     "//base",
+    "//fuchsia/base",
   ]
   visibility = [ ":*" ]
 }

@@ -203,7 +203,7 @@ CanvasColorParams CanvasRenderingContextHost::ColorParams() const {
 ScriptPromise CanvasRenderingContextHost::convertToBlob(
     ScriptState* script_state,
     const ImageEncodeOptions* options,
-    ExceptionState& exception_state) {
+    ExceptionState& exception_state) const {
   WTF::String object_name = "Canvas";
   if (this->IsOffscreenCanvas())
     object_name = "OffscreenCanvas";
@@ -235,8 +235,6 @@ ScriptPromise CanvasRenderingContextHost::convertToBlob(
     return ScriptPromise();
   }
 
-  // It's possible that there are recorded commands that have not been resolved
-  RenderingContext()->FinalizeFrame();
   base::TimeTicks start_time = base::TimeTicks::Now();
   scoped_refptr<StaticBitmapImage> image_bitmap =
       RenderingContext()->GetImage(kPreferNoAcceleration);

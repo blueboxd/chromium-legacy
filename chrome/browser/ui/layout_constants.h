@@ -34,11 +34,11 @@ enum LayoutConstant {
   BOOKMARK_BAR_NTP_PADDING,
 #endif
 
-  // The size of the app menu button in a hosted app browser window.
-  HOSTED_APP_MENU_BUTTON_SIZE,
+  // The size of the app menu button in a web app browser window.
+  WEB_APP_MENU_BUTTON_SIZE,
 
-  // The size of page action icons in a hosted app title bar.
-  HOSTED_APP_PAGE_ACTION_ICON_SIZE,
+  // The size of page action icons in a web app title bar.
+  WEB_APP_PAGE_ACTION_ICON_SIZE,
 
   // The vertical padding between the edge of a location bar bubble and its
   // contained text.

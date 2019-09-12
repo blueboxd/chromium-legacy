@@ -27,7 +27,7 @@ import org.chromium.base.VisibleForTesting;
  * A main activity to handle WPT requests.
  *
  * This is currently implemented to support minimum viable implementation such that
- * Multi-window and JavaScript are enabled by default.
+ * multi-window and JavaScript are enabled by default.
  *
  * TODO(crbug.com/994939): It is currently implemented to support only a single child. Although not
  *                         explicitly stated, there may be some WPT tests that require more than one
@@ -58,13 +58,11 @@ public class WebPlatformTestsActivity extends Activity {
         @Override
         public boolean onCreateWindow(
                 WebView webView, boolean isDialog, boolean isUserGesture, Message resultMsg) {
-            removeAndDestroyChildWebView();
+            removeAndDestroyWebView(mChildWebView);
             // Note that WebView is not inflated but created programmatically
             // such that it can be destroyed separately.
             mChildWebView = new WebView(WebPlatformTestsActivity.this);
-            WebSettings settings = mChildWebView.getSettings();
-            setUpWebSettings(settings);
-            settings.setUseWideViewPort(false);
+            setUpWebSettings(mChildWebView.getSettings());
             mChildWebView.setWebViewClient(new WebViewClient() {
                 @Override
                 public void onPageFinished(WebView childWebView, String url) {
@@ -101,13 +99,12 @@ public class WebPlatformTestsActivity extends Activity {
         }
     }
 
-    /** Remove and destroy a child webview if it exists. */
-    private void removeAndDestroyChildWebView() {
-        if (mChildWebView == null) return;
-        ViewGroup parent = (ViewGroup) mChildWebView.getParent();
-        if (parent != null) parent.removeView(mChildWebView);
-        mChildWebView.destroy();
-        mChildWebView = null;
+    /** Remove and destroy a webview if it exists. */
+    private void removeAndDestroyWebView(WebView webView) {
+        if (webView == null) return;
+        ViewGroup parent = (ViewGroup) webView.getParent();
+        if (parent != null) parent.removeView(webView);
+        webView.destroy();
     }
 
     private String getUrlFromIntent() {
@@ -137,6 +134,15 @@ public class WebPlatformTestsActivity extends Activity {
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        removeAndDestroyWebView(mWebView);
+        mWebView = null;
+        removeAndDestroyWebView(mChildWebView);
+        mChildWebView = null;
+    }
+
     private LinearLayout createChildLayout() {
         // Provide parent such that MATCH_PARENT layout params can work. Ignore the return value
         // which is mRootLayout.
@@ -151,10 +157,13 @@ public class WebPlatformTestsActivity extends Activity {
     }
 
     private void setUpWebSettings(WebSettings settings) {
+        // Required by WPT.
         settings.setJavaScriptEnabled(true);
         // Enable multi-window.
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
         settings.setSupportMultipleWindows(true);
+        // Respect "viewport" HTML meta tag. This is false by default, but set to false to be clear.
+        settings.setUseWideViewPort(false);
     }
 
     private void setUpMainWebView(String url) {
@@ -167,7 +176,8 @@ public class WebPlatformTestsActivity extends Activity {
         TextView childTitleText = mChildLayout.findViewById(R.id.childTitleText);
         childTitleText.setText("");
         mChildLayout.setVisibility(View.INVISIBLE);
-        removeAndDestroyChildWebView();
+        removeAndDestroyWebView(mChildWebView);
+        mChildWebView = null;
         if (mTestCallback != null) mTestCallback.onChildLayoutInvisible();
     }
 

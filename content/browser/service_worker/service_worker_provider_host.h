@@ -35,6 +35,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/locks/lock_manager.mojom-forward.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
@@ -406,6 +407,11 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // committed.
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-environment-execution-ready-flag
   bool is_execution_ready() const;
+
+  // For service worker execution contexts. Forwards |receiver| to the process
+  // host on the UI thread.
+  void CreateLockManager(
+      mojo::PendingReceiver<blink::mojom::LockManager> receiver);
 
  private:
   // For service worker clients. The flow is kInitial -> kResponseCommitted ->

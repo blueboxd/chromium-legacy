@@ -296,6 +296,7 @@ ManagedDisplayInfo DisplayChangeObserver::CreateManagedDisplayInfo(
   }
   new_info.set_year_of_manufacture(snapshot->year_of_manufacture());
 
+  new_info.set_panel_orientation(snapshot->panel_orientation());
   new_info.set_sys_path(snapshot->sys_path());
   new_info.set_native(true);
 

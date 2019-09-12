@@ -6,6 +6,7 @@
 
 #include "ash/components/shortcut_viewer/vector_icons/vector_icons.h"
 #include "ash/components/strings/grit/ash_components_strings.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/search_box/search_box_view_delegate.h"

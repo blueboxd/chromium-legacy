@@ -364,14 +364,14 @@
   'mac_10.14': {
     'swarming': {
       'dimensions': {
-        'os': 'Mac-10.14.4',
+        'os': 'Mac-10.14.6',
       },
       'optional_dimensions': {
-        # Wait 5 minutes for 10.14.3, then 5 for .5, then fall back to 10.14.4
+        # Wait 5 minutes for 10.14.4, then 5 for .5, then fall back to 10.14.6
         # The format for optional dimensions is: expiration: [{key, value}, ..].
         300: [
           {
-            'os': 'Mac-10.14.3',
+            'os': 'Mac-10.14.4',
           },
         ],
         600: [

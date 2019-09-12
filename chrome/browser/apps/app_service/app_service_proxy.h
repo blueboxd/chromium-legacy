@@ -39,10 +39,6 @@ class AppServiceProxy : public KeyedService,
                         public apps::IconLoader,
                         public apps::mojom::Subscriber {
  public:
-  static AppServiceProxy* CreateForTesting(
-      Profile* profile,
-      service_manager::Connector* connector);
-
   explicit AppServiceProxy(Profile* profile);
 
   ~AppServiceProxy() override;

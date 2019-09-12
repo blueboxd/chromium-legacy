@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
-#include "net/base/auth.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate_impl.h"
 #include "net/base/request_priority.h"
@@ -108,14 +107,6 @@ class TestNetworkDelegateImpl : public NetworkDelegateImpl {
     IncrementAndCompareCounter("on_pac_script_error_count");
   }
 
-  AuthRequiredResponse OnAuthRequired(URLRequest* request,
-                                      const AuthChallengeInfo& auth_info,
-                                      AuthCallback callback,
-                                      AuthCredentials* credentials) override {
-    IncrementAndCompareCounter("on_auth_required_count");
-    return NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;
-  }
-
   bool OnCanGetCookies(const URLRequest& request,
                        const CookieList& cookie_list,
                        bool allowed_from_caller) override {
@@ -174,7 +165,6 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
   ~TestLayeredNetworkDelegate() override = default;
 
   void CallAndVerify() {
-    AuthChallengeInfo auth_challenge;
     std::unique_ptr<URLRequest> request = context_.CreateRequest(
         GURL(), IDLE, &delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
     std::unique_ptr<HttpRequestHeaders> request_headers(
@@ -200,9 +190,6 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
     OnCompleted(request.get(), false, net::OK);
     OnURLRequestDestroyed(request.get());
     OnPACScriptError(0, base::string16());
-    EXPECT_EQ(
-        NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION,
-        OnAuthRequired(request.get(), auth_challenge, AuthCallback(), nullptr));
     EXPECT_FALSE(OnCanGetCookies(*request, CookieList(), true));
     EXPECT_FALSE(
         OnCanSetCookie(*request, net::CanonicalCookie(), nullptr, true));
@@ -285,13 +272,6 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
                                 const base::string16& error) override {
     ++(*counters_)["on_pac_script_error_count"];
     EXPECT_EQ(1, (*counters_)["on_pac_script_error_count"]);
-  }
-
-  void OnAuthRequiredInternal(URLRequest* request,
-                              const AuthChallengeInfo& auth_info,
-                              AuthCredentials* credentials) override {
-    ++(*counters_)["on_auth_required_count"];
-    EXPECT_EQ(1, (*counters_)["on_auth_required_count"]);
   }
 
   bool OnCanGetCookiesInternal(const URLRequest& request,

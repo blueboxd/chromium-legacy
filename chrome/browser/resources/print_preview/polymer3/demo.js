@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/cr_elements/action_link_css.m.js';
+import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
@@ -9,6 +11,7 @@ import 'chrome://resources/cr_elements/cr_drawer/cr_drawer.m.js';
 import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.m.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js';
 import 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button.m.js';
 import 'chrome://resources/cr_elements/cr_radio_group/cr_radio_group.m.js';
@@ -20,6 +23,7 @@ import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/cr_elements/md_select_css.m.js';
 import 'chrome://resources/cr_elements/policy/cr_tooltip_icon.m.js';
+import 'chrome://resources/js/action_link.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -27,7 +31,7 @@ import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/poly
 class HelloPolymer3Element extends PolymerElement {
   static get template() {
     return html`
-      <style include="md-select">
+      <style include="md-select action-link">
         cr-toggle {
           display: inline-block;
         }
@@ -48,8 +52,14 @@ class HelloPolymer3Element extends PolymerElement {
 
       <cr-toolbar id="toolbar" page-name="Polymer 3 Demo"
           search-prompt="Search">
-        <cr-icon-button iron-icon="cr:more-vert"></cr-icon-button>
+        <cr-icon-button iron-icon="cr:more-vert" on-click="showActionMenu_">
+        </cr-icon-button>
       </cr-toolbar>
+      <cr-action-menu>
+        <button class="dropdown-item">Hello</button>
+        <button class="dropdown-item">Action</button>
+        <button class="dropdown-item">Menu</button>
+      </cr-action-menu>
 
       <cr-checkbox checked="{{checkboxChecked_}}">
         [[checkboxChecked_]]
@@ -106,9 +116,13 @@ class HelloPolymer3Element extends PolymerElement {
 
       <div>
         <cr-button on-click="showDialog_">Click to open dialog</cr-button>
-        <cr-dialog id="dialog">
-          <div slot="title">I am a dialog</div>
-        </cr-dialog>
+        <cr-lazy-render id="dialog">
+          <template>
+            <cr-dialog>
+              <div slot="title">I am a dialog</div>
+            </cr-dialog>
+          </template>
+        </cr-lazy-render>
       </div>
 
       <div>
@@ -132,6 +146,8 @@ class HelloPolymer3Element extends PolymerElement {
       <div>
         <cr-link-row class="hr" label="Hello Link Row"></cr-link-row>
       </div>
+
+      <a is="action-link">I am an action link</a>
     `;
   }
 
@@ -175,7 +191,7 @@ class HelloPolymer3Element extends PolymerElement {
 
   /** @private */
   showDialog_() {
-    this.shadowRoot.querySelector('cr-dialog').showModal();
+    this.shadowRoot.querySelector('#dialog').get().showModal();
   }
 
   /**
@@ -197,6 +213,14 @@ class HelloPolymer3Element extends PolymerElement {
   /** @private */
   onExpand_() {
     this.expanded_ = !this.expanded_;
+  }
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  showActionMenu_(e) {
+    this.shadowRoot.querySelector('cr-action-menu').showAt(e.target);
   }
 }  // class HelloPolymer3
 

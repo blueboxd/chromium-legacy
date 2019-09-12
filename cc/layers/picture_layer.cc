@@ -150,7 +150,7 @@ bool PictureLayer::Update() {
         layer_tree_host()->recording_scale_factor());
 
     SetNeedsPushProperties();
-    paint_count_++;
+    IncreasePaintCount();
   } else {
     // If this invalidation did not affect the recording source, then it can be
     // cleared as an optimization.

@@ -611,6 +611,7 @@ component("ash") {
     "shelf/shelf_observer.h",
     "shelf/shelf_tooltip_bubble.cc",
     "shelf/shelf_tooltip_bubble.h",
+    "shelf/shelf_tooltip_delegate.h",
     "shelf/shelf_tooltip_manager.cc",
     "shelf/shelf_tooltip_manager.h",
     "shelf/shelf_tooltip_preview_bubble.cc",

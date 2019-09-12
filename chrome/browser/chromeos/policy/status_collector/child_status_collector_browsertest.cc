@@ -214,8 +214,6 @@ class BaseChildStatusCollectorTest : public testing::Test {
     TestingChildStatusCollector::RegisterProfilePrefs(
         profile_pref_service_.registry());
 
-    owner_settings_service_.set_ignore_profile_creation_notification(true);
-
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
 
     // Use FakeUpdateEngineClient.

@@ -250,7 +250,8 @@ class VideoCaptureDeviceTest
 #if defined(OS_MACOSX)
         // Video capture code on MacOSX must run on a CFRunLoop enabled thread
         // for interaction with AVFoundation.
-        task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
+        task_environment_(
+            base::test::SingleThreadTaskEnvironment::MainThreadType::UI),
 #endif
         device_descriptors_(new VideoCaptureDeviceDescriptors()),
         main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -461,7 +462,7 @@ class VideoCaptureDeviceTest
 #if defined(OS_WIN)
   base::win::ScopedCOMInitializer initialize_com_;
 #endif
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<VideoCaptureDeviceDescriptors> device_descriptors_;
   std::unique_ptr<base::RunLoop> run_loop_;
   scoped_refptr<base::TaskRunner> main_thread_task_runner_;

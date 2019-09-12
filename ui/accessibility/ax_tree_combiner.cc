@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_combiner.h"
+
+#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_tree.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace ui {

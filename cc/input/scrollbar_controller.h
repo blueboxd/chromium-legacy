@@ -30,7 +30,9 @@ class CC_EXPORT ScrollbarController {
   // InitialDeltaToAutoscrollVelocity). This value carries a "sign" which is
   // needed to determine whether we should set up the autoscrolling in the
   // forwards or the backwards direction.
-  void StartAutoScrollAnimation(float velocity, ElementId element_id);
+  void StartAutoScrollAnimation(float velocity,
+                                ElementId element_id,
+                                ScrollbarPart pressed_scrollbar_part);
   bool ScrollbarScrollIsActive() { return scrollbar_scroll_is_active_; }
   ScrollbarOrientation orientation() {
     return currently_captured_scrollbar_->orientation();
@@ -54,6 +56,11 @@ class CC_EXPORT ScrollbarController {
     // Used to track the scroller length while autoscrolling. Helpful for
     // setting up infinite scrolling.
     float scroll_layer_length = 0.f;
+
+    // Used to lookup the rect corresponding to the ScrollbarPart so that
+    // autoscroll animations can be played/paused depending on the current
+    // pointer location.
+    ScrollbarPart pressed_scrollbar_part;
   };
 
   // Helper to convert scroll offset to autoscroll velocity.
@@ -68,6 +75,9 @@ class CC_EXPORT ScrollbarController {
       const ScrollbarPart scrollbar_part,
       const ScrollbarOrientation orientation);
 
+  // Returns the rect for the ScrollbarPart.
+  gfx::Rect GetRectForScrollbarPart(const ScrollbarPart scrollbar_part);
+
   LayerImpl* GetLayerHitByPoint(const gfx::PointF position_in_widget);
   int GetScrollDeltaForScrollbarPart(ScrollbarPart scrollbar_part);
 
@@ -75,8 +85,10 @@ class CC_EXPORT ScrollbarController {
   gfx::PointF GetScrollbarRelativePosition(const gfx::PointF position_in_widget,
                                            bool* clipped);
 
-  // Decides whether a track autoscroll should be aborted.
-  bool ShouldCancelTrackAutoscroll();
+  // Decides whether a track autoscroll should be aborted (or restarted) due to
+  // the thumb reaching the pointer or the pointer leaving (or re-entering) the
+  // bounds.
+  void RecomputeAutoscrollStateIfNeeded();
 
   // Calculates the scroll_offset based on position_in_widget and
   // drag_anchor_relative_to_thumb_.
@@ -98,7 +110,7 @@ class CC_EXPORT ScrollbarController {
   const ScrollbarLayerImplBase* currently_captured_scrollbar_;
 
   // This is relative to the RenderWidget's origin.
-  gfx::PointF previous_pointer_position_;
+  gfx::PointF last_known_pointer_position_;
 
   // Holds information pertaining to autoscrolling. This member is empty if and
   // only if an autoscroll is *not* in progress.

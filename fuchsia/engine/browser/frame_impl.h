@@ -8,6 +8,7 @@
 #include <fuchsia/web/cpp/fidl.h>
 #include <lib/fidl/cpp/binding_set.h>
 #include <lib/zx/channel.h>
+
 #include <list>
 #include <map>
 #include <memory>
@@ -21,6 +22,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "fuchsia/engine/browser/discarding_event_filter.h"
 #include "fuchsia/engine/browser/navigation_controller_impl.h"
+#include "fuchsia/engine/browser/url_request_rewrite_rules_manager.h"
 #include "fuchsia/engine/on_load_script_injector.mojom.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/wm/core/focus_controller.h"
@@ -126,6 +128,9 @@ class FrameImpl : public fuchsia::web::Frame,
   void SetPopupFrameCreationListener(
       fidl::InterfaceHandle<fuchsia::web::PopupFrameCreationListener> listener)
       override;
+  void SetUrlRequestRewriteRules(
+      std::vector<fuchsia::web::UrlRequestRewriteRule> rules,
+      SetUrlRequestRewriteRulesCallback callback) override;
 
   // content::WebContentsDelegate implementation.
   void CloseContents(content::WebContents* source) override;
@@ -177,6 +182,7 @@ class FrameImpl : public fuchsia::web::Frame,
   std::map<uint64_t, OriginScopedScript> before_load_scripts_;
   std::vector<uint64_t> before_load_scripts_order_;
   base::RepeatingCallback<void(base::StringPiece)> console_log_message_hook_;
+  UrlRequestRewriteRulesManager url_request_rewrite_rules_manager_;
 
   // Used for receiving and dispatching popup created by this Frame.
   fuchsia::web::PopupFrameCreationListenerPtr popup_listener_;
@@ -187,6 +193,5 @@ class FrameImpl : public fuchsia::web::Frame,
 
   DISALLOW_COPY_AND_ASSIGN(FrameImpl);
 };
-
 
 #endif  // FUCHSIA_ENGINE_BROWSER_FRAME_IMPL_H_

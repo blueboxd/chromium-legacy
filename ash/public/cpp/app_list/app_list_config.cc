@@ -287,8 +287,7 @@ AppListConfig::AppListConfig(ash::AppListConfigType type)
       grid_tile_spacing_in_folder_(8),
       // TODO(manucornet): Share the value with ShelfConstants and use
       // 48 when the new shelf UI is turned off.
-      shelf_height_(chromeos::switches::ShouldShowShelfDenseClamshell() ? 48
-                                                                        : 56),
+      shelf_height_(chromeos::switches::ShouldShowShelfHotseat() ? 48 : 56),
       background_radius_(shelf_height_ / 2),
       blur_radius_(30),
       contents_background_color_(SkColorSetRGB(0xF2, 0xF2, 0xF2)),

@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/extensions/settings_api_bubble_helpers.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"

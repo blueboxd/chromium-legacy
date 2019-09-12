@@ -116,8 +116,6 @@ static uint32_t VideoPixelFormatToVAFourCC(VideoPixelFormat format) {
       return VA_FOURCC_NV12;
     case PIXEL_FORMAT_NV21:
       return VA_FOURCC_NV21;
-    case PIXEL_FORMAT_UYVY:
-      return VA_FOURCC_UYVY;
     case PIXEL_FORMAT_YUY2:
       return VA_FOURCC_YUY2;
     case PIXEL_FORMAT_ARGB:

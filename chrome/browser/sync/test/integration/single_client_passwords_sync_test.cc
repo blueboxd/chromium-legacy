@@ -37,6 +37,9 @@ using autofill::PasswordForm;
 using testing::ElementsAre;
 using testing::IsEmpty;
 
+const syncer::SyncFirstSetupCompleteSource kSetSourceFromTest =
+    syncer::SyncFirstSetupCompleteSource::BASIC_FLOW;
+
 syncer::KeyParams KeystoreKeyParams(const std::string& key) {
   // Due to mis-encode of keystore keys to base64 we have to always encode such
   // keys to provide backward compatibility.
@@ -402,7 +405,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
   // Sign in and enable Sync.
   ASSERT_TRUE(GetClient(0)->SignInPrimaryAccount());
   GetSyncService(0)->GetUserSettings()->SetSyncRequested(true);
-  GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete();
+  GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete(
+      kSetSourceFromTest);
   ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
 
   ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
@@ -493,7 +497,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
   // Sign in and enable Sync.
   ASSERT_TRUE(GetClient(0)->SignInPrimaryAccount());
   GetSyncService(0)->GetUserSettings()->SetSyncRequested(true);
-  GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete();
+  GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete(
+      kSetSourceFromTest);
   ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
 
   ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
@@ -569,7 +574,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
 
   // Turn on Sync-the-feature.
   GetSyncService(0)->GetUserSettings()->SetSyncRequested(true);
-  GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete();
+  GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete(
+      kSetSourceFromTest);
   ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
   ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
 
@@ -617,7 +623,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
   // Make the account primary and turn on Sync-the-feature.
   secondary_account_helper::MakeAccountPrimary(GetProfile(0), "user@email.com");
   GetSyncService(0)->GetUserSettings()->SetSyncRequested(true);
-  GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete();
+  GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete(
+      kSetSourceFromTest);
   ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
   ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
 

@@ -200,9 +200,7 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   void MaybeSendMetricsToUkm() const;
 
   // After an in-page click, sends the index of the url that was clicked to the
-  // UKM id at |ukm_source_id_|. The index sent corresponds to the index of that
-  // url in |top_urls_|, and is 1-indexed. If the url does not appear in
-  // |top_urls_|, a 0 is returned.
+  // UKM id at |ukm_source_id_|.
   void MaybeSendClickMetricsToUkm(const std::string& clicked_url) const;
 
   // Returns the minimum of the bucket that |value| belongs in, for page-wide
@@ -223,11 +221,6 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // Maps from target url (href) to navigation score.
   std::unordered_map<std::string, std::unique_ptr<NavigationScore>>
       navigation_scores_map_;
-
-  // The urls of the top anchor elements in the page, in a random order.
-  // If there are 10 or more urls on the page, |top_urls_| contains 10 urls.
-  // Otherwise, it contains all the urls.
-  std::vector<GURL> top_urls_;
 
   // Total number of anchors that: href has the same host as the document,
   // contains image, inside an iframe, href incremented by 1 from document url.
@@ -298,6 +291,9 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // by the sum of metrics weights nor normalized from 0 to 100 across
   // all navigation scores for a page.
   const bool normalize_navigation_scores_;
+
+  // A count of clicks to prevent reporting more than 10 clicks to UKM.
+  size_t clicked_count_ = 0;
 
   // Timing of document loaded and last click.
   base::TimeTicks document_loaded_timing_;

@@ -22,6 +22,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -36,7 +37,6 @@ enum class AccessPoint;
 }  // namespace signin_metrics
 
 namespace syncer {
-class SyncService;
 class SyncSetupInProgressHandle;
 }  // namespace syncer
 
@@ -262,9 +262,10 @@ class PeopleHandler : public SettingsPageUIHandler,
   PrefChangeRegistrar profile_pref_registrar_;
 
   // Manages observer lifetimes.
-  ScopedObserver<signin::IdentityManager, PeopleHandler>
-      identity_manager_observer_;
-  ScopedObserver<syncer::SyncService, PeopleHandler> sync_service_observer_;
+  ScopedObserver<signin::IdentityManager, signin::IdentityManager::Observer>
+      identity_manager_observer_{this};
+  ScopedObserver<syncer::SyncService, syncer::SyncServiceObserver>
+      sync_service_observer_{this};
 
 #if defined(OS_CHROMEOS)
   base::WeakPtrFactory<PeopleHandler> weak_factory_{this};

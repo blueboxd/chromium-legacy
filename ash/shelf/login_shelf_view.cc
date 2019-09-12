@@ -120,11 +120,11 @@ std::unique_ptr<SkPath> GetButtonHighlightPath(views::View* view) {
   auto path = std::make_unique<SkPath>();
 
   gfx::Rect rect(view->GetLocalBounds());
-  rect.Inset(chromeos::switches::ShouldShowShelfDenseClamshell()
+  rect.Inset(chromeos::switches::ShouldShowShelfHotseat()
                  ? kButtonBackgroundMarginDense
                  : kButtonBackgroundMargin);
 
-  int border_radius = chromeos::switches::ShouldShowShelfDenseClamshell()
+  int border_radius = chromeos::switches::ShouldShowShelfHotseat()
                           ? kButtonRoundedBorderRadiusDpDense
                           : kButtonRoundedBorderRadiusDp;
   path->addRoundRect(gfx::RectToSkRect(rect), border_radius, border_radius);
@@ -183,10 +183,10 @@ class LoginShelfButton : public views::LabelButton {
 
   // views::LabelButton:
   gfx::Insets GetInsets() const override {
-    int top_margin = chromeos::switches::ShouldShowShelfDenseClamshell()
+    int top_margin = chromeos::switches::ShouldShowShelfHotseat()
                          ? kButtonMarginTopDpDense
                          : kButtonMarginTopDp;
-    int bottom_margin = chromeos::switches::ShouldShowShelfDenseClamshell()
+    int bottom_margin = chromeos::switches::ShouldShowShelfHotseat()
                             ? kButtonMarginBottomDpDense
                             : kButtonMarginBottomDp;
     return gfx::Insets(top_margin, kButtonMarginLeftDp, bottom_margin,

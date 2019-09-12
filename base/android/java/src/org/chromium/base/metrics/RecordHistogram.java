@@ -120,6 +120,16 @@ public class RecordHistogram {
 
     /**
      * Records a sample in a count histogram. This is the Java equivalent of the
+     * UMA_HISTOGRAM_COUNTS_100000 C++ macro.
+     * @param name name of the histogram
+     * @param sample sample to be recorded, at least 1 and at most 99999
+     */
+    public static void recordCount100000Histogram(String name, int sample) {
+        recordCustomCountHistogram(name, sample, 1, 100000, 50);
+    }
+
+    /**
+     * Records a sample in a count histogram. This is the Java equivalent of the
      * UMA_HISTOGRAM_CUSTOM_COUNTS C++ macro.
      * @param name name of the histogram
      * @param sample sample to be recorded, at least |min| and at most |max| - 1
@@ -295,6 +305,9 @@ public class RecordHistogram {
         return RecordHistogramJni.get().getHistogramTotalCountForTesting(name);
     }
 
+    /**
+     * Natives API to record metrics.
+     */
     @NativeMethods
     public interface Natives {
         long recordCustomTimesHistogramMilliseconds(

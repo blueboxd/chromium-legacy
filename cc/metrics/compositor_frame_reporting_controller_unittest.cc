@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "components/viz/common/frame_timing_details.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -93,8 +94,9 @@ class CompositorFrameReportingControllerTest : public testing::Test {
   void SimulatePresentCompositorFrame() {
     ++next_token_;
     SimulateSubmitCompositorFrame(*next_token_);
-    reporting_controller_.DidPresentCompositorFrame(*next_token_,
-                                                    base::TimeTicks::Now());
+    viz::FrameTimingDetails details = {};
+    details.presentation_feedback.timestamp = base::TimeTicks::Now();
+    reporting_controller_.DidPresentCompositorFrame(*next_token_, details);
   }
 
  protected:

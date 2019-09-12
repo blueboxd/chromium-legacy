@@ -107,6 +107,9 @@ struct VulkanFunctionPointers {
       nullptr;
 #endif  // defined(OS_FUCHSIA)
 
+  PFN_vkGetPhysicalDeviceImageFormatProperties2
+      vkGetPhysicalDeviceImageFormatProperties2Fn = nullptr;
+
   PFN_vkGetPhysicalDeviceFeatures2 vkGetPhysicalDeviceFeatures2Fn = nullptr;
 
   // Device functions
@@ -165,6 +168,8 @@ struct VulkanFunctionPointers {
   PFN_vkUpdateDescriptorSets vkUpdateDescriptorSetsFn = nullptr;
   PFN_vkWaitForFences vkWaitForFencesFn = nullptr;
 
+  PFN_vkGetImageMemoryRequirements2 vkGetImageMemoryRequirements2Fn = nullptr;
+
 #if defined(OS_ANDROID)
   PFN_vkGetAndroidHardwareBufferPropertiesANDROID
       vkGetAndroidHardwareBufferPropertiesANDROIDFn = nullptr;
@@ -177,6 +182,7 @@ struct VulkanFunctionPointers {
 
 #if defined(OS_LINUX)
   PFN_vkGetMemoryFdKHR vkGetMemoryFdKHRFn = nullptr;
+  PFN_vkGetMemoryFdPropertiesKHR vkGetMemoryFdPropertiesKHRFn = nullptr;
 #endif  // defined(OS_LINUX)
 
 #if defined(OS_FUCHSIA)
@@ -260,6 +266,9 @@ struct VulkanFunctionPointers {
 #define vkCreateImagePipeSurfaceFUCHSIA \
   gpu::GetVulkanFunctionPointers()->vkCreateImagePipeSurfaceFUCHSIAFn
 #endif  // defined(OS_FUCHSIA)
+
+#define vkGetPhysicalDeviceImageFormatProperties2 \
+  gpu::GetVulkanFunctionPointers()->vkGetPhysicalDeviceImageFormatProperties2Fn
 
 #define vkGetPhysicalDeviceFeatures2 \
   gpu::GetVulkanFunctionPointers()->vkGetPhysicalDeviceFeatures2Fn
@@ -350,6 +359,9 @@ struct VulkanFunctionPointers {
   gpu::GetVulkanFunctionPointers()->vkUpdateDescriptorSetsFn
 #define vkWaitForFences gpu::GetVulkanFunctionPointers()->vkWaitForFencesFn
 
+#define vkGetImageMemoryRequirements2 \
+  gpu::GetVulkanFunctionPointers()->vkGetImageMemoryRequirements2Fn
+
 #if defined(OS_ANDROID)
 #define vkGetAndroidHardwareBufferPropertiesANDROID \
   gpu::GetVulkanFunctionPointers()                  \
@@ -365,6 +377,8 @@ struct VulkanFunctionPointers {
 
 #if defined(OS_LINUX)
 #define vkGetMemoryFdKHR gpu::GetVulkanFunctionPointers()->vkGetMemoryFdKHRFn
+#define vkGetMemoryFdPropertiesKHR \
+  gpu::GetVulkanFunctionPointers()->vkGetMemoryFdPropertiesKHRFn
 #endif  // defined(OS_LINUX)
 
 #if defined(OS_FUCHSIA)

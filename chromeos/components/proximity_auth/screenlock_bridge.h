@@ -178,7 +178,7 @@ class ScreenlockBridge {
   ScreenlockBridge();
   ~ScreenlockBridge();
 
-  LockHandler* lock_handler_;  // Not owned
+  LockHandler* lock_handler_ = nullptr;  // Not owned
 
   // The last focused user's id.
   AccountId focused_account_id_;

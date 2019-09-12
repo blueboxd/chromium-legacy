@@ -562,10 +562,8 @@ void SynchronousLayerTreeFrameSink::DidPresentCompositorFrame(
     const viz::FrameTimingDetailsMap& timing_details) {
   if (!client_)
     return;
-  for (const auto& pair : timing_details) {
-    client_->DidPresentCompositorFrame(pair.first,
-                                       pair.second.presentation_feedback);
-  }
+  for (const auto& pair : timing_details)
+    client_->DidPresentCompositorFrame(pair.first, pair.second);
 }
 
 void SynchronousLayerTreeFrameSink::BeginFrame(

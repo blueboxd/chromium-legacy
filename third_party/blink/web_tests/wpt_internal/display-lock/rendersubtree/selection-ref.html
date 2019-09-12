@@ -15,11 +15,8 @@
     width: 30px; height: 30px;
   }
 </style>
-<div id="neighbor">
-  neighbor
-</div>
 <div id="container">
-  <div>
+  <div id="notLocked">
     not locked!
   </div>
   <div id="nonActivatable">
@@ -33,7 +30,7 @@
 <script>
   window.getSelection().removeAllRanges();
   const selectionRange = document.createRange();
-  selectionRange.setStart(neighbor.firstChild, 4);
+  selectionRange.setStart(notLocked.firstChild, 4);
   selectionRange.setEnd(nested.firstChild, 7);
   window.getSelection().addRange(selectionRange);
 </script>

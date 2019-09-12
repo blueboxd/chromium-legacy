@@ -134,6 +134,8 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
   // of a presentable frame.
   virtual void FinalizeFrame() {}
 
+  void NeedsFinalizeFrame();
+
   // Thread::TaskObserver implementation
   void DidProcessTask(const base::PendingTask&) override;
   void WillProcessTask(const base::PendingTask&) final {}

@@ -258,14 +258,14 @@ void PerformanceEvaluator::WriteMetricsToFile() const {
   // Write frame delivery times to json.
   base::Value delivery_times(base::Value::Type::LIST);
   for (double frame_delivery_time : frame_delivery_times_) {
-    delivery_times.GetList().emplace_back(frame_delivery_time);
+    delivery_times.Append(frame_delivery_time);
   }
   metrics.SetKey("FrameDeliveryTimes", std::move(delivery_times));
 
   // Write frame decodes times to json.
   base::Value decode_times(base::Value::Type::LIST);
   for (double frame_decode_time : frame_decode_times_) {
-    decode_times.GetList().emplace_back(frame_decode_time);
+    decode_times.Append(frame_decode_time);
   }
   metrics.SetKey("FrameDecodeTimes", std::move(decode_times));
 

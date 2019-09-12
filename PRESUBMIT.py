@@ -22,6 +22,7 @@ _EXCLUDED_PATHS = (
     r"^v8[\\/].*",
     r".*MakeFile$",
     r".+_autogen\.h$",
+    r".+_pb2\.py$",
     r".+[\\/]pnacl_shim\.c$",
     r"^gpu[\\/]config[\\/].*_list_json\.cc$",
     r"^chrome[\\/]browser[\\/]resources[\\/]pdf[\\/]index.js",
@@ -260,7 +261,6 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^android_webview/browser/',
   '^apps/',
   '^ash/',
-  '^base/',
   '^base/callback.h',  # Intentional.
   '^chrome/app/',
   '^chrome/browser/',
@@ -1122,6 +1122,8 @@ _BANNED_CPP_FUNCTIONS = (
       ),
       False,
       (
+        r'^fuchsia/engine/browser/url_request_rewrite_rules_manager\.cc$',
+        r'^fuchsia/engine/url_request_rewrite_type_converters\.cc$',
         r'^third_party/blink/.*\.(cc|h)$',
         r'^content/renderer/.*\.(cc|h)$',
       ),

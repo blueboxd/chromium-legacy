@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/task/sequence_manager/lazy_now.h"
+#include "base/task/sequence_manager/task_queue.h"
 #include "base/time/time.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"

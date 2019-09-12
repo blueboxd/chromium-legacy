@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/geometry/rect_conversions.h"

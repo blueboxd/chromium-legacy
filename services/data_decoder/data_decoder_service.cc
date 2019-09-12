@@ -11,7 +11,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/data_decoder/bundled_exchanges_parser_factory.h"
 #include "services/data_decoder/image_decoder_impl.h"
 #include "services/data_decoder/json_parser_impl.h"
@@ -91,9 +90,10 @@ void DataDecoderService::BindJsonParser(
       std::move(receiver));
 }
 
-void DataDecoderService::BindXmlParser(mojom::XmlParserRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<XmlParser>(keepalive_.CreateRef()),
-                          std::move(request));
+void DataDecoderService::BindXmlParser(
+    mojo::PendingReceiver<mojom::XmlParser> receiver) {
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<XmlParser>(keepalive_.CreateRef()), std::move(receiver));
 }
 
 void DataDecoderService::BindBundledExchangesParserFactory(

@@ -299,7 +299,8 @@ bool ProfileSyncServiceHarness::SetupSyncImpl(
 
 void ProfileSyncServiceHarness::FinishSyncSetup() {
   sync_blocker_.reset();
-  service()->GetUserSettings()->SetFirstSetupComplete();
+  service()->GetUserSettings()->SetFirstSetupComplete(
+      syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
 }
 
 void ProfileSyncServiceHarness::StopSyncServiceAndClearData() {
@@ -332,7 +333,8 @@ bool ProfileSyncServiceHarness::StartSyncService() {
   DVLOG(1) << "Passphrase decryption success.";
 
   blocker.reset();
-  service()->GetUserSettings()->SetFirstSetupComplete();
+  service()->GetUserSettings()->SetFirstSetupComplete(
+      syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
 
   if (!AwaitSyncSetupCompletion()) {
     LOG(FATAL) << "AwaitSyncSetupCompletion failed.";

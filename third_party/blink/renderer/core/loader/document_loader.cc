@@ -983,7 +983,9 @@ void DocumentLoader::CommitSameDocumentNavigationInternal(
   GetFrameLoader().DidFinishNavigation(
       FrameLoader::NavigationFinishState::kSuccess);
 
-  if (!frame_->GetPage())
+  // GetFrameLoader().DidFinishNavigation can lead to DetachFromFrame so need
+  // to check again if frame_ is null.
+  if (!frame_ || !frame_->GetPage())
     return;
   GetFrameLoader().SaveScrollState();
 

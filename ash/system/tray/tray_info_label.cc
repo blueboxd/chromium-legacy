@@ -6,9 +6,11 @@
 
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/layout/fill_layout.h"
+
 namespace ash {
 
 TrayInfoLabel::TrayInfoLabel(TrayInfoLabel::Delegate* delegate, int message_id)

@@ -104,7 +104,7 @@ bool WebWidgetTestProxy::IsPointerLocked() {
 void WebWidgetTestProxy::SetToolTipText(const blink::WebString& text,
                                         blink::WebTextDirection hint) {
   RenderWidget::SetToolTipText(text, hint);
-  GetTestRunner()->setToolTipText(text);
+  GetTestRunner()->SetToolTipText(text);
 }
 
 void WebWidgetTestProxy::StartDragging(network::mojom::ReferrerPolicy policy,
@@ -112,7 +112,7 @@ void WebWidgetTestProxy::StartDragging(network::mojom::ReferrerPolicy policy,
                                        blink::WebDragOperationsMask mask,
                                        const SkBitmap& drag_image,
                                        const gfx::Point& image_offset) {
-  GetTestRunner()->setDragImage(drag_image);
+  GetTestRunner()->SetDragImage(drag_image);
 
   // When running a test, we need to fake a drag drop operation otherwise
   // Windows waits for real mouse events to know when the drag is over.

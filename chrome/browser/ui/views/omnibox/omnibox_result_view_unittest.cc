@@ -12,6 +12,7 @@
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/test_omnibox_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"

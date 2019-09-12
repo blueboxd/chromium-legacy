@@ -29,6 +29,7 @@
 
 #include "base/bind_helpers.h"
 #include "cc/paint/paint_canvas.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"

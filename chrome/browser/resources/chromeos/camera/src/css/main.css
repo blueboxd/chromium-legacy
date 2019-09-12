@@ -83,8 +83,8 @@ input {
   -webkit-appearance: none;
 }
 
-button:focus::after,
-input:focus::after {
+body.tab-navigation button:focus::after,
+body.tab-navigation input:focus::after {
   border: 2px solid rgba(37, 129, 223, 0.7);
   border-radius: 4px;
   bottom: -3px;
@@ -101,8 +101,8 @@ input:focus::after {
 }
 
 .circle button,
-.circle button:focus::after,
-.circle input:focus::after {
+body.tab-navigation .circle button:focus::after,
+body.tab-navigation .circle input:focus::after {
   border-radius: 50%;
 }
 
@@ -271,7 +271,7 @@ div.mode-item>span {
   z-index: 1;
 }
 
-.mode-item>input:focus::after {
+body.tab-navigation .mode-item>input:focus::after {
   display: none;
 }
 
@@ -281,7 +281,7 @@ div.mode-item>span {
   text-shadow: none;
 }
 
-.mode-item>input:focus + span::after {
+body.tab-navigation .mode-item>input:focus + span::after {
   border: 2px solid rgba(37, 129, 223, 0.7);
   border-radius: 20px/50%;
   bottom: -7px;
@@ -1182,7 +1182,7 @@ body._10sec .description span[i18n-content=label_timer_10s],
   transition: border-width 100ms ease-in;
 }
 
-.menu-item:focus::after {
+body.tab-navigation .menu-item:focus::after {
   left: 2px;
   right: 2px;
 }
@@ -1313,13 +1313,13 @@ body.no-resolution-settings #settings-resolution {
   padding: 6px 18px;
 }
 
-.dialog-buttons button:focus {
+body.tab-navigation .dialog-buttons button:focus {
   background-color: rgb(37, 129, 223);
   border-color: rgb(37, 129, 223);
   color: white;
 }
 
-.dialog-buttons button:focus::after {
+body.tab-navigation .dialog-buttons button:focus::after {
   border: none;
 }
 

@@ -81,9 +81,9 @@ MockRenderWidgetHost* MockRenderWidgetHost::Create(
     RenderWidgetHostDelegate* delegate,
     RenderProcessHost* process,
     int32_t routing_id) {
-  mojom::WidgetPtr widget;
+  mojo::PendingRemote<mojom::Widget> widget;
   std::unique_ptr<MockWidgetImpl> widget_impl =
-      std::make_unique<MockWidgetImpl>(mojo::MakeRequest(&widget));
+      std::make_unique<MockWidgetImpl>(widget.InitWithNewPipeAndPassReceiver());
 
   return new MockRenderWidgetHost(delegate, process, routing_id,
                                   std::move(widget_impl), std::move(widget));
@@ -102,7 +102,7 @@ MockRenderWidgetHost::MockRenderWidgetHost(
     RenderProcessHost* process,
     int routing_id,
     std::unique_ptr<MockWidgetImpl> widget_impl,
-    mojom::WidgetPtr widget)
+    mojo::PendingRemote<mojom::Widget> widget)
     : RenderWidgetHostImpl(delegate,
                            process,
                            routing_id,

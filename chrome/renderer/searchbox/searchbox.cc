@@ -432,7 +432,7 @@ void SearchBox::ConfirmThemeChanges() {
   embedded_search_service_->ConfirmThemeChanges();
 }
 
-void SearchBox::QueryAutocomplete(const std::string& input) {
+void SearchBox::QueryAutocomplete(const base::string16& input) {
   embedded_search_service_->QueryAutocomplete(
       input, base::BindOnce(&SearchBox::QueryAutocompleteResult,
                             weak_ptr_factory_.GetWeakPtr()));
@@ -443,10 +443,10 @@ void SearchBox::StopAutocomplete(bool clear_result) {
 }
 
 void SearchBox::QueryAutocompleteResult(
-    std::vector<chrome::mojom::AutocompleteMatchPtr> results) {
+    chrome::mojom::AutocompleteResultPtr result) {
   if (can_run_js_in_renderframe_) {
     SearchBoxExtension::DispatchQueryAutocompleteResult(
-        render_frame()->GetWebFrame(), results);
+        render_frame()->GetWebFrame(), std::move(result));
   }
 }
 

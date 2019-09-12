@@ -206,7 +206,12 @@ class UkmBrowserTestBase : public SyncTest {
   void BuildAndStoreUkmLog() {
     auto* service = ukm_service();
     DCHECK(service);
+    // Wait for initialization to complete before flushing.
+    base::RunLoop run_loop;
+    service->SetInitializationCompleteCallbackForTesting(run_loop.QuitClosure());
+    run_loop.Run();
     DCHECK(service->initialize_complete_);
+
     service->Flush();
     DCHECK(service->reporting_service_.ukm_log_store()->has_unsent_logs());
   }
@@ -540,13 +545,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, OpenNonSyncCheck) {
 // Keep in sync with UkmTest.testMetricConsent in
 // chrome/android/javatests/src/org/chromium/chrome/browser/sync/
 // UkmTest.java.
-#if defined(OS_CHROMEOS)
-// TODO(https://crbug.com/996823): Re-enable this test.
-#define MAYBE_MetricsConsentCheck DISABLED_MetricsConsentCheck
-#else
-#define MAYBE_MetricsConsentCheck MetricsConsentCheck
-#endif
-IN_PROC_BROWSER_TEST_P(UkmBrowserTest, MAYBE_MetricsConsentCheck) {
+IN_PROC_BROWSER_TEST_P(UkmBrowserTest, MetricsConsentCheck) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -576,13 +575,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, MAYBE_MetricsConsentCheck) {
   CloseBrowserSynchronously(sync_browser);
 }
 
-#if defined(OS_CHROMEOS)
-// TODO(https://crbug.com/996823): Re-enable this test.
-#define MAYBE_LogProtoData DISABLED_LogProtoData
-#else
-#define MAYBE_LogProtoData LogProtoData
-#endif
-IN_PROC_BROWSER_TEST_P(UkmBrowserTest, MAYBE_LogProtoData) {
+IN_PROC_BROWSER_TEST_P(UkmBrowserTest, LogProtoData) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -622,16 +615,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, MAYBE_LogProtoData) {
 
 // Verifies that network provider attaches effective connection type correctly
 // to the UKM report.
-#if defined(OS_CHROMEOS)
-// TODO(https://crbug.com/996823): Re-enable this test.
-#define MAYBE_NetworkProviderPopulatesSystemProfile \
-  DISABLED_NetworkProviderPopulatesSystemProfile
-#else
-#define MAYBE_NetworkProviderPopulatesSystemProfile \
-  NetworkProviderPopulatesSystemProfile
-#endif
-IN_PROC_BROWSER_TEST_P(UkmBrowserTest,
-                       MAYBE_NetworkProviderPopulatesSystemProfile) {
+IN_PROC_BROWSER_TEST_P(UkmBrowserTest, NetworkProviderPopulatesSystemProfile) {
   // Override network quality to 2G. This should cause the
   // |max_effective_connection_type| in the system profile to be set to 2G.
   g_browser_process->network_quality_tracker()

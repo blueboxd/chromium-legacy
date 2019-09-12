@@ -55,7 +55,6 @@ scoped_refptr<media::VideoFrame> CopyFrame(
     DCHECK(frame->format() == media::PIXEL_FORMAT_ARGB ||
            frame->format() == media::PIXEL_FORMAT_XRGB ||
            frame->format() == media::PIXEL_FORMAT_I420 ||
-           frame->format() == media::PIXEL_FORMAT_UYVY ||
            frame->format() == media::PIXEL_FORMAT_NV12);
     new_frame = media::VideoFrame::CreateFrame(
         media::PIXEL_FORMAT_I420, frame->coded_size(), frame->visible_rect(),

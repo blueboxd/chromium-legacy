@@ -4,8 +4,9 @@
 
 source_set("external_service") {
   sources = [
-    "external_connector.cc",
     "external_connector.h",
+    "external_connector_impl.cc",
+    "external_connector_impl.h",
     "external_service.cc",
     "external_service.h",
   ]

@@ -73,11 +73,6 @@ class NET_EXPORT NetworkDelegateImpl : public NetworkDelegate {
 
   void OnPACScriptError(int line_number, const base::string16& error) override;
 
-  AuthRequiredResponse OnAuthRequired(URLRequest* request,
-                                      const AuthChallengeInfo& auth_info,
-                                      AuthCallback callback,
-                                      AuthCredentials* credentials) override;
-
   bool OnCanGetCookies(const URLRequest& request,
                        const CookieList& cookie_list,
                        bool allowed_from_caller) override;

@@ -27,6 +27,7 @@
 #include "components/password_manager/core/browser/password_manager_client_helper.h"
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_manager_onboarding.h"
 #include "components/password_manager/core/browser/password_reuse_detection_manager.h"
 #include "components/password_manager/core/browser/sync_credentials_filter.h"
 #include "components/prefs/pref_member.h"
@@ -170,10 +171,14 @@ class ChromePasswordManagerClient
   void FrameWasScrolled() override;
   void GenerationElementLostFocus() override;
 
+#if defined(OS_ANDROID)
   // This is called when the onboarding experience was shown successfully,
   // which means that the user should now be prompted to save their password.
   void OnOnboardingSuccessful(
-      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save);
+      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
+      std::unique_ptr<password_manager::SavingFlowMetricsRecorder>
+          saving_flow_recorder);
+#endif  // defined(OS_ANDROID)
 
 #if defined(ON_FOCUS_PING_ENABLED)
   void CheckSafeBrowsingReputation(const GURL& form_action,

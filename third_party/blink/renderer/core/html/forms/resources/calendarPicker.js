@@ -2259,7 +2259,7 @@ function YearListView(minimumMonth, maximumMonth) {
 YearListView.prototype = Object.create(ListView.prototype);
 
 YearListView._Height = YearListCell._SelectedHeight - 1;
-YearListView._VisibleYearsRefresh = 3;
+YearListView._VisibleYearsRefresh = 4;
 YearListView._HeightRefresh = YearListCell._SelectedHeightRefresh - 1 + YearListView._VisibleYearsRefresh * YearListCell._HeightRefresh;
 YearListView.GetHeight = function() {
   if (global.params.isFormControlsRefreshEnabled) {
@@ -3842,7 +3842,11 @@ CalendarPicker.prototype.onWindowResize = function(event) {
 CalendarPicker.prototype.onYearListViewDidHide = function(sender) {
   this.monthPopupView.hide();
   this.calendarHeaderView.setDisabled(false);
-  this.adjustHeight();
+  if (global.params.isFormControlsRefreshEnabled) {
+    this.calendarTableView.element.style.visibility = 'visible';
+  } else {
+    this.adjustHeight();
+  }
 };
 
 /**
@@ -3880,7 +3884,11 @@ CalendarPicker.prototype.onMonthPopupButtonClick = function(sender) {
       clientRect.height);
   this.monthPopupView.show(this.currentMonth(), calendarTableRect);
   this.calendarHeaderView.setDisabled(true);
-  this.adjustHeight();
+  if (global.params.isFormControlsRefreshEnabled) {
+    this.calendarTableView.element.style.visibility = 'hidden';
+  } else {
+    this.adjustHeight();
+  }
 };
 
 CalendarPicker.prototype._setConfig = function(config) {
@@ -3935,7 +3943,7 @@ CalendarPicker.prototype.adjustHeight = function() {
   var numberOfRows = global.params.isFormControlsRefreshEnabled ? CalendarPicker.VisibleRowsRefresh : rowForLastDayInMonth - rowForFirstDayInMonth + 1;
   var calendarTableViewHeight =
       CalendarTableHeaderView.GetHeight() + numberOfRows * DayCell.GetHeight() + CalendarTableView.GetBorderWidth() * 2 + CalendarTableView.GetTodayButtonHeight();
-  var height = (this.monthPopupView.isVisible ? YearListView.GetHeight() : calendarTableViewHeight) +
+  var height = (this.monthPopupView.isVisible && !global.params.isFormControlsRefreshEnabled ? YearListView.GetHeight() : calendarTableViewHeight) +
       CalendarHeaderView.Height + CalendarHeaderView.BottomMargin + CalendarPicker.Padding * 2 +
       CalendarPicker.BorderWidth * 2;
   this.setHeight(height);

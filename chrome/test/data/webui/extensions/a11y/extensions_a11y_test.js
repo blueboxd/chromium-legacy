@@ -56,6 +56,16 @@ var CrExtensionsA11yTest = class extends PolymerTest {
         return parentNode && parentNode.host &&
             parentNode.host.tagName == 'CR-TOGGLE';
       },
+
+      // TODO(crbug.com/1002620): this filter can be removed after
+      // addressing the bug
+      'heading-order': function(nodeResult) {
+        // Filter out 'Heading levels do not increase by one' error when
+        // enumerating extensions
+        const expectedMarkup = '<div id="name" role="heading" aria-level="3" \
+class="clippable-flex-text">My extension 1</div>';
+        return nodeResult['html'] === expectedMarkup;
+      },
     };
   }
 
@@ -85,7 +95,13 @@ AccessibilityTest.define('CrExtensionsA11yTest', {
   name: 'NoExtensions',
 
   /** @override */
-  axeOptions: CrExtensionsA11yTest.axeOptions,
+  // TODO(crbug.com/1002627): when bug is addressed, this should be replaced
+  // with axeOptions: CrExtensionsA11yTest.axeOptions,
+  axeOptions: Object.assign({}, CrExtensionsA11yTest.axeOptions, {
+    'rules': Object.assign({}, CrExtensionsA11yTest.axeOptions.rules, {
+      'link-in-text-block': {enabled: false},
+    })
+  }),
 
   /** @override */
   violationFilter: CrExtensionsA11yTest.violationFilter,

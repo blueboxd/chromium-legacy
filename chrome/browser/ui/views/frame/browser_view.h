@@ -250,8 +250,8 @@ class BrowserView : public BrowserWindow,
   bool IsBrowserTypeNormal() const { return browser_->is_type_normal(); }
 
   // Returns true if the Browser object associated with this BrowserView is a
-  // for an installed hosted app.
-  bool IsBrowserTypeHostedApp() const;
+  // for an installed web app.
+  bool IsBrowserTypeWebApp() const;
 
   // Returns true if the top browser controls (a.k.a. top-chrome UIs) are
   // allowed to slide up and down with the gesture scrolls on the current tab's

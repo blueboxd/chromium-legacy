@@ -253,7 +253,7 @@ class H264VideoToolboxEncoderTest : public ::testing::Test {
   static FrameSenderConfig video_sender_config_;
 
   base::SimpleTestTickClock clock_;
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   scoped_refptr<CastEnvironment> cast_environment_;
   std::unique_ptr<VideoEncoder> encoder_;
   OperationalStatus operational_status_;

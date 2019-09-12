@@ -440,14 +440,14 @@ LogicalSize ShrinkAvailableSize(LogicalSize size, const NGBoxStrut& inset);
 LogicalSize CalculateChildPercentageSize(
     const NGConstraintSpace&,
     const NGBlockNode node,
-    const LogicalSize& child_available_size);
+    const LogicalSize child_available_size);
 
 // Calculates the percentage resolution size that replaced children of the node
 // should use.
 LogicalSize CalculateReplacedChildPercentageSize(
     const NGConstraintSpace&,
     const NGBlockNode node,
-    LogicalSize border_box_size,
+    const LogicalSize child_available_size,
     const NGBoxStrut& border_scrollbar_padding,
     const NGBoxStrut& border_padding);
 

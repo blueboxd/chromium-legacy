@@ -334,6 +334,11 @@ std::string ExtractDocIdFromUrl(const std::string& url) {
   return std::string();
 }
 
+base::string16 TitleForAutocompletion(AutocompleteMatch match) {
+  return match.contents +
+         base::UTF8ToUTF16(" - " + match.destination_url.spec());
+}
+
 }  // namespace
 
 // static
@@ -767,6 +772,7 @@ ACMatches DocumentProvider::ParseDocumentSearchResults(
       AutocompleteMatch::AddLastClassificationIfNecessary(
           &match.description_class, 0, ACMatchClassification::DIM);
     }
+    match.TryAutocompleteWithTitle(TitleForAutocompletion(match), input_);
     match.transition = ui::PAGE_TRANSITION_GENERATED;
     match.RecordAdditionalInfo("client score", client_score);
     match.RecordAdditionalInfo("server score", server_score);
@@ -788,6 +794,9 @@ void DocumentProvider::CopyCachedMatchesToMatches(
                 matches_cache_.end(), [this](const auto& cache_key_match_pair) {
                   auto match = cache_key_match_pair.second;
                   match.relevance = 0;
+                  match.allowed_to_be_default_match = false;
+                  match.TryAutocompleteWithTitle(TitleForAutocompletion(match),
+                                                 input_);
                   match.contents_class =
                       DocumentProvider::Classify(match.contents, input_.text());
                   match.RecordAdditionalInfo("from cache", "true");

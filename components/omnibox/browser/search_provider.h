@@ -77,6 +77,9 @@ class SearchProvider : public BaseSearchProvider,
   // AutocompleteProvider:
   void ResetSession() override;
 
+  // The verbatim score for an input which is not an URL.
+  static const int kNonURLVerbatimRelevance = 1300;
+
  protected:
   ~SearchProvider() override;
 

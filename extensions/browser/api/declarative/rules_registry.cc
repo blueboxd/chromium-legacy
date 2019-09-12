@@ -42,7 +42,7 @@ const char kErrorCannotRemoveManifestRules[] =
 base::Value RulesToValue(const std::vector<const api::events::Rule*>& rules) {
   base::Value value(base::Value::Type::LIST);
   for (const auto* rule : rules)
-    value.GetList().push_back(std::move(*rule->ToValue()));
+    value.Append(std::move(*rule->ToValue()));
   return value;
 }
 

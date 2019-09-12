@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"

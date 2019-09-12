@@ -10,8 +10,8 @@
 #include <memory>
 
 #include "media/base/decryptor.h"
-#include "media/filters/fuchsia/stream_processor_helper.h"
-#include "media/filters/fuchsia/sysmem_buffer_pool.h"
+#include "media/fuchsia/common/stream_processor_helper.h"
+#include "media/fuchsia/common/sysmem_buffer_pool.h"
 
 namespace media {
 class SysmemBufferReader;

@@ -4,10 +4,11 @@
 <title>Display Locking: measure forced layout after commit</title>
 <link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
+<script src="../resources/utils.js"></script>
 
 <style>
 .contained {
-  contain: style layout;
+  content-size: 100px 100px;
   background: lightgreen;
 }
 #large {
@@ -73,12 +74,12 @@ async_test((t) => {
 
   async function runTest() {
     const container = document.getElementById("small");
-    await container.displayLock.acquire({ timeout: Infinity, size: [100, 100] });
+    await setInvisible(container);
 
     construct(document.getElementById("large"));
     measureForced();
 
-    container.displayLock.commit();
+    await setVisible(container);
     forcedMeasureAfterCommit();
     t.done();
   }

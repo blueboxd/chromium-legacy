@@ -18,6 +18,10 @@ class TracedValue;
 }  // namespace trace_event
 }  // namespace base
 
+namespace viz {
+struct FrameTimingDetails;
+}
+
 namespace cc {
 
 class CompositorFrameReportingController;
@@ -92,7 +96,7 @@ class CC_EXPORT CompositorTimingHistory {
   void DidNotProduceFrame();
   void DidReceiveCompositorFrameAck();
   void DidPresentCompositorFrame(uint32_t frame_token,
-                                 base::TimeTicks presentation_time);
+                                 const viz::FrameTimingDetails& details);
   void WillInvalidateOnImplSide();
   void SetTreePriority(TreePriority priority);
 

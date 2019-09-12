@@ -2755,8 +2755,9 @@
     Show language options
   </message>
   <if expr="chromeos">
+    <!-- Ends with "." because a "Learn more" link appears next to it. -->
     <message name="IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_ORDERING_INSTRUCTIONS" desc="Explanatory message about ordering the list of languages.">
-      Add languages or reorder list
+      Add languages or reorder list.
     </message>
     <!-- The non-Chrome OS string is in settings_google_chrome_strings.grdp -->
     <message name="IDS_SETTINGS_LANGUAGES_IS_DISPLAYED_IN_THIS_LANGUAGE" desc="The label for a language that is currently used as the UI display language.">

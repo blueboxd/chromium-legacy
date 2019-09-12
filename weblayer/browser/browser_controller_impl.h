@@ -62,6 +62,8 @@ class BrowserControllerImpl : public BrowserController,
   void DidNavigateMainFramePostCommit(
       content::WebContents* web_contents) override;
   int GetTopControlsHeight() override;
+  bool DoBrowserControlsShrinkRendererSize(
+      const content::WebContents* web_contents) override;
 
   // content::WebContentsObserver implementation:
   void DidFirstVisuallyNonEmptyPaint() override;

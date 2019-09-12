@@ -518,6 +518,7 @@ void SMILTimeContainer::ApplyAnimationValues(double elapsed) {
 #endif
   HeapVector<Member<SVGSMILElement>> animations_to_apply;
   for (auto& sandwich : active_sandwiches_) {
+    sandwich->UpdateActiveAnimationStack(elapsed);
     if (SVGSMILElement* animation = sandwich->ApplyAnimationValues())
       animations_to_apply.push_back(animation);
   }

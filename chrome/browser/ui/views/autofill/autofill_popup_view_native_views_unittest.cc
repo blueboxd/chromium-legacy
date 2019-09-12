@@ -16,6 +16,7 @@
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/test/event_generator.h"

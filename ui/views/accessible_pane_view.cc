@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/view_tracker.h"
@@ -76,6 +77,15 @@ bool AccessiblePaneView::SetPaneFocus(views::View* initial_focus) {
     return false;
 
   focus_manager_->SetFocusedView(initial_focus);
+
+  // TODO(pbos): Move this behavior into FocusManager. Focusing an unfocusable
+  // view should do something smart (move focus to its children or clear focus).
+  // DownloadItemView is an example (isn't focusable, has focusable children).
+  // See https://crbug.com/1000998.
+  // The initially-focused view may not be focusable (but one of its children
+  // might). We may need to advance focus here to make sure focus is on
+  // something focusable.
+  focus_manager_->AdvanceFocusIfNecessary();
 
   // If we already have pane focus, we're done.
   if (pane_has_focus_)

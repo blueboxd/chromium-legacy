@@ -30,6 +30,7 @@
 #include "content/public/browser/web_contents.h"
 #include "device/fido/features.h"
 #include "device/fido/fido_authenticator.h"
+#include "device/fido/fido_discovery_factory.h"
 
 #if defined(OS_MACOSX)
 #include "device/fido/mac/authenticator.h"
@@ -38,6 +39,7 @@
 
 #if defined(OS_WIN)
 #include "device/fido/win/authenticator.h"
+#include "device/fido/win/webauthn_api.h"
 #endif
 
 namespace {
@@ -353,7 +355,8 @@ bool ChromeAuthenticatorRequestDelegate::
 
   return base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi) &&
          device::WinWebAuthnApiAuthenticator::
-             IsUserVerifyingPlatformAuthenticatorAvailable();
+             IsUserVerifyingPlatformAuthenticatorAvailable(
+                 GetDiscoveryFactory()->win_webauthn_api());
 #else
   return false;
 #endif  // defined(OS_MACOSX) || defined(OS_WIN)

@@ -141,8 +141,7 @@ void AuthenticatorRequestDialogModel::StartOver() {
 
 void AuthenticatorRequestDialogModel::
     StartGuidedFlowForMostLikelyTransportOrShowTransportSelection() {
-  DCHECK(current_step() == Step::kWelcomeScreen ||
-         current_step() == Step::kNotStarted);
+  DCHECK(current_step() == Step::kNotStarted);
 
   // If no authenticator other than the one for the native Windows API is
   // available, don't show Chrome UI but proceed straight to the native
@@ -175,7 +174,6 @@ void AuthenticatorRequestDialogModel::StartGuidedFlowForTransport(
     AuthenticatorTransport transport,
     bool pair_with_new_device_for_bluetooth_low_energy) {
   DCHECK(current_step() == Step::kTransportSelection ||
-         current_step() == Step::kWelcomeScreen ||
          current_step() == Step::kUsbInsertAndActivate ||
          current_step() == Step::kBleActivate ||
          current_step() == Step::kCableActivate ||
@@ -234,7 +232,6 @@ void AuthenticatorRequestDialogModel::
 void AuthenticatorRequestDialogModel::
     EnsureBleAdapterIsPoweredBeforeContinuingWithStep(Step next_step) {
   DCHECK(current_step() == Step::kTransportSelection ||
-         current_step() == Step::kWelcomeScreen ||
          current_step() == Step::kUsbInsertAndActivate ||
          current_step() == Step::kBleActivate ||
          current_step() == Step::kCableActivate ||

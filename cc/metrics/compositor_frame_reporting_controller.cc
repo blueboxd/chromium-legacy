@@ -5,6 +5,7 @@
 #include "cc/metrics/compositor_frame_reporting_controller.h"
 
 #include "cc/metrics/compositor_frame_reporter.h"
+#include "components/viz/common/frame_timing_details.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 
 namespace cc {
@@ -187,7 +188,7 @@ void CompositorFrameReportingController::DidNotProduceFrame() {
 
 void CompositorFrameReportingController::DidPresentCompositorFrame(
     uint32_t frame_token,
-    base::TimeTicks presentation_time) {
+    const viz::FrameTimingDetails& details) {
   while (!submitted_compositor_frames_.empty()) {
     auto submitted_frame = submitted_compositor_frames_.begin();
     if (viz::FrameTokenGT(submitted_frame->frame_token, frame_token))
@@ -199,8 +200,8 @@ void CompositorFrameReportingController::DidPresentCompositorFrame(
       termination_status =
           CompositorFrameReporter::FrameTerminationStatus::kDidNotPresentFrame;
 
-    submitted_frame->reporter->TerminateFrame(termination_status,
-                                              presentation_time);
+    submitted_frame->reporter->TerminateFrame(
+        termination_status, details.presentation_feedback.timestamp);
     submitted_compositor_frames_.erase(submitted_frame);
   }
 }

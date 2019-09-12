@@ -61,7 +61,7 @@ bool DesktopBrowserFrameAuraLinux::UseCustomFrame() const {
 
   // Hosted app windows get a custom frame (if the desktop PWA experimental
   // feature is enabled).
-  if (browser_view()->IsBrowserTypeHostedApp())
+  if (browser_view()->IsBrowserTypeWebApp())
     return true;
 
   return false;

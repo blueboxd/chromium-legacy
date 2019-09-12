@@ -31,7 +31,7 @@
 
 namespace blink {
 
-SMILAnimationSandwich::SMILAnimationSandwich() {}
+SMILAnimationSandwich::SMILAnimationSandwich() = default;
 
 void SMILAnimationSandwich::Schedule(SVGSMILElement* animation) {
   DCHECK(!sandwich_.Contains(animation));
@@ -42,12 +42,15 @@ void SMILAnimationSandwich::Unschedule(SVGSMILElement* animation) {
   auto* position = std::find(sandwich_.begin(), sandwich_.end(), animation);
   DCHECK(sandwich_.end() != position);
   sandwich_.erase(position);
+  if (animation == ResultElement())
+    animation->ClearAnimatedType();
 }
 
 void SMILAnimationSandwich::Reset() {
-  for (SVGSMILElement* animation : sandwich_) {
+  if (SVGSMILElement* result_element = ResultElement())
+    result_element->ClearAnimatedType();
+  for (SVGSMILElement* animation : sandwich_)
     animation->Reset();
-  }
 }
 
 void SMILAnimationSandwich::UpdateTiming(double elapsed) {
@@ -56,21 +59,13 @@ void SMILAnimationSandwich::UpdateTiming(double elapsed) {
     std::sort(sandwich_.begin(), sandwich_.end(), PriorityCompare(elapsed));
   }
 
-  active_.Shrink(0);
-  active_.ReserveCapacity(sandwich_.size());
-  for (const auto& it_animation : sandwich_) {
-    SVGSMILElement* animation = it_animation.Get();
+  for (const auto& animation : sandwich_) {
     DCHECK(animation->HasValidTarget());
 
-    if (animation->NeedsToProgress(elapsed)) {
-      bool interval_restart = animation->CheckAndUpdateInterval(elapsed);
-      animation->UpdateActiveState(elapsed, interval_restart);
-      active_.push_back(animation);
-    } else if (animation->IsContributing(elapsed)) {
-      active_.push_back(animation);
-    } else {
-      animation->ClearAnimatedType();
-    }
+    if (!animation->NeedsToProgress(elapsed))
+      continue;
+    bool interval_restart = animation->CheckAndUpdateInterval(elapsed);
+    animation->UpdateActiveState(elapsed, interval_restart);
   }
 }
 
@@ -95,30 +90,38 @@ SMILTime SMILAnimationSandwich::NextProgressTime(
 }
 
 void SMILAnimationSandwich::UpdateSyncBases(double elapsed) {
-  for (auto& animation : active_)
+  for (auto& animation : sandwich_)
     animation->UpdateSyncBases();
+}
 
-  auto* it = active_.begin();
-  while (it != active_.end()) {
-    auto* scheduled = it->Get();
-    if (scheduled->IsContributing(elapsed)) {
-      it++;
+SVGSMILElement* SMILAnimationSandwich::ResultElement() const {
+  return !active_.IsEmpty() ? active_.front() : nullptr;
+}
+
+void SMILAnimationSandwich::UpdateActiveAnimationStack(
+    double presentation_time) {
+  SVGSMILElement* old_result_element = ResultElement();
+  active_.Shrink(0);
+  active_.ReserveCapacity(sandwich_.size());
+  // Build the contributing/active sandwich.
+  for (auto& animation : sandwich_) {
+    if (!animation->IsContributing(presentation_time))
       continue;
-    }
-    scheduled->ClearAnimatedType();
-    it = active_.erase(it);
+    active_.push_back(animation);
   }
+  // If we switched result element, clear the old one.
+  if (old_result_element && old_result_element != ResultElement())
+    old_result_element->ClearAnimatedType();
 }
 
 SVGSMILElement* SMILAnimationSandwich::ApplyAnimationValues() {
-  if (active_.IsEmpty())
+  SVGSMILElement* result_element = ResultElement();
+  if (!result_element)
     return nullptr;
-  // Results are accumulated to the first animation that animates and
-  // contributes to a particular element/attribute pair.
+
   // Only reset the animated type to the base value once for
   // the lowest priority animation that animates and
   // contributes to a particular element/attribute pair.
-  SVGSMILElement* result_element = active_.front();
   result_element->ResetAnimatedType();
 
   // Animations have to be applied lowest to highest prio.
@@ -137,10 +140,8 @@ SVGSMILElement* SMILAnimationSandwich::ApplyAnimationValues() {
        sandwich_it++) {
     (*sandwich_it)->UpdateAnimatedValue(result_element);
   }
-  active_.Shrink(0);
 
   result_element->ApplyResultsToTarget();
-
   return result_element;
 }
 

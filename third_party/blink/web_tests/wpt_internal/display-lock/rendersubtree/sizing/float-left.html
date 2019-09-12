@@ -6,6 +6,7 @@
 <link rel="help" href="https://github.com/WICG/display-locking">
 <link rel="match" href="float-left-ref.html">
 <script src="/common/reftest-wait.js"></script>
+<script src="../resources/utils.js"></script>
 
 <style>
 #border {
@@ -13,8 +14,8 @@
   border: 1px solid green;
 }
 #container {
-  contain: style layout;
   float: left;
+  content-size: 123px 456px;
 }
 #child {
   width: 500px;
@@ -33,7 +34,7 @@
 <script>
 async function runTest() {
   const container = document.getElementById("container");
-  await container.displayLock.acquire({ timeout: Infinity, size: [123, 456] });
+  await setInvisible(container);
   takeScreenshot();
 }
 

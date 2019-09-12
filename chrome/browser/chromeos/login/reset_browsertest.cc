@@ -521,8 +521,8 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
   EXPECT_EQ(1, update_engine_client_->rollback_call_count());
   test::OobeJS().ExpectHasClass("revert-promise-view", {"reset"});
 
-  UpdateEngineClient::Status error_update_status;
-  error_update_status.status = UpdateEngineClient::UPDATE_STATUS_ERROR;
+  update_engine::StatusResult error_update_status;
+  error_update_status.set_current_operation(update_engine::Operation::ERROR);
   update_engine_client_->NotifyObserversThatStatusChanged(error_update_status);
   OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
 

@@ -8,7 +8,6 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
-#include "components/sync/driver/sync_service.h"
 
 AvatarButtonErrorController::AvatarButtonErrorController(
     AvatarButtonErrorControllerDelegate* delegate,
@@ -66,8 +65,7 @@ AvatarButtonErrorController::SyncErrorObserver::SyncErrorObserver(
     Profile* profile,
     AvatarButtonErrorController* avatar_button_error_controller)
     : profile_(profile),
-      avatar_button_error_controller_(avatar_button_error_controller),
-      sync_observer_(this) {
+      avatar_button_error_controller_(avatar_button_error_controller) {
   syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   if (sync_service)

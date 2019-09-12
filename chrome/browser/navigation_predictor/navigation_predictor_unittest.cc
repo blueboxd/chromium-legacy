@@ -676,14 +676,14 @@ TEST_F(NavigationPredictorSendUkmMetricsEnabledTest, SendClickUkmMetrics) {
   // ratio area.
   auto all_ukm_entries =
       test_ukm_recorder.GetEntriesByName(LoadUkmEntry::kEntryName);
-  int index = 1;
+  int index = -1;
   for (auto* entry : all_ukm_entries) {
     int entry_ratio_area = static_cast<int>(*test_ukm_recorder.GetEntryMetric(
         entry, LoadUkmEntry::kPercentClickableAreaName));
     if (entry_ratio_area == 100) {
+      index = static_cast<int>(*test_ukm_recorder.GetEntryMetric(
+          entry, LoadUkmEntry::kAnchorIndexName));
       break;
-    } else {
-      index++;
     }
   }
 
@@ -782,43 +782,6 @@ class NavigationPredictorPrefetchAfterPreconnectEnabledTest
     return metrics;
   }
 };
-
-// Tests that a prefetch only occurs for the URL with the highest navigation
-// score in |top_urls_|, not the URL with the highest navigation score overall.
-TEST_F(NavigationPredictorPrefetchAfterPreconnectEnabledTest,
-       PrefetchOnlyURLInTopURLs) {
-  const std::string source = "https://example1.com";
-  const std::string url_to_prefetch = "https://example1.com/large";
-
-  // Simulate the case where the highest navigation score in |navigation_scores|
-  // doesn't contain any of the URLs in |top_urls_| by overriding
-  // |CalculateAnchorNavigationScore| to only take ratio distance into account.
-  std::vector<blink::mojom::AnchorElementMetricsPtr> metrics;
-
-  // The URL with the largest navigation score overall will be that with the
-  // highest ratio distance.
-  metrics.push_back(CreateMetricsPtrWithRatioDistance(
-      source, "https://example2.com/small", 1, 10));
-
-  // However, |top_urls_| will contain the top 10 links that have the highest
-  // ratio area, so the link with the highest ratio distance will not appear
-  // in the list.
-  metrics.push_back(
-      CreateMetricsPtrWithRatioDistance(source, url_to_prefetch, 10, 5));
-  for (int i = 0; i < 9; i++) {
-    metrics.push_back(CreateMetricsPtrWithRatioDistance(
-        source,
-        std::string("https://example2.com/xsmall")
-            .append(base::NumberToString(i)),
-        10, 0));
-  }
-
-  predictor_service()->ReportAnchorElementMetricsOnLoad(std::move(metrics),
-                                                        GetDefaultViewport());
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(prefetch_url().value(), url_to_prefetch);
-}
 
 // Test that a prefetch after preconnect occurs only when the current tab is
 // in the foreground, and that it does not occur multiple times for the same

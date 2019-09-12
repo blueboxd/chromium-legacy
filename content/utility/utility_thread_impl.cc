@@ -25,7 +25,6 @@
 #include "ipc/ipc_sync_channel.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/sandbox/switches.h"
@@ -137,9 +136,10 @@ class ResourceUsageReporterImpl : public mojom::ResourceUsageReporter {
   DISALLOW_COPY_AND_ASSIGN(ResourceUsageReporterImpl);
 };
 
-void CreateResourceUsageReporter(mojom::ResourceUsageReporterRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<ResourceUsageReporterImpl>(),
-                          std::move(request));
+void CreateResourceUsageReporter(
+    mojo::PendingReceiver<mojom::ResourceUsageReporter> receiver) {
+  mojo::MakeSelfOwnedReceiver(std::make_unique<ResourceUsageReporterImpl>(),
+                              std::move(receiver));
 }
 #endif  // !defined(OS_ANDROID)
 

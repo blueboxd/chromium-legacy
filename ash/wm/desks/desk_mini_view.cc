@@ -12,6 +12,7 @@
 #include "ash/wm/desks/desk_preview_view.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_controller.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"

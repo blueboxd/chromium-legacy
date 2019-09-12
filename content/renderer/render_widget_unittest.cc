@@ -179,9 +179,11 @@ class MockWebPagePopup : public StubWebPagePopup {
 
 class InteractiveRenderWidget : public RenderWidget {
  public:
-  explicit InteractiveRenderWidget(CompositorDependencies* compositor_deps)
+  InteractiveRenderWidget(CompositorDependencies* compositor_deps,
+                          PageProperties* page_properties)
       : RenderWidget(++next_routing_id_,
                      compositor_deps,
+                     page_properties,
                      ScreenInfo(),
                      blink::kWebDisplayModeUndefined,
                      false,
@@ -264,7 +266,8 @@ class RenderWidgetUnittest : public testing::Test {
  public:
   // testing::Test implementation.
   void SetUp() override {
-    widget_ = std::make_unique<InteractiveRenderWidget>(&compositor_deps_);
+    widget_ = std::make_unique<InteractiveRenderWidget>(&compositor_deps_,
+                                                        &page_properties_);
   }
 
   void DestroyWidget() {
@@ -289,6 +292,7 @@ class RenderWidgetUnittest : public testing::Test {
   MockRenderProcess render_process_;
   MockRenderThread render_thread_;
   FakeCompositorDependencies compositor_deps_;
+  PageProperties page_properties_;
   std::unique_ptr<InteractiveRenderWidget> widget_;
   base::HistogramTester histogram_tester_;
 };
@@ -448,9 +452,11 @@ TEST_F(RenderWidgetUnittest, AutoResizeAllocatedLocalSurfaceId) {
 
 class PopupRenderWidget : public RenderWidget {
  public:
-  explicit PopupRenderWidget(CompositorDependencies* compositor_deps)
+  PopupRenderWidget(CompositorDependencies* compositor_deps,
+                    PageProperties* page_properties)
       : RenderWidget(routing_id_++,
                      compositor_deps,
+                     page_properties,
                      ScreenInfo(),
                      blink::kWebDisplayModeUndefined,
                      false,
@@ -503,11 +509,13 @@ class RenderWidgetPopupUnittest : public testing::Test {
 
   // testing::Test implementation.
   void SetUp() override {
-    widget_ = std::make_unique<PopupRenderWidget>(&compositor_deps_);
+    widget_ = std::make_unique<PopupRenderWidget>(&compositor_deps_,
+                                                  &page_properties_);
   }
 
   PopupRenderWidget* widget() const { return widget_.get(); }
   FakeCompositorDependencies compositor_deps_;
+  PageProperties page_properties_;
 
  protected:
   base::test::TaskEnvironment task_environment_;
@@ -596,7 +604,7 @@ TEST_F(RenderWidgetPopupUnittest, EmulatingPopupRect) {
   visual_properties.new_size = parent_window_rect.size();
 
   std::unique_ptr<PopupRenderWidget> parent_widget(
-      new PopupRenderWidget(&compositor_deps_));
+      new PopupRenderWidget(&compositor_deps_, &page_properties_));
 
   // Setup emulation on the |parent_widget|.
   parent_widget->OnSynchronizeVisualProperties(visual_properties);

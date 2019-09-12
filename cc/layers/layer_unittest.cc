@@ -1941,5 +1941,9 @@ TEST_F(LayerTestWithLayerLists, SetElementIdUsingLayerLists) {
   EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
 }
 
+TEST(A, B) {
+  LOG(ERROR) << sizeof(Layer);
+}
+
 }  // namespace
 }  // namespace cc

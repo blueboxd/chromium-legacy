@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/device/geolocation/geolocation_impl.h"
 
 namespace device {
@@ -17,9 +17,10 @@ GeolocationContext::GeolocationContext() = default;
 GeolocationContext::~GeolocationContext() = default;
 
 // static
-void GeolocationContext::Create(mojom::GeolocationContextRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<GeolocationContext>(),
-                          std::move(request));
+void GeolocationContext::Create(
+    mojo::PendingReceiver<mojom::GeolocationContext> receiver) {
+  mojo::MakeSelfOwnedReceiver(std::make_unique<GeolocationContext>(),
+                              std::move(receiver));
 }
 
 void GeolocationContext::BindGeolocation(

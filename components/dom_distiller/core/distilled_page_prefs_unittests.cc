@@ -58,7 +58,7 @@ class DistilledPagePrefsTest : public testing::Test {
   std::unique_ptr<DistilledPagePrefs> distilled_page_prefs_;
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
 TEST_F(DistilledPagePrefsTest, TestingOnChangeFontIsBeingCalled) {

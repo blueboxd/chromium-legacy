@@ -34,6 +34,7 @@
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-forward.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom-forward.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-forward.h"
+#include "third_party/blink/public/mojom/locks/lock_manager.mojom-forward.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_ANDROID)
@@ -495,6 +496,13 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void BindIndexedDB(
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver,
       const url::Origin& origin) = 0;
+
+  // Binds |receiver| to an instance of LockManager. This is for internal use
+  // only, and is only exposed here to support MockRenderProcessHost usage in
+  // tests.
+  virtual void CreateLockManager(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::LockManager> receiver) = 0;
 
   // Returns the current number of active views in this process.  Excludes
   // any RenderViewHosts that are swapped out.

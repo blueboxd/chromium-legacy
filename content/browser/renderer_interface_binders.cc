@@ -15,7 +15,6 @@
 #include "content/browser/content_index/content_index_service_impl.h"
 #include "content/browser/cookie_store/cookie_store_context.h"
 #include "content/browser/gpu/gpu_process_host.h"
-#include "content/browser/locks/lock_manager.h"
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/payments/payment_manager.h"
@@ -199,13 +198,6 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
         static_cast<RenderProcessHostImpl*>(host)->BindIndexedDB(
             std::move(receiver), origin);
       }));
-  // TODO(https://crbug.com/873661): Pass origin to FileSystemMananger.
-  parameterized_binder_registry_.AddInterface(base::BindRepeating(
-      [](mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver,
-         RenderProcessHost* host, const url::Origin& origin) {
-        static_cast<RenderProcessHostImpl*>(host)->BindFileSystemManager(
-            origin, std::move(receiver));
-      }));
   if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI)) {
     parameterized_binder_registry_.AddInterface(base::BindRepeating(
         [](mojo::PendingReceiver<blink::mojom::NativeFileSystemManager>
@@ -232,13 +224,6 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
         static_cast<RenderProcessHostImpl*>(host)
             ->permission_service_context()
             .CreateServiceForWorker(std::move(receiver), origin);
-      }));
-  parameterized_binder_registry_.AddInterface(base::BindRepeating(
-      [](blink::mojom::LockManagerRequest request, RenderProcessHost* host,
-         const url::Origin& origin) {
-        static_cast<StoragePartitionImpl*>(host->GetStoragePartition())
-            ->GetLockManager()
-            ->CreateService(std::move(request), origin);
       }));
 
   parameterized_binder_registry_.AddInterface(base::BindRepeating(

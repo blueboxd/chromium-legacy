@@ -59,6 +59,7 @@ import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarPhone;
+import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -994,6 +995,15 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
                     getViewBoundsLeftOfLocationBar(mVisualState) - mUnfocusedLocationBarLayoutLeft;
         }
 
+        // When the dse icon is visible, the LocationBar needs additional translation to compensate
+        // for the dse icon being laid out when focused. This also affects the UrlBar, which is
+        // handled below. See comments in LocationBar#getLocationBarOffsetForFocusAnimation() for
+        // implementation details.
+        if (SearchEngineLogoUtils.shouldShowSearchEngineLogo()) {
+            locationBarBaseTranslationX +=
+                    mLocationBar.getLocationBarOffsetForFocusAnimation(hasFocus());
+        }
+
         boolean isLocationBarRtl = mLocationBar.getLayoutDirection() == LAYOUT_DIRECTION_RTL;
         if (isLocationBarRtl) {
             locationBarBaseTranslationX += mUnfocusedLocationBarLayoutWidth - currentWidth;
@@ -1032,6 +1042,15 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         }
 
         mLocationBar.setTranslationX(locationBarTranslationX);
+
+        // When the dse icon is enabled, the UrlBar needs additional translation to compensate for
+        // the additional translation applied to the LocationBar. See comments in
+        // LocationBar#getUrlBarTranslationXForToolbarAnimation() for implementation details.
+        if (SearchEngineLogoUtils.shouldShowSearchEngineLogo()) {
+            mUrlBar.setTranslationX(mLocationBar.getUrlBarTranslationXForToolbarAnimation(
+                    mUrlExpansionPercent, hasFocus()));
+        }
+
         if (!mExperimentalButtonAnimationRunning) {
             mUrlActionContainer.setTranslationX(getUrlActionsTranslationXForExpansionAnimation(
                     isLocationBarRtl, locationBarBaseTranslationX));

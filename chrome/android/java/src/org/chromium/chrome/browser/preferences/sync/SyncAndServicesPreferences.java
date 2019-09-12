@@ -37,6 +37,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
@@ -170,6 +171,7 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
             assert actionBar != null;
             actionBar.setHomeActionContentDescription(
                     R.string.prefs_sync_and_services_content_description);
+            RecordUserAction.record("Signin_Signin_ShowAdvancedSyncSettings");
         }
 
         PreferenceUtils.addPreferencesFromResource(this, R.xml.sync_and_services_preferences);
@@ -332,7 +334,8 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
                     && wasSigninFlowInterrupted()) {
                 // This flow should only be reached when user toggles sync on.
                 assert (boolean) newValue;
-                mProfileSyncService.setFirstSetupComplete();
+                mProfileSyncService.setFirstSetupComplete(
+                        SyncFirstSetupCompleteSource.ADVANCED_FLOW_INTERRUPTED_TURN_SYNC_ON);
             }
             PostTask.postTask(UiThreadTaskTraits.DEFAULT, this::updatePreferences);
         } else if (PREF_SEARCH_SUGGESTIONS.equals(key)) {
@@ -637,7 +640,8 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
             // error again), but turn sync off.
             assert !mSyncRequested.isChecked();
             SyncPreferenceUtils.enableSync(false);
-            mProfileSyncService.setFirstSetupComplete();
+            mProfileSyncService.setFirstSetupComplete(
+                    SyncFirstSetupCompleteSource.ADVANCED_FLOW_INTERRUPTED_LEAVE_SYNC_OFF);
         }
         if (!mIsFromSigninScreen) return false; // Let parent activity handle it.
         showCancelSyncDialog();
@@ -654,7 +658,8 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
     private void confirmSettings() {
         RecordUserAction.record("Signin_Signin_ConfirmAdvancedSyncSettings");
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_MANUAL_START_ANDROID)) {
-            ProfileSyncService.get().setFirstSetupComplete();
+            ProfileSyncService.get().setFirstSetupComplete(
+                    SyncFirstSetupCompleteSource.ADVANCED_FLOW_CONFIRM);
         }
         UnifiedConsentServiceBridge.recordSyncSetupDataTypesHistogram();
         // Settings will be applied when mSyncSetupInProgressHandle is released in onDestroy.

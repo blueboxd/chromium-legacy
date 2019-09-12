@@ -6,12 +6,11 @@
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_COOKIE_CONTROLS_BUBBLE_VIEW_H_
 
 #include "base/macros.h"
+#include "chrome/browser/ui/cookie_controls/cookie_controls_controller.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "ui/views/controls/button/button.h"
-
-class CookieControlsController;
 
 namespace content {
 class WebContents;

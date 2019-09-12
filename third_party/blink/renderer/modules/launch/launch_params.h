@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_LAUNCH_LAUNCH_PARAMS_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_LAUNCH_LAUNCH_PARAMS_H_
 
-#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_handle.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"

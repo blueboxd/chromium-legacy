@@ -42,10 +42,14 @@ labeled as such (*Needs=Feedback* or *Needs=TestConfirmation*).
   filing a bug is not appropriate.  These bugs **must have an owner** for
   follow-up; they cannot be left "Available*.  More details available
   [below](#How-to-triage-alerts).
-* Every month (the first Thursday of the month), the triage engineer should
+* Every week on Thursday, the triage engineer should
   look over [all bugs with *Needs=Feedback*](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=component%3AUI%3EBrowser%3EOmnibox+Needs%3DFeedback+&colspec=ID+Pri+M+Stars+ReleaseBlock+Component+Status+Owner+Summary+OS+Modified&x=m&y=releaseblock&cells=ids)
-  and should take action on those that have been sitting for too long (ping the
-  reporter, close if unactionable, etc.).
+  and should take action on those that have been sitting for too long.
+  * If there's been no feedback over a week since the label was added, ping the
+    reporter (or whoever's being asked for feedback) and politely ask them to
+    provide feedback.
+  * If there's been no feedback for over a week since the last ping, and no one
+    can reproduce the issue, close it as WontFix.
 
 Other team members are welcome to triage a bug if they see it before the the
 triage engineer.  The triager owner will cycle among team members by

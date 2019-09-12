@@ -127,6 +127,7 @@ void EasyUnlockServiceRegular::LoadRemoteDevices() {
     // OnFeatureStatesChanged() will call back on this method when feature state
     // changes.
     PA_LOG(VERBOSE) << "Smart Lock is not enabled by user; aborting.";
+    SetStoredRemoteDevices(base::ListValue());
     SetProximityAuthDevices(GetAccountId(), multidevice::RemoteDeviceRefList(),
                             base::nullopt /* local_device */);
     return;
@@ -148,6 +149,7 @@ void EasyUnlockServiceRegular::LoadRemoteDevices() {
   } else {
     PA_LOG(ERROR) << "Smart Lock is enabled by user, but no unlock key is "
                      "present; aborting.";
+    SetStoredRemoteDevices(base::ListValue());
     SetProximityAuthDevices(GetAccountId(), multidevice::RemoteDeviceRefList(),
                             base::nullopt /* local_device */);
 
@@ -292,17 +294,6 @@ AccountId EasyUnlockServiceRegular::GetAccountId() const {
   return primary_user->GetAccountId();
 }
 
-void EasyUnlockServiceRegular::SetHardlockAfterKeyOperation(
-    EasyUnlockScreenlockStateHandler::HardlockState state_on_success,
-    bool success) {
-  if (success)
-    SetHardlockStateForUser(GetAccountId(), state_on_success);
-
-  // Even if the refresh keys operation suceeded, we still fetch and check the
-  // cryptohome keys against the keys in local preferences as a sanity check.
-  CheckCryptohomeKeysAndMaybeHardlock();
-}
-
 void EasyUnlockServiceRegular::ClearPermitAccess() {
   DictionaryPrefUpdate pairing_update(profile()->GetPrefs(),
                                       prefs::kEasyUnlockPairing);
@@ -319,10 +310,12 @@ const base::ListValue* EasyUnlockServiceRegular::GetRemoteDevices() const {
 }
 
 std::string EasyUnlockServiceRegular::GetChallenge() const {
+  NOTREACHED();
   return std::string();
 }
 
 std::string EasyUnlockServiceRegular::GetWrappedSecret() const {
+  NOTREACHED();
   return std::string();
 }
 
@@ -338,31 +331,29 @@ void EasyUnlockServiceRegular::RecordPasswordLoginEvent(
 }
 
 void EasyUnlockServiceRegular::InitializeInternal() {
-  // If |device_sync_client_| is not ready yet, wait for it to call back on
-  // OnReady().
-  if (device_sync_client_->is_ready())
-    OnReady();
-
-  device_sync_client_->AddObserver(this);
-
-  OnFeatureStatesChanged(multidevice_setup_client_->GetFeatureStates());
-
-  multidevice_setup_client_->AddObserver(this);
-
-  proximity_auth::ScreenlockBridge::Get()->AddObserver(this);
-
   pref_manager_.reset(new proximity_auth::ProximityAuthProfilePrefManager(
       profile()->GetPrefs(), multidevice_setup_client_));
   pref_manager_->StartSyncingToLocalState(g_browser_process->local_state(),
                                           GetAccountId());
-
-  LoadRemoteDevices();
 
   registrar_.Init(profile()->GetPrefs());
   registrar_.Add(
       proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled,
       base::Bind(&EasyUnlockServiceRegular::RefreshCryptohomeKeysIfPossible,
                  weak_ptr_factory_.GetWeakPtr()));
+
+  // If |device_sync_client_| is not ready yet, wait for it to call back on
+  // OnReady().
+  if (device_sync_client_->is_ready())
+    OnReady();
+  device_sync_client_->AddObserver(this);
+
+  OnFeatureStatesChanged(multidevice_setup_client_->GetFeatureStates());
+  multidevice_setup_client_->AddObserver(this);
+
+  proximity_auth::ScreenlockBridge::Get()->AddObserver(this);
+
+  LoadRemoteDevices();
 }
 
 void EasyUnlockServiceRegular::ShutdownInternal() {
@@ -499,11 +490,6 @@ void EasyUnlockServiceRegular::ShowNotificationIfNewDevicePresent(
       notification_controller_->ShowPairingChangeNotification();
     }
   }
-}
-
-void EasyUnlockServiceRegular::OnForceSyncCompleted(bool success) {
-  if (!success)
-    PA_LOG(WARNING) << "Failed to force device sync.";
 }
 
 void EasyUnlockServiceRegular::OnScreenDidLock(

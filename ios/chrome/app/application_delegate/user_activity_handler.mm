@@ -209,7 +209,9 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
   BOOL handledShortcutItem =
       [UserActivityHandler handleShortcutItem:shortcutItem
                            startupInformation:startupInformation];
-  if (handledShortcutItem) {
+  BOOL isActive = [[UIApplication sharedApplication] applicationState] ==
+                  UIApplicationStateActive;
+  if (handledShortcutItem && isActive) {
     [UserActivityHandler
         handleStartupParametersWithTabOpener:tabOpener
                           startupInformation:startupInformation

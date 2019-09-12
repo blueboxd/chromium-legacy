@@ -2277,41 +2277,84 @@ TEST_F(AlternateProtocolServerPropertiesTest,
   EXPECT_EQ(expected_json, alternative_service_info_json);
 }
 
-typedef HttpServerPropertiesTest SupportsQuicServerPropertiesTest;
-
-TEST_F(SupportsQuicServerPropertiesTest, Set) {
-  HostPortPair quic_server_google("www.google.com", 443);
+TEST_F(HttpServerPropertiesTest, LoadLastLocalAddressWhenQuicWorked) {
+  const IPAddress kEmptyAddress;
+  const IPAddress kValidAddress1 = IPAddress::IPv4Localhost();
+  const IPAddress kValidAddress2 = IPAddress::IPv6Localhost();
 
   // Check by initializing empty address.
-  IPAddress initial_address;
-  impl_.OnSupportsQuicLoadedForTesting(initial_address);
-
-  IPAddress address;
-  EXPECT_FALSE(impl_.GetSupportsQuic(&address));
-  EXPECT_TRUE(address.empty());
+  impl_.OnLastLocalAddressWhenQuicWorkedForTesting(kEmptyAddress);
+  EXPECT_FALSE(impl_.HasLastLocalAddressWhenQuicWorked());
+  // Empty address should not be considered an address that was used when QUIC
+  // worked.
+  EXPECT_FALSE(impl_.WasLastLocalAddressWhenQuicWorked(kEmptyAddress));
+  EXPECT_FALSE(impl_.WasLastLocalAddressWhenQuicWorked(kValidAddress1));
+  EXPECT_FALSE(impl_.WasLastLocalAddressWhenQuicWorked(kValidAddress2));
 
   // Check by initializing with a valid address.
-  initial_address = IPAddress::IPv4Localhost();
-  impl_.OnSupportsQuicLoadedForTesting(initial_address);
+  impl_.OnLastLocalAddressWhenQuicWorkedForTesting(kValidAddress1);
+  EXPECT_TRUE(impl_.HasLastLocalAddressWhenQuicWorked());
+  EXPECT_FALSE(impl_.WasLastLocalAddressWhenQuicWorked(kEmptyAddress));
+  EXPECT_TRUE(impl_.WasLastLocalAddressWhenQuicWorked(kValidAddress1));
+  EXPECT_FALSE(impl_.WasLastLocalAddressWhenQuicWorked(kValidAddress2));
 
-  EXPECT_TRUE(impl_.GetSupportsQuic(&address));
-  EXPECT_EQ(initial_address, address);
+  // Try another valid address.
+  impl_.OnLastLocalAddressWhenQuicWorkedForTesting(kValidAddress2);
+  EXPECT_TRUE(impl_.HasLastLocalAddressWhenQuicWorked());
+  EXPECT_FALSE(impl_.WasLastLocalAddressWhenQuicWorked(kEmptyAddress));
+  EXPECT_FALSE(impl_.WasLastLocalAddressWhenQuicWorked(kValidAddress1));
+  EXPECT_TRUE(impl_.WasLastLocalAddressWhenQuicWorked(kValidAddress2));
+
+  // And loading an empty address clears the current one.
+  // TODO(mmenke): This seems like a bug, since if we've learned the current
+  // network supports QUIC, surely we want to save that to disk? Seems like a
+  // pre-existing value should take precedence, if non-empty, since if the
+  // current network is already known to support QUIC, the loaded value is no
+  // longer relevant.
+  impl_.OnLastLocalAddressWhenQuicWorkedForTesting(kEmptyAddress);
+  EXPECT_FALSE(impl_.HasLastLocalAddressWhenQuicWorked());
+  EXPECT_FALSE(impl_.WasLastLocalAddressWhenQuicWorked(kEmptyAddress));
+  EXPECT_FALSE(impl_.WasLastLocalAddressWhenQuicWorked(kValidAddress1));
+  EXPECT_FALSE(impl_.WasLastLocalAddressWhenQuicWorked(kValidAddress2));
 }
 
-TEST_F(SupportsQuicServerPropertiesTest, SetSupportsQuic) {
-  IPAddress address;
-  EXPECT_FALSE(impl_.GetSupportsQuic(&address));
-  EXPECT_TRUE(address.empty());
+TEST_F(HttpServerPropertiesTest, SetLastLocalAddressWhenQuicWorked) {
+  const IPAddress kEmptyAddress;
+  const IPAddress kValidAddress1 = IPAddress::IPv4Localhost();
+  const IPAddress kValidAddress2 = IPAddress::IPv6Localhost();
 
-  IPAddress actual_address(127, 0, 0, 1);
-  impl_.SetSupportsQuic(true, actual_address);
+  EXPECT_FALSE(impl_.HasLastLocalAddressWhenQuicWorked());
+  EXPECT_FALSE(impl_.WasLastLocalAddressWhenQuicWorked(kEmptyAddress));
+  EXPECT_FALSE(impl_.WasLastLocalAddressWhenQuicWorked(kValidAddress1));
+  EXPECT_FALSE(impl_.WasLastLocalAddressWhenQuicWorked(kValidAddress2));
 
-  EXPECT_TRUE(impl_.GetSupportsQuic(&address));
-  EXPECT_EQ(actual_address, address);
+  // Set to a valid address.
+  impl_.SetLastLocalAddressWhenQuicWorked(kValidAddress1);
+  EXPECT_TRUE(impl_.HasLastLocalAddressWhenQuicWorked());
+  EXPECT_FALSE(impl_.WasLastLocalAddressWhenQuicWorked(kEmptyAddress));
+  EXPECT_TRUE(impl_.WasLastLocalAddressWhenQuicWorked(kValidAddress1));
+  EXPECT_FALSE(impl_.WasLastLocalAddressWhenQuicWorked(kValidAddress2));
 
+  // Clear only this value.
+  impl_.ClearLastLocalAddressWhenQuicWorked();
+  EXPECT_FALSE(impl_.HasLastLocalAddressWhenQuicWorked());
+  EXPECT_FALSE(impl_.WasLastLocalAddressWhenQuicWorked(kEmptyAddress));
+  EXPECT_FALSE(impl_.WasLastLocalAddressWhenQuicWorked(kValidAddress1));
+  EXPECT_FALSE(impl_.WasLastLocalAddressWhenQuicWorked(kValidAddress2));
+
+  // Try another valid address.
+  impl_.SetLastLocalAddressWhenQuicWorked(kValidAddress2);
+  EXPECT_TRUE(impl_.HasLastLocalAddressWhenQuicWorked());
+  EXPECT_FALSE(impl_.WasLastLocalAddressWhenQuicWorked(kEmptyAddress));
+  EXPECT_FALSE(impl_.WasLastLocalAddressWhenQuicWorked(kValidAddress1));
+  EXPECT_TRUE(impl_.WasLastLocalAddressWhenQuicWorked(kValidAddress2));
+
+  // Clear all values.
   impl_.Clear(base::OnceClosure());
-
-  EXPECT_FALSE(impl_.GetSupportsQuic(&address));
+  EXPECT_FALSE(impl_.HasLastLocalAddressWhenQuicWorked());
+  EXPECT_FALSE(impl_.WasLastLocalAddressWhenQuicWorked(kEmptyAddress));
+  EXPECT_FALSE(impl_.WasLastLocalAddressWhenQuicWorked(kValidAddress1));
+  EXPECT_FALSE(impl_.WasLastLocalAddressWhenQuicWorked(kValidAddress2));
 }
 
 TEST_F(HttpServerPropertiesTest, LoadServerNetworkStats) {

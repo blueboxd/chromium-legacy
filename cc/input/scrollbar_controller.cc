@@ -26,38 +26,13 @@ ScrollbarController::ScrollbarController(
     : layer_tree_host_impl_(layer_tree_host_impl),
       scrollbar_scroll_is_active_(false),
       currently_captured_scrollbar_(nullptr),
-      previous_pointer_position_(gfx::PointF(0, 0)),
+      last_known_pointer_position_(gfx::PointF(0, 0)),
       drag_processed_for_current_frame_(false),
       cancelable_autoscroll_task_(nullptr) {}
 
 void ScrollbarController::WillBeginImplFrame() {
   drag_processed_for_current_frame_ = false;
-  if (!autoscroll_state_.has_value())
-    return;
-
-  // TODO(arakeri): Revisit this when addressing crbug.com/967004. The
-  // animations need to be aborted/restarted based on the pointer location (i.e
-  // leaving/entering the track/arrows, reaching the track end etc). The
-  // autoscroll_state_ however, needs to be reset on pointer changes.
-  if (ShouldCancelTrackAutoscroll())
-    layer_tree_host_impl_->mutator_host()->ScrollAnimationAbort();
-
-  // When the scroller is autoscrolling forward, its dimensions need to be
-  // monitored. If the length of the scroller layer increases, the old one needs
-  // to be aborted and a new autoscroll animation needs to start. This needs to
-  // be done only for the "autoscroll forward" case. Autoscrolling backward
-  // always has a constant value to animate to (which is '0'. See the function
-  // ScrollbarController::StartAutoScrollAnimation).
-  if (autoscroll_state_->direction == AutoScrollDirection::AUTOSCROLL_FORWARD) {
-    const float scroll_layer_length =
-        currently_captured_scrollbar_->scroll_layer_length();
-    if (autoscroll_state_->scroll_layer_length != scroll_layer_length) {
-      layer_tree_host_impl_->mutator_host()->ScrollAnimationAbort();
-      StartAutoScrollAnimation(
-          autoscroll_state_->velocity,
-          currently_captured_scrollbar_->scroll_element_id());
-    }
-  }
+  RecomputeAutoscrollStateIfNeeded();
 }
 
 gfx::Vector2dF ScrollbarController::GetThumbRelativePoint(
@@ -79,15 +54,18 @@ gfx::Vector2dF ScrollbarController::GetThumbRelativePoint(
 // GSU.
 InputHandlerPointerResult ScrollbarController::HandlePointerDown(
     const gfx::PointF position_in_widget) {
-  InputHandlerPointerResult scroll_result;
   LayerImpl* layer_impl = GetLayerHitByPoint(position_in_widget);
 
   // If a non-custom scrollbar layer was not found, we return early as there is
-  // no point in setting additional state in the ScrollbarController.
+  // no point in setting additional state in the ScrollbarController. Return an
+  // empty InputHandlerPointerResult in this case so that when it is bubbled up
+  // to InputHandlerProxy::RouteToTypeSpecificHandler, the pointer event gets
+  // passed on to the main thread.
   if (!(layer_impl && layer_impl->ToScrollbarLayer()))
-    return scroll_result;
+    return InputHandlerPointerResult();
 
   currently_captured_scrollbar_ = layer_impl->ToScrollbarLayer();
+  InputHandlerPointerResult scroll_result;
   scroll_result.target_scroller =
       currently_captured_scrollbar_->scroll_element_id();
   scroll_result.type = PointerResultType::kScrollbarScroll;
@@ -96,7 +74,7 @@ InputHandlerPointerResult ScrollbarController::HandlePointerDown(
       GetScrollbarPartFromPointerDown(position_in_widget);
   scroll_result.scroll_offset = GetScrollOffsetForScrollbarPart(
       scrollbar_part, currently_captured_scrollbar_->orientation());
-  previous_pointer_position_ = position_in_widget;
+  last_known_pointer_position_ = position_in_widget;
   scrollbar_scroll_is_active_ = true;
   if (scrollbar_part == ScrollbarPart::THUMB) {
     scroll_result.scroll_units =
@@ -120,7 +98,8 @@ InputHandlerPointerResult ScrollbarController::HandlePointerDown(
             &ScrollbarController::StartAutoScrollAnimation,
             base::Unretained(this),
             InitialDeltaToAutoscrollVelocity(scroll_result.scroll_offset),
-            currently_captured_scrollbar_->scroll_element_id()));
+            currently_captured_scrollbar_->scroll_element_id(),
+            scrollbar_part));
     layer_tree_host_impl_->task_runner_provider()
         ->ImplThreadTaskRunner()
         ->PostDelayedTask(FROM_HERE, cancelable_autoscroll_task_->callback(),
@@ -164,7 +143,8 @@ gfx::ScrollOffset ScrollbarController::GetScrollOffsetForDragPosition(
 // Performs hit test and prepares scroll deltas that will be used by GSU.
 InputHandlerPointerResult ScrollbarController::HandleMouseMove(
     const gfx::PointF position_in_widget) {
-  previous_pointer_position_ = position_in_widget;
+  last_known_pointer_position_ = position_in_widget;
+  RecomputeAutoscrollStateIfNeeded();
   InputHandlerPointerResult scroll_result;
 
   // If a thumb drag is not in progress or if a GSU was already produced for a
@@ -279,9 +259,9 @@ float ScrollbarController::GetScrollerToScrollbarRatio() {
   return scaled_scroller_to_scrollbar_ratio;
 }
 
-bool ScrollbarController::ShouldCancelTrackAutoscroll() {
-  // This function should only ever be called if an autoscroll is in progress.
-  DCHECK(autoscroll_state_.has_value());
+void ScrollbarController::RecomputeAutoscrollStateIfNeeded() {
+  if (!autoscroll_state_.has_value())
+    return;
 
   layer_tree_host_impl_->active_tree()->UpdateScrollbarGeometries();
   const ScrollbarOrientation orientation =
@@ -291,10 +271,10 @@ bool ScrollbarController::ShouldCancelTrackAutoscroll() {
 
   bool clipped;
   gfx::PointF scroller_relative_position(
-      GetScrollbarRelativePosition(previous_pointer_position_, &clipped));
+      GetScrollbarRelativePosition(last_known_pointer_position_, &clipped));
 
   if (clipped)
-    return false;
+    return;
 
   // Based on the orientation of the scrollbar and the direction of the
   // autoscroll, the code below makes a decision of whether the track autoscroll
@@ -312,15 +292,49 @@ bool ScrollbarController::ShouldCancelTrackAutoscroll() {
     pointer_position = scroller_relative_position.x();
   }
 
+  // If the thumb reaches the pointer while autoscrolling, abort.
   if ((autoscroll_state_->direction ==
            AutoScrollDirection::AUTOSCROLL_FORWARD &&
        thumb_end > pointer_position) ||
       (autoscroll_state_->direction ==
            AutoScrollDirection::AUTOSCROLL_BACKWARD &&
        thumb_start < pointer_position))
-    return true;
+    layer_tree_host_impl_->mutator_host()->ScrollAnimationAbort();
 
-  return false;
+  // When the scroller is autoscrolling forward, its dimensions need to be
+  // monitored. If the length of the scroller layer increases, the old one needs
+  // to be aborted and a new autoscroll animation needs to start. This needs to
+  // be done only for the "autoscroll forward" case. Autoscrolling backward
+  // always has a constant value to animate to (which is '0'. See the function
+  // ScrollbarController::StartAutoScrollAnimation).
+  if (autoscroll_state_->direction == AutoScrollDirection::AUTOSCROLL_FORWARD) {
+    const float scroll_layer_length =
+        currently_captured_scrollbar_->scroll_layer_length();
+    if (autoscroll_state_->scroll_layer_length != scroll_layer_length) {
+      layer_tree_host_impl_->mutator_host()->ScrollAnimationAbort();
+      StartAutoScrollAnimation(
+          autoscroll_state_->velocity,
+          currently_captured_scrollbar_->scroll_element_id(),
+          autoscroll_state_->pressed_scrollbar_part);
+    }
+  }
+
+  // The animations need to be aborted/restarted based on the pointer location
+  // (i.e leaving/entering the track/arrows, reaching the track end etc). The
+  // autoscroll_state_ however, needs to be reset on pointer changes.
+  const gfx::RectF scrollbar_part_rect(
+      GetRectForScrollbarPart(autoscroll_state_->pressed_scrollbar_part));
+  if (!scrollbar_part_rect.Contains(scroller_relative_position)) {
+    // Stop animating if pointer moves outside the rect bounds.
+    layer_tree_host_impl_->mutator_host()->ScrollAnimationAbort();
+  } else if (scrollbar_part_rect.Contains(scroller_relative_position) &&
+             !layer_tree_host_impl_->mutator_host()->IsElementAnimating(
+                 currently_captured_scrollbar_->scroll_element_id())) {
+    // Start animating if pointer re-enters the bounds.
+    StartAutoScrollAnimation(autoscroll_state_->velocity,
+                             currently_captured_scrollbar_->scroll_element_id(),
+                             autoscroll_state_->pressed_scrollbar_part);
+  }
 }
 
 // Helper to calculate the autoscroll velocity.
@@ -333,8 +347,10 @@ float ScrollbarController::InitialDeltaToAutoscrollVelocity(
   return scroll_delta * kAutoscrollMultiplier;
 }
 
-void ScrollbarController::StartAutoScrollAnimation(const float velocity,
-                                                   ElementId element_id) {
+void ScrollbarController::StartAutoScrollAnimation(
+    const float velocity,
+    ElementId element_id,
+    ScrollbarPart pressed_scrollbar_part) {
   // Autoscroll and thumb drag are mutually exclusive. Both can't be active at
   // the same time.
   DCHECK(!drag_anchor_relative_to_thumb_.has_value());
@@ -372,6 +388,7 @@ void ScrollbarController::StartAutoScrollAnimation(const float velocity,
   autoscroll_state_ = AutoScrollState();
   autoscroll_state_->velocity = velocity;
   autoscroll_state_->scroll_layer_length = scroll_layer_length;
+  autoscroll_state_->pressed_scrollbar_part = pressed_scrollbar_part;
   autoscroll_state_->direction = velocity < 0
                                      ? AutoScrollDirection::AUTOSCROLL_BACKWARD
                                      : AutoScrollDirection::AUTOSCROLL_FORWARD;
@@ -414,8 +431,7 @@ LayerImpl* ScrollbarController::GetLayerHitByPoint(
   gfx::PointF device_viewport_point = gfx::ScalePoint(
       gfx::PointF(viewport_point), active_tree->device_scale_factor());
   LayerImpl* layer_impl =
-      active_tree->FindFirstScrollingLayerOrScrollbarThatIsHitByPoint(
-          device_viewport_point);
+      active_tree->FindLayerThatIsHitByPoint(device_viewport_point);
 
   return layer_impl;
 }
@@ -478,6 +494,20 @@ ScrollbarPart ScrollbarController::GetScrollbarPartFromPointerDown(
 
   return currently_captured_scrollbar_->IdentifyScrollbarPart(
       scroller_relative_position);
+}
+
+// Determines the corresponding rect for the given scrollbar part.
+gfx::Rect ScrollbarController::GetRectForScrollbarPart(
+    const ScrollbarPart scrollbar_part) {
+  if (scrollbar_part == ScrollbarPart::BACK_BUTTON)
+    return currently_captured_scrollbar_->BackButtonRect();
+  if (scrollbar_part == ScrollbarPart::FORWARD_BUTTON)
+    return currently_captured_scrollbar_->ForwardButtonRect();
+  if (scrollbar_part == ScrollbarPart::BACK_TRACK)
+    return currently_captured_scrollbar_->BackTrackRect();
+  if (scrollbar_part == ScrollbarPart::FORWARD_TRACK)
+    return currently_captured_scrollbar_->ForwardTrackRect();
+  return gfx::Rect(0, 0);
 }
 
 // Determines the scroll offsets based on the ScrollbarPart and the scrollbar

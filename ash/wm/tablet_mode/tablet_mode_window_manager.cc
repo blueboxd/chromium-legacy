@@ -233,27 +233,6 @@ aura::Window* TabletModeWindowManager::GetTopWindow() {
 }
 
 void TabletModeWindowManager::Init() {
-  // If clamshell split view mode is not enabled, still keep the old behavior:
-  // end overview if it's active. And carry over snapped windows to splitscreen
-  // if possible.
-  if (!IsClamshellSplitViewModeEnabled())
-    Shell::Get()->overview_controller()->EndOverview();
-
-  // If clamshell splitview mode is enabled, there are 3 cases when entering
-  // tablet mode:
-  // 1) overview is active but split view is inactive: keep overview active in
-  //    tablet mode.
-  // 2) overview and splitview are both active (splitview can only be active
-  //    when overview is active in clamshell mode): keep overview and splitview
-  //    both active in tablet mode.
-  // 3) overview is inactive: keep the current behavior, i.e.,
-  //    a. if the top window is a snapped window, put it in splitview
-  //    b. if the second top window is also a snapped window and snapped to
-  //       the other side, put it in split view as well. Otherwise, open
-  //       overview on the other side of the screen
-  //    c. if the top window is not a snapped window, maximize all windows
-  //       when entering tablet mode.
-
   {
     ScopedObserveWindowAnimation scoped_observe(GetTopWindow(), this,
                                                 /*exiting_tablet_mode=*/false);
@@ -570,6 +549,27 @@ WindowStateType TabletModeWindowManager::GetDesktopWindowStateType(
 }
 
 void TabletModeWindowManager::ArrangeWindowsForTabletMode() {
+  // If clamshell split view mode is not enabled, still keep the old behavior:
+  // end overview if it's active. And carry over snapped windows to
+  // splitscreen if possible.
+  if (!IsClamshellSplitViewModeEnabled())
+    Shell::Get()->overview_controller()->EndOverview();
+
+  // If clamshell splitview mode is enabled, there are 3 cases when entering
+  // tablet mode:
+  // 1) overview is active but split view is inactive: keep overview active in
+  //    tablet mode.
+  // 2) overview and splitview are both active (splitview can only be active
+  //    when overview is active in clamshell mode): keep overview and splitview
+  //    both active in tablet mode.
+  // 3) overview is inactive: keep the current behavior, i.e.,
+  //    a. if the top window is a snapped window, put it in splitview
+  //    b. if the second top window is also a snapped window and snapped to
+  //       the other side, put it in split view as well. Otherwise, open
+  //       overview on the other side of the screen
+  //    c. if the top window is not a snapped window, maximize all windows
+  //       when entering tablet mode.
+
   // |activatable_windows| includes all windows to be tracked, and that includes
   // windows on the lock screen via |scoped_skip_user_session_blocked_check|.
   ScopedSkipUserSessionBlockedCheck scoped_skip_user_session_blocked_check;

@@ -48,11 +48,6 @@ declare_args() {
   msan_track_origins = 2
 
   # Use dynamic libraries instrumented by one of the sanitizers instead of the
-  # standard system libraries. Set this flag to download prebuilt binaries from
-  # GCS.
-  use_prebuilt_instrumented_libraries = false
-
-  # Use dynamic libraries instrumented by one of the sanitizers instead of the
   # standard system libraries. Set this flag to build the libraries from source.
   use_locally_built_instrumented_libraries = false
 
@@ -122,6 +117,15 @@ declare_args() {
   archive_seed_corpus = true
 }
 
+declare_args() {
+  # Use dynamic libraries instrumented by one of the sanitizers instead of the
+  # standard system libraries. Set this flag to download prebuilt binaries from
+  # GCS.
+  # TODO(thakis): Stop setting this in bot configs, then stop making this
+  # an arg. It should be set exactly when is_msan is on.
+  use_prebuilt_instrumented_libraries = is_msan
+}
+
 # Disable sanitizers for non-default toolchains.
 if (current_toolchain != default_toolchain) {
   is_asan = false
@@ -146,6 +150,9 @@ if (current_toolchain != default_toolchain) {
   use_locally_built_instrumented_libraries = false
   use_sanitizer_coverage = false
 }
+
+assert(is_msan == use_prebuilt_instrumented_libraries,
+       "msan requires using instrumented libraries, but nothing else does")
 
 # Whether we are doing a fuzzer build. Normally this should be checked instead
 # of checking "use_libfuzzer || use_afl" because often developers forget to
@@ -193,9 +200,6 @@ if (use_libfuzzer && is_linux) {
     # We do leak checking with libFuzzer on Linux. Set is_lsan for code that
     # relies on LEAK_SANITIZER define to avoid false positives.
     is_lsan = true
-  }
-  if (is_msan) {
-    use_prebuilt_instrumented_libraries = true
   }
 }
 

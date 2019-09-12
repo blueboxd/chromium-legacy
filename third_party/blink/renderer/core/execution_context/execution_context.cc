@@ -27,6 +27,7 @@
 
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 
+#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"

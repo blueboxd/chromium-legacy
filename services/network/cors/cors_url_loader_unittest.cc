@@ -1220,6 +1220,92 @@ TEST_F(CorsURLLoaderTest, OriginAccessList_Allowed) {
   EXPECT_EQ(net::OK, client().completion_status().error_code);
 }
 
+// Tests if CorsURLLoader takes into account
+// ResourceRequest::isolated_world_origin when consulting OriginAccessList.
+TEST_F(CorsURLLoaderTest, OriginAccessList_IsolatedWorldOrigin) {
+  const GURL main_world_origin("http://main-world.com");
+  const GURL isolated_world_origin("http://isolated-world.com");
+  const GURL url("http://other.com/foo.png");
+
+  AddAllowListEntryForOrigin(url::Origin::Create(isolated_world_origin),
+                             url.scheme(), url.host(),
+                             mojom::CorsDomainMatchMode::kDisallowSubdomains);
+
+  ResourceRequest request;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
+  request.method = net::HttpRequestHeaders::kGetMethod;
+  request.url = url;
+  request.request_initiator = url::Origin::Create(main_world_origin);
+  request.isolated_world_origin = url::Origin::Create(isolated_world_origin);
+  CreateLoaderAndStart(request);
+
+  NotifyLoaderClientOnReceiveResponse();
+  NotifyLoaderClientOnComplete(net::OK);
+
+  RunUntilComplete();
+
+  EXPECT_TRUE(IsNetworkLoaderStarted());
+  EXPECT_FALSE(client().has_received_redirect());
+  EXPECT_TRUE(client().has_received_response());
+  EXPECT_EQ(network::mojom::FetchResponseType::kBasic,
+            client().response_head().response_type);
+  EXPECT_TRUE(client().has_received_completion());
+  EXPECT_EQ(net::OK, client().completion_status().error_code);
+}
+
+// Tests if CorsURLLoader takes into account
+// ResourceRequest::isolated_world_origin when consulting OriginAccessList
+// after redirects.
+TEST_F(CorsURLLoaderTest, OriginAccessList_IsolatedWorldOrigin_Redirect) {
+  const GURL main_world_origin("http://main-world.com");
+  const GURL isolated_world_origin("http://isolated-world.com");
+  const GURL url("http://other.com/foo.png");
+  // |new_url| is same-origin as |url| to avoid tainting the response
+  // in CorsURLLoader::OnReceiveRedirect.
+  const GURL new_url("http://other.com/bar.png");
+
+  AddAllowListEntryForOrigin(url::Origin::Create(isolated_world_origin),
+                             url.scheme(), url.host(),
+                             mojom::CorsDomainMatchMode::kDisallowSubdomains);
+  AddAllowListEntryForOrigin(url::Origin::Create(isolated_world_origin),
+                             new_url.scheme(), new_url.host(),
+                             mojom::CorsDomainMatchMode::kDisallowSubdomains);
+
+  ResourceRequest request;
+  // Using no-cors to force opaque response (unless the allowlist entry added
+  // above is taken into account).
+  request.mode = mojom::RequestMode::kNoCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
+  request.method = net::HttpRequestHeaders::kGetMethod;
+  request.url = url;
+  request.request_initiator = url::Origin::Create(main_world_origin);
+  request.isolated_world_origin = url::Origin::Create(isolated_world_origin);
+  CreateLoaderAndStart(request);
+
+  NotifyLoaderClientOnReceiveRedirect(CreateRedirectInfo(301, "GET", new_url));
+  RunUntilRedirectReceived();
+
+  EXPECT_TRUE(IsNetworkLoaderStarted());
+  EXPECT_FALSE(client().has_received_completion());
+  EXPECT_FALSE(client().has_received_response());
+  EXPECT_TRUE(client().has_received_redirect());
+
+  FollowRedirect();
+  NotifyLoaderClientOnReceiveResponse();
+  NotifyLoaderClientOnComplete(net::OK);
+
+  RunUntilComplete();
+
+  EXPECT_TRUE(IsNetworkLoaderStarted());
+  EXPECT_TRUE(client().has_received_redirect());
+  EXPECT_TRUE(client().has_received_response());
+  EXPECT_EQ(network::mojom::FetchResponseType::kBasic,
+            client().response_head().response_type);
+  EXPECT_TRUE(client().has_received_completion());
+  EXPECT_EQ(net::OK, client().completion_status().error_code);
+}
+
 // Check if higher-priority block list wins.
 TEST_F(CorsURLLoaderTest, OriginAccessList_Blocked) {
   const GURL origin("http://example.com");

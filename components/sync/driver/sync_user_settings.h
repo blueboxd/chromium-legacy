@@ -16,6 +16,18 @@
 
 namespace syncer {
 
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class SyncFirstSetupCompleteSource {
+  BASIC_FLOW = 0,
+  ADVANCED_FLOW_CONFIRM = 1,
+  ADVANCED_FLOW_INTERRUPTED_TURN_SYNC_ON = 2,
+  ADVANCED_FLOW_INTERRUPTED_LEAVE_SYNC_OFF = 3,
+  ENGINE_INITIALIZED_WITH_AUTO_START = 4,
+  kMaxValue = ENGINE_INITIALIZED_WITH_AUTO_START,
+};
+
 // This class encapsulates all the user-configurable bits of Sync.
 class SyncUserSettings : public syncer::DataTypeEncryptionHandler {
  public:
@@ -40,7 +52,7 @@ class SyncUserSettings : public syncer::DataTypeEncryptionHandler {
   // NOTE: On Android and ChromeOS, this gets set automatically, so it doesn't
   // really mean anything. See |browser_defaults::kSyncAutoStarts|.
   virtual bool IsFirstSetupComplete() const = 0;
-  virtual void SetFirstSetupComplete() = 0;
+  virtual void SetFirstSetupComplete(SyncFirstSetupCompleteSource source) = 0;
 
   // The user's selected types. The "sync everything" flag means to sync all
   // current and future data types. If it is set, then GetSelectedTypes() will

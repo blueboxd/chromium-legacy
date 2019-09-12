@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/html/media/media_element_parser_helpers.h"
+
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"

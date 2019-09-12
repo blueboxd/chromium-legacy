@@ -1077,6 +1077,7 @@ const IDNTestCase kIdnCases[] = {
     {"xn--est-118d.net", L"七est.net", false},
     {"xn--est-918d.net", L"丅est.net", false},
     {"xn--est-e28d.net", L"丆est.net", false},
+    {"xn--est-t18d.net", L"丁est.net", false},
     {"xn--3-cq6a.com", L"丩3.com", false},
     {"xn--cxe-n68d.com", L"c丫xe.com", false},
     {"xn--cye-b98d.com", L"cy乂e.com", false},

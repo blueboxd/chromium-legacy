@@ -73,10 +73,13 @@ class TestSavePasswordInfoBarDelegate : public SavePasswordInfoBarDelegate {
   TestSavePasswordInfoBarDelegate(
       content::WebContents* web_contents,
       std::unique_ptr<password_manager::PasswordFormManager> form_to_save,
-      bool is_smartlock_branding_enabled)
+      bool is_smartlock_branding_enabled,
+      std::unique_ptr<password_manager::SavingFlowMetricsRecorder>
+          saving_flow_recorder)
       : SavePasswordInfoBarDelegate(web_contents,
                                     std::move(form_to_save),
-                                    is_smartlock_branding_enabled) {}
+                                    is_smartlock_branding_enabled,
+                                    std::move(saving_flow_recorder)) {}
 
   ~TestSavePasswordInfoBarDelegate() override = default;
 };
@@ -163,11 +166,10 @@ SavePasswordInfoBarDelegateTest::CreateDelegate(
     std::unique_ptr<password_manager::PasswordFormManager>
         password_form_manager,
     bool is_smartlock_branding_enabled) {
-  std::unique_ptr<PasswordManagerInfoBarDelegate> delegate(
-      new TestSavePasswordInfoBarDelegate(web_contents(),
-                                          std::move(password_form_manager),
-                                          is_smartlock_branding_enabled));
-  return delegate;
+  return std::make_unique<TestSavePasswordInfoBarDelegate>(
+      web_contents(), std::move(password_form_manager),
+      is_smartlock_branding_enabled,
+      std::make_unique<password_manager::SavingFlowMetricsRecorder>());
 }
 
 void SavePasswordInfoBarDelegateTest::SetUp() {

@@ -457,17 +457,21 @@ void PoissonAllocationSampler::DoRecordAlloc(intptr_t accumulated_bytes,
     return;
 
   ScopedMuteThreadSamples no_reentrancy_scope;
-  AutoLock lock(mutex_);
+  std::vector<SamplesObserver*> observers_copy;
+  {
+    AutoLock lock(mutex_);
 
-  // TODO(alph): Sometimes RecordAlloc is called twice in a row without
-  // a RecordFree in between. Investigate it.
-  if (sampled_addresses_set().Contains(address))
-    return;
-  sampled_addresses_set().Insert(address);
-  BalanceAddressesHashSet();
+    // TODO(alph): Sometimes RecordAlloc is called twice in a row without
+    // a RecordFree in between. Investigate it.
+    if (sampled_addresses_set().Contains(address))
+      return;
+    sampled_addresses_set().Insert(address);
+    BalanceAddressesHashSet();
+    observers_copy = observers_;
+  }
 
   size_t total_allocated = mean_interval * samples;
-  for (auto* observer : observers_)
+  for (auto* observer : observers_copy)
     observer->SampleAdded(address, size, total_allocated, type, context);
 }
 
@@ -479,10 +483,14 @@ void PoissonAllocationSampler::DoRecordFree(void* address) {
   // thus reenter DoRecordAlloc. However the call chain won't build up further
   // as RecordAlloc accesses are guarded with pthread TLS-based ReentryGuard.
   ScopedMuteThreadSamples no_reentrancy_scope;
-  AutoLock lock(mutex_);
-  for (auto* observer : observers_)
+  std::vector<SamplesObserver*> observers_copy;
+  {
+    AutoLock lock(mutex_);
+    observers_copy = observers_;
+    sampled_addresses_set().Remove(address);
+  }
+  for (auto* observer : observers_copy)
     observer->SampleRemoved(address);
-  sampled_addresses_set().Remove(address);
 }
 
 void PoissonAllocationSampler::BalanceAddressesHashSet() {

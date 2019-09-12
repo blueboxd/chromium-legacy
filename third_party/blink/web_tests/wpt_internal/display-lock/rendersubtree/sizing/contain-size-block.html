@@ -6,6 +6,7 @@
 <link rel="help" href="https://github.com/WICG/display-locking">
 <link rel="match" href="contain-size-block-ref.html">
 <script src="/common/reftest-wait.js"></script>
+<script src="../resources/utils.js"></script>
 
 <style>
 #border {
@@ -14,6 +15,7 @@
 }
 #container {
   contain: style layout size;
+  content-size: none;
 }
 </style>
 
@@ -24,7 +26,7 @@
 <script>
 function runTest() {
   const container = document.getElementById("container");
-  container.displayLock.acquire({ timeout: Infinity, size: [123, 345] }).then(() => {
+  setInvisible(container).then(() => {
     takeScreenshot();
   });
 }

@@ -91,7 +91,9 @@
 
 #if BUILDFLAG(CLANG_COVERAGE)
 #include <stdio.h>
-#include <unistd.h>
+#if defined(OS_WIN)
+#include <io.h>
+#endif
 // Function provided by libclang_rt.profile-*.a, declared and documented at:
 // https://github.com/llvm/llvm-project/blob/master/compiler-rt/lib/profile/InstrProfiling.h
 extern "C" void __llvm_profile_set_file_object(FILE* File, int EnableMerge);
@@ -395,6 +397,11 @@ class ChildProcessImpl : public mojom::ChildProcess {
     // Take the file descriptor so that |file| does not close it.
     int fd = file.TakePlatformFile();
     FILE* f = fdopen(fd, "r+b");
+    __llvm_profile_set_file_object(f, 1);
+#elif defined(OS_WIN)
+    HANDLE handle = file.TakePlatformFile();
+    int fd = _open_osfhandle((intptr_t)handle, 0);
+    FILE* f = _fdopen(fd, "r+b");
     __llvm_profile_set_file_object(f, 1);
 #endif
   }

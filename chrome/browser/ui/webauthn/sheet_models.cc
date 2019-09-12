@@ -122,40 +122,6 @@ void AuthenticatorSheetModelBase::OnModelDestroyed() {
   dialog_model_ = nullptr;
 }
 
-// AuthenticatorWelcomeSheetModel ---------------------------------------------
-
-const gfx::VectorIcon& AuthenticatorWelcomeSheetModel::GetStepIllustration(
-    ImageColorScheme color_scheme) const {
-  return color_scheme == ImageColorScheme::kDark ? kWebauthnWelcomeDarkIcon
-                                                 : kWebauthnWelcomeIcon;
-}
-
-base::string16 AuthenticatorWelcomeSheetModel::GetStepTitle() const {
-  return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_WELCOME_SCREEN_TITLE,
-                                    GetRelyingPartyIdString(dialog_model()));
-}
-
-base::string16 AuthenticatorWelcomeSheetModel::GetStepDescription() const {
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_WELCOME_SCREEN_DESCRIPTION);
-}
-
-bool AuthenticatorWelcomeSheetModel::IsAcceptButtonVisible() const {
-  return true;
-}
-
-bool AuthenticatorWelcomeSheetModel::IsAcceptButtonEnabled() const {
-  return true;
-}
-
-base::string16 AuthenticatorWelcomeSheetModel::GetAcceptButtonLabel() const {
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_WELCOME_SCREEN_NEXT);
-}
-
-void AuthenticatorWelcomeSheetModel::OnAccept() {
-  dialog_model()
-      ->StartGuidedFlowForMostLikelyTransportOrShowTransportSelection();
-}
-
 // AuthenticatorTransportSelectorSheetModel -----------------------------------
 
 bool AuthenticatorTransportSelectorSheetModel::IsBackButtonVisible() const {

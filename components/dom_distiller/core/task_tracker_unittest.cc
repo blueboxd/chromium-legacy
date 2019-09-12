@@ -78,7 +78,7 @@ class DomDistillerTaskTrackerTest : public testing::Test {
   }
 
  protected:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::string entry_id_;
   GURL page_0_url_;
   GURL page_1_url_;

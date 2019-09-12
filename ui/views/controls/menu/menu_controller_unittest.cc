@@ -336,7 +336,8 @@ struct MenuBoundsOptions {
       MenuItemView::MenuPosition::kBestFit;
 };
 
-class MenuControllerTest : public ViewsTestBase {
+class MenuControllerTest : public ViewsTestBase,
+                           public testing::WithParamInterface<bool> {
  public:
   MenuControllerTest() = default;
 
@@ -344,6 +345,12 @@ class MenuControllerTest : public ViewsTestBase {
 
   // ViewsTestBase:
   void SetUp() override {
+    if (testing::UnitTest::GetInstance()->current_test_info()->value_param()) {
+      // Setup right to left environment if necessary.
+      if (GetParam())
+        base::i18n::SetRTLForTesting(true);
+    }
+
     std::unique_ptr<DestructingTestViewsDelegate> views_delegate(
         new DestructingTestViewsDelegate());
     test_views_delegate_ = views_delegate.get();
@@ -378,11 +385,16 @@ class MenuControllerTest : public ViewsTestBase {
                                                  &is_leading);
   }
 
-  gfx::Rect CalculateBubbleMenuBounds(const MenuBoundsOptions& options) {
+  gfx::Rect CalculateBubbleMenuBounds(const MenuBoundsOptions& options,
+                                      MenuItemView* menu_item) {
     SetUpMenuControllerForCalculateBounds(options);
     bool is_leading;
-    return menu_controller_->CalculateBubbleMenuBounds(menu_item_.get(), true,
+    return menu_controller_->CalculateBubbleMenuBounds(menu_item, true,
                                                        &is_leading);
+  }
+
+  gfx::Rect CalculateBubbleMenuBounds(const MenuBoundsOptions& options) {
+    return CalculateBubbleMenuBounds(options, menu_item_.get());
   }
 
 #if defined(USE_AURA)
@@ -545,6 +557,32 @@ class MenuControllerTest : public ViewsTestBase {
 
     // Test that the menu is within the monitor bounds.
     EXPECT_TRUE(options.monitor_bounds.Contains(final_bounds));
+  }
+
+  void TestSubmenuFitsOnScreen(MenuItemView* item,
+                               const gfx::Rect& monitor_bounds,
+                               const gfx::Rect& parent_bounds) {
+    MenuBoundsOptions options;
+    options.menu_anchor = MenuAnchorPosition::kBubbleAbove;
+    options.monitor_bounds = monitor_bounds;
+
+    // Adjust the final bounds to not include the shadow and border.
+    const gfx::Insets border_and_shadow_insets =
+        BubbleBorder::GetBorderAndShadowInsets(
+            MenuConfig::instance().touchable_menu_shadow_elevation);
+
+    MenuItemView* parent_item = item->GetParentMenuItem();
+    SubmenuView* sub_menu = parent_item->GetSubmenu();
+
+    parent_item->SetBoundsRect(parent_bounds);
+    sub_menu->ShowAt(owner(), parent_item->bounds(), false);
+    gfx::Rect final_bounds = CalculateBubbleMenuBounds(options, item);
+    final_bounds.Inset(border_and_shadow_insets);
+    sub_menu->Close();
+
+    EXPECT_TRUE(options.monitor_bounds.Contains(final_bounds))
+        << options.monitor_bounds.ToString() << " does not contain "
+        << final_bounds.ToString();
   }
 
  protected:
@@ -789,6 +827,8 @@ class MenuControllerTest : public ViewsTestBase {
 
   DISALLOW_COPY_AND_ASSIGN(MenuControllerTest);
 };
+
+INSTANTIATE_TEST_SUITE_P(, MenuControllerTest, testing::Bool());
 
 #if defined(USE_X11)
 // Tests that an event targeter which blocks events will be honored by the menu
@@ -1784,7 +1824,7 @@ TEST_F(MenuControllerTest, CalculateMenuBoundsMonitorFitTest) {
 }
 
 // Test that menus show up on screen with non-zero sized anchors.
-TEST_F(MenuControllerTest, TestMenuFitsOnScreen) {
+TEST_P(MenuControllerTest, TestMenuFitsOnScreen) {
   const int display_size = 500;
   // Simulate multiple display layouts.
   for (int x = -1; x <= 1; x++)
@@ -1798,7 +1838,7 @@ TEST_F(MenuControllerTest, TestMenuFitsOnScreen) {
 }
 
 // Test that menus show up on screen with zero sized anchors.
-TEST_F(MenuControllerTest, TestMenuFitsOnScreenSmallAnchor) {
+TEST_P(MenuControllerTest, TestMenuFitsOnScreenSmallAnchor) {
   const int display_size = 500;
   // Simulate multiple display layouts.
   for (int x = -1; x <= 1; x++)
@@ -1811,6 +1851,45 @@ TEST_F(MenuControllerTest, TestMenuFitsOnScreenSmallAnchor) {
                                       monitor_bounds);
       TestMenuFitsOnScreenSmallAnchor(MenuAnchorPosition::kBubbleRight,
                                       monitor_bounds);
+    }
+}
+
+// Test that submenus are displayed within the screen bounds on smaller screens.
+TEST_P(MenuControllerTest, TestSubmenuFitsOnScreen) {
+  menu_controller()->set_use_touchable_layout(true);
+  MenuItemView* sub_item = menu_item()->GetSubmenu()->GetMenuItemAt(0);
+  sub_item->AppendMenuItemWithLabel(11, base::ASCIIToUTF16("Subitem.One"));
+
+  const int menu_width = MenuConfig::instance().touchable_menu_width;
+  const gfx::Size parent_size(menu_width, menu_width);
+
+  const int kDisplayWidth = parent_size.width() * 2;
+  const int kDisplayHeight = parent_size.height() * 2;
+
+  // Simulate multiple display layouts.
+  for (int x = -1; x <= 1; x++)
+    for (int y = -1; y <= 1; y++) {
+      const gfx::Rect monitor_bounds(x * kDisplayWidth, y * kDisplayHeight,
+                                     kDisplayWidth, kDisplayHeight);
+
+      const int x_min = monitor_bounds.x();
+      const int x_max = monitor_bounds.right() - parent_size.width();
+      const int x_mid = (x_min + x_max) / 2;
+
+      const int y_min = monitor_bounds.y();
+      const int y_max = monitor_bounds.bottom() - parent_size.height();
+      const int y_mid = (y_min + y_max) / 2;
+
+      TestSubmenuFitsOnScreen(sub_item, monitor_bounds,
+                              gfx::Rect(gfx::Point(x_min, y_min), parent_size));
+      TestSubmenuFitsOnScreen(sub_item, monitor_bounds,
+                              gfx::Rect(gfx::Point(x_max, y_min), parent_size));
+      TestSubmenuFitsOnScreen(sub_item, monitor_bounds,
+                              gfx::Rect(gfx::Point(x_mid, y_min), parent_size));
+      TestSubmenuFitsOnScreen(sub_item, monitor_bounds,
+                              gfx::Rect(gfx::Point(x_min, y_mid), parent_size));
+      TestSubmenuFitsOnScreen(sub_item, monitor_bounds,
+                              gfx::Rect(gfx::Point(x_min, y_max), parent_size));
     }
 }
 

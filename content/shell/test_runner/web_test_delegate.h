@@ -104,6 +104,8 @@ class WebTestDelegate {
   virtual void EnableAutoResizeMode(const blink::WebSize& min_size,
                                     const blink::WebSize& max_size) = 0;
   virtual void DisableAutoResizeMode(const blink::WebSize& new_size) = 0;
+  // Resets auto resize mode off in between tests, without requiring a size.
+  virtual void ResetAutoResizeMode() = 0;
 
   virtual void NavigateSecondaryWindow(const GURL& url) = 0;
   virtual void InspectSecondaryWindow() = 0;

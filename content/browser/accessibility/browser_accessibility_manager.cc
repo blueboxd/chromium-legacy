@@ -896,8 +896,7 @@ BrowserAccessibility* BrowserAccessibilityManager::PreviousInTreeOrder(
 
   // For android, this needs to be handled carefully. If not, there is a chance
   // of getting into infinite loop.
-  if (can_wrap_to_last_element &&
-      object->GetRole() == ax::mojom::Role::kRootWebArea &&
+  if (can_wrap_to_last_element && object->manager()->GetRoot() == object &&
       object->PlatformChildCount() != 0) {
     return object->PlatformDeepestLastChild();
   }

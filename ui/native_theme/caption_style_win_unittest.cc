@@ -12,8 +12,8 @@
 
 namespace ui {
 
-// Test to ensure closed caption styling from system settings is used on
-// Windows 10.
+// Test to ensure closed caption styling from system settings can be obtained
+// (we obtain a CaptionStyle) on Windows 10.
 TEST(CaptionStyleWinTest, TestWinCaptionStyle) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kSystemCaptionStyle);
@@ -33,6 +33,7 @@ TEST(CaptionStyleWinTest, TestWinCaptionStyle) {
     EXPECT_TRUE(caption_style->text_color.empty());
     EXPECT_TRUE(caption_style->text_shadow.empty());
     EXPECT_TRUE(caption_style->text_size.empty());
+    EXPECT_TRUE(caption_style->window_color.empty());
   }
 }
 

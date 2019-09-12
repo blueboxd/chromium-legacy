@@ -392,13 +392,16 @@ void Transform::Transpose() {
 }
 
 void Transform::FlattenTo2d() {
-  matrix_.set(2, 0, 0.0);
-  matrix_.set(2, 1, 0.0);
-  matrix_.set(0, 2, 0.0);
-  matrix_.set(1, 2, 0.0);
-  matrix_.set(2, 2, 1.0);
-  matrix_.set(3, 2, 0.0);
-  matrix_.set(2, 3, 0.0);
+  float tmp[16];
+  matrix_.asColMajorf(tmp);
+  tmp[2] = 0.0;
+  tmp[6] = 0.0;
+  tmp[8] = 0.0;
+  tmp[9] = 0.0;
+  tmp[10] = 1.0;
+  tmp[11] = 0.0;
+  tmp[14] = 0.0;
+  matrix_.setColMajorf(tmp);
 }
 
 bool Transform::IsFlat() const {

@@ -38,7 +38,7 @@ class SyncUserSettingsImpl : public SyncUserSettings {
   void SetSyncAllowedByPlatform(bool allowed) override;
 
   bool IsFirstSetupComplete() const override;
-  void SetFirstSetupComplete() override;
+  void SetFirstSetupComplete(SyncFirstSetupCompleteSource source) override;
 
   bool IsSyncEverythingEnabled() const override;
   UserSelectableTypeSet GetSelectedTypes() const override;

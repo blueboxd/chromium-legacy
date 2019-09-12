@@ -587,7 +587,6 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
     case PIXEL_FORMAT_I444:
     case PIXEL_FORMAT_NV12:
     case PIXEL_FORMAT_NV21:
-    case PIXEL_FORMAT_UYVY:
     case PIXEL_FORMAT_YUY2:
     case PIXEL_FORMAT_ARGB:
     case PIXEL_FORMAT_XRGB:

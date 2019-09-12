@@ -184,6 +184,7 @@ FrameImpl::FrameImpl(std::unique_ptr<content::WebContents> web_contents,
       context_(context),
       navigation_controller_(web_contents_.get()),
       log_level_(kLogSeverityNone),
+      url_request_rewrite_rules_manager_(web_contents_.get()),
       binding_(this, std::move(frame_request)) {
   web_contents_->SetDelegate(this);
   Observe(web_contents_.get());
@@ -344,6 +345,12 @@ void FrameImpl::AddNewContents(
     case WindowOpenDisposition::NEW_BACKGROUND_TAB:
     case WindowOpenDisposition::NEW_POPUP:
     case WindowOpenDisposition::NEW_WINDOW: {
+      if (url_request_rewrite_rules_manager_.GetCachedRules()) {
+        // There is no support for URL request rules rewriting with popups.
+        *was_blocked = true;
+        return;
+      }
+
       PopupFrameCreationInfoUserData* popup_creation_info =
           reinterpret_cast<PopupFrameCreationInfoUserData*>(
               new_contents->GetUserData(kPopupCreationInfo));
@@ -618,6 +625,15 @@ void FrameImpl::SetPopupFrameCreationListener(
   popup_listener_ = listener.Bind();
   popup_listener_.set_error_handler(
       fit::bind_member(this, &FrameImpl::OnPopupListenerDisconnected));
+}
+
+void FrameImpl::SetUrlRequestRewriteRules(
+    std::vector<fuchsia::web::UrlRequestRewriteRule> rules,
+    SetUrlRequestRewriteRulesCallback callback) {
+  zx_status_t error = url_request_rewrite_rules_manager_.OnRulesUpdated(
+      std::move(rules), std::move(callback));
+  if (error != ZX_OK)
+    binding_.Close(error);
 }
 
 void FrameImpl::CloseContents(content::WebContents* source) {

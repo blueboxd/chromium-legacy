@@ -274,6 +274,8 @@ std::string GetEquivalentAriaRoleString(const ax::mojom::Role role) {
       return "figure";
     case ax::mojom::Role::kFooter:
       return "contentinfo";
+    case ax::mojom::Role::kHeader:
+      return "banner";
     case ax::mojom::Role::kHeading:
       return "heading";
     case ax::mojom::Role::kImage:

@@ -32,6 +32,7 @@ group("closure_compile") {
 
     # Targets for auto-generated Polymer 3 JS Modules
     ":cr_elements_module_resources",
+    "cr_action_menu:closure_compile_module",
     "cr_button:closure_compile_module",
     "cr_checkbox:closure_compile_module",
     "cr_dialog:closure_compile_module",
@@ -39,6 +40,7 @@ group("closure_compile") {
     "cr_expand_button:closure_compile_module",
     "cr_icon_button:closure_compile_module",
     "cr_input:closure_compile_module",
+    "cr_lazy_render:closure_compile_module",
     "cr_link_row:closure_compile_module",
     "cr_radio_button:closure_compile_module",
     "cr_radio_group:closure_compile_module",
@@ -83,6 +85,12 @@ js_library("cr_container_shadow_behavior") {
 
 # Targets for auto-generating Polymer 3 JS Modules.
 
+polymer_modulizer("action_link_css") {
+  js_file = "action_link_css.m.js"
+  html_file = "action_link_css.html"
+  html_type = "style-module"
+}
+
 polymer_modulizer("shared_vars_css") {
   js_file = "shared_vars_css.m.js"
   html_file = "shared_vars_css.html"
@@ -126,6 +134,7 @@ js_modulizer("modulize") {
 
 group("polymer3_elements") {
   deps = [
+    ":action_link_css_module",
     ":cr_icons_css_module",
     ":hidden_style_css_module",
     ":icons_module",
@@ -133,6 +142,8 @@ group("polymer3_elements") {
     ":modulize",
     ":shared_style_css_module",
     ":shared_vars_css_module",
+    "cr_action_menu:cr_action_menu_module",
+    "cr_action_menu:modulize",
     "cr_button:cr_button_module",
     "cr_checkbox:cr_checkbox_module",
     "cr_dialog:cr_dialog_module",
@@ -141,6 +152,7 @@ group("polymer3_elements") {
     "cr_icon_button:cr_icon_button_module",
     "cr_input:cr_input_module",
     "cr_input:cr_input_style_css_module",
+    "cr_lazy_render:cr_lazy_render_module",
     "cr_link_row:cr_link_row_module",
     "cr_radio_button:cr_radio_button_module",
     "cr_radio_button:cr_radio_button_style_css_module",

@@ -27,6 +27,10 @@ class Connector;
 
 namespace device {
 
+#if defined(OS_WIN)
+class WinWebAuthnApi;
+#endif  // defined(OS_WIN)
+
 // FidoDiscoveryFactory offers methods to construct instances of
 // FidoDiscoveryBase for a given |transport| protocol.
 class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryFactory {
@@ -55,9 +59,15 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryFactory {
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
-  // Instantiates a FidoDiscovery for the native Windows WebAuthn
-  // API where available. Returns nullptr otherwise.
+  // Instantiates a FidoDiscovery for the native Windows WebAuthn API where
+  // available. Returns nullptr otherwise.
   std::unique_ptr<FidoDiscoveryBase> MaybeCreateWinWebAuthnApiDiscovery();
+
+  // Sets the WinWebAuthnApi instance to be used for creating the discovery for
+  // the Windows authenticator. If none is set,
+  // MaybeCreateWinWebAuthnApiDiscovery() returns nullptr.
+  void set_win_webauthn_api(WinWebAuthnApi* api);
+  WinWebAuthnApi* win_webauthn_api() const;
 #endif  // defined(OS_WIN)
 
  private:
@@ -66,6 +76,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryFactory {
 #endif  // defined(OS_MACOSX)
   base::Optional<std::vector<CableDiscoveryData>> cable_data_;
   base::Optional<QRGeneratorKey> qr_generator_key_;
+#if defined(OS_WIN)
+  WinWebAuthnApi* win_webauthn_api_ = nullptr;
+#endif  // defined(OS_WIN)
 };
 
 }  // namespace device

@@ -1894,6 +1894,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     case ax::mojom::Role::kForm:
       return base::SysUTF16ToNSString(
           content_client->GetLocalizedString(IDS_AX_ROLE_FORM));
+    case ax::mojom::Role::kHeader:
+      return base::SysUTF16ToNSString(
+          content_client->GetLocalizedString(IDS_AX_ROLE_BANNER));
     case ax::mojom::Role::kMain:
       return base::SysUTF16ToNSString(
           content_client->GetLocalizedString(IDS_AX_ROLE_MAIN_CONTENT));

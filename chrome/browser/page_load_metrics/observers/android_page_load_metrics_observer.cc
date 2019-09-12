@@ -40,6 +40,39 @@ AndroidPageLoadMetricsObserver::OnStart(
   return CONTINUE_OBSERVING;
 }
 
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+AndroidPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  // FlushMetricsOnAppEnterBackground is invoked on Android in cases where the
+  // app is about to be backgrounded, as part of the Activity.onPause()
+  // flow. After this method is invoked, Chrome may be killed without further
+  // notification, so we record final metrics collected up to this point.
+  ReportBufferedMetrics(timing);
+
+  // We continue observing after being backgrounded, in case we are foregrounded
+  // again without being killed. In those cases we may still report non-buffered
+  // metrics such as FCP after being re-foregrounded.
+  return CONTINUE_OBSERVING;
+}
+
+AndroidPageLoadMetricsObserver::ObservePolicy
+AndroidPageLoadMetricsObserver::OnHidden(
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  ReportBufferedMetrics(timing);
+  return CONTINUE_OBSERVING;
+}
+
+void AndroidPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
+    content::NavigationHandle* navigation_handle) {
+  largest_contentful_paint_handler_.OnDidFinishSubFrameNavigation(
+      navigation_handle, GetDelegate());
+}
+
+void AndroidPageLoadMetricsObserver::OnComplete(
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  ReportBufferedMetrics(timing);
+}
+
 void AndroidPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -48,6 +81,14 @@ void AndroidPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
   ReportFirstContentfulPaint(
       (GetDelegate().GetNavigationStart() - base::TimeTicks()).InMicroseconds(),
       first_contentful_paint_ms);
+}
+
+void AndroidPageLoadMetricsObserver::OnFirstInputInPage(
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  int64_t first_input_delay_ms =
+      timing.interactive_timing->first_input_delay->InMilliseconds();
+  ReportFirstInputDelay(first_input_delay_ms);
 }
 
 void AndroidPageLoadMetricsObserver::OnFirstMeaningfulPaintInMainFrameDocument(
@@ -103,6 +144,13 @@ void AndroidPageLoadMetricsObserver::OnLoadedResource(
   }
 }
 
+void AndroidPageLoadMetricsObserver::OnTimingUpdate(
+    content::RenderFrameHost* subframe_rfh,
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  largest_contentful_paint_handler_.RecordTiming(timing.paint_timing,
+                                                 subframe_rfh);
+}
+
 void AndroidPageLoadMetricsObserver::ReportNewNavigation() {
   DCHECK_GE(navigation_id_, 0);
   base::android::ScopedJavaLocalRef<jobject> java_web_contents =
@@ -110,6 +158,41 @@ void AndroidPageLoadMetricsObserver::ReportNewNavigation() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_PageLoadMetrics_onNewNavigation(env, java_web_contents,
                                        static_cast<jlong>(navigation_id_));
+}
+
+void AndroidPageLoadMetricsObserver::ReportBufferedMetrics(
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  // This method may be invoked multiple times. Make sure that if we already
+  // reported, we do not report again.
+  if (reported_buffered_metrics_)
+    return;
+  reported_buffered_metrics_ = true;
+
+  // Buffered metrics aren't available until after the navigation commits.
+  if (!GetDelegate().DidCommit())
+    return;
+
+  base::android::ScopedJavaLocalRef<jobject> java_web_contents =
+      GetDelegate().GetWebContents()->GetJavaWebContents();
+  JNIEnv* env = base::android::AttachCurrentThread();
+  int64_t navigation_start_tick =
+      (GetDelegate().GetNavigationStart() - base::TimeTicks()).InMicroseconds();
+  const page_load_metrics::ContentfulPaintTimingInfo& largest_contentful_paint =
+      largest_contentful_paint_handler_.MergeMainFrameAndSubframes();
+  if (!largest_contentful_paint.IsEmpty()) {
+    Java_PageLoadMetrics_onLargestContentfulPaint(
+        env, java_web_contents, static_cast<jlong>(navigation_id_),
+        static_cast<jlong>(navigation_start_tick),
+        static_cast<jlong>(largest_contentful_paint.Time()->InMilliseconds()),
+        static_cast<jlong>(largest_contentful_paint.Size()));
+  }
+  Java_PageLoadMetrics_onLayoutShiftScore(
+      env, java_web_contents, static_cast<jlong>(navigation_id_),
+      static_cast<jfloat>(GetDelegate()
+                              .GetMainFrameRenderData()
+                              .layout_shift_score_before_input_or_scroll),
+      static_cast<jfloat>(
+          GetDelegate().GetPageRenderData().layout_shift_score));
 }
 
 void AndroidPageLoadMetricsObserver::ReportNetworkQualityEstimate(
@@ -178,4 +261,14 @@ void AndroidPageLoadMetricsObserver::ReportLoadedMainResource(
       static_cast<jlong>(connect_start_ms), static_cast<jlong>(connect_end_ms),
       static_cast<jlong>(request_start_ms), static_cast<jlong>(send_start_ms),
       static_cast<jlong>(send_end_ms));
+}
+
+void AndroidPageLoadMetricsObserver::ReportFirstInputDelay(
+    int64_t first_input_delay_ms) {
+  base::android::ScopedJavaLocalRef<jobject> java_web_contents =
+      GetDelegate().GetWebContents()->GetJavaWebContents();
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_PageLoadMetrics_onFirstInputDelay(
+      env, java_web_contents, static_cast<jlong>(navigation_id_),
+      static_cast<jlong>(first_input_delay_ms));
 }

@@ -81,6 +81,8 @@ MATCHER(AddressHasConverted, "") {
 const char kLocalGuidA[] = "EDC609ED-7EEE-4F27-B00C-423242A9C44A";
 const char kDifferentBillingAddressId[] = "another address entity ID";
 const base::Time kArbitraryDefaultTime = base::Time::FromDoubleT(25);
+const syncer::SyncFirstSetupCompleteSource kSetSourceFromTest =
+    syncer::SyncFirstSetupCompleteSource::BASIC_FLOW;
 
 template <class T>
 class AutofillWebDataServiceConsumer : public WebDataServiceConsumer {
@@ -401,7 +403,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, ClearOnDisableSync) {
   GetSyncService(0)->GetUserSettings()->SetSyncRequested(true);
   // StopAndClear() also clears the "first setup complete" flag, so set it
   // again.
-  GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete();
+  GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete(
+      kSetSourceFromTest);
   // Wait until Sync restores the card and it arrives at PDM.
   WaitForNumberOfCards(pdm, 1);
 
@@ -1261,7 +1264,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSecondaryAccountSyncTest,
   // set first-time setup to complete.
   secondary_account_helper::MakeAccountPrimary(profile(), "user@email.com");
   GetSyncService(0)->GetUserSettings()->SetSyncRequested(true);
-  GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete();
+  GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete(
+      kSetSourceFromTest);
 
   // Wait for Sync to get reconfigured into feature mode.
   ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
@@ -1333,7 +1337,8 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_EQ(syncer::SyncService::TransportState::CONFIGURING,
             GetSyncService(0)->GetTransportState());
 
-  GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete();
+  GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete(
+      kSetSourceFromTest);
 
   // Wait for Sync to get reconfigured into feature mode.
   ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
@@ -1466,7 +1471,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletWithAccountStorageSyncTest,
 
   // STEP 5. Turn Sync-the-feature on again.
   GetSyncService(0)->GetUserSettings()->SetSyncRequested(true);
-  GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete();
+  GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete(
+      kSetSourceFromTest);
 
   // Wait for Sync to get reconfigured into full feature mode again.
   ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());

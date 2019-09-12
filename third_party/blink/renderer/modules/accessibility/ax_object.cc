@@ -313,6 +313,7 @@ const InternalRoleEntry kInternalRoles[] = {
     {ax::mojom::Role::kFigcaption, "Figcaption"},
     {ax::mojom::Role::kFigure, "Figure"},
     {ax::mojom::Role::kFooter, "Footer"},
+    {ax::mojom::Role::kFooterAsNonLandmark, "FooterAsNonLandmark"},
     {ax::mojom::Role::kForm, "Form"},
     {ax::mojom::Role::kGenericContainer, "GenericContainer"},
     // --------------------------------------------------------------
@@ -325,6 +326,8 @@ const InternalRoleEntry kInternalRoles[] = {
     // --------------------------------------------------------------
     {ax::mojom::Role::kGrid, "Grid"},
     {ax::mojom::Role::kGroup, "Group"},
+    {ax::mojom::Role::kHeader, "Header"},
+    {ax::mojom::Role::kHeaderAsNonLandmark, "HeaderAsNonLandmark"},
     {ax::mojom::Role::kHeading, "Heading"},
     {ax::mojom::Role::kIframePresentational, "IframePresentational"},
     {ax::mojom::Role::kIframe, "Iframe"},
@@ -418,6 +421,7 @@ static_assert(base::size(kInternalRoles) ==
 
 // Roles which we need to map in the other direction
 const RoleEntry kReverseRoles[] = {
+    {"banner", ax::mojom::Role::kHeader},
     {"button", ax::mojom::Role::kToggleButton},
     {"combobox", ax::mojom::Role::kPopUpButton},
     {"contentinfo", ax::mojom::Role::kFooter},
@@ -808,6 +812,7 @@ bool AXObject::IsLandmarkRelated() const {
     case ax::mojom::Role::kDocToc:
     case ax::mojom::Role::kFooter:
     case ax::mojom::Role::kForm:
+    case ax::mojom::Role::kHeader:
     case ax::mojom::Role::kMain:
     case ax::mojom::Role::kNavigation:
     case ax::mojom::Role::kRegion:
@@ -3422,6 +3427,7 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::Role::kGraphicsSymbol:
     case ax::mojom::Role::kGrid:
     case ax::mojom::Role::kGroup:
+    case ax::mojom::Role::kHeader:
     case ax::mojom::Role::kIframePresentational:
     case ax::mojom::Role::kIframe:
     case ax::mojom::Role::kImage:
@@ -3487,7 +3493,9 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::Role::kDetails:
     case ax::mojom::Role::kFigcaption:
     case ax::mojom::Role::kFooter:
+    case ax::mojom::Role::kFooterAsNonLandmark:
     case ax::mojom::Role::kGenericContainer:
+    case ax::mojom::Role::kHeaderAsNonLandmark:
     case ax::mojom::Role::kIgnored:
     case ax::mojom::Role::kImageMap:
     case ax::mojom::Role::kInlineTextBox:

@@ -640,6 +640,8 @@ void MainThreadSchedulerImpl::Shutdown() {
 
   base::TimeTicks now = tick_clock()->NowTicks();
   main_thread_only().metrics_helper.OnRendererShutdown(now);
+  main_thread_only()
+      .compositor_priority_experiments.OnMainThreadSchedulerShutdown();
 
   ShutdownAllQueues();
   task_queue_throttler_.reset();
@@ -2493,7 +2495,8 @@ void MainThreadSchedulerImpl::OnTaskCompleted(
   RecordTaskUkm(queue.get(), task, *task_timing);
 
   main_thread_only().compositor_priority_experiments.OnTaskCompleted(
-      queue.get(), main_thread_only().current_policy.compositor_priority());
+      queue.get(), main_thread_only().current_policy.compositor_priority(),
+      task_timing);
 }
 
 void MainThreadSchedulerImpl::RecordTaskUkm(

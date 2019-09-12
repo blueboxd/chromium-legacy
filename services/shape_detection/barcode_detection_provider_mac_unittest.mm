@@ -125,7 +125,7 @@ class BarcodeDetectionProviderMacTest
   MOCK_METHOD0(OnEnumerateSupportedFormats, void(void));
 
   std::unique_ptr<mojom::BarcodeDetectionProvider> provider_;
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   void* vision_framework_ = nullptr;
   bool is_vision_available_ = false;
 };

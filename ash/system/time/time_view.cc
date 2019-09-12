@@ -20,6 +20,7 @@
 #include "third_party/icu/source/i18n/unicode/datefmt.h"
 #include "third_party/icu/source/i18n/unicode/dtptngen.h"
 #include "third_party/icu/source/i18n/unicode/smpdtfmt.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/insets.h"

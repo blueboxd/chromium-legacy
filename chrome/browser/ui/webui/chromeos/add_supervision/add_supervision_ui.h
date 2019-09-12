@@ -33,6 +33,8 @@ class AddSupervisionDialog : public SystemWebDialogDelegate {
   // right.
   static void Close();
 
+  static SystemWebDialogDelegate* GetInstance();
+
   // ui::WebDialogDelegate:
   ui::ModalType GetDialogModalType() const override;
   void GetDialogSize(gfx::Size* size) const override;
@@ -50,8 +52,6 @@ class AddSupervisionDialog : public SystemWebDialogDelegate {
   FRIEND_TEST_ALL_PREFIXES(AddSupervisionMetricsRecorderTimeTest,
                            UserTimingTest);
 
-  static SystemWebDialogDelegate* GetInstance();
-
   DISALLOW_COPY_AND_ASSIGN(AddSupervisionDialog);
 };
 
@@ -65,15 +65,21 @@ class AddSupervisionUI : public ui::MojoWebUIController,
   // AddSupervisionHandler::Delegate:
   bool CloseDialog() override;
 
+  static void SetUpForTest(signin::IdentityManager* identity_manager);
+
  private:
   void BindAddSupervisionHandler(
       add_supervision::mojom::AddSupervisionHandlerRequest request);
-  void SetupResources();
+  void SetUpResources();
+  GURL GetAddSupervisionURL();
 
   std::unique_ptr<add_supervision::mojom::AddSupervisionHandler>
       mojo_api_handler_;
 
   GURL supervision_url_;
+
+  static signin::IdentityManager* test_identity_manager_;
+  bool allow_non_google_url_for_tests_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AddSupervisionUI);
 };

@@ -50,7 +50,7 @@ class BindToTaskRunnerTest : public ::testing::Test {
  public:
   ~BindToTaskRunnerTest() override { base::RunLoop().RunUntilIdle(); }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   MockCallbacks callbacks_;
 };
 

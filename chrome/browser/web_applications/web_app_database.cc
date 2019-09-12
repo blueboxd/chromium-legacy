@@ -44,9 +44,9 @@ void WebAppDatabase::WriteWebApps(AppsToWrite apps,
 
   BeginTransaction();
 
-  for (auto* web_app : apps) {
+  for (const WebApp* web_app : apps) {
     auto proto = CreateWebAppProto(*web_app);
-    write_batch_->WriteData(proto->app_id(), proto->SerializeAsString());
+    write_batch_->WriteData(web_app->app_id(), proto->SerializeAsString());
   }
 
   CommitTransaction(std::move(callback));
@@ -71,19 +71,21 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   auto proto = std::make_unique<WebAppProto>();
 
   // Required fields:
-  DCHECK(!web_app.app_id().empty());
-  proto->set_app_id(web_app.app_id());
+  const GURL launch_url = web_app.launch_url();
+  DCHECK(!launch_url.is_empty() && launch_url.is_valid());
 
-  DCHECK(!web_app.launch_url().is_empty() && web_app.launch_url().is_valid());
-  proto->set_launch_url(web_app.launch_url().spec());
+  DCHECK(!web_app.app_id().empty());
+  DCHECK_EQ(web_app.app_id(), GenerateAppIdFromURL(launch_url));
+
+  proto->set_launch_url(launch_url.spec());
 
   proto->set_name(web_app.name());
 
   DCHECK_NE(LaunchContainer::kDefault, web_app.launch_container());
   proto->set_launch_container(web_app.launch_container() ==
                                       LaunchContainer::kWindow
-                                  ? LaunchContainerProto::WINDOW
-                                  : LaunchContainerProto::TAB);
+                                  ? WebAppProto::WINDOW
+                                  : WebAppProto::TAB);
 
   DCHECK(web_app.sources_.any());
   proto->mutable_sources()->set_system(web_app.sources_[Source::kSystem]);
@@ -113,17 +115,20 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
 
 // static
 std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(const WebAppProto& proto) {
-  auto web_app = std::make_unique<WebApp>(proto.app_id());
-
-  // Required fields:
+  // AppId is a hash of launch_url. Read launch_url first:
   GURL launch_url(proto.launch_url());
   if (launch_url.is_empty() || !launch_url.is_valid()) {
     DLOG(ERROR) << "WebApp proto launch_url parse error: "
                 << launch_url.possibly_invalid_spec();
     return nullptr;
   }
+
+  const AppId app_id = GenerateAppIdFromURL(launch_url);
+
+  auto web_app = std::make_unique<WebApp>(app_id);
   web_app->SetLaunchUrl(launch_url);
 
+  // Required fields:
   if (!proto.has_sources()) {
     DLOG(ERROR) << "WebApp proto parse error: no sources field";
     return nullptr;
@@ -151,8 +156,7 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(const WebAppProto& proto) {
     DLOG(ERROR) << "WebApp proto parse error: no launch_container field";
     return nullptr;
   }
-  web_app->SetLaunchContainer(proto.launch_container() ==
-                                      LaunchContainerProto::WINDOW
+  web_app->SetLaunchContainer(proto.launch_container() == WebAppProto::WINDOW
                                   ? LaunchContainer::kWindow
                                   : LaunchContainer::kTab);
 
@@ -267,12 +271,18 @@ std::unique_ptr<WebApp> WebAppDatabase::ParseWebApp(const AppId& app_id,
                                                     const std::string& value) {
   WebAppProto proto;
   const bool parsed = proto.ParseFromString(value);
-  if (!parsed || proto.app_id() != app_id) {
-    DLOG(ERROR) << "WebApps LevelDB parse error (unknown).";
+  if (!parsed) {
+    DLOG(ERROR) << "WebApps LevelDB parse error: can't parse proto.";
     return nullptr;
   }
 
-  return CreateWebApp(proto);
+  auto web_app = CreateWebApp(proto);
+  if (web_app->app_id() != app_id) {
+    DLOG(ERROR) << "WebApps LevelDB error: app_id doesn't match storage key";
+    return nullptr;
+  }
+
+  return web_app;
 }
 
 void WebAppDatabase::BeginTransaction() {

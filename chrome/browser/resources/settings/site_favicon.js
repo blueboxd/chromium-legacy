@@ -17,7 +17,7 @@ Polymer({
 
   /** @private */
   getBackgroundImage_: function() {
-    let backgroundImage = 'none';
+    let backgroundImage = cr.icon.getFavicon('');
     if (this.faviconUrl) {
       const url = this.ensureUrlHasScheme_(this.faviconUrl);
       backgroundImage = cr.icon.getFavicon(url);

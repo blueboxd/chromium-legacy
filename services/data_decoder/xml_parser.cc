@@ -69,7 +69,7 @@ base::Value* AddChildToElement(base::Value* element, base::Value child) {
   if (!children)
     children = element->SetKey(mojom::XmlParser::kChildrenKey,
                                base::Value(base::Value::Type::LIST));
-  children->GetList().push_back(std::move(child));
+  children->Append(std::move(child));
   return &children->GetList().back();
 }
 

@@ -174,6 +174,13 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   float device_dpi() const { return device_dpi_; }
   void set_device_dpi(float dpi) { device_dpi_ = dpi; }
 
+  display::PanelOrientation panel_orientation() const {
+    return panel_orientation_;
+  }
+  void set_panel_orientation(display::PanelOrientation panel_orientation) {
+    panel_orientation_ = panel_orientation;
+  }
+
   // The native bounds for the display. The size of this can be
   // different from the |size_in_pixel| when overscan insets are set.
   const gfx::Rect& bounds_in_native() const { return bounds_in_native_; }
@@ -308,6 +315,9 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
 
   // This specifies the device's DPI.
   float device_dpi_;
+
+  // Orientation of the panel relative to natural device orientation.
+  display::PanelOrientation panel_orientation_;
 
   // The size of the display in use. The size can be different from the size
   // of |bounds_in_native_| if the display has overscan insets and/or rotation.

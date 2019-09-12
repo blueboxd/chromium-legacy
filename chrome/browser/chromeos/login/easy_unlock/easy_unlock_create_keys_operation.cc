@@ -349,9 +349,12 @@ void EasyUnlockCreateKeysOperation::OnGetSystemSalt(
   cryptohome::AddKeyRequest request;
   cryptohome::KeyDefinitionToKey(key_def, request.mutable_key());
   request.set_clobber_if_exists(true);
+
+  // Create the authorization request with an empty label, in order to act as a
+  // wildcard. See https://crbug.com/1002336 for more.
   cryptohome::HomedirMethods::GetInstance()->AddKeyEx(
       cryptohome::Identification(user_context_.GetAccountId()),
-      cryptohome::CreateAuthorizationRequest(auth_key->GetLabel(),
+      cryptohome::CreateAuthorizationRequest(std::string() /* label */,
                                              auth_key->GetSecret()),
       request,
       base::Bind(&EasyUnlockCreateKeysOperation::OnKeyCreated,

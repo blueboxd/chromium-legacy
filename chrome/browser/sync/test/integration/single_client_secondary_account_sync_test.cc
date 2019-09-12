@@ -141,7 +141,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
   // set first-time setup to complete.
   secondary_account_helper::MakeAccountPrimary(profile(), "user@email.com");
   GetSyncService(0)->GetUserSettings()->SetSyncRequested(true);
-  GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete();
+  GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete(
+      syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
 
   EXPECT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,

@@ -39,16 +39,16 @@ blink::WebView* WebViewTestProxy::CreateView(
     blink::WebSandboxFlags sandbox_flags,
     const blink::FeaturePolicy::FeatureState& opener_feature_state,
     const blink::SessionStorageNamespaceId& session_storage_namespace_id) {
-  if (GetTestRunner()->shouldDumpNavigationPolicy()) {
+  if (GetTestRunner()->ShouldDumpNavigationPolicy()) {
     delegate()->PrintMessage("Default policy for createView for '" +
                              URLDescription(request.Url()) + "' is '" +
                              WebNavigationPolicyToString(policy) + "'\n");
   }
 
-  if (!GetTestRunner()->canOpenWindows())
+  if (!GetTestRunner()->CanOpenWindows())
     return nullptr;
 
-  if (GetTestRunner()->shouldDumpCreateView()) {
+  if (GetTestRunner()->ShouldDumpCreateView()) {
     delegate()->PrintMessage(std::string("createView(") +
                              URLDescription(request.Url()) + ")\n");
   }
@@ -79,7 +79,7 @@ blink::WebScreenInfo WebViewTestProxy::GetScreenInfo() {
   blink::WebScreenInfo info = RenderViewImpl::GetScreenInfo();
 
   MockScreenOrientationClient* mock_client =
-      GetTestRunner()->getMockScreenOrientationClient();
+      GetTestRunner()->GetMockScreenOrientationClient();
 
   if (!mock_client->IsDisabled()) {
     // Override screen orientation information with mock data.

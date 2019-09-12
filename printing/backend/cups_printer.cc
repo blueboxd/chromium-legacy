@@ -23,8 +23,7 @@ const char kCUPSPrinterStateOpt[] = "printer-state";
 
 namespace printing {
 
-CupsPrinter::CupsPrinter(http_t* http,
-                         std::unique_ptr<cups_dest_t, DestinationDeleter> dest)
+CupsPrinter::CupsPrinter(http_t* http, ScopedDestination dest)
     : cups_http_(http), destination_(std::move(dest)) {
   DCHECK(cups_http_);
   DCHECK(destination_);

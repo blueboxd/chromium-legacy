@@ -1527,7 +1527,7 @@ void QuicChromiumClientSession::OnCryptoHandshakeEvent(
   }
   if (event == HANDSHAKE_CONFIRMED) {
     if (stream_factory_)
-      stream_factory_->set_require_confirmation(false);
+      stream_factory_->set_is_quic_known_to_work_on_current_network(true);
 
     // Update |connect_end| only when handshake is confirmed. This should also
     // take care of any failed 0-RTT request.

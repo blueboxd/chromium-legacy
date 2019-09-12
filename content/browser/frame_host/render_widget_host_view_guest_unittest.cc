@@ -32,6 +32,7 @@
 #include "content/test/mock_widget_impl.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/compositor.h"
@@ -52,8 +53,9 @@ class RenderWidgetHostViewGuestTest : public testing::Test {
     MockRenderProcessHost* process_host =
         new MockRenderProcessHost(browser_context_.get());
     int32_t routing_id = process_host->GetNextRoutingID();
-    mojom::WidgetPtr widget;
-    widget_impl_ = std::make_unique<MockWidgetImpl>(mojo::MakeRequest(&widget));
+    mojo::PendingRemote<mojom::Widget> widget;
+    widget_impl_ = std::make_unique<MockWidgetImpl>(
+        widget.InitWithNewPipeAndPassReceiver());
 
     widget_host_ = new RenderWidgetHostImpl(
         &delegate_, process_host, routing_id, std::move(widget), false);
@@ -138,8 +140,9 @@ class RenderWidgetHostViewGuestSurfaceTest
         web_contents_.get(), &browser_plugin_guest_delegate_);
 
     int32_t routing_id = process_host->GetNextRoutingID();
-    mojom::WidgetPtr widget;
-    widget_impl_ = std::make_unique<MockWidgetImpl>(mojo::MakeRequest(&widget));
+    mojo::PendingRemote<mojom::Widget> widget;
+    widget_impl_ = std::make_unique<MockWidgetImpl>(
+        widget.InitWithNewPipeAndPassReceiver());
 
     widget_host_ = new RenderWidgetHostImpl(
         &delegate_, process_host, routing_id, std::move(widget), false);

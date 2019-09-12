@@ -70,13 +70,6 @@ AppServiceProxy::InnerIconLoader::LoadIconFromIconKey(
   return nullptr;
 }
 
-// static
-AppServiceProxy* AppServiceProxy::CreateForTesting(
-    Profile* profile,
-    service_manager::Connector* connector) {
-  return new AppServiceProxy(profile, connector);
-}
-
 AppServiceProxy::AppServiceProxy(Profile* profile)
     : AppServiceProxy(profile, nullptr) {}
 

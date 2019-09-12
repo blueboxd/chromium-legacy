@@ -16,6 +16,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/numerics/ranges.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"

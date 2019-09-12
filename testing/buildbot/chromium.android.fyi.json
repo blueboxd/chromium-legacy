@@ -98,7 +98,7 @@
       {
         "args": [
           "--enable-features=BackForwardCache",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.browser_tests.filter",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.android_browsertests.filter",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -146,7 +146,7 @@
       {
         "args": [
           "--enable-features=BackForwardCache",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.browser_tests.filter",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.chrome_public_test_apk.filter",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -242,7 +242,7 @@
       {
         "args": [
           "--enable-features=BackForwardCache",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.browser_tests.filter",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.content_shell_test_apk.filter",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],

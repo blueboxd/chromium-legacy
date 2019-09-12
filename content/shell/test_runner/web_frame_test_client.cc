@@ -189,7 +189,7 @@ bool WebFrameTestClient::RunModalPromptDialog(
 bool WebFrameTestClient::RunModalBeforeUnloadDialog(bool is_reload) {
   if (test_runner()->ShouldDumpJavaScriptDialogs())
     delegate_->PrintMessage(std::string("CONFIRM NAVIGATION\n"));
-  return !test_runner()->shouldStayOnPageAfterHandlingBeforeUnload();
+  return !test_runner()->ShouldStayOnPageAfterHandlingBeforeUnload();
 }
 
 void WebFrameTestClient::PostAccessibilityEvent(
@@ -325,14 +325,14 @@ void WebFrameTestClient::HandleWebAccessibilityEvent(
 }
 
 void WebFrameTestClient::DidChangeSelection(bool is_empty_callback) {
-  if (test_runner()->shouldDumpEditingCallbacks())
+  if (test_runner()->ShouldDumpEditingCallbacks())
     delegate_->PrintMessage(
         "EDITING DELEGATE: "
         "webViewDidChangeSelection:WebViewDidChangeSelectionNotification\n");
 }
 
 void WebFrameTestClient::DidChangeContents() {
-  if (test_runner()->shouldDumpEditingCallbacks())
+  if (test_runner()->ShouldDumpEditingCallbacks())
     delegate_->PrintMessage(
         "EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification\n");
 }
@@ -357,7 +357,7 @@ void WebFrameTestClient::DownloadURL(
     blink::WebLocalFrameClient::CrossOriginRedirects
         cross_origin_redirect_behavior,
     mojo::ScopedMessagePipeHandle blob_url_token) {
-  if (test_runner()->shouldWaitUntilExternalURLLoad()) {
+  if (test_runner()->ShouldWaitUntilExternalURLLoad()) {
     delegate_->PrintMessage(std::string("Download started\n"));
     delegate_->TestFinished();
   }
@@ -365,20 +365,20 @@ void WebFrameTestClient::DownloadURL(
 
 void WebFrameTestClient::DidReceiveTitle(const blink::WebString& title,
                                          blink::WebTextDirection direction) {
-  if (test_runner()->shouldDumpFrameLoadCallbacks() &&
+  if (test_runner()->ShouldDumpFrameLoadCallbacks() &&
       web_frame_test_proxy_->GetWebFrame()) {
     PrintFrameDescription(delegate_, web_frame_test_proxy_->GetWebFrame());
     delegate_->PrintMessage(std::string(" - didReceiveTitle: ") + title.Utf8() +
                             "\n");
   }
 
-  if (test_runner()->shouldDumpTitleChanges())
+  if (test_runner()->ShouldDumpTitleChanges())
     delegate_->PrintMessage(std::string("TITLE CHANGED: '") + title.Utf8() +
                             "'\n");
 }
 
 void WebFrameTestClient::DidChangeIcon(blink::WebIconURL::Type icon_type) {
-  if (test_runner()->shouldDumpIconChanges()) {
+  if (test_runner()->ShouldDumpIconChanges()) {
     PrintFrameDescription(delegate_, web_frame_test_proxy_->GetWebFrame());
     delegate_->PrintMessage(std::string(" - didChangeIcons\n"));
   }
@@ -386,7 +386,7 @@ void WebFrameTestClient::DidChangeIcon(blink::WebIconURL::Type icon_type) {
 
 void WebFrameTestClient::DidFailLoad(const blink::WebURLError& error,
                                      blink::WebHistoryCommitType commit_type) {
-  if (test_runner()->shouldDumpFrameLoadCallbacks()) {
+  if (test_runner()->ShouldDumpFrameLoadCallbacks()) {
     PrintFrameDescription(delegate_, web_frame_test_proxy_->GetWebFrame());
     delegate_->PrintMessage(" - didFailLoadWithError\n");
   }
@@ -401,7 +401,7 @@ void WebFrameTestClient::DidStopLoading() {
 }
 
 void WebFrameTestClient::DidDispatchPingLoader(const blink::WebURL& url) {
-  if (test_runner()->shouldDumpPingLoaderCallbacks())
+  if (test_runner()->ShouldDumpPingLoaderCallbacks())
     delegate_->PrintMessage(std::string("PingLoader dispatched to '") +
                             URLDescription(url).c_str() + "'.\n");
 }
@@ -413,7 +413,7 @@ void WebFrameTestClient::WillSendRequest(blink::WebURLRequest& request) {
 
   GURL main_document_url = request.SiteForCookies();
 
-  if (test_runner()->shouldDumpResourceLoadCallbacks()) {
+  if (test_runner()->ShouldDumpResourceLoadCallbacks()) {
     delegate_->PrintMessage(DescriptionSuitableForTestResult(request_url));
     delegate_->PrintMessage(" - willSendRequest <NSURLRequest URL ");
     delegate_->PrintMessage(
@@ -425,8 +425,8 @@ void WebFrameTestClient::WillSendRequest(blink::WebURLRequest& request) {
     delegate_->PrintMessage(">\n");
   }
 
-  if (test_runner()->httpHeadersToClear()) {
-    for (const std::string& header : *test_runner()->httpHeadersToClear())
+  if (test_runner()->HttpHeadersToClear()) {
+    for (const std::string& header : *test_runner()->HttpHeadersToClear())
       request.ClearHttpHeaderField(blink::WebString::FromUTF8(header));
   }
 
@@ -509,14 +509,14 @@ void WebFrameTestClient::DidAddMessageToConsole(
 
 bool WebFrameTestClient::ShouldContinueNavigation(
     blink::WebNavigationInfo* info) {
-  if (test_runner()->shouldDumpNavigationPolicy()) {
+  if (test_runner()->ShouldDumpNavigationPolicy()) {
     delegate_->PrintMessage(
         "Default policy for navigation to '" +
         URLDescription(info->url_request.Url()) + "' is '" +
         WebNavigationPolicyToString(info->navigation_policy) + "'\n");
   }
 
-  if (test_runner()->shouldDumpFrameLoadCallbacks()) {
+  if (test_runner()->ShouldDumpFrameLoadCallbacks()) {
     GURL url = info->url_request.Url();
     WebFrameTestClient::PrintFrameDescription(
         delegate_, web_frame_test_proxy_->GetWebFrame());
@@ -529,20 +529,20 @@ bool WebFrameTestClient::ShouldContinueNavigation(
   }
 
   bool should_continue = true;
-  if (test_runner()->policyDelegateEnabled()) {
+  if (test_runner()->PolicyDelegateEnabled()) {
     delegate_->PrintMessage(
         std::string("Policy delegate: attempt to load ") +
         URLDescription(info->url_request.Url()) + " with navigation type '" +
         WebNavigationTypeToString(info->navigation_type) + "'\n");
-    should_continue = test_runner()->policyDelegateIsPermissive();
-    if (test_runner()->policyDelegateShouldNotifyDone()) {
-      test_runner()->policyDelegateDone();
+    should_continue = test_runner()->PolicyDelegateIsPermissive();
+    if (test_runner()->PolicyDelegateShouldNotifyDone()) {
+      test_runner()->PolicyDelegateDone();
       should_continue = false;
     }
   }
 
-  if (test_runner()->httpHeadersToClear()) {
-    for (const std::string& header : *test_runner()->httpHeadersToClear()) {
+  if (test_runner()->HttpHeadersToClear()) {
+    for (const std::string& header : *test_runner()->HttpHeadersToClear()) {
       info->url_request.ClearHttpHeaderField(
           blink::WebString::FromUTF8(header));
     }

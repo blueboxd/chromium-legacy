@@ -7,12 +7,12 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_observer.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 class BrowserActionsContainer;
 class BrowserView;
-class ToolbarActionsBar;
 enum class ImeWarningBubblePermissionStatus;
 
 namespace extensions {
@@ -92,7 +92,7 @@ class ImeWarningBubbleView : public views::BubbleDialogDelegateView,
   ToolbarActionsBar* toolbar_actions_bar_;
 
   ScopedObserver<ToolbarActionsBar, ToolbarActionsBarObserver>
-      toolbar_actions_bar_observer_;
+      toolbar_actions_bar_observer_{this};
 
   base::WeakPtrFactory<ImeWarningBubbleView> weak_ptr_factory_{this};
 

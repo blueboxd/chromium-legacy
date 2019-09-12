@@ -857,11 +857,16 @@ const FeatureEntry::FeatureVariation kOmniboxDocumentProviderVariations[] = {
      base::size(kOmniboxDocumentProviderServerAndClientScoring), nullptr}};
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
+const FeatureEntry::FeatureParam kOmniboxOnFocusSuggestionsParamSERP[] = {
+    {"ZeroSuggestVariant:6:*", ZeroSuggestProvider::kRemoteSendUrlVariant}};
 const FeatureEntry::FeatureParam kOmniboxOnFocusSuggestionsParamNTPOmnibox[] = {
     {"ZeroSuggestVariant:7:*", ZeroSuggestProvider::kRemoteNoUrlVariant}};
 const FeatureEntry::FeatureParam kOmniboxOnFocusSuggestionsParamNTPRealbox[] = {
     {"ZeroSuggestVariant:15:*", ZeroSuggestProvider::kRemoteNoUrlVariant}};
 const FeatureEntry::FeatureVariation kOmniboxOnFocusSuggestionsVariations[] = {
+    {"SERP - RemoteSendURL", kOmniboxOnFocusSuggestionsParamSERP,
+     base::size(kOmniboxOnFocusSuggestionsParamNTPOmnibox),
+     "t3315869" /* variation_id */},
     {"NTP Omnibox - Remote", kOmniboxOnFocusSuggestionsParamNTPOmnibox,
      base::size(kOmniboxOnFocusSuggestionsParamNTPOmnibox),
      "t3316133" /* variation_id */},
@@ -1663,9 +1668,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDisableCancelAllTouchesName,
      flag_descriptions::kDisableCancelAllTouchesDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kDisableCancelAllTouches)},
-    {"enable_messages_web_push", flag_descriptions::kEnableMessagesWebPushName,
-     flag_descriptions::kEnableMessagesWebPushDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kEnableMessagesWebPush)},
     {
         "enable-background-blur",
         flag_descriptions::kEnableBackgroundBlurName,
@@ -1690,9 +1692,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"newblue", flag_descriptions::kNewblueName,
      flag_descriptions::kNewblueDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(device::kNewblueDaemon)},
-    {"shelf-dense-clamshell", flag_descriptions::kShelfDenseClamshellName,
-     flag_descriptions::kShelfDenseClamshellDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kShelfDenseClamshell)},
     {"shelf-hotseat", flag_descriptions::kShelfHotseatName,
      flag_descriptions::kShelfHotseatDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(chromeos::switches::kShelfHotseat)},
@@ -2791,6 +2790,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kDocumentProvider,
                                     kOmniboxDocumentProviderVariations,
                                     "OmniboxBundledExperimentV1")},
+    {"omnibox-autocomplete-titles",
+     flag_descriptions::kOmniboxAutocompleteTitlesName,
+     flag_descriptions::kOmniboxAutocompleteTitlesDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kAutocompleteTitles)},
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
     {"enable-speculative-service-worker-start-on-query-input",
@@ -2996,10 +2999,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"scrollable-tabstrip", flag_descriptions::kScrollableTabStripName,
      flag_descriptions::kScrollableTabStripDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kScrollableTabStrip)},
-
-    {"drag-to-pin-tabs", flag_descriptions::kDragToPinTabsName,
-     flag_descriptions::kDragToPinTabsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kDragToPinTabs)},
 
     {"tab-outlines-in-low-contrast-themes",
      flag_descriptions::kTabOutlinesInLowContrastThemesName,

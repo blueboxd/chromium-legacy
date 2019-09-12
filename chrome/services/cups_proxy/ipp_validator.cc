@@ -80,6 +80,14 @@ size_t GetAttributeValuesSize(const ipp_parser::mojom::IppAttributePtr& attr) {
   return 0;
 }
 
+// Returns true if |data| starts with the full |prefix|, false otherwise.
+bool StartsWith(base::span<uint8_t const> data,
+                base::span<uint8_t const> prefix) {
+  if (data.size() < prefix.size())
+    return false;
+  return std::equal(data.begin(), data.begin() + prefix.size(), prefix.begin());
+}
+
 }  // namespace
 
 // Verifies that |method|, |endpoint|, and |http_version| form a valid HTTP
@@ -257,24 +265,16 @@ ipp_t* IppValidator::ValidateIppMessage(
   return ipp.release();
 }
 
-// Requires IPP data portion is either empty or looks like a pdf.
+// Requires |ipp_data| to be empty or look like a PDF or PostScript document.
 bool IppValidator::ValidateIppData(const std::vector<uint8_t>& ipp_data) {
-  const int pdf_magic_bytes_size = 4;
-  constexpr std::array<uint8_t, pdf_magic_bytes_size> pdf_magic_bytes = {
-      0x25, 0x50, 0x44, 0x46};  // { %PDF }
-
   // Empty IPP data portion.
   if (ipp_data.empty()) {
     return true;
   }
 
-  if (ipp_data.size() < pdf_magic_bytes_size) {
-    return false;
-  }
-
-  // Check that |ipp_data| starts with pdf_magic_bytes.
-  return std::equal(ipp_data.begin(), ipp_data.begin() + pdf_magic_bytes_size,
-                    pdf_magic_bytes.begin());
+  // Check if |ipp_data| looks like a PDF or PostScript document.
+  return StartsWith(ipp_data, pdf_magic_bytes) ||
+         StartsWith(ipp_data, ps_magic_bytes);
 }
 
 IppValidator::IppValidator(CupsProxyServiceDelegate* const delegate)

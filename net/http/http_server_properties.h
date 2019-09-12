@@ -343,9 +343,14 @@ class NET_EXPORT HttpServerProperties
   // Empty alternative service hostnames will be printed as such.
   std::unique_ptr<base::Value> GetAlternativeServiceInfoAsValue() const;
 
-  bool GetSupportsQuic(IPAddress* last_address) const;
-
-  void SetSupportsQuic(bool used_quic, const IPAddress& last_address);
+  // Tracks the last local address when QUIC was known to work. The address
+  // cannot be set to an empty address - use
+  // ClearLastLocalAddressWhenQuicWorked() if it needs to be cleared.
+  bool WasLastLocalAddressWhenQuicWorked(const IPAddress& local_address) const;
+  bool HasLastLocalAddressWhenQuicWorked() const;
+  void SetLastLocalAddressWhenQuicWorked(
+      IPAddress last_local_address_when_quic_worked);
+  void ClearLastLocalAddressWhenQuicWorked();
 
   // Sets |stats| for |server|.
   void SetServerNetworkStats(const url::SchemeHostPort& server,
@@ -396,8 +401,9 @@ class NET_EXPORT HttpServerProperties
       std::unique_ptr<ServerInfoMap> server_info_map) {
     OnServerInfoLoaded(std::move(server_info_map));
   }
-  void OnSupportsQuicLoadedForTesting(const IPAddress& last_address) {
-    OnSupportsQuicLoaded(last_address);
+  void OnLastLocalAddressWhenQuicWorkedForTesting(
+      const IPAddress& last_local_address_when_quic_worked) {
+    OnLastLocalAddressWhenQuicWorkedLoaded(last_local_address_when_quic_worked);
   }
   void OnQuicServerInfoMapLoadedForTesting(
       std::unique_ptr<QuicServerInfoMap> quic_server_info_map) {
@@ -479,20 +485,20 @@ class NET_EXPORT HttpServerProperties
   // exists.
   const std::string* GetCanonicalSuffix(const std::string& host) const;
 
-  void OnPrefsLoaded(
-      std::unique_ptr<ServerInfoMap> server_info_map,
-      const IPAddress& last_quic_address,
-      std::unique_ptr<QuicServerInfoMap> quic_server_info_map,
-      std::unique_ptr<BrokenAlternativeServiceList>
-          broken_alternative_service_list,
-      std::unique_ptr<RecentlyBrokenAlternativeServices>
-          recently_broken_alternative_services);
+  void OnPrefsLoaded(std::unique_ptr<ServerInfoMap> server_info_map,
+                     const IPAddress& last_local_address_when_quic_worked,
+                     std::unique_ptr<QuicServerInfoMap> quic_server_info_map,
+                     std::unique_ptr<BrokenAlternativeServiceList>
+                         broken_alternative_service_list,
+                     std::unique_ptr<RecentlyBrokenAlternativeServices>
+                         recently_broken_alternative_services);
 
   // These methods are called by OnPrefsLoaded to handle merging properties
   // loaded from prefs with what has been learned while waiting for prefs to
   // load.
   void OnServerInfoLoaded(std::unique_ptr<ServerInfoMap> server_info_map);
-  void OnSupportsQuicLoaded(const IPAddress& last_address);
+  void OnLastLocalAddressWhenQuicWorkedLoaded(
+      const IPAddress& last_local_address_when_quic_worked);
   void OnQuicServerInfoMapLoaded(
       std::unique_ptr<QuicServerInfoMap> quic_server_info_map);
   void OnBrokenAndRecentlyBrokenAlternativeServicesLoaded(
@@ -533,7 +539,7 @@ class NET_EXPORT HttpServerProperties
 
   BrokenAlternativeServices broken_alternative_services_;
 
-  IPAddress last_quic_address_;
+  IPAddress last_local_address_when_quic_worked_;
   // Contains a map of servers which could share the same alternate protocol.
   // Map from a Canonical scheme/host/port (host is some postfix of host names)
   // to an actual origin, which has a plausible alternate protocol mapping.

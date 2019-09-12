@@ -841,7 +841,6 @@ EVENT_TYPE(URL_REQUEST_REDIRECTED)
 // Measures the time between when a net::URLRequest calls a delegate that can
 // block it, and when the delegate allows the request to resume. Each delegate
 // type has a corresponding event type.
-EVENT_TYPE(NETWORK_DELEGATE_AUTH_REQUIRED)
 EVENT_TYPE(NETWORK_DELEGATE_BEFORE_START_TRANSACTION)
 EVENT_TYPE(NETWORK_DELEGATE_BEFORE_URL_REQUEST)
 EVENT_TYPE(NETWORK_DELEGATE_HEADERS_RECEIVED)

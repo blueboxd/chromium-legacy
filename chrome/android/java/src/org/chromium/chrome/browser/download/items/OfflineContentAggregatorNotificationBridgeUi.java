@@ -182,6 +182,7 @@ public class OfflineContentAggregatorNotificationBridgeUi
     }
 
     private boolean needsVisualsForUi(OfflineItem item) {
+        if (item.ignoreVisuals) return false;
         switch (item.state) {
             case OfflineItemState.IN_PROGRESS:
             case OfflineItemState.PENDING:
@@ -197,6 +198,7 @@ public class OfflineContentAggregatorNotificationBridgeUi
     }
 
     private boolean shouldCacheVisuals(OfflineItem item) {
+        if (item.ignoreVisuals) return false;
         switch (item.state) {
             case OfflineItemState.IN_PROGRESS:
             case OfflineItemState.PENDING:

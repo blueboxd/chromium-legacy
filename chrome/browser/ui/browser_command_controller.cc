@@ -754,7 +754,7 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
           browser_,
           browser_->tab_strip_model()->GetActiveWebContents()->GetVisibleURL());
       break;
-    case IDC_HOSTED_APP_MENU_APP_INFO: {
+    case IDC_WEB_APP_MENU_APP_INFO: {
       content::WebContents* const web_contents =
           browser_->tab_strip_model()->GetActiveWebContents();
       if (web_contents) {
@@ -994,8 +994,7 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_COPY_URL, is_web_app);
   command_updater_.UpdateCommandEnabled(IDC_OPEN_IN_CHROME, is_web_app);
   command_updater_.UpdateCommandEnabled(IDC_SITE_SETTINGS, is_web_app);
-  command_updater_.UpdateCommandEnabled(IDC_HOSTED_APP_MENU_APP_INFO,
-                                        is_web_app);
+  command_updater_.UpdateCommandEnabled(IDC_WEB_APP_MENU_APP_INFO, is_web_app);
 
   // Window management commands
   command_updater_.UpdateCommandEnabled(IDC_SELECT_NEXT_TAB, normal_window);

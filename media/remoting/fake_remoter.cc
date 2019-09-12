@@ -24,9 +24,9 @@ namespace media {
 namespace remoting {
 
 FakeRemotingDataStreamSender::FakeRemotingDataStreamSender(
-    mojom::RemotingDataStreamSenderRequest request,
+    mojo::PendingReceiver<mojom::RemotingDataStreamSender> receiver,
     mojo::ScopedDataPipeConsumerHandle consumer_handle)
-    : binding_(this, std::move(request)),
+    : receiver_(this, std::move(receiver)),
       data_pipe_reader_(std::move(consumer_handle)),
       send_frame_count_(0),
       cancel_in_flight_count_(0) {}
@@ -133,18 +133,20 @@ void FakeRemoter::Start() {
 void FakeRemoter::StartDataStreams(
     mojo::ScopedDataPipeConsumerHandle audio_pipe,
     mojo::ScopedDataPipeConsumerHandle video_pipe,
-    mojom::RemotingDataStreamSenderRequest audio_sender_request,
-    mojom::RemotingDataStreamSenderRequest video_sender_request) {
+    mojo::PendingReceiver<mojom::RemotingDataStreamSender>
+        audio_sender_receiver,
+    mojo::PendingReceiver<mojom::RemotingDataStreamSender>
+        video_sender_receiver) {
   if (audio_pipe.is_valid()) {
     VLOG(2) << "Has audio";
     audio_stream_sender_.reset(new FakeRemotingDataStreamSender(
-        std::move(audio_sender_request), std::move(audio_pipe)));
+        std::move(audio_sender_receiver), std::move(audio_pipe)));
   }
 
   if (video_pipe.is_valid()) {
     VLOG(2) << "Has video";
     video_stream_sender_.reset(new FakeRemotingDataStreamSender(
-        std::move(video_sender_request), std::move(video_pipe)));
+        std::move(video_sender_receiver), std::move(video_pipe)));
   }
 }
 

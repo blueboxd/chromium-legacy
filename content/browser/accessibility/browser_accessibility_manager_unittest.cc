@@ -1114,6 +1114,7 @@ TEST_F(BrowserAccessibilityManagerTest, TestNextPreviousInTreeOrder) {
             manager->PreviousInTreeOrder(node3_accessible, false));
   EXPECT_EQ(root_accessible,
             manager->PreviousInTreeOrder(node2_accessible, false));
+  EXPECT_EQ(nullptr, manager->PreviousInTreeOrder(root_accessible, false));
 
   EXPECT_EQ(nullptr, manager->PreviousInTreeOrder(nullptr, true));
   EXPECT_EQ(node4_accessible,
@@ -1124,6 +1125,8 @@ TEST_F(BrowserAccessibilityManagerTest, TestNextPreviousInTreeOrder) {
             manager->PreviousInTreeOrder(node3_accessible, true));
   EXPECT_EQ(root_accessible,
             manager->PreviousInTreeOrder(node2_accessible, true));
+  EXPECT_EQ(node5_accessible,
+            manager->PreviousInTreeOrder(root_accessible, true));
 
   EXPECT_EQ(ax::mojom::TreeOrder::kEqual,
             BrowserAccessibilityManager::CompareNodes(*root_accessible,

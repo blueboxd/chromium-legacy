@@ -6,11 +6,8 @@
 #define CHROME_BROWSER_ACCESSIBILITY_ACCESSIBILITY_EXTENSION_API_H_
 
 #include <string>
-#include "base/compiler_specific.h"
-#include "base/memory/singleton.h"
-#include "base/values.h"
+
 #include "extensions/browser/extension_function.h"
-#include "ui/accessibility/ax_enums.mojom.h"
 
 // API function that enables or disables web content accessibility support.
 class AccessibilityPrivateSetNativeAccessibilityEnabledFunction

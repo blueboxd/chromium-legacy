@@ -368,6 +368,12 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // Constructs a new session which will own |connection|, but not
   // |stream_factory|, which must outlive this session.
   // TODO(rch): decouple the factory from the session via a Delegate interface.
+  //
+  // If |require_confirmation| is true, the returned session will wait for a
+  // successful QUIC handshake before vending any streams, to ensure that both
+  // the server and the current network support QUIC, as HTTP fallback can't
+  // trigger (or at least will take longer) after a QUIC stream has successfully
+  // been created.
   QuicChromiumClientSession(
       quic::QuicConnection* connection,
       std::unique_ptr<DatagramClientSocket> socket,

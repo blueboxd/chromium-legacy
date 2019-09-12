@@ -8,6 +8,7 @@
 
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -33,6 +34,14 @@ namespace {
 
 const size_t kMaximumReportSize =
     5000000;  // The report size limitation is 5mb.
+constexpr char kRequestCountMetricsName[] =
+    "Enterprise.CloudReportingRequestCount";
+
+// Because server only stores 20 profiles for each report and when report is
+// separated into requests, there is at least one profile per request. It means
+// server will truncate the report when there are more than 20 requests. Actions
+// are needed if there are many reports exceed this limitation.
+const int kRequestCountMetricMaxValue = 21;
 
 std::string GetChromePath() {
   base::FilePath path;
@@ -177,7 +186,7 @@ void ReportGenerator::OnBasicRequestReady() {
   if (basic_request_size_ > maximum_report_size_) {
     // Basic request is already too large so we can't upload any valid report.
     // Skip all Profiles and response an empty request list.
-    std::move(callback_).Run(std::move(requests_));
+    Response();
     return;
   }
 
@@ -188,6 +197,12 @@ void ReportGenerator::OnBasicRequestReady() {
        index++) {
     GenerateProfileReportWithIndex(index);
   }
+  Response();
+}
+
+void ReportGenerator::Response() {
+  base::UmaHistogramExactLinear(kRequestCountMetricsName, requests_.size(),
+                                kRequestCountMetricMaxValue);
   std::move(callback_).Run(std::move(requests_));
 }
 

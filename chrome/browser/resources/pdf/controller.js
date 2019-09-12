@@ -4,6 +4,9 @@
 
 'use strict';
 
+/** @typedef {{ type: string }} */
+let MessageData;
+
 /**
  * @typedef {{
  *   dataToSave: Array,
@@ -14,8 +17,58 @@
 let SaveDataMessageData;
 
 /**
+ * @typedef {{
+ *   type: string,
+ *   to: string,
+ *   cc: string,
+ *   bcc: string,
+ *   subject: string,
+ *   body: string,
+ * }}
+ */
+let EmailMessageData;
+
+/**
+ * @typedef {{
+ *   type: string,
+ *   url: string,
+ *   grayscale: boolean,
+ *   modifiable: boolean,
+ *   pageNumbers: !Array<number>
+ * }}
+ */
+let PrintPreviewParams;
+
+// Note: Redefining these types here, to work around the fact that ink externs
+// are only available on Chrome OS, so the targets that contain them cannot be
+// built on other platforms.
+// TODO (rbpotter): Break InkController into its own file that is only included
+// on Chrome OS.
+
+/**
+ * @typedef {{
+ *   tool: string,
+ *   size: number,
+ *   color: string,
+ * }}
+ */
+let AnnotationTool;
+
+/**
+ * @typedef {{
+ *   setAnnotationTool: function(AnnotationTool):void,
+ *   viewportChanged: function():void,
+ *   saveDocument: function():!Promise,
+ *   undo: function():void,
+ *   redo: function():void,
+ *   load: function(string, !ArrayBuffer):!Promise,
+ *   viewport: !Viewport,
+ * }}
+ */
+let ViewerInkHostElement;
+
+/**
  * Creates a cryptographically secure pseudorandom 128-bit token.
- *
  * @return {string} The generated token as a hex string.
  */
 function createToken() {
@@ -29,53 +82,32 @@ function createToken() {
 class ContentController {
   constructor() {}
 
-  /**
-   * A callback that's called before the zoom changes.
-   */
   beforeZoom() {}
 
-  /**
-   * A callback that's called after the zoom changes.
-   */
   afterZoom() {}
 
-  /**
-   * Handles a change to the viewport.
-   */
   viewportChanged() {}
 
-  /**
-   * Rotates the document 90 degrees in the clockwise direction.
-   * @abstract
-   */
+  /** @abstract */
   rotateClockwise() {}
 
-  /**
-   * Rotates the document 90 degrees in the counter clockwise direction.
-   * @abstract
-   */
+  /** @abstract */
   rotateCounterclockwise() {}
 
-  /**
-   * Triggers printing of the current document.
-   */
+  /** Triggers printing of the current document. */
   print() {}
 
-  /**
-   * Undo an edit action.
-   */
+  /** Undo an edit action. */
   undo() {}
 
-  /**
-   * Redo an edit action.
-   */
+  /** Redo an edit action. */
   redo() {}
 
   /**
    * Requests that the current document be saved.
    * @param {boolean} requireResult whether a response is required, otherwise
    *     the controller may save the document to disk internally.
-   * @return {Promise<{fileName: string, dataToSave: ArrayBuffer}}
+   * @return {Promise<{fileName: string, dataToSave: ArrayBuffer}>}
    * @abstract
    */
   save(requireResult) {}
@@ -83,7 +115,7 @@ class ContentController {
   /**
    * Loads PDF document from `data` activates UI.
    * @param {string} fileName
-   * @param {ArrayBuffer} data
+   * @param {!ArrayBuffer} data
    * @return {Promise<void>}
    * @abstract
    */
@@ -96,18 +128,35 @@ class ContentController {
   unload() {}
 }
 
+/**
+ * Controller for annotation mode, on Chrome OS only. Fires the following events
+ * from its event target:
+ * has-unsaved-changes: Fired to indicate there are ink annotations that have
+ *     not been saved.
+ * set-annotation-undo-state: Contains information about whether undo or redo
+ *     options are available.
+ */
 class InkController extends ContentController {
-  /**
-   * @param {PDFViewer} viewer
-   * @param {Viewport} viewport
-   */
-  constructor(viewer, viewport) {
+  /** @param {!Viewport} viewport */
+  constructor(viewport) {
     super();
-    this.viewer_ = viewer;
+
+    /** @private {!Viewport} */
     this.viewport_ = viewport;
 
-    /** @type {ViewerInkHost} */
+    /** @private {?ViewerInkHostElement} */
     this.inkHost_ = null;
+
+    /** @private {!EventTarget} */
+    this.eventTarget_ = new cr.EventTarget();
+
+    /** @type {?AnnotationTool} */
+    this.tool_ = null;
+  }
+
+  /** @return {!EventTarget} */
+  getEventTarget() {
+    return this.eventTarget_;
   }
 
   /** @param {AnnotationTool} tool */
@@ -151,14 +200,16 @@ class InkController extends ContentController {
   /** @override */
   load(filename, data) {
     if (!this.inkHost_) {
-      this.inkHost_ = document.createElement('viewer-ink-host');
-      $('content').appendChild(this.inkHost_);
+      const inkHost = document.createElement('viewer-ink-host');
+      $('content').appendChild(inkHost);
+      this.inkHost_ = /** @type {!ViewerInkHostElement} */ (inkHost);
       this.inkHost_.viewport = this.viewport_;
-      this.inkHost_.addEventListener('stroke-added', e => {
-        this.viewer_.setHasUnsavedChanges();
+      inkHost.addEventListener('stroke-added', e => {
+        this.eventTarget_.dispatchEvent(new CustomEvent('has-unsaved-changes'));
       });
-      this.inkHost_.addEventListener('undo-state-changed', e => {
-        this.viewer_.setAnnotationUndoState(e.detail);
+      inkHost.addEventListener('undo-state-changed', e => {
+        this.eventTarget_.dispatchEvent(
+            new CustomEvent('set-annotation-undo-state', {detail: e.detail}));
       });
     }
     return this.inkHost_.load(filename, data);
@@ -171,22 +222,45 @@ class InkController extends ContentController {
   }
 }
 
+/**
+ * PDF plugin controller, responsible for communicating with the embedded plugin
+ * element. Dispatches a 'plugin-message' event containing the message from the
+ * plugin, if a message type not handled by this controller is received.
+ */
 class PluginController extends ContentController {
   /**
-   * @param {HTMLEmbedElement} plugin
-   * @param {PDFViewer} viewer
-   * @param {Viewport} viewport
+   * @param {!HTMLEmbedElement} plugin
+   * @param {!Viewport} viewport
+   * @param {function():boolean} getIsUserInitiatedCallback
+   * @param {function():!Promise} getLoadedCallback
    */
-  constructor(plugin, viewer, viewport) {
+  constructor(plugin, viewport, getIsUserInitiatedCallback, getLoadedCallback) {
     super();
+
+    /** @private {!HTMLEmbedElement} */
     this.plugin_ = plugin;
-    this.viewer_ = viewer;
+
+    /** @private {!Viewport} */
     this.viewport_ = viewport;
+
+    /** @private {!function():boolean} */
+    this.getIsUserInitiatedCallback_ = getIsUserInitiatedCallback;
+
+    /** @private {!function():!Promise} */
+    this.getLoadedCallback_ = getLoadedCallback;
 
     /** @private {!Map<string, PromiseResolver>} */
     this.pendingTokens_ = new Map();
     this.plugin_.addEventListener(
         'message', e => this.handlePluginMessage_(e), false);
+
+    /** @private {!EventTarget} */
+    this.eventTarget_ = new cr.EventTarget();
+  }
+
+  /** @return {!EventTarget} */
+  getEventTarget() {
+    return this.eventTarget_;
   }
 
   /**
@@ -195,13 +269,13 @@ class PluginController extends ContentController {
    * @override
    */
   beforeZoom() {
-    this.postMessage({type: 'stopScrolling'});
+    this.postMessage_({type: 'stopScrolling'});
 
     if (this.viewport_.pinchPhase == Viewport.PinchPhase.PINCH_START) {
       const position = this.viewport_.position;
       const zoom = this.viewport_.getZoom();
       const pinchPhase = this.viewport_.pinchPhase;
-      this.postMessage({
+      this.postMessage_({
         type: 'viewport',
         userInitiated: true,
         zoom: zoom,
@@ -224,9 +298,9 @@ class PluginController extends ContentController {
     const pinchCenter = this.viewport_.pinchCenter || {x: 0, y: 0};
     const pinchPhase = this.viewport_.pinchPhase;
 
-    this.postMessage({
+    this.postMessage_({
       type: 'viewport',
-      userInitiated: this.viewer_.isUserInitiatedEvent_,
+      userInitiated: this.getIsUserInitiatedCallback_(),
       zoom: zoom,
       xOffset: position.x,
       yOffset: position.y,
@@ -238,31 +312,81 @@ class PluginController extends ContentController {
     });
   }
 
-  // TODO(dstockwell): this method should be private, add controller APIs that
-  // map to all of the existing usage. crbug.com/913279
   /**
    * Post a message to the PPAPI plugin. Some messages will cause an async reply
    * to be received through handlePluginMessage_().
-   *
-   * @param {Object} message Message to post.
+   * @param {!MessageData} message Message to post.
+   * @private
    */
-  postMessage(message) {
+  postMessage_(message) {
     this.plugin_.postMessage(message);
   }
 
   /** @override */
   rotateClockwise() {
-    this.postMessage({type: 'rotateClockwise'});
+    this.postMessage_({type: 'rotateClockwise'});
   }
 
   /** @override */
   rotateCounterclockwise() {
-    this.postMessage({type: 'rotateCounterclockwise'});
+    this.postMessage_({type: 'rotateCounterclockwise'});
   }
 
   /** @override */
   print() {
-    this.postMessage({type: 'print'});
+    this.postMessage_({type: 'print'});
+  }
+
+  selectAll() {
+    this.postMessage_({type: 'selectAll'});
+  }
+
+  getSelectedText() {
+    this.postMessage_({type: 'getSelectedText'});
+  }
+
+  /** @param {!PrintPreviewParams} printPreviewParams */
+  resetPrintPreviewMode(printPreviewParams) {
+    this.postMessage_({
+      type: 'resetPrintPreviewMode',
+      url: printPreviewParams.url,
+      grayscale: printPreviewParams.grayscale,
+      // If the PDF isn't modifiable we send 0 as the page count so that no
+      // blank placeholder pages get appended to the PDF.
+      pageCount:
+          (printPreviewParams.modifiable ?
+               printPreviewParams.pageNumbers.length :
+               0)
+    });
+  }
+
+  /** @param {string} newColor New color, in hex, for the PDF plugin. */
+  backgroundColorChanged(newColor) {
+    this.postMessage_({
+      type: 'backgroundColorChanged',
+      backgroundColor: newColor,
+    });
+  }
+
+  /**
+   * @param {string} url
+   * @param {number} index
+   */
+  loadPreviewPage(url, index) {
+    this.postMessage_({type: 'loadPreviewPage', url: url, index: index});
+  }
+
+  /** @param {string} password */
+  getPasswordComplete(password) {
+    this.postMessage_({type: 'getPasswordComplete', password: password});
+  }
+
+  /** @param {string} destination */
+  getNamedDestination(destination) {
+    this.postMessage_({
+      type: 'getNamedDestination',
+      namedDestination: destination,
+    });
   }
 
   /** @override */
@@ -270,7 +394,7 @@ class PluginController extends ContentController {
     const resolver = new PromiseResolver();
     const newToken = createToken();
     this.pendingTokens_.set(newToken, resolver);
-    this.postMessage({type: 'save', token: newToken, force: requireResult});
+    this.postMessage_({type: 'save', token: newToken, force: requireResult});
     return resolver.promise;
   }
 
@@ -281,7 +405,7 @@ class PluginController extends ContentController {
     this.plugin_.setAttribute('stream-url', url);
     this.plugin_.style.display = 'block';
     try {
-      await this.viewer_.loaded;
+      await this.getLoadedCallback_();
     } finally {
       URL.revokeObjectURL(url);
     }
@@ -294,78 +418,49 @@ class PluginController extends ContentController {
 
   /**
    * An event handler for handling message events received from the plugin.
-   *
-   * @param {MessageObject} message a message event.
+   * @param {!Event} messageEvent a message event.
    * @private
    */
-  handlePluginMessage_(message) {
-    switch (message.data.type.toString()) {
-      case 'beep':
-        this.viewer_.handleBeep();
-        break;
-      case 'documentDimensions':
-        this.viewer_.setDocumentDimensions(message.data);
-        break;
+  handlePluginMessage_(messageEvent) {
+    const messageData = /** @type {!MessageData} */ (messageEvent.data);
+    switch (messageData.type) {
       case 'email':
-        const href = 'mailto:' + message.data.to + '?cc=' + message.data.cc +
-            '&bcc=' + message.data.bcc + '&subject=' + message.data.subject +
-            '&body=' + message.data.body;
+        const emailData = /** @type {!EmailMessageData} */ (messageData);
+        const href = 'mailto:' + emailData.to + '?cc=' + emailData.cc +
+            '&bcc=' + emailData.bcc + '&subject=' + emailData.subject +
+            '&body=' + emailData.body;
         window.location.href = href;
         break;
-      case 'getPassword':
-        this.viewer_.handlePasswordRequest();
-        break;
-      case 'getSelectedTextReply':
-        this.viewer_.handleSelectedTextReply(message.data.selectedText);
-        break;
       case 'goToPage':
-        this.viewport_.goToPage(message.data.page);
-        break;
-      case 'loadProgress':
-        this.viewer_.updateProgress(message.data.progress);
-        break;
-      case 'navigate':
-        this.viewer_.handleNavigate(message.data.url, message.data.disposition);
-        break;
-      case 'printPreviewLoaded':
-        this.viewer_.handlePrintPreviewLoaded();
+        this.viewport_.goToPage(
+            /** @type {{type: string, page: number}} */ (messageData).page);
         break;
       case 'setScrollPosition':
-        this.viewport_.scrollTo(/** @type {!PartialPoint} */ (message.data));
+        this.viewport_.scrollTo(/** @type {!PartialPoint} */ (messageData));
         break;
       case 'scrollBy':
-        this.viewport_.scrollBy(/** @type {!Point} */ (message.data));
-        break;
-      case 'metadata':
-        this.viewer_.setDocumentMetadata(
-            message.data.title, message.data.bookmarks,
-            message.data.canSerializeDocument);
-        break;
-      case 'setIsSelecting':
-        this.viewer_.setIsSelecting(message.data.isSelecting);
-        break;
-      case 'getNamedDestinationReply':
-        this.viewer_.paramsParser_.onNamedDestinationReceived(
-            message.data.pageNumber);
-        break;
-      case 'formFocusChange':
-        this.viewer_.setIsFormFieldFocused(message.data.focused);
+        this.viewport_.scrollBy(/** @type {!Point} */ (messageData));
         break;
       case 'saveData':
-        this.saveData_(message.data);
+        this.saveData_(/** @type {!SaveDataMessageData} */ (messageData));
         break;
       case 'consumeSaveToken':
-        const resolver = this.pendingTokens_.get(message.data.token);
-        assert(this.pendingTokens_.delete(message.data.token));
+        const saveTokenData =
+            /** @type {{ type: string, token: string }} */ (messageData);
+        const resolver = this.pendingTokens_.get(saveTokenData.token);
+        assert(this.pendingTokens_.delete(saveTokenData.token));
         resolver.resolve(null);
         break;
+      default:
+        this.eventTarget_.dispatchEvent(
+            new CustomEvent('plugin-message', {detail: messageData}));
     }
   }
 
   /**
    * Handles the pdf file buffer received from the plugin.
    *
-   * @param {SaveDataMessageData} messageData data of the message event.
+   * @param {!SaveDataMessageData} messageData data of the message event.
    * @private
    */
   saveData_(messageData) {

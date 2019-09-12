@@ -8,7 +8,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
@@ -58,8 +57,6 @@ class PinnedTabService : public content::NotificationObserver,
   bool need_to_write_pinned_tabs_ = true;
 
   content::NotificationRegistrar registrar_;
-
-  ScopedObserver<BrowserList, BrowserListObserver> browser_list_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PinnedTabService);
 };

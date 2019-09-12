@@ -13,8 +13,8 @@
 namespace {
 
 TEST(CallbackHelpersTest, IsBaseCallback) {
-  // Check that base::Closures and references to them are considered
-  // base::Callbacks.
+  // Check that base::{Once,Repeating}Closures and references to them are
+  // considered base::{Once,Repeating}Callbacks.
   static_assert(base::IsBaseCallback<base::OnceClosure>::value, "");
   static_assert(base::IsBaseCallback<base::RepeatingClosure>::value, "");
   static_assert(base::IsBaseCallback<base::OnceClosure&&>::value, "");

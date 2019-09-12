@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
+#include "chrome/browser/download/simple_download_manager_coordinator_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
@@ -78,31 +79,29 @@ AndroidTelemetryService::AndroidTelemetryService(
   DCHECK(profile_);
   DCHECK(sb_service_);
 
-  content::DownloadManager* download_manager =
-      BrowserContext::GetDownloadManager(profile_);
-  if (download_manager) {
-    // Look for new downloads being created.
-    download_manager->AddObserver(this);
-  }
+  download::SimpleDownloadManagerCoordinator* coordinator =
+      SimpleDownloadManagerCoordinatorFactory::GetForKey(
+          profile_->GetProfileKey());
+  coordinator->AddObserver(this);
 }
 
 AndroidTelemetryService::~AndroidTelemetryService() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::DownloadManager* download_manager =
-      BrowserContext::GetDownloadManager(profile_);
-  if (download_manager) {
-    download_manager->RemoveObserver(this);
-  }
+  download::SimpleDownloadManagerCoordinator* coordinator =
+      SimpleDownloadManagerCoordinatorFactory::GetForKey(
+          profile_->GetProfileKey());
+  coordinator->RemoveObserver(this);
 }
 
 void AndroidTelemetryService::OnDownloadCreated(
-    content::DownloadManager* manager,
     download::DownloadItem* item) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!BrowserContext::GetDownloadManager(profile_)->IsManagerInitialized()) {
+  download::SimpleDownloadManagerCoordinator* coordinator =
+      SimpleDownloadManagerCoordinatorFactory::GetForKey(
+          profile_->GetProfileKey());
+  if (!coordinator->has_all_history_downloads())
     return;
-  }
 
   if (!CanSendPing(item)) {
     return;

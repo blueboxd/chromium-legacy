@@ -211,7 +211,6 @@ GlobalMenuBarX11::GlobalMenuBarX11(BrowserView* browser_view,
       browser_view_(browser_view),
       xid_(host->GetAcceleratedWidget()),
       tab_restore_service_(nullptr),
-      scoped_observer_(this),
       last_command_id_(kFirstUnreservedCommandId - 1) {
   GlobalMenuBarRegistrarX11::GetInstance()->OnMenuBarCreated(this);
 }

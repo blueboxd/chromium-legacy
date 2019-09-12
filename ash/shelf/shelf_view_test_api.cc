@@ -130,7 +130,7 @@ OverflowBubble* ShelfViewTestAPI::overflow_bubble() {
 }
 
 ShelfTooltipManager* ShelfViewTestAPI::tooltip_manager() {
-  return &shelf_view_->tooltip_;
+  return shelf_view_->shelf()->tooltip();
 }
 
 int ShelfViewTestAPI::GetMinimumDragDistance() const {

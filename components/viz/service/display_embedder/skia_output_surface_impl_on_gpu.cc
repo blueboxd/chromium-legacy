@@ -725,13 +725,13 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
 
     if (!output_sk_surface()->draw(ddl.get()))
       DLOG(ERROR) << "output_sk_surface()->draw() failed.";
-    ddl = nullptr;
+    destroy_after_swap_.emplace_back(std::move(ddl));
 
     if (overdraw_ddl) {
       sk_sp<SkSurface> overdraw_surface = SkSurface::MakeRenderTarget(
           gr_context(), overdraw_ddl->characterization(), SkBudgeted::kNo);
       overdraw_surface->draw(overdraw_ddl.get());
-      overdraw_ddl = nullptr;
+      destroy_after_swap_.emplace_back(std::move(overdraw_ddl));
 
       SkPaint paint;
       sk_sp<SkImage> overdraw_image = overdraw_surface->makeImageSnapshot();
@@ -833,6 +833,8 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(
     output_device_->SwapBuffers(buffer_presented_callback_,
                                 std::move(frame.latency_info));
   }
+
+  destroy_after_swap_.clear();
 }
 
 void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
@@ -877,6 +879,8 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
       DCHECK(result);
     }
     offscreen.surface()->draw(ddl.get());
+    destroy_after_swap_.emplace_back(std::move(ddl));
+
     GrFlushInfo flush_info = {
         .fFlags = kNone_GrFlushFlags,
         .fNumSemaphores = scoped_promise_image_access.end_semaphores().size(),
@@ -920,6 +924,11 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
   TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::CopyOutput");
   // TODO(crbug.com/898595): Do this on the GPU instead of CPU with Vulkan.
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // Clear |destroy_after_swap_| if we CopyOutput without SwapBuffers.
+  base::ScopedClosureRunner cleanup(
+      base::BindOnce([](std::vector<std::unique_ptr<SkDeferredDisplayList>>) {},
+                     std::move(destroy_after_swap_)));
 
   if (deferred_framebuffer_draw_closure) {
     std::move(deferred_framebuffer_draw_closure).Run();

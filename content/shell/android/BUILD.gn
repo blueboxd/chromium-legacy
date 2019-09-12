@@ -230,10 +230,12 @@ instrumentation_test_apk("content_shell_test_apk") {
   shared_libraries = [ ":libcontent_native_test" ]
   android_manifest = "javatests/AndroidManifest.xml"
 
+  data_deps = [
+    "//testing/buildbot/filters:content_shell_test_apk_filters",
+  ]
+
   if (enable_chrome_android_internal) {
-    data_deps = [
-      "//clank/build/bot/filters:content_shell_test_apk_filters",
-    ]
+    data_deps += [ "//clank/build/bot/filters:content_shell_test_apk_filters" ]
   }
 }
 

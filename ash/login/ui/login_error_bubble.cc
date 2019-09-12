@@ -8,6 +8,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/image_view.h"

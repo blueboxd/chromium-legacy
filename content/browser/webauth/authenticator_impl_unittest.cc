@@ -342,8 +342,13 @@ std::vector<device::CableDiscoveryData> GetTestCableExtension() {
 
 class AuthenticatorTestBase : public content::RenderViewHostTestHarness {
  protected:
-  AuthenticatorTestBase() { ResetVirtualDevice(); }
+  AuthenticatorTestBase() = default;
   ~AuthenticatorTestBase() override {}
+
+  void SetUp() override {
+    content::RenderViewHostTestHarness::SetUp();
+    ResetVirtualDevice();
+  }
 
   void ResetVirtualDevice() {
     auto virtual_device_factory =
@@ -355,11 +360,6 @@ class AuthenticatorTestBase : public content::RenderViewHostTestHarness {
   }
 
   device::test::VirtualFidoDeviceFactory* virtual_device_factory_;
-
-#if defined(OS_WIN)
-  device::ScopedFakeWinWebAuthnApi win_webauthn_api_ =
-      device::ScopedFakeWinWebAuthnApi::MakeUnavailable();
-#endif  // defined(OS_WIN)
 };
 
 class AuthenticatorImplTest : public AuthenticatorTestBase {
@@ -4112,15 +4112,14 @@ TEST_F(ResidentKeyAuthenticatorImplTest, WinCredProtectApiVersion) {
   // The canned response returned by the Windows API fake is for acme.com.
   NavigateAndCommit(GURL("https://acme.com"));
   TestServiceManagerContext smc;
-  // AuthenticatorTestBase default-disables |win_webauthn_api_|.
-  win_webauthn_api_.set_available(true);
   for (const bool supports_cred_protect : {false, true}) {
     SCOPED_TRACE(testing::Message()
                  << "supports_cred_protect: " << supports_cred_protect);
 
-    win_webauthn_api_.set_version(supports_cred_protect
-                                      ? WEBAUTHN_API_VERSION_2
-                                      : WEBAUTHN_API_VERSION_1);
+    ::device::FakeWinWebAuthnApi api;
+    virtual_device_factory_->set_win_webauthn_api(&api);
+    api.set_version(supports_cred_protect ? WEBAUTHN_API_VERSION_2
+                                          : WEBAUTHN_API_VERSION_1);
 
     PublicKeyCredentialCreationOptionsPtr options = make_credential_options();
     options->relying_party = device::PublicKeyCredentialRpEntity();

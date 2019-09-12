@@ -698,11 +698,6 @@ const char kDownloadAutoResumptionNativeName[] =
 const char kDownloadAutoResumptionNativeDescription[] =
     "Enables download auto-resumption in native";
 
-const char kDragToPinTabsName[] = "Drag to Modify Tab Pinnedness";
-const char kDragToPinTabsDescription[] =
-    "Allows users to drag tabs between pinned and unpinned tabs to modify the "
-    "pinned state of the tab.";
-
 const char kEnableCSSBackdropFilterName[] = "Enable backdrop-filter";
 const char kEnableCSSBackdropFilterDescription[] =
     "Enable a new CSS property called backdrop-filter.";
@@ -1334,6 +1329,11 @@ const char kOmniboxAlternateMatchDescriptionSeparatorDescription[] =
     "Shows an alternate separator before the description of omnibox matches. "
     "In English, this changes the separator from '-' to '|'.";
 
+const char kOmniboxAutocompleteTitlesName[] = "Omnibox Autocomplete Titles";
+const char kOmniboxAutocompleteTitlesDescription[] =
+    "Allows autocompleting bookmark, history, and document suggestions when the"
+    " user input is a prefix of their titles, as opposed to their URLs.";
+
 const char kOmniboxDisplayTitleForCurrentUrlName[] =
     "Include title for the current URL in the omnibox";
 const char kOmniboxDisplayTitleForCurrentUrlDescription[] =
@@ -1809,16 +1809,12 @@ const char kSharingUseDeviceInfoDescription[] =
     "Enables Sharing infrastructure to register devices in DeviceInfo and "
     "remove sync requirement.";
 
-const char kShelfDenseClamshellName[] =
-    "Show a smaller, denser shelf in laptop mode.";
-const char kShelfDenseClamshellDescription[] =
-    "Reduces the size of the shelf and its apps when in laptop mode.";
-
 const char kShelfHotseatName[] = "Enable a modular design for the shelf.";
 const char kShelfHotseatDescription[] =
     "Shows a modular design for the shelf where the apps are shown separately "
     "in a 'hotseat' interface when in tablet mode, and where various pieces "
-    "are separate and behave independently.";
+    "are separate and behave independently. Also reduces the size of the"
+    "shelf and its app when in laptop mode.";
 
 const char kShelfHoverPreviewsName[] =
     "Show previews of running apps when hovering over the shelf.";

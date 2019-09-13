@@ -17,6 +17,11 @@
 #include "ui/base/ime/text_edit_commands.h"
 #include "ui/events/event.h"
 
+#if defined(USE_X11)
+#include "ui/base/x/x11_util.h"  // nogncheck
+#include "ui/gfx/x/x11.h"        // nogncheck
+#endif
+
 using ui::TextEditCommand;
 
 // TODO(erg): Rewrite the old gtk_key_bindings_handler_unittest.cc and get them
@@ -36,13 +41,56 @@ GtkWidget* CreateInvisibleWindow() {
 #endif
 }
 
+#if !defined(USE_X11)
+GdkModifierType EventFlagsToGdkModifierType(ui::EventFlags event_flags) {
+  static const struct {
+    ui::EventFlags event_flag;
+    GdkModifierType gdk_modifier;
+  } mapping[] = {
+      {ui::EF_SHIFT_DOWN, GDK_SHIFT_MASK},
+      {ui::EF_CAPS_LOCK_ON, GDK_LOCK_MASK},
+      {ui::EF_CONTROL_DOWN, GDK_CONTROL_MASK},
+      {ui::EF_ALT_DOWN, GDK_MOD1_MASK},
+      {ui::EF_NUM_LOCK_ON, GDK_MOD2_MASK},
+      {ui::EF_MOD3_DOWN, GDK_MOD3_MASK},
+      {ui::EF_COMMAND_DOWN, GDK_MOD4_MASK},
+      {ui::EF_ALTGR_DOWN, GDK_MOD5_MASK},
+      {ui::EF_LEFT_MOUSE_BUTTON, GDK_BUTTON1_MASK},
+      {ui::EF_MIDDLE_MOUSE_BUTTON, GDK_BUTTON2_MASK},
+      {ui::EF_RIGHT_MOUSE_BUTTON, GDK_BUTTON3_MASK},
+      {ui::EF_BACK_MOUSE_BUTTON, GDK_BUTTON4_MASK},
+      {ui::EF_FORWARD_MOUSE_BUTTON, GDK_BUTTON5_MASK},
+  };
+  GdkModifierType gdk_modifier_type = static_cast<GdkModifierType>(0);
+  for (const auto& map : mapping) {
+    if (event_flags & map.event_flag) {
+      gdk_modifier_type =
+          static_cast<GdkModifierType>(gdk_modifier_type | map.gdk_modifier);
+    }
+  }
+  return gdk_modifier_type;
+}
+#endif
+
 }  // namespace
 
 namespace libgtkui {
 
 GtkKeyBindingsHandler::GtkKeyBindingsHandler()
-    : fake_window_(CreateInvisibleWindow()), handler_(CreateNewHandler()) {
+    : fake_window_(CreateInvisibleWindow()),
+      handler_(CreateNewHandler()),
+      has_xkb_(false) {
   gtk_container_add(GTK_CONTAINER(fake_window_), handler_);
+
+#if defined(USE_X11)
+  int opcode, event, error;
+  int major = XkbMajorVersion;
+  int minor = XkbMinorVersion;
+  has_xkb_ = XkbQueryExtension(gfx::GetXDisplay(), &opcode, &event, &error,
+                               &major, &minor);
+#else
+  has_xkb_ = false;
+#endif
 }
 
 GtkKeyBindingsHandler::~GtkKeyBindingsHandler() {
@@ -56,19 +104,19 @@ bool GtkKeyBindingsHandler::MatchEvent(
   CHECK(event.IsKeyEvent());
 
   const ui::KeyEvent& key_event = static_cast<const ui::KeyEvent&>(event);
-  if (key_event.is_char())
+  if (key_event.is_char() || !key_event.native_event())
     return false;
 
-  GdkEvent* gdk_event = GdkEventFromKeyEvent(key_event);
-  if (!gdk_event)
-    return false;
+  GdkEventKey gdk_event;
+  BuildGdkEventKeyFromKeyEvent(key_event, &gdk_event);
 
   edit_commands_.clear();
   // If this key event matches a predefined key binding, corresponding signal
   // will be emitted.
 
-  gtk_bindings_activate_event(G_OBJECT(handler_), &gdk_event->key);
-  gdk_event_free(gdk_event);
+  gtk_bindings_activate_event(
+      G_OBJECT(handler_),
+      &gdk_event);
 
   bool matched = !edit_commands_.empty();
   if (edit_commands)
@@ -99,6 +147,56 @@ GtkWidget* GtkKeyBindingsHandler::CreateNewHandler() {
 void GtkKeyBindingsHandler::EditCommandMatched(TextEditCommand command,
                                                const std::string& value) {
   edit_commands_.push_back(ui::TextEditCommandAuraLinux(command, value));
+}
+
+void GtkKeyBindingsHandler::BuildGdkEventKeyFromKeyEvent(
+    const ui::KeyEvent& key_event,
+    GdkEventKey* gdk_event) {
+  GdkKeymap* keymap = gdk_keymap_get_for_display(gdk_display_get_default());
+  GdkModifierType consumed, state;
+
+#if defined(USE_X11)
+  const ui::PlatformEvent& xevent = key_event.native_event();
+  gdk_event->type =
+      xevent->xany.type == KeyPress ? GDK_KEY_PRESS : GDK_KEY_RELEASE;
+  gdk_event->time = xevent->xkey.time;
+  gdk_event->state = static_cast<GdkModifierType>(xevent->xkey.state);
+  gdk_event->hardware_keycode = xevent->xkey.keycode;
+  if (has_xkb_) {
+    gdk_event->group = XkbGroupForCoreState(xevent->xkey.state);
+  } else {
+    // The overwhelming majority of people will be using X servers that support
+    // XKB. GDK has a fallback here that does some complicated stuff to detect
+    // whether a modifier key affects the keybinding, but that should be
+    // extremely rare.
+    static bool logged = false;
+    if (!logged) {
+      NOTIMPLEMENTED();
+      logged = true;
+    }
+    gdk_event->group = 0;
+  }
+#else
+  gdk_event->type =
+      key_event.type() == ui::ET_KEY_PRESSED ? GDK_KEY_PRESS : GDK_KEY_RELEASE;
+  gdk_event->time =
+      (key_event.time_stamp() - base::TimeTicks()).InMilliseconds();
+  gdk_event->state = EventFlagsToGdkModifierType(
+      static_cast<ui::EventFlags>(key_event.flags()));
+  gdk_event->hardware_keycode = key_event.key_code();
+  // TODO(crbug.com/987939): Fix keyboard layout switching in Ozone/X11
+  gdk_event->group = 0;
+#endif
+
+  gdk_event->keyval = GDK_KEY_VoidSymbol;
+  gdk_keymap_translate_keyboard_state(
+      keymap, gdk_event->hardware_keycode,
+      static_cast<GdkModifierType>(gdk_event->state), gdk_event->group,
+      &gdk_event->keyval, nullptr, nullptr, &consumed);
+
+  state = static_cast<GdkModifierType>(gdk_event->state & ~consumed);
+  gdk_keymap_add_virtual_modifiers(keymap, &state);
+  gdk_event->state |= state;
 }
 
 void GtkKeyBindingsHandler::HandlerInit(Handler* self) {

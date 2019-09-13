@@ -7,7 +7,7 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/editor_dialog_section_large_spacing"
+        android:layout_marginTop="@dimen/editor_dialog_section_small_spacing"
         android:layout_marginBottom="@dimen/editor_dialog_section_large_spacing"
         android:layout_marginStart="@dimen/pref_autofill_field_horizontal_padding"
         android:layout_marginEnd="@dimen/pref_autofill_field_horizontal_padding"
@@ -18,7 +18,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAppearance="@style/TextAppearance.BlackCaption"
-            android:layout_marginTop="@dimen/editor_dialog_section_small_spacing"/>
+            android:layout_marginTop="5dp"/>
 
     <android.support.v7.widget.AppCompatSpinner
             android:id="@+id/spinner"

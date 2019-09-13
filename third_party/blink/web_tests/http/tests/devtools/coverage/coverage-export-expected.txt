@@ -2,19 +2,6 @@ Tests the coverage export functionality and format.
 
 
 
-File: http://127.0.0.1:8000/devtools/coverage/resources/highlight-in-source.css
-
-Usage:
-body {
-    background-color: lightblue;
-}
-
-Usage:
-.class {
-    color: red;
-}
-
-
 File: http://127.0.0.1:8000/devtools/coverage/resources/basic-coverage.html
 
 Usage:
@@ -55,6 +42,19 @@ function performActions() {
 
 Usage:
 
+
+
+File: http://127.0.0.1:8000/devtools/coverage/resources/highlight-in-source.css
+
+Usage:
+body {
+    background-color: lightblue;
+}
+
+Usage:
+.class {
+    color: red;
+}
 
 
 File: test://evaluations/0/coverage-export.js

@@ -4,11 +4,12 @@
 
 package org.chromium.android_webview.test;
 
-import android.support.annotation.IntDef;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.util.Pair;
+
+import androidx.annotation.IntDef;
 
 import org.junit.After;
 import org.junit.Assert;

@@ -593,7 +593,8 @@ TEST_F(IndexedDBFactoryTest, ConnectionCloseDuringUpgrade) {
   ASSERT_TRUE(callbacks->connection());
 
   // Close the connection.
-  callbacks->connection()->AbortTransactionsAndClose();
+  callbacks->connection()->AbortTransactionsAndClose(
+      IndexedDBConnection::CloseErrorHandling::kAbortAllReturnLastError);
 
   // Since there are no more references the factory should be closing.
   EXPECT_TRUE(factory()->GetOriginFactory(origin));
@@ -776,7 +777,8 @@ TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
     callbacks->connection()->database()->Commit(
         callbacks->connection()->GetTransaction(transaction_id));
     loop.Run();
-    callbacks->connection()->AbortTransactionsAndClose();
+    callbacks->connection()->AbortTransactionsAndClose(
+        IndexedDBConnection::CloseErrorHandling::kAbortAllReturnLastError);
     RunPostedTasks();
     EXPECT_FALSE(factory()->IsDatabaseOpen(origin, db_name));
   }

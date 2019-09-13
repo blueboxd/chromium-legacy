@@ -605,11 +605,6 @@ class ThreadedHeapTester : public ThreadedTesterBase {
           gc_count_.fetch_add(1, std::memory_order_release);
         }
 
-        // Taking snapshot shouldn't have any bad side effect.
-        // TODO(haraken): This snapshot GC causes crashes, so disable
-        // it at the moment. Fix the crash and enable it.
-        // ThreadHeap::collectGarbage(BlinkGC::NoHeapPointersOnStack,
-        //                            BlinkGC::TakeSnapshot, BlinkGC::ForcedGC);
         TestSupportingGC::PreciselyCollectGarbage();
         EXPECT_EQ(wrapper->Value(), 0x0bbac0de);
         EXPECT_EQ((*global_persistent)->Value(), 0x0ed0cabb);
@@ -644,11 +639,6 @@ class ThreadedWeaknessTester : public ThreadedTesterBase {
           gc_count_.fetch_add(1, std::memory_order_release);
         }
 
-        // Taking snapshot shouldn't have any bad side effect.
-        // TODO(haraken): This snapshot GC causes crashes, so disable
-        // it at the moment. Fix the crash and enable it.
-        // ThreadHeap::collectGarbage(BlinkGC::NoHeapPointersOnStack,
-        //                            BlinkGC::TakeSnapshot, BlinkGC::ForcedGC);
         TestSupportingGC::PreciselyCollectGarbage();
         EXPECT_TRUE(weak_map->IsEmpty());
       }

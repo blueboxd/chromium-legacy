@@ -5,9 +5,10 @@
 package org.chromium.chrome.browser.ntp;
 
 import android.os.SystemClock;
-import android.support.annotation.IntDef;
 import android.view.View;
 import android.view.ViewTreeObserver;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.TimeUtils;
 import org.chromium.base.metrics.RecordHistogram;

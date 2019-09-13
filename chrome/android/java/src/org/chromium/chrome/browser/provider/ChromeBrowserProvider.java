@@ -22,10 +22,11 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.UserHandle;
 import android.provider.BaseColumns;
-import android.support.annotation.IntDef;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.LongSparseArray;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;

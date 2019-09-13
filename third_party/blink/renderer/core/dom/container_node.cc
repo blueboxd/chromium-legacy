@@ -1049,7 +1049,7 @@ void ContainerNode::FocusStateChanged() {
     return;
 
   StyleChangeType change_type =
-      GetComputedStyle()->HasPseudoStyle(kPseudoIdFirstLetter)
+      GetComputedStyle()->HasPseudoElementStyle(kPseudoIdFirstLetter)
           ? kSubtreeStyleChange
           : kLocalStyleChange;
   SetNeedsStyleRecalc(
@@ -1070,7 +1070,7 @@ void ContainerNode::FocusVisibleStateChanged() {
   if (!RuntimeEnabledFeatures::CSSFocusVisibleEnabled())
     return;
   StyleChangeType change_type =
-      GetComputedStyle()->HasPseudoStyle(kPseudoIdFirstLetter)
+      GetComputedStyle()->HasPseudoElementStyle(kPseudoIdFirstLetter)
           ? kSubtreeStyleChange
           : kLocalStyleChange;
   SetNeedsStyleRecalc(change_type,
@@ -1086,7 +1086,7 @@ void ContainerNode::FocusVisibleStateChanged() {
 void ContainerNode::FocusWithinStateChanged() {
   if (GetComputedStyle() && GetComputedStyle()->AffectedByFocusWithin()) {
     StyleChangeType change_type =
-        GetComputedStyle()->HasPseudoStyle(kPseudoIdFirstLetter)
+        GetComputedStyle()->HasPseudoElementStyle(kPseudoIdFirstLetter)
             ? kSubtreeStyleChange
             : kLocalStyleChange;
     SetNeedsStyleRecalc(change_type,
@@ -1195,7 +1195,7 @@ void ContainerNode::SetDragged(bool new_value) {
 
   if (GetComputedStyle()->AffectedByDrag()) {
     StyleChangeType change_type =
-        GetComputedStyle()->HasPseudoStyle(kPseudoIdFirstLetter)
+        GetComputedStyle()->HasPseudoElementStyle(kPseudoIdFirstLetter)
             ? kSubtreeStyleChange
             : kLocalStyleChange;
     SetNeedsStyleRecalc(change_type,

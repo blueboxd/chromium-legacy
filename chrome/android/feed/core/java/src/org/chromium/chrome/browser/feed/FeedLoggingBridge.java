@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.google.android.libraries.feed.api.client.stream.Stream.ScrollListener;
 import com.google.android.libraries.feed.api.host.logging.ActionType;

@@ -133,31 +133,34 @@ void BaseArena::RemoveAllPages() {
   }
 }
 
-void BaseArena::TakeSnapshot(const String& dump_base_name,
-                             ThreadState::GCSnapshotInfo& info) {
-  // |dumpBaseName| at this point is "blink_gc/thread_X/heaps/HeapName"
-  base::trace_event::MemoryAllocatorDump* allocator_dump =
-      BlinkGCMemoryDumpProvider::Instance()
-          ->CreateMemoryAllocatorDumpForCurrentGC(dump_base_name);
-  size_t page_count = 0;
-  BasePage::HeapSnapshotInfo heap_info;
-  for (BasePage* page : unswept_pages_) {
-    String dump_name =
-        dump_base_name + String::Format("/pages/page_%zu", page_count++);
-    base::trace_event::MemoryAllocatorDump* page_dump =
-        BlinkGCMemoryDumpProvider::Instance()
-            ->CreateMemoryAllocatorDumpForCurrentGC(dump_name);
+void BaseArena::CollectStatistics(std::string name,
+                                  ThreadState::Statistics* stats) {
+  ThreadState::Statistics::ArenaStatistics arena_stats;
 
-    page->TakeSnapshot(page_dump, info, heap_info);
+  ResetAllocationPoint();
+
+  if (!NameClient::HideInternalName()) {
+    size_t num_types = GCInfoTable::Get().GcInfoIndex() + 1;
+    arena_stats.object_stats.num_types = num_types;
+    arena_stats.object_stats.type_name.resize(num_types);
+    arena_stats.object_stats.type_count.resize(num_types);
+    arena_stats.object_stats.type_bytes.resize(num_types);
   }
-  allocator_dump->AddScalar("blink_page_count", "objects", page_count);
 
-  // When taking a full dump (w/ freelist), both the /buckets and /pages
-  // report their free size but they are not meant to be added together.
-  // Therefore, here we override the free_size of the parent heap to be
-  // equal to the free_size of the sum of its heap pages.
-  allocator_dump->AddScalar("free_size", "bytes", heap_info.free_size);
-  allocator_dump->AddScalar("free_count", "objects", heap_info.free_count);
+  arena_stats.name = std::move(name);
+  DCHECK(unswept_pages_.IsEmpty());
+  for (BasePage* page : swept_pages_) {
+    page->CollectStatistics(&arena_stats);
+  }
+  CollectFreeListStatistics(&arena_stats.free_list_stats);
+  stats->used_size_bytes += arena_stats.used_size_bytes;
+  stats->committed_size_bytes += arena_stats.committed_size_bytes;
+  stats->arena_stats.emplace_back(std::move(arena_stats));
+}
+
+void NormalPageArena::CollectFreeListStatistics(
+    ThreadState::Statistics::FreeListStatistics* stats) {
+  free_list_.CollectStatistics(stats);
 }
 
 #if DCHECK_IS_ON()
@@ -626,20 +629,6 @@ bool NormalPageArena::PagesToBeSweptContains(Address address) {
   return false;
 }
 #endif
-
-void NormalPageArena::TakeFreelistSnapshot(const String& dump_name) {
-  if (free_list_.TakeSnapshot(dump_name)) {
-    base::trace_event::MemoryAllocatorDump* buckets_dump =
-        BlinkGCMemoryDumpProvider::Instance()
-            ->CreateMemoryAllocatorDumpForCurrentGC(dump_name + "/buckets");
-    base::trace_event::MemoryAllocatorDump* pages_dump =
-        BlinkGCMemoryDumpProvider::Instance()
-            ->CreateMemoryAllocatorDumpForCurrentGC(dump_name + "/pages");
-    BlinkGCMemoryDumpProvider::Instance()
-        ->CurrentProcessMemoryDump()
-        ->AddOwnershipEdge(pages_dump->guid(), buckets_dump->guid());
-  }
-}
 
 void NormalPageArena::AllocatePage() {
   GetThreadState()->Heap().address_cache()->MarkDirty();
@@ -1284,27 +1273,25 @@ int FreeList::BucketIndexForSize(size_t size) {
   return index;
 }
 
-bool FreeList::TakeSnapshot(const String& dump_base_name) {
-  bool did_dump_bucket_stats = false;
+void FreeList::CollectStatistics(
+    ThreadState::Statistics::FreeListStatistics* stats) {
+  Vector<size_t> bucket_size;
+  Vector<size_t> free_count;
+  Vector<size_t> free_size;
   for (size_t i = 0; i < kBlinkPageSizeLog2; ++i) {
     size_t entry_count = 0;
-    size_t free_size = 0;
+    size_t entry_size = 0;
     for (FreeListEntry* entry = free_list_heads_[i]; entry;
          entry = entry->Next()) {
       ++entry_count;
-      free_size += entry->size();
+      entry_size += entry->size();
     }
-
-    String dump_name =
-        dump_base_name + "/buckets/bucket_" + String::Number(1 << i);
-    base::trace_event::MemoryAllocatorDump* bucket_dump =
-        BlinkGCMemoryDumpProvider::Instance()
-            ->CreateMemoryAllocatorDumpForCurrentGC(dump_name);
-    bucket_dump->AddScalar("free_count", "objects", entry_count);
-    bucket_dump->AddScalar("free_size", "bytes", free_size);
-    did_dump_bucket_stats = true;
+    bucket_size.push_back(1 << i);
+    free_count.push_back(entry_count);
+    free_size.push_back(entry_size);
   }
-  return did_dump_bucket_stats;
+  *stats = {std::move(bucket_size), std::move(free_count),
+            std::move(free_size)};
 }
 
 BasePage::BasePage(PageMemory* storage, BaseArena* arena)
@@ -1733,47 +1720,32 @@ HeapObjectHeader* NormalPage::FindHeaderFromAddress(Address address) {
   return header;
 }
 
-void NormalPage::TakeSnapshot(base::trace_event::MemoryAllocatorDump* page_dump,
-                              ThreadState::GCSnapshotInfo& info,
-                              HeapSnapshotInfo& heap_info) {
+void NormalPage::CollectStatistics(
+    ThreadState::Statistics::ArenaStatistics* arena_stats) {
   HeapObjectHeader* header = nullptr;
-  size_t live_count = 0;
-  size_t dead_count = 0;
-  size_t free_count = 0;
   size_t live_size = 0;
-  size_t dead_size = 0;
-  size_t free_size = 0;
   for (Address header_address = Payload(); header_address < PayloadEnd();
        header_address += header->size()) {
     header = reinterpret_cast<HeapObjectHeader*>(header_address);
-    if (header->IsFree()) {
-      free_count++;
-      free_size += header->size();
-    } else if (header->IsMarked()) {
-      live_count++;
+    if (!header->IsFree()) {
+      // All non-free objects, dead or alive, are considered as live for the
+      // purpose of taking a snapshot.
       live_size += header->size();
-
-      uint32_t gc_info_index = header->GcInfoIndex();
-      info.live_count[gc_info_index]++;
-      info.live_size[gc_info_index] += header->size();
-    } else {
-      dead_count++;
-      dead_size += header->size();
-
-      uint32_t gc_info_index = header->GcInfoIndex();
-      info.dead_count[gc_info_index]++;
-      info.dead_size[gc_info_index] += header->size();
+      if (!NameClient::HideInternalName()) {
+        // Detailed names available.
+        uint32_t gc_info_index = header->GcInfoIndex();
+        arena_stats->object_stats.type_count[gc_info_index]++;
+        arena_stats->object_stats.type_bytes[gc_info_index] += header->size();
+        if (arena_stats->object_stats.type_name[gc_info_index].empty()) {
+          arena_stats->object_stats.type_name[gc_info_index] = header->Name();
+        }
+      }
     }
   }
-
-  page_dump->AddScalar("live_count", "objects", live_count);
-  page_dump->AddScalar("dead_count", "objects", dead_count);
-  page_dump->AddScalar("free_count", "objects", free_count);
-  page_dump->AddScalar("live_size", "bytes", live_size);
-  page_dump->AddScalar("dead_size", "bytes", dead_size);
-  page_dump->AddScalar("free_size", "bytes", free_size);
-  heap_info.free_size += free_size;
-  heap_info.free_count += free_count;
+  arena_stats->committed_size_bytes += kBlinkPageSize;
+  arena_stats->used_size_bytes += live_size;
+  arena_stats->page_stats.emplace_back(
+      ThreadState::Statistics::PageStatistics{kBlinkPageSize, live_size});
 }
 
 #if DCHECK_IS_ON()
@@ -1837,33 +1809,24 @@ void LargeObjectPage::PoisonUnmarkedObjects() {
 }
 #endif
 
-void LargeObjectPage::TakeSnapshot(
-    base::trace_event::MemoryAllocatorDump* page_dump,
-    ThreadState::GCSnapshotInfo& info,
-    HeapSnapshotInfo&) {
-  size_t live_size = 0;
-  size_t dead_size = 0;
-  size_t live_count = 0;
-  size_t dead_count = 0;
+void LargeObjectPage::CollectStatistics(
+    ThreadState::Statistics::ArenaStatistics* arena_stats) {
   HeapObjectHeader* header = ObjectHeader();
-  uint32_t gc_info_index = header->GcInfoIndex();
-  size_t payload_size = header->PayloadSize();
-  if (header->IsMarked()) {
-    live_count = 1;
-    live_size += payload_size;
-    info.live_count[gc_info_index]++;
-    info.live_size[gc_info_index] += payload_size;
-  } else {
-    dead_count = 1;
-    dead_size += payload_size;
-    info.dead_count[gc_info_index]++;
-    info.dead_size[gc_info_index] += payload_size;
+  size_t live_size = 0;
+  // All non-free objects, dead or alive, are considered as live for the
+  // purpose of taking a snapshot.
+  live_size += ObjectSize();
+  if (!NameClient::HideInternalName()) {
+    // Detailed names available.
+    uint32_t gc_info_index = header->GcInfoIndex();
+    arena_stats->object_stats.type_count[gc_info_index]++;
+    arena_stats->object_stats.type_bytes[gc_info_index] += ObjectSize();
   }
 
-  page_dump->AddScalar("live_count", "objects", live_count);
-  page_dump->AddScalar("dead_count", "objects", dead_count);
-  page_dump->AddScalar("live_size", "bytes", live_size);
-  page_dump->AddScalar("dead_size", "bytes", dead_size);
+  arena_stats->committed_size_bytes += size();
+  arena_stats->used_size_bytes += live_size;
+  arena_stats->page_stats.emplace_back(
+      ThreadState::Statistics::PageStatistics{size(), live_size});
 }
 
 #if DCHECK_IS_ON()

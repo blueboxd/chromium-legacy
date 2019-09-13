@@ -4,7 +4,7 @@
 
 package org.chromium.android_webview.common.variations;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;

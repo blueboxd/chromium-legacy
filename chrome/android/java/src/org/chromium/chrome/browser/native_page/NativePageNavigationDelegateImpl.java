@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.native_page;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;

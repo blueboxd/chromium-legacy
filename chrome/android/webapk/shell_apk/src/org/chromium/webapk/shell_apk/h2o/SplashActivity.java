@@ -13,9 +13,10 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.IntDef;
 import android.view.View;
 import android.view.ViewTreeObserver;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.webapk.lib.common.WebApkMetaDataUtils;

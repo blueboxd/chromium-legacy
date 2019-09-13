@@ -7,9 +7,10 @@ package org.chromium.content.browser.input;
 import android.annotation.TargetApi;
 import android.graphics.Matrix;
 import android.os.Build;
-import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.inputmethod.CursorAnchorInfo;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.content_public.browser.InputMethodManagerWrapper;

@@ -6,9 +6,10 @@ package org.chromium.chrome.browser.omaha;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.annotation.IntDef;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
+
+import androidx.annotation.IntDef;
 
 import org.junit.After;
 import org.junit.Assert;

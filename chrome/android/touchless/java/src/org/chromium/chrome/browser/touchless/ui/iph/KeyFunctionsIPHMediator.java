@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.touchless.ui.iph;
 
-import android.support.annotation.IntDef;
+import androidx.annotation.IntDef;
 
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ActivityTabProvider;

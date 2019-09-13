@@ -4,7 +4,7 @@
 
 package org.chromium.net.impl;
 
-import android.support.annotation.IntDef;
+import androidx.annotation.IntDef;
 
 import org.chromium.net.UploadDataProvider;
 import org.chromium.net.UploadDataSink;

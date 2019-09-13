@@ -10,8 +10,9 @@ import android.animation.AnimatorSet;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.RectF;
-import android.support.annotation.IntDef;
 import android.util.Pair;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;

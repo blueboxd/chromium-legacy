@@ -6,7 +6,8 @@ package org.chromium.content.browser;
 
 import android.content.Context;
 import android.os.StrictMode;
-import android.support.annotation.IntDef;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;

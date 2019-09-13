@@ -92,8 +92,8 @@ jumbo_component("message_center") {
 
     if (toolkit_views) {
       sources += [
-        "views/desktop_popup_alignment_delegate.cc",
-        "views/desktop_popup_alignment_delegate.h",
+        "views/desktop_message_popup_collection.cc",
+        "views/desktop_message_popup_collection.h",
         "views/message_popup_collection.cc",
         "views/message_popup_collection.h",
         "views/message_popup_view.cc",
@@ -115,8 +115,6 @@ jumbo_component("message_center") {
         "views/notification_view_md.h",
         "views/padded_button.cc",
         "views/padded_button.h",
-        "views/popup_alignment_delegate.cc",
-        "views/popup_alignment_delegate.h",
         "views/proportional_image_view.cc",
         "views/proportional_image_view.h",
         "views/relative_time_formatter.cc",

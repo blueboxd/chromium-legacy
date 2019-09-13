@@ -651,7 +651,7 @@ input[type="button" i]:disabled, input[type="submit" i]:disabled, input[type="re
 input[type="file" i]:disabled::-webkit-file-upload-button, button:disabled,
 select:disabled, optgroup:disabled, option:disabled,
 select[disabled]>option {
-    color: GrayText
+    color: -internal-light-dark-color(GrayText, #aaa);
 }
 
 input[type="button" i]:active, input[type="submit" i]:active, input[type="reset" i]:active, input[type="file" i]:active::-webkit-file-upload-button, button:active {
@@ -663,12 +663,12 @@ input[type="button" i]:active:disabled, input[type="submit" i]:active:disabled, 
 }
 
 input:disabled, textarea:disabled {
-    color: #545454;
+    color: -internal-light-dark-color(#545454, #aaa);
     cursor: default;
 }
 
 option:-internal-spatial-navigation-focus {
-    outline: black dashed 1px;
+    outline: -internal-light-dark-color(black, white) dashed 1px;
     outline-offset: -1px;
 }
 

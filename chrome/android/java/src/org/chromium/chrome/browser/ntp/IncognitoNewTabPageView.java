@@ -9,8 +9,6 @@ import static org.chromium.chrome.browser.util.ViewUtils.dpToPx;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Canvas;
-import android.support.annotation.IdRes;
-import android.support.annotation.StringRes;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ForegroundColorSpan;
@@ -20,6 +18,9 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.annotation.IdRes;
+import androidx.annotation.StringRes;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;

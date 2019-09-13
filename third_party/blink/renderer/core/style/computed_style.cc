@@ -173,23 +173,23 @@ ALWAYS_INLINE ComputedStyle::ComputedStyle(const ComputedStyle& o)
       RefCounted<ComputedStyle>(),
       svg_style_(o.svg_style_) {}
 
-static bool PseudoStylesEqual(const ComputedStyle& old_style,
-                              const ComputedStyle& new_style) {
-  if (!old_style.HasAnyPublicPseudoStyles() &&
-      !new_style.HasAnyPublicPseudoStyles())
+static bool PseudoElementStylesEqual(const ComputedStyle& old_style,
+                                     const ComputedStyle& new_style) {
+  if (!old_style.HasAnyPseudoElementStyles() &&
+      !new_style.HasAnyPseudoElementStyles())
     return true;
   for (PseudoId pseudo_id = kFirstPublicPseudoId;
        pseudo_id < kFirstInternalPseudoId;
        pseudo_id = static_cast<PseudoId>(pseudo_id + 1)) {
-    if (!old_style.HasPseudoStyle(pseudo_id) &&
-        !new_style.HasPseudoStyle(pseudo_id))
+    if (!old_style.HasPseudoElementStyle(pseudo_id) &&
+        !new_style.HasPseudoElementStyle(pseudo_id))
       continue;
     const ComputedStyle* new_pseudo_style =
-        new_style.GetCachedPseudoStyle(pseudo_id);
+        new_style.GetCachedPseudoElementStyle(pseudo_id);
     if (!new_pseudo_style)
       return false;
     const ComputedStyle* old_pseudo_style =
-        old_style.GetCachedPseudoStyle(pseudo_id);
+        old_style.GetCachedPseudoElementStyle(pseudo_id);
     if (old_pseudo_style && *old_pseudo_style != *new_pseudo_style)
       return false;
   }
@@ -204,8 +204,8 @@ bool ComputedStyle::NeedsReattachLayoutTree(const ComputedStyle* old_style,
     return true;
   if (old_style->Display() != new_style->Display())
     return true;
-  if (old_style->HasPseudoStyle(kPseudoIdFirstLetter) !=
-      new_style->HasPseudoStyle(kPseudoIdFirstLetter))
+  if (old_style->HasPseudoElementStyle(kPseudoIdFirstLetter) !=
+      new_style->HasPseudoElementStyle(kPseudoIdFirstLetter))
     return true;
   if (!old_style->ContentDataEquivalent(*new_style))
     return true;
@@ -232,8 +232,8 @@ bool ComputedStyle::NeedsReattachLayoutTree(const ComputedStyle* old_style,
 
   // LayoutNG needs an anonymous inline wrapper if ::first-line is applied.
   // Also see |LayoutBlockFlow::NeedsAnonymousInlineWrapper()|.
-  if (new_style->HasPseudoStyle(kPseudoIdFirstLine) &&
-      !old_style->HasPseudoStyle(kPseudoIdFirstLine))
+  if (new_style->HasPseudoElementStyle(kPseudoIdFirstLine) &&
+      !old_style->HasPseudoElementStyle(kPseudoIdFirstLine))
     return true;
 
   return false;
@@ -256,8 +256,9 @@ ComputedStyle::Difference ComputedStyle::ComputeDifference(
   // See external/wpt/css/css-pseudo/first-line-change-inline-color*.html.
   auto inherited_first_line_style_diff = Difference::kEqual;
   if (const ComputedStyle* cached_inherited_first_line_style =
-          old_style->GetCachedPseudoStyle(kPseudoIdFirstLineInherited)) {
-    DCHECK(!new_style->GetCachedPseudoStyle(kPseudoIdFirstLineInherited));
+          old_style->GetCachedPseudoElementStyle(kPseudoIdFirstLineInherited)) {
+    DCHECK(
+        !new_style->GetCachedPseudoElementStyle(kPseudoIdFirstLineInherited));
     inherited_first_line_style_diff =
         ComputeDifferenceIgnoringInheritedFirstLineStyle(
             *cached_inherited_first_line_style, *new_style);
@@ -288,13 +289,13 @@ ComputedStyle::ComputeDifferenceIgnoringInheritedFirstLineStyle(
     return Difference::kIndependentInherited;
   if (non_inherited_equal) {
     DCHECK(old_style == new_style);
-    if (PseudoStylesEqual(old_style, new_style))
+    if (PseudoElementStylesEqual(old_style, new_style))
       return Difference::kEqual;
-    return Difference::kPseudoStyle;
+    return Difference::kPseudoElementStyle;
   }
-  if (new_style.HasAnyPublicPseudoStyles() ||
-      old_style.HasAnyPublicPseudoStyles())
-    return Difference::kPseudoStyle;
+  if (new_style.HasAnyPseudoElementStyles() ||
+      old_style.HasAnyPseudoElementStyles())
+    return Difference::kPseudoElementStyle;
   return Difference::kNonInherited;
 }
 
@@ -474,14 +475,15 @@ bool ComputedStyle::operator==(const ComputedStyle& o) const {
   return InheritedEqual(o) && NonInheritedEqual(o);
 }
 
-const ComputedStyle* ComputedStyle::GetCachedPseudoStyle(PseudoId pid) const {
-  if (!cached_pseudo_styles_ || !cached_pseudo_styles_->size())
+const ComputedStyle* ComputedStyle::GetCachedPseudoElementStyle(
+    PseudoId pid) const {
+  if (!cached_pseudo_element_styles_ || !cached_pseudo_element_styles_->size())
     return nullptr;
 
   if (StyleType() != kPseudoIdNone)
     return nullptr;
 
-  for (const auto& pseudo_style : *cached_pseudo_styles_) {
+  for (const auto& pseudo_style : *cached_pseudo_element_styles_) {
     if (pseudo_style->StyleType() == pid)
       return pseudo_style.get();
   }
@@ -489,17 +491,17 @@ const ComputedStyle* ComputedStyle::GetCachedPseudoStyle(PseudoId pid) const {
   return nullptr;
 }
 
-const ComputedStyle* ComputedStyle::AddCachedPseudoStyle(
+const ComputedStyle* ComputedStyle::AddCachedPseudoElementStyle(
     scoped_refptr<const ComputedStyle> pseudo) const {
   DCHECK(pseudo);
   DCHECK_GT(pseudo->StyleType(), kPseudoIdNone);
 
   const ComputedStyle* result = pseudo.get();
 
-  if (!cached_pseudo_styles_)
-    cached_pseudo_styles_ = std::make_unique<PseudoStyleCache>();
+  if (!cached_pseudo_element_styles_)
+    cached_pseudo_element_styles_ = std::make_unique<PseudoElementStyleCache>();
 
-  cached_pseudo_styles_->push_back(std::move(pseudo));
+  cached_pseudo_element_styles_->push_back(std::move(pseudo));
 
   return result;
 }

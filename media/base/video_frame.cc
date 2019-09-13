@@ -19,10 +19,13 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "media/base/format_utils.h"
 #include "media/base/limits.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_util.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace media {
 
@@ -58,6 +61,8 @@ static std::string StorageTypeToString(
 #endif
     case VideoFrame::STORAGE_MOJO_SHARED_BUFFER:
       return "MOJO_SHARED_BUFFER";
+    case VideoFrame::STORAGE_GPU_MEMORY_BUFFER:
+      return "GPU_MEMORY_BUFFER";
   }
 
   NOTREACHED() << "Invalid StorageType provided: " << storage_type;
@@ -75,7 +80,8 @@ bool VideoFrame::IsStorageTypeMappable(VideoFrame::StorageType storage_type) {
       (storage_type == VideoFrame::STORAGE_UNOWNED_MEMORY ||
        storage_type == VideoFrame::STORAGE_OWNED_MEMORY ||
        storage_type == VideoFrame::STORAGE_SHMEM ||
-       storage_type == VideoFrame::STORAGE_MOJO_SHARED_BUFFER);
+       storage_type == VideoFrame::STORAGE_MOJO_SHARED_BUFFER ||
+       storage_type == VideoFrame::STORAGE_GPU_MEMORY_BUFFER);
 }
 
 // Checks if |source_format| can be wrapped into a |target_format| frame.
@@ -464,6 +470,53 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvaData(
   frame->data_[kUPlane] = u_data;
   frame->data_[kVPlane] = v_data;
   frame->data_[kAPlane] = a_data;
+  return frame;
+}
+
+// static
+scoped_refptr<VideoFrame> VideoFrame::WrapExternalGpuMemoryBuffer(
+    const gfx::Rect& visible_rect,
+    const gfx::Size& natural_size,
+    std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer,
+    const gpu::MailboxHolder (&mailbox_holders)[kMaxPlanes],
+    ReleaseMailboxCB mailbox_holder_release_cb,
+    base::TimeDelta timestamp) {
+  const base::Optional<VideoPixelFormat> format =
+      GfxBufferFormatToVideoPixelFormat(gpu_memory_buffer->GetFormat());
+  if (!format)
+    return nullptr;
+  constexpr StorageType storage = STORAGE_GPU_MEMORY_BUFFER;
+  const gfx::Size& coded_size = gpu_memory_buffer->GetSize();
+  if (!IsValidConfig(*format, storage, coded_size, visible_rect,
+                     natural_size)) {
+    DLOG(ERROR) << __func__ << " Invalid config"
+                << ConfigToString(*format, storage, coded_size, visible_rect,
+                                  natural_size);
+    return nullptr;
+  }
+
+  const size_t num_planes =
+      NumberOfPlanesForLinearBufferFormat(gpu_memory_buffer->GetFormat());
+  std::vector<int32_t> strides;
+  for (size_t i = 0; i < num_planes; ++i)
+    strides.push_back(gpu_memory_buffer->stride(i));
+  const auto layout = VideoFrameLayout::CreateWithStrides(*format, coded_size,
+                                                          std::move(strides));
+  if (!layout) {
+    DLOG(ERROR) << __func__ << " Invalid layout";
+    return nullptr;
+  }
+
+  scoped_refptr<VideoFrame> frame =
+      new VideoFrame(*layout, storage, visible_rect, natural_size, timestamp);
+  if (!frame) {
+    DLOG(ERROR) << __func__ << " Couldn't create VideoFrame instance";
+    return nullptr;
+  }
+  frame->gpu_memory_buffer_ = std::move(gpu_memory_buffer);
+  memcpy(&frame->mailbox_holders_, mailbox_holders,
+         sizeof(frame->mailbox_holders_));
+  frame->mailbox_holders_release_cb_ = std::move(mailbox_holder_release_cb);
   return frame;
 }
 
@@ -864,6 +917,14 @@ size_t VideoFrame::NumTextures() const {
     }
   }
   return i;
+}
+
+bool VideoFrame::HasGpuMemoryBuffer() const {
+  return !!gpu_memory_buffer_;
+}
+
+gfx::GpuMemoryBuffer* VideoFrame::GetGpuMemoryBuffer() const {
+  return gpu_memory_buffer_.get();
 }
 
 gfx::ColorSpace VideoFrame::ColorSpace() const {

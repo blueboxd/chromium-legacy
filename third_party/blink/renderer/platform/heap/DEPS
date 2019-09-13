@@ -9,6 +9,7 @@ include_rules = [
     "+base/atomicops.h",
     "+base/bits.h",
     "+base/sampling_heap_profiler/poisson_allocation_sampler.h",
+    "+base/strings/string_number_conversions.h",
     "+base/synchronization/lock.h",
     "+base/task_runner.h",
     "+base/template_util.h",

@@ -5,7 +5,8 @@
 package org.chromium.chrome.browser.touchless;
 
 import android.content.Context;
-import android.support.annotation.StringRes;
+
+import androidx.annotation.StringRes;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.native_page.NativePage;

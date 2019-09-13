@@ -5,10 +5,11 @@
 package org.chromium.chrome.browser.touchless;
 
 import android.graphics.Bitmap;
-import android.support.annotation.DrawableRes;
-import android.support.annotation.StringRes;
 import android.view.View;
 import android.view.View.OnClickListener;
+
+import androidx.annotation.DrawableRes;
+import androidx.annotation.StringRes;
 
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActivity;

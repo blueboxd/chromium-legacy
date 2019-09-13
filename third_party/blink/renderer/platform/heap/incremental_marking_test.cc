@@ -171,7 +171,7 @@ class ExpectWriteBarrierFires : public IncrementalMarkingScope {
     EXPECT_FALSE(marking_worklist_->IsGlobalEmpty());
     MarkingItem item;
     // All objects watched should be on the marking stack.
-    while (marking_worklist_->Pop(WorklistTaskId::MainThread, &item)) {
+    while (marking_worklist_->Pop(WorklistTaskId::MutatorThread, &item)) {
       // Inspect backing stores to allow specifying objects that are only
       // reachable through a backing store.
       if (!ThreadHeap::IsNormalArenaIndex(
@@ -1444,7 +1444,7 @@ TEST_F(IncrementalMarkingTest, WriteBarrierDuringMixinConstruction) {
   // the process of calling the constructor.
   EXPECT_FALSE(scope.marking_worklist()->IsGlobalEmpty());
   MarkingItem marking_item;
-  while (scope.marking_worklist()->Pop(WorklistTaskId::MainThread,
+  while (scope.marking_worklist()->Pop(WorklistTaskId::MutatorThread,
                                        &marking_item)) {
     HeapObjectHeader* header =
         HeapObjectHeader::FromPayload(marking_item.object);
@@ -1458,8 +1458,8 @@ TEST_F(IncrementalMarkingTest, WriteBarrierDuringMixinConstruction) {
   bool found_mixin_object = false;
   // The same object may be on the marking work list because of expanding
   // and rehashing of the backing store in the registry.
-  while (scope.not_fully_constructed_worklist()->Pop(WorklistTaskId::MainThread,
-                                                     &partial_item)) {
+  while (scope.not_fully_constructed_worklist()->Pop(
+      WorklistTaskId::MutatorThread, &partial_item)) {
     if (object == partial_item)
       found_mixin_object = true;
     HeapObjectHeader* header = HeapObjectHeader::FromPayload(partial_item);

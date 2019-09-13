@@ -22,11 +22,12 @@ import android.media.projection.MediaProjectionManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.support.annotation.IntDef;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.Surface;
 import android.view.WindowManager;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;

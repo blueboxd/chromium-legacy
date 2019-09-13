@@ -6,11 +6,12 @@ package org.chromium.chrome.browser.firstrun;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.support.annotation.CallSuper;
-import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.view.View;
+
+import androidx.annotation.CallSuper;
+import androidx.annotation.StringRes;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;

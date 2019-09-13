@@ -30,7 +30,7 @@ namespace blink {
 //
 // Work stealing is best effort, i.e., there is no way to inform other tasks
 // of the need of items.
-template <typename _EntryType, int segment_size, int max_tasks = 1>
+template <typename _EntryType, int segment_size, int max_tasks = 2>
 class Worklist {
   USING_FAST_MALLOC(Worklist);
   using WorklistType = Worklist<_EntryType, segment_size, max_tasks>;
@@ -189,6 +189,8 @@ class Worklist {
     auto pair = other->global_pool_.Extract();
     global_pool_.MergeList(pair.first, pair.second);
   }
+
+  int num_tasks() const { return num_tasks_; }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WorklistTest, SegmentCreate);

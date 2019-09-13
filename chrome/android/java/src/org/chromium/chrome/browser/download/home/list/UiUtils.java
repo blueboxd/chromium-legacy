@@ -6,10 +6,11 @@ package org.chromium.chrome.browser.download.home.list;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.support.annotation.DrawableRes;
-import android.support.annotation.VisibleForTesting;
 import android.text.format.DateUtils;
 import android.text.format.Formatter;
+
+import androidx.annotation.DrawableRes;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;

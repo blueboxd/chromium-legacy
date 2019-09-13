@@ -15,8 +15,9 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.RoundRectShape;
-import android.support.annotation.ColorInt;
 import android.support.v4.graphics.drawable.DrawableCompat;
+
+import androidx.annotation.ColorInt;
 
 import org.chromium.chrome.R;
 

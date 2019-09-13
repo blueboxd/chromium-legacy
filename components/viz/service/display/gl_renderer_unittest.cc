@@ -34,6 +34,7 @@
 #include "components/viz/common/resources/platform_color.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/service/display/display_resource_provider.h"
+#include "components/viz/service/display/overlay_candidate_validator.h"
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
 #include "components/viz/test/fake_output_surface.h"
@@ -2715,7 +2716,6 @@ class GLRendererPartialSwapTest : public GLRendererTest {
   void RunTest(bool partial_swap, bool set_draw_rectangle) {
     auto gl_owned = std::make_unique<PartialSwapMockGLES2Interface>();
     gl_owned->set_have_post_sub_buffer(true);
-    gl_owned->set_enable_dc_layers(set_draw_rectangle);
 
     auto* gl = gl_owned.get();
 
@@ -2725,6 +2725,7 @@ class GLRendererPartialSwapTest : public GLRendererTest {
     cc::FakeOutputSurfaceClient output_surface_client;
     std::unique_ptr<FakeOutputSurface> output_surface(
         FakeOutputSurface::Create3d(std::move(provider)));
+    output_surface->set_supports_dc_layers(set_draw_rectangle);
     output_surface->BindToClient(&output_surface_client);
 
     std::unique_ptr<DisplayResourceProvider> resource_provider =
@@ -2833,7 +2834,6 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
   feature_list.InitAndEnableFeature(features::kDirectCompositionUnderlays);
   auto gl_owned = std::make_unique<PartialSwapMockGLES2Interface>();
   gl_owned->set_have_post_sub_buffer(true);
-  gl_owned->set_enable_dc_layers(true);
   auto* gl = gl_owned.get();
 
   auto provider = TestContextProvider::Create(std::move(gl_owned));
@@ -2842,6 +2842,7 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
   cc::FakeOutputSurfaceClient output_surface_client;
   std::unique_ptr<FakeOutputSurface> output_surface(
       FakeOutputSurface::Create3d(std::move(provider)));
+  output_surface->set_supports_dc_layers(true);
   output_surface->BindToClient(&output_surface_client);
 
   auto parent_resource_provider = std::make_unique<DisplayResourceProvider>(

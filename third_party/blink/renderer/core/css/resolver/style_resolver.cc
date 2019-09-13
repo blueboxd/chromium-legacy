@@ -902,7 +902,7 @@ CompositorKeyframeValue* StyleResolver::CreateCompositorKeyframeValueSnapshot(
 
 bool StyleResolver::PseudoStyleForElementInternal(
     Element& element,
-    const PseudoStyleRequest& pseudo_style_request,
+    const PseudoElementStyleRequest& pseudo_style_request,
     StyleResolverState& state) {
   DCHECK(GetDocument().GetFrame());
   DCHECK(GetDocument().GetSettings());
@@ -938,7 +938,7 @@ bool StyleResolver::PseudoStyleForElementInternal(
     // Check UA, user and author rules.
     ElementRuleCollector collector(state.ElementContext(), selector_filter_,
                                    state.Style());
-    collector.SetPseudoStyleRequest(pseudo_style_request);
+    collector.SetPseudoElementStyleRequest(pseudo_style_request);
 
     MatchUARules(collector);
     MatchUserRules(collector);
@@ -983,7 +983,7 @@ bool StyleResolver::PseudoStyleForElementInternal(
 
 scoped_refptr<ComputedStyle> StyleResolver::PseudoStyleForElement(
     Element* element,
-    const PseudoStyleRequest& pseudo_style_request,
+    const PseudoElementStyleRequest& pseudo_style_request,
     const ComputedStyle* parent_style,
     const ComputedStyle* parent_layout_object_style) {
   DCHECK(parent_style);
@@ -994,7 +994,7 @@ scoped_refptr<ComputedStyle> StyleResolver::PseudoStyleForElement(
                            pseudo_style_request.pseudo_id, parent_style,
                            parent_layout_object_style);
   if (!PseudoStyleForElementInternal(*element, pseudo_style_request, state)) {
-    if (pseudo_style_request.type == PseudoStyleRequest::kForRenderer)
+    if (pseudo_style_request.type == PseudoElementStyleRequest::kForRenderer)
       return nullptr;
     return state.TakeStyle();
   }
@@ -1148,7 +1148,7 @@ void StyleResolver::CollectPseudoRulesForElement(
     ElementRuleCollector& collector,
     PseudoId pseudo_id,
     unsigned rules_to_include) {
-  collector.SetPseudoStyleRequest(PseudoStyleRequest(pseudo_id));
+  collector.SetPseudoElementStyleRequest(PseudoElementStyleRequest(pseudo_id));
 
   if (rules_to_include & kUAAndUserCSSRules) {
     MatchUARules(collector);

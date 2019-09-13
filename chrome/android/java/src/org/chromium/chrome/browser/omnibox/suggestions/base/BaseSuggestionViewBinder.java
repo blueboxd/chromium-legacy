@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions.base;
 
-import android.support.annotation.CallSuper;
 import android.support.v4.view.ViewCompat;
+
+import androidx.annotation.CallSuper;
 
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
 import org.chromium.chrome.browser.util.ColorUtils;

@@ -24,6 +24,7 @@
 #include "media/base/audio_parameters.h"
 #include "media/mojo/mojom/audio_data_pipe.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/audio/public/mojom/audio_processing.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -119,7 +120,7 @@ class OldOldRenderFrameAudioInputStreamFactoryTest : public testing::Test {
             &media_stream_manager_,
             kRenderProcessID,
             kRenderFrameID,
-            mojo::MakeRequest(&factory_ptr_))) {}
+            factory_remote_.BindNewPipeAndPassReceiver())) {}
 
   ~OldOldRenderFrameAudioInputStreamFactoryTest() override {
     audio_manager_.Shutdown();
@@ -144,7 +145,7 @@ class OldOldRenderFrameAudioInputStreamFactoryTest : public testing::Test {
   media::AudioSystemImpl audio_system_;
   MediaStreamManager media_stream_manager_;
 
-  mojom::RendererAudioInputStreamFactoryPtr factory_ptr_;
+  mojo::Remote<mojom::RendererAudioInputStreamFactory> factory_remote_;
   media::mojom::AudioInputStreamPtr stream_ptr_;
   MockRendererAudioInputStreamFactoryClient client_;
   mojom::RendererAudioInputStreamFactoryClientPtr client_ptr_;
@@ -155,9 +156,9 @@ class OldOldRenderFrameAudioInputStreamFactoryTest : public testing::Test {
 
 TEST_F(OldOldRenderFrameAudioInputStreamFactoryTest, CreateStream) {
   const base::UnguessableToken kSessionId = base::UnguessableToken::Create();
-  factory_ptr_->CreateStream(std::move(client_ptr_), kSessionId,
-                             GetTestAudioParameters(), kAGC, kSharedMemoryCount,
-                             nullptr);
+  factory_remote_->CreateStream(std::move(client_ptr_), kSessionId,
+                                GetTestAudioParameters(), kAGC,
+                                kSharedMemoryCount, nullptr);
 
   // Wait for delegate to be created and |event_handler| set.
   base::RunLoop().RunUntilIdle();

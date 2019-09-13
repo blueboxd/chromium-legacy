@@ -8,7 +8,6 @@ import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.content.Intent;
 import android.net.Uri;
-import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLayoutChangeListener;
@@ -17,6 +16,9 @@ import android.view.ViewStub;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RemoteViews;
+
+import androidx.annotation.Nullable;
+import androidx.browser.customtabs.CustomTabsIntent;
 
 import org.chromium.base.Log;
 import org.chromium.base.metrics.CachedMetrics;
@@ -35,8 +37,6 @@ import org.chromium.ui.interpolators.BakedBezierInterpolator;
 import java.util.List;
 
 import javax.inject.Inject;
-
-import androidx.browser.customtabs.CustomTabsIntent;
 
 /**
  * Delegate that manages bottom bar area inside of {@link CustomTabActivity}.

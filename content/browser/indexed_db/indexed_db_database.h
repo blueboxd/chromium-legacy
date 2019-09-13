@@ -113,8 +113,6 @@ class CONTENT_EXPORT IndexedDBDatabase {
   void TransactionFinished(blink::mojom::IDBTransactionMode mode,
                            bool committed);
 
-  void AbortAllTransactionsForConnections();
-
   void AddPendingObserver(IndexedDBTransaction* transaction,
                           int32_t observer_id,
                           const IndexedDBObserver::Options& options);

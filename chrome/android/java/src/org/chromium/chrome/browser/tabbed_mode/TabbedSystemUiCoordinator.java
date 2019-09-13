@@ -5,8 +5,9 @@
 package org.chromium.chrome.browser.tabbed_mode;
 
 import android.os.Build;
-import android.support.annotation.Nullable;
 import android.view.Window;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.ObservableSupplier;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;

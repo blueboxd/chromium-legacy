@@ -5,7 +5,8 @@
 package org.chromium.chrome.browser.payments;
 
 import android.graphics.drawable.Drawable;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.widget.prefeditor.EditableOption;

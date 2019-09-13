@@ -67,8 +67,8 @@ const char* const kDumpProviderWhitelist[] = {
 // A list of string names that are allowed for the memory allocator dumps in
 // background mode.
 const char* const kAllocatorDumpNameWhitelist[] = {
-    "blink_gc",
-    "blink_gc/allocated_objects",
+    "blink_gc/main/heap",
+    "blink_gc/workers/heap/worker_0x?",
     "blink_objects/AdSubframe",
     "blink_objects/AudioHandler",
     "blink_objects/ContextLifecycleStateObserver",

@@ -1350,13 +1350,14 @@ static inline const LayoutObject& ScrollbarStyleSource(
     // can scroll.
     Element* body = doc.body();
     if (body && body->GetLayoutObject() && body->GetLayoutObject()->IsBox() &&
-        body->GetLayoutObject()->StyleRef().HasPseudoStyle(kPseudoIdScrollbar))
+        body->GetLayoutObject()->StyleRef().HasPseudoElementStyle(
+            kPseudoIdScrollbar))
       return *body->GetLayoutObject();
 
     // If the <body> didn't have a custom style, then the root element might.
     Element* doc_element = doc.documentElement();
     if (doc_element && doc_element->GetLayoutObject() &&
-        doc_element->GetLayoutObject()->StyleRef().HasPseudoStyle(
+        doc_element->GetLayoutObject()->StyleRef().HasPseudoElementStyle(
             kPseudoIdScrollbar))
       return *doc_element->GetLayoutObject();
   }
@@ -1374,7 +1375,7 @@ int PaintLayerScrollableArea::HypotheticalScrollbarThickness(
 
   const LayoutObject& style_source = ScrollbarStyleSource(*GetLayoutBox());
   bool has_custom_scrollbar_style =
-      style_source.StyleRef().HasPseudoStyle(kPseudoIdScrollbar);
+      style_source.StyleRef().HasPseudoElementStyle(kPseudoIdScrollbar);
   if (has_custom_scrollbar_style) {
     return LayoutScrollbar::HypotheticalScrollbarThickness(
         orientation, *GetLayoutBox(), style_source);
@@ -1403,7 +1404,7 @@ bool PaintLayerScrollableArea::NeedsScrollbarReconstruction() const {
   const LayoutObject& style_source = ScrollbarStyleSource(*GetLayoutBox());
   bool needs_custom =
       style_source.IsBox() &&
-      style_source.StyleRef().HasPseudoStyle(kPseudoIdScrollbar);
+      style_source.StyleRef().HasPseudoElementStyle(kPseudoIdScrollbar);
 
   Scrollbar* scrollbars[] = {HorizontalScrollbar(), VerticalScrollbar()};
 
@@ -1692,8 +1693,8 @@ void PaintLayerScrollableArea::UpdateScrollCornerStyle() {
   const LayoutObject& style_source = ScrollbarStyleSource(*GetLayoutBox());
   scoped_refptr<ComputedStyle> corner =
       GetLayoutBox()->HasOverflowClip()
-          ? style_source.GetUncachedPseudoStyle(
-                PseudoStyleRequest(kPseudoIdScrollbarCorner),
+          ? style_source.GetUncachedPseudoElementStyle(
+                PseudoElementStyleRequest(kPseudoIdScrollbarCorner),
                 style_source.Style())
           : scoped_refptr<ComputedStyle>(nullptr);
   if (corner) {
@@ -1864,8 +1865,9 @@ void PaintLayerScrollableArea::UpdateResizerStyle(
   const LayoutObject& style_source = ScrollbarStyleSource(*GetLayoutBox());
   scoped_refptr<ComputedStyle> resizer =
       GetLayoutBox()->HasOverflowClip()
-          ? style_source.GetUncachedPseudoStyle(
-                PseudoStyleRequest(kPseudoIdResizer), style_source.Style())
+          ? style_source.GetUncachedPseudoElementStyle(
+                PseudoElementStyleRequest(kPseudoIdResizer),
+                style_source.Style())
           : scoped_refptr<ComputedStyle>(nullptr);
   if (resizer) {
     if (!resizer_) {
@@ -2434,7 +2436,7 @@ Scrollbar* PaintLayerScrollableArea::ScrollbarManager::CreateScrollbar(
   const LayoutObject& style_source =
       ScrollbarStyleSource(*ScrollableArea()->GetLayoutBox());
   bool has_custom_scrollbar_style =
-      style_source.StyleRef().HasPseudoStyle(kPseudoIdScrollbar);
+      style_source.StyleRef().HasPseudoElementStyle(kPseudoIdScrollbar);
   if (has_custom_scrollbar_style) {
     DCHECK(style_source.GetNode() && style_source.GetNode()->IsElementNode());
     scrollbar = LayoutScrollbar::CreateCustomScrollbar(

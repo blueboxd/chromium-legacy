@@ -5,10 +5,11 @@
 package org.chromium.chrome.test.util;
 
 import android.app.Instrumentation;
-import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
 import android.text.TextUtils;
 import android.view.View;
+
+import androidx.annotation.Nullable;
 
 import org.junit.Assert;
 

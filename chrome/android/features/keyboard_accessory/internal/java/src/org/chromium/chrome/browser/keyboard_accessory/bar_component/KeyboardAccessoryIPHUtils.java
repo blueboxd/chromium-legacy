@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.keyboard_accessory.bar_component;
 
-import android.support.annotation.StringRes;
 import android.view.View;
+
+import androidx.annotation.StringRes;
 
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.keyboard_accessory.R;

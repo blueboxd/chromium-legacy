@@ -7,7 +7,8 @@ package org.chromium.media;
 import android.annotation.TargetApi;
 import android.media.MediaFormat;
 import android.os.Build;
-import android.support.annotation.VisibleForTesting;
+
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;

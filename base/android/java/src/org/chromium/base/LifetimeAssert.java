@@ -4,7 +4,7 @@
 
 package org.chromium.base;
 
-import android.support.annotation.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
 
 import java.lang.ref.PhantomReference;
 import java.lang.ref.ReferenceQueue;

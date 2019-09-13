@@ -4,9 +4,10 @@
 
 package org.chromium.base;
 
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.NativeMethods;

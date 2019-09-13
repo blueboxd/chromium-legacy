@@ -4,7 +4,7 @@
 
 package org.chromium.components.signin;
 
-import android.support.annotation.MainThread;
+import androidx.annotation.MainThread;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;

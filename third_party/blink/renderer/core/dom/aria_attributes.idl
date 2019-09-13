@@ -17,8 +17,10 @@
     [CEReactions, Reflect=aria_colindex] attribute DOMString? ariaColIndex;
     [CEReactions, Reflect=aria_colspan] attribute DOMString? ariaColSpan;
     [CEReactions, Reflect=aria_controls] attribute DOMString? ariaControls;
+    [CEReactions, Reflect=aria_controls] attribute FrozenArray<Element>? ariaControlsElements;
     [CEReactions, Reflect=aria_current] attribute DOMString? ariaCurrent;
     [CEReactions, Reflect=aria_describedby] attribute DOMString? ariaDescribedBy;
+    [CEReactions, Reflect=aria_describedby] attribute FrozenArray<Element>? ariaDescribedByElements;
     [CEReactions, Reflect=aria_details] attribute DOMString? ariaDetails;
     [CEReactions, Reflect=aria_details] attribute Element? ariaDetailsElement;
     [CEReactions, Reflect=aria_disabled] attribute DOMString? ariaDisabled;
@@ -26,11 +28,13 @@
     [CEReactions, Reflect=aria_errormessage] attribute Element? ariaErrorMessageElement;
     [CEReactions, Reflect=aria_expanded] attribute DOMString? ariaExpanded;
     [CEReactions, Reflect=aria_flowto] attribute DOMString? ariaFlowTo;
+    [CEReactions, Reflect=aria_flowto] attribute FrozenArray<Element>? ariaFlowToElements;
     [CEReactions, Reflect=aria_haspopup] attribute DOMString? ariaHasPopup;
     [CEReactions, Reflect=aria_hidden] attribute DOMString? ariaHidden;
     [CEReactions, Reflect=aria_keyshortcuts] attribute DOMString? ariaKeyShortcuts;
     [CEReactions, Reflect=aria_label] attribute DOMString? ariaLabel;
     [CEReactions, Reflect=aria_labelledby] attribute DOMString? ariaLabelledBy;
+    [CEReactions, Reflect=aria_labelledby] attribute FrozenArray<Element>? ariaLabelledByElements;
     [CEReactions, Reflect=aria_level] attribute DOMString? ariaLevel;
     [CEReactions, Reflect=aria_live] attribute DOMString? ariaLive;
     [CEReactions, Reflect=aria_modal] attribute DOMString? ariaModal;
@@ -38,6 +42,7 @@
     [CEReactions, Reflect=aria_multiselectable] attribute DOMString? ariaMultiSelectable;
     [CEReactions, Reflect=aria_orientation] attribute DOMString? ariaOrientation;
     [CEReactions, Reflect=aria_owns] attribute DOMString? ariaOwns;
+    [CEReactions, Reflect=aria_owns] attribute FrozenArray<Element>? ariaOwnsElements;
     [CEReactions, Reflect=aria_placeholder] attribute DOMString? ariaPlaceholder;
     [CEReactions, Reflect=aria_posinset] attribute DOMString? ariaPosInSet;
     [CEReactions, Reflect=aria_pressed] attribute DOMString? ariaPressed;

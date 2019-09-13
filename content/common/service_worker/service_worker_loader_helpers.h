@@ -7,6 +7,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/optional.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/redirect_info.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
@@ -45,7 +46,7 @@ class ServiceWorkerLoaderHelpers {
   // the plan is to return an error if reading couldn't start, in
   // which case |on_blob_read_complete| isn't called.
   static int ReadBlobResponseBody(
-      blink::mojom::BlobPtr* blob,
+      mojo::Remote<blink::mojom::Blob>* blob,
       uint64_t blob_size,
       base::OnceCallback<void(int net_error)> on_blob_read_complete,
       mojo::ScopedDataPipeConsumerHandle* handle_out);

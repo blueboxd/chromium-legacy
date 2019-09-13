@@ -93,6 +93,12 @@ class CORE_EXPORT CSSMathExpressionNode
       CSSPrimitiveValue::LengthTypeFlags& types) const = 0;
   virtual scoped_refptr<const CalculationExpressionNode>
   ToCalculationExpression(const CSSToLengthConversionData&) const = 0;
+  virtual base::Optional<PixelsAndPercent> ToPixelsAndPercent(
+      const CSSToLengthConversionData&) const = 0;
+
+  scoped_refptr<CalculationValue> ToCalcValue(
+      const CSSToLengthConversionData& conversion_data,
+      ValueRange range) const;
 
   // Evaluates the expression with type conversion (e.g., cm -> px) handled, and
   // returns the result value in the canonical unit of the corresponding
@@ -164,6 +170,8 @@ class CORE_EXPORT CSSMathExpressionNumericLiteral final
   String CustomCSSText() const final;
   scoped_refptr<const CalculationExpressionNode> ToCalculationExpression(
       const CSSToLengthConversionData&) const final;
+  base::Optional<PixelsAndPercent> ToPixelsAndPercent(
+      const CSSToLengthConversionData&) const final;
   double DoubleValue() const final;
   base::Optional<double> ComputeValueInCanonicalUnit() const final;
   double ComputeLengthPx(
@@ -218,6 +226,8 @@ class CORE_EXPORT CSSMathExpressionBinaryOperation final
 
   bool IsZero() const final;
   scoped_refptr<const CalculationExpressionNode> ToCalculationExpression(
+      const CSSToLengthConversionData&) const final;
+  base::Optional<PixelsAndPercent> ToPixelsAndPercent(
       const CSSToLengthConversionData&) const final;
   double DoubleValue() const final;
   base::Optional<double> ComputeValueInCanonicalUnit() const final;
@@ -286,6 +296,8 @@ class CSSMathExpressionVariadicOperation final : public CSSMathExpressionNode {
   bool IsZero() const final;
   String CustomCSSText() const final;
   scoped_refptr<const CalculationExpressionNode> ToCalculationExpression(
+      const CSSToLengthConversionData&) const final;
+  base::Optional<PixelsAndPercent> ToPixelsAndPercent(
       const CSSToLengthConversionData&) const final;
   double DoubleValue() const final;
   double ComputeLengthPx(

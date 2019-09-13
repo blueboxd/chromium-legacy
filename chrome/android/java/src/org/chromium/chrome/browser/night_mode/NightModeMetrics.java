@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.night_mode;
 
-import android.support.annotation.IntDef;
+import androidx.annotation.IntDef;
 
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.RecordUserAction;

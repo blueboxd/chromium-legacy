@@ -203,6 +203,9 @@ const char kSettingShowSystemDialog[] = "showSystemDialog";
 // Username to be sent to printer.
 const char kSettingUsername[] = "username";
 
+// Advanced settings items.
+const char kSettingAdvancedSettings[] = "advancedSettings";
+
 // Indices used to represent first preview page and complete preview document.
 const int FIRST_PAGE_INDEX = 0;
 const int COMPLETE_PREVIEW_DOCUMENT_INDEX = -1;

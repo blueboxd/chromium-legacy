@@ -5,10 +5,11 @@
 package org.chromium.chrome.browser.widget.emptybackground;
 
 import android.app.Activity;
-import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.View.OnAttachStateChangeListener;
 import android.view.ViewStub;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ObservableSupplier;

@@ -7,7 +7,8 @@ package org.chromium.android_webview.common;
 import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.support.annotation.NonNull;
+
+import androidx.annotation.NonNull;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;

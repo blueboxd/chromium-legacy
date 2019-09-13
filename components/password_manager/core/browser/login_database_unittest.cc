@@ -1689,6 +1689,114 @@ TEST_F(LoginDatabaseTest, PasswordReuseMetrics) {
                                    base::Bucket(5, 1)));
 }
 
+TEST_F(LoginDatabaseTest, DuplicatesMetrics_NoDuplicates) {
+  // No duplicate.
+  PasswordForm password_form;
+  password_form.signon_realm = "http://example1.com/";
+  password_form.origin = GURL("http://example1.com/");
+  password_form.username_element = ASCIIToUTF16("userelem_1");
+  password_form.username_value = ASCIIToUTF16("username_1");
+  password_form.password_value = ASCIIToUTF16("password_1");
+  ASSERT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+
+  // Different username -> no duplicate.
+  password_form.signon_realm = "http://example2.com/";
+  password_form.origin = GURL("http://example2.com/");
+  password_form.username_value = ASCIIToUTF16("username_1");
+  ASSERT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+  password_form.username_value = ASCIIToUTF16("username_2");
+  ASSERT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+
+  // Blacklisted forms don't count as duplicates (neither against other
+  // blacklisted forms nor against actual saved credentials).
+  password_form.signon_realm = "http://example3.com/";
+  password_form.origin = GURL("http://example3.com/");
+  password_form.username_value = ASCIIToUTF16("username_1");
+  ASSERT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+  password_form.blacklisted_by_user = true;
+  password_form.username_value = ASCIIToUTF16("username_2");
+  ASSERT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+  password_form.username_value = ASCIIToUTF16("username_3");
+  ASSERT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+
+  base::HistogramTester histogram_tester;
+  db().ReportMetrics("", false);
+
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "PasswordManager.CredentialsWithDuplicates"),
+              testing::ElementsAre(base::Bucket(0, 1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "PasswordManager.CredentialsWithMismatchedDuplicates"),
+              testing::ElementsAre(base::Bucket(0, 1)));
+}
+
+TEST_F(LoginDatabaseTest, DuplicatesMetrics_ExactDuplicates) {
+  // Add some PasswordForms that are "exact" duplicates (only the
+  // username_element is different, which doesn't matter).
+  PasswordForm password_form;
+  password_form.signon_realm = "http://example1.com/";
+  password_form.origin = GURL("http://example1.com/");
+  password_form.username_element = ASCIIToUTF16("userelem_1");
+  password_form.username_value = ASCIIToUTF16("username_1");
+  ASSERT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+  password_form.username_element = ASCIIToUTF16("userelem_2");
+  ASSERT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+  // The number of "identical" credentials doesn't matter; we count the *sets*
+  // of duplicates.
+  password_form.username_element = ASCIIToUTF16("userelem_3");
+  ASSERT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+
+  // Similarly, origin doesn't make forms "different" either.
+  password_form.signon_realm = "http://example2.com/";
+  password_form.origin = GURL("http://example2.com/path1");
+  ASSERT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+  password_form.origin = GURL("http://example2.com/path2");
+  ASSERT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+
+  base::HistogramTester histogram_tester;
+  db().ReportMetrics("", false);
+
+  // There should be 2 groups of "exact" duplicates.
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "PasswordManager.CredentialsWithDuplicates"),
+              testing::ElementsAre(base::Bucket(2, 1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "PasswordManager.CredentialsWithMismatchedDuplicates"),
+              testing::ElementsAre(base::Bucket(0, 1)));
+}
+
+TEST_F(LoginDatabaseTest, DuplicatesMetrics_MismatchedDuplicates) {
+  // Mismatched duplicates: Identical except for the password.
+  PasswordForm password_form;
+  password_form.signon_realm = "http://example1.com/";
+  password_form.origin = GURL("http://example1.com/");
+  password_form.username_element = ASCIIToUTF16("userelem_1");
+  password_form.username_value = ASCIIToUTF16("username_1");
+  password_form.password_element = ASCIIToUTF16("passelem_1");
+  password_form.password_value = ASCIIToUTF16("password_1");
+  ASSERT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+  // Note: password_value is not part of the unique key, so we need to change
+  // some other value to be able to insert the duplicate into the DB.
+  password_form.password_element = ASCIIToUTF16("passelem_2");
+  password_form.password_value = ASCIIToUTF16("password_2");
+  ASSERT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+  // The number of "identical" credentials doesn't matter; we count the *sets*
+  // of duplicates.
+  password_form.password_element = ASCIIToUTF16("passelem_3");
+  password_form.password_value = ASCIIToUTF16("password_3");
+  ASSERT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+
+  base::HistogramTester histogram_tester;
+  db().ReportMetrics("", false);
+
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "PasswordManager.CredentialsWithDuplicates"),
+              testing::ElementsAre(base::Bucket(0, 1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "PasswordManager.CredentialsWithMismatchedDuplicates"),
+              testing::ElementsAre(base::Bucket(1, 1)));
+}
+
 TEST_F(LoginDatabaseTest, NoMetadata) {
   std::unique_ptr<syncer::MetadataBatch> metadata_batch =
       db().GetAllSyncMetadata();

@@ -6,12 +6,13 @@ package org.chromium.chrome.browser.contextmenu;
 
 import android.content.Context;
 import android.net.MailTo;
-import android.support.annotation.IntDef;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.view.ContextMenu;
 import android.webkit.MimeTypeMap;
 import android.webkit.URLUtil;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
@@ -544,7 +545,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             ShareHelper.share(linkShareParams);
         } else if (itemId == R.id.contextmenu_search_with_google_lens) {
             ContextMenuUma.record(params, ContextMenuUma.Action.SEARCH_WITH_GOOGLE_LENS);
-            helper.searchWithGoogleLens(mDelegate.isIncognito());
+            helper.searchWithGoogleLens();
         } else if (itemId == R.id.contextmenu_search_by_image) {
             ContextMenuUma.record(params, ContextMenuUma.Action.SEARCH_BY_IMAGE);
             helper.searchForImage();

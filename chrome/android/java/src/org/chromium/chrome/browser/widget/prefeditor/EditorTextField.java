@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.widget.prefeditor;
 
 import android.content.Context;
-import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.text.Editable;
@@ -24,6 +23,8 @@ import android.widget.AutoCompleteTextView;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView.OnEditorActionListener;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;

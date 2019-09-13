@@ -66,12 +66,6 @@ IdentityManager::IdentityManager(
   primary_account_manager_->SetGoogleSigninSucceededCallback(
       base::BindRepeating(&IdentityManager::GoogleSigninSucceeded,
                           base::Unretained(this)));
-  primary_account_manager_->SetAuthenticatedAccountSetCallback(
-      base::BindRepeating(&IdentityManager::AuthenticatedAccountSet,
-                          base::Unretained(this)));
-  primary_account_manager_->SetAuthenticatedAccountClearedCallback(
-      base::BindRepeating(&IdentityManager::AuthenticatedAccountCleared,
-                          base::Unretained(this)));
 #if !defined(OS_CHROMEOS)
   primary_account_manager_->SetGoogleSignedOutCallback(base::BindRepeating(
       &IdentityManager::GoogleSignedOut, base::Unretained(this)));
@@ -535,6 +529,7 @@ IdentityManager::ComputeUnconsentedPrimaryAccountInfo() const {
 
 void IdentityManager::GoogleSigninSucceeded(
     const CoreAccountInfo& account_info) {
+  UpdateUnconsentedPrimaryAccount();
   for (auto& observer : observer_list_) {
     observer.OnPrimaryAccountSet(account_info);
   }
@@ -551,6 +546,7 @@ void IdentityManager::GoogleSigninSucceeded(
 void IdentityManager::GoogleSignedOut(const CoreAccountInfo& account_info) {
   DCHECK(!HasPrimaryAccount());
   DCHECK(!account_info.IsEmpty());
+  UpdateUnconsentedPrimaryAccount();
   for (auto& observer : observer_list_) {
     observer.OnPrimaryAccountCleared(account_info);
   }
@@ -562,17 +558,6 @@ void IdentityManager::GoogleSignedOut(const CoreAccountInfo& account_info) {
         ConvertToJavaCoreAccountInfo(env, account_info));
   }
 #endif
-}
-
-void IdentityManager::AuthenticatedAccountSet(
-    const CoreAccountInfo& account_info) {
-  DCHECK(primary_account_manager_->IsAuthenticated());
-  UpdateUnconsentedPrimaryAccount();
-}
-
-void IdentityManager::AuthenticatedAccountCleared() {
-  DCHECK(!primary_account_manager_->IsAuthenticated());
-  UpdateUnconsentedPrimaryAccount();
 }
 
 void IdentityManager::OnRefreshTokenAvailable(const CoreAccountId& account_id) {

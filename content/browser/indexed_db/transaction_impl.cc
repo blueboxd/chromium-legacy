@@ -210,7 +210,7 @@ void TransactionImpl::Put(
       if (!connection->IsConnected())
         return;
 
-      connection->AbortTransaction(transaction_.get(), error);
+      connection->AbortTransactionAndTearDownOnError(transaction_.get(), error);
       return;
     }
     case IOHelper::LoadResultCode::kInvalidBlobPath: {
@@ -413,7 +413,7 @@ void TransactionImpl::OnGotUsageAndQuotaForCommit(
       usage + transaction_->size() <= quota) {
     connection->database()->Commit(transaction_.get());
   } else {
-    connection->AbortTransaction(
+    connection->AbortTransactionAndTearDownOnError(
         transaction_.get(),
         IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionQuotaError));
   }

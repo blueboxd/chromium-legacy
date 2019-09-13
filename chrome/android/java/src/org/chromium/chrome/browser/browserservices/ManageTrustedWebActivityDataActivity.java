@@ -5,15 +5,15 @@
 package org.chromium.chrome.browser.browserservices;
 
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+
+import androidx.annotation.Nullable;
+import androidx.browser.customtabs.CustomTabsSessionToken;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
-
-import androidx.browser.customtabs.CustomTabsSessionToken;
 
 /**
  * Launched by Trusted Web Activity apps when the user clears data.

@@ -43,8 +43,8 @@ class CONTENT_EXPORT IndexedDBConnectionCoordinator {
                               base::OnceClosure on_deletion_complete);
 
   // Call this method to prune any tasks that don't want to be run during
-  // force close.
-  void PruneTasksForForceClose();
+  // force close. Returns any error caused by rolling back changes.
+  leveldb::Status PruneTasksForForceClose();
 
   void OnConnectionClosed(IndexedDBConnection* connection);
 

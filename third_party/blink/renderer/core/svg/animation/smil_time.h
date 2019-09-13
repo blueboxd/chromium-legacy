@@ -26,6 +26,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_ANIMATION_SMIL_TIME_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_ANIMATION_SMIL_TIME_H_
 
+#include <ostream>
+
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
@@ -81,6 +83,8 @@ class SMILTimeWithOrigin {
   SMILTime time_;
   Origin origin_;
 };
+
+std::ostream& operator<<(std::ostream& os, SMILTime time);
 
 inline bool operator==(const SMILTime& a, const SMILTime& b) {
   return (a.IsUnresolved() && b.IsUnresolved()) || a.Value() == b.Value();

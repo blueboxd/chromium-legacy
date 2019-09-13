@@ -9,8 +9,9 @@ import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
-import android.support.annotation.IntDef;
 import android.util.Pair;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.AsyncTask;

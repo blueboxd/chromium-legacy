@@ -51,6 +51,10 @@ class FakeOutputSurface : public OutputSurface {
     capabilities_.max_frames_pending = max;
   }
 
+  void set_supports_dc_layers(bool supports) {
+    capabilities_.supports_dc_layers = supports;
+  }
+
   OutputSurfaceFrame* last_sent_frame() { return last_sent_frame_.get(); }
   size_t num_sent_frames() { return num_sent_frames_; }
 
@@ -119,7 +123,6 @@ class FakeOutputSurface : public OutputSurface {
   GLenum framebuffer_format_ = 0;
   unsigned gpu_fence_id_ = 0;
   unsigned overlay_texture_id_ = 0;
-  OverlayCandidateValidator* overlay_candidate_validator_ = nullptr;
   gfx::ColorSpace last_reshape_color_space_;
   gfx::Rect last_set_draw_rectangle_;
 

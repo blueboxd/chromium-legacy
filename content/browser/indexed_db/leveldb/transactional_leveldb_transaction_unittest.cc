@@ -54,8 +54,9 @@ class TransactionalLevelDBTransactionTest : public LevelDBScopesTestBase {
                 [this](leveldb::Status s) { this->failure_status_ = s; }));
     leveldb::Status s = scopes_system->Initialize();
     ASSERT_TRUE(s.ok()) << s.ToString();
-    scopes_system->StartRecoveryAndCleanupTasks(
+    s = scopes_system->StartRecoveryAndCleanupTasks(
         LevelDBScopes::TaskRunnerMode::kNewCleanupAndRevertSequences);
+    ASSERT_TRUE(s.ok()) << s.ToString();
     leveldb_database_ = leveldb_factory_->CreateLevelDBDatabase(
         leveldb_, std::move(scopes_system),
         base::SequencedTaskRunnerHandle::Get(), kTestingMaxOpenCursors);

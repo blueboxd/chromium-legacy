@@ -14,6 +14,7 @@
 #include "content/browser/cache_storage/scoped_writable_entry.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 
@@ -32,12 +33,12 @@ class CONTENT_EXPORT CacheStorageBlobToDiskCache
   CacheStorageBlobToDiskCache();
   ~CacheStorageBlobToDiskCache() override;
 
-  // Writes the body of |blob| to |entry| with index
+  // Writes the body of |blob_remote| to |entry| with index
   // |disk_cache_body_index|. |entry| is passed to the callback once complete.
   // Only call this once per instantiation of CacheStorageBlobToDiskCache.
   void StreamBlobToCache(ScopedWritableEntry entry,
                          int disk_cache_body_index,
-                         blink::mojom::BlobPtr blob,
+                         mojo::PendingRemote<blink::mojom::Blob> blob_remote,
                          uint64_t blob_size,
                          EntryAndBoolCallback callback);
 

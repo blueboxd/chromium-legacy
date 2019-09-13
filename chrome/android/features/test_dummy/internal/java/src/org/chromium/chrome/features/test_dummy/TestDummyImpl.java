@@ -6,8 +6,9 @@ package org.chromium.chrome.features.test_dummy;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.support.annotation.IntDef;
 import android.support.v7.app.AlertDialog;
+
+import androidx.annotation.IntDef;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

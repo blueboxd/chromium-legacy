@@ -5,8 +5,9 @@
 package org.chromium.chrome.browser.touchless;
 
 import android.os.Bundle;
-import android.support.annotation.IntDef;
 import android.view.View;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;

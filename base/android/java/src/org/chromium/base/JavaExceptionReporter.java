@@ -4,7 +4,7 @@
 
 package org.chromium.base;
 
-import android.support.annotation.UiThread;
+import androidx.annotation.UiThread;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;

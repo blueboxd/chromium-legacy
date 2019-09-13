@@ -9310,41 +9310,6 @@
       },
       {
         "args": [
-          "--enable-gpu",
-          "--test-launcher-bot-mode",
-          "--test-launcher-jobs=1",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/vulkan.content_browsertests.filter",
-          "--enable-features=VizDisplayCompositor,UseSkiaRenderer,UiGpuRasterization",
-          "--use-vulkan=native",
-          "--enable-oop-rasterization",
-          "--enable-gpu-rasterization",
-          "--force-gpu-rasterization",
-          "--disable-software-compositing-fallback",
-          "--disable-vulkan-fallback-to-gl-for-testing",
-          "--disable-headless-mode",
-          "--no-xvfb"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "vulkan_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "intel-uhd-630-ubuntu-stable",
-              "os": "Ubuntu-19.04",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "expiration": 14400
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "args": [
           "--use-gpu-in-tests",
           "--use-cmd-decoder=validating"
         ],
@@ -11075,6 +11040,40 @@
           ]
         },
         "test": "angle_white_box_tests"
+      },
+      {
+        "args": [
+          "--enable-gpu",
+          "--test-launcher-bot-mode",
+          "--test-launcher-jobs=1",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/vulkan.content_browsertests.filter",
+          "--enable-features=VizDisplayCompositor,UseSkiaRenderer,UiGpuRasterization",
+          "--use-vulkan=native",
+          "--enable-oop-rasterization",
+          "--enable-gpu-rasterization",
+          "--force-gpu-rasterization",
+          "--disable-software-compositing-fallback",
+          "--disable-vulkan-fallback-to-gl-for-testing",
+          "--disable-headless-mode",
+          "--no-xvfb"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "vulkan_content_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "os": "linux-nvidia-stable",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        },
+        "test": "content_browsertests"
       },
       {
         "args": [

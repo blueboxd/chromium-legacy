@@ -83,8 +83,8 @@ struct Metric {
 const Metric kAllocatorDumpNamesForMetrics[] = {
     {"blink_gc", "BlinkGC", kLargeMetric, kEffectiveSize,
      EmitTo::kSizeInUkmAndUma, &Memory_Experimental::SetBlinkGC},
-    {"blink_gc/allocated_objects", "BlinkGC.AllocatedObjects", kLargeMetric,
-     kEffectiveSize, EmitTo::kSizeInUkmAndUma,
+    {"blink_gc", "BlinkGC.AllocatedObjects", kLargeMetric,
+     kAllocatedObjectsSize, EmitTo::kSizeInUkmAndUma,
      &Memory_Experimental::SetBlinkGC_AllocatedObjects},
     {"blink_objects/Document", "NumberOfDocuments", !kLargeMetric,
      MemoryAllocatorDump::kNameObjectCount, EmitTo::kCountsInUkmOnly,

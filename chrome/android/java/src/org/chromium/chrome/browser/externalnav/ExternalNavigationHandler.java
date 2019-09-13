@@ -13,10 +13,11 @@ import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.SystemClock;
 import android.provider.Browser;
-import android.support.annotation.IntDef;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.webkit.WebView;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;

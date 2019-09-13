@@ -4,9 +4,10 @@
 
 package org.chromium.chrome.browser.touchless;
 
-import android.support.annotation.CallSuper;
 import android.view.KeyEvent;
 import android.view.ViewGroup;
+
+import androidx.annotation.CallSuper;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;

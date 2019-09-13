@@ -110,7 +110,8 @@ LayoutText* FirstLetterPseudoElement::FirstLetterTextLayoutObject(
   }
 
   if (!parent_layout_object ||
-      !parent_layout_object->Style()->HasPseudoStyle(kPseudoIdFirstLetter) ||
+      !parent_layout_object->Style()->HasPseudoElementStyle(
+          kPseudoIdFirstLetter) ||
       !CanHaveGeneratedChildren(*parent_layout_object) ||
       !parent_layout_object->BehavesLikeBlockContainer())
     return nullptr;
@@ -177,7 +178,7 @@ LayoutText* FirstLetterPseudoElement::FirstLetterTextLayoutObject(
       first_letter_text_layout_object =
           first_letter_text_layout_object->NextSibling();
     } else if (!first_letter_text_layout_object->IsInline() &&
-               first_letter_text_layout_object->Style()->HasPseudoStyle(
+               first_letter_text_layout_object->Style()->HasPseudoElementStyle(
                    kPseudoIdFirstLetter) &&
                CanHaveGeneratedChildren(*first_letter_text_layout_object)) {
       // There is a layoutObject further down the tree which has
@@ -313,7 +314,7 @@ FirstLetterPseudoElement::CustomStyleForLayoutObject() {
     return nullptr;
   DCHECK(first_letter_text->Parent());
   return ParentOrShadowHostElement()->StyleForPseudoElement(
-      PseudoStyleRequest(GetPseudoId()),
+      PseudoElementStyleRequest(GetPseudoId()),
       first_letter_text->Parent()->FirstLineStyle());
 }
 

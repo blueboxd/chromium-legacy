@@ -537,7 +537,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestExtraHeaders) {
+// Flaky on ChromeOS: https://crbug.com/1003661
+#if defined(OS_CHROMEOS)
+#define MAYBE_WebRequestExtraHeaders DISABLED_WebRequestExtraHeaders
+#else
+#define MAYBE_WebRequestExtraHeaders WebRequestExtraHeaders
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+                       MAYBE_WebRequestExtraHeaders) {
   CancelLoginDialog login_dialog_helper;
 
   ASSERT_TRUE(StartEmbeddedTestServer());

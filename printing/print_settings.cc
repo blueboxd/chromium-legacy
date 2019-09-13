@@ -185,6 +185,7 @@ void PrintSettings::Clear() {
   send_user_info_ = false;
   username_.clear();
   pin_value_.clear();
+  advanced_settings_.clear();
 #endif  // defined(OS_CHROMEOS)
 }
 

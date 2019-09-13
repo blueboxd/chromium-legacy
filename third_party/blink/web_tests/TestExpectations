@@ -6186,11 +6186,6 @@ crbug.com/1002686 [ Mac10.13 ] virtual/threaded/http/tests/devtools/tracing/time
 # Sheriff 2019-09-11
 crbug.com/1002828 [ Linux ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Pass Failure Crash ]
 
-crbug.com/913887 fast/dom/Window/window-postmessage-args.html [ Skip ]
-crbug.com/913887 fast/dom/Window/window-postmessage-clone.html [ Skip ]
-crbug.com/913887 fast/events/message-port-clone.html [ Skip ]
-crbug.com/913887 virtual/mouseevent_fractional/fast/events/message-port-clone.html [ Skip ]
-
 # Tests fail because of scrollbar-width property
 crbug.com/1003055 external/wpt/css/css-scroll-snap/scroll-target-align-001.html [ Failure ]
 crbug.com/1003055 external/wpt/css/css-scroll-snap/scroll-target-align-002.html [ Failure ]

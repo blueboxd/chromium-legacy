@@ -111,6 +111,9 @@ class AppUpdate {
   apps::mojom::OptionalBool ShowInManagement() const;
   bool ShowInManagementChanged() const;
 
+  std::vector<apps::mojom::IntentFilterPtr> IntentFilters() const;
+  bool IntentFiltersChanged() const;
+
  private:
   const apps::mojom::App* state_;
   const apps::mojom::App* delta_;

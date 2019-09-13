@@ -6,8 +6,9 @@ package org.chromium.components.background_task_scheduler;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.IntDef;
-import android.support.annotation.NonNull;
+
+import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
 
 import org.chromium.base.Log;
 

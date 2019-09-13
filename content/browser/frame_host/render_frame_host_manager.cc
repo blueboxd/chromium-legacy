@@ -593,15 +593,6 @@ void RenderFrameHostManager::UnfreezeCurrentFrameHost() {
       current_frame_host());
 }
 
-void RenderFrameHostManager::EvictFromBackForwardCache(
-    RenderFrameHostImpl* rfh) {
-  // TODO(hajimehoshi): Add a direct getter of BackForwardCache to
-  // RenderFrameHostDelegate.
-  BackForwardCache& back_forward_cache =
-      delegate_->GetControllerForRenderManager().back_forward_cache();
-  back_forward_cache.EvictDocument(rfh);
-}
-
 void RenderFrameHostManager::ResetProxyHosts() {
   for (const auto& pair : proxy_hosts_) {
     static_cast<SiteInstanceImpl*>(pair.second->GetSiteInstance())

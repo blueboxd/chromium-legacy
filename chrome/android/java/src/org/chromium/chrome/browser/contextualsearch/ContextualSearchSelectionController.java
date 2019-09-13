@@ -4,9 +4,10 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
-import android.support.annotation.IntDef;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
+
+import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.Log;
 import org.chromium.base.TimeUtils;
@@ -311,7 +312,7 @@ public class ContextualSearchSelectionController {
      * @param posXPix The x coordinate of the selection start handle.
      * @param posYPix The y coordinate of the selection start handle.
      */
-    void handleSelectionEvent(@SelectionEventType int eventType, float posXPix, float posYPix) {
+    void handleSelectionEvent(int eventType, float posXPix, float posYPix) {
         boolean shouldHandleSelection = false;
         switch (eventType) {
             case SelectionEventType.SELECTION_HANDLES_SHOWN:
@@ -333,7 +334,6 @@ public class ContextualSearchSelectionController {
                 resetAllStates();
                 break;
             case SelectionEventType.SELECTION_HANDLE_DRAG_STOPPED:
-            case SelectionEventType.SELECTION_HANDLES_MOVED:
                 shouldHandleSelection = mShouldHandleSelectionModification;
                 mIsAdjustedSelection = true;
                 break;

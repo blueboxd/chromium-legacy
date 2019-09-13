@@ -17,10 +17,19 @@
 
 using base::UserMetricsAction;
 
+NSString* const kCreditCardScannerViewID = @"kCreditCardScannerViewID";
+
 @interface CreditCardScannerViewController ()
 
 // The delegate notified when there is a new image from the the scanner.
 @property(nonatomic, weak) id<CreditCardScannedImageDelegate> delegate;
+
+// The rect storing the location of the credit card scanner viewport to set the
+// region of interest of the Vision request.
+// This is needed so that UI elements stay on the main thread and
+// |creditCardViewport| can be sent as parameter through the
+// CreditCardScannerCameraControllerDelegate from the background thread.
+@property(nonatomic, assign) CGRect creditCardViewport;
 
 @end
 
@@ -39,6 +48,11 @@ using base::UserMetricsAction;
 }
 
 #pragma mark - UIViewController
+
+- (void)viewDidLoad {
+  [super viewDidLoad];
+  self.view.accessibilityIdentifier = kCreditCardScannerViewID;
+}
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
@@ -59,6 +73,11 @@ using base::UserMetricsAction;
   // Crop the scanner subviews to the size of the |scannerView| to avoid the
   // preview overlay being visible outside the screen bounds while dismissing.
   self.scannerView.clipsToBounds = YES;
+}
+
+- (void)viewDidLayoutSubviews {
+  [super viewDidLayoutSubviews];
+  self.creditCardViewport = [self.scannerView viewportRectOfInterest];
 }
 
 #pragma mark - ScannerViewController
@@ -94,9 +113,8 @@ using base::UserMetricsAction;
 #pragma mark - CreditCardScannerCameraControllerDelegate
 
 - (void)receiveCreditCardScannerResult:(CMSampleBufferRef)sampleBuffer {
-  CGRect creditCardViewport = [self.scannerView viewportRectOfInterest];
   [self.delegate processOutputSampleBuffer:sampleBuffer
-                                  viewport:creditCardViewport];
+                                  viewport:self.creditCardViewport];
 }
 
 @end

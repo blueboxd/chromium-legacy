@@ -5,7 +5,8 @@
 package org.chromium.components.signin;
 
 import android.annotation.SuppressLint;
-import android.support.annotation.MainThread;
+
+import androidx.annotation.MainThread;
 
 import org.chromium.base.ThreadUtils;
 

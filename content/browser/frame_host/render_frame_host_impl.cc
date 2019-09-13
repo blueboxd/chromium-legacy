@@ -1697,7 +1697,6 @@ void RenderFrameHostImpl::RenderProcessGone(SiteInstanceImpl* site_instance) {
   DCHECK_EQ(site_instance_.get(), site_instance);
 
   if (is_in_back_forward_cache_) {
-    // Note: Evicting from the BackForwardCache deletes |this|.
     EvictFromBackForwardCache();
     return;
   }
@@ -2333,7 +2332,6 @@ void RenderFrameHostImpl::UpdateActiveSchedulerTrackedFeatures(
   TRACE_EVENT0("toplevel", "UpdateActiveSchedulerTrackedFeatures");
   renderer_reported_scheduler_tracked_features_ = features_mask;
 
-  // IMPORTANT NOTE: MaybeEvictFromBackForwardCache may delete |this|.
   MaybeEvictFromBackForwardCache();
 }
 
@@ -2343,7 +2341,6 @@ void RenderFrameHostImpl::OnSchedulerTrackedFeatureUsed(
   browser_reported_scheduler_tracked_features_ |=
       1 << static_cast<uint64_t>(feature);
 
-  // IMPORTANT NOTE: MaybeEvictFromBackForwardCache may delete |this|.
   MaybeEvictFromBackForwardCache();
 }
 
@@ -2891,6 +2888,12 @@ void RenderFrameHostImpl::OnRunJavaScriptDialog(
     const base::string16& default_prompt,
     JavaScriptDialogType dialog_type,
     IPC::Message* reply_msg) {
+  // If a dialog tries to show for a document in the BackForwardCache, evict it.
+  if (is_in_back_forward_cache_) {
+    EvictFromBackForwardCache();
+    return;
+  }
+
   // Don't show the dialog if it's triggered on a frame that's pending deletion
   // (e.g., from an unload handler), or when the tab is being closed.
   if (IsWaitingForUnloadACK()) {
@@ -3472,21 +3475,21 @@ void RenderFrameHostImpl::EvictFromBackForwardCache() {
        in_flight_navigation_request->rfh_restored_from_back_forward_cache() ==
            top_document);
 
-  // Hold onto a pointer to the navigation controller, in case we need it to
-  // reissue the navigation after |this| has been destroyed.
   NavigationControllerImpl* controller = static_cast<NavigationControllerImpl*>(
       frame_tree_node_->navigator()->GetController());
-  frame_tree_node_->render_manager()->EvictFromBackForwardCache(top_document);
 
-  // DO NOT REFERENCER ANY MEMBERS after this. The previous call destroyed
-  // |this|.
+  // Evict the frame and schedule it to be destroyed. Eviction happens
+  // immediately, but destruction is delayed, so that callers don't have to
+  // worry about use-after-free of |this|.
+  top_document->is_evicted_from_back_forward_cache_ = true;
+  controller->back_forward_cache().PostTaskToFlushEvictedFrames();
 
   if (!is_navigation_to_evicted_frame_in_flight)
     return;
 
-  // If we are currently navigating to the frame that was just destroyed, we
+  // If we are currently navigating to the frame that was just evicted, we
   // must restart the navigation. This is important because restarting the
-  // navigation deletes the NavigationRequest associated with the destroyed
+  // navigation deletes the NavigationRequest associated with the evicted
   // frame (preventing use-after-free).
   int nav_index = controller->GetEntryIndexWithUniqueID(
       in_flight_navigation_request->nav_entry_id());
@@ -6219,12 +6222,12 @@ void RenderFrameHostImpl::ResetFeaturePolicy() {
 }
 
 void RenderFrameHostImpl::CreateAudioInputStreamFactory(
-    mojom::RendererAudioInputStreamFactoryRequest request) {
+    mojo::PendingReceiver<mojom::RendererAudioInputStreamFactory> receiver) {
   BrowserMainLoop* browser_main_loop = BrowserMainLoop::GetInstance();
   DCHECK(browser_main_loop);
   if (base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams)) {
     MediaStreamManager* msm = browser_main_loop->media_stream_manager();
-    audio_service_audio_input_stream_factory_.emplace(std::move(request), msm,
+    audio_service_audio_input_stream_factory_.emplace(std::move(receiver), msm,
                                                       this);
   } else {
     in_content_audio_input_stream_factory_ =
@@ -6235,7 +6238,7 @@ void RenderFrameHostImpl::CreateAudioInputStreamFactory(
                                 browser_main_loop->user_input_monitor(),
                                 GetProcess()->GetID(), GetRoutingID()),
             browser_main_loop->media_stream_manager(), GetProcess()->GetID(),
-            GetRoutingID(), std::move(request));
+            GetRoutingID(), std::move(receiver));
   }
 }
 
@@ -7551,7 +7554,6 @@ void RenderFrameHostImpl::MaybeEvictFromBackForwardCache() {
   if (controller->back_forward_cache().CanStoreDocument(this))
     return;
 
-  // Note: Calling EvictFromBackForwradCache deletes |this|.
   EvictFromBackForwardCache();
 }
 

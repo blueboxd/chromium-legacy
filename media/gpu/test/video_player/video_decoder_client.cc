@@ -164,10 +164,14 @@ void VideoDecoderClient::CreateDecoderTask(bool* success,
 
   if (decoder_client_config_.use_vd) {
 #if defined(OS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-    decoder_ = ChromeosVideoDecoderFactory::Create(
-        base::ThreadTaskRunnerHandle::Get(),
-        std::make_unique<PlatformVideoFramePool>(),
-        std::make_unique<VideoFrameConverter>());
+    if (decoder_client_config_.allocation_mode == AllocationMode::kImport) {
+      decoder_ = ChromeosVideoDecoderFactory::Create(
+          base::ThreadTaskRunnerHandle::Get(),
+          std::make_unique<PlatformVideoFramePool>(),
+          std::make_unique<VideoFrameConverter>());
+    } else {
+      LOG(ERROR) << "VD-based video decoders only support import mode";
+    }
 #endif  // defined(OS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
   } else {
     // The video decoder client expects decoders to use the VD interface. We

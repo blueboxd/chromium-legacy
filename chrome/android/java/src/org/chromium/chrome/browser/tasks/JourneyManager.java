@@ -7,7 +7,8 @@ package org.chromium.chrome.browser.tasks;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
-import android.support.annotation.NonNull;
+
+import androidx.annotation.NonNull;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;

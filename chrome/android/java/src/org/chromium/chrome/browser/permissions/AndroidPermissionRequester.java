@@ -6,10 +6,11 @@ package org.chromium.chrome.browser.permissions;
 
 import android.app.Activity;
 import android.content.pm.PackageManager;
-import android.support.annotation.StringRes;
 import android.util.SparseArray;
 import android.view.View;
 import android.widget.TextView;
+
+import androidx.annotation.StringRes;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;

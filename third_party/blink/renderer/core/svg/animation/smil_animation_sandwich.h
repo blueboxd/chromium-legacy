@@ -34,7 +34,7 @@
 namespace blink {
 
 struct PriorityCompare {
-  PriorityCompare(double elapsed) : elapsed_(elapsed) {}
+  PriorityCompare(SMILTime elapsed) : elapsed_(elapsed) {}
   bool operator()(const Member<SVGSMILElement>& a,
                   const Member<SVGSMILElement>& b) {
     // FIXME: This should also consider possible timing relations between the
@@ -45,7 +45,7 @@ struct PriorityCompare {
       return a->DocumentOrderIndex() < b->DocumentOrderIndex();
     return a_begin < b_begin;
   }
-  double elapsed_;
+  SMILTime elapsed_;
 };
 
 // This class implements/helps with implementing the "sandwich model" from SMIL.
@@ -59,13 +59,13 @@ class SMILAnimationSandwich : public GarbageCollected<SMILAnimationSandwich> {
   void Unschedule(SVGSMILElement* animation);
   void Reset();
 
-  void UpdateTiming(double elapsed);
-  void UpdateSyncBases(double elapsed);
-  void UpdateActiveAnimationStack(double elapsed);
+  void UpdateTiming(SMILTime elapsed);
+  void UpdateSyncBases(SMILTime elapsed);
+  void UpdateActiveAnimationStack(SMILTime elapsed);
   SVGSMILElement* ApplyAnimationValues();
 
-  SMILTime NextInterestingTime(double presentation_time) const;
-  SMILTime NextProgressTime(double presentation_time) const;
+  SMILTime NextInterestingTime(SMILTime presentation_time) const;
+  SMILTime NextProgressTime(SMILTime presentation_time) const;
 
   bool IsEmpty() { return sandwich_.IsEmpty(); }
 

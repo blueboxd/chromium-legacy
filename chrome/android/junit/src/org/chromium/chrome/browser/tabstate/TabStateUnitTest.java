@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.tabstate;
 
 import static org.junit.Assert.assertEquals;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import org.junit.Rule;
 import org.junit.Test;

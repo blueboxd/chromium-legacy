@@ -6,10 +6,11 @@ package org.chromium.chrome.browser.contextualsearch;
 
 import android.content.Context;
 import android.net.Uri;
-import android.support.annotation.Nullable;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.VisibleForTesting;
@@ -147,9 +148,8 @@ class ContextualSearchPolicy {
         }
 
         if (isPrivacyAggressiveResolveEnabled()
-                && mSelectionController.getSelectionType() == SelectionType.RESOLVING_LONG_PRESS) {
+                && mSelectionController.getSelectionType() == SelectionType.RESOLVING_LONG_PRESS)
             return true;
-        }
 
         return isPromoAvailable() ? isBasePageHTTP(mNetworkCommunicator.getBasePageUrl()) : true;
     }
@@ -251,7 +251,7 @@ class ContextualSearchPolicy {
 
     /**
      * @return Whether a verbatim request should be made for the given base page, assuming there
-     *         is no existing request.
+     *         is no exiting request.
      */
     boolean shouldCreateVerbatimRequest() {
         if (isPrivacyAggressiveResolveEnabled()) return false;
@@ -491,9 +491,8 @@ class ContextualSearchPolicy {
      */
     String getHomeCountry(Context context) {
         if (ContextualSearchFieldTrial.getSwitch(
-                    ContextualSearchSwitch.IS_SEND_HOME_COUNTRY_DISABLED)) {
+                    ContextualSearchSwitch.IS_SEND_HOME_COUNTRY_DISABLED))
             return "";
-        }
 
         TelephonyManager telephonyManager =
                 (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);

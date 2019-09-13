@@ -4,7 +4,7 @@
 
 package org.chromium.base.test.util;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import org.junit.runner.Description;
 

@@ -254,9 +254,10 @@ cr.define('model_test', function() {
      * print ticket.
      */
     test(assert(TestNames.GetPrintTicket), function() {
+      const origin = cr.isChromeOS ? print_preview.DestinationOrigin.CROS :
+                                     print_preview.DestinationOrigin.LOCAL;
       const testDestination = new print_preview.Destination(
-          'FooDevice', print_preview.DestinationType.LOCAL,
-          print_preview.DestinationOrigin.LOCAL, 'FooName',
+          'FooDevice', print_preview.DestinationType.LOCAL, origin, 'FooName',
           print_preview.DestinationConnectionStatus.ONLINE);
       testDestination.capabilities =
           print_preview_test_utils.getCddTemplateWithAdvancedSettings(2)
@@ -301,6 +302,12 @@ cr.define('model_test', function() {
         pageHeight: 792,
         showSystemDialog: false,
       };
+      if (cr.isChromeOS) {
+        expectedDefaultTicketObject.advancedSettings = {
+          printArea: 4,
+          paperType: 0,
+        };
+      }
       expectEquals(JSON.stringify(expectedDefaultTicketObject), defaultTicket);
 
       // Toggle all the values and create a new print ticket.
@@ -344,6 +351,10 @@ cr.define('model_test', function() {
       };
       if (cr.isChromeOS) {
         expectedNewTicketObject.pinValue = '0000';
+        expectedNewTicketObject.advancedSettings = {
+          printArea: 6,
+          paperType: 1,
+        };
       }
 
       expectEquals(JSON.stringify(expectedNewTicketObject), newTicket);

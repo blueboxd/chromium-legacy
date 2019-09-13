@@ -31,13 +31,14 @@ import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
 import android.content.pm.ActivityInfo;
 import android.graphics.Rect;
-import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.test.espresso.matcher.RootMatchers;
 import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
+
+import androidx.annotation.Nullable;
 
 import org.hamcrest.Matcher;
 import org.junit.Before;

@@ -15,6 +15,10 @@
 #include "printing/printing_export.h"
 #include "ui/gfx/geometry/size.h"
 
+#if defined(OS_CHROMEOS)
+#include "base/values.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace base {
 class DictionaryValue;
 }
@@ -41,6 +45,40 @@ struct PRINTING_EXPORT PrinterBasicInfo {
 };
 
 using PrinterList = std::vector<PrinterBasicInfo>;
+
+#if defined(OS_CHROMEOS)
+
+struct PRINTING_EXPORT AdvancedCapabilityValue {
+  AdvancedCapabilityValue();
+  AdvancedCapabilityValue(const AdvancedCapabilityValue& other);
+  ~AdvancedCapabilityValue();
+
+  // IPP identifier of the value.
+  std::string name;
+
+  // Localized name for the value.
+  std::string display_name;
+
+  // True iff this is default value.
+  bool is_default = false;
+};
+
+struct PRINTING_EXPORT AdvancedCapability {
+  AdvancedCapability();
+  AdvancedCapability(const AdvancedCapability& other);
+  ~AdvancedCapability();
+
+  // IPP identifier of the attribute.
+  std::string name;
+
+  // Localized name for the attribute.
+  std::string display_name;
+
+  // Values for enumerated attributes.
+  std::vector<AdvancedCapabilityValue> values;
+};
+
+#endif  // defined(OS_CHROMEOS)
 
 struct PRINTING_EXPORT PrinterSemanticCapsAndDefaults {
   PrinterSemanticCapsAndDefaults();
@@ -74,6 +112,7 @@ struct PRINTING_EXPORT PrinterSemanticCapsAndDefaults {
 
 #if defined(OS_CHROMEOS)
   bool pin_supported = false;
+  std::vector<AdvancedCapability> advanced_capabilities;
 #endif  // defined(OS_CHROMEOS)
 };
 

@@ -142,9 +142,7 @@ bool CSSMathFunctionValue::IsComputationallyIndependent() const {
 
 scoped_refptr<CalculationValue> CSSMathFunctionValue::ToCalcValue(
     const CSSToLengthConversionData& conversion_data) const {
-  return CalculationValue::CreateSimplified(
-      expression_->ToCalculationExpression(conversion_data),
-      PermittedValueRange());
+  return expression_->ToCalcValue(conversion_data, PermittedValueRange());
 }
 
 }  // namespace blink

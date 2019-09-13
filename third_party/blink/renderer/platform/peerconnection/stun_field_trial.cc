@@ -14,7 +14,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "third_party/webrtc/p2p/base/packet_socket_factory.h"
+#include "third_party/webrtc/api/packet_socket_factory.h"
 #include "third_party/webrtc/rtc_base/async_packet_socket.h"
 #include "third_party/webrtc/rtc_base/async_resolver_interface.h"
 #include "third_party/webrtc/rtc_base/ip_address.h"

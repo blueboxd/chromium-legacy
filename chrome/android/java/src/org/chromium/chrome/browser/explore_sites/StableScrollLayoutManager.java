@@ -7,10 +7,11 @@ package org.chromium.chrome.browser.explore_sites;
 import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+
+import androidx.annotation.Nullable;
 
 /**
  * Custom layout manager that fixes the scrollbar size based on number of items

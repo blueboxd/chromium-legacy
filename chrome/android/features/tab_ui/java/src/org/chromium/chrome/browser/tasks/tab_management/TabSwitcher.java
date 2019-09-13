@@ -6,7 +6,8 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.graphics.Bitmap;
 import android.graphics.Rect;
-import android.support.annotation.NonNull;
+
+import androidx.annotation.NonNull;
 
 import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;

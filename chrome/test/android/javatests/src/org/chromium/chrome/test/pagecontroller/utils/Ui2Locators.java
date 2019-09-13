@@ -4,10 +4,11 @@
 
 package org.chromium.chrome.test.pagecontroller.utils;
 
-import android.support.annotation.IdRes;
-import android.support.annotation.NonNull;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.uiautomator.By;
+
+import androidx.annotation.IdRes;
+import androidx.annotation.NonNull;
 
 import java.util.regex.Pattern;
 

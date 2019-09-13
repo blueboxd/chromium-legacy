@@ -51,6 +51,7 @@
 #include "chrome/browser/background/background_contents_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
 #include "chrome/browser/component_updater/chrome_component_updater_configurator.h"
@@ -1381,14 +1382,8 @@ class PrimaryUserPoliciesProxiedTest : public LoginPolicyTestBase {
   DISALLOW_COPY_AND_ASSIGN(PrimaryUserPoliciesProxiedTest);
 };
 
-// TODO(crbug.com/1002066): Test is flaky on ChromeOS.
-#if defined(OS_CHROMEOS)
-#define MAYBE_AvailableInLocalStateEarly DISABLED_AvailableInLocalStateEarly
-#else
-#define MAYBE_AvailableInLocalStateEarly AvailableInLocalStateEarly
-#endif
 IN_PROC_BROWSER_TEST_F(PrimaryUserPoliciesProxiedTest,
-                       MAYBE_AvailableInLocalStateEarly) {
+                       AvailableInLocalStateEarly) {
   PolicyService* const device_wide_policy_service =
       g_browser_process->platform_part()
           ->browser_policy_connector_chromeos()
@@ -1427,6 +1422,11 @@ IN_PROC_BROWSER_TEST_F(PrimaryUserPoliciesProxiedTest,
 
   EXPECT_TRUE(pref->IsManaged());
   EXPECT_FALSE(pref->GetValue()->GetBool());
+
+  // Make sure that session startup finishes before letting chrome exit.
+  // Rationale: We've seen CHECK-failures when exiting chrome right after
+  // NOTIFICATION_PROFILE_CREATED, see e.g. https://crbug.com/1002066 .
+  chromeos::test::WaitForPrimaryUserSessionStart();
 }
 
 #endif  // defined(OS_CHROMEOS)

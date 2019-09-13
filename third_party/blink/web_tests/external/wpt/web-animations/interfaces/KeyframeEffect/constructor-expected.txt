@@ -1,10 +1,10 @@
 This is a testharness.js-based test.
-Found 173 tests; 169 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 173 tests; 172 PASS, 1 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS A KeyframeEffect can be constructed with no frames
 PASS easing values are parsed correctly when passed to the KeyframeEffect constructor in KeyframeEffectOptions
 PASS Invalid easing values are correctly rejected when passed to the KeyframeEffect constructor in KeyframeEffectOptions
-FAIL composite values are parsed correctly when passed to the KeyframeEffect constructor in property-indexed keyframes assert_equals: resulting composite for 'accumulate' expected "accumulate" but got "replace"
-FAIL composite values are parsed correctly when passed to the KeyframeEffect constructor in regular keyframes assert_equals: resulting composite for 'accumulate' expected "accumulate" but got "replace"
+PASS composite values are parsed correctly when passed to the KeyframeEffect constructor in property-indexed keyframes
+PASS composite values are parsed correctly when passed to the KeyframeEffect constructor in regular keyframes
 PASS composite value is auto if the composite operation specified on the keyframe effect is being used
 PASS A KeyframeEffect can be constructed with a one property two value property-indexed keyframes specification
 PASS A KeyframeEffect constructed with a one property two value property-indexed keyframes specification roundtrips
@@ -76,7 +76,7 @@ PASS A KeyframeEffect can be constructed with a property-indexed keyframe with a
 PASS A KeyframeEffect constructed with a property-indexed keyframe with an array of easings that is too long roundtrips
 PASS A KeyframeEffect can be constructed with a property-indexed keyframe with a single composite operation
 PASS A KeyframeEffect constructed with a property-indexed keyframe with a single composite operation roundtrips
-FAIL A KeyframeEffect can be constructed with a property-indexed keyframe with a composite array assert_equals: value for 'composite' on ComputedKeyframe #2 expected "accumulate" but got "replace"
+PASS A KeyframeEffect can be constructed with a property-indexed keyframe with a composite array
 PASS A KeyframeEffect constructed with a property-indexed keyframe with a composite array roundtrips
 PASS A KeyframeEffect can be constructed with a property-indexed keyframe with a composite array that is too short
 PASS A KeyframeEffect constructed with a property-indexed keyframe with a composite array that is too short roundtrips

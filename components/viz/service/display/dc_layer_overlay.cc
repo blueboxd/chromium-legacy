@@ -14,7 +14,7 @@
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "components/viz/service/display/display_resource_provider.h"
-#include "components/viz/service/display/output_surface.h"
+#include "components/viz/service/display/overlay_processor.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "ui/gfx/geometry/insets.h"
@@ -289,11 +289,9 @@ DCLayerOverlay& DCLayerOverlay::operator=(const DCLayerOverlay& other) =
 DCLayerOverlay::~DCLayerOverlay() = default;
 
 DCLayerOverlayProcessor::DCLayerOverlayProcessor(
-    const ContextProvider* context_provider,
+    const OutputSurface::Capabilities& capabilities,
     const RendererSettings& settings)
-    : has_hw_overlay_support_(
-          context_provider &&
-          context_provider->ContextCapabilities().use_dc_overlays_for_video),
+    : has_hw_overlay_support_(capabilities.supports_dc_layers),
       show_debug_borders_(settings.show_dc_layer_debug_borders) {}
 
 DCLayerOverlayProcessor::DCLayerOverlayProcessor()

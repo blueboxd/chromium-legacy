@@ -19,6 +19,8 @@ namespace web_app {
 
 class WebAppSyncBridge : public syncer::ModelTypeSyncBridge {
  public:
+  WebAppSyncBridge();
+  // Tests may inject mock change_processor using this ctor.
   explicit WebAppSyncBridge(
       std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor);
   ~WebAppSyncBridge() override;

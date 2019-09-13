@@ -5,7 +5,8 @@
 package org.chromium.net.test;
 
 import android.content.Context;
-import android.support.annotation.GuardedBy;
+
+import androidx.annotation.GuardedBy;
 
 import org.chromium.net.BidirectionalStream;
 import org.chromium.net.CronetEngine;

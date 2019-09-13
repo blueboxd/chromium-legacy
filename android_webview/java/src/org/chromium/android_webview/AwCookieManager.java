@@ -6,7 +6,8 @@ package org.chromium.android_webview;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.JNINamespace;

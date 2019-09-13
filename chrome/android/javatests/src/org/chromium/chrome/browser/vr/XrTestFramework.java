@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.vr;
 
-import android.support.annotation.IntDef;
 import android.view.View;
+
+import androidx.annotation.IntDef;
 
 import org.junit.Assert;
 

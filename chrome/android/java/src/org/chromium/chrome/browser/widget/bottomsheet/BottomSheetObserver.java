@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.widget.bottomsheet;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.SheetState;

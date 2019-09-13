@@ -45,13 +45,20 @@ class LayoutThemeMac final : public LayoutTheme {
 
   bool IsControlStyled(ControlPart part, const ComputedStyle&) const override;
 
-  Color PlatformActiveSelectionBackgroundColor() const override;
-  Color PlatformInactiveSelectionBackgroundColor() const override;
-  Color PlatformActiveSelectionForegroundColor() const override;
-  Color PlatformActiveListBoxSelectionBackgroundColor() const override;
-  Color PlatformActiveListBoxSelectionForegroundColor() const override;
-  Color PlatformInactiveListBoxSelectionBackgroundColor() const override;
-  Color PlatformInactiveListBoxSelectionForegroundColor() const override;
+  Color PlatformActiveSelectionBackgroundColor(
+      WebColorScheme color_scheme) const override;
+  Color PlatformInactiveSelectionBackgroundColor(
+      WebColorScheme color_scheme) const override;
+  Color PlatformActiveSelectionForegroundColor(
+      WebColorScheme color_scheme) const override;
+  Color PlatformActiveListBoxSelectionBackgroundColor(
+      WebColorScheme color_scheme) const override;
+  Color PlatformActiveListBoxSelectionForegroundColor(
+      WebColorScheme color_scheme) const override;
+  Color PlatformInactiveListBoxSelectionBackgroundColor(
+      WebColorScheme color_scheme) const override;
+  Color PlatformInactiveListBoxSelectionForegroundColor(
+      WebColorScheme color_scheme) const override;
   Color PlatformSpellingMarkerUnderlineColor() const override;
   Color PlatformGrammarMarkerUnderlineColor() const override;
   Color PlatformFocusRingColor() const override;

@@ -9,9 +9,10 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.support.annotation.DrawableRes;
 import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
+
+import androidx.annotation.DrawableRes;
 
 import com.google.android.libraries.feed.api.host.imageloader.BundledAssets;
 import com.google.android.libraries.feed.api.host.imageloader.ImageLoaderApi;

@@ -128,16 +128,16 @@ TEST(ComputedStyleTest, LayoutContainmentStackingContext) {
 
 TEST(ComputedStyleTest, FirstPublicPseudoStyle) {
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
-  style->SetHasPseudoStyle(kPseudoIdFirstLine);
-  EXPECT_TRUE(style->HasPseudoStyle(kPseudoIdFirstLine));
-  EXPECT_TRUE(style->HasAnyPublicPseudoStyles());
+  style->SetHasPseudoElementStyle(kPseudoIdFirstLine);
+  EXPECT_TRUE(style->HasPseudoElementStyle(kPseudoIdFirstLine));
+  EXPECT_TRUE(style->HasAnyPseudoElementStyles());
 }
 
-TEST(ComputedStyleTest, LastPublicPseudoStyle) {
+TEST(ComputedStyleTest, LastPublicPseudoElementStyle) {
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
-  style->SetHasPseudoStyle(kPseudoIdScrollbar);
-  EXPECT_TRUE(style->HasPseudoStyle(kPseudoIdScrollbar));
-  EXPECT_TRUE(style->HasAnyPublicPseudoStyles());
+  style->SetHasPseudoElementStyle(kPseudoIdScrollbar);
+  EXPECT_TRUE(style->HasPseudoElementStyle(kPseudoIdScrollbar));
+  EXPECT_TRUE(style->HasAnyPseudoElementStyles());
 }
 
 TEST(ComputedStyleTest,

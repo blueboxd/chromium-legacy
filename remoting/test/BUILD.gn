@@ -92,6 +92,7 @@ static_library("test_support") {
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/webrtc/api:packet_socket_factory",
     "//third_party/webrtc_overrides",
   ]
 }

@@ -7,8 +7,9 @@ package org.chromium.net.impl;
 import android.annotation.TargetApi;
 import android.net.TrafficStats;
 import android.os.Build;
-import android.support.annotation.Nullable;
 import android.util.Log;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.net.CronetException;
 import org.chromium.net.InlineExecutionProhibitedException;
@@ -40,6 +41,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+
 import javax.annotation.concurrent.GuardedBy;
 
 /**

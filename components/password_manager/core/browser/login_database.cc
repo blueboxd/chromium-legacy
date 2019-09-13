@@ -990,6 +990,63 @@ void LoginDatabase::ReportMetrics(const std::string& sync_username,
 
   for (const auto& password_to_realms : passwords_to_realms)
     LogPasswordReuseMetrics(password_to_realms.second);
+
+  {
+    sql::Statement duplicates_statement(db_.GetUniqueStatement(
+        "SELECT signon_realm, username_value, password_value FROM logins "
+        "WHERE blacklisted_by_user = 0"));
+    // First group the passwords by [signon_realm, username] (which should be a
+    // unique identifier).
+    std::map<std::pair<std::string, std::string>, std::vector<std::string>>
+        passwords_by_realm_and_user;
+    while (duplicates_statement.Step()) {
+      std::string signon_realm = duplicates_statement.ColumnString(0);
+      std::string username = duplicates_statement.ColumnString(1);
+      std::string encrypted_password = duplicates_statement.ColumnString(2);
+#if defined(OS_WIN)
+      // Note: CryptProtectData() (used on Windows for encrypting passwords) is
+      // non-deterministic, so passwords must be decrypted before checking
+      // equality.
+      base::string16 password16;
+      if (DecryptedString(encrypted_password, &password16) !=
+          ENCRYPTION_RESULT_SUCCESS) {
+        continue;
+      }
+      std::string password = base::UTF16ToUTF8(password16);
+#else
+      // On non-Windows platforms, passwords are encrypted in a deterministic
+      // way. Since we're only interested in equality, don't bother decrypting
+      // them, just use the encrypted data directly.
+      std::string password = encrypted_password;
+#endif
+      passwords_by_realm_and_user[std::make_pair(signon_realm, username)]
+          .push_back(password);
+    }
+    // Now go over the passwords by [realm, username] - typically there should
+    // be only one password each.
+    size_t credentials_with_duplicates = 0;
+    size_t credentials_with_mismatched_duplicates = 0;
+    for (auto& entry : passwords_by_realm_and_user) {
+      std::vector<std::string>& passwords = entry.second;
+      // Only one password -> no duplicates, move on.
+      if (passwords.size() == 1)
+        continue;
+      std::sort(passwords.begin(), passwords.end());
+      auto last = std::unique(passwords.begin(), passwords.end());
+      // If |last| moved from |.end()|, that means there were duplicate
+      // passwords.
+      if (last != passwords.end())
+        credentials_with_duplicates++;
+      // If there is more than 1 password left after de-duping, then there were
+      // mismatched duplicates.
+      if (std::distance(passwords.begin(), last) > 1)
+        credentials_with_mismatched_duplicates++;
+    }
+    LogAccountStat("PasswordManager.CredentialsWithDuplicates",
+                   credentials_with_duplicates);
+    LogAccountStat("PasswordManager.CredentialsWithMismatchedDuplicates",
+                   credentials_with_mismatched_duplicates);
+  }
 }
 
 PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form,

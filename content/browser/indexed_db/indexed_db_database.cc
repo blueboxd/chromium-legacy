@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
@@ -269,12 +270,22 @@ IndexedDBDatabase::RunTasks() {
 
 leveldb::Status IndexedDBDatabase::ForceCloseAndRunTasks() {
   leveldb::Status status;
+  DCHECK(!force_closing_);
   force_closing_ = true;
   for (IndexedDBConnection* connection : connections_) {
-    connection->CloseAndReportForceClose();
+    leveldb::Status last_error = connection->CloseAndReportForceClose();
+    if (UNLIKELY(!last_error.ok())) {
+      base::UmaHistogramEnumeration(
+          "WebCore.IndexedDB.ErrorDuringForceCloseAborts",
+          leveldb_env::GetLevelDBStatusUMAValue(last_error),
+          leveldb_env::LEVELDB_STATUS_MAX);
+    }
   }
   connections_.clear();
-  connection_coordinator_.PruneTasksForForceClose();
+  leveldb::Status abort_status =
+      connection_coordinator_.PruneTasksForForceClose();
+  if (UNLIKELY(!abort_status.ok()))
+    return abort_status;
   connection_coordinator_.OnNoConnections();
 
   // Execute any pending tasks in the connection coordinator.
@@ -327,16 +338,6 @@ void IndexedDBDatabase::TransactionFinished(
   // request. Notify the active request if it's the latter.
   if (mode == blink::mojom::IDBTransactionMode::VersionChange) {
     connection_coordinator_.OnUpgradeTransactionFinished(committed);
-  }
-}
-
-void IndexedDBDatabase::AbortAllTransactionsForConnections() {
-  IDB_TRACE("IndexedDBDatabase::AbortAllTransactionsForConnections");
-
-  for (IndexedDBConnection* connection : connections()) {
-    connection->FinishAllTransactions(
-        IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionUnknownError,
-                               "Database is compacting."));
   }
 }
 
@@ -1322,10 +1323,9 @@ Status IndexedDBDatabase::SetIndexKeysOperation(
   if (!s.ok())
     return s;
   if (!found) {
-    transaction->Abort(IndexedDBDatabaseError(
+    return transaction->Abort(IndexedDBDatabaseError(
         blink::kWebIDBDatabaseExceptionUnknownError,
         "Internal error setting index keys for object store."));
-    return leveldb::Status::OK();
   }
 
   std::vector<std::unique_ptr<IndexWriter>> index_writers;
@@ -1339,15 +1339,13 @@ Status IndexedDBDatabase::SetIndexKeysOperation(
       transaction, backing_store_, id(), object_store_metadata, *primary_key,
       false, index_keys, &index_writers, &error_message, &obeys_constraints);
   if (!backing_store_success) {
-    transaction->Abort(IndexedDBDatabaseError(
+    return transaction->Abort(IndexedDBDatabaseError(
         blink::kWebIDBDatabaseExceptionUnknownError,
         "Internal error: backing store error updating index keys."));
-    return leveldb::Status::OK();
   }
   if (!obeys_constraints) {
-    transaction->Abort(IndexedDBDatabaseError(
+    return transaction->Abort(IndexedDBDatabaseError(
         blink::kWebIDBDatabaseExceptionConstraintError, error_message));
-    return leveldb::Status::OK();
   }
 
   for (const auto& writer : index_writers) {

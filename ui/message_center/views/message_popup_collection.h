@@ -12,10 +12,15 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/message_center_observer.h"
+#include "ui/views/widget/widget.h"
 
 namespace gfx {
 class LinearAnimation;
 }  // namespace gfx
+
+namespace display {
+class Display;
+}  // namespace display
 
 namespace message_center {
 
@@ -29,7 +34,7 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
     : public MessageCenterObserver,
       public gfx::AnimationDelegate {
  public:
-  explicit MessagePopupCollection(PopupAlignmentDelegate* alignment_delegate);
+  MessagePopupCollection();
   ~MessagePopupCollection() override;
 
   // Update popups based on current |state_|.
@@ -63,18 +68,46 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   MessagePopupView* GetPopupViewForNotificationID(
       const std::string& notification_id);
 
+  // Called when a new toast appears or toasts are rearranged in the |display|.
+  // The subclass may override this method to check the current desktop status
+  // so that the toasts are arranged at the correct place. Return true if
+  // alignment is actually changed.
+  virtual bool RecomputeAlignment(const display::Display& display) = 0;
+
+  // Sets the parent container for popups. If it does not set a parent a
+  // default parent will be used (e.g. the native desktop on Windows).
+  virtual void ConfigureWidgetInitParamsForContainer(
+      views::Widget* widget,
+      views::Widget::InitParams* init_params) = 0;
+
   void set_inverse() { inverse_ = true; }
 
  protected:
-  // TODO(tetsui): Merge PopupAlignmentDelegate into MessagePopupCollection and
-  // make subclasses e.g. DesktopMessagePopupCollection and
-  // AshMessagePopupCollection.
+  // Returns the x-origin for the given toast bounds in the current work area.
+  virtual int GetToastOriginX(const gfx::Rect& toast_bounds) const = 0;
+
+  // Returns the baseline height of the current work area. That is the starting
+  // point if there are no other toasts.
+  virtual int GetBaseline() const = 0;
+
+  // Returns the rect of the current work area.
+  virtual gfx::Rect GetWorkArea() const = 0;
+
+  // Returns true if the toast should be aligned top down.
+  virtual bool IsTopDown() const = 0;
+
+  // Returns true if the toasts are positioned at the left side of the desktop
+  // so that their reveal animation should happen from left side.
+  virtual bool IsFromLeft() const = 0;
+
+  // Returns true if the display which notifications show on is the primary
+  // display.
+  virtual bool IsPrimaryDisplayForNotification() const = 0;
 
   // virtual for testing.
   virtual MessagePopupView* CreatePopup(const Notification& notification);
   virtual void RestartPopupTimers();
   virtual void PausePopupTimers();
-  virtual bool IsPrimaryDisplayForNotification() const;
 
   gfx::LinearAnimation* animation() { return animation_.get(); }
 
@@ -207,9 +240,6 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
 
   // Notification popups. The first element is the oldest one.
   std::vector<PopupItem> popup_items_;
-
-  // Unowned.
-  PopupAlignmentDelegate* const alignment_delegate_;
 
   // True during Update() to avoid reentrancy. For example, popup size change
   // might be notified during Update() because Update() changes popup sizes, but

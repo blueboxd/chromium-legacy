@@ -4,13 +4,14 @@
 
 package org.chromium.chrome.browser.native_page;
 
-import android.support.annotation.IntDef;
-import android.support.annotation.StringRes;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
+
+import androidx.annotation.IntDef;
+import androidx.annotation.StringRes;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;

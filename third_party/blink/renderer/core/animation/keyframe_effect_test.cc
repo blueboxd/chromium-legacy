@@ -176,10 +176,8 @@ TEST_F(AnimationKeyframeEffectV8Test, SetAndRetrieveEffectComposite) {
   effect->setComposite("replace");
   EXPECT_EQ("replace", effect->composite());
 
-  // TODO(crbug.com/788440): Once accumulate is supported as a composite
-  // property, setting it here should work.
   effect->setComposite("accumulate");
-  EXPECT_EQ("replace", effect->composite());
+  EXPECT_EQ("accumulate", effect->composite());
 }
 
 TEST_F(AnimationKeyframeEffectV8Test, KeyframeCompositeOverridesEffect) {

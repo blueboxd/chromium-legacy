@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "third_party/webrtc/p2p/base/packet_socket_factory.h"
+#include "third_party/webrtc/api/packet_socket_factory.h"
 
 namespace content {
 

@@ -31,21 +31,21 @@ namespace blink {
 
 class ComputedStyle;
 
-class PseudoStyleRequest {
+class PseudoElementStyleRequest {
   DISALLOW_NEW();
 
  public:
   enum RequestType { kForRenderer, kForComputedStyle };
 
-  PseudoStyleRequest(PseudoId pseudo_id,
-                     LayoutScrollbar* scrollbar = nullptr,
-                     ScrollbarPart scrollbar_part = kNoPart)
+  PseudoElementStyleRequest(PseudoId pseudo_id,
+                            LayoutScrollbar* scrollbar = nullptr,
+                            ScrollbarPart scrollbar_part = kNoPart)
       : pseudo_id(pseudo_id),
         type(kForRenderer),
         scrollbar_part(scrollbar_part),
         scrollbar(scrollbar) {}
 
-  PseudoStyleRequest(PseudoId pseudo_id, RequestType request_type)
+  PseudoElementStyleRequest(PseudoId pseudo_id, RequestType request_type)
       : pseudo_id(pseudo_id),
         type(request_type),
         scrollbar_part(kNoPart),

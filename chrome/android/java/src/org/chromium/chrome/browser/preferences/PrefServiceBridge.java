@@ -5,8 +5,9 @@
 package org.chromium.chrome.browser.preferences;
 
 import android.content.SharedPreferences;
-import android.support.annotation.Nullable;
 import android.util.Log;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;

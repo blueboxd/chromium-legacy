@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.tab.Tab;

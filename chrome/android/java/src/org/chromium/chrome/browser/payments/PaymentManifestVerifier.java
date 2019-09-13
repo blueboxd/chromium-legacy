@@ -7,7 +7,8 @@ package org.chromium.chrome.browser.payments;
 import android.content.pm.PackageInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.Signature;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.Log;
 import org.chromium.components.payments.PaymentManifestDownloader;

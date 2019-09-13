@@ -60,7 +60,7 @@ input[type="range" i] {
 /* Not sure this is the right color. #EBEBE4 is what Firefox uses. */
 textarea:disabled,
 input:disabled {
-    background-color: #EBEBE4;
+    background-color: -internal-light-dark-color(#ebebe4, #2d2d2d);
 }
 
 /* Cancel the above rule set for some input types. */

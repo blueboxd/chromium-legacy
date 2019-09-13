@@ -67,6 +67,7 @@ class CONTENT_EXPORT IndexedDBClassFactory {
       const std::set<int64_t>& scope,
       blink::mojom::IDBTransactionMode mode,
       TasksAvailableCallback tasks_available_callback,
+      IndexedDBTransaction::TearDownCallback tear_down_callback,
       IndexedDBBackingStore::Transaction* backing_store_transaction);
 
  protected:

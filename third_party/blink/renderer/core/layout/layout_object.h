@@ -86,7 +86,7 @@ class LocalFrameView;
 class NGPaintFragment;
 class NGPhysicalBoxFragment;
 class PaintLayer;
-class PseudoStyleRequest;
+class PseudoElementStyleRequest;
 struct PaintInfo;
 struct PaintInvalidatorContext;
 struct WebScrollIntoViewParams;
@@ -1170,9 +1170,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // has no concept of changing state). The cached pseudo style always inherits
   // from the originating element's style (because we can cache only one
   // version), while the uncached pseudo style can inherit from any style.
-  const ComputedStyle* GetCachedPseudoStyle(PseudoId) const;
-  scoped_refptr<ComputedStyle> GetUncachedPseudoStyle(
-      const PseudoStyleRequest&,
+  const ComputedStyle* GetCachedPseudoElementStyle(PseudoId) const;
+  scoped_refptr<ComputedStyle> GetUncachedPseudoElementStyle(
+      const PseudoElementStyleRequest&,
       const ComputedStyle* parent_style = nullptr) const;
 
   LayoutView* View() const { return GetDocument().GetLayoutView(); }
@@ -1519,7 +1519,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                 ApplyStyleChanges = ApplyStyleChanges::kYes);
 
   // Set the style of the object if it's generated content.
-  void SetPseudoStyle(scoped_refptr<const ComputedStyle>);
+  void SetPseudoElementStyle(scoped_refptr<const ComputedStyle>);
 
   // In some cases we modify the ComputedStyle after the style recalc, either
   // for updating anonymous style or doing layout hacks for special elements
@@ -2745,7 +2745,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                             const ComputedStyle* new_style);
   void UpdateFirstLineImageObservers(const ComputedStyle* new_style);
 
-  void ApplyPseudoStyleChanges(const ComputedStyle* old_style);
+  void ApplyPseudoElementStyleChanges(const ComputedStyle* old_style);
   void ApplyFirstLineChanges(const ComputedStyle* old_style);
 
   IntRect AdjustVisualRectForInlineBox(const IntRect&) const;

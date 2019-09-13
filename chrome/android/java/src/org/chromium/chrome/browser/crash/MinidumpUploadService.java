@@ -11,7 +11,8 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Build;
 import android.os.PersistableBundle;
-import android.support.annotation.StringDef;
+
+import androidx.annotation.StringDef;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;

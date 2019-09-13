@@ -5,8 +5,9 @@
 package org.chromium.chrome.browser.ntp.cards;
 
 import android.content.Context;
-import android.support.annotation.StringRes;
 import android.text.format.DateUtils;
+
+import androidx.annotation.StringRes;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;

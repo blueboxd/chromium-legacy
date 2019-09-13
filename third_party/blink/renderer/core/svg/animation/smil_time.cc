@@ -37,4 +37,8 @@ SMILTime operator*(const SMILTime& a, const SMILTime& b) {
   return a.Value() * b.Value();
 }
 
+std::ostream& operator<<(std::ostream& os, SMILTime time) {
+  return os << time.Value() << " s";
+}
+
 }  // namespace blink

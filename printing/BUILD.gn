@@ -199,6 +199,10 @@ component("printing") {
         "backend/cups_connection.h",
         "backend/cups_deleters.cc",
         "backend/cups_deleters.h",
+        "backend/cups_ipp_advanced_caps.cc",
+        "backend/cups_ipp_advanced_caps.h",
+        "backend/cups_ipp_constants.cc",
+        "backend/cups_ipp_constants.h",
         "backend/cups_ipp_util.cc",
         "backend/cups_ipp_util.h",
         "backend/cups_jobs.cc",
@@ -221,6 +225,8 @@ component("printing") {
       # We still build the utils for fuzzing.
       if (use_fuzzing_engine) {
         sources += [
+          "backend/cups_ipp_constants.cc",
+          "backend/cups_ipp_constants.h",
           "backend/cups_ipp_util.cc",
           "backend/cups_ipp_util.h",
         ]

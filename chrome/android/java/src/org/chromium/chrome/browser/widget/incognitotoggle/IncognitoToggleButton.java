@@ -5,10 +5,11 @@
 package org.chromium.chrome.browser.widget.incognitotoggle;
 
 import android.content.Context;
-import android.support.annotation.StringRes;
 import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.view.View;
+
+import androidx.annotation.StringRes;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;

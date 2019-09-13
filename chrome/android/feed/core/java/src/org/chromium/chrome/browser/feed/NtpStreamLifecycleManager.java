@@ -5,7 +5,8 @@
 package org.chromium.chrome.browser.feed;
 
 import android.app.Activity;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.Nullable;
 
 import com.google.android.libraries.feed.api.client.stream.Stream;
 

@@ -74,6 +74,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/test/test_content_browser_client.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/dns/mock_host_resolver.h"
@@ -1493,7 +1494,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchEvent_Response) {
   expected_headers["content-type"] = "text/html; charset=UTF-8";
   EXPECT_EQ(expected_headers, response->headers);
 
-  blink::mojom::BlobPtr blob(std::move(response->blob->blob));
+  mojo::Remote<blink::mojom::Blob> blob(std::move(response->blob->blob));
   EXPECT_EQ("This resource is gone. Gone, gone, gone.",
             BlobToString(blob.get()));
 }

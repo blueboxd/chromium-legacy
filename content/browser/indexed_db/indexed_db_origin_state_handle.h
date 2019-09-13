@@ -10,9 +10,6 @@
 #include "content/common/content_export.h"
 
 namespace content {
-namespace indexed_db_backing_store_unittest {
-class IndexedDBBackingStoreTest;
-}
 class IndexedDBOriginState;
 
 // This handle tells the IndexedDBOriginState that there is still something
@@ -32,12 +29,6 @@ class CONTENT_EXPORT IndexedDBOriginStateHandle {
   bool IsHeld() const;
 
   void Release();
-
- protected:
-  friend class IndexedDBFactoryImpl;
-  friend class IndexedDBFactoryTest;
-  friend class IndexedDBBrowserTest;
-  friend class indexed_db_backing_store_unittest::IndexedDBBackingStoreTest;
 
   // Returns null if the factory was destroyed, which should only happen on
   // context destruction.

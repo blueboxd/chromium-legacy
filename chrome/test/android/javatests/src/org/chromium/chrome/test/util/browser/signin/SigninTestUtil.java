@@ -6,7 +6,8 @@ package org.chromium.chrome.test.util.browser.signin;
 
 import android.accounts.Account;
 import android.annotation.SuppressLint;
-import android.support.annotation.WorkerThread;
+
+import androidx.annotation.WorkerThread;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;

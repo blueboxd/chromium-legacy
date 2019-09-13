@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/native_file_system/native_file_system_error.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/mime_util.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_impl.h"
@@ -136,13 +137,14 @@ void NativeFileSystemFileHandleImpl::DidGetMetaDataForBlob(
   }
 
   std::string content_type = blob_handle->content_type();
-  blink::mojom::BlobPtr blob_ptr;
-  BlobImpl::Create(std::move(blob_handle), mojo::MakeRequest(&blob_ptr));
+  mojo::PendingRemote<blink::mojom::Blob> blob_remote;
+  BlobImpl::Create(std::move(blob_handle),
+                   blob_remote.InitWithNewPipeAndPassReceiver());
 
   std::move(callback).Run(
       native_file_system_error::Ok(),
       blink::mojom::SerializedBlob::New(uuid, content_type, info.size,
-                                        blob_ptr.PassInterface()));
+                                        std::move(blob_remote)));
 }
 
 void NativeFileSystemFileHandleImpl::CreateFileWriterImpl(

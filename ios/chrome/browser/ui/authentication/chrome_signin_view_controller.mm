@@ -700,6 +700,7 @@ enum AuthenticationState {
   DCHECK_EQ(_embeddedView, _unifiedConsentCoordinator.viewController.view);
 
   // Update the button title.
+  _unifiedConsentCoordinator.uiDisabled = NO;
   [self updatePrimaryButtonForIdentityPickerState];
   [_secondaryButton setTitle:self.skipSigninButtonTitle
                     forState:UIControlStateNormal];
@@ -754,6 +755,7 @@ enum AuthenticationState {
 #pragma mark - SigninPendingState
 
 - (void)enterSigninPendingState {
+  _unifiedConsentCoordinator.uiDisabled = YES;
   [_secondaryButton setTitle:l10n_util::GetNSString(IDS_CANCEL)
                     forState:UIControlStateNormal];
   [self.view setNeedsLayout];

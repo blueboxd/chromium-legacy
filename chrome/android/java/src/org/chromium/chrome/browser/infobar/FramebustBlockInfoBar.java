@@ -5,10 +5,11 @@
 package org.chromium.chrome.browser.infobar;
 
 import android.net.Uri;
-import android.support.annotation.StringRes;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import androidx.annotation.StringRes;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;

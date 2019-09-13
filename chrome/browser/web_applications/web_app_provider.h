@@ -43,7 +43,7 @@ class WebAppUiManager;
 // Forward declarations for new extension-independent subsystems.
 class WebAppDatabaseFactory;
 class WebAppDatabase;
-class WebAppSyncManager;
+class WebAppSyncBridge;
 
 // Connects Web App features, such as the installation of default and
 // policy-managed web apps, with Profiles (as WebAppProvider is a
@@ -79,7 +79,7 @@ class WebAppProvider : public WebAppProviderBase {
   AppIconManager& icon_manager() override;
 
   WebAppDatabaseFactory& database_factory() { return *database_factory_; }
-  WebAppSyncManager& sync_manager() { return *sync_manager_; }
+  WebAppSyncBridge& sync_bridge() { return *sync_bridge_; }
   SystemWebAppManager& system_web_app_manager();
 
   // KeyedService:
@@ -114,7 +114,7 @@ class WebAppProvider : public WebAppProviderBase {
   // New extension-independent subsystems:
   std::unique_ptr<WebAppDatabaseFactory> database_factory_;
   std::unique_ptr<WebAppDatabase> database_;
-  std::unique_ptr<WebAppSyncManager> sync_manager_;
+  std::unique_ptr<WebAppSyncBridge> sync_bridge_;
 
   // Generalized subsystems:
   std::unique_ptr<AppRegistrar> registrar_;

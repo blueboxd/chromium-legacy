@@ -5,8 +5,9 @@
 package org.chromium.chrome.browser.widget.prefeditor;
 
 import android.graphics.drawable.Drawable;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
+
+import androidx.annotation.Nullable;
 
 /**
  * An option that the user can select, e.g., a shipping option, a shipping address, or a payment

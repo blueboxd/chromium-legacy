@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.suggestions.mostvisited;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;

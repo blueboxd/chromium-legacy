@@ -50,6 +50,7 @@ FORWARD_DECLARE_TEST(IndexedDBTransactionTest, IndexedDBObserver);
 
 class CONTENT_EXPORT IndexedDBTransaction {
  public:
+  using TearDownCallback = base::RepeatingCallback<void(leveldb::Status)>;
   using Operation = base::OnceCallback<leveldb::Status(IndexedDBTransaction*)>;
   using AbortOperation = base::OnceClosure;
 
@@ -66,9 +67,11 @@ class CONTENT_EXPORT IndexedDBTransaction {
   // Signals the transaction for commit.
   void SetCommitFlag();
 
-  // Returns true if the transaction was aborted, or false if it was already
-  // finished.
-  bool Abort(const IndexedDBDatabaseError& error);
+  // This transaction is ultimately backed by a LevelDBScope. Aborting a
+  // transaction rolls back the LevelDBScopes, which (if LevelDBScopes is in
+  // single-sequence mode) can fail. This returns the result of that rollback,
+  // if applicable.
+  leveldb::Status Abort(const IndexedDBDatabaseError& error);
 
   // Called by the scopes lock manager when this transaction is unblocked.
   void Start();
@@ -153,6 +156,7 @@ class CONTENT_EXPORT IndexedDBTransaction {
       const std::set<int64_t>& object_store_ids,
       blink::mojom::IDBTransactionMode mode,
       TasksAvailableCallback tasks_available_callback,
+      TearDownCallback tear_down_callback,
       IndexedDBBackingStore::Transaction* backing_store_transaction);
 
   // May be overridden in tests.
@@ -220,6 +224,9 @@ class CONTENT_EXPORT IndexedDBTransaction {
   scoped_refptr<IndexedDBDatabaseCallbacks> callbacks_;
   base::WeakPtr<IndexedDBDatabase> database_;
   TasksAvailableCallback run_tasks_callback_;
+  // Note: calling this will tear down the IndexedDBOriginState (and probably
+  // destroy this object).
+  TearDownCallback tear_down_callback_;
 
   // Observers in pending queue do not listen to changes until activated.
   std::vector<std::unique_ptr<IndexedDBObserver>> pending_observers_;

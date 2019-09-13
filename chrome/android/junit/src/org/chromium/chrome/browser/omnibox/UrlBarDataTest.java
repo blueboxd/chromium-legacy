@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.omnibox;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import org.junit.Assert;
 import org.junit.Test;

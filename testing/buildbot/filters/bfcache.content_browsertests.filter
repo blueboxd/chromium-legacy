@@ -18,10 +18,6 @@
 # Document expects javascript to run again from the beginning.
 -WebContentsImplBrowserTest.JavaScriptDialogsInMainAndSubframes
 
-# Javascript dialog is shown from a page in the BackForwardCache.
-# https://crbug.com/999847
--NavigationControllerBrowserTest.NoDialogsFromSwappedOutFrames
-
 # Page with no-cache, no-store, must-revalidate shouldn't be cached.
 -NavigationControllerBrowserTest.UncacheablePost
 

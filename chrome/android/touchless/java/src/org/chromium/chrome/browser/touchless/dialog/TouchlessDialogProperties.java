@@ -5,12 +5,13 @@
 package org.chromium.chrome.browser.touchless.dialog;
 
 import android.graphics.drawable.Drawable;
-import android.support.annotation.IntDef;
-import android.support.annotation.StringRes;
 import android.text.TextUtils;
 import android.view.InputEvent;
 import android.view.View;
 import android.widget.TextView;
+
+import androidx.annotation.IntDef;
+import androidx.annotation.StringRes;
 
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;

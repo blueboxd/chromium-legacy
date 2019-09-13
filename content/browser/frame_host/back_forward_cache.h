@@ -10,6 +10,7 @@
 
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -53,15 +54,16 @@ class CONTENT_EXPORT BackForwardCache {
   // removed/evicted from the cache.
   RenderFrameHostImpl* GetDocument(int navigation_entry_id);
 
-  // Remove a document from the BackForwardCache.
-  void EvictDocument(RenderFrameHostImpl* render_frame_host);
-
   // During a history navigation, move a document out of the BackForwardCache
   // knowing its |navigation_entry_id|. Returns nullptr when none is found.
   std::unique_ptr<RenderFrameHostImpl> RestoreDocument(int navigation_entry_id);
 
   // Remove all entries from the BackForwardCache.
   void Flush();
+
+  // Posts a task to destroy all frames in the BackForwardCache that have been
+  // marked as evicted.
+  void PostTaskToFlushEvictedFrames();
 
   // List of reasons the BackForwardCache was disabled for a specific test. If a
   // test needs to be disabled for a reason not covered below, please add to
@@ -123,6 +125,9 @@ class CONTENT_EXPORT BackForwardCache {
   }
 
  private:
+  // Destroys all evicted frames in the BackForwardCache.
+  void FlushEvictedFrames();
+
   // Contains the set of stored RenderFrameHost.
   // Invariant:
   // - Ordered from the most recently used to the last recently used.
@@ -136,6 +141,8 @@ class CONTENT_EXPORT BackForwardCache {
   // Only used in tests. If non-zero, this value will be used as the cache size
   // limit.
   size_t cache_size_limit_for_testing_ = 0;
+
+  base::WeakPtrFactory<BackForwardCache> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BackForwardCache);
 };

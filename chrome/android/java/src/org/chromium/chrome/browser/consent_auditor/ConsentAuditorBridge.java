@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.consent_auditor;
 
-import android.support.annotation.StringRes;
+import androidx.annotation.StringRes;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.NativeMethods;

@@ -17,11 +17,12 @@ import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingProper
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingProperties.PORTRAIT_ORIENTATION;
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingProperties.SHOW_WHEN_VISIBLE;
 
-import android.support.annotation.Nullable;
-import android.support.annotation.Px;
 import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.Nullable;
+import androidx.annotation.Px;
 
 import org.chromium.base.Supplier;
 import org.chromium.base.VisibleForTesting;

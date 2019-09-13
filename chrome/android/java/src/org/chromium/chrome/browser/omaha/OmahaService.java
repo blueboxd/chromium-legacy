@@ -9,7 +9,8 @@ import android.app.IntentService;
 import android.app.job.JobService;
 import android.content.Context;
 import android.os.Build;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;

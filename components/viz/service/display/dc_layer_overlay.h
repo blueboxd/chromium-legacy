@@ -8,6 +8,7 @@
 #include "base/containers/flat_map.h"
 #include "base/memory/ref_counted.h"
 #include "components/viz/common/quads/render_pass.h"
+#include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/viz_service_export.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
@@ -16,7 +17,6 @@
 
 namespace viz {
 class DisplayResourceProvider;
-class ContextProvider;
 class RendererSettings;
 
 // Holds all information necessary to construct a DCLayer from a DrawQuad.
@@ -72,7 +72,7 @@ typedef std::vector<DCLayerOverlay> DCLayerOverlayList;
 
 class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor {
  public:
-  DCLayerOverlayProcessor(const ContextProvider* context_provider,
+  DCLayerOverlayProcessor(const OutputSurface::Capabilities& capabilities,
                           const RendererSettings& settings);
   // For testing.
   DCLayerOverlayProcessor();

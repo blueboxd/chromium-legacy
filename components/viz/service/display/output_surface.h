@@ -17,12 +17,12 @@
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/gpu/gpu_vsync_callback.h"
 #include "components/viz/common/resources/returned_resource.h"
-#include "components/viz/service/display/overlay_candidate_validator.h"
 #include "components/viz/service/display/software_output_device.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "ui/gfx/color_space.h"
+#include "ui/gfx/overlay_transform.h"
 #include "ui/latency/latency_info.h"
 
 namespace gfx {
@@ -65,6 +65,8 @@ class VIZ_SERVICE_EXPORT OutputSurface {
     // on the current system transform. So the OS presentation engine can
     // present buffers onto the screen directly.
     bool supports_pre_transform = false;
+    // Whether this OutputSurface supports DC layer overlays.
+    bool supports_dc_layers = false;
     // Whether this OutputSurface should skip DrawAndSwap(). This is true for
     // the unified display on Chrome OS. All drawing is handled by the physical
     // displays so the unified display should skip that work.

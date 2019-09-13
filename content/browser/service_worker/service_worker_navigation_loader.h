@@ -17,6 +17,7 @@
 #include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
@@ -159,7 +160,7 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
   std::unique_ptr<ServiceWorkerFetchDispatcher> fetch_dispatcher_;
   std::unique_ptr<StreamWaiter> stream_waiter_;
   // The blob needs to be held while it's read to keep it alive.
-  blink::mojom::BlobPtr body_as_blob_;
+  mojo::Remote<blink::mojom::Blob> body_as_blob_;
 
   bool did_navigation_preload_ = false;
   network::ResourceResponseHead response_head_;

@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.omnibox;
 
-import android.support.annotation.IntDef;
 import android.view.ActionMode;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.WindowDelegate;

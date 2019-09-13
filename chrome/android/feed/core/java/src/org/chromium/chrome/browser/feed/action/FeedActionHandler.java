@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed.action;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.google.android.libraries.feed.api.client.knowncontent.ContentMetadata;
 import com.google.android.libraries.feed.api.host.action.ActionApi;

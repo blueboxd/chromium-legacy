@@ -5,8 +5,9 @@
 package org.chromium.chrome.browser.download.home.empty;
 
 import android.content.Context;
-import android.support.annotation.StringRes;
 import android.view.View;
+
+import androidx.annotation.StringRes;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.home.empty.EmptyProperties.State;

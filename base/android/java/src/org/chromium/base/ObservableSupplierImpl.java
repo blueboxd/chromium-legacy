@@ -5,7 +5,8 @@
 package org.chromium.base;
 
 import android.os.Handler;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.Nullable;
 
 /**
  * Concrete implementation of {@link ObservableSupplier} to be used by classes owning the

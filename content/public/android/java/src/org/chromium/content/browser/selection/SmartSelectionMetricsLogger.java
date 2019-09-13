@@ -7,7 +7,8 @@ package org.chromium.content.browser.selection;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
-import android.support.annotation.IntDef;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;

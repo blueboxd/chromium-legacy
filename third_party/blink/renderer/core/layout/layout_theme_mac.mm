@@ -222,27 +222,33 @@ LayoutThemeMac::~LayoutThemeMac() {
   [[NSNotificationCenter defaultCenter] removeObserver:notification_observer_];
 }
 
-Color LayoutThemeMac::PlatformActiveSelectionBackgroundColor() const {
+Color LayoutThemeMac::PlatformActiveSelectionBackgroundColor(
+    WebColorScheme color_scheme) const {
   return GetSystemColor(MacSystemColorID::kSelectedTextBackground);
 }
 
-Color LayoutThemeMac::PlatformInactiveSelectionBackgroundColor() const {
+Color LayoutThemeMac::PlatformInactiveSelectionBackgroundColor(
+    WebColorScheme color_scheme) const {
   return GetSystemColor(MacSystemColorID::kSecondarySelectedControl);
 }
 
-Color LayoutThemeMac::PlatformActiveSelectionForegroundColor() const {
+Color LayoutThemeMac::PlatformActiveSelectionForegroundColor(
+    WebColorScheme color_scheme) const {
   return Color::kBlack;
 }
 
-Color LayoutThemeMac::PlatformActiveListBoxSelectionBackgroundColor() const {
+Color LayoutThemeMac::PlatformActiveListBoxSelectionBackgroundColor(
+    WebColorScheme color_scheme) const {
   return GetSystemColor(MacSystemColorID::kAlternateSelectedControl);
 }
 
-Color LayoutThemeMac::PlatformActiveListBoxSelectionForegroundColor() const {
+Color LayoutThemeMac::PlatformActiveListBoxSelectionForegroundColor(
+    WebColorScheme color_scheme) const {
   return Color::kWhite;
 }
 
-Color LayoutThemeMac::PlatformInactiveListBoxSelectionForegroundColor() const {
+Color LayoutThemeMac::PlatformInactiveListBoxSelectionForegroundColor(
+    WebColorScheme color_scheme) const {
   return Color::kBlack;
 }
 
@@ -264,8 +270,9 @@ Color LayoutThemeMac::PlatformFocusRingColor() const {
                      ComputedStyle::InitialStyle().UsedColorScheme());
 }
 
-Color LayoutThemeMac::PlatformInactiveListBoxSelectionBackgroundColor() const {
-  return PlatformInactiveSelectionBackgroundColor();
+Color LayoutThemeMac::PlatformInactiveListBoxSelectionBackgroundColor(
+    WebColorScheme color_scheme) const {
+  return PlatformInactiveSelectionBackgroundColor(color_scheme);
 }
 
 static FontSelectionValue ToFontWeight(NSInteger app_kit_font_weight) {

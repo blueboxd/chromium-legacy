@@ -6,8 +6,9 @@ package org.chromium.chrome.browser.omaha.inline;
 
 import android.app.Activity;
 import android.content.IntentSender.SendIntentException;
-import android.support.annotation.IntDef;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 
 import com.google.android.play.core.appupdate.AppUpdateInfo;
 import com.google.android.play.core.appupdate.AppUpdateManager;

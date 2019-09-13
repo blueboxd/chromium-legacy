@@ -5,9 +5,10 @@
 package org.chromium.chrome.browser.touchless;
 
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;

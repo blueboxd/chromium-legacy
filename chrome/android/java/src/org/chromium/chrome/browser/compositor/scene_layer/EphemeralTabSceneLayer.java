@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.compositor.scene_layer;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;

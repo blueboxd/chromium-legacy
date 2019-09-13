@@ -115,7 +115,35 @@ and the relevant IdentityManager(::Observer) API surfaces).
   //components/identity/public/identity_manager and you believe that you have a
   new use case for one of these API surfaces, you should first contact the
   OWNERS of //components/signin to discuss this use case and how best to realize
-  it.
+  it. With these caveats, here are the details of how various operations are
+  supported on the various platforms on which Chrome runs:
+  * Mutating the primary account: Setting the primary account is done via
+    PrimaryAccountMutator::SetPrimaryAccount(); see the comments on the
+    declaration of that method for the conditions required for the setting of
+    the primary account to succeed. On all platforms other than ChromeOS, the
+    primary account can be cleared via
+    PrimaryAccountMutator::ClearPrimaryAccount() (on ChromeOS, the primary
+    account cannot be cleared as there is no user-level flow to sign out of
+    the browser).
+  * Updating the state of the accounts in the Gaia cookie: This is supported via
+    AccountsCookieMutator.
+  * Mutating the set of accounts with refresh tokens: The ways in which this
+    occurs are platform-specific due to the differences in underlying platform
+    account management (or lack thereof). We detail these below:
+    - Windows/Mac/Linux: Chrome manages the user's OAuth2 refresh tokens
+      internally. Adding and removing accounts with refresh tokens is done via
+      AccountsMutator.
+    - ChromeOS: Chrome is backed by ChromeOS' platform-level AccountManager.
+      Chrome's view of the accounts with refresh tokens is synchronized with
+      the platform-level state by observing that platform-level AccountManager
+      internally.
+    - Android: Chrome is backed by Android's platform-level AccountManager (in
+      Java). Chrome's view of the accounts with refresh tokens is synchronized
+      with the platform-level state via IdentityMutator.java.
+    - iOS: Chrome is backed by Google's iOS SSO library for supporting shared
+      identities between Google's various iOS applications. Chrome's view of the
+      accounts with refresh tokens is synchronized with the platform-level state
+      via DeviceAccountsSynchronizer.
 
 # Mental Mapping from Chromium's Historical API Surfaces for Signin
 Documentation on the mapping between usage of legacy signin

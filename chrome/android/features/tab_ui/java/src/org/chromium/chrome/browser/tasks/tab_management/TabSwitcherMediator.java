@@ -16,8 +16,9 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerP
 
 import android.graphics.Bitmap;
 import android.os.Handler;
-import android.support.annotation.Nullable;
 import android.view.ViewGroup;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;

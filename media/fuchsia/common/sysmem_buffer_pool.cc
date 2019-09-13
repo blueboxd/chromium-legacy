@@ -14,44 +14,6 @@
 #include "media/fuchsia/common/sysmem_buffer_writer.h"
 
 namespace media {
-namespace {
-
-template <typename T>
-using CreateAccessorCB = base::OnceCallback<void(std::unique_ptr<T>)>;
-
-template <typename T>
-void CreateAccessorInstance(
-    zx_status_t status,
-    fuchsia::sysmem::BufferCollectionInfo_2 buffer_collection_info,
-    CreateAccessorCB<T> create_cb) {
-  if (status != ZX_OK) {
-    ZX_LOG(ERROR, status) << "Fail to enable reader or writer";
-    std::move(create_cb).Run(nullptr);
-    return;
-  }
-
-  std::unique_ptr<T> accessor = T::Create(std::move(buffer_collection_info));
-  if (!accessor) {
-    std::move(create_cb).Run(nullptr);
-    return;
-  }
-
-  std::move(create_cb).Run(std::move(accessor));
-}
-
-template <typename T>
-void CreateAccessor(fuchsia::sysmem::BufferCollection* collection,
-                    CreateAccessorCB<T> create_cb) {
-  collection->WaitForBuffersAllocated(
-      [create_cb = std::move(create_cb)](zx_status_t status,
-                                         fuchsia::sysmem::BufferCollectionInfo_2
-                                             buffer_collection_info) mutable {
-        CreateAccessorInstance<T>(status, std::move(buffer_collection_info),
-                                  std::move(create_cb));
-      });
-}
-
-}  // namespace
 
 SysmemBufferPool::Creator::Creator(
     fuchsia::sysmem::BufferCollectionPtr collection,
@@ -95,16 +57,10 @@ SysmemBufferPool::SysmemBufferPool(
     std::vector<fuchsia::sysmem::BufferCollectionTokenPtr> shared_tokens)
     : collection_(std::move(collection)),
       shared_tokens_(std::move(shared_tokens)) {
-  collection_.set_error_handler(
-      [this](zx_status_t status) {
-        ZX_LOG(ERROR, status)
-            << "The fuchsia.sysmem.BufferCollection channel was disconnected.";
-        collection_.Unbind();
-        if (create_reader_cb_)
-          std::move(create_reader_cb_).Run(nullptr);
-        if (create_writer_cb_)
-          std::move(create_writer_cb_).Run(nullptr);
-      });
+  collection_.set_error_handler([this](zx_status_t status) {
+    ZX_LOG(ERROR, status) << "fuchsia.sysmem.BufferCollection disconnected.";
+    OnError();
+  });
 }
 
 SysmemBufferPool::~SysmemBufferPool() = default;
@@ -119,31 +75,41 @@ fuchsia::sysmem::BufferCollectionTokenPtr SysmemBufferPool::TakeToken() {
 void SysmemBufferPool::CreateReader(CreateReaderCB create_cb) {
   DCHECK(!create_reader_cb_);
   create_reader_cb_ = std::move(create_cb);
-
-  CreateAccessor<SysmemBufferReader>(
-      collection_.get(), base::BindOnce(&SysmemBufferPool::OnReaderCreated,
-                                        base::Unretained(this)));
-}
-
-void SysmemBufferPool::OnReaderCreated(
-    std::unique_ptr<SysmemBufferReader> reader) {
-  DCHECK(create_reader_cb_);
-  std::move(create_reader_cb_).Run(std::move(reader));
+  collection_->WaitForBuffersAllocated(
+      fit::bind_member(this, &SysmemBufferPool::OnBuffersAllocated));
 }
 
 void SysmemBufferPool::CreateWriter(CreateWriterCB create_cb) {
   DCHECK(!create_writer_cb_);
   create_writer_cb_ = std::move(create_cb);
-
-  CreateAccessor<SysmemBufferWriter>(
-      collection_.get(), base::BindOnce(&SysmemBufferPool::OnWriterCreated,
-                                        base::Unretained(this)));
+  collection_->WaitForBuffersAllocated(
+      fit::bind_member(this, &SysmemBufferPool::OnBuffersAllocated));
 }
 
-void SysmemBufferPool::OnWriterCreated(
-    std::unique_ptr<SysmemBufferWriter> writer) {
-  DCHECK(create_writer_cb_);
-  std::move(create_writer_cb_).Run(std::move(writer));
+void SysmemBufferPool::OnBuffersAllocated(
+    zx_status_t status,
+    fuchsia::sysmem::BufferCollectionInfo_2 buffer_collection_info) {
+  if (status != ZX_OK) {
+    ZX_LOG(ERROR, status) << "Fail to allocate sysmem buffers.";
+    OnError();
+    return;
+  }
+
+  if (create_reader_cb_) {
+    std::move(create_reader_cb_)
+        .Run(SysmemBufferReader::Create(std::move(buffer_collection_info)));
+  } else if (create_writer_cb_) {
+    std::move(create_writer_cb_)
+        .Run(SysmemBufferWriter::Create(std::move(buffer_collection_info)));
+  }
+}
+
+void SysmemBufferPool::OnError() {
+  collection_.Unbind();
+  if (create_reader_cb_)
+    std::move(create_reader_cb_).Run(nullptr);
+  if (create_writer_cb_)
+    std::move(create_writer_cb_).Run(nullptr);
 }
 
 BufferAllocator::BufferAllocator() {

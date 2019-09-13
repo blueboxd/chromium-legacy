@@ -5,8 +5,9 @@
 package org.chromium.chrome.browser.omnibox.suggestions.answer;
 
 import android.graphics.Bitmap;
-import android.support.annotation.IntDef;
 import android.text.Spannable;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDelegate;

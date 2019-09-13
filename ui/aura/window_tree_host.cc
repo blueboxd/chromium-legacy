@@ -263,11 +263,6 @@ ui::EventDispatchDetails WindowTreeHost::DispatchKeyEventPostIME(
   // If dispatch to IME is already disabled we shouldn't reach here.
   DCHECK(!dispatcher_->should_skip_ime());
   dispatcher_->set_skip_ime(true);
-
-  // InputMethod::DispatchKeyEvent() is called in PRE_DISPATCH phase, so event
-  // target is reset here to avoid issues in subsequent processing phases.
-  ui::Event::DispatcherApi(event).set_target(nullptr);
-
   // We should bypass event rewriters here as they've been tried before.
   ui::EventDispatchDetails dispatch_details =
       event_sink()->OnEventFromSource(event);

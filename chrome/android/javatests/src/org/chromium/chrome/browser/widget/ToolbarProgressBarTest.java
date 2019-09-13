@@ -10,11 +10,12 @@ import static org.junit.Assert.assertTrue;
 
 import android.animation.Animator;
 import android.content.res.Resources;
-import android.support.annotation.ColorInt;
 import android.support.test.filters.SmallTest;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+
+import androidx.annotation.ColorInt;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

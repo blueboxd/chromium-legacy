@@ -60,6 +60,12 @@ void TestAccumulatePixelsAndPercent(
             To<CalculationExpressionLeafNode>(*value).Pixels());
   EXPECT_EQ(expected_percent,
             To<CalculationExpressionLeafNode>(*value).Percent());
+
+  base::Optional<PixelsAndPercent> pixels_and_percent =
+      expression->ToPixelsAndPercent(conversion_data);
+  EXPECT_TRUE(pixels_and_percent.has_value());
+  EXPECT_EQ(expected_pixels, pixels_and_percent->pixels);
+  EXPECT_EQ(expected_percent, pixels_and_percent->percent);
 }
 
 CSSLengthArray& SetLengthArray(CSSLengthArray& length_array, String text) {

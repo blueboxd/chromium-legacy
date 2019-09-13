@@ -7,7 +7,6 @@ package org.chromium.ui.widget;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.CallSuper;
 import android.text.Layout;
 import android.text.SpannableString;
 import android.text.style.ClickableSpan;
@@ -19,6 +18,8 @@ import android.view.View;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.PopupMenu;
+
+import androidx.annotation.CallSuper;
 
 import org.chromium.base.VisibleForTesting;
 

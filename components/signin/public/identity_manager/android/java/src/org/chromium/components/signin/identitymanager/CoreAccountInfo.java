@@ -5,7 +5,8 @@
 package org.chromium.components.signin.identitymanager;
 
 import android.accounts.Account;
-import android.support.annotation.NonNull;
+
+import androidx.annotation.NonNull;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.components.signin.AccountManagerFacade;

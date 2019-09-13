@@ -268,7 +268,8 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
                 kTestOrigin, context()->data_path());
   RunPostedTasks();
   ASSERT_TRUE(closed_callbacks->connection());
-  closed_callbacks->connection()->AbortTransactionsAndClose();
+  closed_callbacks->connection()->AbortTransactionsAndClose(
+      IndexedDBConnection::CloseErrorHandling::kAbortAllReturnLastError);
   RunPostedTasks();
 
   context()->ForceClose(kTestOrigin,

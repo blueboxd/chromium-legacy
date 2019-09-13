@@ -234,6 +234,8 @@ static bool ShouldAutofocus(const HTMLFormControlElement* element) {
   Document& doc = element->GetDocument();
 
   // 3. If target's browsing context is null, then return.
+  if (!doc.GetFrame())
+    return false;
 
   // 4. If target's active sandboxing flag set has the sandboxed automatic
   // features browsing context flag, then return.

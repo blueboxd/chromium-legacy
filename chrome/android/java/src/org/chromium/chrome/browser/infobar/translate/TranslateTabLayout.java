@@ -10,12 +10,13 @@ import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.animation.DecelerateInterpolator;
+
+import androidx.annotation.NonNull;
 
 import org.chromium.chrome.R;
 

@@ -10,8 +10,11 @@
 #import "ios/chrome/browser/ui/settings/autofill/autofill_edit_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_consumer.h"
 
+// Accessibility identifier for the 'Add Credit Card' view.
 extern NSString* const kAddCreditCardViewID;
+// Accessibility identifier for the 'Add' Credit Card button.
 extern NSString* const kSettingsAddCreditCardButtonID;
+// Accessibility identifier for the Add Credit Card 'Cancel' button.
 extern NSString* const kSettingsAddCreditCardCancelButtonID;
 
 @protocol AddCreditCardViewControllerDelegate;

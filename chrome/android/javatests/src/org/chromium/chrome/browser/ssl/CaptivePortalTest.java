@@ -4,10 +4,11 @@
 
 package org.chromium.chrome.browser.ssl;
 
-import android.support.annotation.IntDef;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.util.Base64;
+
+import androidx.annotation.IntDef;
 
 import org.junit.After;
 import org.junit.Assert;

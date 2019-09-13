@@ -2742,7 +2742,7 @@
           'linux_intel_hd_630',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_fyi_linux_release_gtests',
+          'gtest_tests': 'gpu_fyi_linux_skia_renderer_gtests',
           'isolated_scripts': 'gpu_blink_web_tests',
           'gpu_telemetry_tests': 'gpu_skia_renderer_telemetry_tests',
         },
@@ -2754,7 +2754,7 @@
           'linux_nvidia_quadro_p400',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_fyi_linux_release_gtests',
+          'gtest_tests': 'gpu_fyi_linux_skia_renderer_gtests',
           'isolated_scripts': 'gpu_blink_web_tests',
           'gpu_telemetry_tests': 'gpu_skia_renderer_telemetry_tests',
         },

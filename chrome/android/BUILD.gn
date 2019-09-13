@@ -251,7 +251,7 @@ java_cpp_template("vr_build_config") {
 android_library("chrome_public_java") {
   java_files = [ "//chrome/android/java/src/org/chromium/chrome/browser/compositor/CompositorViewResizer.java" ]
   deps = [
-    "//third_party/android_deps:com_android_support_support_annotations_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
   ]
 }
 
@@ -362,6 +362,7 @@ android_library("chrome_java") {
     "//third_party/android_deps:android_arch_lifecycle_common_java8_java",
     "//third_party/android_deps:android_arch_lifecycle_runtime_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:com_android_support_collections_java",
     "//third_party/android_deps:com_android_support_coordinatorlayout_java",
     "//third_party/android_deps:com_android_support_customview_java",
@@ -371,7 +372,6 @@ android_library("chrome_java") {
     "//third_party/android_deps:com_android_support_mediarouter_v7_java",
     "//third_party/android_deps:com_android_support_preference_v7_java",
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
-    "//third_party/android_deps:com_android_support_support_annotations_java",
     "//third_party/android_deps:com_android_support_support_compat_java",
     "//third_party/android_deps:com_android_support_support_v13_java",
     "//third_party/android_deps:com_android_support_viewpager_java",
@@ -734,9 +734,9 @@ junit_binary("chrome_junit_tests") {
     "//services/media_session/public/cpp/android:media_session_java",
     "//third_party/android_deps:android_arch_lifecycle_common_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:com_android_support_mediarouter_v7_java",
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
-    "//third_party/android_deps:com_android_support_support_annotations_java",
     "//third_party/android_sdk/androidx_browser:androidx_browser_java",
     "//third_party/blink/public:blink_headers_java",
     "//third_party/blink/public/mojom:android_mojo_bindings_java",
@@ -885,11 +885,11 @@ android_library("chrome_test_java") {
     "//third_party/android_data_chart:android_data_chart_java",
     "//third_party/android_deps:android_arch_lifecycle_common_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:com_android_support_collections_java",
     "//third_party/android_deps:com_android_support_design_java",
     "//third_party/android_deps:com_android_support_preference_v7_java",
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
-    "//third_party/android_deps:com_android_support_support_annotations_java",
     "//third_party/android_deps:com_google_protobuf_protobuf_lite_java",
     "//third_party/android_sdk:android_test_base_java",
     "//third_party/android_sdk:android_test_mock_java",
@@ -987,8 +987,8 @@ if (enable_vr || enable_arcore) {
     "//net/android:net_java_test_support",
     "//third_party/android_deps:android_arch_lifecycle_common_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
-    "//third_party/android_deps:com_android_support_support_annotations_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/android_sdk/androidx_browser:androidx_browser_java",

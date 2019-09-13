@@ -894,7 +894,7 @@ android_library("browser_java") {
     "//mojo/public/java/system:system_impl_java",
     "//net/android:net_java",
     "//services/network/public/mojom:mojom_java",
-    "//third_party/android_deps:com_android_support_support_annotations_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/blink/public:blink_headers_java",
     "//ui/android:ui_java",
   ]
@@ -993,7 +993,7 @@ android_library("common_platform_services_java") {
 
   deps = [
     "//base:base_java",
-    "//third_party/android_deps:com_android_support_support_annotations_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
   ]
 
   # The appropriate .class file will be loaded via a dependency to a library

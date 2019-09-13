@@ -5,7 +5,8 @@
 package org.chromium.chrome.browser.contacts_picker;
 
 import android.content.res.Resources;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.chrome.R;
 

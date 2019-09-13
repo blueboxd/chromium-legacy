@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.keyboard_accessory;
 
-import android.support.annotation.Px;
+import androidx.annotation.Px;
 
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.compositor.CompositorViewResizer;

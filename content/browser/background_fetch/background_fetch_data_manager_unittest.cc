@@ -37,6 +37,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_utils.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "storage/browser/blob/blob_data_builder.h"
@@ -337,8 +338,8 @@ class BackgroundFetchDataManagerTest
     run_loop.Run();
 
     if (blob && blob->blob) {
-      blink::mojom::BlobPtr blob_ptr(std::move(blob->blob));
-      return CopyBody(blob_ptr.get());
+      mojo::Remote<blink::mojom::Blob> blob_remote(std::move(blob->blob));
+      return CopyBody(blob_remote.get());
     }
 
     return std::string();
@@ -1880,7 +1881,7 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequestsWithBody) {
   EXPECT_EQ(request->blob->size, upload_data.size());
 
   ASSERT_TRUE(request->blob->blob);
-  blink::mojom::BlobPtr blob(std::move(request->blob->blob));
+  mojo::Remote<blink::mojom::Blob> blob(std::move(request->blob->blob));
   EXPECT_EQ(CopyBody(blob.get()), upload_data);
 }
 

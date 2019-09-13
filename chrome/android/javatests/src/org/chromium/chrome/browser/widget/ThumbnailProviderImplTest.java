@@ -5,9 +5,10 @@
 package org.chromium.chrome.browser.widget;
 
 import android.graphics.Bitmap;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.test.filters.MediumTest;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.junit.After;
 import org.junit.Assert;

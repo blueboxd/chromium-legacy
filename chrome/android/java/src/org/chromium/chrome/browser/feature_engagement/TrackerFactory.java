@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feature_engagement;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.NativeMethods;

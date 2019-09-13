@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/heap/gc_info.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
+#include "third_party/blink/renderer/platform/heap/thread_state_statistics.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -49,12 +50,6 @@
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/sanitizers.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
-
-namespace base {
-namespace trace_event {
-class MemoryAllocatorDump;
-}  // namespace trace_event
-}  // namespace base
 
 namespace blink {
 
@@ -400,8 +395,7 @@ class FreeList {
   bool IsEmpty() const;
   size_t FreeListSize() const;
 
-  // Returns true if the freelist snapshot is captured.
-  bool TakeSnapshot(const String& dump_base_name);
+  void CollectStatistics(ThreadState::Statistics::FreeListStatistics*);
 
   template <typename Predicate>
   FreeListEntry* FindEntry(Predicate pred) {
@@ -521,9 +515,9 @@ class BasePage {
     size_t free_size = 0;
   };
 
-  virtual void TakeSnapshot(base::trace_event::MemoryAllocatorDump*,
-                            ThreadState::GCSnapshotInfo&,
-                            HeapSnapshotInfo&) = 0;
+  virtual void CollectStatistics(
+      ThreadState::Statistics::ArenaStatistics* arena_stats) = 0;
+
 #if DCHECK_IS_ON()
   virtual bool Contains(Address) = 0;
 #endif
@@ -700,9 +694,9 @@ class PLATFORM_EXPORT NormalPage final : public BasePage {
   void PoisonUnmarkedObjects() override;
 #endif
 
-  void TakeSnapshot(base::trace_event::MemoryAllocatorDump*,
-                    ThreadState::GCSnapshotInfo&,
-                    HeapSnapshotInfo&) override;
+  void CollectStatistics(
+      ThreadState::Statistics::ArenaStatistics* arena_stats) override;
+
 #if DCHECK_IS_ON()
   // Returns true for the whole |kBlinkPageSize| page that the page is on, even
   // for the header, and the unmapped guard page at the start. That ensures the
@@ -841,9 +835,8 @@ class PLATFORM_EXPORT LargeObjectPage final : public BasePage {
   void MakeConsistentForMutator() override;
   void FinalizeSweep(SweepResult) override;
 
-  void TakeSnapshot(base::trace_event::MemoryAllocatorDump*,
-                    ThreadState::GCSnapshotInfo&,
-                    HeapSnapshotInfo&) override;
+  void CollectStatistics(
+      ThreadState::Statistics::ArenaStatistics* arena_stats) override;
 
   bool IsLargeObjectPage() override { return true; }
 
@@ -889,11 +882,13 @@ class PLATFORM_EXPORT BaseArena {
   virtual ~BaseArena();
   void RemoveAllPages();
 
-  void TakeSnapshot(const String& dump_base_name, ThreadState::GCSnapshotInfo&);
+  void CollectStatistics(std::string, ThreadState::Statistics*);
+  virtual void CollectFreeListStatistics(
+      ThreadState::Statistics::FreeListStatistics*) {}
+
 #if DCHECK_IS_ON()
   BasePage* FindPageFromAddress(Address);
 #endif
-  virtual void TakeFreelistSnapshot(const String& dump_base_name) {}
   virtual void ClearFreeLists() {}
   virtual void MakeIterable() {}
   virtual void MakeConsistentForGC();
@@ -970,13 +965,14 @@ class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
   }
   void AddToFreeList(FreeList* other) { free_list_.MoveFrom(other); }
   void ClearFreeLists() override;
+  void CollectFreeListStatistics(
+      ThreadState::Statistics::FreeListStatistics*) override;
   void MakeIterable() override;
 
 #if DCHECK_IS_ON()
   bool IsConsistentForGC() override;
   bool PagesToBeSweptContains(Address);
 #endif
-  void TakeFreelistSnapshot(const String& dump_base_name) override;
 
   Address AllocateObject(size_t allocation_size, size_t gc_info_index);
 

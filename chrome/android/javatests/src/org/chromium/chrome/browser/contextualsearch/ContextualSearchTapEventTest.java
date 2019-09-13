@@ -26,7 +26,6 @@ import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.Context
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_public.browser.SelectionPopupController;
@@ -321,7 +320,6 @@ public class ContextualSearchTapEventTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    @Features.DisableFeatures("ContextualSearchLongpressResolve")
     public void testTapProcessIsRobustWhenSelectionGetsCleared() throws InterruptedException {
         Assert.assertEquals(mPanelManager.getRequestPanelShowCount(), 0);
 

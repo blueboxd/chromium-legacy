@@ -9,9 +9,9 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.support.annotation.Nullable;
 import android.widget.RemoteViews;
 
+import androidx.annotation.Nullable;
 import androidx.browser.customtabs.CustomTabsSessionToken;
 
 /**

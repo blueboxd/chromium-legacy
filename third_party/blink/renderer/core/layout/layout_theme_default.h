@@ -47,15 +47,23 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
   bool ThemeDrawsFocusRing(const ComputedStyle&) const override;
 
   // List Box selection color
-  virtual Color ActiveListBoxSelectionBackgroundColor() const;
-  virtual Color ActiveListBoxSelectionForegroundColor() const;
-  virtual Color InactiveListBoxSelectionBackgroundColor() const;
-  virtual Color InactiveListBoxSelectionForegroundColor() const;
+  virtual Color ActiveListBoxSelectionBackgroundColor(
+      WebColorScheme color_scheme) const;
+  virtual Color ActiveListBoxSelectionForegroundColor(
+      WebColorScheme color_scheme) const;
+  virtual Color InactiveListBoxSelectionBackgroundColor(
+      WebColorScheme color_scheme) const;
+  virtual Color InactiveListBoxSelectionForegroundColor(
+      WebColorScheme color_scheme) const;
 
-  Color PlatformActiveSelectionBackgroundColor() const override;
-  Color PlatformInactiveSelectionBackgroundColor() const override;
-  Color PlatformActiveSelectionForegroundColor() const override;
-  Color PlatformInactiveSelectionForegroundColor() const override;
+  Color PlatformActiveSelectionBackgroundColor(
+      WebColorScheme color_scheme) const override;
+  Color PlatformInactiveSelectionBackgroundColor(
+      WebColorScheme color_scheme) const override;
+  Color PlatformActiveSelectionForegroundColor(
+      WebColorScheme color_scheme) const override;
+  Color PlatformInactiveSelectionForegroundColor(
+      WebColorScheme color_scheme) const override;
 
   IntSize SliderTickSize() const override;
   int SliderTickOffsetFromTrackCenter() const override;

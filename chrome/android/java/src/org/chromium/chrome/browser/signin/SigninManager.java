@@ -7,8 +7,9 @@ package org.chromium.chrome.browser.signin;
 import android.accounts.Account;
 import android.app.Activity;
 import android.content.Context;
-import android.support.annotation.MainThread;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.MainThread;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;

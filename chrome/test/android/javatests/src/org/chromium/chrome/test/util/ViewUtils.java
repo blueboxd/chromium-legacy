@@ -6,9 +6,10 @@ package org.chromium.chrome.test.util;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
-import android.support.annotation.IntDef;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.IntDef;
 
 import org.hamcrest.Matcher;
 

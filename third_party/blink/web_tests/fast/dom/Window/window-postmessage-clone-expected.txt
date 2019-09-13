@@ -1,8 +1,8 @@
 Tests that we clone object hierarchies
 PASS: 'postMessage((function(){}))' threw DataCloneError: Failed to execute 'postMessage' on 'Window': function(){} could not be cloned.
-PASS: 'postMessage(arrayBuffer)' threw DataCloneError: Failed to execute 'postMessage' on 'Window': An ArrayBuffer is neutered and could not be cloned.
+PASS: 'postMessage(arrayBuffer)' threw DataCloneError: Failed to execute 'postMessage' on 'Window': An ArrayBuffer is detached and could not be cloned.
 PASS: 'postMessage("data")' threw DataCloneError: Failed to execute 'postMessage' on 'Window': ArrayBuffer at index 1 is a duplicate of an earlier ArrayBuffer.
-PASS: 'postMessage(uint8Array)' threw DataCloneError: Failed to execute 'postMessage' on 'Window': An ArrayBuffer is neutered and could not be cloned.
+PASS: 'postMessage(uint8Array)' threw DataCloneError: Failed to execute 'postMessage' on 'Window': An ArrayBuffer is detached and could not be cloned.
 PASS: 'postMessage(window)' threw DataCloneError: Failed to execute 'postMessage' on 'Window': #<Window> could not be cloned.
 PASS: 'postMessage(({get a() { throw "x" }}))' threw x
 PASS: 'postMessage((function() {return {get a() { throw "accessor-exn"; }};})())' threw accessor-exn

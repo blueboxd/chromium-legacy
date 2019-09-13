@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.widget.textbubble;
 import android.content.Context;
 import android.graphics.Rect;
 import android.os.Handler;
-import android.support.annotation.StringRes;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnTouchListener;
@@ -16,6 +15,8 @@ import android.widget.FrameLayout;
 import android.widget.PopupWindow;
 import android.widget.PopupWindow.OnDismissListener;
 import android.widget.TextView;
+
+import androidx.annotation.StringRes;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;

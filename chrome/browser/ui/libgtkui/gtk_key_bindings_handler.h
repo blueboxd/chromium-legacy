@@ -15,6 +15,7 @@
 
 namespace ui {
 class Event;
+class KeyEvent;
 }
 
 namespace libgtkui {
@@ -68,6 +69,10 @@ class GtkKeyBindingsHandler {
   // Adds an edit command to the key event.
   void EditCommandMatched(ui::TextEditCommand command,
                           const std::string& value);
+
+  // Builds a fake GdkEventKey from an XEvent.
+  void BuildGdkEventKeyFromKeyEvent(const ui::KeyEvent& key_event,
+                                    GdkEventKey* gdk_event);
 
   // Initializes Handler structure.
   static void HandlerInit(Handler* self);
@@ -137,6 +142,9 @@ class GtkKeyBindingsHandler {
 
   // Buffer to store the match results.
   std::vector<ui::TextEditCommandAuraLinux> edit_commands_;
+
+  // Whether the current X server has the XKeyboard extension.
+  bool has_xkb_;
 };
 
 }  // namespace libgtkui

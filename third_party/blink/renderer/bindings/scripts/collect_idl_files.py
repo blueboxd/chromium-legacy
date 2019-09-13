@@ -17,33 +17,34 @@ import utilities
 import web_idl
 
 
-_VALID_COMPONENTS = ("core", "modules")
+_VALID_COMPONENTS = ('core', 'modules')
 
 
 def parse_options():
     parser = optparse.OptionParser()
     parser.add_option('--idl-list-file', type='string',
-                      help='a file path which lists IDL file paths to process')
+                      help="a file path which lists IDL file paths to process")
     parser.add_option('--component', type='choice', choices=_VALID_COMPONENTS,
-                      help='specify a component name')
+                      help="specify a component name")
     parser.add_option('--output', type='string',
-                      help='the output file path')
+                      help="the output file path")
     options, args = parser.parse_args()
 
     if options.idl_list_file is None:
-        parser.error('Specify a file listing IDL files with --idl-list-file.')
+        parser.error("Specify a file listing IDL files with --idl-list-file.")
     if options.output is None:
-        parser.error('Specify the output file path with --output.')
+        parser.error("Specify the output file path with --output.")
     if options.component is None:
-        parser.error('Specify a component with --component.')
+        parser.error("Specify a component with --component.")
+
+    if args:
+        parser.error("Unknown arguments {}".format(args))
 
     return options, args
 
 
 def main():
-    options, args = parse_options()
-    if args:
-        raise RuntimeError('unknown arguments {}'.format(args))
+    options, _ = parse_options()
 
     filepaths = utilities.read_idl_files_list_from_file(options.idl_list_file)
     parser = blink_idl_parser.BlinkIDLParser()

@@ -4,7 +4,7 @@
 
 package org.chromium.components.minidump_uploader;
 
-import android.support.annotation.IntDef;
+import androidx.annotation.IntDef;
 
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;

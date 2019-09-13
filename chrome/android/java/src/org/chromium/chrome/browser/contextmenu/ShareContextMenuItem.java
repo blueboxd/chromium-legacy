@@ -6,9 +6,10 @@ package org.chromium.chrome.browser.contextmenu;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.IdRes;
-import android.support.annotation.StringRes;
 import android.util.Pair;
+
+import androidx.annotation.IdRes;
+import androidx.annotation.StringRes;
 
 import org.chromium.chrome.browser.share.ShareHelper;
 

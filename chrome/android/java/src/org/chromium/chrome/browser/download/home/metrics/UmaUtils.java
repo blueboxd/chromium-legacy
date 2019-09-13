@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.download.home.metrics;
 
-import android.support.annotation.IdRes;
-import android.support.annotation.IntDef;
+import androidx.annotation.IdRes;
+import androidx.annotation.IntDef;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;

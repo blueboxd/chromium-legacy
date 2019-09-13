@@ -92,8 +92,9 @@ int LayoutScrollbar::HypotheticalScrollbarThickness(
     const LayoutBox& enclosing_box,
     const LayoutObject& style_source) {
   scoped_refptr<const ComputedStyle> part_style =
-      style_source.GetUncachedPseudoStyle(
-          PseudoStyleRequest(kPseudoIdScrollbar, nullptr, kScrollbarBGPart),
+      style_source.GetUncachedPseudoElementStyle(
+          PseudoElementStyleRequest(kPseudoIdScrollbar, nullptr,
+                                    kScrollbarBGPart),
           style_source.Style());
   if (orientation == kHorizontalScrollbar) {
     return LayoutScrollbarPart::ComputeScrollbarHeight(
@@ -149,13 +150,13 @@ void LayoutScrollbar::SetPressedPart(ScrollbarPart part,
   UpdateScrollbarPart(kTrackBGPart);
 }
 
-scoped_refptr<ComputedStyle> LayoutScrollbar::GetScrollbarPseudoStyle(
+scoped_refptr<ComputedStyle> LayoutScrollbar::GetScrollbarPseudoElementStyle(
     ScrollbarPart part_type,
     PseudoId pseudo_id) {
   if (!StyleSource()->GetLayoutObject())
     return nullptr;
   return StyleSource()->StyleForPseudoElement(
-      PseudoStyleRequest(pseudo_id, this, part_type),
+      PseudoElementStyleRequest(pseudo_id, this, part_type),
       StyleSource()->GetLayoutObject()->Style());
 }
 
@@ -236,8 +237,8 @@ void LayoutScrollbar::UpdateScrollbarPart(ScrollbarPart part_type,
     return;
 
   scoped_refptr<ComputedStyle> part_style =
-      !destroy ? GetScrollbarPseudoStyle(part_type,
-                                         PseudoForScrollbarPart(part_type))
+      !destroy ? GetScrollbarPseudoElementStyle(
+                     part_type, PseudoForScrollbarPart(part_type))
                : scoped_refptr<ComputedStyle>(nullptr);
 
   bool need_layout_object =

@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions;
 
-import android.support.annotation.Nullable;
 import android.view.View;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.WindowDelegate;
 

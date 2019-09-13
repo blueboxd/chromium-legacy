@@ -18,6 +18,7 @@
 #include "base/task/sequence_manager/task_queue.h"
 #include "base/time/default_tick_clock.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/platform/heap/blink_gc_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/instrumentation/memory_pressure_listener.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_scheduler_proxy.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
@@ -124,8 +125,11 @@ void WorkerThread::SimpleThreadImpl::WaitForInit() {
 }
 
 WorkerThread::GCSupport::GCSupport(WorkerThread* thread) {
-  ThreadState::AttachCurrentThread();
+  ThreadState* thread_state = ThreadState::AttachCurrentThread();
   gc_task_runner_ = std::make_unique<GCTaskRunner>(thread);
+  blink_gc_memory_dump_provider_ = std::make_unique<BlinkGCMemoryDumpProvider>(
+      thread_state, base::ThreadTaskRunnerHandle::Get(),
+      BlinkGCMemoryDumpProvider::HeapType::kBlinkWorkerThread);
 }
 
 WorkerThread::GCSupport::~GCSupport() {
@@ -134,6 +138,7 @@ WorkerThread::GCSupport::~GCSupport() {
 #endif
   // Ensure no posted tasks will run from this point on.
   gc_task_runner_.reset();
+  blink_gc_memory_dump_provider_.reset();
 
   ThreadState::DetachCurrentThread();
 }

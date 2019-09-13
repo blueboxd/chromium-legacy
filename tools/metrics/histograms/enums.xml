@@ -52725,6 +52725,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="DONT_REMEMBER_PASSWORD"/>
 </enum>
 
+<enum name="SavingOnUsernameFirstFlow">
+  <int value="0" label="Saved"/>
+  <int value="1" label="Saved with edited username"/>
+  <int value="2" label="Not saved"/>
+</enum>
+
 <enum name="SB2BloomFailure">
   <obsolete>
     Bloom filter support deleted in October 2012.
@@ -54377,6 +54383,16 @@ Called by update_net_trust_anchors.py.-->
 <enum name="SessionRestoreActions">
   <int value="0" label="A session restore was started"/>
   <int value="1" label="A session restore deferred one or more tabs"/>
+</enum>
+
+<enum name="SessionRestoreFinishReason">
+  <int value="0"
+      label="SessionRestore.ForegroundTabFirstPaint4_XX successfully
+             recorded."/>
+  <int value="1"
+      label="No tabs were visible the whole time before first paint."/>
+  <int value="2" label="No restored tabs were painted."/>
+  <int value="3" label="A non-restored tab was painted first."/>
 </enum>
 
 <enum name="SessionRestoreTabActions">

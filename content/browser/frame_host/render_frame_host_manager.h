@@ -317,7 +317,6 @@ class CONTENT_EXPORT RenderFrameHostManager
   // During a history navigation, unfreezes and swaps in a document from the
   // BackForwardCache, making it active.
   void RestoreFromBackForwardCache(std::unique_ptr<RenderFrameHostImpl>);
-  void EvictFromBackForwardCache(RenderFrameHostImpl*);
 
   // BackForwardCache:
   // Unfreezes the current frame host. This is called after committing a

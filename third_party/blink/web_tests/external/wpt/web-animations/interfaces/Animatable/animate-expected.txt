@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 138 tests; 135 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 138 tests; 136 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Element.animate() creates an Animation object
 PASS Element.animate() creates an Animation object in the relevant realm of the target element
 PASS Element.animate() creates an Animation object with a KeyframeEffect
@@ -42,7 +42,7 @@ PASS Element.animate() accepts a property-indexed keyframe with a single-element
 PASS Element.animate() accepts a property-indexed keyframe with an empty array of easings
 PASS Element.animate() accepts a property-indexed keyframe with an array of easings that is too long
 PASS Element.animate() accepts a property-indexed keyframe with a single composite operation
-FAIL Element.animate() accepts a property-indexed keyframe with a composite array assert_equals: value for 'composite' on ComputedKeyframe #2 expected "accumulate" but got "replace"
+PASS Element.animate() accepts a property-indexed keyframe with a composite array
 PASS Element.animate() accepts a property-indexed keyframe with a composite array that is too short
 PASS Element.animate() accepts a property-indexed keyframe with a composite array that is too long
 PASS Element.animate() accepts a property-indexed keyframe with a single-element composite array

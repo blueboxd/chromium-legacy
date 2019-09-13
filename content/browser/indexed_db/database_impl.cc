@@ -57,9 +57,16 @@ DatabaseImpl::DatabaseImpl(std::unique_ptr<IndexedDBConnection> connection,
 
 DatabaseImpl::~DatabaseImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (connection_->IsConnected())
-    connection_->AbortTransactionsAndClose();
+  leveldb::Status status;
+  if (connection_->IsConnected()) {
+    status = connection_->AbortTransactionsAndClose(
+        IndexedDBConnection::CloseErrorHandling::kAbortAllReturnLastError);
+  }
   indexed_db_context_->ConnectionClosed(origin_, connection_.get());
+  if (!status.ok()) {
+    indexed_db_context_->GetIDBFactory()->OnDatabaseError(
+        origin_, status, "Error during rollbacks.");
+  }
 }
 
 void DatabaseImpl::RenameObjectStore(int64_t transaction_id,
@@ -130,7 +137,13 @@ void DatabaseImpl::Close() {
   if (!connection_->IsConnected())
     return;
 
-  connection_->AbortTransactionsAndClose();
+  leveldb::Status status = connection_->AbortTransactionsAndClose(
+      IndexedDBConnection::CloseErrorHandling::kReturnOnFirstError);
+
+  if (!status.ok()) {
+    indexed_db_context_->GetIDBFactory()->OnDatabaseError(
+        origin_, status, "Error during rollbacks.");
+  }
 }
 
 void DatabaseImpl::VersionChangeIgnored() {
@@ -586,7 +599,7 @@ void DatabaseImpl::Abort(int64_t transaction_id) {
   if (!transaction)
     return;
 
-  connection_->AbortTransaction(
+  connection_->AbortTransactionAndTearDownOnError(
       transaction,
       IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionAbortError,
                              "Transaction aborted by user."));

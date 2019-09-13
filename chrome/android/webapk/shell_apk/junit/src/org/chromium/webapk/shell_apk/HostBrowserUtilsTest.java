@@ -11,7 +11,8 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
-import android.support.annotation.IntDef;
+
+import androidx.annotation.IntDef;
 
 import org.junit.Assert;
 import org.junit.Before;

@@ -55,6 +55,13 @@ static_library("browser") {
     ]
   }
 
+  if (is_chromeos) {
+    sources += [
+      "ipp_l10n.cc",
+      "ipp_l10n.h",
+    ]
+  }
+
   if (enable_print_media_l10n) {
     sources += [
       "print_media_l10n.cc",

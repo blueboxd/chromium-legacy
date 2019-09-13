@@ -990,15 +990,19 @@ class Document::SecurityContextInit : public FeaturePolicyParserDelegate {
   bool bind_csp_immediately_ = false;
 };
 
-ExplicitlySetAttrElementMap* Document::GetExplicitlySetAttrElementMap(
+ExplicitlySetAttrElementsMap* Document::GetExplicitlySetAttrElementsMap(
     Element* element) {
   DCHECK(element);
   DCHECK(element->GetDocument() == this);
-  if (!element_explicitly_set_attr_element_map_.Contains(element)) {
-    element_explicitly_set_attr_element_map_.insert(
-        element, MakeGarbageCollected<ExplicitlySetAttrElementMap>());
+  auto iter = element_explicitly_set_attr_elements_map_.find(element);
+  if (iter != element_explicitly_set_attr_elements_map_.end()) {
+    return iter->value;
+    element_explicitly_set_attr_elements_map_.insert(
+        element, MakeGarbageCollected<ExplicitlySetAttrElementsMap>());
   }
-  return element_explicitly_set_attr_element_map_.at(element);
+  auto add_result = element_explicitly_set_attr_elements_map_.insert(
+      element, MakeGarbageCollected<ExplicitlySetAttrElementsMap>());
+  return add_result.stored_value->value;
 }
 
 Document* Document::Create(Document& document) {
@@ -2606,7 +2610,7 @@ void Document::PropagateStyleToViewport() {
                                        overflow_style->OverscrollBehaviorY())));
       }
 
-      if (overflow_style->HasPseudoStyle(kPseudoIdScrollbar))
+      if (overflow_style->HasPseudoElementStyle(kPseudoIdScrollbar))
         update_scrollbar_style = true;
     }
 
@@ -8303,7 +8307,7 @@ void Document::Trace(Visitor* visitor) {
   visitor->Trace(find_in_page_root_);
   visitor->Trace(computed_node_mapping_);
   visitor->Trace(mime_handler_view_before_unload_event_listener_);
-  visitor->Trace(element_explicitly_set_attr_element_map_);
+  visitor->Trace(element_explicitly_set_attr_elements_map_);
   Supplementable<Document>::Trace(visitor);
   TreeScope::Trace(visitor);
   ContainerNode::Trace(visitor);

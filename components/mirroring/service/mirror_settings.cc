@@ -8,10 +8,10 @@
 
 #include "media/base/audio_parameters.h"
 
-using media::cast::FrameSenderConfig;
-using media::cast::Codec;
-using media::cast::RtpPayloadType;
 using media::ResolutionChangePolicy;
+using media::cast::Codec;
+using media::cast::FrameSenderConfig;
+using media::cast::RtpPayloadType;
 
 namespace mirroring {
 
@@ -108,8 +108,7 @@ media::VideoCaptureParams MirrorSettings::GetVideoCaptureParams() {
                                 kMaxFrameRate, media::PIXEL_FORMAT_I420);
   if (max_height_ == min_height_ && max_width_ == min_width_) {
     params.resolution_change_policy = ResolutionChangePolicy::FIXED_RESOLUTION;
-  } else if ((100 * min_width_ / min_height_) ==
-             (100 * max_width_ / max_height_)) {
+  } else if (enable_sender_side_letterboxing_) {
     params.resolution_change_policy =
         ResolutionChangePolicy::FIXED_ASPECT_RATIO;
   } else {
@@ -133,7 +132,8 @@ base::Value MirrorSettings::ToDictionaryValue() {
   settings.SetKey("maxHeight", base::Value(max_height_));
   settings.SetKey("minWidth", base::Value(min_width_));
   settings.SetKey("minHeight", base::Value(min_height_));
-  settings.SetKey("senderSideLetterboxing", base::Value(true));
+  settings.SetKey("senderSideLetterboxing",
+                  base::Value(enable_sender_side_letterboxing_));
   settings.SetKey("minFrameRate", base::Value(0));
   settings.SetKey("maxFrameRate", base::Value(kMaxFrameRate));
   settings.SetKey("minVideoBitrate", base::Value(kMinVideoBitrate));

@@ -31,6 +31,7 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "ui/gfx/geometry/size.h"
@@ -202,8 +203,8 @@ class WebTestBackgroundFetchDelegate::WebTestBackgroundFetchDownloadClient
   void DidGetUploadData(download::GetUploadDataCallback callback,
                         blink::mojom::SerializedBlobPtr blob) {
     mojo::PendingRemote<network::mojom::DataPipeGetter> data_pipe_getter_remote;
-    blink::mojom::BlobPtr blob_ptr(std::move(blob->blob));
-    blob_ptr->AsDataPipeGetter(
+    mojo::Remote<blink::mojom::Blob> blob_remote(std::move(blob->blob));
+    blob_remote->AsDataPipeGetter(
         data_pipe_getter_remote.InitWithNewPipeAndPassReceiver());
 
     auto request_body = base::MakeRefCounted<network::ResourceRequestBody>();

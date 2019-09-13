@@ -26,6 +26,10 @@ class Size;
 struct PresentationFeedback;
 }  // namespace gfx
 
+namespace gl {
+class GLImage;
+}
+
 namespace viz {
 
 class SkiaOutputDevice {

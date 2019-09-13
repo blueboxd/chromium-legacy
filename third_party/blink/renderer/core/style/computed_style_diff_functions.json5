@@ -134,7 +134,7 @@
             field_dependencies: ["filter"]
           },
           {
-            method: "HasPseudoStyle(kPseudoIdScrollbar)",
+            method: "HasPseudoElementStyle(kPseudoIdScrollbar)",
             field_dependencies: ["StyleType"]
           },
           {

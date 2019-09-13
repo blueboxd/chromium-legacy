@@ -57,6 +57,10 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) MirrorSettings {
   int max_width_;
   int max_height_;
 
+  // TODO(crbug.com/1002603): Disable sender-side letterboxing for Chromecast
+  // devices that support arbitrary aspect ratios.
+  bool enable_sender_side_letterboxing_ = true;
+
   DISALLOW_COPY_AND_ASSIGN(MirrorSettings);
 };
 

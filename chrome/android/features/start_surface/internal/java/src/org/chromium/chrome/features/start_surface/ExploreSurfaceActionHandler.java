@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.features.start_surface;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.google.android.libraries.feed.api.client.knowncontent.ContentMetadata;
 

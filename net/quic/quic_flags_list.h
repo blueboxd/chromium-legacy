@@ -196,11 +196,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_conservative_cwnd_and_pacing_gains,
           false)
 
-// If true, ignore TLPR if there is no pending stream data.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_ignore_tlpr_if_no_pending_stream_data,
-          true)
-
 // When true, QUIC Version Negotiation packets will randomly include fake
 // versions.
 QUIC_FLAG(bool,
@@ -209,12 +204,6 @@ QUIC_FLAG(bool,
 
 // If true, use predictable version negotiation versions.
 QUIC_FLAG(bool, FLAGS_quic_disable_version_negotiation_grease_randomness, false)
-
-// Fixes quic::GetPacketHeaderSize and callsites when
-// QuicVersionHasLongHeaderLengths is false.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_fix_get_packet_header_size,
-          true)
 
 // Calls ClearQueuedPackets after sending a connection close packet.
 QUIC_FLAG(
@@ -362,3 +351,20 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_simple_inflight_time, false)
 // If true, QUIC supports both QUIC Crypto and TLS 1.3 for the handshake
 // protocol.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_supports_tls_handshake, true)
+
+// If true, deprecate SpuriousRetransmitDetected and call SpuriousLossDetected
+// instead.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_detect_spurious_loss, false)
+
+// If true, a stream will reset itself if it receives a stream frame that
+// includes a data beyond the close offset.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_rst_if_stream_frame_beyond_close_offset,
+    false)
+
+// If true, enable IETF loss detection as described in
+// https://tools.ietf.org/html/draft-ietf-quic-recovery-22#section-6.1.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_enable_ietf_loss_detection,
+          false)

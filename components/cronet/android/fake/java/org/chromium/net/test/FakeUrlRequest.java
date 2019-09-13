@@ -4,7 +4,7 @@
 
 package org.chromium.net.test;
 
-import android.support.annotation.GuardedBy;
+import androidx.annotation.GuardedBy;
 
 import org.chromium.net.CronetException;
 import org.chromium.net.InlineExecutionProhibitedException;

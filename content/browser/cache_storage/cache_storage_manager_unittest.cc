@@ -42,6 +42,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_utils.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/disk_cache/disk_cache.h"
@@ -634,14 +635,14 @@ class CacheStorageManagerTest : public testing::Test {
     std::unique_ptr<storage::BlobDataHandle> blob_data_handle =
         blob_storage_context_->AddFinishedBlob(std::move(blob_data));
 
-    blink::mojom::BlobPtrInfo blob_ptr_info;
+    mojo::PendingRemote<blink::mojom::Blob> blob_remote;
     storage::BlobImpl::Create(std::move(blob_data_handle),
-                              MakeRequest(&blob_ptr_info));
+                              blob_remote.InitWithNewPipeAndPassReceiver());
 
     auto blob = blink::mojom::SerializedBlob::New();
     blob->uuid = blob_uuid;
     blob->size = request->url.spec().size();
-    blob->blob = std::move(blob_ptr_info);
+    blob->blob = std::move(blob_remote);
 
     base::RunLoop loop;
     CachePutWithStatusCodeAndBlobInternal(cache, std::move(request),

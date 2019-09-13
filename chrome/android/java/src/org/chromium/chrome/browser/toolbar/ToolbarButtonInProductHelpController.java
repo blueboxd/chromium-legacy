@@ -4,9 +4,10 @@
 
 package org.chromium.chrome.browser.toolbar;
 
-import android.support.annotation.Nullable;
-import android.support.annotation.StringRes;
 import android.view.View;
+
+import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 
 import org.chromium.base.Callback;
 import org.chromium.base.task.PostTask;

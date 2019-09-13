@@ -53,7 +53,7 @@ void SMILAnimationSandwich::Reset() {
     animation->Reset();
 }
 
-void SMILAnimationSandwich::UpdateTiming(double elapsed) {
+void SMILAnimationSandwich::UpdateTiming(SMILTime elapsed) {
   if (!std::is_sorted(sandwich_.begin(), sandwich_.end(),
                       PriorityCompare(elapsed))) {
     std::sort(sandwich_.begin(), sandwich_.end(), PriorityCompare(elapsed));
@@ -70,7 +70,7 @@ void SMILAnimationSandwich::UpdateTiming(double elapsed) {
 }
 
 SMILTime SMILAnimationSandwich::NextInterestingTime(
-    double presentation_time) const {
+    SMILTime presentation_time) const {
   SMILTime interesting_time = SMILTime::Indefinite();
   for (const auto& animation : sandwich_) {
     interesting_time = std::min(
@@ -80,7 +80,7 @@ SMILTime SMILAnimationSandwich::NextInterestingTime(
 }
 
 SMILTime SMILAnimationSandwich::NextProgressTime(
-    double presentation_time) const {
+    SMILTime presentation_time) const {
   SMILTime earliest_progress_time = SMILTime::Unresolved();
   for (const auto& animation : sandwich_) {
     earliest_progress_time = std::min(
@@ -91,7 +91,7 @@ SMILTime SMILAnimationSandwich::NextProgressTime(
   return earliest_progress_time;
 }
 
-void SMILAnimationSandwich::UpdateSyncBases(double elapsed) {
+void SMILAnimationSandwich::UpdateSyncBases(SMILTime elapsed) {
   for (auto& animation : sandwich_)
     animation->UpdateSyncBases();
 }
@@ -101,7 +101,7 @@ SVGSMILElement* SMILAnimationSandwich::ResultElement() const {
 }
 
 void SMILAnimationSandwich::UpdateActiveAnimationStack(
-    double presentation_time) {
+    SMILTime presentation_time) {
   SVGSMILElement* old_result_element = ResultElement();
   active_.Shrink(0);
   active_.ReserveCapacity(sandwich_.size());

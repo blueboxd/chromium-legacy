@@ -132,7 +132,7 @@ uint64_t GetDisallowedFeatures() {
 const base::Feature kBackForwardCacheWithServiceWorker = {
     "BackForwardCacheWithServiceWorker", base::FEATURE_DISABLED_BY_DEFAULT};
 
-BackForwardCache::BackForwardCache() = default;
+BackForwardCache::BackForwardCache() : weak_factory_(this) {}
 BackForwardCache::~BackForwardCache() = default;
 
 bool BackForwardCache::CanStoreDocument(RenderFrameHostImpl* rfh) {
@@ -201,28 +201,25 @@ void BackForwardCache::Resume(RenderFrameHostImpl* main_rfh) {
   SetPageFrozenImpl(main_rfh, /*frozen = */ false, &unfrozen_render_view_hosts);
 }
 
-void BackForwardCache::EvictDocument(RenderFrameHostImpl* render_frame_host) {
-  auto matching_rfh = std::find_if(
-      render_frame_hosts_.begin(), render_frame_hosts_.end(),
-      [render_frame_host](std::unique_ptr<RenderFrameHostImpl>& rfh) {
-        return rfh.get() == render_frame_host;
-      });
-
-  DCHECK(matching_rfh != render_frame_hosts_.end());
-  render_frame_hosts_.erase(matching_rfh);
-}
-
 std::unique_ptr<RenderFrameHostImpl> BackForwardCache::RestoreDocument(
     int navigation_entry_id) {
   // Select the RenderFrameHostImpl matching the navigation entry.
   auto matching_rfh = std::find_if(
       render_frame_hosts_.begin(), render_frame_hosts_.end(),
       [navigation_entry_id](std::unique_ptr<RenderFrameHostImpl>& rfh) {
+        // Never restore evicted frames.
+        if (rfh->is_evicted_from_back_forward_cache())
+          return false;
+
         return rfh->nav_entry_id() == navigation_entry_id;
       });
 
   // Not found.
   if (matching_rfh == render_frame_hosts_.end())
+    return nullptr;
+
+  // Don't restore an evicted frame.
+  if ((*matching_rfh)->is_evicted_from_back_forward_cache())
     return nullptr;
 
   std::unique_ptr<RenderFrameHostImpl> rfh = std::move(*matching_rfh);
@@ -233,6 +230,12 @@ std::unique_ptr<RenderFrameHostImpl> BackForwardCache::RestoreDocument(
 
 void BackForwardCache::Flush() {
   render_frame_hosts_.clear();
+}
+
+void BackForwardCache::PostTaskToFlushEvictedFrames() {
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&BackForwardCache::FlushEvictedFrames,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void BackForwardCache::DisableForTesting(DisableForTestingReason reason) {
@@ -254,7 +257,20 @@ RenderFrameHostImpl* BackForwardCache::GetDocument(int navigation_entry_id) {
   if (matching_rfh == render_frame_hosts_.end())
     return nullptr;
 
+  // Don't return the frame if it is evicted.
+  if ((*matching_rfh)->is_evicted_from_back_forward_cache())
+    return nullptr;
+
   return (*matching_rfh).get();
 }
 
+void BackForwardCache::FlushEvictedFrames() {
+  if (render_frame_hosts_.empty())
+    return;
+  render_frame_hosts_.erase(
+      std::remove_if(render_frame_hosts_.begin(), render_frame_hosts_.end(),
+                     [](std::unique_ptr<RenderFrameHostImpl>& rfh) {
+                       return rfh->is_evicted_from_back_forward_cache();
+                     }));
+}
 }  // namespace content

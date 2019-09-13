@@ -43,6 +43,10 @@
 #include "base/files/scoped_file.h"
 #endif  // defined(OS_LINUX)
 
+namespace gfx {
+class GpuMemoryBuffer;
+}
+
 namespace media {
 
 class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
@@ -86,7 +90,8 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
     // Backed by a mojo shared buffer. This should only be used by the
     // MojoSharedBufferVideoFrame subclass.
     STORAGE_MOJO_SHARED_BUFFER = 6,
-    STORAGE_LAST = STORAGE_MOJO_SHARED_BUFFER,
+    STORAGE_GPU_MEMORY_BUFFER = 7,
+    STORAGE_LAST = STORAGE_GPU_MEMORY_BUFFER,
   };
 
   // CB to be called on the mailbox backing this frame when the frame is
@@ -227,6 +232,17 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       uint8_t* u_data,
       uint8_t* v_data,
       uint8_t* a_data,
+      base::TimeDelta timestamp);
+
+  // Wraps |gpu_memory_buffer| along with the mailboxes created from
+  // |gpu_memory_buffer|. |mailbox_holders_release_cb| will be called with a
+  // sync token as the argument when the VideoFrame is to be destroyed.
+  static scoped_refptr<VideoFrame> WrapExternalGpuMemoryBuffer(
+      const gfx::Rect& visible_rect,
+      const gfx::Size& natural_size,
+      std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer,
+      const gpu::MailboxHolder (&mailbox_holders)[kMaxPlanes],
+      ReleaseMailboxCB mailbox_holder_release_cb,
       base::TimeDelta timestamp);
 
 #if defined(OS_LINUX)
@@ -378,6 +394,12 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
   // Returns the number of native textures.
   size_t NumTextures() const;
+
+  // Returns true if the video frame is backed with GpuMemoryBuffer.
+  bool HasGpuMemoryBuffer() const;
+
+  // Gets the GpuMemoryBuffer backing the VideoFrame.
+  gfx::GpuMemoryBuffer* GetGpuMemoryBuffer() const;
 
   // Returns the color space of this frame's content.
   gfx::ColorSpace ColorSpace() const;
@@ -629,6 +651,9 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // case, shm_region_ will refer to this region.
   base::UnsafeSharedMemoryRegion owned_shm_region_;
   base::WritableSharedMemoryMapping owned_shm_mapping_;
+
+  // GPU memory buffer, if this frame is STORAGE_GPU_MEMORY_BUFFER.
+  std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
 
 #if defined(OS_LINUX)
   class DmabufHolder;

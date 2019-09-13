@@ -8,8 +8,10 @@ import static org.chromium.chrome.browser.dependency_injection.ChromeCommonQuali
 
 import android.content.Context;
 import android.content.Intent;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.browser.customtabs.CustomTabsSessionToken;
 
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
@@ -17,8 +19,6 @@ import org.chromium.chrome.browser.tab.Tab;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-
-import androidx.browser.customtabs.CustomTabsSessionToken;
 
 /**
  * Handles the incoming intents: the one that starts the activity, as well as subsequent intents

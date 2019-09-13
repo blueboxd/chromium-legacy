@@ -8,9 +8,10 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabSwitcherMediat
 
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.support.annotation.Nullable;
 import android.support.v7.content.res.AppCompatResources;
 import android.view.View;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;

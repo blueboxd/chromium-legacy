@@ -383,11 +383,11 @@ void AccessibilityDetailedView::HandleViewClicked(views::View* view) {
         Shell::Get()->docked_magnifier_controller();
     const bool new_state = !docked_magnifier_controller->GetEnabled();
 
-    if (new_state) {
-      // Close the system tray bubble as there may not be enough screen space to
-      // display the current bubble after enabling the docked magnifier.
-      CloseBubble();
-    }
+    // Close the system tray bubble as the available screen space has changed
+    // E.g. there may not be enough screen space to display the current bubble
+    // after enabling the docked magnifier or more space is made available after
+    // disabling the docked magnifier.
+    CloseBubble();
 
     RecordAction(new_state
                      ? UserMetricsAction("StatusArea_DockedMagnifierEnabled")

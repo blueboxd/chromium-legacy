@@ -4868,12 +4868,14 @@
       },
       'content_browsertests_stress': {
         'args': ['--gtest_filter=WebRtc*MANUAL*:-UsingRealWebcam*',
-                  '--run-manual', '--ui-test-action-max-timeout=120000'],
+                 '--run-manual', '--ui-test-action-max-timeout=110000',
+                 '--test-launcher-timeout=120000'],
         'test': 'content_browsertests',
       },
       'content_browsertests_stress': {
         'args': ['--gtest_filter=WebRtc*MANUAL*:-UsingRealWebcam*',
-                  '--run-manual', '--ui-test-action-max-timeout=120000'],
+                 '--run-manual', '--ui-test-action-max-timeout=110000',
+                 '--test-launcher-timeout=120000'],
         'test': 'content_browsertests',
       },
       'browser_tests_functional': {
@@ -5549,6 +5551,16 @@
     ],
 
     'gpu_fyi_linux_release_gtests': [
+      'gpu_angle_end2end_gtests',
+      'gpu_angle_unit_gtests',
+      'gpu_angle_white_box_gtests',
+      'gpu_common_gtests',
+      'gpu_desktop_specific_gtests',
+      'gpu_gles2_conform_gtests',
+      'gpu_swiftshader_gtests',
+    ],
+
+    'gpu_fyi_linux_skia_renderer_gtests': [
       'gpu_angle_end2end_gtests',
       'gpu_angle_unit_gtests',
       'gpu_angle_white_box_gtests',

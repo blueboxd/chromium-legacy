@@ -40,7 +40,7 @@ scoped_refptr<ComputedStyle> GetUncachedSelectionStyle(Node* node) {
     if (root->IsUserAgent()) {
       if (Element* shadow_host = node->OwnerShadowHost()) {
         return shadow_host->StyleForPseudoElement(
-            PseudoStyleRequest(kPseudoIdSelection));
+            PseudoElementStyleRequest(kPseudoIdSelection));
       }
     }
   }
@@ -61,7 +61,8 @@ scoped_refptr<ComputedStyle> GetUncachedSelectionStyle(Node* node) {
     return nullptr;
   }
 
-  return element->StyleForPseudoElement(PseudoStyleRequest(kPseudoIdSelection));
+  return element->StyleForPseudoElement(
+      PseudoElementStyleRequest(kPseudoIdSelection));
 }
 
 Color SelectionColor(const Document& document,
@@ -93,8 +94,10 @@ Color SelectionColor(const Document& document,
   if (!LayoutTheme::GetTheme().SupportsSelectionForegroundColors())
     return style.VisitedDependentColor(color_property);
   return document.GetFrame()->Selection().FrameIsFocusedAndActive()
-             ? LayoutTheme::GetTheme().ActiveSelectionForegroundColor()
-             : LayoutTheme::GetTheme().InactiveSelectionForegroundColor();
+             ? LayoutTheme::GetTheme().ActiveSelectionForegroundColor(
+                   style.UsedColorScheme())
+             : LayoutTheme::GetTheme().InactiveSelectionForegroundColor(
+                   style.UsedColorScheme());
 }
 
 const ComputedStyle* SelectionPseudoStyle(Node* node) {
@@ -104,7 +107,7 @@ const ComputedStyle* SelectionPseudoStyle(Node* node) {
   if (!element)
     return nullptr;
   return element->CachedStyleForPseudoElement(
-      PseudoStyleRequest(kPseudoIdSelection));
+      PseudoElementStyleRequest(kPseudoIdSelection));
 }
 
 }  // anonymous namespace
@@ -133,8 +136,10 @@ Color SelectionPaintingUtils::SelectionBackgroundColor(
   }
 
   return document.GetFrame()->Selection().FrameIsFocusedAndActive()
-             ? LayoutTheme::GetTheme().ActiveSelectionBackgroundColor()
-             : LayoutTheme::GetTheme().InactiveSelectionBackgroundColor();
+             ? LayoutTheme::GetTheme().ActiveSelectionBackgroundColor(
+                   style.UsedColorScheme())
+             : LayoutTheme::GetTheme().InactiveSelectionBackgroundColor(
+                   style.UsedColorScheme());
 }
 
 Color SelectionPaintingUtils::SelectionForegroundColor(

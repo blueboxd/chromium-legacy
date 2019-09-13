@@ -5,12 +5,13 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.graphics.drawable.Drawable;
-import android.support.annotation.Nullable;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.modelutil.PropertyKey;

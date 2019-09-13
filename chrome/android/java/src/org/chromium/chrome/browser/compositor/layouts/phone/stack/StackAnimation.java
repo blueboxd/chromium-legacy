@@ -6,8 +6,9 @@ package org.chromium.chrome.browser.compositor.layouts.phone.stack;
 
 import android.animation.Animator;
 import android.animation.AnimatorSet;
-import android.support.annotation.IntDef;
 import android.util.Pair;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;

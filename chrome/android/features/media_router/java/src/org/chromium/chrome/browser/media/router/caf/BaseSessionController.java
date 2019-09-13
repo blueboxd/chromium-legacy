@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.media.router.caf;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import com.google.android.gms.cast.CastDevice;
 import com.google.android.gms.cast.framework.CastSession;

@@ -47,6 +47,7 @@
 #include "content/public/common/referrer_type_converters.h"
 #include "crypto/hmac.h"
 #include "crypto/symmetric_key.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/completion_repeating_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -1779,7 +1780,7 @@ void LegacyCacheStorageCache::PutWriteBlobToCache(
                          TRACE_ID_GLOBAL(put_context->trace_id),
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
-  blink::mojom::BlobPtr blob;
+  mojo::PendingRemote<blink::mojom::Blob> blob;
   int64_t blob_size = 0;
 
   switch (disk_cache_body_index) {

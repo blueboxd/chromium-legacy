@@ -20,10 +20,11 @@ import android.provider.Browser;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.speech.RecognizerResultsIntent;
-import android.support.annotation.IntDef;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Pair;
+
+import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;

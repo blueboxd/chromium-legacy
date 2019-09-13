@@ -5,8 +5,9 @@
 package org.chromium.chrome.browser.jsdialog;
 
 import android.content.res.Resources;
-import android.support.annotation.StringRes;
 import android.view.LayoutInflater;
+
+import androidx.annotation.StringRes;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.R;

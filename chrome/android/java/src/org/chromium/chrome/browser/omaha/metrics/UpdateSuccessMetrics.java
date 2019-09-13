@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.omaha.metrics;
 
-import android.support.annotation.IntDef;
 import android.text.TextUtils;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.omaha.UpdateConfigs;
@@ -15,7 +16,6 @@ import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateStatus;
 import org.chromium.chrome.browser.omaha.metrics.UpdateProtos.Tracking;
 import org.chromium.chrome.browser.omaha.metrics.UpdateProtos.Tracking.Source;
 import org.chromium.chrome.browser.omaha.metrics.UpdateProtos.Tracking.Type;
-import org.chromium.chrome.browser.omaha.metrics.UpdateSuccessMetrics.UpdateType;
 import org.chromium.components.version_info.VersionConstants;
 
 import java.lang.annotation.Retention;

@@ -7,10 +7,11 @@ package org.chromium.chrome.browser.sharing.click_to_call;
 import android.content.Context;
 import android.os.Handler;
 import android.os.SystemClock;
-import android.support.annotation.IntDef;
-import android.support.annotation.MainThread;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
+
+import androidx.annotation.IntDef;
+import androidx.annotation.MainThread;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;

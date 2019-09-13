@@ -1151,6 +1151,8 @@ QuicTestPacketMaker::MakeSettingsPacket(uint64_t packet_number,
     spdy::SpdySettingsIR settings_frame;
     settings_frame.AddSetting(spdy::SETTINGS_MAX_HEADER_LIST_SIZE,
                               kQuicMaxHeaderListSize);
+    settings_frame.AddSetting(quic::SETTINGS_QPACK_BLOCKED_STREAMS,
+                              quic::kDefaultMaximumBlockedStreams);
     spdy::SpdySerializedFrame spdy_frame(
         spdy_request_framer_.SerializeFrame(settings_frame));
     InitializeHeader(packet_number, should_include_version);
@@ -1172,6 +1174,8 @@ QuicTestPacketMaker::MakeInitialSettingsPacket(uint64_t packet_number) {
     spdy::SpdySettingsIR settings_frame;
     settings_frame.AddSetting(spdy::SETTINGS_MAX_HEADER_LIST_SIZE,
                               kQuicMaxHeaderListSize);
+    settings_frame.AddSetting(quic::SETTINGS_QPACK_BLOCKED_STREAMS,
+                              quic::kDefaultMaximumBlockedStreams);
     spdy::SpdySerializedFrame spdy_frame(
         spdy_request_framer_.SerializeFrame(settings_frame));
     InitializeHeader(packet_number, /*should_include_version*/ true);
@@ -1475,6 +1479,8 @@ std::string QuicTestPacketMaker::GenerateHttp3SettingsData() {
   settings.values[quic::SETTINGS_MAX_HEADER_LIST_SIZE] = kQuicMaxHeaderListSize;
   settings.values[quic::SETTINGS_QPACK_MAX_TABLE_CAPACITY] =
       quic::kDefaultQpackMaxDynamicTableCapacity;
+  settings.values[quic::SETTINGS_QPACK_BLOCKED_STREAMS] =
+      quic::kDefaultMaximumBlockedStreams;
   std::unique_ptr<char[]> buffer;
   quic::QuicByteCount frame_length =
       http_encoder_.SerializeSettingsFrame(settings, &buffer);

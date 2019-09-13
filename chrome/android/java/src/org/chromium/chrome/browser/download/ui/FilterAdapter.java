@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.download.ui;
 
 import android.content.res.Resources;
-import android.support.annotation.LayoutRes;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.view.LayoutInflater;
@@ -14,6 +13,8 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
+
+import androidx.annotation.LayoutRes;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.download.R;

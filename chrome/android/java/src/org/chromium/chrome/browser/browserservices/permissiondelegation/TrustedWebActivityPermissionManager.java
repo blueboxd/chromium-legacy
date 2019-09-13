@@ -6,9 +6,10 @@ package org.chromium.chrome.browser.browserservices.permissiondelegation;
 
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.support.annotation.Nullable;
-import android.support.annotation.UiThread;
 import android.text.TextUtils;
+
+import androidx.annotation.Nullable;
+import androidx.annotation.UiThread;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;

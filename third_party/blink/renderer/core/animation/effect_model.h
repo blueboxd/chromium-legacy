@@ -50,6 +50,7 @@ class CORE_EXPORT EffectModel : public GarbageCollectedFinalized<EffectModel> {
   enum CompositeOperation {
     kCompositeReplace,
     kCompositeAdd,
+    kCompositeAccumulate,
   };
   static base::Optional<CompositeOperation> StringToCompositeOperation(
       const String&);

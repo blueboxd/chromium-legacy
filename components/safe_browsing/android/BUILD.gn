@@ -8,7 +8,7 @@ import("//build/config/android/rules.gni")
 android_library("safe_browsing_java") {
   deps = [
     "//base:base_java",
-    "//third_party/android_deps:com_android_support_support_annotations_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
   ]
   java_files = [
     "java/src/org/chromium/components/safe_browsing/SafeBrowsingApiBridge.java",

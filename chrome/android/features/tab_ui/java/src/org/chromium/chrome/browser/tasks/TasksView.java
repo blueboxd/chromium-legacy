@@ -5,13 +5,14 @@
 package org.chromium.chrome.browser.tasks;
 
 import android.content.Context;
-import android.support.annotation.Nullable;
 import android.support.v4.view.MarginLayoutParamsCompat;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.chrome.tab_ui.R;
 

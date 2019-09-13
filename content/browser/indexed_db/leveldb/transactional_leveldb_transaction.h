@@ -65,10 +65,9 @@ class CONTENT_EXPORT TransactionalLevelDBTransaction
                               bool* found) WARN_UNUSED_RESULT;
   virtual leveldb::Status Commit(bool sync_on_commit) WARN_UNUSED_RESULT;
 
-  // In the right circumstances (system failing too much, and the revert fails
-  // as well), a rollback can cause the entire IndexedDBOriginState to be torn
-  // down.
-  void RollbackAndMaybeTearDown();
+  // If the underlying scopes system is in single-sequence mode, then this
+  // method will return the result of the rollback task.
+  leveldb::Status Rollback() WARN_UNUSED_RESULT;
 
   // The returned iterator must be destroyed before the destruction of this
   // transaction.

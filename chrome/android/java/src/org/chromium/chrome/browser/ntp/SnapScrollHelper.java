@@ -6,9 +6,10 @@ package org.chromium.chrome.browser.ntp;
 
 import android.annotation.SuppressLint;
 import android.content.res.Resources;
-import android.support.annotation.NonNull;
 import android.view.MotionEvent;
 import android.view.View;
+
+import androidx.annotation.NonNull;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;

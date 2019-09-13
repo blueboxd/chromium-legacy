@@ -39,6 +39,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/symmetric_key.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
@@ -460,7 +461,7 @@ class CacheStorageCacheTest : public testing::Test {
     blob_handle_ = BuildBlobHandle("blob-id:myblob", expected_blob_data_);
     storage::BlobImpl::Create(
         std::make_unique<storage::BlobDataHandle>(*blob_handle_),
-        MakeRequest(&blob_ptr_));
+        blob_remote_.BindNewPipeAndPassReceiver());
 
     // Use a mock LegacyCacheStorage object so we can use real
     // CacheStorageCacheHandle reference counting.  A LegacyCacheStorage
@@ -500,8 +501,8 @@ class CacheStorageCacheTest : public testing::Test {
     auto blob = blink::mojom::SerializedBlob::New();
     blob->uuid = blob_handle_->uuid();
     blob->size = expected_blob_data_.size();
-    // Use cloned blob pointer for all responses with blob body.
-    blob_ptr_->Clone(blob->blob.InitWithNewPipeAndPassReceiver());
+    // Use cloned blob remote for all responses with blob body.
+    blob_remote_->Clone(blob->blob.InitWithNewPipeAndPassReceiver());
 
     blink::mojom::FetchAPIResponsePtr response = CreateNoBodyResponse();
     response->url_list = {kBodyUrl};
@@ -861,7 +862,7 @@ class CacheStorageCacheTest : public testing::Test {
   blink::mojom::FetchAPIRequestPtr body_head_request_;
   std::unique_ptr<storage::BlobDataHandle> blob_handle_;
   // Holds a Mojo connection to the BlobImpl containing |blob_handle_|.
-  blink::mojom::BlobPtr blob_ptr_;
+  mojo::Remote<blink::mojom::Blob> blob_remote_;
   base::Time response_time_;
   std::string expected_blob_data_;
 
@@ -1137,7 +1138,8 @@ TEST_P(CacheStorageCacheTestP, MatchBody) {
   EXPECT_TRUE(Match(body_request_));
   EXPECT_TRUE(ResponseMetadataEqual(*SetCacheName(CreateBlobBodyResponse()),
                                     *callback_response_));
-  blink::mojom::BlobPtr blob(std::move(callback_response_->blob->blob));
+  mojo::Remote<blink::mojom::Blob> blob(
+      std::move(callback_response_->blob->blob));
   EXPECT_TRUE(ResponseBodiesEqual(expected_blob_data_, blob.get()));
 }
 
@@ -1173,7 +1175,7 @@ TEST_P(CacheStorageCacheTestP, MatchAll_Body) {
   ASSERT_EQ(1u, responses.size());
   EXPECT_TRUE(ResponseMetadataEqual(*SetCacheName(CreateBlobBodyResponse()),
                                     *responses[0]));
-  blink::mojom::BlobPtr blob(std::move(responses[0]->blob->blob));
+  mojo::Remote<blink::mojom::Blob> blob(std::move(responses[0]->blob->blob));
   EXPECT_TRUE(ResponseBodiesEqual(expected_blob_data_, blob.get()));
 }
 
@@ -1191,7 +1193,7 @@ TEST_P(CacheStorageCacheTestP, MatchAll_TwoResponsesThenOne) {
   EXPECT_FALSE(responses[0]->blob);
   EXPECT_TRUE(ResponseMetadataEqual(*SetCacheName(CreateBlobBodyResponse()),
                                     *responses[1]));
-  blink::mojom::BlobPtr blob(std::move(responses[1]->blob->blob));
+  mojo::Remote<blink::mojom::Blob> blob(std::move(responses[1]->blob->blob));
   EXPECT_TRUE(ResponseBodiesEqual(expected_blob_data_, blob.get()));
 
   responses.clear();
@@ -1260,7 +1262,7 @@ TEST_P(CacheStorageCacheTestP, GetAllMatchedEntries_RequestsIncluded) {
   auto& response = cache_entries[0].second;
   EXPECT_TRUE(ResponseMetadataEqual(*SetCacheName(CreateBlobBodyResponse()),
                                     *response));
-  blink::mojom::BlobPtr blob(std::move(response->blob->blob));
+  mojo::Remote<blink::mojom::Blob> blob(std::move(response->blob->blob));
   EXPECT_TRUE(ResponseBodiesEqual(expected_blob_data_, blob.get()));
 }
 
@@ -1435,7 +1437,7 @@ TEST_P(CacheStorageCacheTestP, MatchAll_Head) {
   ASSERT_EQ(1u, responses.size());
   EXPECT_TRUE(ResponseMetadataEqual(*SetCacheName(CreateBlobBodyResponse()),
                                     *responses[0]));
-  blink::mojom::BlobPtr blob(std::move(responses[0]->blob->blob));
+  mojo::Remote<blink::mojom::Blob> blob(std::move(responses[0]->blob->blob));
   EXPECT_TRUE(ResponseBodiesEqual(expected_blob_data_, blob.get()));
 }
 
@@ -1673,7 +1675,8 @@ TEST_P(CacheStorageCacheTestP, PutWithSideData) {
 
   EXPECT_TRUE(Match(body_request_));
   ASSERT_TRUE(callback_response_->blob);
-  blink::mojom::BlobPtr blob(std::move(callback_response_->blob->blob));
+  mojo::Remote<blink::mojom::Blob> blob(
+      std::move(callback_response_->blob->blob));
   EXPECT_TRUE(ResponseBodiesEqual(expected_blob_data_, blob.get()));
   EXPECT_TRUE(ResponseSideDataEqual(expected_side_data, blob.get()));
 }
@@ -1716,7 +1719,8 @@ TEST_P(CacheStorageCacheTestP, PutWithSideData_QuotaExceededSkipSideData) {
 
   EXPECT_TRUE(Match(body_request_));
   ASSERT_TRUE(callback_response_->blob);
-  blink::mojom::BlobPtr blob(std::move(callback_response_->blob->blob));
+  mojo::Remote<blink::mojom::Blob> blob(
+      std::move(callback_response_->blob->blob));
   EXPECT_TRUE(ResponseBodiesEqual(expected_blob_data_, blob.get()));
   // The side data should not be written.
   EXPECT_TRUE(ResponseSideDataEqual("", blob.get()));
@@ -1766,7 +1770,8 @@ TEST_P(CacheStorageCacheTestP, WriteSideData) {
 
   EXPECT_TRUE(Match(body_request_));
   ASSERT_TRUE(callback_response_->blob);
-  blink::mojom::BlobPtr blob1(std::move(callback_response_->blob->blob));
+  mojo::Remote<blink::mojom::Blob> blob1(
+      std::move(callback_response_->blob->blob));
   EXPECT_TRUE(ResponseBodiesEqual(expected_blob_data_, blob1.get()));
   EXPECT_TRUE(ResponseSideDataEqual(expected_side_data1, blob1.get()));
 
@@ -1777,7 +1782,8 @@ TEST_P(CacheStorageCacheTestP, WriteSideData) {
                             expected_side_data2.length()));
   EXPECT_TRUE(Match(body_request_));
   ASSERT_TRUE(callback_response_->blob);
-  blink::mojom::BlobPtr blob2(std::move(callback_response_->blob->blob));
+  mojo::Remote<blink::mojom::Blob> blob2(
+      std::move(callback_response_->blob->blob));
   EXPECT_TRUE(ResponseBodiesEqual(expected_blob_data_, blob2.get()));
   EXPECT_TRUE(ResponseSideDataEqual(expected_side_data2, blob2.get()));
 
@@ -2204,7 +2210,8 @@ TEST_P(CacheStorageCacheTestP, GetSizeThenClose) {
   EXPECT_TRUE(Put(body_request_, CreateBlobBodyResponse()));
   // Get a reference to the response in the cache.
   EXPECT_TRUE(Match(body_request_));
-  blink::mojom::BlobPtr blob(std::move(callback_response_->blob->blob));
+  mojo::Remote<blink::mojom::Blob> blob(
+      std::move(callback_response_->blob->blob));
   callback_response_ = nullptr;
 
   int64_t cache_size = Size();
@@ -2275,7 +2282,8 @@ TEST_P(CacheStorageCacheTestP, BlobReferenceDelaysClose) {
   EXPECT_TRUE(Put(body_request_, CreateBlobBodyResponse()));
   // Get a reference to the response in the cache.
   EXPECT_TRUE(Match(body_request_));
-  blink::mojom::BlobPtr blob(std::move(callback_response_->blob->blob));
+  mojo::Remote<blink::mojom::Blob> blob(
+      std::move(callback_response_->blob->blob));
   callback_response_ = nullptr;
 
   base::RunLoop loop;

@@ -192,6 +192,10 @@ void MailboxVideoFrameConverter::TryOutputFrames() {
         frame->coded_size(), frame->visible_rect(), frame->natural_size(),
         frame->timestamp());
     mailbox_frame->metadata()->MergeMetadataFrom(frame->metadata());
+
+    mailbox_frame->metadata()->SetBoolean(
+        VideoFrameMetadata::READ_LOCK_FENCES_ENABLED, true);
+
     output_cb_.Run(mailbox_frame);
   }
 }

@@ -12,8 +12,7 @@
 #include "ui/message_center/message_center_observer.h"
 
 namespace message_center {
-class DesktopPopupAlignmentDelegate;
-class MessagePopupCollection;
+class DesktopMessagePopupCollection;
 }  // namespace message_center
 
 // A message center view implementation that shows notification popups (toasts)
@@ -41,9 +40,8 @@ class PopupsOnlyUiController : public message_center::MessageCenterObserver {
 
  private:
   message_center::MessageCenter* const message_center_;
-  std::unique_ptr<message_center::MessagePopupCollection> popup_collection_;
-  std::unique_ptr<message_center::DesktopPopupAlignmentDelegate>
-      alignment_delegate_;
+  std::unique_ptr<message_center::DesktopMessagePopupCollection>
+      popup_collection_;
 
   // Update the visibility of the popup bubbles. Shows or hides them if
   // necessary.

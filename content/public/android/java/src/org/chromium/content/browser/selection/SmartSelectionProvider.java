@@ -10,11 +10,12 @@ import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
 import android.os.LocaleList;
-import android.support.annotation.IntDef;
 import android.view.textclassifier.TextClassification;
 import android.view.textclassifier.TextClassificationManager;
 import android.view.textclassifier.TextClassifier;
 import android.view.textclassifier.TextSelection;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.task.AsyncTask;
 import org.chromium.content_public.browser.SelectionClient;

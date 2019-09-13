@@ -340,8 +340,11 @@ void IndexedDBFactoryImpl::DeleteDatabase(
         std::move(origin_state_handle), callbacks,
         base::BindOnce(&IndexedDBFactoryImpl::OnDatabaseDeleted,
                        weak_factory_.GetWeakPtr(), origin));
-    if (force_close)
-      database->ForceCloseAndRunTasks();
+    if (force_close) {
+      leveldb::Status status = database->ForceCloseAndRunTasks();
+      if (!status.ok())
+        OnDatabaseError(origin, status, "Error aborting transactions.");
+    }
     return;
   }
 
@@ -393,8 +396,11 @@ void IndexedDBFactoryImpl::DeleteDatabase(
       std::move(origin_state_handle), std::move(callbacks),
       base::BindOnce(&IndexedDBFactoryImpl::OnDatabaseDeleted,
                      weak_factory_.GetWeakPtr(), origin));
-  if (force_close)
-    database_ptr->ForceCloseAndRunTasks();
+  if (force_close) {
+    leveldb::Status status = database_ptr->ForceCloseAndRunTasks();
+    if (!status.ok())
+      OnDatabaseError(origin, status, "Error aborting transactions.");
+  }
 }
 
 void IndexedDBFactoryImpl::AbortTransactionsAndCompactDatabase(
@@ -723,24 +729,41 @@ IndexedDBFactoryImpl::GetOrOpenOriginFactory(
   DCHECK(backing_store);
   // Scopes must be single sequence to keep methods like ForceClose synchronous.
   // See https://crbug.com/980685
-  backing_store->db()->scopes()->StartRecoveryAndCleanupTasks(
+  s = backing_store->db()->scopes()->StartRecoveryAndCleanupTasks(
       LevelDBScopes::TaskRunnerMode::kUseCurrentSequence);
+
+  if (UNLIKELY(!s.ok())) {
+    ReportOpenStatus(indexed_db::INDEXED_DB_BACKING_STORE_OPEN_NO_RECOVERY,
+                     origin);
+
+    return {IndexedDBOriginStateHandle(), s, CreateDefaultError(),
+            data_loss_info, /*was_cold_open=*/true};
+  }
 
   if (!is_incognito_and_in_memory)
     ReportOpenStatus(indexed_db::INDEXED_DB_BACKING_STORE_OPEN_SUCCESS, origin);
-  it = factories_per_origin_
-           .emplace(
-               origin,
-               std::make_unique<IndexedDBOriginState>(
-                   origin,
-                   /*persist_for_incognito=*/is_incognito_and_in_memory, clock_,
-                   leveldb_factory_, &earliest_sweep_, std::move(lock_manager),
-                   base::BindRepeating(
-                       &IndexedDBFactoryImpl::MaybeRunTasksForOrigin,
-                       origin_state_destruction_weak_factory_.GetWeakPtr(),
-                       origin),
-                   std::move(backing_store)))
-           .first;
+
+  auto run_tasks_callback = base::BindRepeating(
+      &IndexedDBFactoryImpl::MaybeRunTasksForOrigin,
+      origin_state_destruction_weak_factory_.GetWeakPtr(), origin);
+
+  auto tear_down_callback = base::BindRepeating(
+      [](const Origin& origin, base::WeakPtr<IndexedDBFactoryImpl> factory,
+         leveldb::Status s) {
+        if (!factory)
+          return;
+        factory->OnDatabaseError(origin, s, nullptr);
+      },
+      origin, weak_factory_.GetWeakPtr());
+
+  auto origin_state = std::make_unique<IndexedDBOriginState>(
+      origin,
+      /*persist_for_incognito=*/is_incognito_and_in_memory, clock_,
+      leveldb_factory_, &earliest_sweep_, std::move(lock_manager),
+      std::move(run_tasks_callback), std::move(tear_down_callback),
+      std::move(backing_store));
+
+  it = factories_per_origin_.emplace(origin, std::move(origin_state)).first;
 
   context_->FactoryOpened(origin);
   return {it->second->CreateHandle(), s, IndexedDBDatabaseError(),

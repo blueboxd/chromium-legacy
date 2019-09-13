@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.widget.selection;
 
 import android.content.Context;
-import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -13,6 +12,8 @@ import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
 import android.widget.Checkable;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
 import org.chromium.ui.widget.ViewLookupCachingFrameLayout;

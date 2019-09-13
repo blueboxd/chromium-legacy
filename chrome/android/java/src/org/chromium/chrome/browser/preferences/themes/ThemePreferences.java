@@ -8,9 +8,10 @@ import static org.chromium.chrome.browser.preferences.ChromePreferenceManager.UI
 
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.IntDef;
-import android.support.annotation.Nullable;
 import android.support.v7.preference.PreferenceFragmentCompat;
+
+import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;

@@ -6,9 +6,10 @@ package org.chromium.chrome.browser.customtabs;
 
 import android.app.Activity;
 import android.os.StrictMode;
-import android.support.annotation.Nullable;
 import android.util.Pair;
 import android.util.SparseBooleanArray;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;

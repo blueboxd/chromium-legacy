@@ -83,6 +83,7 @@ IndexedDBOriginState::IndexedDBOriginState(
     base::Time* earliest_global_sweep_time,
     std::unique_ptr<DisjointRangeLockManager> lock_manager,
     TasksAvailableCallback notify_tasks_callback,
+    TearDownCallback tear_down_callback,
     std::unique_ptr<IndexedDBBackingStore> backing_store)
     : origin_(std::move(origin)),
       persist_for_incognito_(persist_for_incognito),
@@ -91,7 +92,8 @@ IndexedDBOriginState::IndexedDBOriginState(
       earliest_global_sweep_time_(earliest_global_sweep_time),
       lock_manager_(std::move(lock_manager)),
       backing_store_(std::move(backing_store)),
-      notify_tasks_callback_(std::move(notify_tasks_callback)) {
+      notify_tasks_callback_(std::move(notify_tasks_callback)),
+      tear_down_callback_(std::move(tear_down_callback)) {
   DCHECK(clock_);
   DCHECK(earliest_global_sweep_time_);
   if (*earliest_global_sweep_time_ == base::Time())
@@ -132,17 +134,19 @@ void IndexedDBOriginState::AbortAllTransactions(bool compact) {
 
     for (base::WeakPtr<IndexedDBConnection> connection : weak_connections) {
       if (connection) {
-        connection->FinishAllTransactions(IndexedDBDatabaseError(
-            blink::kWebIDBDatabaseExceptionUnknownError,
-            "Aborting all transactions for the origin."));
+        leveldb::Status status =
+            connection->AbortAllTransactions(IndexedDBDatabaseError(
+                blink::kWebIDBDatabaseExceptionUnknownError,
+                "Aborting all transactions for the origin."));
+        if (!status.ok()) {
+          // This call should delete this object.
+          tear_down_callback().Run(status);
+          return;
+        }
       }
     }
   }
 
-  // FinishAllTransactions on a connection can destroy the IndexedDBOriginState
-  // if the revert fails when scopes is in single-sequence mode.
-  if (!weak_ptr)
-    return;
   if (compact)
     backing_store_->Compact();
 }
@@ -155,6 +159,8 @@ void IndexedDBOriginState::ForceClose() {
   // map mutate. Afterwards the map is manually deleted.
   IndexedDBOriginStateHandle handle = CreateHandle();
   for (const auto& pair : databases_) {
+    // Note: We purposefully ignore the result here as force close needs to
+    // continue tearing things down anyways.
     pair.second->ForceCloseAndRunTasks();
   }
   databases_.clear();

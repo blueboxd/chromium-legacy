@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.ntp.snippets;
 
-import android.support.annotation.LayoutRes;
+import androidx.annotation.LayoutRes;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;

@@ -8,10 +8,12 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.provider.Browser;
-import android.support.annotation.IntDef;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.Window;
+
+import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
+import androidx.browser.customtabs.CustomTabsSessionToken;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ActivityTabProvider;
@@ -55,7 +57,6 @@ import java.lang.annotation.RetentionPolicy;
 
 import javax.inject.Inject;
 
-import androidx.browser.customtabs.CustomTabsSessionToken;
 import dagger.Lazy;
 
 /**

@@ -5,9 +5,10 @@
 package org.chromium.chrome.browser.omnibox.suggestions.answer;
 
 import android.content.Context;
-import android.support.annotation.StyleRes;
 import android.text.style.MetricAffectingSpan;
 import android.text.style.TextAppearanceSpan;
+
+import androidx.annotation.StyleRes;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.R;

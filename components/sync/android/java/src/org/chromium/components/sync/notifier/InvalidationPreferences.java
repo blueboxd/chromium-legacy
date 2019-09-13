@@ -7,8 +7,9 @@ package org.chromium.components.sync.notifier;
 import android.accounts.Account;
 import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
-import android.support.annotation.Nullable;
 import android.util.Base64;
+
+import androidx.annotation.Nullable;
 
 import com.google.ipc.invalidation.external.client.types.ObjectId;
 

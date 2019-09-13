@@ -8,10 +8,11 @@ import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_
 
 import android.graphics.PointF;
 import android.graphics.Rect;
-import android.support.annotation.IntDef;
 import android.view.Choreographer;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.IntDef;
 
 import org.junit.Assert;
 

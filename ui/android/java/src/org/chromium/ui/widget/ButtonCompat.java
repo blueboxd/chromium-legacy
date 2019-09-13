@@ -10,10 +10,11 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.os.Build;
-import android.support.annotation.StyleRes;
 import android.support.v7.widget.AppCompatButton;
 import android.util.AttributeSet;
 import android.view.ContextThemeWrapper;
+
+import androidx.annotation.StyleRes;
 
 import org.chromium.ui.R;
 

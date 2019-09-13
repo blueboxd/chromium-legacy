@@ -70,8 +70,10 @@ class TransactionalLevelDBDatabaseTest : public testing::Test {
     leveldb::Status status = scopes->Initialize();
     if (!status.ok())
       return status;
-    scopes->StartRecoveryAndCleanupTasks(
+    status = scopes->StartRecoveryAndCleanupTasks(
         LevelDBScopes::TaskRunnerMode::kUseCurrentSequence);
+    if (!status.ok())
+      return status;
     leveldb_database_ =
         indexed_db::LevelDBFactory::Get()->CreateLevelDBDatabase(
             std::move(ldb_state), std::move(scopes), nullptr,

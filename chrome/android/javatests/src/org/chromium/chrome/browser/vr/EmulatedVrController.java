@@ -6,7 +6,8 @@ package org.chromium.chrome.browser.vr;
 
 import android.content.Context;
 import android.os.SystemClock;
-import android.support.annotation.IntDef;
+
+import androidx.annotation.IntDef;
 
 import com.google.vr.testframework.controller.ControllerTestApi;
 

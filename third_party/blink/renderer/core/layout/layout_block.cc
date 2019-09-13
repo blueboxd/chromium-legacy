@@ -1042,7 +1042,7 @@ void LayoutBlock::ImageChanged(WrappedImagePtr image,
                                CanDeferInvalidation defer) {
   LayoutBox::ImageChanged(image, defer);
 
-  if (!StyleRef().HasPseudoStyle(kPseudoIdFirstLine))
+  if (!StyleRef().HasPseudoElementStyle(kPseudoIdFirstLine))
     return;
 
   const auto* first_line_style = FirstLineStyleWithoutFallback();
@@ -1896,7 +1896,7 @@ const LayoutBlock* LayoutBlock::EnclosingFirstLineStyleBlock() const {
   bool has_pseudo = false;
   while (true) {
     has_pseudo =
-        first_line_block->StyleRef().HasPseudoStyle(kPseudoIdFirstLine);
+        first_line_block->StyleRef().HasPseudoElementStyle(kPseudoIdFirstLine);
     if (has_pseudo)
       break;
     LayoutObject* parent_block = first_line_block->Parent();

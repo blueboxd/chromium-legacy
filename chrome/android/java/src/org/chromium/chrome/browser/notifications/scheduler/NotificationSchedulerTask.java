@@ -6,7 +6,8 @@ package org.chromium.chrome.browser.notifications.scheduler;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.MainThread;
+
+import androidx.annotation.MainThread;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;

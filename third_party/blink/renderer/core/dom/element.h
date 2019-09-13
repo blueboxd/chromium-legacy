@@ -74,7 +74,7 @@ class NamedNodeMap;
 class PaintLayerScrollableArea;
 class PointerLockOptions;
 class PseudoElement;
-class PseudoStyleRequest;
+class PseudoElementStyleRequest;
 class ResizeObservation;
 class ResizeObserver;
 class ScrollIntoViewOptions;
@@ -203,6 +203,12 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   Element* GetElementAttribute(const QualifiedName& name);
   void SetElementAttribute(const QualifiedName&, Element*);
+  HeapVector<Member<Element>> GetElementArrayAttribute(
+      const QualifiedName& name,
+      bool& is_null);
+  void SetElementArrayAttribute(const QualifiedName&,
+                                HeapVector<Member<Element>>,
+                                bool is_null);
 
   // Call this to get the value of an attribute that is known not to be the
   // style attribute or one of the SVG animatable attributes.
@@ -748,9 +754,10 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   PseudoElement* GetPseudoElement(PseudoId) const;
   LayoutObject* PseudoElementLayoutObject(PseudoId) const;
 
-  const ComputedStyle* CachedStyleForPseudoElement(const PseudoStyleRequest&);
+  const ComputedStyle* CachedStyleForPseudoElement(
+      const PseudoElementStyleRequest&);
   scoped_refptr<ComputedStyle> StyleForPseudoElement(
-      const PseudoStyleRequest&,
+      const PseudoElementStyleRequest&,
       const ComputedStyle* parent_style = nullptr);
   bool CanGeneratePseudoElement(PseudoId) const;
 

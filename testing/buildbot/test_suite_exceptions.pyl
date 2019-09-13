@@ -1653,16 +1653,6 @@
       'VR Linux',
     ],
   },
-  'vulkan_content_browsertests' : {
-    'remove_from': [
-      # Vulkan Driver needs updating crbug.com/953535
-      'Linux FYI Release (AMD R7 240)',
-      'Linux FYI Release (Intel HD 630)',
-      'Linux FYI Debug (NVIDIA)',
-      'Linux FYI SkiaRenderer Vulkan (NVIDIA)',
-      'Linux FYI Release (NVIDIA)',
-    ],
-  },
   'wayland_client_perftests': {
     'remove_from': [
       'linux-chromeos-dbg',  # https://crbug.com/859307

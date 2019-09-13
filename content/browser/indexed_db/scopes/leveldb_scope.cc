@@ -126,13 +126,15 @@ LevelDBScope::LevelDBScope(
     scoped_refptr<LevelDBState> level_db,
     std::vector<ScopeLock> locks,
     std::vector<std::pair<std::string, std::string>> empty_ranges,
-    RollbackCallback rollback_callback)
+    RollbackCallback rollback_callback,
+    TearDownCallback tear_down_callback)
     : scope_id_(scope_id),
       prefix_(std::move(prefix)),
       write_batch_size_(write_batch_size),
       level_db_(std::move(level_db)),
       locks_(std::move(locks)),
-      rollback_callback_(std::move(rollback_callback)) {
+      rollback_callback_(std::move(rollback_callback)),
+      tear_down_callback_(std::move(tear_down_callback)) {
   DCHECK(!locks_.empty());
   std::vector<std::pair<EmptyRange, bool>> map_values;
   map_values.reserve(empty_ranges.size());
@@ -152,14 +154,17 @@ LevelDBScope::LevelDBScope(
 
 LevelDBScope::~LevelDBScope() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (UNLIKELY(has_written_to_disk_ && !committed_)) {
+  if (UNLIKELY(has_written_to_disk_ && !committed_ && rollback_callback_)) {
     DCHECK(undo_sequence_number_ < std::numeric_limits<int64_t>::max() ||
            cleanup_sequence_number_ > 0)
         << "A reverting scope that has written to disk must have either an "
            "undo or cleanup task written to it. undo_sequence_number_: "
         << undo_sequence_number_
         << ", cleanup_sequence_number_: " << cleanup_sequence_number_;
-    std::move(rollback_callback_).Run(scope_id_, std::move(locks_));
+    leveldb::Status status =
+        std::move(rollback_callback_).Run(scope_id_, std::move(locks_));
+    if (!status.ok())
+      tear_down_callback_.Run(status);
   }
 }
 
@@ -284,9 +289,29 @@ leveldb::Status LevelDBScope::WriteChangesAndUndoLog() {
   return WriteChangesAndUndoLogInternal(false);
 }
 
+leveldb::Status LevelDBScope::Rollback() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!committed_);
+  DCHECK(rollback_callback_);
+  if (!has_written_to_disk_) {
+    buffer_batch_.Clear();
+    buffer_batch_empty_ = true;
+    return leveldb::Status::OK();
+  }
+  DCHECK(undo_sequence_number_ < std::numeric_limits<int64_t>::max() ||
+         cleanup_sequence_number_ > 0)
+      << "A reverting scope that has written to disk must have either an "
+         "undo or cleanup task written to it. undo_sequence_number_: "
+      << undo_sequence_number_
+      << ", cleanup_sequence_number_: " << cleanup_sequence_number_;
+  return std::move(rollback_callback_).Run(scope_id_, std::move(locks_));
+}
+
 std::pair<leveldb::Status, LevelDBScope::Mode> LevelDBScope::Commit(
     bool sync_on_commit) {
   DCHECK(!locks_.empty());
+  DCHECK(!committed_);
+  DCHECK(rollback_callback_);
   leveldb::Status s;
   switch (mode_) {
     case Mode::kInMemory:

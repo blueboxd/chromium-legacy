@@ -385,11 +385,29 @@ bool HasUpwardDirection(const Element& element) {
 bool IsElementReflectionAttribute(const QualifiedName& name) {
   if (name == html_names::kAriaActivedescendantAttr)
     return true;
-  if (name == html_names::kAriaErrormessageAttr)
+  if (name == html_names::kAriaControlsAttr)
+    return true;
+  if (name == html_names::kAriaDescribedbyAttr)
     return true;
   if (name == html_names::kAriaDetailsAttr)
     return true;
+  if (name == html_names::kAriaErrormessageAttr)
+    return true;
+  if (name == html_names::kAriaFlowtoAttr)
+    return true;
+  if (name == html_names::kAriaLabelledbyAttr)
+    return true;
+  if (name == html_names::kAriaOwnsAttr)
+    return true;
   return false;
+}
+
+HeapVector<Member<Element>>* GetExplicitlySetElementsForAttr(
+    Element* element,
+    QualifiedName name) {
+  ExplicitlySetAttrElementsMap* element_attribute_map =
+      element->GetDocument().GetExplicitlySetAttrElementsMap(element);
+  return element_attribute_map->at(name);
 }
 
 // Checks that the given element |candidate| is a descendant of
@@ -585,14 +603,14 @@ void Element::SetBooleanAttribute(const QualifiedName& name, bool value) {
 
 void Element::SynchronizeContentAttributeAndElementReference(
     const QualifiedName& name) {
-  ExplicitlySetAttrElementMap* element_attribute_data =
-      GetDocument().GetExplicitlySetAttrElementMap(this);
-  element_attribute_data->erase(name);
+  ExplicitlySetAttrElementsMap* element_attribute_map =
+      GetDocument().GetExplicitlySetAttrElementsMap(this);
+  element_attribute_map->erase(name);
 }
 
 void Element::SetElementAttribute(const QualifiedName& name, Element* element) {
-  ExplicitlySetAttrElementMap* element_attribute_data =
-      GetDocument().GetExplicitlySetAttrElementMap(this);
+  ExplicitlySetAttrElementsMap* explicitly_set_attr_elements_map_ =
+      GetDocument().GetExplicitlySetAttrElementsMap(this);
 
   // If the reflected element is explicitly null, or is not a member of this
   // elements shadow including ancestor tree, then we remove the content
@@ -602,7 +620,7 @@ void Element::SetElementAttribute(const QualifiedName& name, Element* element) {
   // https://whatpr.org/html/3917/common-dom-interfaces.html#reflecting-content-attributes-in-idl-attributes:concept-shadow-including-ancestor
   if (!element ||
       !ElementIsDescendantOfShadowIncludingAncestor(*this, *element)) {
-    element_attribute_data->erase(name);
+    explicitly_set_attr_elements_map_->erase(name);
     removeAttribute(name);
     return;
   }
@@ -622,18 +640,27 @@ void Element::SetElementAttribute(const QualifiedName& name, Element* element) {
   else
     setAttribute(name, id);
 
-  element_attribute_data->Set(name, element);
+  auto result = explicitly_set_attr_elements_map_->insert(name, nullptr);
+  if (result.is_new_entry) {
+    result.stored_value->value =
+        MakeGarbageCollected<HeapVector<Member<Element>>>();
+  } else {
+    result.stored_value->value->clear();
+  }
+  result.stored_value->value->push_back(element);
 }
 
 Element* Element::GetElementAttribute(const QualifiedName& name) {
-  ExplicitlySetAttrElementMap* element_attribute_data =
-      GetDocument().GetExplicitlySetAttrElementMap(this);
-
-  Element* explicitly_set_element = element_attribute_data->at(name);
-  // Only return the explicit element if it still exists in the same scope.
-  if (explicitly_set_element && ElementIsDescendantOfShadowIncludingAncestor(
-                                    *this, *explicitly_set_element))
-    return explicitly_set_element;
+  HeapVector<Member<Element>>* element_attribute_vector =
+      GetExplicitlySetElementsForAttr(this, name);
+  if (element_attribute_vector) {
+    DCHECK_EQ(element_attribute_vector->size(), 1u);
+    Element* explicitly_set_element = element_attribute_vector->at(0);
+    // Only return the explicit element if it still exists in the same scope.
+    if (explicitly_set_element && ElementIsDescendantOfShadowIncludingAncestor(
+                                      *this, *explicitly_set_element))
+      return explicitly_set_element;
+  }
 
   // Compute the attr-associated element, this can be null.
   AtomicString id = getAttribute(name);
@@ -642,6 +669,84 @@ Element* Element::GetElementAttribute(const QualifiedName& name) {
 
   // Will return null if the id is empty.
   return GetTreeScope().getElementById(id);
+}
+
+void Element::SetElementArrayAttribute(
+    const QualifiedName& name,
+    HeapVector<Member<Element>> given_elements,
+    bool is_null) {
+  ExplicitlySetAttrElementsMap* element_attribute_map =
+      GetDocument().GetExplicitlySetAttrElementsMap(this);
+
+  if (is_null) {
+    element_attribute_map->erase(name);
+    removeAttribute(name);
+    return;
+  }
+
+  // Get or create element array, and remove any pre-existing elements.
+  // Note that this performs two look ups on |name| within the map, as
+  // modifying the content attribute will cause the synchronization steps to
+  // be run which with modifies the hash map, and can cause a rehash.
+  HeapVector<Member<Element>>* elements = element_attribute_map->at(name);
+  if (!elements)
+    elements = MakeGarbageCollected<HeapVector<Member<Element>>>();
+  else
+    elements->clear();
+  SpaceSplitString value;
+
+  for (auto element : given_elements) {
+    if (!ElementIsDescendantOfShadowIncludingAncestor(*this, *element))
+      continue;
+    if (value.IsNull() && !elements->IsEmpty()) {
+      elements->push_back(element);
+      continue;
+    }
+    elements->push_back(element);
+    const AtomicString given_element_id = element->GetIdAttribute();
+    if (given_element_id.IsNull() ||
+        GetTreeScope() != element->GetTreeScope() ||
+        GetTreeScope().getElementById(given_element_id) != element) {
+      value.Clear();
+      continue;
+    }
+    value.Add(given_element_id);
+  }
+
+  setAttribute(name, value.SerializeToString());
+  element_attribute_map->Set(name, elements);
+}
+
+HeapVector<Member<Element>> Element::GetElementArrayAttribute(
+    const QualifiedName& name,
+    bool& is_null) {
+  HeapVector<Member<Element>>* explicitly_set_elements =
+      GetExplicitlySetElementsForAttr(this, name);
+  is_null = false;
+  if (explicitly_set_elements) {
+    HeapVector<Member<Element>> return_elements;
+    for (auto element : *explicitly_set_elements) {
+      if (ElementIsDescendantOfShadowIncludingAncestor(*this, *element))
+        return_elements.push_back(element);
+    }
+    return return_elements;
+  }
+
+  String attribute_value = getAttribute(name).GetString();
+  HeapVector<Member<Element>> content_elements;
+
+  Vector<String> tokens;
+  attribute_value = attribute_value.SimplifyWhiteSpace();
+  attribute_value.Split(' ', tokens);
+
+  for (auto token : tokens) {
+    Element* candidate = GetTreeScope().getElementById(AtomicString(token));
+    if (candidate)
+      content_elements.push_back(candidate);
+  }
+  if (content_elements.IsEmpty())
+    is_null = true;
+  return content_elements;
 }
 
 NamedNodeMap* Element::attributesForBindings() const {
@@ -2814,7 +2919,7 @@ static const StyleRecalcChange ApplyComputedStyleDiff(
     const StyleRecalcChange change,
     ComputedStyle::Difference diff) {
   if (change.RecalcDescendants() ||
-      diff < ComputedStyle::Difference::kPseudoStyle)
+      diff < ComputedStyle::Difference::kPseudoElementStyle)
     return change;
   if (diff == ComputedStyle::Difference::kDisplayAffectingDescendantStyles)
     return change.ForceRecalcDescendants();
@@ -2822,7 +2927,7 @@ static const StyleRecalcChange ApplyComputedStyleDiff(
     return change.EnsureAtLeast(StyleRecalcChange::kRecalcChildren);
   if (diff == ComputedStyle::Difference::kIndependentInherited)
     return change.EnsureAtLeast(StyleRecalcChange::kIndependentInherit);
-  DCHECK(diff == ComputedStyle::Difference::kPseudoStyle);
+  DCHECK(diff == ComputedStyle::Difference::kPseudoElementStyle);
   return change.EnsureAtLeast(StyleRecalcChange::kUpdatePseudoElements);
 }
 
@@ -4599,7 +4704,7 @@ const ComputedStyle* Element::EnsureComputedStyle(
     return element_style;
 
   if (const ComputedStyle* pseudo_element_style =
-          element_style->GetCachedPseudoStyle(pseudo_element_specifier))
+          element_style->GetCachedPseudoElementStyle(pseudo_element_specifier))
     return pseudo_element_style;
 
   const ComputedStyle* layout_parent_style = element_style;
@@ -4613,12 +4718,13 @@ const ComputedStyle* Element::EnsureComputedStyle(
   scoped_refptr<ComputedStyle> result =
       GetDocument().EnsureStyleResolver().PseudoStyleForElement(
           this,
-          PseudoStyleRequest(pseudo_element_specifier,
-                             PseudoStyleRequest::kForComputedStyle),
+          PseudoElementStyleRequest(
+              pseudo_element_specifier,
+              PseudoElementStyleRequest::kForComputedStyle),
           element_style, layout_parent_style);
   DCHECK(result);
   result->SetIsEnsuredInDisplayNone();
-  return element_style->AddCachedPseudoStyle(std::move(result));
+  return element_style->AddCachedPseudoElementStyle(std::move(result));
 }
 
 bool Element::HasDisplayContentsStyle() const {
@@ -4848,26 +4954,26 @@ LayoutObject* Element::PseudoElementLayoutObject(PseudoId pseudo_id) const {
 }
 
 const ComputedStyle* Element::CachedStyleForPseudoElement(
-    const PseudoStyleRequest& request) {
+    const PseudoElementStyleRequest& request) {
   const ComputedStyle* style = GetComputedStyle();
 
   if (!style || (request.pseudo_id < kFirstInternalPseudoId &&
-                 !style->HasPseudoStyle(request.pseudo_id))) {
+                 !style->HasPseudoElementStyle(request.pseudo_id))) {
     return nullptr;
   }
 
   if (const ComputedStyle* cached =
-          style->GetCachedPseudoStyle(request.pseudo_id))
+          style->GetCachedPseudoElementStyle(request.pseudo_id))
     return cached;
 
   scoped_refptr<ComputedStyle> result = StyleForPseudoElement(request, style);
   if (result)
-    return style->AddCachedPseudoStyle(std::move(result));
+    return style->AddCachedPseudoElementStyle(std::move(result));
   return nullptr;
 }
 
 scoped_refptr<ComputedStyle> Element::StyleForPseudoElement(
-    const PseudoStyleRequest& request,
+    const PseudoElementStyleRequest& request,
     const ComputedStyle* parent_style) {
   const ComputedStyle* style = GetComputedStyle();
   const bool is_before_or_after = request.pseudo_id == kPseudoIdBefore ||
@@ -5927,7 +6033,7 @@ void Element::SetHovered(bool hovered) {
   const ComputedStyle* style = GetComputedStyle();
   if (!style || style->AffectedByHover()) {
     StyleChangeType change_type = kLocalStyleChange;
-    if (style && style->HasPseudoStyle(kPseudoIdFirstLetter))
+    if (style && style->HasPseudoElementStyle(kPseudoIdFirstLetter))
       change_type = kSubtreeStyleChange;
     SetNeedsStyleRecalc(change_type,
                         StyleChangeReasonForTracing::CreateWithExtraData(
@@ -5961,7 +6067,7 @@ void Element::SetActive(bool active) {
 
   if (GetComputedStyle()->AffectedByActive()) {
     StyleChangeType change_type =
-        GetComputedStyle()->HasPseudoStyle(kPseudoIdFirstLetter)
+        GetComputedStyle()->HasPseudoElementStyle(kPseudoIdFirstLetter)
             ? kSubtreeStyleChange
             : kLocalStyleChange;
     SetNeedsStyleRecalc(change_type,

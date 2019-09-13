@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.keyboard_accessory.sheet_tabs;
 
-import android.support.annotation.IntDef;
 import android.support.v7.widget.RecyclerView;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.AccessorySheetData;
 import org.chromium.ui.modelutil.ListModel;

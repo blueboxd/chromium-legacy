@@ -31,6 +31,14 @@
 #include "ui/base/l10n/l10n_util.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "base/feature_list.h"
+#include "components/printing/browser/ipp_l10n.h"
+#include "components/strings/grit/components_strings.h"
+#include "printing/printing_features_chromeos.h"
+#include "ui/base/l10n/l10n_util.h"
+#endif  // defined(OS_CHROMEOS)
+
 #if BUILDFLAG(PRINT_MEDIA_L10N_ENABLED)
 #include "components/printing/browser/print_media_l10n.h"
 #endif
@@ -52,6 +60,24 @@ void PopulateAllPaperDisplayNames(PrinterSemanticCapsAndDefaults* info) {
   }
 }
 #endif  // BUILDFLAG(PRINT_MEDIA_L10N_ENABLED)
+
+#if defined(OS_CHROMEOS)
+void PopulateAdvancedCapsLocalization(
+    std::vector<AdvancedCapability>* advanced_capabilities) {
+  auto& l10n_map = CapabilityLocalizationMap();
+  for (AdvancedCapability& capability : *advanced_capabilities) {
+    auto it = l10n_map.find(capability.name);
+    if (it != l10n_map.end())
+      capability.display_name = l10n_util::GetStringUTF8(it->second);
+
+    for (AdvancedCapabilityValue& value : capability.values) {
+      auto it = l10n_map.find(capability.name + "/" + value.name);
+      if (it != l10n_map.end())
+        value.display_name = l10n_util::GetStringUTF8(it->second);
+    }
+  }
+}
+#endif  // defined(OS_CHROMEOS)
 
 // Returns a dictionary representing printer capabilities as CDD.  Returns
 // an empty dictionary if a dictionary could not be generated.
@@ -85,6 +111,9 @@ base::Value GetPrinterCapabilitiesOnBlockingPoolThread(
 #if defined(OS_CHROMEOS)
   if (!has_secure_protocol)
     info.pin_supported = false;
+
+  if (base::FeatureList::IsEnabled(printing::kAdvancedPpdAttributes))
+    PopulateAdvancedCapsLocalization(&info.advanced_capabilities);
 #endif  // defined(OS_CHROMEOS)
 
   return cloud_print::PrinterSemanticCapsAndDefaultsToCdd(info);

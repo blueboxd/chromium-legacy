@@ -45,6 +45,9 @@
 // and accessibility trait UIAccessibilityTraitHeader.
 + (id<GREYMatcher>)headerWithAccessibilityLabelID:(int)messageID;
 
+// Matcher for text field of a cell with |messageID|.
++ (id<GREYMatcher>)textFieldForCellWithLabelID:(int)messageID;
+
 // Matcher for element with accessibility label corresponding to |label| and
 // accessibility trait UIAccessibilityTraitHeader.
 + (id<GREYMatcher>)headerWithAccessibilityLabel:(NSString*)label;
@@ -163,6 +166,10 @@
 // settings' navigation bar.
 + (id<GREYMatcher>)syncSettingsConfirmButton;
 
+// Returns matcher for the Autofill Credit Card "Payment Methods" view in the
+// settings menu.
++ (id<GREYMatcher>)autofillCreditCardTableView;
+
 // Returns matcher for the "Payment Methods" button in the settings menu.
 + (id<GREYMatcher>)paymentMethodsButton;
 
@@ -180,6 +187,9 @@
 // Returns matcher for the "Cancel" button in the Payment Methods add credit
 // card view.
 + (id<GREYMatcher>)addCreditCardCancelButton;
+
+// Returns matcher for the "Credit Card Scanner" view.
++ (id<GREYMatcher>)creditCardScannerView;
 
 // Returns matcher for the tools menu table view.
 + (id<GREYMatcher>)toolsMenuView;

@@ -7,11 +7,12 @@ package org.chromium.chrome.browser.download;
 import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.support.annotation.IntDef;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.util.Log;
 import android.util.Pair;
+
+import androidx.annotation.IntDef;
 
 import org.junit.After;
 import org.junit.Assert;

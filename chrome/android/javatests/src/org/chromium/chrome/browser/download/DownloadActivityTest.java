@@ -20,7 +20,6 @@ import android.content.Intent;
 import android.content.SharedPreferences.Editor;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.StringRes;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.rule.ActivityTestRule;
@@ -30,6 +29,8 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.Spinner;
 import android.widget.TextView;
+
+import androidx.annotation.StringRes;
 
 import org.junit.Assert;
 import org.junit.Before;

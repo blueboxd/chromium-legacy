@@ -354,7 +354,7 @@ LayoutPoint InlineBox::FlipForWritingMode(const LayoutPoint& point) const {
 }
 
 void InlineBox::SetShouldDoFullPaintInvalidationForFirstLine() {
-  GetLineLayoutItem().StyleRef().ClearCachedPseudoStyles();
+  GetLineLayoutItem().StyleRef().ClearCachedPseudoElementStyles();
   GetLineLayoutItem().SetShouldDoFullPaintInvalidation();
   if (!IsInlineFlowBox())
     return;

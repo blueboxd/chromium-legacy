@@ -109,7 +109,9 @@ DirectRenderer::DirectRenderer(const RendererSettings* settings,
                                DisplayResourceProvider* resource_provider)
     : settings_(settings),
       output_surface_(output_surface),
-      resource_provider_(resource_provider) {}
+      resource_provider_(resource_provider) {
+  DCHECK(output_surface_);
+}
 
 DirectRenderer::~DirectRenderer() = default;
 
@@ -117,22 +119,17 @@ void DirectRenderer::Initialize() {
   // Create an overlay validator based on the platform and set it on the newly
   // created processor. This would initialize the strategies on the validator as
   // well.
-  // Create overlay validator based on the platform and set it on the newly
-  // created processor. This would initialize the strategies on the validator as
-  // well.
-  gpu::SurfaceHandle surface_handle = output_surface_->GetSurfaceHandle();
-  overlay_processor_ = OverlayProcessor::CreateOverlayProcessor(
-      output_surface_->context_provider(), surface_handle, *settings_);
+  overlay_processor_ =
+      OverlayProcessor::CreateOverlayProcessor(*output_surface_, *settings_);
 
   auto* context_provider = output_surface_->context_provider();
 
   use_partial_swap_ = settings_->partial_swap_enabled && CanPartialSwap();
   allow_empty_swap_ = use_partial_swap_;
+  supports_dc_layers_ = output_surface_->capabilities().supports_dc_layers;
   if (context_provider) {
     if (context_provider->ContextCapabilities().commit_overlay_planes)
       allow_empty_swap_ = true;
-    if (context_provider->ContextCapabilities().dc_layers)
-      supports_dc_layers_ = true;
     if (context_provider->ContextCapabilities()
             .disable_non_empty_post_sub_buffers) {
       use_partial_swap_ = false;

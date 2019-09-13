@@ -5,8 +5,9 @@
 package org.chromium.chrome.browser.background_sync;
 
 import android.os.Bundle;
-import android.support.annotation.IntDef;
 import android.text.format.DateUtils;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;

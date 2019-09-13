@@ -5,9 +5,10 @@
 package org.chromium.chrome.browser.omnibox;
 
 import android.net.Uri;
-import android.support.annotation.Nullable;
 import android.text.Spanned;
 import android.text.TextUtils;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.CollectionUtil;
 import org.chromium.chrome.browser.util.UrlConstants;

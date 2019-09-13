@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <cstring>
 #include <memory>
 #include <utility>
 
@@ -18,11 +19,15 @@
 #include "base/files/scoped_file.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/platform_shared_memory_region.h"
+#include "base/memory/read_only_shared_memory_region.h"
+#include "base/memory/writable_shared_memory_region.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/unguessable_token.h"
 #include "chromeos/dbus/blocking_method_caller.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
@@ -51,10 +56,8 @@ constexpr char kEmptyAccountId[] = "";
 // The timeout used when starting the android container is 90 seconds
 constexpr int kStartArcTimeout = 90 * 1000;
 
-// 64k of data, minus 64 bits for a preceding size. This number was chosen to
-// fit all the data in a single pipe buffer and avoid blocking on write.
-// (http://man7.org/linux/man-pages/man7/pipe.7.html)
-const size_t kLoginScreenStorageDataSizeLimit = 1024 * 64 - sizeof(size_t);
+// 10MB. It's the current restriction enforced by session manager.
+const size_t kSharedMemoryDataSizeLimit = 10 * 1024 * 1024;
 
 // Helper to get the enum type of RetrievePolicyResponseType based on error
 // name.
@@ -116,8 +119,13 @@ login_manager::PolicyDescriptor MakeChromePolicyDescriptor(
 // read from that pipe will be closed on browser's exit, therefore the password
 // won't be leaked if the browser crashes.
 base::ScopedFD CreatePasswordPipe(const std::string& data) {
+  // 64k of data, minus 64 bits for a preceding size. This number was chosen to
+  // fit all the data in a single pipe buffer and avoid blocking on write.
+  // (http://man7.org/linux/man-pages/man7/pipe.7.html)
+  const size_t kPipeDataSizeLimit = 1024 * 64 - sizeof(size_t);
+
   int pipe_fds[2];
-  if (data.size() > kLoginScreenStorageDataSizeLimit ||
+  if (data.size() > kPipeDataSizeLimit ||
       !base::CreateLocalNonBlockingPipe(pipe_fds)) {
     DLOG(ERROR) << "Failed to create pipe";
     return base::ScopedFD();
@@ -135,19 +143,48 @@ base::ScopedFD CreatePasswordPipe(const std::string& data) {
   return pipe_read_end;
 }
 
-// Reads a secret from the given pipe. Secret is preceded by a 'size_t' value
-// representing its size.
-bool ReadSecretFromPipe(base::ScopedFD fd, std::vector<uint8_t>* secret) {
-  size_t secret_size = 0;
-  if (!base::ReadFromFD(fd.get(), reinterpret_cast<char*>(&secret_size),
-                        sizeof(size_t)) ||
-      secret_size > kLoginScreenStorageDataSizeLimit) {
+// Creates a read-only shared memory region that contains the given data.
+base::ScopedFD CreateSharedMemoryRegionFDWithData(const std::string& data) {
+  if (data.size() > kSharedMemoryDataSizeLimit) {
+    LOG(ERROR) << "Couldn't create shared memory, data is too big.";
+    return base::ScopedFD();
+  }
+  auto region = base::WritableSharedMemoryRegion::Create(data.size());
+  base::WritableSharedMemoryMapping mapping = region.Map();
+  if (!mapping.IsValid())
+    return base::ScopedFD();
+  memcpy(mapping.memory(), data.data(), data.size());
+  return base::WritableSharedMemoryRegion::TakeHandleForSerialization(
+             std::move(region))
+      .PassPlatformHandle()
+      .readonly_fd;
+}
+
+// Reads |secret_size| bytes from a given shared memory region. Puts result into
+// |secret|. |fd| should point at a read-only shared memory region.
+bool ReadSecretFromSharedMemory(base::ScopedFD fd,
+                                size_t secret_size,
+                                std::vector<uint8_t>* secret) {
+  if (secret_size > kSharedMemoryDataSizeLimit) {
+    LOG(ERROR) << "Couldn't read secret from the shared memory, "
+                  "secret's size is too big.";
     return false;
   }
-
+  auto platform_region(base::subtle::PlatformSharedMemoryRegion::Take(
+      std::move(fd), base::subtle::PlatformSharedMemoryRegion::Mode::kReadOnly,
+      secret_size, base::UnguessableToken::Create()));
+  if (!platform_region.IsValid())
+    return false;
+  auto region =
+      base::ReadOnlySharedMemoryRegion::Deserialize(std::move(platform_region));
+  if (!region.IsValid())
+    return false;
+  base::ReadOnlySharedMemoryMapping mapping = region.Map();
+  if (!mapping.IsValid())
+    return false;
   secret->resize(secret_size);
-  return base::ReadFromFD(fd.get(), reinterpret_cast<char*>(secret->data()),
-                          secret_size);
+  memcpy(secret->data(), mapping.memory(), secret->size());
+  return true;
 }
 
 }  // namespace
@@ -242,11 +279,11 @@ class SessionManagerClientImpl : public SessionManagerClient {
     writer.AppendArrayOfBytes(
         reinterpret_cast<const uint8_t*>(metadata_blob.data()),
         metadata_blob.size());
+    writer.AppendUint64(data.size());
 
-    base::ScopedFD fd = CreatePasswordPipe(data);
-    if (fd.get() == -1) {
-      std::string error = "Could not create password pipe.";
-      LOG(ERROR) << error;
+    base::ScopedFD fd = CreateSharedMemoryRegionFDWithData(data);
+    if (!fd.is_valid()) {
+      std::string error = "Could not create shared memory.";
       std::move(callback).Run(std::move(error));
       return;
     }
@@ -768,14 +805,17 @@ class SessionManagerClientImpl : public SessionManagerClient {
 
     dbus::MessageReader reader(response);
     base::ScopedFD result_fd;
-    if (!reader.PopFileDescriptor(&result_fd)) {
+    uint64_t result_size;
+    if (!reader.PopUint64(&result_size) ||
+        !reader.PopFileDescriptor(&result_fd)) {
       std::string error = "Invalid response: " + response->ToString();
       std::move(callback).Run(base::nullopt /* data */, error);
       return;
     }
     std::vector<uint8_t> result_data;
-    if (!ReadSecretFromPipe(std::move(result_fd), &result_data)) {
-      std::string error = "Couldn't read retrieved data from pipe.";
+    if (!ReadSecretFromSharedMemory(std::move(result_fd), result_size,
+                                    &result_data)) {
+      std::string error = "Couldn't read retrieved data from shared memory.";
       std::move(callback).Run(base::nullopt /* data */, error);
       return;
     }

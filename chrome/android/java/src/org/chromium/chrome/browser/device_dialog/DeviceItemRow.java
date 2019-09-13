@@ -7,8 +7,9 @@ package org.chromium.chrome.browser.device_dialog;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
+
+import androidx.annotation.Nullable;
 
 /**
  * A class representing one data row in the dialog.

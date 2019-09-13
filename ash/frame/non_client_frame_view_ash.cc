@@ -157,8 +157,6 @@ class NonClientFrameViewAsh::OverlayView : public views::View,
   explicit OverlayView(HeaderView* header_view);
   ~OverlayView() override;
 
-  void SetHeaderHeight(base::Optional<int> height);
-
   // views::View:
   void Layout() override;
   const char* GetClassName() const override { return "OverlayView"; }
@@ -169,8 +167,6 @@ class NonClientFrameViewAsh::OverlayView : public views::View,
                          const gfx::Rect& rect) const override;
 
   HeaderView* header_view_;
-
-  base::Optional<int> header_height_;
 
   DISALLOW_COPY_AND_ASSIGN(OverlayView);
 };
@@ -183,15 +179,6 @@ NonClientFrameViewAsh::OverlayView::OverlayView(HeaderView* header_view)
 
 NonClientFrameViewAsh::OverlayView::~OverlayView() = default;
 
-void NonClientFrameViewAsh::OverlayView::SetHeaderHeight(
-    base::Optional<int> height) {
-  if (header_height_ == height)
-    return;
-
-  header_height_ = height;
-  Layout();
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // NonClientFrameViewAsh::OverlayView, views::View overrides:
 
@@ -200,11 +187,8 @@ void NonClientFrameViewAsh::OverlayView::Layout() {
   // GetPreferredOnScreenHeight().
   header_view_->Layout();
 
-  int onscreen_height = header_height_
-                            ? *header_height_
-                            : header_view_->GetPreferredOnScreenHeight();
-  int height =
-      header_height_ ? *header_height_ : header_view_->GetPreferredHeight();
+  int onscreen_height = header_view_->GetPreferredOnScreenHeight();
+  int height = header_view_->GetPreferredHeight();
   if (onscreen_height == 0 || !GetVisible()) {
     header_view_->SetVisible(false);
     // Make sure the correct width is set even when immersive is enabled, but
@@ -282,10 +266,6 @@ void NonClientFrameViewAsh::SetCaptionButtonModel(
     std::unique_ptr<CaptionButtonModel> model) {
   header_view_->caption_button_container()->SetModel(std::move(model));
   header_view_->UpdateCaptionButtons();
-}
-
-void NonClientFrameViewAsh::SetHeaderHeight(base::Optional<int> height) {
-  overlay_view_->SetHeaderHeight(height);
 }
 
 HeaderView* NonClientFrameViewAsh::GetHeaderView() {

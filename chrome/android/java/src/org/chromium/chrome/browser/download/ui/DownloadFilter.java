@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.download.ui;
 
-import android.support.annotation.IntDef;
 import android.text.TextUtils;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.R;

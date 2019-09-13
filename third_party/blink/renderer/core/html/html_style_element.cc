@@ -124,8 +124,14 @@ void HTMLStyleElement::NotifyLoadedSheetAndAllCriticalSubresources(
   if (fired_load_ && is_load_event)
     return;
   loaded_sheet_ = is_load_event;
+  // Per the spec this should post on the network task source.
+  // https://html.spec.whatwg.org/multipage/semantics.html#the-style-element
+  // This guarantees that the <style> will be applied before the next <script>
+  // is loaded. Note: this means that for the potential future efforts to
+  // prioritise individual network requests we should ensure that their priority
+  // is lower than of this task.
   GetDocument()
-      .GetTaskRunner(TaskType::kDOMManipulation)
+      .GetTaskRunner(TaskType::kNetworking)
       ->PostTask(
           FROM_HERE,
           WTF::Bind(&HTMLStyleElement::DispatchPendingEvent,

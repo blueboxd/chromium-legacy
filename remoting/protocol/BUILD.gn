@@ -257,6 +257,7 @@ static_library("protocol") {
     deps += [
       "//remoting/proto/remoting/v1:network_traversal_grpc_library",
       "//third_party/webrtc/api:callfactory_api",
+      "//third_party/webrtc/api:packet_socket_factory",
       "//third_party/webrtc/api/audio_codecs:audio_codecs_api",
       "//third_party/webrtc/api/audio_codecs/opus:audio_decoder_opus",
       "//third_party/webrtc/api/audio_codecs/opus:audio_encoder_opus",

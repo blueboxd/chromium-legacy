@@ -10,9 +10,10 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
-import android.support.annotation.ColorRes;
 import android.support.test.filters.SmallTest;
 import android.view.ViewGroup;
+
+import androidx.annotation.ColorRes;
 
 import org.junit.Assert;
 import org.junit.Before;

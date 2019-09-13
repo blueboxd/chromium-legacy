@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.offlinepages;
 
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;

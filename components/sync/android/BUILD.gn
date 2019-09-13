@@ -10,7 +10,7 @@ android_library("sync_java") {
     "//base:base_java",
     "//components/signin/core/browser/android:java",
     "//net/android:net_java",
-    "//third_party/android_deps:com_android_support_support_annotations_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_sdk:android_gcm_java",
     "//third_party/cacheinvalidation:cacheinvalidation_javalib",
     "//third_party/cacheinvalidation:cacheinvalidation_proto_java",

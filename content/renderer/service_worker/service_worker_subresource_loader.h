@@ -14,6 +14,7 @@
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_response.h"
@@ -153,7 +154,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   mojo::Receiver<blink::mojom::ServiceWorkerFetchResponseCallback>
       response_callback_receiver_{this};
   // The blob needs to be held while it's read to keep it alive.
-  blink::mojom::BlobPtr body_as_blob_;
+  mojo::Remote<blink::mojom::Blob> body_as_blob_;
   uint64_t body_as_blob_size_;
 
   scoped_refptr<ControllerServiceWorkerConnector> controller_connector_;

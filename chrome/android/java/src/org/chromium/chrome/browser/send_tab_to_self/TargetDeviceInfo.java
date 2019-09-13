@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.send_tab_to_self;
 
-import android.support.annotation.IntDef;
+import androidx.annotation.IntDef;
 
 import org.chromium.base.annotations.CalledByNative;
 

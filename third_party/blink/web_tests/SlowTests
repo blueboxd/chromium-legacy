@@ -664,3 +664,5 @@ crbug.com/984003 http/tests/virtual-scroller/find-element-65-0px.html [ Slow ]
 crbug.com/984003 http/tests/virtual-scroller/find-element-65-10px.html [ Slow ]
 crbug.com/984003 http/tests/virtual-scroller/find-element-66-0px.html [ Slow ]
 crbug.com/984003 http/tests/virtual-scroller/find-element-66-10px.html [ Slow ]
+
+crbug.com/1003715 [ Win10 ] http/tests/notifications/serviceworker-notification-properties.html [ Slow ]

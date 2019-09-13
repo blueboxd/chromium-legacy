@@ -180,8 +180,10 @@ bool ValidatePartialKeyframes(const StringKeyframeVector& keyframes) {
 EffectModel::CompositeOperation ResolveCompositeOperationForKeyframe(
     EffectModel::CompositeOperation composite,
     StringKeyframe* keyframe) {
+  bool additive_composite = composite == EffectModel::kCompositeAdd ||
+                            composite == EffectModel::kCompositeAccumulate;
   if (!RuntimeEnabledFeatures::CSSAdditiveAnimationsEnabled() &&
-      keyframe->HasCssProperty() && composite == EffectModel::kCompositeAdd) {
+      keyframe->HasCssProperty() && additive_composite) {
     return EffectModel::kCompositeReplace;
   }
   return composite;
@@ -642,8 +644,10 @@ bool HasAdditiveCompositeCSSKeyframe(
     if (!property.IsCSSProperty())
       continue;
     for (const auto& keyframe : keyframe_group.value->Keyframes()) {
-      if (keyframe->Composite() == EffectModel::kCompositeAdd)
+      if (keyframe->Composite() == EffectModel::kCompositeAdd ||
+          keyframe->Composite() == EffectModel::kCompositeAccumulate) {
         return true;
+      }
     }
   }
   return false;

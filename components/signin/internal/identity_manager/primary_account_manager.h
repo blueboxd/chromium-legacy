@@ -45,7 +45,6 @@ class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
  public:
   typedef base::RepeatingCallback<void(const CoreAccountInfo&)>
       AccountSigninCallback;
-  typedef base::RepeatingCallback<void()> AccountClearedCallback;
 
 #if !defined(OS_CHROMEOS)
   // Used to remove accounts from the token service and the account tracker.
@@ -106,14 +105,6 @@ class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
   void SetGoogleSignedOutCallback(AccountSigninCallback callback);
 #endif
 
-  // If set, this callback will be invoked during the signin as soon as
-  // PrimaryAccountManager::authenticated_account_id_ is set.
-  void SetAuthenticatedAccountSetCallback(AccountSigninCallback callback);
-
-  // If set, this callback will be invoked during the signout as soon as
-  // PrimaryAccountManager::authenticated_account_id_ is cleared.
-  void SetAuthenticatedAccountClearedCallback(AccountClearedCallback callback);
-
   // Signs a user in. PrimaryAccountManager assumes that |username| can be used
   // to look up the corresponding account_id and gaia_id for this email.
   void SignIn(const std::string& username);
@@ -159,12 +150,6 @@ class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
   // ClearAuthenticatedAccountId() instead.
   void SetAuthenticatedAccountInfo(const CoreAccountInfo& account_info);
 
-  // Clears the authenticated user's account id.
-  // This method is not public because PrimaryAccountManager does not allow
-  // signing out by default. Subclasses implementing a sign-out functionality
-  // need to call this.
-  void ClearAuthenticatedAccountInfo();
-
 #if !defined(OS_CHROMEOS)
   // Starts the sign out process.
   void StartSignOut(signin_metrics::ProfileSignout signout_source_metric,
@@ -177,9 +162,6 @@ class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
       signin_metrics::SignoutDelete signout_delete_metric,
       RemoveAccountsOption remove_option,
       SigninClient::SignoutDecision signout_decision);
-
-  // Send all observers |GoogleSignedOut| notifications.
-  void FireGoogleSignedOut(const CoreAccountInfo& account_info);
 
   // ProfileOAuth2TokenServiceObserver:
   void OnRefreshTokensLoaded() override;
@@ -202,8 +184,6 @@ class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
 #if !defined(OS_CHROMEOS)
   AccountSigninCallback on_google_signed_out_callback_;
 #endif
-  AccountSigninCallback on_authenticated_account_set_callback_;
-  AccountClearedCallback on_authenticated_account_cleared_callback_;
 
   // The list of callbacks notified on shutdown.
   base::CallbackList<void()> on_shutdown_callback_list_;

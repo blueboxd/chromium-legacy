@@ -12,17 +12,20 @@
 #include <utility>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "printing/backend/cups_connection.h"
+#include "printing/backend/cups_ipp_constants.h"
 #include "printing/backend/cups_ipp_util.h"
 #include "printing/backend/cups_printer.h"
 #include "printing/metafile.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
+#include "printing/printing_features_chromeos.h"
 #include "printing/units.h"
 
 namespace printing {
@@ -126,6 +129,32 @@ std::vector<ScopedCupsOption> SettingsToCupsOptions(
   if (!settings.pin_value().empty()) {
     options.push_back(ConstructOption(kIppPin, settings.pin_value()));
     options.push_back(ConstructOption(kIppPinEncryption, kPinEncryptionNone));
+  }
+
+  if (base::FeatureList::IsEnabled(printing::kAdvancedPpdAttributes)) {
+    std::map<std::string, std::vector<std::string>> multival;
+    for (const auto& setting : settings.advanced_settings()) {
+      const std::string& key = setting.first;
+      const std::string& value = setting.second.GetString();
+      if (value.empty())
+        continue;
+
+      // Check for multivalue enum ("attribute/value").
+      size_t pos = key.find('/');
+      if (pos == std::string::npos) {
+        // Regular value.
+        options.push_back(ConstructOption(key, value));
+        continue;
+      }
+      // Store selected enum values.
+      if (value == kOptionTrue)
+        multival[key.substr(0, pos)].push_back(key.substr(pos + 1));
+    }
+    // Pass multivalue enums as comma-separated lists.
+    for (const auto& it : multival) {
+      options.push_back(
+          ConstructOption(it.first, base::JoinString(it.second, ",")));
+    }
   }
 
   return options;

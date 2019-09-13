@@ -38,10 +38,11 @@ import static org.chromium.chrome.browser.tabmodel.TabSelectionType.FROM_USER;
 
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.Nullable;
 import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.Nullable;
 
 import org.junit.Before;
 import org.junit.Rule;

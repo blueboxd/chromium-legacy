@@ -46,9 +46,6 @@ void MarkingVisitorBase::FlushCompactionWorklists() {
 
 void MarkingVisitorBase::RegisterWeakCallback(void* object,
                                               WeakCallback callback) {
-  // We don't want to run weak processings when taking a snapshot.
-  if (marking_mode_ == kSnapshotMarking)
-    return;
   weak_callback_worklist_.Push({object, callback});
 }
 
@@ -78,10 +75,6 @@ bool MarkingVisitorBase::RegisterWeakTable(
     EphemeronCallback iteration_callback) {
   weak_table_worklist_.Push({const_cast<void*>(closure), iteration_callback});
   return true;
-}
-
-void MarkingVisitorBase::FlushWeakTableCallbacks() {
-  weak_table_worklist_.FlushToGlobal();
 }
 
 void MarkingVisitorBase::AdjustMarkedBytes(HeapObjectHeader* header,
@@ -142,7 +135,7 @@ void MarkingVisitor::TraceMarkedBackingStoreSlow(void* value) {
 }
 
 MarkingVisitor::MarkingVisitor(ThreadState* state, MarkingMode marking_mode)
-    : MarkingVisitorBase(state, marking_mode, WorklistTaskId::MainThread) {
+    : MarkingVisitorBase(state, marking_mode, WorklistTaskId::MutatorThread) {
   DCHECK(state->InAtomicMarkingPause());
   DCHECK(state->CheckThread());
 }
@@ -205,13 +198,28 @@ void MarkingVisitor::ConservativelyMarkAddress(BasePage* page,
   }
 }
 
+void MarkingVisitor::FlushMarkingWorklist() {
+  marking_worklist_.FlushToGlobal();
+}
+
 ConcurrentMarkingVisitor::ConcurrentMarkingVisitor(ThreadState* state,
                                                    MarkingMode marking_mode,
                                                    int task_id)
     : MarkingVisitorBase(state, marking_mode, task_id) {
   DCHECK(state->InAtomicMarkingPause());
   DCHECK(state->CheckThread());
-  DCHECK_NE(WorklistTaskId::MainThread, task_id);
+  DCHECK_NE(WorklistTaskId::MutatorThread, task_id);
+}
+
+void ConcurrentMarkingVisitor::FlushWorklists() {
+  // Flush marking worklists for further marking on the mutator thread.
+  marking_worklist_.FlushToGlobal();
+  not_fully_constructed_worklist_.FlushToGlobal();
+  weak_callback_worklist_.FlushToGlobal();
+  weak_table_worklist_.FlushToGlobal();
+  // Flush compaction worklists.
+  movable_reference_worklist_.FlushToGlobal();
+  backing_store_callback_worklist_.FlushToGlobal();
 }
 
 }  // namespace blink

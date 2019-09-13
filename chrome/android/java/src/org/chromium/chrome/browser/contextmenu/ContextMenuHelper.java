@@ -5,10 +5,11 @@
 package org.chromium.chrome.browser.contextmenu;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Build;
+import android.support.annotation.Nullable;
 import android.util.Pair;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -187,12 +188,9 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
 
     /**
      * Search for the image by intenting to the lens app with the image data attached.
-     * @param isIncognito Whether the image to search came from an incognito context.
      */
-    public void searchWithGoogleLens(boolean isIncognito) {
-        retrieveImage((Uri imageUri) -> {
-            ShareHelper.shareImageWithGoogleLens(mActivity, imageUri, isIncognito);
-        });
+    public void searchWithGoogleLens() {
+        shareImageDirectly(null, /* shareWithGoogleLens = */ true);
     }
 
     /**
@@ -209,37 +207,36 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
      * it will use the right activity set when the menu was displayed.
      */
     void shareImage() {
-        retrieveImage((Uri imageUri) -> { ShareHelper.shareImage(mActivity, null, imageUri); });
+        shareImageDirectly(null, /* shareWithGoogleLens = */ false);
     }
 
     /**
      * Share the image that triggered the current context menu with the last app used to share.
      */
     private void shareImageWithLastShareComponent() {
-        retrieveImage((Uri imageUri) -> {
-            ShareHelper.shareImage(
-                    mActivity, ShareHelper.getLastShareComponentName(null), imageUri);
-        });
+        shareImageDirectly(
+                ShareHelper.getLastShareComponentName(null), /* shareWithGoogleLens = */ false);
     }
 
     /**
-     * Retrieves a URI for the selected image for sharing with external apps. If the function fails
-     * to retrieve the image bytes or generate a URI the callback will *not* be called.
-     * @param callback Called once the the image is generated and ready to be shared.
+     * Share image triggered with the current context menu directly with a specific app.
+     * @param name The {@link ComponentName} of the app to share the image directly with.
+     * @param shareWithGoogleLens Whether to share with the Google Lens (overrides the
+     *      value specified in the ComponentName field).
      */
-    private void retrieveImage(Callback<Uri> callback) {
+    private void shareImageDirectly(
+            @Nullable final ComponentName name, boolean shareWithGoogleLens) {
         if (mNativeContextMenuHelper == 0) return;
-        Callback<byte[]> imageRetrievalCallback = new Callback<byte[]>() {
+        Callback<byte[]> callback = new Callback<byte[]>() {
             @Override
             public void onResult(byte[] result) {
                 if (mActivity == null) return;
 
-                ShareHelper.generateUriFromData(mActivity, result, callback);
+                ShareHelper.shareImage(mActivity, result, name, shareWithGoogleLens);
             }
         };
         ContextMenuHelperJni.get().retrieveImageForShare(mNativeContextMenuHelper,
-                ContextMenuHelper.this, imageRetrievalCallback, MAX_SHARE_DIMEN_PX,
-                MAX_SHARE_DIMEN_PX);
+                ContextMenuHelper.this, callback, MAX_SHARE_DIMEN_PX, MAX_SHARE_DIMEN_PX);
     }
 
     /**

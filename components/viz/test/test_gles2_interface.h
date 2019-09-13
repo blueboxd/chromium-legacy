@@ -145,7 +145,6 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
   void set_msaa_is_slow(bool msaa_is_slow);
   void set_gpu_rasterization(bool gpu_rasterization);
   void set_avoid_stencil_buffers(bool avoid_stencil_buffers);
-  void set_enable_dc_layers(bool support);
   void set_support_multisample_compatibility(bool support);
   void set_support_texture_storage_image(bool support);
   void set_support_texture_npot(bool support);

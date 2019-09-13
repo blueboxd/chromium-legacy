@@ -5,8 +5,9 @@
 package org.chromium.chrome.browser.send_tab_to_self;
 
 import android.content.SharedPreferences;
-import android.support.annotation.Nullable;
 import android.support.test.filters.SmallTest;
+
+import androidx.annotation.Nullable;
 
 import org.junit.Assert;
 import org.junit.Test;

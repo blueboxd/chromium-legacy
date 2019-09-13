@@ -5,8 +5,9 @@
 package org.chromium.base.task;
 
 import android.os.Process;
-import android.support.annotation.Nullable;
 import android.util.Pair;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.LifetimeAssert;
 import org.chromium.base.TraceEvent;

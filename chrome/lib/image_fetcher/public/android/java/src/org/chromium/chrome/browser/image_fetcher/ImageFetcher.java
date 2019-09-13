@@ -6,7 +6,8 @@ package org.chromium.chrome.browser.image_fetcher;
 
 import android.graphics.Bitmap;
 import android.media.ThumbnailUtils;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;

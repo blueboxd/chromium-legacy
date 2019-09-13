@@ -5,7 +5,8 @@
 package org.chromium.chrome.browser;
 
 import android.os.Bundle;
-import android.support.annotation.CallSuper;
+
+import androidx.annotation.CallSuper;
 
 import org.chromium.base.Log;
 import org.chromium.base.library_loader.ProcessInitException;

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 package org.chromium.chrome.browser.webapps;
 
-import android.support.annotation.IntDef;
+import androidx.annotation.IntDef;
 
 import org.chromium.chrome.browser.util.UrlUtilities;
 

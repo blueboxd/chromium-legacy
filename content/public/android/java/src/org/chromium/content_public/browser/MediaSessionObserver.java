@@ -4,7 +4,7 @@
 
 package org.chromium.content_public.browser;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import org.chromium.content.browser.MediaSessionImpl;
 import org.chromium.services.media_session.MediaImage;

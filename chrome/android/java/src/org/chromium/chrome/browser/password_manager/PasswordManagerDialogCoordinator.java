@@ -5,9 +5,10 @@
 package org.chromium.chrome.browser.password_manager;
 
 import android.content.Context;
-import android.support.annotation.DrawableRes;
 import android.view.LayoutInflater;
 import android.view.View;
+
+import androidx.annotation.DrawableRes;
 
 import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;

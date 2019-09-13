@@ -7,8 +7,9 @@ import static org.chromium.chrome.browser.download.home.metrics.UmaUtils.recordR
 import static org.chromium.chrome.browser.download.home.metrics.UmaUtils.recordRenameResult;
 
 import android.content.Context;
-import android.support.annotation.IntDef;
 import android.text.TextUtils;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.download.home.metrics.UmaUtils;

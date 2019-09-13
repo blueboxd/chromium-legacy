@@ -125,3 +125,32 @@ action_with_pydeps("web_idl_database") {
     ":web_idl_in_modules",
   ]
 }
+
+action_with_pydeps("generate_bindings_example") {
+  script = "${bindings_scripts_dir}/generate_bindings.py"
+
+  web_idl_database_outputs = get_target_outputs(":web_idl_database")
+  web_idl_database = web_idl_database_outputs[0]
+
+  inputs = [
+    web_idl_database,
+    "${bindings_scripts_dir}/bind_gen/example.cc.tmpl",
+  ]
+  outputs = [
+    "${bindings_output_dir}/core/v8/v8_example.cc",
+  ]
+
+  args = [
+    "example",
+    "--web_idl_database",
+    rebase_path(web_idl_database, root_build_dir),
+    "--output_dir_core",
+    rebase_path("${bindings_output_dir}/core/v8/", root_build_dir),
+    "--output_dir_modules",
+    rebase_path("${bindings_output_dir}/modules/v8/", root_build_dir),
+  ]
+
+  deps = [
+    ":web_idl_database",
+  ]
+}

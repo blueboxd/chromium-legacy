@@ -6,7 +6,8 @@ package org.chromium.chrome.browser.compositor.animation;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.support.annotation.NonNull;
+
+import androidx.annotation.NonNull;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;

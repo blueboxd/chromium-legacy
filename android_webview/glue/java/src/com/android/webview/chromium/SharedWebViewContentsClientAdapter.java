@@ -6,10 +6,11 @@ package com.android.webview.chromium;
 
 import android.content.Context;
 import android.os.Build;
-import android.support.annotation.Nullable;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import androidx.annotation.Nullable;
 
 import com.android.webview.chromium.WebViewDelegateFactory.WebViewDelegate;
 

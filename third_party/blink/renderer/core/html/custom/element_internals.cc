@@ -41,7 +41,7 @@ void ElementInternals::Trace(Visitor* visitor) {
   visitor->Trace(state_);
   visitor->Trace(validity_flags_);
   visitor->Trace(validation_anchor_);
-  visitor->Trace(explicitly_set_attr_element_map);
+  visitor->Trace(explicitly_set_attr_elements_map_);
   ListedElement::Trace(visitor);
   ScriptWrappable::Trace(visitor);
 }
@@ -256,11 +256,47 @@ void ElementInternals::DidUpgrade() {
 
 void ElementInternals::SetElementAttribute(const QualifiedName& name,
                                            Element* element) {
-  explicitly_set_attr_element_map.Set(name, element);
+  auto result = explicitly_set_attr_elements_map_.insert(name, nullptr);
+  if (result.is_new_entry) {
+    result.stored_value->value =
+        MakeGarbageCollected<HeapVector<Member<Element>>>();
+  } else {
+    result.stored_value->value->clear();
+  }
+  result.stored_value->value->push_back(element);
 }
 
 Element* ElementInternals::GetElementAttribute(const QualifiedName& name) {
-  return explicitly_set_attr_element_map.at(name);
+  HeapVector<Member<Element>>* element_vector =
+      explicitly_set_attr_elements_map_.at(name);
+  if (!element_vector)
+    return nullptr;
+  DCHECK_EQ(element_vector->size(), 1u);
+  return element_vector->at(0);
+}
+
+HeapVector<Member<Element>> ElementInternals::GetElementArrayAttribute(
+    const QualifiedName& name,
+    bool is_null) {
+  is_null = true;
+  auto iter = explicitly_set_attr_elements_map_.find(name);
+  if (iter != explicitly_set_attr_elements_map_.end()) {
+    is_null = false;
+    return *(iter->value);
+  }
+  return HeapVector<Member<Element>>();
+}
+
+void ElementInternals::SetElementArrayAttribute(
+    const QualifiedName& name,
+    HeapVector<Member<Element>> elements,
+    bool is_null) {
+  if (is_null) {
+    explicitly_set_attr_elements_map_.erase(name);
+    return;
+  }
+  explicitly_set_attr_elements_map_.Set(
+      name, MakeGarbageCollected<HeapVector<Member<Element>>>(elements));
 }
 
 bool ElementInternals::IsTargetFormAssociated() const {

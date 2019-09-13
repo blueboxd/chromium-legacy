@@ -8,6 +8,8 @@
 #import "ios/chrome/browser/ui/scanner/scanner_view_controller.h"
 #include "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_camera_controller.h"
 
+extern NSString* const kCreditCardScannerViewID;
+
 @protocol CreditCardScannedImageDelegate;
 @protocol LoadQueryCommands;
 

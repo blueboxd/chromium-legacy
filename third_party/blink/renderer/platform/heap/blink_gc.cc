@@ -34,10 +34,8 @@ const char* BlinkGC::ToString(BlinkGC::MarkingType type) {
   switch (type) {
     case BlinkGC::MarkingType::kAtomicMarking:
       return "AtomicMarking";
-    case BlinkGC::MarkingType::kIncrementalMarking:
-      return "IncrementalMarking";
-    case BlinkGC::MarkingType::kTakeSnapshot:
-      return "TakeSnapshot";
+    case BlinkGC::MarkingType::kIncrementalAndConcurrentMarking:
+      return "IncrementalAndConcurrentMarking";
   }
   IMMEDIATE_CRASH();
 }
@@ -60,6 +58,22 @@ const char* BlinkGC::ToString(BlinkGC::StackState stack_state) {
       return "HeapPointersOnStack";
   }
   IMMEDIATE_CRASH();
+}
+
+const char* BlinkGC::ToString(BlinkGC::ArenaIndices arena_index) {
+#define ArenaCase(name)     \
+  case k##name##ArenaIndex: \
+    return "" #name "Arena";
+
+  switch (arena_index) {
+    FOR_EACH_ARENA(ArenaCase)
+
+    case BlinkGC::ArenaIndices::kNumberOfArenas:
+      IMMEDIATE_CRASH();
+  }
+  IMMEDIATE_CRASH();
+
+#undef ArenaCase
 }
 
 }  // namespace blink

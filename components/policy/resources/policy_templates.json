@@ -74,7 +74,7 @@
 #     where the value of the policy can be entered. 'main' policies on
 #     Windows ignore this. Policies on Mac are using this instead of caption.
 #
-# As a reference for translators, non-translateable strings must be tagged using
+# As a reference for translators, non-translatable strings must be tagged using
 # <ph name="..."></ph> as described in [1]. As these tags are pruned before
 # generating the comments for .proto files, paragraphs containing such tags
 # should not be line-wrapped (use one long line per paragraph instead) to allow

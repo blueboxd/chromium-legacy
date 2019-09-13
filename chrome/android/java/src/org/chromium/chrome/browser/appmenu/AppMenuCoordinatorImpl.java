@@ -5,10 +5,11 @@
 package org.chromium.chrome.browser.appmenu;
 
 import android.content.Context;
-import android.support.annotation.Nullable;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewConfiguration;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.ObservableSupplier;
 import org.chromium.base.VisibleForTesting;

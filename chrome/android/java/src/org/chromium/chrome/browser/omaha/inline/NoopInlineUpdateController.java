@@ -5,7 +5,8 @@
 package org.chromium.chrome.browser.omaha.inline;
 
 import android.app.Activity;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider;

@@ -5,11 +5,12 @@
 package org.chromium.chrome.browser.gesturenav;
 
 import android.content.Context;
-import android.support.annotation.IdRes;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
+
+import androidx.annotation.IdRes;
 
 import org.chromium.chrome.R;
 

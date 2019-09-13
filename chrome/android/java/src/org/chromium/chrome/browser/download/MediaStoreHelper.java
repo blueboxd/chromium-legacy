@@ -5,8 +5,9 @@
 package org.chromium.chrome.browser.download;
 
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;

@@ -7,11 +7,12 @@ package org.chromium.chrome.browser.signin;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.DimenRes;
-import android.support.annotation.Nullable;
-import android.support.annotation.StringRes;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.DimenRes;
+import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;

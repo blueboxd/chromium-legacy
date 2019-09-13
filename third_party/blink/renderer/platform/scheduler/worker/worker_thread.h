@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 
 namespace blink {
+class BlinkGCMemoryDumpProvider;
 class ThreadScheduler;
 }
 
@@ -136,6 +137,7 @@ class PLATFORM_EXPORT WorkerThread : public Thread {
 
    private:
     std::unique_ptr<GCTaskRunner> gc_task_runner_;
+    std::unique_ptr<BlinkGCMemoryDumpProvider> blink_gc_memory_dump_provider_;
   };
 
   std::unique_ptr<SimpleThreadImpl> thread_;

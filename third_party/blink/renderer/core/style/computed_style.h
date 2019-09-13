@@ -89,7 +89,7 @@ class StyleResolver;
 class StyleSelfAlignmentData;
 class TransformationMatrix;
 
-typedef Vector<scoped_refptr<const ComputedStyle>, 4> PseudoStyleCache;
+typedef Vector<scoped_refptr<const ComputedStyle>, 4> PseudoElementStyleCache;
 
 namespace css_longhand {
 
@@ -143,7 +143,7 @@ class WebkitTextStrokeColor;
 //
 // In addition to storing the computed value of every CSS property,
 // ComputedStyle also contains various internal style information. Examples
-// include cached_pseudo_styles_ (for storing pseudo element styles) and
+// include cached_pseudo_element_styles_ (for storing pseudo element styles) and
 // has_simple_underline_ (cached indicator flag of text-decoration). These are
 // stored on ComputedStyle for two reasons:
 //
@@ -279,7 +279,8 @@ class ComputedStyle : public ComputedStyleBase,
   //    <script>
   //      getComputedStyle(div, "::before").color // still green.
   //    </script>
-  mutable std::unique_ptr<PseudoStyleCache> cached_pseudo_styles_;
+  mutable std::unique_ptr<PseudoElementStyleCache>
+      cached_pseudo_element_styles_;
 
   DataRef<SVGComputedStyle> svg_style_;
 
@@ -308,7 +309,7 @@ class ComputedStyle : public ComputedStyleBase,
   // Find out how two ComputedStyles differ. Used for figuring out if style
   // recalc needs to propagate style changes down the tree. The constants are
   // listed in increasing severity. E.g. kInherited also means we need to update
-  // pseudo elements (kPseudoStyle).
+  // pseudo elements (kPseudoElementStyle).
   enum class Difference {
     // The ComputedStyle objects have the same computed style. The might have
     // some different extra flags which means we still need to replace the old
@@ -319,7 +320,7 @@ class ComputedStyle : public ComputedStyleBase,
     kNonInherited,
     // Pseudo element style is different which means we have to update pseudo
     // element existence and computed style.
-    kPseudoStyle,
+    kPseudoElementStyle,
     // Inherited properties are different which means we need to recalc style
     // for children. Only independent properties changed which means we can
     // inherit by cloning the exiting ComputedStyle for children an set modified
@@ -382,12 +383,12 @@ class ComputedStyle : public ComputedStyleBase,
   }
   void SetStyleType(PseudoId style_type) { SetStyleTypeInternal(style_type); }
 
-  const ComputedStyle* GetCachedPseudoStyle(PseudoId) const;
-  const ComputedStyle* AddCachedPseudoStyle(
+  const ComputedStyle* GetCachedPseudoElementStyle(PseudoId) const;
+  const ComputedStyle* AddCachedPseudoElementStyle(
       scoped_refptr<const ComputedStyle>) const;
-  void ClearCachedPseudoStyles() const {
-    if (cached_pseudo_styles_)
-      cached_pseudo_styles_->clear();
+  void ClearCachedPseudoElementStyles() const {
+    if (cached_pseudo_element_styles_)
+      cached_pseudo_element_styles_->clear();
   }
 
   /**
@@ -2333,11 +2334,10 @@ class ComputedStyle : public ComputedStyleBase,
     return IsStackingContext() || GetPosition() != EPosition::kStatic;
   }
 
-  // Pseudo-styles
-  bool HasAnyPublicPseudoStyles() const;
-  bool HasPseudoStyle(PseudoId) const;
-  void SetHasPseudoStyle(PseudoId);
-  bool HasPseudoElementStyle() const;
+  // Pseudo element styles.
+  bool HasAnyPseudoElementStyles() const;
+  bool HasPseudoElementStyle(PseudoId) const;
+  void SetHasPseudoElementStyle(PseudoId);
 
   // Note: CanContainAbsolutePositionObjects should return true if
   // CanContainFixedPositionObjects.  We currently never use this value
@@ -2475,7 +2475,7 @@ class ComputedStyle : public ComputedStyleBase,
   InterpolationQuality GetInterpolationQuality() const;
 
   bool CanGeneratePseudoElement(PseudoId pseudo) const {
-    if (!HasPseudoStyle(pseudo))
+    if (!HasPseudoElementStyle(pseudo))
       return false;
     if (Display() == EDisplay::kNone)
       return false;
@@ -2875,26 +2875,22 @@ inline float ComputedStyle::EffectiveZoom() const {
   return InternalEffectiveZoom();
 }
 
-inline bool ComputedStyle::HasAnyPublicPseudoStyles() const {
-  return PseudoBitsInternal() != kPseudoIdNone;
+inline bool ComputedStyle::HasAnyPseudoElementStyles() const {
+  return !!PseudoBitsInternal();
 }
 
-inline bool ComputedStyle::HasPseudoStyle(PseudoId pseudo) const {
+inline bool ComputedStyle::HasPseudoElementStyle(PseudoId pseudo) const {
   DCHECK(pseudo >= kFirstPublicPseudoId);
   DCHECK(pseudo < kFirstInternalPseudoId);
   return (1 << (pseudo - kFirstPublicPseudoId)) & PseudoBitsInternal();
 }
 
-inline void ComputedStyle::SetHasPseudoStyle(PseudoId pseudo) {
+inline void ComputedStyle::SetHasPseudoElementStyle(PseudoId pseudo) {
   DCHECK(pseudo >= kFirstPublicPseudoId);
   DCHECK(pseudo < kFirstInternalPseudoId);
   // TODO: Fix up this code. It is hard to understand.
   SetPseudoBitsInternal(static_cast<PseudoId>(
       PseudoBitsInternal() | 1 << (pseudo - kFirstPublicPseudoId)));
-}
-
-inline bool ComputedStyle::HasPseudoElementStyle() const {
-  return PseudoBitsInternal() & kElementPseudoIdMask;
 }
 
 }  // namespace blink

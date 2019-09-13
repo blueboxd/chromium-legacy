@@ -11,10 +11,11 @@ import android.content.res.Resources;
 import android.graphics.Rect;
 import android.media.AudioManager;
 import android.os.Build;
-import android.support.annotation.Nullable;
 import android.support.v4.util.ArrayMap;
 import android.view.KeyEvent;
 import android.view.View;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;

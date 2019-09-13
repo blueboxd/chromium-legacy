@@ -5,9 +5,10 @@
 package org.chromium.chrome.test.ui;
 
 import android.os.Bundle;
-import android.support.annotation.IdRes;
-import android.support.annotation.LayoutRes;
 import android.support.v7.app.AppCompatActivity;
+
+import androidx.annotation.IdRes;
+import androidx.annotation.LayoutRes;
 
 /** Dummy activity to test UI components without Chrome browser initialization and natives. */
 public class DummyUiActivity extends AppCompatActivity {

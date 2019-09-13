@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 package org.chromium.ui.modelutil;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 /**
  * An interface for models notifying about changes to a list of items. Note that ListObservable

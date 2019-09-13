@@ -12,7 +12,7 @@
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
-#include "ui/message_center/views/desktop_popup_alignment_delegate.h"
+#include "ui/message_center/views/desktop_message_popup_collection.h"
 #include "ui/message_center/views/message_popup_view.h"
 #include "ui/views/test/views_test_base.h"
 
@@ -25,32 +25,10 @@ namespace {
 
 class MockMessagePopupView;
 
-// Provides an aura window context for widget creation.
-class TestPopupAlignmentDelegate : public DesktopPopupAlignmentDelegate {
+class MockMessagePopupCollection : public DesktopMessagePopupCollection {
  public:
-  explicit TestPopupAlignmentDelegate(gfx::NativeWindow context)
-      : context_(context) {}
-  ~TestPopupAlignmentDelegate() override {}
-
-  // PopupAlignmentDelegate:
-  void ConfigureWidgetInitParamsForContainer(
-      views::Widget* widget,
-      views::Widget::InitParams* init_params) override {
-    init_params->context = context_;
-  }
-
- private:
-  gfx::NativeWindow context_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestPopupAlignmentDelegate);
-};
-
-class MockMessagePopupCollection : public MessagePopupCollection {
- public:
-  explicit MockMessagePopupCollection(
-      PopupAlignmentDelegate* alignment_delegate)
-      : MessagePopupCollection(alignment_delegate),
-        alignment_delegate_(alignment_delegate) {}
+  explicit MockMessagePopupCollection(gfx::NativeWindow context)
+      : DesktopMessagePopupCollection(), context_(context) {}
 
   ~MockMessagePopupCollection() override = default;
 
@@ -83,6 +61,13 @@ class MockMessagePopupCollection : public MessagePopupCollection {
  protected:
   MessagePopupView* CreatePopup(const Notification& notification) override;
 
+  void ConfigureWidgetInitParamsForContainer(
+      views::Widget* widget,
+      views::Widget::InitParams* init_params) override {
+    // Provides an aura window context for widget creation.
+    init_params->context = context_;
+  }
+
   void RestartPopupTimers() override {
     MessagePopupCollection::RestartPopupTimers();
     popup_timer_started_ = true;
@@ -98,7 +83,8 @@ class MockMessagePopupCollection : public MessagePopupCollection {
   }
 
  private:
-  PopupAlignmentDelegate* alignment_delegate_;
+  gfx::NativeWindow context_;
+
   std::vector<MockMessagePopupView*> popups_;
 
   bool popup_timer_started_ = false;
@@ -112,9 +98,8 @@ class MockMessagePopupView : public MessagePopupView {
  public:
   MockMessagePopupView(const std::string& id,
                        int init_height,
-                       PopupAlignmentDelegate* alignment_delegate,
                        MockMessagePopupCollection* popup_collection)
-      : MessagePopupView(alignment_delegate, popup_collection),
+      : MessagePopupView(popup_collection),
         popup_collection_(popup_collection),
         id_(id),
         title_(base::UTF16ToUTF8(
@@ -189,8 +174,8 @@ class MockMessagePopupView : public MessagePopupView {
 
 MessagePopupView* MockMessagePopupCollection::CreatePopup(
     const Notification& notification) {
-  auto* popup = new MockMessagePopupView(notification.id(), new_popup_height_,
-                                         alignment_delegate_, this);
+  auto* popup =
+      new MockMessagePopupView(notification.id(), new_popup_height_, this);
   popups_.push_back(popup);
   return popup;
 }
@@ -210,10 +195,8 @@ class MessagePopupCollectionTest : public views::ViewsTestBase,
     MessageCenter::Get()->DisableTimersForTest();
     MessageCenter::Get()->AddObserver(this);
 
-    alignment_delegate_ =
-        std::make_unique<TestPopupAlignmentDelegate>(GetContext());
     popup_collection_ =
-        std::make_unique<MockMessagePopupCollection>(alignment_delegate_.get());
+        std::make_unique<MockMessagePopupCollection>(GetContext());
 
     // This size fits test machines resolution and also can keep a few popups
     // w/o ill effects of hitting the screen overflow. This allows us to assume
@@ -303,7 +286,7 @@ class MessagePopupCollectionTest : public views::ViewsTestBase,
     dummy_display.set_bounds(display_bounds);
     dummy_display.set_work_area(work_area);
     work_area_ = work_area;
-    alignment_delegate_->RecomputeAlignment(dummy_display);
+    popup_collection_->RecomputeAlignment(dummy_display);
   }
 
   bool IsPopupTimerStarted() const {
@@ -321,7 +304,6 @@ class MessagePopupCollectionTest : public views::ViewsTestBase,
   int id_ = 0;
 
   std::unique_ptr<MockMessagePopupCollection> popup_collection_;
-  std::unique_ptr<DesktopPopupAlignmentDelegate> alignment_delegate_;
 
   gfx::Rect work_area_;
   std::string last_displayed_id_;

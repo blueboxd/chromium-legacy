@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.directactions;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;

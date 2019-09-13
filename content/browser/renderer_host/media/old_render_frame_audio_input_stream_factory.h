@@ -24,7 +24,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "media/audio/audio_input_delegate.h"
 #include "media/mojo/mojom/audio_logging.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/audio/public/mojom/audio_processing.mojom.h"
 
 namespace media {
@@ -112,19 +113,20 @@ class CONTENT_EXPORT OldRenderFrameAudioInputStreamFactory
   DISALLOW_COPY_AND_ASSIGN(OldRenderFrameAudioInputStreamFactory);
 };
 
-// This class is a convenient bundle of factory and binding.
+// This class is a convenient bundle of factory and receiver.
 // It can be created on any thread, but should be destroyed on the IO thread
 // (hence the DeleteOnIOThread pointer).
 class CONTENT_EXPORT RenderFrameAudioInputStreamFactoryHandle {
  public:
   static std::unique_ptr<RenderFrameAudioInputStreamFactoryHandle,
                          BrowserThread::DeleteOnIOThread>
-  CreateFactory(OldRenderFrameAudioInputStreamFactory::CreateDelegateCallback
-                    create_delegate_callback,
-                MediaStreamManager* media_stream_manager,
-                int render_process_id,
-                int render_frame_id,
-                mojom::RendererAudioInputStreamFactoryRequest request);
+  CreateFactory(
+      OldRenderFrameAudioInputStreamFactory::CreateDelegateCallback
+          create_delegate_callback,
+      MediaStreamManager* media_stream_manager,
+      int render_process_id,
+      int render_frame_id,
+      mojo::PendingReceiver<mojom::RendererAudioInputStreamFactory> receiver);
 
   ~RenderFrameAudioInputStreamFactoryHandle();
 
@@ -136,10 +138,11 @@ class CONTENT_EXPORT RenderFrameAudioInputStreamFactoryHandle {
       int render_process_id,
       int render_frame_id);
 
-  void Init(mojom::RendererAudioInputStreamFactoryRequest request);
+  void Init(
+      mojo::PendingReceiver<mojom::RendererAudioInputStreamFactory> receiver);
 
   OldRenderFrameAudioInputStreamFactory impl_;
-  mojo::Binding<mojom::RendererAudioInputStreamFactory> binding_;
+  mojo::Receiver<mojom::RendererAudioInputStreamFactory> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameAudioInputStreamFactoryHandle);
 };

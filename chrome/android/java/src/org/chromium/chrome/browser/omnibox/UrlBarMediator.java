@@ -8,10 +8,11 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.net.Uri;
-import android.support.annotation.VisibleForTesting;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.view.ActionMode;
+
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;

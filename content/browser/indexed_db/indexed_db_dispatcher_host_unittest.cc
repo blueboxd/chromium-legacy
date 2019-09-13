@@ -33,6 +33,7 @@
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "storage/browser/test/mock_quota_manager.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
@@ -527,9 +528,10 @@ TEST_F(IndexedDBDispatcherHostTest, MAYBE_PutWithInvalidBlob) {
             blink::IndexedDBKeyPath(), false);
         // Call Put with an invalid blob.
         std::vector<blink::mojom::IDBBlobInfoPtr> blobs;
-        blink::mojom::BlobPtrInfo blob;
-        // Ignore the result of MakeRequest, to end up with an invalid blob.
-        mojo::MakeRequest(&blob);
+        mojo::PendingRemote<blink::mojom::Blob> blob;
+        // Ignore the result of InitWithNewPipeAndPassReceiver, to end up with
+        // an invalid blob.
+        ignore_result(blob.InitWithNewPipeAndPassReceiver());
         blobs.push_back(blink::mojom::IDBBlobInfo::New(
             std::move(blob), "fakeUUID", base::string16(), 100, nullptr));
 

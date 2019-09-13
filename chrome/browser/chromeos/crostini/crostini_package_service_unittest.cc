@@ -1888,7 +1888,17 @@ TEST_F(CrostiniPackageServiceTest, InstallNotificationFailsOnVmShutdown) {
       UnorderedElementsAre(IsInstallFailedNotification()));
 }
 
-TEST_F(CrostiniPackageServiceTest, UninstallsQueuesBehindStartingUpInstall) {
+// Disabled on ASan and LSAn builds due to a consistent failure. See
+// crbug.com/1003775
+#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
+#define MAYBE_UninstallsQueuesBehindStartingUpInstall \
+  DISABLED_UninstallsQueuesBehindStartingUpInstall
+#else
+#define MAYBE_UninstallsQueuesBehindStartingUpInstall \
+  UninstallsQueuesBehindStartingUpInstall
+#endif
+TEST_F(CrostiniPackageServiceTest,
+       MAYBE_UninstallsQueuesBehindStartingUpInstall) {
   CrostiniResult result = CrostiniResult::UNKNOWN_ERROR;
   service_->QueueInstallLinuxPackage(
       kCrostiniDefaultVmName, kCrostiniDefaultContainerName, package_file_url_,

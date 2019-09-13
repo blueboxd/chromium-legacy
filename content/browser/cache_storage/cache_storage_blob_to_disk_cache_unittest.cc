@@ -120,13 +120,13 @@ class CacheStorageBlobToDiskCacheTest : public testing::Test {
   }
 
   bool Stream() {
-    blink::mojom::BlobPtr blob_ptr;
+    mojo::PendingRemote<blink::mojom::Blob> blob_remote;
     storage::BlobImpl::Create(
         std::make_unique<storage::BlobDataHandle>(*blob_handle_),
-        MakeRequest(&blob_ptr));
+        blob_remote.InitWithNewPipeAndPassReceiver());
 
     cache_storage_blob_to_disk_cache_->StreamBlobToCache(
-        std::move(disk_cache_entry_), kCacheEntryIndex, std::move(blob_ptr),
+        std::move(disk_cache_entry_), kCacheEntryIndex, std::move(blob_remote),
         blob_handle_->size(),
         base::BindOnce(&CacheStorageBlobToDiskCacheTest::StreamCallback,
                        base::Unretained(this)));

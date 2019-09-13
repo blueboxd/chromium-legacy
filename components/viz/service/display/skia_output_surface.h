@@ -12,6 +12,7 @@
 #include "components/viz/common/resources/resource_id.h"
 #include "components/viz/service/display/external_use_client.h"
 #include "components/viz/service/display/output_surface.h"
+#include "components/viz/service/display/overlay_processor.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkCanvas;

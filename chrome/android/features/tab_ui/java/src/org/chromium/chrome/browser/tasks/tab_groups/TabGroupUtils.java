@@ -5,8 +5,9 @@
 package org.chromium.chrome.browser.tasks.tab_groups;
 
 import android.app.Activity;
-import android.support.annotation.StringRes;
 import android.view.View;
+
+import androidx.annotation.StringRes;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.VisibleForTesting;

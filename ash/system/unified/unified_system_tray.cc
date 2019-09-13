@@ -10,7 +10,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/system/message_center/ash_popup_alignment_delegate.h"
+#include "ash/system/message_center/ash_message_popup_collection.h"
 #include "ash/system/message_center/message_center_ui_controller.h"
 #include "ash/system/message_center/message_center_ui_delegate.h"
 #include "ash/system/message_center/unified_message_center_bubble.h"
@@ -37,7 +37,6 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/message_center/message_center.h"
-#include "ui/message_center/views/message_popup_collection.h"
 
 namespace ash {
 
@@ -56,7 +55,7 @@ class UnifiedSystemTray::UiDelegate : public MessageCenterUiDelegate {
   MessageCenterUiController* ui_controller() { return ui_controller_.get(); }
 
   void SetTrayBubbleHeight(int height) {
-    popup_alignment_delegate_->SetTrayBubbleHeight(height);
+    message_popup_collection_->SetTrayBubbleHeight(height);
   }
   message_center::MessagePopupView* GetPopupViewForNotificationID(
       const std::string& notification_id) {
@@ -66,9 +65,7 @@ class UnifiedSystemTray::UiDelegate : public MessageCenterUiDelegate {
 
  private:
   std::unique_ptr<MessageCenterUiController> ui_controller_;
-  std::unique_ptr<AshPopupAlignmentDelegate> popup_alignment_delegate_;
-  std::unique_ptr<message_center::MessagePopupCollection>
-      message_popup_collection_;
+  std::unique_ptr<AshMessagePopupCollection> message_popup_collection_;
 
   UnifiedSystemTray* const owner_;
 
@@ -82,14 +79,10 @@ UnifiedSystemTray::UiDelegate::UiDelegate(UnifiedSystemTray* owner)
     : owner_(owner) {
   ui_controller_ = std::make_unique<MessageCenterUiController>(this);
   ui_controller_->set_hide_on_last_notification(false);
-  popup_alignment_delegate_ =
-      std::make_unique<AshPopupAlignmentDelegate>(owner->shelf());
   message_popup_collection_ =
-      std::make_unique<message_center::MessagePopupCollection>(
-          popup_alignment_delegate_.get());
-  message_popup_collection_->set_inverse();
+      std::make_unique<AshMessagePopupCollection>(owner->shelf());
   display::Screen* screen = display::Screen::GetScreen();
-  popup_alignment_delegate_->StartObserving(
+  message_popup_collection_->StartObserving(
       screen, screen->GetDisplayNearestWindow(
                   owner->shelf()->GetStatusAreaWidget()->GetNativeWindow()));
 }
@@ -107,7 +100,7 @@ bool UnifiedSystemTray::UiDelegate::ShowPopups() {
 }
 
 void UnifiedSystemTray::UiDelegate::HidePopups() {
-  popup_alignment_delegate_->SetTrayBubbleHeight(0);
+  message_popup_collection_->SetTrayBubbleHeight(0);
 }
 
 bool UnifiedSystemTray::UiDelegate::ShowMessageCenter(bool show_by_click) {

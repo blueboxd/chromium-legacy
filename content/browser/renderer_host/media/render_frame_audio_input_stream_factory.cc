@@ -32,7 +32,7 @@
 #include "content/public/browser/web_contents_media_capture_id.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_parameters.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/audio/public/mojom/audio_processing.mojom.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "url/origin.h"
@@ -101,13 +101,14 @@ void GetSaltOriginAndPermissionsOnUIThread(
 class RenderFrameAudioInputStreamFactory::Core final
     : public mojom::RendererAudioInputStreamFactory {
  public:
-  Core(mojom::RendererAudioInputStreamFactoryRequest request,
+  Core(mojo::PendingReceiver<mojom::RendererAudioInputStreamFactory> receiver,
        MediaStreamManager* media_stream_manager,
        RenderFrameHost* render_frame_host);
 
   ~Core() final;
 
-  void Init(mojom::RendererAudioInputStreamFactoryRequest request);
+  void Init(
+      mojo::PendingReceiver<mojom::RendererAudioInputStreamFactory> receiver);
 
   // mojom::RendererAudioInputStreamFactory implementation.
   void CreateStream(
@@ -144,7 +145,7 @@ class RenderFrameAudioInputStreamFactory::Core final
   const int frame_id_;
   const url::Origin origin_;
 
-  mojo::Binding<RendererAudioInputStreamFactory> binding_;
+  mojo::Receiver<RendererAudioInputStreamFactory> receiver_{this};
   // Always null-check this weak pointer before dereferencing it.
   base::WeakPtr<ForwardingAudioStreamFactory::Core> forwarding_factory_;
 
@@ -154,10 +155,10 @@ class RenderFrameAudioInputStreamFactory::Core final
 };
 
 RenderFrameAudioInputStreamFactory::RenderFrameAudioInputStreamFactory(
-    mojom::RendererAudioInputStreamFactoryRequest request,
+    mojo::PendingReceiver<mojom::RendererAudioInputStreamFactory> receiver,
     MediaStreamManager* media_stream_manager,
     RenderFrameHost* render_frame_host)
-    : core_(new Core(std::move(request),
+    : core_(new Core(std::move(receiver),
                      media_stream_manager,
                      render_frame_host)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -175,14 +176,13 @@ RenderFrameAudioInputStreamFactory::~RenderFrameAudioInputStreamFactory() {
 }
 
 RenderFrameAudioInputStreamFactory::Core::Core(
-    mojom::RendererAudioInputStreamFactoryRequest request,
+    mojo::PendingReceiver<mojom::RendererAudioInputStreamFactory> receiver,
     MediaStreamManager* media_stream_manager,
     RenderFrameHost* render_frame_host)
     : media_stream_manager_(media_stream_manager),
       process_id_(render_frame_host->GetProcess()->GetID()),
       frame_id_(render_frame_host->GetRoutingID()),
-      origin_(render_frame_host->GetLastCommittedOrigin()),
-      binding_(this) {
+      origin_(render_frame_host->GetLastCommittedOrigin()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ForwardingAudioStreamFactory::Core* tmp_factory =
@@ -191,7 +191,7 @@ RenderFrameAudioInputStreamFactory::Core::Core(
   if (!tmp_factory) {
     // The only case when we not have a forwarding factory at this point is when
     // the frame belongs to an interstitial. Interstitials don't need audio, so
-    // it's fine to drop the request.
+    // it's fine to drop the receiver.
     return;
   }
 
@@ -201,7 +201,7 @@ RenderFrameAudioInputStreamFactory::Core::Core(
   // thread.
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&Core::Init, base::Unretained(this), std::move(request)));
+      base::BindOnce(&Core::Init, base::Unretained(this), std::move(receiver)));
 }
 
 RenderFrameAudioInputStreamFactory::Core::~Core() {
@@ -209,9 +209,9 @@ RenderFrameAudioInputStreamFactory::Core::~Core() {
 }
 
 void RenderFrameAudioInputStreamFactory::Core::Init(
-    mojom::RendererAudioInputStreamFactoryRequest request) {
+    mojo::PendingReceiver<mojom::RendererAudioInputStreamFactory> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  binding_.Bind(std::move(request));
+  receiver_.Bind(std::move(receiver));
 }
 
 void RenderFrameAudioInputStreamFactory::Core::CreateStream(

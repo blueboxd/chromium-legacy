@@ -402,6 +402,9 @@ def getter_base_name(interface, attribute, arguments):
         return CONTENT_ATTRIBUTE_GETTER_NAMES[base_idl_type]
     if 'URL' in attribute.extended_attributes:
         return 'GetURLAttribute'
+    idl_type = attribute.idl_type
+    if idl_type.is_frozen_array:
+        return 'Get%sArrayAttribute' % idl_type.element_type
     return 'FastGetAttribute'
 
 
@@ -570,6 +573,9 @@ def setter_base_name(interface, attribute, arguments):
     base_idl_type = attribute.idl_type.base_type
     if base_idl_type in CONTENT_ATTRIBUTE_SETTER_NAMES:
         return CONTENT_ATTRIBUTE_SETTER_NAMES[base_idl_type]
+    idl_type = attribute.idl_type
+    if idl_type.is_frozen_array:
+        return 'Set%sArrayAttribute' % idl_type.element_type
     return 'setAttribute'
 
 

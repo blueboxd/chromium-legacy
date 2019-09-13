@@ -34,6 +34,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/synchronization/lock.h"
 #include "third_party/blink/renderer/platform/heap/atomic_entry_flag.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/heap/threading_traits.h"
@@ -60,6 +61,7 @@ class IncrementalMarkingScope;
 }  // namespace incremental_marking_test
 
 class CancelableTaskScheduler;
+class ConcurrentMarkingVisitor;
 class MarkingVisitor;
 class PersistentNode;
 class PersistentRegion;
@@ -180,6 +182,8 @@ class PLATFORM_EXPORT ThreadState final {
   class LsanDisabledScope;
   class MainThreadGCForbiddenScope;
   class NoAllocationScope;
+  class StatisticsCollector;
+  struct Statistics;
   class SweepForbiddenScope;
 
   using V8TraceRootsCallback = void (*)(v8::Isolate*, Visitor*);
@@ -197,12 +201,12 @@ class PLATFORM_EXPORT ThreadState final {
     return incremental_marking_flag_.MightBeEntered();
   }
 
-  static void AttachMainThread();
+  static ThreadState* AttachMainThread();
 
   // Associate ThreadState object with the current thread. After this
   // call thread can start using the garbage collected heap infrastructure.
   // It also has to periodically check for safepoints.
-  static void AttachCurrentThread();
+  static ThreadState* AttachCurrentThread();
 
   // Disassociate attached ThreadState from the current thread. The thread
   // can no longer use the garbage collected heap after this call.
@@ -294,8 +298,12 @@ class PLATFORM_EXPORT ThreadState final {
   void EnableIncrementalMarkingBarrier();
   void DisableIncrementalMarkingBarrier();
 
+  // Returns true if concurrent markers are still running.
+  bool ConcurrentMarkingStep();
+  void ScheduleConcurrentMarking();
+  void PerformConcurrentMark(std::unique_ptr<ConcurrentMarkingVisitor>);
+
   void CompleteSweep();
-  void FinishSnapshot();
   void NotifySweepDone();
   void PostSweep();
 
@@ -337,19 +345,6 @@ class PLATFORM_EXPORT ThreadState final {
   PersistentRegion* GetWeakPersistentRegion() const {
     return weak_persistent_region_.get();
   }
-
-  struct GCSnapshotInfo {
-    STACK_ALLOCATED();
-
-   public:
-    GCSnapshotInfo(wtf_size_t num_object_types);
-
-    // Map from gcInfoIndex (vector-index) to count/size.
-    Vector<int> live_count;
-    Vector<int> dead_count;
-    Vector<size_t> live_size;
-    Vector<size_t> dead_size;
-  };
 
   void RegisterStaticPersistentNode(PersistentNode*);
   void ReleaseStaticPersistentNodes();
@@ -587,6 +582,11 @@ class PLATFORM_EXPORT ThreadState final {
     std::unique_ptr<MarkingVisitor> visitor;
   };
   GCData current_gc_data_;
+
+  std::unique_ptr<CancelableTaskScheduler> marker_scheduler_;
+  uint8_t active_markers_{0};
+  base::Lock active_concurrent_markers_lock_;
+  size_t concurrently_marked_bytes_{0};
 
   std::unique_ptr<CancelableTaskScheduler> sweeper_scheduler_;
 

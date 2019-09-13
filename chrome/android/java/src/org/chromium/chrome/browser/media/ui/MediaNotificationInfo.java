@@ -6,8 +6,9 @@ package org.chromium.chrome.browser.media.ui;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.services.media_session.MediaMetadata;

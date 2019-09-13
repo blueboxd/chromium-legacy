@@ -6,13 +6,14 @@ package org.chromium.chrome.browser.payments.ui;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.support.annotation.ColorInt;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.util.AttributeSet;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.annotation.ColorInt;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;

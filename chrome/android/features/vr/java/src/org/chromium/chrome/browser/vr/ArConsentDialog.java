@@ -6,7 +6,8 @@ package org.chromium.chrome.browser.vr;
 
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
-import android.support.annotation.NonNull;
+
+import androidx.annotation.NonNull;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;

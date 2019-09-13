@@ -46,8 +46,6 @@ source_set("web_applications") {
     "web_app_registry_update.h",
     "web_app_sync_bridge.cc",
     "web_app_sync_bridge.h",
-    "web_app_sync_manager.cc",
-    "web_app_sync_manager.h",
   ]
 
   deps = [

@@ -22,9 +22,9 @@ class DisplayResourceProvider;
 }
 
 namespace viz {
+class OutputSurface;
 class OverlayCandidateValidator;
 class RendererSettings;
-class ContextProvider;
 
 class VIZ_SERVICE_EXPORT OverlayProcessor {
  public:
@@ -92,8 +92,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
   using StrategyList = std::vector<std::unique_ptr<Strategy>>;
 
   static std::unique_ptr<OverlayProcessor> CreateOverlayProcessor(
-      const ContextProvider* context_provider,
-      gpu::SurfaceHandle surface_handle,
+      const OutputSurface& output_surface,
       const RendererSettings& renderer_settings);
 
   virtual ~OverlayProcessor();

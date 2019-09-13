@@ -17,6 +17,7 @@
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/browser/cache_storage/scoped_writable_entry.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/disk_cache/disk_cache.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
@@ -36,9 +37,9 @@ struct PutContext {
 
   PutContext(blink::mojom::FetchAPIRequestPtr request,
              blink::mojom::FetchAPIResponsePtr response,
-             blink::mojom::BlobPtr blob,
+             mojo::PendingRemote<blink::mojom::Blob> blob,
              uint64_t blob_size,
-             blink::mojom::BlobPtr side_data_blob,
+             mojo::PendingRemote<blink::mojom::Blob> side_data_blob,
              uint64_t side_data_blob_size,
              int64_t trace_id);
 
@@ -47,9 +48,9 @@ struct PutContext {
   // Provided by the constructor.
   blink::mojom::FetchAPIRequestPtr request;
   blink::mojom::FetchAPIResponsePtr response;
-  blink::mojom::BlobPtr blob;
+  mojo::PendingRemote<blink::mojom::Blob> blob;
   uint64_t blob_size;
-  blink::mojom::BlobPtr side_data_blob;
+  mojo::PendingRemote<blink::mojom::Blob> side_data_blob;
   uint64_t side_data_blob_size;
   int64_t trace_id;
 

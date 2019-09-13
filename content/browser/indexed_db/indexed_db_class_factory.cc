@@ -59,10 +59,11 @@ IndexedDBClassFactory::CreateIndexedDBTransaction(
     const std::set<int64_t>& scope,
     blink::mojom::IDBTransactionMode mode,
     TasksAvailableCallback tasks_available_callback,
+    IndexedDBTransaction::TearDownCallback tear_down_callback,
     IndexedDBBackingStore::Transaction* backing_store_transaction) {
   return base::WrapUnique(new IndexedDBTransaction(
       id, connection, scope, mode, std::move(tasks_available_callback),
-      backing_store_transaction));
+      std::move(tear_down_callback), backing_store_transaction));
 }
 
 }  // namespace content

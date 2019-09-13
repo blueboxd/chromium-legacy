@@ -192,7 +192,8 @@
         "args": [
           "--gtest_filter=WebRtc*MANUAL*:-UsingRealWebcam*",
           "--run-manual",
-          "--ui-test-action-max-timeout=120000"
+          "--ui-test-action-max-timeout=110000",
+          "--test-launcher-timeout=120000"
         ],
         "merge": {
           "args": [],
@@ -351,7 +352,8 @@
         "args": [
           "--gtest_filter=WebRtc*MANUAL*:-UsingRealWebcam*",
           "--run-manual",
-          "--ui-test-action-max-timeout=120000"
+          "--ui-test-action-max-timeout=110000",
+          "--test-launcher-timeout=120000"
         ],
         "merge": {
           "args": [],
@@ -490,7 +492,8 @@
         "args": [
           "--gtest_filter=WebRtc*MANUAL*:-UsingRealWebcam*",
           "--run-manual",
-          "--ui-test-action-max-timeout=120000"
+          "--ui-test-action-max-timeout=110000",
+          "--test-launcher-timeout=120000"
         ],
         "merge": {
           "args": [],
@@ -622,7 +625,8 @@
         "args": [
           "--gtest_filter=WebRtc*MANUAL*:-UsingRealWebcam*",
           "--run-manual",
-          "--ui-test-action-max-timeout=120000"
+          "--ui-test-action-max-timeout=110000",
+          "--test-launcher-timeout=120000"
         ],
         "merge": {
           "args": [],
@@ -754,7 +758,8 @@
         "args": [
           "--gtest_filter=WebRtc*MANUAL*:-UsingRealWebcam*",
           "--run-manual",
-          "--ui-test-action-max-timeout=120000"
+          "--ui-test-action-max-timeout=110000",
+          "--test-launcher-timeout=120000"
         ],
         "merge": {
           "args": [],

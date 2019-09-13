@@ -101,10 +101,6 @@ void HTMLEmbedElement::CollectStyleForPresentationAttribute(
 
 void HTMLEmbedElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  // Changing an attribute may change the content, type of content, layout
-  // object type, or all of the above. Not safe to re-use through reattach.
-  SetDisposeView();
-
   if (params.name == kTypeAttr) {
     SetServiceType(params.new_value.LowerASCII());
     wtf_size_t pos = service_type_.Find(";");
@@ -112,6 +108,7 @@ void HTMLEmbedElement::ParseAttribute(
       SetServiceType(service_type_.Left(pos));
     if (GetLayoutObject()) {
       SetNeedsPluginUpdate(true);
+      SetDisposeView();
       GetLayoutObject()->SetNeedsLayoutAndFullPaintInvalidation(
           "Embed type changed");
     }
@@ -119,9 +116,11 @@ void HTMLEmbedElement::ParseAttribute(
     // TODO(schenney): Remove this branch? It's not in the spec and we're not in
     // the HTMLAppletElement hierarchy.
     SetUrl(StripLeadingAndTrailingHTMLSpaces(params.new_value));
+    SetDisposeView();
   } else if (params.name == kSrcAttr) {
     SetUrl(StripLeadingAndTrailingHTMLSpaces(params.new_value));
     if (GetLayoutObject() && IsImageType()) {
+      SetDisposeView();
       if (!image_loader_)
         image_loader_ = MakeGarbageCollected<HTMLImageLoader>(this);
       image_loader_->UpdateFromElement(ImageLoader::kUpdateIgnorePreviousError);

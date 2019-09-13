@@ -5,11 +5,12 @@
 package org.chromium.chrome.browser.keyboard_accessory.sheet_component;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 /**
  * This ViewPager disables all animations - swipes and smooth transitions.

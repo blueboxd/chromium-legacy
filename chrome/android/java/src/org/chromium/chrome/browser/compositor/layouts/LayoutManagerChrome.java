@@ -5,8 +5,9 @@
 package org.chromium.chrome.browser.compositor.layouts;
 
 import android.content.Context;
-import android.support.annotation.Nullable;
 import android.view.ViewGroup;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;

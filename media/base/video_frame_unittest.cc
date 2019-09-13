@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/format_macros.h"
 #include "base/memory/aligned_memory.h"
@@ -18,6 +19,7 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/simple_sync_token_client.h"
+#include "media/video/fake_gpu_memory_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libyuv/include/libyuv.h"
 
@@ -375,6 +377,40 @@ TEST(VideoFrame, WrapUnsafeSharedMemoryWithOffset) {
   EXPECT_EQ(frame->visible_rect(), visible_rect);
   EXPECT_EQ(frame->timestamp(), timestamp);
   EXPECT_EQ(frame->data(media::VideoFrame::kYPlane)[0], 0xff);
+}
+
+TEST(VideoFrame, WrapExternalGpuMemoryBuffer) {
+  gfx::Size coded_size = gfx::Size(256, 256);
+  gfx::Rect visible_rect(coded_size);
+  auto timestamp = base::TimeDelta::FromMilliseconds(1);
+  std::unique_ptr<gfx::GpuMemoryBuffer> gmb =
+      std::make_unique<FakeGpuMemoryBuffer>(
+          coded_size, gfx::BufferFormat::YUV_420_BIPLANAR);
+  gfx::GpuMemoryBuffer* gmb_raw_ptr = gmb.get();
+  gpu::MailboxHolder mailbox_holders[media::VideoFrame::kMaxPlanes] = {
+      gpu::MailboxHolder(gpu::Mailbox::Generate(), gpu::SyncToken(), 5),
+      gpu::MailboxHolder(gpu::Mailbox::Generate(), gpu::SyncToken(), 10)};
+  auto frame = VideoFrame::WrapExternalGpuMemoryBuffer(
+      visible_rect, coded_size, std::move(gmb), mailbox_holders,
+      base::DoNothing::Once<const gpu::SyncToken&>(), timestamp);
+
+  EXPECT_EQ(frame->layout().format(), PIXEL_FORMAT_NV12);
+  EXPECT_EQ(frame->layout().coded_size(), coded_size);
+  EXPECT_EQ(frame->layout().num_planes(), 2u);
+  EXPECT_EQ(frame->layout().is_multi_planar(), false);
+  for (size_t i = 0; i < 2; ++i) {
+    EXPECT_EQ(frame->layout().planes()[i].stride, coded_size.width());
+  }
+  EXPECT_EQ(frame->storage_type(), VideoFrame::STORAGE_GPU_MEMORY_BUFFER);
+  EXPECT_TRUE(frame->HasGpuMemoryBuffer());
+  EXPECT_EQ(frame->GetGpuMemoryBuffer(), gmb_raw_ptr);
+  EXPECT_EQ(frame->coded_size(), coded_size);
+  EXPECT_EQ(frame->visible_rect(), visible_rect);
+  EXPECT_EQ(frame->timestamp(), timestamp);
+  EXPECT_EQ(frame->HasTextures(), true);
+  EXPECT_EQ(frame->HasReleaseMailboxCB(), true);
+  EXPECT_EQ(frame->mailbox_holder(0).mailbox, mailbox_holders[0].mailbox);
+  EXPECT_EQ(frame->mailbox_holder(1).mailbox, mailbox_holders[1].mailbox);
 }
 
 #if defined(OS_LINUX)

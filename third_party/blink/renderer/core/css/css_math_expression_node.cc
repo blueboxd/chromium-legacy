@@ -158,8 +158,8 @@ String CSSMathExpressionNumericLiteral::CustomCSSText() const {
   return value_->CssText();
 }
 
-scoped_refptr<const CalculationExpressionNode>
-CSSMathExpressionNumericLiteral::ToCalculationExpression(
+base::Optional<PixelsAndPercent>
+CSSMathExpressionNumericLiteral::ToPixelsAndPercent(
     const CSSToLengthConversionData& conversion_data) const {
   PixelsAndPercent value(0, 0);
   switch (category_) {
@@ -179,7 +179,14 @@ CSSMathExpressionNumericLiteral::ToCalculationExpression(
     default:
       NOTREACHED();
   }
-  return base::MakeRefCounted<CalculationExpressionLeafNode>(value);
+  return value;
+}
+
+scoped_refptr<const CalculationExpressionNode>
+CSSMathExpressionNumericLiteral::ToCalculationExpression(
+    const CSSToLengthConversionData& conversion_data) const {
+  return base::MakeRefCounted<CalculationExpressionLeafNode>(
+      *ToPixelsAndPercent(conversion_data));
 }
 
 double CSSMathExpressionNumericLiteral::DoubleValue() const {
@@ -471,6 +478,52 @@ CSSMathExpressionBinaryOperation::CSSMathExpressionBinaryOperation(
 
 bool CSSMathExpressionBinaryOperation::IsZero() const {
   return !DoubleValue();
+}
+
+base::Optional<PixelsAndPercent>
+CSSMathExpressionBinaryOperation::ToPixelsAndPercent(
+    const CSSToLengthConversionData& conversion_data) const {
+  base::Optional<PixelsAndPercent> result;
+  switch (operator_) {
+    case CSSMathOperator::kAdd:
+    case CSSMathOperator::kSubtract: {
+      result = left_side_->ToPixelsAndPercent(conversion_data);
+      if (!result)
+        return base::nullopt;
+
+      base::Optional<PixelsAndPercent> other_side =
+          right_side_->ToPixelsAndPercent(conversion_data);
+      if (!other_side)
+        return base::nullopt;
+      if (operator_ == CSSMathOperator::kAdd) {
+        result->pixels += other_side->pixels;
+        result->percent += other_side->percent;
+      } else {
+        result->pixels -= other_side->pixels;
+        result->percent -= other_side->percent;
+      }
+      break;
+    }
+    case CSSMathOperator::kMultiply:
+    case CSSMathOperator::kDivide: {
+      const CSSMathExpressionNode* number_side =
+          GetNumberSide(left_side_, right_side_);
+      const CSSMathExpressionNode* other_side =
+          left_side_ == number_side ? right_side_ : left_side_;
+      result = other_side->ToPixelsAndPercent(conversion_data);
+      if (!result)
+        return base::nullopt;
+      float number = number_side->DoubleValue();
+      if (operator_ == CSSMathOperator::kDivide)
+        number = 1.0 / number;
+      result->pixels *= number;
+      result->percent *= number;
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
+  return result;
 }
 
 scoped_refptr<const CalculationExpressionNode>
@@ -831,6 +884,12 @@ String CSSMathExpressionVariadicOperation::CustomCSSText() const {
   return result.ToString();
 }
 
+base::Optional<PixelsAndPercent>
+CSSMathExpressionVariadicOperation::ToPixelsAndPercent(
+    const CSSToLengthConversionData& conversion_data) const {
+  return base::nullopt;
+}
+
 scoped_refptr<const CalculationExpressionNode>
 CSSMathExpressionVariadicOperation::ToCalculationExpression(
     const CSSToLengthConversionData& data) const {
@@ -1093,6 +1152,15 @@ class CSSMathExpressionNodeParser {
     return ParseAdditiveValueExpression(tokens, depth);
   }
 };
+
+scoped_refptr<CalculationValue> CSSMathExpressionNode::ToCalcValue(
+    const CSSToLengthConversionData& conversion_data,
+    ValueRange range) const {
+  if (auto maybe_pixels_and_percent = ToPixelsAndPercent(conversion_data))
+    return CalculationValue::Create(*maybe_pixels_and_percent, range);
+  return CalculationValue::CreateSimplified(
+      ToCalculationExpression(conversion_data), range);
+}
 
 // static
 CSSMathExpressionNode* CSSMathExpressionNode::Create(

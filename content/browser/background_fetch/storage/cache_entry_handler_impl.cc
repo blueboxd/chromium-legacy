@@ -5,6 +5,7 @@
 #include "content/browser/background_fetch/storage/cache_entry_handler_impl.h"
 
 #include "base/guid.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 
 namespace content {
@@ -20,17 +21,17 @@ std::unique_ptr<PutContext> CacheEntryHandlerImpl::CreatePutContext(
     blink::mojom::FetchAPIRequestPtr request,
     blink::mojom::FetchAPIResponsePtr response,
     int64_t trace_id) {
-  blink::mojom::BlobPtr response_blob;
+  mojo::PendingRemote<blink::mojom::Blob> response_blob;
   uint64_t response_blob_size = blink::BlobUtils::kUnknownSize;
-  blink::mojom::BlobPtr request_blob;
+  mojo::PendingRemote<blink::mojom::Blob> request_blob;
   uint64_t request_blob_size = blink::BlobUtils::kUnknownSize;
 
   if (response->blob) {
-    response_blob.Bind(std::move(response->blob->blob));
+    response_blob = std::move(response->blob->blob);
     response_blob_size = response->blob->size;
   }
   if (request->blob) {
-    request_blob.Bind(std::move(request->blob->blob));
+    request_blob = std::move(request->blob->blob);
     request_blob_size = request->blob->size;
   }
 

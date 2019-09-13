@@ -5,12 +5,13 @@
 package org.chromium.chrome.browser.contacts_picker;
 
 import android.content.ContentResolver;
-import android.support.annotation.IntDef;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.Adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;

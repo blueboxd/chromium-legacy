@@ -9,9 +9,10 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Parcel;
-import android.support.annotation.MainThread;
-import android.support.annotation.Nullable;
 import android.util.Log;
+
+import androidx.annotation.MainThread;
+import androidx.annotation.Nullable;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.ipc.invalidation.ticl.android2.channel.GcmUpstreamSenderService;

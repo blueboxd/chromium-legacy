@@ -5,11 +5,12 @@
 package org.chromium.chrome.features.start_surface;
 
 import android.app.Activity;
-import android.support.annotation.Nullable;
 import android.support.v4.widget.NestedScrollView;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
+
+import androidx.annotation.Nullable;
 
 import com.google.android.libraries.feed.api.client.stream.Stream;
 

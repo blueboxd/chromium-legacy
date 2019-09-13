@@ -12,16 +12,17 @@
 #include "components/viz/service/viz_service_export.h"
 
 namespace viz {
+class OutputSurface;
 class RendererSettings;
-class ContextProvider;
 
 // This class that can be used to answer questions about possible overlay
 // configurations for a particular output device.
 class VIZ_SERVICE_EXPORT OverlayCandidateValidator {
  public:
+  // TODO(weiliangc): Replace OutputSurface with OutputSurface::Capabilities.
   static std::unique_ptr<OverlayCandidateValidator> Create(
       gpu::SurfaceHandle surface_handle,
-      const ContextProvider* context_provider,
+      const OutputSurface& output_surface,
       const RendererSettings& renderer_settings);
   virtual ~OverlayCandidateValidator();
 

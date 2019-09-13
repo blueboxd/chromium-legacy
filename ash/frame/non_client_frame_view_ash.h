@@ -64,10 +64,6 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView {
   // will have some transparency added when the frame is drawn.
   void SetFrameColors(SkColor active_frame_color, SkColor inactive_frame_color);
 
-  // Sets the height of the header. If |height| has no value (the default), the
-  // preferred height is used.
-  void SetHeaderHeight(base::Optional<int> height);
-
   // Get the view of the header.
   HeaderView* GetHeaderView();
 

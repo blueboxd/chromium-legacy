@@ -5,12 +5,13 @@
 package org.chromium.chrome.browser.ntp.cards;
 
 import android.content.res.Resources;
-import android.support.annotation.CallSuper;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnAttachStateChangeListener;
 import android.view.ViewGroup;
+
+import androidx.annotation.CallSuper;
 
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.ContextMenuManager.ContextMenuItemId;

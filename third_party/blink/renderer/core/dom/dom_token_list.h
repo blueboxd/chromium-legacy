@@ -59,7 +59,7 @@ class CORE_EXPORT DOMTokenList : public ScriptWrappable {
                const AtomicString& new_token,
                ExceptionState&);
   bool supports(const AtomicString&, ExceptionState&);
-  const AtomicString& value() const { return value_; }
+  const AtomicString& value() const;
   void setValue(const AtomicString&);
   const AtomicString& toString() const { return value(); }
 
@@ -84,7 +84,6 @@ class CORE_EXPORT DOMTokenList : public ScriptWrappable {
   void UpdateWithTokenSet(const SpaceSplitString&);
 
   SpaceSplitString token_set_;
-  AtomicString value_;
   const Member<Element> element_;
   const QualifiedName attribute_name_;
   bool is_in_update_step_ = false;

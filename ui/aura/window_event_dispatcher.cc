@@ -1032,14 +1032,6 @@ DispatchDetails WindowEventDispatcher::PreDispatchKeyEvent(
       !host_->ShouldSendKeyEventToIme()) {
     return DispatchDetails();
   }
-
-  // At this point (i.e: EP_PREDISPATCH), event target is still not set, so do
-  // it explicitly here thus making it possible for InputMethodContext
-  // implementation to retrieve target window through KeyEvent::target().
-  // Event::target is reset at WindowTreeHost::DispatchKeyEventPostIME(), just
-  // after key is processed by InputMethodContext.
-  ui::Event::DispatcherApi(event).set_target(window());
-
   DispatchDetails details = host_->GetInputMethod()->DispatchKeyEvent(event);
   event->StopPropagation();
   return details;

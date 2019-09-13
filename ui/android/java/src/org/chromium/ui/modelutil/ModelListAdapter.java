@@ -4,12 +4,13 @@
 
 package org.chromium.ui.modelutil;
 
-import android.support.annotation.Nullable;
 import android.util.Pair;
 import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.ui.R;

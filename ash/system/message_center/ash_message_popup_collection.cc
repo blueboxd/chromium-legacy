@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/message_center/ash_popup_alignment_delegate.h"
+#include "ash/system/message_center/ash_message_popup_collection.h"
 
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
@@ -17,7 +17,6 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
-#include "ui/message_center/views/message_popup_collection.h"
 #include "ui/wm/core/shadow_types.h"
 
 namespace ash {
@@ -28,30 +27,29 @@ const int kToastMarginX = 7;
 
 }  // namespace
 
-AshPopupAlignmentDelegate::AshPopupAlignmentDelegate(Shelf* shelf)
-    : screen_(NULL), shelf_(shelf), tray_bubble_height_(0) {
+AshMessagePopupCollection::AshMessagePopupCollection(Shelf* shelf)
+    : screen_(nullptr), shelf_(shelf), tray_bubble_height_(0) {
+  set_inverse();
   shelf_->AddObserver(this);
 }
 
-AshPopupAlignmentDelegate::~AshPopupAlignmentDelegate() {
+AshMessagePopupCollection::~AshMessagePopupCollection() {
   if (screen_)
     screen_->RemoveObserver(this);
-  Shell::Get()->RemoveShellObserver(this);
   shelf_->RemoveObserver(this);
 }
 
-void AshPopupAlignmentDelegate::StartObserving(
+void AshMessagePopupCollection::StartObserving(
     display::Screen* screen,
     const display::Display& display) {
   screen_ = screen;
   work_area_ = display.work_area();
   screen->AddObserver(this);
-  Shell::Get()->AddShellObserver(this);
   if (tray_bubble_height_ > 0)
     UpdateWorkArea();
 }
 
-void AshPopupAlignmentDelegate::SetTrayBubbleHeight(int height) {
+void AshMessagePopupCollection::SetTrayBubbleHeight(int height) {
   const int old_tray_bubble_height = tray_bubble_height_;
 
   tray_bubble_height_ = height;
@@ -72,7 +70,7 @@ void AshPopupAlignmentDelegate::SetTrayBubbleHeight(int height) {
     ResetBounds();
 }
 
-int AshPopupAlignmentDelegate::GetToastOriginX(
+int AshMessagePopupCollection::GetToastOriginX(
     const gfx::Rect& toast_bounds) const {
   // In Ash, RTL UI language mirrors the whole ash layout, so the toast
   // widgets should be at the bottom-left instead of bottom right.
@@ -84,32 +82,32 @@ int AshPopupAlignmentDelegate::GetToastOriginX(
   return work_area_.right() - kToastMarginX - toast_bounds.width();
 }
 
-int AshPopupAlignmentDelegate::GetBaseline() const {
+int AshMessagePopupCollection::GetBaseline() const {
   return work_area_.bottom() - kUnifiedMenuPadding - tray_bubble_height_;
 }
 
-gfx::Rect AshPopupAlignmentDelegate::GetWorkArea() const {
+gfx::Rect AshMessagePopupCollection::GetWorkArea() const {
   gfx::Rect work_area_without_tray_bubble = work_area_;
   work_area_without_tray_bubble.set_height(
       work_area_without_tray_bubble.height() - tray_bubble_height_);
   return work_area_without_tray_bubble;
 }
 
-bool AshPopupAlignmentDelegate::IsTopDown() const {
+bool AshMessagePopupCollection::IsTopDown() const {
   return false;
 }
 
-bool AshPopupAlignmentDelegate::IsFromLeft() const {
+bool AshMessagePopupCollection::IsFromLeft() const {
   return GetAlignment() == SHELF_ALIGNMENT_LEFT;
 }
 
-bool AshPopupAlignmentDelegate::RecomputeAlignment(
+bool AshMessagePopupCollection::RecomputeAlignment(
     const display::Display& display) {
   // Nothing needs to be done.
   return false;
 }
 
-void AshPopupAlignmentDelegate::ConfigureWidgetInitParamsForContainer(
+void AshMessagePopupCollection::ConfigureWidgetInitParamsForContainer(
     views::Widget* widget,
     views::Widget::InitParams* init_params) {
   init_params->shadow_type = views::Widget::InitParams::SHADOW_TYPE_DROP;
@@ -119,21 +117,21 @@ void AshPopupAlignmentDelegate::ConfigureWidgetInitParamsForContainer(
       kShellWindowId_StatusContainer);
 }
 
-bool AshPopupAlignmentDelegate::IsPrimaryDisplayForNotification() const {
+bool AshMessagePopupCollection::IsPrimaryDisplayForNotification() const {
   return screen_ &&
          GetCurrentDisplay().id() == screen_->GetPrimaryDisplay().id();
 }
 
-ShelfAlignment AshPopupAlignmentDelegate::GetAlignment() const {
+ShelfAlignment AshMessagePopupCollection::GetAlignment() const {
   return shelf_->alignment();
 }
 
-display::Display AshPopupAlignmentDelegate::GetCurrentDisplay() const {
+display::Display AshMessagePopupCollection::GetCurrentDisplay() const {
   return display::Screen::GetScreen()->GetDisplayNearestWindow(
       shelf_->GetWindow());
 }
 
-void AshPopupAlignmentDelegate::UpdateWorkArea() {
+void AshMessagePopupCollection::UpdateWorkArea() {
   gfx::Rect new_work_area =
       WorkAreaInsets::ForWindow(shelf_->GetWindow()->GetRootWindow())
           ->user_work_area_bounds();
@@ -147,14 +145,14 @@ void AshPopupAlignmentDelegate::UpdateWorkArea() {
 ///////////////////////////////////////////////////////////////////////////////
 // ShelfObserver:
 
-void AshPopupAlignmentDelegate::OnShelfWorkAreaInsetsChanged() {
+void AshMessagePopupCollection::OnShelfWorkAreaInsetsChanged() {
   UpdateWorkArea();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // display::DisplayObserver:
 
-void AshPopupAlignmentDelegate::OnDisplayMetricsChanged(
+void AshMessagePopupCollection::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t metrics) {
   if (GetCurrentDisplay().id() == display.id())

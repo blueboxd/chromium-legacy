@@ -5,11 +5,12 @@
 package org.chromium.chrome.browser.customtabs;
 
 import android.app.Activity;
-import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.support.test.rule.UiThreadTestRule;
+
+import androidx.annotation.Nullable;
 
 import org.hamcrest.Matchers;
 import org.junit.After;

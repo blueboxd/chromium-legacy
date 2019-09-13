@@ -1959,8 +1959,10 @@ interface Element : Node
     getter ariaColIndex
     getter ariaColSpan
     getter ariaControls
+    getter ariaControlsElements
     getter ariaCurrent
     getter ariaDescribedBy
+    getter ariaDescribedByElements
     getter ariaDetails
     getter ariaDetailsElement
     getter ariaDisabled
@@ -1968,11 +1970,13 @@ interface Element : Node
     getter ariaErrorMessageElement
     getter ariaExpanded
     getter ariaFlowTo
+    getter ariaFlowToElements
     getter ariaHasPopup
     getter ariaHidden
     getter ariaKeyShortcuts
     getter ariaLabel
     getter ariaLabelledBy
+    getter ariaLabelledByElements
     getter ariaLevel
     getter ariaLive
     getter ariaModal
@@ -1980,6 +1984,7 @@ interface Element : Node
     getter ariaMultiSelectable
     getter ariaOrientation
     getter ariaOwns
+    getter ariaOwnsElements
     getter ariaPlaceholder
     getter ariaPosInSet
     getter ariaPressed
@@ -2104,8 +2109,10 @@ interface Element : Node
     setter ariaColIndex
     setter ariaColSpan
     setter ariaControls
+    setter ariaControlsElements
     setter ariaCurrent
     setter ariaDescribedBy
+    setter ariaDescribedByElements
     setter ariaDetails
     setter ariaDetailsElement
     setter ariaDisabled
@@ -2113,11 +2120,13 @@ interface Element : Node
     setter ariaErrorMessageElement
     setter ariaExpanded
     setter ariaFlowTo
+    setter ariaFlowToElements
     setter ariaHasPopup
     setter ariaHidden
     setter ariaKeyShortcuts
     setter ariaLabel
     setter ariaLabelledBy
+    setter ariaLabelledByElements
     setter ariaLevel
     setter ariaLive
     setter ariaModal
@@ -2125,6 +2134,7 @@ interface Element : Node
     setter ariaMultiSelectable
     setter ariaOrientation
     setter ariaOwns
+    setter ariaOwnsElements
     setter ariaPlaceholder
     setter ariaPosInSet
     setter ariaPressed
@@ -2174,8 +2184,10 @@ interface ElementInternals
     getter ariaColIndex
     getter ariaColSpan
     getter ariaControls
+    getter ariaControlsElements
     getter ariaCurrent
     getter ariaDescribedBy
+    getter ariaDescribedByElements
     getter ariaDetails
     getter ariaDetailsElement
     getter ariaDisabled
@@ -2183,11 +2195,13 @@ interface ElementInternals
     getter ariaErrorMessageElement
     getter ariaExpanded
     getter ariaFlowTo
+    getter ariaFlowToElements
     getter ariaHasPopup
     getter ariaHidden
     getter ariaKeyShortcuts
     getter ariaLabel
     getter ariaLabelledBy
+    getter ariaLabelledByElements
     getter ariaLevel
     getter ariaLive
     getter ariaModal
@@ -2195,6 +2209,7 @@ interface ElementInternals
     getter ariaMultiSelectable
     getter ariaOrientation
     getter ariaOwns
+    getter ariaOwnsElements
     getter ariaPlaceholder
     getter ariaPosInSet
     getter ariaPressed
@@ -2232,8 +2247,10 @@ interface ElementInternals
     setter ariaColIndex
     setter ariaColSpan
     setter ariaControls
+    setter ariaControlsElements
     setter ariaCurrent
     setter ariaDescribedBy
+    setter ariaDescribedByElements
     setter ariaDetails
     setter ariaDetailsElement
     setter ariaDisabled
@@ -2241,11 +2258,13 @@ interface ElementInternals
     setter ariaErrorMessageElement
     setter ariaExpanded
     setter ariaFlowTo
+    setter ariaFlowToElements
     setter ariaHasPopup
     setter ariaHidden
     setter ariaKeyShortcuts
     setter ariaLabel
     setter ariaLabelledBy
+    setter ariaLabelledByElements
     setter ariaLevel
     setter ariaLive
     setter ariaModal
@@ -2253,6 +2272,7 @@ interface ElementInternals
     setter ariaMultiSelectable
     setter ariaOrientation
     setter ariaOwns
+    setter ariaOwnsElements
     setter ariaPlaceholder
     setter ariaPosInSet
     setter ariaPressed

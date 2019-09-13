@@ -6,8 +6,8 @@
 
 package org.chromium.chrome.browser.customtabs.content;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.ActivityTabProvider;

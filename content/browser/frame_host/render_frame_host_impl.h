@@ -908,13 +908,19 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void AudioContextPlaybackStarted(int audio_context_id);
   void AudioContextPlaybackStopped(int audio_context_id);
 
-  // BackForwardCache:
-  //
-  // When a RenderFrameHostImpl enters the BackForwardCache, the document enters
-  // in a "Frozen" state where no Javascript can run.
-  void EnterBackForwardCache();  // The document enters the BackForwardCache.
-  void LeaveBackForwardCache();  // The document leaves the BackForwardCache.
+  // Called when this RenderFrameHostImpl enters the BackForwardCache, the
+  // document enters in a "Frozen" state where no Javascript can run.
+  void EnterBackForwardCache();
+
+  // Called when this RenderFrameHostImpl leaves the BackForwardCache. This
+  // occurs immediately before a restored document is committed.
+  void LeaveBackForwardCache();
+
   bool is_in_back_forward_cache() { return is_in_back_forward_cache_; }
+
+  bool is_evicted_from_back_forward_cache() {
+    return is_evicted_from_back_forward_cache_;
+  }
 
   // Called to taint |this| so the pages which have requested MediaStream
   // (audio/video/etc capture stream) access would not enter BackForwardCache.
@@ -1513,7 +1519,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::PendingReceiver<blink::mojom::WebUsbService> receiver);
 
   void CreateAudioInputStreamFactory(
-      mojom::RendererAudioInputStreamFactoryRequest request);
+      mojo::PendingReceiver<mojom::RendererAudioInputStreamFactory> receiver);
   void CreateAudioOutputStreamFactory(
       mojom::RendererAudioOutputStreamFactoryRequest request);
 
@@ -1816,9 +1822,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Evicts the document from the BackForwardCache if it is in the cache,
   // and ineligible for caching.
-  // Note: Calling MaybeEvictFromBackForwardCache may delete |this|.
-  // TODO(https://crbug.com/1001528): Make deletion delayed instead of immediate
-  // so upstream callers don't have to worry about UAFs.
   void MaybeEvictFromBackForwardCache();
 
   // The RenderViewHost that this RenderFrameHost is associated with.
@@ -2318,6 +2321,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // BackForwardCache:
   bool is_in_back_forward_cache_ = false;
+  bool is_evicted_from_back_forward_cache_ = false;
 
   blink::mojom::FrameVisibility visibility_ =
       blink::mojom::FrameVisibility::kRenderedInViewport;

@@ -6,9 +6,10 @@ package org.chromium.chrome.browser.tabmodel;
 
 import android.content.SharedPreferences;
 import android.os.StrictMode;
-import android.support.annotation.WorkerThread;
 import android.util.Pair;
 import android.util.SparseBooleanArray;
+
+import androidx.annotation.WorkerThread;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;

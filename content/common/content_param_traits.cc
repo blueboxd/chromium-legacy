@@ -17,6 +17,7 @@
 #include "content/common/tab_switch_time_recorder.h"
 #include "ipc/ipc_mojo_message_helper.h"
 #include "ipc/ipc_mojo_param_traits.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/ip_endpoint.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
@@ -237,7 +238,7 @@ struct ParamTraits<blink::mojom::SerializedBlobPtr> {
         !ReadParam(m, iter, &(*r)->size) || !ReadParam(m, iter, &handle)) {
       return false;
     }
-    (*r)->blob = blink::mojom::BlobPtrInfo(
+    (*r)->blob = mojo::PendingRemote<blink::mojom::Blob>(
         mojo::ScopedMessagePipeHandle(handle), blink::mojom::Blob::Version_);
     return true;
   }

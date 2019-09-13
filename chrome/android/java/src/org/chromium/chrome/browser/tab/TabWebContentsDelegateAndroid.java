@@ -7,7 +7,8 @@ package org.chromium.chrome.browser.tab;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Handler;
-import android.support.annotation.CallSuper;
+
+import androidx.annotation.CallSuper;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ObserverList.RewindableIterator;

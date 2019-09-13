@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.omnibox;
 import android.content.Context;
 import android.graphics.Rect;
 import android.provider.Settings;
-import android.support.annotation.CallSuper;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
@@ -17,6 +16,8 @@ import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.widget.EditText;
+
+import androidx.annotation.CallSuper;
 
 import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;

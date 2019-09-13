@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.keyboard_accessory;
 
-import android.support.annotation.Nullable;
 import android.util.SparseArray;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.keyboard_accessory.data.CachedProviderAdapter;

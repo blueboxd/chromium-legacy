@@ -17,30 +17,20 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "printing/backend/cups_ipp_advanced_caps.h"
+#include "printing/backend/cups_ipp_constants.h"
 #include "printing/backend/cups_printer.h"
 #include "printing/backend/print_backend_consts.h"
 #include "printing/units.h"
 
+#if defined(OS_CHROMEOS)
+#include "printing/printing_features_chromeos.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace printing {
-
-// property names
-constexpr char kIppCollate[] = "sheet-collate";  // RFC 3381
-constexpr char kIppCopies[] = CUPS_COPIES;
-constexpr char kIppColor[] = CUPS_PRINT_COLOR_MODE;
-constexpr char kIppMedia[] = CUPS_MEDIA;
-constexpr char kIppDuplex[] = CUPS_SIDES;
-constexpr char kIppResolution[] = "printer-resolution";            // RFC 2911
-constexpr char kIppRequestingUserName[] = "requesting-user-name";  // RFC 8011
-constexpr char kIppPin[] = "job-password";                       // PWG 5100.11
-constexpr char kIppPinEncryption[] = "job-password-encryption";  // PWG 5100.11
-
-// collation values
-constexpr char kCollated[] = "collated";
-constexpr char kUncollated[] = "uncollated";
 
 #if defined(OS_CHROMEOS)
 constexpr int kPinMinimumLength = 4;
-constexpr char kPinEncryptionNone[] = "none";
 #endif  // defined(OS_CHROMEOS)
 
 namespace {
@@ -353,6 +343,8 @@ void CapsAndDefaultsFromPrinter(const CupsOptionProvider& printer,
 
 #if defined(OS_CHROMEOS)
   printer_info->pin_supported = PinSupported(printer);
+  if (base::FeatureList::IsEnabled(printing::kAdvancedPpdAttributes))
+    ExtractAdvancedCapabilities(printer, printer_info);
 #endif  // defined(OS_CHROMEOS)
 
   ExtractCopies(printer, printer_info);

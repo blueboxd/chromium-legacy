@@ -48,6 +48,7 @@ constexpr const char kIDBCloseImmediatelySwitch[] = "idb-close-immediately";
 // * The factory is in an incognito profile.
 class CONTENT_EXPORT IndexedDBOriginState {
  public:
+  using TearDownCallback = base::RepeatingCallback<void(leveldb::Status)>;
   using OriginDBMap =
       base::flat_map<base::string16, std::unique_ptr<IndexedDBDatabase>>;
 
@@ -83,6 +84,7 @@ class CONTENT_EXPORT IndexedDBOriginState {
                        base::Time* earliest_global_sweep_time,
                        std::unique_ptr<DisjointRangeLockManager> lock_manager,
                        TasksAvailableCallback notify_tasks_callback,
+                       TearDownCallback tear_down_callback,
                        std::unique_ptr<IndexedDBBackingStore> backing_store);
   ~IndexedDBOriginState();
 
@@ -125,6 +127,9 @@ class CONTENT_EXPORT IndexedDBOriginState {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return notify_tasks_callback_;
   }
+
+  // Note: calling this callback will destroy the IndexedDBOriginState.
+  const TearDownCallback& tear_down_callback() { return tear_down_callback_; }
 
   bool is_running_tasks() const { return running_tasks_; }
   bool is_task_run_scheduled() const { return task_run_scheduled_; }
@@ -201,6 +206,7 @@ class CONTENT_EXPORT IndexedDBOriginState {
   std::unique_ptr<IndexedDBPreCloseTaskQueue> pre_close_task_queue_;
 
   TasksAvailableCallback notify_tasks_callback_;
+  TearDownCallback tear_down_callback_;
 
   base::WeakPtrFactory<IndexedDBOriginState> weak_factory_{this};
 

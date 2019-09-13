@@ -18,11 +18,12 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.shapes.RoundRectShape;
 import android.graphics.drawable.shapes.Shape;
-import android.support.annotation.ColorRes;
-import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.widget.ImageView;
+
+import androidx.annotation.ColorRes;
+import androidx.annotation.Nullable;
 
 import org.chromium.ui.R;
 

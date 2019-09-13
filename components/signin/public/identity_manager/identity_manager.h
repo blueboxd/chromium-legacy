@@ -609,8 +609,6 @@ class IdentityManager : public KeyedService,
   // PrimaryAccountManager callbacks:
   void GoogleSigninSucceeded(const CoreAccountInfo& account_info);
   void GoogleSignedOut(const CoreAccountInfo& account_info);
-  void AuthenticatedAccountSet(const CoreAccountInfo& account_info);
-  void AuthenticatedAccountCleared();
 
   // ProfileOAuth2TokenServiceObserver:
   void OnRefreshTokenAvailable(const CoreAccountId& account_id) override;

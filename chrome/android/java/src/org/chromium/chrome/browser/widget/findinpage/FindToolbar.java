@@ -13,7 +13,6 @@ import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Vibrator;
 import android.provider.Settings;
-import android.support.annotation.IntDef;
 import android.support.v13.view.inputmethod.EditorInfoCompat;
 import android.support.v4.view.accessibility.AccessibilityEventCompat;
 import android.text.Editable;
@@ -30,6 +29,8 @@ import android.view.inputmethod.InputConnection;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ThreadUtils;

@@ -15,7 +15,7 @@ import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingProper
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingProperties.StateProperty.HIDDEN_SHEET;
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingProperties.StateProperty.VISIBLE_SHEET;
 
-import android.support.annotation.IntDef;
+import androidx.annotation.IntDef;
 
 import org.chromium.ui.modelutil.PropertyModel;
 

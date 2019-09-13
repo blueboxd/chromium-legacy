@@ -4,7 +4,7 @@
 
 package org.chromium.components.signin.identitymanager;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.chromium.base.annotations.CalledByNative;
 

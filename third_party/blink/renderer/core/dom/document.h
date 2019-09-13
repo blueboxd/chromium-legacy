@@ -244,8 +244,12 @@ using DocumentClassFlags = unsigned char;
 //   ("ariaActiveDescendant", el2)
 // This represents 'explicitly set attr-element' in the HTML specification.
 // https://whatpr.org/html/3917/common-dom-interfaces.html#reflecting-content-attributes-in-idl-attributes:element-2
-using ExplicitlySetAttrElementMap =
-    HeapHashMap<QualifiedName, WeakMember<Element>>;
+// Note that in the interest of simplicitly, attributes that reflect a single
+// element reference are implemented using the same ExplicitlySetAttrElementsMap
+// storage, but only store a single element vector which is DCHECKED at the
+// calling site.
+using ExplicitlySetAttrElementsMap =
+    HeapHashMap<QualifiedName, Member<HeapVector<Member<Element>>>>;
 
 // A document (https://dom.spec.whatwg.org/#concept-document) is the root node
 // of a tree of DOM nodes, generally resulting from the parsing of an markup
@@ -816,7 +820,7 @@ class CORE_EXPORT Document : public ContainerNode,
     return user_action_elements_;
   }
 
-  ExplicitlySetAttrElementMap* GetExplicitlySetAttrElementMap(Element* index);
+  ExplicitlySetAttrElementsMap* GetExplicitlySetAttrElementsMap(Element*);
 
   // Returns false if the function fails.  e.g. |pseudo| is not supported.
   bool SetPseudoStateForTesting(Element& element,
@@ -2119,10 +2123,9 @@ class CORE_EXPORT Document : public ContainerNode,
 
   bool toggle_during_parsing_ = false;
 
-  HeapHashMap<WeakMember<Element>, Member<ExplicitlySetAttrElementMap>>
-      element_explicitly_set_attr_element_map_;
-
   String fragment_directive_;
+  HeapHashMap<WeakMember<Element>, Member<ExplicitlySetAttrElementsMap>>
+      element_explicitly_set_attr_elements_map_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

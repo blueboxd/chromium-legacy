@@ -5,9 +5,11 @@
 package org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller;
 
 import android.os.Bundle;
-import android.support.annotation.IntDef;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.browser.customtabs.CustomTabsService;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
@@ -41,7 +43,6 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
-import androidx.browser.customtabs.CustomTabsService;
 import dagger.Lazy;
 
 /**

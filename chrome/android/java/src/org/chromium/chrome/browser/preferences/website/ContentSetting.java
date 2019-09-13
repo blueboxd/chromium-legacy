@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.preferences.website;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 /**
  * Java counterpart to C++ ContentSetting enum.

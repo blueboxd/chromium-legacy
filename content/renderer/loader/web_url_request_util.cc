@@ -16,6 +16,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
@@ -299,13 +300,14 @@ scoped_refptr<network::ResourceRequestBody> GetRequestBodyForWebHTTPBody(
         break;
       case WebHTTPBody::Element::kTypeBlob: {
         DCHECK(element.optional_blob_handle.is_valid());
-        blink::mojom::BlobPtr blob_ptr(
-            blink::mojom::BlobPtrInfo(std::move(element.optional_blob_handle),
-                                      blink::mojom::Blob::Version_));
+        mojo::Remote<blink::mojom::Blob> blob_remote(
+            mojo::PendingRemote<blink::mojom::Blob>(
+                std::move(element.optional_blob_handle),
+                blink::mojom::Blob::Version_));
 
         mojo::PendingRemote<network::mojom::DataPipeGetter>
             data_pipe_getter_remote;
-        blob_ptr->AsDataPipeGetter(
+        blob_remote->AsDataPipeGetter(
             data_pipe_getter_remote.InitWithNewPipeAndPassReceiver());
 
         request_body->AppendDataPipe(std::move(data_pipe_getter_remote));

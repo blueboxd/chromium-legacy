@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "third_party/webrtc/p2p/base/packet_socket_factory.h"
+#include "third_party/webrtc/api/packet_socket_factory.h"
 
 namespace remoting {
 namespace protocol {

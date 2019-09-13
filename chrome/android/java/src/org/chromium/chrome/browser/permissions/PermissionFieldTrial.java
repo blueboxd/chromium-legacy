@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.permissions;
 
-import android.support.annotation.IntDef;
 import android.support.v4.app.NotificationCompat;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;

@@ -6,7 +6,7 @@ android_library("java") {
     "//base:jni_java",
     "//components/signin/core/browser/android:java",
     "//third_party/android_deps:android_support_v4_java",
-    "//third_party/android_deps:com_android_support_support_annotations_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
   ]
 
   srcjar_deps = [

@@ -105,9 +105,6 @@ class EVENTS_EXPORT Event {
   // Sets the properties associated with this Event.
   void SetProperties(const Properties& properties);
 
-  // Inserts/updates a key/values property pair
-  void SetProperty(const char* key, const std::vector<uint8_t>& values);
-
   // Returns the properties associated with this event, which may be null.
   // The properties are meant to provide a way to associate arbitrary key/value
   // pairs with Events and not used by Event.

@@ -6,11 +6,12 @@ package org.chromium.chrome.browser.autofill_assistant.overlay;
 
 import android.content.Context;
 import android.graphics.RectF;
-import android.support.annotation.IntDef;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.MotionEvent;
 import android.view.View;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;

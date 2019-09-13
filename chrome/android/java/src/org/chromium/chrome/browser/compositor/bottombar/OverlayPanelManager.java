@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.compositor.bottombar;
 
-import android.support.annotation.IntDef;
 import android.view.ViewGroup;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;

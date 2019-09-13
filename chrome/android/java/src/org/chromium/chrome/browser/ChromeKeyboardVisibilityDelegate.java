@@ -6,8 +6,9 @@ package org.chromium.chrome.browser;
 
 import android.app.Activity;
 import android.content.Context;
-import android.support.annotation.Nullable;
 import android.view.View;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.init.SingleWindowKeyboardVisibilityDelegate;
 

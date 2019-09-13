@@ -65,6 +65,9 @@ class AppUpdateTest : public testing::Test {
   apps::mojom::OptionalBool expect_show_in_management_;
   bool expect_show_in_management_changed_;
 
+  std::vector<apps::mojom::IntentFilterPtr> expect_intent_filters_;
+  bool expect_intent_filters_changed_;
+
   static constexpr uint32_t kPermissionTypeLocation = 100;
   static constexpr uint32_t kPermissionTypeNotification = 200;
 
@@ -75,6 +78,15 @@ class AppUpdateTest : public testing::Test {
     permission->value_type = apps::mojom::PermissionValueType::kTriState;
     permission->value = static_cast<uint32_t>(value);
     return permission;
+  }
+
+  apps::mojom::ConditionPtr MakeCondition(
+      apps::mojom::ConditionType condition_type,
+      std::string value) {
+    auto condition = apps::mojom::Condition::New();
+    condition->condition_type = condition_type;
+    condition->value = value;
+    return condition;
   }
 
   void ExpectNoChange() {
@@ -95,6 +107,7 @@ class AppUpdateTest : public testing::Test {
     expect_show_in_launcher_changed_ = false;
     expect_show_in_search_changed_ = false;
     expect_show_in_management_changed_ = false;
+    expect_intent_filters_changed_ = false;
   }
 
   void CheckExpects(const apps::AppUpdate& u) {
@@ -149,6 +162,9 @@ class AppUpdateTest : public testing::Test {
 
     EXPECT_EQ(expect_show_in_management_, u.ShowInManagement());
     EXPECT_EQ(expect_show_in_management_changed_, u.ShowInManagementChanged());
+
+    EXPECT_EQ(expect_intent_filters_, u.IntentFilters());
+    EXPECT_EQ(expect_intent_filters_changed_, u.IntentFiltersChanged());
   }
 
   void TestAppUpdate(apps::mojom::App* state, apps::mojom::App* delta) {
@@ -175,6 +191,7 @@ class AppUpdateTest : public testing::Test {
     expect_show_in_launcher_ = apps::mojom::OptionalBool::kUnknown;
     expect_show_in_search_ = apps::mojom::OptionalBool::kUnknown;
     expect_show_in_management_ = apps::mojom::OptionalBool::kUnknown;
+    expect_intent_filters_.clear();
     ExpectNoChange();
     CheckExpects(u);
 
@@ -561,6 +578,49 @@ class AppUpdateTest : public testing::Test {
       expect_permissions_.push_back(p0.Clone());
       expect_permissions_.push_back(p1.Clone());
       expect_permissions_changed_ = true;
+      CheckExpects(u);
+    }
+
+    if (state) {
+      apps::AppUpdate::Merge(state, delta);
+      ExpectNoChange();
+      CheckExpects(u);
+    }
+
+    // Intent Filter tests.
+
+    if (state) {
+      auto intent_filter = apps::mojom::IntentFilter::New();
+      auto scheme_condition =
+          MakeCondition(apps::mojom::ConditionType::kScheme, "https");
+      auto host_condition =
+          MakeCondition(apps::mojom::ConditionType::kHost, "www.google.com");
+
+      intent_filter->conditions.push_back(scheme_condition.Clone());
+      intent_filter->conditions.push_back(host_condition.Clone());
+
+      state->intent_filters.push_back(intent_filter.Clone());
+      expect_intent_filters_.push_back(intent_filter.Clone());
+      expect_intent_filters_changed_ = false;
+      CheckExpects(u);
+    }
+
+    if (delta) {
+      expect_intent_filters_.clear();
+
+      auto intent_filter = apps::mojom::IntentFilter::New();
+
+      auto scheme_condition =
+          MakeCondition(apps::mojom::ConditionType::kScheme, "https");
+      auto host_condition =
+          MakeCondition(apps::mojom::ConditionType::kHost, "www.abc.com");
+
+      intent_filter->conditions.push_back(scheme_condition.Clone());
+      intent_filter->conditions.push_back(host_condition.Clone());
+
+      delta->intent_filters.push_back(intent_filter.Clone());
+      expect_intent_filters_.push_back(intent_filter.Clone());
+      expect_intent_filters_changed_ = true;
       CheckExpects(u);
     }
 

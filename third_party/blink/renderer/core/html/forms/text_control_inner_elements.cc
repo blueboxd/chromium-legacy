@@ -188,8 +188,8 @@ TextControlInnerEditorElement::CreateInnerEditorStyle() const {
     scoped_refptr<ComputedStyle> no_scrollbar_style = ComputedStyle::Create();
     no_scrollbar_style->SetStyleType(kPseudoIdScrollbar);
     no_scrollbar_style->SetDisplay(EDisplay::kNone);
-    text_block_style->AddCachedPseudoStyle(no_scrollbar_style);
-    text_block_style->SetHasPseudoStyle(kPseudoIdScrollbar);
+    text_block_style->AddCachedPseudoElementStyle(no_scrollbar_style);
+    text_block_style->SetHasPseudoElementStyle(kPseudoIdScrollbar);
   }
 
   return text_block_style;

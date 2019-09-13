@@ -1466,6 +1466,7 @@ jumbo_component("platform") {
     "//third_party/emoji-segmenter",
     "//third_party/icu",
     "//third_party/webrtc/api:libjingle_logging_api",
+    "//third_party/webrtc/api:packet_socket_factory",
     "//third_party/webrtc/api/audio_codecs/L16:audio_decoder_L16",
     "//third_party/webrtc/api/audio_codecs/L16:audio_encoder_L16",
     "//third_party/webrtc/api/audio_codecs/g711:audio_decoder_g711",

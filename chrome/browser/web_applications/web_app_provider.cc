@@ -32,7 +32,7 @@
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
-#include "chrome/browser/web_applications/web_app_sync_manager.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/common/chrome_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/web_contents.h"
@@ -158,7 +158,7 @@ void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
   database_factory_ = std::make_unique<WebAppDatabaseFactory>(profile);
   database_ = std::make_unique<WebAppDatabase>(database_factory_.get());
   registrar_ = std::make_unique<WebAppRegistrar>(profile, database_.get());
-  sync_manager_ = std::make_unique<WebAppSyncManager>();
+  sync_bridge_ = std::make_unique<WebAppSyncBridge>();
   auto icon_manager = std::make_unique<WebAppIconManager>(
       profile, *registrar_->AsWebAppRegistrar(),
       std::make_unique<FileUtilsWrapper>());

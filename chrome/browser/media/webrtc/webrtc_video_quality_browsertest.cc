@@ -233,9 +233,16 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
 
   void TestVideoQuality(const std::string& video_codec,
                         bool prefer_hw_video_codec) {
+    ASSERT_GE(TestTimeouts::test_launcher_timeout().InSeconds(), 150)
+        << "This is a long-running test; you must specify "
+           "--test-launcher-timeout to have a value of at least 150000.";
     ASSERT_GE(TestTimeouts::action_max_timeout().InSeconds(), 150)
         << "This is a long-running test; you must specify "
            "--ui-test-action-max-timeout to have a value of at least 150000.";
+    ASSERT_LT(TestTimeouts::action_max_timeout(),
+              TestTimeouts::test_launcher_timeout())
+        << "action_max_timeout needs to be strictly-less-than "
+           "test_launcher_timeout";
     ASSERT_TRUE(test::HasReferenceFilesInCheckout());
     ASSERT_TRUE(embedded_test_server()->Start());
 

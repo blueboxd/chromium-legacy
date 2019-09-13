@@ -21,8 +21,9 @@ import static org.mockito.Mockito.verify;
 
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 
-import android.support.annotation.IdRes;
 import android.support.test.filters.MediumTest;
+
+import androidx.annotation.IdRes;
 
 import org.junit.Before;
 import org.junit.Rule;

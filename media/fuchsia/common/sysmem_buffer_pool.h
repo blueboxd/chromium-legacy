@@ -72,8 +72,10 @@ class SysmemBufferPool {
  private:
   friend class BufferAllocator;
 
-  void OnReaderCreated(std::unique_ptr<SysmemBufferReader> reader);
-  void OnWriterCreated(std::unique_ptr<SysmemBufferWriter> reader);
+  void OnBuffersAllocated(
+      zx_status_t status,
+      fuchsia::sysmem::BufferCollectionInfo_2 buffer_collection_info);
+  void OnError();
 
   fuchsia::sysmem::BufferCollectionPtr collection_;
   std::vector<fuchsia::sysmem::BufferCollectionTokenPtr> shared_tokens_;

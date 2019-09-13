@@ -40,7 +40,6 @@
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
-#include "chrome/browser/web_applications/web_app_sync_manager.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
@@ -542,8 +541,7 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
       DCHECK(base::FeatureList::IsEnabled(features::kDesktopPWAsUSS));
       auto* provider = web_app::WebAppProvider::Get(profile_);
       DCHECK(provider);
-      return provider->sync_manager()
-          .bridge()
+      return provider->sync_bridge()
           .change_processor()
           ->GetControllerDelegate();
     }

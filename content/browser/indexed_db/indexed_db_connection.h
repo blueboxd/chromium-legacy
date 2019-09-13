@@ -35,8 +35,17 @@ class CONTENT_EXPORT IndexedDBConnection {
                       scoped_refptr<IndexedDBDatabaseCallbacks> callbacks);
   virtual ~IndexedDBConnection();
 
-  void AbortTransactionsAndClose();
-  void CloseAndReportForceClose();
+  enum class CloseErrorHandling {
+    // Returns from the function on the first encounter with an error.
+    kReturnOnFirstError,
+    // Continues to call Abort() on all transactions despite any errors.
+    // The last error encountered is returned.
+    kAbortAllReturnLastError,
+  };
+
+  leveldb::Status AbortTransactionsAndClose(CloseErrorHandling error_handling);
+
+  leveldb::Status CloseAndReportForceClose();
   bool IsConnected();
 
   void VersionChangeIgnored();
@@ -68,14 +77,14 @@ class CONTENT_EXPORT IndexedDBConnection {
       blink::mojom::IDBTransactionMode mode,
       IndexedDBBackingStore::Transaction* backing_store_transaction);
 
-  void AbortTransaction(IndexedDBTransaction* transaction,
-                        const IndexedDBDatabaseError& error);
+  void AbortTransactionAndTearDownOnError(IndexedDBTransaction* transaction,
+                                          const IndexedDBDatabaseError& error);
 
-  // Aborts or commits each transaction owned by this connection depending on
-  // the transaction's current state. Any transaction with is_commit_pending_
-  // false is aborted, and any transaction with is_commit_pending_ true is
-  // committed.
-  void FinishAllTransactions(const IndexedDBDatabaseError& error);
+  leveldb::Status AbortAllTransactions(const IndexedDBDatabaseError& error);
+
+  // Returns the last error that occurred, if there is any.
+  leveldb::Status AbortAllTransactionsAndIgnoreErrors(
+      const IndexedDBDatabaseError& error);
 
   IndexedDBTransaction* GetTransaction(int64_t id) const;
 

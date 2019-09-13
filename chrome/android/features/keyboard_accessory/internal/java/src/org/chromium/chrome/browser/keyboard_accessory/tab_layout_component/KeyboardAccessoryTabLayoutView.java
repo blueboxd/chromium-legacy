@@ -7,10 +7,11 @@ package org.chromium.chrome.browser.keyboard_accessory.tab_layout_component;
 import android.content.Context;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.Nullable;
-import android.support.annotation.StringRes;
 import android.support.design.widget.TabLayout;
 import android.util.AttributeSet;
+
+import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.browser.keyboard_accessory.R;

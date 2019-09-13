@@ -5,8 +5,9 @@
 package org.chromium.chrome.browser.infobar;
 
 import android.content.Context;
-import android.support.annotation.Nullable;
 import android.view.View;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.download.DownloadInfoBarController;
 import org.chromium.chrome.browser.download.DownloadManagerService;

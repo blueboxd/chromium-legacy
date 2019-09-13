@@ -12,7 +12,6 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/views/message_popup_view.h"
-#include "ui/message_center/views/popup_alignment_delegate.h"
 
 namespace message_center {
 
@@ -28,13 +27,10 @@ constexpr base::TimeDelta kMoveDownDuration =
 
 }  // namespace
 
-MessagePopupCollection::MessagePopupCollection(
-    PopupAlignmentDelegate* alignment_delegate)
+MessagePopupCollection::MessagePopupCollection()
     : animation_(std::make_unique<gfx::LinearAnimation>(this)),
-      alignment_delegate_(alignment_delegate),
       weak_ptr_factory_(this) {
   MessageCenter::Get()->AddObserver(this);
-  alignment_delegate_->set_collection(this);
 }
 
 MessagePopupCollection::~MessagePopupCollection() {
@@ -209,7 +205,7 @@ MessagePopupView* MessagePopupCollection::GetPopupViewForNotificationID(
 
 MessagePopupView* MessagePopupCollection::CreatePopup(
     const Notification& notification) {
-  return new MessagePopupView(notification, alignment_delegate_, this);
+  return new MessagePopupView(notification, this);
 }
 
 void MessagePopupCollection::RestartPopupTimers() {
@@ -218,10 +214,6 @@ void MessagePopupCollection::RestartPopupTimers() {
 
 void MessagePopupCollection::PausePopupTimers() {
   MessageCenter::Get()->PausePopupTimers();
-}
-
-bool MessagePopupCollection::IsPrimaryDisplayForNotification() const {
-  return alignment_delegate_->IsPrimaryDisplayForNotification();
 }
 
 void MessagePopupCollection::TransitionFromAnimation() {
@@ -341,7 +333,7 @@ void MessagePopupCollection::UpdatePopupTimers() {
 }
 
 void MessagePopupCollection::CalculateBounds() {
-  int base = alignment_delegate_->GetBaseline();
+  int base = GetBaseline();
   for (size_t i = 0; i < popup_items_.size(); ++i) {
     gfx::Size preferred_size(
         kNotificationWidth,
@@ -350,15 +342,14 @@ void MessagePopupCollection::CalculateBounds() {
     // Align the top of i-th popup to |hot_top_|.
     if (is_hot_ && hot_index_ == i) {
       base = hot_top_;
-      if (!alignment_delegate_->IsTopDown())
+      if (!IsTopDown())
         base += preferred_size.height();
     }
 
-    int origin_x =
-        alignment_delegate_->GetToastOriginX(gfx::Rect(preferred_size));
+    int origin_x = GetToastOriginX(gfx::Rect(preferred_size));
 
     int origin_y = base;
-    if (!alignment_delegate_->IsTopDown())
+    if (!IsTopDown())
       origin_y -= preferred_size.height();
 
     GetPopupItem(i)->start_bounds = GetPopupItem(i)->bounds;
@@ -366,7 +357,7 @@ void MessagePopupCollection::CalculateBounds() {
         gfx::Rect(gfx::Point(origin_x, origin_y), preferred_size);
 
     const int delta = preferred_size.height() + kMarginBetweenPopups;
-    if (alignment_delegate_->IsTopDown())
+    if (IsTopDown())
       base += delta;
     else
       base -= delta;
@@ -462,8 +453,8 @@ bool MessagePopupCollection::AddPopup() {
 
   auto& item = popup_items_.back();
   item.start_bounds = item.bounds;
-  item.start_bounds += gfx::Vector2d(
-      (alignment_delegate_->IsFromLeft() ? -1 : 1) * item.bounds.width(), 0);
+  item.start_bounds +=
+      gfx::Vector2d((IsFromLeft() ? -1 : 1) * item.bounds.width(), 0);
   return true;
 }
 
@@ -490,22 +481,21 @@ int MessagePopupCollection::GetNextEdge(const PopupItem& item) const {
 
   int base = 0;
   if (popup_items_.empty()) {
-    base = alignment_delegate_->GetBaseline();
+    base = GetBaseline();
   } else {
-    base = alignment_delegate_->IsTopDown()
-               ? popup_items_.back().bounds.bottom()
-               : popup_items_.back().bounds.y();
+    base = IsTopDown() ? popup_items_.back().bounds.bottom()
+                       : popup_items_.back().bounds.y();
   }
 
-  return alignment_delegate_->IsTopDown() ? base + delta : base - delta;
+  return IsTopDown() ? base + delta : base - delta;
 }
 
 bool MessagePopupCollection::IsNextEdgeOutsideWorkArea(
     const PopupItem& item) const {
   const int next_edge = GetNextEdge(item);
-  const gfx::Rect work_area = alignment_delegate_->GetWorkArea();
-  return alignment_delegate_->IsTopDown() ? next_edge > work_area.bottom()
-                                          : next_edge < work_area.y();
+  const gfx::Rect work_area = GetWorkArea();
+  return IsTopDown() ? next_edge > work_area.bottom()
+                     : next_edge < work_area.y();
 }
 
 void MessagePopupCollection::StartHotMode() {
@@ -547,7 +537,7 @@ bool MessagePopupCollection::CloseTransparentPopups() {
 }
 
 void MessagePopupCollection::ClosePopupsOutsideWorkArea() {
-  const gfx::Rect work_area = alignment_delegate_->GetWorkArea();
+  const gfx::Rect work_area = GetWorkArea();
   for (auto& item : popup_items_) {
     if (work_area.Contains(item.bounds))
       continue;

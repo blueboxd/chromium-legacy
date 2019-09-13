@@ -72,11 +72,11 @@ class BlobHandleImpl : public BlobHandle {
 
   std::string GetUUID() override { return handle_->uuid(); }
 
-  blink::mojom::BlobPtr PassBlob() override {
-    blink::mojom::BlobPtr result;
+  mojo::PendingRemote<blink::mojom::Blob> PassBlob() override {
+    mojo::PendingRemote<blink::mojom::Blob> result;
     storage::BlobImpl::Create(
         std::make_unique<storage::BlobDataHandle>(*handle_),
-        MakeRequest(&result));
+        result.InitWithNewPipeAndPassReceiver());
     return result;
   }
 

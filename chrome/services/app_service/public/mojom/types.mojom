@@ -46,6 +46,11 @@ struct App {
   OptionalBool show_in_search;
   OptionalBool show_in_management;
 
+  // This vector stores all the intent filters defined in this app. Each
+  // intent filter defines a matching criteria for whether an intent can
+  // be handled by this app. One app can have multiple intent filters.
+  array<IntentFilter> intent_filters;
+
   // When adding new fields, also update the Merge method and other helpers in
   // chrome/services/app_service/public/cpp/app_update.*
 };
@@ -167,4 +172,34 @@ enum TriState {
 enum PermissionValueType {
   kBool,                       // Permission.value is a Bool (either 0 or 1).
   kTriState,                   // Permission.value is a TriState.
+};
+
+// The intent filter matching condition types.
+enum ConditionType {
+  kScheme,    // Matches the URL scheme (e.g. https, tel).
+  kHost,      // Matches the URL host (e.g. www.google.com).
+  kPattern,   // Matches the URL pattern (e.g. /abc/*).
+};
+
+// The pattern match type for intent filter pattern condition.
+enum PatternMatchType {
+  kNone = 0,
+  kLiteral,
+  kPrefix,
+  kGlob,
+};
+
+// The condition for an intent filter. It matches if the intent contains this
+// condition type and the corresponding value matches with the value.
+struct Condition {
+  ConditionType condition_type;
+  string value;
+  PatternMatchType match_type;  //This will be None for non pattern conditions.
+};
+
+// An intent filter is defined by an app, and contains a list of conditions that
+// an intent needs to match. If all conditions match, then this intent filter
+// matches against an intent.
+struct IntentFilter {
+  array<Condition> conditions;
 };

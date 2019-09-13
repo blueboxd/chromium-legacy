@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.preferences.autofill;
 
-import android.support.annotation.IntDef;
 import android.util.Pair;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;

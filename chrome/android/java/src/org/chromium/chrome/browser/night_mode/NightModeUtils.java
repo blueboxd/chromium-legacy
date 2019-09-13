@@ -8,9 +8,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Build;
-import android.support.annotation.Nullable;
-import android.support.annotation.StyleRes;
 import android.view.ContextThemeWrapper;
+
+import androidx.annotation.Nullable;
+import androidx.annotation.StyleRes;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;

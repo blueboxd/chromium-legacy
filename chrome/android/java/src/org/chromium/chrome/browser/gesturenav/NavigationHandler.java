@@ -4,12 +4,13 @@
 
 package org.chromium.chrome.browser.gesturenav;
 
-import android.support.annotation.IntDef;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.Supplier;
 import org.chromium.base.VisibleForTesting;

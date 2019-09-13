@@ -223,11 +223,11 @@ void Platform::InitializeCommon(Platform* platform,
   Thread::SetMainThread(std::move(main_thread));
 
   ProcessHeap::Init();
-  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      BlinkGCMemoryDumpProvider::Instance(), "BlinkGC",
-      base::ThreadTaskRunnerHandle::Get());
 
-  ThreadState::AttachMainThread();
+  ThreadState* thread_state = ThreadState::AttachMainThread();
+  new BlinkGCMemoryDumpProvider(
+      thread_state, base::ThreadTaskRunnerHandle::Get(),
+      BlinkGCMemoryDumpProvider::HeapType::kBlinkMainThread);
 
   MemoryPressureListenerRegistry::Initialize();
 

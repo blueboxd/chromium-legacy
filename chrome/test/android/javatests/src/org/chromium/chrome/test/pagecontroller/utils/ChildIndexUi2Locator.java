@@ -4,10 +4,11 @@
 
 package org.chromium.chrome.test.pagecontroller.utils;
 
-import android.support.annotation.NonNull;
 import android.support.test.uiautomator.By;
 import android.support.test.uiautomator.UiDevice;
 import android.support.test.uiautomator.UiObject2;
+
+import androidx.annotation.NonNull;
 
 import java.util.Arrays;
 import java.util.List;

@@ -4,7 +4,7 @@
 
 package org.chromium.components.search_engines;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;

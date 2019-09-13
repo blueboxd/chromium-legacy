@@ -63,8 +63,8 @@ void LayoutTextControl::StyleDidChange(StyleDifference diff,
     // (see: GetUncachedSelectionStyle in SelectionPaintingUtils.cpp) so ensure
     // the inner editor selection is invalidated anytime style changes and a
     // ::selection style is or was present on LayoutTextControl.
-    if (StyleRef().HasPseudoStyle(kPseudoIdSelection) ||
-        (old_style && old_style->HasPseudoStyle(kPseudoIdSelection))) {
+    if (StyleRef().HasPseudoElementStyle(kPseudoIdSelection) ||
+        (old_style && old_style->HasPseudoElementStyle(kPseudoIdSelection))) {
       inner_editor_layout_object->InvalidateSelectedChildrenOnStyleChange();
     }
   }

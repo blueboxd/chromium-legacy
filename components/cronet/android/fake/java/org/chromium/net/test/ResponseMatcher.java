@@ -4,7 +4,7 @@
 
 package org.chromium.net.test;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import org.chromium.net.UrlRequest;
 

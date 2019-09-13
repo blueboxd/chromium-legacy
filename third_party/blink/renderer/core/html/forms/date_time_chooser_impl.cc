@@ -32,6 +32,8 @@
 
 #include "third_party/blink/public/mojom/choosers/date_time_chooser.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/forms/chooser_resource_loader.h"
 #include "third_party/blink/renderer/core/html/forms/date_time_chooser_client.h"
@@ -201,14 +203,19 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
         LayoutTheme::GetTheme().SupportsCalendarPicker(parameters_->type),
         data);
     AddProperty("otherDateLabel", other_date_label_string, data);
+
+    DCHECK(OwnerElement().GetComputedStyle());
+    WebColorScheme color_scheme =
+        OwnerElement().GetComputedStyle()->UsedColorScheme();
+
     AddProperty("suggestionHighlightColor",
                 LayoutTheme::GetTheme()
-                    .ActiveListBoxSelectionBackgroundColor()
+                    .ActiveListBoxSelectionBackgroundColor(color_scheme)
                     .Serialized(),
                 data);
     AddProperty("suggestionHighlightTextColor",
                 LayoutTheme::GetTheme()
-                    .ActiveListBoxSelectionForegroundColor()
+                    .ActiveListBoxSelectionForegroundColor(color_scheme)
                     .Serialized(),
                 data);
   }

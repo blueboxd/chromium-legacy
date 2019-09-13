@@ -87,6 +87,8 @@ class TranslateInfobarMediatorTest : public PlatformTest {
     CreateTranslateClient();
   }
 
+  ~TranslateInfobarMediatorTest() override { [mediator_ disconnect]; }
+
   WebStateList* web_state_list() { return web_state_list_.get(); }
 
   id selection_handler() { return selection_handler_; }

@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.media.remote;
 
-import android.support.annotation.IntDef;
+import androidx.annotation.IntDef;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;

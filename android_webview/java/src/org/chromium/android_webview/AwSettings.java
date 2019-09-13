@@ -12,9 +12,10 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.Process;
 import android.provider.Settings;
-import android.support.annotation.IntDef;
 import android.util.Log;
 import android.webkit.WebSettings;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.android_webview.settings.DarkModePreferences;
 import org.chromium.android_webview.settings.ForceDarkMode;

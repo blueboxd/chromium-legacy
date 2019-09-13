@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/message_center/views/desktop_popup_alignment_delegate.h"
+#include "ui/message_center/views/desktop_message_popup_collection.h"
 
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -11,17 +11,17 @@
 
 namespace message_center {
 
-DesktopPopupAlignmentDelegate::DesktopPopupAlignmentDelegate()
+DesktopMessagePopupCollection::DesktopMessagePopupCollection()
     : alignment_(POPUP_ALIGNMENT_BOTTOM | POPUP_ALIGNMENT_RIGHT),
       primary_display_id_(display::kInvalidDisplayId),
-      screen_(NULL) {}
+      screen_(nullptr) {}
 
-DesktopPopupAlignmentDelegate::~DesktopPopupAlignmentDelegate() {
+DesktopMessagePopupCollection::~DesktopMessagePopupCollection() {
   if (screen_)
     screen_->RemoveObserver(this);
 }
 
-void DesktopPopupAlignmentDelegate::StartObserving(display::Screen* screen) {
+void DesktopMessagePopupCollection::StartObserving(display::Screen* screen) {
   if (screen_ || !screen)
     return;
 
@@ -32,31 +32,31 @@ void DesktopPopupAlignmentDelegate::StartObserving(display::Screen* screen) {
   RecomputeAlignment(display);
 }
 
-int DesktopPopupAlignmentDelegate::GetToastOriginX(
+int DesktopMessagePopupCollection::GetToastOriginX(
     const gfx::Rect& toast_bounds) const {
   if (IsFromLeft())
     return work_area_.x() + kMarginBetweenPopups;
   return work_area_.right() - kMarginBetweenPopups - toast_bounds.width();
 }
 
-int DesktopPopupAlignmentDelegate::GetBaseline() const {
+int DesktopMessagePopupCollection::GetBaseline() const {
   return IsTopDown() ? work_area_.y() + kMarginBetweenPopups
                      : work_area_.bottom() - kMarginBetweenPopups;
 }
 
-gfx::Rect DesktopPopupAlignmentDelegate::GetWorkArea() const {
+gfx::Rect DesktopMessagePopupCollection::GetWorkArea() const {
   return work_area_;
 }
 
-bool DesktopPopupAlignmentDelegate::IsTopDown() const {
+bool DesktopMessagePopupCollection::IsTopDown() const {
   return (alignment_ & POPUP_ALIGNMENT_TOP) != 0;
 }
 
-bool DesktopPopupAlignmentDelegate::IsFromLeft() const {
+bool DesktopMessagePopupCollection::IsFromLeft() const {
   return (alignment_ & POPUP_ALIGNMENT_LEFT) != 0;
 }
 
-bool DesktopPopupAlignmentDelegate::RecomputeAlignment(
+bool DesktopMessagePopupCollection::RecomputeAlignment(
     const display::Display& display) {
   if (work_area_ == display.work_area())
     return false;
@@ -77,19 +77,19 @@ bool DesktopPopupAlignmentDelegate::RecomputeAlignment(
   // the top before concluding that the taskbar is at the left.
   alignment_ |= (work_area_.x() > display.bounds().x() &&
                  work_area_.y() == display.bounds().y())
-      ? POPUP_ALIGNMENT_LEFT
-      : POPUP_ALIGNMENT_RIGHT;
+                    ? POPUP_ALIGNMENT_LEFT
+                    : POPUP_ALIGNMENT_RIGHT;
 
   return true;
 }
 
-void DesktopPopupAlignmentDelegate::ConfigureWidgetInitParamsForContainer(
+void DesktopMessagePopupCollection::ConfigureWidgetInitParamsForContainer(
     views::Widget* widget,
     views::Widget::InitParams* init_params) {
   // Do nothing, which will use the default container.
 }
 
-bool DesktopPopupAlignmentDelegate::IsPrimaryDisplayForNotification() const {
+bool DesktopMessagePopupCollection::IsPrimaryDisplayForNotification() const {
   return true;
 }
 
@@ -99,7 +99,7 @@ bool DesktopPopupAlignmentDelegate::IsPrimaryDisplayForNotification() const {
 // monitor, we get a OnDisplayMetricsChanged() event. On Linux, we get a
 // OnDisplayRemoved() and a OnDisplayAdded() instead. In order to account for
 // these slightly different abstractions, we update on every event.
-void DesktopPopupAlignmentDelegate::UpdatePrimaryDisplay() {
+void DesktopMessagePopupCollection::UpdatePrimaryDisplay() {
   display::Display primary_display = screen_->GetPrimaryDisplay();
   if (primary_display.id() != primary_display_id_) {
     primary_display_id_ = primary_display.id();
@@ -108,19 +108,19 @@ void DesktopPopupAlignmentDelegate::UpdatePrimaryDisplay() {
   }
 }
 
-void DesktopPopupAlignmentDelegate::OnDisplayAdded(
+void DesktopMessagePopupCollection::OnDisplayAdded(
     const display::Display& added_display) {
   // The added display could be the new primary display.
   UpdatePrimaryDisplay();
 }
 
-void DesktopPopupAlignmentDelegate::OnDisplayRemoved(
+void DesktopMessagePopupCollection::OnDisplayRemoved(
     const display::Display& removed_display) {
   // The removed display may have been the primary display.
   UpdatePrimaryDisplay();
 }
 
-void DesktopPopupAlignmentDelegate::OnDisplayMetricsChanged(
+void DesktopMessagePopupCollection::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t metrics) {
   // Set to kInvalidDisplayId so the alignment is updated regardless of whether

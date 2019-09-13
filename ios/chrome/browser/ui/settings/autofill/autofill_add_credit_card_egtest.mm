@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/ios/ios_util.h"
 #import "ios/chrome/browser/ui/settings/autofill/features.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -17,9 +18,11 @@
 #endif
 
 using chrome_test_util::AddPaymentMethodButton;
+using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::PaymentMethodsButton;
 using chrome_test_util::StaticTextWithAccessibilityLabelId;
+using chrome_test_util::TextFieldForCellWithLabelId;
 
 namespace {
 
@@ -55,10 +58,17 @@ id<GREYMatcher> UseCameraButton() {
 
 // Matcher for the 'Card Number' text field in the add credit card view.
 id<GREYMatcher> CardNumberTextField() {
-  return grey_allOf(
-      grey_accessibilityID([l10n_util::GetNSStringWithFixup(
-          IDS_IOS_AUTOFILL_CARD_NUMBER) stringByAppendingString:@"_textField"]),
-      grey_kindOfClass([UITextField class]), nil);
+  return TextFieldForCellWithLabelId(IDS_IOS_AUTOFILL_CARD_NUMBER);
+}
+
+// Matcher for the 'Month of Expiry' text field in the add credit card view.
+id<GREYMatcher> MonthOfExpiryTextField() {
+  return TextFieldForCellWithLabelId(IDS_IOS_AUTOFILL_EXP_MONTH);
+}
+
+// Matcher for the 'Year of Expiry' text field in the add credit card view.
+id<GREYMatcher> YearOfExpiryTextField() {
+  return TextFieldForCellWithLabelId(IDS_IOS_AUTOFILL_EXP_YEAR);
 }
 
 // Matcher for the Invalid Card Number Alert.
@@ -173,7 +183,33 @@ id<GREYMatcher> InvalidCardNumberAlert() {
       assertWithMatcher:grey_nil()];
 }
 
-// Tests that the 'Cancel' button dismisses the screen
+// Tests when a user tries to add a valid card number, the screen is dismissed
+// and the new card number appears on the Autofill Credit Card 'Payment Methods'
+// screen.
+- (void)testAddButtonOnValidNumber {
+  [[EarlGrey selectElementWithMatcher:CardNumberTextField()]
+      performAction:grey_typeText(@"4111111111111111")];
+  [[EarlGrey selectElementWithMatcher:MonthOfExpiryTextField()]
+      performAction:grey_typeText(@"12")];
+  [[EarlGrey selectElementWithMatcher:YearOfExpiryTextField()]
+      performAction:grey_typeText(@"2999")];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::AddCreditCardButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::AddCreditCardView()]
+      assertWithMatcher:grey_nil()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::AutofillCreditCardTableView()]
+      assertWithMatcher:grey_notNil()];
+
+  NSString* newCreditCardObjectLabel =
+      @", Visa  •⁠ ⁠•⁠ ⁠•⁠ ⁠•⁠ ⁠1111‬";
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(
+                                          newCreditCardObjectLabel)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Tests that the 'Cancel' button dismisses the screen.
 - (void)testCancelButtonDismissesScreen {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::AddCreditCardView()]
       assertWithMatcher:grey_notNil()];
@@ -182,6 +218,20 @@ id<GREYMatcher> InvalidCardNumberAlert() {
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::AddCreditCardView()]
       assertWithMatcher:grey_nil()];
+}
+
+// Tests that the 'Use Camera' button opens the credit card scanner.
+- (void)testUseCameraButtonOpensCreditCardScanner {
+  // Feature only supported on iOS >= 13.
+  if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 12 and lower.");
+  }
+  [[EarlGrey selectElementWithMatcher:UseCameraButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::CreditCardScannerView()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::CloseButton()]
+      performAction:grey_tap()];
 }
 
 @end

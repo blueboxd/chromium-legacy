@@ -5,7 +5,8 @@
 package org.chromium.components.signin;
 
 import android.os.SystemClock;
-import android.support.annotation.IntDef;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;

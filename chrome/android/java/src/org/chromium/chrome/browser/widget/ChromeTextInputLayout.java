@@ -9,8 +9,6 @@ import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Rect;
-import android.support.annotation.ColorInt;
-import android.support.annotation.IntDef;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.AccessibilityDelegateCompat;
@@ -31,6 +29,9 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.annotation.ColorInt;
+import androidx.annotation.IntDef;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
@@ -110,7 +111,7 @@ public class ChromeTextInputLayout extends LinearLayout {
                 0);
         ApiCompatibilityUtils.setTextAppearance(mLabel,
                 a.getResourceId(R.styleable.ChromeTextInputLayout_hintTextAppearance,
-                        android.R.style.TextAppearance_Small));
+                        R.style.TextAppearance_BlackCaption));
         mLabel.setPivotX(0f);
         mLabel.setPivotY(mLabel.getPaint().getFontMetrics().bottom);
         mLabelStatus = LabelStatus.COLLAPSED;
@@ -146,7 +147,7 @@ public class ChromeTextInputLayout extends LinearLayout {
         mLabel.setTextColor(new ColorStateList(
                 new int[][] {new int[] {android.R.attr.state_activated}, new int[] {}},
                 new int[] {getColorAttribute(context, R.attr.colorControlActivated),
-                        mLabel.getCurrentHintTextColor()}));
+                        mLabel.getCurrentTextColor()}));
 
         mInterpolator = new FastOutSlowInInterpolator();
         setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_YES);

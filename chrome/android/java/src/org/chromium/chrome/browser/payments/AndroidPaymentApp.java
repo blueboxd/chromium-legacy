@@ -16,8 +16,9 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Parcelable;
 import android.os.RemoteException;
-import android.support.annotation.Nullable;
 import android.util.JsonWriter;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.IsReadyToPayService;
 import org.chromium.IsReadyToPayServiceCallback;

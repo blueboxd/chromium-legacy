@@ -6,8 +6,9 @@ package org.chromium.chrome.browser.download.home.list;
 
 import android.content.Intent;
 import android.os.Handler;
-import android.support.annotation.Nullable;
 import android.support.v4.util.Pair;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.base.CollectionUtil;

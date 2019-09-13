@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.tabbed_mode;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActivity;

@@ -589,7 +589,6 @@ void ShellSurfaceBase::OnSetFrame(SurfaceFrameType frame_type) {
   frame_view->SetEnabled(frame_enabled());
   frame_view->SetVisible(frame_enabled());
   frame_view->SetShouldPaintHeader(frame_enabled());
-  frame_view->SetHeaderHeight(base::nullopt);
   widget_->GetRootView()->Layout();
   // TODO(oshima): We probably should wait applying these if the
   // window is animating.

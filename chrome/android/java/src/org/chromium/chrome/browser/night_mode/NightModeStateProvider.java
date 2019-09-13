@@ -7,7 +7,8 @@ package org.chromium.chrome.browser.night_mode;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
-import android.support.annotation.NonNull;
+
+import androidx.annotation.NonNull;
 
 /**
  * An interface that provides and notifies about night mode state.

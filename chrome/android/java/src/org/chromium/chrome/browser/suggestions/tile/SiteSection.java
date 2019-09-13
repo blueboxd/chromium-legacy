@@ -4,9 +4,10 @@
 
 package org.chromium.chrome.browser.suggestions.tile;
 
-import android.support.annotation.LayoutRes;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+
+import androidx.annotation.LayoutRes;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;

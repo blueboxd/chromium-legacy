@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.ntp;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;

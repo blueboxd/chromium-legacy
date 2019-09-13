@@ -8,7 +8,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.DrawableRes;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.text.Spannable;
 import android.util.AttributeSet;
@@ -17,6 +16,8 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import androidx.annotation.DrawableRes;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDelegate;

@@ -4,9 +4,10 @@
 
 package org.chromium.chrome.test.pagecontroller.utils;
 
-import android.support.annotation.Nullable;
 import android.support.test.uiautomator.UiDevice;
 import android.support.test.uiautomator.UiObject2;
+
+import androidx.annotation.Nullable;
 
 import java.util.List;
 

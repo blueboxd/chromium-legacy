@@ -197,6 +197,9 @@ class ReportGeneratorTest : public ::testing::Test {
       std::vector<std::unique_ptr<em::ChromeDesktopReportRequest>>& rets) {
     histogram_tester_->ExpectUniqueSample(
         "Enterprise.CloudReportingRequestCount", rets.size(), 1);
+    histogram_tester_->ExpectUniqueSample(
+        "Enterprise.CloudReportingBasicRequestSize",
+        /*basic request size floor to KB*/ 0, 1);
   }
 
   TestingProfileManager* profile_manager() { return &profile_manager_; }

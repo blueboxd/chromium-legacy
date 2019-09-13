@@ -6,7 +6,8 @@ package org.chromium.chrome.browser.touchless;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.task.AsyncTask;

@@ -5,8 +5,9 @@
 package org.chromium.chrome.browser.omnibox.status;
 
 import android.content.res.Resources;
-import android.support.annotation.DrawableRes;
 import android.view.View;
+
+import androidx.annotation.DrawableRes;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;

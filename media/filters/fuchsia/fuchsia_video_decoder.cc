@@ -859,6 +859,13 @@ void FuchsiaVideoDecoder::OnOutputPacket(fuchsia::media::Packet output_packet,
                      base::Unretained(this), buffer_index,
                      output_packet.header().packet_index()));
 
+  // Mark the frame as power-efficient when software decoders are disabled. The
+  // codec may still decode on hardware even when |enable_sw_decoding_| is set
+  // (i.e. POWER_EFFICIENT flag would not be set correctly in that case). It
+  // doesn't matter because software decoders can be enabled only for tests.
+  frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT,
+                                !enable_sw_decoding_);
+
   output_cb_.Run(std::move(frame));
 }
 

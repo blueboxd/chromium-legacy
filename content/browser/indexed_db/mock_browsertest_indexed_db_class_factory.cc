@@ -85,12 +85,14 @@ class IndexedDBTestTransaction : public IndexedDBTransaction {
       const std::set<int64_t>& scope,
       blink::mojom::IDBTransactionMode mode,
       TasksAvailableCallback tasks_available_callback,
+      IndexedDBTransaction::TearDownCallback tear_down_callback,
       IndexedDBBackingStore::Transaction* backing_store_transaction)
       : IndexedDBTransaction(id,
                              connection,
                              scope,
                              mode,
                              std::move(tasks_available_callback),
+                             std::move(tear_down_callback),
                              backing_store_transaction) {}
   ~IndexedDBTestTransaction() override {}
 
@@ -388,10 +390,11 @@ MockBrowserTestIndexedDBClassFactory::CreateIndexedDBTransaction(
     const std::set<int64_t>& scope,
     blink::mojom::IDBTransactionMode mode,
     TasksAvailableCallback tasks_available_callback,
+    IndexedDBTransaction::TearDownCallback tear_down_callback,
     IndexedDBBackingStore::Transaction* backing_store_transaction) {
   return std::make_unique<IndexedDBTestTransaction>(
       id, connection, scope, mode, std::move(tasks_available_callback),
-      backing_store_transaction);
+      std::move(tear_down_callback), backing_store_transaction);
 }
 
 std::unique_ptr<TransactionalLevelDBDatabase>

@@ -9,7 +9,7 @@ android_library("java") {
     "//base:base_java",
     "//chrome/android/features/test_dummy/public:java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
-    "//third_party/android_deps:com_android_support_support_annotations_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
   ]
   java_files =
       [ "java/src/org/chromium/chrome/features/test_dummy/TestDummyImpl.java" ]

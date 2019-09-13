@@ -130,7 +130,7 @@ void SVGInlineTextBoxPainter::PaintTextFragments(
   bool should_paint_selection = ShouldPaintSelection(paint_info);
   if (should_paint_selection) {
     selection_style =
-        parent_layout_object.GetCachedPseudoStyle(kPseudoIdSelection);
+        parent_layout_object.GetCachedPseudoElementStyle(kPseudoIdSelection);
     if (selection_style) {
       const SVGComputedStyle& svg_selection_style = selection_style->SvgStyle();
 

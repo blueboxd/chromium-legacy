@@ -5,8 +5,9 @@
 package org.chromium.chrome.browser.util;
 
 import android.net.Uri;
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
 
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.Log;

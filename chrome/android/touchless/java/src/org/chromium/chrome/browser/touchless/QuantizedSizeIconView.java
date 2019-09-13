@@ -7,9 +7,10 @@ package org.chromium.chrome.browser.touchless;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
-import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.widget.ImageView;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.chrome.touchless.R;
 

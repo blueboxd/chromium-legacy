@@ -13,6 +13,11 @@
 #include "components/cloud_devices/common/printer_description.h"
 #include "printing/backend/print_backend.h"
 
+#if defined(OS_CHROMEOS)
+#include "base/feature_list.h"
+#include "printing/printing_features_chromeos.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace cloud_print {
 
 namespace {
@@ -31,6 +36,29 @@ cloud_devices::printer::DuplexType ToCloudDuplexType(
   }
   return cloud_devices::printer::DuplexType::NO_DUPLEX;
 }
+
+#if defined(OS_CHROMEOS)
+cloud_devices::printer::TypedValueVendorCapability::ValueType ToCloudValueType(
+    base::Value::Type type) {
+  switch (type) {
+    case base::Value::Type::BOOLEAN:
+      return cloud_devices::printer::TypedValueVendorCapability::ValueType::
+          BOOLEAN;
+    case base::Value::Type::DOUBLE:
+      return cloud_devices::printer::TypedValueVendorCapability::ValueType::
+          FLOAT;
+    case base::Value::Type::INTEGER:
+      return cloud_devices::printer::TypedValueVendorCapability::ValueType::
+          INTEGER;
+    case base::Value::Type::STRING:
+      return cloud_devices::printer::TypedValueVendorCapability::ValueType::
+          STRING;
+    default:
+      NOTREACHED();
+  }
+  return cloud_devices::printer::TypedValueVendorCapability::ValueType::STRING;
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace
 
@@ -145,6 +173,34 @@ base::Value PrinterSemanticCapsAndDefaultsToCdd(
   PinCapability pin;
   pin.set_value(semantic_info.pin_supported);
   pin.SaveTo(&description);
+
+  if (base::FeatureList::IsEnabled(printing::kAdvancedPpdAttributes) &&
+      !semantic_info.advanced_capabilities.empty()) {
+    VendorCapabilities vendor_capabilities;
+    for (const auto& capability : semantic_info.advanced_capabilities) {
+      std::string capability_name = capability.display_name.empty()
+                                        ? capability.name
+                                        : capability.display_name;
+      if (!capability.values.empty()) {
+        SelectVendorCapability select_capability;
+        for (const auto& value : capability.values) {
+          std::string localized_value =
+              value.display_name.empty() ? value.name : value.display_name;
+          select_capability.AddDefaultOption(
+              SelectVendorCapabilityOption(value.name, localized_value),
+              value.is_default);
+        }
+        vendor_capabilities.AddOption(VendorCapability(
+            capability.name, capability_name, std::move(select_capability)));
+      } else {
+        vendor_capabilities.AddOption(
+            VendorCapability(capability.name, capability_name,
+                             TypedValueVendorCapability(
+                                 ToCloudValueType(base::Value::Type::STRING))));
+      }
+    }
+    vendor_capabilities.SaveTo(&description);
+  }
 #endif  // defined(OS_CHROMEOS)
 
   return std::move(description).ToValue();

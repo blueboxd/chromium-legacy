@@ -10,7 +10,8 @@ import android.app.NotificationChannelGroup;
 import android.app.NotificationManager;
 import android.content.res.Resources;
 import android.os.Build;
-import android.support.annotation.StringDef;
+
+import androidx.annotation.StringDef;
 
 import org.chromium.chrome.R;
 

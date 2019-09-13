@@ -325,6 +325,8 @@ void PasswordFormManager::UpdateUsername(const base::string16& new_username) {
   parsed_submitted_form_->username_value = new_username;
   parsed_submitted_form_->username_element.clear();
 
+  metrics_recorder_->set_username_updated_in_bubble(true);
+
   // |has_username_edited_vote_| is true iff |new_username| was typed in another
   // field. Otherwise, |has_username_edited_vote_| is false and no vote will be
   // uploaded.
@@ -645,14 +647,15 @@ bool PasswordFormManager::ProvisionallySave(
   submitted_form_ = submitted_form;
   is_submitted_ = true;
   CalculateFillingAssistanceMetric(submitted_form);
+  metrics_recorder_->set_possible_username_used(false);
 
   if (parsed_submitted_form_->username_value.empty() && possible_username &&
       IsPossibleUsernameValid(*possible_username,
                               parsed_submitted_form_->signon_realm,
                               base::Time::Now())) {
     parsed_submitted_form_->username_value = possible_username->value;
+    metrics_recorder_->set_possible_username_used(true);
   }
-
   CreatePendingCredentials();
   return true;
 }

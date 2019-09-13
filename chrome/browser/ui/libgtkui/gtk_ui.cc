@@ -28,7 +28,6 @@
 #include "chrome/browser/ui/libgtkui/gtk_key_bindings_handler.h"
 #include "chrome/browser/ui/libgtkui/gtk_status_icon.h"
 #include "chrome/browser/ui/libgtkui/gtk_util.h"
-#include "chrome/browser/ui/libgtkui/input_method_context_impl_gtk.h"
 #include "chrome/browser/ui/libgtkui/native_theme_gtk.h"
 #include "chrome/browser/ui/libgtkui/nav_button_provider_gtk.h"
 #include "chrome/browser/ui/libgtkui/print_dialog_gtk.h"
@@ -74,6 +73,7 @@
 
 #if defined(USE_X11)
 #include "chrome/browser/ui/libgtkui/gtk_event_loop_x11.h"  // nogncheck
+#include "chrome/browser/ui/libgtkui/x11_input_method_context_impl_gtk.h"  // nogncheck
 #include "ui/gfx/x/x11.h"        // nogncheck
 #include "ui/gfx/x/x11_types.h"  // nogncheck
 #endif
@@ -333,7 +333,7 @@ GtkUi::GtkUi() {
       {ActionSource::kRightClick, Action::kMenu}};
 
   // Force Gtk to use Xwayland if it would have used wayland.  libgtkui assumes
-  // the use of X11 (eg. InputMethodContextImplGtk) and will crash under
+  // the use of X11 (eg. X11InputMethodContextImplGtk) and will crash under
   // other backends.
   // TODO(thomasanderson): Change this logic once Wayland support is added.
   gdk_set_allowed_backends("x11");
@@ -655,7 +655,7 @@ std::unique_ptr<ui::LinuxInputMethodContext> GtkUi::CreateInputMethodContext(
     bool is_simple) const {
 #if defined(USE_X11)
   return std::unique_ptr<ui::LinuxInputMethodContext>(
-      new InputMethodContextImplGtk(delegate, is_simple));
+      new X11InputMethodContextImplGtk(delegate, is_simple));
 #else
   NOTIMPLEMENTED();
   return std::make_unique<ui::FakeInputMethodContext>();

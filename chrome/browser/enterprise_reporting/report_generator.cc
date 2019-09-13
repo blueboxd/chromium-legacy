@@ -39,6 +39,8 @@ constexpr char kRequestCountMetricsName[] =
     "Enterprise.CloudReportingRequestCount";
 constexpr char kRequestSizeMetricsName[] =
     "Enterprise.CloudReportingRequestSize";
+constexpr char kBasicRequestSizeMetricsName[] =
+    "Enterprise.CloudReportingBasicRequestSize";
 
 // Because server only stores 20 profiles for each report and when report is
 // separated into requests, there is at least one profile per request. It means
@@ -200,6 +202,8 @@ void ReportGenerator::OnPluginsReady(
 
 void ReportGenerator::OnBasicRequestReady() {
   basic_request_size_ = basic_request_.ByteSizeLong();
+  base::UmaHistogramMemoryKB(kBasicRequestSizeMetricsName,
+                             basic_request_size_ / 1024);
   if (basic_request_size_ > maximum_report_size_) {
     // Basic request is already too large so we can't upload any valid report.
     // Skip all Profiles and response an empty request list.

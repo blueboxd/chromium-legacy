@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_MESSAGE_CENTER_ASH_POPUP_ALIGNMENT_DELEGATE_H_
-#define ASH_SYSTEM_MESSAGE_CENTER_ASH_POPUP_ALIGNMENT_DELEGATE_H_
+#ifndef ASH_SYSTEM_MESSAGE_CENTER_ASH_MESSAGE_POPUP_COLLECTION_H_
+#define ASH_SYSTEM_MESSAGE_CENTER_ASH_MESSAGE_POPUP_COLLECTION_H_
 
 #include <stdint.h>
 
@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/message_center/views/popup_alignment_delegate.h"
+#include "ui/message_center/views/message_popup_collection.h"
 
 namespace display {
 class Screen;
@@ -22,20 +22,18 @@ class Screen;
 
 namespace ash {
 
-class AshPopupAlignmentDelegateTest;
+class AshMessagePopupCollectionTest;
 class Shelf;
-class NotificationTrayTest;
 
-// The PopupAlignmentDelegate subclass for Ash. It needs to handle alignment of
+// The MessagePopupCollection subclass for Ash. It needs to handle alignment of
 // the shelf and its autohide state.
-class ASH_EXPORT AshPopupAlignmentDelegate
-    : public message_center::PopupAlignmentDelegate,
+class ASH_EXPORT AshMessagePopupCollection
+    : public message_center::MessagePopupCollection,
       public ShelfObserver,
-      public ShellObserver,
       public display::DisplayObserver {
  public:
-  explicit AshPopupAlignmentDelegate(Shelf* shelf);
-  ~AshPopupAlignmentDelegate() override;
+  explicit AshMessagePopupCollection(Shelf* shelf);
+  ~AshMessagePopupCollection() override;
 
   // Start observing the system.
   void StartObserving(display::Screen* screen, const display::Display& display);
@@ -44,10 +42,7 @@ class ASH_EXPORT AshPopupAlignmentDelegate
   // bubble) so that notification toasts can avoid it.
   void SetTrayBubbleHeight(int height);
 
-  // Returns the current tray bubble height or 0 if there is no bubble.
-  int tray_bubble_height_for_test() const { return tray_bubble_height_; }
-
-  // Overridden from message_center::PopupAlignmentDelegate:
+  // Overridden from message_center::MessagePopupCollection:
   int GetToastOriginX(const gfx::Rect& toast_bounds) const override;
   int GetBaseline() const override;
   gfx::Rect GetWorkArea() const override;
@@ -59,9 +54,11 @@ class ASH_EXPORT AshPopupAlignmentDelegate
       views::Widget::InitParams* init_params) override;
   bool IsPrimaryDisplayForNotification() const override;
 
+  // Returns the current tray bubble height or 0 if there is no bubble.
+  int tray_bubble_height_for_test() const { return tray_bubble_height_; }
+
  private:
-  friend class AshPopupAlignmentDelegateTest;
-  friend class NotificationTrayTest;
+  friend class AshMessagePopupCollectionTest;
 
   // Get the current alignment of the shelf.
   ShelfAlignment GetAlignment() const;
@@ -84,9 +81,9 @@ class ASH_EXPORT AshPopupAlignmentDelegate
   Shelf* shelf_;
   int tray_bubble_height_;
 
-  DISALLOW_COPY_AND_ASSIGN(AshPopupAlignmentDelegate);
+  DISALLOW_COPY_AND_ASSIGN(AshMessagePopupCollection);
 };
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_MESSAGE_CENTER_ASH_POPUP_ALIGNMENT_DELEGATE_H_
+#endif  // ASH_SYSTEM_MESSAGE_CENTER_ASH_MESSAGE_POPUP_COLLECTION_H_

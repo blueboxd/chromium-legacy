@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 package org.chromium.chrome.browser.keyboard_accessory.bar_component;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import org.chromium.ui.modelutil.ListModel;
 import org.chromium.ui.modelutil.SimpleRecyclerViewMcp;

@@ -312,36 +312,45 @@ String LayoutTheme::ExtraFullscreenStyleSheet() {
   return String();
 }
 
-Color LayoutTheme::ActiveSelectionBackgroundColor() const {
-  return PlatformActiveSelectionBackgroundColor().BlendWithWhite();
+Color LayoutTheme::ActiveSelectionBackgroundColor(
+    WebColorScheme color_scheme) const {
+  return PlatformActiveSelectionBackgroundColor(color_scheme).BlendWithWhite();
 }
 
-Color LayoutTheme::InactiveSelectionBackgroundColor() const {
-  return PlatformInactiveSelectionBackgroundColor().BlendWithWhite();
+Color LayoutTheme::InactiveSelectionBackgroundColor(
+    WebColorScheme color_scheme) const {
+  return PlatformInactiveSelectionBackgroundColor(color_scheme)
+      .BlendWithWhite();
 }
 
-Color LayoutTheme::ActiveSelectionForegroundColor() const {
-  return PlatformActiveSelectionForegroundColor();
+Color LayoutTheme::ActiveSelectionForegroundColor(
+    WebColorScheme color_scheme) const {
+  return PlatformActiveSelectionForegroundColor(color_scheme);
 }
 
-Color LayoutTheme::InactiveSelectionForegroundColor() const {
-  return PlatformInactiveSelectionForegroundColor();
+Color LayoutTheme::InactiveSelectionForegroundColor(
+    WebColorScheme color_scheme) const {
+  return PlatformInactiveSelectionForegroundColor(color_scheme);
 }
 
-Color LayoutTheme::ActiveListBoxSelectionBackgroundColor() const {
-  return PlatformActiveListBoxSelectionBackgroundColor();
+Color LayoutTheme::ActiveListBoxSelectionBackgroundColor(
+    WebColorScheme color_scheme) const {
+  return PlatformActiveListBoxSelectionBackgroundColor(color_scheme);
 }
 
-Color LayoutTheme::InactiveListBoxSelectionBackgroundColor() const {
-  return PlatformInactiveListBoxSelectionBackgroundColor();
+Color LayoutTheme::InactiveListBoxSelectionBackgroundColor(
+    WebColorScheme color_scheme) const {
+  return PlatformInactiveListBoxSelectionBackgroundColor(color_scheme);
 }
 
-Color LayoutTheme::ActiveListBoxSelectionForegroundColor() const {
-  return PlatformActiveListBoxSelectionForegroundColor();
+Color LayoutTheme::ActiveListBoxSelectionForegroundColor(
+    WebColorScheme color_scheme) const {
+  return PlatformActiveListBoxSelectionForegroundColor(color_scheme);
 }
 
-Color LayoutTheme::InactiveListBoxSelectionForegroundColor() const {
-  return PlatformInactiveListBoxSelectionForegroundColor();
+Color LayoutTheme::InactiveListBoxSelectionForegroundColor(
+    WebColorScheme color_scheme) const {
+  return PlatformInactiveListBoxSelectionForegroundColor(color_scheme);
 }
 
 Color LayoutTheme::PlatformSpellingMarkerUnderlineColor() const {
@@ -356,41 +365,49 @@ Color LayoutTheme::PlatformActiveSpellingMarkerHighlightColor() const {
   return Color(255, 0, 0, 102);
 }
 
-Color LayoutTheme::PlatformActiveSelectionBackgroundColor() const {
+Color LayoutTheme::PlatformActiveSelectionBackgroundColor(
+    WebColorScheme color_scheme) const {
   // Use a blue color by default if the platform theme doesn't define anything.
   return Color(0, 0, 255);
 }
 
-Color LayoutTheme::PlatformActiveSelectionForegroundColor() const {
+Color LayoutTheme::PlatformActiveSelectionForegroundColor(
+    WebColorScheme color_scheme) const {
   // Use a white color by default if the platform theme doesn't define anything.
   return Color::kWhite;
 }
 
-Color LayoutTheme::PlatformInactiveSelectionBackgroundColor() const {
+Color LayoutTheme::PlatformInactiveSelectionBackgroundColor(
+    WebColorScheme color_scheme) const {
   // Use a grey color by default if the platform theme doesn't define anything.
   // This color matches Firefox's inactive color.
   return Color(176, 176, 176);
 }
 
-Color LayoutTheme::PlatformInactiveSelectionForegroundColor() const {
+Color LayoutTheme::PlatformInactiveSelectionForegroundColor(
+    WebColorScheme color_scheme) const {
   // Use a black color by default.
   return Color::kBlack;
 }
 
-Color LayoutTheme::PlatformActiveListBoxSelectionBackgroundColor() const {
-  return PlatformActiveSelectionBackgroundColor();
+Color LayoutTheme::PlatformActiveListBoxSelectionBackgroundColor(
+    WebColorScheme color_scheme) const {
+  return PlatformActiveSelectionBackgroundColor(color_scheme);
 }
 
-Color LayoutTheme::PlatformActiveListBoxSelectionForegroundColor() const {
-  return PlatformActiveSelectionForegroundColor();
+Color LayoutTheme::PlatformActiveListBoxSelectionForegroundColor(
+    WebColorScheme color_scheme) const {
+  return PlatformActiveSelectionForegroundColor(color_scheme);
 }
 
-Color LayoutTheme::PlatformInactiveListBoxSelectionBackgroundColor() const {
-  return PlatformInactiveSelectionBackgroundColor();
+Color LayoutTheme::PlatformInactiveListBoxSelectionBackgroundColor(
+    WebColorScheme color_scheme) const {
+  return PlatformInactiveSelectionBackgroundColor(color_scheme);
 }
 
-Color LayoutTheme::PlatformInactiveListBoxSelectionForegroundColor() const {
-  return PlatformInactiveSelectionForegroundColor();
+Color LayoutTheme::PlatformInactiveListBoxSelectionForegroundColor(
+    WebColorScheme color_scheme) const {
+  return PlatformInactiveSelectionForegroundColor(color_scheme);
 }
 
 LayoutUnit LayoutTheme::BaselinePositionAdjustment(
@@ -778,13 +795,13 @@ Color LayoutTheme::SystemColor(CSSValueID css_value_id,
     case CSSValueID::kWindowtext:
       return color_scheme == WebColorScheme::kDark ? 0xFFFFFFFF : 0xFF000000;
     case CSSValueID::kInternalActiveListBoxSelection:
-      return ActiveListBoxSelectionBackgroundColor();
+      return ActiveListBoxSelectionBackgroundColor(color_scheme);
     case CSSValueID::kInternalActiveListBoxSelectionText:
-      return ActiveListBoxSelectionForegroundColor();
+      return ActiveListBoxSelectionForegroundColor(color_scheme);
     case CSSValueID::kInternalInactiveListBoxSelection:
-      return InactiveListBoxSelectionBackgroundColor();
+      return InactiveListBoxSelectionBackgroundColor(color_scheme);
     case CSSValueID::kInternalInactiveListBoxSelectionText:
-      return InactiveListBoxSelectionForegroundColor();
+      return InactiveListBoxSelectionForegroundColor(color_scheme);
     default:
       break;
   }

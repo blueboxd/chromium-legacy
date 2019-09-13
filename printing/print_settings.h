@@ -17,6 +17,12 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
+#if defined(OS_CHROMEOS)
+#include <map>
+
+#include "base/values.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace printing {
 
 // Returns true if |color_mode| is color and not B&W.
@@ -58,6 +64,10 @@ class PRINTING_EXPORT PrintSettings {
       return size_microns.IsEmpty() && vendor_id.empty();
     }
   };
+
+#if defined(OS_CHROMEOS)
+  using AdvancedSettings = std::map<std::string, base::Value>;
+#endif  // defined(OS_CHROMEOS)
 
   PrintSettings();
   ~PrintSettings();
@@ -201,7 +211,12 @@ class PRINTING_EXPORT PrintSettings {
 
   void set_pin_value(const std::string& pin_value) { pin_value_ = pin_value; }
   const std::string& pin_value() const { return pin_value_; }
-#endif
+
+  AdvancedSettings& advanced_settings() { return advanced_settings_; }
+  const AdvancedSettings& advanced_settings() const {
+    return advanced_settings_;
+  }
+#endif  // defined(OS_CHROMEOS)
 
   // Cookie generator. It is used to initialize PrintedDocument with its
   // associated PrintSettings, to be sure that each generated PrintedPage is
@@ -291,6 +306,9 @@ class PRINTING_EXPORT PrintSettings {
 
   // PIN code entered by the user.
   std::string pin_value_;
+
+  // Advanced settings.
+  AdvancedSettings advanced_settings_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(PrintSettings);

@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.infobar;
 
 import android.graphics.drawable.Drawable;
-import android.support.annotation.Nullable;
 import android.support.graphics.drawable.Animatable2Compat;
 import android.support.graphics.drawable.AnimatedVectorDrawableCompat;
 import android.support.graphics.drawable.VectorDrawableCompat;
@@ -13,12 +12,13 @@ import android.support.v4.view.ViewCompat;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadInfoBarController;
-import org.chromium.chrome.browser.infobar.InfoBarContainerLayout.Item.InfoBarPriority;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.content_public.browser.UiThreadTaskTraits;

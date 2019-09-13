@@ -7,9 +7,10 @@ package org.chromium.chrome.browser.metrics;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Handler;
-import android.support.annotation.IntDef;
-import android.support.annotation.Nullable;
 import android.text.format.DateUtils;
+
+import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationState;

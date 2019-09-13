@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.tab;
 
-import android.support.annotation.IntDef;
 import android.view.View;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationState;

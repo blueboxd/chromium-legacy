@@ -65,7 +65,7 @@ RenderFrameAudioInputStreamFactoryHandle::CreateFactory(
     content::MediaStreamManager* media_stream_manager,
     int render_process_id,
     int render_frame_id,
-    mojom::RendererAudioInputStreamFactoryRequest request) {
+    mojo::PendingReceiver<mojom::RendererAudioInputStreamFactory> receiver) {
   std::unique_ptr<RenderFrameAudioInputStreamFactoryHandle,
                   BrowserThread::DeleteOnIOThread>
       handle(new RenderFrameAudioInputStreamFactoryHandle(
@@ -76,7 +76,7 @@ RenderFrameAudioInputStreamFactoryHandle::CreateFactory(
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&RenderFrameAudioInputStreamFactoryHandle::Init,
-                     base::Unretained(handle.get()), std::move(request)));
+                     base::Unretained(handle.get()), std::move(receiver)));
   return handle;
 }
 
@@ -96,12 +96,12 @@ RenderFrameAudioInputStreamFactoryHandle::
             media_stream_manager,
             render_process_id,
             render_frame_id),
-      binding_(&impl_) {}
+      receiver_(&impl_) {}
 
 void RenderFrameAudioInputStreamFactoryHandle::Init(
-    mojom::RendererAudioInputStreamFactoryRequest request) {
+    mojo::PendingReceiver<mojom::RendererAudioInputStreamFactory> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  binding_.Bind(std::move(request));
+  receiver_.Bind(std::move(receiver));
 }
 
 OldRenderFrameAudioInputStreamFactory::OldRenderFrameAudioInputStreamFactory(

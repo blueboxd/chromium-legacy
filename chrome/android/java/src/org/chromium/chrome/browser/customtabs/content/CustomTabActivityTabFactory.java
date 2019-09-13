@@ -5,8 +5,9 @@
 package org.chromium.chrome.browser.customtabs.content;
 
 import android.content.Intent;
-import android.support.annotation.Nullable;
 import android.util.Pair;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.IntentHandler;

@@ -5,7 +5,8 @@
 package org.chromium.chrome.browser.feed;
 
 import android.app.Activity;
-import android.support.annotation.IntDef;
+
+import androidx.annotation.IntDef;
 
 import com.google.android.libraries.feed.api.client.lifecycle.AppLifecycleListener;
 

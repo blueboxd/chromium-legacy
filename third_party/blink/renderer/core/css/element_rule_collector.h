@@ -113,7 +113,7 @@ class ElementRuleCollector {
   ~ElementRuleCollector();
 
   void SetMode(SelectorChecker::Mode mode) { mode_ = mode; }
-  void SetPseudoStyleRequest(const PseudoStyleRequest& request) {
+  void SetPseudoElementStyleRequest(const PseudoElementStyleRequest& request) {
     pseudo_style_request_ = request;
   }
   void SetSameOriginOnly(bool f) { same_origin_only_ = f; }
@@ -182,7 +182,7 @@ class ElementRuleCollector {
   scoped_refptr<ComputedStyle>
       style_;  // FIXME: This can be mutated during matching!
 
-  PseudoStyleRequest pseudo_style_request_;
+  PseudoElementStyleRequest pseudo_style_request_;
   SelectorChecker::Mode mode_;
   bool can_use_fast_reject_;
   bool same_origin_only_;

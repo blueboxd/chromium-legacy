@@ -13,8 +13,10 @@ import static androidx.browser.customtabs.CustomTabsCallback.TAB_SHOWN;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
+
+import androidx.annotation.Nullable;
+import androidx.browser.customtabs.CustomTabsCallback;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -26,8 +28,6 @@ import org.chromium.net.NetError;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import androidx.browser.customtabs.CustomTabsCallback;
 
 /**
  * An observer for firing navigation events to the CCT dynamic module.

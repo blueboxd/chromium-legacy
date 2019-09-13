@@ -126,7 +126,7 @@ android_library("java") {
     "//third_party/android_deps:android_arch_lifecycle_runtime_java",
     "//third_party/android_deps:android_arch_lifecycle_viewmodel_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
-    "//third_party/android_deps:com_android_support_support_annotations_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/gvr-android-keyboard:kb_java",
     "//third_party/gvr-android-sdk:gvr_common_java",
     "//ui/android:ui_full_java",

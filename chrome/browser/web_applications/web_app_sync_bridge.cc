@@ -4,11 +4,23 @@
 
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/optional.h"
+#include "chrome/common/channel_info.h"
+#include "components/sync/base/model_type.h"
+#include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/model/metadata_change_list.h"
+#include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 
 namespace web_app {
+
+WebAppSyncBridge::WebAppSyncBridge()
+    : WebAppSyncBridge(
+          std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
+              syncer::WEB_APPS,
+              base::BindRepeating(&syncer::ReportUnrecoverableError,
+                                  chrome::GetChannel()))) {}
 
 WebAppSyncBridge::WebAppSyncBridge(
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor)

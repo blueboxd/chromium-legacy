@@ -10,9 +10,11 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.SystemClock;
-import android.support.annotation.IntDef;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
+
+import androidx.annotation.IntDef;
+import androidx.browser.customtabs.CustomTabsSessionToken;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
@@ -32,8 +34,6 @@ import java.lang.annotation.RetentionPolicy;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-
-import androidx.browser.customtabs.CustomTabsSessionToken;
 
 /**
  * A {@link TabObserver} that also handles custom tabs specific logging and messaging.

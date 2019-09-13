@@ -122,41 +122,49 @@ String LayoutThemeDefault::ExtraQuirksStyleSheet() {
   return UncompressResourceAsASCIIString(IDR_UASTYLE_THEME_WIN_QUIRKS_CSS);
 }
 
-Color LayoutThemeDefault::ActiveListBoxSelectionBackgroundColor() const {
+Color LayoutThemeDefault::ActiveListBoxSelectionBackgroundColor(
+    WebColorScheme color_scheme) const {
   return Color(0x28, 0x28, 0x28);
 }
 
-Color LayoutThemeDefault::ActiveListBoxSelectionForegroundColor() const {
-  return Color::kBlack;
+Color LayoutThemeDefault::ActiveListBoxSelectionForegroundColor(
+    WebColorScheme color_scheme) const {
+  return color_scheme == WebColorScheme::kDark ? Color::kWhite : Color::kBlack;
 }
 
-Color LayoutThemeDefault::InactiveListBoxSelectionBackgroundColor() const {
+Color LayoutThemeDefault::InactiveListBoxSelectionBackgroundColor(
+    WebColorScheme color_scheme) const {
   return Color(0xc8, 0xc8, 0xc8);
 }
 
-Color LayoutThemeDefault::InactiveListBoxSelectionForegroundColor() const {
+Color LayoutThemeDefault::InactiveListBoxSelectionForegroundColor(
+    WebColorScheme color_scheme) const {
   return Color(0x32, 0x32, 0x32);
 }
 
-Color LayoutThemeDefault::PlatformActiveSelectionBackgroundColor() const {
+Color LayoutThemeDefault::PlatformActiveSelectionBackgroundColor(
+    WebColorScheme color_scheme) const {
   if (UseMockTheme())
     return Color(0x00, 0x00, 0xff);  // Royal blue.
   return active_selection_background_color_;
 }
 
-Color LayoutThemeDefault::PlatformInactiveSelectionBackgroundColor() const {
+Color LayoutThemeDefault::PlatformInactiveSelectionBackgroundColor(
+    WebColorScheme color_scheme) const {
   if (UseMockTheme())
     return Color(0x99, 0x99, 0x99);  // Medium gray.
   return inactive_selection_background_color_;
 }
 
-Color LayoutThemeDefault::PlatformActiveSelectionForegroundColor() const {
+Color LayoutThemeDefault::PlatformActiveSelectionForegroundColor(
+    WebColorScheme color_scheme) const {
   if (UseMockTheme())
     return Color(0xff, 0xff, 0xcc);  // Pale yellow.
   return active_selection_foreground_color_;
 }
 
-Color LayoutThemeDefault::PlatformInactiveSelectionForegroundColor() const {
+Color LayoutThemeDefault::PlatformInactiveSelectionForegroundColor(
+    WebColorScheme color_scheme) const {
   if (UseMockTheme())
     return Color::kWhite;
   return inactive_selection_foreground_color_;

@@ -5,8 +5,9 @@
 package org.chromium.chrome.browser.download.home.filter;
 
 import android.content.Context;
-import android.support.annotation.IntDef;
 import android.view.View;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.download.home.filter.Filters.FilterType;

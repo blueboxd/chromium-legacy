@@ -4,7 +4,7 @@
 
 package org.chromium.mojo;
 
-import android.support.annotation.IntDef;
+import androidx.annotation.IntDef;
 
 import org.junit.rules.ExternalResource;
 

@@ -6,7 +6,8 @@ package org.chromium.chrome.browser.autofill_assistant.overlay;
 
 import android.graphics.Color;
 import android.graphics.RectF;
-import android.support.annotation.ColorInt;
+
+import androidx.annotation.ColorInt;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;

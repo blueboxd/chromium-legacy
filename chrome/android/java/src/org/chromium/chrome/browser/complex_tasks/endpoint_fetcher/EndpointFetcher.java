@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.complex_tasks.endpoint_fetcher;
 
-import android.support.annotation.MainThread;
+import androidx.annotation.MainThread;
 
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.NativeMethods;

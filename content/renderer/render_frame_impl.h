@@ -1607,7 +1607,8 @@ class CONTENT_EXPORT RenderFrameImpl
   std::unique_ptr<blink::WebMediaStreamDeviceObserver>
       web_media_stream_device_observer_;
 
-  mojom::RendererAudioInputStreamFactoryPtr audio_input_stream_factory_;
+  mojo::Remote<mojom::RendererAudioInputStreamFactory>
+      audio_input_stream_factory_;
 
   // The media permission dispatcher attached to this frame.
   std::unique_ptr<MediaPermissionDispatcher> media_permission_dispatcher_;

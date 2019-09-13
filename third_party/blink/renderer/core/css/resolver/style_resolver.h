@@ -85,7 +85,7 @@ class CORE_EXPORT StyleResolver final
 
   scoped_refptr<ComputedStyle> PseudoStyleForElement(
       Element*,
-      const PseudoStyleRequest&,
+      const PseudoElementStyleRequest&,
       const ComputedStyle* parent_style,
       const ComputedStyle* layout_parent_style);
 
@@ -305,7 +305,7 @@ class CORE_EXPORT StyleResolver final
   void ApplyCascadedColorValue(StyleResolverState&);
 
   bool PseudoStyleForElementInternal(Element&,
-                                     const PseudoStyleRequest&,
+                                     const PseudoElementStyleRequest&,
                                      StyleResolverState&);
 
   bool HasAuthorBorder(const StyleResolverState&);

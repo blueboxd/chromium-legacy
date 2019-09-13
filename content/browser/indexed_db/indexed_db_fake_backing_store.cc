@@ -172,7 +172,9 @@ leveldb::Status IndexedDBFakeBackingStore::FakeTransaction::CommitPhaseTwo() {
 uint64_t IndexedDBFakeBackingStore::FakeTransaction::GetTransactionSize() {
   return 0;
 }
-void IndexedDBFakeBackingStore::FakeTransaction::RollbackAndMaybeTearDown() {}
+leveldb::Status IndexedDBFakeBackingStore::FakeTransaction::Rollback() {
+  return leveldb::Status::OK();
+}
 
 std::unique_ptr<IndexedDBBackingStore::Transaction>
 IndexedDBFakeBackingStore::CreateTransaction(bool relaxed_durability) {

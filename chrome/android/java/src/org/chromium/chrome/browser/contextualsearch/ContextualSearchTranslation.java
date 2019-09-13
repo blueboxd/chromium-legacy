@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 /**
  * Provides an interface for forcing translation on a Contextual Search Request.

@@ -4,12 +4,13 @@
 
 package org.chromium.chrome.browser.widget;
 
-import android.support.annotation.ColorInt;
-import android.support.annotation.IntDef;
-import android.support.annotation.StringRes;
-import android.support.annotation.StyleRes;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+
+import androidx.annotation.ColorInt;
+import androidx.annotation.IntDef;
+import androidx.annotation.StringRes;
+import androidx.annotation.StyleRes;
 
 import org.chromium.chrome.browser.AppHooks;
 

@@ -1252,6 +1252,9 @@ Polymer({
     if (this.getSettingValue('pin')) {
       ticket.pinValue = this.getSettingValue('pinValue');
     }
+    if (destination.origin == print_preview.DestinationOrigin.CROS) {
+      ticket.advancedSettings = this.getSettingValue('vendorItems');
+    }
     // </if>
 
     return JSON.stringify(ticket);

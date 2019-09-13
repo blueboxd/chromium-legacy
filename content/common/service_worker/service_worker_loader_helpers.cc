@@ -138,7 +138,7 @@ ServiceWorkerLoaderHelpers::ComputeRedirectInfo(
 }
 
 int ServiceWorkerLoaderHelpers::ReadBlobResponseBody(
-    blink::mojom::BlobPtr* blob,
+    mojo::Remote<blink::mojom::Blob>* blob,
     uint64_t blob_size,
     base::OnceCallback<void(int)> on_blob_read_complete,
     mojo::ScopedDataPipeConsumerHandle* handle_out) {

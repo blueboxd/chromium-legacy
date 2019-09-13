@@ -267,6 +267,15 @@ class PasswordFormMetricsRecorder
     kMaxValue = kHashSaved,
   };
 
+  // Records user actions when Chrome suggests usernames on a page which are
+  // considered to be username first flow.
+  enum class SavingOnUsernameFirstFlow {
+    kSaved = 0,
+    kSavedWithEditedUsername = 1,
+    kNotSaved = 2,
+    kMaxValue = kNotSaved,
+  };
+
   // The maximum number of combinations of the ManagerAction, UserAction and
   // SubmitResult enums.
   // This is used when recording the actions taken by the form in UMA.
@@ -393,6 +402,14 @@ class PasswordFormMetricsRecorder
     password_hash_saved_on_chrome_sing_in_page_ = true;
   }
 
+  void set_possible_username_used(bool value) {
+    possible_username_used_ = value;
+  }
+
+  void set_username_updated_in_bubble(bool value) {
+    username_updated_in_bubble_ = value;
+  }
+
  private:
   friend class base::RefCounted<PasswordFormMetricsRecorder>;
 
@@ -480,6 +497,9 @@ class PasswordFormMetricsRecorder
   bool password_hash_saved_on_chrome_sing_in_page_ = false;
 
   base::Optional<FillingAssistance> filling_assistance_;
+
+  bool possible_username_used_ = false;
+  bool username_updated_in_bubble_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordFormMetricsRecorder);
 };

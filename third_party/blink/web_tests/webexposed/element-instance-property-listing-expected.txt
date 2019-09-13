@@ -40,8 +40,10 @@ namespace http://www.w3.org/1999/xhtml
     property ariaColIndex
     property ariaColSpan
     property ariaControls
+    property ariaControlsElements
     property ariaCurrent
     property ariaDescribedBy
+    property ariaDescribedByElements
     property ariaDetails
     property ariaDetailsElement
     property ariaDisabled
@@ -49,11 +51,13 @@ namespace http://www.w3.org/1999/xhtml
     property ariaErrorMessageElement
     property ariaExpanded
     property ariaFlowTo
+    property ariaFlowToElements
     property ariaHasPopup
     property ariaHidden
     property ariaKeyShortcuts
     property ariaLabel
     property ariaLabelledBy
+    property ariaLabelledByElements
     property ariaLevel
     property ariaLive
     property ariaModal
@@ -61,6 +65,7 @@ namespace http://www.w3.org/1999/xhtml
     property ariaMultiSelectable
     property ariaOrientation
     property ariaOwns
+    property ariaOwnsElements
     property ariaPlaceholder
     property ariaPosInSet
     property ariaPressed
@@ -1240,8 +1245,10 @@ namespace http://www.w3.org/2000/svg
     property ariaColIndex
     property ariaColSpan
     property ariaControls
+    property ariaControlsElements
     property ariaCurrent
     property ariaDescribedBy
+    property ariaDescribedByElements
     property ariaDetails
     property ariaDetailsElement
     property ariaDisabled
@@ -1249,11 +1256,13 @@ namespace http://www.w3.org/2000/svg
     property ariaErrorMessageElement
     property ariaExpanded
     property ariaFlowTo
+    property ariaFlowToElements
     property ariaHasPopup
     property ariaHidden
     property ariaKeyShortcuts
     property ariaLabel
     property ariaLabelledBy
+    property ariaLabelledByElements
     property ariaLevel
     property ariaLive
     property ariaModal
@@ -1261,6 +1270,7 @@ namespace http://www.w3.org/2000/svg
     property ariaMultiSelectable
     property ariaOrientation
     property ariaOwns
+    property ariaOwnsElements
     property ariaPlaceholder
     property ariaPosInSet
     property ariaPressed

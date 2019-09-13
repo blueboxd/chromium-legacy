@@ -29,12 +29,12 @@ CacheStorageBlobToDiskCache::~CacheStorageBlobToDiskCache() = default;
 void CacheStorageBlobToDiskCache::StreamBlobToCache(
     ScopedWritableEntry entry,
     int disk_cache_body_index,
-    blink::mojom::BlobPtr blob,
+    mojo::PendingRemote<blink::mojom::Blob> blob_remote,
     uint64_t blob_size,
     EntryAndBoolCallback callback) {
   DCHECK(entry);
   DCHECK_LE(0, disk_cache_body_index);
-  DCHECK(blob);
+  DCHECK(blob_remote);
   DCHECK(!consumer_handle_.is_valid());
   DCHECK(!pending_read_);
 
@@ -56,6 +56,7 @@ void CacheStorageBlobToDiskCache::StreamBlobToCache(
   entry_ = std::move(entry);
   callback_ = std::move(callback);
 
+  mojo::Remote<blink::mojom::Blob> blob(std::move(blob_remote));
   blob->ReadAll(std::move(producer_handle),
                 client_receiver_.BindNewPipeAndPassRemote());
 

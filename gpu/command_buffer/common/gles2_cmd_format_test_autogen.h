@@ -5400,6 +5400,17 @@ TEST_F(GLES2FormatTest, ProgramPathFragmentInputGenCHROMIUM) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, ContextVisibilityHintCHROMIUM) {
+  cmds::ContextVisibilityHintCHROMIUM& cmd =
+      *GetBufferAs<cmds::ContextVisibilityHintCHROMIUM>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLboolean>(11));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::ContextVisibilityHintCHROMIUM::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLboolean>(11), cmd.visibility);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, CoverageModulationCHROMIUM) {
   cmds::CoverageModulationCHROMIUM& cmd =
       *GetBufferAs<cmds::CoverageModulationCHROMIUM>();

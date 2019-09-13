@@ -32,6 +32,7 @@ bool StructTraits<blink::mojom::CloneableMessage::DataView,
   out->stack_trace_id = data.stack_trace_id();
   out->stack_trace_debugger_id_first = data.stack_trace_debugger_id_first();
   out->stack_trace_debugger_id_second = data.stack_trace_debugger_id_second();
+  out->stack_trace_should_pause = data.stack_trace_should_pause();
   out->locked_agent_cluster_id = locked_agent_cluster_id;
   return true;
 }

@@ -395,10 +395,6 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   void DispatchExtendableMessageEvent(
       mojom::blink::ExtendableMessageEventPtr event,
       DispatchExtendableMessageEventCallback callback) override;
-  void DispatchExtendableMessageEventWithCustomTimeout(
-      mojom::blink::ExtendableMessageEventPtr event,
-      base::TimeDelta timeout,
-      DispatchExtendableMessageEventCallback callback) override;
   void DispatchFetchEventForMainResource(
       mojom::blink::DispatchFetchEventParamsPtr params,
       mojo::PendingRemote<mojom::blink::ServiceWorkerFetchResponseCallback>

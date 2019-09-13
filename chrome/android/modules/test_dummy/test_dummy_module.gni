@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//chrome/android/modules/buildflags.gni")
-
 test_dummy_module_desc = {
   name = "test_dummy"
   android_manifest =
@@ -12,13 +10,4 @@ test_dummy_module_desc = {
     "//chrome/android/features/test_dummy/internal:java",
     "//chrome/android/modules/test_dummy/internal:java",
   ]
-
-  if (use_native_modules) {
-    native_deps = [
-      "//chrome/android/features/test_dummy/internal:native",
-      "//chrome/android/modules/test_dummy/internal:native",
-    ]
-    native_entrypoints =
-        "//chrome/android/modules/test_dummy/internal/entrypoints.lst"
-  }
 }

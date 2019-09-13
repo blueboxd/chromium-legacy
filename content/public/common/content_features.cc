@@ -144,6 +144,11 @@ const base::Feature kExperimentalAccessibilityLabels{
 const base::Feature kExpensiveBackgroundTimerThrottling{
     "ExpensiveBackgroundTimerThrottling", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Extra CORS safelisted headers. See https://crbug.com/999054.
+const base::Feature kExtraSafelistedRequestHeadersForOutOfBlinkCors{
+    "ExtraSafelistedRequestHeadersForOutOfBlinkCors",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled Feature Policy propagation is similar to sandbox flags and,
 // sandbox flags are implemented on top of Feature Policy.
 const base::Feature kFeaturePolicyForSandbox{"FeaturePolicyForSandbox",

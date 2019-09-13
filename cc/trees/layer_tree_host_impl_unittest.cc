@@ -585,7 +585,7 @@ class LayerTreeHostImplTest : public testing::Test,
     // Create the pending tree.
     host_impl_->BeginCommit();
     LayerTreeImpl* pending_tree = host_impl_->pending_tree();
-    LayerImpl* root = SetupRootLayer<FakePictureLayerImplWithRasterSource>(
+    LayerImpl* root = SetupRootLayer<FakePictureLayerImpl>(
         pending_tree, layer_size, raster_source);
     root->SetDrawsContent(true);
     UpdateDrawProperties(pending_tree);
@@ -8886,8 +8886,8 @@ TEST_F(LayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
   scoped_refptr<FakeRasterSource> raster_source(
       FakeRasterSource::CreateFilled(content_layer_bounds));
 
-  auto* content_layer = AddLayer<FakePictureLayerImplWithRasterSource>(
-      host_impl_->pending_tree(), raster_source);
+  auto* content_layer =
+      AddLayer<FakePictureLayerImpl>(host_impl_->pending_tree(), raster_source);
   CopyProperties(scrolling_layer, content_layer);
   content_layer->SetBounds(content_layer_bounds);
   content_layer->SetDrawsContent(true);
@@ -10680,7 +10680,7 @@ TEST_F(ResourcelessSoftwareLayerTreeHostImplTest,
   CreatePendingTree();
   scoped_refptr<FakeRasterSource> raster_source(
       FakeRasterSource::CreateFilled(viewport_size));
-  auto* root = SetupRootLayer<FakePictureLayerImplWithRasterSource>(
+  auto* root = SetupRootLayer<FakePictureLayerImpl>(
       host_impl_->pending_tree(), viewport_size, raster_source);
   root->SetBounds(viewport_size);
   root->SetDrawsContent(true);
@@ -12683,8 +12683,8 @@ TEST_F(LayerTreeHostImplTest, CheckerImagingTileInvalidation) {
   // Create the pending tree.
   host_impl_->BeginCommit();
   LayerTreeImpl* pending_tree = host_impl_->pending_tree();
-  auto* root = SetupRootLayer<FakePictureLayerImplWithRasterSource>(
-      pending_tree, layer_size, raster_source);
+  auto* root = SetupRootLayer<FakePictureLayerImpl>(pending_tree, layer_size,
+                                                    raster_source);
   root->SetDrawsContent(true);
   UpdateDrawProperties(pending_tree);
 
@@ -12717,7 +12717,7 @@ TEST_F(LayerTreeHostImplTest, CheckerImagingTileInvalidation) {
   // invalidated on the pending tree.
   host_impl_->InvalidateContentOnImplSide();
   pending_tree = host_impl_->pending_tree();
-  root = static_cast<FakePictureLayerImplWithRasterSource*>(
+  root = static_cast<FakePictureLayerImpl*>(
       pending_tree->root_layer_for_testing());
   for (auto* tile : root->tilings()->tiling_at(0)->AllTilesForTesting()) {
     if (tile->tiling_i_index() < 2 && tile->tiling_j_index() < 2)
@@ -12764,8 +12764,7 @@ TEST_F(LayerTreeHostImplTest, UpdatedTilingsForNonDrawingLayers) {
   scoped_refptr<FakeRasterSource> raster_source(
       FakeRasterSource::CreateFilled(layer_bounds));
   auto* animated_transform_layer =
-      AddLayer<FakePictureLayerImplWithRasterSource>(host_impl_->pending_tree(),
-                                                     raster_source);
+      AddLayer<FakePictureLayerImpl>(host_impl_->pending_tree(), raster_source);
   animated_transform_layer->SetBounds(layer_bounds);
   animated_transform_layer->SetDrawsContent(true);
 
@@ -12817,15 +12816,15 @@ TEST_F(LayerTreeHostImplTest, RasterTilePrioritizationForNonDrawingLayers) {
   scoped_refptr<FakeRasterSource> raster_source(
       FakeRasterSource::CreateFilled(layer_bounds));
 
-  auto* hidden_layer = AddLayer<FakePictureLayerImplWithRasterSource>(
-      host_impl_->pending_tree(), raster_source);
+  auto* hidden_layer =
+      AddLayer<FakePictureLayerImpl>(host_impl_->pending_tree(), raster_source);
   hidden_layer->SetBounds(layer_bounds);
   hidden_layer->SetDrawsContent(true);
   hidden_layer->set_contributes_to_drawn_render_surface(true);
   CopyProperties(root, hidden_layer);
 
-  auto* drawing_layer = AddLayer<FakePictureLayerImplWithRasterSource>(
-      host_impl_->pending_tree(), raster_source);
+  auto* drawing_layer =
+      AddLayer<FakePictureLayerImpl>(host_impl_->pending_tree(), raster_source);
   drawing_layer->SetBounds(layer_bounds);
   drawing_layer->SetDrawsContent(true);
   drawing_layer->set_contributes_to_drawn_render_surface(true);
@@ -12878,8 +12877,8 @@ TEST_F(LayerTreeHostImplTest, DrawAfterDroppingTileResources) {
   gfx::Size bounds(100, 100);
   scoped_refptr<FakeRasterSource> raster_source(
       FakeRasterSource::CreateFilled(bounds));
-  auto* root = SetupRootLayer<FakePictureLayerImplWithRasterSource>(
-      host_impl_->pending_tree(), bounds, raster_source);
+  auto* root = SetupRootLayer<FakePictureLayerImpl>(host_impl_->pending_tree(),
+                                                    bounds, raster_source);
   root->SetDrawsContent(true);
   host_impl_->ActivateSyncTree();
 
@@ -13665,8 +13664,7 @@ TEST_F(CommitToPendingTreeLayerTreeHostImplTest, CommitWithDirtyPaintWorklets) {
   // PaintWorklets.
   host_impl_->CreatePendingTree();
   auto* root = SetupRootLayer<PictureLayerImpl>(host_impl_->pending_tree(),
-                                                gfx::Size(100, 100),
-                                                Layer::LayerMaskType::NOT_MASK);
+                                                gfx::Size(100, 100));
   root->SetNeedsPushProperties();
 
   // Add a PaintWorkletInput to the PictureLayerImpl.
@@ -13715,8 +13713,7 @@ TEST_F(CommitToPendingTreeLayerTreeHostImplTest,
 
   host_impl_->CreatePendingTree();
   auto* root = SetupRootLayer<PictureLayerImpl>(host_impl_->pending_tree(),
-                                                gfx::Size(100, 100),
-                                                Layer::LayerMaskType::NOT_MASK);
+                                                gfx::Size(100, 100));
   root->SetNeedsPushProperties();
 
   // Add some PaintWorklets.
@@ -13763,8 +13760,7 @@ TEST_F(ForceActivateAfterPaintWorkletPaintLayerTreeHostImplTest,
   // PaintWorklets.
   host_impl_->CreatePendingTree();
   auto* root = SetupRootLayer<PictureLayerImpl>(host_impl_->pending_tree(),
-                                                gfx::Size(100, 100),
-                                                Layer::LayerMaskType::NOT_MASK);
+                                                gfx::Size(100, 100));
   root->SetNeedsPushProperties();
 
   // Add a PaintWorkletInput to the PictureLayerImpl.

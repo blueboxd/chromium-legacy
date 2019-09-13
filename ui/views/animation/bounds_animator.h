@@ -86,12 +86,11 @@ class VIEWS_EXPORT BoundsAnimator : public AnimationDelegateViews {
   // size. Any views marked for deletion are deleted.
   void Cancel();
 
-  // Overrides default animation duration. |duration_ms| is the new duration in
-  // milliseconds.
-  void SetAnimationDuration(int duration_ms);
+  // Overrides default animation duration.
+  void SetAnimationDuration(base::TimeDelta duration);
 
   // Gets the currently used animation duration.
-  int GetAnimationDuration() const { return animation_duration_ms_; }
+  base::TimeDelta GetAnimationDuration() const { return animation_duration_; }
 
   // Sets the tween type for new animations. Default is EASE_OUT.
   void set_tween_type(gfx::Tween::Type type) { tween_type_ = type; }
@@ -178,7 +177,7 @@ class VIEWS_EXPORT BoundsAnimator : public AnimationDelegateViews {
   // to repaint these bounds.
   gfx::Rect repaint_bounds_;
 
-  int animation_duration_ms_ = 200;
+  base::TimeDelta animation_duration_ = base::TimeDelta::FromMilliseconds(200);
 
   gfx::Tween::Type tween_type_ = gfx::Tween::EASE_OUT;
 

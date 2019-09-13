@@ -102,6 +102,9 @@ COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kTimerTicks;
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
+int GetProactiveSuggestionsMaxWidth();
+
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 std::string GetProactiveSuggestionsServerExperimentIds();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)

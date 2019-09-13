@@ -16,9 +16,8 @@ namespace internal {
 class PostTaskExecutorTest : public testing::Test {
  public:
   template <typename CallbackT>
-  scoped_refptr<internal::AbstractPromise> CreatePostTaskPromise(
-      const Location& from_here,
-      CallbackT&& task) {
+  WrappedPromise CreatePostTaskPromise(const Location& from_here,
+                                       CallbackT&& task) {
     // Extract properties from |task| callback.
     using CallbackTraits = CallbackTraits<std::decay_t<CallbackT>>;
 
@@ -27,20 +26,20 @@ class PostTaskExecutorTest : public testing::Test {
             internal::PostTaskExecutor<typename CallbackTraits::ReturnType>>(),
         internal::ToCallbackBase(std::move(task)));
 
-    return AbstractPromise::CreateNoPrerequisitePromise(
+    return WrappedPromise(AbstractPromise::CreateNoPrerequisitePromise(
         from_here, RejectPolicy::kMustCatchRejection,
         internal::DependentList::ConstructUnresolved(),
-        std::move(executor_data));
+        std::move(executor_data)));
   }
 };
 
 TEST_F(PostTaskExecutorTest, OnceClosure) {
   bool run = false;
 
-  scoped_refptr<AbstractPromise> p = CreatePostTaskPromise(
+  WrappedPromise p = CreatePostTaskPromise(
       FROM_HERE, BindOnce([](bool* run) { *run = true; }, &run));
 
-  p->Execute();
+  p.Execute();
 
   EXPECT_TRUE(run);
 }
@@ -48,20 +47,19 @@ TEST_F(PostTaskExecutorTest, OnceClosure) {
 TEST_F(PostTaskExecutorTest, RepeatingClosure) {
   bool run = false;
 
-  scoped_refptr<AbstractPromise> p = CreatePostTaskPromise(
+  WrappedPromise p = CreatePostTaskPromise(
       FROM_HERE, BindRepeating([](bool* run) { *run = true; }, &run));
 
-  p->Execute();
+  p.Execute();
 
   EXPECT_TRUE(run);
 }
 
 TEST_F(PostTaskExecutorTest, DoNothing) {
   // Check it compiles and the executor doesn't crash when run.
-  scoped_refptr<AbstractPromise> p =
-      CreatePostTaskPromise(FROM_HERE, DoNothing());
+  WrappedPromise p = CreatePostTaskPromise(FROM_HERE, DoNothing());
 
-  p->Execute();
+  p.Execute();
 }
 
 }  // namespace internal

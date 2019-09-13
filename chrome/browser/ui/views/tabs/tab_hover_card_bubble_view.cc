@@ -214,8 +214,7 @@ class TabHoverCardBubbleView::WidgetSlideAnimationDelegate
       : AnimationDelegateViews(hover_card_delegate),
         bubble_delegate_(hover_card_delegate),
         slide_animation_(std::make_unique<gfx::SlideAnimation>(this)) {
-    constexpr int kSlideDuration = 75;
-    slide_animation_->SetSlideDuration(kSlideDuration);
+    slide_animation_->SetSlideDuration(base::TimeDelta::FromMilliseconds(75));
   }
   ~WidgetSlideAnimationDelegate() override {}
 

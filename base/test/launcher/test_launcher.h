@@ -118,8 +118,10 @@ class TestLauncher {
   };
 
   // Constructor. |parallel_jobs| is the limit of simultaneous parallel test
-  // jobs.
-  TestLauncher(TestLauncherDelegate* launcher_delegate, size_t parallel_jobs);
+  // jobs. |retry_limit| is the default limit of retries for bots or all tests.
+  TestLauncher(TestLauncherDelegate* launcher_delegate,
+               size_t parallel_jobs,
+               size_t retry_limit = 1U);
   // virtual to mock in testing.
   virtual ~TestLauncher();
 

@@ -65,30 +65,31 @@ WebEngineContentRendererClient::CreateURLLoaderThrottleProvider(
 
 void WebEngineContentRendererClient::AddSupportedKeySystems(
     std::vector<std::unique_ptr<media::KeySystemProperties>>* key_systems) {
-  // TODO(yucliu): Check if Widevine is enabled from command line/context
-  // feature flags.
-  // TODO(yucliu): Check supported hw video decoders.
-  media::SupportedCodecs supported_video_codecs = media::EME_CODEC_NONE;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableWidevine)) {
+    // TODO(yucliu): Check supported hw video decoders.
+    media::SupportedCodecs supported_video_codecs = media::EME_CODEC_NONE;
 
-  base::flat_set<media::EncryptionMode> encryption_schemes{
-      media::EncryptionMode::kCenc, media::EncryptionMode::kCbcs};
+    base::flat_set<media::EncryptionMode> encryption_schemes{
+        media::EncryptionMode::kCenc, media::EncryptionMode::kCbcs};
 
-  // Fuchsia always decrypts audio into clear buffers and return them back to
-  // Chromium. Hardware secured decoders are only available for supported
-  // video codecs.
-  key_systems->emplace_back(new cdm::WidevineKeySystemProperties(
-      media::EME_CODEC_AUDIO_ALL | supported_video_codecs,  // codecs
-      encryption_schemes,      // encryption schemes
-      supported_video_codecs,  // hw secure codecs
-      encryption_schemes,      // hw secure encryption schemes
-      cdm::WidevineKeySystemProperties::Robustness::
-          HW_SECURE_CRYPTO,  // max audio robustness
-      cdm::WidevineKeySystemProperties::Robustness::
-          HW_SECURE_ALL,                            // max video robustness
-      media::EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent license
-      media::EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent usage record
-      media::EmeFeatureSupport::ALWAYS_ENABLED,     // persistent state
-      media::EmeFeatureSupport::ALWAYS_ENABLED));   // distinctive identifier
+    // Fuchsia always decrypts audio into clear buffers and return them back to
+    // Chromium. Hardware secured decoders are only available for supported
+    // video codecs.
+    key_systems->emplace_back(new cdm::WidevineKeySystemProperties(
+        media::EME_CODEC_AUDIO_ALL | supported_video_codecs,  // codecs
+        encryption_schemes,      // encryption schemes
+        supported_video_codecs,  // hw secure codecs
+        encryption_schemes,      // hw secure encryption schemes
+        cdm::WidevineKeySystemProperties::Robustness::
+            HW_SECURE_CRYPTO,  // max audio robustness
+        cdm::WidevineKeySystemProperties::Robustness::
+            HW_SECURE_ALL,                            // max video robustness
+        media::EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent license
+        media::EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent usage record
+        media::EmeFeatureSupport::ALWAYS_ENABLED,     // persistent state
+        media::EmeFeatureSupport::ALWAYS_ENABLED));   // distinctive identifier
+  }
 }
 
 bool WebEngineContentRendererClient::IsSupportedVideoType(

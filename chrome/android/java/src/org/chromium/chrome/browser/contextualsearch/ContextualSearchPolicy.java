@@ -46,7 +46,6 @@ class ContextualSearchPolicy {
     private final ContextualSearchSelectionController mSelectionController;
     private ContextualSearchNetworkCommunicator mNetworkCommunicator;
     private ContextualSearchPanel mSearchPanel;
-    private ContextualSearchPreferenceHelper mContextualSearchPreferenceHelper;
 
     // Members used only for testing purposes.
     private boolean mDidOverrideDecidedStateForTesting;
@@ -62,11 +61,6 @@ class ContextualSearchPolicy {
 
         mSelectionController = selectionController;
         mNetworkCommunicator = networkCommunicator;
-    }
-
-    void initialize() {
-        // TODO(donnd): remove when integration with Unified Consent is complete.
-        mContextualSearchPreferenceHelper = ContextualSearchPreferenceHelper.getInstance();
     }
 
     /**
@@ -153,14 +147,11 @@ class ContextualSearchPolicy {
         }
 
         if (isPrivacyAggressiveResolveEnabled()
-                && mSelectionController.getSelectionType() == SelectionType.RESOLVING_LONG_PRESS)
+                && mSelectionController.getSelectionType() == SelectionType.RESOLVING_LONG_PRESS) {
             return true;
+        }
 
-        return (isPromoAvailable()
-                       || (mContextualSearchPreferenceHelper != null
-                                  && mContextualSearchPreferenceHelper.canThrottle()))
-                ? isBasePageHTTP(mNetworkCommunicator.getBasePageUrl())
-                : true;
+        return isPromoAvailable() ? isBasePageHTTP(mNetworkCommunicator.getBasePageUrl()) : true;
     }
 
     /** @return Whether a long-press gesture can resolve. */
@@ -260,7 +251,7 @@ class ContextualSearchPolicy {
 
     /**
      * @return Whether a verbatim request should be made for the given base page, assuming there
-     *         is no exiting request.
+     *         is no existing request.
      */
     boolean shouldCreateVerbatimRequest() {
         if (isPrivacyAggressiveResolveEnabled()) return false;
@@ -433,12 +424,6 @@ class ContextualSearchPolicy {
                 ChromePreferenceManager.CONTEXTUAL_SEARCH_TAP_SINCE_OPEN_COUNT);
     }
 
-    @VisibleForTesting
-    void applyUnifiedConsentGivenMetadata(
-            @ContextualSearchPreviousPreferenceMetadata int metadata) {
-        mContextualSearchPreferenceHelper.applyUnifiedConsentGivenMetadata(metadata);
-    }
-
     // --------------------------------------------------------------------------------------------
     // Translation support.
     // --------------------------------------------------------------------------------------------
@@ -506,8 +491,9 @@ class ContextualSearchPolicy {
      */
     String getHomeCountry(Context context) {
         if (ContextualSearchFieldTrial.getSwitch(
-                    ContextualSearchSwitch.IS_SEND_HOME_COUNTRY_DISABLED))
+                    ContextualSearchSwitch.IS_SEND_HOME_COUNTRY_DISABLED)) {
             return "";
+        }
 
         TelephonyManager telephonyManager =
                 (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);

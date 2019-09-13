@@ -60,4 +60,15 @@ bool MockWMRHolographicSpace::TrySetDirect3D11Device(
   return true;
 }
 
+ABI::Windows::Graphics::Holographic::HolographicSpaceUserPresence
+MockWMRHolographicSpace::UserPresence() {
+  return ABI::Windows::Graphics::Holographic::
+      HolographicSpaceUserPresence_PresentActive;
+}
+std::unique_ptr<base::CallbackList<void()>::Subscription>
+MockWMRHolographicSpace::AddUserPresenceChangedCallback(
+    const base::RepeatingCallback<void()>& cb) {
+  return user_presence_changed_callback_list_.Add(cb);
+}
+
 }  // namespace device

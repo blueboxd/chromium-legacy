@@ -51,12 +51,11 @@ class PendingAppRegistrationTask : public PendingAppRegistrationTaskBase {
 
   // ServiceWorkerContextObserver:
   void OnRegistrationCompleted(const GURL& scope) override;
+  void OnDestruct(content::ServiceWorkerContext* context) override;
 
   static void SetTimeoutForTesting(int registration_timeout_in_seconds);
 
  private:
-  content::ServiceWorkerContext* GetServiceWorkerContext();
-
   void OnDidCheckHasServiceWorker(content::ServiceWorkerCapability capability);
 
   void OnRegistrationTimeout();
@@ -64,6 +63,7 @@ class PendingAppRegistrationTask : public PendingAppRegistrationTaskBase {
   WebAppUrlLoader* const url_loader_;
   content::WebContents* const web_contents_;
   RegistrationCallback callback_;
+  content::ServiceWorkerContext* service_worker_context_;
 
   base::OneShotTimer registration_timer_;
 

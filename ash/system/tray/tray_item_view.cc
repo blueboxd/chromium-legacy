@@ -19,12 +19,6 @@
 
 namespace ash {
 
-namespace {
-
-const int kTrayItemAnimationDurationMS = 200;
-
-}  // namespace
-
 void IconizedLabel::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   if (custom_accessible_name_.empty())
     return Label::GetAccessibleNodeData(node_data);
@@ -68,7 +62,7 @@ void TrayItemView::SetVisible(bool set_visible) {
 
   if (!animation_) {
     animation_.reset(new gfx::SlideAnimation(this));
-    animation_->SetSlideDuration(GetAnimationDurationMS());
+    animation_->SetSlideDuration(base::TimeDelta::FromMilliseconds(200));
     animation_->SetTweenType(gfx::Tween::LINEAR);
     animation_->Reset(GetVisible() ? 1.0 : 0.0);
   }
@@ -81,10 +75,6 @@ void TrayItemView::SetVisible(bool set_visible) {
     AnimationProgressed(animation_.get());
     views::View::SetVisible(true);
   }
-}
-
-int TrayItemView::GetAnimationDurationMS() {
-  return kTrayItemAnimationDurationMS;
 }
 
 bool TrayItemView::IsHorizontalAlignment() const {

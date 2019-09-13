@@ -1,4 +1,5 @@
 # Need a Skia GL specific baseline.
+crbug.com/993384 compositing/geometry/vertical-scroll-composited.html [ Skip ]
 crbug.com/993384 compositing/lots-of-img-layers.html [ Skip ]
 crbug.com/993384 css3/blending/background-blend-mode-crossfade-image-gradient.html [ Skip ]
 crbug.com/993384 css3/blending/background-blend-mode-gradient-image.html [ Skip ]

@@ -246,6 +246,24 @@ const base::Feature kBackgroundVideoPauseOptimization{
 const base::Feature kMemoryPressureBasedSourceBufferGC{
     "MemoryPressureBasedSourceBufferGC", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Approach original pre-REC MSE object URL autorevoking behavior, though await
+// actual attempt to use the object URL for attachment to perform revocation.
+// This will hopefully reduce runtime memory bloat for pages that do not
+// explicitly detach their HTMLME+MSE object collections nor explicitly revoke
+// the object URLs used to attach HTMLME+MSE. When disabled, revocation only
+// occurs when application explicitly revokes the object URL, or upon the
+// execution context teardown for the MediaSource object. When enabled,
+// revocation occurs upon successful start of attachment of HTMLME to the object
+// URL. Note, rather than immediately scheduling a task to revoke upon the URL's
+// creation, as at least one other browser does and the original File API
+// pattern used to follow, this delay until attachment start enables new
+// scenarios that could use the object URL for attaching HTMLME+MSE cross-thread
+// (MSE-in-workers), where there could be significant delay between the worker
+// thread creation of the object URL and the main thread usage of the object URL
+// for starting attachment to HTMLME.
+const base::Feature kRevokeMediaSourceObjectURLOnAttach{
+    "RevokeMediaSourceObjectURLOnAttach", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable the instance from ChromeosVideoDecoderFactory in
 // MojoVideoDecoderService, replacing VdaVideoDecoder at Chrome OS platform.
 const base::Feature kChromeosVideoDecoder{"ChromeosVideoDecoder",

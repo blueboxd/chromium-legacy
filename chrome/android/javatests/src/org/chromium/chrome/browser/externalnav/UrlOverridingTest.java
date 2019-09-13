@@ -58,7 +58,7 @@ import java.util.concurrent.TimeoutException;
  * Test suite for verifying the behavior of various URL overriding actions.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "allow-pre-commit-input"})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class UrlOverridingTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =

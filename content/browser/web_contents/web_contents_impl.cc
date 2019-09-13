@@ -1945,7 +1945,7 @@ std::unique_ptr<WebContents> WebContentsImpl::DetachFromOuterWebContents() {
   view_.reset(CreateWebContentsView(
       this, GetContentClient()->browser()->GetWebContentsViewDelegate(this),
       &render_view_host_delegate_view_));
-  view_->CreateView(GetPreferredSize(), nullptr);
+  view_->CreateView(nullptr);
   std::unique_ptr<WebContents> web_contents =
       node_.DisconnectFromOuterWebContents();
   DCHECK_EQ(web_contents.get(), this);
@@ -2040,7 +2040,6 @@ std::unique_ptr<WebContents> WebContentsImpl::Clone() {
   // We pass our own opener so that the cloned page can access it if it was set
   // before.
   CreateParams create_params(GetBrowserContext(), GetSiteInstance());
-  create_params.initial_size = GetContainerBounds().size();
   FrameTreeNode* opener = frame_tree_.root()->opener();
   RenderFrameHostImpl* opener_rfh = nullptr;
   if (opener)
@@ -2155,8 +2154,7 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   CHECK(render_view_host_delegate_view_);
   CHECK(view_.get());
 
-  gfx::Size initial_size = params.initial_size;
-  view_->CreateView(initial_size, params.context);
+  view_->CreateView(params.context);
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   plugin_content_origin_whitelist_.reset(
@@ -2874,7 +2872,6 @@ void WebContentsImpl::CreateNewWindow(
   std::unique_ptr<WebContents> new_contents;
   if (!is_guest) {
     create_params.context = view_->GetNativeView();
-    create_params.initial_size = GetContainerBounds().size();
     new_contents = WebContents::Create(create_params);
   }  else {
     new_contents = base::WrapUnique(

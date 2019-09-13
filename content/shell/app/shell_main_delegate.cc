@@ -255,10 +255,6 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     // command_line.AppendSwitch(switches::kRunAllCompositorStagesBeforeDraw);
     command_line.AppendSwitch(cc::switches::kDisableCheckerImaging);
 
-    // WebTests expect to be able to send events at any time, even before
-    // the system is ready to process them.
-    command_line.AppendSwitch(switches::kAllowPreCommitInput);
-
     command_line.AppendSwitch(switches::kMuteAudio);
 
     command_line.AppendSwitch(switches::kEnablePreciseMemoryInfo);

@@ -54,12 +54,6 @@ class ImmersiveWindowTargeter : public aura::WindowTargeter {
   DISALLOW_COPY_AND_ASSIGN(ImmersiveWindowTargeter);
 };
 
-// Duration for the reveal show/hide slide animation. The slower duration is
-// used for the initial slide out to give the user more change to see what
-// happened.
-const int kRevealSlowAnimationDurationMs = 400;
-const int kRevealFastAnimationDurationMs = 200;
-
 // The delay in milliseconds between the mouse stopping at the top edge of the
 // screen and the top-of-window views revealing.
 const int kMouseRevealDelayMs = 200;
@@ -536,17 +530,18 @@ bool ImmersiveFullscreenController::UpdateRevealedLocksForSwipe(
   return false;
 }
 
-int ImmersiveFullscreenController::GetAnimationDuration(Animate animate) const {
+base::TimeDelta ImmersiveFullscreenController::GetAnimationDuration(
+    Animate animate) const {
   switch (animate) {
     case ANIMATE_NO:
-      return 0;
+      return base::TimeDelta();
     case ANIMATE_SLOW:
-      return kRevealSlowAnimationDurationMs;
+      return base::TimeDelta::FromMilliseconds(400);
     case ANIMATE_FAST:
-      return kRevealFastAnimationDurationMs;
+      return base::TimeDelta::FromMilliseconds(200);
   }
   NOTREACHED();
-  return 0;
+  return base::TimeDelta();
 }
 
 void ImmersiveFullscreenController::MaybeStartReveal(Animate animate) {
@@ -610,9 +605,9 @@ void ImmersiveFullscreenController::MaybeEndReveal(Animate animate) {
   }
 
   reveal_state_ = SLIDING_CLOSED;
-  int duration_ms = GetAnimationDuration(animate);
-  if (duration_ms > 0) {
-    animation_.SetSlideDuration(duration_ms);
+  base::TimeDelta duration = GetAnimationDuration(animate);
+  if (duration > base::TimeDelta()) {
+    animation_.SetSlideDuration(duration);
     animation_.Hide();
   } else {
     animation_.Reset(0);

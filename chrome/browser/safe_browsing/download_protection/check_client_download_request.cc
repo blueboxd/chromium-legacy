@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
-#include "chrome/browser/safe_browsing/download_protection/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_item_request.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
@@ -31,6 +31,7 @@
 #include "components/safe_browsing/common/utils.h"
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/proto/csd.pb.h"
+#include "components/safe_browsing/proto/webprotect.pb.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
 
@@ -39,6 +40,25 @@ namespace safe_browsing {
 using content::BrowserThread;
 
 namespace {
+
+// TODO(drubery): This function would be simpler if the ClientDownloadResponse
+// and MalwareDeepScanningVerdict used the same enum.
+std::string MalwareVerdictToThreatType(
+    MalwareDeepScanningVerdict::Verdict verdict) {
+  switch (verdict) {
+    case MalwareDeepScanningVerdict::CLEAN:
+      return "SAFE";
+    case MalwareDeepScanningVerdict::UWS:
+      return "POTENTIALLY_UNWANTED";
+    case MalwareDeepScanningVerdict::MALWARE:
+      return "DANGEROUS";
+    case MalwareDeepScanningVerdict::VERDICT_UNSPECIFIED:
+    default:
+      return "UNKNOWN";
+  }
+}
+
+}  // namespace
 
 void MaybeReportDownloadDeepScanningVerdict(
     Profile* profile,
@@ -64,7 +84,10 @@ void MaybeReportDownloadDeepScanningVerdict(
       response.malware_scan_verdict().verdict() ==
           MalwareDeepScanningVerdict::MALWARE) {
     extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
-        ->OnDangerousDeepScanningResult(url, file_name, download_digest_sha256);
+        ->OnDangerousDeepScanningResult(
+            url, file_name, download_digest_sha256,
+            MalwareVerdictToThreatType(
+                response.malware_scan_verdict().verdict()));
   }
 
   if (response.dlp_scan_verdict().status() == DlpDeepScanningVerdict::SUCCESS) {
@@ -75,8 +98,6 @@ void MaybeReportDownloadDeepScanningVerdict(
     }
   }
 }
-
-}  // namespace
 
 CheckClientDownloadRequest::CheckClientDownloadRequest(
     download::DownloadItem* item,
@@ -237,10 +258,11 @@ void CheckClientDownloadRequest::MaybeUploadBinary(
       return;
 
     auto request = std::make_unique<DownloadItemRequest>(
-        item_, base::BindOnce(&MaybeReportDownloadDeepScanningVerdict, profile,
-                              item_->GetURL(),
-                              item_->GetTargetFilePath().AsUTF8Unsafe(),
-                              item_->GetHash()));
+        item_,
+        base::BindOnce(
+            &MaybeReportDownloadDeepScanningVerdict, profile, item_->GetURL(),
+            item_->GetTargetFilePath().AsUTF8Unsafe(),
+            base::HexEncode(item_->GetHash().data(), item_->GetHash().size())));
 
     if (upload_for_dlp) {
       DlpDeepScanningClientRequest dlp_request;

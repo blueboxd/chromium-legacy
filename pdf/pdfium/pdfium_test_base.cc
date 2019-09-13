@@ -62,7 +62,8 @@ std::unique_ptr<PDFiumEngine> PDFiumTestBase::InitializeEngine(
     const base::FilePath::CharType* pdf_name) {
   SetDocumentForTest(pdf_name);
   pp::URLLoader dummy_loader;
-  auto engine = std::make_unique<PDFiumEngine>(client, true);
+  auto engine =
+      std::make_unique<PDFiumEngine>(client, /*enable_javascript=*/false);
   if (!engine->New("https://chromium.org/dummy.pdf", "") ||
       !engine->HandleDocumentLoad(dummy_loader)) {
     return nullptr;

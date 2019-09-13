@@ -164,8 +164,9 @@ PreviewsService::GetAllowedPreviews() {
 }
 
 PreviewsService::PreviewsService(content::BrowserContext* browser_context)
-    : top_host_provider_(
-          std::make_unique<DataSaverTopHostProvider>(browser_context)),
+    : top_host_provider_(std::make_unique<DataSaverTopHostProvider>(
+          browser_context,
+          base::DefaultClock::GetInstance())),
       previews_lite_page_decider_(
           std::make_unique<PreviewsLitePageDecider>(browser_context)),
       previews_offline_helper_(

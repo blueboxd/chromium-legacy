@@ -1139,7 +1139,7 @@ void RenderAccessibilityImpl::RecordImageMetrics(AXContentTreeUpdate* update) {
       continue;
     // We log the min size in a histogram with a max of 10000, so set a ceiling
     // of 10000 on min_size.
-    int min_size = std::min(std::min(width, height), 10000);
+    int min_size = std::min({width, height, 10000});
     int max_size = std::max(width, height);
     // The ratio is always the smaller divided by the larger so as not to go
     // over 100%.

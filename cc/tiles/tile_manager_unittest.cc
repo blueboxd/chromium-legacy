@@ -617,7 +617,7 @@ TEST_F(TileManagerTilePriorityQueueTest, ActivationComesBeforeSoon) {
   // Create a pending child layer.
   scoped_refptr<FakeRasterSource> pending_raster_source =
       FakeRasterSource::CreateFilled(layer_bounds);
-  auto* pending_child = AddLayer<FakePictureLayerImplWithRasterSource>(
+  auto* pending_child = AddLayer<FakePictureLayerImpl>(
       host_impl()->pending_tree(), pending_raster_source);
   pending_child->SetDrawsContent(true);
   CopyProperties(pending_layer(), pending_child);
@@ -833,7 +833,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
       FakeRasterSource::CreateFilled(layer_bounds);
   SetupPendingTree(pending_raster_source);
 
-  auto* pending_child_layer = AddLayer<FakePictureLayerImplWithRasterSource>(
+  auto* pending_child_layer = AddLayer<FakePictureLayerImpl>(
       host_impl()->pending_tree(), pending_raster_source);
   int child_id = pending_child_layer->id();
   pending_child_layer->SetDrawsContent(true);
@@ -940,7 +940,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
       FakeRasterSource::CreateFilled(layer_bounds);
   SetupPendingTree(pending_raster_source);
 
-  auto* pending_child_layer = AddLayer<FakePictureLayerImplWithRasterSource>(
+  auto* pending_child_layer = AddLayer<FakePictureLayerImpl>(
       host_impl()->pending_tree(), pending_raster_source);
   pending_child_layer->SetElementId(
       LayerIdToElementIdForTesting(pending_child_layer->id()));
@@ -1476,8 +1476,8 @@ TEST_F(TileManagerTilePriorityQueueTest, NoRasterTasksforSolidColorTiles) {
   FakePictureLayerTilingClient tiling_client;
   tiling_client.SetTileSize(size);
 
-  std::unique_ptr<PictureLayerImpl> layer_impl = PictureLayerImpl::Create(
-      host_impl()->active_tree(), 1, Layer::LayerMaskType::NOT_MASK);
+  std::unique_ptr<PictureLayerImpl> layer_impl =
+      PictureLayerImpl::Create(host_impl()->active_tree(), 1);
   layer_impl->set_contributes_to_drawn_render_surface(true);
   PictureLayerTilingSet* tiling_set = layer_impl->picture_layer_tiling_set();
 
@@ -1760,8 +1760,8 @@ TEST_F(PixelInspectTileManagerTest, LowResHasNoImage) {
     FakePictureLayerTilingClient tiling_client;
     tiling_client.SetTileSize(size);
 
-    std::unique_ptr<PictureLayerImpl> layer = PictureLayerImpl::Create(
-        host_impl()->active_tree(), 1, Layer::LayerMaskType::NOT_MASK);
+    std::unique_ptr<PictureLayerImpl> layer =
+        PictureLayerImpl::Create(host_impl()->active_tree(), 1);
     PictureLayerTilingSet* tiling_set = layer->picture_layer_tiling_set();
     layer->set_contributes_to_drawn_render_surface(true);
 
@@ -1920,8 +1920,8 @@ TEST_F(PartialRasterTileManagerTest, CancelledTasksHaveNoContentId) {
 
   // Steal from the recycled tree.
   std::unique_ptr<FakePictureLayerImpl> pending_layer =
-      FakePictureLayerImpl::CreateWithRasterSource(pending_tree, kLayerId,
-                                                   pending_raster_source);
+      FakePictureLayerImpl::Create(pending_tree, kLayerId,
+                                   pending_raster_source);
   pending_layer->SetDrawsContent(true);
 
   // The bounds() just mirror the raster source size.
@@ -2018,8 +2018,8 @@ void RunPartialRasterCheck(std::unique_ptr<LayerTreeHostImpl> host_impl,
       host_impl->active_tree()->GetDeviceViewport());
 
   std::unique_ptr<FakePictureLayerImpl> pending_layer =
-      FakePictureLayerImpl::CreateWithRasterSource(pending_tree, kLayerId,
-                                                   pending_raster_source);
+      FakePictureLayerImpl::Create(pending_tree, kLayerId,
+                                   pending_raster_source);
   pending_layer->SetDrawsContent(true);
 
   // The bounds() just mirror the raster source size.
@@ -2103,8 +2103,8 @@ void RunPartialTileDecodeCheck(std::unique_ptr<LayerTreeHostImpl> host_impl,
 
   // Steal from the recycled tree.
   std::unique_ptr<FakePictureLayerImpl> pending_layer =
-      FakePictureLayerImpl::CreateWithRasterSource(pending_tree, kLayerId,
-                                                   pending_raster_source);
+      FakePictureLayerImpl::Create(pending_tree, kLayerId,
+                                   pending_raster_source);
   pending_layer->SetDrawsContent(true);
 
   // The bounds() just mirror the raster source size.
@@ -2215,8 +2215,8 @@ TEST_F(InvalidResourceTileManagerTest, InvalidResource) {
   FakePictureLayerTilingClient tiling_client;
   tiling_client.SetTileSize(size);
 
-  std::unique_ptr<PictureLayerImpl> layer = PictureLayerImpl::Create(
-      host_impl()->active_tree(), 1, Layer::LayerMaskType::NOT_MASK);
+  std::unique_ptr<PictureLayerImpl> layer =
+      PictureLayerImpl::Create(host_impl()->active_tree(), 1);
   layer->set_contributes_to_drawn_render_surface(true);
 
   auto* tiling = layer->picture_layer_tiling_set()->AddTiling(
@@ -3383,8 +3383,8 @@ TEST_F(DecodedImageTrackerTileManagerTest, DecodedImageTrackerDropsLocksOnUse) {
 
   // Steal from the recycled tree.
   std::unique_ptr<FakePictureLayerImpl> pending_layer =
-      FakePictureLayerImpl::CreateWithRasterSource(pending_tree, kLayerId,
-                                                   pending_raster_source);
+      FakePictureLayerImpl::Create(pending_tree, kLayerId,
+                                   pending_raster_source);
   pending_layer->SetDrawsContent(true);
 
   // The bounds() are half the recording source size, allowing for prepaint

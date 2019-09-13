@@ -37,14 +37,17 @@ class SMILTime {
   DISALLOW_NEW();
 
  public:
-  SMILTime() : time_(0) {}
-  SMILTime(double time) : time_(time) {}
+  constexpr SMILTime() : time_(0) {}
+  constexpr SMILTime(double time) : time_(time) {}
 
-  static SMILTime Unresolved() {
+  static constexpr SMILTime Unresolved() {
     return std::numeric_limits<double>::quiet_NaN();
   }
-  static SMILTime Indefinite() {
+  static constexpr SMILTime Indefinite() {
     return std::numeric_limits<double>::infinity();
+  }
+  static constexpr SMILTime Earliest() {
+    return -std::numeric_limits<double>::infinity();
   }
 
   double Value() const { return time_; }

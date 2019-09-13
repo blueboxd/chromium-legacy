@@ -629,12 +629,6 @@ class LocalNtpSource::SearchConfigurationProvider
                              base::FeatureList::IsEnabled(
                                  features::kChromeColorsCustomColorPicker));
       config_data.SetBoolean("realboxEnabled", features::IsNtpRealboxEnabled());
-      config_data.SetBoolean(
-          "realboxUseClockIcon",
-          base::FeatureList::IsEnabled(
-              omnibox::kOmniboxSuggestionTransparencyOptions) ||
-              base::FeatureList::IsEnabled(
-                  omnibox::kOmniboxUICuesForSearchHistoryMatches));
     }
 
     // Serialize the dictionary.

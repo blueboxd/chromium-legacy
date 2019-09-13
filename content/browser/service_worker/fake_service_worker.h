@@ -119,11 +119,6 @@ class FakeServiceWorker : public blink::mojom::ServiceWorker {
   void DispatchExtendableMessageEvent(
       blink::mojom::ExtendableMessageEventPtr event,
       DispatchExtendableMessageEventCallback callback) override;
-  void DispatchExtendableMessageEventWithCustomTimeout(
-      blink::mojom::ExtendableMessageEventPtr event,
-      base::TimeDelta timeout,
-      DispatchExtendableMessageEventWithCustomTimeoutCallback callback)
-      override;
   void DispatchContentDeleteEvent(
       const std::string& id,
       DispatchContentDeleteEventCallback callback) override;

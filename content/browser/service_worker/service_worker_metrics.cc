@@ -122,8 +122,6 @@ const char* EventTypeToSuffix(ServiceWorkerMetrics::EventType event_type) {
       return "_ABORT_PAYMENT";
     case ServiceWorkerMetrics::EventType::COOKIE_CHANGE:
       return "_COOKIE_CHANGE";
-    case ServiceWorkerMetrics::EventType::LONG_RUNNING_MESSAGE:
-      return "_LONG_RUNNING_MESSAGE";
     case ServiceWorkerMetrics::EventType::BACKGROUND_FETCH_SUCCESS:
       return "_BACKGROUND_FETCH_SUCCESS";
     case ServiceWorkerMetrics::EventType::PERIODIC_SYNC:
@@ -191,8 +189,6 @@ const char* ServiceWorkerMetrics::EventTypeToString(EventType event_type) {
       return "Abort Payment";
     case EventType::COOKIE_CHANGE:
       return "Cookie Change";
-    case EventType::LONG_RUNNING_MESSAGE:
-      return "Long Running Message";
     case EventType::BACKGROUND_FETCH_SUCCESS:
       return "Background Fetch Success";
     case EventType::PERIODIC_SYNC:
@@ -476,10 +472,6 @@ void ServiceWorkerMetrics::RecordEventDuration(EventType event,
       break;
     case EventType::COOKIE_CHANGE:
       UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.CookieChangeEvent.Time", time);
-      break;
-    case EventType::LONG_RUNNING_MESSAGE:
-      // Since this event is expected to last indefinitely we don't need to log
-      // how long they actually last.
       break;
     case EventType::PERIODIC_SYNC:
       UMA_HISTOGRAM_MEDIUM_TIMES(

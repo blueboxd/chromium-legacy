@@ -88,6 +88,10 @@ TEST(ImmediateCrashTest, ExpectedOpcodeSequence) {
   for (int i = 0; i < 2; ++i) {
     // INT 3
     EXPECT_EQ(0xCC, *++it);
+    // TODO(1002498): Remove this and update immediate_crash.h in the next clang
+    // roll.
+    if (*std::next(it) == 0xCC)
+      continue;
     // UD2
     EXPECT_EQ(0x0F, *++it);
     EXPECT_EQ(0x0B, *++it);

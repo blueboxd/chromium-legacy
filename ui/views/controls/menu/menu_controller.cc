@@ -3110,8 +3110,7 @@ void MenuController::RegisterAlertedItem(MenuItemView* item) {
   // Start animation if necessary. We stop the animation once no alerted
   // items are showing.
   if (!alert_animation_.is_animating()) {
-    alert_animation_.SetThrobDuration(
-        kAlertAnimationThrobDuration.InMilliseconds());
+    alert_animation_.SetThrobDuration(kAlertAnimationThrobDuration);
     alert_animation_.StartThrobbing(-1);
   }
 }

@@ -49,7 +49,9 @@
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/peer_connection_tracker.h"
+#include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
 #include "content/renderer/p2p/port_allocator.h"
+#include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/storage_util.h"
 #include "content/renderer/webgraphicscontext3d_provider_impl.h"
@@ -60,6 +62,7 @@
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "media/audio/audio_output_device.h"
+#include "media/base/media_permission.h"
 #include "media/base/media_switches.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/filters/stream_parser_factory.h"
@@ -537,15 +540,24 @@ std::unique_ptr<WebRTCPeerConnectionHandler>
 RendererBlinkPlatformImpl::CreateRTCPeerConnectionHandler(
     WebRTCPeerConnectionHandlerClient* client,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  // TODO(crbug.com/787254): Move this method body back to
+  // PeerConnectionDependencyFactory::CreateRTCPeerConnectionHandler
+  // when it the file gets Onion soup'ed.
+
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   DCHECK(render_thread);
   if (!render_thread)
     return nullptr;
 
+  // Save histogram data so we can see how much PeerConnection is used.
+  // The histogram counts the number of calls to the JS API
+  // RTCPeerConnection.
+  UpdateWebRTCMethodCount(blink::WebRTCAPIName::kRTCPeerConnection);
+
   PeerConnectionDependencyFactory* rtc_dependency_factory =
       render_thread->GetPeerConnectionDependencyFactory();
-  return rtc_dependency_factory->CreateRTCPeerConnectionHandler(client,
-                                                                task_runner);
+  return std::make_unique<RTCPeerConnectionHandler>(
+      client, rtc_dependency_factory, task_runner);
 }
 
 //------------------------------------------------------------------------------
@@ -629,11 +641,6 @@ RendererBlinkPlatformImpl::GetRtpReceiverCapabilities(
 
 //------------------------------------------------------------------------------
 
-void RendererBlinkPlatformImpl::UpdateWebRTCAPICount(
-    blink::WebRTCAPIName api_name) {
-  UpdateWebRTCMethodCount(api_name);
-}
-
 base::Optional<double>
 RendererBlinkPlatformImpl::GetWebRtcMaxCaptureFrameRate() {
   const std::string max_fps_str =
@@ -674,6 +681,74 @@ RendererBlinkPlatformImpl::GetWebRTCAudioProcessingConfiguration() {
   return GetContentClient()
       ->renderer()
       ->WebRTCPlatformSpecificAudioProcessingConfiguration();
+}
+
+bool RendererBlinkPlatformImpl::ShouldEnforceWebRTCRoutingPreferences() {
+  return GetContentClient()
+      ->renderer()
+      ->ShouldEnforceWebRTCRoutingPreferences();
+}
+
+bool RendererBlinkPlatformImpl::UsesFakeCodecForPeerConnection() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseFakeCodecForPeerConnection);
+}
+
+bool RendererBlinkPlatformImpl::IsWebRtcEncryptionEnabled() {
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableWebRtcEncryption);
+}
+
+base::Optional<std::string>
+RendererBlinkPlatformImpl::WebRtcStunProbeTrialParameter() {
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  if (!cmd_line->HasSwitch(switches::kWebRtcStunProbeTrialParameter))
+    return base::nullopt;
+
+  return cmd_line->GetSwitchValueASCII(
+      switches::kWebRtcStunProbeTrialParameter);
+}
+
+media::MediaPermission* RendererBlinkPlatformImpl::GetWebRTCMediaPermission(
+    blink::WebLocalFrame* web_frame) {
+  DCHECK(ShouldEnforceWebRTCRoutingPreferences());
+
+  media::MediaPermission* media_permission = nullptr;
+  bool create_media_permission =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnforceWebRtcIPPermissionCheck);
+  create_media_permission =
+      create_media_permission ||
+      !StartsWith(
+          base::FieldTrialList::FindFullName("WebRTC-LocalIPPermissionCheck"),
+          "Disabled", base::CompareCase::SENSITIVE);
+  if (create_media_permission) {
+    RenderFrameImpl* render_frame = RenderFrameImpl::FromWebFrame(web_frame);
+    if (render_frame)
+      media_permission = render_frame->GetMediaPermission();
+    DCHECK(media_permission);
+  }
+
+  return media_permission;
+}
+
+void RendererBlinkPlatformImpl::GetWebRTCRendererPreferences(
+    blink::WebLocalFrame* web_frame,
+    blink::WebString* ip_handling_policy,
+    uint16_t* udp_min_port,
+    uint16_t* udp_max_port) {
+  DCHECK(ip_handling_policy);
+  DCHECK(udp_min_port);
+  DCHECK(udp_max_port);
+
+  auto* render_frame = RenderFrameImpl::FromWebFrame(web_frame);
+  if (!render_frame)
+    return;
+
+  *ip_handling_policy = blink::WebString::FromUTF8(
+      render_frame->GetRendererPreferences().webrtc_ip_handling_policy);
+  *udp_min_port = render_frame->GetRendererPreferences().webrtc_udp_min_port;
+  *udp_max_port = render_frame->GetRendererPreferences().webrtc_udp_max_port;
 }
 
 base::Optional<int> RendererBlinkPlatformImpl::GetAgcStartupMinimumVolume() {

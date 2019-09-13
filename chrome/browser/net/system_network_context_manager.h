@@ -170,7 +170,7 @@ class SystemNetworkContextManager {
   ProxyConfigMonitor proxy_config_monitor_;
 
   // NetworkContext using the network service, if the network service is
-  // enabled. nullptr, otherwise.
+  // enabled. mojo::NullRemote(), otherwise.
   mojo::Remote<network::mojom::NetworkContext> network_service_network_context_;
 
   // URLLoaderFactory backed by the NetworkContext returned by GetContext(), so

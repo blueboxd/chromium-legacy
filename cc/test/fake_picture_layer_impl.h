@@ -19,49 +19,13 @@ class FakePictureLayerImpl : public PictureLayerImpl {
  public:
   using TileRequirementCheck = bool (PictureLayerTiling::*)(const Tile*) const;
 
-  static std::unique_ptr<FakePictureLayerImpl> Create(LayerTreeImpl* tree_impl,
-                                                      int id) {
-    Layer::LayerMaskType mask_type = Layer::LayerMaskType::NOT_MASK;
-    return base::WrapUnique(new FakePictureLayerImpl(tree_impl, id, mask_type));
-  }
-
-  static std::unique_ptr<FakePictureLayerImpl> CreateMask(
-      LayerTreeImpl* tree_impl,
-      int id) {
-    Layer::LayerMaskType mask_type = Layer::LayerMaskType::SINGLE_TEXTURE_MASK;
-    return base::WrapUnique(new FakePictureLayerImpl(tree_impl, id, mask_type));
-  }
-
-  // Create layer from a raster source that covers the entire layer.
-  static std::unique_ptr<FakePictureLayerImpl> CreateWithRasterSource(
+  // If raster_source is provided, it will cover the entire layer.
+  static std::unique_ptr<FakePictureLayerImpl> Create(
       LayerTreeImpl* tree_impl,
       int id,
-      scoped_refptr<RasterSource> raster_source) {
-    Layer::LayerMaskType mask_type = Layer::LayerMaskType::NOT_MASK;
+      scoped_refptr<RasterSource> raster_source = nullptr) {
     return base::WrapUnique(
-        new FakePictureLayerImpl(tree_impl, id, raster_source, mask_type));
-  }
-
-  // Create layer from a raster source that only covers part of the layer.
-  static std::unique_ptr<FakePictureLayerImpl> CreateWithPartialRasterSource(
-      LayerTreeImpl* tree_impl,
-      int id,
-      scoped_refptr<RasterSource> raster_source,
-      const gfx::Size& layer_bounds) {
-    Layer::LayerMaskType mask_type = Layer::LayerMaskType::NOT_MASK;
-    return base::WrapUnique(new FakePictureLayerImpl(
-        tree_impl, id, raster_source, mask_type, layer_bounds));
-  }
-
-  // Create layer from a raster source that covers the entire layer and is a
-  // mask.
-  static std::unique_ptr<FakePictureLayerImpl> CreateMaskWithRasterSource(
-      LayerTreeImpl* tree_impl,
-      int id,
-      scoped_refptr<RasterSource> raster_source) {
-    Layer::LayerMaskType mask_type = Layer::LayerMaskType::SINGLE_TEXTURE_MASK;
-    return base::WrapUnique(
-        new FakePictureLayerImpl(tree_impl, id, raster_source, mask_type));
+        new FakePictureLayerImpl(tree_impl, id, raster_source));
   }
 
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
@@ -157,16 +121,7 @@ class FakePictureLayerImpl : public PictureLayerImpl {
  protected:
   FakePictureLayerImpl(LayerTreeImpl* tree_impl,
                        int id,
-                       scoped_refptr<RasterSource> raster_source,
-                       Layer::LayerMaskType mask_type);
-  FakePictureLayerImpl(LayerTreeImpl* tree_impl,
-                       int id,
-                       scoped_refptr<RasterSource> raster_source,
-                       Layer::LayerMaskType mask_type,
-                       const gfx::Size& layer_bounds);
-  FakePictureLayerImpl(LayerTreeImpl* tree_impl,
-                       int id,
-                       Layer::LayerMaskType mask_type);
+                       scoped_refptr<RasterSource> raster_source = nullptr);
 
  private:
   gfx::Size fixed_tile_size_;
@@ -177,50 +132,6 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   bool use_set_valid_tile_priorities_flag_ = false;
   size_t release_resources_count_ = 0;
   size_t release_tile_resources_count_ = 0;
-};
-
-// An adapter so that FakePictureLayerImpl::CreateWithRasterSource can be used
-// as FakePictureLayerImplWithRasterSource::Create() in some templates.
-class FakePictureLayerImplWithRasterSource : public FakePictureLayerImpl {
- public:
-  static std::unique_ptr<FakePictureLayerImplWithRasterSource> Create(
-      LayerTreeImpl* tree_impl,
-      int id,
-      scoped_refptr<RasterSource> raster_source) {
-    return base::WrapUnique(static_cast<FakePictureLayerImplWithRasterSource*>(
-        FakePictureLayerImpl::CreateWithRasterSource(tree_impl, id,
-                                                     std::move(raster_source))
-            .release()));
-  }
-};
-
-// An adapter so that FakePictureLayerImpl::CreateMask can be used as
-// FakePictureLayerImplAsMask::Create() in some templates.
-class FakePictureLayerImplAsMask : public FakePictureLayerImpl {
- public:
-  static std::unique_ptr<FakePictureLayerImplAsMask> Create(
-      LayerTreeImpl* tree_impl,
-      int id) {
-    return base::WrapUnique(static_cast<FakePictureLayerImplAsMask*>(
-        FakePictureLayerImpl::CreateMask(tree_impl, id).release()));
-  }
-};
-
-// An adapter so that FakePictureLayerImpl::CreateMaskWithRasterSource can be
-// used as FakePictureLayerImplWithRasterSourceAsMask::Create() in some
-// templates.
-class FakePictureLayerImplWithRasterSourceAsMask : public FakePictureLayerImpl {
- public:
-  static std::unique_ptr<FakePictureLayerImplWithRasterSourceAsMask> Create(
-      LayerTreeImpl* tree_impl,
-      int id,
-      scoped_refptr<RasterSource> raster_source) {
-    return base::WrapUnique(
-        static_cast<FakePictureLayerImplWithRasterSourceAsMask*>(
-            FakePictureLayerImpl::CreateMaskWithRasterSource(
-                tree_impl, id, std::move(raster_source))
-                .release()));
-  }
 };
 
 }  // namespace cc

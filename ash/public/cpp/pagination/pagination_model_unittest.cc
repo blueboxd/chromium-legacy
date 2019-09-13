@@ -122,7 +122,8 @@ class PaginationModelTest : public views::test::WidgetTest {
     widget_.reset(CreateTopLevelPlatformWidget());
     pagination_ = std::make_unique<PaginationModel>(widget_->GetContentsView());
     pagination_->SetTotalPages(5);
-    pagination_->SetTransitionDurations(1, 1);
+    pagination_->SetTransitionDurations(base::TimeDelta::FromMilliseconds(1),
+                                        base::TimeDelta::FromMilliseconds(1));
     observer_.set_model(pagination_.get());
     pagination_->AddObserver(&observer_);
   }

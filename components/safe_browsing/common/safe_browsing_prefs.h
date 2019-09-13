@@ -113,6 +113,9 @@ extern const char kDomainsToCheckComplianceOfDownloadedContent[];
 // List of domains where Chrome should check for malware of uploaded files.
 extern const char kDomainsToCheckForMalwareOfUploadedContent[];
 
+// List of domains where Chrome should not check compliance of uploaded files.
+extern const char kDomainsToNotCheckComplianceOfUploadedContent[];
+
 }  // namespace prefs
 
 namespace safe_browsing {
@@ -161,7 +164,7 @@ enum PasswordProtectionTrigger {
 };
 
 // Enum representing possible values of the SendFilesForMalwareCheck policy.
-// This must be kept in sync with policy_templates.json
+// This must be kept in sync with policy_templates.json.
 enum SendFilesForMalwareCheckValues {
   DO_NOT_SCAN = 0,
   SEND_FILES_DISABLED = 1,
@@ -173,7 +176,7 @@ enum SendFilesForMalwareCheckValues {
 };
 
 // Enum representing possible values of the CheckContentCompliance policy. This
-// must be kept in sync with policy_templates.json
+// must be kept in sync with policy_templates.json.
 enum CheckContentComplianceValues {
   CHECK_NONE = 0,
   CHECK_DOWNLOADS = 1,
@@ -184,7 +187,7 @@ enum CheckContentComplianceValues {
 };
 
 // Enum representing possible values of the AllowPasswordProtectedFiles policy.
-// This must be kept in sync with policy_templates.json
+// This must be kept in sync with policy_templates.json.
 enum AllowPasswordProtectedFilesValues {
   ALLOW_NONE = 0,
   ALLOW_DOWNLOADS = 1,
@@ -193,12 +196,21 @@ enum AllowPasswordProtectedFilesValues {
 };
 
 // Enum representing possible values of the BlockLargeFileTransfer policy. This
-// must be kept in sync with policy_templates.json
+// must be kept in sync with policy_templates.json.
 enum BlockLargeFileTransferValues {
   BLOCK_NONE = 0,
   BLOCK_LARGE_DOWNLOADS = 1,
   BLOCK_LARGE_UPLOADS = 2,
   BLOCK_LARGE_UPLOADS_AND_DOWNLOADS = 3,
+};
+
+// Enum representing possible values of the DelayDeliveryUntilVerdict policy.
+// This must be kept in sync with policy_templates.json.
+enum DelayDeliveryUntilVerdictValues {
+  DELAY_NONE = 0,
+  DELAY_DOWNLOADS = 1,
+  DELAY_UPLOADS = 2,
+  DELAY_UPLOADS_AND_DOWNLOADS = 3,
 };
 
 // Returns whether the currently active Safe Browsing Extended Reporting

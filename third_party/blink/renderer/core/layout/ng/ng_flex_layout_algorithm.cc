@@ -71,12 +71,7 @@ bool NGFlexLayoutAlgorithm::IsContainerCrossSizeDefinite() const {
       !ConstraintSpace().IsFixedBlockSizeIndefinite())
     return true;
 
-  Length cross_size = Style().LogicalHeight();
-  if (cross_size.IsAuto() || cross_size.IsMinContent() ||
-      cross_size.IsMaxContent() || cross_size.IsFitContent()) {
-    return false;
-  }
-  return !BlockLengthUnresolvable(ConstraintSpace(), cross_size,
+  return !BlockLengthUnresolvable(ConstraintSpace(), Style().LogicalHeight(),
                                   LengthResolvePhase::kLayout);
 }
 
@@ -339,8 +334,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
                 child_space, child_style, border_padding_in_child_writing_mode,
                 intrinsic_sizes_border_box, specified_length_in_main_axis);
           }
-        } else if (!specified_length_in_main_axis.IsAuto() &&
-                   !BlockLengthUnresolvable(child_space,
+        } else if (!BlockLengthUnresolvable(child_space,
                                             specified_length_in_main_axis,
                                             LengthResolvePhase::kLayout)) {
           specified_size_suggestion = ResolveMainBlockLength(

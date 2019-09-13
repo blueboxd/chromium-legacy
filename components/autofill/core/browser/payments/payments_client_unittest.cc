@@ -428,11 +428,13 @@ TEST_F(PaymentsClientTest, UnmaskSuccessViaFIDO) {
 TEST_F(PaymentsClientTest, UnmaskSuccessViaCVCWithCreationOptions) {
   StartUnmasking(CardUnmaskOptions().with_use_fido(false));
   IssueOAuthToken();
-  ReturnResponse(net::HTTP_OK,
-                 "{ \"pan\": \"1234\", \"fido_creation_options\": "
-                 "{\"relying_party_id\": \"google.com\"}}");
+  ReturnResponse(
+      net::HTTP_OK,
+      "{ \"pan\": \"1234\", \"dcvv\": \"321\", \"fido_creation_options\": "
+      "{\"relying_party_id\": \"google.com\"}}");
   EXPECT_EQ(AutofillClient::SUCCESS, result_);
   EXPECT_EQ("1234", unmask_response_details_->real_pan);
+  EXPECT_EQ("321", unmask_response_details_->dcvv);
   EXPECT_EQ("google.com",
             *unmask_response_details_->fido_creation_options->FindStringKey(
                 "relying_party_id"));

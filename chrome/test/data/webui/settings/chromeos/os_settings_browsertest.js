@@ -192,7 +192,8 @@ var OSSettingsAppManagementPageTest =
   }
 };
 
-TEST_F('OSSettingsAppManagementPageTest', 'AllJsTests', () => {
+// Disabled due to: https://crbug.com/1003483
+TEST_F('OSSettingsAppManagementPageTest', 'MAYBE_AllJsTests', () => {
   mocha.run();
 });
 
@@ -259,7 +260,8 @@ var OSSettingsAppManagementManagedAppTest =
   }
 };
 
-TEST_F('OSSettingsAppManagementManagedAppTest', 'AllJsTests', () => {
+// Disabled due to: https://crbug.com/1003483
+TEST_F('OSSettingsAppManagementManagedAppTest', 'MAYBE_AllJsTests', () => {
   mocha.run();
 });
 
@@ -833,7 +835,8 @@ var OSSettingsPeoplePageTest = class extends OSSettingsBrowserTest {
   }
 };
 
-TEST_F('OSSettingsPeoplePageTest', 'MAYBE_AllJsTests', () => {
+// Disabled due to: https://crbug.com/1003562
+TEST_F('OSSettingsPeoplePageTest', 'DISABLED_AllJsTests', () => {
   mocha.run();
 });
 
@@ -851,7 +854,8 @@ var OSSettingsPersonalizationPageTest = class extends OSSettingsBrowserTest {
   }
 };
 
-TEST_F('OSSettingsPersonalizationPageTest', 'AllJsTests', () => {
+// Disabled due to: https://crbug.com/1003483
+TEST_F('OSSettingsPersonalizationPageTest', 'MAYBE_AllJsTests', () => {
   mocha.run();
 });
 
@@ -1008,7 +1012,8 @@ var OSSettingsResetPageTest = class extends OSSettingsBrowserTest {
   }
 };
 
-TEST_F('OSSettingsResetPageTest', 'AllJsTests', () => {
+// Disabled due to: https://crbug.com/1003483
+TEST_F('OSSettingsResetPageTest', 'MAYBE_AllJsTests', () => {
   mocha.run();
 });
 

@@ -16,8 +16,8 @@
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/renderer_preferences_util.h"
-#include "content/public/common/webrtc_ip_handling_policy.h"
 #include "media/media_buildflags.h"
+#include "third_party/blink/public/common/peerconnection/webrtc_ip_handling_policy.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/public_buildflags.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -94,10 +94,10 @@ void UpdateFromSystemSettings(blink::mojom::RendererPreferences* prefs,
   if (!pref_service->HasPrefPath(prefs::kWebRTCIPHandlingPolicy)) {
     if (!pref_service->GetBoolean(prefs::kWebRTCNonProxiedUdpEnabled)) {
       prefs->webrtc_ip_handling_policy =
-          content::kWebRTCIPHandlingDisableNonProxiedUdp;
+          blink::kWebRTCIPHandlingDisableNonProxiedUdp;
     } else if (!pref_service->GetBoolean(prefs::kWebRTCMultipleRoutesEnabled)) {
       prefs->webrtc_ip_handling_policy =
-          content::kWebRTCIPHandlingDefaultPublicInterfaceOnly;
+          blink::kWebRTCIPHandlingDefaultPublicInterfaceOnly;
     }
   }
   if (prefs->webrtc_ip_handling_policy.empty()) {

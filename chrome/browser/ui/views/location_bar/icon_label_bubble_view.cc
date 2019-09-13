@@ -52,9 +52,6 @@ constexpr int kIconLabelBubbleFadeOutDurationMs = 175;
 // The type of tweening for the animation.
 const gfx::Tween::Type kIconLabelBubbleTweenType = gfx::Tween::EASE_IN_OUT;
 
-// The total time for the in and out text animation.
-constexpr int kIconLabelBubbleAnimationDurationMs = 3000;
-
 // The ratio of text animation duration to total animation duration.
 const double kIconLabelBubbleOpenTimeFraction = 0.2;
 }  // namespace
@@ -394,8 +391,8 @@ int IconLabelBubbleView::GetExtraInternalSpacing() const {
   return 0;
 }
 
-int IconLabelBubbleView::GetSlideDurationTime() const {
-  return kIconLabelBubbleAnimationDurationMs;
+base::TimeDelta IconLabelBubbleView::GetSlideDurationTime() const {
+  return base::TimeDelta::FromMilliseconds(3000);
 }
 
 int IconLabelBubbleView::GetWidthBetweenIconAndSeparator() const {
@@ -447,7 +444,7 @@ void IconLabelBubbleView::ResetSlideAnimation(bool show_label) {
 }
 
 void IconLabelBubbleView::ReduceAnimationTimeForTesting() {
-  slide_animation_.SetSlideDuration(1);
+  slide_animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(1));
 }
 
 void IconLabelBubbleView::PauseAnimation() {

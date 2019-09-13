@@ -47,8 +47,6 @@ void WorkerAnimationFrameProvider::BeginFrame() {
                     WorkerGlobalScopePerformance::performance(
                         *To<WorkerGlobalScope>(context));
                 double time = performance->now();
-                // We don't want to expose microseconds residues to users.
-                time = round(time * 60) / 60;
 
                 provider->callback_collection_.ExecuteFrameCallbacks(time,
                                                                      time);

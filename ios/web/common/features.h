@@ -16,9 +16,6 @@ extern const base::Feature kIgnoresViewportScaleLimits;
 // Used to enable the WKBackForwardList based navigation manager.
 extern const base::Feature kSlimNavigationManager;
 
-// Used to enable using WKHTTPSystemCookieStore in main context URL requests.
-extern const base::Feature kWKHTTPSystemCookieStore;
-
 // Used to crash the browser if unexpected URL change is detected.
 // https://crbug.com/841105.
 extern const base::Feature kCrashOnUnexpectedURLChange;

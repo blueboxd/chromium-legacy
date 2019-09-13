@@ -37,6 +37,7 @@ html {
   --warning-color: var(--google-red-700);
 
   --input-background: var(--google-grey-100);
+  --input-placeholder-color: rgb(117, 117, 117);
   --keyboard-focus-ring: rgba(var(--google-blue-500-rgb), 0.4);
   --link-color: var(--google-blue-700);
   --separator-color: rgba(0, 0, 0, .06);
@@ -176,6 +177,10 @@ button {
   font-size: .8125rem;
   padding: 12px 36px;
   width: 100%;
+}
+
+#search::placeholder {
+  color: var(--input-placeholder-color);
 }
 
 @media (prefers-color-scheme: dark) {

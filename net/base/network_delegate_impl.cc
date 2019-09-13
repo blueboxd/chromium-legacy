@@ -27,10 +27,6 @@ void NetworkDelegateImpl::OnBeforeSendHeaders(
     const ProxyRetryInfoMap& proxy_retry_info,
     HttpRequestHeaders* headers) {}
 
-void NetworkDelegateImpl::OnStartTransaction(
-    URLRequest* request,
-    const HttpRequestHeaders& headers) {}
-
 int NetworkDelegateImpl::OnHeadersReceived(
     URLRequest* request,
     CompletionOnceCallback callback,
@@ -45,12 +41,6 @@ void NetworkDelegateImpl::OnBeforeRedirect(URLRequest* request,
 
 void NetworkDelegateImpl::OnResponseStarted(URLRequest* request,
                                             int net_error) {}
-
-void NetworkDelegateImpl::OnNetworkBytesReceived(URLRequest* request,
-                                                 int64_t bytes_received) {}
-
-void NetworkDelegateImpl::OnNetworkBytesSent(URLRequest* request,
-                                             int64_t bytes_sent) {}
 
 void NetworkDelegateImpl::OnCompleted(URLRequest* request,
                                       bool started,

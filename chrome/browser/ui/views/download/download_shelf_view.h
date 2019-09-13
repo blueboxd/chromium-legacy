@@ -117,12 +117,6 @@ class DownloadShelfView : public views::AccessiblePaneView,
   // Padding between the show all link and close button.
   static constexpr int kCloseAndLinkPadding = 6;
 
-  // New download item animation speed in milliseconds.
-  static constexpr int kNewItemAnimationDurationMs = 800;
-
-  // Shelf show/hide speed.
-  static constexpr int kShelfAnimationDurationMs = 120;
-
   // Amount of time to delay if the mouse leaves the shelf by way of entering
   // another window. This is much larger than the normal delay as opening a
   // download is most likely going to trigger a new window to appear over the

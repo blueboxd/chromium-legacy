@@ -786,7 +786,7 @@ scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::NewTimerTaskQueue(
                           .SetCanBeDeferred(true)
                           .SetCanBeThrottled(true)
                           .SetFrameScheduler(frame_scheduler)
-                          .SetShouldUseVirtualTime(true));
+                          .SetCanRunWhenVirtualTimePaused(true));
 }
 
 std::unique_ptr<WebRenderWidgetSchedulingState>

@@ -1266,6 +1266,45 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, OrphanedNavigation) {
   main_frame_navigation_observer.Wait();
 }
 
+// Tests that the browser doesn't crash if the renderer tries to create the
+// PortalHost after the parent renderer dropped the portal.
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
+                       AccessPortalHostAfterPortalDestruction) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
+
+  Portal* portal = nullptr;
+  {
+    PortalCreatedObserver portal_created_observer(main_frame);
+    GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+    EXPECT_TRUE(ExecJs(
+        main_frame, JsReplace("var portal = document.createElement('portal');"
+                              "portal.src = $1;"
+                              "document.body.appendChild(portal);",
+                              a_url)));
+    portal = portal_created_observer.WaitUntilPortalCreated();
+  }
+  WebContentsImpl* portal_contents = portal->GetPortalContents();
+  RenderFrameHostImpl* portal_frame = portal_contents->GetMainFrame();
+
+  // The portal should not have navigated yet; wait for the first navigation.
+  TestNavigationObserver navigation_observer(portal_contents);
+  navigation_observer.Wait();
+
+  // Simulate the portal being dropped, but not the destruction of the
+  // WebContents.
+  portal->GetBindingForTesting()->SwapImplForTesting(nullptr);
+
+  // Get the portal renderer to access the WebContents.
+  RenderProcessHostKillWaiter kill_waiter(portal_frame->GetProcess());
+  ExecuteScriptAsync(portal_frame,
+                     "window.portalHost.postMessage('message', '*');");
+  EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
+}
+
 class PortalOOPIFBrowserTest : public PortalBrowserTest {
  protected:
   PortalOOPIFBrowserTest() {}

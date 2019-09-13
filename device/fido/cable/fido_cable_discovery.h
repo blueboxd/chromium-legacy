@@ -31,16 +31,37 @@ class FidoCableHandshakeHandler;
 class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
     : public FidoBleDiscoveryBase {
  public:
-  FidoCableDiscovery(std::vector<CableDiscoveryData> discovery_data,
-                     base::Optional<QRGeneratorKey> qr_generator_key);
+  FidoCableDiscovery(
+      std::vector<CableDiscoveryData> discovery_data,
+      base::Optional<QRGeneratorKey> qr_generator_key,
+      base::Optional<
+          base::RepeatingCallback<void(std::unique_ptr<CableDiscoveryData>)>>
+          pairing_callback);
   ~FidoCableDiscovery() override;
 
  protected:
   virtual base::Optional<std::unique_ptr<FidoCableHandshakeHandler>>
   CreateHandshakeHandler(FidoCableDevice* device,
-                         const CableDiscoveryData* discovery_data);
+                         const CableDiscoveryData& discovery_data,
+                         const CableNonce& nonce,
+                         const CableEidArray& eid);
 
  private:
+  // Result represents a successful match of a received EID against a specific
+  // |FidoDiscoveryData|.
+  struct Result {
+    Result();
+    Result(const CableDiscoveryData& in_discovery_data,
+           const CableNonce& in_nonce,
+           const CableEidArray& in_eid);
+    Result(const Result&);
+    ~Result();
+
+    CableDiscoveryData discovery_data;
+    CableNonce nonce;
+    CableEidArray eid;
+  };
+
   FRIEND_TEST_ALL_PREFIXES(FidoCableDiscoveryTest,
                            TestDiscoveryWithAdvertisementFailures);
   FRIEND_TEST_ALL_PREFIXES(FidoCableDiscoveryTest,
@@ -77,19 +98,19 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
   void StopAdvertisements(base::OnceClosure callback);
   void CableDeviceFound(BluetoothAdapter* adapter, BluetoothDevice* device);
   void ConductEncryptionHandshake(std::unique_ptr<FidoCableDevice> cable_device,
-                                  CableDiscoveryData discovery_data);
+                                  Result discovery_data);
   void ValidateAuthenticatorHandshakeMessage(
       std::unique_ptr<FidoCableDevice> cable_device,
       FidoCableHandshakeHandler* handshake_handler,
       base::Optional<std::vector<uint8_t>> handshake_response);
 
-  base::Optional<CableDiscoveryData> GetCableDiscoveryData(
+  base::Optional<Result> GetCableDiscoveryData(
       const BluetoothDevice* device) const;
-  base::Optional<CableDiscoveryData> GetCableDiscoveryDataFromServiceData(
+  base::Optional<Result> GetCableDiscoveryDataFromServiceData(
       const BluetoothDevice* device) const;
-  base::Optional<CableDiscoveryData> GetCableDiscoveryDataFromServiceUUIDs(
+  base::Optional<Result> GetCableDiscoveryDataFromServiceUUIDs(
       const BluetoothDevice* device) const;
-  base::Optional<CableDiscoveryData> GetCableDiscoveryDataFromAuthenticatorEid(
+  base::Optional<Result> GetCableDiscoveryDataFromAuthenticatorEid(
       CableEidArray authenticator_eid) const;
 
   std::vector<CableDiscoveryData> discovery_data_;
@@ -109,6 +130,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
       advertisements_;
   std::vector<std::unique_ptr<FidoCableHandshakeHandler>>
       cable_handshake_handlers_;
+  base::Optional<
+      base::RepeatingCallback<void(std::unique_ptr<CableDiscoveryData>)>>
+      pairing_callback_;
   base::WeakPtrFactory<FidoCableDiscovery> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FidoCableDiscovery);

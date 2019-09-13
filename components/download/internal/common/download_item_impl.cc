@@ -42,7 +42,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
 #include "build/build_config.h"
-#include "components/download/database/in_progress/download_entry.h"
 #include "components/download/internal/common/download_job_impl.h"
 #include "components/download/internal/common/parallel_download_utils.h"
 #include "components/download/public/common/download_danger_type.h"
@@ -313,7 +312,8 @@ DownloadItemImpl::DownloadItemImpl(
     bool opened,
     base::Time last_access_time,
     bool transient,
-    const std::vector<DownloadItem::ReceivedSlice>& received_slices)
+    const std::vector<DownloadItem::ReceivedSlice>& received_slices,
+    std::unique_ptr<DownloadEntry> download_entry)
     : request_info_(url_chain,
                     referrer_url,
                     site_url,
@@ -356,6 +356,16 @@ DownloadItemImpl::DownloadItemImpl(
   DCHECK(state_ == COMPLETE_INTERNAL || state_ == INTERRUPTED_INTERNAL ||
          state_ == CANCELLED_INTERNAL);
   DCHECK(base::IsValidGUID(guid_));
+
+  if (download_entry) {
+    download_source_ = download_entry->download_source;
+    fetch_error_body_ = download_entry->fetch_error_body;
+    request_headers_ = download_entry->request_headers;
+    ukm_download_id_ = download_entry->ukm_download_id;
+    bytes_wasted_ = download_entry->bytes_wasted;
+  } else {
+    ukm_download_id_ = GetUniqueDownloadId();
+  }
   Init(false /* not actively downloading */, TYPE_HISTORY_IMPORT);
 }
 
@@ -1393,20 +1403,6 @@ void DownloadItemImpl::Init(bool active,
     TRACE_EVENT_INSTANT1("download", "DownloadItemActive",
                          TRACE_EVENT_SCOPE_THREAD, "download_item",
                          std::move(active_data));
-
-    // Read data from in-progress cache.
-    // TODO(qinmin): Remove this once we initialize the data in DownloadItemImpl
-    // ctor.
-    auto in_progress_entry = delegate_->GetInProgressEntry(this);
-    if (in_progress_entry) {
-      download_source_ = in_progress_entry->download_source;
-      fetch_error_body_ = in_progress_entry->fetch_error_body;
-      request_headers_ = in_progress_entry->request_headers;
-      ukm_download_id_ = in_progress_entry->ukm_download_id;
-      bytes_wasted_ = in_progress_entry->bytes_wasted;
-    } else {
-      ukm_download_id_ = GetUniqueDownloadId();
-    }
   }
 
   DVLOG(20) << __func__ << "() " << DebugString(true);

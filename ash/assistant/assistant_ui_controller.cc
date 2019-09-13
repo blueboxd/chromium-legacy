@@ -298,6 +298,34 @@ void AssistantUiController::OnProactiveSuggestionsCloseButtonPressed() {
   DCHECK(!proactive_suggestions_view_);
 }
 
+void AssistantUiController::OnProactiveSuggestionsViewHoverChanged(
+    bool is_hovering) {
+  if (!is_hovering) {
+    // When the user is no longer hovering over the proactive suggestions view
+    // we need to reset the timer so that it will auto-close appropriately.
+    auto_close_proactive_suggestions_timer_.Reset();
+    return;
+  }
+
+  const base::TimeDelta remaining_time =
+      auto_close_proactive_suggestions_timer_.desired_run_time() -
+      base::TimeTicks::Now();
+
+  // The user is now hovering over the proactive suggestions view so we need to
+  // pause the auto-close timer until we are no longer in a hovering state. Once
+  // we leave hovering state, we will resume the auto-close timer with whatever
+  // |remaining_time| is left on the timer. To accomplish this, we schedule the
+  // auto-close timer to fire in the future...
+  auto_close_proactive_suggestions_timer_.Start(
+      FROM_HERE, remaining_time,
+      auto_close_proactive_suggestions_timer_.user_task());
+
+  // ...but immediately stop it so that when we reset the auto-close timer upon
+  // leaving hovering state, the timer will appriopriately fire only after the
+  // |remaining_time| has elapsed.
+  auto_close_proactive_suggestions_timer_.Stop();
+}
+
 void AssistantUiController::OnProactiveSuggestionsViewPressed() {
   ResetProactiveSuggestionsView(
       assistant_controller_->suggestions_controller()

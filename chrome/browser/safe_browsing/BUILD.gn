@@ -137,6 +137,8 @@ jumbo_static_library("safe_browsing") {
         "client_side_detection_service.h",
         "client_side_model_loader.cc",
         "client_side_model_loader.h",
+        "cloud_content_scanning/deep_scanning_dialog_delegate.cc",
+        "cloud_content_scanning/deep_scanning_dialog_delegate.h",
         "download_protection/binary_fcm_service.cc",
         "download_protection/binary_fcm_service.h",
         "download_protection/binary_upload_service.cc",

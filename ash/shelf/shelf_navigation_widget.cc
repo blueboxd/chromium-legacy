@@ -25,7 +25,8 @@ namespace ash {
 namespace {
 
 // Duration of the back button's opacity animation.
-constexpr int kBackButtonOpacityAnimationDurationMs = 200;
+constexpr auto kBackButtonOpacityAnimationDuration =
+    base::TimeDelta::FromMilliseconds(200);
 
 bool IsTabletMode() {
   return Shell::Get()->tablet_mode_controller() &&
@@ -140,7 +141,7 @@ ShelfNavigationWidget::ShelfNavigationWidget(Shelf* shelf,
       delegate_(new ShelfNavigationWidget::Delegate(shelf, shelf_view)),
       bounds_animator_(std::make_unique<views::BoundsAnimator>(delegate_)) {
   DCHECK(shelf_);
-  bounds_animator_->SetAnimationDuration(kBackButtonOpacityAnimationDurationMs);
+  bounds_animator_->SetAnimationDuration(kBackButtonOpacityAnimationDuration);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
 }
@@ -236,8 +237,7 @@ void ShelfNavigationWidget::UpdateLayout() {
                                         : views::View::FocusBehavior::NEVER);
   ui::ScopedLayerAnimationSettings settings(
       GetBackButton()->layer()->GetAnimator());
-  settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kBackButtonOpacityAnimationDurationMs));
+  settings.SetTransitionDuration(kBackButtonOpacityAnimationDuration);
   settings.AddObserver(this);
   GetBackButton()->layer()->SetOpacity(tablet_mode ? 1 : 0);
 

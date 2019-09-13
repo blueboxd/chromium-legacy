@@ -187,7 +187,6 @@ NSURLSession* TestGaiaAuthFetcherIOSNSURLSessionBridge::CreateNSURLSession(
 void GaiaAuthFetcherIOSNSURLSessionBridgeTest::SetUp() {
   std::vector<base::Feature> enabled_features;
   std::vector<base::Feature> disabled_features;
-  enabled_features.push_back(web::features::kWKHTTPSystemCookieStore);
   enabled_features.push_back(kUseNSURLSessionForGaiaSigninRequests);
   scoped_feature_list.InitWithFeatures(enabled_features, disabled_features);
   delegate_.reset(new FakeGaiaAuthFetcherIOSBridgeDelegate());

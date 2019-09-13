@@ -107,8 +107,8 @@ class BackgroundAnimation : public AppListFolderView::Animation,
 
     ui::ScopedLayerAnimationSettings settings(
         background_view_->layer()->GetAnimator());
-    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-        folder_view_->GetAppListConfig().folder_transition_in_duration_ms()));
+    settings.SetTransitionDuration(
+        folder_view_->GetAppListConfig().folder_transition_in_duration());
     settings.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
     settings.AddObserver(this);
     background_view_->layer()->SetColor(to_color);
@@ -155,7 +155,7 @@ class FolderItemTitleAnimation : public AppListFolderView::Animation,
 
     animation_.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
     animation_.SetSlideDuration(
-        folder_view_->GetAppListConfig().folder_transition_in_duration_ms());
+        folder_view_->GetAppListConfig().folder_transition_in_duration());
   }
 
   ~FolderItemTitleAnimation() override = default;
@@ -391,8 +391,8 @@ class ContentsContainerAnimation : public AppListFolderView::Animation,
     ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
     animation.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
     animation.AddObserver(this);
-    animation.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-        folder_view_->GetAppListConfig().folder_transition_in_duration_ms()));
+    animation.SetTransitionDuration(
+        folder_view_->GetAppListConfig().folder_transition_in_duration());
     layer->SetTransform(show_ ? gfx::Transform() : transform);
     layer->SetOpacity(show_ ? 1.0f : 0.0f);
 
@@ -663,7 +663,7 @@ void AppListFolderView::RecordAnimationSmoothness() {
   if (end_frame_number > *animation_start_frame_number_) {
     RecordFolderShowHideAnimationSmoothness(
         end_frame_number - *animation_start_frame_number_,
-        GetAppListConfig().folder_transition_in_duration_ms(),
+        GetAppListConfig().folder_transition_in_duration(),
         compositor->refresh_rate());
   }
   // Resets the frame number so that further invocation won't record the

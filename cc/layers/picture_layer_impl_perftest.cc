@@ -53,8 +53,7 @@ class PictureLayerImplPerfTest : public LayerTestCommon::LayerImplTest,
     pending_tree->DetachLayers();
 
     std::unique_ptr<FakePictureLayerImpl> pending_layer =
-        FakePictureLayerImpl::CreateWithRasterSource(pending_tree, 7,
-                                                     raster_source);
+        FakePictureLayerImpl::Create(pending_tree, 7, raster_source);
     pending_layer->SetDrawsContent(true);
     pending_layer_ = pending_layer.get();
     pending_tree->SetElementIdsForTesting();

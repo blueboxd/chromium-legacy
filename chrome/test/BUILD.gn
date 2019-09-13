@@ -443,9 +443,11 @@ group("telemetry_gpu_integration_test") {
   # actual executable rather than the whole directory; copying the
   # whole directory doesn't work, at least with "mb.py zip".
   if (is_win) {
-    data += [ "//tools/skia_goldctl/goldctl.exe" ]
+    data += [ "//tools/skia_goldctl/win/goldctl.exe" ]
+  } else if (is_mac) {
+    data += [ "//tools/skia_goldctl/mac/goldctl" ]
   } else {
-    data += [ "//tools/skia_goldctl/goldctl" ]
+    data += [ "//tools/skia_goldctl/linux/goldctl" ]
   }
 }
 
@@ -1955,9 +1957,11 @@ if (!is_android) {
     # actual executable rather than the whole directory; copying the
     # whole directory doesn't work, at least with "mb.py zip".
     if (is_win) {
-      data += [ "//tools/skia_goldctl/goldctl.exe" ]
+      data += [ "//tools/skia_goldctl/win/goldctl.exe" ]
+    } else if (is_mac) {
+      data += [ "//tools/skia_goldctl/mac/goldctl" ]
     } else {
-      data += [ "//tools/skia_goldctl/goldctl" ]
+      data += [ "//tools/skia_goldctl/linux/goldctl" ]
     }
 
     if (is_chromeos) {
@@ -2792,7 +2796,6 @@ test("unit_tests") {
     "../browser/android/compositor/layer/tab_layer_unittest.cc",
     "../browser/android/contextualsearch/contextual_search_delegate_unittest.cc",
     "../browser/android/contextualsearch/contextual_search_field_trial_unittest.cc",
-    "../browser/android/contextualsearch/contextual_search_preference_helper_unittest.cc",
     "../browser/android/digital_asset_links/digital_asset_links_handler_unittest.cc",
     "../browser/android/download/available_offline_content_provider_unittest.cc",
     "../browser/android/download/download_manager_service_unittest.cc",
@@ -4616,6 +4619,7 @@ test("unit_tests") {
       "../browser/safe_browsing/client_side_detection_host_unittest.cc",
       "../browser/safe_browsing/client_side_detection_service_unittest.cc",
       "../browser/safe_browsing/client_side_model_loader_unittest.cc",
+      "../browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_delegate_unittest.cc",
       "../browser/safe_browsing/download_protection/binary_fcm_service_unittest.cc",
       "../browser/safe_browsing/download_protection/binary_upload_service_unittest.cc",
       "../browser/safe_browsing/download_protection/download_feedback_service_unittest.cc",

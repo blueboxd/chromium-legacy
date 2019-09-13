@@ -6,9 +6,8 @@ package org.chromium.weblayer;
 
 import android.net.Uri;
 import android.os.RemoteException;
-import android.util.AndroidRuntimeException;
-import android.util.Log;
 
+import org.chromium.weblayer_private.aidl.APICallException;
 import org.chromium.weblayer_private.aidl.IBrowserController;
 import org.chromium.weblayer_private.aidl.IClientNavigation;
 import org.chromium.weblayer_private.aidl.INavigation;
@@ -19,7 +18,6 @@ import org.chromium.weblayer_private.aidl.INavigationControllerClient;
  * Provides methods to control navigation, along with maintaining the current list of navigations.
  */
 public final class NavigationController {
-    private static final String TAG = "WebLayer";
     private INavigationController mNavigationController;
     private final ObserverList<NavigationObserver> mObservers;
 
@@ -30,8 +28,7 @@ public final class NavigationController {
                     browserController.createNavigationController(
                             navigationController.new NavigationControllerClientImpl());
         } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call createNavigationController.", e);
-            throw new AndroidRuntimeException(e);
+            throw new APICallException(e);
         }
         return navigationController;
     }
@@ -44,8 +41,7 @@ public final class NavigationController {
         try {
             mNavigationController.navigate(uri.toString());
         } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call navigate.", e);
-            throw new AndroidRuntimeException(e);
+            throw new APICallException(e);
         }
     }
 
@@ -53,8 +49,7 @@ public final class NavigationController {
         try {
             mNavigationController.goBack();
         } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call goBack.", e);
-            throw new AndroidRuntimeException(e);
+            throw new APICallException(e);
         }
     }
 
@@ -62,8 +57,7 @@ public final class NavigationController {
         try {
             mNavigationController.goForward();
         } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call goForward.", e);
-            throw new AndroidRuntimeException(e);
+            throw new APICallException(e);
         }
     }
 
@@ -71,8 +65,7 @@ public final class NavigationController {
         try {
             mNavigationController.reload();
         } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call reload.", e);
-            throw new AndroidRuntimeException(e);
+            throw new APICallException(e);
         }
     }
 
@@ -80,8 +73,7 @@ public final class NavigationController {
         try {
             mNavigationController.stop();
         } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call stop.", e);
-            throw new AndroidRuntimeException(e);
+            throw new APICallException(e);
         }
     }
 
@@ -89,8 +81,7 @@ public final class NavigationController {
         try {
             return mNavigationController.getNavigationListSize();
         } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call getNavigationListSize.", e);
-            throw new AndroidRuntimeException(e);
+            throw new APICallException(e);
         }
     }
 
@@ -98,8 +89,7 @@ public final class NavigationController {
         try {
             return mNavigationController.getNavigationListCurrentIndex();
         } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call getNavigationListCurrentIndex.", e);
-            throw new AndroidRuntimeException(e);
+            throw new APICallException(e);
         }
     }
 
@@ -107,8 +97,7 @@ public final class NavigationController {
         try {
             return Uri.parse(mNavigationController.getNavigationEntryDisplayUri(index));
         } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call getNavigationEntryDisplayUri.", e);
-            throw new AndroidRuntimeException(e);
+            throw new APICallException(e);
         }
     }
 

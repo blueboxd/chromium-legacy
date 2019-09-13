@@ -519,4 +519,3 @@ remoting_localize("remoting_windows_resources") {
 
   locales = remoting_locales
 }
-# TODO(GYP) More Windows remoting targets from remoting_host_win.gypi

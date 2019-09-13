@@ -11,7 +11,6 @@
 #include "content/browser/webrtc/webrtc_content_browsertest_base.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/webrtc_ip_handling_policy.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -19,6 +18,7 @@
 #include "media/webrtc/webrtc_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest-param-test.h"
+#include "third_party/blink/public/common/peerconnection/webrtc_ip_handling_policy.h"
 
 const char kAudioConstraints[] = "audio: {echoCancellation: {exact: false}}";
 const char kVideoConstraints[] = "video:true";
@@ -46,7 +46,6 @@ class WebRtcAudioBrowserTest : public WebRtcContentBrowserTestBase,
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WebRtcContentBrowserTestBase::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kAllowPreCommitInput);
     // Automatically grant device permission.
     AppendUseFakeUIForMediaStreamFlag();
   }

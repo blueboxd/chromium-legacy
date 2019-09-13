@@ -5,7 +5,7 @@
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 
 const base::Feature kNewClearBrowsingDataUI{"NewClearBrowsingDataUI",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kWebClearBrowsingData{"WebClearBrowsingData",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

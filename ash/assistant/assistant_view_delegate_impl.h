@@ -60,6 +60,7 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
                                    int notification_button_index) override;
   void OnOptInButtonPressed() override;
   void OnProactiveSuggestionsCloseButtonPressed() override;
+  void OnProactiveSuggestionsViewHoverChanged(bool is_hovering) override;
   void OnProactiveSuggestionsViewPressed() override;
   void OnSuggestionChipPressed(const AssistantSuggestion* suggestion) override;
   void OpenUrlFromView(const GURL& url) override;

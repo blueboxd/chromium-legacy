@@ -1005,11 +1005,15 @@ class V4L2QueueFactory {
   }
 };
 
-V4L2Device::V4L2Device() {}
+V4L2Device::V4L2Device() {
+  DETACH_FROM_SEQUENCE(client_sequence_checker_);
+}
 
 V4L2Device::~V4L2Device() {}
 
 scoped_refptr<V4L2Queue> V4L2Device::GetQueue(enum v4l2_buf_type type) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+
   switch (type) {
     // Supported queue types.
     case V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE:
@@ -1034,6 +1038,8 @@ scoped_refptr<V4L2Queue> V4L2Device::GetQueue(enum v4l2_buf_type type) {
 }
 
 void V4L2Device::OnQueueDestroyed(v4l2_buf_type buf_type) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+
   auto it = queues_.find(buf_type);
   DCHECK(it != queues_.end());
   queues_.erase(it);

@@ -34,7 +34,6 @@
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -1411,10 +1410,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, SlowPageFill) {
 // a new tab with a URL for which the embedded test server issues a basic auth
 // challenge.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, NoLastLoadGoodLastLoad) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      ::features::kHTTPAuthCommittedInterstitials);
-
   // We must use a new test server here because embedded_test_server() is
   // already started at this point and adding the request handler to it would
   // not be thread safe.
@@ -2918,10 +2913,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, BasicAuthSeparateRealms) {
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, ProxyAuthFilling) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      ::features::kHTTPAuthCommittedInterstitials);
-
   GURL test_page = embedded_test_server()->GetURL("/auth-basic");
 
   // Save credentials for "testrealm" in the store.
@@ -3605,9 +3596,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
 // password manager works even though it should be disabled on the previous
 // page.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, CorrectEntryForHttpAuth) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      ::features::kHTTPAuthCommittedInterstitials);
     // The embedded_test_server() is already started at this point and adding
     // the request handler to it would not be thread safe. Therefore, use a new
     // server.

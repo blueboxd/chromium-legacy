@@ -696,7 +696,7 @@
     // For simulating Android's overlay fullscreen video in web tests on Linux.
     {
       name: "ForbidSyncXHRInPageDismissal",
-      status: "test",
+      status: "experimental",
     },
     {
       name: "ForcedColors",

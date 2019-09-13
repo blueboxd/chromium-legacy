@@ -30,9 +30,11 @@
 const char* kSkiaGoldInstance = "chrome";
 
 #if defined(OS_WIN)
-const wchar_t* kSkiaGoldCtl = L"tools/skia_goldctl/goldctl.exe";
+const wchar_t* kSkiaGoldCtl = L"tools/skia_goldctl/win/goldctl.exe";
+#elif defined(OS_MACOSX)
+const char* kSkiaGoldCtl = "tools/skia_goldctl/mac/goldctl";
 #else
-const char* kSkiaGoldCtl = "tools/skia_goldctl/goldctl";
+const char* kSkiaGoldCtl = "tools/skia_goldctl/linux/goldctl";
 #endif
 
 const char* kBuildRevisionKey = "build-revision";

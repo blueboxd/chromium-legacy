@@ -181,11 +181,15 @@ void MediaInterfaceProxy::CreateFlingingRenderer(
     media::mojom::RendererRequest request) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  media::MojoRendererService::Create(
-      nullptr,
+  std::unique_ptr<FlingingRenderer> flinging_renderer =
       FlingingRenderer::Create(render_frame_host_, presentation_id,
-                               std::move(client_extension)),
-      std::move(request));
+                               std::move(client_extension));
+
+  if (!flinging_renderer)
+    return;
+
+  media::MojoRendererService::Create(nullptr, std::move(flinging_renderer),
+                                     std::move(request));
 }
 
 void MediaInterfaceProxy::CreateMediaPlayerRenderer(

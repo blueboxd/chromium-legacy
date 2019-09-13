@@ -39,7 +39,8 @@ class TestableTtsController : public content::TtsController {
 
   // Unimplemented.
   bool IsSpeaking() override { return false; }
-  void SpeakOrEnqueue(content::TtsUtterance* utterance) override {}
+  void SpeakOrEnqueue(
+      std::unique_ptr<content::TtsUtterance> utterance) override {}
   void Stop() override {}
   void Stop(const GURL& source_url) override {}
   void Pause() override {}

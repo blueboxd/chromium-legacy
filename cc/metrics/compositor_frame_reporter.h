@@ -55,22 +55,26 @@ class CC_EXPORT CompositorFrameReporter {
     kUnknown
   };
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
   enum class MissedFrameReportTypes {
-    kNonMissedFrame,
-    kMissedFrame,
-    kMissedFrameLatencyIncrease,
+    kNonMissedFrame = 0,
+    kMissedFrame = 1,
+    kDeprecatedMissedFrameLatencyIncrease = 2,
     kMissedFrameReportTypeCount
   };
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
   enum class StageType {
-    kBeginImplFrameToSendBeginMainFrame,
-    kSendBeginMainFrameToCommit,
-    kCommit,
-    kEndCommitToActivation,
-    kActivation,
-    kEndActivateToSubmitCompositorFrame,
-    kSubmitCompositorFrameToPresentationCompositorFrame,
-    kTotalLatency,
+    kBeginImplFrameToSendBeginMainFrame = 0,
+    kSendBeginMainFrameToCommit = 1,
+    kCommit = 2,
+    kEndCommitToActivation = 3,
+    kActivation = 4,
+    kEndActivateToSubmitCompositorFrame = 5,
+    kSubmitCompositorFrameToPresentationCompositorFrame = 6,
+    kTotalLatency = 7,
     kStageTypeCount
   };
 
@@ -87,9 +91,7 @@ class CC_EXPORT CompositorFrameReporter {
 
   // Note that the started stage may be reported to UMA. If the histogram is
   // intended to be reported then the histograms.xml file must be updated too.
-  void StartStage(StageType stage_type,
-                  base::TimeTicks start_time,
-                  RollingTimeDeltaHistory* stage_time_delta_history);
+  void StartStage(StageType stage_type, base::TimeTicks start_time);
   void TerminateFrame(FrameTerminationStatus termination_status,
                       base::TimeTicks termination_time);
 
@@ -100,7 +102,6 @@ class CC_EXPORT CompositorFrameReporter {
     StageType stage_type;
     base::TimeTicks start_time;
     base::TimeTicks end_time;
-    RollingTimeDeltaHistory* time_delta_history;
   };
 
   StageData current_stage_;

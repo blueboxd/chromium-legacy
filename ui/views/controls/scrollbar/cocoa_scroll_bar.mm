@@ -23,9 +23,6 @@ namespace {
 // The length of the fade animation.
 constexpr int kFadeDurationMs = 240;
 
-// The length of the expand animation.
-constexpr int kExpandDurationMs = 240;
-
 // How long we should wait before hiding the scrollbar.
 constexpr int kScrollbarHideTimeoutMs = 500;
 
@@ -192,7 +189,7 @@ CocoaScrollBar::CocoaScrollBar(bool horizontal)
   bridge_.reset([[ViewsScrollbarBridge alloc] initWithDelegate:this]);
   scroller_style_ = [ViewsScrollbarBridge getPreferredScrollerStyle];
 
-  thickness_animation_.SetSlideDuration(kExpandDurationMs);
+  thickness_animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(240));
 
   SetPaintToLayer();
   has_scrolltrack_ = scroller_style_ == NSScrollerStyleLegacy;

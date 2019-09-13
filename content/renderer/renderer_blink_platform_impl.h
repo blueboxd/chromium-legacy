@@ -144,7 +144,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       const blink::WebString& kind) override;
   std::unique_ptr<webrtc::RtpCapabilities> GetRtpReceiverCapabilities(
       const blink::WebString& kind) override;
-  void UpdateWebRTCAPICount(blink::WebRTCAPIName api_name) override;
   base::Optional<double> GetWebRtcMaxCaptureFrameRate() override;
   scoped_refptr<media::AudioRendererSink> NewAudioRendererSink(
       blink::WebAudioDeviceSourceType source_type,
@@ -154,6 +153,16 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       blink::WebAudioDeviceSourceType source_type) override;
   blink::WebRtcAudioDeviceImpl* GetWebRtcAudioDevice() override;
   base::Optional<std::string> GetWebRTCAudioProcessingConfiguration() override;
+  bool ShouldEnforceWebRTCRoutingPreferences() override;
+  bool UsesFakeCodecForPeerConnection() override;
+  bool IsWebRtcEncryptionEnabled() override;
+  base::Optional<std::string> WebRtcStunProbeTrialParameter() override;
+  media::MediaPermission* GetWebRTCMediaPermission(
+      blink::WebLocalFrame* web_frame) override;
+  void GetWebRTCRendererPreferences(blink::WebLocalFrame* web_frame,
+                                    blink::WebString* ip_handling_policy,
+                                    uint16_t* udp_min_port,
+                                    uint16_t* udp_max_port) override;
   base::Optional<int> GetAgcStartupMinimumVolume() override;
   void TrackGetUserMedia(
       const blink::WebUserMediaRequest& web_request) override;

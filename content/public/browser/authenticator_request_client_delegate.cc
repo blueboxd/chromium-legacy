@@ -65,6 +65,9 @@ bool AuthenticatorRequestClientDelegate::SetCableTransportInfo(
   return false;
 }
 
+void AuthenticatorRequestClientDelegate::AppendCablePairings(
+    std::vector<device::CableDiscoveryData>* pairings) {}
+
 void AuthenticatorRequestClientDelegate::SelectAccount(
     std::vector<device::AuthenticatorGetAssertionResponse> responses,
     base::OnceCallback<void(device::AuthenticatorGetAssertionResponse)>
@@ -108,6 +111,8 @@ AuthenticatorRequestClientDelegate::GetDiscoveryFactory() {
           device::WinWebAuthnApi::GetDefault());
     }
 #endif  // defined(OS_WIN)
+
+    CustomizeDiscoveryFactory(discovery_factory_.get());
   }
   return discovery_factory_.get();
 #endif
@@ -161,5 +166,8 @@ void AuthenticatorRequestClientDelegate::CollectPIN(
 void AuthenticatorRequestClientDelegate::FinishCollectPIN() {
   NOTREACHED();
 }
+
+void AuthenticatorRequestClientDelegate::CustomizeDiscoveryFactory(
+    device::FidoDiscoveryFactory* discovery_factory) {}
 
 }  // namespace content

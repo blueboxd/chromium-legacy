@@ -9,10 +9,6 @@
 
 #include "build/build_config.h"
 
-namespace gfx {
-class Size;
-}
-
 #if !defined(OS_ANDROID)
 namespace views {
 class WebView;
@@ -27,10 +23,7 @@ class NavigationController;
 // Represents a browser window that is navigable.
 class BrowserController {
  public:
-  // Pass an empty |path| for an in-memory profile.
-  static std::unique_ptr<BrowserController> Create(
-      Profile* profile,
-      const gfx::Size& initial_size);
+  static std::unique_ptr<BrowserController> Create(Profile* profile);
 
   virtual ~BrowserController() {}
 

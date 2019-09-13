@@ -30,9 +30,7 @@ scoped_refptr<PictureLayer> PictureLayer::Create(ContentLayerClient* client) {
 }
 
 PictureLayer::PictureLayer(ContentLayerClient* client)
-    : instrumentation_object_tracker_(id()),
-      update_source_frame_number_(-1),
-      mask_type_(LayerMaskType::NOT_MASK) {
+    : instrumentation_object_tracker_(id()), update_source_frame_number_(-1) {
   picture_layer_inputs_.client = client;
 }
 
@@ -46,18 +44,23 @@ PictureLayer::~PictureLayer() = default;
 
 std::unique_ptr<LayerImpl> PictureLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return PictureLayerImpl::Create(tree_impl, id(), mask_type_);
+  return PictureLayerImpl::Create(tree_impl, id());
 }
 
 void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
   // TODO(enne): http://crbug.com/918126 debugging
   CHECK(this);
 
+  PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
+
+  // This is before Layer::PushPropertiesTo() because PictureLayerImpl requires
+  // that is_mask flag can change only when the layer is just created before
+  // any property tree state is assigned.
+  layer_impl->SetIsMask(is_mask());
+
   Layer::PushPropertiesTo(base_layer);
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "PictureLayer::PushPropertiesTo");
-  PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
-  layer_impl->SetLayerMaskType(mask_type());
   DropRecordingSourceContentIfInvalid();
 
   layer_impl->SetNearestNeighbor(picture_layer_inputs_.nearest_neighbor);
@@ -158,10 +161,6 @@ bool PictureLayer::Update() {
   }
 
   return updated;
-}
-
-void PictureLayer::SetLayerMaskType(LayerMaskType mask_type) {
-  mask_type_ = mask_type;
 }
 
 sk_sp<SkPicture> PictureLayer::GetPicture() const {

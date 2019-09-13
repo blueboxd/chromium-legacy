@@ -39,6 +39,7 @@ class GL_EXPORT GLContextCGL : public GLContextReal {
   uint64_t BackpressureFenceCreate() override;
   void BackpressureFenceWait(uint64_t fence) override;
   void FlushForDriverCrashWorkaround() override;
+  void SetVisibility(bool visibility) override;
 
  protected:
   ~GLContextCGL() override;

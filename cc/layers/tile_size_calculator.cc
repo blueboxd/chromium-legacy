@@ -124,7 +124,7 @@ TileSizeCalculator::AffectingParams TileSizeCalculator::GetAffectingParams() {
 gfx::Size TileSizeCalculator::CalculateTileSize() {
   gfx::Size content_bounds = layer_impl()->content_bounds();
 
-  if (layer_impl()->mask_type() == Layer::LayerMaskType::SINGLE_TEXTURE_MASK) {
+  if (layer_impl()->is_mask()) {
     // Masks are not tiled, so if we can't cover the whole mask with one tile,
     // we shouldn't have such a tiling at all.
     DCHECK_LE(content_bounds.width(),

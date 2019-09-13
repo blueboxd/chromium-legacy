@@ -44,6 +44,7 @@ int g_minimum_homescreen_icon_size = -1;
 int g_ideal_splash_image_size = -1;
 int g_minimum_splash_image_size = -1;
 int g_ideal_badge_icon_size = -1;
+int g_ideal_adaptive_launcher_icon_size = -1;
 
 int g_default_rgb_icon_value = 145;
 
@@ -57,7 +58,7 @@ void GetHomescreenIconAndSplashImageSizes() {
   base::android::JavaIntArrayToIntVector(env, java_size_array, &sizes);
 
   // Check that the size returned is what is expected.
-  DCHECK(sizes.size() == 5);
+  DCHECK_EQ(6u, sizes.size());
 
   // This ordering must be kept up to date with the Java ShortcutHelper.
   g_ideal_homescreen_icon_size = sizes[0];
@@ -65,6 +66,7 @@ void GetHomescreenIconAndSplashImageSizes() {
   g_ideal_splash_image_size = sizes[2];
   g_minimum_splash_image_size = sizes[3];
   g_ideal_badge_icon_size = sizes[4];
+  g_ideal_adaptive_launcher_icon_size = sizes[5];
 
   // Try to ensure that the data returned is sane.
   DCHECK(g_minimum_homescreen_icon_size <= g_ideal_homescreen_icon_size);
@@ -229,6 +231,12 @@ int ShortcutHelper::GetIdealBadgeIconSizeInPx() {
   return g_ideal_badge_icon_size;
 }
 
+int ShortcutHelper::GetIdealAdaptiveLauncherIconSizeInPx() {
+  if (g_ideal_adaptive_launcher_icon_size == -1)
+    GetHomescreenIconAndSplashImageSizes();
+  return g_ideal_adaptive_launcher_icon_size;
+}
+
 // static
 void ShortcutHelper::FetchSplashScreenImage(
     content::WebContents* web_contents,
@@ -349,4 +357,3 @@ void JNI_ShortcutHelper_OnWebappDataStored(JNIEnv* env,
   std::move(*splash_image_callback).Run();
   delete splash_image_callback;
 }
-

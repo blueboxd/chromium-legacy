@@ -31,7 +31,6 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/webrtc_ip_handling_policy.h"
 #include "content/shell/browser/shell_browser_main_parts.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_devtools_frontend.h"
@@ -45,6 +44,7 @@
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/common/web_test/web_test_switches.h"
 #include "media/media_buildflags.h"
+#include "third_party/blink/public/common/peerconnection/webrtc_ip_handling_policy.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/web/web_presentation_receiver_flags.h"
 
@@ -231,11 +231,10 @@ Shell* Shell::CreateNewWindow(BrowserContext* browser_context,
     create_params.starting_sandbox_flags =
         blink::kPresentationReceiverSandboxFlags;
   }
-  create_params.initial_size = AdjustWindowSize(initial_size);
   std::unique_ptr<WebContents> web_contents =
       WebContents::Create(create_params);
   Shell* shell =
-      CreateShell(std::move(web_contents), create_params.initial_size,
+      CreateShell(std::move(web_contents), AdjustWindowSize(initial_size),
                   true /* should_set_delegate */);
   if (!url.is_empty())
     shell->LoadURL(url);
@@ -254,14 +253,13 @@ Shell* Shell::CreateNewWindowWithSessionStorageNamespace(
     create_params.starting_sandbox_flags =
         blink::kPresentationReceiverSandboxFlags;
   }
-  create_params.initial_size = AdjustWindowSize(initial_size);
   std::map<std::string, scoped_refptr<SessionStorageNamespace>>
       session_storages;
   session_storages[""] = session_storage_namespace;
   std::unique_ptr<WebContents> web_contents =
       WebContents::CreateWithSessionStorage(create_params, session_storages);
   Shell* shell =
-      CreateShell(std::move(web_contents), create_params.initial_size,
+      CreateShell(std::move(web_contents), AdjustWindowSize(initial_size),
                   true /* should_set_delegate */);
   if (!url.is_empty())
     shell->LoadURL(url);

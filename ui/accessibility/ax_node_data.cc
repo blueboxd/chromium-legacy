@@ -1533,7 +1533,8 @@ std::string AXNodeData::ToString() const {
     }
   }
 
-  result += " actions=" + ActionsBitfieldToString(actions);
+  if (actions)
+    result += " actions=" + ActionsBitfieldToString(actions);
 
   if (!child_ids.empty())
     result += " child_ids=" + IntVectorToString(child_ids);

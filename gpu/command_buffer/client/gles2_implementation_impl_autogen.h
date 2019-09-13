@@ -3654,6 +3654,14 @@ void GLES2Implementation::StencilThenCoverStrokePathCHROMIUM(GLuint path,
   CheckGLError();
 }
 
+void GLES2Implementation::ContextVisibilityHintCHROMIUM(GLboolean visibility) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glContextVisibilityHintCHROMIUM("
+                     << GLES2Util::GetStringBool(visibility) << ")");
+  helper_->ContextVisibilityHintCHROMIUM(visibility);
+  CheckGLError();
+}
+
 void GLES2Implementation::CoverageModulationCHROMIUM(GLenum components) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG(

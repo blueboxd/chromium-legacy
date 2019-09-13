@@ -37,6 +37,7 @@ class TabModalConfirmDialogViews : public TabModalConfirmDialog,
       content::WebContents* web_contents);
 
   // views::DialogDelegate:
+  int GetDialogButtons() const override;
   base::string16 GetWindowTitle() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool Cancel() override;

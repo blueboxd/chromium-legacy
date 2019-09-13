@@ -544,7 +544,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             ShareHelper.share(linkShareParams);
         } else if (itemId == R.id.contextmenu_search_with_google_lens) {
             ContextMenuUma.record(params, ContextMenuUma.Action.SEARCH_WITH_GOOGLE_LENS);
-            helper.searchWithGoogleLens();
+            helper.searchWithGoogleLens(mDelegate.isIncognito());
         } else if (itemId == R.id.contextmenu_search_by_image) {
             ContextMenuUma.record(params, ContextMenuUma.Action.SEARCH_BY_IMAGE);
             helper.searchForImage();

@@ -401,6 +401,16 @@ bool ShareGroup::IsLost() const {
   return lost_;
 }
 
+void ShareGroup::SetGpuSwitched(bool gpu_switched) {
+  base::AutoLock hold(gpu_switched_lock_);
+  gpu_switched_ = gpu_switched;
+}
+
+bool ShareGroup::GetGpuSwitched() const {
+  base::AutoLock hold(gpu_switched_lock_);
+  return gpu_switched_;
+}
+
 void ShareGroup::SetProgramInfoManagerForTesting(ProgramInfoManager* manager) {
   program_info_manager_.reset(manager);
 }

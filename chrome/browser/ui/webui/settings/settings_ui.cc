@@ -47,6 +47,7 @@
 #include "chrome/browser/ui/webui/settings/settings_security_key_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_startup_pages_handler.h"
 #include "chrome/browser/ui/webui/settings/site_settings_handler.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/settings_resources.h"
@@ -269,6 +270,10 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       "diceEnabled",
       AccountConsistencyModeManager::IsDiceEnabledForProfile(profile));
 #endif  // !defined(OS_CHROMEOS)
+
+  html_source->AddBoolean(
+      "a11yEnhancements",
+      base::FeatureList::IsEnabled(features::kWebUIA11yEnhancements));
 
   html_source->AddBoolean("unifiedConsentEnabled",
                           unified_consent::IsUnifiedConsentFeatureEnabled());

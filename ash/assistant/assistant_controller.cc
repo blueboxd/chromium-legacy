@@ -12,7 +12,6 @@
 #include "ash/public/cpp/android_intent_helper.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/new_window_delegate.h"
-#include "ash/public/mojom/assistant_volume_control.mojom.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -22,10 +21,6 @@
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "components/prefs/pref_registry_simple.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/content/public/mojom/constants.mojom.h"
 #include "services/content/public/mojom/navigable_contents_factory.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -40,7 +35,8 @@ constexpr char kAndroidIntentScheme[] = "intent";
 }  // namespace
 
 AssistantController::AssistantController()
-    : assistant_alarm_timer_controller_(this),
+    : assistant_volume_control_binding_(this),
+      assistant_alarm_timer_controller_(this),
       assistant_interaction_controller_(this),
       assistant_notification_controller_(this),
       assistant_screen_context_controller_(this),
@@ -74,9 +70,9 @@ void AssistantController::BindRequest(
   assistant_controller_bindings_.AddBinding(this, std::move(request));
 }
 
-void AssistantController::BindReceiver(
-    mojo::PendingReceiver<mojom::AssistantVolumeControl> receiver) {
-  assistant_volume_control_receiver_.Bind(std::move(receiver));
+void AssistantController::BindRequest(
+    mojom::AssistantVolumeControlRequest request) {
+  assistant_volume_control_binding_.Bind(std::move(request));
 }
 
 void AssistantController::AddObserver(AssistantControllerObserver* observer) {
@@ -204,9 +200,8 @@ void AssistantController::SetMuted(bool muted) {
   chromeos::CrasAudioHandler::Get()->SetOutputMute(muted);
 }
 
-void AssistantController::AddVolumeObserver(
-    mojo::PendingRemote<mojom::VolumeObserver> observer) {
-  volume_observers_.Add(std::move(observer));
+void AssistantController::AddVolumeObserver(mojom::VolumeObserverPtr observer) {
+  volume_observer_.AddPtr(std::move(observer));
 
   int output_volume =
       chromeos::CrasAudioHandler::Get()->GetOutputVolumePercent();
@@ -216,14 +211,16 @@ void AssistantController::AddVolumeObserver(
 }
 
 void AssistantController::OnOutputMuteChanged(bool mute_on) {
-  for (auto& observer : volume_observers_)
+  volume_observer_.ForAllPtrs([mute_on](mojom::VolumeObserver* observer) {
     observer->OnMuteStateChanged(mute_on);
+  });
 }
 
 void AssistantController::OnOutputNodeVolumeChanged(uint64_t node, int volume) {
   // |node| refers to the active volume device, which we don't care here.
-  for (auto& observer : volume_observers_)
+  volume_observer_.ForAllPtrs([volume](mojom::VolumeObserver* observer) {
     observer->OnVolumeChanged(volume);
+  });
 }
 
 void AssistantController::OnAccessibilityStatusChanged() {
@@ -370,7 +367,7 @@ void AssistantController::BindStateController(
 
 void AssistantController::BindVolumeControl(
     mojo::PendingReceiver<mojom::AssistantVolumeControl> receiver) {
-  Shell::Get()->assistant_controller()->BindReceiver(std::move(receiver));
+  Shell::Get()->assistant_controller()->BindRequest(std::move(receiver));
 }
 
 base::WeakPtr<AssistantController> AssistantController::GetWeakPtr() {

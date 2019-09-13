@@ -21,8 +21,7 @@ namespace ash {
 namespace {
 
 // Animation.
-constexpr int kAnimationDurationMs = 250;
-constexpr int kFadeInAnimationDelayMs = 17;
+constexpr auto kAnimationDuration = base::TimeDelta::FromMilliseconds(250);
 
 // Helpers ---------------------------------------------------------------------
 
@@ -82,7 +81,7 @@ void AssistantContainerViewAnimatorLegacyImpl::OnPreferredSizeChanged() {
   // When visible, size changes are animated.
   if (visible) {
     animation_ = std::make_unique<gfx::SlideAnimation>(this);
-    animation_->SetSlideDuration(kAnimationDurationMs);
+    animation_->SetSlideDuration(kAnimationDuration);
 
     // Cache start and end animation values.
     start_size_ = assistant_container_view_->size();
@@ -127,10 +126,9 @@ void AssistantContainerViewAnimatorLegacyImpl::OnUiVisibilityChanged(
       ->StartAnimation(CreateLayerAnimationSequence(
           ui::LayerAnimationElement::CreatePauseElement(
               ui::LayerAnimationElement::AnimatableProperty::OPACITY,
-              base::TimeDelta::FromMilliseconds(kFadeInAnimationDelayMs)),
-          CreateOpacityElement(
-              1.f, base::TimeDelta::FromMilliseconds(kAnimationDurationMs),
-              gfx::Tween::Type::FAST_OUT_SLOW_IN_2)));
+              base::TimeDelta::FromMilliseconds(17)),
+          CreateOpacityElement(1.0f, kAnimationDuration,
+                               gfx::Tween::Type::FAST_OUT_SLOW_IN_2)));
 
   // Set the initial animation value of bound with height equals to 0.
   gfx::Rect current_bounds = assistant_container_view_->bounds();
@@ -176,7 +174,7 @@ void AssistantContainerViewAnimatorLegacyImpl::AnimationEnded(
     const gfx::Animation* animation) {
   const int ideal_frames =
       GetCompositorRefreshRate(assistant_container_view_->layer()) *
-      kAnimationDurationMs / base::Time::kMillisecondsPerSecond;
+      kAnimationDuration.InSecondsF();
 
   const int actual_frames =
       GetCompositorFrameNumber(assistant_container_view_->layer()) -

@@ -235,11 +235,6 @@ TEST(URLRequestHttpJobWithProxy, TestFailureWithoutProxy) {
   EXPECT_EQ(0, request->received_response_content_length());
   EXPECT_EQ(CountWriteBytes(writes), request->GetTotalSentBytes());
   EXPECT_EQ(CountReadBytes(reads), request->GetTotalReceivedBytes());
-  EXPECT_EQ(CountWriteBytes(writes),
-            http_job_with_proxy.network_delegate_.total_network_bytes_sent());
-  EXPECT_EQ(
-      CountReadBytes(reads),
-      http_job_with_proxy.network_delegate_.total_network_bytes_received());
 }
 
 // Tests that when one proxy is in use and the connection to the proxy server
@@ -286,10 +281,6 @@ TEST(URLRequestHttpJobWithProxy, TestSuccessfulWithOneProxy) {
   EXPECT_EQ(0, request->received_response_content_length());
   EXPECT_EQ(CountWriteBytes(writes), request->GetTotalSentBytes());
   EXPECT_EQ(0, request->GetTotalReceivedBytes());
-  EXPECT_EQ(CountWriteBytes(writes),
-            http_job_with_proxy.network_delegate_.total_network_bytes_sent());
-  EXPECT_EQ(
-      0, http_job_with_proxy.network_delegate_.total_network_bytes_received());
 }
 
 // Tests that when two proxies are in use and the connection to the first proxy
@@ -338,11 +329,6 @@ TEST(URLRequestHttpJobWithProxy,
   EXPECT_EQ(12, request->received_response_content_length());
   EXPECT_EQ(CountWriteBytes(writes), request->GetTotalSentBytes());
   EXPECT_EQ(CountReadBytes(reads), request->GetTotalReceivedBytes());
-  EXPECT_EQ(CountWriteBytes(writes),
-            http_job_with_proxy.network_delegate_.total_network_bytes_sent());
-  EXPECT_EQ(
-      CountReadBytes(reads),
-      http_job_with_proxy.network_delegate_.total_network_bytes_received());
 }
 
 class URLRequestHttpJobTest : public TestWithTaskEnvironment {
@@ -412,10 +398,6 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   EXPECT_EQ(12, request->received_response_content_length());
   EXPECT_EQ(CountWriteBytes(writes), request->GetTotalSentBytes());
   EXPECT_EQ(CountReadBytes(reads), request->GetTotalReceivedBytes());
-  EXPECT_EQ(CountWriteBytes(writes),
-            network_delegate_.total_network_bytes_sent());
-  EXPECT_EQ(CountReadBytes(reads),
-            network_delegate_.total_network_bytes_received());
 }
 
 // Tests a successful HEAD request.
@@ -442,10 +424,6 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, TestSuccessfulHead) {
   EXPECT_EQ(0, request->received_response_content_length());
   EXPECT_EQ(CountWriteBytes(writes), request->GetTotalSentBytes());
   EXPECT_EQ(CountReadBytes(reads), request->GetTotalReceivedBytes());
-  EXPECT_EQ(CountWriteBytes(writes),
-            network_delegate_.total_network_bytes_sent());
-  EXPECT_EQ(CountReadBytes(reads),
-            network_delegate_.total_network_bytes_received());
 }
 
 // Similar to above test but tests that even if response body is there in the
@@ -473,10 +451,6 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, TestSuccessfulHeadWithContent) {
   EXPECT_EQ(0, request->received_response_content_length());
   EXPECT_EQ(CountWriteBytes(writes), request->GetTotalSentBytes());
   EXPECT_EQ(CountReadBytes(reads) - 12, request->GetTotalReceivedBytes());
-  EXPECT_EQ(CountWriteBytes(writes),
-            network_delegate_.total_network_bytes_sent());
-  EXPECT_EQ(CountReadBytes(reads) - 12,
-            network_delegate_.total_network_bytes_received());
 }
 
 TEST_F(URLRequestHttpJobWithMockSocketsTest, TestSuccessfulCachedHeadRequest) {
@@ -503,10 +477,6 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, TestSuccessfulCachedHeadRequest) {
     EXPECT_EQ(12, request->received_response_content_length());
     EXPECT_EQ(CountWriteBytes(writes), request->GetTotalSentBytes());
     EXPECT_EQ(CountReadBytes(reads), request->GetTotalReceivedBytes());
-    EXPECT_EQ(CountWriteBytes(writes),
-              network_delegate_.total_network_bytes_sent());
-    EXPECT_EQ(CountReadBytes(reads),
-              network_delegate_.total_network_bytes_received());
   }
 
   // Send a HEAD request for the cached response.
@@ -560,10 +530,6 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   EXPECT_EQ(12, request->received_response_content_length());
   EXPECT_EQ(CountWriteBytes(writes), request->GetTotalSentBytes());
   EXPECT_EQ(CountReadBytes(reads), request->GetTotalReceivedBytes());
-  EXPECT_EQ(CountWriteBytes(writes),
-            network_delegate_.total_network_bytes_sent());
-  EXPECT_EQ(CountReadBytes(reads),
-            network_delegate_.total_network_bytes_received());
 }
 
 TEST_F(URLRequestHttpJobWithMockSocketsTest, TestContentLengthFailedRequest) {
@@ -589,10 +555,6 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, TestContentLengthFailedRequest) {
   EXPECT_EQ(12, request->received_response_content_length());
   EXPECT_EQ(CountWriteBytes(writes), request->GetTotalSentBytes());
   EXPECT_EQ(CountReadBytes(reads), request->GetTotalReceivedBytes());
-  EXPECT_EQ(CountWriteBytes(writes),
-            network_delegate_.total_network_bytes_sent());
-  EXPECT_EQ(CountReadBytes(reads),
-            network_delegate_.total_network_bytes_received());
 }
 
 TEST_F(URLRequestHttpJobWithMockSocketsTest,
@@ -619,10 +581,6 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   EXPECT_EQ(12, request->received_response_content_length());
   EXPECT_EQ(CountWriteBytes(writes), request->GetTotalSentBytes());
   EXPECT_EQ(CountReadBytes(reads), request->GetTotalReceivedBytes());
-  EXPECT_EQ(CountWriteBytes(writes),
-            network_delegate_.total_network_bytes_sent());
-  EXPECT_EQ(CountReadBytes(reads),
-            network_delegate_.total_network_bytes_received());
 }
 
 TEST_F(URLRequestHttpJobWithMockSocketsTest,
@@ -785,11 +743,6 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   // Should not include the redirect.
   EXPECT_EQ(CountWriteBytes(final_writes), request->GetTotalSentBytes());
   EXPECT_EQ(CountReadBytes(final_reads), request->GetTotalReceivedBytes());
-  // Should include the redirect as well as the final response.
-  EXPECT_EQ(CountWriteBytes(redirect_writes) + CountWriteBytes(final_writes),
-            network_delegate_.total_network_bytes_sent());
-  EXPECT_EQ(CountReadBytes(redirect_reads) + CountReadBytes(final_reads),
-            network_delegate_.total_network_bytes_received());
 }
 
 TEST_F(URLRequestHttpJobWithMockSocketsTest,
@@ -812,10 +765,6 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   EXPECT_EQ(0, request->received_response_content_length());
   EXPECT_EQ(CountWriteBytes(writes), request->GetTotalSentBytes());
   EXPECT_EQ(CountReadBytes(reads), request->GetTotalReceivedBytes());
-  EXPECT_EQ(CountWriteBytes(writes),
-            network_delegate_.total_network_bytes_sent());
-  EXPECT_EQ(CountReadBytes(reads),
-            network_delegate_.total_network_bytes_received());
 }
 
 TEST_F(URLRequestHttpJobWithMockSocketsTest,
@@ -836,7 +785,6 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   EXPECT_EQ(0, request->received_response_content_length());
   EXPECT_EQ(0, request->GetTotalSentBytes());
   EXPECT_EQ(0, request->GetTotalReceivedBytes());
-  EXPECT_EQ(0, network_delegate_.total_network_bytes_received());
 }
 
 TEST_F(URLRequestHttpJobWithMockSocketsTest, TestHttpTimeToFirstByte) {

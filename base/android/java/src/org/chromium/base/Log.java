@@ -47,8 +47,8 @@ public class Log {
     }
 
     /** Returns a formatted log message, using the supplied format and arguments.*/
-    private static String formatLog(String messageTemplate, Object... params) {
-        if (params != null && params.length != 0) {
+    private static String formatLog(String messageTemplate, Throwable tr, Object... params) {
+        if ((params != null) && ((tr == null && params.length > 0) || params.length > 1)) {
             messageTemplate = String.format(Locale.US, messageTemplate, params);
         }
 
@@ -77,8 +77,9 @@ public class Log {
      * Returns a formatted log message, using the supplied format and arguments.
      * The message will be prepended with the filename and line number of the call.
      */
-    private static String formatLogWithStack(String messageTemplate, Object... params) {
-        return "[" + getCallOrigin() + "] " + formatLog(messageTemplate, params);
+    private static String formatLogWithStack(
+            String messageTemplate, Throwable tr, Object... params) {
+        return "[" + getCallOrigin() + "] " + formatLog(messageTemplate, tr, params);
     }
 
     @RemovableInRelease
@@ -115,8 +116,8 @@ public class Log {
      */
     @RemovableInRelease
     public static void v(String tag, String messageTemplate, Object... args) {
-        String message = formatLogWithStack(messageTemplate, args);
         Throwable tr = getThrowableToLog(args);
+        String message = formatLogWithStack(messageTemplate, tr, args);
         if (tr != null) {
             android.util.Log.v(normalizeTag(tag), message, tr);
         } else {
@@ -140,8 +141,8 @@ public class Log {
      */
     @RemovableInRelease
     public static void d(String tag, String messageTemplate, Object... args) {
-        String message = formatLogWithStack(messageTemplate, args);
         Throwable tr = getThrowableToLog(args);
+        String message = formatLogWithStack(messageTemplate, tr, args);
         if (tr != null) {
             android.util.Log.d(normalizeTag(tag), message, tr);
         } else {
@@ -160,8 +161,8 @@ public class Log {
      *             one is a {@link Throwable}, its trace will be printed.
      */
     public static void i(String tag, String messageTemplate, Object... args) {
-        String message = formatLog(messageTemplate, args);
         Throwable tr = getThrowableToLog(args);
+        String message = formatLog(messageTemplate, tr, args);
         if (tr != null) {
             android.util.Log.i(normalizeTag(tag), message, tr);
         } else {
@@ -180,8 +181,8 @@ public class Log {
      *             one is a {@link Throwable}, its trace will be printed.
      */
     public static void w(String tag, String messageTemplate, Object... args) {
-        String message = formatLog(messageTemplate, args);
         Throwable tr = getThrowableToLog(args);
+        String message = formatLog(messageTemplate, tr, args);
         if (tr != null) {
             android.util.Log.w(normalizeTag(tag), message, tr);
         } else {
@@ -200,8 +201,8 @@ public class Log {
      *             one is a {@link Throwable}, its trace will be printed.
      */
     public static void e(String tag, String messageTemplate, Object... args) {
-        String message = formatLog(messageTemplate, args);
         Throwable tr = getThrowableToLog(args);
+        String message = formatLog(messageTemplate, tr, args);
         if (tr != null) {
             android.util.Log.e(normalizeTag(tag), message, tr);
         } else {
@@ -224,8 +225,8 @@ public class Log {
      *             one is a {@link Throwable}, its trace will be printed.
      */
     public static void wtf(String tag, String messageTemplate, Object... args) {
-        String message = formatLog(messageTemplate, args);
         Throwable tr = getThrowableToLog(args);
+        String message = formatLog(messageTemplate, tr, args);
         if (tr != null) {
             android.util.Log.wtf(normalizeTag(tag), message, tr);
         } else {

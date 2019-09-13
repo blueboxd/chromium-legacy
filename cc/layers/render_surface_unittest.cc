@@ -40,6 +40,13 @@ namespace {
 // does not intersect with visible_layer_rect.
 class FakePictureLayerImplForRenderSurfaceTest : public FakePictureLayerImpl {
  public:
+  static std::unique_ptr<FakePictureLayerImplForRenderSurfaceTest> Create(
+      LayerTreeImpl* tree_impl,
+      int id) {
+    return base::WrapUnique(
+        new FakePictureLayerImplForRenderSurfaceTest(tree_impl, id));
+  }
+
   std::unique_ptr<LayerImpl> CreateLayerImpl(
       LayerTreeImpl* tree_impl) override {
     return base::WrapUnique(
@@ -69,26 +76,9 @@ class FakePictureLayerImplForRenderSurfaceTest : public FakePictureLayerImpl {
 
  protected:
   FakePictureLayerImplForRenderSurfaceTest(LayerTreeImpl* tree_impl, int id)
-      : FakePictureLayerImpl(tree_impl,
-                             id,
-                             Layer::LayerMaskType::SINGLE_TEXTURE_MASK) {}
+      : FakePictureLayerImpl(tree_impl, id) {}
 
   std::vector<gfx::Rect> quad_rects_;
-};
-
-class FakePictureLayerImplForRenderSurfaceTestAsMask
-    : public FakePictureLayerImplForRenderSurfaceTest {
- public:
-  static std::unique_ptr<FakePictureLayerImplForRenderSurfaceTestAsMask> Create(
-      LayerTreeImpl* tree_impl,
-      int id) {
-    return base::WrapUnique(
-        new FakePictureLayerImplForRenderSurfaceTestAsMask(tree_impl, id));
-  }
-
- protected:
-  using FakePictureLayerImplForRenderSurfaceTest::
-      FakePictureLayerImplForRenderSurfaceTest;
 };
 
 TEST(RenderSurfaceTest, VerifySurfaceChangesAreTrackedProperly) {
@@ -232,7 +222,7 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceIgnoreMaskLayerOcclusion) {
   CreateEffectNode(layer);
 
   auto* mask_layer =
-      impl.AddMaskLayer<FakePictureLayerImplForRenderSurfaceTestAsMask>(layer);
+      impl.AddMaskLayer<FakePictureLayerImplForRenderSurfaceTest>(layer);
   scoped_refptr<FakeRasterSource> raster_source(
       FakeRasterSource::CreateFilled(mask_layer->bounds()));
   mask_layer->SetRasterSourceOnActive(raster_source, Region());

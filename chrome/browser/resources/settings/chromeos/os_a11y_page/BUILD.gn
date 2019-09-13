@@ -7,10 +7,12 @@ import("//third_party/closure_compiler/compile_js.gni")
 js_type_check("closure_compile") {
   deps = [
     ":os_a11y_page",
+    "../../a11y_page:captions_subpage",
     "../../a11y_page:externs",
     "../../a11y_page:manage_a11y_page",
     "../../a11y_page:switch_access_subpage",
     "../../a11y_page:tts_subpage",
+    "../../appearance_page:fonts_browser_proxy",
   ]
 }
 

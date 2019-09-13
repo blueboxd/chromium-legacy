@@ -13,7 +13,6 @@ js_type_check("closure_compile") {
 js_library("reset_password") {
   deps = [
     "//chrome/browser/ui/webui/reset_password:mojo_bindings_js_library_for_compile",
-    "//ui/webui/resources/js:assert",
-    "//ui/webui/resources/js:util",
+    "//ui/webui/resources/js:util.m",
   ]
 }

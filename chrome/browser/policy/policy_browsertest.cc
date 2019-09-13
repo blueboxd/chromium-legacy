@@ -7403,4 +7403,48 @@ IN_PROC_BROWSER_TEST_F(HSTSPolicyTest, HSTSPolicyBypassList) {
   EXPECT_EQ(url, contents->GetURL());
 }
 
+class PolicyTestSyncXHR : public PolicyTest {
+  void SetUpInProcessBrowserTestFixture() override {
+    PolicyTest::SetUpInProcessBrowserTestFixture();
+    PolicyMap policies;
+    policies.Set(policy::key::kAllowSyncXHRInPageDismissal,
+                 policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
+                 std::make_unique<base::Value>(true), nullptr);
+    provider_.UpdateChromePolicy(policies);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(PolicyTestSyncXHR, CheckAllowSyncXHRInPageDismissal) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAllowSyncXHRInPageDismissal);
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kAllowSyncXHRInPageDismissal));
+
+  GURL url(embedded_test_server()->GetURL("/empty.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+  constexpr char kScript[] =
+      R"({
+           window.addEventListener('unload', function() {
+             var xhr = new XMLHttpRequest();
+             xhr.open('GET', '', false);
+             try { xhr.send(); } catch(err) {
+               window.domAutomationController.send(false);
+             }
+             window.domAutomationController.send(xhr.status === 200);
+           });
+           window.location.href='about:blank';
+         })";
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  content::DOMMessageQueue message_queue;
+  content::ExecuteScriptAsync(web_contents, kScript);
+  std::string message;
+  EXPECT_TRUE(message_queue.WaitForMessage(&message));
+  EXPECT_EQ("true", message);
+}
+
 }  // namespace policy

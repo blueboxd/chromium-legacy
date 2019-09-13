@@ -25,14 +25,20 @@ void AppListPage::OnAnimationUpdated(double progress,
                                      ash::AppListState from_state,
                                      ash::AppListState to_state) {}
 
-gfx::Rect AppListPage::GetSearchBoxBounds() const {
-  DCHECK(contents_view_);
-  return contents_view_->GetDefaultSearchBoxBounds();
+gfx::Size AppListPage::GetPreferredSearchBoxSize() const {
+  return gfx::Size();
 }
 
-gfx::Rect AppListPage::GetSearchBoxBoundsForState(
-    ash::AppListState state) const {
-  return GetSearchBoxBounds();
+base::Optional<int> AppListPage::GetSearchBoxTop(
+    ash::AppListViewState view_state) const {
+  return base::nullopt;
+}
+
+void AppListPage::UpdatePageBoundsForState(ash::AppListState state,
+                                           const gfx::Rect& contents_bounds,
+                                           const gfx::Rect& search_box_bounds) {
+  SetBoundsRect(
+      GetPageBoundsForState(state, contents_bounds, search_box_bounds));
 }
 
 views::View* AppListPage::GetSelectedView() const {
@@ -73,7 +79,7 @@ gfx::Rect AppListPage::GetFullContentsBounds() const {
 
 gfx::Rect AppListPage::GetDefaultContentsBounds() const {
   DCHECK(contents_view_);
-  return contents_view_->GetDefaultContentsBounds();
+  return contents_view_->GetContentsBounds();
 }
 
 const char* AppListPage::GetClassName() const {

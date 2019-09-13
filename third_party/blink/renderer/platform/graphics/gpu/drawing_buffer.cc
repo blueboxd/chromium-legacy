@@ -253,6 +253,8 @@ void DrawingBuffer::SetIsHidden(bool hidden) {
   is_hidden_ = hidden;
   if (is_hidden_)
     recycled_color_buffer_queue_.clear();
+  gl_->ContextVisibilityHintCHROMIUM(is_hidden_ ? GL_FALSE : GL_TRUE);
+  gl_->Flush();
 }
 
 void DrawingBuffer::SetFilterQuality(SkFilterQuality filter_quality) {
@@ -1277,6 +1279,11 @@ void DrawingBuffer::ResolveIfNeeded() {
       !contents_change_resolved_)
     ResolveMultisampleFramebufferInternal();
   contents_change_resolved_ = true;
+
+  auto* gl = ContextProvider()->ContextGL();
+  if (gl->DidGpuSwitch() == GL_TRUE) {
+    // TODO(crbug.com/681341): reallocate multi-sampled render buffer.
+  }
 }
 
 void DrawingBuffer::RestoreFramebufferBindings() {

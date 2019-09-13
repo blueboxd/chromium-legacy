@@ -296,12 +296,6 @@ void AccountReconcilor::SetConsistencyCookieManager(
   consistency_cookie_manager_ = std::move(consistency_cookie_manager);
 }
 
-#if defined(OS_IOS)
-void AccountReconcilor::SetIsWKHTTPSystemCookieStoreEnabled(bool is_enabled) {
-  is_wkhttp_system_cookie_store_enabled_ = is_enabled;
-}
-#endif  // defined(OS_IOS)
-
 void AccountReconcilor::EnableReconcile() {
   SetState(AccountReconcilorState::ACCOUNT_RECONCILOR_SCHEDULED);
   RegisterWithAllDependencies();
@@ -1033,14 +1027,6 @@ void AccountReconcilor::HandleReconcileTimeout() {
 }
 
 bool AccountReconcilor::IsMultiloginEndpointEnabled() const {
-#if defined(OS_IOS)
-  // kUseMultiloginEndpoint feature should not be used if
-  // kWKHTTPSystemCookieStore feature is disabbled.
-  // See http://crbug.com/902584.
-  if (!is_wkhttp_system_cookie_store_enabled_)
-    return false;
-#endif  // defined(OS_IOS)
-
 #if defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(signin::kMiceFeature))
     return true;  // Mice is only implemented with multilogin.

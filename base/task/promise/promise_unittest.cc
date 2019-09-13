@@ -106,6 +106,86 @@ TEST(PromiseMemoryLeakTest, TargetTaskRunnerClearsTasks) {
   EXPECT_TRUE(delete_reply_flag);
 }
 
+TEST(PromiseMemoryLeakTest, GetResolveCallbackNeverRun) {
+  test::TaskEnvironment task_environment_;
+  OnceCallback<void(int)> cb;
+  MockObject mock_object;
+  bool delete_task_flag = false;
+
+  {
+    ManualPromiseResolver<int> p(FROM_HERE);
+    cb = p.GetResolveCallback();
+
+    p.promise().ThenHere(
+        FROM_HERE, BindOnce(&MockObject::Task, Unretained(&mock_object),
+                            MakeRefCounted<ObjectToDelete>(&delete_task_flag)));
+  }
+
+  EXPECT_FALSE(delete_task_flag);
+  cb = OnceCallback<void(int)>();
+  EXPECT_TRUE(delete_task_flag);
+}
+
+TEST(PromiseMemoryLeakTest, GetRepeatingResolveCallbackNeverRun) {
+  test::TaskEnvironment task_environment_;
+  RepeatingCallback<void(int)> cb;
+  MockObject mock_object;
+  bool delete_task_flag = false;
+
+  {
+    ManualPromiseResolver<int> p(FROM_HERE);
+    cb = p.GetRepeatingResolveCallback();
+
+    p.promise().ThenHere(
+        FROM_HERE, BindOnce(&MockObject::Task, Unretained(&mock_object),
+                            MakeRefCounted<ObjectToDelete>(&delete_task_flag)));
+  }
+
+  EXPECT_FALSE(delete_task_flag);
+  cb = RepeatingCallback<void(int)>();
+  EXPECT_TRUE(delete_task_flag);
+}
+
+TEST(PromiseMemoryLeakTest, GetRejectCallbackNeverRun) {
+  test::TaskEnvironment task_environment_;
+  OnceCallback<void(int)> cb;
+  MockObject mock_object;
+  bool delete_task_flag = false;
+
+  {
+    ManualPromiseResolver<void, int> p(FROM_HERE);
+    cb = p.GetRejectCallback();
+
+    p.promise().CatchHere(
+        FROM_HERE, BindOnce(&MockObject::Task, Unretained(&mock_object),
+                            MakeRefCounted<ObjectToDelete>(&delete_task_flag)));
+  }
+
+  EXPECT_FALSE(delete_task_flag);
+  cb = OnceCallback<void(int)>();
+  EXPECT_TRUE(delete_task_flag);
+}
+
+TEST(PromiseMemoryLeakTest, GetRepeatingRejectCallbackNeverRun) {
+  test::TaskEnvironment task_environment_;
+  RepeatingCallback<void(int)> cb;
+  MockObject mock_object;
+  bool delete_task_flag = false;
+
+  {
+    ManualPromiseResolver<void, int> p(FROM_HERE);
+    cb = p.GetRepeatingRejectCallback();
+
+    p.promise().CatchHere(
+        FROM_HERE, BindOnce(&MockObject::Task, Unretained(&mock_object),
+                            MakeRefCounted<ObjectToDelete>(&delete_task_flag)));
+  }
+
+  EXPECT_FALSE(delete_task_flag);
+  cb = RepeatingCallback<void(int)>();
+  EXPECT_TRUE(delete_task_flag);
+}
+
 TEST_F(PromiseTest, GetResolveCallbackThen) {
   ManualPromiseResolver<int> p(FROM_HERE);
   p.GetResolveCallback().Run(123);
@@ -1602,13 +1682,17 @@ TEST_F(PromiseTest, MoveOnlyTypeMultipleCatchesNotAllowed) {
   auto p = Promise<void, std::unique_ptr<int>>::CreateRejected(
       FROM_HERE, std::make_unique<int>(123));
 
-  p.CatchHere(FROM_HERE,
-              BindOnce([](std::unique_ptr<int> i) { EXPECT_EQ(123, *i); }));
+  auto r = p.CatchHere(
+      FROM_HERE, BindOnce([](std::unique_ptr<int> i) { EXPECT_EQ(123, *i); }));
 
   EXPECT_DCHECK_DEATH({
     p.CatchHere(FROM_HERE,
                 BindOnce([](std::unique_ptr<int> i) { EXPECT_EQ(123, *i); }));
   });
+
+  // TODO(alexclarke): Temporary, remove when SequenceManager handles promises
+  // natively.
+  r.GetScopedRefptrForTesting()->OnCanceled();
 #endif
 }
 

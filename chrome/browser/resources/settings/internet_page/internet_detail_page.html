@@ -284,7 +284,7 @@
               $i18n{networkSectionNetwork}
             </div>
             <template is="dom-if"
-                if="[[showScanningSpinner_(managedProperties_)]]">
+                if="[[showScanningSpinner_(managedProperties_, deviceState_)]]">
               <paper-spinner-lite active></paper-spinner-lite>
             </template>
           </div>

@@ -26,13 +26,6 @@
 namespace cc {
 namespace {
 
-auto CombineWithLayerMaskTypes(
-    const std::vector<PixelResourceTestCase>& test_cases) {
-  return ::testing::Combine(
-      ::testing::ValuesIn(test_cases),
-      ::testing::Values(Layer::LayerMaskType::SINGLE_TEXTURE_MASK));
-}
-
 // TODO(penghuang): Fix vulkan with one copy or zero copy
 // https://crbug.com/979703
 std::vector<PixelResourceTestCase> const kTestCases = {
@@ -52,7 +45,7 @@ using LayerTreeHostMasksPixelTest = ParameterizedPixelResourceTest;
 
 INSTANTIATE_TEST_SUITE_P(PixelResourceTest,
                          LayerTreeHostMasksPixelTest,
-                         CombineWithLayerMaskTypes(kTestCases));
+                         ::testing::ValuesIn(kTestCases));
 
 class MaskContentLayerClient : public ContentLayerClient {
  public:
@@ -111,7 +104,6 @@ TEST_P(LayerTreeHostMasksPixelTest, MaskOfLayer) {
   scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
   mask->SetBounds(mask_bounds);
   mask->SetIsDrawable(true);
-  mask->SetLayerMaskType(mask_type_);
   green->SetMaskLayer(mask);
 
   pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(true);
@@ -164,7 +156,7 @@ class LayerTreeHostMaskPixelTestWithLayerList
 
 INSTANTIATE_TEST_SUITE_P(PixelResourceTest,
                          LayerTreeHostMaskPixelTestWithLayerList,
-                         CombineWithLayerMaskTypes(kTestCases));
+                         ::testing::ValuesIn(kTestCases));
 
 TEST_P(LayerTreeHostMaskPixelTestWithLayerList, MaskWithEffect) {
   MaskContentLayerClient client(mask_bounds_);
@@ -237,7 +229,7 @@ class LayerTreeHostMaskPixelTest_SolidColorEmptyMaskWithEffectAndRenderSurface
 INSTANTIATE_TEST_SUITE_P(
     PixelResourceTest,
     LayerTreeHostMaskPixelTest_SolidColorEmptyMaskWithEffectAndRenderSurface,
-    CombineWithLayerMaskTypes(kTestCases));
+    ::testing::ValuesIn(kTestCases));
 
 TEST_P(LayerTreeHostMaskPixelTest_SolidColorEmptyMaskWithEffectAndRenderSurface,
        Test) {
@@ -272,7 +264,7 @@ class LayerTreeHostMaskPixelTest_MaskWithEffectNoContentToMask
 INSTANTIATE_TEST_SUITE_P(
     PixelResourceTest,
     LayerTreeHostMaskPixelTest_MaskWithEffectNoContentToMask,
-    CombineWithLayerMaskTypes(kTestCases));
+    ::testing::ValuesIn(kTestCases));
 
 TEST_P(LayerTreeHostMaskPixelTest_MaskWithEffectNoContentToMask, Test) {
   MaskContentLayerClient client(mask_bounds_);
@@ -297,7 +289,7 @@ class LayerTreeHostMaskPixelTest_ScaledMaskWithEffect
 
 INSTANTIATE_TEST_SUITE_P(PixelResourceTest,
                          LayerTreeHostMaskPixelTest_ScaledMaskWithEffect,
-                         CombineWithLayerMaskTypes(kTestCases));
+                         ::testing::ValuesIn(kTestCases));
 
 TEST_P(LayerTreeHostMaskPixelTest_ScaledMaskWithEffect, Test) {
   MaskContentLayerClient client(mask_bounds_);
@@ -361,7 +353,6 @@ TEST_P(LayerTreeHostMasksPixelTest, ImageMaskOfLayer) {
 
   scoped_refptr<PictureImageLayer> mask = PictureImageLayer::Create();
   mask->SetIsDrawable(true);
-  mask->SetLayerMaskType(mask_type_);
   mask->SetBounds(mask_bounds);
 
   sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(200, 200);
@@ -411,7 +402,6 @@ TEST_P(LayerTreeHostMasksPixelTest, MaskOfClippedLayer) {
   scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
   mask->SetBounds(mask_bounds);
   mask->SetIsDrawable(true);
-  mask->SetLayerMaskType(mask_type_);
   green->SetMaskLayer(mask);
 
   pixel_comparator_ =
@@ -435,7 +425,6 @@ TEST_P(LayerTreeHostMasksPixelTest, MaskOfLayerNonExactTextureSize) {
   scoped_refptr<FakePictureLayer> mask = FakePictureLayer::Create(&client);
   mask->SetBounds(mask_bounds);
   mask->SetIsDrawable(true);
-  mask->SetLayerMaskType(mask_type_);
   mask->set_fixed_tile_size(gfx::Size(173, 135));
   green->SetMaskLayer(mask);
 
@@ -542,7 +531,7 @@ using LayerTreeHostMasksForBackdropFiltersPixelTest =
 
 INSTANTIATE_TEST_SUITE_P(PixelResourceTest,
                          LayerTreeHostMasksForBackdropFiltersPixelTest,
-                         CombineWithLayerMaskTypes(kTestCases));
+                         ::testing::ValuesIn(kTestCases));
 
 TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest,
        MaskOfLayerWithBackdropFilter) {
@@ -570,9 +559,7 @@ TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest,
   scoped_refptr<PictureLayer> mask = PictureLayer::Create(&mask_client);
   mask->SetBounds(mask_bounds);
   mask->SetIsDrawable(true);
-  mask->SetLayerMaskType(mask_type_);
   blur->SetMaskLayer(mask);
-  CHECK_EQ(Layer::LayerMaskType::SINGLE_TEXTURE_MASK, mask->mask_type());
 
   base::FilePath image_name =
       (raster_type() == GPU)
@@ -625,7 +612,6 @@ TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest, MaskOfLayerWithBlend) {
   scoped_refptr<PictureLayer> mask = PictureLayer::Create(&mask_client);
   mask->SetBounds(mask_bounds);
   mask->SetIsDrawable(true);
-  mask->SetLayerMaskType(mask_type_);
   picture_horizontal->SetMaskLayer(mask);
 
   float percentage_pixels_large_error = 0.04f;  // 0.04%, ~6px / (128*128)
@@ -684,9 +670,7 @@ class LayerTreeHostMaskAsBlendingPixelTest
       public ::testing::WithParamInterface<MaskTestConfig> {
  public:
   LayerTreeHostMaskAsBlendingPixelTest()
-      : LayerTreeHostPixelResourceTest(
-            GetParam().test_case,
-            Layer::LayerMaskType::SINGLE_TEXTURE_MASK),
+      : LayerTreeHostPixelResourceTest(GetParam().test_case),
         use_antialiasing_(GetParam().flags & kUseAntialiasing),
         force_shaders_(GetParam().flags & kForceShaders) {
     float percentage_pixels_error = 0.f;
@@ -1048,7 +1032,6 @@ TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest,
   scoped_refptr<PictureLayer> mask = PictureLayer::Create(&mask_client);
   mask->SetBounds(mask_bounds);
   mask->SetIsDrawable(true);
-  mask->SetLayerMaskType(mask_type_);
   picture_horizontal->SetMaskLayer(mask);
 
   base::FilePath result_path(

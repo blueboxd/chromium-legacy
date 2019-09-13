@@ -749,7 +749,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   }
 
   struct AncestorDependentCompositingInputs {
-   public:
     const PaintLayer* opacity_ancestor = nullptr;
     const PaintLayer* transform_ancestor = nullptr;
     const PaintLayer* filter_ancestor = nullptr;
@@ -776,6 +775,11 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     // needs to know about clip parents in order to circumvent its normal
     // clipping logic.
     const PaintLayer* clip_parent = nullptr;
+
+    // Nearest layer that has layout containment applied to its LayoutObject.
+    // Squashing is disallowed across contain layout boundaries to provide
+    // better isolation.
+    const PaintLayer* nearest_contained_layout_layer = nullptr;
 
     // These two boxes do not include any applicable scroll offset of the
     // root PaintLayer.
@@ -852,6 +856,10 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   }
   const PaintLayer* ClipParent() const {
     return GetAncestorDependentCompositingInputs().clip_parent;
+  }
+  const PaintLayer* NearestContainedLayoutLayer() const {
+    return GetAncestorDependentCompositingInputs()
+        .nearest_contained_layout_layer;
   }
   const PaintLayer* ClipPathAncestor() const {
     return GetAncestorDependentCompositingInputs().clip_path_ancestor;

@@ -454,8 +454,8 @@
     <message name="IDS_SETTINGS_ACCESSIBILITY_APPEARANCE_SETTINGS_TITLE" desc="In the settings tab, the title of a link to open appearance settings.">
       Open appearance settings
     </message>
-    <message name="IDS_SETTINGS_ACCESSIBILITY_AUDIO_HEADING" desc="In the settings tab, the heading for the section on audio / sound settings.">
-      Audio
+    <message name="IDS_SETTINGS_ACCESSIBILITY_AUDIO_AND_CAPTIONS_HEADING" desc="In the settings tab, the heading for the section on audio / sound and caption settings.">
+      Audio and captions
     </message>
     <message name="IDS_SETTINGS_ACCESSIBILITY_CARET_HIGHLIGHT_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to highlight the caret (the text insertion point) to make it easier to see.">
       Highlight the text caret when it appears or moves
@@ -3045,6 +3045,9 @@
     </message>
     <message name="IDS_SETTINGS_FACTORY_RESET_WARNING" desc="Warning text in the 'Factory Reset' window">
       A restart is required before your device can be reset with Powerwash.
+    </message>
+    <message name="IDS_SETTINGS_FACTORY_RESET_BUTTON_LABEL" desc="Label for the factory reset button.">
+      Reset
     </message>
   </if>
 

@@ -8,6 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/promise/dependent_list.h"
+#include "base/task/promise/post_task_executor.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 
 namespace base {
@@ -290,7 +291,7 @@ AbstractPromise* AbstractPromise::GetCurriedPromise() {
 const PromiseExecutor* AbstractPromise::GetExecutor() const {
   if (!value_.ContainsPromiseExecutor())
     return nullptr;
-  return value_.Get<internal::PromiseExecutor>();
+  return value_.Get<PromiseExecutor>();
 }
 
 PromiseExecutor::PrerequisitePolicy AbstractPromise::GetPrerequisitePolicy() {
@@ -509,7 +510,7 @@ void AbstractPromise::OnRejectMakeDependantsUseCurriedPrerequisite(
 
 void AbstractPromise::DispatchPromise() {
   if (task_runner_) {
-    task_runner_->PostPromiseInternal(this, TimeDelta());
+    task_runner_->PostPromiseInternal(WrappedPromise(this), TimeDelta());
   } else {
     Execute();
   }
@@ -670,14 +671,66 @@ void AbstractPromise::AdjacencyList::Clear() {
     prerequisite_list_.clear();
   } else {
     // If there's multiple prerequisites we can't do that because the
-    // DependentList::Nodes may still be in use by some of them. Instead we
-    // release our prerequisite references and rely on refcounting to release
-    // the owning AbstractPromise.
+    // DependentList::Nodes may still be in use by some of them.
+    // Instead we release our prerequisite references and rely on refcounting to
+    // release the owning AbstractPromise.
     for (DependentList::Node& node : prerequisite_list_) {
       node.ClearPrerequisite();
     }
   }
 }
 
+BasePromise::BasePromise() = default;
+
+BasePromise::BasePromise(
+    scoped_refptr<internal::AbstractPromise> abstract_promise)
+    : abstract_promise_(std::move(abstract_promise)) {}
+
+BasePromise::BasePromise(const BasePromise& other) = default;
+BasePromise::BasePromise(BasePromise&& other) = default;
+
+BasePromise& BasePromise::operator=(const BasePromise& other) = default;
+BasePromise& BasePromise::operator=(BasePromise&& other) = default;
+
+BasePromise::~BasePromise() = default;
+
 }  // namespace internal
+
+WrappedPromise::WrappedPromise() = default;
+
+WrappedPromise::WrappedPromise(scoped_refptr<internal::AbstractPromise> promise)
+    : promise_(std::move(promise)) {}
+
+WrappedPromise::WrappedPromise(internal::PassedPromise&& passed_promise)
+    : promise_(passed_promise.Release(), subtle::kAdoptRefTag) {
+  DCHECK(promise_);
+}
+
+WrappedPromise::WrappedPromise(const Location& from_here, OnceClosure task)
+    : WrappedPromise(internal::AbstractPromise::CreateNoPrerequisitePromise(
+          from_here,
+          RejectPolicy::kMustCatchRejection,
+          internal::DependentList::ConstructUnresolved(),
+          internal::PromiseExecutor::Data(
+              base::in_place_type_t<internal::PostTaskExecutor<void>>(),
+              std::move(task)))) {}
+
+WrappedPromise::WrappedPromise(const WrappedPromise& other) = default;
+WrappedPromise::WrappedPromise(WrappedPromise&& other) = default;
+
+WrappedPromise& WrappedPromise::operator=(const WrappedPromise& other) =
+    default;
+WrappedPromise& WrappedPromise::operator=(WrappedPromise&& other) = default;
+
+WrappedPromise::~WrappedPromise() = default;
+
+void WrappedPromise::Execute() {
+  DCHECK(promise_);
+  promise_->Execute();
+}
+
+void WrappedPromise::Clear() {
+  promise_ = nullptr;
+}
+
 }  // namespace base

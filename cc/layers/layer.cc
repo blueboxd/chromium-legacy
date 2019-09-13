@@ -612,8 +612,7 @@ void Layer::SetMaskLayer(scoped_refptr<PictureLayer> mask_layer) {
     inputs_.mask_layer->RemoveFromParent();
     DCHECK(!inputs_.mask_layer->parent());
     inputs_.mask_layer->SetParent(this);
-    inputs_.mask_layer->SetLayerMaskType(
-        Layer::LayerMaskType::SINGLE_TEXTURE_MASK);
+    inputs_.mask_layer->set_is_mask();
   }
   SetSubtreePropertyChanged();
   SetNeedsFullTreeSync();

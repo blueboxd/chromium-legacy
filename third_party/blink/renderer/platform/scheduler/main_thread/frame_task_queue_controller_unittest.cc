@@ -95,7 +95,7 @@ class FrameTaskQueueControllerTest : public testing::Test,
       .SetCanBeFrozen(true)
       .SetCanBeDeferred(true)
       .SetCanBePaused(true)
-      .SetShouldUseVirtualTime(true));
+      .SetCanRunWhenVirtualTimePaused(true));
   }
 
   scoped_refptr<MainThreadTaskQueue> GetTaskQueue(
@@ -144,7 +144,7 @@ TEST_F(FrameTaskQueueControllerTest, CreateAllTaskQueues) {
                                        .SetCanBeDeferred(true)
                                        .SetCanBeFrozen(true)
                                        .SetCanBePaused(true)
-                                       .SetShouldUseVirtualTime(true));
+                                       .SetCanRunWhenVirtualTimePaused(true));
   EXPECT_FALSE(all_task_queues.Contains(task_queue));
   all_task_queues.insert(task_queue.get(), QueueCheckResult::kDidNotSeeQueue);
   EXPECT_EQ(all_task_queues.size(), task_queue_created_count());
@@ -152,20 +152,20 @@ TEST_F(FrameTaskQueueControllerTest, CreateAllTaskQueues) {
   task_queue = GetTaskQueue(QueueTraits()
                                         .SetCanBeDeferred(true)
                                         .SetCanBePaused(true)
-                                        .SetShouldUseVirtualTime(true));
+                                        .SetCanRunWhenVirtualTimePaused(true));
   EXPECT_FALSE(all_task_queues.Contains(task_queue));
   all_task_queues.insert(task_queue.get(), QueueCheckResult::kDidNotSeeQueue);
   EXPECT_EQ(all_task_queues.size(), task_queue_created_count());
 
   task_queue = GetTaskQueue(QueueTraits()
                                         .SetCanBePaused(true)
-                                        .SetShouldUseVirtualTime(true));
+                                        .SetCanRunWhenVirtualTimePaused(true));
   EXPECT_FALSE(all_task_queues.Contains(task_queue));
   all_task_queues.insert(task_queue.get(), QueueCheckResult::kDidNotSeeQueue);
   EXPECT_EQ(all_task_queues.size(), task_queue_created_count());
 
   task_queue = GetTaskQueue(QueueTraits()
-                                        .SetShouldUseVirtualTime(true));
+                                        .SetCanRunWhenVirtualTimePaused(true));
   EXPECT_FALSE(all_task_queues.Contains(task_queue));
   all_task_queues.insert(task_queue.get(), QueueCheckResult::kDidNotSeeQueue);
   EXPECT_EQ(all_task_queues.size(), task_queue_created_count());
@@ -368,7 +368,7 @@ TEST_P(TaskQueueCreationFromQueueTraitsTest,
             .SetCanBeFrozen(!!(i & 1 << 2))
             .SetCanBePaused(!!(i & 1 << 3))
             .SetCanRunInBackground(!!(i & 1 << 4))
-            .SetShouldUseVirtualTime(!!(i & 1 << 5))
+            .SetCanRunWhenVirtualTimePaused(!!(i & 1 << 5))
             .SetPrioritisationType(prioritisation_type);
     scoped_refptr<MainThreadTaskQueue> task_queue =
         frame_task_queue_controller_->GetTaskQueue(queue_traits);

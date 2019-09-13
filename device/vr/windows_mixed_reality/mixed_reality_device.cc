@@ -130,10 +130,15 @@ void MixedRealityDevice::RequestSession(
   auto on_presentation_ended = base::BindOnce(
       &MixedRealityDevice::OnPresentationEnded, weak_ptr_factory_.GetWeakPtr());
 
+  auto on_visibility_state_changed =
+      base::BindRepeating(&MixedRealityDevice::OnVisibilityStateChanged,
+                          weak_ptr_factory_.GetWeakPtr());
+
   render_loop_->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestSession,
                                 base::Unretained(render_loop_.get()),
                                 std::move(on_presentation_ended),
+                                std::move(on_visibility_state_changed),
                                 std::move(options), std::move(my_callback)));
 }
 

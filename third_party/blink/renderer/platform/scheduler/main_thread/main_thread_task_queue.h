@@ -118,7 +118,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue
           can_be_paused(false),
           can_be_frozen(false),
           can_run_in_background(true),
-          should_use_virtual_time(false) {}
+          can_run_when_virtual_time_paused(false) {}
 
     // Separate enum class for handling prioritisation decisions in task queues.
     enum class PrioritisationType {
@@ -170,8 +170,8 @@ class PLATFORM_EXPORT MainThreadTaskQueue
       return *this;
     }
 
-    QueueTraits SetShouldUseVirtualTime(bool value) {
-      should_use_virtual_time = value;
+    QueueTraits SetCanRunWhenVirtualTimePaused(bool value) {
+      can_run_when_virtual_time_paused = value;
       return *this;
     }
 
@@ -186,7 +186,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue
              can_be_paused == other.can_be_paused &&
              can_be_frozen == other.can_be_frozen &&
              can_run_in_background == other.can_run_in_background &&
-             should_use_virtual_time == other.should_use_virtual_time &&
+             can_run_when_virtual_time_paused == other.can_run_when_virtual_time_paused &&
              prioritisation_type == other.prioritisation_type;
     }
 
@@ -201,7 +201,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue
       key |= can_be_paused << (offset++);
       key |= can_be_frozen << (offset++);
       key |= can_run_in_background << (offset++);
-      key |= should_use_virtual_time << (offset++);
+      key |= can_run_when_virtual_time_paused << (offset++);
       key |= static_cast<int>(prioritisation_type) << offset;
       offset += kPrioritisationTypeWidthBits;
       return key;
@@ -212,7 +212,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue
     bool can_be_paused : 1;
     bool can_be_frozen : 1;
     bool can_run_in_background : 1;
-    bool should_use_virtual_time : 1;
+    bool can_run_when_virtual_time_paused : 1;
     PrioritisationType prioritisation_type = PrioritisationType::kRegular;
   };
 
@@ -273,8 +273,8 @@ class PLATFORM_EXPORT MainThreadTaskQueue
       return *this;
     }
 
-    QueueCreationParams SetShouldUseVirtualTime(bool value) {
-      queue_traits = queue_traits.SetShouldUseVirtualTime(value);
+    QueueCreationParams SetCanRunWhenVirtualTimePaused(bool value) {
+      queue_traits = queue_traits.SetCanRunWhenVirtualTimePaused(value);
       ApplyQueueTraitsToSpec();
       return *this;
     }
@@ -346,7 +346,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue
   }
 
   bool ShouldUseVirtualTime() const {
-    return queue_traits_.should_use_virtual_time;
+    return queue_traits_.can_run_when_virtual_time_paused;
   }
 
   bool FreezeWhenKeepActive() const { return freeze_when_keep_active_; }

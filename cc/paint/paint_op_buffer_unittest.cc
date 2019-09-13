@@ -1393,8 +1393,8 @@ void PushDrawDRRectOps(PaintOpBuffer* buffer) {
 }
 
 void PushDrawImageOps(PaintOpBuffer* buffer) {
-  size_t len = std::min(std::min(test_images.size(), test_flags.size()),
-                        test_floats.size() - 1);
+  size_t len =
+      std::min({test_images.size(), test_flags.size(), test_floats.size() - 1});
   for (size_t i = 0; i < len; ++i) {
     buffer->push<DrawImageOp>(test_images[i], test_floats[i],
                               test_floats[i + 1], &test_flags[i]);
@@ -1408,8 +1408,8 @@ void PushDrawImageOps(PaintOpBuffer* buffer) {
 }
 
 void PushDrawImageRectOps(PaintOpBuffer* buffer) {
-  size_t len = std::min(std::min(test_images.size(), test_flags.size()),
-                        test_rects.size() - 1);
+  size_t len =
+      std::min({test_images.size(), test_flags.size(), test_rects.size() - 1});
   for (size_t i = 0; i < len; ++i) {
     PaintCanvas::SrcRectConstraint constraint =
         i % 2 ? PaintCanvas::kStrict_SrcRectConstraint
@@ -1529,8 +1529,8 @@ void PushDrawTextBlobOps(PaintOpBuffer* buffer) {
         return builder.make();
       }(),
   };
-  size_t len = std::min(std::min(test_paint_blobs.size(), test_flags.size()),
-                        test_floats.size() - 1);
+  size_t len = std::min(
+      {test_paint_blobs.size(), test_flags.size(), test_floats.size() - 1});
   for (size_t i = 0; i < len; ++i) {
     buffer->push<DrawTextBlobOp>(test_paint_blobs[i], test_floats[i],
                                  test_floats[i + 1], test_flags[i]);

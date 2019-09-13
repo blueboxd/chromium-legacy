@@ -12,7 +12,10 @@ enum TaskQueuePriority {
     "idle"
 };
 
-[RuntimeEnabled=WebScheduler] interface TaskQueue {
+[
+    ImplementedAs=DOMTaskQueue,
+    RuntimeEnabled=WebScheduler
+] interface TaskQueue {
     readonly attribute TaskQueuePriority priority;
     Task postTask(Function callback, optional TaskQueuePostTaskOptions options, any... arguments);
     void take(Task task);

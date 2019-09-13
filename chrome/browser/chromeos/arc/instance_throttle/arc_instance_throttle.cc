@@ -119,7 +119,7 @@ void ArcInstanceThrottle::ThrottleInstance(
 std::vector<ArcThrottleObserver*> ArcInstanceThrottle::GetAllObservers() {
   if (!observers_for_testing_.empty())
     return observers_for_testing_;
-  return {&active_window_throttle_observer_};
+  return {&active_window_throttle_observer_, &boot_phase_throttle_observer_};
 }
 
 void ArcInstanceThrottle::NotifyObserverStateChangedForTesting() {
@@ -128,7 +128,6 @@ void ArcInstanceThrottle::NotifyObserverStateChangedForTesting() {
 
 void ArcInstanceThrottle::SetObserversForTesting(
     const std::vector<ArcThrottleObserver*>& observers) {
-  DCHECK(!observers.empty());
   for (auto* observer : GetAllObservers())
     observer->StopObserving();
   observers_for_testing_ = observers;

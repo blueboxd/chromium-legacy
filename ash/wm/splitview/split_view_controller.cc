@@ -73,11 +73,6 @@ constexpr float kTwoThirdPositionRatio = 0.67f;
 constexpr float kBlackScrimFadeInRatio = 0.1f;
 constexpr float kBlackScrimOpacity = 0.4f;
 
-// The duration of the divider snap animation, in milliseconds. Before you
-// change this value, read the comment on kIsWindowMovedTimeoutMs in
-// tablet_mode_window_drag_delegate.cc.
-constexpr int kDividerSnapDurationMs = 300;
-
 // Histogram names that record presentation time of resize operation with
 // following conditions, a) single snapped window, empty overview, b) two
 // snapped windows, c) single snapped window and non empty overview.
@@ -237,7 +232,9 @@ class SplitViewController::DividerSnapAnimation
         split_view_controller_(split_view_controller),
         starting_position_(starting_position),
         ending_position_(ending_position) {
-    SetSlideDuration(kDividerSnapDurationMs);
+    // Before you change this value, read the comment on kIsWindowMovedTimeoutMs
+    // in tablet_mode_window_drag_delegate.cc.
+    SetSlideDuration(base::TimeDelta::FromMilliseconds(300));
     SetTweenType(gfx::Tween::EASE_IN);
   }
 
@@ -444,8 +441,8 @@ void SplitViewController::SnapWindow(aura::Window* window,
     // Apply the transform that |window| will undergo when the divider spawns.
     static const double value = gfx::Tween::CalculateValue(
         gfx::Tween::FAST_OUT_SLOW_IN,
-        static_cast<double>(kSplitviewDividerSpawnDelayMs) /
-            static_cast<double>(kSplitviewWindowTransformMs));
+        kSplitviewDividerSpawnDelay.InMillisecondsF() /
+            kSplitviewWindowTransformDuration.InMillisecondsF());
     gfx::TransformAboutPivot(bounds.origin(),
                              gfx::Tween::TransformValueBetween(
                                  value, window->transform(), gfx::Transform()))

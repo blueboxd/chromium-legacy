@@ -661,6 +661,12 @@ class OncMojo {
         result.ethernet = {};
         break;
       case mojom.NetworkType.kTether:
+        result.tether = {
+          batteryPercentage: 0,
+          carrier: '',
+          hasConnectedToHost: false,
+          signalStrength: 0,
+        };
         break;
       case mojom.NetworkType.kVPN:
         result.vpn = {

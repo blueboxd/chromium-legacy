@@ -142,7 +142,7 @@ class MoreButton : public views::Button {
 UnifiedVolumeView::UnifiedVolumeView(UnifiedVolumeSliderController* controller)
     : UnifiedSliderView(controller,
                         kSystemMenuVolumeHighIcon,
-                        IDS_ASH_STATUS_TRAY_VOLUME),
+                        IDS_ASH_STATUS_TRAY_VOLUME_SLIDER_LABEL),
       more_button_(new MoreButton(controller)) {
   CrasAudioHandler::Get()->AddAudioObserver(this);
   AddChildView(more_button_);

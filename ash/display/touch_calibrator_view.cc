@@ -64,7 +64,8 @@ const SkColor kHintSublabelTextColor = SkColorSetARGB(255, 161, 161, 161);
 const SkColor kInnerCircleColor = SK_ColorWHITE;
 const SkColor kOuterCircleColor = SkColorSetA(kInnerCircleColor, 255 * 0.2);
 
-constexpr int kCircleAnimationDurationMs = 900;
+constexpr auto kCircleAnimationDuration =
+    base::TimeDelta::FromMilliseconds(900);
 
 constexpr int kHintRectBorderRadius = 4;
 
@@ -130,7 +131,7 @@ class CircularThrobberView : public views::View,
   CircularThrobberView(int width,
                        const SkColor& inner_circle_color,
                        const SkColor& outer_circle_color,
-                       int animation_duration);
+                       base::TimeDelta animation_duration);
   ~CircularThrobberView() override;
 
   // views::View:
@@ -166,7 +167,7 @@ class CircularThrobberView : public views::View,
 CircularThrobberView::CircularThrobberView(int width,
                                            const SkColor& inner_circle_color,
                                            const SkColor& outer_circle_color,
-                                           int animation_duration)
+                                           base::TimeDelta animation_duration)
     : views::AnimationDelegateViews(this),
       inner_radius_(width / 4),
       outer_radius_(inner_radius_),
@@ -212,7 +213,7 @@ class TouchTargetThrobberView : public CircularThrobberView {
                           const SkColor& inner_circle_color,
                           const SkColor& outer_circle_color,
                           const SkColor& hand_icon_color,
-                          int animation_duration);
+                          base::TimeDelta animation_duration);
   ~TouchTargetThrobberView() override;
 
   // views::View:
@@ -233,7 +234,7 @@ TouchTargetThrobberView::TouchTargetThrobberView(
     const SkColor& inner_circle_color,
     const SkColor& outer_circle_color,
     const SkColor& hand_icon_color,
-    int animation_duration)
+    base::TimeDelta animation_duration)
     : CircularThrobberView(bounds.width(),
                            inner_circle_color,
                            outer_circle_color,
@@ -527,7 +528,7 @@ void TouchCalibratorView::InitViewContents() {
 
   throbber_circle_ =
       new CircularThrobberView(kThrobberCircleViewWidth, kInnerCircleColor,
-                               kOuterCircleColor, kCircleAnimationDurationMs);
+                               kOuterCircleColor, kCircleAnimationDuration);
   throbber_circle_->SetPosition(
       gfx::Point(kThrobberCircleViewHorizontalOffset, 0));
 
@@ -589,7 +590,7 @@ void TouchCalibratorView::InitViewContents() {
                 hint_box->height() * kTouchTargetVerticalOffsetFactor,
                 kTouchTargetWidth, kTouchTargetHeight),
       kTouchTargetInnerCircleColor, kTouchTargetOuterCircleColor,
-      kHandIconColor, kCircleAnimationDurationMs);
+      kHandIconColor, kCircleAnimationDuration);
   target_view->SetVisible(true);
 
   hint_box_view_->AddChildView(target_view);

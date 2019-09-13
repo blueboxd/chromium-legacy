@@ -28,6 +28,11 @@ const char kHintsFetcherDataSaverTopHostBlacklist[] =
 const char kHintsFetcherDataSaverTopHostBlacklistState[] =
     "optimization_guide.hintsfetcher.top_host_blacklist_state";
 
+// Time when the blacklist was last initialized. Recorded as seconds since
+// epoch.
+const char kTimeBlacklistLastInitialized[] =
+    "optimization_guide.hintsfetcher.time_blacklist_last_initialized";
+
 // A dictionary pref that stores hosts that have had hints successfully fetched
 // from the remote Optimization Guide Server. The entry for each host contains
 // the time that the fetch that covered this host expires, i.e., any hints
@@ -55,6 +60,8 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
       kHintsFetcherDataSaverTopHostBlacklistState,
       static_cast<int>(HintsFetcherTopHostBlacklistState::kNotInitialized),
       PrefRegistry::LOSSY_PREF);
+  registry->RegisterDoublePref(kTimeBlacklistLastInitialized, 0,
+                               PrefRegistry::LOSSY_PREF);
   registry->RegisterStringPref(kPendingHintsProcessingVersion, "",
                                PrefRegistry::LOSSY_PREF);
 }

@@ -238,10 +238,13 @@ class AbstractPromiseTest : public testing::Test {
 #endif
           std::move(settings.callback));
 
-      return AbstractPromise::Create(
-          settings.task_runner, settings.from_here,
-          std::move(settings.prerequisites), settings.reject_policy,
-          DependentList::ConstructUnresolved(), std::move(executor_data));
+      return WrappedPromise(AbstractPromise::Create(
+                                settings.task_runner, settings.from_here,
+                                std::move(settings.prerequisites),
+                                settings.reject_policy,
+                                DependentList::ConstructUnresolved(),
+                                std::move(executor_data)))
+          .TakeForTesting();
     }
 
     PromiseSettings settings;
@@ -293,7 +296,7 @@ class AbstractPromiseTest : public testing::Test {
 
   PromiseSettingsBuilder AllPromise(
       Location from_here,
-      std::vector<internal::DependentList::Node> prerequisite_list) {
+      std::vector<DependentList::Node> prerequisite_list) {
     PromiseSettingsBuilder builder(
         from_here, std::make_unique<AbstractPromise::AdjacencyList>(
                        std::move(prerequisite_list)));

@@ -97,7 +97,8 @@ class WindowCycleControllerTest : public AshTestBase {
 
     shelf_view_test_.reset(
         new ShelfViewTestAPI(GetPrimaryShelf()->GetShelfViewForTesting()));
-    shelf_view_test_->SetAnimationDuration(1);
+    shelf_view_test_->SetAnimationDuration(
+        base::TimeDelta::FromMilliseconds(1));
   }
 
   const aura::Window::Windows GetWindows(WindowCycleController* controller) {

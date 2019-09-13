@@ -932,12 +932,7 @@ Visibility WebContentsViewAura::GetVisibility() const {
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsViewAura, WebContentsView implementation:
 
-void WebContentsViewAura::CreateView(const gfx::Size& initial_size,
-                                     gfx::NativeView context) {
-  // NOTE: we ignore |initial_size| since in some cases it's wrong (such as
-  // if the bookmark bar is not shown and you create a new tab). The right
-  // value is set shortly after this, so its safe to ignore.
-
+void WebContentsViewAura::CreateView(gfx::NativeView context) {
   CreateAuraWindow(context);
 
   // delegate_->GetDragDestDelegate() creates a new delegate on every call.

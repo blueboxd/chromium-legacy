@@ -81,6 +81,7 @@ class TabModalConfirmDialogDelegate : public content::NotificationObserver {
 
   // Title for the accept and the cancel buttons.
   // The default implementation uses IDS_OK and IDS_CANCEL.
+  virtual int GetDialogButtons() const;
   virtual base::string16 GetAcceptButtonTitle();
   virtual base::string16 GetCancelButtonTitle();
 

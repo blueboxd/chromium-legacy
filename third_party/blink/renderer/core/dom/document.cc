@@ -2976,6 +2976,22 @@ void Document::UpdateStyleAndLayoutTreeForNode(const Node* node) {
   UpdateStyleAndLayoutTree();
 }
 
+void Document::UpdateStyleAndLayoutTreeForSubtree(const Node* node) {
+  DCHECK(node);
+  if (!node->InActiveDocument()) {
+    DCHECK_EQ(node->ownerDocument(), this);
+    return;
+  }
+  DCHECK(!InStyleRecalc())
+      << "UpdateStyleAndLayoutTreeForSubtree called from within style recalc";
+
+  if (NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(*node) ||
+      node->ChildNeedsStyleRecalc() || node->ChildNeedsStyleInvalidation()) {
+    DisplayLockUtilities::ScopedChainForcedUpdate scoped_update_forced(node);
+    UpdateStyleAndLayoutTree();
+  }
+}
+
 void Document::UpdateStyleAndLayoutForNode(const Node* node) {
   DCHECK(node);
   if (!node->InActiveDocument())

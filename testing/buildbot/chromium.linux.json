@@ -3908,23 +3908,6 @@
         }
       },
       {
-        "isolate_coverage_data": true,
-        "isolate_name": "python3_smoketest",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "python3_smoketest",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        }
-      },
-      {
         "args": [
           "--num-retries=3",
           "--additional-driver-flag=--enable-gpu-rasterization",
@@ -5639,22 +5622,6 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "metrics_python_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        }
-      },
-      {
-        "isolate_name": "python3_smoketest",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "python3_smoketest",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -7494,22 +7461,6 @@
             }
           ],
           "shards": 10
-        }
-      },
-      {
-        "isolate_name": "python3_smoketest",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "python3_smoketest",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-14.04"
-            }
-          ]
         }
       },
       {

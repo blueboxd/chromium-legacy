@@ -339,9 +339,9 @@ TEST(AXTreeTest, SerializeSimpleAXTree) {
 
   EXPECT_EQ(
       "AXTree title=Title\n"
-      "id=1 dialog FOCUSABLE (0, 0)-(800, 600) actions= child_ids=2,3\n"
-      "  id=2 button (20, 20)-(200, 30) actions=\n"
-      "  id=3 checkBox (20, 50)-(200, 30) actions=\n",
+      "id=1 dialog FOCUSABLE (0, 0)-(800, 600) child_ids=2,3\n"
+      "  id=2 button (20, 20)-(200, 30)\n"
+      "  id=3 checkBox (20, 50)-(200, 30)\n",
       dst_tree.ToString());
 }
 
@@ -374,10 +374,10 @@ TEST(AXTreeTest, SerializeAXTreeUpdate) {
 
   EXPECT_EQ(
       "AXTreeUpdate: root id 3\n"
-      "id=3 list (0, 0)-(0, 0) actions= child_ids=4,5,6\n"
-      "  id=5 listItem (0, 0)-(0, 0) actions=\n"
-      "  id=6 listItem (0, 0)-(0, 0) actions=\n"
-      "id=7 button (0, 0)-(0, 0) actions=\n",
+      "id=3 list (0, 0)-(0, 0) child_ids=4,5,6\n"
+      "  id=5 listItem (0, 0)-(0, 0)\n"
+      "  id=6 listItem (0, 0)-(0, 0)\n"
+      "id=7 button (0, 0)-(0, 0)\n",
       update.ToString());
 }
 
@@ -3455,7 +3455,7 @@ TEST(AXTreeTest, SingleUpdateDeletesNewlyCreatedChildNode) {
 
   ASSERT_EQ(
       "AXTree\n"
-      "id=1 rootWebArea (0, 0)-(0, 0) actions=\n",
+      "id=1 rootWebArea (0, 0)-(0, 0)\n",
       tree.ToString());
 
   // Unserialize again, but with another add child.
@@ -3468,8 +3468,8 @@ TEST(AXTreeTest, SingleUpdateDeletesNewlyCreatedChildNode) {
 
   ASSERT_EQ(
       "AXTree\n"
-      "id=1 rootWebArea (0, 0)-(0, 0) actions= child_ids=2\n"
-      "  id=2 genericContainer (0, 0)-(0, 0) actions=\n",
+      "id=1 rootWebArea (0, 0)-(0, 0) child_ids=2\n"
+      "  id=2 genericContainer (0, 0)-(0, 0)\n",
       tree.ToString());
 }
 
@@ -3519,10 +3519,10 @@ TEST(AXTreeTest, SingleUpdateReparentsNodeMultipleTimes) {
 
   ASSERT_TRUE(tree.Unserialize(tree_update)) << tree.error();
   EXPECT_EQ(
-      "AXTree\nid=1 rootWebArea (0, 0)-(0, 0) actions= child_ids=2,3\n"
-      "  id=2 list (0, 0)-(0, 0) actions= child_ids=4\n"
-      "    id=4 listItem (0, 0)-(0, 0) actions=\n"
-      "  id=3 list (0, 0)-(0, 0) actions=\n",
+      "AXTree\nid=1 rootWebArea (0, 0)-(0, 0) child_ids=2,3\n"
+      "  id=2 list (0, 0)-(0, 0) child_ids=4\n"
+      "    id=4 listItem (0, 0)-(0, 0)\n"
+      "  id=3 list (0, 0)-(0, 0)\n",
       tree.ToString());
 
   // Unserialize again, but with another reparent.
@@ -3533,10 +3533,10 @@ TEST(AXTreeTest, SingleUpdateReparentsNodeMultipleTimes) {
 
   ASSERT_TRUE(tree.Unserialize(tree_update)) << tree.error();
   EXPECT_EQ(
-      "AXTree\nid=1 rootWebArea (0, 0)-(0, 0) actions= child_ids=2,3\n"
-      "  id=2 list (0, 0)-(0, 0) actions=\n"
-      "  id=3 list (0, 0)-(0, 0) actions= child_ids=4\n"
-      "    id=4 listItem (0, 0)-(0, 0) actions=\n",
+      "AXTree\nid=1 rootWebArea (0, 0)-(0, 0) child_ids=2,3\n"
+      "  id=2 list (0, 0)-(0, 0)\n"
+      "  id=3 list (0, 0)-(0, 0) child_ids=4\n"
+      "    id=4 listItem (0, 0)-(0, 0)\n",
       tree.ToString());
 }
 
@@ -3566,8 +3566,8 @@ TEST(AXTreeTest, SingleUpdateIgnoresNewlyCreatedUnignoredChildNode) {
 
   ASSERT_EQ(
       "AXTree\n"
-      "id=1 rootWebArea (0, 0)-(0, 0) actions= child_ids=2\n"
-      "  id=2 genericContainer IGNORED (0, 0)-(0, 0) actions=\n",
+      "id=1 rootWebArea (0, 0)-(0, 0) child_ids=2\n"
+      "  id=2 genericContainer IGNORED (0, 0)-(0, 0)\n",
       tree.ToString());
 }
 
@@ -3584,7 +3584,7 @@ TEST(AXTreeTest, SingleUpdateTogglesIgnoredStateAfterCreatingNode) {
 
   ASSERT_EQ(
       "AXTree\n"
-      "id=1 rootWebArea (0, 0)-(0, 0) actions=\n",
+      "id=1 rootWebArea (0, 0)-(0, 0)\n",
       tree.ToString());
 
   AXTreeUpdate tree_update;
@@ -3608,9 +3608,9 @@ TEST(AXTreeTest, SingleUpdateTogglesIgnoredStateAfterCreatingNode) {
 
   ASSERT_EQ(
       "AXTree\n"
-      "id=1 rootWebArea (0, 0)-(0, 0) actions= child_ids=2,3\n"
-      "  id=2 genericContainer IGNORED (0, 0)-(0, 0) actions=\n"
-      "  id=3 genericContainer (0, 0)-(0, 0) actions=\n",
+      "id=1 rootWebArea (0, 0)-(0, 0) child_ids=2,3\n"
+      "  id=2 genericContainer IGNORED (0, 0)-(0, 0)\n"
+      "  id=3 genericContainer (0, 0)-(0, 0)\n",
       tree.ToString());
 }
 
@@ -3633,9 +3633,9 @@ TEST(AXTreeTest, SingleUpdateTogglesIgnoredStateBeforeDestroyingNode) {
 
   ASSERT_EQ(
       "AXTree\n"
-      "id=1 rootWebArea (0, 0)-(0, 0) actions= child_ids=2,3\n"
-      "  id=2 genericContainer (0, 0)-(0, 0) actions=\n"
-      "  id=3 genericContainer IGNORED (0, 0)-(0, 0) actions=\n",
+      "id=1 rootWebArea (0, 0)-(0, 0) child_ids=2,3\n"
+      "  id=2 genericContainer (0, 0)-(0, 0)\n"
+      "  id=3 genericContainer IGNORED (0, 0)-(0, 0)\n",
       tree.ToString());
 
   AXTreeUpdate tree_update;
@@ -3654,7 +3654,7 @@ TEST(AXTreeTest, SingleUpdateTogglesIgnoredStateBeforeDestroyingNode) {
 
   ASSERT_EQ(
       "AXTree\n"
-      "id=1 rootWebArea (0, 0)-(0, 0) actions=\n",
+      "id=1 rootWebArea (0, 0)-(0, 0)\n",
       tree.ToString());
 }
 

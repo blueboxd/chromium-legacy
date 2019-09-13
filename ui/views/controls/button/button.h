@@ -125,7 +125,7 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   void StopThrobbing();
 
   // Set how long the hover animation will last for.
-  void SetAnimationDuration(int duration);
+  void SetAnimationDuration(base::TimeDelta duration);
 
   void set_triggerable_event_flags(int triggerable_event_flags) {
     triggerable_event_flags_ = triggerable_event_flags;

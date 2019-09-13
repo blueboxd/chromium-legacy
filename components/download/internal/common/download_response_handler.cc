@@ -158,6 +158,13 @@ DownloadResponseHandler::CreateDownloadCreateInfo(
 void DownloadResponseHandler::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
     network::mojom::URLResponseHeadPtr head) {
+  // Check if redirect URL is web safe.
+  if (delegate_ && !delegate_->CanRequestURL(redirect_info.new_url)) {
+    abort_reason_ = DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST;
+    OnComplete(network::URLLoaderCompletionStatus(net::OK));
+    return;
+  }
+
   if (!follow_cross_origin_redirects_ &&
       !first_origin_.IsSameOriginWith(
           url::Origin::Create(redirect_info.new_url))) {
@@ -169,18 +176,12 @@ void DownloadResponseHandler::OnReceiveRedirect(
     OnComplete(network::URLLoaderCompletionStatus(net::OK));
     return;
   }
+
   if (is_partial_request_) {
     // A redirect while attempting a partial resumption indicates a potential
     // middle box. Trigger another interruption so that the
     // DownloadItem can retry.
     abort_reason_ = DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE;
-    OnComplete(network::URLLoaderCompletionStatus(net::OK));
-    return;
-  }
-
-  // Check if redirect URL is web safe.
-  if (delegate_ && !delegate_->CanRequestURL(redirect_info.new_url)) {
-    abort_reason_ = DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST;
     OnComplete(network::URLLoaderCompletionStatus(net::OK));
     return;
   }

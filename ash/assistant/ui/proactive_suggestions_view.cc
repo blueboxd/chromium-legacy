@@ -11,6 +11,7 @@
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/services/assistant/public/features.h"
 #include "net/base/escape.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
@@ -33,7 +34,6 @@ constexpr int kAssistantIconSizeDip = 16;
 constexpr int kCloseButtonIconSizeDip = 16;
 constexpr int kCloseButtonSizeDip = 32;
 constexpr int kLineHeightDip = 20;
-constexpr int kMaxWidthDip = 240;
 constexpr int kPaddingLeftDip = 8;
 constexpr int kPaddingRightDip = 0;
 constexpr int kPreferredHeightDip = 32;
@@ -63,7 +63,9 @@ const char* ProactiveSuggestionsView::GetClassName() const {
 
 gfx::Size ProactiveSuggestionsView::CalculatePreferredSize() const {
   int preferred_width = views::View::CalculatePreferredSize().width();
-  preferred_width = std::min(preferred_width, kMaxWidthDip);
+  preferred_width = std::min(
+      preferred_width,
+      chromeos::assistant::features::GetProactiveSuggestionsMaxWidth());
   return gfx::Size(preferred_width, GetHeightForWidth(preferred_width));
 }
 
@@ -80,6 +82,32 @@ void ProactiveSuggestionsView::OnPaintBackground(gfx::Canvas* canvas) {
   flags.setDither(true);
 
   canvas->DrawRoundRect(GetLocalBounds(), radius, flags);
+}
+
+void ProactiveSuggestionsView::OnMouseEntered(const ui::MouseEvent& event) {
+  views::Button::OnMouseEntered(event);
+  delegate_->OnProactiveSuggestionsViewHoverChanged(/*is_hovering=*/true);
+}
+
+void ProactiveSuggestionsView::OnMouseExited(const ui::MouseEvent& event) {
+  views::Button::OnMouseExited(event);
+  delegate_->OnProactiveSuggestionsViewHoverChanged(/*is_hovering=*/false);
+}
+
+void ProactiveSuggestionsView::OnGestureEvent(ui::GestureEvent* event) {
+  views::Button::OnGestureEvent(event);
+  switch (event->type()) {
+    case ui::ET_GESTURE_TAP:
+    case ui::ET_GESTURE_TAP_CANCEL:
+      delegate_->OnProactiveSuggestionsViewHoverChanged(/*is_hovering=*/false);
+      break;
+    case ui::ET_GESTURE_TAP_DOWN:
+      delegate_->OnProactiveSuggestionsViewHoverChanged(/*is_hovering=*/true);
+      break;
+    default:
+      // No action necessary.
+      break;
+  }
 }
 
 void ProactiveSuggestionsView::ButtonPressed(views::Button* sender,

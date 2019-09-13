@@ -312,15 +312,19 @@ Polymer({
 
   /** CrosNetworkConfigObserver impl */
   onNetworkStateListChanged: function() {
+    if (!this.guid || !this.managedProperties_) {
+      return;
+    }
     this.checkNetworkExists_();
   },
 
   /** CrosNetworkConfigObserver impl */
   onDeviceStateListChanged: function() {
-    this.getDeviceState_();
-    if (this.guid) {
-      this.getNetworkDetails_();
+    if (!this.guid || !this.managedProperties_) {
+      return;
     }
+    this.getDeviceState_();
+    this.getNetworkDetails_();
   },
 
   /** @private */
@@ -518,10 +522,25 @@ Polymer({
       this.close();
       return;
     }
+
     const managedProperties = OncMojo.getDefaultManagedProperties(
         networkState.type, networkState.guid, networkState.name);
     managedProperties.connectable = networkState.connectable;
     managedProperties.connectionState = networkState.connectionState;
+    switch (networkState.type) {
+      case mojom.NetworkType.kCellular:
+        managedProperties.cellular.signalStrength =
+            networkState.cellular.signalStrength;
+        break;
+      case mojom.NetworkType.kTether:
+        managedProperties.tether.signalStrength =
+            networkState.tether.signalStrength;
+        break;
+      case mojom.NetworkType.kWiFi:
+        managedProperties.wifi.signalStrength =
+            networkState.wifi.signalStrength;
+        break;
+    }
     this.managedProperties_ = managedProperties;
 
     this.propertiesReceived_ = true;
@@ -706,9 +725,9 @@ Polymer({
         mojom.ConnectionStateType.kNotConnected) {
       return false;
     }
-    // Cellular is not configurable, so we show a disabled connect button of
-    // connectable is false.
-    if (managedProperties.type != mojom.NetworkType.kCellular) {
+    // Cellular is not configurable, so we always show the connect button, and
+    // disable it if 'connectable' is false.
+    if (managedProperties.type == mojom.NetworkType.kCellular) {
       return true;
     }
     // If 'connectable' is false we show the configure button.
@@ -971,7 +990,8 @@ Polymer({
    * @private
    */
   getTetherDialog_: function() {
-    return /** @type {!TetherConnectionDialogElement} */ (this.$.tetherDialog);
+    return /** @type {!TetherConnectionDialogElement} */ (
+        this.$$('#tetherDialog'));
   },
 
   /** @private */
@@ -1278,9 +1298,10 @@ Polymer({
     /** @type {!Array<string>} */ const fields = [];
     const type = this.managedProperties_.type;
     if (type == mojom.NetworkType.kCellular) {
-      fields.push(
-          'cellular.activationState', 'restrictedConnectivity',
-          'cellular.servingOperator.name');
+      fields.push('cellular.activationState', 'cellular.servingOperator.name');
+      if (this.managedProperties_.restrictedConnectivity) {
+        fields.push('restrictedConnectivity');
+      }
     } else if (type == mojom.NetworkType.kTether) {
       fields.push(
           'tether.batteryPercentage', 'tether.signalStrength',
@@ -1304,7 +1325,9 @@ Polymer({
           break;
       }
     } else if (type == mojom.NetworkType.kWiFi) {
-      fields.push('restrictedConnectivity');
+      if (this.managedProperties_.restrictedConnectivity) {
+        fields.push('restrictedConnectivity');
+      }
     }
     return fields;
   },
@@ -1480,14 +1503,15 @@ Polymer({
   },
 
   /**
-   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
-  showScanningSpinner_: function(managedProperties) {
-    return !!managedProperties &&
-        managedProperties.type == mojom.NetworkType.kCellular &&
-        managedProperties.cellular.scanning;
+  showScanningSpinner_: function() {
+    if (!this.managedProperties_ ||
+        this.managedProperties_.type != mojom.NetworkType.kCellular) {
+      return false;
+    }
+    return !!this.deviceState_ && this.deviceState_.scanning;
   },
 
   /**

@@ -408,21 +408,21 @@ DownloadDBEntry CreateDownloadDBEntryFromItem(const DownloadItemImpl& item) {
   return entry;
 }
 
-base::Optional<DownloadEntry> CreateDownloadEntryFromDownloadDBEntry(
+std::unique_ptr<DownloadEntry> CreateDownloadEntryFromDownloadDBEntry(
     base::Optional<DownloadDBEntry> entry) {
   if (!entry || !entry->download_info)
-    return base::Optional<DownloadEntry>();
+    return nullptr;
 
   base::Optional<InProgressInfo> in_progress_info =
       entry->download_info->in_progress_info;
   base::Optional<UkmInfo> ukm_info = entry->download_info->ukm_info;
   if (!ukm_info || !in_progress_info)
-    return base::Optional<DownloadEntry>();
+    return nullptr;
 
-  return base::Optional<DownloadEntry>(DownloadEntry(
+  return std::make_unique<DownloadEntry>(
       entry->download_info->guid, std::string(), ukm_info->download_source,
       in_progress_info->fetch_error_body, in_progress_info->request_headers,
-      ukm_info->ukm_download_id));
+      ukm_info->ukm_download_id);
 }
 
 uint64_t GetUniqueDownloadId() {

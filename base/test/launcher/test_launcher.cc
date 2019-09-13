@@ -775,7 +775,8 @@ TestLauncher::LaunchOptions::LaunchOptions(const LaunchOptions& other) =
 TestLauncher::LaunchOptions::~LaunchOptions() = default;
 
 TestLauncher::TestLauncher(TestLauncherDelegate* launcher_delegate,
-                           size_t parallel_jobs)
+                           size_t parallel_jobs,
+                           size_t retry_limit)
     : launcher_delegate_(launcher_delegate),
       total_shards_(1),
       shard_index_(0),
@@ -785,7 +786,7 @@ TestLauncher::TestLauncher(TestLauncherDelegate* launcher_delegate,
       test_finished_count_(0),
       test_success_count_(0),
       test_broken_count_(0),
-      retry_limit_(0),
+      retry_limit_(retry_limit),
       force_run_broken_tests_(false),
       watchdog_timer_(FROM_HERE,
                       kOutputTimeout,
@@ -1241,12 +1242,12 @@ bool TestLauncher::Init(CommandLine* command_line) {
     }
 
     retry_limit_ = retry_limit;
-  } else if (BotModeEnabled(command_line) ||
-             !(command_line->HasSwitch(kGTestFilterFlag) ||
-               command_line->HasSwitch(kIsolatedScriptTestFilterFlag))) {
-    // Retry failures 1 time by default if we are running all of the tests or
-    // in bot mode.
-    retry_limit_ = 1;
+  } else if (!BotModeEnabled(command_line) &&
+             (command_line->HasSwitch(kGTestFilterFlag) ||
+              command_line->HasSwitch(kIsolatedScriptTestFilterFlag))) {
+    // No retry flag specified, not in bot mode and filtered by flag
+    // Set reties to zero
+    retry_limit_ = 0U;
   }
 
   force_run_broken_tests_ =

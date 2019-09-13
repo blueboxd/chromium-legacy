@@ -10,11 +10,10 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.util.AndroidRuntimeException;
-import android.util.Log;
 import android.webkit.WebViewDelegate;
 import android.webkit.WebViewFactory;
 
+import org.chromium.weblayer_private.aidl.APICallException;
 import org.chromium.weblayer_private.aidl.IWebLayer;
 
 import java.io.File;
@@ -25,7 +24,6 @@ import java.lang.reflect.Field;
  * WebLayer is responsible for initializing state necessary to use* any of the classes in web layer.
  */
 public final class WebLayer {
-    private static final String TAG = "WebLayer";
     private static final String PACKAGE_NAME = "org.chromium.weblayer.support";
 
     private static WebLayer sInstance;
@@ -66,8 +64,7 @@ public final class WebLayer {
                             .getMethod("create", Application.class, Context.class)
                             .invoke(null, application, remoteContext));
         } catch (Exception e) {
-            Log.e(TAG, "Failed to get WebLayerImpl.", e);
-            throw new AndroidRuntimeException(e);
+            throw new APICallException(e);
         }
     }
 
@@ -82,14 +79,13 @@ public final class WebLayer {
     }
 
     /**
-     * Creates a new Profile with the given path. Pass in an empty path for an in-memory profile.
+     * Creates a new Profile with the given path. Pass in an null path for an in-memory profile.
      */
     public Profile createProfile(File path) {
         try {
-            return new Profile(mImpl.createProfile(path.getPath()));
+            return new Profile(mImpl.createProfile(path == null ? "" : path.getPath()));
         } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call createProfile.", e);
-            throw new AndroidRuntimeException(e);
+            throw new APICallException(e);
         }
     }
 }

@@ -17,33 +17,17 @@ namespace cc {
 FakePictureLayerImpl::FakePictureLayerImpl(
     LayerTreeImpl* tree_impl,
     int id,
-    scoped_refptr<RasterSource> raster_source,
-    Layer::LayerMaskType mask_type)
-    : PictureLayerImpl(tree_impl, id, mask_type) {
-  SetBounds(raster_source->GetSize());
-  SetRasterSourceOnPending(raster_source, Region());
+    scoped_refptr<RasterSource> raster_source)
+    : PictureLayerImpl(tree_impl, id) {
+  if (raster_source) {
+    SetBounds(raster_source->GetSize());
+    SetRasterSourceOnPending(raster_source, Region());
+  }
 }
-
-FakePictureLayerImpl::FakePictureLayerImpl(
-    LayerTreeImpl* tree_impl,
-    int id,
-    scoped_refptr<RasterSource> raster_source,
-    Layer::LayerMaskType mask_type,
-    const gfx::Size& layer_bounds)
-    : PictureLayerImpl(tree_impl, id, mask_type) {
-  SetBounds(layer_bounds);
-  SetRasterSourceOnPending(raster_source, Region());
-}
-
-FakePictureLayerImpl::FakePictureLayerImpl(LayerTreeImpl* tree_impl,
-                                           int id,
-                                           Layer::LayerMaskType mask_type)
-    : PictureLayerImpl(tree_impl, id, mask_type) {}
 
 std::unique_ptr<LayerImpl> FakePictureLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return base::WrapUnique(
-      new FakePictureLayerImpl(tree_impl, id(), mask_type_));
+  return base::WrapUnique(new FakePictureLayerImpl(tree_impl, id()));
 }
 
 void FakePictureLayerImpl::PushPropertiesTo(LayerImpl* layer_impl) {

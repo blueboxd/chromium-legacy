@@ -327,6 +327,7 @@ if (enable_extensions) {
       "//components/version_info",
       "//crypto",
       "//device/bluetooth",
+      "//device/bluetooth/public/cpp",
       "//extensions:extensions_resources",
       "//extensions/common/api",
       "//extensions/strings",

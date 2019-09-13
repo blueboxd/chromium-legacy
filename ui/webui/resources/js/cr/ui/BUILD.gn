@@ -90,7 +90,6 @@ js_library("dialogs") {
 
 js_library("drag_wrapper") {
   deps = [
-    "../..:assert",
     "../..:cr",
   ]
 }
@@ -268,22 +267,32 @@ js_library("tree") {
 
 js_modulizer("modulize") {
   input_files = [
+    "drag_wrapper.js",
     "focus_outline_manager.js",
     "focus_row.js",
     "focus_without_ink.js",
   ]
   namespace_rewrites = [
-    "cr.ui.FocusRow|FocusRow",
+    "cr.ui.DragWrapperDelegate|DragWrapperDelegate",
     "cr.ui.FocusRowDelegate|FocusRowDelegate",
+    "cr.ui.FocusRow|FocusRow",
   ]
 }
 
 js_type_check("ui_resources_modules") {
   deps = [
+    ":drag_wrapper.m",
     ":focus_outline_manager.m",
     ":focus_row.m",
     ":focus_without_ink.m",
   ]
+}
+
+js_library("drag_wrapper.m") {
+  sources = [
+    "$root_gen_dir/ui/webui/resources/js/cr/ui/drag_wrapper.m.js",
+  ]
+  extra_deps = [ ":modulize" ]
 }
 
 js_library("focus_outline_manager.m") {

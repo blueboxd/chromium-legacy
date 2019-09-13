@@ -95,6 +95,9 @@ extern const char kAndroidSiteSettingsUIRefreshDescription[];
 extern const char kAutomaticPasswordGenerationName[];
 extern const char kAutomaticPasswordGenerationDescription[];
 
+extern const char kAutofillAlwaysReturnCloudTokenizedCardName[];
+extern const char kAutofillAlwaysReturnCloudTokenizedCardDescription[];
+
 extern const char kAutofillAlwaysShowServerCardsInSyncTransportName[];
 extern const char kAutofillAlwaysShowServerCardsInSyncTransportDescription[];
 
@@ -846,9 +849,6 @@ extern const char kOmniboxSearchEngineLogoDescription[];
 extern const char kOmniboxSpareRendererName[];
 extern const char kOmniboxSpareRendererDescription[];
 
-extern const char kOmniboxUICuesForSearchHistoryMatchesName[];
-extern const char kOmniboxUICuesForSearchHistoryMatchesDescription[];
-
 extern const char kOmniboxUIHideSteadyStateUrlSchemeName[];
 extern const char kOmniboxUIHideSteadyStateUrlSchemeDescription[];
 
@@ -1424,9 +1424,6 @@ extern const char kContextualSearchSimplifiedServerDescription[];
 extern const char kContextualSearchTranslationModelName[];
 extern const char kContextualSearchTranslationModelDescription[];
 
-extern const char kContextualSearchUnityIntegrationName[];
-extern const char kContextualSearchUnityIntegrationDescription[];
-
 extern const char kDirectActionsName[];
 extern const char kDirectActionsDescription[];
 
@@ -1498,6 +1495,9 @@ extern const char kOfflineIndicatorAlwaysHttpProbeDescription[];
 
 extern const char kOfflineIndicatorChoiceName[];
 extern const char kOfflineIndicatorChoiceDescription[];
+
+extern const char kOfflineIndicatorV2Name[];
+extern const char kOfflineIndicatorV2Description[];
 
 extern const char kOfflinePagesCtName[];
 extern const char kOfflinePagesCtDescription[];
@@ -1717,6 +1717,9 @@ extern const char kOmniboxWrapPopupPositionDescription[];
 
 extern const char kProactiveTabFreezeAndDiscardName[];
 extern const char kProactiveTabFreezeAndDiscardDescription[];
+
+extern const char kWebUIA11yEnhancementsName[];
+extern const char kWebUIA11yEnhancementsDescription[];
 
 #if defined(GOOGLE_CHROME_BUILD)
 

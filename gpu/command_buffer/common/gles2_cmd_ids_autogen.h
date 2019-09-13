@@ -336,32 +336,33 @@
   OP(StencilThenCoverStrokePathInstancedCHROMIUM)          /* 577 */ \
   OP(BindFragmentInputLocationCHROMIUMBucket)              /* 578 */ \
   OP(ProgramPathFragmentInputGenCHROMIUM)                  /* 579 */ \
-  OP(CoverageModulationCHROMIUM)                           /* 580 */ \
-  OP(BlendBarrierKHR)                                      /* 581 */ \
-  OP(ApplyScreenSpaceAntialiasingCHROMIUM)                 /* 582 */ \
-  OP(BindFragDataLocationIndexedEXTBucket)                 /* 583 */ \
-  OP(BindFragDataLocationEXTBucket)                        /* 584 */ \
-  OP(GetFragDataIndexEXT)                                  /* 585 */ \
-  OP(UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate) /* 586 */ \
-  OP(OverlayPromotionHintCHROMIUM)                         /* 587 */ \
-  OP(SwapBuffersWithBoundsCHROMIUMImmediate)               /* 588 */ \
-  OP(SetDrawRectangleCHROMIUM)                             /* 589 */ \
-  OP(SetEnableDCLayersCHROMIUM)                            /* 590 */ \
-  OP(InitializeDiscardableTextureCHROMIUM)                 /* 591 */ \
-  OP(UnlockDiscardableTextureCHROMIUM)                     /* 592 */ \
-  OP(LockDiscardableTextureCHROMIUM)                       /* 593 */ \
-  OP(TexStorage2DImageCHROMIUM)                            /* 594 */ \
-  OP(SetColorSpaceMetadataCHROMIUM)                        /* 595 */ \
-  OP(WindowRectanglesEXTImmediate)                         /* 596 */ \
-  OP(CreateGpuFenceINTERNAL)                               /* 597 */ \
-  OP(WaitGpuFenceCHROMIUM)                                 /* 598 */ \
-  OP(DestroyGpuFenceCHROMIUM)                              /* 599 */ \
-  OP(SetReadbackBufferShadowAllocationINTERNAL)            /* 600 */ \
-  OP(FramebufferTextureMultiviewOVR)                       /* 601 */ \
-  OP(MaxShaderCompilerThreadsKHR)                          /* 602 */ \
-  OP(CreateAndTexStorage2DSharedImageINTERNALImmediate)    /* 603 */ \
-  OP(BeginSharedImageAccessDirectCHROMIUM)                 /* 604 */ \
-  OP(EndSharedImageAccessDirectCHROMIUM)                   /* 605 */
+  OP(ContextVisibilityHintCHROMIUM)                        /* 580 */ \
+  OP(CoverageModulationCHROMIUM)                           /* 581 */ \
+  OP(BlendBarrierKHR)                                      /* 582 */ \
+  OP(ApplyScreenSpaceAntialiasingCHROMIUM)                 /* 583 */ \
+  OP(BindFragDataLocationIndexedEXTBucket)                 /* 584 */ \
+  OP(BindFragDataLocationEXTBucket)                        /* 585 */ \
+  OP(GetFragDataIndexEXT)                                  /* 586 */ \
+  OP(UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate) /* 587 */ \
+  OP(OverlayPromotionHintCHROMIUM)                         /* 588 */ \
+  OP(SwapBuffersWithBoundsCHROMIUMImmediate)               /* 589 */ \
+  OP(SetDrawRectangleCHROMIUM)                             /* 590 */ \
+  OP(SetEnableDCLayersCHROMIUM)                            /* 591 */ \
+  OP(InitializeDiscardableTextureCHROMIUM)                 /* 592 */ \
+  OP(UnlockDiscardableTextureCHROMIUM)                     /* 593 */ \
+  OP(LockDiscardableTextureCHROMIUM)                       /* 594 */ \
+  OP(TexStorage2DImageCHROMIUM)                            /* 595 */ \
+  OP(SetColorSpaceMetadataCHROMIUM)                        /* 596 */ \
+  OP(WindowRectanglesEXTImmediate)                         /* 597 */ \
+  OP(CreateGpuFenceINTERNAL)                               /* 598 */ \
+  OP(WaitGpuFenceCHROMIUM)                                 /* 599 */ \
+  OP(DestroyGpuFenceCHROMIUM)                              /* 600 */ \
+  OP(SetReadbackBufferShadowAllocationINTERNAL)            /* 601 */ \
+  OP(FramebufferTextureMultiviewOVR)                       /* 602 */ \
+  OP(MaxShaderCompilerThreadsKHR)                          /* 603 */ \
+  OP(CreateAndTexStorage2DSharedImageINTERNALImmediate)    /* 604 */ \
+  OP(BeginSharedImageAccessDirectCHROMIUM)                 /* 605 */ \
+  OP(EndSharedImageAccessDirectCHROMIUM)                   /* 606 */
 
 enum CommandId {
   kOneBeforeStartPoint =

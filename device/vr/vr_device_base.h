@@ -65,6 +65,7 @@ class DEVICE_VR_EXPORT VRDeviceBase : public mojom::XRRuntime {
   void SetVRDisplayInfo(mojom::VRDisplayInfoPtr display_info);
   void OnActivate(mojom::VRDisplayEventReason reason,
                   base::Callback<void(bool)> on_handled);
+  void OnVisibilityStateChanged(mojom::XRVisibilityState visibility_state);
 
   mojom::VRDisplayInfoPtr display_info_;
 

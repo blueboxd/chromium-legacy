@@ -92,6 +92,12 @@ base::TimeDelta StoredFetchedHintsFreshnessDuration() {
       "max_store_duration_for_featured_hints_in_days", 7));
 }
 
+base::TimeDelta DurationApplyLowEngagementScoreThreshold() {
+  return base::TimeDelta::FromDays(GetFieldTrialParamByFeatureAsInt(
+      features::kOptimizationHintsFetching,
+      "duration_apply_low_engagement_score_threshold_in_days", 30));
+}
+
 std::string GetOptimizationGuideServiceAPIKey() {
   // Command line override takes priority.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();

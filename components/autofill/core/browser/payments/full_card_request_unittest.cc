@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -18,6 +19,7 @@
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -106,6 +108,17 @@ class FullCardRequestTest : public testing::Test {
     request_->OnDidGetRealPan(result, response.with_real_pan(real_pan));
   }
 
+  void OnDidGetRealPanWithDcvv(AutofillClient::PaymentsRpcResult result,
+                               const std::string& real_pan,
+                               const std::string& dcvv) {
+    payments::PaymentsClient::UnmaskResponseDetails response;
+    request_->OnDidGetRealPan(result,
+                              response.with_real_pan(real_pan).with_dcvv(dcvv));
+  }
+
+ protected:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
  private:
   base::test::SingleThreadTaskEnvironment task_environment_;
   MockPersonalDataManager personal_data_;
@@ -139,6 +152,55 @@ MATCHER_P4(CardMatches, record_type, number, month, year, "") {
 
 // Verify getting the full PAN and the CVC for a masked server card.
 TEST_F(FullCardRequestTest, GetFullCardPanAndCvcForMaskedServerCardViaCvc) {
+  EXPECT_CALL(*result_delegate(),
+              OnFullCardRequestSucceeded(
+                  testing::Ref(*request()),
+                  CardMatches(CreditCard::FULL_SERVER_CARD, "4111"),
+                  base::ASCIIToUTF16("123")));
+  EXPECT_CALL(*ui_delegate(), ShowUnmaskPrompt(_, _, _));
+  EXPECT_CALL(*ui_delegate(),
+              OnUnmaskVerificationResult(AutofillClient::SUCCESS));
+
+  request()->GetFullCard(
+      CreditCard(CreditCard::MASKED_SERVER_CARD, "server_id"),
+      AutofillClient::UNMASK_FOR_AUTOFILL, result_delegate()->AsWeakPtr(),
+      ui_delegate()->AsWeakPtr());
+  CardUnmaskDelegate::UserProvidedUnmaskDetails details;
+  details.cvc = base::ASCIIToUTF16("123");
+  card_unmask_delegate()->OnUnmaskPromptAccepted(details);
+  OnDidGetRealPan(AutofillClient::SUCCESS, "4111");
+  card_unmask_delegate()->OnUnmaskPromptClosed();
+}
+
+// Verify getting the full PAN and the dCVV for a masked server card when cloud
+// tokenization is enabled.
+TEST_F(FullCardRequestTest, GetFullCardPanAndDcvvForMaskedServerCardViaDcvv) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillAlwaysReturnCloudTokenizedCard);
+  EXPECT_CALL(*result_delegate(),
+              OnFullCardRequestSucceeded(
+                  testing::Ref(*request()),
+                  CardMatches(CreditCard::FULL_SERVER_CARD, "4111"),
+                  base::ASCIIToUTF16("321")));
+  EXPECT_CALL(*ui_delegate(), ShowUnmaskPrompt(_, _, _));
+  EXPECT_CALL(*ui_delegate(),
+              OnUnmaskVerificationResult(AutofillClient::SUCCESS));
+
+  request()->GetFullCard(
+      CreditCard(CreditCard::MASKED_SERVER_CARD, "server_id"),
+      AutofillClient::UNMASK_FOR_AUTOFILL, result_delegate()->AsWeakPtr(),
+      ui_delegate()->AsWeakPtr());
+  CardUnmaskDelegate::UserProvidedUnmaskDetails details;
+  card_unmask_delegate()->OnUnmaskPromptAccepted(details);
+  OnDidGetRealPanWithDcvv(AutofillClient::SUCCESS, "4111", "321");
+  card_unmask_delegate()->OnUnmaskPromptClosed();
+}
+
+// Verify getting the full PAN for a masked server card when cloud
+// tokenization is enabled but no dCVV is returned.
+TEST_F(FullCardRequestTest, GetFullCardPanForMaskedServerCardWithoutDcvv) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillAlwaysReturnCloudTokenizedCard);
   EXPECT_CALL(*result_delegate(),
               OnFullCardRequestSucceeded(
                   testing::Ref(*request()),

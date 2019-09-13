@@ -1947,6 +1947,12 @@ _FUNCTION_INFO = {
     'no_gl': True,
     'expectation': False,
   },
+  'ContextVisibilityHintCHROMIUM': {
+    'decoder_func': 'DoContextVisibilityHintCHROMIUM',
+    'extension': 'CHROMIUM_context_visibility_hint',
+    'unit_test': False,
+    'client_test': False,
+  },
   'CopyBufferSubData': {
     'decoder_func': 'DoCopyBufferSubData',
     'impl_func': False,

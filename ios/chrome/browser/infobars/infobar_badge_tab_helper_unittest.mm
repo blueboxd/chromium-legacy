@@ -63,7 +63,8 @@
 @end
 
 @implementation InfobarBadgeUITestDelegate
-- (void)infobarWasAccepted:(InfobarType)infobarType {
+- (void)infobarWasAccepted:(InfobarType)infobarType
+               forWebState:(web::WebState*)webState {
   self.infobarBadgeTabHelper->UpdateBadgeForInfobarAccepted(infobarType);
 }
 @end

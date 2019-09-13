@@ -152,13 +152,12 @@ class CorsURLLoaderTest : public testing::Test {
 
  protected:
   // testing::Test implementation.
-  void SetUp() override {
+  void SetUp(network::mojom::NetworkContextParamsPtr context_params) {
     feature_list_.InitWithFeatures(
         {features::kOutOfBlinkCors, features::kNetworkService}, {});
 
     network_service_ = NetworkService::CreateForTesting();
 
-    auto context_params = mojom::NetworkContextParams::New();
     context_params->initial_proxy_config =
         net::ProxyConfigWithAnnotation::CreateDirect();
     context_params->cors_exempt_header_list.push_back(kTestCorsExemptHeader);
@@ -169,6 +168,7 @@ class CorsURLLoaderTest : public testing::Test {
 
     ResetFactory(base::nullopt, kRendererProcessId);
   }
+  void SetUp() override { SetUp(mojom::NetworkContextParams::New()); }
 
   void CreateLoaderAndStart(const GURL& origin,
                             const GURL& url,
@@ -349,6 +349,8 @@ class CorsURLLoaderTest : public testing::Test {
         mojo::MakeRequest(&cors_url_loader_factory_ptr_), &origin_access_list_,
         std::move(factory));
   }
+
+  NetworkContext* network_context() { return network_context_.get(); }
 
  private:
   // Testing instance to enable kOutOfBlinkCors feature.
@@ -1978,6 +1980,68 @@ TEST_F(CorsURLLoaderTest, RestrictedPrefetchFailsWithoutNIK) {
       bad_message_helper.bad_message_reports(),
       ::testing::ElementsAre("CorsURLLoaderFactory: Request with "
                              "LOAD_RESTRICTED_PREFETCH flag is not trusted"));
+}
+
+class CorsURLLoaderExtraSafelistedHeadersTest : public CorsURLLoaderTest {
+ public:
+  void SetUp() override {
+    auto params = mojom::NetworkContextParams::New();
+    params->cors_extra_safelisted_request_header_names = {
+        "safelisted-1", "safelisted-2", "safelisted-3"};
+    CorsURLLoaderTest::SetUp(std::move(params));
+  }
+};
+
+TEST_F(CorsURLLoaderExtraSafelistedHeadersTest, ExtraSafelistedHeaders1) {
+  const GURL origin("https://example.com");
+  const GURL url("https://other.example.com/foo.png");
+  const GURL new_url("https://other2.example.com/bar.png");
+
+  ResourceRequest request;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
+  request.method = "GET";
+  request.url = url;
+  request.request_initiator = url::Origin::Create(origin);
+  request.headers.SetHeader("safelisted-1", "foo");
+  request.headers.SetHeader("safelisted-2", "bar");
+  request.headers.SetHeader("safelisted-3", "baz");
+
+  CreateLoaderAndStart(request);
+
+  // NO preflight request
+  ASSERT_EQ(1, num_created_loaders());
+  EXPECT_EQ(GetRequest().url, url);
+  EXPECT_EQ(GetRequest().method, "GET");
+}
+
+TEST_F(CorsURLLoaderExtraSafelistedHeadersTest, ExtraSafelistedHeaders2) {
+  const GURL origin("https://example.com");
+  const GURL url("https://other.example.com/foo.png");
+  const GURL new_url("https://other2.example.com/bar.png");
+
+  ResourceRequest request;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
+  request.method = "GET";
+  request.url = url;
+  request.request_initiator = url::Origin::Create(origin);
+  request.headers.SetHeader("safelisted-1", "foo");
+  request.headers.SetHeader("safelisted-2", "bar");
+  request.headers.SetHeader("hoge", "fuga");
+  request.headers.SetHeader("piyo", "hogera");
+
+  CreateLoaderAndStart(request);
+
+  // preflight request
+  ASSERT_EQ(1, num_created_loaders());
+  EXPECT_EQ(GetRequest().url, url);
+  EXPECT_EQ(GetRequest().method, "OPTIONS");
+
+  std::string headers;
+  EXPECT_TRUE(GetRequest().headers.GetHeader("access-control-request-headers",
+                                             &headers));
+  EXPECT_EQ(headers, "hoge,piyo");
 }
 
 }  // namespace

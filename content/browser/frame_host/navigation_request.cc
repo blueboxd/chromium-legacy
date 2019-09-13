@@ -2244,7 +2244,7 @@ void NavigationRequest::CommitNavigation() {
 
     // Transfer ownership of this NavigationRequest to the restored
     // RenderFrameHost.
-    frame_tree_node_->TransferNavigationRequestOwnership(render_frame_host());
+    frame_tree_node_->TransferNavigationRequestOwnership(GetRenderFrameHost());
 
     // Move the restored RenderFrameHost into RenderFrameHostManager, in
     // preparation for committing.
@@ -2253,7 +2253,7 @@ void NavigationRequest::CommitNavigation() {
 
     // Commit the restored RenderFrameHost.
     // Note that this will delete the NavigationRequest.
-    render_frame_host()->DidCommitBackForwardCacheNavigation(
+    GetRenderFrameHost()->DidCommitBackForwardCacheNavigation(
         this, MakeDidCommitProvisionalLoadParamsForBFCache());
 
     return;
@@ -3179,7 +3179,7 @@ void NavigationRequest::RenderProcessBlockedStateChanged(bool blocked) {
 void NavigationRequest::StopCommitTimeout() {
   commit_timeout_timer_.Stop();
   render_process_blocked_state_changed_subscription_.reset();
-  render_frame_host()->GetRenderWidgetHost()->RendererIsResponsive();
+  GetRenderFrameHost()->GetRenderWidgetHost()->RendererIsResponsive();
 }
 
 void NavigationRequest::RestartCommitTimeout() {
@@ -3188,7 +3188,7 @@ void NavigationRequest::RestartCommitTimeout() {
     return;
 
   RenderProcessHost* renderer_host =
-      render_frame_host()->GetRenderWidgetHost()->GetProcess();
+      GetRenderFrameHost()->GetRenderWidgetHost()->GetProcess();
   if (!render_process_blocked_state_changed_subscription_) {
     render_process_blocked_state_changed_subscription_ =
         renderer_host->RegisterBlockStateChangedCallback(base::BindRepeating(
@@ -3262,14 +3262,14 @@ void NavigationRequest::OnCommitTimeout() {
         last_crash_time);
   }
   UMA_HISTOGRAM_BOOLEAN("Navigation.CommitTimeout.IsRendererProcessReady",
-                        render_frame_host()->GetProcess()->IsReady());
+                        GetRenderFrameHost()->GetProcess()->IsReady());
   UMA_HISTOGRAM_ENUMERATION("Navigation.CommitTimeout.Scheme",
                             GetScheme(common_params_->url));
   UMA_HISTOGRAM_BOOLEAN("Navigation.CommitTimeout.IsMainFrame",
                         frame_tree_node_->IsMainFrame());
   base::UmaHistogramSparse("Navigation.CommitTimeout.ErrorCode", -net_error_);
   render_process_blocked_state_changed_subscription_.reset();
-  render_frame_host()->GetRenderWidgetHost()->RendererIsUnresponsive(
+  GetRenderFrameHost()->GetRenderWidgetHost()->RendererIsUnresponsive(
       base::BindRepeating(&NavigationRequest::RestartCommitTimeout,
                           weak_factory_.GetWeakPtr()));
 }
@@ -3340,7 +3340,7 @@ NavigationRequest::MakeDidCommitProvisionalLoadParamsForBFCache() {
   // TODO(lowell): Set the actual response mime type from FrameNavigationEntry.
   params->contents_mime_type = "text/html";
 
-  params->request_id = request_id().request_id;
+  params->request_id = GetGlobalRequestID().request_id;
 
   return params;
 }
@@ -3431,6 +3431,176 @@ void NavigationRequest::TraceNavigationHandleEnd() {
   }
   TRACE_EVENT_ASYNC_END0("navigation", "NavigationHandle",
                          navigation_handle_.get());
+}
+
+int64_t NavigationRequest::GetNavigationId() {
+  return navigation_handle_id_;
+}
+
+const GURL& NavigationRequest::GetURL() {
+  return common_params().url;
+}
+
+SiteInstanceImpl* NavigationRequest::GetStartingSiteInstance() {
+  return starting_site_instance_.get();
+}
+
+bool NavigationRequest::IsRendererInitiated() {
+  return !browser_initiated_;
+}
+
+bool NavigationRequest::WasServerRedirect() {
+  return was_redirected_;
+}
+
+const std::vector<GURL>& NavigationRequest::GetRedirectChain() {
+  return redirect_chain_;
+}
+
+base::TimeTicks NavigationRequest::NavigationStart() {
+  return common_params().navigation_start;
+}
+
+base::TimeTicks NavigationRequest::NavigationInputStart() {
+  return common_params().input_start;
+}
+
+bool NavigationRequest::IsPost() {
+  return common_params().method == "POST";
+}
+
+const blink::mojom::Referrer& NavigationRequest::GetReferrer() {
+  return *sanitized_referrer_;
+}
+
+bool NavigationRequest::HasUserGesture() {
+  return common_params().has_user_gesture;
+}
+
+ui::PageTransition NavigationRequest::GetPageTransition() {
+  return common_params().transition;
+}
+
+NavigationUIData* NavigationRequest::GetNavigationUIData() {
+  return navigation_ui_data_.get();
+}
+
+net::Error NavigationRequest::GetNetErrorCode() {
+  return net_error_;
+}
+
+// The RenderFrameHost that will commit the navigation or an error page.
+// This is computed when the response is received, or when the navigation
+// fails and error page should be displayed.
+RenderFrameHostImpl* NavigationRequest::GetRenderFrameHost() {
+  // Only allow the RenderFrameHost to be retrieved once it has been set for
+  // this navigation. This will happens either at WillProcessResponse time for
+  // regular navigations or at WillFailRequest time for error pages.
+  CHECK_GE(handle_state_, PROCESSING_WILL_FAIL_REQUEST)
+      << "This accessor should only be called after a RenderFrameHost has "
+         "been picked for this navigation.";
+  static_assert(WILL_FAIL_REQUEST < WILL_PROCESS_RESPONSE,
+                "WillFailRequest state should come before WillProcessResponse");
+  return render_frame_host_;
+}
+
+const net::HttpRequestHeaders& NavigationRequest::GetRequestHeaders() {
+  return request_headers_;
+}
+
+const base::Optional<net::SSLInfo>& NavigationRequest::GetSSLInfo() {
+  return ssl_info_;
+}
+
+const base::Optional<net::AuthChallengeInfo>&
+NavigationRequest::GetAuthChallengeInfo() {
+  return auth_challenge_info_;
+}
+
+bool NavigationRequest::HasSubframeNavigationEntryCommitted() {
+  DCHECK(!frame_tree_node_->IsMainFrame());
+  DCHECK(handle_state_ == DID_COMMIT || handle_state_ == DID_COMMIT_ERROR_PAGE);
+  return subframe_entry_committed_;
+}
+
+bool NavigationRequest::DidReplaceEntry() {
+  DCHECK(handle_state_ == DID_COMMIT || handle_state_ == DID_COMMIT_ERROR_PAGE);
+  return did_replace_entry_;
+}
+
+bool NavigationRequest::ShouldUpdateHistory() {
+  DCHECK(handle_state_ == DID_COMMIT || handle_state_ == DID_COMMIT_ERROR_PAGE);
+  return should_update_history_;
+}
+
+const GURL& NavigationRequest::GetPreviousURL() {
+  DCHECK(handle_state_ == DID_COMMIT || handle_state_ == DID_COMMIT_ERROR_PAGE);
+  return previous_url_;
+}
+
+bool NavigationRequest::WasStartedFromContextMenu() {
+  return common_params().started_from_context_menu;
+}
+
+const GURL& NavigationRequest::GetSearchableFormURL() {
+  return begin_params()->searchable_form_url;
+}
+
+const std::string& NavigationRequest::GetSearchableFormEncoding() {
+  return begin_params()->searchable_form_encoding;
+}
+
+ReloadType NavigationRequest::GetReloadType() {
+  return reload_type_;
+}
+
+RestoreType NavigationRequest::GetRestoreType() const {
+  return restore_type_;
+}
+
+const GURL& NavigationRequest::GetBaseURLForDataURL() {
+  return common_params().base_url_for_data_url;
+}
+
+const GlobalRequestID& NavigationRequest::GetGlobalRequestID() {
+  DCHECK_GE(handle_state_, PROCESSING_WILL_PROCESS_RESPONSE);
+  return request_id_;
+}
+
+bool NavigationRequest::IsDownload() {
+  return is_download_;
+}
+
+bool NavigationRequest::IsFormSubmission() {
+  return begin_params()->is_form_submission;
+}
+
+bool NavigationRequest::WasInitiatedByLinkClick() {
+  return begin_params()->was_initiated_by_link_click;
+}
+
+const std::string& NavigationRequest::GetHrefTranslate() {
+  return common_params().href_translate;
+}
+
+const base::Optional<url::Origin>& NavigationRequest::GetInitiatorOrigin() {
+  return common_params().initiator_origin;
+}
+
+bool NavigationRequest::IsSameProcess() {
+  return is_same_process_;
+}
+
+int NavigationRequest::GetNavigationEntryOffset() {
+  return navigation_entry_offset_;
+}
+
+bool NavigationRequest::FromDownloadCrossOriginRedirect() {
+  return from_download_cross_origin_redirect_;
+}
+
+const net::ProxyServer& NavigationRequest::GetProxyServer() {
+  return proxy_server_;
 }
 
 }  // namespace content

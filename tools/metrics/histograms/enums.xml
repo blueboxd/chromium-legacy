@@ -7658,9 +7658,10 @@ histogram as enum -->
 </enum>
 
 <enum name="ChromeColorsRevertReason">
-  <int value="0" label="User action"/>
+  <int value="0" label="Menu Cancel"/>
   <int value="1" label="Search provider change"/>
   <int value="2" label="Tab closed"/>
+  <int value="3" label="Navigation"/>
 </enum>
 
 <enum name="ChromeDownloadCountType">
@@ -18041,6 +18042,7 @@ Called by update_net_error_codes.py.-->
   <int value="601" label="HSTSPolicyBypassList"/>
   <int value="602" label="ReportDeviceOsUpdateStatus"/>
   <int value="603" label="DeviceLoginScreenWebUsbAllowDevicesForUrls"/>
+  <int value="604" label="AllowSyncXHRInPageDismissal"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -24645,6 +24647,7 @@ Called by update_net_error_codes.py.-->
   <int value="3029" label="QuotaRead"/>
   <int value="3030" label="DelegateFocus"/>
   <int value="3031" label="DelegateFocusNotFirstInFlatTree"/>
+  <int value="3032" label="ThirdPartySharedWorker"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -34829,6 +34832,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1847835522" label="disable-touch-adjustment"/>
   <int value="-1847776781"
       label="enable-loading-ipc-optimization-for-small-resources"/>
+  <int value="-1846680525" label="WebUIA11yEnhancements:enabled"/>
   <int value="-1846471618"
       label="enable-experimental-accessibility-switch-access-text"/>
   <int value="-1844754731" label="Mash:disabled"/>
@@ -35306,6 +35310,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1222805155" label="PdfIsolation:enabled"/>
   <int value="-1222556118" label="VirtualDesks:disabled"/>
   <int value="-1218608640" label="disable-offline-load-stale-cache"/>
+  <int value="-1217623062"
+      label="AutofillAlwaysReturnCloudTokenizedCard:disabled"/>
   <int value="-1217462552"
       label="OmniboxUIExperimentHideSteadyStateUrlTrivialSubdomains:disabled"/>
   <int value="-1217425153" label="ChromeHomeClearUrlOnOpen:enabled"/>
@@ -36320,6 +36326,7 @@ from previous Chrome versions.
   <int value="132560299"
       label="OmniboxUIExperimentHideSteadyStateUrlScheme:disabled"/>
   <int value="133482330" label="AppNotificationStatusMessaging:enabled"/>
+  <int value="136924140" label="OfflineIndicatorV2:enabled"/>
   <int value="138345654" label="enable-ambient-authentication-in-incognito"/>
   <int value="143725809" label="DownloadProgressInfoBar:enabled"/>
   <int value="146229312" label="WebPaymentsExperimentalFeatures:enabled"/>
@@ -36328,6 +36335,7 @@ from previous Chrome versions.
   <int value="149914698" label="SearchReadyOmnibox:disabled"/>
   <int value="151022756" label="ArcAvailableForChildAccount:disabled"/>
   <int value="151101719" label="HtmlBaseUsernameDetector:enabled"/>
+  <int value="151630887" label="WebUIA11yEnhancements:disabled"/>
   <int value="152867897" label="PasswordEditingAndroid:disabled"/>
   <int value="153347646" label="SmartDimModelV3:disabled"/>
   <int value="155977192" label="EnableFileManagerFormatDialog:disabled"/>
@@ -37340,6 +37348,7 @@ from previous Chrome versions.
   <int value="1590300329" label="CCTModulePostMessage:enabled"/>
   <int value="1591653786" label="SpeculativePreconnect:enabled"/>
   <int value="1593720927" label="GamepadVibration:disabled"/>
+  <int value="1593883073" label="OfflineIndicatorV2:disabled"/>
   <int value="1593917165" label="SimplifiedNTP:disabled"/>
   <int value="1594247626" label="ContentSuggestionsSettings:enabled"/>
   <int value="1594664550" label="NTPModernLayout:enabled"/>
@@ -37374,6 +37383,8 @@ from previous Chrome versions.
   <int value="1632112977" label="ash-disable-tablet-autohide-titlebars"/>
   <int value="1633456034" label="chrome-home-swipe-logic"/>
   <int value="1634732103" label="PassiveDocumentWheelEventListeners:enabled"/>
+  <int value="1634884226"
+      label="AutofillAlwaysReturnCloudTokenizedCard:enabled"/>
   <int value="1634897915" label="password-import-export:enabled"/>
   <int value="1634980726" label="VrShellExperimentalRendering:disabled"/>
   <int value="1635986352" label="ContextMenuSearchWithGoogleLens:enabled"/>

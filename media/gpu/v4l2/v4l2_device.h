@@ -20,6 +20,7 @@
 #include "base/files/scoped_file.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
+#include "base/sequence_checker.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_layout.h"
@@ -548,6 +549,8 @@ class MEDIA_GPU_EXPORT V4L2Device
   // Callback that is called upon a queue's destruction, to cleanup its pointer
   // in queues_.
   void OnQueueDestroyed(v4l2_buf_type buf_type);
+
+  SEQUENCE_CHECKER(client_sequence_checker_);
 };
 
 }  //  namespace media

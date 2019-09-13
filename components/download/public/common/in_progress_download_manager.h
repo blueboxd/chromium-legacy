@@ -142,8 +142,6 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
                                  const GURL& site_url) override;
   bool ShouldOpenDownload(DownloadItemImpl* item,
                           const ShouldOpenDownloadCallback& callback) override;
-  base::Optional<DownloadEntry> GetInProgressEntry(
-      DownloadItemImpl* download) override;
   void ReportBytesWasted(DownloadItemImpl* download) override;
 
   // Called to remove an in-progress download.
@@ -261,12 +259,6 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   // Cache for DownloadDB.
   std::unique_ptr<DownloadDBCache> download_db_cache_;
 
-  using DownloadEntryMap = std::map<std::string, DownloadEntry>;
-  // DownloadEntries to provide persistent information when creating download
-  // item.
-  // TODO(qinmin): remove this once features::kDownloadDBForNewDownloads is
-  // enabled by default.
-  DownloadEntryMap download_entries_;
 
   // listens to information about in-progress download items.
   std::unique_ptr<DownloadItem::Observer> in_progress_download_observer_;

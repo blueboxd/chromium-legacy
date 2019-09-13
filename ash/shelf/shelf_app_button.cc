@@ -39,8 +39,6 @@
 
 namespace {
 
-constexpr int kStatusIndicatorAttentionThrobDurationMS = 800;
-constexpr int kStatusIndicatorMaxAnimationSeconds = 10;
 constexpr int kStatusIndicatorRadiusDip = 2;
 constexpr int kStatusIndicatorMaxSize = 10;
 constexpr int kStatusIndicatorActiveSize = 8;
@@ -106,7 +104,7 @@ class ShelfAppButtonAnimation : public gfx::AnimationDelegate {
 
  private:
   ShelfAppButtonAnimation() : animation_(this) {
-    animation_.SetThrobDuration(kStatusIndicatorAttentionThrobDurationMS);
+    animation_.SetThrobDuration(base::TimeDelta::FromMilliseconds(800));
     animation_.SetTweenType(gfx::Tween::SMOOTH_IN_OUT);
   }
 
@@ -254,8 +252,7 @@ class ShelfAppButton::AppStatusIndicatorView
     show_attention_ = show;
     if (show_attention_) {
       animation_end_time_ =
-          base::TimeTicks::Now() +
-          base::TimeDelta::FromSeconds(kStatusIndicatorMaxAnimationSeconds);
+          base::TimeTicks::Now() + base::TimeDelta::FromSeconds(10);
       ShelfAppButtonAnimation::GetInstance()->AddObserver(this);
     } else {
       ShelfAppButtonAnimation::GetInstance()->RemoveObserver(this);

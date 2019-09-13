@@ -32,7 +32,7 @@ class TtsSsmlBrowserTest : public ContentBrowserTest {
   void RunSSMLStripTest(std::string input, std::string expected_string) {
     MockTtsControllerImpl* controller = new MockTtsControllerImpl();
 
-    TtsUtterance* utterance = TtsUtterance::Create(nullptr);
+    std::unique_ptr<TtsUtterance> utterance = TtsUtterance::Create(nullptr);
     utterance->SetText(input);
 
     base::RunLoop run_loop;

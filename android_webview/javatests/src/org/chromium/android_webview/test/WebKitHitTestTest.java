@@ -24,7 +24,6 @@ import org.junit.runner.RunWith;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.AwTestTouchUtils;
 import org.chromium.android_webview.test.util.CommonResources;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnPageCommitVisibleHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -36,7 +35,6 @@ import java.util.concurrent.TimeUnit;
  * Test for getHitTestResult, requestFocusNodeHref, and requestImageRef methods
  */
 @RunWith(AwJUnit4ClassRunner.class)
-@CommandLineFlags.Add({"allow-pre-commit-input"})
 public class WebKitHitTestTest {
     @Rule
     public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();

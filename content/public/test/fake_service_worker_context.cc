@@ -95,14 +95,6 @@ void FakeServiceWorkerContext::StartServiceWorkerAndDispatchMessage(
       std::make_tuple(scope, std::move(message), std::move(result_callback)));
 }
 
-void FakeServiceWorkerContext::StartServiceWorkerAndDispatchLongRunningMessage(
-    const GURL& scope,
-    blink::TransferableMessage message,
-    ResultCallback result_callback) {
-  start_service_worker_and_dispatch_long_running_message_calls_.push_back(
-      std::make_tuple(scope, std::move(message), std::move(result_callback)));
-}
-
 void FakeServiceWorkerContext::StopAllServiceWorkersForOrigin(
     const GURL& origin) {
   stop_all_service_workers_for_origin_calls_.push_back(origin);

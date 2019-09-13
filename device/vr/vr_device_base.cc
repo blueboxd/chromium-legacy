@@ -64,6 +64,12 @@ void VRDeviceBase::OnActivate(mojom::VRDisplayEventReason reason,
     listener_->OnDeviceActivated(reason, std::move(on_handled));
 }
 
+void VRDeviceBase::OnVisibilityStateChanged(
+    mojom::XRVisibilityState visibility_state) {
+  if (listener_)
+    listener_->OnVisibilityStateChanged(visibility_state);
+}
+
 mojom::XRRuntimePtr VRDeviceBase::BindXRRuntimePtr() {
   mojom::XRRuntimePtr runtime;
   runtime_binding_.Bind(mojo::MakeRequest(&runtime));

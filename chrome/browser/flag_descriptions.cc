@@ -118,6 +118,14 @@ const char kDrawVerticallyEdgeToEdgeName[] =
 const char kDrawVerticallyEdgeToEdgeDescription[] =
     "Draw contents vertically from edge to edge.";
 
+const char kAutofillAlwaysReturnCloudTokenizedCardName[] =
+    "Return cloud token details for server credit cards when possible";
+const char kAutofillAlwaysReturnCloudTokenizedCardDescription[] =
+    "When enabled and where available, forms filled using Google Payments "
+    "server cards are populated with cloud token details, including CPAN "
+    "(cloud tokenized version of the Primary Account Number) and dCVV (dynamic "
+    "CVV).";
+
 extern const char kAutofillAlwaysShowServerCardsInSyncTransportName[] =
     "AlwaysShowServerCardsInSyncTransport";
 extern const char kAutofillAlwaysShowServerCardsInSyncTransportDescription[] =
@@ -1386,13 +1394,6 @@ const char kOmniboxSpareRendererDescription[] =
     "When the omnibox is focused, start an empty spare renderer. This can "
     "speed up the load of the navigation from the omnibox.";
 
-const char kOmniboxUICuesForSearchHistoryMatchesName[] =
-    "Omnibox UI Cues to Differentiate Search History Matches";
-const char kOmniboxUICuesForSearchHistoryMatchesDescription[] =
-    "Shows UI cues in the omnibox to differentiate Search History matches from "
-    "other search suggestions provided by the default search provider. This "
-    "feature is a narrow subset of Omnibox Suggestion Transparency Options.";
-
 const char kOmniboxUIHideSteadyStateUrlSchemeName[] =
     "Omnibox UI Hide Steady-State URL Scheme";
 const char kOmniboxUIHideSteadyStateUrlSchemeDescription[] =
@@ -2411,11 +2412,6 @@ const char kContextualSearchTranslationModelDescription[] =
     "Enables triggering translation in Contextual Search according to the "
     "Chrome translation model semantics.";
 
-const char kContextualSearchUnityIntegrationName[] =
-    "Contextual Search integration with Unified Consent";
-const char kContextualSearchUnityIntegrationDescription[] =
-    "Enables integration of Tap to Search with Unified Consent.";
-
 const char kDirectActionsName[] = "Direct actions";
 const char kDirectActionsDescription[] =
     "Enables direct actions (Android Q and more).";
@@ -2524,6 +2520,10 @@ const char kOfflineIndicatorAlwaysHttpProbeDescription[] =
 const char kOfflineIndicatorChoiceName[] = "Offline indicator choices";
 const char kOfflineIndicatorChoiceDescription[] =
     "Show an offline indicator while offline.";
+
+const char kOfflineIndicatorV2Name[] = "Offline indicator V2";
+const char kOfflineIndicatorV2Description[] =
+    "Show a persistent offline indicator when offline.";
 
 const char kOfflinePagesCtName[] = "Enable Offline Pages CT features.";
 const char kOfflinePagesCtDescription[] = "Enable Offline Pages CT features.";
@@ -2908,8 +2908,8 @@ const char kOmniboxSuggestionTransparencyOptionsName[] =
     "Omnibox Suggestion Transparency Options";
 const char kOmniboxSuggestionTransparencyOptionsDescription[] =
     "Improves transparency of and control over omnibox suggestions. This "
-    "includes UI cues (like a clock icon for Search History suggestions), as "
-    "well as user controls to delete personalized suggestions.";
+    "includes \"Why this Suggestion?\" and user controls to delete "
+    "personalized suggestions.";
 
 const char kOmniboxTabSwitchSuggestionsName[] =
     "Omnibox tab switch suggestions";
@@ -2931,6 +2931,15 @@ const char kProactiveTabFreezeAndDiscardName[] =
 const char kProactiveTabFreezeAndDiscardDescription[] =
     "Enables proactive tab freezing and discarding. This requires "
     "#enable-page-almost-idle.";
+
+const char kWebUIA11yEnhancementsName[] =
+    "Enable accessibility enahncements in WebUI";
+const char kWebUIA11yEnhancementsDescription[] =
+    "This flag covers a wide variety of accessibility enhancements in WebUI "
+    "and is used to demonstrate the enhancements for review and testing. When "
+    "a enhancement is ready to be released, the enhancement will be taken out "
+    "from behind this feature flag. This flag will remain disabled and ready "
+    "to be used for other enhancements.";
 
 #if defined(GOOGLE_CHROME_BUILD)
 

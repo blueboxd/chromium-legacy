@@ -230,7 +230,7 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
     scoped_refptr<FakeRasterSource> raster_source =
         FakeRasterSource::CreateFilledWithImages(layer_bounds);
     while (static_cast<int>(layers.size()) < layer_count) {
-      auto* child_layer = AddLayer<FakePictureLayerImplWithRasterSource>(
+      auto* child_layer = AddLayer<FakePictureLayerImpl>(
           host_impl()->pending_tree(), raster_source);
       child_layer->SetBounds(layer_bounds);
       child_layer->SetDrawsContent(true);

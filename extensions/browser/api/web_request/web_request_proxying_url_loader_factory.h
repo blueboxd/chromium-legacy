@@ -110,7 +110,7 @@ class WebRequestProxyingURLLoaderFactory
                              int error_code);
     void OnAuthRequestHandled(
         WebRequestAPI::AuthRequestCallback callback,
-        net::NetworkDelegate::AuthRequiredResponse response);
+        ExtensionWebRequestEventRouter::AuthRequiredResponse response);
     void ContinueToBeforeRedirect(const net::RedirectInfo& redirect_info,
                                   int error_code);
     void HandleResponseOrRedirectHeaders(

@@ -21642,17 +21642,6 @@
         }
       },
       {
-        "isolate_name": "python3_smoketest",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "python3_smoketest",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
-      {
         "isolate_name": "telemetry_gpu_unittests",
         "merge": {
           "args": [],
@@ -23729,17 +23718,6 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "metrics_python_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
-      {
-        "isolate_name": "python3_smoketest",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "python3_smoketest",
         "swarming": {
           "can_use_on_swarming_builders": true
         }

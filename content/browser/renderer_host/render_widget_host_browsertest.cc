@@ -45,7 +45,6 @@ class RenderWidgetHostSitePerProcessTest : public ContentBrowserTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ContentBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kAllowPreCommitInput);
     IsolateAllSitesForTesting(command_line);
   }
 
@@ -121,11 +120,6 @@ class RenderWidgetHostTouchEmulatorBrowserTest : public ContentBrowserTest {
     router_ = static_cast<WebContentsImpl*>(shell()->web_contents())
                   ->GetInputEventRouter();
     ASSERT_TRUE(router_);
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ContentBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kAllowPreCommitInput);
   }
 
   base::TimeTicks GetNextSimulatedEventTime() {

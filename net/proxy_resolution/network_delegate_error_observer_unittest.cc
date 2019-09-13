@@ -39,8 +39,6 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
                                HttpRequestHeaders* headers) override {
     return OK;
   }
-  void OnStartTransaction(URLRequest* request,
-                          const HttpRequestHeaders& headers) override {}
   int OnHeadersReceived(
       URLRequest* request,
       CompletionOnceCallback callback,

@@ -28,6 +28,7 @@ class GpuControlClient {
   virtual void OnGpuControlErrorMessage(const char* message, int32_t id) = 0;
   virtual void OnGpuControlSwapBuffersCompleted(
       const SwapBuffersCompleteParams& params) = 0;
+  virtual void OnGpuSwitched() {}
   virtual void OnSwapBufferPresented(
       uint64_t swap_id,
       const gfx::PresentationFeedback& feedback) = 0;

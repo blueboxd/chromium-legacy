@@ -937,7 +937,7 @@ QuicTestPacketMaker::MakePushPromisePacket(
     size_t* spdy_headers_frame_length) {
   if (quic::VersionUsesQpack(version_.transport_version)) {
     std::string encoded_headers =
-        qpack_encoder_.EncodeHeaderList(stream_id, headers);
+        qpack_encoder_.EncodeHeaderList(stream_id, headers, nullptr);
     quic::QuicFrames frames;
     quic::PushPromiseFrame frame;
     frame.push_id = promised_stream_id;
@@ -1363,7 +1363,7 @@ std::vector<std::string> QuicTestPacketMaker::QpackEncodeHeaders(
   std::vector<std::string> data;
 
   std::string encoded_headers =
-      qpack_encoder_.EncodeHeaderList(stream_id, headers);
+      qpack_encoder_.EncodeHeaderList(stream_id, headers, nullptr);
 
   // Generate HEADERS frame header.
   std::unique_ptr<char[]> headers_frame_header;

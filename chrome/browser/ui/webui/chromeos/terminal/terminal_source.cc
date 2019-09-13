@@ -27,7 +27,11 @@ void ReadFile(const base::FilePath& path,
               const content::URLDataSource::GotDataCallback& callback) {
   std::string content;
   bool result = base::ReadFileToString(path, &content);
-  DCHECK(result) << path;
+  // Allow missing files in <root>/_locales only.
+  DCHECK(result || base::FilePath(kTerminalRoot)
+                       .Append("_locales")
+                       .AppendRelativePath(path, nullptr))
+      << path;
   scoped_refptr<base::RefCountedString> response =
       base::RefCountedString::TakeString(&content);
   callback.Run(response.get());

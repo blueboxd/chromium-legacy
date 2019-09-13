@@ -101,7 +101,13 @@ class PaymentsClient {
       return *this;
     }
 
+    UnmaskResponseDetails& with_dcvv(std::string d) {
+      dcvv = d;
+      return *this;
+    }
+
     std::string real_pan;
+    std::string dcvv;
     // Challenge required for enrolling user into FIDO authentication for future
     // card unmasking.
     base::Optional<base::Value> fido_creation_options = base::nullopt;

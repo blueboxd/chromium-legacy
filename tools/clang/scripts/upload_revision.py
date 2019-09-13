@@ -85,9 +85,11 @@ def main():
       clang_old_revision, clang_svn_revision, commit_message)])
 
   Git(["cl", "upload", "-f", "--bypass-hooks"])
-  Git(["cl", "try", "-b", "linux_upload_clang", "-r", git_revision])
-  Git(["cl", "try", "-b", "mac_upload_clang", "-r", git_revision])
-  Git(["cl", "try", "-b", "win_upload_clang", "-r", git_revision])
+  Git(["cl", "try", "-B", "luci.chromium.try",
+       "-b", "linux_upload_clang",
+       "-b", "mac_upload_clang",
+       "-b", "win_upload_clang",
+       "-r", git_revision])
 
   print ("Please, wait until the try bots succeeded "
          "and then push the binaries to goma.")

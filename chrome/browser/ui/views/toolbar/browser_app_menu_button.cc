@@ -84,8 +84,7 @@ class PulsingInkDropMask : public views::AnimationDelegateViews,
         normal_corner_radius_(normal_corner_radius),
         max_inset_(max_inset),
         throb_animation_(this) {
-    throb_animation_.SetThrobDuration(
-        kFeaturePromoPulseDuration.InMilliseconds());
+    throb_animation_.SetThrobDuration(kFeaturePromoPulseDuration);
     throb_animation_.StartThrobbing(-1);
   }
 

@@ -16,7 +16,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
-
 static const LayoutBoxModelObject* ClippingContainerFromClipChainParent(
     const PaintLayer* clip_chain_parent) {
   return clip_chain_parent->GetLayoutObject().HasClipRelatedProperty()
@@ -194,7 +193,7 @@ void CompositingInputsUpdater::UpdateSelfAndDescendantsRecursively(
   compositor->ClearCompositingInputsRoot();
 }
 
-void CompositingInputsUpdater::UpdateAncestorInfo(PaintLayer* layer,
+void CompositingInputsUpdater::UpdateAncestorInfo(PaintLayer* const layer,
                                                   UpdateType& update_type,
                                                   AncestorInfo& info) {
   LayoutBoxModelObject& layout_object = layer->GetLayoutObject();
@@ -208,7 +207,7 @@ void CompositingInputsUpdater::UpdateAncestorInfo(PaintLayer* layer,
     case kNotComposited:
       break;
     case kPaintsIntoOwnBacking:
-      if (layer->GetLayoutObject().StyleRef().IsStackingContext())
+      if (style.IsStackingContext())
         enclosing_stacking_composited_layer = layer;
       break;
     case kPaintsIntoGroupedBacking:
@@ -239,6 +238,9 @@ void CompositingInputsUpdater::UpdateAncestorInfo(PaintLayer* layer,
     info.scrolling_ancestor = info.scrolling_ancestor_for_fixed;
     info.needs_reparent_scroll = info.needs_reparent_scroll_for_fixed;
   }
+
+  if (layout_object.ShouldApplyLayoutContainment())
+    info.nearest_contained_layout_layer = layer;
 
   if (update_type == kForceUpdate)
     UpdateAncestorDependentCompositingInputs(layer, info);
@@ -332,7 +334,7 @@ void CompositingInputsUpdater::UpdateAncestorInfo(PaintLayer* layer,
         info.needs_reparent_scroll_for_fixed = false;
   }
 
-  if (layer->GetLayoutObject().IsStickyPositioned())
+  if (layout_object.IsStickyPositioned())
     info.is_under_position_sticky = true;
 }
 
@@ -426,6 +428,8 @@ void CompositingInputsUpdater::UpdateAncestorDependentCompositingInputs(
     properties.scroll_parent = info.scrolling_ancestor;
 
   properties.is_under_position_sticky = info.is_under_position_sticky;
+  properties.nearest_contained_layout_layer =
+      info.nearest_contained_layout_layer;
 
   layer->UpdateAncestorDependentCompositingInputs(properties);
 }

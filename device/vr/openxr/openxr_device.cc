@@ -160,10 +160,12 @@ void OpenXrDevice::RequestSession(
   // a method and cannot take nullptr, so passing in base::DoNothing::Once()
   // for on_presentation_ended
   render_loop_->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestSession,
-                                base::Unretained(render_loop_.get()),
-                                base::DoNothing::Once(), std::move(options),
-                                std::move(my_callback)));
+      FROM_HERE,
+      base::BindOnce(&XRCompositorCommon::RequestSession,
+                     base::Unretained(render_loop_.get()),
+                     base::DoNothing::Once(),
+                     base::DoNothing::Repeatedly<mojom::XRVisibilityState>(),
+                     std::move(options), std::move(my_callback)));
 }
 
 void OpenXrDevice::OnRequestSessionResult(

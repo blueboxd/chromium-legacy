@@ -11,6 +11,7 @@
 namespace blink {
 
 class ExceptionState;
+class ExecutionContext;
 class ScriptState;
 class Blob;
 
@@ -20,6 +21,7 @@ class URLFileAPI {
  public:
   static String createObjectURL(ScriptState*, Blob*, ExceptionState&);
   static void revokeObjectURL(ScriptState*, const String&);
+  static void revokeObjectURL(ExecutionContext*, const String&);
 };
 
 }  // namespace blink

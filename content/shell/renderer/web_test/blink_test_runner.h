@@ -21,6 +21,7 @@
 #include "content/shell/common/web_test/web_test_bluetooth_fake_adapter_setter.mojom.h"
 #include "content/shell/test_runner/test_preferences.h"
 #include "content/shell/test_runner/web_test_delegate.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "v8/include/v8.h"
 
 class SkBitmap;
@@ -181,7 +182,8 @@ class BlinkTestRunner : public RenderViewObserver,
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner();
 
   mojom::WebTestBluetoothFakeAdapterSetter& GetBluetoothFakeAdapterSetter();
-  mojom::WebTestBluetoothFakeAdapterSetterPtr bluetooth_fake_adapter_setter_;
+  mojo::Remote<mojom::WebTestBluetoothFakeAdapterSetter>
+      bluetooth_fake_adapter_setter_;
 
   test_runner::TestPreferences prefs_;
 

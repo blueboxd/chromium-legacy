@@ -306,7 +306,9 @@ CertVerifyProcBuiltin::CertVerifyProcBuiltin(
     scoped_refptr<CertNetFetcher> net_fetcher,
     std::unique_ptr<SystemTrustStoreProvider> system_trust_store_provider)
     : net_fetcher_(std::move(net_fetcher)),
-      system_trust_store_provider_(std::move(system_trust_store_provider)) {}
+      system_trust_store_provider_(std::move(system_trust_store_provider)) {
+  DCHECK(system_trust_store_provider_);
+}
 
 CertVerifyProcBuiltin::~CertVerifyProcBuiltin() = default;
 
@@ -626,9 +628,7 @@ int CertVerifyProcBuiltin::VerifyInternal(
 
   // Parse the additional trust anchors and setup trust store.
   std::unique_ptr<SystemTrustStore> ssl_trust_store =
-      system_trust_store_provider_
-          ? system_trust_store_provider_->CreateSystemTrustStore()
-          : CreateSslSystemTrustStore();
+      system_trust_store_provider_->CreateSystemTrustStore();
 
   for (const auto& x509_cert : additional_trust_anchors) {
     scoped_refptr<ParsedCertificate> cert =
@@ -712,7 +712,20 @@ int CertVerifyProcBuiltin::VerifyInternal(
   return error;
 }
 
+class DefaultSystemTrustStoreProvider : public SystemTrustStoreProvider {
+ public:
+  std::unique_ptr<SystemTrustStore> CreateSystemTrustStore() override {
+    return CreateSslSystemTrustStore();
+  }
+};
+
 }  // namespace
+
+// static
+std::unique_ptr<SystemTrustStoreProvider>
+SystemTrustStoreProvider::CreateDefaultForSSL() {
+  return std::make_unique<DefaultSystemTrustStoreProvider>();
+}
 
 scoped_refptr<CertVerifyProc> CreateCertVerifyProcBuiltin(
     scoped_refptr<CertNetFetcher> net_fetcher,

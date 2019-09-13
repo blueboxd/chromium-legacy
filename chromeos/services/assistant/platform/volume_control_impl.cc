@@ -6,12 +6,8 @@
 
 #include <utility>
 
-#include "ash/public/mojom/assistant_volume_control.mojom.h"
 #include "ash/public/mojom/constants.mojom.h"
 #include "chromeos/services/assistant/media_session/assistant_media_session.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
 
 namespace chromeos {
 namespace assistant {
@@ -19,13 +15,14 @@ namespace assistant {
 VolumeControlImpl::VolumeControlImpl(mojom::Client* client,
                                      AssistantMediaSession* media_session)
     : media_session_(media_session),
+      binding_(this),
       main_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       weak_factory_(this) {
   client->RequestAssistantVolumeControl(
-      volume_control_.BindNewPipeAndPassReceiver());
-  mojo::PendingRemote<mojo::ash::mojom::VolumeObserver> observer;
-  receiver_.Bind(observer.InitWithNewPipeAndPassReceiver());
-  volume_control_->AddVolumeObserver(std::move(observer));
+      mojo::MakeRequest(&volume_control_ptr_));
+  ash::mojom::VolumeObserverPtr observer;
+  binding_.Bind(mojo::MakeRequest(&observer));
+  volume_control_ptr_->AddVolumeObserver(std::move(observer));
 }
 
 VolumeControlImpl::~VolumeControlImpl() = default;

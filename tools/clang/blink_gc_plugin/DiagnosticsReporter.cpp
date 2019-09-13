@@ -140,6 +140,10 @@ const char kBaseClassMustDeclareVirtualTrace[] =
     "[blink-gc] Left-most base class %0 of derived class %1"
     " must define a virtual trace method.";
 
+const char kClassMustCRTPItself[] =
+    "[blink-gc] GC base class %0 must be specialized with the derived class "
+    "%1.";
+
 const char kIteratorToGCManagedCollectionNote[] =
     "[blink-gc] Iterator field %0 to a GC managed collection declared here:";
 
@@ -220,6 +224,8 @@ DiagnosticsReporter::DiagnosticsReporter(
       getErrorLevel(), kLeftMostBaseMustBePolymorphic);
   diag_base_class_must_declare_virtual_trace_ = diagnostic_.getCustomDiagID(
       getErrorLevel(), kBaseClassMustDeclareVirtualTrace);
+  diag_class_must_crtp_itself_ =
+      diagnostic_.getCustomDiagID(getErrorLevel(), kClassMustCRTPItself);
   diag_iterator_to_gc_managed_collection_note_ = diagnostic_.getCustomDiagID(
       getErrorLevel(), kIteratorToGCManagedCollectionNote);
   diag_trace_method_of_stack_allocated_parent_ = diagnostic_.getCustomDiagID(
@@ -502,6 +508,14 @@ void DiagnosticsReporter::BaseClassMustDeclareVirtualTrace(
     CXXRecordDecl* base) {
   ReportDiagnostic(base->getBeginLoc(),
                    diag_base_class_must_declare_virtual_trace_)
+      << base << derived->record();
+}
+
+void DiagnosticsReporter::ClassMustCRTPItself(
+    const RecordInfo* derived,
+    const CXXRecordDecl* base,
+    const CXXBaseSpecifier* base_spec) {
+  ReportDiagnostic(base_spec->getBeginLoc(), diag_class_must_crtp_itself_)
       << base << derived->record();
 }
 

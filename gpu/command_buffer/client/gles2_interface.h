@@ -37,6 +37,8 @@ class GLES2Interface : public InterfaceBase {
 
   virtual void FreeSharedMemory(void*) {}
 
+  virtual GLboolean DidGpuSwitch();
+
   // Include the auto-generated part of this class. We split this because
   // it means we can easily edit the non-auto generated parts right here in
   // this file instead of having to edit some template or the code generator.

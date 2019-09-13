@@ -155,15 +155,13 @@ void PageSetup::CalculateSizesWithinRect(const gfx::Rect& bounds,
   effective_margins_.footer = std::max(
       requested_margins_.footer, physical_size_.height() - bounds.bottom());
   effective_margins_.left = std::max(requested_margins_.left, bounds.x());
-  effective_margins_.top =
-      std::max(std::max(requested_margins_.top, bounds.y()),
-               effective_margins_.header + text_height);
+  effective_margins_.top = std::max({requested_margins_.top, bounds.y(),
+                                     effective_margins_.header + text_height});
   effective_margins_.right = std::max(requested_margins_.right,
                                       physical_size_.width() - bounds.right());
-  effective_margins_.bottom =
-      std::max(std::max(requested_margins_.bottom,
-                        physical_size_.height() - bounds.bottom()),
-               effective_margins_.footer + text_height);
+  effective_margins_.bottom = std::max(
+      {requested_margins_.bottom, physical_size_.height() - bounds.bottom(),
+       effective_margins_.footer + text_height});
 
   // Calculate the overlay area. If the margins are excessive, the overlay_area
   // size will be (0, 0).

@@ -71,7 +71,8 @@ BlinkTransferableMessage ToBlinkTransferableMessage(
   result.sender_stack_trace_id = v8_inspector::V8StackTraceId(
       static_cast<uintptr_t>(message.stack_trace_id),
       std::make_pair(message.stack_trace_debugger_id_first,
-                     message.stack_trace_debugger_id_second));
+                     message.stack_trace_debugger_id_second),
+      message.stack_trace_should_pause);
   result.locked_agent_cluster_id = message.locked_agent_cluster_id;
   result.ports.AppendRange(message.ports.begin(), message.ports.end());
   result.message->GetStreamChannels().AppendRange(
@@ -139,6 +140,7 @@ TransferableMessage ToTransferableMessage(BlinkTransferableMessage message) {
       message.sender_stack_trace_id.debugger_id.first;
   result.stack_trace_debugger_id_second =
       message.sender_stack_trace_id.debugger_id.second;
+  result.stack_trace_should_pause = message.sender_stack_trace_id.should_pause;
   result.locked_agent_cluster_id = message.locked_agent_cluster_id;
   result.ports.assign(message.ports.begin(), message.ports.end());
   auto& stream_channels = message.message->GetStreamChannels();

@@ -87,10 +87,8 @@ void FakeUpdateEngineClient::GetChannel(bool get_current_channel,
 
 void FakeUpdateEngineClient::GetEolStatus(GetEolStatusCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(base::BindOnce(std::move(callback),
-                                    update_engine::EndOfLifeStatus::kSupported),
-                     base::nullopt /* number_of_milestones */));
+      FROM_HERE, base::BindOnce(std::move(callback),
+                                update_engine::EndOfLifeStatus::kSupported));
 }
 
 void FakeUpdateEngineClient::SetUpdateOverCellularPermission(

@@ -420,19 +420,23 @@ void WebRequestProxyingWebSocket::OnHeadersReceivedComplete(int error_code) {
 }
 
 void WebRequestProxyingWebSocket::OnAuthRequiredComplete(
-    net::NetworkDelegate::AuthRequiredResponse rv) {
+    ExtensionWebRequestEventRouter::AuthRequiredResponse rv) {
   DCHECK(auth_required_callback_);
   ResumeIncomingMethodCallProcessing();
   switch (rv) {
-    case net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION:
-    case net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_CANCEL_AUTH:
+    case ExtensionWebRequestEventRouter::AuthRequiredResponse::
+        AUTH_REQUIRED_RESPONSE_NO_ACTION:
+    case ExtensionWebRequestEventRouter::AuthRequiredResponse::
+        AUTH_REQUIRED_RESPONSE_CANCEL_AUTH:
       std::move(auth_required_callback_).Run(base::nullopt);
       break;
 
-    case net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_SET_AUTH:
+    case ExtensionWebRequestEventRouter::AuthRequiredResponse::
+        AUTH_REQUIRED_RESPONSE_SET_AUTH:
       std::move(auth_required_callback_).Run(auth_credentials_);
       break;
-    case net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_IO_PENDING:
+    case ExtensionWebRequestEventRouter::AuthRequiredResponse::
+        AUTH_REQUIRED_RESPONSE_IO_PENDING:
       NOTREACHED();
       break;
   }
@@ -455,8 +459,10 @@ void WebRequestProxyingWebSocket::OnHeadersReceivedCompleteForAuth(
       browser_context_, &info_, auth_info, std::move(continuation),
       &auth_credentials_);
   PauseIncomingMethodCallProcessing();
-  if (auth_rv == net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_IO_PENDING)
+  if (auth_rv == ExtensionWebRequestEventRouter::AuthRequiredResponse::
+                     AUTH_REQUIRED_RESPONSE_IO_PENDING) {
     return;
+  }
 
   OnAuthRequiredComplete(auth_rv);
 }

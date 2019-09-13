@@ -24,9 +24,6 @@
 namespace ash {
 
 namespace {
-// Duration of crossfade animation for activating and deactivating frame.
-const int kActivationCrossfadeDurationMs = 200;
-
 // Returns the available bounds for the header's title given the views to the
 // left and right of the title, and the font used. |left_view| should be null
 // if there is no view to the left of the title.
@@ -102,7 +99,8 @@ void FrameHeader::PaintHeader(gfx::Canvas* canvas, Mode mode) {
     UpdateCaptionButtonColors();
 
     if (!initial_paint_ && CanAnimateActivation(target_widget_)) {
-      activation_animation_.SetSlideDuration(kActivationCrossfadeDurationMs);
+      activation_animation_.SetSlideDuration(
+          base::TimeDelta::FromMilliseconds(200));
       if (mode_ == MODE_ACTIVE)
         activation_animation_.Show();
       else

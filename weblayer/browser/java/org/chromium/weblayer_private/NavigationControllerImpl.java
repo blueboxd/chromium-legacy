@@ -5,11 +5,10 @@
 package org.chromium.weblayer_private;
 
 import android.os.RemoteException;
-import android.util.AndroidRuntimeException;
 
-import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.weblayer_private.aidl.APICallException;
 import org.chromium.weblayer_private.aidl.INavigationController;
 import org.chromium.weblayer_private.aidl.INavigationControllerClient;
 
@@ -18,8 +17,6 @@ import org.chromium.weblayer_private.aidl.INavigationControllerClient;
  */
 @JNINamespace("weblayer")
 public final class NavigationControllerImpl extends INavigationController.Stub {
-    private static final String TAG = "WebLayer";
-
     private long mNativeNavigationController;
     private BrowserControllerImpl mBrowserController;
     private INavigationControllerClient mNavigationControllerClient;
@@ -83,8 +80,7 @@ public final class NavigationControllerImpl extends INavigationController.Stub {
         try {
             mNavigationControllerClient.navigationStarted(navigation.getClientNavigation());
         } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call navigationStarted.", e);
-            throw new AndroidRuntimeException(e);
+            throw new APICallException(e);
         }
     }
 
@@ -93,8 +89,7 @@ public final class NavigationControllerImpl extends INavigationController.Stub {
         try {
             mNavigationControllerClient.navigationRedirected(navigation.getClientNavigation());
         } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call navigationRedirected.", e);
-            throw new AndroidRuntimeException(e);
+            throw new APICallException(e);
         }
     }
 
@@ -103,8 +98,7 @@ public final class NavigationControllerImpl extends INavigationController.Stub {
         try {
             mNavigationControllerClient.navigationCommitted(navigation.getClientNavigation());
         } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call navigationCommitted.", e);
-            throw new AndroidRuntimeException(e);
+            throw new APICallException(e);
         }
     }
 
@@ -113,8 +107,7 @@ public final class NavigationControllerImpl extends INavigationController.Stub {
         try {
             mNavigationControllerClient.navigationCompleted(navigation.getClientNavigation());
         } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call navigationCompleted.", e);
-            throw new AndroidRuntimeException(e);
+            throw new APICallException(e);
         }
     }
 
@@ -123,8 +116,7 @@ public final class NavigationControllerImpl extends INavigationController.Stub {
         try {
             mNavigationControllerClient.navigationFailed(navigation.getClientNavigation());
         } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call navigationFailed.", e);
-            throw new AndroidRuntimeException(e);
+            throw new APICallException(e);
         }
     }
 

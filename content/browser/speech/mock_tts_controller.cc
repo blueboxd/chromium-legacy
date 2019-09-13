@@ -26,7 +26,7 @@ class MockTtsController : public TtsController {
 
   bool IsSpeaking() override { return false; }
 
-  void SpeakOrEnqueue(TtsUtterance* utterance) override {}
+  void SpeakOrEnqueue(std::unique_ptr<TtsUtterance> utterance) override {}
 
   void Stop() override {}
 

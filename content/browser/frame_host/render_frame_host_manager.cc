@@ -2297,7 +2297,7 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
       request.dest_site_instance(), candidate_site_instance,
       request.common_params().transition,
       request.state() == NavigationRequest::FAILED,
-      request.restore_type() != RestoreType::NONE, request.is_view_source(),
+      request.GetRestoreType() != RestoreType::NONE, request.is_view_source(),
       was_server_redirect);
 
   return dest_site_instance;

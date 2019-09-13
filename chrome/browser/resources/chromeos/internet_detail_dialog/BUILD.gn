@@ -31,9 +31,5 @@ js_library("internet_detail_dialog") {
     "//ui/webui/resources/js:i18n_behavior",
     "//ui/webui/resources/js/chromeos:onc_mojo",
   ]
-  externs_list = [
-    "$externs_path/chrome_send.js",
-    "$externs_path/networking_private.js",
-  ]
-  extra_sources = [ "$interfaces_path/networking_private_interface.js" ]
+  externs_list = [ "$externs_path/chrome_send.js" ]
 }

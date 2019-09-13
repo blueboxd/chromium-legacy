@@ -25,9 +25,16 @@ class RefCounted;
 template <class, typename>
 class RefCountedThreadSafe;
 class SequencedTaskRunner;
+class WrappedPromise;
 
 template <typename T>
 scoped_refptr<T> AdoptRef(T* t);
+
+namespace internal {
+
+class BasePromise;
+
+}  // namespace internal
 
 namespace subtle {
 
@@ -259,6 +266,11 @@ class scoped_refptr {
   template <typename U>
   friend scoped_refptr<U> base::AdoptRef(U*);
   friend class ::base::SequencedTaskRunner;
+
+  // Friend access so these classes can use the constructor below as part of a
+  // binary size optimization.
+  friend class ::base::internal::BasePromise;
+  friend class ::base::WrappedPromise;
 
   // Returns the owned pointer (if any), releasing ownership to the caller. The
   // caller is responsible for managing the lifetime of the reference.

@@ -15,7 +15,7 @@ namespace media {
 
 namespace mp4 {
 
-struct DOVIDecoderConfigurationRecord {
+struct MEDIA_EXPORT DOVIDecoderConfigurationRecord {
   uint8_t dv_version_major = 0;
   uint8_t dv_version_minor = 0;
   uint8_t dv_profile = 0;

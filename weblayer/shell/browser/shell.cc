@@ -118,11 +118,10 @@ gfx::Size Shell::AdjustWindowSize(const gfx::Size& initial_size) {
 Shell* Shell::CreateNewWindow(weblayer::Profile* web_profile,
                               const GURL& url,
                               const gfx::Size& initial_size) {
-  auto adjusted_size = AdjustWindowSize(initial_size);
-  auto browser_controller =
-      BrowserController::Create(web_profile, adjusted_size);
+  auto browser_controller = BrowserController::Create(web_profile);
 
-  Shell* shell = CreateShell(std::move(browser_controller), adjusted_size);
+  Shell* shell = CreateShell(std::move(browser_controller),
+                             AdjustWindowSize(initial_size));
   if (!url.is_empty())
     shell->LoadURL(url);
   return shell;

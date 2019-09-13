@@ -34,18 +34,24 @@ CRWSessionStorage* SessionStorageBuilder::BuildStorage(
   session_storage.hasOpener = web_state->HasOpener();
   session_storage.lastCommittedItemIndex =
       navigation_manager->GetLastCommittedItemIndex();
+  if (session_storage.lastCommittedItemIndex == -1) {
+    // This can happen when a session is saved during restoration. Instead,
+    // default to GetItemCount() - 1.
+    session_storage.lastCommittedItemIndex =
+        navigation_manager->GetItemCount() - 1;
+  }
   session_storage.previousItemIndex =
       navigation_manager->GetPreviousItemIndex();
   NSMutableArray* item_storages = [[NSMutableArray alloc] init];
   NavigationItemStorageBuilder item_storage_builder;
+  size_t originalIndex = session_storage.lastCommittedItemIndex;
   for (size_t index = 0;
        index < static_cast<size_t>(navigation_manager->GetItemCount());
        ++index) {
     web::NavigationItemImpl* item =
         navigation_manager->GetNavigationItemImplAtIndex(index);
     if (item->ShouldSkipSerialization()) {
-      if (index <= static_cast<size_t>(
-                       navigation_manager->GetLastCommittedItemIndex())) {
+      if (index <= originalIndex) {
         session_storage.lastCommittedItemIndex--;
       }
       continue;

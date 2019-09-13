@@ -50,6 +50,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryFactory {
   void set_cable_data(std::vector<CableDiscoveryData> cable_data,
                       base::Optional<QRGeneratorKey> qr_generator_key);
 
+  // set_cable_pairing_callback installs a repeating callback that will be
+  // called when a QR handshake results in a phone wishing to pair with this
+  // browser.
+  void set_cable_pairing_callback(
+      base::RepeatingCallback<void(std::unique_ptr<CableDiscoveryData>)>);
+
 #if defined(OS_MACOSX)
   // Configures the Touch ID authenticator. Set to base::nullopt to disable it.
   void set_mac_touch_id_info(
@@ -76,6 +82,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryFactory {
 #endif  // defined(OS_MACOSX)
   base::Optional<std::vector<CableDiscoveryData>> cable_data_;
   base::Optional<QRGeneratorKey> qr_generator_key_;
+  base::Optional<
+      base::RepeatingCallback<void(std::unique_ptr<CableDiscoveryData>)>>
+      cable_pairing_callback_;
 #if defined(OS_WIN)
   WinWebAuthnApi* win_webauthn_api_ = nullptr;
 #endif  // defined(OS_WIN)

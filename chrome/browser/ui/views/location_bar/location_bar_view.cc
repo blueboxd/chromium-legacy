@@ -311,7 +311,7 @@ void LocationBarView::Init() {
   // visible when the location entry has just been initialized.
   Update(nullptr);
 
-  hover_animation_.SetSlideDuration(200);
+  hover_animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(200));
 
   is_initialized_ = true;
 }

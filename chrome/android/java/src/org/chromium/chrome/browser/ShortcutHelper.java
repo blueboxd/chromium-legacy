@@ -654,6 +654,15 @@ public class ShortcutHelper {
     }
 
     /**
+     * Returns the ideal size for an adaptive launcher icon of a WebAPK.
+     * @param context Context to pull resources from.
+     * @return the dimensions in pixels which the adaptive launcher icon should have.
+     */
+    public static int getIdealAdaptiveLauncherIconSizeInPx(Context context) {
+        return getSizeFromResourceInPx(context, R.dimen.webapk_adaptive_icon_size);
+    }
+
+    /**
      * @return String that can be used to verify that a WebappActivity is being started by Chrome.
      */
     public static String getEncodedMac(String url) {
@@ -703,13 +712,10 @@ public class ShortcutHelper {
     private static int[] getHomeScreenIconAndSplashImageSizes() {
         Context context = ContextUtils.getApplicationContext();
         // This ordering must be kept up to date with the C++ ShortcutHelper.
-        return new int[] {
-            getIdealHomescreenIconSizeInPx(context),
-            getMinimumHomescreenIconSizeInPx(context),
-            getIdealSplashImageSizeInPx(context),
-            getMinimumSplashImageSizeInPx(context),
-            getIdealBadgeIconSizeInPx(context)
-        };
+        return new int[] {getIdealHomescreenIconSizeInPx(context),
+                getMinimumHomescreenIconSizeInPx(context), getIdealSplashImageSizeInPx(context),
+                getMinimumSplashImageSizeInPx(context), getIdealBadgeIconSizeInPx(context),
+                getIdealAdaptiveLauncherIconSizeInPx(context)};
     }
 
     /**

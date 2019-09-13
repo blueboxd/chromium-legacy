@@ -1154,11 +1154,6 @@ test("ui_base_unittests") {
   }
   if (is_mac) {
     data += [ "$root_out_dir/ui_unittests Framework.framework/" ]
-
-    if (is_asan && symbol_level == 0) {
-      # TODO(crbug.com/330301): make this conditional on mac_strip_release.
-      # data += [ "$root_out_dir/ui_base_unittests.dSYM/" ]
-    }
   }
 }
 

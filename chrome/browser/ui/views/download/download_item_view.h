@@ -164,12 +164,6 @@ class DownloadItemView : public views::InkDropHostView,
   // Height/width of the erro icon, also in dp.
   static constexpr int kErrorIconSize = 27;
 
-  // How long the 'download complete' animation should last for.
-  static constexpr int kCompleteAnimationDurationMs = 2500;
-
-  // How long the 'download interrupted' animation should last for.
-  static constexpr int kInterruptedAnimationDurationMs = 2500;
-
   // How long we keep the item disabled after the user clicked it to open the
   // downloaded item.
   static constexpr int kDisabledOnOpenDuration = 3000;

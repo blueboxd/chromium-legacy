@@ -4,23 +4,32 @@
 
 #include "ui/gl/dual_gpu_state.h"
 
+#include "base/containers/flat_set.h"
 #include "base/trace_event/trace_event.h"
 
 namespace gl {
 
-DualGPUState::DualGPUState() : num_high_performance_contexts_(0) {}
+class GLContext;
 
-void DualGPUState::RegisterHighPerformanceContext() {
+DualGPUState::DualGPUState() {}
+
+DualGPUState::~DualGPUState() {}
+
+void DualGPUState::RegisterHighPerformanceContext(GLContext* context) {
+  if (contexts_.contains(context))
+    return;
+
   CancelDelayedSwitchToLowPowerGPU();
-  num_high_performance_contexts_++;
+  contexts_.insert(context);
   SwitchToHighPerformanceGPUIfNeeded();
 }
 
-void DualGPUState::RemoveHighPerformanceContext() {
-  DCHECK(num_high_performance_contexts_ > 0);
+void DualGPUState::RemoveHighPerformanceContext(GLContext* context) {
+  if (!contexts_.contains(context))
+    return;
 
-  num_high_performance_contexts_--;
-  if (num_high_performance_contexts_ == 0)
+  contexts_.erase(context);
+  if (contexts_.empty())
     AttemptSwitchToLowPowerGPUWithDelay();
 }
 

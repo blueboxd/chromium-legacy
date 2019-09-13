@@ -267,12 +267,6 @@ interface ServiceWorker {
   // Ref: https://github.com/rknoll/content-index
   DispatchContentDeleteEvent(string id) => (ServiceWorkerEventStatus status);
 
-  // TODO(crbug.com/869714): Remove this code for long living service workers
-  // when Android Messages no longer requires it.
-  DispatchExtendableMessageEventWithCustomTimeout(ExtendableMessageEvent event,
-                                 mojo_base.mojom.TimeDelta timeout)
-      => (ServiceWorkerEventStatus status);
-
   // Pings the service worker to check if it is responsive. If the callback is
   // not called within a certain period of time, the browser will terminate the
   // worker.

@@ -76,6 +76,7 @@ content::WebUIDataSource* CreateFlagsUIHTMLSource() {
 
   source->AddResourcePath(flags_ui::kFlagsJS, IDR_FLAGS_UI_FLAGS_JS);
   source->SetDefaultResource(IDR_FLAGS_UI_FLAGS_HTML);
+  source->UseStringsJs();
   return source;
 }
 
@@ -141,6 +142,10 @@ void FlagsUI::AddStrings(content::WebUIDataSource* source) {
                              IDS_FLAGS_UI_SEARCH_PLACEHOLDER);
   source->AddLocalizedString("title", IDS_FLAGS_UI_TITLE);
   source->AddLocalizedString("unavailable", IDS_FLAGS_UI_UNAVAILABLE_FEATURE);
+  source->AddLocalizedString("searchResultsSingular",
+                             IDS_FLAGS_UI_SEARCH_RESULTS_SINGULAR);
+  source->AddLocalizedString("searchResultsPlural",
+                             IDS_FLAGS_UI_SEARCH_RESULTS_PLURAL);
 }
 
 // static
@@ -172,6 +177,10 @@ void FlagsDeprecatedUI::AddStrings(content::WebUIDataSource* source) {
   source->AddLocalizedString("title", IDS_DEPRECATED_FEATURES_TITLE);
   source->AddLocalizedString("unavailable",
                              IDS_DEPRECATED_FEATURES_UNAVAILABLE_FEATURE);
+  source->AddLocalizedString("searchResultsSingular",
+                             IDS_ENTERPRISE_UI_SEARCH_RESULTS_SINGULAR);
+  source->AddLocalizedString("searchResultsPlural",
+                             IDS_ENTERPRISE_UI_SEARCH_RESULTS_PLURAL);
 }
 
 template <class T>

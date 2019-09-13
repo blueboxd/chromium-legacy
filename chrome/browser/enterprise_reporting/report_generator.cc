@@ -34,8 +34,11 @@ namespace {
 
 const size_t kMaximumReportSize =
     5000000;  // The report size limitation is 5mb.
+
 constexpr char kRequestCountMetricsName[] =
     "Enterprise.CloudReportingRequestCount";
+constexpr char kRequestSizeMetricsName[] =
+    "Enterprise.CloudReportingRequestSize";
 
 // Because server only stores 20 profiles for each report and when report is
 // separated into requests, there is at least one profile per request. It means
@@ -142,29 +145,43 @@ void ReportGenerator::GenerateProfileReportWithIndex(int profile_index) {
     return;
   }
 
-  size_t profile_report_size = profile_report->ByteSizeLong();
+  // Use size diff to calculate estimated request size after full profile report
+  // is added. There are still few bytes difference but close enough.
+  size_t profile_report_incremental_size =
+      profile_report->ByteSizeLong() -
+      basic_request_.browser_report()
+          .chrome_user_profile_infos(profile_index)
+          .ByteSizeLong();
   size_t current_request_size = requests_.back()->ByteSizeLong();
 
-  if (current_request_size + profile_report_size <= maximum_report_size_) {
+  if (current_request_size + profile_report_incremental_size <=
+      maximum_report_size_) {
     // The new full Profile report can be appended into the current request.
     requests_.back()
         ->mutable_browser_report()
         ->mutable_chrome_user_profile_infos(profile_index)
         ->Swap(profile_report.get());
-  } else if (basic_request_size_ + profile_report_size <=
+  } else if (basic_request_size_ + profile_report_incremental_size <=
              maximum_report_size_) {
     // The new full Profile report is too big to be appended into the current
-    // request, move it to the next request if possible.
+    // request, move it to the next request if possible. Record metrics for the
+    // current request's size.
+    base::UmaHistogramMemoryKB(kRequestSizeMetricsName,
+                               requests_.back()->ByteSizeLong() / 1024);
     requests_.push(
         std::make_unique<em::ChromeDesktopReportRequest>(basic_request_));
     requests_.back()
         ->mutable_browser_report()
         ->mutable_chrome_user_profile_infos(profile_index)
         ->Swap(profile_report.get());
+  } else {
+    // The new full Profile report is too big to be uploaded, skip this
+    // Profile report. But we still add the report size into metrics so
+    // that we could understand the situation better.
+    base::UmaHistogramMemoryKB(
+        kRequestSizeMetricsName,
+        (basic_request_size_ + profile_report_incremental_size) / 1024);
   }
-  // Else: The new full Profile report is too big to be uploaded, skip this
-  // Profile report.
-  // TODO(crbug.com/956237): Record this event with UMA metrics.
 }
 
 void ReportGenerator::OnPluginsReady(
@@ -197,6 +214,8 @@ void ReportGenerator::OnBasicRequestReady() {
        index++) {
     GenerateProfileReportWithIndex(index);
   }
+  base::UmaHistogramMemoryKB(kRequestSizeMetricsName,
+                             requests_.back()->ByteSizeLong() / 1024);
   Response();
 }
 

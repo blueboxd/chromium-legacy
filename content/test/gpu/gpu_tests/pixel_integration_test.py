@@ -57,9 +57,13 @@ test_harness_script = r"""
 """
 
 goldctl_bin = os.path.join(
-    path_util.GetChromiumSrcDir(), 'tools', 'skia_goldctl', 'goldctl')
+    path_util.GetChromiumSrcDir(), 'tools', 'skia_goldctl')
 if sys.platform == 'win32':
-  goldctl_bin += '.exe'
+  goldctl_bin = os.path.join(goldctl_bin, 'win', 'goldctl') + '.exe'
+elif sys.platform == 'darwin':
+  goldctl_bin = os.path.join(goldctl_bin, 'mac', 'goldctl')
+else:
+  goldctl_bin = os.path.join(goldctl_bin, 'linux', 'goldctl')
 
 SKIA_GOLD_INSTANCE = 'chrome-gpu'
 

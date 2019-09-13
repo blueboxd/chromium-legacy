@@ -22,8 +22,8 @@ class FakeVRDisplayImplClient : public mojom::VRDisplayClient,
   // mojom::XRSessionClient overrides
   void OnChanged(mojom::VRDisplayInfoPtr display) override;
   void OnExitPresent() override {}
-  void OnBlur() override {}
-  void OnFocus() override {}
+  void OnVisibilityStateChanged(
+      mojom::XRVisibilityState visibility_state) override {}
   // mojom::VRDisplayClient overrides
   void OnActivate(mojom::VRDisplayEventReason reason,
                   OnActivateCallback callback) override {}

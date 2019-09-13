@@ -176,18 +176,31 @@ FidoCableV1HandshakeHandler::GetEncryptionKeyAfterSuccessfulHandshake(
                             /*derived_key_length=*/32);
 }
 
+// kP256PointSize is the number of bytes in an X9.62 encoding of a P-256 point.
+static constexpr size_t kP256PointSize = 65;
+
 FidoCableV2HandshakeHandler::FidoCableV2HandshakeHandler(
     FidoCableDevice* cable_device,
-    base::span<const uint8_t, 32> session_pre_key)
+    base::span<const uint8_t, 32> psk_gen_key,
+    base::span<const uint8_t, 8> nonce,
+    base::span<const uint8_t, kCableEphemeralIdSize> eid,
+    base::Optional<base::span<const uint8_t, kP256PointSize>> peer_identity,
+    base::RepeatingCallback<void(std::unique_ptr<CableDiscoveryData>)>
+        pairing_callback)
     : cable_device_(cable_device),
-      session_pre_key_(fido_parsing_utils::Materialize(session_pre_key)) {}
+      eid_(fido_parsing_utils::Materialize(eid)),
+      pairing_callback_(std::move(pairing_callback)) {
+  HKDF(psk_.data(), psk_.size(), EVP_sha256(), psk_gen_key.data(),
+       psk_gen_key.size(), /*salt=*/nonce.data(), nonce.size(),
+       /*info=*/nullptr, 0);
+  if (peer_identity) {
+    peer_identity_ = fido_parsing_utils::Materialize(*peer_identity);
+  }
+}
 
 FidoCableV2HandshakeHandler::~FidoCableV2HandshakeHandler() {}
 
 namespace {
-
-// P256PointSize is the number of bytes in an X9.62 encoding of a P-256 point.
-constexpr size_t P256PointSize = 65;
 
 // HKDF2 implements the functions with the same name from Noise[1], specialized
 // to the case where |num_outputs| is two.
@@ -227,44 +240,86 @@ HKDF3(base::span<const uint8_t, 32> ck, base::span<const uint8_t> ikm) {
   return std::make_tuple(a, b, c);
 }
 
+template <size_t N>
+bool CopyBytestring(std::array<uint8_t, N>* out,
+                    const cbor::Value::MapValue& map,
+                    int key) {
+  const auto it = map.find(cbor::Value(key));
+  if (it == map.end() || !it->second.is_bytestring()) {
+    return false;
+  }
+  const std::vector<uint8_t> bytestring = it->second.GetBytestring();
+  return fido_parsing_utils::ExtractArray(bytestring, /*pos=*/0, out);
+}
+
 }  // namespace
 
 void FidoCableV2HandshakeHandler::InitiateCableHandshake(
     FidoDevice::DeviceCallback callback) {
   // See https://www.noiseprotocol.org/noise.html#the-handshakestate-object
-  static const char kProtocolName[] = "Noise_NNpsk0_P256_AESGCM_SHA256";
-  static_assert(sizeof(kProtocolName) == crypto::kSHA256Length,
+  static const char kNNProtocolName[] = "Noise_NNpsk0_P256_AESGCM_SHA256";
+  static const char kNKProtocolName[] = "Noise_NKpsk0_P256_AESGCM_SHA256";
+  static_assert(sizeof(kNKProtocolName) == sizeof(kNNProtocolName),
+                "protocol names are different lengths");
+  static_assert(sizeof(kNNProtocolName) == crypto::kSHA256Length,
                 "name may need padding if not HASHLEN bytes long");
   static_assert(
       std::tuple_size<decltype(chaining_key_)>::value == crypto::kSHA256Length,
       "chaining_key_ is wrong size");
   static_assert(std::tuple_size<decltype(h_)>::value == crypto::kSHA256Length,
                 "h_ is wrong size");
-  memcpy(chaining_key_.data(), kProtocolName, sizeof(kProtocolName));
+  if (peer_identity_) {
+    memcpy(chaining_key_.data(), kNKProtocolName, sizeof(kNKProtocolName));
+  } else {
+    memcpy(chaining_key_.data(), kNNProtocolName, sizeof(kNNProtocolName));
+  }
   h_ = chaining_key_;
 
-  static const uint8_t kPrologue[] = "caBLE QR code handshake";
-  MixHash(kPrologue);
+  if (peer_identity_) {
+    static const uint8_t kPrologue[] = "caBLE handshake";
+    MixHash(kPrologue);
+  } else {
+    static const uint8_t kPrologue[] = "caBLE QR code handshake";
+    MixHash(kPrologue);
+  }
 
-  MixKeyAndHash(session_pre_key_);
+  MixKeyAndHash(psk_);
   ephemeral_key_.reset(EC_KEY_new_by_curve_name(NID_X9_62_prime256v1));
+  const EC_GROUP* group = EC_KEY_get0_group(ephemeral_key_.get());
   CHECK(EC_KEY_generate_key(ephemeral_key_.get()));
-  uint8_t ephemeral_key_public_bytes[P256PointSize];
+  uint8_t ephemeral_key_public_bytes[kP256PointSize];
   CHECK_EQ(sizeof(ephemeral_key_public_bytes),
            EC_POINT_point2oct(
-               EC_KEY_get0_group(ephemeral_key_.get()),
-               EC_KEY_get0_public_key(ephemeral_key_.get()),
+               group, EC_KEY_get0_public_key(ephemeral_key_.get()),
                POINT_CONVERSION_UNCOMPRESSED, ephemeral_key_public_bytes,
                sizeof(ephemeral_key_public_bytes), /*ctx=*/nullptr));
   MixHash(ephemeral_key_public_bytes);
   MixKey(ephemeral_key_public_bytes);
 
+  if (peer_identity_) {
+    // If we know the identity of the peer from a previous interaction, NKpsk0
+    // is performed to ensure that other browsers, which may also know the PSK,
+    // cannot impersonate the authenticator.
+    bssl::UniquePtr<EC_POINT> peer_identity_point(EC_POINT_new(group));
+    uint8_t es_key[32];
+    if (!EC_POINT_oct2point(group, peer_identity_point.get(),
+                            peer_identity_->data(), peer_identity_->size(),
+                            /*ctx=*/nullptr) ||
+        !ECDH_compute_key(es_key, sizeof(es_key), peer_identity_point.get(),
+                          ephemeral_key_.get(), /*kdf=*/nullptr)) {
+      FIDO_LOG(DEBUG) << "Dropping handshake because peer identity is invalid";
+      return;
+    }
+    MixKey(es_key);
+  }
+
   std::vector<uint8_t> ciphertext = Encrypt(base::span<const uint8_t>());
   MixHash(ciphertext);
 
   std::vector<uint8_t> handshake_message;
-  handshake_message.reserve(sizeof(ephemeral_key_public_bytes) +
+  handshake_message.reserve(eid_.size() + sizeof(ephemeral_key_public_bytes) +
                             ciphertext.size());
+  handshake_message.insert(handshake_message.end(), eid_.begin(), eid_.end());
   handshake_message.insert(
       handshake_message.end(), ephemeral_key_public_bytes,
       ephemeral_key_public_bytes + sizeof(ephemeral_key_public_bytes));
@@ -277,17 +332,17 @@ void FidoCableV2HandshakeHandler::InitiateCableHandshake(
 
 bool FidoCableV2HandshakeHandler::ValidateAuthenticatorHandshakeMessage(
     base::span<const uint8_t> response) {
-  if (response.size() < P256PointSize) {
+  if (response.size() < kP256PointSize) {
     return false;
   }
-  auto peer_point_bytes = response.subspan(0, P256PointSize);
-  auto ciphertext = response.subspan(P256PointSize);
+  auto peer_point_bytes = response.subspan(0, kP256PointSize);
+  auto ciphertext = response.subspan(kP256PointSize);
 
   bssl::UniquePtr<EC_POINT> peer_point(
       EC_POINT_new(EC_KEY_get0_group(ephemeral_key_.get())));
   uint8_t shared_key[32];
-  if (!EC_POINT_oct2point(EC_KEY_get0_group(ephemeral_key_.get()),
-                          peer_point.get(), peer_point_bytes.data(),
+  const EC_GROUP* group = EC_KEY_get0_group(ephemeral_key_.get());
+  if (!EC_POINT_oct2point(group, peer_point.get(), peer_point_bytes.data(),
                           peer_point_bytes.size(), /*ctx=*/nullptr) ||
       !ECDH_compute_key(shared_key, sizeof(shared_key), peer_point.get(),
                         ephemeral_key_.get(), /*kdf=*/nullptr)) {
@@ -298,10 +353,55 @@ bool FidoCableV2HandshakeHandler::ValidateAuthenticatorHandshakeMessage(
   MixKey(peer_point_bytes);
   MixKey(shared_key);
 
-  auto maybe_plaintext = Decrypt(ciphertext);
-  if (!maybe_plaintext || !maybe_plaintext->empty()) {
+  auto plaintext = Decrypt(ciphertext);
+  if (!plaintext || plaintext->empty() != peer_identity_.has_value()) {
+    FIDO_LOG(DEBUG) << "Invalid caBLE handshake message";
     return false;
   }
+
+  if (!peer_identity_) {
+    // Handshakes without a peer identity (i.e. NNpsk0 handshakes setup from a
+    // QR code) send a padded message in the reply. This message can,
+    // optionally, contain CBOR-encoded, long-term pairing information.
+    const size_t padding_length = (*plaintext)[plaintext->size() - 1];
+    if (padding_length + 1 > plaintext->size()) {
+      FIDO_LOG(DEBUG) << "Invalid padding in caBLE handshake message";
+      return false;
+    }
+    plaintext->resize(plaintext->size() - padding_length - 1);
+
+    if (!plaintext->empty()) {
+      base::Optional<cbor::Value> pairing = cbor::Reader::Read(*plaintext);
+      if (!pairing || !pairing->is_map()) {
+        FIDO_LOG(DEBUG) << "CBOR parse failure in caBLE handshake message";
+        return false;
+      }
+
+      auto future_discovery = std::make_unique<CableDiscoveryData>();
+      future_discovery->version = CableDiscoveryData::Version::V2;
+      future_discovery->v2.emplace();
+      future_discovery->v2->peer_identity.emplace();
+
+      const cbor::Value::MapValue& pairing_map(pairing->GetMap());
+      const auto name_it = pairing_map.find(cbor::Value(4));
+      if (!CopyBytestring(&future_discovery->v2->eid_gen_key, pairing_map, 1) ||
+          !CopyBytestring(&future_discovery->v2->psk_gen_key, pairing_map, 2) ||
+          !CopyBytestring(&future_discovery->v2->peer_identity.value(),
+                          pairing_map, 3) ||
+          name_it == pairing_map.end() || !name_it->second.is_string() ||
+          !EC_POINT_oct2point(group, peer_point.get(),
+                              future_discovery->v2->peer_identity->data(),
+                              future_discovery->v2->peer_identity->size(),
+                              /*ctx=*/nullptr)) {
+        FIDO_LOG(DEBUG) << "CBOR structure error in caBLE handshake message";
+        return false;
+      }
+
+      future_discovery->v2->peer_name = name_it->second.GetString();
+      pairing_callback_.Run(std::move(future_discovery));
+    }
+  }
+
   // Here the spec says to do MixHash(ciphertext), but there are no more
   // handshake messages so that's moot.
   // MixHash(ciphertext);

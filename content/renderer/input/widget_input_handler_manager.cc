@@ -356,7 +356,7 @@ void WidgetInputHandlerManager::DispatchEvent(
   // move event.
   // We don't want users interacting with stuff they can't see, so we drop it.
   // We allow moves because we need to keep the current pointer location up
-  // to date. Tests can allow pre-commit input through the
+  // to date. Tests and other code can allow pre-commit input through the
   // "allow-pre-commit-input" command line flag.
   // TODO(schenney): Also allow scrolls? This would make some tests not flaky,
   // it seems, because they sometimes crash on seeing a scroll update/end
@@ -494,18 +494,21 @@ void WidgetInputHandlerManager::DidNavigate() {
 void WidgetInputHandlerManager::OnDeferMainFrameUpdatesChanged(bool status) {
   if (status) {
     renderer_deferral_state_ |=
-        (unsigned)RenderingDeferralBits::kDeferMainFrameUpdates;
+        static_cast<uint16_t>(RenderingDeferralBits::kDeferMainFrameUpdates);
   } else {
     renderer_deferral_state_ &=
-        ~(unsigned)RenderingDeferralBits::kDeferMainFrameUpdates;
+        ~static_cast<uint16_t>(RenderingDeferralBits::kDeferMainFrameUpdates);
   }
 }
 
 void WidgetInputHandlerManager::OnDeferCommitsChanged(bool status) {
-  if (status)
-    renderer_deferral_state_ |= (unsigned)RenderingDeferralBits::kDeferCommits;
-  else
-    renderer_deferral_state_ &= ~(unsigned)RenderingDeferralBits::kDeferCommits;
+  if (status) {
+    renderer_deferral_state_ |=
+        static_cast<uint16_t>(RenderingDeferralBits::kDeferCommits);
+  } else {
+    renderer_deferral_state_ &=
+        ~static_cast<uint16_t>(RenderingDeferralBits::kDeferCommits);
+  }
 }
 
 void WidgetInputHandlerManager::InitOnInputHandlingThread(

@@ -37,6 +37,9 @@ class CC_EXPORT PictureLayer : public Layer {
     return picture_layer_inputs_.transformed_rasterization_allowed;
   }
 
+  void set_is_mask() { picture_layer_inputs_.is_mask = true; }
+  bool is_mask() const { return picture_layer_inputs_.is_mask; }
+
   // Layer interface.
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
   void SetLayerTreeHost(LayerTreeHost* host) override;
@@ -58,9 +61,6 @@ class CC_EXPORT PictureLayer : public Layer {
 
   const DisplayItemList* GetDisplayItemList();
 
-  void SetLayerMaskType(LayerMaskType mask_type);
-  LayerMaskType mask_type() { return mask_type_; }
-
  protected:
   // Encapsulates all data, callbacks or interfaces received from the embedder.
   struct PictureLayerInputs {
@@ -70,6 +70,7 @@ class CC_EXPORT PictureLayer : public Layer {
     ContentLayerClient* client = nullptr;
     bool nearest_neighbor = false;
     bool transformed_rasterization_allowed = false;
+    bool is_mask = false;
     gfx::Rect recorded_viewport;
     scoped_refptr<DisplayItemList> display_list;
     size_t painter_reported_memory_usage = 0;
@@ -99,7 +100,6 @@ class CC_EXPORT PictureLayer : public Layer {
   Region last_updated_invalidation_;
 
   int update_source_frame_number_;
-  LayerMaskType mask_type_;
 };
 
 }  // namespace cc

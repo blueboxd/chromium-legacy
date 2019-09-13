@@ -207,10 +207,12 @@ void OpenVRDevice::RequestSession(
       &OpenVRDevice::OnPresentationEnded, weak_ptr_factory_.GetWeakPtr());
 
   render_loop_->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestSession,
-                                base::Unretained(render_loop_.get()),
-                                std::move(on_presentation_ended),
-                                std::move(options), std::move(my_callback)));
+      FROM_HERE,
+      base::BindOnce(&XRCompositorCommon::RequestSession,
+                     base::Unretained(render_loop_.get()),
+                     std::move(on_presentation_ended),
+                     base::DoNothing::Repeatedly<mojom::XRVisibilityState>(),
+                     std::move(options), std::move(my_callback)));
   outstanding_session_requests_count_++;
 }
 

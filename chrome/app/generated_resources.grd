@@ -10073,6 +10073,14 @@ Please help our engineers fix this problem. Tell us what happened right before y
       Not Helpful
     </message>
 
+    <!-- Deep scanning dialog strings -->
+    <message name="IDS_DEEP_SCANNING_DIALOG_TITLE" desc="Title shown in tab modal dialog while performing a deep scan of data to see if it complies with enterprise policies">
+      Scanning
+    </message>
+    <message name="IDS_DEEP_SCANNING_DIALOG_MESSAGE" desc="Message shown in tab modal dialog while performing a deep scan of data to see if complies with enterprise policies">
+      Scanning files for sensitive data...
+    </message>
+
     <!-- SMS strings -->
     <message name="IDS_SMS_INFOBAR_TITLE" desc="Title shown when Chrome is waiting for an SMS on the user's behalf">
       Verify your phone number

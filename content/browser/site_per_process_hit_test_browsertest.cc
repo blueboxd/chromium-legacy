@@ -717,7 +717,6 @@ class SitePerProcessHitTestBrowserTest
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     SitePerProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kAllowPreCommitInput);
     ui::PlatformEventSource::SetIgnoreNativePlatformEvents(true);
     if (std::get<0>(GetParam()) == HitTestType::kDrawQuad) {
       // Default enabled.

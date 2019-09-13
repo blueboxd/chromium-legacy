@@ -49,7 +49,7 @@ namespace {
 // child process client id.
 constexpr uint32_t kBrowserClientId = 0u;
 
-scoped_refptr<viz::ContextProviderCommandBuffer> CreateContextProviderImpl(
+scoped_refptr<viz::ContextProviderCommandBuffer> CreateContextProvider(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     bool support_locking,
@@ -410,23 +410,20 @@ VizProcessTransportFactory::TryCreateContextsForGpuCompositing(
     worker_context_provider_.reset();
 
   bool enable_oop_rasterization =
+      features::IsUiGpuRasterizationEnabled() &&
       gpu_feature_info.status_values[gpu::GPU_FEATURE_TYPE_OOP_RASTERIZATION] ==
-      gpu::kGpuFeatureStatusEnabled;
+          gpu::kGpuFeatureStatusEnabled;
+  bool enable_gpu_rasterization =
+      features::IsUiGpuRasterizationEnabled() && !enable_oop_rasterization;
 
   if (!worker_context_provider_) {
-    constexpr bool kSharedWorkerContextSupportsLocking = true;
-    constexpr bool kSharedWorkerContextSupportsRaster = true;
-    const bool kSharedWorkerContextSupportsGLES2 =
-        features::IsUiGpuRasterizationEnabled() && !enable_oop_rasterization;
-    const bool kSharedWorkerContextSupportsGrContext =
-        features::IsUiGpuRasterizationEnabled() && !enable_oop_rasterization;
-    const bool kSharedWorkerContextSupportsOOPR = enable_oop_rasterization;
-
-    worker_context_provider_ = CreateContextProviderImpl(
+    worker_context_provider_ = CreateContextProvider(
         gpu_channel_host, GetGpuMemoryBufferManager(),
-        kSharedWorkerContextSupportsLocking, kSharedWorkerContextSupportsGLES2,
-        kSharedWorkerContextSupportsRaster,
-        kSharedWorkerContextSupportsGrContext, kSharedWorkerContextSupportsOOPR,
+        /*supports_locking=*/true,
+        /*supports_gles2=*/enable_gpu_rasterization,
+        /*supports_raster=*/true,
+        /*supports_grcontext=*/enable_gpu_rasterization,
+        /*supports_oopr=*/enable_oop_rasterization,
         viz::command_buffer_metrics::ContextType::BROWSER_WORKER);
 
     // Don't observer context loss on |worker_context_provider_| here, that is
@@ -452,7 +449,7 @@ VizProcessTransportFactory::TryCreateContextsForGpuCompositing(
     constexpr bool kCompositorContextSupportsGrContext = true;
     constexpr bool kCompositorContextSupportsOOPR = false;
 
-    main_context_provider_ = CreateContextProviderImpl(
+    main_context_provider_ = CreateContextProvider(
         std::move(gpu_channel_host), GetGpuMemoryBufferManager(),
         kCompositorContextSupportsLocking, kCompositorContextSupportsGLES2,
         kCompositorContextSupportsRaster, kCompositorContextSupportsGrContext,

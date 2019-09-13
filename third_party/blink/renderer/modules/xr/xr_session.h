@@ -79,7 +79,7 @@ class XRSession final
 
   XR* xr() const { return xr_; }
   const String& environmentBlendMode() const { return blend_mode_string_; }
-  const String& visibilityState() const { return visibility_state_string_; }
+  const String visibilityState() const;
   XRRenderState* renderState() const { return render_state_; }
   XRWorldTrackingState* worldTrackingState() { return world_tracking_state_; }
   XRSpace* viewerSpace() const;
@@ -230,6 +230,8 @@ class XRSession final
  private:
   class XRSessionResizeObserverDelegate;
 
+  using XRVisibilityState = device::mojom::blink::XRVisibilityState;
+
   void UpdateCanvasDimensions(Element*);
   void ApplyPendingRenderState();
 
@@ -242,10 +244,10 @@ class XRSession final
   // XRSessionClient
   void OnChanged(device::mojom::blink::VRDisplayInfoPtr display_info) override;
   void OnExitPresent() override;
-  void OnFocus() override;
-  void OnBlur() override;
+  void OnVisibilityStateChanged(
+      device::mojom::blink::XRVisibilityState visibility_state) override;
 
-  bool HasAppropriateFocus();
+  void UpdateVisibilityState();
 
   void OnHitTestResults(
       ScriptPromiseResolver* resolver,
@@ -267,6 +269,8 @@ class XRSession final
   const SessionMode mode_;
   const bool environment_integration_;
   String blend_mode_string_;
+  XRVisibilityState device_visibility_state_ = XRVisibilityState::VISIBLE;
+  XRVisibilityState visibility_state_ = XRVisibilityState::VISIBLE;
   String visibility_state_string_;
   Member<XRRenderState> render_state_;
   Member<XRWorldTrackingState> world_tracking_state_;
@@ -289,7 +293,6 @@ class XRSession final
   HeapHashSet<Member<ScriptPromiseResolver>> create_anchor_promises_;
   HeapVector<Member<XRReferenceSpace>> reference_spaces_;
 
-  bool has_xr_focus_ = true;
   bool is_external_ = false;
   unsigned int display_info_id_ = 0;
   unsigned int stage_parameters_id_ = 0;
@@ -302,7 +305,6 @@ class XRSession final
   Member<XRFrameRequestCallbackCollection> callback_collection_;
   std::unique_ptr<TransformationMatrix> base_pose_matrix_;
 
-  bool blurred_;
   bool ended_ = false;
   bool pending_frame_ = false;
   bool resolving_frame_ = false;

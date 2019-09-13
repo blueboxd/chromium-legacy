@@ -5,13 +5,13 @@
 #include "third_party/blink/renderer/modules/scheduler/window_scheduler.h"
 
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
-#include "third_party/blink/renderer/modules/scheduler/scheduler.h"
+#include "third_party/blink/renderer/modules/scheduler/dom_scheduler.h"
 
 namespace blink {
 
-Scheduler* WindowScheduler::scheduler(LocalDOMWindow& window) {
+DOMScheduler* WindowScheduler::scheduler(LocalDOMWindow& window) {
   if (Document* document = window.document()) {
-    return Scheduler::From(*document);
+    return DOMScheduler::From(*document);
   }
   return nullptr;
 }

@@ -8,7 +8,7 @@
 
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -64,7 +64,7 @@ MediaDevices::MediaDevices(ExecutionContext* context)
 MediaDevices::~MediaDevices() = default;
 
 ScriptPromise MediaDevices::enumerateDevices(ScriptState* script_state) {
-  Platform::Current()->UpdateWebRTCAPICount(WebRTCAPIName::kEnumerateDevices);
+  UpdateWebRTCMethodCount(WebRTCAPIName::kEnumerateDevices);
   LocalFrame* frame =
       To<Document>(ExecutionContext::From(script_state))->GetFrame();
   if (!frame) {

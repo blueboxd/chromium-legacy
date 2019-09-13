@@ -2,9 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import './strings.m.js';
 
-(function() {
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {BrowserSwitchProxyImpl} from './browser_switch_proxy.js';
 
 /** @type {number} */
 const MS_PER_SECOND = 1000;
@@ -17,6 +22,8 @@ const LaunchError = {
 
 Polymer({
   is: 'browser-switch-app',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [I18nBehavior],
 
@@ -141,6 +148,5 @@ function getUrlHostname(url) {
 }
 
 function getProxy() {
-  return browser_switch.BrowserSwitchProxyImpl.getInstance();
+  return BrowserSwitchProxyImpl.getInstance();
 }
-})();

@@ -239,7 +239,6 @@ public class ContextualSearchManagerTest {
 
     @After
     public void tearDown() throws Exception {
-        clearUnifiedConsentMetadata();
         mTestServer.stopAndDestroyServer();
         TestThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(false));
     }
@@ -265,14 +264,6 @@ public class ContextualSearchManagerTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> tab.reload());
         // Make sure the page is fully loaded.
         ChromeTabUtils.waitForTabPageLoaded(tab, testUrl);
-    }
-
-    /** Clears stored metadata about preference state before Unified Consent became active. */
-    private void clearUnifiedConsentMetadata() {
-        if (mPolicy != null) {
-            mPolicy.applyUnifiedConsentGivenMetadata(
-                    ContextualSearchPreviousPreferenceMetadata.UNKNOWN);
-        }
     }
 
     //============================================================================================
@@ -1799,78 +1790,6 @@ public class ContextualSearchManagerTest {
         mPolicy.overrideDecidedStateForTesting(true);
 
         clickToResolveAndAssertPrefetch();
-    }
-
-    // --------------------------------------------------------------------------------------------
-    // Unified Consent throttling tests.
-    // --------------------------------------------------------------------------------------------
-
-    /**
-     * Sets up state to simulate Unified Consent switched on for this user.
-     * @param wasPreviouslyUndecided Whether the user was "undecided" before Unified Consent.
-     */
-    void setupUnifiedConsentState(boolean wasPreviouslyUndecided)
-            throws InterruptedException, TimeoutException {
-        mFakeServer.reset();
-        // User is now decided, either due to Unified Consent enabling or because they already were.
-        mPolicy.overrideDecidedStateForTesting(true);
-        @ContextualSearchPreviousPreferenceMetadata
-        int previousMetadata =
-                wasPreviouslyUndecided ? ContextualSearchPreviousPreferenceMetadata.WAS_UNDECIDED
-                                       : ContextualSearchPreviousPreferenceMetadata.WAS_DECIDED;
-        mPolicy.applyUnifiedConsentGivenMetadata(previousMetadata);
-        // Throttling is done by not resolving HTTPS requests.
-        mFakeServer.setShouldUseHttps(true);
-        // Tap on a word.  We may or may not request the search term.
-        clickWordNode("states");
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    // Throttling is OFF (see the very end of this field-trial settings set):
-    @CommandLineFlags.Add({"enable-features=ContextualSearchUnityIntegration<FakeStudyName",
-            "force-fieldtrials=FakeStudyName/FakeGroup",
-            "force-fieldtrial-params=FakeStudyName.FakeGroup:throttle/false"})
-    public void
-    testPreviouslyUndecidedsResolveAfterUnifiedConsent()
-            throws InterruptedException, TimeoutException {
-        boolean previouslyUndecided = true;
-        setupUnifiedConsentState(previouslyUndecided);
-
-        assertSearchTermRequested();
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    // Throttling is ON (see the very end of this field-trial settings set):
-    @CommandLineFlags.Add({"enable-features=ContextualSearchUnityIntegration<FakeStudyName",
-            "force-fieldtrials=FakeStudyName/FakeGroup",
-            "force-fieldtrial-params=FakeStudyName.FakeGroup:throttle/true"})
-    public void
-    testPreviouslyUndecidedsCanThrottleAfterUnifiedConsent()
-            throws InterruptedException, TimeoutException {
-        boolean previouslyUndecided = true;
-        setupUnifiedConsentState(previouslyUndecided);
-
-        assertSearchTermNotRequested();
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    // Throttling is ON (see the very end of this field-trial settings set):
-    @CommandLineFlags.Add({"enable-features=ContextualSearchUnityIntegration<FakeStudyName",
-            "force-fieldtrials=FakeStudyName/FakeGroup",
-            "force-fieldtrial-params=FakeStudyName.FakeGroup:throttle/true"})
-    public void
-    testPreviouslyDecidedsCannotThrottleAfterUnifiedConsent()
-            throws InterruptedException, TimeoutException {
-        boolean previouslyUndecided = false;
-        setupUnifiedConsentState(previouslyUndecided);
-
-        assertSearchTermRequested();
     }
 
     // --------------------------------------------------------------------------------------------

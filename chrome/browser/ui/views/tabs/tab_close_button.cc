@@ -50,7 +50,7 @@ TabCloseButton::TabCloseButton(views::ButtonListener* listener,
 
   // Disable animation so that the hover indicator shows up immediately to help
   // avoid mis-clicks.
-  SetAnimationDuration(0);
+  SetAnimationDuration(base::TimeDelta());
   GetInkDrop()->SetHoverHighlightFadeDuration(base::TimeDelta());
 
   SetInstallFocusRingOnFocus(true);

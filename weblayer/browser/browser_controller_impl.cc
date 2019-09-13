@@ -24,12 +24,10 @@
 
 namespace weblayer {
 
-BrowserControllerImpl::BrowserControllerImpl(ProfileImpl* profile,
-                                             const gfx::Size& initial_size)
+BrowserControllerImpl::BrowserControllerImpl(ProfileImpl* profile)
     : profile_(profile) {
   content::WebContents::CreateParams create_params(
       profile_->GetBrowserContext());
-  create_params.initial_size = initial_size;
   web_contents_ = content::WebContents::Create(create_params);
 
   web_contents_->SetDelegate(this);
@@ -66,9 +64,8 @@ void BrowserControllerImpl::AttachToView(views::WebView* web_view) {
 #if defined(OS_ANDROID)
 static jlong JNI_BrowserControllerImpl_CreateBrowserController(JNIEnv* env,
                                                                jlong profile) {
-  // TODO: figure out size.
-  return reinterpret_cast<intptr_t>(new BrowserControllerImpl(
-      reinterpret_cast<ProfileImpl*>(profile), gfx::Size()));
+  return reinterpret_cast<intptr_t>(
+      new BrowserControllerImpl(reinterpret_cast<ProfileImpl*>(profile)));
 }
 
 static void JNI_BrowserControllerImpl_DeleteBrowserController(
@@ -142,11 +139,9 @@ void BrowserControllerImpl::DidFinishNavigation(
 #endif
 }
 
-std::unique_ptr<BrowserController> BrowserController::Create(
-    Profile* profile,
-    const gfx::Size& initial_size) {
+std::unique_ptr<BrowserController> BrowserController::Create(Profile* profile) {
   return std::make_unique<BrowserControllerImpl>(
-      static_cast<ProfileImpl*>(profile), initial_size);
+      static_cast<ProfileImpl*>(profile));
 }
 
 }  // namespace weblayer

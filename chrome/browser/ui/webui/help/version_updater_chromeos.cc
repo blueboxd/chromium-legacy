@@ -250,10 +250,8 @@ void VersionUpdaterCros::GetEolStatus(EolStatusCallback cb) {
                      weak_ptr_factory_.GetWeakPtr(), std::move(cb)));
 }
 
-void VersionUpdaterCros::OnGetEolStatus(
-    EolStatusCallback cb,
-    update_engine::EndOfLifeStatus status,
-    base::Optional<int32_t> number_of_milestones) {
+void VersionUpdaterCros::OnGetEolStatus(EolStatusCallback cb,
+                                        update_engine::EndOfLifeStatus status) {
   std::move(cb).Run(status);
 }
 

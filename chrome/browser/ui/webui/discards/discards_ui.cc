@@ -425,8 +425,6 @@ DiscardsUI::DiscardsUI(content::WebUI* web_ui)
   source->AddResourcePath(
       "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom-lite.js",
       IDR_DISCARDS_LIFECYCLE_UNIT_STATE_MOJOM_LITE_JS);
-  source->AddResourcePath("mojom/webui_graph_dump.mojom-lite.js",
-                          IDR_DISCARDS_WEBUI_GRAPH_DUMP_MOJOM_LITE_JS);
 
   // Add the mojo base dependency for the WebUI Graph Dump.
   source->AddResourcePath(
@@ -460,7 +458,7 @@ void DiscardsUI::BindDiscardsDetailsProvider(
 }
 
 void DiscardsUI::BindWebUIGraphDumpProvider(
-    performance_manager::mojom::WebUIGraphDumpRequest request) {
+    mojom::WebUIGraphDumpRequest request) {
   if (performance_manager::PerformanceManager::IsAvailable()) {
     // Forward the interface request directly to the service.
     performance_manager::PerformanceManager::CallOnGraph(

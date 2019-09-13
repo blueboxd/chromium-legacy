@@ -11,25 +11,11 @@
 namespace cc {
 namespace {
 using StageType = CompositorFrameReporter::StageType;
-RollingTimeDeltaHistory* GetStageHistory(
-    std::unique_ptr<RollingTimeDeltaHistory> stage_history_[],
-    StageType stage_type) {
-  return stage_history_[static_cast<int>(stage_type)].get();
-}
-
-static constexpr size_t kMaxHistorySize = 50;
 }  // namespace
 
 CompositorFrameReportingController::CompositorFrameReportingController(
     bool is_single_threaded)
-    : is_single_threaded_(is_single_threaded) {
-  for (int i = 0; i < static_cast<int>(
-                          CompositorFrameReporter::StageType::kStageTypeCount);
-       ++i) {
-    stage_history_[i] =
-        std::make_unique<RollingTimeDeltaHistory>(kMaxHistorySize);
-  }
-}
+    : is_single_threaded_(is_single_threaded) {}
 
 CompositorFrameReportingController::~CompositorFrameReportingController() {
   base::TimeTicks now = Now();
@@ -75,9 +61,7 @@ void CompositorFrameReportingController::WillBeginImplFrame() {
                                                 is_single_threaded_);
   reporter->StartStage(
       CompositorFrameReporter::StageType::kBeginImplFrameToSendBeginMainFrame,
-      begin_time,
-      GetStageHistory(stage_history_, CompositorFrameReporter::StageType::
-                                          kBeginImplFrameToSendBeginMainFrame));
+      begin_time);
   reporters_[PipelineStage::kBeginImplFrame] = std::move(reporter);
 }
 
@@ -88,10 +72,7 @@ void CompositorFrameReportingController::WillBeginMainFrame() {
   DCHECK_NE(reporters_[PipelineStage::kBeginMainFrame].get(),
             reporters_[PipelineStage::kBeginImplFrame].get());
   reporters_[PipelineStage::kBeginImplFrame]->StartStage(
-      CompositorFrameReporter::StageType::kSendBeginMainFrameToCommit, Now(),
-      GetStageHistory(
-          stage_history_,
-          CompositorFrameReporter::StageType::kSendBeginMainFrameToCommit));
+      CompositorFrameReporter::StageType::kSendBeginMainFrameToCommit, Now());
   AdvanceReporterStage(PipelineStage::kBeginImplFrame,
                        PipelineStage::kBeginMainFrame);
 }
@@ -108,18 +89,13 @@ void CompositorFrameReportingController::BeginMainFrameAborted() {
 void CompositorFrameReportingController::WillCommit() {
   DCHECK(reporters_[PipelineStage::kBeginMainFrame]);
   reporters_[PipelineStage::kBeginMainFrame]->StartStage(
-      CompositorFrameReporter::StageType::kCommit, Now(),
-      GetStageHistory(stage_history_,
-                      CompositorFrameReporter::StageType::kCommit));
+      CompositorFrameReporter::StageType::kCommit, Now());
 }
 
 void CompositorFrameReportingController::DidCommit() {
   DCHECK(reporters_[PipelineStage::kBeginMainFrame]);
   reporters_[PipelineStage::kBeginMainFrame]->StartStage(
-      CompositorFrameReporter::StageType::kEndCommitToActivation, Now(),
-      GetStageHistory(
-          stage_history_,
-          CompositorFrameReporter::StageType::kEndCommitToActivation));
+      CompositorFrameReporter::StageType::kEndCommitToActivation, Now());
   AdvanceReporterStage(PipelineStage::kBeginMainFrame, PipelineStage::kCommit);
 }
 
@@ -134,9 +110,7 @@ void CompositorFrameReportingController::WillActivate() {
   if (!reporters_[PipelineStage::kCommit])
     return;
   reporters_[PipelineStage::kCommit]->StartStage(
-      CompositorFrameReporter::StageType::kActivation, Now(),
-      GetStageHistory(stage_history_,
-                      CompositorFrameReporter::StageType::kActivation));
+      CompositorFrameReporter::StageType::kActivation, Now());
 }
 
 void CompositorFrameReportingController::DidActivate() {
@@ -146,9 +120,7 @@ void CompositorFrameReportingController::DidActivate() {
     return;
   reporters_[PipelineStage::kCommit]->StartStage(
       CompositorFrameReporter::StageType::kEndActivateToSubmitCompositorFrame,
-      Now(),
-      GetStageHistory(stage_history_, CompositorFrameReporter::StageType::
-                                          kEndActivateToSubmitCompositorFrame));
+      Now());
   AdvanceReporterStage(PipelineStage::kCommit, PipelineStage::kActivate);
 }
 
@@ -169,10 +141,7 @@ void CompositorFrameReportingController::DidSubmitCompositorFrame(
   submitted_reporter->StartStage(
       CompositorFrameReporter::StageType::
           kSubmitCompositorFrameToPresentationCompositorFrame,
-      Now(),
-      GetStageHistory(stage_history_,
-                      CompositorFrameReporter::StageType::
-                          kSubmitCompositorFrameToPresentationCompositorFrame));
+      Now());
   submitted_compositor_frames_.emplace_back(frame_token,
                                             std::move(submitted_reporter));
 }

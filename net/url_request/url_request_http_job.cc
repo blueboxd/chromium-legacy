@@ -512,11 +512,6 @@ void URLRequestHttpJob::StartTransactionInternal() {
   if (network_quality_estimator)
     network_quality_estimator->NotifyStartTransaction(*request_);
 
-  if (network_delegate()) {
-    network_delegate()->NotifyStartTransaction(request_,
-                                               request_info_.extra_headers);
-  }
-
   if (transaction_.get()) {
     rv = transaction_->RestartWithAuth(
         auth_credentials_, base::BindOnce(&URLRequestHttpJob::OnStartCompleted,

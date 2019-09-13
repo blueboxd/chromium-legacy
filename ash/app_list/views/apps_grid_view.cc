@@ -354,8 +354,8 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
   }
 
   pagination_model_.SetTransitionDurations(
-      GetAppListConfig().page_transition_duration_ms(),
-      GetAppListConfig().overscroll_page_transition_duration_ms());
+      GetAppListConfig().page_transition_duration(),
+      GetAppListConfig().overscroll_page_transition_duration());
 
   pagination_model_.AddObserver(this);
   pagination_controller_ = std::make_unique<ash::PaginationController>(
@@ -816,9 +816,9 @@ void AppsGridView::ScheduleShowHideAnimation(bool show) {
   animation.AddObserver(this);
   animation.SetTweenType(show ? kFolderFadeInTweenType
                               : kFolderFadeOutTweenType);
-  animation.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-      show ? GetAppListConfig().folder_transition_in_duration_ms()
-           : GetAppListConfig().folder_transition_out_duration_ms()));
+  animation.SetTransitionDuration(
+      show ? GetAppListConfig().folder_transition_in_duration()
+           : GetAppListConfig().folder_transition_out_duration());
 
   layer()->SetOpacity(show ? 1.0f : 0.0f);
 }
@@ -2772,8 +2772,8 @@ void AppsGridView::TransitionEnded() {
   if (end_frame_number > pagination_animation_start_frame_number_ &&
       !duration.is_zero()) {
     RecordPaginationAnimationSmoothness(
-        end_frame_number - pagination_animation_start_frame_number_,
-        duration.InMilliseconds(), compositor->refresh_rate(), IsTabletMode());
+        end_frame_number - pagination_animation_start_frame_number_, duration,
+        compositor->refresh_rate(), IsTabletMode());
   }
 }
 

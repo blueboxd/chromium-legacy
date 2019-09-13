@@ -228,8 +228,8 @@ scoped_refptr<const ShapeResultView> ShapingLineBreaker::ShapeLine(
   // Find a candidate break opportunity by identifying the last offset before
   // exceeding the available space and the determine the closest valid break
   // preceding the candidate.
-  LayoutUnit end_position = SnapEnd(start_position_float, direction) +
-                            FlipRtl(available_space, direction);
+  LayoutUnit end_position =
+      start_position + FlipRtl(available_space, direction);
   DCHECK_GE(FlipRtl(end_position - start_position, direction), LayoutUnit(0));
   unsigned candidate_break =
       result_->CachedOffsetForPosition(end_position) + range_start;

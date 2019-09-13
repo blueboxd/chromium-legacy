@@ -33,6 +33,8 @@ struct DoNothingPromiseBuilder {
     return *this;
   }
 
+  operator WrappedPromise() const;
+
   operator scoped_refptr<internal::AbstractPromise>() const;
 };
 

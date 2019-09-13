@@ -6,17 +6,14 @@ package org.chromium.weblayer;
 
 import android.net.Uri;
 import android.os.RemoteException;
-import android.util.AndroidRuntimeException;
-import android.util.Log;
 import android.view.View;
 
+import org.chromium.weblayer_private.aidl.APICallException;
 import org.chromium.weblayer_private.aidl.IBrowserController;
 import org.chromium.weblayer_private.aidl.IBrowserControllerClient;
 import org.chromium.weblayer_private.aidl.ObjectWrapper;
 
 public final class BrowserController {
-    private static final String TAG = "WL_BrowserController";
-
     private final IBrowserController mImpl;
     private final NavigationController mNavigationController;
     private final ObserverList<BrowserObserver> mObservers;
@@ -26,8 +23,7 @@ public final class BrowserController {
         try {
             mImpl.setClient(new BrowserClientImpl());
         } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call setClient.", e);
-            throw new AndroidRuntimeException(e);
+            throw new APICallException(e);
         }
 
         mObservers = new ObserverList<BrowserObserver>();
@@ -47,8 +43,7 @@ public final class BrowserController {
         try {
             mImpl.setTopView(ObjectWrapper.wrap(view));
         } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call setTopView.", e);
-            throw new AndroidRuntimeException(e);
+            throw new APICallException(e);
         }
     }
 
@@ -64,8 +59,7 @@ public final class BrowserController {
         try {
             mImpl.destroy();
         } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call destroy.", e);
-            throw new AndroidRuntimeException(e);
+            throw new APICallException(e);
         }
     }
 
@@ -73,8 +67,7 @@ public final class BrowserController {
         try {
             return ObjectWrapper.unwrap(mImpl.onCreateView(), View.class);
         } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call onCreateView.", e);
-            throw new AndroidRuntimeException(e);
+            throw new APICallException(e);
         }
     }
 

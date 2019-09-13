@@ -108,6 +108,7 @@ class ASH_EXPORT AssistantUiController
   void OnDialogPlateButtonPressed(AssistantButtonId id) override;
   void OnMiniViewPressed() override;
   void OnProactiveSuggestionsCloseButtonPressed() override;
+  void OnProactiveSuggestionsViewHoverChanged(bool is_hovering) override;
   void OnProactiveSuggestionsViewPressed() override;
 
   // HighlighterController::Observer:
@@ -197,7 +198,7 @@ class ASH_EXPORT AssistantUiController
 
   // When shown, the proactive suggestions widget will automatically be closed
   // if the user doesn't interact with it within a fixed interval.
-  base::OneShotTimer auto_close_proactive_suggestions_timer_;
+  base::RetainingOneShotTimer auto_close_proactive_suggestions_timer_;
 
   // Whether the UI controller is observing changes to the usable work area.
   bool is_observing_usable_work_area_ = false;

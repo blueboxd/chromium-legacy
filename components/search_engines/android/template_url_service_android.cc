@@ -238,6 +238,17 @@ int TemplateUrlServiceAndroid::GetSearchEngineTypeFromTemplateUrl(
   return template_url->GetEngineType(search_terms_data);
 }
 
+jboolean TemplateUrlServiceAndroid::SetPlayAPISearchEngine(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jstring>& jname,
+    const base::android::JavaParamRef<jstring>& jkeyword,
+    const base::android::JavaParamRef<jstring>& jsearch_url,
+    const base::android::JavaParamRef<jstring>& jfavicon_url) {
+  // TODO(crbug/1002271): Implement adding search engine to TemplateURLService.
+  return true;
+}
+
 base::android::ScopedJavaLocalRef<jstring>
 TemplateUrlServiceAndroid::AddSearchEngineForTesting(
     JNIEnv* env,

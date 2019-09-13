@@ -844,7 +844,28 @@ views::AccessiblePaneView* ToolbarView::GetAsAccessiblePaneView() {
   return this;
 }
 
-views::View* ToolbarView::GetAnchorView() {
+views::View* ToolbarView::GetAnchorView(PageActionIconType type) {
+  if (base::FeatureList::IsEnabled(
+          autofill::features::kAutofillEnableToolbarStatusChip)) {
+    switch (type) {
+      case PageActionIconType::kLocalCardMigration:
+      case PageActionIconType::kManagePasswords:
+      case PageActionIconType::kSaveCard:
+        return toolbar_page_action_container_;
+      case PageActionIconType::kFind:
+      case PageActionIconType::kIntentPicker:
+      case PageActionIconType::kPwaInstall:
+      case PageActionIconType::kReaderMode:
+      case PageActionIconType::kSendTabToSelf:
+      case PageActionIconType::kSharedClipboard:
+      case PageActionIconType::kTranslate:
+      case PageActionIconType::kZoom:
+      case PageActionIconType::kNativeFileSystemAccess:
+      case PageActionIconType::kClickToCall:
+      case PageActionIconType::kCookieControls:
+        break;
+    }
+  }
   return location_bar_;
 }
 

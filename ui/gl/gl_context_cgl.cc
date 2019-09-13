@@ -104,7 +104,7 @@ bool GLContextCGL::Initialize(GLSurface* compatible_surface,
   // toward the discrete gpu.
   if (!GLContext::SwitchableGPUsSupported() ||
       gpu_preference == GpuPreference::kHighPerformance) {
-    DualGPUStateMac::GetInstance()->RegisterHighPerformanceContext();
+    DualGPUStateMac::GetInstance()->RegisterHighPerformanceContext(this);
     is_high_performance_context_ = true;
     // The renderer might be switched after this, so ignore the saved ID.
     share_group()->SetRendererID(-1);
@@ -151,7 +151,7 @@ void GLContextCGL::Destroy() {
   }
 
   if (is_high_performance_context_) {
-    DualGPUStateMac::GetInstance()->RemoveHighPerformanceContext();
+    DualGPUStateMac::GetInstance()->RemoveHighPerformanceContext(this);
   }
   if (context_) {
     CGLDestroyContext(static_cast<CGLContextObj>(context_));
@@ -321,6 +321,15 @@ bool GLContextCGL::MakeCurrent(GLSurface* surface) {
 
   release_current.Cancel();
   return true;
+}
+
+void GLContextCGL::SetVisibility(bool visibility) {
+  if (!is_high_performance_context_ || !g_support_renderer_switching)
+    return;
+  if (visibility)
+    DualGPUStateMac::GetInstance()->RegisterHighPerformanceContext(this);
+  else
+    DualGPUStateMac::GetInstance()->RemoveHighPerformanceContext(this);
 }
 
 void GLContextCGL::ReleaseCurrent(GLSurface* surface) {

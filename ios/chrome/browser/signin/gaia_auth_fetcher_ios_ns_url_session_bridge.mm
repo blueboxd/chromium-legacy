@@ -80,7 +80,6 @@ GaiaAuthFetcherIOSNSURLSessionBridge::GaiaAuthFetcherIOSNSURLSessionBridge(
     web::BrowserState* browser_state)
     : GaiaAuthFetcherIOSBridge(delegate, browser_state) {
   DCHECK(base::FeatureList::IsEnabled(kUseNSURLSessionForGaiaSigninRequests));
-  DCHECK(base::FeatureList::IsEnabled(web::features::kWKHTTPSystemCookieStore));
   url_session_delegate_ = [[GaiaAuthFetcherIOSURLSessionDelegate alloc] init];
   url_session_delegate_.bridge = this;
 }

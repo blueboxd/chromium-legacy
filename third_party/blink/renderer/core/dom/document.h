@@ -539,6 +539,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // lay out.
   void UpdateStyleAndLayoutTree();
   void UpdateStyleAndLayoutTreeForNode(const Node*);
+  void UpdateStyleAndLayoutTreeForSubtree(const Node*);
 
   enum ForcedLayoutStatus { IsForcedLayout, IsNotForcedLayout };
   void UpdateStyleAndLayout(ForcedLayoutStatus = IsForcedLayout);

@@ -84,6 +84,7 @@ class GpuMemoryBufferManager;
 namespace media {
 struct AudioSinkParameters;
 struct AudioSourceParameters;
+class MediaPermission;
 class GpuVideoAcceleratorFactories;
 }
 
@@ -613,8 +614,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual std::unique_ptr<webrtc::RtpCapabilities> GetRtpReceiverCapabilities(
       const WebString& kind);
 
-  virtual void UpdateWebRTCAPICount(WebRTCAPIName api_name) {}
-
   // Checks if the default minimum starting volume value for the AGC is
   // overridden on the command line.
   virtual base::Optional<double> GetWebRtcMaxCaptureFrameRate() {
@@ -639,6 +638,26 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual base::Optional<std::string> GetWebRTCAudioProcessingConfiguration() {
     return base::nullopt;
   }
+
+  virtual bool ShouldEnforceWebRTCRoutingPreferences() { return true; }
+
+  virtual media::MediaPermission* GetWebRTCMediaPermission(
+      WebLocalFrame* web_frame) {
+    return nullptr;
+  }
+
+  virtual bool UsesFakeCodecForPeerConnection() { return false; }
+
+  virtual bool IsWebRtcEncryptionEnabled() { return true; }
+
+  virtual base::Optional<std::string> WebRtcStunProbeTrialParameter() {
+    return base::nullopt;
+  }
+
+  virtual void GetWebRTCRendererPreferences(WebLocalFrame* web_frame,
+                                            WebString* ip_handling_policy,
+                                            uint16_t* udp_min_port,
+                                            uint16_t* udp_max_port) {}
 
   virtual base::Optional<int> GetAgcStartupMinimumVolume() {
     return base::nullopt;

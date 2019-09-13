@@ -14,10 +14,13 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
+#include "chrome/browser/safe_browsing/download_protection/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/download_protection/check_client_download_request_base.h"
 #include "components/download/public/common/download_item.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
+
+class Profile;
 
 namespace safe_browsing {
 
@@ -68,6 +71,17 @@ class CheckClientDownloadRequest : public CheckClientDownloadRequestBase,
 
   DISALLOW_COPY_AND_ASSIGN(CheckClientDownloadRequest);
 };
+
+// Function that can be called from BinaryUploadService::Callback to report
+// verdicts.  Only successful results are reported, assuming that reporting
+// is turned on by enterprise policy.
+void MaybeReportDownloadDeepScanningVerdict(
+    Profile* profile,
+    const GURL& url,
+    const std::string& file_name,
+    const std::string& download_digest_sha256,
+    BinaryUploadService::Result result,
+    DeepScanningClientResponse response);
 
 }  // namespace safe_browsing
 

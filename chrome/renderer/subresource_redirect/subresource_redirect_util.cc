@@ -32,11 +32,11 @@ GURL GetSubresourceURLForURL(const GURL& original_url) {
       subresource_host.scheme() + "://" + origin_hash + "." +
       subresource_host.host() +
       (subresource_host.has_port() ? (":" + subresource_host.port()) : "") +
-      "/sr?u=" +
+      "/i?u=" +
       // Strip out the fragment so that it is not sent to the server.
       net::EscapeQueryParamValue(original_url.GetAsReferrer().spec(),
                                  true /* use_plus */) +
-      "&t=image" + fragment);
+      fragment);
 
   DCHECK(compressed_url.is_valid());
   DCHECK_EQ(subresource_host.scheme(), compressed_url.scheme());

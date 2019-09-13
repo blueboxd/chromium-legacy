@@ -41,7 +41,7 @@ void ThrobAnimation::Hide() {
   SlideAnimation::Hide();
 }
 
-void ThrobAnimation::SetSlideDuration(int duration) {
+void ThrobAnimation::SetSlideDuration(base::TimeDelta duration) {
   slide_duration_ = duration;
 }
 

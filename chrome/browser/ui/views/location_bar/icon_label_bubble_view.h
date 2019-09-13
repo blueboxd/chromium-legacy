@@ -188,7 +188,7 @@ class IconLabelBubbleView : public views::InkDropObserver,
 
   // Subclasses that want a different duration for the slide animation can
   // override this method.
-  virtual int GetSlideDurationTime() const;
+  virtual base::TimeDelta GetSlideDurationTime() const;
 
   // Returns the width after the icon and before the separator. If the
   // separator is not shown, and ShouldShowExtraEndSpace() is false, this

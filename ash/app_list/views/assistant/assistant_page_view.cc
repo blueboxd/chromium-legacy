@@ -17,6 +17,7 @@
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/assistant_web_view.h"
 #include "ash/assistant/util/assistant_util.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/view_shadow.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -200,13 +201,28 @@ void AssistantPageView::OnAnimationStarted(ash::AppListState from_state,
                                            ash::AppListState to_state) {
   if (to_state != ash::AppListState::kStateEmbeddedAssistant)
     return;
-  SetBoundsRect(GetPageBoundsForState(to_state));
+  UpdatePageBoundsForState(to_state, contents_view()->GetContentsBounds(),
+                           contents_view()->GetSearchBoxBounds(to_state));
+}
+
+base::Optional<int> AssistantPageView::GetSearchBoxTop(
+    ash::AppListViewState view_state) const {
+  if (view_state == ash::AppListViewState::kPeeking ||
+      view_state == ash::AppListViewState::kHalf) {
+    return AppListConfig::instance().search_box_fullscreen_top_padding();
+  }
+  // For other view states, return base::nullopt so the app_list::ContentsView
+  // sets the default search box widget origin.
+  return base::nullopt;
 }
 
 gfx::Rect AssistantPageView::GetPageBoundsForState(
-    ash::AppListState state) const {
-  gfx::Rect bounds = AppListPage::GetSearchBoxBounds();
-  bounds.Offset((bounds.width() - ash::kPreferredWidthDip) / 2, 0);
+    ash::AppListState state,
+    const gfx::Rect& contents_bounds,
+    const gfx::Rect& search_box_bounds) const {
+  gfx::Rect bounds = contents_bounds;
+  bounds.Offset((bounds.width() - ash::kPreferredWidthDip) / 2,
+                search_box_bounds.y());
   bounds.set_size(GetPreferredSize());
   return bounds;
 }

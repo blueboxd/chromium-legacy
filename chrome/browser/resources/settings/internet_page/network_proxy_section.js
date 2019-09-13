@@ -55,8 +55,8 @@ Polymer({
    * @private
    */
   isShared_: function() {
-    return this.managedProperties.source == 'Device' ||
-        this.managedProperties.source == 'DevicePolicy';
+    return this.managedProperties.source == mojom.OncSource.kDevice ||
+        this.managedProperties.source == mojom.OncSource.kDevicePolicy;
   },
 
   /**

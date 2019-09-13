@@ -1644,24 +1644,6 @@ void ServiceWorkerGlobalScope::DispatchExtendableMessageEvent(
   DispatchExtendableMessageEventInternal(event_id, std::move(event));
 }
 
-void ServiceWorkerGlobalScope::DispatchExtendableMessageEventWithCustomTimeout(
-    mojom::blink::ExtendableMessageEventPtr event,
-    base::TimeDelta timeout,
-    DispatchExtendableMessageEventCallback callback) {
-  DCHECK(IsContextThread());
-  int event_id = timeout_timer_->StartEventWithCustomTimeout(
-      CreateAbortCallback(&message_event_callbacks_), timeout);
-  message_event_callbacks_.Set(event_id, std::move(callback));
-  TRACE_EVENT_WITH_FLOW0(
-      "ServiceWorker",
-      "ServiceWorkerGlobalScope::"
-      "DispatchExtendableMessageEventWithCustomTimeout",
-      TRACE_ID_WITH_SCOPE(kServiceWorkerGlobalScopeTraceScope,
-                          TRACE_ID_LOCAL(event_id)),
-      TRACE_EVENT_FLAG_FLOW_OUT);
-  DispatchExtendableMessageEventInternal(event_id, std::move(event));
-}
-
 void ServiceWorkerGlobalScope::DispatchFetchEventForMainResource(
     mojom::blink::DispatchFetchEventParamsPtr params,
     mojo::PendingRemote<mojom::blink::ServiceWorkerFetchResponseCallback>

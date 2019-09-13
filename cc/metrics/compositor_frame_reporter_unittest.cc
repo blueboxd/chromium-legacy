@@ -38,13 +38,12 @@ TEST_F(CompositorFrameReporterTest, MainFrameAbortedReportingTest) {
 
   pipeline_reporter_->StartStage(
       CompositorFrameReporter::StageType::kBeginImplFrameToSendBeginMainFrame,
-      Now(), nullptr);
+      Now());
   EXPECT_EQ(0, pipeline_reporter_->StageHistorySizeForTesting());
 
   AdvanceNowByMs(3);
   pipeline_reporter_->StartStage(
-      CompositorFrameReporter::StageType::kSendBeginMainFrameToCommit, Now(),
-      nullptr);
+      CompositorFrameReporter::StageType::kSendBeginMainFrameToCommit, Now());
   EXPECT_EQ(1, pipeline_reporter_->StageHistorySizeForTesting());
 
   AdvanceNowByMs(2);
@@ -64,13 +63,12 @@ TEST_F(CompositorFrameReporterTest, ReplacedByNewReporterReportingTest) {
   base::HistogramTester histogram_tester;
 
   pipeline_reporter_->StartStage(CompositorFrameReporter::StageType::kCommit,
-                                 Now(), nullptr);
+                                 Now());
   EXPECT_EQ(0, pipeline_reporter_->StageHistorySizeForTesting());
 
   AdvanceNowByMs(3);
   pipeline_reporter_->StartStage(
-      CompositorFrameReporter::StageType::kEndCommitToActivation, Now(),
-      nullptr);
+      CompositorFrameReporter::StageType::kEndCommitToActivation, Now());
   EXPECT_EQ(1, pipeline_reporter_->StageHistorySizeForTesting());
 
   AdvanceNowByMs(2);
@@ -89,13 +87,13 @@ TEST_F(CompositorFrameReporterTest, SubmittedFrameReportingTest) {
   base::HistogramTester histogram_tester;
 
   pipeline_reporter_->StartStage(
-      CompositorFrameReporter::StageType::kActivation, Now(), nullptr);
+      CompositorFrameReporter::StageType::kActivation, Now());
   EXPECT_EQ(0, pipeline_reporter_->StageHistorySizeForTesting());
 
   AdvanceNowByMs(3);
   pipeline_reporter_->StartStage(
       CompositorFrameReporter::StageType::kEndActivateToSubmitCompositorFrame,
-      Now(), nullptr);
+      Now());
   EXPECT_EQ(1, pipeline_reporter_->StageHistorySizeForTesting());
 
   AdvanceNowByMs(2);
@@ -125,13 +123,12 @@ TEST_F(CompositorFrameReporterTest, SubmittedMissedFrameReportingTest) {
   base::HistogramTester histogram_tester;
 
   pipeline_reporter_->StartStage(
-      CompositorFrameReporter::StageType::kSendBeginMainFrameToCommit, Now(),
-      nullptr);
+      CompositorFrameReporter::StageType::kSendBeginMainFrameToCommit, Now());
   EXPECT_EQ(0, pipeline_reporter_->StageHistorySizeForTesting());
 
   AdvanceNowByMs(3);
   pipeline_reporter_->StartStage(CompositorFrameReporter::StageType::kCommit,
-                                 Now(), nullptr);
+                                 Now());
   EXPECT_EQ(1, pipeline_reporter_->StageHistorySizeForTesting());
 
   AdvanceNowByMs(2);
@@ -158,149 +155,5 @@ TEST_F(CompositorFrameReporterTest, SubmittedMissedFrameReportingTest) {
   histogram_tester.ExpectBucketCount(
       "CompositorLatency.MissedFrame.TotalLatency", 5, 1);
 }
-
-TEST_F(CompositorFrameReporterTest, MissedFrameLatencyIncreaseReportingTest) {
-  base::HistogramTester histogram_tester;
-  RollingTimeDeltaHistory time_delta_history(50);
-  RollingTimeDeltaHistory time_delta_history2(50);
-
-  // Terminate this frame since it will get destroyed in the for loop.
-  pipeline_reporter_->TerminateFrame(
-      CompositorFrameReporter::FrameTerminationStatus::kDidNotProduceFrame,
-      Now());
-
-  // Submit 19 non-missed frames.
-  for (int i = 0; i < 19; ++i) {
-    pipeline_reporter_ =
-        std::make_unique<CompositorFrameReporter>(&active_trackers);
-    pipeline_reporter_->StartStage(CompositorFrameReporter::StageType::kCommit,
-                                   Now(), &time_delta_history);
-    AdvanceNowByMs(1);
-    pipeline_reporter_->StartStage(
-        CompositorFrameReporter::StageType::kEndCommitToActivation, Now(),
-        &time_delta_history2);
-    pipeline_reporter_->TerminateFrame(
-        CompositorFrameReporter::FrameTerminationStatus::kPresentedFrame,
-        Now());
-  }
-  pipeline_reporter_ = nullptr;
-  EXPECT_EQ((size_t)19, time_delta_history.sample_count());
-  EXPECT_EQ((size_t)19, time_delta_history2.sample_count());
-  histogram_tester.ExpectTotalCount("CompositorLatency.Commit", 19);
-  histogram_tester.ExpectTotalCount("CompositorLatency.EndCommitToActivation",
-                                    19);
-
-  // Submit 3 frames missed frames. This will remove 3 sample from the front of
-  // time delta history. And 16 sample will be in the time delta history.
-  for (int i = 0; i < 3; ++i) {
-    pipeline_reporter_ =
-        std::make_unique<CompositorFrameReporter>(&active_trackers);
-    pipeline_reporter_->StartStage(CompositorFrameReporter::StageType::kCommit,
-                                   Now(), &time_delta_history);
-    AdvanceNowByMs(100);
-    pipeline_reporter_->StartStage(
-        CompositorFrameReporter::StageType::kEndCommitToActivation, Now(),
-        &time_delta_history2);
-    pipeline_reporter_->MissedSubmittedFrame();
-    pipeline_reporter_->TerminateFrame(
-        CompositorFrameReporter::FrameTerminationStatus::kPresentedFrame,
-        Now());
-  }
-  pipeline_reporter_ = nullptr;
-  EXPECT_EQ((size_t)16, time_delta_history.sample_count());
-  EXPECT_EQ((size_t)16, time_delta_history2.sample_count());
-  DCHECK_EQ(time_delta_history.sample_count(), (size_t)16);
-  histogram_tester.ExpectTotalCount(
-      "CompositorLatency.MissedFrameLatencyIncrease.Commit", 0);
-  histogram_tester.ExpectTotalCount(
-      "CompositorLatency.MissedFrameLatencyIncrease.EndCommitToActivation", 0);
-  histogram_tester.ExpectTotalCount("CompositorLatency.MissedFrame.Commit", 3);
-  histogram_tester.ExpectTotalCount(
-      "CompositorLatency.MissedFrame.EndCommitToActivation", 3);
-
-  // Submit 5 frame so that missed frame duration increases would be reported.
-  for (int i = 0; i < 5; ++i) {
-    pipeline_reporter_ =
-        std::make_unique<CompositorFrameReporter>(&active_trackers);
-    pipeline_reporter_->StartStage(CompositorFrameReporter::StageType::kCommit,
-                                   Now(), &time_delta_history);
-    AdvanceNowByMs(1);
-    pipeline_reporter_->StartStage(
-        CompositorFrameReporter::StageType::kEndCommitToActivation, Now(),
-        &time_delta_history2);
-    pipeline_reporter_->TerminateFrame(
-        CompositorFrameReporter::FrameTerminationStatus::kPresentedFrame,
-        Now());
-  }
-  pipeline_reporter_ = nullptr;
-  EXPECT_EQ((size_t)21, time_delta_history.sample_count());
-  EXPECT_EQ((size_t)21, time_delta_history2.sample_count());
-
-  histogram_tester.ExpectTotalCount("CompositorLatency.Commit", 24);
-  histogram_tester.ExpectTotalCount("CompositorLatency.EndCommitToActivation",
-                                    24);
-
-  // Submit missed frame that is not abnormal (more than 95 percentile of the
-  // frame history). This brings down the time delta history count to 20.
-  pipeline_reporter_ =
-      std::make_unique<CompositorFrameReporter>(&active_trackers);
-  pipeline_reporter_->StartStage(CompositorFrameReporter::StageType::kCommit,
-                                 Now(), &time_delta_history);
-  AdvanceNowByMs(1);
-  pipeline_reporter_->StartStage(
-      CompositorFrameReporter::StageType::kEndCommitToActivation, Now(),
-      &time_delta_history2);
-  pipeline_reporter_->MissedSubmittedFrame();
-  pipeline_reporter_->TerminateFrame(
-      CompositorFrameReporter::FrameTerminationStatus::kPresentedFrame, Now());
-  pipeline_reporter_ = nullptr;
-  histogram_tester.ExpectTotalCount(
-      "CompositorLatency.MissedFrameLatencyIncrease.Commit", 0);
-  histogram_tester.ExpectTotalCount("CompositorLatency.MissedFrame.Commit", 4);
-  histogram_tester.ExpectTotalCount(
-      "CompositorLatency.MissedFrame.EndCommitToActivation", 4);
-
-  EXPECT_EQ((size_t)20, time_delta_history.sample_count());
-  EXPECT_EQ((size_t)20, time_delta_history2.sample_count());
-
-  // Submit missed frame that is abnormal (more than 95 percentile of the
-  // frame history).
-  pipeline_reporter_ =
-      std::make_unique<CompositorFrameReporter>(&active_trackers);
-  pipeline_reporter_->StartStage(CompositorFrameReporter::StageType::kCommit,
-                                 Now(), &time_delta_history);
-  AdvanceNowByMs(3);
-  pipeline_reporter_->StartStage(
-      CompositorFrameReporter::StageType::kEndCommitToActivation, Now(),
-      &time_delta_history2);
-  pipeline_reporter_->MissedSubmittedFrame();
-  pipeline_reporter_->TerminateFrame(
-      CompositorFrameReporter::FrameTerminationStatus::kPresentedFrame, Now());
-  pipeline_reporter_ = nullptr;
-  histogram_tester.ExpectTotalCount(
-      "CompositorLatency.MissedFrameLatencyIncrease.Commit", 1);
-  histogram_tester.ExpectTotalCount("CompositorLatency.MissedFrame.Commit", 5);
-  histogram_tester.ExpectTotalCount(
-      "CompositorLatency.MissedFrame.EndCommitToActivation", 5);
-
-  // Submit not-missed frame with abnormal times.
-  pipeline_reporter_ =
-      std::make_unique<CompositorFrameReporter>(&active_trackers);
-  pipeline_reporter_->StartStage(CompositorFrameReporter::StageType::kCommit,
-                                 Now(), &time_delta_history);
-  AdvanceNowByMs(3);
-  pipeline_reporter_->StartStage(
-      CompositorFrameReporter::StageType::kEndCommitToActivation, Now(),
-      &time_delta_history2);
-  pipeline_reporter_->TerminateFrame(
-      CompositorFrameReporter::FrameTerminationStatus::kPresentedFrame, Now());
-  pipeline_reporter_ = nullptr;
-  histogram_tester.ExpectTotalCount(
-      "CompositorLatency.MissedFrameLatencyIncrease.Commit", 1);
-  histogram_tester.ExpectTotalCount("CompositorLatency.Commit", 25);
-  histogram_tester.ExpectTotalCount("CompositorLatency.EndCommitToActivation",
-                                    25);
-}
-
 }  // namespace
 }  // namespace cc

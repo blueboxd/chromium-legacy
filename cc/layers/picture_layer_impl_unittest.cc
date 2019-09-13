@@ -1159,7 +1159,7 @@ TEST_F(PictureLayerImplTest, DontAddLowResForSmallLayers) {
 
   // Mask layers dont create low res since they always fit on one tile.
   CreateEffectNode(pending_layer());
-  auto* mask = AddMaskLayer<FakePictureLayerImplWithRasterSourceAsMask>(
+  auto* mask = AddMaskLayer<FakePictureLayerImpl>(
       host_impl()->pending_tree(), pending_layer(), pending_raster_source);
   mask->SetBounds(layer_bounds);
   mask->SetDrawsContent(true);
@@ -1188,7 +1188,7 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
   SetupPendingTree(valid_raster_source);
 
   CreateEffectNode(pending_layer());
-  auto* pending_mask = AddMaskLayer<FakePictureLayerImplWithRasterSourceAsMask>(
+  auto* pending_mask = AddMaskLayer<FakePictureLayerImpl>(
       host_impl()->pending_tree(), pending_layer(), valid_raster_source);
   pending_mask->SetBounds(layer_bounds);
   pending_mask->SetDrawsContent(true);
@@ -1315,7 +1315,7 @@ TEST_F(PictureLayerImplTest, ScaledMaskLayer) {
   SetupPendingTree(valid_raster_source);
 
   CreateEffectNode(pending_layer());
-  auto* pending_mask = AddMaskLayer<FakePictureLayerImplWithRasterSourceAsMask>(
+  auto* pending_mask = AddMaskLayer<FakePictureLayerImpl>(
       host_impl()->pending_tree(), pending_layer(), valid_raster_source);
   pending_mask->SetBounds(layer_bounds);
   pending_mask->SetDrawsContent(true);
@@ -2265,8 +2265,8 @@ TEST_F(PictureLayerImplTest, ActivateUninitializedLayer) {
 
   int kLayerId = 2;
   std::unique_ptr<FakePictureLayerImpl> pending_layer =
-      FakePictureLayerImpl::CreateWithRasterSource(pending_tree, kLayerId,
-                                                   pending_raster_source);
+      FakePictureLayerImpl::Create(pending_tree, kLayerId,
+                                   pending_raster_source);
   pending_layer->SetDrawsContent(true);
   auto* raw_pending_layer = pending_layer.get();
   SetupRootProperties(raw_pending_layer);
@@ -3327,8 +3327,7 @@ TEST_F(PictureLayerImplTest, OcclusionOnSolidColorPictureLayer) {
 
   scoped_refptr<FakeRasterSource> pending_raster_source =
       FakeRasterSource::CreateFilledSolidColor(layer_bounds);
-  SetupPendingTree(std::move(pending_raster_source), gfx::Size(), Region(),
-                   Layer::LayerMaskType::NOT_MASK);
+  SetupPendingTree(std::move(pending_raster_source), gfx::Size(), Region());
   // Device scale factor should not affect a non-mask solid color layer.
   host_impl()->pending_tree()->SetDeviceScaleFactor(2.f);
   ActivateTree();
@@ -3358,8 +3357,8 @@ TEST_F(PictureLayerImplTest, IgnoreOcclusionOnSolidColorMask) {
 
   scoped_refptr<FakeRasterSource> pending_raster_source =
       FakeRasterSource::CreateFilledSolidColor(layer_bounds);
-  SetupPendingTree(std::move(pending_raster_source), gfx::Size(), Region(),
-                   Layer::LayerMaskType::SINGLE_TEXTURE_MASK);
+  SetupPendingTree(std::move(pending_raster_source), gfx::Size(), Region());
+
   host_impl()->pending_tree()->SetDeviceScaleFactor(2.f);
   ActivateTree();
 
@@ -5183,8 +5182,8 @@ TEST_F(PictureLayerImplTest, CompositedImageCalculateContentsScale) {
   LayerTreeImpl* pending_tree = host_impl()->pending_tree();
 
   std::unique_ptr<FakePictureLayerImpl> pending_layer =
-      FakePictureLayerImpl::CreateWithRasterSource(pending_tree, root_id(),
-                                                   pending_raster_source);
+      FakePictureLayerImpl::Create(pending_tree, root_id(),
+                                   pending_raster_source);
   pending_layer->set_is_directly_composited_image(true);
   pending_layer->SetDrawsContent(true);
   FakePictureLayerImpl* pending_layer_ptr = pending_layer.get();
@@ -5208,8 +5207,8 @@ TEST_F(PictureLayerImplTest, CompositedImageIgnoreIdealContentsScale) {
   LayerTreeImpl* pending_tree = host_impl()->pending_tree();
 
   std::unique_ptr<FakePictureLayerImpl> pending_layer =
-      FakePictureLayerImpl::CreateWithRasterSource(pending_tree, root_id(),
-                                                   pending_raster_source);
+      FakePictureLayerImpl::Create(pending_tree, root_id(),
+                                   pending_raster_source);
   pending_layer->set_is_directly_composited_image(true);
   pending_layer->SetDrawsContent(true);
   FakePictureLayerImpl* pending_layer_ptr = pending_layer.get();

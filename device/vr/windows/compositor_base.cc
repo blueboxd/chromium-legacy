@@ -192,6 +192,8 @@ void XRCompositorCommon::UpdateLayerBounds(int16_t frame_id,
 
 void XRCompositorCommon::RequestSession(
     base::OnceCallback<void()> on_presentation_ended,
+    base::RepeatingCallback<void(mojom::XRVisibilityState)>
+        on_visibility_state_changed,
     mojom::XRRuntimeSessionOptionsPtr options,
     RequestSessionCallback callback) {
   DCHECK(options->immersive);
@@ -212,6 +214,8 @@ void XRCompositorCommon::RequestSession(
   // knows it has requested a new session, and isn't expecting that callback to
   // be called.
   on_presentation_ended_ = std::move(on_presentation_ended);
+
+  on_visibility_state_changed_ = std::move(on_visibility_state_changed);
 
   device::mojom::XRPresentationProviderPtr presentation_provider;
   device::mojom::XRFrameDataProviderPtr frame_data_provider;
@@ -272,6 +276,15 @@ void XRCompositorCommon::ExitPresent() {
   if (on_presentation_ended_) {
     main_thread_task_runner_->PostTask(FROM_HERE,
                                        std::move(on_presentation_ended_));
+  }
+}
+
+void XRCompositorCommon::VisibilityStateChanged(
+    mojom::XRVisibilityState visibility_state) {
+  if (on_visibility_state_changed_) {
+    main_thread_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(on_visibility_state_changed_, visibility_state));
   }
 }
 

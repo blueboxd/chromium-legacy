@@ -388,10 +388,6 @@ const char kWebPageTextAccessibilityDescription[] =
     "When enabled, text in web pages will respect the user's Dynamic Type "
     "setting.";
 
-const char kWKHTTPSystemCookieStoreName[] = "Use WKHTTPSystemCookieStore.";
-const char kWKHTTPSystemCookieStoreDescription[] =
-    "Use WKHTTPCookieStore backed store for main context URL requests.";
-
 // Please insert your name/description above in alphabetical order.
 
 }  // namespace flag_descriptions

@@ -39,60 +39,62 @@ namespace {
 
 // Duration of the animation of the position of buttons to the left of
 // |size_button_|.
-const int kPositionAnimationDurationMs = 500;
+constexpr auto kPositionAnimationDuration =
+    base::TimeDelta::FromMilliseconds(500);
 
 // Duration of the animation of the alpha of |size_button_|.
-const int kAlphaAnimationDurationMs = 250;
+constexpr auto kAlphaAnimationDuration = base::TimeDelta::FromMilliseconds(250);
 
 // Delay during |tablet_mode_animation_| hide to wait before beginning to
 // animate the position of buttons to the left of |size_button_|.
-const int kHidePositionDelayMs = 100;
+constexpr auto kHidePositionDelay = base::TimeDelta::FromMilliseconds(100);
 
 // Duration of |tablet_mode_animation_| hiding.
 // Hiding size button 250
 // |------------------------|
 // Delay 100      Slide other buttons 500
 // |---------|-------------------------------------------------|
-const int kHideAnimationDurationMs =
-    kHidePositionDelayMs + kPositionAnimationDurationMs;
+constexpr auto kHideAnimationDuration =
+    kHidePositionDelay + kPositionAnimationDuration;
 
 // Delay during |tablet_mode_animation_| show to wait before beginning to
 // animate the alpha of |size_button_|.
-const int kShowAnimationAlphaDelayMs = 100;
+constexpr auto kShowAnimationAlphaDelay =
+    base::TimeDelta::FromMilliseconds(100);
 
 // Duration of |tablet_mode_animation_| showing.
 // Slide other buttons 500
 // |-------------------------------------------------|
 // Delay 100   Show size button 250
 // |---------|-----------------------|
-const int kShowAnimationDurationMs = kPositionAnimationDurationMs;
+constexpr auto kShowAnimationDuration = kPositionAnimationDuration;
 
 // Value of |tablet_mode_animation_| showing to begin animating alpha of
 // |size_button_|.
 float SizeButtonShowStartValue() {
-  return static_cast<float>(kShowAnimationAlphaDelayMs) /
-         kShowAnimationDurationMs;
+  return kShowAnimationAlphaDelay.InMillisecondsF() /
+         kShowAnimationDuration.InMillisecondsF();
 }
 
 // Amount of |tablet_mode_animation_| showing to animate the alpha of
 // |size_button_|.
 float SizeButtonShowDuration() {
-  return static_cast<float>(kAlphaAnimationDurationMs) /
-         kShowAnimationDurationMs;
+  return kAlphaAnimationDuration.InMillisecondsF() /
+         kShowAnimationDuration.InMillisecondsF();
 }
 
 // Amount of |tablet_mode_animation_| hiding to animate the alpha of
 // |size_button_|.
 float SizeButtonHideDuration() {
-  return static_cast<float>(kAlphaAnimationDurationMs) /
-         kHideAnimationDurationMs;
+  return kAlphaAnimationDuration.InMillisecondsF() /
+         kHideAnimationDuration.InMillisecondsF();
 }
 
 // Value of |tablet_mode_animation_| hiding to begin animating the position of
 // buttons to the left of |size_button_|.
 float HidePositionStartValue() {
-  return 1.0f -
-         static_cast<float>(kHidePositionDelayMs) / kHideAnimationDurationMs;
+  return 1.0f - kHidePositionDelay.InMillisecondsF() /
+                    kHideAnimationDuration.InMillisecondsF();
 }
 
 // Bounds animation values to the range 0.0 - 1.0. Allows for mapping of offset
@@ -251,12 +253,12 @@ void FrameCaptionButtonContainerView::UpdateCaptionButtonState(bool animate) {
   if (size_button_visible) {
     size_button_->SetVisible(true);
     if (animate) {
-      tablet_mode_animation_->SetSlideDuration(kShowAnimationDurationMs);
+      tablet_mode_animation_->SetSlideDuration(kShowAnimationDuration);
       tablet_mode_animation_->Show();
     }
   } else {
     if (animate) {
-      tablet_mode_animation_->SetSlideDuration(kHideAnimationDurationMs);
+      tablet_mode_animation_->SetSlideDuration(kHideAnimationDuration);
       tablet_mode_animation_->Hide();
     } else {
       size_button_->SetVisible(false);

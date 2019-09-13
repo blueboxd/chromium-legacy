@@ -14,7 +14,7 @@ interface AssistantVolumeControl {
 
   // Adds volume observer. The observer will be immediately notified of volume
   // and mute status when added.
-  AddVolumeObserver(pending_remote<VolumeObserver> observer);
+  AddVolumeObserver(VolumeObserver observer);
 };
 
 // Observes volume state changes.

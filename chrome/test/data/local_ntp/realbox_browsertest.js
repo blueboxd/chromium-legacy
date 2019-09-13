@@ -356,6 +356,56 @@ test.realbox.testCopyUrlSucceeds = function() {
   assertTrue(copyEvent.defaultPrevented);
   assertEquals(
       'https://www.google.com/', copyEvent.clipboardData.getData('text/plain'));
+  assertFalse(test.realbox.realboxEl.value === '');
+};
+
+test.realbox.testCutEmptyInputFails = function() {
+  const cutEvent = test.realbox.clipboardEvent('cut');
+  test.realbox.realboxEl.dispatchEvent(cutEvent);
+  assertFalse(cutEvent.defaultPrevented);
+};
+
+test.realbox.testCutSearchResultFails = function() {
+  test.realbox.realboxEl.value = 'skittles!';
+  test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
+
+  chrome.embeddedSearch.searchBox.onqueryautocompletedone({
+    input: test.realbox.realboxEl.value,
+    matches: [test.realbox.getSearchMatch({contents: 'skittles!'})],
+  });
+
+  test.realbox.realboxEl.setSelectionRange(0, 'skittles!'.length);
+
+  const cutEvent = test.realbox.clipboardEvent('cut');
+  test.realbox.realboxEl.dispatchEvent(cutEvent);
+  assertFalse(cutEvent.defaultPrevented);
+};
+
+test.realbox.testCutUrlSucceeds = function() {
+  test.realbox.realboxEl.value = 'go';
+  test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
+
+  chrome.embeddedSearch.searchBox.onqueryautocompletedone({
+    input: test.realbox.realboxEl.value,
+    matches: [
+      test.realbox.getUrlMatch({
+        contents: 'go',
+        inlineAutocompletion: 'ogle.com',
+        destinationUrl: 'https://www.google.com/',
+      }),
+    ],
+  });
+
+  assertEquals('google.com', test.realbox.realboxEl.value);
+
+  test.realbox.realboxEl.setSelectionRange(0, 'google.com'.length);
+
+  const cutEvent = test.realbox.clipboardEvent('cut');
+  test.realbox.realboxEl.dispatchEvent(cutEvent);
+  assertTrue(cutEvent.defaultPrevented);
+  assertEquals(
+      'https://www.google.com/', cutEvent.clipboardData.getData('text/plain'));
+  assertTrue(test.realbox.realboxEl.value === '');
 };
 
 test.realbox.testStaleAutocompleteResult = function() {

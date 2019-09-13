@@ -79,8 +79,8 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
 
   // Notifications/calls from BrowserXRRuntime:
   void OnExitPresent();
-  void OnBlur();
-  void OnFocus();
+  void OnVisibilityStateChanged(
+      device::mojom::XRVisibilityState visibility_state);
   void OnActivate(device::mojom::VRDisplayEventReason reason,
                   base::OnceCallback<void(bool)> on_handled);
   void OnDeactivate(device::mojom::VRDisplayEventReason reason);

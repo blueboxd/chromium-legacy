@@ -3322,6 +3322,14 @@ void ProgramPathFragmentInputGenCHROMIUM(GLuint program,
   }
 }
 
+void ContextVisibilityHintCHROMIUM(GLboolean visibility) {
+  gles2::cmds::ContextVisibilityHintCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::ContextVisibilityHintCHROMIUM>();
+  if (c) {
+    c->Init(visibility);
+  }
+}
+
 void CoverageModulationCHROMIUM(GLenum components) {
   gles2::cmds::CoverageModulationCHROMIUM* c =
       GetCmdSpace<gles2::cmds::CoverageModulationCHROMIUM>();

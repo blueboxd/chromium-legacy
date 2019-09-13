@@ -248,11 +248,8 @@ void NativeFileSystemUsageBubbleView::ShowBubble(
   if (!browser)
     return;
 
-  OmniboxPageActionIconContainerView* anchor_view =
-      BrowserView::GetBrowserViewForBrowser(browser)
-          ->toolbar_button_provider()
-          ->GetOmniboxPageActionIconContainerView();
-
+  ToolbarButtonProvider* button_provider =
+      BrowserView::GetBrowserViewForBrowser(browser)->toolbar_button_provider();
   // Writable directories are generally also readable, but we don't want to
   // display the same directory twice. So filter out any writable directories
   // from the readable directories list.
@@ -265,11 +262,14 @@ void NativeFileSystemUsageBubbleView::ShowBubble(
   }
   usage.readable_directories = readable_directories;
 
-  bubble_ = new NativeFileSystemUsageBubbleView(anchor_view, web_contents,
-                                                origin, std::move(usage));
+  bubble_ = new NativeFileSystemUsageBubbleView(
+      button_provider->GetAnchorView(
+          PageActionIconType::kNativeFileSystemAccess),
+      web_contents, origin, std::move(usage));
 
-  bubble_->SetHighlightedButton(anchor_view->GetPageActionIconView(
-      PageActionIconType::kNativeFileSystemAccess));
+  bubble_->SetHighlightedButton(
+      button_provider->GetOmniboxPageActionIconContainerView()
+          ->GetPageActionIconView(PageActionIconType::kNativeFileSystemAccess));
   views::BubbleDialogDelegateView::CreateBubble(bubble_);
 
   bubble_->ShowForReason(DisplayReason::USER_GESTURE,

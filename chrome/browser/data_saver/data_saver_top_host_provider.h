@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/sequence_checker.h"
+#include "base/time/clock.h"
 #include "base/values.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/top_host_provider.h"
@@ -31,7 +32,8 @@ class DataSaverTopHostProvider : public optimization_guide::TopHostProvider {
   // OptimizationGuideKeyedService is fully rolled out. All future callers
   // should be using the CreateIfAllowed() factory method instead, which
   // validates if the user has the proper permissions to use this class.
-  explicit DataSaverTopHostProvider(content::BrowserContext* BrowserContext);
+  DataSaverTopHostProvider(content::BrowserContext* BrowserContext,
+                           base::Clock* time_clock);
   ~DataSaverTopHostProvider() override;
 
   // Creates a DataSaverTopHostProvider if the user is a Data Saver user and has
@@ -70,6 +72,9 @@ class DataSaverTopHostProvider : public optimization_guide::TopHostProvider {
   // and the embedder should guarantee that it is non-null during the lifetime
   // of |this|.
   content::BrowserContext* browser_context_;
+
+  // Clock used for getting current time.
+  base::Clock* time_clock_;
 
   // |pref_service_| provides information about the current profile's
   // settings. It is not owned and guaranteed to outlive |this|.

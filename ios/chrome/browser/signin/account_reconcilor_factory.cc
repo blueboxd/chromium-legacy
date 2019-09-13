@@ -53,10 +53,6 @@ std::unique_ptr<KeyedService> AccountReconcilorFactory::BuildServiceInstanceFor(
       SigninClientFactory::GetForBrowserState(chrome_browser_state),
       std::make_unique<signin::MirrorAccountReconcilorDelegate>(
           identity_manager)));
-#if defined(OS_IOS)
-  reconcilor->SetIsWKHTTPSystemCookieStoreEnabled(
-      base::FeatureList::IsEnabled(web::features::kWKHTTPSystemCookieStore));
-#endif  // defined(OS_IOS)
   reconcilor->Initialize(true /* start_reconcile_if_tokens_available */);
   return reconcilor;
 }

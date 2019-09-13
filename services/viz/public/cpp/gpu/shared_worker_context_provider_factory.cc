@@ -50,18 +50,28 @@ gpu::ContextResult SharedWorkerContextProviderFactory::Validate(
   if (provider_)
     return gpu::ContextResult::kSuccess;
 
+  const auto& gpu_feature_info = gpu_channel_host->gpu_feature_info();
+  bool enable_oop_rasterization =
+      features::IsUiGpuRasterizationEnabled() &&
+      gpu_feature_info.status_values[gpu::GPU_FEATURE_TYPE_OOP_RASTERIZATION] ==
+          gpu::kGpuFeatureStatusEnabled;
+  bool enable_gpu_rasterization =
+      features::IsUiGpuRasterizationEnabled() && !enable_oop_rasterization;
+
   // TODO(crbug.com/909568): refactor
   // RenderThreadImpl::SharedCompositorWorkerContextProvider to use this.
   const bool need_alpha_channel = false;
   const bool support_locking = true;
-  const bool support_gles2_interface = features::IsUiGpuRasterizationEnabled();
+  const bool support_gles2_interface = enable_gpu_rasterization;
   const bool support_raster_interface = true;
-  const bool support_grcontext = features::IsUiGpuRasterizationEnabled();
+  const bool support_grcontext = enable_gpu_rasterization;
+  const bool support_oopr = enable_oop_rasterization;
+
   provider_ = CreateContextProvider(
       std::move(gpu_channel_host), gpu_memory_buffer_manager,
-      gpu::kNullSurfaceHandle, need_alpha_channel, false /* support_stencil */,
+      gpu::kNullSurfaceHandle, need_alpha_channel, /*support_stencil=*/false,
       support_locking, support_gles2_interface, support_raster_interface,
-      support_grcontext, context_type_);
+      support_grcontext, support_oopr, context_type_);
   auto result = provider_->BindToCurrentThread();
   if (result != gpu::ContextResult::kSuccess)
     provider_ = nullptr;
@@ -79,6 +89,7 @@ SharedWorkerContextProviderFactory::CreateContextProvider(
     bool support_gles2_interface,
     bool support_raster_interface,
     bool support_grcontext,
+    bool support_oopr,
     command_buffer_metrics::ContextType type) {
   DCHECK(gpu_channel_host);
 
@@ -93,7 +104,7 @@ SharedWorkerContextProviderFactory::CreateContextProvider(
   attributes.buffer_preserved = false;
   attributes.enable_gles2_interface = support_gles2_interface;
   attributes.enable_raster_interface = support_raster_interface;
-
+  attributes.enable_oop_rasterization = support_oopr;
   gpu::SharedMemoryLimits memory_limits =
       gpu::SharedMemoryLimits::ForDisplayCompositor();
 

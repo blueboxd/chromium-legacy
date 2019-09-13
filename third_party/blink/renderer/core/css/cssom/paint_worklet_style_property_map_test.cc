@@ -85,13 +85,13 @@ class PaintWorkletStylePropertyMapTest : public PageTestBase {
     EXPECT_EQ(data.at("--foo")->ToCSSStyleValue()->GetType(),
               CSSStyleValue::StyleValueType::kUnitType);
     EXPECT_EQ(To<CSSUnitValue>(data.at("--foo")->ToCSSStyleValue())->value(),
-              134);
+              10);
     EXPECT_EQ(To<CSSUnitValue>(data.at("--foo")->ToCSSStyleValue())->unit(),
               "px");
     EXPECT_EQ(data.at("--bar")->ToCSSStyleValue()->GetType(),
               CSSStyleValue::StyleValueType::kUnitType);
     EXPECT_EQ(To<CSSUnitValue>(data.at("--bar")->ToCSSStyleValue())->value(),
-              42);
+              15);
     EXPECT_EQ(data.at("--loo")->ToCSSStyleValue()->GetType(),
               CSSStyleValue::StyleValueType::kKeywordType);
     EXPECT_EQ(To<CSSKeywordValue>(data.at("--loo")->ToCSSStyleValue())->value(),
@@ -100,7 +100,7 @@ class PaintWorkletStylePropertyMapTest : public PageTestBase {
               CSSStyleValue::StyleValueType::kUnsupportedColorType);
     EXPECT_EQ(To<CSSUnsupportedColorValue>(data.at("--gar")->ToCSSStyleValue())
                   ->Value(),
-              Color(0, 255, 0));
+              Color(255, 0, 0));
     EXPECT_EQ(data.at("display")->ToCSSStyleValue()->GetType(),
               CSSStyleValue::StyleValueType::kKeywordType);
     waitable_event->Signal();
@@ -150,7 +150,7 @@ TEST_F(PaintWorkletStylePropertyMapTest, UnregisteredCustomProperty) {
   ShutDownThread();
 }
 
-TEST_F(PaintWorkletStylePropertyMapTest, CreateSupportedCrossThreadData) {
+TEST_F(PaintWorkletStylePropertyMapTest, SupportedCrossThreadData) {
   Vector<CSSPropertyID> native_properties({CSSPropertyID::kDisplay});
   Vector<AtomicString> custom_properties({"--foo", "--bar", "--loo", "--gar"});
   css_test_helpers::RegisterProperty(GetDocument(), "--foo", "<length>",
@@ -162,9 +162,13 @@ TEST_F(PaintWorkletStylePropertyMapTest, CreateSupportedCrossThreadData) {
   css_test_helpers::RegisterProperty(GetDocument(), "--gar", "<color>",
                                      "rgb(0, 255, 0)", false);
 
+  GetDocument().documentElement()->SetInnerHTMLFromString(
+      "<div id='target' style='--foo:10px; --bar:15; --gar:rgb(255, 0, "
+      "0)'></div>");
   UpdateAllLifecyclePhasesForTest();
-  Node* node = PageNode();
 
+  Element* node = GetDocument().getElementById("target");
+  node->GetLayoutObject()->GetMutableForPainting().EnsureId();
   Vector<std::unique_ptr<CrossThreadStyleValue>> input_arguments;
   CompositorPaintWorkletInput::PropertyKeys input_property_keys;
   auto data = PaintWorkletStylePropertyMap::BuildCrossThreadData(
@@ -204,8 +208,13 @@ TEST_F(PaintWorkletStylePropertyMapTest, UnsupportedCrossThreadData) {
   css_test_helpers::RegisterProperty(GetDocument(), "--loo", "test", "test",
                                      false);
 
+  GetDocument().documentElement()->SetInnerHTMLFromString(
+      "<div id='target' style='--foo:url(https://crbug.com/); "
+      "--bar:15;'></div>");
   UpdateAllLifecyclePhasesForTest();
-  Node* node = PageNode();
+
+  Element* node = GetDocument().getElementById("target");
+  node->GetLayoutObject()->GetMutableForPainting().EnsureId();
 
   Vector<std::unique_ptr<CrossThreadStyleValue>> input_arguments;
   CompositorPaintWorkletInput::PropertyKeys input_property_keys;

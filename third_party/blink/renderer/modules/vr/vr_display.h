@@ -66,8 +66,8 @@ class SessionClientBinding
  private:
   void OnChanged(device::mojom::blink::VRDisplayInfoPtr) override;
   void OnExitPresent() override;
-  void OnBlur() override;
-  void OnFocus() override;
+  void OnVisibilityStateChanged(
+      device::mojom::blink::XRVisibilityState) override;
 
   // VRDisplay keeps all references to SessionClientBinding, so as soon as
   // VRDisplay is destroyed, so is the SessionClientBinding.

@@ -446,7 +446,7 @@ views::AccessiblePaneView* WebAppFrameToolbarView::GetAsAccessiblePaneView() {
   return this;
 }
 
-views::View* WebAppFrameToolbarView::GetAnchorView() {
+views::View* WebAppFrameToolbarView::GetAnchorView(PageActionIconType type) {
   return web_app_menu_button_;
 }
 

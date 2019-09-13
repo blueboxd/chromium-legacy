@@ -175,16 +175,19 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // Returns the pagination model for the ContentsView.
   const ash::PaginationModel& pagination_model() { return pagination_model_; }
 
-  // Returns search box bounds to use for content views that do not specify
-  // their own custom layout.
-  gfx::Rect GetDefaultSearchBoxBounds() const;
+  // Returns the search box bounds to use for a given app list (pagination)
+  // state (in the current app list view state).
+  gfx::Rect GetSearchBoxBounds(ash::AppListState state) const;
 
-  // Returns search box bounds to use for a given state.
-  gfx::Rect GetSearchBoxBoundsForState(ash::AppListState state) const;
+  // Returns the search box bounds size to use for a given app list (pagination)
+  // state (in the current app list view state).
+  gfx::Size GetSearchBoxSize(ash::AppListState state) const;
 
-  // Returns the content area bounds to use for content views that do not
-  // specify their own custom layout.
-  gfx::Rect GetDefaultContentsBounds() const;
+  // Returns the search box bounds size to use for a given app list (pagination)
+  // state and app list view state.
+  gfx::Rect GetSearchBoxBoundsForViewState(
+      ash::AppListState state,
+      ash::AppListViewState view_state) const;
 
   // Performs the 'back' action for the active page. Returns whether the action
   // was handled.
@@ -233,9 +236,6 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // Invoked when active view is changed.
   void ActivePageChanged();
 
-  // Returns the size of the default content area.
-  gfx::Size GetDefaultContentsSize() const;
-
   void InitializeSearchBoxAnimation(ash::AppListState current_state,
                                     ash::AppListState target_state);
   void UpdateSearchBoxAnimation(double progress,
@@ -275,6 +275,17 @@ class APP_LIST_EXPORT ContentsView : public views::View,
 
   // Converts rect to widget without applying transform.
   gfx::Rect ConvertRectToWidgetWithoutTransform(const gfx::Rect& rect);
+
+  // Returns the search box origin y coordinate to use for a given app list
+  // (pagination) state and app list view state.
+  // NOTE: The search box will be horizontally centered in the current content
+  // bounds.
+  int GetSearchBoxTopForViewState(ash::AppListState state,
+                                  ash::AppListViewState view_state) const;
+
+  // Returns the expected search box bounds based on the app list transition
+  // progress.
+  gfx::Rect GetSearchBoxExpectedBoundsForProgress(float progress) const;
 
   // Unowned pointer to application list model.
   AppListModel* model_ = nullptr;

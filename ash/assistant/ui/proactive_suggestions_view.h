@@ -32,6 +32,9 @@ class COMPONENT_EXPORT(ASSISTANT_UI) ProactiveSuggestionsView
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
   void OnPaintBackground(gfx::Canvas* canvas) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

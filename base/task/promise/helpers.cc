@@ -11,32 +11,11 @@
 namespace base {
 namespace internal {
 
-PromiseHolder::PromiseHolder(scoped_refptr<AbstractPromise> promise)
-    : promise_(std::move(promise)) {}
-
-PromiseHolder::~PromiseHolder() {
-  // Detect if the promise was not executed and if so cancel to ensure memory
-  // is released.
-  if (promise_)
-    promise_->OnCanceled();
-}
-
-PromiseHolder::PromiseHolder(PromiseHolder&& other)
-    : promise_(std::move(other.promise_)) {}
-
-scoped_refptr<AbstractPromise> PromiseHolder::Unwrap() const {
-  return std::move(promise_);
-}
-
-scoped_refptr<TaskRunner> GetCurrentSequence() {
-  return SequencedTaskRunnerHandle::Get();
-}
-
 DoNothing ToCallbackBase(DoNothing task) {
   return task;
 }
 
-scoped_refptr<AbstractPromise> ConstructAbstractPromiseWithSinglePrerequisite(
+PassedPromise ConstructAbstractPromiseWithSinglePrerequisite(
     const scoped_refptr<TaskRunner>& task_runner,
     const Location& from_here,
     AbstractPromise* prerequisite,
@@ -46,26 +25,35 @@ scoped_refptr<AbstractPromise> ConstructAbstractPromiseWithSinglePrerequisite(
   if (!prerequisite) {
     // Ensure the destructor for |executor_data| runs.
     PromiseExecutor dummy_executor(std::move(executor_data));
-    return nullptr;
+    return PassedPromise();
   }
 
-  return AbstractPromise::Create(
+  return PassedPromise(AbstractPromise::Create(
       task_runner, from_here,
       std::make_unique<AbstractPromise::AdjacencyList>(prerequisite),
       RejectPolicy::kMustCatchRejection,
-      internal::DependentList::ConstructUnresolved(), std::move(executor_data));
+      internal::DependentList::ConstructUnresolved(),
+      std::move(executor_data)));
 }
 
-scoped_refptr<AbstractPromise> ConstructManualPromiseResolverPromise(
+PassedPromise ConstructHereAbstractPromiseWithSinglePrerequisite(
     const Location& from_here,
-    RejectPolicy reject_policy,
-    bool can_resolve,
-    bool can_reject) {
-  return AbstractPromise::CreateNoPrerequisitePromise(
+    AbstractPromise* prerequisite,
+    internal::PromiseExecutor::Data&& executor_data) noexcept {
+  return ConstructAbstractPromiseWithSinglePrerequisite(
+      SequencedTaskRunnerHandle::Get(), from_here, prerequisite,
+      std::move(executor_data));
+}
+
+PassedPromise ConstructManualPromiseResolverPromise(const Location& from_here,
+                                                    RejectPolicy reject_policy,
+                                                    bool can_resolve,
+                                                    bool can_reject) {
+  return PassedPromise(AbstractPromise::CreateNoPrerequisitePromise(
       from_here, reject_policy, internal::DependentList::ConstructUnresolved(),
       internal::PromiseExecutor::Data(
           in_place_type_t<internal::NoOpPromiseExecutor>(), can_resolve,
-          can_reject));
+          can_reject)));
 }
 
 }  // namespace internal

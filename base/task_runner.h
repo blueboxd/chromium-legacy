@@ -11,13 +11,10 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
+#include "base/task/promise/abstract_promise.h"
 #include "base/time/time.h"
 
 namespace base {
-
-namespace internal {
-class AbstractPromise;
-}  // namespace internal
 
 struct TaskRunnerTraits;
 
@@ -139,9 +136,7 @@ class BASE_EXPORT TaskRunner
 
   // TODO(alexclarke): This should become pure virtual and replace
   // PostDelayedTask. NB passing by reference to reduce binary size.
-  bool PostPromiseInternal(
-      const scoped_refptr<internal::AbstractPromise>& promise,
-      base::TimeDelta delay);
+  bool PostPromiseInternal(WrappedPromise promise, base::TimeDelta delay);
 
  protected:
   friend struct TaskRunnerTraits;

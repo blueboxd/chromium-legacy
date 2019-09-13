@@ -289,6 +289,9 @@ void NetworkState::GetStateProperties(base::Value* dictionary) const {
                        base::Value(tether_has_connected_to_host()));
     dictionary->SetKey(kTetherSignalStrength, base::Value(signal_strength()));
 
+    // All Tether networks are connectable.
+    dictionary->SetKey(shill::kConnectableProperty, base::Value(connectable()));
+
     // Tether networks do not share some of the wireless/mobile properties added
     // below; exit early to avoid having these properties applied.
     return;

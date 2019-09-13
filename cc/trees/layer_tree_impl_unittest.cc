@@ -2285,14 +2285,11 @@ TEST_F(LayerTreeImplTest, TrackPictureLayersWithPaintWorklets) {
   root->SetBounds(gfx::Size(100, 100));
 
   // Add three layers; two with PaintWorklets and one without.
-  auto* child1 =
-      AddLayerInPendingTree<PictureLayerImpl>(Layer::LayerMaskType::NOT_MASK);
+  auto* child1 = AddLayerInPendingTree<PictureLayerImpl>();
   child1->SetBounds(gfx::Size(100, 100));
-  auto* child2 =
-      AddLayerInPendingTree<PictureLayerImpl>(Layer::LayerMaskType::NOT_MASK);
+  auto* child2 = AddLayerInPendingTree<PictureLayerImpl>();
   child2->SetBounds(gfx::Size(100, 100));
-  auto* child3 =
-      AddLayerInPendingTree<PictureLayerImpl>(Layer::LayerMaskType::NOT_MASK);
+  auto* child3 = AddLayerInPendingTree<PictureLayerImpl>();
   child3->SetBounds(gfx::Size(100, 100));
 
   CopyProperties(root, child1);

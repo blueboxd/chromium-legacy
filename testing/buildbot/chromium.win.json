@@ -1183,17 +1183,6 @@
         }
       },
       {
-        "isolate_name": "python3_smoketest",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "python3_smoketest",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
-      {
         "isolate_name": "telemetry_gpu_unittests",
         "merge": {
           "args": [],
@@ -3071,23 +3060,6 @@
         }
       },
       {
-        "isolate_name": "python3_smoketest",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "python3_smoketest",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
-            }
-          ]
-        }
-      },
-      {
         "isolate_name": "telemetry_gpu_unittests",
         "merge": {
           "args": [],
@@ -4929,23 +4901,6 @@
         }
       },
       {
-        "isolate_name": "python3_smoketest",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "python3_smoketest",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
-            }
-          ]
-        }
-      },
-      {
         "isolate_name": "telemetry_gpu_unittests",
         "merge": {
           "args": [],
@@ -6252,17 +6207,6 @@
         }
       },
       {
-        "isolate_name": "python3_smoketest",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "python3_smoketest",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
-      {
         "isolate_name": "telemetry_gpu_unittests",
         "merge": {
           "args": [],
@@ -7461,17 +7405,6 @@
           "can_use_on_swarming_builders": true,
           "hard_timeout": 960,
           "shards": 2
-        }
-      },
-      {
-        "isolate_name": "python3_smoketest",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "python3_smoketest",
-        "swarming": {
-          "can_use_on_swarming_builders": true
         }
       },
       {

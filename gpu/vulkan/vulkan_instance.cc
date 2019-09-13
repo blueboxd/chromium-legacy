@@ -129,7 +129,6 @@ bool VulkanInstance::Initialize(
 #endif
 
   std::vector<const char*> enabled_layer_names = required_layers;
-#if DCHECK_IS_ON()
   uint32_t num_instance_layers = 0;
   result = vkEnumerateInstanceLayerProperties(&num_instance_layers, nullptr);
   if (VK_SUCCESS != result) {
@@ -138,14 +137,15 @@ bool VulkanInstance::Initialize(
     return false;
   }
 
-  std::vector<VkLayerProperties> instance_layers(num_instance_layers);
+  layer_properties_.resize(num_instance_layers);
   result = vkEnumerateInstanceLayerProperties(&num_instance_layers,
-                                              instance_layers.data());
+                                              layer_properties_.data());
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkEnumerateInstanceLayerProperties() failed: " << result;
     return false;
   }
 
+#if DCHECK_IS_ON()
   // TODO(crbug.com/843346): Make validation work in combination with
   // VK_KHR_xlib_surface or switch to VK_KHR_xcb_surface.
   constexpr base::StringPiece xlib_surface_extension_name(
@@ -160,7 +160,7 @@ bool VulkanInstance::Initialize(
   // VK_KHR_xlib_surface.
   constexpr base::StringPiece standard_validation(
       "VK_LAYER_LUNARG_standard_validation");
-  for (const VkLayerProperties& layer_property : instance_layers) {
+  for (const VkLayerProperties& layer_property : layer_properties_) {
     if (standard_validation != layer_property.layerName)
       continue;
     if (!require_xlib_surface_extension ||

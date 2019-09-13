@@ -73,13 +73,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     INVALID_ID = -1,
   };
 
-  // A layer can be attached to another layer as a mask for it. These
-  // describe how the mask would be generated as a texture in that case.
-  enum LayerMaskType {
-    NOT_MASK = 0,
-    SINGLE_TEXTURE_MASK,
-  };
-
   // Factory to create a new Layer, with a unique id.
   static scoped_refptr<Layer> Create();
 
@@ -208,6 +201,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // channel of the mask layer's content is used as an alpha mask of this
   // layer's content. IOW the mask's alpha is multiplied by this layer's alpha
   // for each matching pixel.
+  // This is for layer tree mode only.
   void SetMaskLayer(scoped_refptr<PictureLayer> mask_layer);
   PictureLayer* mask_layer() { return inputs_.mask_layer.get(); }
 

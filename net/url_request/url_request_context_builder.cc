@@ -83,9 +83,6 @@ class BasicNetworkDelegate : public NetworkDelegateImpl {
     return OK;
   }
 
-  void OnStartTransaction(URLRequest* request,
-                          const HttpRequestHeaders& headers) override {}
-
   int OnHeadersReceived(
       URLRequest* request,
       CompletionOnceCallback callback,

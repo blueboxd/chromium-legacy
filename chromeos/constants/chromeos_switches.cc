@@ -78,6 +78,9 @@ const char kArcDataCleanupOnStart[] = "arc-data-cleanup-on-start";
 // in autotests to resolve racy conditions.
 const char kArcDisableAppSync[] = "arc-disable-app-sync";
 
+// Used in autotest to disable GMS-core caches which is on by default.
+const char kArcDisableGmsCoreCache[] = "arc-disable-gms-core-cache";
+
 // Flag that disables ARC locale sync with Android container. Used in autotest
 // to prevent conditions when certain apps, including Play Store may get
 // restarted. Restarting Play Store may cause random test failures. Enabling

@@ -33,7 +33,7 @@ PASS minmax replaced IMG svg 31
 PASS minmax replaced IMG svg 32
 PASS minmax replaced IMG svg 33
 PASS minmax replaced IMG 34
-FAIL minmax replaced IMG 35 assert_equals: incorrect offsetWidth expected "400" but got "438"
+FAIL minmax replaced IMG 35 assert_equals: incorrect offsetWidth expected "388" but got "426"
 PASS minmax replaced IMG 36
 PASS minmax replaced IMG 37
 Harness: the test ran to completion.

@@ -6,10 +6,16 @@
 
 namespace base {
 
+DoNothingPromiseBuilder::operator WrappedPromise() const {
+  return WrappedPromise(internal::NoOpPromiseExecutor::Create(
+      from_here, can_resolve, can_reject, reject_policy));
+}
+
 DoNothingPromiseBuilder::operator scoped_refptr<internal::AbstractPromise>()
     const {
-  return internal::NoOpPromiseExecutor::Create(from_here, can_resolve,
-                                               can_reject, reject_policy);
+  return WrappedPromise(internal::NoOpPromiseExecutor::Create(
+                            from_here, can_resolve, can_reject, reject_policy))
+      .TakeForTesting();
 }
 
 }  // namespace base

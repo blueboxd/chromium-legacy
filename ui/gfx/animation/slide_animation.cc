@@ -30,7 +30,7 @@ void SlideAnimation::Hide() {
   BeginAnimating(false);
 }
 
-void SlideAnimation::SetSlideDuration(int duration) {
+void SlideAnimation::SetSlideDuration(base::TimeDelta duration) {
   slide_duration_ = duration;
 }
 
@@ -46,8 +46,7 @@ base::TimeDelta SlideAnimation::GetDuration() {
   const double current_progress =
       showing_ ? value_current_ : 1.0 - value_current_;
 
-  return base::TimeDelta::FromMillisecondsD(
-      slide_duration_ * (1 - pow(current_progress, dampening_value_)));
+  return slide_duration_ * (1 - pow(current_progress, dampening_value_));
 }
 
 void SlideAnimation::BeginAnimating(bool showing) {
@@ -59,7 +58,7 @@ void SlideAnimation::BeginAnimating(bool showing) {
   value_end_ = showing ? 1.0 : 0.0;
 
   // Make sure we actually have something to do.
-  if (slide_duration_ == 0) {
+  if (slide_duration_.is_zero()) {
     AnimateToState(1.0);  // Skip to the end of the animation.
     if (delegate()) {
       delegate()->AnimationProgressed(this);

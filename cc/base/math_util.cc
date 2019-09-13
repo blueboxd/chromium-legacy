@@ -162,8 +162,7 @@ static inline bool IsNearlyTheSame(float f, float g) {
   // for the base of the scale too.
   static const float epsilon_scale = 0.00001f;
   return std::abs(f - g) <
-         epsilon_scale *
-             std::max(std::max(std::abs(f), std::abs(g)), epsilon_scale);
+         epsilon_scale * std::max({std::abs(f), std::abs(g), epsilon_scale});
 }
 
 static inline bool IsNearlyTheSame(const gfx::PointF& lhs,

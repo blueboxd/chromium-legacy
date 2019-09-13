@@ -66,7 +66,8 @@ class JavaChecker(object):
     # TODO(husky): We need some way of determining the "real" path to
     # a generated file -- i.e., where it would be in source control if
     # it weren't generated.
-    if d.startswith('out') or d in ('xcodebuild', 'AndroidStudioDefault',):
+    if d.startswith('out') or d in ('xcodebuild', 'AndroidStudioDefault',
+                                    'libassistant',):
       return True
     # Skip third-party directories.
     if d in ('third_party', 'ThirdParty'):

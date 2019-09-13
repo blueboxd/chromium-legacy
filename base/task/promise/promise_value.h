@@ -40,9 +40,6 @@ struct Resolved {
                   "Can't have Resolved<NoResolve>");
   }
 
-  Resolved(const Resolved& other) = default;
-  Resolved(Resolved&& other) = default;
-
   // Conversion constructor accepts any arguments except Resolved<T>.
   template <
       typename... Args,
@@ -74,9 +71,6 @@ struct Rejected {
     static_assert(!std::is_same<T, NoReject>::value,
                   "Can't have Rejected<NoReject>");
   }
-
-  Rejected(const Rejected& other) = default;
-  Rejected(Rejected&& other) = default;
 
   // Conversion constructor accepts any arguments except Rejected<T>.
   template <

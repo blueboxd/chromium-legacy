@@ -41,9 +41,6 @@ namespace {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kIsButtonProperty, false)
 
-// How long the hover animation takes if uninterrupted.
-constexpr int kHoverFadeDurationMs = 150;
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -228,7 +225,7 @@ void Button::StopThrobbing() {
   }
 }
 
-void Button::SetAnimationDuration(int duration) {
+void Button::SetAnimationDuration(base::TimeDelta duration) {
   hover_animation_.SetSlideDuration(duration);
 }
 
@@ -506,7 +503,7 @@ Button::Button(ButtonListener* listener)
       ink_drop_base_color_(gfx::kPlaceholderColor) {
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   SetProperty(kIsButtonProperty, true);
-  hover_animation_.SetSlideDuration(kHoverFadeDurationMs);
+  hover_animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(150));
   SetInstallFocusRingOnFocus(PlatformStyle::kPreferFocusRings);
   button_controller_ = std::make_unique<ButtonController>(
       this, std::make_unique<DefaultButtonControllerDelegate>(this));

@@ -31,9 +31,14 @@ PendingAppRegistrationTask::PendingAppRegistrationTask(
       url_loader_(url_loader),
       web_contents_(web_contents),
       callback_(std::move(callback)) {
-  content::ServiceWorkerContext* service_worker_context =
-      GetServiceWorkerContext();
-  service_worker_context->AddObserver(this);
+  content::StoragePartition* storage_partition =
+      content::BrowserContext::GetStoragePartition(
+          Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
+          web_contents_->GetSiteInstance());
+  DCHECK(storage_partition);
+
+  service_worker_context_ = storage_partition->GetServiceWorkerContext();
+  service_worker_context_->AddObserver(this);
 
   registration_timer_.Start(
       FROM_HERE, base::TimeDelta::FromSeconds(registration_timeout_in_seconds_),
@@ -41,14 +46,15 @@ PendingAppRegistrationTask::PendingAppRegistrationTask(
                      weak_ptr_factory_.GetWeakPtr()));
 
   // Check to see if there is already a service worker for the launch url.
-  service_worker_context->CheckHasServiceWorker(
+  service_worker_context_->CheckHasServiceWorker(
       launch_url,
       base::BindOnce(&PendingAppRegistrationTask::OnDidCheckHasServiceWorker,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
 PendingAppRegistrationTask::~PendingAppRegistrationTask() {
-  GetServiceWorkerContext()->RemoveObserver(this);
+  if (service_worker_context_)
+    service_worker_context_->RemoveObserver(this);
 }
 
 void PendingAppRegistrationTask::OnRegistrationCompleted(const GURL& scope) {
@@ -59,20 +65,15 @@ void PendingAppRegistrationTask::OnRegistrationCompleted(const GURL& scope) {
   std::move(callback_).Run(RegistrationResultCode::kSuccess);
 }
 
+void PendingAppRegistrationTask::OnDestruct(
+    content::ServiceWorkerContext* context) {
+  service_worker_context_->RemoveObserver(this);
+  service_worker_context_ = nullptr;
+}
+
 void PendingAppRegistrationTask::SetTimeoutForTesting(
     int registration_timeout_in_seconds) {
   registration_timeout_in_seconds_ = registration_timeout_in_seconds;
-}
-
-content::ServiceWorkerContext*
-PendingAppRegistrationTask::GetServiceWorkerContext() {
-  content::StoragePartition* storage_partition =
-      content::BrowserContext::GetStoragePartition(
-          Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
-          web_contents_->GetSiteInstance());
-  DCHECK(storage_partition);
-
-  return storage_partition->GetServiceWorkerContext();
 }
 
 void PendingAppRegistrationTask::OnDidCheckHasServiceWorker(

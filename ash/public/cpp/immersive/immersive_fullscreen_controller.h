@@ -200,7 +200,7 @@ class ASH_PUBLIC_EXPORT ImmersiveFullscreenController
   bool UpdateRevealedLocksForSwipe(SwipeType swipe_type);
 
   // Returns the animation duration given |animate|.
-  int GetAnimationDuration(Animate animate) const;
+  base::TimeDelta GetAnimationDuration(Animate animate) const;
 
   // Temporarily reveals the top-of-window views while in immersive mode,
   // hiding them when the cursor exits the area of the top views. If |animate|

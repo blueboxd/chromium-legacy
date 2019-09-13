@@ -68,18 +68,6 @@ group("telemetry_chrome_test") {
       "//build/win:copy_cdb_to_output",
       "//third_party/crashpad/crashpad/tools:crashpad_database_util",
     ]
-
-    # TODO(GYP): These should be provided automatically through data_deps.
-    data += [ "$root_out_dir/chrome.exe.pdb" ]
-    if (is_component_build) {
-      data += [
-        "$root_out_dir/base.dll.pdb",
-        "$root_out_dir/blink_platform.dll.pdb",
-        "$root_out_dir/content.dll.pdb",
-      ]
-    } else {
-      data += [ "$root_out_dir/chrome_child.dll.pdb" ]
-    }
   }
 }
 

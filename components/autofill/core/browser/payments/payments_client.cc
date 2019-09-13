@@ -350,6 +350,12 @@ class UnmaskCardRequest : public PaymentsRequest {
     request_dict.SetKey("encrypted_cvc", base::Value("__param:s7e_13_cvc"));
     request_dict.SetKey("credit_card_id",
                         base::Value(request_details_.card.server_id()));
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillAlwaysReturnCloudTokenizedCard)) {
+      // See b/140727361.
+      request_dict.SetKey("instrument_token",
+                          base::Value("INSTRUMENT_TOKEN_FOR_TEST"));
+    }
     request_dict.SetKey("risk_data_encoded",
                         BuildRiskDictionary(request_details_.risk_data));
     base::Value context(base::Value::Type::DICTIONARY);
@@ -413,6 +419,9 @@ class UnmaskCardRequest : public PaymentsRequest {
   void ParseResponse(const base::Value& response) override {
     const auto* pan = response.FindStringKey("pan");
     response_details_.real_pan = pan ? *pan : std::string();
+
+    const auto* dcvv = response.FindStringKey("dcvv");
+    response_details_.dcvv = dcvv ? *dcvv : std::string();
 
     const auto* creation_options = response.FindKeyOfType(
         "fido_creation_options", base::Value::Type::DICTIONARY);

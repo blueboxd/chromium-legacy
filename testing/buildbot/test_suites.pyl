@@ -2732,7 +2732,6 @@
       'flatbuffers_unittests': {},
       'grit_python_unittests': {},
       'metrics_python_tests': {},
-      'python3_smoketest': {},
       'telemetry_gpu_unittests': {
         'swarming': {
           'idempotent': False,  # https://crbug.com/549140

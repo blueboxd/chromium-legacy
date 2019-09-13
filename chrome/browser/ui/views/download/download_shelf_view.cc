@@ -85,11 +85,12 @@ DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
   accessible_alert_ = AddChildView(std::make_unique<views::View>());
 
   if (gfx::Animation::ShouldRenderRichAnimation()) {
-    new_item_animation_.SetSlideDuration(kNewItemAnimationDurationMs);
-    shelf_animation_.SetSlideDuration(kShelfAnimationDurationMs);
+    new_item_animation_.SetSlideDuration(
+        base::TimeDelta::FromMilliseconds(800));
+    shelf_animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(120));
   } else {
-    new_item_animation_.SetSlideDuration(0);
-    shelf_animation_.SetSlideDuration(0);
+    new_item_animation_.SetSlideDuration(base::TimeDelta());
+    shelf_animation_.SetSlideDuration(base::TimeDelta());
   }
 
   GetViewAccessibility().OverrideName(

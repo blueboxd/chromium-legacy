@@ -71,8 +71,7 @@ class StubVRDeviceEventListener : public mojom::XRRuntimeEventListener {
   }
 
   MOCK_METHOD0(OnExitPresent, void());
-  MOCK_METHOD0(OnBlur, void());
-  MOCK_METHOD0(OnFocus, void());
+  MOCK_METHOD1(OnVisibilityStateChanged, void(mojom::XRVisibilityState));
   MOCK_METHOD1(OnDeviceIdle, void(mojom::VRDisplayEventReason));
   MOCK_METHOD0(OnInitialized, void());
 

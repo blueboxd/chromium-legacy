@@ -32,7 +32,6 @@ let MostVisitedData;
  *            isAccessibleBrowser: boolean,
  *            isGooglePage: boolean,
  *            realboxEnabled: boolean,
- *            realboxUseClockIcon: boolean,
  *            richerPicker: boolean,
  *            showPlaceholderOnFocus: boolean,
  *            translatedStrings: Array<string>}}

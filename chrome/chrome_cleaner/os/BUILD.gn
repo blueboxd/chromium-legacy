@@ -142,7 +142,6 @@ source_set("unittest_sources") {
     "resource_util_unittest.cc",
     "shutdown_watchdog_unittest.cc",
     "system_util_cleaner_unittest.cc",
-    "system_util_unittest.cc",
     "task_scheduler_unittest.cc",
     "whitelisted_directory_unittest.cc",
   ]

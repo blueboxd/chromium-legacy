@@ -25,23 +25,12 @@ FakePictureLayer::~FakePictureLayer() = default;
 
 std::unique_ptr<LayerImpl> FakePictureLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  std::unique_ptr<FakePictureLayerImpl> layer_impl;
-  switch (mask_type()) {
-    case Layer::LayerMaskType::NOT_MASK:
-      layer_impl = FakePictureLayerImpl::Create(tree_impl, id());
-      break;
-    case Layer::LayerMaskType::SINGLE_TEXTURE_MASK:
-      layer_impl = FakePictureLayerImpl::CreateMask(tree_impl, id());
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
+  auto layer_impl = FakePictureLayerImpl::Create(tree_impl, id());
 
   if (!fixed_tile_size_.IsEmpty())
     layer_impl->set_fixed_tile_size(fixed_tile_size_);
 
-  return std::move(layer_impl);
+  return layer_impl;
 }
 
 bool FakePictureLayer::Update() {

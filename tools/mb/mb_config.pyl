@@ -2281,11 +2281,11 @@
     },
 
     'msan': {
-      'gn_args': 'is_msan=true msan_track_origins=2 use_prebuilt_instrumented_libraries=true',
+      'gn_args': 'is_msan=true msan_track_origins=2',
     },
 
     'msan_no_origins': {
-      'gn_args': 'is_msan=true msan_track_origins=0 use_prebuilt_instrumented_libraries=true',
+      'gn_args': 'is_msan=true msan_track_origins=0',
     },
 
     'no_com_init_hooks': {

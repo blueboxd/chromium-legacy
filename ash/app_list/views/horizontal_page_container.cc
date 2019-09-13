@@ -25,8 +25,8 @@ HorizontalPageContainer::HorizontalPageContainer(ContentsView* contents_view,
   // Assumes all horizontal pages paint to their own layers.
   SetPaintToLayer(ui::LAYER_NOT_DRAWN);
   pagination_model_.SetTransitionDurations(
-      AppListConfig::instance().page_transition_duration_ms(),
-      AppListConfig::instance().overscroll_page_transition_duration_ms());
+      AppListConfig::instance().page_transition_duration(),
+      AppListConfig::instance().overscroll_page_transition_duration());
   pagination_model_.AddObserver(this);
   pagination_controller_ = std::make_unique<ash::PaginationController>(
       &pagination_model_, ash::PaginationController::SCROLL_AXIS_HORIZONTAL,
@@ -81,8 +81,12 @@ void HorizontalPageContainer::OnWillBeHidden() {
 
 void HorizontalPageContainer::OnAnimationStarted(ash::AppListState from_state,
                                                  ash::AppListState to_state) {
-  const gfx::Rect from_rect = GetPageBoundsForState(from_state);
-  const gfx::Rect to_rect = GetPageBoundsForState(to_state);
+  gfx::Rect contents_bounds = GetDefaultContentsBounds();
+
+  const gfx::Rect from_rect =
+      GetPageBoundsForState(from_state, contents_bounds, gfx::Rect());
+  const gfx::Rect to_rect =
+      GetPageBoundsForState(to_state, contents_bounds, gfx::Rect());
   if (from_rect != to_rect) {
     SetBoundsRect(from_rect);
     auto settings = contents_view()->CreateTransitionAnimationSettings(layer());
@@ -105,26 +109,13 @@ void HorizontalPageContainer::OnAnimationStarted(ash::AppListState from_state,
   }
 }
 
-gfx::Rect HorizontalPageContainer::GetSearchBoxBounds() const {
-  return GetSearchBoxBoundsForState(contents_view_->GetActiveState());
-}
-
-gfx::Rect HorizontalPageContainer::GetSearchBoxBoundsForState(
-    ash::AppListState state) const {
-  // The search box bounds are decided by AppsContainerView and are not changed
-  // during horizontal page switching.
-  return apps_container_view_->GetSearchBoxTargetBounds();
-}
-
 gfx::Rect HorizontalPageContainer::GetPageBoundsForState(
-    ash::AppListState state) const {
-  const gfx::Rect onscreen_bounds = GetDefaultContentsBounds();
-
-  // kStateApps is the AppsContainerView page.
+    ash::AppListState state,
+    const gfx::Rect& contents_bounds,
+    const gfx::Rect& search_box_bounds) const {
   if (state == ash::AppListState::kStateApps)
-    return onscreen_bounds;
-
-  return GetBelowContentsOffscreenBounds(onscreen_bounds.size());
+    return contents_bounds;
+  return GetBelowContentsOffscreenBounds(contents_bounds.size());
 }
 
 views::View* HorizontalPageContainer::GetFirstFocusableView() {

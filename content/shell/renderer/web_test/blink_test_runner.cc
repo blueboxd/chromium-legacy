@@ -766,7 +766,7 @@ mojom::WebTestBluetoothFakeAdapterSetter&
 BlinkTestRunner::GetBluetoothFakeAdapterSetter() {
   if (!bluetooth_fake_adapter_setter_) {
     RenderThread::Get()->BindHostReceiver(
-        mojo::MakeRequest(&bluetooth_fake_adapter_setter_));
+        bluetooth_fake_adapter_setter_.BindNewPipeAndPassReceiver());
   }
   return *bluetooth_fake_adapter_setter_;
 }

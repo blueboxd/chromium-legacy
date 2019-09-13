@@ -15,14 +15,6 @@
 namespace cc {
 namespace {
 
-// When considering if a time is abnormal, compare the stage execution
-// time to this percentile from the previous times of the same stage.
-constexpr double kAbnormalityPercentile = 95;
-
-// Use for determining abnormal execution times. If the sample size is less
-// than this then don't check for abnormal execution time.
-constexpr size_t kMinimumTimeDeltaSampleSize = 20;
-
 constexpr int kMissedFrameReportTypeCount =
     static_cast<int>(CompositorFrameReporter::MissedFrameReportTypes::
                          kMissedFrameReportTypeCount);
@@ -95,12 +87,10 @@ CompositorFrameReporter::~CompositorFrameReporter() {
 
 void CompositorFrameReporter::StartStage(
     CompositorFrameReporter::StageType stage_type,
-    base::TimeTicks start_time,
-    RollingTimeDeltaHistory* stage_time_delta_history) {
+    base::TimeTicks start_time) {
   EndCurrentStage(start_time);
   current_stage_.stage_type = stage_type;
   current_stage_.start_time = start_time;
-  current_stage_.time_delta_history = stage_time_delta_history;
   int stage_type_index = static_cast<int>(current_stage_.stage_type);
   CHECK_LT(stage_type_index, static_cast<int>(StageType::kStageTypeCount));
   CHECK_GE(stage_type_index, 0);
@@ -115,7 +105,6 @@ void CompositorFrameReporter::EndCurrentStage(base::TimeTicks end_time) {
   current_stage_.end_time = end_time;
   stage_history_.emplace_back(current_stage_);
   current_stage_.start_time = base::TimeTicks();
-  current_stage_.time_delta_history = nullptr;
 }
 
 void CompositorFrameReporter::MissedSubmittedFrame() {
@@ -168,9 +157,9 @@ void CompositorFrameReporter::TerminateReporter() {
   // Only report histograms if the frame was presented.
   if (report_latency) {
     DCHECK(stage_history_.size());
-    stage_history_.emplace_back(
-        StageData{StageType::kTotalLatency, stage_history_.front().start_time,
-                  stage_history_.back().end_time, nullptr});
+    stage_history_.emplace_back(StageData{StageType::kTotalLatency,
+                                          stage_history_.front().start_time,
+                                          stage_history_.back().end_time});
     ReportStageHistograms(submitted_frame_missed_deadline_);
   }
 }
@@ -189,40 +178,6 @@ void CompositorFrameReporter::ReportStageHistograms(bool missed_frame) const {
     for (const auto& frame_sequence_tracker_type : *active_trackers_) {
       ReportHistogram(report_type, frame_sequence_tracker_type,
                       stage.stage_type, stage_delta);
-    }
-
-    if (!stage.time_delta_history)
-      continue;
-
-    if (!missed_frame) {
-      stage.time_delta_history->InsertSample(stage_delta);
-    } else {
-      // If enough sample data is recorded compare the stage duration with the
-      // known normal stage duration and if it's higher than normal, report the
-      // difference.
-      if (stage.time_delta_history->sample_count() >=
-          kMinimumTimeDeltaSampleSize) {
-        base::TimeDelta time_upper_limit = GetStateNormalUpperLimit(stage);
-        if (stage_delta > time_upper_limit) {
-          // This ReportHistogram reports the latency of all
-          // frame_sequence_tracker_types(interactions) combined.
-          auto current_report_type = CompositorFrameReporter::
-              MissedFrameReportTypes::kMissedFrameLatencyIncrease;
-          ReportHistogram(current_report_type,
-                          FrameSequenceTrackerType::kMaxType, stage.stage_type,
-                          stage_delta - time_upper_limit);
-
-          for (const auto& frame_sequence_tracker_type : *active_trackers_) {
-            ReportHistogram(current_report_type, frame_sequence_tracker_type,
-                            stage.stage_type, stage_delta - time_upper_limit);
-          }
-        }
-      }
-
-      // In case of a missing frame, remove a sample from the recorded normal
-      // stages. This invalidates the recorded normal durations if at a point
-      // all frames start missing for a while.
-      stage.time_delta_history->RemoveOldestSample();
     }
   }
 }
@@ -263,10 +218,5 @@ void CompositorFrameReporter::ReportHistogram(
                         frame_sequence_tracker_type_index, stage_type_index),
           kHistogramMin, kHistogramMax, kHistogramBucketCount,
           base::HistogramBase::kUmaTargetedHistogramFlag));
-}
-
-base::TimeDelta CompositorFrameReporter::GetStateNormalUpperLimit(
-    const StageData& stage) const {
-  return stage.time_delta_history->Percentile(kAbnormalityPercentile);
 }
 }  // namespace cc

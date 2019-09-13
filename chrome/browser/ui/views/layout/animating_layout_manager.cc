@@ -125,8 +125,7 @@ AnimatingLayoutManager::AnimationDelegate::AnimationDelegate(
 
 void AnimatingLayoutManager::AnimationDelegate::UpdateAnimationParameters() {
   animation_->SetTweenType(target_layout_manager_->tween_type());
-  animation_->SetSlideDuration(
-      target_layout_manager_->animation_duration().InMilliseconds());
+  animation_->SetSlideDuration(target_layout_manager_->animation_duration());
 }
 
 void AnimatingLayoutManager::AnimationDelegate::Animate() {

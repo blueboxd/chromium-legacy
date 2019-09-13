@@ -43,11 +43,9 @@ class TestLayerTreeHostBase : public testing::Test {
   void SetupTrees(scoped_refptr<RasterSource> pending_raster_source,
                   scoped_refptr<RasterSource> active_raster_source);
   void SetupPendingTree(scoped_refptr<RasterSource> raster_source = nullptr);
-  void SetupPendingTree(
-      scoped_refptr<RasterSource> raster_source,
-      const gfx::Size& tile_size,
-      const Region& invalidation,
-      Layer::LayerMaskType mask_type = Layer::LayerMaskType::NOT_MASK);
+  void SetupPendingTree(scoped_refptr<RasterSource> raster_source,
+                        const gfx::Size& tile_size,
+                        const Region& invalidation);
   void ActivateTree();
   void PerformImplSideInvalidation();
 
@@ -78,10 +76,12 @@ class TestLayerTreeHostBase : public testing::Test {
   T* AddMaskLayer(LayerTreeImpl* layer_tree_impl,
                   LayerImpl* masked_layer,
                   Args&&... args) {
+    static_assert(std::is_base_of<PictureLayerImpl, T>::value, "");
     std::unique_ptr<T> mask = T::Create(layer_tree_impl, next_layer_id_++,
                                         std::forward<Args>(args)...);
     T* result = mask.get();
     layer_tree_impl->AddMaskLayer(std::move(mask));
+    result->SetIsMask(true);
     CopyProperties(masked_layer, result);
     auto* masked_effect = GetEffectNode(masked_layer);
     masked_effect->render_surface_reason = RenderSurfaceReason::kMask;

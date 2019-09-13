@@ -91,7 +91,7 @@ class CONTENT_EXPORT TtsController {
   // and another utterance is in progress, adds it to the end of the queue.
   // Otherwise, interrupts any current utterance and speaks this one
   // immediately.
-  virtual void SpeakOrEnqueue(TtsUtterance* utterance) = 0;
+  virtual void SpeakOrEnqueue(std::unique_ptr<TtsUtterance> utterance) = 0;
 
   // Stop all utterances and flush the queue. Implies leaving pause mode
   // as well.

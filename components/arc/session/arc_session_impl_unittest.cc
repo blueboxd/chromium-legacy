@@ -569,8 +569,7 @@ class ArcSessionImplPackagesCacheModeTest
       public ::testing::WithParamInterface<PackagesCacheModeState> {};
 
 TEST_P(ArcSessionImplPackagesCacheModeTest, PackagesCacheModes) {
-  std::unique_ptr<ArcSessionImpl, ArcSessionDeleter> arc_session =
-      CreateArcSession();
+  auto arc_session = CreateArcSession();
 
   const PackagesCacheModeState& state = GetParam();
   if (state.chrome_switch) {
@@ -592,6 +591,28 @@ TEST_P(ArcSessionImplPackagesCacheModeTest, PackagesCacheModes) {
 INSTANTIATE_TEST_SUITE_P(,
                          ArcSessionImplPackagesCacheModeTest,
                          ::testing::ValuesIn(kPackagesCacheModeStates));
+
+class ArcSessionImplGmsCoreCacheTest
+    : public ArcSessionImplTest,
+      public ::testing::WithParamInterface<bool> {};
+
+TEST_P(ArcSessionImplGmsCoreCacheTest, GmsCoreCaches) {
+  auto arc_session = CreateArcSession();
+
+  if (GetParam()) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        chromeos::switches::kArcDisableGmsCoreCache);
+  }
+
+  arc_session->StartMiniInstance();
+  arc_session->RequestUpgrade(DefaultUpgradeParams());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(GetParam(), chromeos::FakeSessionManagerClient::Get()
+                            ->last_upgrade_arc_request()
+                            .skip_gms_core_cache());
+}
+
+INSTANTIATE_TEST_SUITE_P(, ArcSessionImplGmsCoreCacheTest, ::testing::Bool());
 
 TEST_F(ArcSessionImplTest, DemoSession) {
   auto arc_session = CreateArcSession();

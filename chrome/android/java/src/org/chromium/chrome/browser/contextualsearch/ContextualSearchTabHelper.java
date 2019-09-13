@@ -346,8 +346,6 @@ public class ContextualSearchTabHelper
             controller.setSelectionClient(
                     mSelectionClientManager.addContextualSearchSelectionClient(
                             contextualSearchManager.getContextualSearchSelectionClient()));
-            contextualSearchManager.setCouldSmartSelectionBeActive(
-                    mSelectionClientManager.isSmartSelectionEnabledInChrome());
             ContextualSearchTabHelperJni.get().installUnhandledTapNotifierIfNeeded(
                     mNativeHelper, ContextualSearchTabHelper.this, webContents, mPxToDp);
         }

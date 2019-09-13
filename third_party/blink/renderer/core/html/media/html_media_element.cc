@@ -31,9 +31,11 @@
 
 #include "base/auto_reset.h"
 #include "base/debug/crash_logging.h"
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "media/base/logging_override_if_enabled.h"
+#include "media/base/media_switches.h"
 #include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_client.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -57,6 +59,7 @@
 #include "third_party/blink/renderer/core/dom/events/event_queue.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
+#include "third_party/blink/renderer/core/fileapi/url_file_api.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -1188,11 +1191,24 @@ void HTMLMediaElement::LoadResource(const WebMediaPlayerSource& source,
   bool attempt_load = true;
 
   media_source_ = HTMLMediaSource::Lookup(url.GetString());
-  if (media_source_ && !media_source_->AttachToElement(this)) {
-    // Forget our reference to the MediaSource, so we leave it alone
-    // while processing remainder of load failure.
-    media_source_ = nullptr;
-    attempt_load = false;
+  if (media_source_) {
+    if (media_source_->AttachToElement(this)) {
+      // If the associated feature is enabled, auto-revoke the MediaSource
+      // object URL that was used for attachment on successful (start of)
+      // attachment. This can help reduce memory bloat later if the app does not
+      // revoke the object URL explicitly and the object URL was the only
+      // remaining strong reference to an attached HTMLMediaElement+MediaSource
+      // cycle of objects that could otherwise be garbage-collectable.
+      if (base::FeatureList::IsEnabled(
+              media::kRevokeMediaSourceObjectURLOnAttach)) {
+        URLFileAPI::revokeObjectURL(GetExecutionContext(), url.GetString());
+      }
+    } else {
+      // Forget our reference to the MediaSource, so we leave it alone
+      // while processing remainder of load failure.
+      media_source_ = nullptr;
+      attempt_load = false;
+    }
   }
 
   bool can_load_resource =

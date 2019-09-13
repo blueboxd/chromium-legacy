@@ -90,14 +90,14 @@ PrinterInfo GetEmptyPrinterInfo() {
   return empty_printer;
 }
 
-base::Value GetPrintPreviewTicket(bool is_pdf) {
+base::Value GetPrintPreviewTicket() {
   base::Value print_ticket = GetPrintTicket(kLocalPrinter, false);
 
   // Make some modifications to match a preview print ticket.
   print_ticket.SetKey(kSettingPageRange, base::Value());
   print_ticket.SetKey(kIsFirstRequest, base::Value(true));
   print_ticket.SetKey(kPreviewRequestID, base::Value(0));
-  print_ticket.SetKey(kSettingPreviewModifiable, base::Value(is_pdf));
+  print_ticket.SetKey(kSettingPreviewModifiable, base::Value(false));
   print_ticket.RemoveKey(kSettingPageWidth);
   print_ticket.RemoveKey(kSettingPageHeight);
   print_ticket.RemoveKey(kSettingShowSystemDialog);
@@ -654,7 +654,7 @@ TEST_F(PrintPreviewHandlerTest, Print) {
 TEST_F(PrintPreviewHandlerTest, GetPreview) {
   Initialize();
 
-  base::Value print_ticket = GetPrintPreviewTicket(false);
+  base::Value print_ticket = GetPrintPreviewTicket();
   std::unique_ptr<base::ListValue> list_args =
       ConstructPreviewArgs("test-callback-id-1", print_ticket);
   handler()->HandleGetPreview(list_args.get());
@@ -679,7 +679,7 @@ TEST_F(PrintPreviewHandlerTest, SendPreviewUpdates) {
   Initialize();
 
   const char callback_id_in[] = "test-callback-id-1";
-  base::Value print_ticket = GetPrintPreviewTicket(false);
+  base::Value print_ticket = GetPrintPreviewTicket();
   std::unique_ptr<base::ListValue> list_args =
       ConstructPreviewArgs(callback_id_in, print_ticket);
   handler()->HandleGetPreview(list_args.get());

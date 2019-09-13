@@ -132,6 +132,9 @@ struct TemplateURLData {
   // group policy.
   bool created_by_policy;
 
+  // True if this TemplateURL was created from metadata received from Play API.
+  bool created_from_play_api;
+
   // Number of times this TemplateURL has been explicitly used to load a URL.
   // We don't increment this for uses as the "default search engine" since
   // that's not really "explicit" usage and incrementing would result in pinning

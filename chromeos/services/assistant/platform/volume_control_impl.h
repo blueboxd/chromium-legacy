@@ -9,8 +9,7 @@
 #include "base/macros.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "libassistant/shared/public/platform_audio_output.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace chromeos {
 namespace assistant {
@@ -45,8 +44,8 @@ class VolumeControlImpl : public assistant_client::VolumeControl,
   void SetSystemMutedOnMainThread(bool muted);
 
   AssistantMediaSession* media_session_;
-  mojo::Remote<ash::mojom::AssistantVolumeControl> volume_control_;
-  mojo::Receiver<ash::mojom::VolumeObserver> receiver_{this};
+  ash::mojom::AssistantVolumeControlPtr volume_control_ptr_;
+  mojo::Binding<ash::mojom::VolumeObserver> binding_;
   scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
 
   int volume_ = 100;

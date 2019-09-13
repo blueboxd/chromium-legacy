@@ -52,13 +52,18 @@ class APP_LIST_EXPORT SearchResultPageView
   void OnHidden() override;
   void OnShown() override;
 
-  gfx::Rect GetPageBoundsForState(ash::AppListState state) const override;
   void OnAnimationStarted(ash::AppListState from_state,
                           ash::AppListState to_state) override;
   void OnAnimationUpdated(double progress,
                           ash::AppListState from_state,
                           ash::AppListState to_state) override;
-  gfx::Rect GetSearchBoxBounds() const override;
+  gfx::Size GetPreferredSearchBoxSize() const override;
+  base::Optional<int> GetSearchBoxTop(
+      ash::AppListViewState view_state) const override;
+  gfx::Rect GetPageBoundsForState(
+      ash::AppListState state,
+      const gfx::Rect& contents_bounds,
+      const gfx::Rect& search_box_bounds) const override;
   views::View* GetFirstFocusableView() override;
   views::View* GetLastFocusableView() override;
 

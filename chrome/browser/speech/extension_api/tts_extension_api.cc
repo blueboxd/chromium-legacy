@@ -272,7 +272,7 @@ bool TtsSpeakFunction::RunAsync() {
   // the behavior more predictable and easier to write unit tests for too.
   SendResponse(true);
 
-  content::TtsUtterance* utterance =
+  std::unique_ptr<content::TtsUtterance> utterance =
       content::TtsUtterance::Create(GetProfile());
   utterance->SetText(text);
   utterance->SetVoiceName(voice_name);
@@ -288,7 +288,7 @@ bool TtsSpeakFunction::RunAsync() {
   utterance->SetEventDelegate(new TtsExtensionEventHandler(extension_id()));
 
   content::TtsController* controller = content::TtsController::GetInstance();
-  controller->SpeakOrEnqueue(utterance);
+  controller->SpeakOrEnqueue(std::move(utterance));
   return true;
 }
 

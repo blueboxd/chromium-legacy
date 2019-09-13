@@ -10,35 +10,9 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "base/win/scoped_handle.h"
-#include "base/win/wincrypt_shim.h"
 #include "chrome/chrome_cleaner/os/scoped_service_handle.h"
 
 namespace chrome_cleaner {
-
-// Enumerate the contexts of the given certificate store.
-class CertificateEnumerator {
- public:
-  explicit CertificateEnumerator(HCERTSTORE store_handle) {
-    store_handle_ = store_handle;
-  }
-
-  ~CertificateEnumerator() {
-    if (context_)
-      ::CertFreeCertificateContext(context_);
-  }
-
-  bool Next() {
-    context_ = ::CertEnumCertificatesInStore(store_handle_, context_);
-    return context_ != nullptr;
-  }
-
-  PCCERT_CONTEXT context() const { return context_; }
-
- private:
-  HCERTSTORE store_handle_;
-  PCCERT_CONTEXT context_ = nullptr;
-};
 
 // Based on ENUM_SERVICE_STATUS_PROCESSW from
 // https://docs.microsoft.com/en-us/windows/desktop/api/winsvc/ns-winsvc-_enum_service_status_processw

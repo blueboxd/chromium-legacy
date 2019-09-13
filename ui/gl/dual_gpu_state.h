@@ -5,18 +5,22 @@
 #ifndef UI_GL_DUAL_GPU_STATE_H_
 #define UI_GL_DUAL_GPU_STATE_H_
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "ui/gl/gl_export.h"
 
 namespace gl {
 
+class GLContext;
+
 class GL_EXPORT DualGPUState {
  public:
-  void RegisterHighPerformanceContext();
-  void RemoveHighPerformanceContext();
+  void RegisterHighPerformanceContext(GLContext* context);
+  void RemoveHighPerformanceContext(GLContext* context);
 
  protected:
   DualGPUState();
+  ~DualGPUState();
 
  private:
   virtual void SwitchToHighPerformanceGPUIfNeeded() = 0;
@@ -24,7 +28,7 @@ class GL_EXPORT DualGPUState {
   virtual void AttemptSwitchToLowPowerGPUWithDelay() = 0;
   virtual void CancelDelayedSwitchToLowPowerGPU() = 0;
 
-  unsigned int num_high_performance_contexts_;
+  base::flat_set<GLContext*> contexts_;
 
   DISALLOW_COPY_AND_ASSIGN(DualGPUState);
 };

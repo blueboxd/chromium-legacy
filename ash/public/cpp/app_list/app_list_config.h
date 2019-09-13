@@ -94,6 +94,9 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   int search_box_fullscreen_top_padding() const {
     return search_box_fullscreen_top_padding_;
   }
+  int search_box_preferred_size_for_dense_layout() const {
+    return search_box_preferred_size_for_dense_layout_;
+  }
   int preferred_cols() const { return preferred_cols_; }
   int preferred_rows() const { return preferred_rows_; }
   int page_spacing() const { return page_spacing_; }
@@ -131,17 +134,17 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   }
   SkColor grid_selected_color() const { return grid_selected_color_; }
   SkColor card_background_color() const { return card_background_color_; }
-  int page_transition_duration_ms() const {
-    return page_transition_duration_ms_;
+  base::TimeDelta page_transition_duration() const {
+    return page_transition_duration_;
   }
-  int overscroll_page_transition_duration_ms() const {
-    return overscroll_page_transition_duration_ms_;
+  base::TimeDelta overscroll_page_transition_duration() const {
+    return overscroll_page_transition_duration_;
   }
-  int folder_transition_in_duration_ms() const {
-    return folder_transition_in_duration_ms_;
+  base::TimeDelta folder_transition_in_duration() const {
+    return folder_transition_in_duration_;
   }
-  int folder_transition_out_duration_ms() const {
-    return folder_transition_out_duration_ms_;
+  base::TimeDelta folder_transition_out_duration() const {
+    return folder_transition_out_duration_;
   }
   size_t num_start_page_tiles() const { return num_start_page_tiles_; }
   size_t max_search_results() const { return max_search_results_; }
@@ -297,6 +300,10 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   // The top padding of search box in fullscreen state.
   const int search_box_fullscreen_top_padding_;
 
+  // The preferred search box size when the vertical app list contents space is
+  // condensed - normally the default search box preferred size would be used.
+  const int search_box_preferred_size_for_dense_layout_;
+
   // Preferred number of columns and rows in apps grid.
   const int preferred_cols_;
   const int preferred_rows_;
@@ -372,20 +379,20 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   // The background color for views in search results page.
   const SkColor card_background_color_;
 
-  // Duration in milliseconds for page transition.
-  const int page_transition_duration_ms_;
+  // Duration for page transition.
+  const base::TimeDelta page_transition_duration_;
 
-  // Duration in milliseconds for over scroll page transition.
-  const int overscroll_page_transition_duration_ms_;
+  // Duration for over scroll page transition.
+  const base::TimeDelta overscroll_page_transition_duration_;
 
-  // Duration in milliseconds for fading in the target page when opening
+  // Duration for fading in the target page when opening
   // or closing a folder, and the duration for the top folder icon animation
   // for flying in or out the folder.
-  const int folder_transition_in_duration_ms_;
+  const base::TimeDelta folder_transition_in_duration_;
 
-  // Duration in milliseconds for fading out the old page when opening or
+  // Duration for fading out the old page when opening or
   // closing a folder.
-  const int folder_transition_out_duration_ms_;
+  const base::TimeDelta folder_transition_out_duration_;
 
   // The number of apps shown in the start page app grid.
   const size_t num_start_page_tiles_;

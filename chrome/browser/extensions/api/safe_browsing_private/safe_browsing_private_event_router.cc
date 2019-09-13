@@ -51,6 +51,7 @@ const char SafeBrowsingPrivateEventRouter::kKeyClickedThrough[] =
     "clickedThrough";
 const char SafeBrowsingPrivateEventRouter::kKeyTriggeredRules[] =
     "triggeredRules";
+const char SafeBrowsingPrivateEventRouter::kKeyThreatType[] = "threatType";
 
 const char SafeBrowsingPrivateEventRouter::kKeyPasswordReuseEvent[] =
     "passwordReuseEvent";
@@ -241,7 +242,8 @@ void SafeBrowsingPrivateEventRouter::OnSecurityInterstitialProceeded(
 void SafeBrowsingPrivateEventRouter::OnDangerousDeepScanningResult(
     const GURL& url,
     const std::string& file_name,
-    const std::string& download_digest_sha256) {
+    const std::string& download_digest_sha256,
+    const std::string& threat_type) {
   if (client_) {
     // Create a real-time event dictionary from the arguments and report it.
     base::Value event(base::Value::Type::DICTIONARY);
@@ -249,6 +251,7 @@ void SafeBrowsingPrivateEventRouter::OnDangerousDeepScanningResult(
     event.SetStringKey(kKeyFileName, file_name);
     event.SetStringKey(kKeyDownloadDigestSha256, download_digest_sha256);
     event.SetStringKey(kKeyProfileUserName, GetProfileUserName());
+    event.SetStringKey(kKeyThreatType, threat_type);
     ReportRealtimeEvent(kKeyDangerousDownloadEvent, std::move(event));
   }
 }

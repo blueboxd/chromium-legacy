@@ -9,6 +9,7 @@ class AppMenuButton;
 class BrowserActionsContainer;
 class OmniboxPageActionIconContainerView;
 class ToolbarActionView;
+enum class PageActionIconType;
 
 namespace gfx {
 class Rect;
@@ -53,8 +54,8 @@ class ToolbarButtonProvider {
   // Returns the toolbar as an AccessiblePaneView.
   virtual views::AccessiblePaneView* GetAsAccessiblePaneView() = 0;
 
-  // Returns the toolbar as an anchor point.
-  virtual views::View* GetAnchorView() = 0;
+  // Returns the appropriate anchor view for the page action icon.
+  virtual views::View* GetAnchorView(PageActionIconType type) = 0;
 
   // TODO(calamity): Move other buttons and button actions into here.
  protected:

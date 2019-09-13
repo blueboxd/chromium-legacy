@@ -109,6 +109,7 @@ source_set("headers") {
     "origin_trials/trial_token.h",
     "origin_trials/trial_token_validator.h",
     "page/launching_process_state.h",
+    "peerconnection/webrtc_ip_handling_policy.h",
     "prerender/prerender_rel_type.h",
     "privacy_preferences.h",
     "scheduler/web_scheduler_tracked_feature.h",

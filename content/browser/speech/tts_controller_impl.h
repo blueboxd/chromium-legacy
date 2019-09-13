@@ -39,7 +39,7 @@ class CONTENT_EXPORT TtsControllerImpl : public TtsController {
 
   // TtsController methods
   bool IsSpeaking() override;
-  void SpeakOrEnqueue(TtsUtterance* utterance) override;
+  void SpeakOrEnqueue(std::unique_ptr<TtsUtterance> utterance) override;
   void Stop() override;
   void Stop(const GURL& source_url) override;
   void Pause() override;
@@ -84,7 +84,7 @@ class CONTENT_EXPORT TtsControllerImpl : public TtsController {
 
   // Start speaking the given utterance. Will either take ownership of
   // |utterance| or delete it if there's an error. Returns true on success.
-  void SpeakNow(TtsUtterance* utterance);
+  void SpeakNow(std::unique_ptr<TtsUtterance> utterance);
 
   // Clear the utterance queue. If send_events is true, will send
   // TTS_EVENT_CANCELLED events on each one.
@@ -102,7 +102,7 @@ class CONTENT_EXPORT TtsControllerImpl : public TtsController {
   void UpdateUtteranceDefaults(TtsUtterance* utterance);
 
   // Passed to Speak() as a callback.
-  void OnSpeakFinished(TtsUtterance* utterance, bool success);
+  void OnSpeakFinished(int utterance_id, bool success);
 
   // Static helper methods for StripSSML.
   static void StripSSMLHelper(
@@ -121,7 +121,7 @@ class CONTENT_EXPORT TtsControllerImpl : public TtsController {
   base::ObserverList<VoicesChangedDelegate> voices_changed_delegates_;
 
   // The current utterance being spoken.
-  TtsUtterance* current_utterance_;
+  std::unique_ptr<TtsUtterance> current_utterance_;
 
   // Whether the queue is paused or not.
   bool paused_;
@@ -131,7 +131,7 @@ class CONTENT_EXPORT TtsControllerImpl : public TtsController {
   TtsPlatform* tts_platform_;
 
   // A queue of utterances to speak after the current one finishes.
-  base::queue<TtsUtterance*> utterance_queue_;
+  base::queue<std::unique_ptr<TtsUtterance>> utterance_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(TtsControllerImpl);
 };

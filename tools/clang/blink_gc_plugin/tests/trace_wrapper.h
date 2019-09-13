@@ -23,7 +23,7 @@ class A : public GarbageCollected<A> {
   TraceWrapperV8Reference<v8::String> str_;
 };
 
-class B : public GarbageCollected<A> {
+class B : public GarbageCollected<B> {
  public:
   void Trace(Visitor* visitor);
   void TraceAfterDispatch(Visitor*) {}

@@ -1198,4 +1198,35 @@ TEST_F(LayoutBoxModelObjectTest, UpdateStackingContextForOption) {
   EXPECT_TRUE(option_layout->StyleRef().HasCurrentOpacityAnimation());
 }
 
+// Tests that contain: layout changes cause compositing inputs update.
+TEST_F(LayoutBoxModelObjectTest,
+       LayoutContainmentChangeCausesCompositingInputsUpdate) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    /* ensure we retain the paint layer after removing .contained class. */
+    div { position: relative; }
+    .contained { contain: layout; }
+    </style>
+    <div id=target class=contained></div>
+    <div id=unrelated class=contained></div>
+  )HTML");
+  LayoutBoxModelObject* target =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"));
+  ASSERT_TRUE(target->Layer());
+
+  EXPECT_FALSE(target->Layer()->NeedsCompositingInputsUpdate());
+  EXPECT_EQ(target->Layer(), target->Layer()->NearestContainedLayoutLayer());
+
+  To<HTMLElement>(target->GetNode())->classList().Remove("contained");
+  GetDocument().View()->UpdateLifecycleToLayoutClean();
+
+  EXPECT_TRUE(target->Layer()->NeedsCompositingInputsUpdate());
+
+  // After updating compositing inputs we should have no contained layer
+  // ancestors.
+  UpdateAllLifecyclePhasesForTest();
+  ASSERT_TRUE(target->Layer());
+  EXPECT_FALSE(target->Layer()->NeedsCompositingInputsUpdate());
+  EXPECT_EQ(nullptr, target->Layer()->NearestContainedLayoutLayer());
+}
 }  // namespace blink

@@ -5,7 +5,7 @@
 cr.define('graph_tab', function() {
   'use strict';
   /**
-   * @implements {performanceManager.mojom.WebUIGraphChangeStreamInterface}
+   * @implements {mojom.WebUIGraphChangeStreamInterface}
    */
   class WebUIGraphChangeStreamImpl {
     constructor(contentWindow) {
@@ -72,20 +72,20 @@ Polymer({
   /**
    * The Mojo graph data source.
    *
-   * @private {performanceManager.mojom.WebUIGraphDumpRemote}
+   * @private {mojom.WebUIGraphDumpRemote}
    */
   graphDump_: null,
 
   /**
    * The graph change listener.
    *
-   * @private {performanceManager.mojom.WebUIGraphChangeStreamInterface}
+   * @private {mojom.WebUIGraphChangeStreamInterface}
    */
   changeListener_: null,
 
   /** @override */
   ready: function() {
-    this.graphDump_ = performanceManager.mojom.WebUIGraphDump.getRemote();
+    this.graphDump_ = mojom.WebUIGraphDump.getRemote();
   },
 
   /** @override */
@@ -99,8 +99,8 @@ Polymer({
   onWebViewReady_: function() {
     this.changeListener_ =
         new graph_tab.WebUIGraphChangeStreamImpl(this.$.webView.contentWindow);
-    this.client_ = new performanceManager.mojom.WebUIGraphChangeStreamReceiver(
-        this.changeListener_);
+    this.client_ =
+        new mojom.WebUIGraphChangeStreamReceiver(this.changeListener_);
     // Save helper to work around closure compiler bug: https://crbug.com/969212
     const helper = this.client_.$;
 

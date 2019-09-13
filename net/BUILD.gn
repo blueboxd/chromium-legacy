@@ -6099,16 +6099,6 @@ test("net_unittests") {
     shard_timeout = 300
   }
 
-  # Symbols for crashes when running tests on swarming.
-  if (symbol_level > 0) {
-    if (is_win) {
-      data += [ "$root_out_dir/net_unittests.exe.pdb" ]
-    } else if (is_mac) {
-      # TODO(crbug.com/330301): make this conditional on mac_strip_release.
-      # data += [ "$root_out_dir/net_unittests.dSYM/" ]
-    }
-  }
-
   if (is_win) {
     libs = [
       "iphlpapi.lib",

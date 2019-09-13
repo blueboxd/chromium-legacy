@@ -132,7 +132,7 @@ void SpeechSynthesisImpl::Speak(
   // See comments on EventThunk about how lifetime of this instance is managed.
   tts_utterance->SetEventDelegate(new EventThunk(std::move(client)));
 
-  TtsController::GetInstance()->SpeakOrEnqueue(tts_utterance.release());
+  TtsController::GetInstance()->SpeakOrEnqueue(std::move(tts_utterance));
 }
 
 void SpeechSynthesisImpl::Pause() {

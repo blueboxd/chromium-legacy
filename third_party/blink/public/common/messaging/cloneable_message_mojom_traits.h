@@ -38,6 +38,10 @@ struct BLINK_COMMON_EXPORT
     return input.stack_trace_debugger_id_second;
   }
 
+  static bool stack_trace_should_pause(const blink::CloneableMessage& input) {
+    return input.stack_trace_should_pause;
+  }
+
   static const base::Optional<base::UnguessableToken>& locked_agent_cluster_id(
       const blink::CloneableMessage& input) {
     return input.locked_agent_cluster_id;

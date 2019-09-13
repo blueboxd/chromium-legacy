@@ -153,7 +153,7 @@ class QuicProxyClientSocketTest
     peer_addr_ = IPEndPoint(ip, 443);
     clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(20));
     if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
-      SetQuicFlag(FLAGS_quic_supports_tls_handshake, true);
+      SetQuicReloadableFlag(quic_supports_tls_handshake, true);
     }
   }
 

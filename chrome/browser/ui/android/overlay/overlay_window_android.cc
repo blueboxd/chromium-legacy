@@ -29,6 +29,7 @@ OverlayWindowAndroid::OverlayWindowAndroid(
   surface_layer_->SetIsDrawable(true);
   surface_layer_->SetStretchContentToFillBounds(true);
   surface_layer_->SetMayContainVideo(true);
+  surface_layer_->SetBackgroundColor(SK_ColorBLACK);
 
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_PictureInPictureActivity_createActivity(

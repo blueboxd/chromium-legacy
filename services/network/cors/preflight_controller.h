@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
+#include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -47,7 +48,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightController final {
       bool tainted,
       base::Optional<CorsErrorStatus>* detected_error_status);
 
-  PreflightController();
+  explicit PreflightController(
+      const std::vector<std::string>& extra_safelisted_header_names);
   ~PreflightController();
 
   // Determines if a CORS-preflight request is needed, and checks the cache, or
@@ -60,6 +62,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightController final {
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       mojom::URLLoaderFactory* loader_factory);
 
+  const base::flat_set<std::string>& extra_safelisted_header_names() const {
+    return extra_safelisted_header_names_;
+  }
+
+  void set_extra_safelisted_header_names(
+      const base::flat_set<std::string>& extra_safelisted_header_names) {
+    extra_safelisted_header_names_ = extra_safelisted_header_names;
+  }
+
  private:
   class PreflightLoader;
 
@@ -71,6 +82,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightController final {
   PreflightCache cache_;
   std::set<std::unique_ptr<PreflightLoader>, base::UniquePtrComparator>
       loaders_;
+
+  base::flat_set<std::string> extra_safelisted_header_names_;
 
   DISALLOW_COPY_AND_ASSIGN(PreflightController);
 };

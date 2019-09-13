@@ -165,6 +165,9 @@ class GLES2_IMPL_EXPORT ShareGroup
   // thread safe as contexts may be on different threads.
   bool IsLost() const;
 
+  void SetGpuSwitched(bool gpu_switched);
+  bool GetGpuSwitched() const;
+
  private:
   friend class gpu::RefCountedThreadSafe<ShareGroup>;
   friend class gpu::gles2::GLES2ImplementationTest;
@@ -185,6 +188,9 @@ class GLES2_IMPL_EXPORT ShareGroup
 
   mutable base::Lock lost_lock_;
   bool lost_ = false;
+
+  mutable base::Lock gpu_switched_lock_;
+  bool gpu_switched_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ShareGroup);
 };

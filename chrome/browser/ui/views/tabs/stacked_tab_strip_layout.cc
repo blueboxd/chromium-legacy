@@ -407,13 +407,12 @@ void StackedTabStripLayout::LayoutUsingCurrentAfter(int index) {
 
 void StackedTabStripLayout::LayoutUsingCurrentBefore(int index) {
   for (int i = index - 1; i >= pinned_tab_count_; --i) {
+    int x = std::max(ideal_x(i), ideal_x(i + 1) - tab_offset());
     int max_x = x_ + width_for_count(i - pinned_tab_count_);
     if (i > pinned_tab_count_)
       max_x -= overlap_;
-    max_x = std::min(max_x, ideal_x(i + 1) - stacked_padding_);
-    SetIdealBoundsAt(
-        i, std::min(max_x,
-                    std::max(ideal_x(i), ideal_x(i + 1) - tab_offset())));
+    SetIdealBoundsAt(i,
+                     std::min({x, ideal_x(i + 1) - stacked_padding_, max_x}));
   }
 }
 

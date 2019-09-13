@@ -900,8 +900,7 @@ TEST_P(TabStripTest, ResetBoundsForDraggedTabs) {
   // Once the animation completes, the dragged tab should have animated to
   // the new ideal bounds (computed with this as an inactive tab) rather
   // than the original ones (where it's an active tab).
-  const auto duration = base::TimeDelta::FromMilliseconds(
-      bounds_animator()->GetAnimationDuration());
+  const base::TimeDelta duration = bounds_animator()->GetAnimationDuration();
   test_api.IncrementTime(duration);
 
   EXPECT_FALSE(dragged_tab->dragging());
@@ -1001,7 +1000,7 @@ TEST_P(TabStripTest, AnimationOnTabAdd) {
 
 TEST_P(TabStripTest, GroupHeaderBasics) {
   tab_strip_->SetBounds(0, 0, 1000, 100);
-  bounds_animator()->SetAnimationDuration(0);
+  bounds_animator()->SetAnimationDuration(base::TimeDelta());
   tab_strip_->AddTabAt(0, TabRendererData(), false);
 
   Tab* tab = tab_strip_->tab_at(0);
@@ -1022,7 +1021,7 @@ TEST_P(TabStripTest, GroupHeaderBasics) {
 
 TEST_P(TabStripTest, GroupHeaderBetweenTabs) {
   tab_strip_->SetBounds(0, 0, 1000, 100);
-  bounds_animator()->SetAnimationDuration(0);
+  bounds_animator()->SetAnimationDuration(base::TimeDelta());
 
   tab_strip_->AddTabAt(0, TabRendererData(), false);
   tab_strip_->AddTabAt(1, TabRendererData(), false);
@@ -1142,7 +1141,7 @@ TEST_P(TabStripTest, UngroupedTabMovesLeftOfHeader) {
 // This can happen when a tab in the middle of a group starts to close.
 TEST_P(TabStripTest, DiscontinuousGroup) {
   tab_strip_->SetBounds(0, 0, 1000, 100);
-  bounds_animator()->SetAnimationDuration(0);
+  bounds_animator()->SetAnimationDuration(base::TimeDelta());
 
   tab_strip_->AddTabAt(0, TabRendererData(), false);
   tab_strip_->AddTabAt(1, TabRendererData(), false);

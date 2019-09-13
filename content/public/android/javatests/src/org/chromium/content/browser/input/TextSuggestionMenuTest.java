@@ -35,7 +35,7 @@ import java.util.concurrent.TimeoutException;
  * Integration tests for the text suggestion menu.
  */
 @RunWith(ContentJUnit4ClassRunner.class)
-@CommandLineFlags.Add({"expose-internals-for-testing", "allow-pre-commit-input"})
+@CommandLineFlags.Add({"expose-internals-for-testing"})
 public class TextSuggestionMenuTest {
     private static final String URL =
             "data:text/html, <div contenteditable id=\"div\" /><span id=\"span\" />";

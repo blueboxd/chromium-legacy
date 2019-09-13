@@ -38,15 +38,15 @@ NavigationHandleImpl::NavigationHandleImpl(
 NavigationHandleImpl::~NavigationHandleImpl() = default;
 
 int64_t NavigationHandleImpl::GetNavigationId() {
-  return navigation_request_->navigation_handle_id();
+  return navigation_request_->GetNavigationId();
 }
 
 const GURL& NavigationHandleImpl::GetURL() {
-  return navigation_request_->common_params().url;
+  return navigation_request_->GetURL();
 }
 
 SiteInstanceImpl* NavigationHandleImpl::GetStartingSiteInstance() {
-  return navigation_request_->starting_site_instance();
+  return navigation_request_->GetStartingSiteInstance();
 }
 
 bool NavigationHandleImpl::IsInMainFrame() {
@@ -58,15 +58,15 @@ bool NavigationHandleImpl::IsParentMainFrame() {
 }
 
 bool NavigationHandleImpl::IsRendererInitiated() {
-  return !navigation_request_->browser_initiated();
+  return navigation_request_->IsRendererInitiated();
 }
 
 bool NavigationHandleImpl::WasServerRedirect() {
-  return navigation_request_->was_redirected();
+  return navigation_request_->WasServerRedirect();
 }
 
 const std::vector<GURL>& NavigationHandleImpl::GetRedirectChain() {
-  return navigation_request_->redirect_chain();
+  return navigation_request_->GetRedirectChain();
 }
 
 int NavigationHandleImpl::GetFrameTreeNodeId() {
@@ -78,15 +78,15 @@ RenderFrameHostImpl* NavigationHandleImpl::GetParentFrame() {
 }
 
 base::TimeTicks NavigationHandleImpl::NavigationStart() {
-  return navigation_request_->common_params().navigation_start;
+  return navigation_request_->NavigationStart();
 }
 
 base::TimeTicks NavigationHandleImpl::NavigationInputStart() {
-  return navigation_request_->common_params().input_start;
+  return navigation_request_->NavigationInputStart();
 }
 
 bool NavigationHandleImpl::IsPost() {
-  return navigation_request_->common_params().method == "POST";
+  return navigation_request_->IsPost();
 }
 
 const scoped_refptr<network::ResourceRequestBody>&
@@ -95,19 +95,19 @@ NavigationHandleImpl::GetResourceRequestBody() {
 }
 
 const blink::mojom::Referrer& NavigationHandleImpl::GetReferrer() {
-  return navigation_request_->sanitized_referrer();
+  return navigation_request_->GetReferrer();
 }
 
 bool NavigationHandleImpl::HasUserGesture() {
-  return navigation_request_->common_params().has_user_gesture;
+  return navigation_request_->HasUserGesture();
 }
 
 ui::PageTransition NavigationHandleImpl::GetPageTransition() {
-  return navigation_request_->common_params().transition;
+  return navigation_request_->GetPageTransition();
 }
 
 NavigationUIData* NavigationHandleImpl::GetNavigationUIData() {
-  return navigation_request_->navigation_ui_data();
+  return navigation_request_->GetNavigationUIData();
 }
 
 bool NavigationHandleImpl::IsExternalProtocol() {
@@ -115,11 +115,11 @@ bool NavigationHandleImpl::IsExternalProtocol() {
 }
 
 net::Error NavigationHandleImpl::GetNetErrorCode() {
-  return navigation_request_->net_error();
+  return navigation_request_->GetNetErrorCode();
 }
 
 RenderFrameHostImpl* NavigationHandleImpl::GetRenderFrameHost() {
-  return navigation_request_->render_frame_host();
+  return navigation_request_->GetRenderFrameHost();
 }
 
 bool NavigationHandleImpl::IsSameDocument() {
@@ -127,7 +127,7 @@ bool NavigationHandleImpl::IsSameDocument() {
 }
 
 const net::HttpRequestHeaders& NavigationHandleImpl::GetRequestHeaders() {
-  return navigation_request_->request_headers();
+  return navigation_request_->GetRequestHeaders();
 }
 
 void NavigationHandleImpl::RemoveRequestHeader(const std::string& header_name) {
@@ -149,12 +149,12 @@ NavigationHandleImpl::GetConnectionInfo() {
 }
 
 const base::Optional<net::SSLInfo>& NavigationHandleImpl::GetSSLInfo() {
-  return navigation_request_->ssl_info();
+  return navigation_request_->GetSSLInfo();
 }
 
 const base::Optional<net::AuthChallengeInfo>&
 NavigationHandleImpl::GetAuthChallengeInfo() {
-  return navigation_request_->auth_challenge_info();
+  return navigation_request_->GetAuthChallengeInfo();
 }
 
 bool NavigationHandleImpl::HasCommitted() {
@@ -166,19 +166,19 @@ bool NavigationHandleImpl::IsErrorPage() {
 }
 
 bool NavigationHandleImpl::HasSubframeNavigationEntryCommitted() {
-  return navigation_request_->subframe_entry_committed();
+  return navigation_request_->HasSubframeNavigationEntryCommitted();
 }
 
 bool NavigationHandleImpl::DidReplaceEntry() {
-  return navigation_request_->did_replace_entry();
+  return navigation_request_->DidReplaceEntry();
 }
 
 bool NavigationHandleImpl::ShouldUpdateHistory() {
-  return navigation_request_->should_update_history();
+  return navigation_request_->ShouldUpdateHistory();
 }
 
 const GURL& NavigationHandleImpl::GetPreviousURL() {
-  return navigation_request_->previous_url();
+  return navigation_request_->GetPreviousURL();
 }
 
 net::IPEndPoint NavigationHandleImpl::GetSocketAddress() {
@@ -196,27 +196,27 @@ bool NavigationHandleImpl::IsDeferredForTesting() {
 }
 
 bool NavigationHandleImpl::WasStartedFromContextMenu() {
-  return navigation_request_->common_params().started_from_context_menu;
+  return navigation_request_->WasStartedFromContextMenu();
 }
 
 const GURL& NavigationHandleImpl::GetSearchableFormURL() {
-  return navigation_request_->begin_params()->searchable_form_url;
+  return navigation_request_->GetSearchableFormURL();
 }
 
 const std::string& NavigationHandleImpl::GetSearchableFormEncoding() {
-  return navigation_request_->begin_params()->searchable_form_encoding;
+  return navigation_request_->GetSearchableFormEncoding();
 }
 
 ReloadType NavigationHandleImpl::GetReloadType() {
-  return navigation_request_->reload_type();
+  return navigation_request_->GetReloadType();
 }
 
 RestoreType NavigationHandleImpl::GetRestoreType() {
-  return navigation_request_->restore_type();
+  return navigation_request_->GetRestoreType();
 }
 
 const GURL& NavigationHandleImpl::GetBaseURLForDataURL() {
-  return navigation_request_->common_params().base_url_for_data_url;
+  return navigation_request_->GetBaseURLForDataURL();
 }
 
 void NavigationHandleImpl::RegisterSubresourceOverride(
@@ -226,23 +226,23 @@ void NavigationHandleImpl::RegisterSubresourceOverride(
 }
 
 const GlobalRequestID& NavigationHandleImpl::GetGlobalRequestID() {
-  return navigation_request_->request_id();
+  return navigation_request_->GetGlobalRequestID();
 }
 
 bool NavigationHandleImpl::IsDownload() {
-  return navigation_request_->is_download();
+  return navigation_request_->IsDownload();
 }
 
 bool NavigationHandleImpl::IsFormSubmission() {
-  return navigation_request_->begin_params()->is_form_submission;
+  return navigation_request_->IsFormSubmission();
 }
 
 bool NavigationHandleImpl::WasInitiatedByLinkClick() {
-  return navigation_request_->begin_params()->was_initiated_by_link_click;
+  return navigation_request_->WasInitiatedByLinkClick();
 }
 
 const std::string& NavigationHandleImpl::GetHrefTranslate() {
-  return navigation_request_->common_params().href_translate;
+  return navigation_request_->GetHrefTranslate();
 }
 
 void NavigationHandleImpl::CallResumeForTesting() {
@@ -250,19 +250,19 @@ void NavigationHandleImpl::CallResumeForTesting() {
 }
 
 const base::Optional<url::Origin>& NavigationHandleImpl::GetInitiatorOrigin() {
-  return navigation_request_->common_params().initiator_origin;
+  return navigation_request_->GetInitiatorOrigin();
 }
 
 bool NavigationHandleImpl::IsSameProcess() {
-  return navigation_request_->is_same_process();
+  return navigation_request_->IsSameProcess();
 }
 
 int NavigationHandleImpl::GetNavigationEntryOffset() {
-  return navigation_request_->navigation_entry_offset();
+  return navigation_request_->GetNavigationEntryOffset();
 }
 
 bool NavigationHandleImpl::FromDownloadCrossOriginRedirect() {
-  return navigation_request_->from_download_cross_origin_redirect();
+  return navigation_request_->FromDownloadCrossOriginRedirect();
 }
 
 bool NavigationHandleImpl::IsSignedExchangeInnerResponse() {
@@ -279,7 +279,7 @@ bool NavigationHandleImpl::WasResponseCached() {
 }
 
 const net::ProxyServer& NavigationHandleImpl::GetProxyServer() {
-  return navigation_request_->proxy_server();
+  return navigation_request_->GetProxyServer();
 }
 
 }  // namespace content

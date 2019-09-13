@@ -40,7 +40,10 @@ generate_jni("jni") {
 }
 
 android_library("client_java") {
-  java_files = [ "org/chromium/weblayer_private/aidl/ObjectWrapper.java" ]
+  java_files = [
+    "org/chromium/weblayer_private/aidl/ObjectWrapper.java",
+    "org/chromium/weblayer_private/aidl/APICallException.java",
+  ]
 
   srcjar_deps = [ ":aidl" ]
 }

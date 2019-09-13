@@ -123,6 +123,8 @@ const char kDomainsToCheckComplianceOfDownloadedContent[] =
     "safebrowsing.domains_to_check_compliance_of_downloaded_content";
 const char kDomainsToCheckForMalwareOfUploadedContent[] =
     "safebrowsing.domains_to_check_for_malware_of_uploaded_content";
+const char kDomainsToNotCheckComplianceOfUploadedContent[] =
+    "policy.domains_to_not_check_compliance_of_uploaded_content";
 
 }  // namespace prefs
 
@@ -188,7 +190,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kSafeBrowsingRealTimeLookupEnabled,
                                 false);
   registry->RegisterIntegerPref(prefs::kSafeBrowsingSendFilesForMalwareCheck,
-                                0);
+                                DO_NOT_SCAN);
 }
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
@@ -199,9 +201,12 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(
       prefs::kAllowPasswordProtectedFiles,
       AllowPasswordProtectedFilesValues::ALLOW_UPLOADS_AND_DOWNLOADS);
-  registry->RegisterIntegerPref(prefs::kCheckContentCompliance, 0);
+  registry->RegisterIntegerPref(prefs::kCheckContentCompliance, CHECK_NONE);
   registry->RegisterListPref(
       prefs::kDomainsToCheckComplianceOfDownloadedContent);
+  registry->RegisterListPref(
+      prefs::kDomainsToNotCheckComplianceOfUploadedContent);
+  registry->RegisterListPref(prefs::kDomainsToCheckForMalwareOfUploadedContent);
 }
 
 void SetExtendedReportingPrefAndMetric(

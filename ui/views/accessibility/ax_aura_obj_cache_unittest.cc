@@ -121,7 +121,8 @@ TEST_F(AXAuraObjCacheTest, ValidTree) {
   // Verify tree is valid.
   ui::AXTreeSourceChecker<AXAuraObjWrapper*, ui::AXNodeData, ui::AXTreeData>
       checker(&tree_source);
-  EXPECT_TRUE(checker.Check());
+  std::string error_string;
+  EXPECT_TRUE(checker.CheckAndGetErrorString(&error_string)) << error_string;
   ui::AXTree ax_tree(serialized_tree);
   EXPECT_TRUE(HasNodeWithName(ax_tree, "ParentWindow"));
   EXPECT_TRUE(HasNodeWithName(ax_tree, "ChildWindow"));

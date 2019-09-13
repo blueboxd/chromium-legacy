@@ -39,7 +39,8 @@ namespace {
 
 std::unique_ptr<DownloadItemImpl> CreateDownloadItemImpl(
     DownloadItemImplDelegate* delegate,
-    const DownloadDBEntry entry) {
+    const DownloadDBEntry entry,
+    std::unique_ptr<DownloadEntry> download_entry) {
   if (!entry.download_info)
     return nullptr;
 
@@ -65,7 +66,8 @@ std::unique_ptr<DownloadItemImpl> CreateDownloadItemImpl(
       in_progress_info->state, in_progress_info->danger_type,
       in_progress_info->interrupt_reason, in_progress_info->paused,
       in_progress_info->metered, false, base::Time(),
-      in_progress_info->transient, in_progress_info->received_slices);
+      in_progress_info->transient, in_progress_info->received_slices,
+      std::move(download_entry));
 }
 
 void OnUrlDownloadHandlerCreated(
@@ -420,16 +422,6 @@ bool InProgressDownloadManager::ShouldOpenDownload(
   return true;
 }
 
-base::Optional<DownloadEntry> InProgressDownloadManager::GetInProgressEntry(
-    DownloadItemImpl* download) {
-  if (!download)
-    return base::Optional<DownloadEntry>();
-  if (base::Contains(download_entries_, download->GetGuid()))
-    return download_entries_[download->GetGuid()];
-
-  return base::Optional<DownloadEntry>();
-}
-
 void InProgressDownloadManager::ReportBytesWasted(DownloadItemImpl* download) {
   download_db_cache_->OnDownloadUpdated(download);
 }
@@ -581,11 +573,8 @@ void InProgressDownloadManager::OnDownloadNamesRetrieved(
   int num_duplicates = 0;
   display_names_ = std::move(display_names);
   for (const auto& entry : *entries) {
-    base::Optional<DownloadEntry> download_entry =
-        CreateDownloadEntryFromDownloadDBEntry(entry);
-    if (download_entry)
-      download_entries_[download_entry->guid] = download_entry.value();
-    auto item = CreateDownloadItemImpl(this, entry);
+    auto item = CreateDownloadItemImpl(
+        this, entry, CreateDownloadEntryFromDownloadDBEntry(entry));
     if (!item)
       continue;
     uint32_t download_id = item->GetId();
@@ -638,7 +627,6 @@ base::FilePath InProgressDownloadManager::GetDownloadDisplayName(
 }
 
 void InProgressDownloadManager::OnAllInprogressDownloadsLoaded() {
-  download_entries_.clear();
   display_names_.reset();
 }
 

@@ -6,9 +6,8 @@ package org.chromium.weblayer;
 
 import android.content.Context;
 import android.os.RemoteException;
-import android.util.AndroidRuntimeException;
-import android.util.Log;
 
+import org.chromium.weblayer_private.aidl.APICallException;
 import org.chromium.weblayer_private.aidl.IProfile;
 import org.chromium.weblayer_private.aidl.ObjectWrapper;
 
@@ -17,8 +16,6 @@ import org.chromium.weblayer_private.aidl.ObjectWrapper;
  * Profile via WebLayer.
  */
 public final class Profile {
-    private static final String TAG = "WL_Profile";
-
     private IProfile mImpl;
 
     Profile(IProfile impl) {
@@ -34,8 +31,7 @@ public final class Profile {
         try {
             mImpl.destroy();
         } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call destroy.", e);
-            throw new AndroidRuntimeException(e);
+            throw new APICallException(e);
         }
     }
 
@@ -43,8 +39,7 @@ public final class Profile {
         try {
             mImpl.clearBrowsingData();
         } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call clearBrowsingData.", e);
-            throw new AndroidRuntimeException(e);
+            throw new APICallException(e);
         }
     }
 
@@ -53,8 +48,7 @@ public final class Profile {
             return new BrowserController(
                     mImpl.createBrowserController(ObjectWrapper.wrap(context)));
         } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call createBrowserController.", e);
-            throw new AndroidRuntimeException(e);
+            throw new APICallException(e);
         }
     }
 }

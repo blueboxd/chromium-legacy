@@ -143,6 +143,7 @@ source_set("test_support") {
   public_deps = [
     ":public",
     "//base",
+    "//components/download/database",
     "//net",
     "//services/service_manager/public/cpp:cpp",
     "//testing/gmock",

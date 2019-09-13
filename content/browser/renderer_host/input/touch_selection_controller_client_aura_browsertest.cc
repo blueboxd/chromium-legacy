@@ -184,11 +184,6 @@ class TouchSelectionControllerClientAuraTest : public ContentBrowserTest {
         ui::test::MockMotionEvent(ui::MotionEvent::Action::DOWN));
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ContentBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kAllowPreCommitInput);
-  }
-
   void SetUpOnMainThread() override {
     ContentBrowserTest::SetUpOnMainThread();
     if (!ui::TouchSelectionMenuRunner::GetInstance())
@@ -879,7 +874,6 @@ class TouchSelectionControllerClientAuraScaleFactorTest
     : public TouchSelectionControllerClientAuraTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kAllowPreCommitInput);
     command_line->AppendSwitchASCII(switches::kForceDeviceScaleFactor, "2");
   }
 };

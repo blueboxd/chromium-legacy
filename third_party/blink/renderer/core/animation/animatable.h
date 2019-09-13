@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATABLE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATABLE_H_
 
+#include "third_party/blink/renderer/core/animation/get_animations_options.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
@@ -60,7 +61,8 @@ class CORE_EXPORT Animatable {
 
   Animation* animate(ScriptState*, const ScriptValue&, ExceptionState&);
 
-  HeapVector<Member<Animation>> getAnimations();
+  HeapVector<Member<Animation>> getAnimations(
+      GetAnimationsOptions* options = nullptr);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AnimationSimTest, CustomPropertyBaseComputedStyle);

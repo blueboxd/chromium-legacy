@@ -23,6 +23,10 @@ class NET_EXPORT SystemTrustStoreProvider {
  public:
   virtual ~SystemTrustStoreProvider() {}
 
+  // Returns a SystemTrustStoreProvider that will create the default
+  // SystemTrustStore for SSL (using CreateSslSystemTrustStore()).
+  static std::unique_ptr<SystemTrustStoreProvider> CreateDefaultForSSL();
+
   // Create and return a SystemTrustStore to be used during certificate
   // verification.
   // This function may be invoked concurrently on worker threads and must be
@@ -34,10 +38,6 @@ class NET_EXPORT SystemTrustStoreProvider {
 // TODO(crbug.com/649017): This is not how other cert_verify_proc_*.h are
 // implemented -- they expose the type in the header. Use a consistent style
 // here too.
-// If |system_trust_store_provider| is null, the default SystemTrustStore will
-// be created.
-// If |system_trust_store_provider| is non-null, it will be used to create the
-// SystemTrustStore instance for certificate verification.
 NET_EXPORT scoped_refptr<CertVerifyProc> CreateCertVerifyProcBuiltin(
     scoped_refptr<CertNetFetcher> net_fetcher,
     std::unique_ptr<SystemTrustStoreProvider> system_trust_store_provider);

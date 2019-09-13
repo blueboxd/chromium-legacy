@@ -21,7 +21,7 @@ namespace gfx {
 //  public:
 //   MyClass() {
 //     animation_ = std::make_unique<SlideAnimation>(this);
-//     animation_->SetSlideDuration(500);
+//     animation_->SetSlideDuration(base::TimeDelta::FromMilliseconds(500));
 //   }
 //   void OnMouseOver() {
 //     animation_->Show();
@@ -64,8 +64,8 @@ class ANIMATION_EXPORT SlideAnimation : public LinearAnimation {
   // Sets the time a slide will take. Note that this isn't actually
   // the amount of time an animation will take as the current value of
   // the slide is considered.
-  virtual void SetSlideDuration(int duration);
-  int GetSlideDuration() const { return slide_duration_; }
+  virtual void SetSlideDuration(base::TimeDelta duration);
+  base::TimeDelta GetSlideDuration() const { return slide_duration_; }
   void SetTweenType(Tween::Type tween_type) { tween_type_ = tween_type; }
 
   // Dampens the reduction in duration for an animation which starts partway.
@@ -106,9 +106,9 @@ class ANIMATION_EXPORT SlideAnimation : public LinearAnimation {
   double value_end_ = 0;
   double value_current_ = 0;
 
-  // How long a hover in/out animation will last for, in ms. This can be
-  // overridden with SetDuration.
-  int slide_duration_ = 120;
+  // How long a hover in/out animation will last for. This can be overridden
+  // with SetSlideDuration().
+  base::TimeDelta slide_duration_ = base::TimeDelta::FromMilliseconds(120);
 
   // Dampens the reduction in duration for animations which start partway.
   double dampening_value_ = 1.0;

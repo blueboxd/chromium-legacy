@@ -208,6 +208,10 @@ CompositingLayerAssigner::GetReasonsPreventingSquashing(
       layer->MaskAncestor() != squashing_layer.MaskAncestor())
     return SquashingDisallowedReason::kMaskMismatch;
 
+  if (layer->NearestContainedLayoutLayer() !=
+      squashing_layer.NearestContainedLayoutLayer())
+    return SquashingDisallowedReason::kCrossesLayoutContainmentBoundary;
+
   return SquashingDisallowedReason::kNone;
 }
 

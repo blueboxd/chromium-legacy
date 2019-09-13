@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/profiles/profile.h"
 #include "third_party/cros_system_api/dbus/update_engine/dbus-constants.h"
@@ -30,11 +29,7 @@ class EolNotification final {
 
  private:
   // Callback invoked when |GetEolStatus()| has finished.
-  // - EndOfLife status: the end of life status of the device.
-  // - Optional<int32_t> number_of_milestones: the number of milestones before
-  // end of life, if known by update engine.
-  void OnEolStatus(update_engine::EndOfLifeStatus status,
-                   base::Optional<int32_t> number_of_milestones);
+  void OnEolStatus(update_engine::EndOfLifeStatus status);
 
   // Create or updates the notfication.
   void Update();
@@ -44,9 +39,6 @@ class EolNotification final {
 
   // Device EndOfLife status.
   update_engine::EndOfLifeStatus status_;
-
-  // Number of milestones remaining until end of life.
-  base::Optional<int32_t> number_of_milestones_;
 
   // Factory of callbacks.
   base::WeakPtrFactory<EolNotification> weak_factory_{this};

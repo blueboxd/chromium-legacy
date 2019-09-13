@@ -26,8 +26,6 @@ class DevToolsProtocolTest : public ContentBrowserTest,
   DevToolsProtocolTest();
   ~DevToolsProtocolTest() override;
 
-  void SetUpCommandLine(base::CommandLine* command_line) override;
-
   void SetUpOnMainThread() override;
 
  protected:

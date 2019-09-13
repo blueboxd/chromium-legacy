@@ -63,6 +63,7 @@ class SharedWorkerContextProviderFactory {
       bool support_gles2_interface,
       bool support_raster_interface,
       bool support_grcontext,
+      bool support_oopr,
       command_buffer_metrics::ContextType type);
 
   const int32_t stream_id_;

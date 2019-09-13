@@ -410,8 +410,6 @@ std::unique_ptr<content::WebContents> CreateTargetContents(
         params.opener->GetProcess()->GetID();
   }
   if (params.source_contents) {
-    create_params.initial_size =
-        params.source_contents->GetContainerBounds().size();
     create_params.created_with_opener = params.created_with_opener;
   }
   if (params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB)

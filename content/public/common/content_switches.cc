@@ -14,7 +14,8 @@ namespace switches {
 const char kAcceleratedCanvas2dMSAASampleCount[] = "canvas-msaa-sample-count";
 
 // Allows processing of input before a frame has been committed.
-// TODO(schenney): Remove when crbug.com/987626 is fixed.
+// TODO(schenney): crbug.com/987626. Used by headless. Look for a way not
+// involving a command line switch.
 const char kAllowPreCommitInput[] = "allow-pre-commit-input";
 
 // By default, file:// URIs cannot read other file:// URIs. This is an
@@ -32,6 +33,10 @@ const char kAllowLoopbackInPeerConnection[] =
 // Allow a page to show popups during its unloading.
 // TODO(https://crbug.com/937569): Remove this in Chrome 82.
 const char kAllowPopupsDuringPageUnload[] = "allow-popups-during-page-unload";
+
+// Allow a page to send synchronus XHR during its unloading.
+// TODO(https://crbug.com/1003101): Remove this in Chrome 82.
+const char kAllowSyncXHRInPageDismissal[] = "allow-sync-xhr-in-page-dimissal";
 
 // Uses the android SkFontManager on linux. The specified directory should
 // include the configuration xml file with the name "fonts.xml".

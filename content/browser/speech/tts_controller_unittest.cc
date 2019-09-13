@@ -83,15 +83,15 @@ TEST_F(TtsControllerTest, TestTtsControllerShutdown) {
 
   controller->SetTtsPlatform(&platform_impl);
 
-  TtsUtterance* utterance1 = TtsUtterance::Create(nullptr);
+  std::unique_ptr<TtsUtterance> utterance1 = TtsUtterance::Create(nullptr);
   utterance1->SetCanEnqueue(true);
   utterance1->SetSrcId(1);
-  controller->SpeakOrEnqueue(utterance1);
+  controller->SpeakOrEnqueue(std::move(utterance1));
 
-  TtsUtterance* utterance2 = TtsUtterance::Create(nullptr);
+  std::unique_ptr<TtsUtterance> utterance2 = TtsUtterance::Create(nullptr);
   utterance2->SetCanEnqueue(true);
   utterance2->SetSrcId(2);
-  controller->SpeakOrEnqueue(utterance2);
+  controller->SpeakOrEnqueue(std::move(utterance2));
 
   // Make sure that deleting the controller when there are pending
   // utterances doesn't cause a crash.
@@ -107,7 +107,7 @@ TEST_F(TtsControllerTest, TestTtsControllerUtteranceDefaults) {
       std::make_unique<TtsControllerForTesting>();
 
   std::unique_ptr<TtsUtterance> utterance1 =
-      base::WrapUnique(content::TtsUtterance::Create(nullptr));
+      content::TtsUtterance::Create(nullptr);
   // Initialized to default (unset constant) values.
   EXPECT_EQ(blink::mojom::kSpeechSynthesisDoublePrefNotSet,
             utterance1->GetContinuousParameters().rate);

@@ -432,6 +432,29 @@ TEST(FileTest, DISABLED_TouchGetInfo) {
             creation_time.ToInternalValue());
 }
 
+// Test we can retrieve the file's creation time through File::GetInfo().
+TEST(FileTest, GetInfoForCreationTime) {
+  int64_t before_creation_time_s =
+      base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds();
+
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  FilePath file_path = temp_dir.GetPath().AppendASCII("test_file");
+  File file(file_path, base::File::FLAG_CREATE | base::File::FLAG_READ |
+                           base::File::FLAG_WRITE);
+  EXPECT_TRUE(file.IsValid());
+
+  int64_t after_creation_time_s =
+      base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds();
+
+  base::File::Info info;
+  EXPECT_TRUE(file.GetInfo(&info));
+  EXPECT_GE(info.creation_time.ToDeltaSinceWindowsEpoch().InSeconds(),
+            before_creation_time_s);
+  EXPECT_LE(info.creation_time.ToDeltaSinceWindowsEpoch().InSeconds(),
+            after_creation_time_s);
+}
+
 TEST(FileTest, ReadAtCurrentPosition) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());

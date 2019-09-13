@@ -38,8 +38,7 @@ InstallableInkDropAnimator::InstallableInkDropAnimator(
   flood_fill_animation_.SetContainer(animation_container);
   fade_out_animation_.SetContainer(animation_container);
 
-  highlight_animation_.SetSlideDuration(
-      kHighlightAnimationDuration.InMilliseconds());
+  highlight_animation_.SetSlideDuration(kHighlightAnimationDuration);
 }
 
 InstallableInkDropAnimator::~InstallableInkDropAnimator() = default;

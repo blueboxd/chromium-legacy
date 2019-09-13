@@ -319,7 +319,8 @@ void DownloadItemView::OnDownloadUpdated() {
             true);
         StopDownloadProgress();
         complete_animation_ = std::make_unique<gfx::SlideAnimation>(this);
-        complete_animation_->SetSlideDuration(kInterruptedAnimationDurationMs);
+        complete_animation_->SetSlideDuration(
+            base::TimeDelta::FromMilliseconds(2500));
         complete_animation_->SetTweenType(gfx::Tween::LINEAR);
         complete_animation_->Show();
         LoadIcon();
@@ -336,7 +337,8 @@ void DownloadItemView::OnDownloadUpdated() {
         }
         StopDownloadProgress();
         complete_animation_ = std::make_unique<gfx::SlideAnimation>(this);
-        complete_animation_->SetSlideDuration(kCompleteAnimationDurationMs);
+        complete_animation_->SetSlideDuration(
+            base::TimeDelta::FromMilliseconds(2500));
         complete_animation_->SetTweenType(gfx::Tween::LINEAR);
         complete_animation_->Show();
         LoadIcon();

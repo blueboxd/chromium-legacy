@@ -5,7 +5,9 @@
 module mojom;
 
 import "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom";
+import "mojo/public/mojom/base/process_id.mojom";
 import "mojo/public/mojom/base/time.mojom";
+import "url/mojom/url.mojom";
 
 // Identical to content::Visibility.
 enum LifecycleUnitVisibility {
@@ -176,4 +178,73 @@ interface DiscardsDetailsProvider {
   // eligible for discard. Invokes a callback when the discard is complete, or
   // if the decision was made not to discard.
   Discard(bool urgent) => ();
+};
+
+// Represents the momentary state of a Page CU.
+struct WebUIPageInfo {
+  int64 id;
+
+  url.mojom.Url main_frame_url;
+
+  // TODO(siggi): Estimate data.
+};
+
+// Represents the momentary state of a Frame CU.
+struct WebUIFrameInfo {
+  int64 id;
+
+  url.mojom.Url url;
+  int64 page_id;
+  int64 parent_frame_id;
+  int64 process_id;
+};
+
+// Represents the momentary state of a Process CU.
+struct WebUIProcessInfo {
+  int64 id;
+
+  mojo_base.mojom.ProcessId pid;
+  mojo_base.mojom.TimeDelta cumulative_cpu_usage;
+  uint64 private_footprint_kb;
+};
+
+// Used to transport favicon data.
+struct WebUIFavIconInfo {
+  int64 node_id;
+
+  // Contains the base64-encoded icon data, suitable for inclusion in a
+  // data URL.
+  string icon_data;
+};
+
+// Implement to receive a stream of notifications when performance manager
+// graph nodes are created, changed or deleted.
+interface WebUIGraphChangeStream {
+  // The |frame| was created.
+  FrameCreated(WebUIFrameInfo frame);
+  // The |page| was created.
+  PageCreated(WebUIPageInfo pages);
+  // The |process| was created.
+  ProcessCreated(WebUIProcessInfo process);
+
+  // The |frame| changed.
+  FrameChanged(WebUIFrameInfo frame);
+  // The |page| changed.
+  PageChanged(WebUIPageInfo page);
+  // The |process| changed.
+  ProcessChanged(WebUIProcessInfo process);
+
+  // A |favicon| became available, whether because the associated page changed
+  // its favicon, or because an initial lookup completed.
+  FavIconDataAvailable(WebUIFavIconInfo favicon);
+
+  // The node with |node_id| was deleted.
+  NodeDeleted(int64 node_id);
+};
+
+// This interface allows subscribing to a stream of events that track the state
+// of the performance manager graph.
+interface WebUIGraphDump {
+  // Subscribes |change_subscriber| to a graph change stream.
+  SubscribeToChanges(WebUIGraphChangeStream change_subscriber);
 };

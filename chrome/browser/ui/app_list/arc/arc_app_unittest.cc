@@ -21,9 +21,11 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_command_line.h"
 #include "base/values.h"
+#include "chrome/browser/apps/app_service/arc_icon_once_loader.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
@@ -2069,6 +2071,44 @@ TEST_P(ArcAppModelBuilderTest, IconLoader) {
   // No more updates are expected.
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1 + scale_factors.size(), delegate.update_image_count());
+}
+
+TEST_P(ArcAppModelBuilderTest, IconLoaderCompressed) {
+  const arc::mojom::AppInfo& app = fake_apps()[0];
+  const std::string app_id = ArcAppTest::GetAppId(app);
+  const int icon_size =
+      app_list::AppListConfig::instance().grid_icon_dimension();
+  const std::vector<ui::ScaleFactor>& scale_factors =
+      ui::GetSupportedScaleFactors();
+  size_t num_compressed_images_seen = 0;
+
+  app_instance()->SendRefreshAppList(std::vector<arc::mojom::AppInfo>(
+      fake_apps().begin(), fake_apps().begin() + 1));
+
+  base::RunLoop run_loop;
+  base::Closure quit = run_loop.QuitClosure();
+
+  apps::ArcIconOnceLoader once_loader(profile());
+  once_loader.LoadIcon(
+      app_id, icon_size, apps::mojom::IconCompression::kCompressed,
+      base::BindLambdaForTesting([&](ArcAppIcon* icon) {
+        const std::map<ui::ScaleFactor, std::string>& compressed_images =
+            icon->compressed_images();
+        for (auto& scale_factor : scale_factors) {
+          auto iter = compressed_images.find(scale_factor);
+          if (iter != compressed_images.end()) {
+            num_compressed_images_seen++;
+            const std::string& compressed = iter->second;
+            // Check that |compressed| starts with the 8-byte PNG magic string.
+            EXPECT_EQ(compressed.substr(0, 8),
+                      "\x89\x50\x4e\x47\x0d\x0a\x1a\x0a");
+          }
+        }
+        quit.Run();
+      }));
+
+  run_loop.Run();
+  EXPECT_EQ(num_compressed_images_seen, scale_factors.size());
 }
 
 TEST_P(ArcAppModelIconTest, IconInvalidation) {

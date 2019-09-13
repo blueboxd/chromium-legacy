@@ -47,7 +47,7 @@ import java.util.concurrent.TimeoutException;
  * IME (input method editor) and text input tests.
  */
 @RunWith(ContentJUnit4ClassRunner.class)
-@CommandLineFlags.Add({"expose-internals-for-testing", "allow-pre-commit-input"})
+@CommandLineFlags.Add({"expose-internals-for-testing"})
 public class ImeTest {
     @Rule
     public ImeActivityTestRule mRule = new ImeActivityTestRule();

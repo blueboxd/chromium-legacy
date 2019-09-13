@@ -139,7 +139,7 @@ void TtsHandler::HandlePreviewTtsVoice(const base::ListValue* args) {
   json->GetString("name", &name);
   json->GetString("extension", &extension_id);
 
-  content::TtsUtterance* utterance =
+  std::unique_ptr<content::TtsUtterance> utterance =
       content::TtsUtterance::Create((Profile::FromWebUI(web_ui())));
   utterance->SetText(text);
   utterance->SetVoiceName(name);
@@ -151,7 +151,7 @@ void TtsHandler::HandlePreviewTtsVoice(const base::ListValue* args) {
 
   base::Value result(true /* preview started */);
   FireWebUIListener("tts-preview-state-changed", result);
-  content::TtsController::GetInstance()->SpeakOrEnqueue(utterance);
+  content::TtsController::GetInstance()->SpeakOrEnqueue(std::move(utterance));
 }
 
 void TtsHandler::RegisterMessages() {

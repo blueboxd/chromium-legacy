@@ -25,7 +25,10 @@ extern const char kDontUseJobObjectFlag[];
 using RunTestSuiteCallback = OnceCallback<int(void)>;
 
 // Launches unit tests in given test suite. Returns exit code.
-int LaunchUnitTests(int argc, char** argv, RunTestSuiteCallback run_test_suite);
+int LaunchUnitTests(int argc,
+                    char** argv,
+                    RunTestSuiteCallback run_test_suite,
+                    size_t retry_limit = 1U);
 
 // Same as above, but always runs tests serially.
 int LaunchUnitTestsSerially(int argc,

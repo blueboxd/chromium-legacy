@@ -49,7 +49,7 @@
 namespace blink {
 
 // This is used for duration type time values that can't be negative.
-static const double kInvalidCachedTime = -1.;
+static constexpr SMILTime kInvalidCachedTime = SMILTime::Earliest();
 
 class ConditionEventListener final : public NativeEventListener {
  public:
@@ -796,9 +796,8 @@ SMILInterval SVGSMILElement::ResolveInterval(
     IntervalSelector interval_selector) const {
   bool first = interval_selector == kFirstInterval;
   // See the pseudocode in http://www.w3.org/TR/SMIL3/smil-timing.html#q90.
-  auto constexpr infinity = std::numeric_limits<double>::infinity();
-  SMILTime begin_after = first ? -infinity : interval_.end;
-  SMILTime last_interval_temp_end = infinity;
+  SMILTime begin_after = first ? SMILTime::Earliest() : interval_.end;
+  SMILTime last_interval_temp_end = SMILTime::Indefinite();
   while (true) {
     bool equals_minimum_ok = !first || interval_.end > interval_.begin;
     SMILTime temp_begin =

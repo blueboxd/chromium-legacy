@@ -75,7 +75,7 @@ CreateDownloadDBEntryFromItem(const DownloadItemImpl& item);
 
 // Helper function to convert DownloadDBEntry to DownloadEntry.
 // TODO(qinmin): remove this function after DownloadEntry is deprecated.
-COMPONENTS_DOWNLOAD_EXPORT base::Optional<DownloadEntry>
+COMPONENTS_DOWNLOAD_EXPORT std::unique_ptr<DownloadEntry>
 CreateDownloadEntryFromDownloadDBEntry(base::Optional<DownloadDBEntry> entry);
 
 COMPONENTS_DOWNLOAD_EXPORT uint64_t GetUniqueDownloadId();

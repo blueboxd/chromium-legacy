@@ -91,6 +91,10 @@ WebRequestProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
       &WebRequestProxyingURLLoaderFactory::InProgressRequest::OnRequestError,
       weak_factory_.GetWeakPtr(),
       network::URLLoaderCompletionStatus(net::ERR_ABORTED)));
+  proxied_loader_binding_.set_connection_error_handler(base::BindOnce(
+      &WebRequestProxyingURLLoaderFactory::InProgressRequest::OnRequestError,
+      weak_factory_.GetWeakPtr(),
+      network::URLLoaderCompletionStatus(net::ERR_ABORTED)));
 }
 
 WebRequestProxyingURLLoaderFactory::InProgressRequest::~InProgressRequest() {
@@ -628,7 +632,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::ContinueAuthRequest(
                           weak_factory_.GetWeakPtr(), base::Passed(&callback));
 
   auth_credentials_.emplace();
-  net::NetworkDelegate::AuthRequiredResponse response =
+  ExtensionWebRequestEventRouter::AuthRequiredResponse response =
       ExtensionWebRequestEventRouter::GetInstance()->OnAuthRequired(
           factory_->browser_context_, &info_.value(), auth_info, continuation,
           &auth_credentials_.value());
@@ -636,35 +640,42 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::ContinueAuthRequest(
   // At least one extension has a blocking handler for this request, so we'll
   // just wait for them to finish. |OnAuthRequestHandled()| will be invoked
   // eventually.
-  if (response == net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_IO_PENDING)
+  if (response == ExtensionWebRequestEventRouter::AuthRequiredResponse::
+                      AUTH_REQUIRED_RESPONSE_IO_PENDING) {
     return;
+  }
 
   // We're not touching this auth request. Let the default browser behavior
   // proceed.
-  DCHECK_EQ(response, net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION);
+  DCHECK_EQ(response, ExtensionWebRequestEventRouter::AuthRequiredResponse::
+                          AUTH_REQUIRED_RESPONSE_NO_ACTION);
   continuation.Run(response);
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::
-    OnAuthRequestHandled(WebRequestAPI::AuthRequestCallback callback,
-                         net::NetworkDelegate::AuthRequiredResponse response) {
+    OnAuthRequestHandled(
+        WebRequestAPI::AuthRequestCallback callback,
+        ExtensionWebRequestEventRouter::AuthRequiredResponse response) {
   if (proxied_client_binding_.is_bound())
     proxied_client_binding_.ResumeIncomingMethodCallProcessing();
 
   base::OnceClosure completion;
   switch (response) {
-    case net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION:
+    case ExtensionWebRequestEventRouter::AuthRequiredResponse::
+        AUTH_REQUIRED_RESPONSE_NO_ACTION:
       // We're not touching this auth request. Let the default browser behavior
       // proceed.
       completion = base::BindOnce(std::move(callback), base::nullopt,
                                   false /* should_cancel */);
       break;
-    case net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_SET_AUTH:
+    case ExtensionWebRequestEventRouter::AuthRequiredResponse::
+        AUTH_REQUIRED_RESPONSE_SET_AUTH:
       completion =
           base::BindOnce(std::move(callback), auth_credentials_.value(),
                          false /* should_cancel */);
       break;
-    case net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_CANCEL_AUTH:
+    case ExtensionWebRequestEventRouter::AuthRequiredResponse::
+        AUTH_REQUIRED_RESPONSE_CANCEL_AUTH:
       completion = base::BindOnce(std::move(callback), base::nullopt,
                                   true /* should_cancel */);
       break;

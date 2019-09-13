@@ -40,20 +40,14 @@ class ArcInstanceThrottleTest : public testing::Test {
     SetArcAvailableCommandLineForTesting(
         base::CommandLine::ForCurrentProcess());
 
-    ArcBootPhaseMonitorBridgeFactory::GetInstance()->SetTestingFactoryAndUse(
-        testing_profile_.get(),
-        base::BindRepeating([](content::BrowserContext* context)
-                                -> std::unique_ptr<KeyedService> {
-          return std::unique_ptr<KeyedService>();
-        }));
-
+    ArcBootPhaseMonitorBridge::GetForBrowserContextForTesting(
+        testing_profile_.get());
     arc_instance_throttle_ =
         ArcInstanceThrottle::GetForBrowserContextForTesting(
             testing_profile_.get());
     arc_instance_throttle_->set_delegate_for_testing(
         std::make_unique<TestDelegateImpl>(this));
   }
-  ~ArcInstanceThrottleTest() override { arc_instance_throttle_->Shutdown(); }
 
  protected:
   sync_preferences::TestingPrefServiceSyncable* GetPrefs() {
@@ -136,6 +130,8 @@ TEST_F(ArcInstanceThrottleTest, TestOnObserverStateChanged) {
   critical_observer()->SetActive(false);
   EXPECT_EQ(2U, enable_cpu_restriction_counter());
   EXPECT_EQ(1U, disable_cpu_restriction_counter());
+
+  arc_instance_throttle()->SetObserversForTesting({});
 }
 
 }  // namespace arc

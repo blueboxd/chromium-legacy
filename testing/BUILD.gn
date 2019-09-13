@@ -39,15 +39,3 @@ group("run_perf_test") {
     ":test_scripts_shared",
   ]
 }
-
-group("python3_smoketest") {
-  data = [
-    "//testing/python3_smoketest.py",
-    "//testing/scripts/common.py",
-    "//testing/scripts/run_isolated_script_test.py",
-  ]
-
-  data_deps = [
-    ":test_scripts_shared",
-  ]
-}

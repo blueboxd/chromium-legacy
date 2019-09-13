@@ -23,6 +23,9 @@ class TaskRunner;
 template <typename ResolveType, typename RejectType>
 class ManualPromiseResolver;
 
+template <typename ResolveType, typename RejectType>
+class Promise;
+
 // AbstractPromise Memory Management.
 //
 // Consider a chain of promises: P1, P2 & P3
@@ -265,13 +268,71 @@ enum class RejectPolicy {
   kCatchNotRequired,
 };
 
+class WrappedPromise;
+
 namespace internal {
 
 template <typename T, typename... Args>
 class PromiseCallbackHelper;
 
-class PromiseHolder;
+class AbstractPromise;
 class AbstractPromiseTest;
+class BasePromise;
+
+// A binary size optimization to reduce the overhead of passing a scoped_refptr
+// to Promise<> returned by PostTask. There are many thousands of PostTasks so
+// even a single extra instruction (such as the scoped_refptr move constructor
+// clearing the pointer) adds up. This is why we're not constructing a Promise<>
+// with a scoped_refptr.
+//
+// The constructor calls AddRef, it's up to the owner of this object to either
+// call Clear (which calls Release) or AbstractPromise in order to pass
+// ownership onto a WrappedPromise.
+class BASE_EXPORT PassedPromise {
+ public:
+  explicit inline PassedPromise(const scoped_refptr<AbstractPromise>& promise);
+
+  PassedPromise() : promise_(nullptr) {}
+
+  PassedPromise(const PassedPromise&) = delete;
+  PassedPromise& operator=(const PassedPromise&) = delete;
+
+#if DCHECK_IS_ON()
+  PassedPromise(PassedPromise&& other) noexcept : promise_(other.promise_) {
+    DCHECK(promise_);
+    other.promise_ = nullptr;
+  }
+
+  PassedPromise& operator=(PassedPromise&& other) noexcept {
+    DCHECK(!promise_);
+    promise_ = other.promise_;
+    DCHECK(promise_);
+    other.promise_ = nullptr;
+    return *this;
+  }
+
+  ~PassedPromise() {
+    DCHECK(!promise_) << "The PassedPromise must be Cleared or passed onto a "
+                         "Wrapped Promise";
+  }
+#else
+  PassedPromise(PassedPromise&&) noexcept = default;
+  PassedPromise& operator=(PassedPromise&&) noexcept = default;
+#endif
+
+  AbstractPromise* Release() {
+    AbstractPromise* promise = promise_;
+#if DCHECK_IS_ON()
+    promise_ = nullptr;
+#endif
+    return promise;
+  }
+
+  AbstractPromise* get() const { return promise_; }
+
+ private:
+  AbstractPromise* promise_;
+};
 
 // Internal promise representation, maintains a graph of dependencies and posts
 // promises as they become ready. In debug builds various sanity checks are
@@ -308,12 +369,11 @@ class BASE_EXPORT AbstractPromise
       RejectPolicy reject_policy,
       ConstructType tag,
       PromiseExecutor::Data&& executor_data) noexcept {
-    scoped_refptr<AbstractPromise> promise =
-        subtle::AdoptRefIfNeeded(new internal::AbstractPromise(
-                                     nullptr, from_here, nullptr, reject_policy,
-                                     tag, std::move(executor_data)),
-                                 AbstractPromise::kRefCountPreference);
-    return promise;
+    return subtle::AdoptRefIfNeeded(
+        new internal::AbstractPromise(nullptr, from_here, nullptr,
+                                      reject_policy, tag,
+                                      std::move(executor_data)),
+        AbstractPromise::kRefCountPreference);
   }
 
   AbstractPromise(const AbstractPromise&) = delete;
@@ -457,9 +517,14 @@ class BASE_EXPORT AbstractPromise
 
   void IgnoreUncaughtCatchForTesting();
 
- private:
-  friend class AbstractPromiseTest;
+  // Signals that this promise was cancelled. If executor hasn't run yet, this
+  // will prevent it from running and cancels any dependent promises unless they
+  // have PrerequisitePolicy::kAny, in which case they will only be canceled if
+  // all of their prerequisites are canceled. If OnCanceled() or OnResolved() or
+  // OnRejected() has already run, this does nothing.
+  void OnCanceled();
 
+ private:
   friend base::RefCountedThreadSafe<AbstractPromise>;
 
   friend class AbstractPromiseTest;
@@ -469,8 +534,6 @@ class BASE_EXPORT AbstractPromise
 
   template <typename T, typename... Args>
   friend class PromiseCallbackHelper;
-
-  friend class PromiseHolder;
 
   template <typename ConstructType>
   AbstractPromise(const scoped_refptr<TaskRunner>& task_runner,
@@ -519,13 +582,6 @@ class BASE_EXPORT AbstractPromise
   // yet, in which case the non-settled ancestor is returned. A node may also
   // have been canceled, in which case null is returned.
   AbstractPromise* FindCurriedAncestor();
-
-  // Signals that this promise was cancelled. If executor hasn't run yet, this
-  // will prevent it from running and cancels any dependent promises unless they
-  // have PrerequisitePolicy::kAny, in which case they will only be canceled if
-  // all of their prerequisites are canceled. If OnCanceled() or OnResolved() or
-  // OnRejected() has already run, this does nothing.
-  void OnCanceled();
 
   // Signals that |value_| now contains a resolve value. Dependent promises may
   // scheduled for execution.
@@ -714,7 +770,115 @@ class BASE_EXPORT AbstractPromise
   std::unique_ptr<AdjacencyList> prerequisites_;
 };
 
+PassedPromise::PassedPromise(const scoped_refptr<AbstractPromise>& promise)
+    : promise_(promise.get()) {
+  promise_->AddRef();
+}
+
+// Non-templatized base class of the Promise<> template. This is a binary size
+// optimization, letting us use an out of line destructor in the template
+// instead of the more complex scoped_refptr<> destructor.
+class BASE_EXPORT BasePromise {
+ public:
+  BasePromise();
+
+  BasePromise(const BasePromise& other);
+  BasePromise(BasePromise&& other) noexcept;
+
+  BasePromise& operator=(const BasePromise& other);
+  BasePromise& operator=(BasePromise&& other) noexcept;
+
+  // We want an out of line destructor to reduce binary size.
+  ~BasePromise();
+
+  // Returns true if the promise is not null.
+  operator bool() const { return abstract_promise_.get(); }
+
+ protected:
+  struct InlineConstructor {};
+
+  explicit BasePromise(
+      scoped_refptr<internal::AbstractPromise> abstract_promise);
+
+  // We want this to be inlined to reduce binary size for the Promise<>
+  // constructor. Its a template to bypass ChromiumStyle plugin which otherwise
+  // insists this is out of line.
+  template <typename T>
+  explicit BasePromise(internal::PassedPromise&& passed_promise,
+                       T InlineConstructor)
+      : abstract_promise_(passed_promise.Release(), subtle::kAdoptRefTag) {}
+
+  scoped_refptr<internal::AbstractPromise> abstract_promise_;
+};
+
 }  // namespace internal
+
+// Wrapper around scoped_refptr<base::internal::AbstractPromise> which is
+// intended for use by TaskRunner implementations.
+class BASE_EXPORT WrappedPromise {
+ public:
+  WrappedPromise();
+
+  explicit WrappedPromise(scoped_refptr<internal::AbstractPromise> promise);
+
+  WrappedPromise(const WrappedPromise& other);
+  WrappedPromise(WrappedPromise&& other) noexcept;
+
+  WrappedPromise& operator=(const WrappedPromise& other);
+  WrappedPromise& operator=(WrappedPromise&& other) noexcept;
+
+  explicit WrappedPromise(internal::PassedPromise&& passed_promise);
+
+  // Constructs a promise to run |task|.
+  WrappedPromise(const Location& from_here, OnceClosure task);
+
+  // If the WrappedPromise hasn't been executed, cleared or taken by
+  // TakeForTesting, it will be canceled to prevent memory leaks of dependent
+  // tasks that will never run.
+  ~WrappedPromise();
+
+  // Returns true if the promise is not null.
+  operator bool() const { return promise_.get(); }
+
+  bool IsCanceled() const {
+    DCHECK(promise_);
+    return promise_->IsCanceled();
+  }
+
+  void OnCanceled() {
+    DCHECK(promise_);
+    promise_->OnCanceled();
+  }
+
+  // Can only be called once, clears |promise_| after execution.
+  void Execute();
+
+  // Clears |promise_|.
+  void Clear();
+
+  const Location& from_here() const {
+    DCHECK(promise_);
+    return promise_->from_here();
+  }
+
+  scoped_refptr<internal::AbstractPromise>& GetForTesting() { return promise_; }
+
+  scoped_refptr<internal::AbstractPromise> TakeForTesting() {
+    return std::move(promise_);
+  }
+
+ private:
+  template <typename ResolveType, typename RejectType>
+  friend class Promise;
+
+  template <typename T, typename... Args>
+  friend class internal::PromiseCallbackHelper;
+
+  friend class Promises;
+
+  scoped_refptr<internal::AbstractPromise> promise_;
+};
+
 }  // namespace base
 
 #endif  // BASE_TASK_PROMISE_ABSTRACT_PROMISE_H_

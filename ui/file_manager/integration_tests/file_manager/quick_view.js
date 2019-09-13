@@ -98,13 +98,13 @@
 
     /**
      * <files-metadata-box> field rendering is async. The field name has been
-     * rendered when the 'metadata' attribute indicates that.
+     * rendered when its 'metadata' attribute indicates that.
      */
     switch (name) {
       case 'Size':
         filesMetadataBox += '[metadata~="size"]';
         break;
-      case 'Modified time':
+      case 'Date modified':
       case 'Type':
         filesMetadataBox += '[metadata~="mime"]';
         break;
@@ -801,8 +801,8 @@
     const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
     chrome.test.assertEq('image/jpeg', mimeType);
 
-    // Check: the correct modified time should be displayed.
-    const time = await getQuickViewMetadataBoxField(appId, 'Modified time');
+    // Check: the correct file modified time should be displayed.
+    const time = await getQuickViewMetadataBoxField(appId, 'Date modified');
     chrome.test.assertEq('Jan 18, 2038, 1:02 AM', time);
 
     // Check: the correct image EXIF metadata should be displayed.

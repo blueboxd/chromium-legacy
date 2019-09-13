@@ -566,7 +566,6 @@ int ServiceWorkerVersion::StartRequestWithCustomTimeout(
          event_type == ServiceWorkerMetrics::EventType::ACTIVATE ||
          event_type == ServiceWorkerMetrics::EventType::MESSAGE ||
          event_type == ServiceWorkerMetrics::EventType::EXTERNAL_REQUEST ||
-         event_type == ServiceWorkerMetrics::EventType::LONG_RUNNING_MESSAGE ||
          status() == ACTIVATED)
       << "Event of type " << static_cast<int>(event_type)
       << " can only be dispatched to an active worker: " << status();
@@ -575,9 +574,6 @@ int ServiceWorkerVersion::StartRequestWithCustomTimeout(
   // request will be aborted soon, so don't bother aborting the request directly
   // here, and just skip this bookkeeping.
   if (context_) {
-    if (event_type == ServiceWorkerMetrics::EventType::LONG_RUNNING_MESSAGE)
-      embedded_worker_->AbortLifetimeTracking();
-
     if (event_type != ServiceWorkerMetrics::EventType::INSTALL &&
         event_type != ServiceWorkerMetrics::EventType::ACTIVATE &&
         event_type != ServiceWorkerMetrics::EventType::MESSAGE) {

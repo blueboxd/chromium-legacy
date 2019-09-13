@@ -60,6 +60,18 @@
   <message name="IDS_FLAGS_UI_EXPERIMENT_ENABLED" translateable="false" desc="Screen reader text stating that an experiment is enabled.">
     Experiment enabled
   </message>
+  <message name="IDS_FLAGS_UI_SEARCH_RESULTS_SINGULAR" desc="Message announced to screenreader users when searching completes and results are showing.">
+    1 result for '<ph name="SEARCH_TEXT">
+      $1<ex>cookies</ex>
+    </ph>'
+  </message>
+  <message name="IDS_FLAGS_UI_SEARCH_RESULTS_PLURAL" desc="Message announced to screenreader users when searching completes and results are showing.">
+    <ph name="RESULT_COUNT">
+      $1<ex>15</ex>
+    </ph> results for '<ph name="SEARCH_TEXT">
+      $2<ex>cookies</ex>
+    </ph>'
+  </message>
   <!-- about:flags/deprecated
       New entries here should also be added for about:flags above -->
   <message name="IDS_DEPRECATED_FEATURES_PAGE_RESET" desc="Label for button that resets the features to their default value.">
@@ -117,5 +129,17 @@
   </message>
   <message name="IDS_DEPRECATED_UI_EXPERIMENT_ENABLED" desc="Screen reader text stating that an experiment is enabled.">
     Experiment enabled
+  </message>
+  <message name="IDS_ENTERPRISE_UI_SEARCH_RESULTS_SINGULAR" desc="Message announced to screenreader users when searching completes and results are showing.">
+    1 result for '<ph name="SEARCH_TEXT">
+      $1<ex>cookies</ex>
+    </ph>'
+  </message>
+  <message name="IDS_ENTERPRISE_UI_SEARCH_RESULTS_PLURAL" desc="Message announced to screenreader users when searching completes and results are showing.">
+    <ph name="RESULT_COUNT">
+      $1<ex>15</ex>
+    </ph> results for '<ph name="SEARCH_TEXT">
+      $2<ex>cookies</ex>
+    </ph>'
   </message>
 </grit-part>

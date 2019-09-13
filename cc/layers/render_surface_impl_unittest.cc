@@ -69,8 +69,7 @@ TEST(RenderSurfaceLayerImplTest, Occlusion) {
 
 static std::unique_ptr<viz::RenderPass> DoAppendQuadsWithScaledMask(
     DrawMode draw_mode,
-    float device_scale_factor,
-    Layer::LayerMaskType mask_type) {
+    float device_scale_factor) {
   gfx::Size layer_size(1000, 1000);
   gfx::Rect viewport_rect(1000, 1000);
   float scale_factor = 2;
@@ -89,7 +88,7 @@ static std::unique_ptr<viz::RenderPass> DoAppendQuadsWithScaledMask(
   CreateEffectNode(surface).render_surface_reason = RenderSurfaceReason::kTest;
 
   auto* mask_layer =
-      impl.AddMaskLayer<FakeMaskLayerImpl>(surface, raster_source, mask_type);
+      impl.AddMaskLayer<FakeMaskLayerImpl>(surface, raster_source);
   mask_layer->set_resource_size(
       gfx::ScaleToCeiledSize(layer_size, scale_factor));
   mask_layer->SetDrawsContent(true);
@@ -114,8 +113,8 @@ static std::unique_ptr<viz::RenderPass> DoAppendQuadsWithScaledMask(
 }
 
 TEST(RenderSurfaceLayerImplTest, AppendQuadsWithScaledMask) {
-  std::unique_ptr<viz::RenderPass> render_pass = DoAppendQuadsWithScaledMask(
-      DRAW_MODE_HARDWARE, 1.f, Layer::LayerMaskType::SINGLE_TEXTURE_MASK);
+  std::unique_ptr<viz::RenderPass> render_pass =
+      DoAppendQuadsWithScaledMask(DRAW_MODE_HARDWARE, 1.f);
   DCHECK(render_pass->quad_list.front());
   const viz::RenderPassDrawQuad* quad =
       viz::RenderPassDrawQuad::MaterialCast(render_pass->quad_list.front());
@@ -125,8 +124,7 @@ TEST(RenderSurfaceLayerImplTest, AppendQuadsWithScaledMask) {
 
 TEST(RenderSurfaceLayerImplTest, ResourcelessAppendQuadsSkipMask) {
   std::unique_ptr<viz::RenderPass> render_pass =
-      DoAppendQuadsWithScaledMask(DRAW_MODE_RESOURCELESS_SOFTWARE, 1.f,
-                                  Layer::LayerMaskType::SINGLE_TEXTURE_MASK);
+      DoAppendQuadsWithScaledMask(DRAW_MODE_RESOURCELESS_SOFTWARE, 1.f);
   DCHECK(render_pass->quad_list.front());
   const viz::RenderPassDrawQuad* quad =
       viz::RenderPassDrawQuad::MaterialCast(render_pass->quad_list.front());
@@ -135,8 +133,8 @@ TEST(RenderSurfaceLayerImplTest, ResourcelessAppendQuadsSkipMask) {
 
 TEST(RenderSurfaceLayerImplTest,
      AppendQuadsWithSolidColorMaskAndDeviceScaleFactor) {
-  std::unique_ptr<viz::RenderPass> render_pass = DoAppendQuadsWithScaledMask(
-      DRAW_MODE_HARDWARE, 2.f, Layer::LayerMaskType::SINGLE_TEXTURE_MASK);
+  std::unique_ptr<viz::RenderPass> render_pass =
+      DoAppendQuadsWithScaledMask(DRAW_MODE_HARDWARE, 2.f);
   DCHECK(render_pass->quad_list.front());
   const viz::RenderPassDrawQuad* quad =
       viz::RenderPassDrawQuad::MaterialCast(render_pass->quad_list.front());

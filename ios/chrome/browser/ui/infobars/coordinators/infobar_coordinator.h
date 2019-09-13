@@ -28,6 +28,10 @@ namespace infobars {
 class InfoBarDelegate;
 }
 
+namespace web {
+class WebState;
+}  // namespace web
+
 enum class InfobarBannerPresentationState;
 
 // Must be subclassed. Defines common behavior for all Infobars.
@@ -84,6 +88,9 @@ enum class InfobarBannerPresentationState;
 // TODO(crbug.com/927064): Once we create the coordinators in the UI Hierarchy
 // browserState will be set on init.
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+
+// The WebState that the InfobarCoordinator is associated with. Can be nil.
+@property(nonatomic, assign) web::WebState* webState;
 
 // The ChromeBrowserState owned by the Coordinator.
 // TODO(crbug.com/927064): Once we create the coordinators in the UI Hierarchy

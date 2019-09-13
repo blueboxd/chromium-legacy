@@ -21,10 +21,10 @@ class BASE_EXPORT NoOpPromiseExecutor {
   static constexpr PromiseExecutor::PrerequisitePolicy kPrerequisitePolicy =
       PromiseExecutor::PrerequisitePolicy::kNever;
 
-  static scoped_refptr<AbstractPromise> Create(Location from_here,
-                                               bool can_resolve,
-                                               bool can_reject,
-                                               RejectPolicy reject_policy);
+  static PassedPromise Create(Location from_here,
+                              bool can_resolve,
+                              bool can_reject,
+                              RejectPolicy reject_policy);
 
   PromiseExecutor::PrerequisitePolicy GetPrerequisitePolicy() const;
   bool IsCancelled() const;

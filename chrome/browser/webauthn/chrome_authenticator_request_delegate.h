@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
 #include "content/public/browser/authenticator_request_client_delegate.h"
+#include "device/fido/cable/cable_discovery_data.h"
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
 
@@ -80,6 +81,8 @@ class ChromeAuthenticatorRequestDelegate
   bool SetCableTransportInfo(
       bool cable_extension_provided,
       base::Optional<device::QRGeneratorKey> qr_generator_key) override;
+  void AppendCablePairings(
+      std::vector<device::CableDiscoveryData>* pairings) override;
   void SelectAccount(
       std::vector<device::AuthenticatorGetAssertionResponse> responses,
       base::OnceCallback<void(device::AuthenticatorGetAssertionResponse)>
@@ -118,6 +121,10 @@ class ChromeAuthenticatorRequestDelegate
   void OnModelDestroyed() override;
   void OnCancelRequest() override;
 
+ protected:
+  void CustomizeDiscoveryFactory(
+      device::FidoDiscoveryFactory* discovery_factory) override;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeAuthenticatorRequestDelegateTest,
                            TestTransportPrefType);
@@ -132,6 +139,8 @@ class ChromeAuthenticatorRequestDelegate
   void AddFidoBleDeviceToPairedList(std::string ble_authenticator_id);
   base::Optional<device::FidoTransportProtocol> GetLastTransportUsed() const;
   const base::ListValue* GetPreviouslyPairedFidoBleDeviceIds() const;
+  void StoreNewCablePairingInPrefs(
+      std::unique_ptr<device::CableDiscoveryData> discovery_data);
 
   content::RenderFrameHost* const render_frame_host_;
   const std::string relying_party_id_;

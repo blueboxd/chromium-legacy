@@ -55,9 +55,12 @@ class XRCompositorCommon : public base::Thread,
   // callback will be called (since we haven't yet stopped presenting to the
   // headset).
   void RequestSession(base::OnceCallback<void()> on_presentation_ended,
+                      base::RepeatingCallback<void(mojom::XRVisibilityState)>
+                          on_visibility_state_changed,
                       mojom::XRRuntimeSessionOptionsPtr options,
                       RequestSessionCallback callback);
   void ExitPresent();
+  void VisibilityStateChanged(mojom::XRVisibilityState visibility_state);
 
   void GetFrameData(mojom::XRFrameDataRequestOptionsPtr options,
                     XRFrameDataProvider::GetFrameDataCallback callback) final;
@@ -171,6 +174,8 @@ class XRCompositorCommon : public base::Thread,
   RequestNotificationOnWebXrSubmittedCallback on_webxr_submitted_;
   bool webxr_has_pose_ = false;
   base::OnceCallback<void()> on_presentation_ended_;
+  base::RepeatingCallback<void(mojom::XRVisibilityState)>
+      on_visibility_state_changed_;
   mojom::IsolatedXRGamepadProvider::RequestUpdateCallback gamepad_callback_;
   mojo::Binding<mojom::XRPresentationProvider> presentation_binding_;
   mojo::Binding<mojom::XRFrameDataProvider> frame_data_binding_;

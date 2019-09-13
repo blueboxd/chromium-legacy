@@ -525,7 +525,7 @@ const char* OmniboxResultView::GetClassName() const {
 }
 
 void OmniboxResultView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  animation_->SetSlideDuration(width() / 4);
+  animation_->SetSlideDuration(base::TimeDelta::FromMilliseconds(width() / 4));
   Layout();
 }
 

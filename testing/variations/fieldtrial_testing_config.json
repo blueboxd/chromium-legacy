@@ -666,9 +666,7 @@
                         "timeout_seconds": "180"
                     },
                     "enable_features": [
-                        "AudioServiceOutOfProcessKillAtHang",
-                        "AudioServiceSandbox",
-                        "WebRtcApmInAudioService"
+                        "AudioServiceOutOfProcessKillAtHang"
                     ]
                 }
             ]
@@ -2684,6 +2682,23 @@
             ]
         }
     ],
+    "GpuUseDisplayThreadPriority": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "BlinkCompositorUseDisplayThreadPriority",
+                        "GpuProcessHighPriorityWin",
+                        "GpuUseDisplayThreadPriority"
+                    ]
+                }
+            ]
+        }
+    ],
     "GpuWatchdogV2": [
         {
             "platforms": [
@@ -3587,8 +3602,22 @@
     "NetworkServiceSandbox": [
         {
             "platforms": [
-                "mac",
                 "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "NetworkServiceSandbox"
+                    ]
+                }
+            ]
+        }
+    ],
+    "NetworkServiceSandboxMac": [
+        {
+            "platforms": [
+                "mac"
             ],
             "experiments": [
                 {
@@ -4120,6 +4149,24 @@
                     "name": "Enabled",
                     "enable_features": [
                         "PasswordLeakDetection"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PasswordManagerStickyBubble": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PasswordManagerStickyBubble"
                     ]
                 }
             ]

@@ -2589,11 +2589,9 @@ GLsizei TextureManager::ComputeMipMapCount(GLenum target,
     case GL_TEXTURE_RECTANGLE_ARB:
       return 1;
     case GL_TEXTURE_3D:
-      return 1 +
-             base::bits::Log2Floor(std::max(std::max(width, height), depth));
+      return 1 + base::bits::Log2Floor(std::max({width, height, depth}));
     default:
-      return 1 +
-             base::bits::Log2Floor(std::max(width, height));
+      return 1 + base::bits::Log2Floor(std::max(width, height));
   }
 }
 

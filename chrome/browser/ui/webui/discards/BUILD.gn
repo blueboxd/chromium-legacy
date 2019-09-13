@@ -8,7 +8,6 @@ if (is_win || is_mac || is_desktop_linux || is_chromeos) {
   mojom("mojo_bindings") {
     sources = [
       "discards.mojom",
-      "webui_graph_dump.mojom",
     ]
 
     public_deps = [

@@ -506,9 +506,9 @@ const NetworkUI = (function() {
    * Requests the global policy dictionary and updates the page.
    */
   const requestGlobalPolicy = function() {
-    chrome.networkingPrivate.getGlobalPolicy(function(policy) {
+    networkConfig.getGlobalPolicy().then(result => {
       document.querySelector('#global-policy').textContent =
-          JSON.stringify(policy, null, '\t');
+          JSON.stringify(result.result, null, '\t');
     });
   };
 
@@ -546,18 +546,13 @@ const NetworkUI = (function() {
     }
 
     // Otherwise, connect.
-    chrome.networkingPrivate.startConnect(networkState.guid, () => {
-      const lastError = chrome.runtime.lastError;
-      if (!lastError)
-        return;
-      const message = lastError.message;
-      if (message == 'connecting' || message == 'connect-canceled' ||
-          message == 'connected' || message == 'Error.InvalidNetworkGuid') {
+    networkConfig.startConnect(networkState.guid).then(response => {
+      if (response.result == mojom.StartConnectResult.kSuccess) {
         return;
       }
       console.error(
-          'networkingPrivate.startConnect error: ' + message +
-          ' For: ' + networkState.guid);
+          'startConnect error for: ' + networkState.guid + ' Result: ' +
+          response.result.toString() + ' Message: ' + response.message);
       chrome.send('showNetworkConfig', [networkState.guid]);
     });
   };

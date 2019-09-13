@@ -307,7 +307,8 @@ bool X11ClipboardOzone::OnSetSelectionOwnerNotify(XEvent* xev) {
   }
 
   // Increase the sequence number always.
-  update_sequence_cb_.Run(BufferForSelectionAtom(event->selection));
+  if (update_sequence_cb_)
+    update_sequence_cb_.Run(BufferForSelectionAtom(event->selection));
 
   return true;
 }

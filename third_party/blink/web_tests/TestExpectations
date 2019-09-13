@@ -11,6 +11,12 @@ Bug(intentional) external/wpt/infrastructure/reftest/reftest_ref_timeout.html [ 
 Bug(intentional) external/wpt/infrastructure/reftest/reftest_timeout.html [ Timeout ]
 Bug(intentional) external/wpt/infrastructure/expected-fail/timeout.html [ Timeout ]
 
+crbug.com/997202 external/wpt/infrastructure/reftest/reftest_fuzzy_1.html [ Failure ]
+crbug.com/997202 external/wpt/infrastructure/reftest/reftest_fuzzy_chain_ini.html [ Failure ]
+crbug.com/997202 external/wpt/infrastructure/reftest/reftest_fuzzy_ini_full.html [ Failure ]
+crbug.com/997202 external/wpt/infrastructure/reftest/reftest_fuzzy_ini_ref_only.html [ Failure ]
+crbug.com/997202 external/wpt/infrastructure/reftest/reftest_fuzzy_ini_short.html [ Failure ]
+
 crbug.com/807686 crbug.com/24182 jquery/manipulation.html [ Timeout Pass ]
 
 # The following tests need to remove the assumption that user activation isfast/text/firstline/capitalize-transform.html
@@ -189,6 +195,7 @@ crbug.com/774873 [ Linux ] virtual/exotic-color-space/images/color-profile-borde
 crbug.com/774873 [ Win ] virtual/exotic-color-space/images/color-profile-border-fade.html [ Pass Failure ]
 
 crbug.com/974652 [ Linux Debug ] virtual/gpu/fast/canvas/OffscreenCanvas-copyImage.html [ Pass Failure ]
+crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/OffscreenCanvas-copyImage.html [ Pass Failure ]
 
 crbug.com/974666 [ Mac10.13 ] http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Pass Failure ]
 crbug.com/974720 [ Mac10.13 ] fast/text/firstline/capitalize-transform-2.html [ Pass Crash ]
@@ -2346,6 +2353,11 @@ crbug.com/688613 external/wpt/mediacapture-streams/MediaStreamTrack-MediaElement
 crbug.com/688613 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-audio-is-silence.https.html [ Skip ]
 crbug.com/688613 virtual/audio-service/external/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-audio-is-silence.https.html [ Skip ]
 
+# Disabled until v8 roll, which brings new async stepping mechanism.
+crbug.com/1000475 inspector-protocol/debugger/message-channel-async-stack.js [ Skip ]
+crbug.com/1000475 inspector-protocol/worker/worker-constructor-async-stacks.js [ Skip ]
+crbug.com/1000475 inspector-protocol/worker/worker-on-message-async-stacks.js [ Skip ]
+crbug.com/1000475 inspector-protocol/worker/worker-post-message-async-stacks.js [ Skip ]
 
 crbug.com/766135 fast/dom/Window/redirect-with-timer.html [ Timeout Pass ]
 
@@ -3071,8 +3083,6 @@ crbug.com/332189 external/wpt/css/css-transitions/no-transition-from-ua-to-block
 
 crbug.com/552085 external/wpt/css/css-cascade/important-prop.html [ Failure ]
 
-crbug.com/626703 external/wpt/css/css-animations/Element-getAnimations.tentative.html [ Pass Failure ]
-
 # TODO(chrishtr): rebaseline these
 crbug.com/921242 [ Mac ] paint/invalidation/compositing/fixed-pos-inside-composited-intermediate-layer.html [ Failure ]
 crbug.com/921242 [ Mac ] paint/invalidation/scroll/fixed-under-composited-absolute-scrolled.html [ Failure ]
@@ -3231,9 +3241,6 @@ crbug.com/626703 [ Linux ] external/wpt/css/css-scroll-anchoring/infinite-scroll
 crbug.com/626703 [ Mac ] external/wpt/css/css-scroll-anchoring/infinite-scroll-event.tentative.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/css/css-scroll-anchoring/infinite-scroll-event.tentative.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/web-animations/timing-model/animation-effects/phases-and-states.html [ Crash ]
-crbug.com/626703 [ Linux ] external/wpt/infrastructure/reftest/reftest_fuzzy_chain_ini.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/infrastructure/reftest/reftest_fuzzy_chain_ini.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/infrastructure/reftest/reftest_fuzzy_chain_ini.html [ Failure ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/webxr/xrStationaryReferenceSpace_floorlevel_updates.https.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/webxr/xrStationaryReferenceSpace_floorlevel_updates.https.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/webxr/xrStationaryReferenceSpace_floorlevel_updates.https.html [ Failure Timeout ]
@@ -3385,9 +3392,7 @@ crbug.com/626703 external/wpt/css/css-values/ch-unit-013.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-values/ch-unit-018.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-values/ch-unit-014.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-values/ch-unit-017.html [ Failure ]
-crbug.com/626703 external/wpt/infrastructure/reftest/reftest_fuzzy_ini_ref_only.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/html/rendering/widgets/button-layout/propagate-text-decoration.html [ Failure ]
-crbug.com/626703 external/wpt/infrastructure/reftest/reftest_fuzzy_ini_short.html [ Failure ]
 crbug.com/626703 external/wpt/xhr/abort-after-stop.any.worker.html [ Timeout ]
 crbug.com/626703 virtual/omt-worker-fetch/external/wpt/xhr/abort-after-stop.any.worker.html [ Timeout ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/bidi/vertical_rl.html [ Failure ]
@@ -3495,8 +3500,6 @@ crbug.com/626703 external/wpt/svg/text/reftests/text-text-anchor-102.svg [ Failu
 crbug.com/626703 external/wpt/svg/text/reftests/text-text-anchor-002.svg [ Failure ]
 crbug.com/626703 external/wpt/svg/text/reftests/text-text-anchor-203.svg [ Failure ]
 crbug.com/626703 external/wpt/svg/text/reftests/text-text-anchor-003.svg [ Failure ]
-crbug.com/626703 external/wpt/infrastructure/reftest/reftest_fuzzy_ini_full.html [ Failure ]
-crbug.com/626703 external/wpt/infrastructure/reftest/reftest_fuzzy_1.html [ Failure ]
 crbug.com/626703 external/wpt/screen-orientation/onchange-event.html [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/forms/the-fieldset-element/accessibility/fieldset-div-display-contents-manual.html [ Skip ]
 crbug.com/626703 external/wpt/html/semantics/forms/the-fieldset-element/accessibility/role-manual.html [ Skip ]

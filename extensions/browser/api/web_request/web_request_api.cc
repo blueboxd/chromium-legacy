@@ -885,7 +885,7 @@ struct ExtensionWebRequestEventRouter::BlockedRequest {
   // The callback to invoke for auth. If |auth_callback.is_null()| is false,
   // |callback| must be NULL.
   // Only valid for OnAuthRequired.
-  net::NetworkDelegate::AuthCallback auth_callback;
+  AuthCallback auth_callback;
 
   // If non-empty, this contains the auth credentials that may be filled in.
   // Only valid for OnAuthRequired.
@@ -1305,26 +1305,26 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
   return net::ERR_IO_PENDING;
 }
 
-net::NetworkDelegate::AuthRequiredResponse
+ExtensionWebRequestEventRouter::AuthRequiredResponse
 ExtensionWebRequestEventRouter::OnAuthRequired(
     content::BrowserContext* browser_context,
     const WebRequestInfo* request,
     const net::AuthChallengeInfo& auth_info,
-    net::NetworkDelegate::AuthCallback callback,
+    AuthCallback callback,
     net::AuthCredentials* credentials) {
   // No browser_context means that this is for authentication challenges in the
   // system context. Skip in that case. Also skip sensitive requests.
   if (!browser_context ||
       WebRequestPermissions::HideRequest(PermissionHelper::Get(browser_context),
                                          *request)) {
-    return net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;
+    return AuthRequiredResponse::AUTH_REQUIRED_RESPONSE_NO_ACTION;
   }
 
   int extra_info_spec = 0;
   RawListeners listeners = GetMatchingListeners(
       browser_context, keys::kOnAuthRequiredEvent, request, &extra_info_spec);
   if (listeners.empty())
-    return net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;
+    return AuthRequiredResponse::AUTH_REQUIRED_RESPONSE_NO_ACTION;
 
   std::unique_ptr<WebRequestEventDetails> event_details(
       CreateEventDetails(*request, extra_info_spec));
@@ -1339,9 +1339,9 @@ ExtensionWebRequestEventRouter::OnAuthRequired(
     blocked_request.request = request;
     blocked_request.auth_callback = std::move(callback);
     blocked_request.auth_credentials = credentials;
-    return net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_IO_PENDING;
+    return AuthRequiredResponse::AUTH_REQUIRED_RESPONSE_IO_PENDING;
   }
-  return net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;
+  return AuthRequiredResponse::AUTH_REQUIRED_RESPONSE_NO_ACTION;
 }
 
 void ExtensionWebRequestEventRouter::OnBeforeRedirect(
@@ -2346,16 +2346,15 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(
     if (call_callback)
       std::move(callback).Run(request_headers_removed, request_headers_set, rv);
   } else if (!blocked_request.auth_callback.is_null()) {
-    net::NetworkDelegate::AuthRequiredResponse response;
+    ExtensionWebRequestEventRouter::AuthRequiredResponse response;
     if (canceled)
-      response = net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_CANCEL_AUTH;
+      response = AuthRequiredResponse::AUTH_REQUIRED_RESPONSE_CANCEL_AUTH;
     else if (credentials_set)
-      response = net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_SET_AUTH;
+      response = AuthRequiredResponse::AUTH_REQUIRED_RESPONSE_SET_AUTH;
     else
-      response = net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;
+      response = AuthRequiredResponse::AUTH_REQUIRED_RESPONSE_NO_ACTION;
 
-    net::NetworkDelegate::AuthCallback callback =
-        std::move(blocked_request.auth_callback);
+    AuthCallback callback = std::move(blocked_request.auth_callback);
     blocked_requests_.erase(request->id);
     if (call_callback)
       std::move(callback).Run(response);

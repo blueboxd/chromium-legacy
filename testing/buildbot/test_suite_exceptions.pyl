@@ -37,6 +37,8 @@
       # Temporarily disabled due to bad NVIDIA driver upgrade crbug.com/950542
       'Linux FYI Debug (NVIDIA)',
       'Linux FYI GPU TSAN Release',
+      # https://crbug.com/1002313
+      'Win10 FYI x64 Exp Release (Intel HD 630)',
     ],
   },
   'angle_perftests': {

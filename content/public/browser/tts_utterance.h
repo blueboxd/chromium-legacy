@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_TTS_UTTERANCE_H_
 #define CONTENT_PUBLIC_BROWSER_TTS_UTTERANCE_H_
 
+#include <memory>
 #include <set>
 
 #include "content/common/content_export.h"
@@ -61,7 +62,7 @@ class CONTENT_EXPORT TtsUtterance {
   // Construct an utterance given a profile and a completion task to call
   // when the utterance is done speaking. Before speaking this utterance,
   // its other parameters like text, rate, pitch, etc. should all be set.
-  static TtsUtterance* Create(BrowserContext* browser_context);
+  static std::unique_ptr<TtsUtterance> Create(BrowserContext* browser_context);
   virtual ~TtsUtterance() = default;
 
   // Sends an event to the delegate. If the event type is TTS_EVENT_END

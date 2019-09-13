@@ -36,7 +36,8 @@ MockDownloadItemImpl::MockDownloadItemImpl(DownloadItemImplDelegate* delegate)
                        false,
                        base::Time(),
                        true,
-                       DownloadItem::ReceivedSlices()) {}
+                       DownloadItem::ReceivedSlices(),
+                       nullptr /* download_entry */) {}
 
 MockDownloadItemImpl::~MockDownloadItemImpl() = default;
 

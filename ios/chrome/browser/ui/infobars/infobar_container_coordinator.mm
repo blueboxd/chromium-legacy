@@ -21,6 +21,7 @@
 #import "ios/chrome/browser/ui/infobars/infobar_positioner.h"
 #include "ios/chrome/browser/ui/infobars/legacy_infobar_container_view_controller.h"
 #include "ios/chrome/browser/upgrade/upgrade_center.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -223,6 +224,7 @@
   [infobarCoordinator start];
   infobarCoordinator.badgeDelegate = self.mediator;
   infobarCoordinator.browserState = self.browserState;
+  infobarCoordinator.webState = self.webStateList->GetActiveWebState();
   infobarCoordinator.baseViewController = self.baseViewController;
   infobarCoordinator.dispatcher = self.dispatcher;
   infobarCoordinator.infobarContainer = self;
@@ -262,8 +264,9 @@
 #pragma mark InfobarCommands
 
 - (void)displayModalInfobar:(InfobarType)infobarType {
-  NSArray* allCoordinators = [self.infobarCoordinators allValues];
-  InfobarCoordinator* infobarCoordinator = [allCoordinators lastObject];
+  NSNumber* infobarKey = [NSNumber numberWithInt:static_cast<int>(infobarType)];
+  InfobarCoordinator* infobarCoordinator = self.infobarCoordinators[infobarKey];
+  DCHECK(infobarCoordinator);
   [infobarCoordinator presentInfobarModal];
 }
 

@@ -262,6 +262,13 @@ Polymer({
    */
   handleSyncStatus_: function(syncStatus) {
     this.syncStatus = syncStatus;
+
+    // When ChromeOSAccountManager is disabled, fall back to using the sync
+    // username ("alice@gmail.com") as the profile label.
+    if (!this.isAccountManagerEnabled_ && syncStatus && syncStatus.signedIn &&
+        syncStatus.signedInUsername) {
+      this.profileLabel_ = syncStatus.signedInUsername;
+    }
   },
 
   /** @private */

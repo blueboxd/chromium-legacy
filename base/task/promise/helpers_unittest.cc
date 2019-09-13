@@ -187,8 +187,9 @@ TEST(EmplaceHelper, EmplacePromiseResult) {
 TEST(EmplaceHelper, EmplacePromise) {
   scoped_refptr<AbstractPromise> promise =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
-  scoped_refptr<AbstractPromise> curried = DoNothingPromiseBuilder(FROM_HERE);
 
+  PassedPromise curried = NoOpPromiseExecutor::Create(
+      FROM_HERE, false, false, RejectPolicy::kCatchNotRequired);
   EmplaceHelper<Resolved<int>, Rejected<NoReject>>::Emplace(
       promise.get(), Promise<int>(std::move(curried)));
 

@@ -151,8 +151,8 @@ void CubicBezier::InitRange(double p1y, double p2y) {
   if (0 < t2 && t2 < 1)
     sol2 = SampleCurveY(t2);
 
-  range_min_ = std::min(std::min(range_min_, sol1), sol2);
-  range_max_ = std::max(std::max(range_max_, sol1), sol2);
+  range_min_ = std::min({range_min_, sol1, sol2});
+  range_max_ = std::max({range_max_, sol1, sol2});
 }
 
 void CubicBezier::InitSpline() {

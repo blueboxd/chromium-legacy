@@ -57,6 +57,7 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
   static const char kKeyNetErrorCode[];
   static const char kKeyClickedThrough[];
   static const char kKeyTriggeredRules[];
+  static const char kKeyThreatType[];
 
   static const char kKeyPasswordReuseEvent[];
   static const char kKeyPasswordChangedEvent[];
@@ -96,7 +97,8 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
   // Notifies listeners that deep scanning detected a dangerous download.
   void OnDangerousDeepScanningResult(const GURL& url,
                                      const std::string& file_name,
-                                     const std::string& download_digest_sha256);
+                                     const std::string& download_digest_sha256,
+                                     const std::string& threat_type);
 
   // Notifies listeners that scanning for sensitive data detected a violation.
   void OnSensitiveDataEvent(

@@ -61,6 +61,19 @@ class EmptyStmtVisitor : public RecursiveASTVisitor<EmptyStmtVisitor> {
   bool empty_;
 };
 
+const CXXRecordDecl* GetFirstTemplateArgAsCXXRecordDecl(
+    const CXXRecordDecl* gc_base) {
+  if (const auto* gc_base_template_id =
+          dyn_cast<ClassTemplateSpecializationDecl>(gc_base)) {
+    const TemplateArgumentList& gc_args =
+        gc_base_template_id->getTemplateArgs();
+    if (!gc_args.size() || gc_args[0].getKind() != TemplateArgument::Type)
+      return nullptr;
+    return gc_args[0].getAsType()->getAsCXXRecordDecl();
+  }
+  return nullptr;
+}
+
 }  // namespace
 
 BlinkGCPluginConsumer::BlinkGCPluginConsumer(
@@ -204,6 +217,25 @@ void BlinkGCPluginConsumer::CheckClass(RecordInfo* info) {
   }
 
   if (info->IsGCDerived()) {
+    // Check that CRTP pattern for GCed classes is correctly used.
+    if (auto* base_spec = info->GetDirectGCBase()) {
+      // Skip the check if base_spec name is dependent. The check will occur
+      // later for actual specializations.
+      if (!base_spec->getType()->isDependentType()) {
+        const CXXRecordDecl* base_decl =
+            base_spec->getType()->getAsCXXRecordDecl();
+        const CXXRecordDecl* first_arg =
+            GetFirstTemplateArgAsCXXRecordDecl(base_decl);
+        // The last check is for redeclaratation cases, for example, when
+        // explicit instantiation declaration is followed by the corresponding
+        // explicit instantiation definition.
+        if (!first_arg ||
+            first_arg->getFirstDecl() != info->record()->getFirstDecl()) {
+          reporter_.ClassMustCRTPItself(info, base_decl, base_spec);
+        }
+      }
+    }
+
     // It is illegal for a class to be both stack allocated and garbage
     // collected.
     if (info->IsStackAllocated()) {

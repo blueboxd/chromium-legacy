@@ -21,6 +21,7 @@ struct CloneableMessage {
   uint64 stack_trace_id;
   int64 stack_trace_debugger_id_first;
   int64 stack_trace_debugger_id_second;
+  bool stack_trace_should_pause;
   // If not null, this message is locked to the given agent cluster ID.
   // See https://html.spec.whatwg.org/multipage/webappapis.html#integration-with-the-javascript-agent-cluster-formalism
   mojo_base.mojom.UnguessableToken? locked_agent_cluster_id;

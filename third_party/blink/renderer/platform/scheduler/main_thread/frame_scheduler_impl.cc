@@ -1147,7 +1147,7 @@ FrameSchedulerImpl::ThrottleableTaskQueueTraits() {
       .SetCanBeFrozen(true)
       .SetCanBeDeferred(true)
       .SetCanBePaused(true)
-      .SetShouldUseVirtualTime(true);
+      .SetCanRunWhenVirtualTimePaused(true);
 }
 
 // static
@@ -1158,7 +1158,7 @@ FrameSchedulerImpl::DeferrableTaskQueueTraits() {
       .SetCanBeFrozen(base::FeatureList::IsEnabled(
           blink::features::kStopNonTimersInBackground))
       .SetCanBePaused(true)
-      .SetShouldUseVirtualTime(true);
+      .SetCanRunWhenVirtualTimePaused(true);
 }
 
 // static
@@ -1168,7 +1168,7 @@ FrameSchedulerImpl::PausableTaskQueueTraits() {
       .SetCanBeFrozen(base::FeatureList::IsEnabled(
           blink::features::kStopNonTimersInBackground))
       .SetCanBePaused(true)
-      .SetShouldUseVirtualTime(true);
+      .SetCanRunWhenVirtualTimePaused(true);
 }
 
 // static
@@ -1182,19 +1182,19 @@ FrameSchedulerImpl::FreezableTaskQueueTraits() {
 // static
 MainThreadTaskQueue::QueueTraits
 FrameSchedulerImpl::UnpausableTaskQueueTraits() {
-  return QueueTraits().SetShouldUseVirtualTime(true);
+  return QueueTraits().SetCanRunWhenVirtualTimePaused(true);
 }
 
 MainThreadTaskQueue::QueueTraits
 FrameSchedulerImpl::ForegroundOnlyTaskQueueTraits() {
   return ThrottleableTaskQueueTraits()
       .SetCanRunInBackground(false)
-      .SetShouldUseVirtualTime(true);
+      .SetCanRunWhenVirtualTimePaused(true);
 }
 
 MainThreadTaskQueue::QueueTraits
 FrameSchedulerImpl::DoesNotUseVirtualTimeTaskQueueTraits() {
-  return QueueTraits().SetShouldUseVirtualTime(false);
+  return QueueTraits().SetCanRunWhenVirtualTimePaused(false);
 }
 
 void FrameSchedulerImpl::SetPausedForCooperativeScheduling(Paused paused) {

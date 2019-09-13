@@ -7,10 +7,6 @@ import("//remoting/build/config/remoting_build.gni")
 import("//build/config/zip.gni")
 
 action("remoting_me2me_host_archive") {
-  # TODO(GYP) TODO(crbug.com/622415) This needs work and testing.
-
-  # TODO(GYP) At the very least, we need to add in the localized strings.
-
   _installer_mac_files = [
     "do_signing.sh",
     "do_signing.props",

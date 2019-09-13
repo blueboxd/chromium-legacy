@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_INPUT_WIDGET_INPUT_HANDLER_MANAGER_H_
 #define CONTENT_RENDERER_INPUT_WIDGET_INPUT_HANDLER_MANAGER_H_
 
+#include <atomic>
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
@@ -222,7 +223,10 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   // Metrics also report the lifecycle state when the first non-move event is
   // seen.
   // This is a bitfield, using the bit values from RenderingDeferralBits.
-  unsigned renderer_deferral_state_ = 0;
+  // The compositor thread accesses this value when processing input (to decide
+  // whether to suppress input) and the renderer thread accesses it when the
+  // status of deferrals changes, so it needs to be thread safe.
+  std::atomic<uint16_t> renderer_deferral_state_{0};
 
   // Allow input suppression to be disabled for tests and non-browser uses
   // of chromium that do not wait for the first commit, or that may never

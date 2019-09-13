@@ -96,8 +96,7 @@ void TestLayerTreeHostBase::SetupPendingTree(
 void TestLayerTreeHostBase::SetupPendingTree(
     scoped_refptr<RasterSource> raster_source,
     const gfx::Size& tile_size,
-    const Region& invalidation,
-    Layer::LayerMaskType mask_type) {
+    const Region& invalidation) {
   host_impl()->CreatePendingTree();
   host_impl()->pending_tree()->PushPageScaleFromMainThread(1.f, 0.00001f,
                                                            100000.f);
@@ -118,17 +117,7 @@ void TestLayerTreeHostBase::SetupPendingTree(
     pending_root = pending_tree->root_layer_for_testing();
 
     auto* page_scale_layer = AddLayer<LayerImpl>(pending_tree);
-
-    switch (mask_type) {
-      case Layer::LayerMaskType::NOT_MASK:
-        pending_layer_ = AddLayer<FakePictureLayerImpl>(pending_tree);
-        break;
-      case Layer::LayerMaskType::SINGLE_TEXTURE_MASK:
-        pending_layer_ = AddLayer<FakePictureLayerImplAsMask>(pending_tree);
-        break;
-      default:
-        NOTREACHED();
-    }
+    pending_layer_ = AddLayer<FakePictureLayerImpl>(pending_tree);
     pending_layer_->SetDrawsContent(true);
     pending_layer_->SetScrollable(gfx::Size(1, 1));
 

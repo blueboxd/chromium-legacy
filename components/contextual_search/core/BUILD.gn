@@ -4,8 +4,6 @@
 
 static_library("browser") {
   sources = [
-    "browser/contextual_search_preference.cc",
-    "browser/contextual_search_preference.h",
     "browser/ctr_aggregator.cc",
     "browser/ctr_aggregator.h",
     "browser/public.cc",
@@ -31,14 +29,4 @@ source_set("unit_tests") {
     "//base",
     "//testing/gtest",
   ]
-}
-
-if (is_android) {
-  import("//build/config/android/rules.gni")
-
-  java_cpp_enum("enums_java") {
-    sources = [
-      "browser/contextual_search_preference.h",
-    ]
-  }
 }

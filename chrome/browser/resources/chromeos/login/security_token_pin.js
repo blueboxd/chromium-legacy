@@ -114,6 +114,7 @@ Polymer({
     this.$.pinKeyboard.value = '';
     this.processingCompletion_ = false;
     this.userEdited_ = false;
+    this.$.pinKeyboard.focusInput();
   },
 
   /**

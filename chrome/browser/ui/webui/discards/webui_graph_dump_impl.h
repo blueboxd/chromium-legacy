@@ -14,7 +14,7 @@
 #include "chrome/browser/performance_manager/public/graph/graph.h"
 #include "chrome/browser/performance_manager/public/graph/page_node.h"
 #include "chrome/browser/performance_manager/public/graph/process_node.h"
-#include "chrome/browser/ui/webui/discards/webui_graph_dump.mojom.h"
+#include "chrome/browser/ui/webui/discards/discards.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace performance_manager {

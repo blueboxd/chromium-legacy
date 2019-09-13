@@ -427,6 +427,10 @@ MemoryTracker* GLES2CommandBufferStub::GetMemoryTracker() const {
   return context_group_->memory_tracker();
 }
 
+void GLES2CommandBufferStub::OnGpuSwitched() {
+  Send(new GpuCommandBufferMsg_GpuSwitched(route_id_));
+}
+
 bool GLES2CommandBufferStub::HandleMessage(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GLES2CommandBufferStub, message)

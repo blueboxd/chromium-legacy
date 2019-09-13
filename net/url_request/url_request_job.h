@@ -401,12 +401,6 @@ class NET_EXPORT URLRequestJob {
   // read since the last invocation.
   virtual void UpdatePacketReadTimes();
 
-
-  // Notify the network delegate that more bytes have been received or sent over
-  // the network, if bytes have been received or sent since the previous
-  // notification.
-  void MaybeNotifyNetworkBytes();
-
   // Indicates that the job is done producing data, either it has completed
   // all the data or an error has been encountered. Set exclusively by
   // NotifyDone so that it is kept in sync with the request.
@@ -442,16 +436,6 @@ class NET_EXPORT URLRequestJob {
 
   // The network delegate to use with this request, if any.
   NetworkDelegate* network_delegate_;
-
-  // The value from GetTotalReceivedBytes() the last time
-  // MaybeNotifyNetworkBytes() was called. Used to calculate how bytes have been
-  // newly received since the last notification.
-  int64_t last_notified_total_received_bytes_;
-
-  // The value from GetTotalSentBytes() the last time MaybeNotifyNetworkBytes()
-  // was called. Used to calculate how bytes have been newly sent since the last
-  // notification.
-  int64_t last_notified_total_sent_bytes_;
 
   // Non-null if ReadRawData() returned ERR_IO_PENDING, and the read has not
   // completed.

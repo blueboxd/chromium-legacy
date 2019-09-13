@@ -24,6 +24,7 @@ if (closure_compile) {
         "local_ntp:closure_compile",
         "local_state:closure_compile",
         "management:closure_compile",
+        "media_router:closure_compile",
         "ntp4:closure_compile",
         "omnibox:closure_compile",
         "pdf:closure_compile",

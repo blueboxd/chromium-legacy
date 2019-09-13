@@ -174,7 +174,8 @@ void ShowPWAInstallBubble(content::WebContents* web_contents,
 
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   views::View* anchor_view =
-      browser_view->toolbar_button_provider()->GetAnchorView();
+      browser_view->toolbar_button_provider()->GetAnchorView(
+          PageActionIconType::kPwaInstall);
   PageActionIconView* icon =
       browser_view->toolbar_button_provider()
           ->GetOmniboxPageActionIconContainerView()

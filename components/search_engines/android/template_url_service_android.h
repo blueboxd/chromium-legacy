@@ -65,6 +65,18 @@ class TemplateUrlServiceAndroid : public TemplateURLServiceObserver {
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& jkeyword);
 
+  // Adds a search engine, set by Play API.
+  // Returns true if search engine was successfully added, false if search
+  // engine from Play API with such keyword already existed (e.g. from previous
+  // attempt to set search engine).
+  jboolean SetPlayAPISearchEngine(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& jname,
+      const base::android::JavaParamRef<jstring>& jkeyword,
+      const base::android::JavaParamRef<jstring>& jsearch_url,
+      const base::android::JavaParamRef<jstring>& jfavicon_url);
+
   // Adds a custom search engine, sets |jkeyword| as its short_name and keyword,
   // and sets its date_created as |age_in_days| days before the current time.
   base::android::ScopedJavaLocalRef<jstring> AddSearchEngineForTesting(

@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder.h"
 #include "third_party/blink/renderer/core/dom/processing_instruction.h"
+#include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/shadow_root_init.h"
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
@@ -339,6 +340,30 @@ TEST_F(NodeTest, MutationOutsideFlatTreeStyleDirty) {
       .getElementById("nonslotted")
       ->setAttribute("style", "color:green");
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
+}
+
+TEST_F(NodeTest, ContainsChild) {
+  SetBodyContent("<div id=a><div id=b></div></div>");
+  Element* a = GetDocument().getElementById("a");
+  Element* b = GetDocument().getElementById("b");
+  EXPECT_TRUE(a->contains(b));
+}
+
+TEST_F(NodeTest, ContainsNoSibling) {
+  SetBodyContent("<div id=a></div><div id=b></div>");
+  Element* a = GetDocument().getElementById("a");
+  Element* b = GetDocument().getElementById("b");
+  EXPECT_FALSE(a->contains(b));
+}
+
+TEST_F(NodeTest, ContainsPseudo) {
+  SetBodyContent(
+      "<style>#a::before{content:'aaa';}</style>"
+      "<div id=a></div>");
+  Element* a = GetDocument().getElementById("a");
+  PseudoElement* pseudo = a->GetPseudoElement(kPseudoIdBefore);
+  ASSERT_TRUE(pseudo);
+  EXPECT_TRUE(a->contains(pseudo));
 }
 
 }  // namespace blink

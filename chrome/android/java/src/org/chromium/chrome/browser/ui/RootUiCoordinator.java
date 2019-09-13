@@ -11,6 +11,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.MenuOrKeyboardActionController;
 import org.chromium.chrome.browser.appmenu.AppMenuBlocker;
 import org.chromium.chrome.browser.appmenu.AppMenuCoordinator;
@@ -22,6 +23,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
+import org.chromium.chrome.browser.status_indicator.StatusIndicatorCoordinator;
 import org.chromium.chrome.browser.vr.VrModeObserver;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
@@ -52,6 +54,8 @@ public class RootUiCoordinator
     private Callback<OverviewModeBehavior> mOverviewModeBehaviorSupplierCallback;
     private OverviewModeBehavior mOverviewModeBehavior;
     private OverviewModeBehavior.OverviewModeObserver mOverviewModeObserver;
+
+    private StatusIndicatorCoordinator mStatusIndicatorCoordinator;
 
     private VrModeObserver mVrModeObserver;
 
@@ -196,6 +200,12 @@ public class RootUiCoordinator
             }
 
             mOverlayPanelManager.addObserver(mOverlayPanelManagerObserver);
+
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.OFFLINE_INDICATOR_V2)) {
+                mStatusIndicatorCoordinator = new StatusIndicatorCoordinator();
+                layoutManager.setStatusIndicatorSceneOverlay(
+                        mStatusIndicatorCoordinator.getSceneLayer());
+            }
         };
         mActivity.getLayoutManagerSupplier().addObserver(mLayoutManagerSupplierCallback);
     }

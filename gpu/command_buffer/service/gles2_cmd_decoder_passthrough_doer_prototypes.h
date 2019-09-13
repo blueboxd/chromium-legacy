@@ -119,6 +119,7 @@ error::Error DoCompressedTexSubImage3D(GLenum target,
                                        GLsizei image_size,
                                        GLsizei data_size,
                                        const void* data);
+error::Error DoContextVisibilityHintCHROMIUM(GLboolean visibility);
 error::Error DoCopyBufferSubData(GLenum readtarget,
                                  GLenum writetarget,
                                  GLintptr readoffset,

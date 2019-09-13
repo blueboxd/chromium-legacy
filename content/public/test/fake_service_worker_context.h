@@ -62,10 +62,6 @@ class FakeServiceWorkerContext : public ServiceWorkerContext {
       const GURL& scope,
       blink::TransferableMessage message,
       FakeServiceWorkerContext::ResultCallback result_callback) override;
-  void StartServiceWorkerAndDispatchLongRunningMessage(
-      const GURL& scope,
-      blink::TransferableMessage message,
-      FakeServiceWorkerContext::ResultCallback result_callback) override;
   void StartServiceWorkerForNavigationHint(
       const GURL& document_url,
       StartServiceWorkerForNavigationHintCallback callback) override;

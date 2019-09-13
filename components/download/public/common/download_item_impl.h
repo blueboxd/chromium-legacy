@@ -19,6 +19,7 @@
 #include "base/optional.h"
 #include "base/threading/thread_checker_impl.h"
 #include "base/time/time.h"
+#include "components/download/database/in_progress/download_entry.h"
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_destination_observer.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
@@ -191,7 +192,8 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
       bool opened,
       base::Time last_access_time,
       bool transient,
-      const std::vector<DownloadItem::ReceivedSlice>& received_slices);
+      const std::vector<DownloadItem::ReceivedSlice>& received_slices,
+      std::unique_ptr<DownloadEntry> download_entry);
 
   // Constructing for a regular download.
   // |net_log| is constructed externally for our use.

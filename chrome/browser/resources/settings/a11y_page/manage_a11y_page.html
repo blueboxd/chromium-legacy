@@ -218,12 +218,14 @@
         on-click="onMouseTap_" sub-label="$i18n{mouseSettingsDescription}"
         embedded></cr-link-row>
 
-    <h2>$i18n{audioHeading}</h2>
-    <settings-toggle-button class="first"
+    <h2>$i18n{audioAndCaptionsHeading}</h2>
+    <cr-link-row class="first" label="$i18n{captionsTitle}"
+        on-click="onCaptionsClick_"></cr-link-row>
+    <settings-toggle-button
         pref="{{prefs.settings.a11y.mono_audio}}"
         label="$i18n{monoAudioLabel}">
     </settings-toggle-button>
-    <settings-toggle-button id="startupSoundEnabled" class="first"
+    <settings-toggle-button id="startupSoundEnabled"
         pref=" "
         on-change="toggleStartupSoundEnabled_"
         label="$i18n{startupSoundLabel}">

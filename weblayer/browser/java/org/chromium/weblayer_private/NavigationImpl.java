@@ -5,11 +5,10 @@
 package org.chromium.weblayer_private;
 
 import android.os.RemoteException;
-import android.util.AndroidRuntimeException;
 
-import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.weblayer_private.aidl.APICallException;
 import org.chromium.weblayer_private.aidl.IClientNavigation;
 import org.chromium.weblayer_private.aidl.INavigation;
 import org.chromium.weblayer_private.aidl.INavigationControllerClient;
@@ -18,7 +17,6 @@ import java.util.List;
 
 @JNINamespace("weblayer")
 public final class NavigationImpl extends INavigation.Stub {
-    private static final String TAG = "WebLayer";
     private final IClientNavigation mClientNavigation;
     // WARNING: NavigationImpl may outlive the native side, in which case this member is set to 0.
     private long mNativeNavigationImpl;
@@ -28,8 +26,7 @@ public final class NavigationImpl extends INavigation.Stub {
         try {
             mClientNavigation = client.createClientNavigation(this);
         } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call createClientNavigation.", e);
-            throw new AndroidRuntimeException(e);
+            throw new APICallException(e);
         }
         nativeSetJavaNavigation(mNativeNavigationImpl);
     }

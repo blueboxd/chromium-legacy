@@ -22,6 +22,9 @@ class GPU_EXPORT DecoderClient {
   // Prints a message (error/warning) to the console.
   virtual void OnConsoleMessage(int32_t id, const std::string& message) = 0;
 
+  // Notifies the renderer process that the active GPU changed.
+  virtual void OnGpuSwitched() {}
+
   // Cache a newly linked shader.
   virtual void CacheShader(const std::string& key,
                            const std::string& shader) = 0;

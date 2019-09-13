@@ -158,10 +158,6 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       const GURL& scope,
       blink::TransferableMessage message,
       ResultCallback result_callback) override;
-  void StartServiceWorkerAndDispatchLongRunningMessage(
-      const GURL& scope,
-      blink::TransferableMessage message,
-      ResultCallback result_callback) override;
   void StartServiceWorkerForNavigationHint(
       const GURL& document_url,
       StartServiceWorkerForNavigationHintCallback callback) override;
@@ -412,7 +408,6 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       const GURL& source_origin,
       ResultCallback result_callback,
       scoped_refptr<base::TaskRunner> callback_runner,
-      bool is_long_running_message,
       blink::ServiceWorkerStatusCode service_worker_status,
       scoped_refptr<ServiceWorkerRegistration> registration);
 
@@ -422,16 +417,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       scoped_refptr<ServiceWorkerRegistration> registration,
       ServiceWorkerContext::ResultCallback result_callback,
       scoped_refptr<base::TaskRunner> callback_runner,
-      bool is_long_running_message,
       blink::ServiceWorkerStatusCode service_worker_status);
-
-  void SendActiveWorkerMessage(
-      blink::TransferableMessage message,
-      const GURL& source_origin,
-      ServiceWorkerContext::ResultCallback result_callback,
-      blink::ServiceWorkerStatusCode status,
-      scoped_refptr<ServiceWorkerRegistration> registration);
-
 
   ServiceWorkerRunningInfo ExtractServiceWorkerRunningInfoFromVersionInfo(
       const ServiceWorkerVersionInfo& version_info);
@@ -474,11 +460,6 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       base::OnceClosure callback,
       scoped_refptr<base::TaskRunner> callback_runner);
   void StartServiceWorkerAndDispatchMessageOnCoreThread(
-      const GURL& scope,
-      blink::TransferableMessage message,
-      ResultCallback result_callback,
-      scoped_refptr<base::TaskRunner> callback_runner);
-  void StartServiceWorkerAndDispatchLongRunningMessageOnCoreThread(
       const GURL& scope,
       blink::TransferableMessage message,
       ResultCallback result_callback,

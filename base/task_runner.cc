@@ -54,13 +54,14 @@ bool TaskRunner::PostTaskAndReply(const Location& from_here,
       from_here, std::move(task), std::move(reply));
 }
 
-bool TaskRunner::PostPromiseInternal(
-    const scoped_refptr<internal::AbstractPromise>& promise,
-    base::TimeDelta delay) {
-  return PostDelayedTask(promise->from_here(),
-                         BindOnce(&internal::AbstractPromise::Execute,
-                                  internal::PromiseHolder(promise)),
-                         delay);
+bool TaskRunner::PostPromiseInternal(WrappedPromise promise,
+                                     base::TimeDelta delay) {
+  Location from_here = promise.from_here();
+  return PostDelayedTask(
+      from_here,
+      BindOnce([](WrappedPromise promise) { promise.Execute(); },
+               std::move(promise)),
+      delay);
 }
 
 TaskRunner::TaskRunner() = default;

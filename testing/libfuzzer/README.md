@@ -1,10 +1,12 @@
-# Fuzzing in Chromium
+# Fuzz testing in Chromium
 
 [go/chrome-fuzzing](https://goto.google.com/chrome-fuzzing)
 
-[Fuzzing] is a testing technique that feeds randomized inputs to a target code
-in an attempt to crash it. It's one of the most effective methods we have for
-finding security and stability issues ([go/fuzzing-success]).
+[Fuzzing] is a testing technique that feeds auto-generated inputs to a piece
+of target code in an attempt to crash the code. It's one of the most effective
+methods we have for finding security and stability issues (see
+[go/fuzzing-success](http://go/fuzzing-success)). You can learn more about the
+benefits of fuzzing at [go/why-fuzz](http://go/why-fuzz).
 
 This documentation covers the in-process guided fuzzing approach employed by
 different fuzzing engines, such as [libFuzzer] or [AFL]. To learn more about

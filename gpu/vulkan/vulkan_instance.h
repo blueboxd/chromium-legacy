@@ -36,6 +36,10 @@ class VULKAN_EXPORT VulkanInstance {
     return enabled_extensions_;
   }
 
+  const std::vector<VkLayerProperties>& layer_properties() const {
+    return layer_properties_;
+  }
+
   VkInstance vk_instance() { return vk_instance_; }
 
  private:
@@ -44,6 +48,7 @@ class VULKAN_EXPORT VulkanInstance {
   uint32_t api_version_;
 
   VkInstance vk_instance_ = VK_NULL_HANDLE;
+  std::vector<VkLayerProperties> layer_properties_;
   gfx::ExtensionSet enabled_extensions_;
   bool debug_report_enabled_ = false;
 #if DCHECK_IS_ON()

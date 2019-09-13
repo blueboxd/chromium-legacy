@@ -34,6 +34,14 @@ const char
     kAutofillSaveCreditCardUsesImprovedMessagingParamValueConfirmAndSaveCard[] =
         "Confirm & Save Card";
 
+// Features
+
+// Controls whether or not Autofill client will populate form with CPAN and
+// dCVV, rather than FPAN.
+const base::Feature kAutofillAlwaysReturnCloudTokenizedCard{
+    "AutofillAlwaysReturnCloudTokenizedCard",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kAutofillCreditCardAblationExperiment{
     "AutofillCreditCardAblationExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
 

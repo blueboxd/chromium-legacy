@@ -121,7 +121,7 @@ class LocationIconView : public IconLabelBubbleView {
   // Returns what the minimum size would be if the preferred size were |size|.
   gfx::Size GetMinimumSizeForPreferredSize(gfx::Size size) const;
 
-  int GetSlideDurationTime() const override;
+  base::TimeDelta GetSlideDurationTime() const override;
 
   Delegate* delegate_;
 

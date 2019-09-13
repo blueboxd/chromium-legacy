@@ -75,17 +75,38 @@ gpu::VulkanInstance* VulkanImplementationScenic::GetVulkanInstance() {
 
 std::unique_ptr<gpu::VulkanSurface>
 VulkanImplementationScenic::CreateViewSurface(gfx::AcceleratedWidget window) {
-  fuchsia::images::ImagePipePtr image_pipe;
+  // TODO(crbug.com/982922): Remove these checks after swapchain update and
+  // ImagePipe2 rollout completes.
+  uint32_t image_pipe_swapchain_implementation_version = 0;
+  constexpr base::StringPiece image_pipe_swapchain(
+      "VK_LAYER_FUCHSIA_imagepipe_swapchain");
+  for (const VkLayerProperties& layer_property :
+       vulkan_instance_.layer_properties()) {
+    if (image_pipe_swapchain != layer_property.layerName)
+      continue;
+    image_pipe_swapchain_implementation_version =
+        layer_property.implementationVersion;
+    break;
+  }
+  DCHECK_GT(image_pipe_swapchain_implementation_version, 0u);
   ScenicSurface* scenic_surface = scenic_surface_factory_->GetSurface(window);
-  scenic_surface->SetTextureToNewImagePipe(image_pipe.NewRequest());
+  zx_handle_t image_pipe_handle = 0;
+  if (image_pipe_swapchain_implementation_version > 1u) {
+    fuchsia::images::ImagePipe2Ptr image_pipe;
+    scenic_surface->SetTextureToNewImagePipe(image_pipe.NewRequest());
+    image_pipe_handle = image_pipe.Unbind().TakeChannel().release();
+  } else {
+    fuchsia::images::ImagePipePtr image_pipe;
+    scenic_surface->SetTextureToNewImagePipe1(image_pipe.NewRequest());
+    image_pipe_handle = image_pipe.Unbind().TakeChannel().release();
+  }
 
   VkSurfaceKHR surface;
   VkImagePipeSurfaceCreateInfoFUCHSIA surface_create_info = {};
   surface_create_info.sType =
       VK_STRUCTURE_TYPE_IMAGEPIPE_SURFACE_CREATE_INFO_FUCHSIA;
   surface_create_info.flags = 0;
-  surface_create_info.imagePipeHandle =
-      image_pipe.Unbind().TakeChannel().release();
+  surface_create_info.imagePipeHandle = image_pipe_handle;
 
   VkResult result = vkCreateImagePipeSurfaceFUCHSIA(
       vulkan_instance_.vk_instance(), &surface_create_info, nullptr, &surface);

@@ -24,15 +24,7 @@
 namespace media {
 namespace test {
 
-VideoTestEnvironment::VideoTestEnvironment() = default;
-VideoTestEnvironment::~VideoTestEnvironment() = default;
-
-void VideoTestEnvironment::SetUp() {
-  // If using '--gtest_repeat' Setup/TearDown will be called multiple times on
-  // the same environment, however the setup here should only be performed once.
-  if (initialized_)
-    return;
-
+VideoTestEnvironment::VideoTestEnvironment() {
   // Using shared memory requires mojo to be initialized (crbug.com/849207).
   mojo::core::Init();
 
@@ -73,9 +65,9 @@ void VideoTestEnvironment::SetUp() {
   gpu_helper_.reset(new ui::OzoneGpuTestHelper());
   gpu_helper_->Initialize(base::ThreadTaskRunnerHandle::Get());
 #endif
-
-  initialized_ = true;
 }
+
+VideoTestEnvironment::~VideoTestEnvironment() = default;
 
 void VideoTestEnvironment::TearDown() {
   // Some implementations (like VideoDecoder) might be destroyed on a different

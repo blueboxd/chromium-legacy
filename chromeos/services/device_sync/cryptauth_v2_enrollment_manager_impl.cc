@@ -37,8 +37,11 @@ namespace {
 // recorded by the metrics.
 constexpr base::TimeDelta kWaitingForGcmRegistrationTimeout =
     kMaxAsyncExecutionTime;
+
+// Note: Based on initial findings, about 6% of ClientAppMetadata fetches were
+// timing out after 30s.
 constexpr base::TimeDelta kWaitingForClientAppMetadataTimeout =
-    kMaxAsyncExecutionTime;
+    base::TimeDelta::FromSeconds(60);
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -133,9 +136,11 @@ void RecordGcmRegistrationMetrics(const base::TimeDelta& execution_time,
 
 void RecordClientAppMetadataFetchMetrics(const base::TimeDelta& execution_time,
                                          CryptAuthAsyncTaskResult result) {
-  LogAsyncExecutionTimeMetric(
-      "CryptAuth.EnrollmentV2.ExecutionTime.ClientAppMetadataFetch",
-      execution_time);
+  base::UmaHistogramCustomTimes(
+      "CryptAuth.EnrollmentV2.ExecutionTime.ClientAppMetadataFetch2",
+      execution_time, base::TimeDelta::FromSeconds(1) /* min */,
+      kWaitingForClientAppMetadataTimeout /* max */, 100 /* buckets */);
+
   LogCryptAuthAsyncTaskSuccessMetric(
       "CryptAuth.EnrollmentV2.AsyncTaskResult.ClientAppMetadataFetch", result);
 }

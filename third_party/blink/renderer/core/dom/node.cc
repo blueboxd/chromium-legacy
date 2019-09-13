@@ -1437,7 +1437,7 @@ void Node::ClearFlatTreeNodeData() {
 
 bool Node::IsDescendantOf(const Node* other) const {
   // Return true if other is an ancestor of this, otherwise false
-  if (!other || !other->hasChildren() || isConnected() != other->isConnected())
+  if (!other || isConnected() != other->isConnected())
     return false;
   if (other->GetTreeScope() != GetTreeScope())
     return false;

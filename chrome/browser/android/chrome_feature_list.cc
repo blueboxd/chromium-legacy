@@ -128,7 +128,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kContextualSearchSimplifiedServer,
     &kContextualSearchTapDisableOverride,
     &kContextualSearchTranslationModel,
-    &kContextualSearchUnityIntegration,
     &kDirectActions,
     &kDownloadLocationShowImageInGallery,
     &kDownloadFileProvider,
@@ -154,6 +153,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kNotificationSuspender,
     &kNoCreditCardAbort,
     &kNTPLaunchAfterInactivity,
+    &kOfflineIndicatorV2,
     &kOmniboxSpareRenderer,
     &kOverlayNewLayout,
     &kPayWithGoogleV1,
@@ -385,9 +385,6 @@ const base::Feature kContextualSearchTapDisableOverride{
 const base::Feature kContextualSearchTranslationModel{
     "ContextualSearchTranslationModel", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kContextualSearchUnityIntegration{
-    "ContextualSearchUnityIntegration", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kDirectActions{"DirectActions",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -478,6 +475,9 @@ const base::Feature kNoCreditCardAbort{"NoCreditCardAbort",
 
 const base::Feature kNTPLaunchAfterInactivity{
     "NTPLaunchAfterInactivity", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kOfflineIndicatorV2{"OfflineIndicatorV2",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kOmniboxSpareRenderer{"OmniboxSpareRenderer",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

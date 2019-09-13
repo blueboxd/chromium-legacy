@@ -89,6 +89,9 @@ bool BlockLengthUnresolvable(
     const Length& length,
     LengthResolvePhase phase,
     const LayoutUnit* opt_percentage_resolution_block_size_for_min_max) {
+  if (length.IsAuto() || length.IsMinContent() || length.IsMaxContent() ||
+      length.IsFitContent() || length.IsMaxSizeNone())
+    return true;
   if (length.IsPercentOrCalc()) {
     if (phase == LengthResolvePhase::kIntrinsic)
       return true;
@@ -607,7 +610,10 @@ LogicalSize ComputeReplacedSize(
                           aspect_ratio.inline_size / aspect_ratio.block_size) +
                          border_padding.InlineSum();
     } else {
-      intrinsic_inline = space.AvailableSize().inline_size;
+      NGBoxStrut margins = ComputeMarginsForSelf(space, node.Style());
+      intrinsic_inline =
+          (space.AvailableSize().inline_size - margins.InlineSum())
+              .ClampNegativeToZero();
     }
   }
   if (!intrinsic_block) {

@@ -215,30 +215,27 @@ constexpr size_t Base64EncodedSize(size_t input_length) {
 // valid.
 void QRDataForCurrentTime(uint8_t out_qr_data[QRCode::kInputBytes],
                           base::span<const uint8_t, 32> qr_generator_key) {
-  uint8_t qr_secret[device::kCableQRSecretSize];
-  uint8_t authenticator_eid[device::kCableEphemeralIdSize];
-  uint8_t session_pre_key[device::kCableSessionPreKeySize];
   const int64_t current_tick = device::CableDiscoveryData::CurrentTimeTick();
-  device::CableDiscoveryData::DeriveQRKeyMaterial(
-      qr_secret, authenticator_eid, session_pre_key, qr_generator_key,
-      current_tick);
+  auto qr_secret = device::CableDiscoveryData::DeriveQRSecret(qr_generator_key,
+                                                              current_tick);
 
-  std::string base64_eid;
+  std::string base64_qr_secret;
   base::Base64UrlEncode(
-      base::StringPiece(reinterpret_cast<const char*>(qr_secret),
-                        sizeof(qr_secret)),
-      base::Base64UrlEncodePolicy::OMIT_PADDING, &base64_eid);
-  static constexpr size_t kEncodedEIDLength =
+      base::StringPiece(reinterpret_cast<const char*>(qr_secret.data()),
+                        qr_secret.size()),
+      base::Base64UrlEncodePolicy::OMIT_PADDING, &base64_qr_secret);
+  static constexpr size_t kEncodedSecretLength =
       Base64EncodedSize(sizeof(qr_secret));
-  DCHECK_EQ(kEncodedEIDLength, base64_eid.size());
+  DCHECK_EQ(kEncodedSecretLength, base64_qr_secret.size());
 
   static constexpr char kPrefix[] = "fido://c1/";
   static constexpr size_t kPrefixLength = sizeof(kPrefix) - 1;
 
-  static_assert(QRCode::kInputBytes == kPrefixLength + kEncodedEIDLength,
+  static_assert(QRCode::kInputBytes == kPrefixLength + kEncodedSecretLength,
                 "unexpected QR input length");
   memcpy(out_qr_data, kPrefix, kPrefixLength);
-  memcpy(&out_qr_data[kPrefixLength], base64_eid.data(), kEncodedEIDLength);
+  memcpy(&out_qr_data[kPrefixLength], base64_qr_secret.data(),
+         kEncodedSecretLength);
 }
 
 }  // anonymous namespace

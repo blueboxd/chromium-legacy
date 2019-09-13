@@ -1502,11 +1502,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextualSearchTranslationModelDescription,
      kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContextualSearchTranslationModel)},
-    {"contextual-search-unity-integration",
-     flag_descriptions::kContextualSearchUnityIntegrationName,
-     flag_descriptions::kContextualSearchUnityIntegrationDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kContextualSearchUnityIntegration)},
     {"direct-actions", flag_descriptions::kDirectActionsName,
      flag_descriptions::kDirectActionsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kDirectActions)},
@@ -2265,6 +2260,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOfflineIndicatorAlwaysHttpProbeDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(
          offline_pages::kOfflineIndicatorAlwaysHttpProbeFeature)},
+    {"offline-indicator-v2", flag_descriptions::kOfflineIndicatorV2Name,
+     flag_descriptions::kOfflineIndicatorV2Description, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kOfflineIndicatorV2)},
     {"on-the-fly-mhtml-hash-computation",
      flag_descriptions::kOnTheFlyMhtmlHashComputationName,
      flag_descriptions::kOnTheFlyMhtmlHashComputationDescription, kOsAndroid,
@@ -2774,11 +2772,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxSuggestionTransparencyOptionsDescription,
      kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxSuggestionTransparencyOptions)},
-    {"omnibox-ui-cues-for-search-history-matches",
-     flag_descriptions::kOmniboxUICuesForSearchHistoryMatchesName,
-     flag_descriptions::kOmniboxUICuesForSearchHistoryMatchesDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(omnibox::kOmniboxUICuesForSearchHistoryMatches)},
     {"omnibox-alternate-match-description-separator",
      flag_descriptions::kOmniboxAlternateMatchDescriptionSeparatorName,
      flag_descriptions::kOmniboxAlternateMatchDescriptionSeparatorDescription,
@@ -3052,6 +3045,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"ntp-realbox", flag_descriptions::kNtpRealboxName,
      flag_descriptions::kNtpRealboxDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kNtpRealbox)},
+
+    {"webui-a11y-enhancements", flag_descriptions::kWebUIA11yEnhancementsName,
+     flag_descriptions::kWebUIA11yEnhancementsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kWebUIA11yEnhancements)},
 #endif  // !defined(OS_ANDROID)
 
 #if defined(DCHECK_IS_CONFIGURABLE)
@@ -4527,6 +4524,13 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      FEATURE_VALUE_TYPE(features::kAccessibilityInternalsPageImprovements)},
 #endif
+
+    {"autofill-always-return-cloud-tokenized-card",
+     flag_descriptions::kAutofillAlwaysReturnCloudTokenizedCardName,
+     flag_descriptions::kAutofillAlwaysReturnCloudTokenizedCardDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillAlwaysReturnCloudTokenizedCard)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

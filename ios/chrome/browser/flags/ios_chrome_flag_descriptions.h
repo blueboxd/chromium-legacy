@@ -333,11 +333,6 @@ extern const char kWebClearBrowsingDataDescription[];
 extern const char kWebPageTextAccessibilityName[];
 extern const char kWebPageTextAccessibilityDescription[];
 
-// Title and description for the flag to enable WKHTTPSystemCookieStore usage
-// for main context URL requests.
-extern const char kWKHTTPSystemCookieStoreName[];
-extern const char kWKHTTPSystemCookieStoreDescription[];
-
 // Please add names and descriptions above in alphabetical order.
 
 }  // namespace flag_descriptions

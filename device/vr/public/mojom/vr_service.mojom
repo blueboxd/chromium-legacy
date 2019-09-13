@@ -590,12 +590,21 @@ interface XRPresentationClient {
   OnSubmitFrameGpuFence(gfx.mojom.GpuFenceHandle gpu_fence_handle);
 };
 
+enum XRVisibilityState {
+  // Indicates the WebXR content is visible to the user and receiving input.
+  VISIBLE = 1,
+  // Indicates the WebXR content is visible but not receiving input.
+  VISIBLE_BLURRED = 2,
+  // Indicates the WebXR content is not visible.
+  HIDDEN = 3
+};
+
 // Functions for pushing device information to the sessions.
 interface XRSessionClient {
   OnChanged(VRDisplayInfo display);
   OnExitPresent();
-  OnBlur();
-  OnFocus();
+  // Indicates a change in the visibility of the WebXR content.
+  OnVisibilityStateChanged(XRVisibilityState visibility_state);
 };
 
 // Backwards compatibility events for WebVR 1.1. These are expected to not be

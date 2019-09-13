@@ -36,13 +36,10 @@ void PasswordBubbleViewBase::ShowBubble(content::WebContents* web_contents,
          !g_manage_passwords_bubble_->GetWidget()->IsVisible());
 
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  views::View* anchor_view = nullptr;
-  if (base::FeatureList::IsEnabled(
-          autofill::features::kAutofillEnableToolbarStatusChip)) {
-    anchor_view = browser_view->toolbar()->toolbar_page_action_container();
-  } else {
-    anchor_view = browser_view->toolbar_button_provider()->GetAnchorView();
-  }
+  ToolbarButtonProvider* button_provider =
+      browser_view->toolbar_button_provider();
+  views::View* anchor_view =
+      button_provider->GetAnchorView(PageActionIconType::kManagePasswords);
 
   PasswordBubbleViewBase* bubble =
       CreateBubble(web_contents, anchor_view, reason);

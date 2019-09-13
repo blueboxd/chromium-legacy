@@ -48,6 +48,7 @@ struct BLINK_COMMON_EXPORT CloneableMessage {
   uint64_t stack_trace_id = 0;
   int64_t stack_trace_debugger_id_first = 0;
   int64_t stack_trace_debugger_id_second = 0;
+  bool stack_trace_should_pause = false;
 
   // If not null, this message is locked to the given agent cluster ID.
   // See

@@ -113,10 +113,8 @@ gfx::Rect WebContentsViewGuest::GetViewBounds() const {
   return gfx::Rect(size_);
 }
 
-void WebContentsViewGuest::CreateView(const gfx::Size& initial_size,
-                                      gfx::NativeView context) {
-  platform_view_->CreateView(initial_size, context);
-  size_ = initial_size;
+void WebContentsViewGuest::CreateView(gfx::NativeView context) {
+  platform_view_->CreateView(context);
 }
 
 RenderWidgetHostViewBase* WebContentsViewGuest::CreateViewForWidget(

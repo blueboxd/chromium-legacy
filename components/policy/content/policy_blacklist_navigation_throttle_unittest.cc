@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/run_loop.h"
 #include "base/values.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/policy/content/policy_blacklist_service.h"
@@ -99,7 +98,7 @@ class PolicyBlacklistNavigationThrottleTest
     value->Append(base::Value(pattern));
     pref_service_.SetManagedPref(policy::policy_prefs::kUrlBlacklist,
                                  std::move(value));
-    base::RunLoop().RunUntilIdle();
+    task_environment()->RunUntilIdle();
   }
 
   void SetWhitelistUrlPattern(const std::string& pattern) {
@@ -107,7 +106,7 @@ class PolicyBlacklistNavigationThrottleTest
     value->Append(base::Value(pattern));
     pref_service_.SetManagedPref(policy::policy_prefs::kUrlWhitelist,
                                  std::move(value));
-    base::RunLoop().RunUntilIdle();
+    task_environment()->RunUntilIdle();
   }
 
   void SetSafeSitesFilterBehavior(SafeSitesFilterBehavior filter_behavior) {

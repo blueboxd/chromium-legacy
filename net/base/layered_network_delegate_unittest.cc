@@ -62,11 +62,6 @@ class TestNetworkDelegateImpl : public NetworkDelegateImpl {
     IncrementAndCompareCounter("on_before_send_headers_count");
   }
 
-  void OnStartTransaction(URLRequest* request,
-                          const HttpRequestHeaders& headers) override {
-    IncrementAndCompareCounter("on_start_transaction_count");
-  }
-
   int OnHeadersReceived(
       URLRequest* request,
       CompletionOnceCallback callback,
@@ -84,15 +79,6 @@ class TestNetworkDelegateImpl : public NetworkDelegateImpl {
 
   void OnResponseStarted(URLRequest* request, int net_error) override {
     IncrementAndCompareCounter("on_response_started_count");
-  }
-
-  void OnNetworkBytesReceived(URLRequest* request,
-                              int64_t bytes_received) override {
-    IncrementAndCompareCounter("on_network_bytes_received_count");
-  }
-
-  void OnNetworkBytesSent(URLRequest* request, int64_t bytes_sent) override {
-    IncrementAndCompareCounter("on_network_bytes_sent_count");
   }
 
   void OnCompleted(URLRequest* request, bool started, int net_error) override {
@@ -181,12 +167,9 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
                                        request_headers.get()));
     OnBeforeSendHeaders(nullptr, ProxyInfo(), proxy_retry_info,
                         request_headers.get());
-    OnStartTransaction(nullptr, *request_headers);
-    OnNetworkBytesSent(request.get(), 42);
     EXPECT_EQ(OK, OnHeadersReceived(nullptr, completion_callback.callback(),
                                     response_headers.get(), nullptr, nullptr));
     OnResponseStarted(request.get(), net::OK);
-    OnNetworkBytesReceived(request.get(), 42);
     OnCompleted(request.get(), false, net::OK);
     OnURLRequestDestroyed(request.get());
     OnPACScriptError(0, base::string16());
@@ -218,12 +201,6 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
     EXPECT_EQ(1, (*counters_)["on_before_send_headers_count"]);
   }
 
-  void OnStartTransactionInternal(URLRequest* request,
-                                  const HttpRequestHeaders& headers) override {
-    ++(*counters_)["on_start_transaction_count"];
-    EXPECT_EQ(1, (*counters_)["on_start_transaction_count"]);
-  }
-
   void OnHeadersReceivedInternal(
       URLRequest* request,
       const HttpResponseHeaders* original_response_headers,
@@ -242,18 +219,6 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
   void OnResponseStartedInternal(URLRequest* request, int net_error) override {
     ++(*counters_)["on_response_started_count"];
     EXPECT_EQ(1, (*counters_)["on_response_started_count"]);
-  }
-
-  void OnNetworkBytesReceivedInternal(URLRequest* request,
-                                      int64_t bytes_received) override {
-    ++(*counters_)["on_network_bytes_received_count"];
-    EXPECT_EQ(1, (*counters_)["on_network_bytes_received_count"]);
-  }
-
-  void OnNetworkBytesSentInternal(URLRequest* request,
-                                  int64_t bytes_sent) override {
-    ++(*counters_)["on_network_bytes_sent_count"];
-    EXPECT_EQ(1, (*counters_)["on_network_bytes_sent_count"]);
   }
 
   void OnCompletedInternal(URLRequest* request,

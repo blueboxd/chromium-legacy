@@ -539,6 +539,7 @@ void CreditCard::operator=(const CreditCard& credit_card) {
   bank_name_ = credit_card.bank_name_;
   temp_card_first_name_ = credit_card.temp_card_first_name_;
   temp_card_last_name_ = credit_card.temp_card_last_name_;
+  cloud_token_data_ = credit_card.cloud_token_data_;
 
   set_guid(credit_card.guid());
   set_origin(credit_card.origin());

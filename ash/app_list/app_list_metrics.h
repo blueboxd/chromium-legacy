@@ -267,7 +267,7 @@ struct AppLaunchedMetricParams {
 };
 
 void RecordFolderShowHideAnimationSmoothness(int actual_frames,
-                                             int ideal_duration_ms,
+                                             base::TimeDelta ideal_duration,
                                              float refresh_rate);
 
 void RecordPageSwitcherSourceByEventType(ui::EventType type,
@@ -277,7 +277,7 @@ void RecordPageSwitcherSource(AppListPageSwitcherSource source,
                               bool is_tablet_mode);
 
 void RecordPaginationAnimationSmoothness(int actual_frames,
-                                         int ideal_duration_ms,
+                                         base::TimeDelta ideal_duration,
                                          float refresh_rate,
                                          bool is_tablet_mode);
 

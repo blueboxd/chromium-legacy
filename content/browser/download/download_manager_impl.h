@@ -231,8 +231,6 @@ class CONTENT_EXPORT DownloadManagerImpl
   void ShowDownloadInShell(download::DownloadItemImpl* download) override;
   void DownloadRemoved(download::DownloadItemImpl* download) override;
   void DownloadInterrupted(download::DownloadItemImpl* download) override;
-  base::Optional<download::DownloadEntry> GetInProgressEntry(
-      download::DownloadItemImpl* download) override;
   bool IsOffTheRecord() const override;
   void ReportBytesWasted(download::DownloadItemImpl* download) override;
   service_manager::Connector* GetServiceManagerConnector() override;

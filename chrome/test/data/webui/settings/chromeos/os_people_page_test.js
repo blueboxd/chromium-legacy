@@ -123,6 +123,8 @@ cr.define('settings_people_page', function() {
           browserProxy.fakeProfileInfo.name, profileNameEl.textContent.trim());
       const bg = profileIconEl.style.backgroundImage;
       assertTrue(bg.includes(browserProxy.fakeProfileInfo.iconUrl));
+      assertEquals(
+          'fakeUsername', peoplePage.$$('#profile-label').textContent.trim());
 
       const iconDataUrl = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEA' +
           'LAAAAAABAAEAAAICTAEAOw==';

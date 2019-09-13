@@ -370,7 +370,7 @@ gfx::Image GetAvatarIconForTitleBar(const gfx::Image& image,
   if (!is_gaia_image && image.Height() <= kAvatarIconSize)
     return image;
 
-  int size = std::min(kAvatarIconSize, std::min(dst_width, dst_height));
+  int size = std::min({kAvatarIconSize, dst_width, dst_height});
   gfx::Size dst_size(dst_width, dst_height);
 
   // Source for a sized icon drawn at the bottom center of the canvas,

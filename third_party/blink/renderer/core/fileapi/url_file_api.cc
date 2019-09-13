@@ -33,6 +33,14 @@ void URLFileAPI::revokeObjectURL(ScriptState* script_state,
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   DCHECK(execution_context);
 
+  revokeObjectURL(execution_context, url_string);
+}
+
+// static
+void URLFileAPI::revokeObjectURL(ExecutionContext* execution_context,
+                                 const String& url_string) {
+  DCHECK(execution_context);
+
   KURL url(NullURL(), url_string);
   execution_context->RemoveURLFromMemoryCache(url);
   execution_context->GetPublicURLManager().Revoke(url);

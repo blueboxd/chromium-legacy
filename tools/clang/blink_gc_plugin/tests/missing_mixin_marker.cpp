@@ -36,8 +36,9 @@ class GoodDerived : public GarbageCollected<GoodDerived>, public Mixin {
 class GoodDerived;
 
 // Same macro providing only a typedef is also ok.
-class GoodDerivedMacroUsingTypedef : public GarbageCollected<GoodDerived>,
-                                     public Mixin {
+class GoodDerivedMacroUsingTypedef
+    : public GarbageCollected<GoodDerivedMacroUsingTypedef>,
+      public Mixin {
   USING_GARBAGE_COLLECTED_MIXIN_NEW(GoodDerivedMacroUsingTypedef);
 };
 class GoodDerivedMacroUsingTypedef;

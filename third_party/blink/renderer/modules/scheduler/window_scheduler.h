@@ -10,14 +10,14 @@
 
 namespace blink {
 
+class DOMScheduler;
 class LocalDOMWindow;
-class Scheduler;
 
 class MODULES_EXPORT WindowScheduler {
   STATIC_ONLY(WindowScheduler);
 
  public:
-  static Scheduler* scheduler(LocalDOMWindow&);
+  static DOMScheduler* scheduler(LocalDOMWindow&);
 };
 
 }  // namespace blink

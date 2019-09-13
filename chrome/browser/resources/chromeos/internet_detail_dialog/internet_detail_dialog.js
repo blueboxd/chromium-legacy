@@ -36,15 +36,6 @@ Polymer({
     },
 
     /**
-     * Interface for networkingPrivate calls, passed from internet_page.
-     * @type {NetworkingPrivate}
-     */
-    networkingPrivate: {
-      type: Object,
-      value: chrome.networkingPrivate,
-    },
-
-    /**
      * Whether to show technology badge on mobile network icons.
      * @private
      */
@@ -70,12 +61,7 @@ Polymer({
    */
   propertiesReceived_: false,
 
-  /**
-   * This UI will use both the networkingPrivate extension API and the
-   * networkConfig mojo API until we provide all of the required functionality
-   * in networkConfig. TODO(stevenjb): Remove use of networkingPrivate api.
-   * @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote}
-   */
+  /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
   networkConfig_: null,
 
   /** @override */
@@ -425,21 +411,28 @@ Polymer({
       return;
     }
     if (!this.showConnect_(this.managedProperties_)) {
-      this.networkingPrivate.startDisconnect(this.guid);
+      this.networkConfig_.startDisconnect(this.guid);
       return;
     }
 
+    const mojom = chromeos.networkConfig.mojom;
     const guid = this.managedProperties_.guid;
-    this.networkingPrivate.startConnect(guid, function() {
-      if (chrome.runtime.lastError) {
-        const message = chrome.runtime.lastError.message;
-        if (message == 'connecting' || message == 'connect-canceled' ||
-            message == 'connected' || message == 'Error.InvalidNetworkGuid') {
-          return;
-        }
-        console.error(
-            'Unexpected networkingPrivate.startConnect error: ' + message +
-            ' For: ' + guid);
+    this.networkConfig_.startConnect(this.guid).then(response => {
+      switch (response.result) {
+        case mojom.StartConnectResult.kSuccess:
+          break;
+        case mojom.StartConnectResult.kInvalidState:
+        case mojom.StartConnectResult.kCanceled:
+          // Ignore failures due to in-progress or cancelled connects.
+          break;
+        case mojom.StartConnectResult.kInvalidGuid:
+        case mojom.StartConnectResult.kNotConfigured:
+        case mojom.StartConnectResult.kBlocked:
+        case mojom.StartConnectResult.kUnknown:
+          console.error(
+              'Unexpected startConnect error for: ' + guid + ' Result: ' +
+              response.result.toString() + ' Message: ' + response.message);
+          break;
       }
     });
   },

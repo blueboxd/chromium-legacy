@@ -206,13 +206,6 @@ void FakeServiceWorker::DispatchExtendableMessageEvent(
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }
 
-void FakeServiceWorker::DispatchExtendableMessageEventWithCustomTimeout(
-    blink::mojom::ExtendableMessageEventPtr event,
-    base::TimeDelta timeout,
-    DispatchExtendableMessageEventWithCustomTimeoutCallback callback) {
-  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
-}
-
 void FakeServiceWorker::DispatchContentDeleteEvent(
     const std::string& id,
     DispatchContentDeleteEventCallback callback) {

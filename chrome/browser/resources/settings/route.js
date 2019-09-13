@@ -58,6 +58,7 @@
  *   LANGUAGES_DETAILS: (undefined|!settings.Route),
  *   LOCK_SCREEN: (undefined|!settings.Route),
  *   MANAGE_ACCESSIBILITY: (undefined|!settings.Route),
+ *   MANAGE_CAPTION_SETTINGS: (undefined|!settings.Route),
  *   MANAGE_PROFILE: (undefined|!settings.Route),
  *   MANAGE_SWITCH_ACCESS_SETTINGS: (undefined|!settings.Route),
  *   MANAGE_TTS_SETTINGS: (undefined|!settings.Route),
@@ -570,6 +571,9 @@ cr.define('settings', function() {
     }
     r.MANAGE_TTS_SETTINGS =
         r.MANAGE_ACCESSIBILITY.createChild('/manageAccessibility/tts');
+
+    r.MANAGE_CAPTION_SETTINGS =
+        r.MANAGE_ACCESSIBILITY.createChild('/manageAccessibility/captions');
   }
   // </if>
 

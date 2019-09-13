@@ -15,7 +15,6 @@
 #include "ios/net/cookies/cookie_store_ios_test_util.h"
 #import "ios/net/cookies/ns_http_system_cookie_store.h"
 #import "ios/net/cookies/system_cookie_store.h"
-#include "ios/web/common/features.h"
 #include "ios/web/public/test/web_task_environment.h"
 #include "ios/web/public/test/web_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -72,16 +71,11 @@ TEST_F(CookieUtilTest, ShouldClearSessionCookies) {
 }
 
 // Tests that CreateCookieStore returns the correct type of net::CookieStore
-// based on the given parameters and the iOS version.
-TEST_F(CookieUtilTest, CreateCookieStoreInIOS11) {
+// based on the given parameters.
+TEST_F(CookieUtilTest, CreateCookieStore) {
   web::WebTaskEnvironment task_environment;
   net::ScopedTestingCookieStoreIOSClient scoped_cookie_store_ios_client(
       std::make_unique<net::TestCookieStoreIOSClient>());
-
-  // Testing while WKHTTPSystemCookieStore feature is enabled.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      web::features::kWKHTTPSystemCookieStore);
 
   GURL test_url("http://foo.google.com/bar");
   NSString* cookie_name = @"cookie_name";

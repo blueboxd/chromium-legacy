@@ -1871,6 +1871,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             mContextualSearchManager.setSearchContentViewDelegate(layoutManager);
         }
 
+        mLayoutManagerSupplier.set(layoutManager);
+
         layoutManager.addSceneChangeObserver(this);
         mCompositorViewHolder.setLayoutManager(layoutManager);
         mCompositorViewHolder.setFocusable(false);
@@ -1890,8 +1892,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         mActivityTabProvider.setLayoutManager(layoutManager);
         EphemeralTabPanel panel = layoutManager.getEphemeralTabPanel();
         if (panel != null) panel.setChromeActivity(this);
-
-        mLayoutManagerSupplier.set(layoutManager);
     }
 
     /**

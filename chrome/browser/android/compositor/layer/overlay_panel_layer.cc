@@ -126,9 +126,8 @@ void OverlayPanelLayer::SetProperties(
     rounded_bar_top_->SetIsDrawable(true);
 
     ui::NinePatchResource* rounded_bar_top_resource =
-        ui::NinePatchResource::From(
-            resource_manager_->GetStaticResourceWithTint(
-                rounded_bar_top_resource_id_, bar_background_color));
+        ui::NinePatchResource::From(resource_manager_->GetResource(
+            ui::ANDROID_RESOURCE_TYPE_STATIC, rounded_bar_top_resource_id_));
 
     DCHECK(rounded_bar_top_resource);
 

@@ -124,11 +124,19 @@ void SessionClientBinding::OnChanged(
 void SessionClientBinding::OnExitPresent() {
   display_->OnExitPresent(is_immersive_);
 }
-void SessionClientBinding::OnBlur() {
-  display_->OnBlur(is_immersive_);
-}
-void SessionClientBinding::OnFocus() {
-  display_->OnFocus(is_immersive_);
+void SessionClientBinding::OnVisibilityStateChanged(
+    device::mojom::blink::XRVisibilityState visibility_state) {
+  switch (visibility_state) {
+    case device::mojom::blink::XRVisibilityState::VISIBLE:
+      display_->OnFocus(is_immersive_);
+      break;
+    case device::mojom::blink::XRVisibilityState::VISIBLE_BLURRED:
+      display_->OnBlur(is_immersive_);
+      break;
+    case device::mojom::blink::XRVisibilityState::HIDDEN:
+      display_->OnBlur(is_immersive_);
+      break;
+  }
 }
 void SessionClientBinding::Trace(blink::Visitor* visitor) {
   visitor->Trace(display_);

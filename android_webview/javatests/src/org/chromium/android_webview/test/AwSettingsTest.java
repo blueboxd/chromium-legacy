@@ -67,8 +67,7 @@ import java.util.regex.Pattern;
  * application
  */
 @RunWith(AwJUnit4ClassRunner.class)
-@CommandLineFlags.
-Add({"allow-pre-commit-input", ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1"})
+@CommandLineFlags.Add({ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1"})
 public class AwSettingsTest {
     @Rule
     public AwActivityTestRule mActivityTestRule =

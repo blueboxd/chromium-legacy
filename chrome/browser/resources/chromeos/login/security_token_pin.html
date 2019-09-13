@@ -44,15 +44,18 @@
 
   <template>
 
-    <oobe-dialog class="gaia-dialog" has-buttons>
+    <oobe-dialog class="gaia-dialog" has-buttons role="dialog"
+        aria-labelledby="title" aria-describedby="description">
       <hd-iron-icon slot="oobe-icon" icon1x="security-token-pin-dialog-32:lock"
           icon2x="security-token-pin-dialog-64:lock">
       </hd-iron-icon>
-      <h1 slot="title">
+      <h1 slot="title" id="title">
         [[i18nDynamic(locale, 'securityTokenPinDialogTitle')]]
       </h1>
-      <div slot="subtitle">
-        [[i18nDynamic(locale, 'securityTokenPinDialogSubtitle')]]
+      <div slot="subtitle" id="subtitle">
+        <span id="description">
+          [[i18nDynamic(locale, 'securityTokenPinDialogSubtitle')]]
+        </span>
         <a href="#" id="learnMore">
           [[i18nDynamic(locale, 'learnMoreButton')]]
         </a>

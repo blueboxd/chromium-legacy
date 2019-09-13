@@ -45,7 +45,7 @@ class GCMChannelStatusRequestTest : public testing::Test {
   network::TestURLLoaderFactory* test_url_loader_factory();
 
   std::unique_ptr<GCMChannelStatusRequest> request_;
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   bool request_callback_invoked_;

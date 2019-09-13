@@ -21,7 +21,6 @@ import org.chromium.android_webview.JsPromptResultReceiver;
 import org.chromium.android_webview.JsResultReceiver;
 import org.chromium.android_webview.test.util.AwTestTouchUtils;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
@@ -33,7 +32,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Tests for callbacks implementing JS alerts and prompts.
  */
 @RunWith(AwJUnit4ClassRunner.class)
-@CommandLineFlags.Add({"allow-pre-commit-input"})
 public class WebViewModalDialogOverrideTest {
     @Rule
     public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();

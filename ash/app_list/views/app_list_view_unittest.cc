@@ -201,9 +201,11 @@ class AppListViewTest : public views::ViewsTestBase,
     ContentsView* contents_view = view_->app_list_main_view()->contents_view();
     bool success = true;
     for (int i = 0; i < contents_view->NumLauncherPages(); ++i) {
-      success = success &&
-                (contents_view->GetPageView(i)->GetPageBoundsForState(state) ==
-                 contents_view->GetPageView(i)->bounds());
+      success =
+          success && (contents_view->GetPageView(i)->GetPageBoundsForState(
+                          state, contents_view->GetContentsBounds(),
+                          contents_view->GetSearchBoxBounds(state)) ==
+                      contents_view->GetPageView(i)->bounds());
     }
     return success && state == delegate_->GetModel()->state();
   }
@@ -2314,6 +2316,8 @@ TEST_F(AppListViewTest, DisplayTest) {
 
 // Tests switching rapidly between multiple pages of the launcher.
 TEST_F(AppListViewTest, PageSwitchingAnimationTest) {
+  AppListView::SetShortAnimationForTesting(false);
+
   Initialize(false /*is_tablet_mode*/);
   Show();
   AppListMainView* main_view = view_->app_list_main_view();
@@ -2325,21 +2329,17 @@ TEST_F(AppListViewTest, PageSwitchingAnimationTest) {
 
   contents_view->SetActiveState(ash::AppListState::kStateApps);
   contents_view->Layout();
+  EXPECT_TRUE(IsStateShown(ash::AppListState::kStateApps));
 
-  IsStateShown(ash::AppListState::kStateApps);
-
-  // Change pages. View should not have moved without Layout().
+  // Change pages. Animation start triggers layout, and updates the page UI.
   contents_view->ShowSearchResults(true);
-  IsStateShown(ash::AppListState::kStateApps);
+  EXPECT_TRUE(IsStateShown(ash::AppListState::kStateSearchResults));
 
-  // Change to a third page. This queues up the second animation behind the
-  // first.
+  // Change to a third page. Should jump to the third page.
   contents_view->SetActiveState(ash::AppListState::kStateApps);
-  IsStateShown(ash::AppListState::kStateApps);
+  EXPECT_TRUE(IsStateShown(ash::AppListState::kStateApps));
 
-  // Call Layout(). Should jump to the third page.
-  contents_view->Layout();
-  IsStateShown(ash::AppListState::kStateApps);
+  AppListView::SetShortAnimationForTesting(true);
 }
 
 // Tests that the correct views are displayed for showing search results.
@@ -2385,13 +2385,15 @@ TEST_F(AppListViewTest, DISABLED_SearchResultsTest) {
   contents_view->Layout();
   EXPECT_TRUE(
       contents_view->IsStateActive(ash::AppListState::kStateSearchResults));
-  EXPECT_TRUE(CheckSearchBoxWidget(contents_view->GetDefaultSearchBoxBounds()));
+  EXPECT_TRUE(CheckSearchBoxWidget(contents_view->GetSearchBoxBounds(
+      ash::AppListState::kStateSearchResults)));
 
   // Check that typing into the search box triggers the search page.
   EXPECT_TRUE(SetAppListState(ash::AppListState::kStateApps));
   contents_view->Layout();
   EXPECT_TRUE(IsStateShown(ash::AppListState::kStateApps));
-  EXPECT_TRUE(CheckSearchBoxWidget(contents_view->GetDefaultSearchBoxBounds()));
+  EXPECT_TRUE(CheckSearchBoxWidget(
+      contents_view->GetSearchBoxBounds(ash::AppListState::kStateApps)));
 
   base::string16 new_search_text = base::UTF8ToUTF16("apple");
   main_view->search_box_view()->search_box()->SetText(base::string16());
@@ -2402,7 +2404,8 @@ TEST_F(AppListViewTest, DISABLED_SearchResultsTest) {
             main_view->search_box_view()->search_box()->GetText());
   contents_view->Layout();
   EXPECT_TRUE(IsStateShown(ash::AppListState::kStateSearchResults));
-  EXPECT_TRUE(CheckSearchBoxWidget(contents_view->GetDefaultSearchBoxBounds()));
+  EXPECT_TRUE(CheckSearchBoxWidget(contents_view->GetSearchBoxBounds(
+      ash::AppListState::kStateSearchResults)));
 }
 
 // Tests that the back button navigates through the app list correctly.

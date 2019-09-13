@@ -392,6 +392,13 @@ void BrowserXRRuntime::OnDeviceIdle(
   }
 }
 
+void BrowserXRRuntime::OnVisibilityStateChanged(
+    device::mojom::XRVisibilityState visibility_state) {
+  for (VRServiceImpl* service : services_) {
+    service->OnVisibilityStateChanged(visibility_state);
+  }
+}
+
 void BrowserXRRuntime::OnInitialized() {
   for (auto& callback : pending_initialization_callbacks_) {
     std::move(callback).Run(display_info_.Clone());

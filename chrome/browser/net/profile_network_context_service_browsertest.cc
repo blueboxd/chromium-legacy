@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -27,12 +28,19 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/load_flags.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
+#include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -349,3 +357,118 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 #endif  // defined(OS_CHROMEOS)
+
+class CorsExtraSafelistedHeaderNamesTest : public InProcessBrowserTest {
+ public:
+  CorsExtraSafelistedHeaderNamesTest() {
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{network::features::kOutOfBlinkCors, {}},
+         {features::kExtraSafelistedRequestHeadersForOutOfBlinkCors,
+          {{"extra-safelisted-request-headers", "foo,bar"}}}},
+        {});
+  }
+
+  void SetUpOnMainThread() override {
+    ASSERT_TRUE(embedded_test_server()->Start());
+
+    // This base::Unretained is safe because |this| outlives
+    // |cross_origin_test_server_|.
+    cross_origin_test_server_.RegisterRequestHandler(
+        base::BindRepeating(&CorsExtraSafelistedHeaderNamesTest::HandleRequest,
+                            base::Unretained(this)));
+    ASSERT_TRUE(cross_origin_test_server_.Start());
+  }
+
+  void LoadAndWait(const GURL& url) {
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    base::string16 expected_title(base::ASCIIToUTF16("OK"));
+    content::TitleWatcher title_watcher(web_contents, expected_title);
+    title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("FAIL"));
+    ui_test_utils::NavigateToURL(browser(), url);
+    ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+  }
+
+  uint16_t cross_origin_port() { return cross_origin_test_server_.port(); }
+  size_t options_count() {
+    base::AutoLock lock(lock_);
+    return options_count_;
+  }
+  size_t get_count() {
+    base::AutoLock lock(lock_);
+    return get_count_;
+  }
+
+  const net::EmbeddedTestServer& cross_origin_test_server() const {
+    return cross_origin_test_server_;
+  }
+
+  static constexpr char kTestPath[] =
+      "/cors-extra-safelisted-header-names.html";
+
+ private:
+  std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
+      const net::test_server::HttpRequest& request) {
+    std::unique_ptr<net::test_server::BasicHttpResponse> response =
+        std::make_unique<net::test_server::BasicHttpResponse>();
+    response->set_code(net::HTTP_OK);
+    response->AddCustomHeader(
+        network::cors::header_names::kAccessControlAllowOrigin, "*");
+    if (request.method == net::test_server::METHOD_OPTIONS) {
+      response->AddCustomHeader(
+          network::cors::header_names::kAccessControlAllowMethods,
+          "GET, OPTIONS");
+      response->AddCustomHeader(
+          network::cors::header_names::kAccessControlAllowHeaders, "baz");
+      response->AddCustomHeader(
+          network::cors::header_names::kAccessControlMaxAge, "60");
+      base::AutoLock lock(lock_);
+      options_count_++;
+    } else if (request.method == net::test_server::METHOD_GET) {
+      base::AutoLock lock(lock_);
+      get_count_++;
+    }
+    return response;
+  }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+  net::EmbeddedTestServer cross_origin_test_server_;
+  base::Lock lock_;
+
+  size_t options_count_ GUARDED_BY(lock_) = 0;
+  size_t get_count_ GUARDED_BY(lock_) = 0;
+};
+
+constexpr char CorsExtraSafelistedHeaderNamesTest::kTestPath[];
+
+IN_PROC_BROWSER_TEST_F(CorsExtraSafelistedHeaderNamesTest, RequestWithFoo) {
+  GURL url(cross_origin_test_server().GetURL("/hello"));
+  LoadAndWait(embedded_test_server()->GetURL(base::StringPrintf(
+      "%s?url=%s&headers=foo", kTestPath, url.spec().c_str())));
+  EXPECT_EQ(0u, options_count());
+  EXPECT_EQ(1u, get_count());
+}
+
+IN_PROC_BROWSER_TEST_F(CorsExtraSafelistedHeaderNamesTest, RequestWithFooBar) {
+  GURL url(cross_origin_test_server().GetURL("/hello"));
+  LoadAndWait(embedded_test_server()->GetURL(base::StringPrintf(
+      "%s?url=%s&headers=foo,bar", kTestPath, url.spec().c_str())));
+  EXPECT_EQ(0u, options_count());
+  EXPECT_EQ(1u, get_count());
+}
+
+IN_PROC_BROWSER_TEST_F(CorsExtraSafelistedHeaderNamesTest, RequestWithBaz) {
+  GURL url(cross_origin_test_server().GetURL("/hello"));
+  LoadAndWait(embedded_test_server()->GetURL(base::StringPrintf(
+      "%s?url=%s&headers=baz", kTestPath, url.spec().c_str())));
+  EXPECT_EQ(1u, options_count());
+  EXPECT_EQ(1u, get_count());
+}
+
+IN_PROC_BROWSER_TEST_F(CorsExtraSafelistedHeaderNamesTest, RequestWithFooBaz) {
+  GURL url(cross_origin_test_server().GetURL("/hello"));
+  LoadAndWait(embedded_test_server()->GetURL(base::StringPrintf(
+      "%s?url=%s&headers=foo,baz", kTestPath, url.spec().c_str())));
+  EXPECT_EQ(1u, options_count());
+  EXPECT_EQ(1u, get_count());
+}

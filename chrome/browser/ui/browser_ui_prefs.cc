@@ -17,8 +17,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/translate/core/browser/translate_pref_names.h"
-#include "content/public/common/webrtc_ip_handling_policy.h"
 #include "media/media_buildflags.h"
+#include "third_party/blink/public/common/peerconnection/webrtc_ip_handling_policy.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -85,7 +85,7 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kWebRTCMultipleRoutesEnabled, true);
   registry->RegisterBooleanPref(prefs::kWebRTCNonProxiedUdpEnabled, true);
   registry->RegisterStringPref(prefs::kWebRTCIPHandlingPolicy,
-                               content::kWebRTCIPHandlingDefault);
+                               blink::kWebRTCIPHandlingDefault);
   registry->RegisterStringPref(prefs::kWebRTCUDPPortRange, std::string());
   registry->RegisterBooleanPref(prefs::kWebRtcEventLogCollectionAllowed, false);
 
@@ -125,6 +125,7 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
                                 false);
   registry->RegisterBooleanPref(prefs::kAllowPopupsDuringPageUnload, false);
   registry->RegisterBooleanPref(prefs::kUserFeedbackAllowed, true);
+  registry->RegisterBooleanPref(prefs::kAllowSyncXHRInPageDismissal, false);
 
 #if !defined(OS_ANDROID)
   registry->RegisterBooleanPref(prefs::kShowFirstRunDefaultSearchShortcut,

@@ -488,9 +488,18 @@ void StorageHandler::UpdateExternalStorages() {
     if (!disk)
       continue;
 
+    std::string label = disk->device_label();
+    if (label.empty()) {
+      // To make volume labels consistent with Files app, we follow how Files
+      // generates a volume label when the volume doesn't have specific label.
+      // That is, we use the base name of mount path instead in such cases.
+      // TODO(fukino): Share the implementation to compute the volume name with
+      // Files app. crbug.com/1002535.
+      label = base::FilePath(mount_info.mount_path).BaseName().AsUTF8Unsafe();
+    }
     base::Value device(base::Value::Type::DICTIONARY);
     device.SetKey("uuid", base::Value(disk->fs_uuid()));
-    device.SetKey("label", base::Value(disk->device_label()));
+    device.SetKey("label", base::Value(label));
     devices.Append(std::move(device));
   }
   FireWebUIListener("onExternalStoragesUpdated", devices);

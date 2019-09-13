@@ -424,7 +424,6 @@ class BlockingNetworkDelegate : public TestNetworkDelegate {
   void OnBlocked();
 
   void RunCallback(int response, CompletionOnceCallback callback);
-  void RunAuthCallback(AuthRequiredResponse response, AuthCallback callback);
 
   // TestNetworkDelegate implementation.
   int OnBeforeURLRequest(URLRequest* request,
@@ -4332,12 +4331,6 @@ class AsyncLoggingNetworkDelegate : public TestNetworkDelegate {
                              LOAD_STATE_WAITING_FOR_DELEGATE,
                              base::BindOnce(std::move(callback), OK));
     return ERR_IO_PENDING;
-  }
-
-  static void SetAuthAndResume(AuthCallback callback,
-                               AuthCredentials* credentials) {
-    *credentials = AuthCredentials(kUser, kSecret);
-    std::move(callback).Run(NetworkDelegate::AUTH_REQUIRED_RESPONSE_SET_AUTH);
   }
 
   DISALLOW_COPY_AND_ASSIGN(AsyncLoggingNetworkDelegate);

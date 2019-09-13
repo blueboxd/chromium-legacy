@@ -72,10 +72,6 @@ QUIC_FLAG(uint32_t, FLAGS_quic_send_buffer_max_data_slice_size, 4096u)
 // send no more than factor times bytes received.
 QUIC_FLAG(int32_t, FLAGS_quic_anti_amplification_factor, 3)
 
-// If true, QUIC supports both QUIC Crypto and TLS 1.3 for the handshake
-// protocol.
-QUIC_FLAG(bool, FLAGS_quic_supports_tls_handshake, false)
-
 // Enables 3 new connection options to make PROBE_RTT more aggressive
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_less_probe_rtt, false)
 
@@ -226,24 +222,12 @@ QUIC_FLAG(
     FLAGS_quic_reloadable_flag_quic_clear_queued_packets_on_connection_close,
     true)
 
-// If true, QuicConnection will be closed if a WindowUpdate frame is received on
-// a READ_UNIDIRECTIONAL stream.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_no_window_update_on_read_only_stream,
-          true)
-
 // If true and --quic_lumpy_pacing_size is 1, QUIC will use a lumpy size of two
 // for pacing.
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_change_default_lumpy_pacing_size_to_two,
     true)
-
-// If true, QuicSpdySession::GetSpdyDataStream() will close the connection
-// if the returned stream is static.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_handle_staticness_for_spdy_stream,
-          true)
 
 // If true, do not add connection ID of packets with unknown connection ID
 // and no version to time wait list, instead, send appropriate responses
@@ -260,12 +244,6 @@ QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_connection_id_use_siphash, true)
 // send.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_rto_retransmission3, true)
 
-// If true, QuicSession::GetOrCreateDynamicStream() is deprecated, and its
-// contents are moved to GetOrCreateStream().
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_inline_getorcreatedynamicstream,
-          true)
-
 // Maximum number of tracked packets.
 QUIC_FLAG(int64_t, FLAGS_quic_max_tracked_packet_count, 10000)
 
@@ -280,13 +258,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_simplify_stop_waiting, false)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_allow_client_enabled_bbr_v2,
           false)
-
-// When true, QuicDispatcher will pass the version from the packet to the
-// ChloExtractor instead of all supported versions.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_restart_flag_quic_dispatcher_hands_chlo_extractor_one_version,
-    true)
 
 // If true, will negotiate the ACK delay time.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_negotiate_ack_delay_time, false)
@@ -387,3 +358,7 @@ QUIC_FLAG(int32_t, FLAGS_quic_max_buffered_crypto_bytes, 16 * 1024)
 // If true, use the saved time of the last sent inflight packet rather than
 // traversing the deque.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_simple_inflight_time, false)
+
+// If true, QUIC supports both QUIC Crypto and TLS 1.3 for the handshake
+// protocol.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_supports_tls_handshake, true)

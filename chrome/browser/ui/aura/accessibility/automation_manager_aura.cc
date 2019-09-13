@@ -9,12 +9,14 @@
 #include "base/bind.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
+#include "components/crash/core/common/crash_key.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_event_bundle_sink.h"
 #include "ui/accessibility/ax_tree_id_registry.h"
+#include "ui/accessibility/ax_tree_source_checker.h"
 #include "ui/accessibility/platform/aura_window_properties.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -30,10 +32,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
-#endif
-
-#if DCHECK_IS_ON()
-#include "ui/accessibility/ax_tree_source_checker.h"
 #endif
 
 // static
@@ -306,12 +304,19 @@ void AutomationManagerAura::PerformHitTest(
 
 void AutomationManagerAura::OnSerializeFailure(ax::mojom::Event event_type,
                                                const ui::AXTreeUpdate& update) {
-#if DCHECK_IS_ON()
+  std::string error_string;
   ui::AXTreeSourceChecker<views::AXAuraObjWrapper*, ui::AXNodeData,
                           ui::AXTreeData>
       checker(current_tree_.get());
-  checker.Check();
-#endif
-  LOG(FATAL) << "Unable to serialize accessibility event, type " << event_type
-             << " update " << update.ToString();
+  checker.CheckAndGetErrorString(&error_string);
+
+  // Add a crash key so we can figure out why this is happening.
+  static crash_reporter::CrashKeyString<256> ax_tree_source_error(
+      "ax_tree_source_error");
+  ax_tree_source_error.Set(error_string);
+
+  LOG(FATAL) << "Unable to serialize accessibility event!\n"
+             << "Event type: " << event_type << "\n"
+             << "Error: " << error_string << "\n"
+             << "Update: " << update.ToString();
 }

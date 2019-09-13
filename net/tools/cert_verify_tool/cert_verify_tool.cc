@@ -148,9 +148,10 @@ class CertVerifyImplUsingPathBuilder : public CertVerifyImpl {
  public:
   explicit CertVerifyImplUsingPathBuilder(
       scoped_refptr<net::CertNetFetcher> cert_net_fetcher,
-      bool use_system_roots)
+      std::unique_ptr<net::SystemTrustStoreProvider>
+          system_trust_store_provider)
       : cert_net_fetcher_(std::move(cert_net_fetcher)),
-        use_system_roots_(use_system_roots) {}
+        system_trust_store_provider_(std::move(system_trust_store_provider)) {}
 
   std::string GetName() const override { return "CertPathBuilder"; }
 
@@ -172,13 +173,12 @@ class CertVerifyImplUsingPathBuilder : public CertVerifyImpl {
     return VerifyUsingPathBuilder(
         target_der_cert, intermediate_der_certs, root_der_certs, verify_time,
         dump_prefix_path, cert_net_fetcher_,
-        use_system_roots_ ? net::CreateSslSystemTrustStore()
-                          : net::CreateEmptySystemTrustStore());
+        system_trust_store_provider_->CreateSystemTrustStore());
   }
 
  private:
   scoped_refptr<net::CertNetFetcher> cert_net_fetcher_;
-  const bool use_system_roots_;
+  std::unique_ptr<net::SystemTrustStoreProvider> system_trust_store_provider_;
 };
 
 class DummySystemTrustStoreProvider : public net::SystemTrustStoreProvider {
@@ -190,9 +190,8 @@ class DummySystemTrustStoreProvider : public net::SystemTrustStoreProvider {
 
 std::unique_ptr<net::SystemTrustStoreProvider> CreateSystemTrustStoreProvider(
     bool use_system_roots) {
-  if (use_system_roots)
-    return nullptr;
-  return std::make_unique<DummySystemTrustStoreProvider>();
+  return use_system_roots ? net::SystemTrustStoreProvider::CreateDefaultForSSL()
+                          : std::make_unique<DummySystemTrustStoreProvider>();
 }
 
 // Creates an subclass of CertVerifyImpl based on its name, or returns nullptr.
@@ -222,7 +221,8 @@ std::unique_ptr<CertVerifyImpl> CreateCertVerifyImplFromName(
 
   if (impl_name == "pathbuilder") {
     return std::make_unique<CertVerifyImplUsingPathBuilder>(
-        std::move(cert_net_fetcher), use_system_roots);
+        std::move(cert_net_fetcher),
+        CreateSystemTrustStoreProvider(use_system_roots));
   }
 
   std::cerr << "WARNING: Unrecognized impl: " << impl_name << "\n";

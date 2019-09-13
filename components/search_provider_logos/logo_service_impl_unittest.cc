@@ -960,6 +960,8 @@ TEST_F(LogoServiceImplTest, DeleteExpiredCachedLogo) {
 TEST_F(LogoServiceImplTest, ClearLogoOnSignOut) {
   // Sign in and setup a logo response.
   signin_helper_.SignIn();
+  // |SetCachedLogo(nullptr)| task might not have run.
+  task_environment_.RunUntilIdle();
   Logo logo = GetSampleLogo(DoodleURL(), test_clock_.Now());
   SetServerResponse(ServerResponse(logo));
 

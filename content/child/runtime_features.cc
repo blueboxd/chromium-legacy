@@ -456,7 +456,8 @@ void SetIndividualRuntimeFeatures(
   }
 
   if (base::FeatureList::IsEnabled(
-          blink::features::kForbidSyncXHRInPageDismissal)) {
+          blink::features::kForbidSyncXHRInPageDismissal) &&
+      !command_line.HasSwitch(switches::kAllowSyncXHRInPageDismissal)) {
     WebRuntimeFeatures::EnableForbidSyncXHRInPageDismissal(true);
   }
 

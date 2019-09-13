@@ -42,6 +42,23 @@ const char kPngExtension[] = ".png";
 // size for triggering banners.
 const int kMinimumPrimaryIconSizeInPx = 144;
 
+// This constant is the smallest possible adaptive launcher icon size for any
+// device density.
+// The adaptive icon size guide states that an adaptive launcher icon should be
+// 108dp.
+// (https://developer.android.com/guide/practices/ui_guidelines/icon_design_adaptive)
+// For a manifest to be valid, we do NOT need an maskable icon to be
+// 108dp for the device's screen density. Instead, we only need the maskable
+// icon be larger than (or equal to) 108dp in the smallest screen density (that
+// is the mdpi screen density). For mdpi devices, 1dp is 1px. Therefore, we have
+// 108px here.
+// Requiring the minimum icon size (in pixel) independent of the device's screen
+// density is because we use mipmap-anydpi-v26 to specify adaptive launcher
+// icon, and it will make the icon adaptive as long as there is one usable
+// maskable icon (if that icon is of wrong size, it'll be automatically
+// resized).
+const int kMinimumPrimaryAdaptiveLauncherIconSizeInPx = 108;
+
 #if !defined(OS_ANDROID)
 const int kMinimumBadgeIconSizeInPx = 72;
 #endif
@@ -70,13 +87,22 @@ int GetIdealBadgeIconSizeInPx() {
 #endif
 }
 
+int GetIdealPrimaryAdaptiveLauncherIconSizeInPx() {
+#if defined(OS_ANDROID)
+  return ShortcutHelper::GetIdealAdaptiveLauncherIconSizeInPx();
+#else
+  return kMinimumPrimaryAdaptiveLauncherIconSizeInPx;
+#endif
+}
+
 using IconPurpose = blink::Manifest::ImageResource::Purpose;
 
-// Returns true if |manifest| specifies a PNG icon of height and width >=
-// kMinimumPrimaryIconSizeInPx (or size "any"), and either
-// 1. with IconPurpose::ANY or IconPurpose::MASKABLE, if maskable icon is
-// preferred, or
-// 2. with IconPurpose::ANY if maskable icon is not preferred.
+// Returns true if |manifest| specifies a PNG icon that either
+// 1. has IconPurpose::ANY, with height and width >= kMinimumPrimaryIconSizeInPx
+// (or size "any")
+// 2. if maskable icon is preferred, has IconPurpose::MASKABLE with height and
+// width >= kMinimumPrimaryAdaptiveLauncherIconSizeInPx (or size "any")
+
 bool DoesManifestContainRequiredIcon(const blink::Manifest& manifest,
                                      bool prefer_maskable_icon) {
   for (const auto& icon : manifest.icons) {
@@ -100,8 +126,17 @@ bool DoesManifestContainRequiredIcon(const blink::Manifest& manifest,
     for (const auto& size : icon.sizes) {
       if (size.IsEmpty())  // "any"
         return true;
-      if (size.width() >= kMinimumPrimaryIconSizeInPx &&
+      if (base::Contains(icon.purpose,
+                         blink::Manifest::ImageResource::Purpose::ANY) &&
+          size.width() >= kMinimumPrimaryIconSizeInPx &&
           size.height() >= kMinimumPrimaryIconSizeInPx) {
+        return true;
+      }
+      if (prefer_maskable_icon &&
+          base::Contains(icon.purpose,
+                         blink::Manifest::ImageResource::Purpose::MASKABLE) &&
+          size.height() >= kMinimumPrimaryAdaptiveLauncherIconSizeInPx &
+              size.width() >= kMinimumPrimaryAdaptiveLauncherIconSizeInPx) {
         return true;
       }
     }
@@ -171,7 +206,6 @@ InstallableManager::InstallableManager(content::WebContents* web_contents)
 }
 
 InstallableManager::~InstallableManager() {
-  // Null in unit tests.
   if (service_worker_context_)
     service_worker_context_->RemoveObserver(this);
 }
@@ -446,8 +480,8 @@ void InstallableManager::WorkOnTask() {
     FetchManifest();
   } else if (params.valid_primary_icon && params.prefer_maskable_icon &&
              !IsIconFetched(IconPurpose::MASKABLE)) {
-    CheckAndFetchBestIcon(GetIdealPrimaryIconSizeInPx(),
-                          GetMinimumPrimaryIconSizeInPx(),
+    CheckAndFetchBestIcon(GetIdealPrimaryAdaptiveLauncherIconSizeInPx(),
+                          kMinimumPrimaryAdaptiveLauncherIconSizeInPx,
                           IconPurpose::MASKABLE);
   } else if (params.valid_primary_icon && !IsIconFetched(IconPurpose::ANY)) {
     CheckAndFetchBestIcon(GetIdealPrimaryIconSizeInPx(),
@@ -668,6 +702,11 @@ void InstallableManager::OnRegistrationCompleted(const GURL& pattern) {
     return;  // If the pipeline was already running, we don't restart it.
 
   WorkOnTask();
+}
+
+void InstallableManager::OnDestruct(content::ServiceWorkerContext* context) {
+  service_worker_context_->RemoveObserver(this);
+  service_worker_context_ = nullptr;
 }
 
 void InstallableManager::DidFinishNavigation(

@@ -13,7 +13,6 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/update_engine/update_engine.pb.h"
@@ -108,12 +107,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) UpdateEngineClient : public DBusClient {
                           const GetChannelCallback& callback) = 0;
 
   // Called once GetEolStatus() is complete. Takes one parameter;
-  // - EndOfLife status: the end of life status of the device.
-  // - Optional<int32_t> number_of_milestones: the number of milestones before
-  // end of life.
+  // - EndOfLife Status: the end of life status of the device.
   using GetEolStatusCallback =
-      base::OnceCallback<void(update_engine::EndOfLifeStatus status,
-                              base::Optional<int32_t> number_of_milestones)>;
+      base::OnceCallback<void(update_engine::EndOfLifeStatus status)>;
 
   // Get EndOfLife status of the device and calls |callback| when completed.
   virtual void GetEolStatus(GetEolStatusCallback callback) = 0;

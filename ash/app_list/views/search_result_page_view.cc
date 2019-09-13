@@ -403,19 +403,6 @@ void SearchResultPageView::OnShown() {
   }
 }
 
-gfx::Rect SearchResultPageView::GetPageBoundsForState(
-    ash::AppListState state) const {
-  if (state != ash::AppListState::kStateSearchResults) {
-    // Hides this view behind the search box by using the same bounds.
-    return AppListPage::contents_view()->GetSearchBoxBoundsForState(state);
-  }
-
-  gfx::Rect onscreen_bounds = AppListPage::GetSearchBoxBounds();
-  onscreen_bounds.Offset((onscreen_bounds.width() - kWidth) / 2, 0);
-  onscreen_bounds.set_size(GetPreferredSize());
-  return onscreen_bounds;
-}
-
 void SearchResultPageView::OnAnimationStarted(ash::AppListState from_state,
                                               ash::AppListState to_state) {
   if (from_state != ash::AppListState::kStateSearchResults &&
@@ -423,12 +410,16 @@ void SearchResultPageView::OnAnimationStarted(ash::AppListState from_state,
     return;
   }
 
-  const gfx::Rect from_rect = GetPageBoundsForState(from_state);
-  const gfx::Rect to_rect = GetPageBoundsForState(to_state);
+  const ContentsView* const contents_view = AppListPage::contents_view();
+  const gfx::Rect contents_bounds = contents_view->GetContentsBounds();
+  const gfx::Rect from_rect =
+      GetPageBoundsForState(from_state, contents_bounds,
+                            contents_view->GetSearchBoxBounds(from_state));
+  const gfx::Rect to_rect = GetPageBoundsForState(
+      to_state, contents_bounds, contents_view->GetSearchBoxBounds(to_state));
   if (from_rect == to_rect)
     return;
 
-  const ContentsView* const contents_view = AppListPage::contents_view();
   const int to_radius =
       contents_view->GetSearchBoxView()->GetSearchBoxBorderCornerRadiusForState(
           to_state);
@@ -483,13 +474,35 @@ void SearchResultPageView::OnAnimationUpdated(double progress,
   }
 }
 
-gfx::Rect SearchResultPageView::GetSearchBoxBounds() const {
-  gfx::Rect rect(AppListPage::GetSearchBoxBounds());
+gfx::Size SearchResultPageView::GetPreferredSearchBoxSize() const {
+  static gfx::Size size = gfx::Size(kWidth, kSearchBoxHeight);
+  return size;
+}
 
-  rect.Offset((rect.width() - kWidth) / 2, 0);
-  rect.set_size(gfx::Size(kWidth, kSearchBoxHeight));
+base::Optional<int> SearchResultPageView::GetSearchBoxTop(
+    ash::AppListViewState view_state) const {
+  if (view_state == ash::AppListViewState::kPeeking ||
+      view_state == ash::AppListViewState::kHalf) {
+    return AppListConfig::instance().search_box_fullscreen_top_padding();
+  }
+  // For other view states, return base::nullopt so the app_list::ContentsView
+  // sets the default search box widget origin.
+  return base::nullopt;
+}
 
-  return rect;
+gfx::Rect SearchResultPageView::GetPageBoundsForState(
+    ash::AppListState state,
+    const gfx::Rect& contents_bounds,
+    const gfx::Rect& search_box_bounds) const {
+  if (state != ash::AppListState::kStateSearchResults) {
+    // Hides this view behind the search box by using the same bounds.
+    return search_box_bounds;
+  }
+
+  gfx::Rect bounds = contents_bounds;
+  bounds.Offset((contents_bounds.width() - kWidth) / 2, search_box_bounds.y());
+  bounds.set_size(GetPreferredSize());
+  return bounds;
 }
 
 views::View* SearchResultPageView::GetFirstFocusableView() {

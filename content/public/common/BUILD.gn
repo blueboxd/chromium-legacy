@@ -216,8 +216,6 @@ jumbo_source_set("common_sources") {
     "webplugininfo.cc",
     "webplugininfo.h",
     "webplugininfo_param_traits.h",
-    "webrtc_ip_handling_policy.cc",
-    "webrtc_ip_handling_policy.h",
     "widget_type.h",
   ]
 

@@ -21,9 +21,6 @@ var worker = new Worker(URL.createObjectURL(blob));
   testRunner.log('Run stepInto with breakOnAsyncCall flag');
   await dp.Debugger.oncePaused();
   dp.Debugger.stepInto({breakOnAsyncCall: true});
-  testRunner.log('Get scheduledAsyncStackId');
-  let {params: {asyncCallStackTraceId}} = await dp.Debugger.oncePaused();
-  dp.Debugger.resume();
 
   testRunner.log('Setup worker session');
   const childSession = session.createChild(
@@ -33,8 +30,6 @@ var worker = new Worker(URL.createObjectURL(blob));
         (await childSession.protocol.Debugger.enable()).debuggerId;
   debuggers.set(workerDebuggerId, childSession.protocol.Debugger);
   childSession.protocol.Debugger.setAsyncCallStackDepth({maxDepth: 32});
-  testRunner.log('Request pause on async task and run worker');
-  childSession.protocol.Debugger.pauseOnAsyncCall({parentStackTraceId: asyncCallStackTraceId});
   childSession.protocol.Runtime.runIfWaitingForDebugger();
 
   const {callFrames, asyncStackTrace, asyncStackTraceId} =

@@ -10,6 +10,7 @@
 #include "device/gamepad/gamepad_consumer.h"
 #include "device/gamepad/gamepad_export.h"
 #include "device/gamepad/public/mojom/gamepad.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace device {
@@ -20,7 +21,7 @@ class DEVICE_GAMEPAD_EXPORT GamepadMonitor : public GamepadConsumer,
   GamepadMonitor();
   ~GamepadMonitor() override;
 
-  static void Create(mojom::GamepadMonitorRequest request);
+  static void Create(mojo::PendingReceiver<mojom::GamepadMonitor> receiver);
 
   // GamepadConsumer implementation.
   void OnGamepadConnected(uint32_t index, const Gamepad& gamepad) override;

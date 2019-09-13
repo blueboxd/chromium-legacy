@@ -2288,15 +2288,6 @@
     "label": "//third_party/webrtc/test/fuzzers:pseudotcp_parser_fuzzer",
     "type": "fuzzer",
   },
-  "python3_smoketest": {
-    "args": [
-      "../../testing/python3_smoketest.py",
-    ],
-    "label": "//testing:python3_smoketest",
-    "type": "script",
-    "script": "//testing/scripts/run_isolated_script_test.py",
-    "use_python3": True,
-  },
   "qcms_color_space_fuzzer": {
     "label": "//third_party/qcms:qcms_color_space_fuzzer",
     "type": "fuzzer",

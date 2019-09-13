@@ -10,6 +10,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_types.h"
 
 using content::NavigationController;
 using content::WebContents;
@@ -77,6 +78,10 @@ void TabModalConfirmDialogDelegate::LinkClicked(
 
 gfx::Image* TabModalConfirmDialogDelegate::GetIcon() {
   return NULL;
+}
+
+int TabModalConfirmDialogDelegate::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 }
 
 base::string16 TabModalConfirmDialogDelegate::GetAcceptButtonTitle() {

@@ -7,6 +7,8 @@
 #include <memory>
 #include <utility>
 
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+
 #include "base/auto_reset.h"
 #include "base/metrics/histogram_macros.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -170,8 +172,8 @@ XRSession::XRSession(
       uses_input_eventing_(uses_input_eventing),
       sensorless_session_(sensorless_session) {
   render_state_ = MakeGarbageCollected<XRRenderState>(immersive());
-  blurred_ = !HasAppropriateFocus();
-  visibility_state_string_ = HasAppropriateFocus() ? "visible" : "hidden";
+  // Ensure that frame focus is considered in the initial visibilityState.
+  UpdateVisibilityState();
 
   switch (environment_blend_mode) {
     case kBlendModeOpaque:
@@ -186,6 +188,17 @@ XRSession::XRSession(
     default:
       NOTREACHED() << "Unknown environment blend mode: "
                    << environment_blend_mode;
+  }
+}
+
+const String XRSession::visibilityState() const {
+  switch (visibility_state_) {
+    case XRVisibilityState::VISIBLE:
+      return "visible";
+    case XRVisibilityState::VISIBLE_BLURRED:
+      return "visible-blurred";
+    case XRVisibilityState::HIDDEN:
+      return "hidden";
   }
 }
 
@@ -789,38 +802,52 @@ DoubleSize XRSession::OutputCanvasSize() const {
   return DoubleSize(output_width_, output_height_);
 }
 
-void XRSession::OnFocus() {
-  if (!blurred_)
-    return;
-
-  blurred_ = false;
-  visibility_state_string_ = "visible";
-  DispatchEvent(
-      *XRSessionEvent::Create(event_type_names::kVisibilitychange, this));
-}
-
-void XRSession::OnBlur() {
-  if (blurred_)
-    return;
-
-  blurred_ = true;
-  visibility_state_string_ = "hidden";
-  DispatchEvent(
-      *XRSessionEvent::Create(event_type_names::kVisibilitychange, this));
-}
-
-// Immersive sessions may still not be blurred in headset even if the page isn't
-// focused.  This prevents the in-headset experience from freezing on an
-// external display headset when the user clicks on another tab.
-bool XRSession::HasAppropriateFocus() {
-  return immersive() ? has_xr_focus_ : has_xr_focus_ && xr_->IsFrameFocused();
-}
-
 void XRSession::OnFocusChanged() {
-  if (HasAppropriateFocus()) {
-    OnFocus();
-  } else {
-    OnBlur();
+  UpdateVisibilityState();
+}
+
+void XRSession::OnVisibilityStateChanged(XRVisibilityState visibility_state) {
+  // TODO(crbug.com/1002742): Until some ambiguities in the spec are cleared up,
+  // force "visible-blurred" states from the device to report as "hidden"
+  if (visibility_state == XRVisibilityState::VISIBLE_BLURRED) {
+    visibility_state = XRVisibilityState::HIDDEN;
+  }
+
+  if (device_visibility_state_ != visibility_state) {
+    device_visibility_state_ = visibility_state;
+    UpdateVisibilityState();
+  }
+}
+
+// The ultimate visibility state of the session is a combination of the devices
+// reported visibility state and, for inline sessions, the frame focus, which
+// will override the device visibility to "hidden" if the frame is not currently
+// focused.
+void XRSession::UpdateVisibilityState() {
+  // Don't need to track the visibility state if the session has ended.
+  if (ended_) {
+    return;
+  }
+
+  XRVisibilityState state = device_visibility_state_;
+  if (!immersive() && !xr_->IsFrameFocused()) {
+    state = XRVisibilityState::HIDDEN;
+  }
+
+  if (visibility_state_ != state) {
+    visibility_state_ = state;
+
+    // If the visibility state was changed to something other than hidden and
+    // there are rAF callbacks still waiting to resolve kickstart the rAF loop
+    // again.
+    if (visibility_state_ != XRVisibilityState::HIDDEN && !pending_frame_ &&
+        !callback_collection_->IsEmpty()) {
+      xr_->frameProvider()->RequestFrame(this);
+      pending_frame_ = true;
+    }
+
+    DispatchEvent(
+        *XRSessionEvent::Create(event_type_names::kVisibilitychange, this));
   }
 }
 
@@ -897,6 +924,7 @@ void XRSession::OnFrame(
     const device::mojom::blink::XRAnchorsDataPtr& tracked_anchors_data) {
   TRACE_EVENT0("gpu", __FUNCTION__);
   DVLOG(2) << __FUNCTION__;
+
   // Don't process any outstanding frames once the session is ended.
   if (ended_)
     return;
@@ -924,6 +952,17 @@ void XRSession::OnFrame(
     if (!immersive() && !render_state_->output_canvas())
       return;
 
+    frame_base_layer->OnFrameStart(output_mailbox_holder);
+
+    // Don't allow frames to be processed if the session's visibility state is
+    // "hidden".
+    if (visibility_state_ == XRVisibilityState::HIDDEN) {
+      // If the frame is skipped because of the visibility state, make sure we
+      // end the frame anyway.
+      frame_base_layer->OnFrameEnd();
+      return;
+    }
+
     XRFrame* presentation_frame = CreatePresentationFrame();
     presentation_frame->SetAnimationFrame(true);
 
@@ -932,8 +971,6 @@ void XRSession::OnFrame(
       views_dirty_ = true;
       update_views_next_frame_ = false;
     }
-
-    frame_base_layer->OnFrameStart(output_mailbox_holder);
 
     // Resolve the queued requestAnimationFrame callbacks. All XR rendering will
     // happen within these calls. resolving_frame_ will be true for the duration

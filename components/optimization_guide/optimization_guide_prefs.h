@@ -15,6 +15,7 @@ namespace prefs {
 extern const char kHintsFetcherLastFetchAttempt[];
 extern const char kHintsFetcherDataSaverTopHostBlacklist[];
 extern const char kHintsFetcherDataSaverTopHostBlacklistState[];
+extern const char kTimeBlacklistLastInitialized[];
 extern const char kHintsFetcherHostsSuccessfullyFetched[];
 extern const char kPendingHintsProcessingVersion[];
 

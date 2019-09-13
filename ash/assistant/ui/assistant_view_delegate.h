@@ -63,6 +63,9 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegateObserver
   // Invoked when the proactive suggestions close button is pressed.
   virtual void OnProactiveSuggestionsCloseButtonPressed() {}
 
+  // Invoked when the hover state of the proactive suggestions view is changed.
+  virtual void OnProactiveSuggestionsViewHoverChanged(bool is_hovering) {}
+
   // Invoked when the proactive suggestions view is pressed.
   virtual void OnProactiveSuggestionsViewPressed() {}
 
@@ -163,6 +166,9 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
 
   // Invoked when the proactive suggestions close button is pressed.
   virtual void OnProactiveSuggestionsCloseButtonPressed() {}
+
+  // Invoked when the hover state of the proactive suggestions view is changed.
+  virtual void OnProactiveSuggestionsViewHoverChanged(bool is_hovering) {}
 
   // Invoked when the proactive suggestions view is pressed.
   virtual void OnProactiveSuggestionsViewPressed() {}

@@ -403,6 +403,9 @@ struct NetworkContextParams {
   // List of single-label hostnames that are exempted from the HSTS upgrade
   // policy.
   array<string> hsts_policy_bypass_list;
+
+  // Extra CORS safelisted request headers names.
+  array<string> cors_extra_safelisted_request_header_names;
 };
 
 struct NetworkConditions {

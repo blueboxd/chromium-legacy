@@ -14,6 +14,7 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/win/com_init_util.h"
 #include "base/win/core_winrt_util.h"
@@ -44,6 +45,8 @@ using SpatialMovementRange =
 using ABI::Windows::Foundation::DateTime;
 using ABI::Windows::Foundation::TimeSpan;
 using ABI::Windows::Foundation::Numerics::Matrix4x4;
+using HolographicSpaceUserPresence =
+    ABI::Windows::Graphics::Holographic::HolographicSpaceUserPresence;
 using ABI::Windows::Graphics::Holographic::HolographicStereoTransform;
 using Microsoft::WRL::ComPtr;
 
@@ -221,6 +224,15 @@ bool MixedRealityRenderLoop::StartRuntime() {
   if (!holographic_space_)
     return false;
 
+  // Since we explicitly null out both the holographic_space and the
+  // subscription during StopRuntime (which happens before destruction),
+  // base::Unretained is safe.
+  user_presence_changed_subscription_ =
+      holographic_space_->AddUserPresenceChangedCallback(
+          base::BindRepeating(&MixedRealityRenderLoop::OnUserPresenceChanged,
+                              base::Unretained(this)));
+  UpdateVisiblityState();
+
   input_helper_ = std::make_unique<MixedRealityInputHelper>(
       window_->hwnd(), weak_ptr_factory_.GetWeakPtr());
 
@@ -279,6 +291,8 @@ void MixedRealityRenderLoop::StopRuntime() {
   pose_ = nullptr;
   rendering_params_ = nullptr;
   camera_ = nullptr;
+
+  user_presence_changed_subscription_ = nullptr;
 
   if (input_helper_)
     input_helper_->Dispose();
@@ -384,6 +398,48 @@ void MixedRealityRenderLoop::OnCurrentStageChanged() {
                                 render_loop->InitializeStageOrigin();
                               },
                               base::Unretained(this)));
+}
+
+void MixedRealityRenderLoop::OnUserPresenceChanged() {
+  // Unretained is safe here because the task_runner() gets invalidated
+  // during Stop() which happens before our destruction
+  task_runner()->PostTask(FROM_HERE,
+                          base::BindOnce(
+                              [](MixedRealityRenderLoop* render_loop) {
+                                render_loop->UpdateVisiblityState();
+                              },
+                              base::Unretained(this)));
+}
+
+void MixedRealityRenderLoop::UpdateVisiblityState() {
+  HolographicSpaceUserPresence user_presence =
+      holographic_space_->UserPresence();
+
+  device::mojom::XRVisibilityState new_state;
+  switch (user_presence) {
+    // Indicates that the browsers immersive content is visible in the headset
+    // receiving input, and the headset is being worn.
+    case HolographicSpaceUserPresence::
+        HolographicSpaceUserPresence_PresentActive:
+      new_state = device::mojom::XRVisibilityState::VISIBLE;
+      break;
+    // Indicates that the browsers immersive content is visible in the headset
+    // and the headset is being worn, but a modal dialog is capturing input.
+    case HolographicSpaceUserPresence::
+        HolographicSpaceUserPresence_PresentPassive:
+      new_state = device::mojom::XRVisibilityState::VISIBLE_BLURRED;
+      break;
+    // Indicates that the browsers immersive content is not visible in the
+    // headset or the user is not wearing the headset.
+    case HolographicSpaceUserPresence::HolographicSpaceUserPresence_Absent:
+      new_state = device::mojom::XRVisibilityState::HIDDEN;
+      break;
+  }
+
+  if (visibility_state != new_state) {
+    visibility_state = new_state;
+    VisibilityStateChanged(visibility_state);
+  }
 }
 
 void MixedRealityRenderLoop::EnsureStageBounds() {
@@ -745,6 +801,12 @@ mojom::XRFrameDataPtr MixedRealityRenderLoop::GetNextFrameData() {
   // Once we have a prediction, we can generate a frame data.
   mojom::XRFrameDataPtr ret =
       CreateDefaultFrameData(timestamp_.get(), next_frame_id_);
+
+  // If the device isn't currently showing content from this render loop, don't
+  // deliver complete frame data.
+  if (visibility_state == device::mojom::XRVisibilityState::HIDDEN) {
+    return ret;
+  }
 
   if ((!attached_ && !anchor_origin_) || !pose_) {
     TRACE_EVENT_INSTANT0("xr", "No origin or no pose",

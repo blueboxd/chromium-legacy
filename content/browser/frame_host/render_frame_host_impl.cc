@@ -406,7 +406,7 @@ base::Optional<url::Origin> GetOriginForURLLoaderFactoryUnchecked(
   // GetOriginForURLLoaderFactory should only be called at the ready-to-commit
   // time, when the RFHI and process to commit the navigation are already known.
   DCHECK_LE(NavigationRequest::RESPONSE_STARTED, navigation_request->state());
-  RenderFrameHostImpl* target_frame = navigation_request->render_frame_host();
+  RenderFrameHostImpl* target_frame = navigation_request->GetRenderFrameHost();
 
   // Check if this is loadDataWithBaseUrl (which needs special treatment).
   auto& common_params = navigation_request->common_params();
@@ -472,7 +472,7 @@ base::Optional<url::Origin> GetOriginForURLLoaderFactory(
   if (result.has_value() && !result->opaque()) {
     auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
     CHECK(policy->CanAccessDataForOrigin(
-        navigation_request->render_frame_host()->GetProcess()->GetID(),
+        navigation_request->GetRenderFrameHost()->GetProcess()->GetID(),
         *result));
   }
 
@@ -7515,7 +7515,7 @@ void RenderFrameHostImpl::LogCannotCommitUrlCrashKeys(
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("net_error",
                                             base::debug::CrashKeySize::Size32),
-        base::NumberToString(navigation_request->net_error()));
+        base::NumberToString(navigation_request->GetNetErrorCode()));
 
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("initiator_origin",

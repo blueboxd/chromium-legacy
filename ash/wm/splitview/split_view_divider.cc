@@ -36,14 +36,6 @@ namespace ash {
 
 namespace {
 
-constexpr base::TimeDelta kDividerSelectionStatusChangeDuration =
-    base::TimeDelta::FromMilliseconds(
-        kSplitviewDividerSelectionStatusChangeDurationMs);
-constexpr base::TimeDelta kDividerSpawnDuration =
-    base::TimeDelta::FromMilliseconds(kSplitviewDividerSpawnDurationMs);
-constexpr base::TimeDelta kDividerSpawnDelay =
-    base::TimeDelta::FromMilliseconds(kSplitviewDividerSpawnDelayMs);
-
 // The distance to the divider edge in which a touch gesture will be considered
 // as a valid event on the divider.
 constexpr int kDividerEdgeInsetForTouch = 8;
@@ -118,11 +110,11 @@ class DividerView : public views::View, public views::ViewTargeterDelegate {
     }
     ui::LayerAnimator* divider_animator = divider_view_->layer()->GetAnimator();
     ui::ScopedLayerAnimationSettings settings(divider_animator);
-    settings.SetTransitionDuration(kDividerSpawnDuration);
+    settings.SetTransitionDuration(kSplitviewDividerSpawnDuration);
     settings.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
     settings.SetPreemptionStrategy(ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
     divider_animator->SchedulePauseForProperties(
-        kDividerSpawnDelay, ui::LayerAnimationElement::BOUNDS);
+        kSplitviewDividerSpawnDelay, ui::LayerAnimationElement::BOUNDS);
     divider_view_->SetBounds(0, 0, bounds.width(), bounds.height());
     divider_handler_view_->DoSpawningAnimation(divider_signed_offset);
   }
@@ -216,7 +208,8 @@ class DividerView : public views::View, public views::ViewTargeterDelegate {
         static_cast<float>(new_bounds.width()) / old_bounds.width(),
         static_cast<float>(new_bounds.height()) / old_bounds.height());
     ui::ScopedLayerAnimationSettings settings(divider_animator);
-    settings.SetTransitionDuration(kDividerSelectionStatusChangeDuration);
+    settings.SetTransitionDuration(
+        kSplitviewDividerSelectionStatusChangeDuration);
     settings.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
     settings.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);

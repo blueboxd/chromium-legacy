@@ -42,9 +42,10 @@ class APP_LIST_EXPORT HorizontalPageContainer
   void OnWillBeHidden() override;
   void OnAnimationStarted(ash::AppListState from_state,
                           ash::AppListState to_state) override;
-  gfx::Rect GetSearchBoxBounds() const override;
-  gfx::Rect GetSearchBoxBoundsForState(ash::AppListState state) const override;
-  gfx::Rect GetPageBoundsForState(ash::AppListState state) const override;
+  gfx::Rect GetPageBoundsForState(
+      ash::AppListState state,
+      const gfx::Rect& contents_bounds,
+      const gfx::Rect& search_box_bounds) const override;
   views::View* GetFirstFocusableView() override;
   views::View* GetLastFocusableView() override;
   bool ShouldShowSearchBox() const override;

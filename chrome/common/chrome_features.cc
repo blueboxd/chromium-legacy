@@ -411,7 +411,7 @@ const base::Feature kHappinessTrackingSurveysForDesktopDemo{
 // Enables committed error pages instead of transient navigation entries for
 // HTTP auth interstitial pages (i.e. HTTP auth prompts initiated cross-origin).
 const base::Feature kHTTPAuthCommittedInterstitials{
-    "HTTPAuthCommittedInterstitials", base::FEATURE_DISABLED_BY_DEFAULT};
+    "HTTPAuthCommittedInterstitials", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables navigation suggestions UI for lookalike URLs (e.g. internationalized
 // domain names that are visually similar to popular domains or to domains with
@@ -821,6 +821,10 @@ const base::Feature kWebRtcRemoteEventLog{"WebRtcRemoteEventLog",
 // Compress remote-bound WebRTC event logs (if used; see kWebRtcRemoteEventLog).
 const base::Feature kWebRtcRemoteEventLogGzipped{
     "WebRtcRemoteEventLogGzipped", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enable WebUI accessibility enhancements for review and testing.
+const base::Feature kWebUIA11yEnhancements{"WebUIA11yEnhancements",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // Whether to enable "dark mode" enhancements in Mac Mojave or Windows 10 for

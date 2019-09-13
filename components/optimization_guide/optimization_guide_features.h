@@ -45,6 +45,12 @@ double MinTopHostEngagementScoreThreshold();
 // to be used and remain in the HintCacheStore.
 base::TimeDelta StoredFetchedHintsFreshnessDuration();
 
+// The duration of time after the blacklist initialization for which the low
+// engagement score threshold needs to be applied. If the blacklist was
+// initialized more than DurationApplyLowEngagementScoreThreshold() ago, then
+// the low engagement score threshold need not be applied.
+base::TimeDelta DurationApplyLowEngagementScoreThreshold();
+
 // The API key for the One Platform Optimization Guide Service.
 std::string GetOptimizationGuideServiceAPIKey();
 

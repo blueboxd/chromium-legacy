@@ -36,6 +36,7 @@
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
 #include "mojo/core/embedder/embedder.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "net/base/mime_util.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
@@ -280,7 +281,7 @@ class MHTMLGenerationManager::Job {
   std::vector<MHTMLExtraDataPart> extra_data_parts_;
 
   // MHTMLFileWriter instance for the frame being currently serialized.
-  mojom::MhtmlFileWriterAssociatedPtr writer_;
+  mojo::AssociatedRemote<mojom::MhtmlFileWriter> writer_;
 
   // Watcher to detect new data written to |mhtml_data_consumer_|.
   // This is instantiated and destroyed in the download sequence for each frame.
@@ -382,13 +383,19 @@ mojom::MhtmlSaveStatus MHTMLGenerationManager::Job::SendToNextRenderFrame() {
     return mojom::MhtmlSaveStatus::kFrameNoLongerExists;
   RenderFrameHost* rfh = ftn->current_frame_host();
 
+  if (writer_) {
+    // If we reached here, means the work for previous frame is done, so it is
+    // safe to cut the connection to the previous frame.
+    writer_.reset();
+  }
+
   // Bind Mojo interface to the RenderFrame
   rfh->GetRemoteAssociatedInterfaces()->GetInterface(&writer_);
 
   // Safe, as |writer_| is owned by this Job instance.
   auto error_callback =
       base::BindOnce(&Job::OnConnectionError, base::Unretained(this));
-  writer_.set_connection_error_handler(std::move(error_callback));
+  writer_.set_disconnect_handler(std::move(error_callback));
 
   mojom::SerializeAsMHTMLParamsPtr params(CreateMojoParams());
 

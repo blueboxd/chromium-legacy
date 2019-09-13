@@ -80,12 +80,6 @@ constexpr SkColor kContextSelectionFolder =
 // The width of the focus ring within a folder.
 constexpr int kFocusRingWidth = 2;
 
-// The duration in milliseconds of dragged view hover animation.
-constexpr int kDraggedViewHoverAnimationDuration = 250;
-
-// The duration in milliseconds of dragged view hover animation for folder icon.
-constexpr int kDraggedViewHoverAnimationDurationForFolder = 125;
-
 // The shadow blur of title.
 constexpr int kTitleShadowBlur = 28;
 
@@ -165,8 +159,7 @@ class AppListItemView::IconImageView : public views::ImageView {
   void AnimateRoundedCornerAndInsets(const AppListConfig& config, bool show) {
     ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
     settings.SetTweenType(gfx::Tween::EASE_IN);
-    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-        kDraggedViewHoverAnimationDurationForFolder));
+    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(125));
 
     SetRoundedCornerAndInsets(
         show ? config.folder_unclipped_icon_dimension() / 2
@@ -278,7 +271,7 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
 
   set_context_menu_controller(this);
 
-  SetAnimationDuration(0);
+  SetAnimationDuration(base::TimeDelta());
 
   preview_circle_radius_ = 0;
 }
@@ -960,7 +953,7 @@ void AppListItemView::CreateDraggedViewHoverAnimation() {
   dragged_view_hover_animation_ = std::make_unique<gfx::SlideAnimation>(this);
   dragged_view_hover_animation_->SetTweenType(gfx::Tween::EASE_IN);
   dragged_view_hover_animation_->SetSlideDuration(
-      kDraggedViewHoverAnimationDuration);
+      base::TimeDelta::FromMilliseconds(250));
 }
 
 void AppListItemView::AdaptBoundsForSelectionHighlight(gfx::Rect* bounds) {

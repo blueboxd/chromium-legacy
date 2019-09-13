@@ -47,8 +47,7 @@ jboolean JNI_NotificationSchedulerTask_OnStopTask(
   auto* handler = service->GetBackgroundTaskSchedulerHandler();
   handler->OnStopTask(
       static_cast<notifications::SchedulerTaskTime>(j_task_time));
-  // TODO(Hesen): Handle the return value and stoptask.
-  return true;
+  return false;
 }
 
 NotificationBackgroundTaskSchedulerAndroid::

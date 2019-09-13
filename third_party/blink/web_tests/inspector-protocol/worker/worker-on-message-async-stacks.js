@@ -35,12 +35,6 @@ worker.onmessage = (e) => console.log(e.data);
   await childSession.protocol.Debugger.oncePaused();
 
   childSession.protocol.Debugger.stepInto({breakOnAsyncCall: true});
-  testRunner.log('Get scheduledAsyncStackId');
-  const {asyncCallStackTraceId} =
-        (await childSession.protocol.Debugger.oncePaused()).params;
-  testRunner.log('Request pause on async task and resume');
-  dp.Debugger.pauseOnAsyncCall({parentStackTraceId: asyncCallStackTraceId});
-  childSession.protocol.Debugger.resume();
 
   const {callFrames, asyncStackTraceId} = (await dp.Debugger.oncePaused()).params;
   await testRunner.logStackTrace(

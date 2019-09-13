@@ -182,8 +182,9 @@ void OculusDevice::RequestSession(
       FROM_HERE,
       base::BindOnce(&XRCompositorCommon::RequestSession,
                      base::Unretained(render_loop_.get()),
-                     std::move(on_presentation_ended), std::move(options),
-                     std::move(on_request_present_result)));
+                     std::move(on_presentation_ended),
+                     base::DoNothing::Repeatedly<mojom::XRVisibilityState>(),
+                     std::move(options), std::move(on_request_present_result)));
   outstanding_session_requests_count_++;
 }
 

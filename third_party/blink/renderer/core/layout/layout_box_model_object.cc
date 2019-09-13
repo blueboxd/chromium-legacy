@@ -464,6 +464,15 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
     if (old_transform.IsInvertible() != new_transform.IsInvertible())
       Layer()->SetNeedsRepaint();
   }
+
+  // We can't squash across a layout containment boundary. So, if the
+  // containment changes, we need to update the compositing inputs.
+  if (old_style &&
+      ShouldApplyLayoutContainment(*old_style) !=
+          ShouldApplyLayoutContainment() &&
+      Layer()) {
+    Layer()->SetNeedsCompositingInputsUpdate();
+  }
 }
 
 void LayoutBoxModelObject::InvalidateStickyConstraints() {

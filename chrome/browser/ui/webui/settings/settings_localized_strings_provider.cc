@@ -335,7 +335,8 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
     {"mouseSettingsTitle", IDS_SETTINGS_ACCESSIBILITY_MOUSE_SETTINGS_TITLE},
     {"mouseSettingsDescription",
      IDS_SETTINGS_ACCESSIBILITY_MOUSE_SETTINGS_DESCRIPTION},
-    {"audioHeading", IDS_SETTINGS_ACCESSIBILITY_AUDIO_HEADING},
+    {"audioAndCaptionsHeading",
+     IDS_SETTINGS_ACCESSIBILITY_AUDIO_AND_CAPTIONS_HEADING},
     {"additionalFeaturesTitle",
      IDS_SETTINGS_ACCESSIBILITY_ADDITIONAL_FEATURES_TITLE},
     {"manageTtsSettings", IDS_SETTINGS_MANAGE_TTS_SETTINGS},
@@ -1293,6 +1294,7 @@ void AddResetStrings(content::WebUIDataSource* html_source) {
     {"powerwashDialogExplanation", IDS_SETTINGS_FACTORY_RESET_WARNING},
     {"powerwashDialogButton", IDS_SETTINGS_RESTART},
     {"powerwashLearnMoreUrl", IDS_FACTORY_RESET_HELP_URL},
+    {"powerwashButton", IDS_SETTINGS_FACTORY_RESET_BUTTON_LABEL},
 #endif
     // Automatic reset banner (now a dialog).
     {"resetAutomatedDialogTitle", IDS_SETTINGS_RESET_AUTOMATED_DIALOG_TITLE},

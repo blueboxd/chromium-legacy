@@ -446,44 +446,6 @@ gfx::Rect AppsContainerView::GetPageBoundsForState(
   return contents_view_->GetContentsBounds();
 }
 
-gfx::Rect AppsContainerView::GetSearchBoxTargetBounds() const {
-  gfx::Rect search_box_bounds(contents_view_->GetDefaultSearchBoxBounds());
-
-  int y = 0;
-  const ash::AppListViewState target_state =
-      contents_view_->target_view_state();
-  switch (target_state) {
-    case ash::AppListViewState::kClosed:
-      y = AppListConfig::instance().search_box_closed_top_padding();
-      break;
-    case ash::AppListViewState::kPeeking:
-    case ash::AppListViewState::kHalf:
-      y = AppListConfig::instance().search_box_peeking_top_padding();
-      break;
-    default:  // fullscreen
-      y = AppListConfig::instance().search_box_fullscreen_top_padding();
-  }
-  search_box_bounds.set_y(y);
-  return search_box_bounds;
-}
-
-gfx::Rect AppsContainerView::GetSearchBoxExpectedBounds() const {
-  gfx::Rect search_box_bounds(contents_view_->GetDefaultSearchBoxBounds());
-  const float progress =
-      contents_view_->app_list_view()->GetAppListTransitionProgress();
-  if (progress <= 1) {
-    search_box_bounds.set_y(gfx::Tween::IntValueBetween(
-        progress, AppListConfig::instance().search_box_closed_top_padding(),
-        AppListConfig::instance().search_box_peeking_top_padding()));
-  } else {
-    search_box_bounds.set_y(gfx::Tween::IntValueBetween(
-        progress - 1,
-        AppListConfig::instance().search_box_peeking_top_padding(),
-        AppListConfig::instance().search_box_fullscreen_top_padding()));
-  }
-  return search_box_bounds;
-}
-
 void AppsContainerView::UpdateSuggestionChips() {
   suggestion_chip_container_view_->SetResults(
       contents_view_->GetAppListMainView()

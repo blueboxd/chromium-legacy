@@ -6,9 +6,8 @@ package org.chromium.weblayer;
 
 import android.net.Uri;
 import android.os.RemoteException;
-import android.util.AndroidRuntimeException;
-import android.util.Log;
 
+import org.chromium.weblayer_private.aidl.APICallException;
 import org.chromium.weblayer_private.aidl.IClientNavigation;
 import org.chromium.weblayer_private.aidl.INavigation;
 
@@ -19,7 +18,6 @@ import java.util.List;
  * Information about a navigation.
  */
 public final class Navigation extends IClientNavigation.Stub {
-    private static final String TAG = "WebLayer";
     private final INavigation mNavigationImpl;
     // TODO(sky): investigate using java_cpp_enum.
     public enum State {
@@ -52,8 +50,7 @@ public final class Navigation extends IClientNavigation.Stub {
         try {
             return ipcStateToState(mNavigationImpl.getState());
         } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call getState.", e);
-            throw new AndroidRuntimeException(e);
+            throw new APICallException(e);
         }
     }
 
@@ -65,8 +62,7 @@ public final class Navigation extends IClientNavigation.Stub {
         try {
             return Uri.parse(mNavigationImpl.getUri());
         } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call getUri.", e);
-            throw new AndroidRuntimeException(e);
+            throw new APICallException(e);
         }
     }
 
@@ -80,8 +76,7 @@ public final class Navigation extends IClientNavigation.Stub {
             for (String r : mNavigationImpl.getRedirectChain()) redirects.add(Uri.parse(r));
             return redirects;
         } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call getRedirectChain.", e);
-            throw new AndroidRuntimeException(e);
+            throw new APICallException(e);
         }
     }
 }

@@ -82,7 +82,7 @@ class BoundsAnimatorTest : public testing::Test {
         child_(new TestView()),
         animator_(&parent_) {
     parent_.AddChildView(child_);
-    animator_.SetAnimationDuration(10);
+    animator_.SetAnimationDuration(base::TimeDelta::FromMilliseconds(10));
   }
 
   TestView* parent() { return &parent_; }

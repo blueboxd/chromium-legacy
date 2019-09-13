@@ -189,7 +189,7 @@ class GCMEncryptionProviderTest : public ::testing::Test {
     encrypted_message_ = std::move(message);
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   base::ScopedTempDir scoped_temp_dir_;
   base::HistogramTester histogram_tester_;
 

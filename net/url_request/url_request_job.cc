@@ -84,9 +84,7 @@ URLRequestJob::URLRequestJob(URLRequest* request,
       postfilter_bytes_read_(0),
       has_handled_response_(false),
       expected_content_size_(-1),
-      network_delegate_(network_delegate),
-      last_notified_total_received_bytes_(0),
-      last_notified_total_sent_bytes_(0) {}
+      network_delegate_(network_delegate) {}
 
 URLRequestJob::~URLRequestJob() {
 }
@@ -364,7 +362,6 @@ void URLRequestJob::NotifyHeadersComplete() {
   request_->response_info_.response_time = base::Time::Now();
   GetResponseInfo(&request_->response_info_);
 
-  MaybeNotifyNetworkBytes();
   request_->OnHeadersComplete();
 
   GURL new_location;
@@ -512,8 +509,6 @@ void URLRequestJob::NotifyStartError(const URLRequestStatus &status) {
   // error case.
   GetResponseInfo(&request_->response_info_);
 
-  MaybeNotifyNetworkBytes();
-
   request_->NotifyResponseStarted(status);
   // |this| may have been deleted here.
 }
@@ -541,8 +536,6 @@ void URLRequestJob::OnDone(const URLRequestStatus& status, bool notify_done) {
                                                    status.error());
     request_->set_status(status);
   }
-
-  MaybeNotifyNetworkBytes();
 
   if (notify_done) {
     // Complete this notification later.  This prevents us from re-entering the
@@ -727,39 +720,9 @@ void URLRequestJob::RecordBytesRead(int bytes_read) {
            << " pre total = " << prefilter_bytes_read()
            << " post total = " << postfilter_bytes_read();
   UpdatePacketReadTimes();  // Facilitate stats recording if it is active.
-
-  // Notify observers if any additional network usage has occurred. Note that
-  // the number of received bytes over the network sent by this notification
-  // could be vastly different from |bytes_read|, such as when a large chunk of
-  // network bytes is received before multiple smaller raw reads are performed
-  // on it.
-  MaybeNotifyNetworkBytes();
 }
 
 void URLRequestJob::UpdatePacketReadTimes() {
-}
-
-void URLRequestJob::MaybeNotifyNetworkBytes() {
-  if (!network_delegate_)
-    return;
-
-  // Report any new received bytes.
-  int64_t total_received_bytes = GetTotalReceivedBytes();
-  DCHECK_GE(total_received_bytes, last_notified_total_received_bytes_);
-  if (total_received_bytes > last_notified_total_received_bytes_) {
-    network_delegate_->NotifyNetworkBytesReceived(
-        request_, total_received_bytes - last_notified_total_received_bytes_);
-  }
-  last_notified_total_received_bytes_ = total_received_bytes;
-
-  // Report any new sent bytes.
-  int64_t total_sent_bytes = GetTotalSentBytes();
-  DCHECK_GE(total_sent_bytes, last_notified_total_sent_bytes_);
-  if (total_sent_bytes > last_notified_total_sent_bytes_) {
-    network_delegate_->NotifyNetworkBytesSent(
-        request_, total_sent_bytes - last_notified_total_sent_bytes_);
-  }
-  last_notified_total_sent_bytes_ = total_sent_bytes;
 }
 
 }  // namespace net

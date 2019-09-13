@@ -26,11 +26,8 @@ namespace {
 // Ink drop parameters.
 constexpr float kInkDropVisibleOpacity = 0.06f;
 
-// The duration of the crossfade animation when swapping the button's images.
-constexpr int kSwapImagesAnimationDurationMs = 200;
-
 // The duration of the fade out animation of the old icon during a crossfade
-// animation as a ratio of |kSwapImagesAnimationDurationMs|.
+// animation as a ratio of the duration of |swap_images_animation_|.
 constexpr float kFadeOutRatio = 0.5f;
 
 // The ratio applied to the button's alpha when the button is disabled.
@@ -116,7 +113,8 @@ void FrameCaptionButton::SetImage(CaptionButtonIcon icon,
 
   if (animate == ANIMATE_YES) {
     swap_images_animation_->Reset(0);
-    swap_images_animation_->SetSlideDuration(kSwapImagesAnimationDurationMs);
+    swap_images_animation_->SetSlideDuration(
+        base::TimeDelta::FromMilliseconds(200));
     swap_images_animation_->Show();
   } else {
     swap_images_animation_->Reset(1);

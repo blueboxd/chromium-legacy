@@ -16,9 +16,8 @@ namespace web {
 
 // This class is an implementation of SystemCookieStore, WKHTTPSystemCookieStore
 // uses WKHTTPCookieStore as the underlying system cookie store.
-class API_AVAILABLE(ios(11.0)) WKHTTPSystemCookieStore
-    : public net::SystemCookieStore,
-      public WKWebViewConfigurationProviderObserver {
+class WKHTTPSystemCookieStore : public net::SystemCookieStore,
+                                public WKWebViewConfigurationProviderObserver {
  public:
   explicit WKHTTPSystemCookieStore(
       WKWebViewConfigurationProvider* config_provider);

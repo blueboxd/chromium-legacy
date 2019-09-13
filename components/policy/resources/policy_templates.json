@@ -17671,6 +17671,31 @@
       'tags': ['system-security'],
       'desc': '''Hostnames specified in this list will be exempt from the HSTS policy check that could potentially upgrade requests from http to https. Only single-label hostnames are allowed in this policy. Hostnames must be canonicalized: any IDNs must be convered to their A-label format, and all ASCII letters must be lowercase. This policy only applies to the specific hostnames specified; it does not apply to subdomains of the names specified.''',
     },
+    {
+      'name': 'AllowSyncXHRInPageDismissal',
+      'owners': ['kdillon@chromium.org, panicker@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:78-', 'chrome_os:78-', 'android:78-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'default_for_enterprise_users': True,
+      'example_value': False,
+      'id': 604,
+      'caption': '''Allows a page to perform synchronus XHR requests during page dismissal.''',
+      'tags': [],
+      'desc': '''This policy allows an admin to specify that a page may send synchronus XHR requests during page dismissal.
+
+      When the policy is set to enabled, pages are allowed to send synchronus XHR reequests during page dismissal.
+
+      When the policy is set to disabled or not set, pages are not allowed to send synchronus XHR requests during page dismissal.
+
+      This policy will be removed in Chrome 82.
+
+      See https://www.chromestatus.com/feature/4664843055398912 .''',
+    },
   ],
 
   'messages': {
@@ -18470,6 +18495,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 603,
+  'highest_id_currently_used': 604,
   'highest_atomic_group_id_currently_used': 37
 }

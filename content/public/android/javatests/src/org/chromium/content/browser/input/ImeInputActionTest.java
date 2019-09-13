@@ -23,7 +23,7 @@ import org.chromium.ui.base.ime.TextInputType;
  * IME (input method editor) and text input tests for enterkeyhint attribute.
  */
 @RunWith(ContentJUnit4ClassRunner.class)
-@CommandLineFlags.Add({"enable-experimental-web-platform-features", "allow-pre-commit-input"})
+@CommandLineFlags.Add({"enable-experimental-web-platform-features"})
 public class ImeInputActionTest {
     @Rule
     public ImeActivityTestRule mRule = new ImeActivityTestRule();

@@ -56,10 +56,10 @@ class ShelfViewTestAPI {
   void HideOverflowBubble();
 
   // An accessor for the |bounds_animator_| duration.
-  int GetAnimationDuration() const;
+  base::TimeDelta GetAnimationDuration() const;
 
-  // Sets animation duration in milliseconds for test.
-  void SetAnimationDuration(int duration_ms);
+  // Sets animation duration for test.
+  void SetAnimationDuration(base::TimeDelta duration);
 
   // Runs message loop and waits until all add/remove animations are done for
   // the given bounds animator.

@@ -2003,7 +2003,7 @@ void TabStrip::Init() {
   UpdateContrastRatioValues();
 
   if (!gfx::Animation::ShouldRenderRichAnimation())
-    bounds_animator_.SetAnimationDuration(0);
+    bounds_animator_.SetAnimationDuration(base::TimeDelta());
 }
 
 std::map<TabGroupId, TabGroupHeader*> TabStrip::GetGroupHeaders() {

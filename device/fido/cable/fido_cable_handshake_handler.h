@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "device/fido/cable/cable_discovery_data.h"
 #include "device/fido/fido_device.h"
 #include "third_party/boringssl/src/include/openssl/base.h"
 
@@ -78,8 +79,14 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableV1HandshakeHandler
 class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableV2HandshakeHandler
     : public FidoCableHandshakeHandler {
  public:
-  FidoCableV2HandshakeHandler(FidoCableDevice* device,
-                              base::span<const uint8_t, 32> session_pre_key);
+  FidoCableV2HandshakeHandler(
+      FidoCableDevice* device,
+      base::span<const uint8_t, 32> psk_gen_key,
+      base::span<const uint8_t, 8> nonce,
+      base::span<const uint8_t, kCableEphemeralIdSize> eid,
+      base::Optional<base::span<const uint8_t, 65>> peer_identity,
+      base::RepeatingCallback<void(std::unique_ptr<CableDiscoveryData>)>
+          pairing_callback);
   ~FidoCableV2HandshakeHandler() override;
 
   // FidoCableHandshakeHandler:
@@ -97,12 +104,16 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableV2HandshakeHandler
       base::span<const uint8_t> ciphertext);
 
   FidoCableDevice* const cable_device_;
-  std::array<uint8_t, 32> session_pre_key_;
+  std::array<uint8_t, 16> eid_;
+  std::array<uint8_t, 32> psk_;
   std::array<uint8_t, 32> chaining_key_;
   std::array<uint8_t, 32> h_;
   std::array<uint8_t, 32> symmetric_key_;
   uint32_t symmetric_nonce_;
+  base::Optional<std::array<uint8_t, 65>> peer_identity_;
   bssl::UniquePtr<EC_KEY> ephemeral_key_;
+  base::RepeatingCallback<void(std::unique_ptr<CableDiscoveryData>)>
+      pairing_callback_;
 };
 
 }  // namespace device

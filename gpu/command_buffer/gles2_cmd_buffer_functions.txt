@@ -362,6 +362,8 @@ GL_APICALL void         GL_APIENTRY glStencilThenCoverStrokePathInstancedCHROMIU
 GL_APICALL void         GL_APIENTRY glBindFragmentInputLocationCHROMIUM (GLidProgram program, GLint location, const char* name);
 GL_APICALL void         GL_APIENTRY glProgramPathFragmentInputGenCHROMIUM (GLidProgram program, GLint location, GLenumPathFragmentInputGenMode genMode, GLint components, const GLfloat* coeffs);
 
+// Extension CHROMIUM_context_visibility_hint
+GL_APICALL void         GL_APIENTRY glContextVisibilityHintCHROMIUM (GLboolean visibility);
 
 // Extension CHROMIUM_framebuffer_mixed_samples
 GL_APICALL void         GL_APIENTRY glCoverageModulationCHROMIUM (GLenumCoverageModulationComponents components);

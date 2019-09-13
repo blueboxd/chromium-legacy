@@ -42,6 +42,11 @@ struct CORE_EXPORT StructTraits<blink::mojom::blink::CloneableMessage::DataView,
     return input.sender_stack_trace_id.debugger_id.second;
   }
 
+  static bool stack_trace_should_pause(
+      const blink::BlinkCloneableMessage& input) {
+    return input.sender_stack_trace_id.should_pause;
+  }
+
   static const base::Optional<base::UnguessableToken>& locked_agent_cluster_id(
       const blink::BlinkCloneableMessage& input) {
     return input.locked_agent_cluster_id;

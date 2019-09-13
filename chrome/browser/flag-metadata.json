@@ -219,6 +219,11 @@
     "expiry_milestone": 79
   },
   {
+    "name": "autofill-always-return-cloud-tokenized-card",
+    "owners": [ "aneeshali@google.com", "annelim@google.com", "jsaul@google.com" ],
+    "expiry_milestone": 87
+  },
+  {
     "name": "autofill-always-show-server-cards-in-sync-transport",
     "owners": [ "sebsg" ],
     "expiry_milestone": 74
@@ -2459,6 +2464,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "offline-indicator-v2",
+    "owners": [ "sinansahin@google.com", "twellington", "offline-dev" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "offline-pages-alternate-dino-page",
     "owners": [ "carlosk", "offline-dev" ],
     "expiry_milestone": 76
@@ -3328,6 +3338,11 @@
     "name": "web-contents-occlusion",
     "owners": [ "davidbienvenu" ],
     "expiry_milestone": 81
+  },
+  {
+    "name": "webui-a11y-enhancements",
+    "owners": [ "aee" ],
+    "expiry_milestone": 82
   },
   {
     "name": "webui-tab-strip",

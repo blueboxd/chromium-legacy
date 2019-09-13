@@ -24,7 +24,8 @@ enum class RevertReason {
   MENU_CANCEL = 0,
   SEARCH_PROVIDER_CHANGE = 1,
   TAB_CLOSED = 2,
-  kMaxValue = TAB_CLOSED,
+  NAVIGATION = 3,
+  kMaxValue = NAVIGATION,
 };
 
 // Supports theme changes originating from the NTP customization menu. Users can
@@ -56,7 +57,7 @@ class ChromeColorsService : public KeyedService {
 
   // Same as |RevertThemeChanges| but only reverts theme changes if they were
   // made from the same tab. Used for reverting changes from a closing NTP.
-  void RevertThemeChangesForTab(content::WebContents* tab);
+  void RevertThemeChangesForTab(content::WebContents* tab, RevertReason reason);
 
   // Confirms current theme changes. Since the theme is already installed by
   // Apply*, this only clears the previously saved state.

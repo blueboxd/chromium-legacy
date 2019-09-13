@@ -14,6 +14,8 @@
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
@@ -59,18 +61,54 @@ bool IsWebauthnRPIDListedInEnterprisePolicy(
                      });
 }
 
-}  // namespace
+std::string Base64(base::span<const uint8_t> in) {
+  std::string ret;
+  base::Base64Encode(
+      base::StringPiece(reinterpret_cast<const char*>(in.data()), in.size()),
+      &ret);
+  return ret;
+}
+
+template <size_t N>
+bool CopyBytestring(std::array<uint8_t, N>* out,
+                    const base::Value& dict,
+                    const char* key) {
+  const base::Value* v = dict.FindKey(key);
+  if (!v || !v->is_string()) {
+    return false;
+  }
+
+  std::string bytes;
+  if (!base::Base64Decode(v->GetString(), &bytes) || bytes.size() != N) {
+    return false;
+  }
+
+  std::copy(bytes.begin(), bytes.end(), out->begin());
+  return true;
+}
 
 #if defined(OS_MACOSX)
-static const char kWebAuthnTouchIdMetadataSecretPrefName[] =
+const char kWebAuthnTouchIdMetadataSecretPrefName[] =
     "webauthn.touchid.metadata_secret";
 #endif
 
-static const char kWebAuthnLastTransportUsedPrefName[] =
+const char kWebAuthnLastTransportUsedPrefName[] =
     "webauthn.last_transport_used";
 
-static const char kWebAuthnBlePairedMacAddressesPrefName[] =
+const char kWebAuthnBlePairedMacAddressesPrefName[] =
     "webauthn.ble.paired_mac_addresses";
+
+const char kWebAuthnCablePairingsPrefName[] = "webauthn.cable_pairings";
+
+// The |kWebAuthnCablePairingsPrefName| preference contains a list of dicts,
+// where each dict has these keys:
+const char kPairingPrefIdentity[] = "identity";
+const char kPairingPrefName[] = "name";
+const char kPairingPrefTime[] = "time";
+const char kPairingPrefEIDGenKey[] = "eid_gen_key";
+const char kPairingPrefPSKGenKey[] = "psk_gen_key";
+
+}  // namespace
 
 // static
 void ChromeAuthenticatorRequestDelegate::RegisterProfilePrefs(
@@ -83,6 +121,7 @@ void ChromeAuthenticatorRequestDelegate::RegisterProfilePrefs(
   registry->RegisterStringPref(kWebAuthnLastTransportUsedPrefName,
                                std::string());
   registry->RegisterListPref(kWebAuthnBlePairedMacAddressesPrefName);
+  registry->RegisterListPref(kWebAuthnCablePairingsPrefName);
 }
 
 ChromeAuthenticatorRequestDelegate::ChromeAuthenticatorRequestDelegate(
@@ -498,6 +537,41 @@ void ChromeAuthenticatorRequestDelegate::OnCancelRequest() {
   std::move(cancel_callback_).Run();
 }
 
+void ChromeAuthenticatorRequestDelegate::AppendCablePairings(
+    std::vector<device::CableDiscoveryData>* pairings) {
+  if (!base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport)) {
+    NOTREACHED();
+    return;
+  }
+
+  PrefService* prefs =
+      Profile::FromBrowserContext(browser_context())->GetPrefs();
+  const base::ListValue* pref_pairings =
+      prefs->GetList(kWebAuthnCablePairingsPrefName);
+
+  for (const auto& pairing : *pref_pairings) {
+    if (!pairing.is_dict()) {
+      continue;
+    }
+
+    device::CableDiscoveryData discovery;
+    discovery.version = device::CableDiscoveryData::Version::V2;
+    discovery.v2.emplace();
+    discovery.v2->peer_identity.emplace();
+
+    if (!CopyBytestring(&discovery.v2->peer_identity.value(), pairing,
+                        kPairingPrefIdentity) ||
+        !CopyBytestring(&discovery.v2->eid_gen_key, pairing,
+                        kPairingPrefEIDGenKey) ||
+        !CopyBytestring(&discovery.v2->psk_gen_key, pairing,
+                        kPairingPrefPSKGenKey)) {
+      continue;
+    }
+
+    pairings->push_back(discovery);
+  }
+}
+
 void ChromeAuthenticatorRequestDelegate::AddFidoBleDeviceToPairedList(
     std::string ble_authenticator_id) {
   ListPrefUpdate update(
@@ -530,4 +604,66 @@ ChromeAuthenticatorRequestDelegate::GetPreviouslyPairedFidoBleDeviceIds()
   PrefService* prefs =
       Profile::FromBrowserContext(browser_context())->GetPrefs();
   return prefs->GetList(kWebAuthnBlePairedMacAddressesPrefName);
+}
+
+void ChromeAuthenticatorRequestDelegate::CustomizeDiscoveryFactory(
+    device::FidoDiscoveryFactory* discovery_factory) {
+  discovery_factory->set_cable_pairing_callback(base::BindRepeating(
+      &ChromeAuthenticatorRequestDelegate::StoreNewCablePairingInPrefs,
+      weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ChromeAuthenticatorRequestDelegate::StoreNewCablePairingInPrefs(
+    std::unique_ptr<device::CableDiscoveryData> discovery_data) {
+  // This is called when doing a QR-code pairing with a phone and the phone
+  // sends long-term pairing information during the handshake. The pairing
+  // information is saved in preferences for future operations.
+  DCHECK_EQ(device::CableDiscoveryData::Version::V2, discovery_data->version);
+  DCHECK(discovery_data->v2->peer_identity.has_value());
+  DCHECK(discovery_data->v2->peer_name.has_value());
+  if (!base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport)) {
+    NOTREACHED();
+    return;
+  }
+
+  // For Incognito/Guest profiles, pairings will only last for the duration of
+  // that session. While an argument could be made that it's safe to persist
+  // such pairing for longer, this seems like the safe option initially.
+  ListPrefUpdate update(
+      Profile::FromBrowserContext(browser_context())->GetPrefs(),
+      kWebAuthnCablePairingsPrefName);
+  const std::string identity_base64 =
+      Base64(*discovery_data->v2->peer_identity);
+  if (std::any_of(update->begin(), update->end(),
+                  [&identity_base64](const auto& value) {
+                    if (!value.is_dict()) {
+                      return false;
+                    }
+                    const base::Value* identity =
+                        value.FindKey(kPairingPrefIdentity);
+                    return identity && identity->is_string() &&
+                           identity->GetString() == identity_base64;
+                  })) {
+    // This phone is already known, don't add it again.
+    return;
+  }
+
+  auto dict = std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
+  dict->SetKey(kPairingPrefIdentity, base::Value(std::move(identity_base64)));
+  dict->SetKey(kPairingPrefName,
+               base::Value(std::move(*discovery_data->v2->peer_name)));
+  dict->SetKey(kPairingPrefEIDGenKey,
+               base::Value(Base64(discovery_data->v2->eid_gen_key)));
+  dict->SetKey(kPairingPrefPSKGenKey,
+               base::Value(Base64(discovery_data->v2->psk_gen_key)));
+
+  base::Time::Exploded now;
+  base::Time::Now().UTCExplode(&now);
+  dict->SetKey(kPairingPrefTime,
+               // RFC 3339 time format.
+               base::Value(base::StringPrintf(
+                   "%04d-%02d-%02dT%02d:%02d:%02dZ", now.year, now.month,
+                   now.day_of_month, now.hour, now.minute, now.second)));
+
+  update->Append(std::move(dict));
 }

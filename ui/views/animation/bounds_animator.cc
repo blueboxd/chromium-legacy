@@ -134,8 +134,8 @@ void BoundsAnimator::Cancel() {
   AnimationContainerProgressed(container_.get());
 }
 
-void BoundsAnimator::SetAnimationDuration(int duration_ms) {
-  animation_duration_ms_ = duration_ms;
+void BoundsAnimator::SetAnimationDuration(base::TimeDelta duration) {
+  animation_duration_ = duration;
 }
 
 void BoundsAnimator::AddObserver(BoundsAnimatorObserver* observer) {
@@ -149,7 +149,7 @@ void BoundsAnimator::RemoveObserver(BoundsAnimatorObserver* observer) {
 std::unique_ptr<gfx::SlideAnimation> BoundsAnimator::CreateAnimation() {
   auto animation = std::make_unique<gfx::SlideAnimation>(this);
   animation->SetContainer(container_.get());
-  animation->SetSlideDuration(animation_duration_ms_);
+  animation->SetSlideDuration(animation_duration_);
   animation->SetTweenType(tween_type_);
   return animation;
 }

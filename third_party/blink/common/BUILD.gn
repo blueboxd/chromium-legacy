@@ -75,6 +75,7 @@ jumbo_source_set("common") {
     "origin_policy/origin_policy_parser.h",
     "origin_trials/trial_token.cc",
     "origin_trials/trial_token_validator.cc",
+    "peerconnection/webrtc_ip_handling_policy.cc",
     "privacy_preferences.cc",
     "service_worker/service_worker_status_code.cc",
     "service_worker/service_worker_type_converters.cc",

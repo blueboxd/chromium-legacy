@@ -289,6 +289,9 @@ IPC_MESSAGE_ROUTED3(GpuCommandBufferMsg_AsyncFlush,
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_ConsoleMsg,
                     GPUCommandBufferConsoleMessage /* msg */)
 
+// Sent by the GPU process to notify the renderer process of a GPU switch.
+IPC_MESSAGE_ROUTED0(GpuCommandBufferMsg_GpuSwitched)
+
 // Register an existing shared memory transfer buffer. The id that can be
 // used to identify the transfer buffer from a command buffer.
 IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_RegisterTransferBuffer,

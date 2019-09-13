@@ -148,11 +148,6 @@ std::unique_ptr<WebContents> BrowserNavigatorTest::CreateWebContents(
       initialize_renderer
           ? WebContents::CreateParams::kInitializeAndWarmupRendererProcess
           : WebContents::CreateParams::kOkayToHaveRendererProcess;
-  WebContents* base_web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  if (base_web_contents) {
-    create_params.initial_size = base_web_contents->GetContainerBounds().size();
-  }
   return WebContents::Create(create_params);
 }
 

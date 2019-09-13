@@ -294,20 +294,19 @@ class FakeFidoCableDiscovery : public FidoCableDiscovery {
  public:
   explicit FakeFidoCableDiscovery(
       std::vector<CableDiscoveryData> discovery_data)
-      : FidoCableDiscovery(std::move(discovery_data), BogusQRGeneratorKey()) {}
+      : FidoCableDiscovery(std::move(discovery_data),
+                           BogusQRGeneratorKey(),
+                           /*pairing_callback=*/base::nullopt) {}
   ~FakeFidoCableDiscovery() override = default;
 
  private:
   base::Optional<std::unique_ptr<FidoCableHandshakeHandler>>
   CreateHandshakeHandler(FidoCableDevice* device,
-                         const CableDiscoveryData* discovery_data) override {
-    // Nonce is embedded as first 8 bytes of client EID.
-    std::array<uint8_t, 8> nonce;
-    const bool ok = fido_parsing_utils::ExtractArray(
-        discovery_data->v1->client_eid, 0, &nonce);
-    DCHECK(ok);
+                         const CableDiscoveryData& discovery_data,
+                         const CableNonce& nonce,
+                         const CableEidArray& eid) override {
     return std::make_unique<FakeHandshakeHandler>(
-        device, nonce, discovery_data->v1->session_pre_key);
+        device, nonce, discovery_data.v1->session_pre_key);
   }
 
   static std::array<uint8_t, 32> BogusQRGeneratorKey() {

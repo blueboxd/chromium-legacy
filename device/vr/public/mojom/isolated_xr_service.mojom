@@ -34,6 +34,10 @@ interface XRRuntimeEventListener {
   // A device has indicated that it is idle.
   OnDeviceIdle(device.mojom.VRDisplayEventReason reason);
 
+  // A device has indicated that the visibility of the content it's displaying
+  // has changed.
+  OnVisibilityStateChanged(device.mojom.XRVisibilityState visibility_state);
+
   // Called when the device exits presentation.
   OnExitPresent();
 };

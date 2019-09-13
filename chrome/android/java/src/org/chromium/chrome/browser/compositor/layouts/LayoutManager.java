@@ -118,6 +118,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     private final EphemeralTabPanel mEphemeralTabPanel;
     private final OverlayPanelManager mOverlayPanelManager;
     private final ToolbarSceneLayer mToolbarOverlay;
+    private SceneOverlay mStatusIndicatorSceneOverlay;
 
     /** A delegate for interacting with the Contextual Search manager. */
     protected ContextualSearchManagementDelegate mContextualSearchDelegate;
@@ -872,6 +873,14 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     }
 
     /**
+     * Set the {@link SceneOverlay} and add it to the layout.
+     * @param overlay The {@link SceneOverlay} to set.
+     */
+    public void setStatusIndicatorSceneOverlay(SceneOverlay overlay) {
+        mStatusIndicatorSceneOverlay = overlay;
+    }
+
+    /**
      * Adds the {@link SceneOverlay} across all {@link Layout}s owned by this class.
      * @param helper A {@link SceneOverlay} instance.
      */
@@ -888,6 +897,9 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
      */
     protected void addAllSceneOverlays() {
         addGlobalSceneOverlay(mToolbarOverlay);
+        if (mStatusIndicatorSceneOverlay != null) {
+            addGlobalSceneOverlay(mStatusIndicatorSceneOverlay);
+        }
         mStaticLayout.addSceneOverlay(mContextualSearchPanel);
         if (mEphemeralTabPanel != null) mStaticLayout.addSceneOverlay(mEphemeralTabPanel);
     }

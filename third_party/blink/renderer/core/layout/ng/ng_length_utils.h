@@ -59,7 +59,9 @@ CORE_EXPORT bool NeedMinMaxSizeForContentContribution(WritingMode mode,
                                                       const ComputedStyle&);
 
 // Returns if the given |Length| is unresolvable, e.g. the length is %-based
-// during the intrinsic phase. Considers 'auto' as resolvable.
+// during the intrinsic phase. For block lengths we also consider 'auto',
+// 'min-content', 'max-content', 'fit-content' and 'none' (for max-block-size)
+// as unresolvable.
 CORE_EXPORT bool InlineLengthUnresolvable(const Length&, LengthResolvePhase);
 CORE_EXPORT bool BlockLengthUnresolvable(
     const NGConstraintSpace&,
@@ -145,11 +147,9 @@ inline LayoutUnit ResolveMinBlockLength(
     LengthResolvePhase phase,
     const LayoutUnit* opt_percentage_resolution_block_size_for_min_max =
         nullptr) {
-  if (LIKELY(length.IsAuto() || length.IsMinContent() ||
-             length.IsMaxContent() || length.IsFitContent() ||
-             BlockLengthUnresolvable(
-                 constraint_space, length, phase,
-                 opt_percentage_resolution_block_size_for_min_max)))
+  if (LIKELY(BlockLengthUnresolvable(
+          constraint_space, length, phase,
+          opt_percentage_resolution_block_size_for_min_max)))
     return border_padding.BlockSum();
 
   return ResolveBlockLengthInternal(
@@ -167,11 +167,9 @@ inline LayoutUnit ResolveMaxBlockLength(
     LengthResolvePhase phase,
     const LayoutUnit* opt_percentage_resolution_block_size_for_min_max =
         nullptr) {
-  if (LIKELY(length.IsMaxSizeNone() || length.IsMinContent() ||
-             length.IsMaxContent() || length.IsFitContent() ||
-             BlockLengthUnresolvable(
-                 constraint_space, length, phase,
-                 opt_percentage_resolution_block_size_for_min_max)))
+  if (LIKELY(BlockLengthUnresolvable(
+          constraint_space, length, phase,
+          opt_percentage_resolution_block_size_for_min_max)))
     return LayoutUnit::Max();
 
   return ResolveBlockLengthInternal(

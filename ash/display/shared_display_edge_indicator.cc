@@ -20,8 +20,6 @@
 namespace ash {
 namespace {
 
-const int kIndicatorAnimationDurationMs = 1000;
-
 class IndicatorView : public views::View {
  public:
   IndicatorView() = default;
@@ -83,7 +81,7 @@ void SharedDisplayEdgeIndicator::Show(const gfx::Rect& src_bounds,
   CreateWidget(src_bounds, src_indicator_);
   CreateWidget(dst_bounds, dst_indicator_);
   animation_.reset(new gfx::ThrobAnimation(this));
-  animation_->SetThrobDuration(kIndicatorAnimationDurationMs);
+  animation_->SetThrobDuration(base::TimeDelta::FromMilliseconds(1000));
   animation_->StartThrobbing(-1 /* infinite */);
 }
 

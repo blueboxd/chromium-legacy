@@ -275,7 +275,6 @@ gfx::Size LocationIconView::GetMinimumSizeForPreferredSize(
   return size;
 }
 
-int LocationIconView::GetSlideDurationTime() const {
-  constexpr int kSlideDurationTimeMs = 150;
-  return kSlideDurationTimeMs;
+base::TimeDelta LocationIconView::GetSlideDurationTime() const {
+  return base::TimeDelta::FromMilliseconds(150);
 }

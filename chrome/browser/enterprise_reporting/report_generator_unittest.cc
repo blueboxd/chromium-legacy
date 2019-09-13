@@ -201,6 +201,7 @@ class ReportGeneratorTest : public ::testing::Test {
 
   TestingProfileManager* profile_manager() { return &profile_manager_; }
   ReportGenerator* generator() { return &generator_; }
+  base::HistogramTester* histogram_tester() { return histogram_tester_.get(); }
 
  private:
   ReportGenerator generator_;
@@ -257,6 +258,9 @@ TEST_F(ReportGeneratorTest, GenerateActiveProfiles) {
 
   VerifyProfileReport(active_profiles_names, inactive_profiles_names,
                       requests[0]->browser_report());
+
+  histogram_tester()->ExpectBucketCount("Enterprise.CloudReportingRequestSize",
+                                        /*report size floor to KB*/ 0, 1);
 }
 
 TEST_F(ReportGeneratorTest, BasicReportIsTooBig) {
@@ -268,6 +272,8 @@ TEST_F(ReportGeneratorTest, BasicReportIsTooBig) {
   // Because the limitation is so small, no request can be created.
   auto requests = GenerateRequests();
   EXPECT_EQ(0u, requests.size());
+  histogram_tester()->ExpectTotalCount("Enterprise.CloudReportingRequestSize",
+                                       0);
 }
 
 TEST_F(ReportGeneratorTest, ReportSeparation) {
@@ -295,6 +301,8 @@ TEST_F(ReportGeneratorTest, ReportSeparation) {
                       requests[0]->browser_report());
   VerifyProfileReport(second_request_profiles, first_request_profiles,
                       requests[1]->browser_report());
+  histogram_tester()->ExpectBucketCount("Enterprise.CloudReportingRequestSize",
+                                        /*report size floor to KB*/ 0, 2);
 }
 
 TEST_F(ReportGeneratorTest, ProfileReportIsTooBig) {
@@ -317,6 +325,8 @@ TEST_F(ReportGeneratorTest, ProfileReportIsTooBig) {
   // reported.
   VerifyProfileReport(second_profile_name, first_profile_name,
                       requests[0]->browser_report());
+  histogram_tester()->ExpectBucketCount("Enterprise.CloudReportingRequestSize",
+                                        /*report size floor to KB*/ 0, 2);
 }
 
 #endif

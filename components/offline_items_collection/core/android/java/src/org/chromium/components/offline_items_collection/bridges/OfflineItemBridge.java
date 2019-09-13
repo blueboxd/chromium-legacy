@@ -6,6 +6,7 @@ package org.chromium.components.offline_items_collection.bridges;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.components.offline_items_collection.FailState;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
 import org.chromium.components.offline_items_collection.OfflineItemProgressUnit;
@@ -50,8 +51,8 @@ public final class OfflineItemBridge {
             boolean externallyRemoved, long creationTimeMs, long completionTimeMs,
             long lastAccessedTimeMs, boolean isOpenable, String filePath, String mimeType,
             String pageUrl, String originalUrl, boolean isOffTheRecord, @OfflineItemState int state,
-            @PendingState int pendingState, boolean isResumable, boolean allowMetered,
-            long receivedBytes, long progressValue, long progressMax,
+            @FailState int failState, @PendingState int pendingState, boolean isResumable,
+            boolean allowMetered, long receivedBytes, long progressValue, long progressMax,
             @OfflineItemProgressUnit int progressUnit, long timeRemainingMs, boolean isDangerous,
             boolean canRename, boolean ignoreVisuals) {
         OfflineItem item = new OfflineItem();
@@ -76,6 +77,7 @@ public final class OfflineItemBridge {
         item.originalUrl = originalUrl;
         item.isOffTheRecord = isOffTheRecord;
         item.state = state;
+        item.failState = failState;
         item.pendingState = pendingState;
         item.isResumable = isResumable;
         item.allowMetered = allowMetered;

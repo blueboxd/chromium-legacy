@@ -98,6 +98,8 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
   void OnDeviceActivated(device::mojom::VRDisplayEventReason reason,
                          base::OnceCallback<void(bool)> on_handled) override;
   void OnDeviceIdle(device::mojom::VRDisplayEventReason reason) override;
+  void OnVisibilityStateChanged(
+      device::mojom::XRVisibilityState visibility_state) override;
 
   void StopImmersiveSession();
   void OnListeningForActivate(bool is_listening);

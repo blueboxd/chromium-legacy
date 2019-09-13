@@ -2061,13 +2061,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, CannotZoomInvalidTab) {
 }
 
 // Regression test for crbug.com/660498.
-// TODO(crbug.com/882213) Disabled due to timeouts on Linux builders.
-#if defined(OS_LINUX)
-#define MAYBE_TemporaryAddressSpoof DISABLED_TemporaryAddressSpoof
-#else
-#define MAYBE_TemporaryAddressSpoof TemporaryAddressSpoof
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_TemporaryAddressSpoof) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TemporaryAddressSpoof) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   content::WebContents* first_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -2115,6 +2109,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_TemporaryAddressSpoof) {
             browser()->tab_strip_model()->GetActiveWebContents());
 
   EXPECT_EQ(url, second_web_contents->GetVisibleURL());
+
+  // Wait for the TestNavigationManager-initiated navigation to complete to
+  // avoid a race during browser teardown (see crbug.com/882213).
+  navigation_manager.WaitForNavigationFinished();
 }
 
 // Tests how chrome.windows.create behaves when setSelfAsOpener parameter is

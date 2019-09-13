@@ -1695,7 +1695,9 @@ TEST_F(AppsGridViewTest, ControlShiftArrowFolderLastItemOnPage) {
 
 TEST_P(AppsGridViewTest, MouseDragFlipPage) {
   apps_grid_view_->set_page_flip_delay_in_ms_for_testing(10);
-  GetPaginationModel()->SetTransitionDurations(10, 10);
+  GetPaginationModel()->SetTransitionDurations(
+      base::TimeDelta::FromMilliseconds(10),
+      base::TimeDelta::FromMilliseconds(10));
 
   PageFlipWaiter page_flip_waiter(GetPaginationModel());
 
@@ -1860,7 +1862,9 @@ class AppsGridGapTest : public AppsGridViewTest {
   void SetUp() override {
     AppsGridViewTest::SetUp();
     apps_grid_view_->set_page_flip_delay_in_ms_for_testing(10);
-    GetPaginationModel()->SetTransitionDurations(10, 10);
+    GetPaginationModel()->SetTransitionDurations(
+        base::TimeDelta::FromMilliseconds(10),
+        base::TimeDelta::FromMilliseconds(10));
     page_flip_waiter_ = std::make_unique<PageFlipWaiter>(GetPaginationModel());
   }
 

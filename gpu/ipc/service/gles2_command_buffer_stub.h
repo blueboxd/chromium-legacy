@@ -39,6 +39,9 @@ class GPU_IPC_SERVICE_EXPORT GLES2CommandBufferStub
       base::UnsafeSharedMemoryRegion shared_state_shm) override;
   MemoryTracker* GetMemoryTracker() const override;
 
+  // DecoderClient implementation.
+  void OnGpuSwitched() override;
+
 // ImageTransportSurfaceDelegate implementation:
 #if defined(OS_WIN)
   void DidCreateAcceleratedSurfaceChildWindow(

@@ -131,11 +131,8 @@ content::WebUIDataSource* CreateBrowserSwitchUIHTMLSource(
                              IDS_ABOUT_BROWSER_SWITCH_PROTOCOL_ERROR);
   source->AddLocalizedString("title", IDS_ABOUT_BROWSER_SWITCH_TITLE);
 
-  source->AddResourcePath("app.html", IDR_BROWSER_SWITCH_APP_HTML);
   source->AddResourcePath("app.js", IDR_BROWSER_SWITCH_APP_JS);
   source->AddResourcePath("browser_switch.html", IDR_BROWSER_SWITCH_HTML);
-  source->AddResourcePath("browser_switch_proxy.html",
-                          IDR_BROWSER_SWITCH_PROXY_HTML);
   source->AddResourcePath("browser_switch_proxy.js",
                           IDR_BROWSER_SWITCH_PROXY_JS);
   source->SetDefaultResource(IDR_BROWSER_SWITCH_HTML);

@@ -53,6 +53,11 @@ class CompositingInputsUpdater {
     PaintLayer* scrolling_ancestor = nullptr;
     PaintLayer* scrolling_ancestor_for_absolute = nullptr;
     PaintLayer* scrolling_ancestor_for_fixed = nullptr;
+
+    // The nearest layer up in the ancestor chain that has layout containment
+    // applied to it, including the self layer.
+    PaintLayer* nearest_contained_layout_layer = nullptr;
+
     // These flags are set to true if a non-stacking context scroller
     // is encountered, so that a descendant element won't inherit scroll
     // translation from its compositing ancestor directly thus having to
@@ -76,7 +81,7 @@ class CompositingInputsUpdater {
                                                       AncestorInfo&);
   // This method takes care of updating AncestorInfo taking into account the
   // current value of AncestorInfo.
-  void UpdateAncestorInfo(PaintLayer*, UpdateType&, AncestorInfo&);
+  void UpdateAncestorInfo(PaintLayer* const, UpdateType&, AncestorInfo&);
 
   // Combine all reasons for compositing a layer into a single boolean value
   bool LayerOrDescendantShouldBeComposited(PaintLayer*);

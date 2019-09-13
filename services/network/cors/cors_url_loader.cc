@@ -5,6 +5,7 @@
 #include "services/network/cors/cors_url_loader.h"
 
 #include "base/bind.h"
+#include "base/containers/flat_set.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "net/base/load_flags.h"
@@ -34,7 +35,9 @@ enum class CompletionStatusMetric {
   kMaxValue = kBlockedByCors,
 };
 
-bool NeedsPreflight(const ResourceRequest& request) {
+bool NeedsPreflight(
+    const ResourceRequest& request,
+    const base::flat_set<std::string>& extra_safelisted_header_names) {
   if (!IsCorsEnabledRequestMode(request.mode))
     return false;
 
@@ -54,7 +57,8 @@ bool NeedsPreflight(const ResourceRequest& request) {
     return true;
 
   return !CorsUnsafeNotForbiddenRequestHeaderNames(
-              request.headers.GetHeaderVector(), request.is_revalidating)
+              request.headers.GetHeaderVector(), request.is_revalidating,
+              extra_safelisted_header_names)
               .empty();
 }
 
@@ -209,7 +213,9 @@ void CorsURLLoader::FollowRedirect(
   //
   // After both OOR-CORS and network service are fully shipped, we may be able
   // to remove the logic in net/.
-  if ((fetch_cors_flag_ && NeedsPreflight(request_)) ||
+  if ((fetch_cors_flag_ &&
+       NeedsPreflight(
+           request_, preflight_controller_->extra_safelisted_header_names())) ||
       (!original_fetch_cors_flag && fetch_cors_flag_) ||
       (fetch_cors_flag_ && original_method != request_.method)) {
     DCHECK_NE(request_.mode, mojom::RequestMode::kNoCors);
@@ -450,7 +456,9 @@ void CorsURLLoader::StartRequest() {
   // Note that even when |NeedsPreflight(request_)| holds we don't make a
   // preflight request when |fetch_cors_flag_| is false (e.g., when the origin
   // of the url is equal to the origin of the request.
-  if (!fetch_cors_flag_ || !NeedsPreflight(request_)) {
+  if (!fetch_cors_flag_ ||
+      !NeedsPreflight(request_,
+                      preflight_controller_->extra_safelisted_header_names())) {
     StartNetworkRequest(net::OK, base::nullopt);
     return;
   }

@@ -68,11 +68,6 @@ std::unique_ptr<WebContents> CreateRestoredTab(
   create_params.desired_renderer_state =
       WebContents::CreateParams::kNoRendererProcess;
   create_params.last_active_time = last_active_time;
-  WebContents* base_web_contents =
-      browser->tab_strip_model()->GetActiveWebContents();
-  if (base_web_contents) {
-    create_params.initial_size = base_web_contents->GetContainerBounds().size();
-  }
   std::unique_ptr<WebContents> web_contents =
       WebContents::CreateWithSessionStorage(create_params,
                                             session_storage_namespace_map);

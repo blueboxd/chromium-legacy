@@ -32,11 +32,6 @@ DevToolsProtocolTest::DevToolsProtocolTest()
 
 DevToolsProtocolTest::~DevToolsProtocolTest() = default;
 
-void DevToolsProtocolTest::SetUpCommandLine(base::CommandLine* command_line) {
-  ContentBrowserTest::SetUpCommandLine(command_line);
-  command_line->AppendSwitch(switches::kAllowPreCommitInput);
-}
-
 void DevToolsProtocolTest::SetUpOnMainThread() {
   host_resolver()->AddRule("*", "127.0.0.1");
 }

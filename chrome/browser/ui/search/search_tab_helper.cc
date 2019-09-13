@@ -170,7 +170,8 @@ void SearchTabHelper::OnTabDeactivated() {
 
 void SearchTabHelper::OnTabClosing() {
   if (search::IsInstantNTP(web_contents_) && chrome_colors_service_)
-    chrome_colors_service_->RevertThemeChangesForTab(web_contents_);
+    chrome_colors_service_->RevertThemeChangesForTab(
+        web_contents_, chrome_colors::RevertReason::TAB_CLOSED);
 }
 
 void SearchTabHelper::DidStartNavigation(
@@ -178,6 +179,12 @@ void SearchTabHelper::DidStartNavigation(
   if (!navigation_handle->IsInMainFrame() ||
       navigation_handle->IsSameDocument()) {
     return;
+  }
+
+  // When navigating away from NTP we should revert all the unconfirmed state.
+  if (search::IsInstantNTP(web_contents_) && chrome_colors_service_) {
+    chrome_colors_service_->RevertThemeChangesForTab(
+        web_contents_, chrome_colors::RevertReason::NAVIGATION);
   }
 
   if (search::IsNTPOrRelatedURL(navigation_handle->GetURL(), profile())) {

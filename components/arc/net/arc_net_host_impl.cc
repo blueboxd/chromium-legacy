@@ -314,27 +314,6 @@ arc::mojom::NetworkConfigurationPtr TranslateONCConfiguration(
   return mojo;
 }
 
-// Convenience helper for translating a vector of NetworkState objects to a
-// vector of mojo NetworkConfiguration objects.
-std::vector<arc::mojom::NetworkConfigurationPtr> TranslateNetworkStates(
-    const std::string& default_network_path,
-    const std::string& arc_vpn_path,
-    const chromeos::NetworkStateHandler::NetworkStateList& network_states) {
-  std::vector<arc::mojom::NetworkConfigurationPtr> networks;
-  for (const chromeos::NetworkState* state : network_states) {
-    const std::string& network_path = state->path();
-    if (network_path == arc_vpn_path) {
-      // Never tell Android about its own VPN.
-      continue;
-    }
-    auto network = TranslateONCConfiguration(
-        state, chromeos::network_util::TranslateNetworkStateToONC(state).get());
-    network->is_default_network = network_path == default_network_path;
-    networks.push_back(std::move(network));
-  }
-  return networks;
-}
-
 const chromeos::NetworkState* GetShillBackedNetwork(
     const chromeos::NetworkState* network) {
   if (!network)
@@ -351,6 +330,35 @@ const chromeos::NetworkState* GetShillBackedNetwork(
   // Connected Tether networks delegate to an underlying Wi-Fi network.
   DCHECK(!network->tether_guid().empty());
   return GetStateHandler()->GetNetworkStateFromGuid(network->tether_guid());
+}
+
+// Convenience helper for translating a vector of NetworkState objects to a
+// vector of mojo NetworkConfiguration objects.
+std::vector<arc::mojom::NetworkConfigurationPtr> TranslateNetworkStates(
+    const std::string& default_network_path,
+    const std::string& arc_vpn_path,
+    const chromeos::NetworkStateHandler::NetworkStateList& network_states) {
+  std::vector<arc::mojom::NetworkConfigurationPtr> networks;
+  for (const chromeos::NetworkState* state : network_states) {
+    const std::string& network_path = state->path();
+    if (network_path == arc_vpn_path) {
+      // Never tell Android about its own VPN.
+      continue;
+    }
+    // For tethered networks, the underlying WiFi networks are not part of
+    // active networks. Replace any such tethered network with its underlying
+    // backing network, because ARC cannot match its datapath with the tethered
+    // network configuration.
+    state = GetShillBackedNetwork(state);
+    if (!state) {
+      continue;
+    }
+    auto network = TranslateONCConfiguration(
+        state, chromeos::network_util::TranslateNetworkStateToONC(state).get());
+    network->is_default_network = network_path == default_network_path;
+    networks.push_back(std::move(network));
+  }
+  return networks;
 }
 
 void ForgetNetworkSuccessCallback(

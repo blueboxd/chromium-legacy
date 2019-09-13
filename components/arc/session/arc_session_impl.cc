@@ -536,6 +536,11 @@ void ArcSessionImpl::OnSocketCreated(base::ScopedFD socket_fd) {
             << packages_cache_mode_string << ".";
   }
 
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kArcDisableGmsCoreCache)) {
+    request.set_skip_gms_core_cache(true);
+  }
+
   request.set_supervision_transition(ToLoginManagerSupervisionTransition(
       upgrade_params_.supervision_transition));
   request.set_locale(upgrade_params_.locale);

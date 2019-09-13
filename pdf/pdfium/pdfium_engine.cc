@@ -238,6 +238,10 @@ std::string GetDocumentMetadata(FPDF_DOCUMENT doc, const std::string& key) {
 
 gin::IsolateHolder* g_isolate_holder = nullptr;
 
+bool IsV8Initialized() {
+  return !!g_isolate_holder;
+}
+
 void SetUpV8() {
   const char* recommended = FPDF_GetRecommendedV8Flags();
   v8::V8::SetFlagsFromString(recommended, strlen(recommended));
@@ -359,13 +363,17 @@ wchar_t SimplifyForSearch(wchar_t c) {
 
 }  // namespace
 
-bool InitializeSDK() {
-  SetUpV8();
-
+void InitializeSDK(bool enable_v8) {
   FPDF_LIBRARY_CONFIG config;
   config.version = 2;
   config.m_pUserFontPaths = nullptr;
-  config.m_pIsolate = v8::Isolate::GetCurrent();
+
+  if (enable_v8) {
+    SetUpV8();
+    config.m_pIsolate = v8::Isolate::GetCurrent();
+  } else {
+    config.m_pIsolate = nullptr;
+  }
   config.m_v8EmbedderSlot = gin::kEmbedderPDFium;
   FPDF_InitLibraryWithConfig(&config);
 
@@ -374,13 +382,12 @@ bool InitializeSDK() {
 #endif
 
   InitializeUnsupportedFeaturesHandler();
-
-  return true;
 }
 
 void ShutdownSDK() {
   FPDF_DestroyLibrary();
-  TearDownV8();
+  if (IsV8Initialized())
+    TearDownV8();
 }
 
 std::unique_ptr<PDFEngine> PDFEngine::Create(PDFEngine::Client* client,
@@ -394,6 +401,9 @@ PDFiumEngine::PDFiumEngine(PDFEngine::Client* client, bool enable_javascript)
       mouse_down_state_(PDFiumPage::NONSELECTABLE_AREA,
                         PDFiumPage::LinkTarget()),
       print_(this) {
+  if (enable_javascript)
+    DCHECK(IsV8Initialized());
+
   find_factory_.Initialize(this);
   password_factory_.Initialize(this);
 
@@ -3276,11 +3286,10 @@ void PDFiumEngine::DrawPageShadow(const pp::Rect& page_rc,
 
   // Page drop shadow parameters.
   constexpr double factor = 0.5;
-  uint32_t depth =
-      std::max(std::max(page_rect.x() - shadow_rect.x(),
-                        page_rect.y() - shadow_rect.y()),
-               std::max(shadow_rect.right() - page_rect.right(),
-                        shadow_rect.bottom() - page_rect.bottom()));
+  uint32_t depth = std::max({page_rect.x() - shadow_rect.x(),
+                             page_rect.y() - shadow_rect.y(),
+                             shadow_rect.right() - page_rect.right(),
+                             shadow_rect.bottom() - page_rect.bottom()});
   depth = static_cast<uint32_t>(depth * 1.5) + 1;
 
   // We need to check depth only to verify our copy of shadow matrix is correct.

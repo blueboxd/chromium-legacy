@@ -54,6 +54,8 @@ the most recent checkpoint on the remote repository.
 ## 8. Stage relevant files for commit
 
 Run `git add <path_to_file>` for all of the relevant files you've modified.
+Unlike other version-control systems such as svn, you have to specifically
+`git add` the files you want to commit before calling `git commit`.
 
 ## 9. Commit your changes
 

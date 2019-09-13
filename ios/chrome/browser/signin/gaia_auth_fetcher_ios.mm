@@ -34,11 +34,7 @@ GaiaAuthFetcherIOS::GaiaAuthFetcherIOS(
     web::BrowserState* browser_state)
     : GaiaAuthFetcher(consumer, source, url_loader_factory),
       browser_state_(browser_state) {
-  if (base::FeatureList::IsEnabled(web::features::kWKHTTPSystemCookieStore) &&
-      base::FeatureList::IsEnabled(kUseNSURLSessionForGaiaSigninRequests)) {
-    // GaiaAuthFetcherIOSNSURLSessionBridge can only work with
-    // kWKHTTPSystemCookieStore is enabled.
-    // See http://crbug.com/902584
+  if (base::FeatureList::IsEnabled(kUseNSURLSessionForGaiaSigninRequests)) {
     bridge_.reset(
         new GaiaAuthFetcherIOSNSURLSessionBridge(this, browser_state));
   } else {

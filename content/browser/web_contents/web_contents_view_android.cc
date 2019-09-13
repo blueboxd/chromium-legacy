@@ -229,9 +229,7 @@ gfx::Rect WebContentsViewAndroid::GetViewBounds() const {
   return gfx::Rect(view_.GetSize());
 }
 
-void WebContentsViewAndroid::CreateView(
-    const gfx::Size& initial_size, gfx::NativeView context) {
-}
+void WebContentsViewAndroid::CreateView(gfx::NativeView context) {}
 
 RenderWidgetHostViewBase* WebContentsViewAndroid::CreateViewForWidget(
     RenderWidgetHost* render_widget_host, bool is_guest_view_hack) {

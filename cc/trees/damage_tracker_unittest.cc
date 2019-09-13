@@ -1561,7 +1561,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForMask) {
 
   // Set up the mask layer.
   CreateEffectNode(child);
-  LayerImpl* mask_layer = AddMaskLayer<LayerImpl>(child);
+  LayerImpl* mask_layer = AddMaskLayer<PictureLayerImpl>(child);
 
   // Add opacity and a grand_child so that the render surface persists even
   // after we remove the mask.

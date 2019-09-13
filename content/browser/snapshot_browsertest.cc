@@ -24,6 +24,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/common/shell_switches.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -253,10 +254,9 @@ IN_PROC_BROWSER_TEST_F(SnapshotBrowserTest, SingleWindowTest) {
 //   Windows Debug
 //   Linux Chromium OS ASAN LSAN Tests (1)
 //   Linux TSAN Tests
-//   Linux FYI SkiaRenderer Vulkan (Intel HD 630)
 // See crbug.com/771119
 #if (defined(OS_WIN) && !defined(NDEBUG)) || (defined(OS_CHROMEOS)) || \
-    defined(OS_LINUX)
+    (defined(OS_LINUX) && defined(THREAD_SANITIZER))
 #define MAYBE_SyncMultiWindowTest DISABLED_SyncMultiWindowTest
 #define MAYBE_AsyncMultiWindowTest DISABLED_AsyncMultiWindowTest
 #else
@@ -320,6 +320,13 @@ IN_PROC_BROWSER_TEST_F(SnapshotBrowserTest, MAYBE_SyncMultiWindowTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(SnapshotBrowserTest, MAYBE_AsyncMultiWindowTest) {
+  // TODO(jonross): Re-enable this once the root cause of the failure has been
+  // fixed. https://crbug.com/1003375
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kUseVulkan))
+    return;
+
   SetupTestServer();
 
   for (int i = 0; i < 3; ++i) {

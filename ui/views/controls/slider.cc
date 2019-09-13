@@ -25,10 +25,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/widget/widget.h"
 
-namespace {
-constexpr int kSlideValueChangeDurationMs = 150;
-}  // namespace
-
 namespace views {
 
 namespace {
@@ -55,16 +51,13 @@ constexpr float kThumbRadius = 4.f;
 constexpr float kThumbWidth = 2 * kThumbRadius;
 constexpr float kThumbHighlightRadius = 12.f;
 
-// Duration of the thumb highlight growing effect animation.
-constexpr int kSlideHighlightChangeDurationMs = 150;
-
 }  // namespace
 
 Slider::Slider(SliderListener* listener)
     : listener_(listener),
       highlight_animation_(this),
       pending_accessibility_value_change_(false) {
-  highlight_animation_.SetSlideDuration(kSlideHighlightChangeDurationMs);
+  highlight_animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(150));
   EnableCanvasFlippingForRTLUI(true);
 #if defined(OS_MACOSX)
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
@@ -159,7 +152,7 @@ void Slider::SetValueInternal(float value, SliderChangeReason reason) {
     if (!move_animation_) {
       initial_animating_value_ = old_value;
       move_animation_ = std::make_unique<gfx::SlideAnimation>(this);
-      move_animation_->SetSlideDuration(kSlideValueChangeDurationMs);
+      move_animation_->SetSlideDuration(base::TimeDelta::FromMilliseconds(150));
       move_animation_->Show();
     }
     OnPropertyChanged(&value_, kPropertyEffectsNone);

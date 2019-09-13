@@ -25,8 +25,6 @@ import org.chromium.weblayer.BrowserObserver;
 import org.chromium.weblayer.Profile;
 import org.chromium.weblayer.WebLayer;
 
-import java.io.File;
-
 /**
  * Activity for managing the Demo Shell.
  */
@@ -85,7 +83,7 @@ public class WebLayerShellActivity extends FragmentActivity {
             }
         });
 
-        mProfile = WebLayer.getInstance().createProfile(new File(""));
+        mProfile = WebLayer.getInstance().createProfile(null);
         mBrowserController = mProfile.createBrowserController(this);
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();

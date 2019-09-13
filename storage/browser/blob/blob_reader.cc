@@ -644,8 +644,7 @@ int BlobReader::ComputeBytesToRead() const {
   uint64_t max_int_value = std::numeric_limits<int>::max();
   // Here we make sure we don't overflow 'max int'.
   uint64_t min = std::min(
-      std::min(std::min(item_remaining, buf_remaining), remaining_bytes_),
-      max_int_value);
+      {item_remaining, buf_remaining, remaining_bytes_, max_int_value});
 
   return static_cast<int>(min);
 }

@@ -139,6 +139,14 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
       bool cable_extension_provided,
       base::Optional<device::QRGeneratorKey> qr_generator_key);
 
+  // AppendCablePairings appends any known caBLE pairing data to |discoveries|.
+  // For example, the embedder may know of pairings because it configured the
+  // |FidoDiscoveryFactory| (using |CustomizeDiscoveryFactory|) to make a
+  // callback when a phone offered long-term pairing data. Additionally, it may
+  // know of pairings via some cloud-based service or sync feature.
+  virtual void AppendCablePairings(
+      std::vector<device::CableDiscoveryData>* pairings);
+
   // SelectAccount is called to allow the embedder to select between one or more
   // accounts. This is triggered when the web page requests an unspecified
   // credential (by passing an empty allow-list). In this case, any accounts
@@ -218,6 +226,12 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
       base::Optional<int> attempts,
       base::OnceCallback<void(std::string)> provide_pin_cb) override;
   void FinishCollectPIN() override;
+
+ protected:
+  // CustomizeDiscoveryFactory may be overridden in order to configure
+  // |discovery_factory|.
+  virtual void CustomizeDiscoveryFactory(
+      device::FidoDiscoveryFactory* discovery_factory);
 
  private:
 #if !defined(OS_ANDROID)

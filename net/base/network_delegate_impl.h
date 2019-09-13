@@ -48,9 +48,6 @@ class NET_EXPORT NetworkDelegateImpl : public NetworkDelegate {
                            const ProxyRetryInfoMap& proxy_retry_info,
                            HttpRequestHeaders* headers) override;
 
-  void OnStartTransaction(URLRequest* request,
-                          const HttpRequestHeaders& headers) override;
-
   int OnHeadersReceived(
       URLRequest* request,
       CompletionOnceCallback callback,
@@ -61,11 +58,6 @@ class NET_EXPORT NetworkDelegateImpl : public NetworkDelegate {
   void OnBeforeRedirect(URLRequest* request, const GURL& new_location) override;
 
   void OnResponseStarted(URLRequest* request, int net_error) override;
-
-  void OnNetworkBytesReceived(URLRequest* request,
-                              int64_t bytes_received) override;
-
-  void OnNetworkBytesSent(URLRequest* request, int64_t bytes_sent) override;
 
   void OnCompleted(URLRequest* request, bool started, int net_error) override;
 

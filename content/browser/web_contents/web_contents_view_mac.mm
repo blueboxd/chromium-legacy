@@ -315,8 +315,7 @@ gfx::Rect WebContentsViewMac::GetViewBounds() const {
   return gfx::ScreenRectFromNSRect(window_bounds);
 }
 
-void WebContentsViewMac::CreateView(
-    const gfx::Size& initial_size, gfx::NativeView context) {
+void WebContentsViewMac::CreateView(gfx::NativeView context) {
   in_process_ns_view_bridge_ =
       std::make_unique<remote_cocoa::WebContentsNSViewBridge>(ns_view_id_,
                                                               this);

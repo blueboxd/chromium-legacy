@@ -56,7 +56,9 @@ class VarDictionary;
 namespace chrome_pdf {
 
 // Do one time initialization of the SDK.
-bool InitializeSDK();
+// If |enable_v8| is false, then the PDFEngine will not be able to run
+// JavaScript.
+void InitializeSDK(bool enable_v8);
 // Tells the SDK that we're shutting down.
 void ShutdownSDK();
 

@@ -45,15 +45,14 @@ bool NoOpPromiseExecutor::CanReject() const {
 void NoOpPromiseExecutor::Execute(AbstractPromise* promise) {}
 
 // static
-scoped_refptr<internal::AbstractPromise> NoOpPromiseExecutor::Create(
-    Location from_here,
-    bool can_resolve,
-    bool can_reject,
-    RejectPolicy reject_policy) {
-  return AbstractPromise::CreateNoPrerequisitePromise(
+PassedPromise NoOpPromiseExecutor::Create(Location from_here,
+                                          bool can_resolve,
+                                          bool can_reject,
+                                          RejectPolicy reject_policy) {
+  return PassedPromise(AbstractPromise::CreateNoPrerequisitePromise(
       from_here, reject_policy, DependentList::ConstructUnresolved(),
       PromiseExecutor::Data(in_place_type_t<NoOpPromiseExecutor>(), can_resolve,
-                            can_reject));
+                            can_reject)));
 }
 
 }  // namespace internal

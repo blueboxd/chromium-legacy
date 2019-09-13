@@ -54,6 +54,7 @@ Portal::~Portal() {
       portal_contents_impl_->GetOuterDelegateFrameTreeNodeId());
   if (outer_node)
     outer_node->RemoveObserver(this);
+  portal_contents_impl_->set_portal(nullptr);
 
   g_portal_token_map.Get().erase(portal_token_);
 }

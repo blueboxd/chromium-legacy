@@ -601,6 +601,7 @@ core_dictionary_idl_files =
                     "animation/computed_effect_timing.idl",
                     "animation/document_timeline_options.idl",
                     "animation/effect_timing.idl",
+                    "animation/get_animations_options.idl",
                     "animation/keyframe_animation_options.idl",
                     "animation/keyframe_effect_options.idl",
                     "animation/optional_effect_timing.idl",

@@ -17,7 +17,6 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
@@ -406,16 +405,14 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
   void OnGetEolStatus(GetEolStatusCallback callback, dbus::Response* response) {
     if (!response) {
       LOG(ERROR) << "Failed to request getting eol status";
-      std::move(callback).Run(update_engine::EndOfLifeStatus::kSupported,
-                              base::nullopt /* number_of_milestones */);
+      std::move(callback).Run(update_engine::EndOfLifeStatus::kSupported);
       return;
     }
     dbus::MessageReader reader(response);
     int status;
     if (!reader.PopInt32(&status)) {
       LOG(ERROR) << "Incorrect response: " << response->ToString();
-      std::move(callback).Run(update_engine::EndOfLifeStatus::kSupported,
-                              base::nullopt /* number_of_milestones */);
+      std::move(callback).Run(update_engine::EndOfLifeStatus::kSupported);
       return;
     }
 
@@ -423,25 +420,13 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
     if (status > update_engine::EndOfLifeStatus::kEol ||
         status < update_engine::EndOfLifeStatus::kSupported) {
       LOG(ERROR) << "Incorrect status value: " << status;
-      std::move(callback).Run(update_engine::EndOfLifeStatus::kSupported,
-                              base::nullopt /* number_of_milestones */);
+      std::move(callback).Run(update_engine::EndOfLifeStatus::kSupported);
       return;
     }
 
-    base::Optional<int32_t> opt_number_of_milestones;
-    int32_t number_of_milestones;
-    if (reader.PopInt32(&number_of_milestones)) {
-      opt_number_of_milestones = number_of_milestones;
-    }
-
-    std::string str_number_of_milestones =
-        opt_number_of_milestones
-            ? base::NumberToString(opt_number_of_milestones.value())
-            : "not provided";
-    VLOG(1) << "Eol status received: " << status
-            << ". Number of Milestones: " << str_number_of_milestones;
-    std::move(callback).Run(static_cast<update_engine::EndOfLifeStatus>(status),
-                            std::move(opt_number_of_milestones));
+    VLOG(1) << "Eol status received: " << status;
+    std::move(callback).Run(
+        static_cast<update_engine::EndOfLifeStatus>(status));
   }
 
   // Called when a response for SetUpdateOverCellularPermission() is received.
@@ -601,8 +586,7 @@ class UpdateEngineClientStubImpl : public UpdateEngineClient {
   }
 
   void GetEolStatus(GetEolStatusCallback callback) override {
-    std::move(callback).Run(update_engine::EndOfLifeStatus::kSupported,
-                            base::nullopt /* number_of_milestones */);
+    std::move(callback).Run(update_engine::EndOfLifeStatus::kSupported);
   }
 
   void SetUpdateOverCellularPermission(bool allowed,

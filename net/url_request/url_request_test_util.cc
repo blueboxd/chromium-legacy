@@ -38,14 +38,13 @@ namespace {
 // events in the wrong order.
 const int kStageBeforeURLRequest = 1 << 0;
 const int kStageBeforeStartTransaction = 1 << 1;
-const int kStageStartTransaction = 1 << 2;
-const int kStageHeadersReceived = 1 << 3;
-const int kStageBeforeRedirect = 1 << 4;
-const int kStageResponseStarted = 1 << 5;
-const int kStageCompletedSuccess = 1 << 6;
-const int kStageCompletedError = 1 << 7;
-const int kStageURLRequestDestroyed = 1 << 8;
-const int kStageDestruction = 1 << 9;
+const int kStageHeadersReceived = 1 << 2;
+const int kStageBeforeRedirect = 1 << 3;
+const int kStageResponseStarted = 1 << 4;
+const int kStageCompletedSuccess = 1 << 5;
+const int kStageCompletedError = 1 << 6;
+const int kStageURLRequestDestroyed = 1 << 7;
+const int kStageDestruction = 1 << 8;
 
 }  // namespace
 
@@ -360,12 +359,9 @@ TestNetworkDelegate::TestNetworkDelegate()
       before_send_headers_with_proxy_count_(0),
       before_start_transaction_count_(0),
       headers_received_count_(0),
-      total_network_bytes_received_(0),
-      total_network_bytes_sent_(0),
       has_load_timing_info_before_redirect_(false),
       experimental_cookie_features_enabled_(false),
       cancel_request_with_policy_violating_referrer_(false),
-      will_be_intercepted_on_next_error_(false),
       before_start_transaction_fails_(false),
       add_header_to_first_response_(false) {}
 
@@ -422,8 +418,7 @@ int TestNetworkDelegate::OnBeforeStartTransaction(
   event_order_[req_id] += "OnBeforeStartTransaction\n";
   EXPECT_TRUE(next_states_[req_id] & kStageBeforeStartTransaction)
       << event_order_[req_id];
-  next_states_[req_id] = kStageStartTransaction |
-                         kStageCompletedError;  // request canceled by delegate
+  next_states_[req_id] = kStageHeadersReceived | kStageCompletedError;
   before_start_transaction_count_++;
   return OK;
 }
@@ -441,21 +436,6 @@ void TestNetworkDelegate::OnBeforeSendHeaders(
   }
   ++before_send_headers_with_proxy_count_;
   last_observed_proxy_ = proxy_info.proxy_server().host_port_pair();
-}
-
-void TestNetworkDelegate::OnStartTransaction(
-    URLRequest* request,
-    const HttpRequestHeaders& headers) {
-  int req_id = request->identifier();
-  InitRequestStatesIfNew(req_id);
-  event_order_[req_id] += "OnStartTransaction\n";
-  EXPECT_TRUE(next_states_[req_id] & kStageStartTransaction)
-      << event_order_[req_id];
-  if (!will_be_intercepted_on_next_error_)
-    next_states_[req_id] = kStageHeadersReceived | kStageCompletedError;
-  else
-    next_states_[req_id] = kStageResponseStarted;
-  will_be_intercepted_on_next_error_ = false;
 }
 
 int TestNetworkDelegate::OnHeadersReceived(
@@ -550,18 +530,6 @@ void TestNetworkDelegate::OnResponseStarted(URLRequest* request,
     error_count_++;
     last_error_ = net_error;
   }
-}
-
-void TestNetworkDelegate::OnNetworkBytesReceived(URLRequest* request,
-                                                 int64_t bytes_received) {
-  event_order_[request->identifier()] += "OnNetworkBytesReceived\n";
-  total_network_bytes_received_ += bytes_received;
-}
-
-void TestNetworkDelegate::OnNetworkBytesSent(URLRequest* request,
-                                             int64_t bytes_sent) {
-  event_order_[request->identifier()] += "OnNetworkBytesSent\n";
-  total_network_bytes_sent_ += bytes_sent;
 }
 
 void TestNetworkDelegate::OnCompleted(URLRequest* request,

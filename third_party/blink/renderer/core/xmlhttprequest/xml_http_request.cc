@@ -1144,8 +1144,7 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
       auto pagedismissal = GetDocument()->PageDismissalEventBeingDispatched();
       if (pagedismissal != Document::kNoDismissal) {
         // Disallow synchronous requests on page dismissal
-        if (base::FeatureList::IsEnabled(
-                features::kForbidSyncXHRInPageDismissal)) {
+        if (RuntimeEnabledFeatures::ForbidSyncXHRInPageDismissalEnabled()) {
           UseCounter::Count(&execution_context,
                             WebFeature::kForbiddenSyncXhrInPageDismissal);
           DEFINE_STATIC_LOCAL(EnumerationHistogram,

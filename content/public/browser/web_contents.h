@@ -152,9 +152,6 @@ class WebContents : public PageNavigator,
     // window.open('', 'bar')).
     std::string main_frame_name;
 
-    // Initial size of the new WebContent's view. Can be (0, 0) if not needed.
-    gfx::Size initial_size;
-
     // True if the contents should be initially hidden.
     bool initially_hidden;
 

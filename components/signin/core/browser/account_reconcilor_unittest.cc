@@ -122,9 +122,6 @@ class DummyAccountReconcilorWithDelegate : public AccountReconcilor {
                                             identity_manager,
                                             account_consistency,
                                             dice_migration_completed)) {
-#if defined(OS_IOS)
-    SetIsWKHTTPSystemCookieStoreEnabled(true);
-#endif  // defined(OS_IOS)
     Initialize(false /* start_reconcile_if_tokens_available */);
   }
 
@@ -138,9 +135,6 @@ class DummyAccountReconcilorWithDelegate : public AccountReconcilor {
             identity_manager,
             client,
             std::unique_ptr<signin::AccountReconcilorDelegate>(delegate)) {
-#if defined(OS_IOS)
-    SetIsWKHTTPSystemCookieStoreEnabled(true);
-#endif  // defined(OS_IOS)
     Initialize(false /* start_reconcile_if_tokens_available */);
   }
 

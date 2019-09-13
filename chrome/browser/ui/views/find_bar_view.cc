@@ -191,7 +191,7 @@ FindBarView::FindBarView(FindBarHost* host) : find_bar_host_(host) {
   close_button->SetFocusForPlatform();
   close_button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_FIND_IN_PAGE_CLOSE_TOOLTIP));
-  close_button->SetAnimationDuration(0);
+  close_button->SetAnimationDuration(base::TimeDelta());
   close_button_ = AddChildView(std::move(close_button));
 
   auto focus_forwarder_view = std::make_unique<FocusForwarderView>(find_text_);

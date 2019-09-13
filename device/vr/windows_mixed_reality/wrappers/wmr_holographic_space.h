@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/callback_list.h"
 #include "base/macros.h"
 
 namespace device {
@@ -24,6 +25,10 @@ class WMRHolographicSpace {
       const Microsoft::WRL::ComPtr<
           ABI::Windows::Graphics::DirectX::Direct3D11::IDirect3DDevice>&
           device) = 0;
+  virtual ABI::Windows::Graphics::Holographic::HolographicSpaceUserPresence
+  UserPresence() = 0;
+  virtual std::unique_ptr<base::CallbackList<void()>::Subscription>
+  AddUserPresenceChangedCallback(const base::RepeatingCallback<void()>& cb) = 0;
 };
 
 class WMRHolographicSpaceImpl : public WMRHolographicSpace {
@@ -40,10 +45,28 @@ class WMRHolographicSpaceImpl : public WMRHolographicSpace {
       const Microsoft::WRL::ComPtr<
           ABI::Windows::Graphics::DirectX::Direct3D11::IDirect3DDevice>& device)
       override;
+  ABI::Windows::Graphics::Holographic::HolographicSpaceUserPresence
+  UserPresence() override;
+  std::unique_ptr<base::CallbackList<void()>::Subscription>
+  AddUserPresenceChangedCallback(
+      const base::RepeatingCallback<void()>& cb) override;
 
  private:
+  void SubscribeEvents();
+  void UnsubscribeEvents();
+
+  HRESULT OnUserPresenceChanged(
+      ABI::Windows::Graphics::Holographic::IHolographicSpace*,
+      IInspectable*);
+
   Microsoft::WRL::ComPtr<ABI::Windows::Graphics::Holographic::IHolographicSpace>
       space_;
+  Microsoft::WRL::ComPtr<
+      ABI::Windows::Graphics::Holographic::IHolographicSpace2>
+      space2_;
+
+  EventRegistrationToken user_presence_changed_token_;
+  base::CallbackList<void()> user_presence_changed_callback_list_;
 
   DISALLOW_COPY_AND_ASSIGN(WMRHolographicSpaceImpl);
 };

@@ -52,7 +52,7 @@ void ScrollAnimator::Start(float velocity_x, float velocity_y) {
   velocity_y_ = velocity_y;
   duration_ = -v / acceleration_; // in seconds
   animation_ = std::make_unique<gfx::SlideAnimation>(this);
-  animation_->SetSlideDuration(static_cast<int>(duration_ * 1000));
+  animation_->SetSlideDuration(base::TimeDelta::FromSecondsD(duration_));
   animation_->Show();
 }
 

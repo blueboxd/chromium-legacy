@@ -33,10 +33,9 @@
 #include "chromeos/services/assistant/public/mojom/assistant.mojom-forward.h"
 #include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/content/public/mojom/navigable_contents_factory.mojom-forward.h"
 
 class PrefRegistrySimple;
@@ -68,8 +67,7 @@ class ASH_EXPORT AssistantController
 
   void BindRequest(
       chromeos::assistant::mojom::AssistantControllerRequest request);
-  void BindReceiver(
-      mojo::PendingReceiver<mojom::AssistantVolumeControl> receiver);
+  void BindRequest(mojom::AssistantVolumeControlRequest request);
 
   // Adds/removes the specified |observer|.
   void AddObserver(AssistantControllerObserver* observer);
@@ -98,8 +96,7 @@ class ASH_EXPORT AssistantController
   // mojom::VolumeControl:
   void SetVolume(int volume, bool user_initiated) override;
   void SetMuted(bool muted) override;
-  void AddVolumeObserver(
-      mojo::PendingRemote<mojom::VolumeObserver> observer) override;
+  void AddVolumeObserver(mojom::VolumeObserverPtr observer) override;
 
   // chromeos::CrasAudioHandler::AudioObserver:
   void OnOutputMuteChanged(bool mute_on) override;
@@ -187,9 +184,9 @@ class ASH_EXPORT AssistantController
   mojo::BindingSet<chromeos::assistant::mojom::AssistantController>
       assistant_controller_bindings_;
 
-  mojo::Receiver<mojom::AssistantVolumeControl>
-      assistant_volume_control_receiver_{this};
-  mojo::RemoteSet<mojom::VolumeObserver> volume_observers_;
+  mojo::Binding<mojom::AssistantVolumeControl>
+      assistant_volume_control_binding_;
+  mojo::InterfacePtrSet<mojom::VolumeObserver> volume_observer_;
 
   chromeos::assistant::mojom::AssistantPtr assistant_;
 

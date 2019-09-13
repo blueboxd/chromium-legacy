@@ -20,6 +20,8 @@
 <script src="chrome://resources/js/cr.js"></script>
 <script src="chrome://resources/js/cr/ui/focus_outline_manager.js"></script>
 <script src="chrome://resources/js/util.js"></script>
+<script src="chrome://resources/js/load_time_data.js"></script>
+<script src="chrome://flags/strings.js"></script>
 </head>
 <body>
 <div id="header">
@@ -30,6 +32,7 @@
             autocomplete="off" spellcheck="false">
         <input type="button" class="clear-search" title="$i18n{clear-search}"
             tabindex="2">
+        <div class="screen-reader-only" id="search-success-message" role="status"></div>
       </div>
     </div>
     <div class="flex">

@@ -2573,6 +2573,13 @@ void GLES2TraceImplementation::ProgramPathFragmentInputGenCHROMIUM(
                                            components, coeffs);
 }
 
+void GLES2TraceImplementation::ContextVisibilityHintCHROMIUM(
+    GLboolean visibility) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "GLES2Trace::ContextVisibilityHintCHROMIUM");
+  gl_->ContextVisibilityHintCHROMIUM(visibility);
+}
+
 void GLES2TraceImplementation::CoverageModulationCHROMIUM(GLenum components) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu",
                                 "GLES2Trace::CoverageModulationCHROMIUM");

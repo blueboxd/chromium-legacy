@@ -127,7 +127,8 @@ base::Optional<CorsErrorStatus> PreflightResult::EnsureAllowedCrossOriginMethod(
 base::Optional<CorsErrorStatus>
 PreflightResult::EnsureAllowedCrossOriginHeaders(
     const net::HttpRequestHeaders& headers,
-    bool is_revalidating) const {
+    bool is_revalidating,
+    const base::flat_set<std::string>& extra_safelisted_header_names) const {
   if (!credentials_ && headers_.find("*") != headers_.end())
     return base::nullopt;
 
@@ -135,7 +136,8 @@ PreflightResult::EnsureAllowedCrossOriginHeaders(
   // beforehand. But user-agents may add these headers internally, and it's
   // fine.
   for (const auto& name : CorsUnsafeNotForbiddenRequestHeaderNames(
-           headers.GetHeaderVector(), is_revalidating)) {
+           headers.GetHeaderVector(), is_revalidating,
+           extra_safelisted_header_names)) {
     // Header list check is performed in case-insensitive way. Here, we have a
     // parsed header list set in lower case, and search each header in lower
     // case.

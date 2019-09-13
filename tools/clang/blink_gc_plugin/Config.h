@@ -114,6 +114,10 @@ class Config {
            name == "ThreadSafeRefCounted";
   }
 
+  static bool IsGCSimpleBase(const std::string& name) {
+    return name == "GarbageCollected";
+  }
+
   static bool IsGCMixinBase(const std::string& name) {
     return name == "GarbageCollectedMixin";
   }
@@ -123,8 +127,7 @@ class Config {
   }
 
   static bool IsGCBase(const std::string& name) {
-    return name == "GarbageCollected" ||
-           IsGCFinalizedBase(name) ||
+    return IsGCSimpleBase(name) || IsGCFinalizedBase(name) ||
            IsGCMixinBase(name);
   }
 

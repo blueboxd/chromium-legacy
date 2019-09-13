@@ -206,6 +206,7 @@ class InstallableManager
 
   // content::ServiceWorkerContextObserver overrides
   void OnRegistrationCompleted(const GURL& pattern) override;
+  void OnDestruct(content::ServiceWorkerContext* context) override;
 
   // content::WebContentsObserver overrides
   void DidFinishNavigation(content::NavigationHandle* handle) override;

@@ -144,6 +144,10 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   // (For an Android work-around only).
   virtual void SetUnbindFboOnMakeCurrent();
 
+  // Indicate that the context has become visible/invisible. This can be due to
+  // tab-switching, window minimization, etc.
+  virtual void SetVisibility(bool visibility) {}
+
   // Returns whether the current context supports the named extension. The
   // context must be current.
   bool HasExtension(const char* name);

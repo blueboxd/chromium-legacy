@@ -131,12 +131,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // metadata and controls.
   cl->AppendSwitch(switches::kDisableMediaSessionAPI);
 
-  // WebView CTS fails in numerous ways if we drop pre-commit input.
-  // We would like to remove this flag, but it requires a cross team effort to
-  // figure out how to address the failures.
-  // crbug.com/987626 is the tracking bug for removing this flag from tests.
-  cl->AppendSwitch(switches::kAllowPreCommitInput);
-
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   if (cl->GetSwitchValueASCII(switches::kProcessType).empty()) {
     // Browser process (no type specified).

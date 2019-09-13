@@ -58,6 +58,8 @@ using testing::Assign;
 using testing::AtMost;
 using testing::DoAll;
 using testing::Return;
+using base::test::ios::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForPageLoadTimeout;
 
 namespace web {
 namespace {
@@ -883,6 +885,8 @@ TEST_P(WebStateImplTest, UncommittedRestoreSession) {
   EXPECT_EQ(@(1), user_data_value);
 }
 
+// Test that lastCommittedItemIndex is end-of-list when there's no defined
+// index, such as during a restore.
 TEST_P(WebStateImplTest, NoUncommittedRestoreSession) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
@@ -893,6 +897,51 @@ TEST_P(WebStateImplTest, NoUncommittedRestoreSession) {
   EXPECT_NSEQ(@[], session_storage.itemStorages);
   EXPECT_TRUE(web_state_->GetTitle().empty());
   EXPECT_EQ(GURL::EmptyGURL(), web_state_->GetVisibleURL());
+}
+
+TEST_P(WebStateImplTest, BuildStorageDuringRestore) {
+  if (GetParam() == NavigationManagerChoice::LEGACY) {
+    return;
+  }
+
+  GURL urls[3] = {GURL("https://chromium.test/1"),
+                  GURL("https://chromium.test/2"),
+                  GURL("https://chromium.test/3")};
+  std::vector<std::unique_ptr<NavigationItem>> items;
+  for (size_t index = 0; index < base::size(urls); ++index) {
+    items.push_back(NavigationItem::Create());
+    items.back()->SetURL(urls[index]);
+  }
+
+  // Force generation of child views; necessary for some tests.
+  web_state_->GetView();
+  web_state_->SetKeepRenderProcessAlive(true);
+
+  web_state_->GetNavigationManager()->Restore(0, std::move(items));
+  __block bool restore_done = false;
+  web_state_->GetNavigationManager()->AddRestoreCompletionCallback(
+      base::BindOnce(^{
+        restore_done = true;
+      }));
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return restore_done;
+  }));
+  // Trying to grab the lastCommittedItemIndex while a restore is happening is
+  // undefined, so the last committed item defaults to end-of-list.
+  CRWSessionStorage* session_storage = web_state_->BuildSessionStorage();
+  EXPECT_EQ(2, session_storage.lastCommittedItemIndex);
+
+  // Now wait until the last committed item is fully loaded, and
+  // lastCommittedItemIndex goes back to 0.
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    EXPECT_FALSE(
+        wk_navigation_util::IsWKInternalUrl(web_state_->GetVisibleURL()));
+
+    return !web_state_->GetNavigationManager()->GetPendingItem() &&
+           !web_state_->IsLoading() && web_state_->GetLoadingProgress() == 1.0;
+  }));
+  session_storage = web_state_->BuildSessionStorage();
+  EXPECT_EQ(0, session_storage.lastCommittedItemIndex);
 }
 
 // Tests showing and clearing interstitial when NavigationManager is

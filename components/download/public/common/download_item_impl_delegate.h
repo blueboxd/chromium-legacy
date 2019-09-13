@@ -23,7 +23,6 @@ class Connector;
 }  // namespace service_manager
 
 namespace download {
-struct DownloadEntry;
 class DownloadItemImpl;
 
 // Delegate for operations that a DownloadItemImpl can't do for itself.
@@ -106,10 +105,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImplDelegate {
 
   // Called when the download is interrupted.
   virtual void DownloadInterrupted(DownloadItemImpl* download);
-
-  // Get the in progress entry for the download item.
-  virtual base::Optional<DownloadEntry> GetInProgressEntry(
-      DownloadItemImpl* download);
 
   // Whether the download is off the record.
   virtual bool IsOffTheRecord() const;

@@ -10,7 +10,7 @@
 #include "base/memory/shared_memory.h"
 #include "device/gamepad/gamepad_service.h"
 #include "device/gamepad/gamepad_shared_buffer.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace device {
 
@@ -22,9 +22,10 @@ GamepadMonitor::~GamepadMonitor() {
 }
 
 // static
-void GamepadMonitor::Create(mojom::GamepadMonitorRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<GamepadMonitor>(),
-                          std::move(request));
+void GamepadMonitor::Create(
+    mojo::PendingReceiver<mojom::GamepadMonitor> receiver) {
+  mojo::MakeSelfOwnedReceiver(std::make_unique<GamepadMonitor>(),
+                              std::move(receiver));
 }
 
 void GamepadMonitor::OnGamepadConnected(uint32_t index,

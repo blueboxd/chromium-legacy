@@ -37,7 +37,7 @@ import java.util.concurrent.TimeoutException;
  * See also chrome layer org.chromium.chrome.browser.VideoFullscreenOrientationLockChromeTest
  */
 @RunWith(ContentJUnit4ClassRunner.class)
-@CommandLineFlags.Add({MediaSwitches.AUTOPLAY_NO_GESTURE_REQUIRED_POLICY, "allow-pre-commit-input"})
+@CommandLineFlags.Add({MediaSwitches.AUTOPLAY_NO_GESTURE_REQUIRED_POLICY})
 public class VideoFullscreenOrientationLockTest {
     @Rule
     public ContentShellActivityTestRule mActivityTestRule = new ContentShellActivityTestRule();

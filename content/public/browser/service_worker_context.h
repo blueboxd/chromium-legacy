@@ -208,23 +208,6 @@ class CONTENT_EXPORT ServiceWorkerContext {
       blink::TransferableMessage message,
       ResultCallback result_callback) = 0;
 
-  // Deprecated: DO NOT USE
-  // This is a temporary addition only to be used for the Android Messages
-  // integration with ChromeOS (http://crbug.com/823256).  The removal is
-  // tracked at http://crbug.com/869714.  Please ask Service Worker OWNERS
-  // (content/browser/service_worker/OWNERS) if you have questions.
-  //
-  // Starts the active worker of the registration for the given |scope|, sets
-  // its timeout to 999 days, and passes in the given |message|.  The
-  // |result_callback| will be executed upon success or failure and pass back
-  // the boolean result.
-  //
-  // May be called on any thread, and the callback is called on that thread.
-  virtual void StartServiceWorkerAndDispatchLongRunningMessage(
-      const GURL& scope,
-      blink::TransferableMessage message,
-      ResultCallback result_callback) = 0;
-
   // Starts the service worker for |document_url|. Called when a navigation to
   // that URL is predicted to occur soon. Must be called from the UI thread. The
   // |callback| will always be called on the UI thread.

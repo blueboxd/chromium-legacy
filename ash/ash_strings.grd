@@ -406,6 +406,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_VOLUME_STATE_MUTED" desc="The accessible text used when the volume button is in the muted state.">
         Volume is muted.
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_VOLUME_SLIDER_LABEL" desc="The accessible text for the volume slider in the tray.">
+        Volume
+      </message>
 
       <message name="IDS_ASH_FEATURE_DISABLED_BY_POLICY" desc="The message used to indicate that this feature is disabled by policy.">
         <ph name="FEATURE_NAME">$1<ex>Docked magnifier</ex></ph> has been disabled by a policy applied to this device. Please talk to your administrator to request changes.

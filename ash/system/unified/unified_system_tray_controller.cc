@@ -55,8 +55,6 @@ namespace ash {
 
 namespace {
 
-// Animation duration to collapse / expand the view in milliseconds.
-const int kExpandAnimationDurationMs = 500;
 // Threshold in pixel that fully collapses / expands the view through gesture.
 const int kDragThreshold = 200;
 
@@ -73,12 +71,12 @@ UnifiedSystemTrayController::UnifiedSystemTrayController(
       bubble_(bubble),
       animation_(std::make_unique<gfx::SlideAnimation>(this)) {
   animation_->Reset(model->IsExpandedOnOpen() ? 1.0 : 0.0);
-  animation_->SetSlideDuration(kExpandAnimationDurationMs);
+  animation_->SetSlideDuration(base::TimeDelta::FromMilliseconds(500));
   animation_->SetTweenType(gfx::Tween::EASE_IN_OUT);
 
   model_->pagination_model()->SetTransitionDurations(
-      kUnifiedSystemTrayPageTransitionDurationMs,
-      kUnifiedSystemTrayOverScrollPageTransitionDurationMs);
+      base::TimeDelta::FromMilliseconds(250),
+      base::TimeDelta::FromMilliseconds(50));
 
   pagination_controller_ = std::make_unique<PaginationController>(
       model_->pagination_model(), PaginationController::SCROLL_AXIS_HORIZONTAL,

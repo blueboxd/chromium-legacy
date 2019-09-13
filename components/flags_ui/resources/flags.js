@@ -84,6 +84,7 @@ function renderTemplate(experimentalFeaturesData) {
         tabEls[j].parentNode.classList.toggle('selected', tabEls[j] == this);
         tabEls[j].setAttribute('aria-selected', tabEls[j] == this);
       }
+      FlagSearch.getInstance().announceSearchResults();
     });
   }
 
@@ -169,6 +170,7 @@ function restartBrowser() {
 /** Reset all flags to their default values and refresh the UI. */
 function resetAllFlags() {
   chrome.send('resetAllFlags');
+  FlagSearch.getInstance().clearSearch();
   $('reset-all-success-message').setAttribute("aria-disabled", "false");
   // Updating the message in order for it to get announced by screen readers.
   $('reset-all-success-message').innerHTML += "!";
@@ -490,8 +492,7 @@ FlagSearch.prototype = {
    * Performs a search against the experiment title, description, permalink.
    */
   doSearch: function() {
-    var searchTerm =
-        this.searchBox_.value.trim().toLowerCase();
+    var searchTerm = this.searchBox_.value.trim().toLowerCase();
 
     if (searchTerm || searchTerm == '') {
       document.body.classList.toggle('searching', searchTerm);
@@ -501,9 +502,34 @@ FlagSearch.prototype = {
       // Unavailable experiments
       this.noMatchMsg_[1].classList.toggle('hidden',
           this.highlightAllMatches(this.unavailableExperiments_, searchTerm));
+      this.announceSearchResults();
     }
 
     this.searchIntervalId_ = null;
+  },
+
+  announceSearchResults: function() {
+    var searchTerm = this.searchBox_.value.trim().toLowerCase();
+    if (!searchTerm) {
+      return;
+    }
+
+    var tabAvailable = true;
+    var tabEls = document.getElementsByClassName('tab');
+    for (var i = 0; i < tabEls.length; ++i) {
+      if (tabEls[i].parentNode.classList.contains('selected')) {
+        tabAvailable = tabEls[i].id == 'tab-available';
+      }
+    }
+    var seletedTabId =
+        tabAvailable ? '#tab-content-available' : '#tab-content-unavailable';
+    var queryString = seletedTabId + ' .experiment:not(.hidden)';
+    const total = document.querySelectorAll(queryString).length;
+    if (total) {
+      $('search-success-message').innerHTML = (total == 1) ?
+          loadTimeData.getStringF("searchResultsSingular", searchTerm) :
+          loadTimeData.getStringF("searchResultsPlural", total, searchTerm);
+    }
   },
 
   /**

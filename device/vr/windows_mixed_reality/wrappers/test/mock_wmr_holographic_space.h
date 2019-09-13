@@ -21,9 +21,16 @@ class MockWMRHolographicSpace : public WMRHolographicSpace {
       const Microsoft::WRL::ComPtr<
           ABI::Windows::Graphics::DirectX::Direct3D11::IDirect3DDevice>& device)
       override;
+  ABI::Windows::Graphics::Holographic::HolographicSpaceUserPresence
+  UserPresence() override;
+  std::unique_ptr<base::CallbackList<void()>::Subscription>
+  AddUserPresenceChangedCallback(
+      const base::RepeatingCallback<void()>& cb) override;
 
  private:
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device_ = nullptr;
+  base::CallbackList<void()> user_presence_changed_callback_list_;
+
   DISALLOW_COPY_AND_ASSIGN(MockWMRHolographicSpace);
 };
 

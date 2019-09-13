@@ -37,7 +37,6 @@
 #include "ipc/ipc_sender.h"
 #include "net/base/auth.h"
 #include "net/base/completion_once_callback.h"
-#include "net/base/network_delegate.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/websocket.mojom.h"
@@ -329,6 +328,22 @@ class ExtensionWebRequestEventRouter {
     DISALLOW_COPY_AND_ASSIGN(EventResponse);
   };
 
+  // AuthRequiredResponse indicates how an OnAuthRequired call is handled.
+  enum class AuthRequiredResponse {
+    // No credenitals were provided.
+    AUTH_REQUIRED_RESPONSE_NO_ACTION,
+    // AuthCredentials is filled in with a username and password, which should
+    // be used in a response to the provided auth challenge.
+    AUTH_REQUIRED_RESPONSE_SET_AUTH,
+    // The request should be canceled.
+    AUTH_REQUIRED_RESPONSE_CANCEL_AUTH,
+    // The action will be decided asynchronously. |callback| will be invoked
+    // when the decision is made, and one of the other AuthRequiredResponse
+    // values will be passed in with the same semantics as described above.
+    AUTH_REQUIRED_RESPONSE_IO_PENDING,
+  };
+  using AuthCallback = base::OnceCallback<void(AuthRequiredResponse)>;
+
   static ExtensionWebRequestEventRouter* GetInstance();
 
   // Registers a rule registry. Pass null for |rules_registry| to unregister
@@ -389,15 +404,14 @@ class ExtensionWebRequestEventRouter {
 
   // Dispatches the OnAuthRequired event to any extensions whose filters match
   // the given request. If the listener is not registered as "blocking", then
-  // AUTH_REQUIRED_RESPONSE_OK is returned. Otherwise,
+  // AUTH_REQUIRED_RESPONSE_NO_ACTION is returned. Otherwise,
   // AUTH_REQUIRED_RESPONSE_IO_PENDING is returned and |callback| will be
   // invoked later.
-  net::NetworkDelegate::AuthRequiredResponse OnAuthRequired(
-      content::BrowserContext* browser_context,
-      const WebRequestInfo* request,
-      const net::AuthChallengeInfo& auth_info,
-      net::NetworkDelegate::AuthCallback callback,
-      net::AuthCredentials* credentials);
+  AuthRequiredResponse OnAuthRequired(content::BrowserContext* browser_context,
+                                      const WebRequestInfo* request,
+                                      const net::AuthChallengeInfo& auth_info,
+                                      AuthCallback callback,
+                                      net::AuthCredentials* credentials);
 
   // Dispatches the onBeforeRedirect event. This is fired for HTTP(s) requests
   // only.

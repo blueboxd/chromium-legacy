@@ -602,6 +602,16 @@ _CONFIG = [
     },
     {
         'paths': [
+            'third_party/blink/renderer/core/html/media/',
+        ],
+        # This module needs access to the following for media's base::Feature
+        # list.
+        'allowed': [
+            'media::.+',
+        ]
+    },
+    {
+        'paths': [
             'third_party/blink/renderer/modules/encryptedmedia/',
         ],
         'allowed': [

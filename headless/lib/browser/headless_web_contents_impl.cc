@@ -249,12 +249,8 @@ std::unique_ptr<HeadlessWebContentsImpl> HeadlessWebContentsImpl::Create(
     HeadlessWebContents::Builder* builder) {
   content::WebContents::CreateParams create_params(builder->browser_context_,
                                                    nullptr);
-  create_params.initial_size = builder->window_size_;
-
-  std::unique_ptr<HeadlessWebContentsImpl> headless_web_contents =
-      base::WrapUnique(new HeadlessWebContentsImpl(
-          content::WebContents::Create(create_params),
-          builder->browser_context_));
+  auto headless_web_contents = base::WrapUnique(new HeadlessWebContentsImpl(
+      content::WebContents::Create(create_params), builder->browser_context_));
 
   headless_web_contents->begin_frame_control_enabled_ =
       builder->enable_begin_frame_control_ ||

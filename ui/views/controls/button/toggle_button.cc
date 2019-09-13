@@ -110,7 +110,7 @@ class ToggleButton::ThumbView : public InkDropHostView {
 };
 
 ToggleButton::ToggleButton(ButtonListener* listener) : Button(listener) {
-  slide_animation_.SetSlideDuration(80 /* ms */);
+  slide_animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(80));
   slide_animation_.SetTweenType(gfx::Tween::LINEAR);
   thumb_view_ = AddChildView(std::make_unique<ThumbView>());
   SetInkDropMode(InkDropMode::ON);

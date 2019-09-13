@@ -233,7 +233,7 @@ TEST_F(TtsControllerTest, TestTtsControllerUtteranceDefaults) {
   double volume = blink::mojom::kSpeechSynthesisDoublePrefNotSet;
 
   std::unique_ptr<content::TtsUtterance> utterance1 =
-      base::WrapUnique(content::TtsUtterance::Create(nullptr));
+      content::TtsUtterance::Create(nullptr);
   tts_controller_delegate->UpdateUtteranceDefaultsFromPrefs(
       utterance1.get(), &rate, &pitch, &volume);
   // Updated to global defaults.
@@ -252,7 +252,7 @@ TEST_F(TtsControllerTest, TestTtsControllerUtteranceDefaults) {
   tts_controller_delegate->pref_service_ = &pref_service_;
 
   std::unique_ptr<content::TtsUtterance> utterance2 =
-      base::WrapUnique(content::TtsUtterance::Create(nullptr));
+      content::TtsUtterance::Create(nullptr);
   tts_controller_delegate->UpdateUtteranceDefaultsFromPrefs(
       utterance2.get(), &rate, &pitch, &volume);
   // Updated to pref values.
@@ -266,7 +266,7 @@ TEST_F(TtsControllerTest, TestTtsControllerUtteranceDefaults) {
   volume = 1.3f;
 
   std::unique_ptr<content::TtsUtterance> utterance3 =
-      base::WrapUnique(content::TtsUtterance::Create(nullptr));
+      content::TtsUtterance::Create(nullptr);
   tts_controller_delegate->UpdateUtteranceDefaultsFromPrefs(
       utterance3.get(), &rate, &pitch, &volume);
   // Updated to pref values.

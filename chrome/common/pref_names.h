@@ -958,6 +958,8 @@ extern const char kSignedHTTPExchangeEnabled[];
 
 extern const char kAllowPopupsDuringPageUnload[];
 
+extern const char kAllowSyncXHRInPageDismissal[];
+
 #if defined(OS_ANDROID)
 extern const char kUsageStatsEnabled[];
 #endif

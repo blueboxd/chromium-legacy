@@ -34,17 +34,17 @@ class CC_EXPORT PictureLayerImpl
       public PictureLayerTilingClient,
       public ImageAnimationController::AnimationDriver {
  public:
-  static std::unique_ptr<PictureLayerImpl>
-  Create(LayerTreeImpl* tree_impl, int id, Layer::LayerMaskType mask_type) {
-    return base::WrapUnique(new PictureLayerImpl(tree_impl, id, mask_type));
+  static std::unique_ptr<PictureLayerImpl> Create(LayerTreeImpl* tree_impl,
+                                                  int id) {
+    return base::WrapUnique(new PictureLayerImpl(tree_impl, id));
   }
   PictureLayerImpl(const PictureLayerImpl&) = delete;
   ~PictureLayerImpl() override;
 
   PictureLayerImpl& operator=(const PictureLayerImpl&) = delete;
 
-  Layer::LayerMaskType mask_type() const { return mask_type_; }
-  void SetLayerMaskType(Layer::LayerMaskType type);
+  void SetIsMask(bool is_mask);
+  bool is_mask() const { return is_mask_; }
 
   // LayerImpl overrides.
   const char* LayerTypeAsString() const override;
@@ -158,9 +158,7 @@ class CC_EXPORT PictureLayerImpl
   void InvalidatePaintWorklets(const PaintWorkletInput::PropertyKey& key);
 
  protected:
-  PictureLayerImpl(LayerTreeImpl* tree_impl,
-                   int id,
-                   Layer::LayerMaskType mask_type);
+  PictureLayerImpl(LayerTreeImpl* tree_impl, int id);
   PictureLayerTiling* AddTiling(const gfx::AxisTransform2d& contents_transform);
   void RemoveAllTilings();
   void AddTilingsForRasterScale();
@@ -223,7 +221,7 @@ class CC_EXPORT PictureLayerImpl
   float raster_contents_scale_;
   float low_res_raster_contents_scale_;
 
-  Layer::LayerMaskType mask_type_;
+  bool is_mask_ : 1;
 
   bool was_screen_space_transform_animating_ : 1;
   bool only_used_low_res_last_append_quads_ : 1;

@@ -156,6 +156,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
                                  SkYUVAIndex indices[4]);
   void ContextLost();
 
+  void RecreateRootRecorder();
+
   OutputSurfaceClient* client_ = nullptr;
   bool needs_swap_size_notifications_ = false;
 
@@ -175,10 +177,29 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
 
   std::unique_ptr<base::WaitableEvent> initialize_waitable_event_;
   SkSurfaceCharacterization characterization_;
-  base::Optional<SkDeferredDisplayListRecorder> recorder_;
+  base::Optional<SkDeferredDisplayListRecorder> root_recorder_;
 
-  // The current render pass id set by BeginPaintRenderPass.
-  RenderPassId current_render_pass_id_ = 0;
+  class ScopedPaint {
+   public:
+    explicit ScopedPaint(SkDeferredDisplayListRecorder* root_recorder);
+    ScopedPaint(SkSurfaceCharacterization characterization,
+                RenderPassId render_pass_id);
+    ~ScopedPaint();
+
+    SkDeferredDisplayListRecorder* recorder() { return recorder_; }
+    RenderPassId render_pass_id() { return render_pass_id_; }
+
+   private:
+    // This is recorder being used for current paint
+    SkDeferredDisplayListRecorder* recorder_;
+    // If we need new recorder for this Paint (i.e it's not root render pass),
+    // it's stored here
+    base::Optional<SkDeferredDisplayListRecorder> recorder_storage_;
+    const RenderPassId render_pass_id_;
+  };
+
+  // This holds current paint info
+  base::Optional<ScopedPaint> current_paint_;
 
   // The SkDDL recorder is used for overdraw feedback. It is created by
   // BeginPaintOverdraw, and FinishPaintCurrentFrame will turn it into a SkDDL

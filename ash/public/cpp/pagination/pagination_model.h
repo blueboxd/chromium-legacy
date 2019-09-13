@@ -65,7 +65,8 @@ class ASH_PUBLIC_EXPORT PaginationModel : public views::AnimationDelegateViews {
   void FinishAnimation();
 
   void SetTransition(const Transition& transition);
-  void SetTransitionDurations(int duration_ms, int overscroll_duration_ms);
+  void SetTransitionDurations(base::TimeDelta duration,
+                              base::TimeDelta overscroll_duration);
 
   // Starts a scroll transition. If there is a running transition animation,
   // cancels it but keeps the transition info.
@@ -141,8 +142,8 @@ class ASH_PUBLIC_EXPORT PaginationModel : public views::AnimationDelegateViews {
   int pending_selected_page_;
 
   std::unique_ptr<gfx::SlideAnimation> transition_animation_;
-  int transition_duration_ms_;  // Transition duration in millisecond.
-  int overscroll_transition_duration_ms_;
+  base::TimeDelta transition_duration_;
+  base::TimeDelta overscroll_transition_duration_;
 
   base::TimeTicks last_overscroll_animation_start_time_;
 

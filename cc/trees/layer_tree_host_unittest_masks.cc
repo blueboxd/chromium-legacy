@@ -50,7 +50,6 @@ class LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOrigin
 
     gfx::Size mask_size(100, 100);
     mask_layer->SetBounds(mask_size);
-    mask_layer->SetLayerMaskType(Layer::LayerMaskType::SINGLE_TEXTURE_MASK);
     mask_layer_id_ = mask_layer->id();
 
     layer_tree_host()->SetRootLayer(root);
@@ -156,7 +155,6 @@ class LayerTreeTestMaskLayerForSurfaceWithClippedLayer : public LayerTreeTest {
 
     gfx::Size mask_size(50, 50);
     mask_layer->SetBounds(mask_size);
-    mask_layer->SetLayerMaskType(Layer::LayerMaskType::SINGLE_TEXTURE_MASK);
     mask_layer_id_ = mask_layer->id();
 
     layer_tree_host()->SetRootLayer(root);
@@ -265,7 +263,6 @@ class LayerTreeTestMaskLayerForSurfaceWithDifferentScale
 
     gfx::Size mask_size(50, 50);
     mask_layer->SetBounds(mask_size);
-    mask_layer->SetLayerMaskType(Layer::LayerMaskType::SINGLE_TEXTURE_MASK);
     // Setting will change transform on mask layer will make it not adjust
     // raster scale, which will remain 1. This means the mask_layer and render
     // surface will have a scale of 2 during draw time.
@@ -368,9 +365,7 @@ class LayerTreeTestMaskLayerWithScaling : public LayerTreeTest {
     scaling_layer->SetTransform(scale);
 
     content_layer->SetBounds(scaling_layer_size);
-
     mask_layer->SetBounds(scaling_layer_size);
-    mask_layer->SetLayerMaskType(Layer::LayerMaskType::SINGLE_TEXTURE_MASK);
 
     layer_tree_host()->SetRootLayer(root);
     LayerTreeTest::SetupTree();
@@ -471,7 +466,6 @@ class LayerTreeTestMaskWithNonExactTextureSize : public LayerTreeTest {
     gfx::Size mask_size(100, 100);
     gfx::Size mask_texture_size(120, 150);
     mask_layer->SetBounds(mask_size);
-    mask_layer->SetLayerMaskType(Layer::LayerMaskType::SINGLE_TEXTURE_MASK);
     mask_layer->set_fixed_tile_size(mask_texture_size);
 
     layer_tree_host()->SetRootLayer(root);

@@ -51,9 +51,6 @@ constexpr base::TimeDelta kLabelAnimation =
 // The delay before the indicator labels start fading in.
 constexpr base::TimeDelta kLabelAnimationDelay =
     base::TimeDelta::FromMilliseconds(167);
-// The time duration for the window transformation animations.
-constexpr base::TimeDelta kWindowTransform =
-    base::TimeDelta::FromMilliseconds(kSplitviewWindowTransformMs);
 
 constexpr float kHighlightOpacity = 0.3f;
 constexpr float kPreviewAreaHighlightOpacity = 0.18f;
@@ -115,7 +112,7 @@ void GetAnimationValuesForType(
       *out_tween_type = gfx::Tween::FAST_OUT_LINEAR_IN;
       return;
     case SPLITVIEW_ANIMATION_SET_WINDOW_TRANSFORM:
-      *out_duration = kWindowTransform;
+      *out_duration = kSplitviewWindowTransformDuration;
       *out_tween_type = gfx::Tween::FAST_OUT_SLOW_IN;
       *out_preemption_strategy =
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET;

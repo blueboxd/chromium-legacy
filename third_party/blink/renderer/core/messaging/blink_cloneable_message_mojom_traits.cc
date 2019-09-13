@@ -39,7 +39,8 @@ bool StructTraits<blink::mojom::blink::CloneableMessage::DataView,
   out->sender_stack_trace_id = v8_inspector::V8StackTraceId(
       static_cast<uintptr_t>(data.stack_trace_id()),
       std::make_pair(data.stack_trace_debugger_id_first(),
-                     data.stack_trace_debugger_id_second()));
+                     data.stack_trace_debugger_id_second()),
+      data.stack_trace_should_pause());
 
   base::Optional<base::UnguessableToken> locked_agent_cluster_id;
   if (!data.ReadLockedAgentClusterId(&locked_agent_cluster_id))

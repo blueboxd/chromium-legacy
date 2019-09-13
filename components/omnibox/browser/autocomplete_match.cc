@@ -254,15 +254,8 @@ const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
       return vector_icons::kSearchIcon;
 
     case Type::SEARCH_HISTORY:
-    case Type::SEARCH_SUGGEST_PERSONALIZED: {
-      if (base::FeatureList::IsEnabled(
-              omnibox::kOmniboxSuggestionTransparencyOptions) ||
-          base::FeatureList::IsEnabled(
-              omnibox::kOmniboxUICuesForSearchHistoryMatches)) {
-        return omnibox::kClockIcon;
-      }
-      return vector_icons::kSearchIcon;
-    }
+    case Type::SEARCH_SUGGEST_PERSONALIZED:
+      return omnibox::kClockIcon;
 
     case Type::EXTENSION_APP_DEPRECATED:
       return omnibox::kExtensionAppIcon;

@@ -154,6 +154,12 @@ void AssistantViewDelegateImpl::OnProactiveSuggestionsCloseButtonPressed() {
     observer.OnProactiveSuggestionsCloseButtonPressed();
 }
 
+void AssistantViewDelegateImpl::OnProactiveSuggestionsViewHoverChanged(
+    bool is_hovering) {
+  for (auto& observer : view_delegate_observers_)
+    observer.OnProactiveSuggestionsViewHoverChanged(is_hovering);
+}
+
 void AssistantViewDelegateImpl::OnProactiveSuggestionsViewPressed() {
   for (auto& observer : view_delegate_observers_)
     observer.OnProactiveSuggestionsViewPressed();

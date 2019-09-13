@@ -46,6 +46,23 @@
 
 namespace blink {
 
+namespace {
+
+void RecordSharedWorkerUsage(Document* document) {
+  UseCounter::Count(document, WebFeature::kSharedWorkerStart);
+
+  // Don't record the use counter if the frame is same-origin to the top frame,
+  // or if we can't tell whether the frame was ever cross-origin or not.
+  if (!document->TopFrameOrigin() ||
+      document->TopFrameOrigin()->CanAccess(document->GetSecurityOrigin())) {
+    return;
+  }
+
+  UseCounter::Count(document, WebFeature::kThirdPartySharedWorker);
+}
+
+}  // namespace
+
 inline SharedWorker::SharedWorker(ExecutionContext* context)
     : AbstractWorker(context), is_being_connected_(false) {}
 
@@ -55,7 +72,12 @@ SharedWorker* SharedWorker::Create(ExecutionContext* context,
                                    ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  UseCounter::Count(context, WebFeature::kSharedWorkerStart);
+  // We don't currently support nested workers, so workers can only be created
+  // from documents.
+  Document* document = To<Document>(context);
+  DCHECK(document);
+
+  RecordSharedWorkerUsage(document);
 
   SharedWorker* worker = MakeGarbageCollected<SharedWorker>(context);
   worker->UpdateStateIfNeeded();
@@ -64,9 +86,6 @@ SharedWorker* SharedWorker::Create(ExecutionContext* context,
   worker->port_ = channel->port1();
   MessagePortChannel remote_port = channel->port2()->Disentangle();
 
-  // We don't currently support nested workers, so workers can only be created
-  // from documents.
-  Document* document = To<Document>(context);
   if (!document->GetSecurityOrigin()->CanAccessSharedWorkers()) {
     exception_state.ThrowSecurityError(
         "Access to shared workers is denied to origin '" +

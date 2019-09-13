@@ -5350,6 +5350,17 @@ error::Error GLES2DecoderImpl::HandlePathStencilFuncCHROMIUM(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleContextVisibilityHintCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::ContextVisibilityHintCHROMIUM& c =
+      *static_cast<const volatile gles2::cmds::ContextVisibilityHintCHROMIUM*>(
+          cmd_data);
+  GLboolean visibility = static_cast<GLboolean>(c.visibility);
+  DoContextVisibilityHintCHROMIUM(visibility);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleCoverageModulationCHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {

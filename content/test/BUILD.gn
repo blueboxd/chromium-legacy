@@ -1295,10 +1295,6 @@ test("content_browsertests") {
     libs = [ "uiautomationcore.lib" ]
 
     configs += [ "//build/config/win:delayloads" ]
-
-    if (symbol_level != 0) {
-      data += [ "$root_out_dir/content_browsertests.exe.pdb" ]
-    }
   }
 
   if (is_linux) {

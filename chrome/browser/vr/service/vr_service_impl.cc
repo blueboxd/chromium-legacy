@@ -574,16 +574,12 @@ void VRServiceImpl::OnExitPresent() {
       [](device::mojom::XRSessionClient* client) { client->OnExitPresent(); });
 }
 
-// TODO(http://crbug.com/845283): We should store the state here and send blur
-// messages to sessions that start blurred.
-void VRServiceImpl::OnBlur() {
+void VRServiceImpl::OnVisibilityStateChanged(
+    device::mojom::XRVisibilityState visiblity_state) {
   session_clients_.ForAllPtrs(
-      [](device::mojom::XRSessionClient* client) { client->OnBlur(); });
-}
-
-void VRServiceImpl::OnFocus() {
-  session_clients_.ForAllPtrs(
-      [](device::mojom::XRSessionClient* client) { client->OnFocus(); });
+      [visiblity_state](device::mojom::XRSessionClient* client) {
+        client->OnVisibilityStateChanged(visiblity_state);
+      });
 }
 
 void VRServiceImpl::OnActivate(device::mojom::VRDisplayEventReason reason,

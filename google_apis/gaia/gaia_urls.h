@@ -66,7 +66,6 @@ class GaiaUrls {
 
   GURL client_login_url_;
   GURL service_login_url_;
-  GURL embedded_setup_chromeos_url_v1_;
   GURL embedded_setup_chromeos_url_v2_;
   GURL embedded_setup_windows_url_;
   GURL signin_chrome_sync_dice_;

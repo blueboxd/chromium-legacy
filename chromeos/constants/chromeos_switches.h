@@ -37,6 +37,8 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kArcAvailability[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kArcAvailable[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kArcDataCleanupOnStart[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kArcDisableAppSync[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const char kArcDisableGmsCoreCache[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kArcDisableLocaleSync[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kArcDisablePlayAutoInstall[];

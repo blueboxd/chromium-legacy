@@ -599,22 +599,25 @@ void AuthenticatorCommon::StartGetAssertionRequest() {
   if (!discovery_factory)
     discovery_factory = request_delegate_->GetDiscoveryFactory();
 
-  std::vector<device::CableDiscoveryData> cable_extension;
+  std::vector<device::CableDiscoveryData> cable_pairings;
+  bool have_cable_extension;
   if (ctap_get_assertion_request_->cable_extension &&
       request_delegate_->ShouldPermitCableExtension(caller_origin_) &&
       IsFocused()) {
-    cable_extension = *ctap_get_assertion_request_->cable_extension;
+    cable_pairings = *ctap_get_assertion_request_->cable_extension;
+    have_cable_extension = !cable_pairings.empty();
   }
 
   base::Optional<device::QRGeneratorKey> qr_generator_key;
   if (base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport)) {
     qr_generator_key.emplace(device::CableDiscoveryData::NewQRKey());
+    request_delegate_->AppendCablePairings(&cable_pairings);
   }
 
-  if ((!cable_extension.empty() || qr_generator_key.has_value()) &&
-      request_delegate_->SetCableTransportInfo(!cable_extension.empty(),
+  if ((!cable_pairings.empty() || qr_generator_key.has_value()) &&
+      request_delegate_->SetCableTransportInfo(have_cable_extension,
                                                qr_generator_key)) {
-    discovery_factory->set_cable_data(std::move(cable_extension),
+    discovery_factory->set_cable_data(std::move(cable_pairings),
                                       std::move(qr_generator_key));
   }
 

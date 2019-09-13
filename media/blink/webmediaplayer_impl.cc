@@ -414,8 +414,9 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
     media_metrics_provider_->SetIsAdMedia();
 
 #if defined(OS_ANDROID)
-  renderer_factory_selector_->SetRemotePlayStateChangeCB(base::BindRepeating(
-      &WebMediaPlayerImpl::OnRemotePlayStateChange, weak_this_));
+  renderer_factory_selector_->SetRemotePlayStateChangeCB(
+      BindToCurrentLoop(base::BindRepeating(
+          &WebMediaPlayerImpl::OnRemotePlayStateChange, weak_this_)));
 #endif  // defined (OS_ANDROID)
 }
 
@@ -2501,6 +2502,7 @@ void WebMediaPlayerImpl::FlingingStopped() {
 
 void WebMediaPlayerImpl::OnRemotePlayStateChange(MediaStatus::State state) {
   DCHECK(is_flinging_);
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   if (state == MediaStatus::State::PLAYING && Paused()) {
     DVLOG(1) << __func__ << " requesting PLAY.";

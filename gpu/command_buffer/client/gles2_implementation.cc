@@ -386,6 +386,19 @@ void GLES2Implementation::OnGpuControlSwapBuffersCompleted(
   std::move(callback).Run(params);
 }
 
+void GLES2Implementation::OnGpuSwitched() {
+  share_group_->SetGpuSwitched(true);
+}
+
+GLboolean GLES2Implementation::DidGpuSwitch() {
+  // TODO(zmo): Redesign this code; it works for now because the share group
+  // only contains one context but in the future only the first OpenGL context
+  // in the share group will receive GL_TRUE as the return value.
+  bool gpu_changed = share_group_->GetGpuSwitched();
+  share_group_->SetGpuSwitched(false);
+  return gpu_changed ? GL_TRUE : GL_FALSE;
+}
+
 void GLES2Implementation::SendErrorMessage(std::string message, int32_t id) {
   if (error_message_callback_.is_null())
     return;

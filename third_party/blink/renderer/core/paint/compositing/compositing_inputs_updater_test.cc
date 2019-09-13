@@ -165,7 +165,7 @@ TEST_F(CompositingInputsUpdaterTest, MaskAncestor) {
   SetBodyInnerHTML(R"HTML(
     <div id="parent" style="-webkit-mask-image: linear-gradient(black, white);">
       <div id="child" style="width: 20px; height: 20px; will-change: transform">
-        <div id="grandchild" style="position: relative";
+        <div id="grandchild" style="position: relative"></div>
       </div>
     </div>
   )HTML");
@@ -180,6 +180,33 @@ TEST_F(CompositingInputsUpdaterTest, MaskAncestor) {
   EXPECT_EQ(nullptr, parent->MaskAncestor());
   EXPECT_EQ(parent, child->MaskAncestor());
   EXPECT_EQ(parent, grandchild->MaskAncestor());
+}
+
+TEST_F(CompositingInputsUpdaterTest, LayoutContainmentLayer) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="parent" style="contain: layout">
+      <div id="child" style="width: 20px; height: 20px; will-change: transform">
+        <div id="grandchild" style="contain: layout; position: relative">
+          <div id="greatgrandchild" style="position: relative"></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  PaintLayer* parent =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("parent"))->Layer();
+  PaintLayer* child =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("child"))->Layer();
+  PaintLayer* grandchild =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("grandchild"))->Layer();
+  PaintLayer* greatgrandchild =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("greatgrandchild"))
+          ->Layer();
+
+  EXPECT_EQ(parent, parent->NearestContainedLayoutLayer());
+  EXPECT_EQ(parent, child->NearestContainedLayoutLayer());
+  EXPECT_EQ(grandchild, grandchild->NearestContainedLayoutLayer());
+  EXPECT_EQ(grandchild, greatgrandchild->NearestContainedLayoutLayer());
 }
 
 }  // namespace blink

@@ -49,8 +49,7 @@ LabelButton::LabelButton(ButtonListener* listener,
   label_->SetAutoColorReadabilityEnabled(false);
   label_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
 
-  constexpr int kHoverAnimationDurationMs = 170;
-  SetAnimationDuration(kHoverAnimationDurationMs);
+  SetAnimationDuration(base::TimeDelta::FromMilliseconds(170));
   SetTextInternal(text);
 }
 

@@ -270,7 +270,8 @@ class PreflightControllerTest : public testing::Test {
 
  private:
   void SetUp() override {
-    preflight_controller_ = std::make_unique<PreflightController>();
+    preflight_controller_ =
+        std::make_unique<PreflightController>(std::vector<std::string>());
 
     test_server_.RegisterRequestHandler(base::BindRepeating(
         &PreflightControllerTest::ServePreflight, base::Unretained(this)));

@@ -121,19 +121,17 @@ bool IsBrowserFullscreen(Browser* browser) {
   return browser->window()->IsFullscreen();
 }
 
-OmniboxPageActionIconContainerView* GetAnchorViewForBrowser(
-    Browser* browser,
-    bool is_fullscreen) {
+views::View* GetAnchorViewForBrowser(Browser* browser, bool is_fullscreen) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   if (!is_fullscreen ||
       browser_view->immersive_mode_controller()->IsRevealed()) {
-    return browser_view->toolbar_button_provider()
-        ->GetOmniboxPageActionIconContainerView();
+    return browser_view->toolbar_button_provider()->GetAnchorView(
+        PageActionIconType::kZoom);
   }
   return nullptr;
 }
 
-OmniboxPageActionIconContainerView* GetAnchorViewForBrowser(Browser* browser) {
+views::View* GetAnchorViewForBrowser(Browser* browser) {
   const bool is_fullscreen = IsBrowserFullscreen(browser);
   return GetAnchorViewForBrowser(browser, is_fullscreen);
 }
@@ -296,15 +294,11 @@ base::string16 ZoomBubbleView::GetAccessibleWindowTitle() const {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   if (!browser)
     return {};
-  OmniboxPageActionIconContainerView* page_action_icon_container_view =
-      GetAnchorViewForBrowser(browser);
-  if (!page_action_icon_container_view)
-    return {};
-
-  PageActionIconView* zoom_view =
-      page_action_icon_container_view->GetPageActionIconView(
-          PageActionIconType::kZoom);
-  return zoom_view->GetTextForTooltipAndAccessibleName();
+  return BrowserView::GetBrowserViewForBrowser(browser)
+      ->toolbar_button_provider()
+      ->GetOmniboxPageActionIconContainerView()
+      ->GetPageActionIconView(PageActionIconType::kZoom)
+      ->GetTextForTooltipAndAccessibleName();
 }
 
 int ZoomBubbleView::GetDialogButtons() const {

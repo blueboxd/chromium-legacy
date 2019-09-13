@@ -1059,6 +1059,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kUserFeedbackAllowed,
     prefs::kUserFeedbackAllowed,
     base::Value::Type::BOOLEAN },
+  { key::kAllowSyncXHRInPageDismissal,
+    prefs::kAllowSyncXHRInPageDismissal,
+    base::Value::Type::BOOLEAN },
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
@@ -1109,6 +1112,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::LIST },
   { key::kDomainsToCheckForMalwareOfUploadedContent,
     prefs::kDomainsToCheckForMalwareOfUploadedContent,
+    base::Value::Type::LIST },
+  { key::kDomainsToNotCheckComplianceOfUploadedContent,
+    prefs::kDomainsToNotCheckComplianceOfUploadedContent,
     base::Value::Type::LIST },
 #endif
 #if defined(OS_WIN)

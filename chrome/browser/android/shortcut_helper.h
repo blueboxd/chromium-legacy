@@ -63,6 +63,9 @@ class ShortcutHelper {
   // Returns the ideal size for a badge icon of a WebAPK.
   static int GetIdealBadgeIconSizeInPx();
 
+  // Returns the ideal size for an adaptive launcher icon of a WebAPK
+  static int GetIdealAdaptiveLauncherIconSizeInPx();
+
   // Fetches the splash screen image and stores it inside the WebappDataStorage
   // of the webapp. The WebappDataStorage object *must* have been previously
   // created by AddToLauncherWithSkBitmap(); this method should be passed as a

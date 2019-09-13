@@ -297,7 +297,7 @@ class PowerManagerClientTest : public testing::Test {
   static const int kSuspendDelayId = 100;
   static const int kDarkSuspendDelayId = 200;
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   // Mock bus and proxy for simulating calls to powerd.
   scoped_refptr<dbus::MockBus> bus_;

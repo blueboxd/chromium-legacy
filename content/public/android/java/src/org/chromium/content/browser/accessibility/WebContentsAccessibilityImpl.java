@@ -1110,13 +1110,17 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
             boolean canScrollForward, boolean canScrollBackward, boolean canScrollUp,
             boolean canScrollDown, boolean canScrollLeft, boolean canScrollRight, boolean clickable,
             boolean editableText, boolean enabled, boolean focusable, boolean focused,
-            boolean isCollapsed, boolean isExpanded, boolean hasNonEmptyValue) {
+            boolean isCollapsed, boolean isExpanded, boolean hasNonEmptyValue,
+            boolean hasNonEmptyInnerText) {
         addAction(node, AccessibilityNodeInfo.ACTION_NEXT_HTML_ELEMENT);
         addAction(node, AccessibilityNodeInfo.ACTION_PREVIOUS_HTML_ELEMENT);
-        addAction(node, AccessibilityNodeInfo.ACTION_NEXT_AT_MOVEMENT_GRANULARITY);
-        addAction(node, AccessibilityNodeInfo.ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY);
         addAction(node, ACTION_SHOW_ON_SCREEN);
         addAction(node, ACTION_CONTEXT_CLICK);
+
+        if (hasNonEmptyInnerText) {
+            addAction(node, AccessibilityNodeInfo.ACTION_NEXT_AT_MOVEMENT_GRANULARITY);
+            addAction(node, AccessibilityNodeInfo.ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY);
+        }
 
         if (editableText && enabled) {
             // TODO: don't support actions that modify it if it's read-only (but

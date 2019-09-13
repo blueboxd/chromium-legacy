@@ -87,12 +87,6 @@ public class ChromePreferenceManager {
     public static final String CONTEXTUAL_SEARCH_QUICK_ACTIONS_IGNORED_COUNT =
             "contextual_search_quick_actions_ignored_count";
     /**
-     * The user's previous preference setting before Unified Consent took effect, as an int, for
-     * Contextual Search. This can be removed after the full rollout of Unified Consent.
-     */
-    public static final String CONTEXTUAL_SEARCH_PRE_UNIFIED_CONSENT_PREF =
-            "contextual_search_pre_unified_consent_pref";
-    /**
      * A user interaction event ID for interaction with Contextual Search, stored as a long.
      */
     public static final String CONTEXTUAL_SEARCH_PREVIOUS_INTERACTION_EVENT_ID =
@@ -412,6 +406,11 @@ public class ChromePreferenceManager {
      */
     public static final String TOUCHLESS_BROWSING_SESSION_COUNT =
             "touchless_browsing_session_count";
+
+    /**
+     * Key to cache whether offline indicator v2 (persistent offline indicator) is enabled.
+     */
+    public static final String OFFLINE_INDICATOR_V2_ENABLED_KEY = "offline_indicator_v2_enabled";
 
     private static class LazyHolder {
         static final ChromePreferenceManager INSTANCE = new ChromePreferenceManager();

@@ -813,6 +813,13 @@ error::Error GLES2DecoderPassthroughImpl::DoCompressedTexSubImage3D(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderPassthroughImpl::DoContextVisibilityHintCHROMIUM(
+    GLboolean visibility) {
+  if (feature_info_->IsWebGLContext())
+    context_->SetVisibility(visibility == GL_TRUE);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderPassthroughImpl::DoCopyBufferSubData(
     GLenum readtarget,
     GLenum writetarget,

@@ -78,9 +78,7 @@ gfx::Rect SafeIntersectRects(const gfx::Rect& one, const gfx::Rect& two) {
 
 }  // namespace
 
-PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl,
-                                   int id,
-                                   Layer::LayerMaskType mask_type)
+PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl, int id)
     : LayerImpl(tree_impl, id, /*will_always_push_properties=*/true),
       twin_layer_(nullptr),
       tilings_(CreatePictureLayerTilingSet()),
@@ -93,7 +91,7 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl,
       raster_source_scale_(0.f),
       raster_contents_scale_(0.f),
       low_res_raster_contents_scale_(0.f),
-      mask_type_(mask_type),
+      is_mask_(false),
       was_screen_space_transform_animating_(false),
       only_used_low_res_last_append_quads_(false),
       nearest_neighbor_(false),
@@ -127,15 +125,13 @@ PictureLayerImpl::~PictureLayerImpl() {
   UnregisterAnimatedImages();
 }
 
-void PictureLayerImpl::SetLayerMaskType(Layer::LayerMaskType mask_type) {
-  if (mask_type_ == mask_type)
+void PictureLayerImpl::SetIsMask(bool is_mask) {
+  if (is_mask_ == is_mask)
     return;
-  // It is expected that a layer can never change from being a mask to not being
-  // one and vice versa. Only changes that make mask layer single <-> multi are
-  // expected.
-  DCHECK(mask_type_ != Layer::LayerMaskType::NOT_MASK &&
-         mask_type != Layer::LayerMaskType::NOT_MASK);
-  mask_type_ = mask_type;
+
+  // This flag can't be set after property trees have been updated.
+  DCHECK_EQ(effect_tree_index(), EffectTree::kInvalidNodeId);
+  is_mask_ = is_mask;
 }
 
 const char* PictureLayerImpl::LayerTypeAsString() const {
@@ -144,15 +140,19 @@ const char* PictureLayerImpl::LayerTypeAsString() const {
 
 std::unique_ptr<LayerImpl> PictureLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return PictureLayerImpl::Create(tree_impl, id(), mask_type());
+  return PictureLayerImpl::Create(tree_impl, id());
 }
 
 void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
 
+  // This is before LayerImpl::PushPropertiesTo() because PictureLayerImpl
+  // requires that is_mask flag can change only when the layer is just created
+  // before any property tree state is assigned.
+  layer_impl->SetIsMask(is_mask());
+
   LayerImpl::PushPropertiesTo(base_layer);
 
-  layer_impl->SetLayerMaskType(mask_type());
   // Twin relationships should never change once established.
   DCHECK(!twin_layer_ || twin_layer_ == layer_impl);
   DCHECK(!twin_layer_ || layer_impl->twin_layer_ == this);
@@ -229,7 +229,7 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
         shared_quad_state->visible_quad_layer_rect;
     Occlusion occlusion;
     // TODO(sunxd): Compute the correct occlusion for mask layers.
-    if (mask_type_ == Layer::LayerMaskType::NOT_MASK) {
+    if (!is_mask_) {
       occlusion = draw_properties().occlusion_in_content_space;
     }
 
@@ -251,7 +251,7 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
   PopulateScaledSharedQuadState(shared_quad_state, max_contents_scale,
                                 contents_opaque());
   Occlusion scaled_occlusion;
-  if (mask_type_ == Layer::LayerMaskType::NOT_MASK) {
+  if (!is_mask_) {
     scaled_occlusion =
         draw_properties()
             .occlusion_in_content_space.GetOcclusionWithGivenDrawTransform(
@@ -445,8 +445,7 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
           float alpha =
               (SkColorGetA(draw_info.solid_color()) * (1.0f / 255.0f)) *
               shared_quad_state->opacity;
-          if (mask_type_ != Layer::LayerMaskType::NOT_MASK ||
-              alpha >= std::numeric_limits<float>::epsilon()) {
+          if (is_mask_ || alpha >= std::numeric_limits<float>::epsilon()) {
             auto* quad =
                 render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
             quad->SetNew(
@@ -466,8 +465,7 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
     if (!has_draw_quad) {
       // Checkerboard.
       SkColor color = SafeOpaqueBackgroundColor();
-      if (mask_type_ == Layer::LayerMaskType::NOT_MASK &&
-          ShowDebugBorders(DebugBorderType::LAYER)) {
+      if (!is_mask_ && ShowDebugBorders(DebugBorderType::LAYER)) {
         // Fill the whole tile with the missing tile color.
         color = DebugColors::DefaultCheckerboardColor();
       }
@@ -822,7 +820,7 @@ std::unique_ptr<Tile> PictureLayerImpl::CreateTile(
   // handle solid color single texture masks if the flag is enabled, so we
   // shouldn't bother analyzing those.
   // Otherwise, always analyze to maximize memory savings.
-  if (mask_type_ != Layer::LayerMaskType::SINGLE_TEXTURE_MASK)
+  if (!is_mask_)
     flags = Tile::USE_PICTURE_ANALYSIS;
 
   if (contents_opaque())
@@ -1279,12 +1277,12 @@ void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
 
   PictureLayerImpl* twin = GetPendingOrActiveTwinLayer();
   if (twin && twin->CanHaveTilings()) {
-    min_acceptable_high_res_scale = std::min(
-        min_acceptable_high_res_scale,
-        std::min(twin->raster_contents_scale_, twin->ideal_contents_scale_));
-    max_acceptable_high_res_scale = std::max(
-        max_acceptable_high_res_scale,
-        std::max(twin->raster_contents_scale_, twin->ideal_contents_scale_));
+    min_acceptable_high_res_scale =
+        std::min({min_acceptable_high_res_scale, twin->raster_contents_scale_,
+                  twin->ideal_contents_scale_});
+    max_acceptable_high_res_scale =
+        std::max({max_acceptable_high_res_scale, twin->raster_contents_scale_,
+                  twin->ideal_contents_scale_});
   }
 
   PictureLayerTilingSet* twin_set = twin ? twin->tilings_.get() : nullptr;
@@ -1355,9 +1353,8 @@ float PictureLayerImpl::MaximumContentsScale() const {
   // use a single tile for the entire tiling. Other layers can have tilings such
   // that dimension * scale does not overflow.
   float max_dimension =
-      static_cast<float>(mask_type_ == Layer::LayerMaskType::SINGLE_TEXTURE_MASK
-                             ? layer_tree_impl()->max_texture_size()
-                             : std::numeric_limits<int>::max());
+      static_cast<float>(is_mask_ ? layer_tree_impl()->max_texture_size()
+                                  : std::numeric_limits<int>::max());
   int higher_dimension = std::max(bounds().width(), bounds().height());
   float max_scale = max_dimension / higher_dimension;
 

@@ -83,20 +83,28 @@ Animation* Animatable::animate(ScriptState* script_state,
   return animateInternal(*element, effect, Timing());
 }
 
-HeapVector<Member<Animation>> Animatable::getAnimations() {
+HeapVector<Member<Animation>> Animatable::getAnimations(
+    GetAnimationsOptions* options) {
+  bool use_subtree = options && options->subtree();
   Element* element = GetAnimationTarget();
-  element->GetDocument().UpdateStyleAndLayoutTreeForNode(element);
+  if (use_subtree)
+    element->GetDocument().UpdateStyleAndLayoutTreeForSubtree(element);
+  else
+    element->GetDocument().UpdateStyleAndLayoutTreeForNode(element);
 
   HeapVector<Member<Animation>> animations;
-  if (!element->HasAnimations())
+  if (!use_subtree && !element->HasAnimations())
     return animations;
 
   for (const auto& animation :
        element->GetDocument().Timeline().getAnimations()) {
     DCHECK(animation->effect());
-    if (ToKeyframeEffect(animation->effect())->target() == element &&
-        (animation->effect()->IsCurrent() || animation->effect()->IsInEffect()))
-      animations.push_back(animation);
+    Element* target = ToKeyframeEffect(animation->effect())->target();
+
+    if (element == target || (use_subtree && element->contains(target))) {
+      if (animation->effect()->IsCurrent() || animation->effect()->IsInEffect())
+        animations.push_back(animation);
+    }
   }
   return animations;
 }

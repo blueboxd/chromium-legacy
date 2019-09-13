@@ -255,6 +255,7 @@ test("accessibility_unittests") {
     "ax_text_utils_unittest.cc",
     "ax_tree_combiner_unittest.cc",
     "ax_tree_serializer_unittest.cc",
+    "ax_tree_source_checker_unittest.cc",
     "ax_tree_unittest.cc",
     "mojom/ax_action_data_mojom_traits_unittest.cc",
     "mojom/ax_event_mojom_traits_unittest.cc",

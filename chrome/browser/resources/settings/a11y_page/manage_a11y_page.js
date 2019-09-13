@@ -206,6 +206,11 @@ Polymer({
   },
 
   /** @private */
+  onCaptionsClick_: function() {
+    settings.navigateTo(settings.routes.MANAGE_CAPTION_SETTINGS);
+  },
+
+  /** @private */
   onSelectToSpeakSettingsTap_: function() {
     chrome.send('showSelectToSpeakSettings');
   },

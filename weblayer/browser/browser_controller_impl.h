@@ -32,7 +32,7 @@ class BrowserControllerImpl : public BrowserController,
                               public content::WebContentsDelegate,
                               public content::WebContentsObserver {
  public:
-  BrowserControllerImpl(ProfileImpl* profile, const gfx::Size& initial_size);
+  explicit BrowserControllerImpl(ProfileImpl* profile);
   ~BrowserControllerImpl() override;
 
   content::WebContents* web_contents() const { return web_contents_.get(); }

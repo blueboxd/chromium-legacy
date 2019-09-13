@@ -87,10 +87,12 @@ class LayerTestCommon {
 
     template <typename T, typename... Args>
     T* AddMaskLayer(LayerImpl* origin, Args&&... args) {
+      static_assert(std::is_base_of<PictureLayerImpl, T>::value, "");
       std::unique_ptr<T> layer =
           T::Create(host_impl()->active_tree(), layer_impl_id_++,
                     std::forward<Args>(args)...);
       layer->SetBounds(origin->bounds());
+      layer->SetIsMask(true);
       T* ptr = layer.get();
       host_impl()->active_tree()->AddMaskLayer(std::move(layer));
       if (host_impl()->active_tree()->settings().use_layer_lists) {

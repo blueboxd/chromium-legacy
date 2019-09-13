@@ -49,13 +49,15 @@ base::Optional<std::string> GetHeaderString(
 //  - byte-lowercased
 std::string CreateAccessControlRequestHeadersHeader(
     const net::HttpRequestHeaders& headers,
-    bool is_revalidating) {
+    bool is_revalidating,
+    const base::flat_set<std::string>& extra_safelisted_header_names) {
   // Exclude the forbidden headers because they may be added by the user
   // agent. They must be checked separately and rejected for
   // JavaScript-initiated requests.
   std::vector<std::string> filtered_headers =
       CorsUnsafeNotForbiddenRequestHeaderNames(headers.GetHeaderVector(),
-                                               is_revalidating);
+                                               is_revalidating,
+                                               extra_safelisted_header_names);
   if (filtered_headers.empty())
     return std::string();
 
@@ -67,7 +69,8 @@ std::string CreateAccessControlRequestHeadersHeader(
 
 std::unique_ptr<ResourceRequest> CreatePreflightRequest(
     const ResourceRequest& request,
-    bool tainted) {
+    bool tainted,
+    const base::flat_set<std::string>& extra_safelisted_header_names) {
   DCHECK(!request.url.has_username());
   DCHECK(!request.url.has_password());
 
@@ -93,7 +96,7 @@ std::unique_ptr<ResourceRequest> CreatePreflightRequest(
       header_names::kAccessControlRequestMethod, request.method);
 
   std::string request_headers = CreateAccessControlRequestHeadersHeader(
-      request.headers, request.is_revalidating);
+      request.headers, request.is_revalidating, extra_safelisted_header_names);
   if (!request_headers.empty()) {
     preflight_request->headers.SetHeader(
         header_names::kAccessControlRequestHeaders, request_headers);
@@ -167,14 +170,16 @@ std::unique_ptr<PreflightResult> CreatePreflightResult(
 
 base::Optional<CorsErrorStatus> CheckPreflightResult(
     PreflightResult* result,
-    const ResourceRequest& original_request) {
+    const ResourceRequest& original_request,
+    const base::flat_set<std::string>& extra_safelisted_header_names) {
   base::Optional<CorsErrorStatus> status =
       result->EnsureAllowedCrossOriginMethod(original_request.method);
   if (status)
     return status;
 
   return result->EnsureAllowedCrossOriginHeaders(
-      original_request.headers, original_request.is_revalidating);
+      original_request.headers, original_request.is_revalidating,
+      extra_safelisted_header_names);
 }
 
 }  // namespace
@@ -190,8 +195,10 @@ class PreflightController::PreflightLoader final {
         completion_callback_(std::move(completion_callback)),
         original_request_(request),
         tainted_(tainted) {
-    loader_ = SimpleURLLoader::Create(CreatePreflightRequest(request, tainted),
-                                      annotation_tag);
+    loader_ = SimpleURLLoader::Create(
+        CreatePreflightRequest(request, tainted,
+                               controller->extra_safelisted_header_names()),
+        annotation_tag);
   }
 
   void Request(mojom::URLLoaderFactory* loader_factory) {
@@ -236,7 +243,8 @@ class PreflightController::PreflightLoader final {
       // Preflight succeeded. Check |original_request_| with |result|.
       DCHECK(!detected_error_status);
       detected_error_status =
-          CheckPreflightResult(result.get(), original_request_);
+          CheckPreflightResult(result.get(), original_request_,
+                               controller_->extra_safelisted_header_names());
     }
 
     if (!(original_request_.load_flags & net::LOAD_DISABLE_CACHE) &&
@@ -295,7 +303,7 @@ std::unique_ptr<ResourceRequest>
 PreflightController::CreatePreflightRequestForTesting(
     const ResourceRequest& request,
     bool tainted) {
-  return CreatePreflightRequest(request, tainted);
+  return CreatePreflightRequest(request, tainted, {});
 }
 
 // static
@@ -310,7 +318,10 @@ PreflightController::CreatePreflightResultForTesting(
                                detected_error_status);
 }
 
-PreflightController::PreflightController() = default;
+PreflightController::PreflightController(
+    const std::vector<std::string>& extra_safelisted_header_names)
+    : extra_safelisted_header_names_(extra_safelisted_header_names.cbegin(),
+                                     extra_safelisted_header_names.cend()) {}
 
 PreflightController::~PreflightController() = default;
 

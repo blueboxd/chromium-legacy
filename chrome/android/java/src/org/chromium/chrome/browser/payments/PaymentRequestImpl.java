@@ -2542,6 +2542,7 @@ public class PaymentRequestImpl
         if (mMicrotransactionUi != null) {
             mMicrotransactionUi.hide();
             mMicrotransactionUi = null;
+            setIsAnyPaymentRequestShowing(false);
         }
 
         if (mUI != null) {
@@ -2550,10 +2551,10 @@ public class PaymentRequestImpl
                 closeClient();
             });
             mUI = null;
+            setIsAnyPaymentRequestShowing(false);
         }
 
         mIsCurrentPaymentRequestShowing = false;
-        setIsAnyPaymentRequestShowing(false);
 
         if (mPaymentMethodsSection != null) {
             for (int i = 0; i < mPaymentMethodsSection.getSize(); i++) {

@@ -115,20 +115,6 @@ public class WebLayerShellActivity extends FragmentActivity {
         super.onStart();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        zoomIn();
-    }
-
-    private void zoomIn() {
-        mMainView.animate().scaleX(0.5f).scaleY(0.5f).setDuration(1000).withEndAction(() -> zoomOut());
-    }
-
-    private void zoomOut() {
-        mMainView.animate().scaleX(1.f).scaleY(1.f).setDuration(1000).withEndAction(() -> zoomIn());
-    }
-
     private void loadUrl(String url) {
         mBrowserController.getNavigationController().navigate(Uri.parse(sanitizeUrl(url)));
         mUrlView.clearFocus();

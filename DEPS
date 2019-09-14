@@ -162,11 +162,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '2cb1315d99e45fef58e18490d3dac5dba3370711',
+  'skia_revision': 'e1af44498b6e40c448811e6efc4412272cc10ca7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '2af2515dc5cb2810b9792cfb1b7637e6c69f7812',
+  'v8_revision': '29c09b1de90db6cf874116fdd83b8fb079d68f9c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -878,7 +878,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '9d25ad41920eff43a8249f663e5f66d7d1b89d5f',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '73ec83f0febdf5015e18199abe42ee092b6e67ab',
 
   'src/third_party/devtools-node-modules':
     Var('chromium_git') + '/external/github.com/ChromeDevTools/devtools-node-modules' + '@' + Var('devtools_node_modules_revision'),
@@ -1257,7 +1257,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'b76d3875bc1b2b912dfdb87daaeb80f2631fcba5',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'b0b8d9e4cd23b30220dac359ee14b48673958bfe',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1425,7 +1425,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'abaae129d9a0c6e1e092067e0b105475df43352e',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '0dd37ce029f05234e081dbef4b2d53223349db29',
+    Var('webrtc_git') + '/src.git' + '@' + 'ec06ebd25b7189bdbb9214670c73f23c53cb49d6',
 
   'src/third_party/xdg-utils': {
       'url': Var('chromium_git') + '/chromium/deps/xdg-utils.git' + '@' + 'd80274d5869b17b8c9067a1022e4416ee7ed5e0d',
@@ -1487,7 +1487,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@fdadc02909bfd13e103440f8189ca877b14ac1b3',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@f9329acdeb98b8e831c3da385e83e0aded483220',
     'condition': 'checkout_src_internal',
   },
 

@@ -712,7 +712,7 @@ class HeapDeque : public Deque<T, inlineCapacity, HeapAllocator> {
     // VectorTraits<T>::kNeedsDestruction case for now.
     static_assert(inlineCapacity == 0 || !VectorTraits<T>::kNeedsDestruction,
                   "on-heap HeapDeque<> should not have an inline capacity");
-    return ThreadHeap::Allocate<HeapVector<T, inlineCapacity>>(size);
+    return ThreadHeap::Allocate<HeapDeque<T, inlineCapacity>>(size);
   }
 
   HeapDeque() { CheckType(); }

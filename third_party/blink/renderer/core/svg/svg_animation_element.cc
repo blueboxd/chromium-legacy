@@ -241,11 +241,11 @@ float SVGAnimationElement::getStartTime(ExceptionState& exception_state) const {
                                       "No current interval.");
     return 0;
   }
-  return clampTo<float>(start_time.Value());
+  return clampTo<float>(start_time.InSecondsF());
 }
 
 float SVGAnimationElement::getCurrentTime() const {
-  return clampTo<float>(Elapsed().Value());
+  return clampTo<float>(Elapsed().InSecondsF());
 }
 
 float SVGAnimationElement::getSimpleDuration(
@@ -256,7 +256,7 @@ float SVGAnimationElement::getSimpleDuration(
                                       "No simple duration defined.");
     return 0;
   }
-  return clampTo<float>(duration.Value());
+  return clampTo<float>(duration.InSecondsF());
 }
 
 void SVGAnimationElement::beginElementAt(float offset) {
@@ -402,7 +402,7 @@ float SVGAnimationElement::CalculatePercentForSpline(
   if (!duration.IsFinite())
     duration = 100.0;
   return clampTo<float>(
-      bezier.SolveWithEpsilon(percent, SolveEpsilon(duration.Value())));
+      bezier.SolveWithEpsilon(percent, SolveEpsilon(duration.InSecondsF())));
 }
 
 float SVGAnimationElement::CalculatePercentFromKeyPoints(float percent) const {

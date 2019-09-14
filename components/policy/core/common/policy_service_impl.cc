@@ -304,7 +304,7 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
                                      &policy_dictionary_merger};
 
   PolicyGroupMerger policy_group_merger;
-  if (atomic_policy_group_enabled && atomic_policy_group_enabled_policy_value)
+  if (atomic_policy_group_enabled)
     mergers.push_back(&policy_group_merger);
 
   for (auto it = bundle.begin(); it != bundle.end(); ++it)

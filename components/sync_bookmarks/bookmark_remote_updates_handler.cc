@@ -11,6 +11,7 @@
 #include <unordered_set>
 #include <utility>
 
+#include "base/guid.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
@@ -399,6 +400,13 @@ bool BookmarkRemoteUpdatesHandler::ProcessCreate(
 
   DCHECK(IsValidBookmarkSpecifics(update_entity.specifics.bookmark(),
                                   update_entity.is_folder));
+
+  // If specifics do not have a valid GUID, create a new one. Legacy clients do
+  // not populate GUID field and if the originator_client_item_id is not of
+  // valid GUID format to replace it, the field is left blank.
+  if (!base::IsValidGUID(update_entity.specifics.bookmark().guid())) {
+    update.entity->specifics.mutable_bookmark()->set_guid(base::GenerateGUID());
+  }
 
   const bookmarks::BookmarkNode* parent_node = GetParentNode(update_entity);
   if (!parent_node) {

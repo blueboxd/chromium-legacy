@@ -38,6 +38,18 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryFactory {
   FidoDiscoveryFactory();
   virtual ~FidoDiscoveryFactory();
 
+  // Resets all fields that are only meaningful for the duration of a single
+  // request to a safe default.
+  //
+  // The "regular" FidoDiscoveryFactory is owned by the
+  // AuthenticatorClientRequestDelegate and lives only for a single request.
+  // Instances returned from
+  // AuthenticatorEnvironmentImpl::GetDiscoveryFactoryOverride(), which are
+  // used in unit tests or by the WebDriver virtual authenticators, are
+  // long-lived and may handle multiple WebAuthn requests. Hence, they will be
+  // reset at the beginning of each new request.
+  void ResetRequestState();
+
   // Instantiates a FidoDiscoveryBase for the given transport.
   //
   // FidoTransportProtocol::kUsbHumanInterfaceDevice requires specifying a
@@ -77,14 +89,22 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryFactory {
 #endif  // defined(OS_WIN)
 
  private:
+  // RequestState holds configuration data that is only meaningful for a
+  // single WebAuthn request.
+  struct RequestState {
+    RequestState();
+    ~RequestState();
+    base::Optional<std::vector<CableDiscoveryData>> cable_data_;
+    base::Optional<QRGeneratorKey> qr_generator_key_;
+    base::Optional<
+        base::RepeatingCallback<void(std::unique_ptr<CableDiscoveryData>)>>
+        cable_pairing_callback_;
+  };
+
+  RequestState request_state_;
 #if defined(OS_MACOSX)
   base::Optional<fido::mac::AuthenticatorConfig> mac_touch_id_config_;
 #endif  // defined(OS_MACOSX)
-  base::Optional<std::vector<CableDiscoveryData>> cable_data_;
-  base::Optional<QRGeneratorKey> qr_generator_key_;
-  base::Optional<
-      base::RepeatingCallback<void(std::unique_ptr<CableDiscoveryData>)>>
-      cable_pairing_callback_;
 #if defined(OS_WIN)
   WinWebAuthnApi* win_webauthn_api_ = nullptr;
 #endif  // defined(OS_WIN)

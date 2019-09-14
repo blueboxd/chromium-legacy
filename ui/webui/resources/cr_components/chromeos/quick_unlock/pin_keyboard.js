@@ -41,11 +41,28 @@ const INITIAL_BACKSPACE_DELAY_MS = 500;
 
 /**
  * The key codes of the keys allowed to be used on the pin input, in addition to
- * number keys. Currently we allow backspace(8), tab(9), left(37) and right(39).
- * @type {Array<number>}
+ * number keys. We allow some editing keys. We also allow system keys, otherwise
+ * preventDefault() will prevent the user from changing screen brightness,
+ * taking screenshots, etc. https://crbug.com/1002863
+ * @type {!Set<number>}
  * @const
  */
-const PIN_INPUT_ALLOWED_NON_NUMBER_KEY_CODES = [8, 9, 37, 39];
+const PIN_INPUT_ALLOWED_NON_NUMBER_KEY_CODES = new Set([
+  8,   // backspace
+  9,   // tab
+  37,  // left
+  39,  // right
+  // We don't allow back, forward, or refresh.
+  183,  // ZoomToggle, aka fullscreen
+  182,  // LaunchApplication1, aka overview mode
+  216,  // BrightnessDown
+  217,  // BrightnessUp
+  179,  // MediaPlayPause
+  173,  // AudioVolumeMute
+  174,  // AudioVolumeDown
+  175,  // AudioVolumeUp
+  154,  // LaunchControlPanel, aka system tray menu
+]);
 
 /** @return {boolean} */
 function receivedFocusFromKeyboard() {
@@ -384,7 +401,7 @@ Polymer({
 
     // Valid if the key is one of the selected special keys defined in
     // |PIN_INPUT_ALLOWED_NON_NUMBER_KEY_CODES|.
-    if (PIN_INPUT_ALLOWED_NON_NUMBER_KEY_CODES.indexOf(event.keyCode) > -1) {
+    if (PIN_INPUT_ALLOWED_NON_NUMBER_KEY_CODES.has(event.keyCode)) {
       return true;
     }
 

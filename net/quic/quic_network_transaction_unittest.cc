@@ -943,12 +943,17 @@ class QuicNetworkTransactionTest
         version_, quic::QuicUtils::CreateRandomConnectionId(&random_generator_),
         &clock_, kDefaultServerHostName, quic::Perspective::IS_SERVER, false);
     MockQuicData quic_data(version_);
+    int packet_number = 1;
     client_maker.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
+    if (VersionUsesQpack(version_.transport_version)) {
+      quic_data.AddWrite(
+          SYNCHRONOUS, client_maker.MakeInitialSettingsPacket(packet_number++));
+    }
     quic_data.AddWrite(
         SYNCHRONOUS,
         client_maker.MakeRequestHeadersPacket(
-            1, GetNthClientInitiatedBidirectionalStreamId(0), true, true,
-            ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY),
+            packet_number++, GetNthClientInitiatedBidirectionalStreamId(0),
+            true, true, ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY),
             GetRequestHeaders("GET", "https", "/", &client_maker), 0, nullptr));
     client_maker.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
     quic_data.AddRead(
@@ -3744,10 +3749,6 @@ TEST_P(QuicNetworkTransactionTest,
 // Much like above test, but verifies that NetworkIsolationKey is respected.
 TEST_P(QuicNetworkTransactionTest,
        ProtocolErrorAfterHandshakeConfirmedThenBrokenWithNetworkIsolationKey) {
-  if (version_.transport_version == quic::QUIC_VERSION_99) {
-    // TODO(crbug.com/1003456): Enable this test for v99.
-    return;
-  }
   const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
   const net::NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
   const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
@@ -3769,13 +3770,18 @@ TEST_P(QuicNetworkTransactionTest,
 
   // The request will initially go out over QUIC.
   MockQuicData quic_data(version_);
+  uint64_t packet_number = 1;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  quic_data.AddWrite(SYNCHRONOUS,
-                     ConstructClientRequestHeadersPacket(
-                         1, GetNthClientInitiatedBidirectionalStreamId(0), true,
-                         true, GetRequestHeaders("GET", "https", "/")));
+  if (VersionUsesQpack(version_.transport_version)) {
+    quic_data.AddWrite(SYNCHRONOUS,
+                       ConstructInitialSettingsPacket(packet_number++));
+  }
+  quic_data.AddWrite(
+      SYNCHRONOUS,
+      ConstructClientRequestHeadersPacket(
+          packet_number++, GetNthClientInitiatedBidirectionalStreamId(0), true,
+          true, GetRequestHeaders("GET", "https", "/")));
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
-  uint64_t packet_number = 2;
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
 
   // Peer sending data from an non-existing stream causes this end to raise
@@ -5932,10 +5938,6 @@ TEST_P(QuicNetworkTransactionTest, FailedZeroRttBrokenAlternateProtocol) {
 
 TEST_P(QuicNetworkTransactionTest,
        FailedZeroRttBrokenAlternateProtocolWithNetworkIsolationKey) {
-  if (version_.transport_version == quic::QUIC_VERSION_99) {
-    // TODO(crbug.com/1003456): Enable this test for v99.
-    return;
-  }
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
       // enabled_features

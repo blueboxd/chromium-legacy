@@ -6,6 +6,7 @@
 
 # During WebContent destructor, in RenderFrameHost:
 # Check failed: !is_active().
+# https://crbug.com/1003744
 -NavigationControllerTest.Back_NewPending
 -NavigationControllerTest.CopyStateFromAndPruneSourcePending
 

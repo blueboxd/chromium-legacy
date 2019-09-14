@@ -46,7 +46,6 @@ class Value;
 
 namespace net {
 
-class HostPortPair;
 class HttpServerPropertiesManager;
 class IPAddress;
 class NetLog;
@@ -89,10 +88,6 @@ const int kMaxRecentlyBrokenAlternativeServiceEntries = 200;
 
 // Store at most 5 MRU QUIC servers by default. This is mainly used by cronet.
 const int kDefaultMaxQuicServerEntries = 5;
-
-// Max number of quic servers to store is not hardcoded and can be set.
-// Because of this, QuicServerInfoMap will not be a subclass of MRUCache.
-typedef base::MRUCache<quic::QuicServerId, std::string> QuicServerInfoMap;
 
 // The interface for setting/retrieving the HTTP server properties.
 // Currently, this class manages servers':
@@ -199,6 +194,31 @@ class NET_EXPORT HttpServerProperties
    private:
     DISALLOW_COPY_AND_ASSIGN(ServerInfoMap);
   };
+
+  struct NET_EXPORT QuicServerInfoMapKey {
+    // If |use_network_isolation_key| is false, an empty NetworkIsolationKey is
+    // used instead of |network_isolation_key|.
+    QuicServerInfoMapKey(const quic::QuicServerId& server_id,
+                         const NetworkIsolationKey& network_isolation_key,
+                         bool use_network_isolation_key);
+    ~QuicServerInfoMapKey();
+
+    bool operator<(const QuicServerInfoMapKey& other) const;
+
+    // Used in tests.
+    bool operator==(const QuicServerInfoMapKey& other) const;
+
+    quic::QuicServerId server_id;
+    NetworkIsolationKey network_isolation_key;
+  };
+
+  // Max number of quic servers to store is not hardcoded and can be set.
+  // Because of this, QuicServerInfoMap will not be a subclass of MRUCache.
+  // Separate from ServerInfoMap because the key includes privacy mode (Since
+  // this is analogous to the SSL session cache, which has separate caches for
+  // privacy mode), and each entry can be quite large, so it has its own size
+  // limit, which is much smaller than the ServerInfoMap's limit.
+  typedef base::MRUCache<QuicServerInfoMapKey, std::string> QuicServerInfoMap;
 
   // If a |pref_delegate| is specified, it will be used to read/write the
   // properties to a pref file. Writes are rate limited to improve performance.
@@ -367,12 +387,17 @@ class NET_EXPORT HttpServerProperties
       const url::SchemeHostPort& server,
       const NetworkIsolationKey& network_isolation_key);
 
-  // Save QuicServerInfo (in std::string form) for the given |server_id|.
+  // Save QuicServerInfo (in std::string form) for the given |server_id|, in the
+  // context of |network_isolation_key|.
   void SetQuicServerInfo(const quic::QuicServerId& server_id,
+                         const NetworkIsolationKey& network_isolation_key,
                          const std::string& server_info);
 
-  // Get QuicServerInfo (in std::string form) for the given |server_id|.
-  const std::string* GetQuicServerInfo(const quic::QuicServerId& server_id);
+  // Get QuicServerInfo (in std::string form) for the given |server_id|, in the
+  // context of |network_isolation_key|.
+  const std::string* GetQuicServerInfo(
+      const quic::QuicServerId& server_id,
+      const NetworkIsolationKey& network_isolation_key);
 
   // Returns all persistent QuicServerInfo objects.
   const QuicServerInfoMap& quic_server_info_map() const;
@@ -438,16 +463,18 @@ class NET_EXPORT HttpServerProperties
   // friendness is no longer required.
   friend class HttpServerPropertiesPeer;
 
-  typedef base::flat_map<ServerInfoMapKey, url::SchemeHostPort>
-      CanonicalAltSvcMap;
-  typedef base::flat_map<HostPortPair, quic::QuicServerId>
-      CanonicalServerInfoMap;
+  typedef base::flat_map<ServerInfoMapKey, url::SchemeHostPort> CanonicalMap;
+  typedef base::flat_map<QuicServerInfoMapKey, quic::QuicServerId>
+      QuicCanonicalMap;
   typedef std::vector<std::string> CanonicalSuffixList;
 
-  // Helper function to use the passed in parameters and
-  // |use_network_isolation_key_| to create a ServerInfoMapKey.
+  // Helper functions to use the passed in parameters and
+  // |use_network_isolation_key_| to create a [Quic]ServerInfoMapKey.
   ServerInfoMapKey CreateServerInfoKey(
       const url::SchemeHostPort& server,
+      const NetworkIsolationKey& network_isolation_key) const;
+  QuicServerInfoMapKey CreateQuicServerInfoKey(
+      const quic::QuicServerId& server_id,
       const NetworkIsolationKey& network_isolation_key) const;
 
   // Return the iterator for |server| in the context of |network_isolation_key|,
@@ -459,15 +486,15 @@ class NET_EXPORT HttpServerProperties
 
   // Return the canonical host for |server|  in the context of
   // |network_isolation_key|, or end if none exists.
-  CanonicalAltSvcMap::const_iterator GetCanonicalAltSvcHost(
+  CanonicalMap::const_iterator GetCanonicalAltSvcHost(
       const url::SchemeHostPort& server,
       const net::NetworkIsolationKey& network_isolation_key) const;
 
   // Return the canonical host with the same canonical suffix as |server|.
   // The returned canonical host can be used to search for server info in
   // |quic_server_info_map_|. Return 'end' the host doesn't exist.
-  CanonicalServerInfoMap::const_iterator GetCanonicalServerInfoHost(
-      const quic::QuicServerId& server) const;
+  QuicCanonicalMap::const_iterator GetCanonicalServerInfoHost(
+      const QuicServerInfoMapKey& key) const;
 
   // Remove the canonical alt-svc host for |server| with
   // |network_isolation_key|.
@@ -476,10 +503,10 @@ class NET_EXPORT HttpServerProperties
       const NetworkIsolationKey& network_isolation_key);
 
   // Update |canonical_server_info_map_| with the new canonical host.
-  // The |server| should have the corresponding server info associated with it
+  // The |key| should have the corresponding server info associated with it
   // in |quic_server_info_map_|. If |canonical_server_info_map_| doesn't
-  // have an entry associated with |server|, the method will add one.
-  void UpdateCanonicalServerInfoMap(const quic::QuicServerId& server);
+  // have an entry associated with |key|, the method will add one.
+  void UpdateCanonicalServerInfoMap(const QuicServerInfoMapKey& key);
 
   // Returns the canonical host suffix for |host|, or nullptr if none
   // exists.
@@ -541,9 +568,10 @@ class NET_EXPORT HttpServerProperties
 
   IPAddress last_local_address_when_quic_worked_;
   // Contains a map of servers which could share the same alternate protocol.
-  // Map from a Canonical scheme/host/port (host is some postfix of host names)
-  // to an actual origin, which has a plausible alternate protocol mapping.
-  CanonicalAltSvcMap canonical_alt_svc_map_;
+  // Map from a Canonical scheme/host/port/NIK (host is some postfix of host
+  // names) to an actual origin, which has a plausible alternate protocol
+  // mapping.
+  CanonicalMap canonical_alt_svc_map_;
 
   // Contains list of suffixes (for example ".c.youtube.com",
   // ".googlevideo.com", ".googleusercontent.com") of canonical hostnames.
@@ -558,7 +586,7 @@ class NET_EXPORT HttpServerProperties
   // map exists solely to improve the search performance. It only contains
   // derived data that can be recalculated by traversing
   // |quic_server_info_map_|.
-  CanonicalServerInfoMap canonical_server_info_map_;
+  QuicCanonicalMap canonical_server_info_map_;
 
   size_t max_server_configs_stored_in_properties_;
 

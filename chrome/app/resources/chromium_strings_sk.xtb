@@ -196,6 +196,7 @@ Prehliadač Chromium nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="753534427205733210">{0,plural, =1{Chromium sa reštartuje o 1 minútu}few{Chromium sa reštartuje o # minúty}many{Chromium sa reštartuje o # minúty}other{Chromium sa reštartuje o # minút}}</translation>
 <translation id="7549178288319965365">Informácie o systéme Chromium OS</translation>
 <translation id="7561906087460245826">Tiež vymazať údaje z prehliadača Chromium (<ph name="URL" />)</translation>
+<translation id="7585853947355360626">Ak nie je určité nastavenie zobrazené na tejto stránke, skontrolujte <ph name="LINK_BEGIN" />nastavenia operačného systému Chromium<ph name="LINK_END" /></translation>
 <translation id="761356813943268536">Chromium používa vašu kameru a mikrofón.</translation>
 <translation id="7617377681829253106">Prehliadač Chromium bol práve vylepšený</translation>
 <translation id="7686590090926151193">Chromium nie je váš predvolený prehliadač</translation>
@@ -229,6 +230,7 @@ Prehliadač Chromium nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="8619360774459241877">Spúšťa sa Chromium…</translation>
 <translation id="8621669128220841554">Inštalácia zlyhala kvôli neznámej chybe. Skúste prehliadač Chromium stiahnuť znova.</translation>
 <translation id="8667808506758191620">Vaše zariadenie <ph name="DEVICE_TYPE" /> je aktuálne.</translation>
+<translation id="8682540261359803721">Ak nie je určité nastavenie zobrazené na tejto stránke, skontrolujte <ph name="LINK_BEGIN" />nastavenia prehliadača Chromium<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">Tiež určuje, ktorá stránka sa zobrazí pri spustení prehliadača Chromium alebo pri vyhľadávaní pomocou všeobecného poľa.</translation>
 <translation id="8704119203788522458">Toto je váš prehliadač Chromium</translation>
 <translation id="8739167630197873875">Po ukončení prehliadača Chromium vymažete súbory cookie. Ak chcete aj naďalej synchronizovať, zmeňte nastavenie <ph name="COOKIE_SETTINGS_LINK" />.</translation>

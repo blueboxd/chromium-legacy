@@ -132,7 +132,8 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
           expected_color = rgba_color.RgbaColor(
               expectation["color"][0],
               expectation["color"][1],
-              expectation["color"][2])
+              expectation["color"][2],
+              expectation["color"][3] if len(expectation["color"]) > 3 else 255)
           if not actual_color.IsEqual(expected_color, tolerance):
             self.fail('Expected pixel at ' + str(location) +
                 ' (actual pixel (' + str(x) + ', ' + str(y) + ')) ' +
@@ -140,7 +141,8 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
                 str(expectation["color"]) + " but got [" +
                 str(actual_color.r) + ", " +
                 str(actual_color.g) + ", " +
-                str(actual_color.b) + "]")
+                str(actual_color.b) + ", " +
+                str(actual_color.a) + "]")
 
   ###
   ### Routines working with the local disk (only used for local

@@ -173,6 +173,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   PageLoadTracker(bool in_foreground,
                   PageLoadMetricsEmbedderInterface* embedder_interface,
                   const GURL& currently_committed_url,
+                  bool is_first_navigation_in_web_contents,
                   content::NavigationHandle* navigation_handle,
                   UserInitiatedInfo user_initiated_info,
                   int aborted_chain_size,
@@ -223,6 +224,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   const ui::ScopedVisibilityTracker& GetVisibilityTracker() const override;
   const ResourceTracker& GetResourceTracker() const override;
   ukm::SourceId GetSourceId() const override;
+  bool IsFirstNavigationInWebContents() const override;
 
   void Redirect(content::NavigationHandle* navigation_handle);
   void WillProcessNavigationResponse(
@@ -452,6 +454,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   const ukm::SourceId source_id_;
 
   content::WebContents* const web_contents_;
+
+  const bool is_first_navigation_in_web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(PageLoadTracker);
 };

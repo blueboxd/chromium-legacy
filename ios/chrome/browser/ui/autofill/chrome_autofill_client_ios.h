@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/payments/card_unmask_delegate.h"
+#include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/payments/strike_database.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_controller_impl.h"
@@ -70,7 +71,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
   void ShowLocalCardMigrationDialog(
       base::OnceClosure show_migration_dialog_closure) override;
   void ConfirmMigrateLocalCardToCloud(
-      std::unique_ptr<base::DictionaryValue> legal_message,
+      const LegalMessageLines& legal_message_lines,
       const std::string& user_email,
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       LocalCardMigrationCallback start_migrating_cards_callback) override;
@@ -88,7 +89,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
       LocalSaveCardPromptCallback callback) override;
   void ConfirmSaveCreditCardToCloud(
       const CreditCard& card,
-      std::unique_ptr<base::DictionaryValue> legal_message,
+      const LegalMessageLines& legal_message_lines,
       SaveCreditCardOptions options,
       UploadSaveCardPromptCallback callback) override;
   void CreditCardUploadCompleted(bool card_saved) override;

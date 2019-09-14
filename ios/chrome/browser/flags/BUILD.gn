@@ -41,6 +41,7 @@ source_set("flags") {
     "//ios/chrome/browser/app_launcher:feature_flags",
     "//ios/chrome/browser/browsing_data:feature_flags",
     "//ios/chrome/browser/crash_report:flags",
+    "//ios/chrome/browser/crash_report/breadcrumbs:feature_flags",
     "//ios/chrome/browser/drag_and_drop",
     "//ios/chrome/browser/find_in_page:feature_flags",
     "//ios/chrome/browser/passwords:feature_flags",

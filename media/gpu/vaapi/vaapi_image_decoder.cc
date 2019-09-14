@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/va_surface.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
@@ -28,6 +29,12 @@ VaapiImageDecoder::VaapiImageDecoder(VAProfile va_profile)
 VaapiImageDecoder::~VaapiImageDecoder() = default;
 
 bool VaapiImageDecoder::Initialize(const base::RepeatingClosure& error_uma_cb) {
+  // TODO(crbug.com/974438): we can't advertise accelerated image decoding in
+  // AMD until we support VAAPI surfaces with multiple buffer objects.
+  if (base::StartsWith(VaapiWrapper::GetVendorString(), "Mesa Gallium driver",
+                       base::CompareCase::SENSITIVE)) {
+    return false;
+  }
   vaapi_wrapper_ =
       VaapiWrapper::Create(VaapiWrapper::kDecode, va_profile_, error_uma_cb);
   return !!vaapi_wrapper_;

@@ -288,17 +288,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // This method may only be called before Start().
   void set_site_for_cookies(const GURL& site_for_cookies);
 
-  // The origin of the top frame of the page making the request (where
-  // applicable). Note that this is experimental and may not always be set.
-  // DEPRECATED: This was introduced for the cache key and will be removed once
-  // |network_isolation_key| is set for most cases.
-  const base::Optional<url::Origin>& top_frame_origin() const {
-    return top_frame_origin_;
-  }
-  void set_top_frame_origin(const base::Optional<url::Origin>& origin) {
-    top_frame_origin_ = origin;
-  }
-
   // This key is used to isolate requests from different contexts in accessing
   // shared network resources like the cache.
   const NetworkIsolationKey& network_isolation_key() const {
@@ -645,13 +634,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // TODO(maksims): Remove this.
   bool Read(IOBuffer* buf, int max_bytes, int* bytes_read);
 
-  // If this request is being cached by the HTTP cache, stop subsequent caching.
-  // Note that this method has no effect on other (simultaneous or not) requests
-  // for the same resource. The typical example is a request that results in
-  // the data being stored to disk (downloaded instead of rendered) so we don't
-  // want to store it twice.
-  void StopCaching();
-
   // This method may be called to follow a redirect that was deferred in
   // response to an OnReceivedRedirect call. If non-null,
   // |modified_headers| are changes applied to the request headers after
@@ -717,15 +699,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // Gets the over the wire raw header size of the response after https
   // encryption, 0 for cached responses.
   int raw_header_size() const { return raw_header_size_; }
-
-  // True if this request was issued by the proxy service subsystem in order to
-  // probe/fetch a Proxy Auto Config script.
-  // TODO(mmenke): See if there's a way to not need this.
-  bool is_pac_request() const { return is_pac_request_; }
-  // Sets whether this is a request for a PAC script. Defaults to false.
-  void set_is_pac_request(bool is_pac_request) {
-    is_pac_request_ = is_pac_request;
-  }
 
   // Returns the error status of the request.
   // Do not use! Going to be protected!
@@ -881,9 +854,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   std::vector<GURL> url_chain_;
   GURL site_for_cookies_;
 
-  // DEPRECATED: See comment on the getter function.
-  base::Optional<url::Origin> top_frame_origin_;
-
   NetworkIsolationKey network_isolation_key_;
 
   bool attach_same_site_cookies_;
@@ -982,9 +952,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   // The raw header size of the response.
   int raw_header_size_;
-
-  // True if this is a request for a PAC script.
-  bool is_pac_request_;
 
   const NetworkTrafficAnnotationTag traffic_annotation_;
 

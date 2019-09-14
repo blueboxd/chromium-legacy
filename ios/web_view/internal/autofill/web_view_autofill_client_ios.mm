@@ -138,7 +138,7 @@ void WebViewAutofillClientIOS::ShowLocalCardMigrationDialog(
 }
 
 void WebViewAutofillClientIOS::ConfirmMigrateLocalCardToCloud(
-    std::unique_ptr<base::DictionaryValue> legal_message,
+    const LegalMessageLines& legal_message_lines,
     const std::string& user_email,
     const std::vector<MigratableCreditCard>& migratable_credit_cards,
     LocalCardMigrationCallback start_migrating_cards_callback) {
@@ -178,12 +178,12 @@ void WebViewAutofillClientIOS::ConfirmSaveCreditCardLocally(
 
 void WebViewAutofillClientIOS::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,
-    std::unique_ptr<base::DictionaryValue> legal_message,
+    const LegalMessageLines& legal_message_lines,
     SaveCreditCardOptions options,
     UploadSaveCardPromptCallback callback) {
   DCHECK(options.show_prompt);
   [bridge_ confirmSaveCreditCardToCloud:card
-                           legalMessage:std::move(legal_message)
+                      legalMessageLines:legal_message_lines
                   saveCreditCardOptions:options
                                callback:std::move(callback)];
 }

@@ -32,6 +32,9 @@ public abstract class PaymentInstrument extends EditableOption {
      */
     protected boolean mHaveRequestedAutofillData;
 
+    /** Whether the instrument should be invoked for a microtransaction. */
+    protected boolean mIsMicrotransaction;
+
     /**
      * The interface for the requester of instrument details.
      */
@@ -231,4 +234,20 @@ public abstract class PaymentInstrument extends EditableOption {
      * connections.
      */
     public abstract void dismissInstrument();
+
+    /** @return Whether the payment instrument is ready for a microtransaction (no UI flow.) */
+    public boolean isReadyForMicrotransaction() {
+        return false;
+    }
+
+    /** @return Account balance for microtransaction flow. */
+    @Nullable
+    public String accountBalance() {
+        return null;
+    }
+
+    /** Switch the instrument into the microtransaction mode. */
+    public void setMicrontransactionMode() {
+        mIsMicrotransaction = true;
+    }
 }

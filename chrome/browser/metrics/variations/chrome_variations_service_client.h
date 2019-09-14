@@ -29,6 +29,7 @@ class ChromeVariationsServiceClient
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   network_time::NetworkTimeTracker* GetNetworkTimeTracker() override;
   bool OverridesRestrictParameter(std::string* parameter) override;
+  bool IsEnterprise() override;
 
  private:
   // variations::VariationsServiceClient:

@@ -12,6 +12,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/numerics/ranges.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -281,8 +282,7 @@ std::unique_ptr<::media::AudioBus> GetMixedAudioData(
         }
       }
 
-      // Clamp the mixed sample between 1.0 and -1.0.
-      *result = std::min(1.0f, std::max(-1.0f, *result));
+      *result = base::ClampToRange(*result, -1.0f, 1.0f);
     }
   }
   return mixed;

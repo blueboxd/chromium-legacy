@@ -1145,30 +1145,6 @@ void QuicTestPacketMaker::InitializeHeader(uint64_t packet_number,
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
-QuicTestPacketMaker::MakeSettingsPacket(uint64_t packet_number,
-                                        bool should_include_version) {
-  if (!quic::VersionHasStreamType(version_.transport_version)) {
-    spdy::SpdySettingsIR settings_frame;
-    settings_frame.AddSetting(spdy::SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kQuicMaxHeaderListSize);
-    settings_frame.AddSetting(quic::SETTINGS_QPACK_BLOCKED_STREAMS,
-                              quic::kDefaultMaximumBlockedStreams);
-    spdy::SpdySerializedFrame spdy_frame(
-        spdy_request_framer_.SerializeFrame(settings_frame));
-    InitializeHeader(packet_number, should_include_version);
-    return MakePacket(header_, GenerateNextStreamFrame(
-                                   GetHeadersStreamId(), false,
-                                   quic::QuicStringPiece(spdy_frame.data(),
-                                                         spdy_frame.size())));
-  }
-
-  quic::QuicFrames frames;
-  MaybeAddHttp3SettingsFrames(&frames);
-  InitializeHeader(packet_number, /*should_include_version*/ true);
-  return MakeMultipleFramesPacket(header_, frames, nullptr);
-}
-
-std::unique_ptr<quic::QuicReceivedPacket>
 QuicTestPacketMaker::MakeInitialSettingsPacket(uint64_t packet_number) {
   if (!quic::VersionHasStreamType(version_.transport_version)) {
     spdy::SpdySettingsIR settings_frame;

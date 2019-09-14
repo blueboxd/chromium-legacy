@@ -18,7 +18,7 @@ public final class BrowserController {
     private final NavigationController mNavigationController;
     private final ObserverList<BrowserObserver> mObservers;
 
-    public BrowserController(IBrowserController impl) {
+    BrowserController(IBrowserController impl) {
         mImpl = impl;
         try {
             mImpl.setClient(new BrowserClientImpl());
@@ -39,14 +39,6 @@ public final class BrowserController {
         return mNavigationController;
     }
 
-    public void setTopView(View view) {
-        try {
-            mImpl.setTopView(ObjectWrapper.wrap(view));
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
-    }
-
     public void addObserver(BrowserObserver observer) {
         mObservers.addObserver(observer);
     }
@@ -55,7 +47,8 @@ public final class BrowserController {
         mObservers.removeObserver(observer);
     }
 
-    public void destroy() {
+    // Only called from BrowserFragmentImpl.
+    void destroy() {
         try {
             mImpl.destroy();
         } catch (RemoteException e) {
@@ -69,6 +62,10 @@ public final class BrowserController {
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
+    }
+
+    IBrowserController getIBrowserController() {
+        return mImpl;
     }
 
     private final class BrowserClientImpl extends IBrowserControllerClient.Stub {

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
@@ -20,6 +21,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/accessibility/view_accessibility.h"
@@ -29,25 +31,26 @@
 
 KeywordHintView::KeywordHintView(LocationBarView* parent, Profile* profile)
     : Button(parent),
-      location_bar_view_(parent),
       profile_(profile),
       chip_container_(new views::View()),
       chip_label_(
           new views::Label(base::string16(), CONTEXT_OMNIBOX_DECORATION)) {
-  OmniboxTint tint = parent->CalculateTint();
+  const ui::ThemeProvider* theme_provider =
+      &ThemeService::GetThemeProviderForProfile(profile_);
   const SkColor leading_label_text_color =
-      GetOmniboxColor(OmniboxPart::LOCATION_BAR_TEXT_DEFAULT, tint);
+      GetOmniboxColor(theme_provider, OmniboxPart::LOCATION_BAR_TEXT_DEFAULT);
   const SkColor background_color =
-      GetOmniboxColor(OmniboxPart::LOCATION_BAR_BACKGROUND, tint);
+      GetOmniboxColor(theme_provider, OmniboxPart::LOCATION_BAR_BACKGROUND);
   leading_label_ = CreateLabel(leading_label_text_color, background_color);
 
   chip_label_->SetBorder(
       views::CreateEmptyBorder(gfx::Insets(0, GetCornerRadius())));
 
   const SkColor tab_border_color =
-      GetOmniboxColor(OmniboxPart::LOCATION_BAR_BUBBLE_OUTLINE, tint);
+      GetOmniboxColor(theme_provider, OmniboxPart::LOCATION_BAR_BUBBLE_OUTLINE);
   SkColor text_color = leading_label_text_color;
-  SkColor tab_bg_color = GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND, tint);
+  SkColor tab_bg_color =
+      GetOmniboxColor(theme_provider, OmniboxPart::RESULTS_BACKGROUND);
   if (OmniboxFieldTrial::IsExperimentalKeywordModeEnabled()) {
     text_color = SK_ColorWHITE;
     tab_bg_color = tab_border_color;
@@ -205,18 +208,18 @@ void KeywordHintView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 void KeywordHintView::OnThemeChanged() {
-  OmniboxTint tint = location_bar_view_->CalculateTint();
-  const SkColor leading_label_text_color =
-      GetOmniboxColor(OmniboxPart::LOCATION_BAR_TEXT_DEFAULT, tint);
+  const SkColor leading_label_text_color = GetOmniboxColor(
+      GetThemeProvider(), OmniboxPart::LOCATION_BAR_TEXT_DEFAULT);
   const SkColor background_color =
-      GetOmniboxColor(OmniboxPart::LOCATION_BAR_BACKGROUND, tint);
+      GetOmniboxColor(GetThemeProvider(), OmniboxPart::LOCATION_BAR_BACKGROUND);
   leading_label_->SetEnabledColor(leading_label_text_color);
   leading_label_->SetBackgroundColor(background_color);
 
-  const SkColor tab_border_color =
-      GetOmniboxColor(OmniboxPart::LOCATION_BAR_BUBBLE_OUTLINE, tint);
+  const SkColor tab_border_color = GetOmniboxColor(
+      GetThemeProvider(), OmniboxPart::LOCATION_BAR_BUBBLE_OUTLINE);
   SkColor text_color = leading_label_text_color;
-  SkColor tab_bg_color = GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND, tint);
+  SkColor tab_bg_color =
+      GetOmniboxColor(GetThemeProvider(), OmniboxPart::RESULTS_BACKGROUND);
   if (OmniboxFieldTrial::IsExperimentalKeywordModeEnabled()) {
     text_color = SK_ColorWHITE;
     tab_bg_color = tab_border_color;

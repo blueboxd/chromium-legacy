@@ -104,7 +104,6 @@
 <translation id="2359808026110333948">Endelea</translation>
 <translation id="2365393535144473978">Kuwasha data ya mtandao wa simu kutawasha Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
-<translation id="239188844683466770">Washa au uzime kipengee cha Usinisumbue</translation>
 <translation id="2412593942846481727">Sasisho linapatikana</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> ni kipindi kinachodhibitiwa ambacho kinasimamiwa na <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Mbofyo wa kushoto</translation>
@@ -224,6 +223,7 @@
 <translation id="4181841719683918333">Lugha</translation>
 <translation id="4195877955194704651">Kitufe cha mibofyo ya kiotomatiki</translation>
 <translation id="4217571870635786043">Kuandika kwa kutamka</translation>
+<translation id="421885205185866088">PIN ya kadi mahiri ya <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Onyesha mipangilio ya arifa. Umezima arifa</translation>
 <translation id="4269883910223712419">Msimamizi wa kifaa hiki ana uwezo wa:</translation>
@@ -239,6 +239,7 @@
 <translation id="4379531060876907730">Hizi ni zana zako za stylus</translation>
 <translation id="4389184120735010762">Umebofya mikato ya kibodi ya kikuzaji kilichoambatishwa. Ungependa kukiwasha?</translation>
 <translation id="4421231901400348175">Kushiriki udhibiti wa skrini yako na <ph name="HELPER_NAME" /> kupitia Usaidizi wa Mbali.</translation>
+<translation id="4430019312045809116">Kiwango</translation>
 <translation id="4450893287417543264">Usionyeshe tena</translation>
 <translation id="4477350412780666475">Wimbo Unaofuata</translation>
 <translation id="4479639480957787382">Ethernet</translation>

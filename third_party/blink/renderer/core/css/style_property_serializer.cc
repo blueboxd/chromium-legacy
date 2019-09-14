@@ -634,28 +634,26 @@ bool StylePropertySerializer::AppendFontLonghandValueIfNotNormal(
   if (identifier_value && identifier_value->GetValueID() == CSSValueID::kNormal)
     return true;
 
-  char prefix = '\0';
-  switch (property.PropertyID()) {
-    case CSSPropertyID::kFontStyle:
-      break;  // No prefix.
-    case CSSPropertyID::kFontFamily:
-    case CSSPropertyID::kFontStretch:
-    case CSSPropertyID::kFontVariantCaps:
-    case CSSPropertyID::kFontVariantLigatures:
-    case CSSPropertyID::kFontVariantNumeric:
-    case CSSPropertyID::kFontVariantEastAsian:
-    case CSSPropertyID::kFontWeight:
-      prefix = ' ';
-      break;
-    case CSSPropertyID::kLineHeight:
-      prefix = '/';
-      break;
-    default:
-      NOTREACHED();
+  if (!result.IsEmpty()) {
+    switch (property.PropertyID()) {
+      case CSSPropertyID::kFontStyle:
+        break;  // No prefix.
+      case CSSPropertyID::kFontFamily:
+      case CSSPropertyID::kFontStretch:
+      case CSSPropertyID::kFontVariantCaps:
+      case CSSPropertyID::kFontVariantLigatures:
+      case CSSPropertyID::kFontVariantNumeric:
+      case CSSPropertyID::kFontVariantEastAsian:
+      case CSSPropertyID::kFontWeight:
+        result.Append(' ');
+        break;
+      case CSSPropertyID::kLineHeight:
+        result.Append(" / ");
+        break;
+      default:
+        NOTREACHED();
+    }
   }
-
-  if (prefix && !result.IsEmpty())
-    result.Append(prefix);
 
   String value;
   // In the font-variant shorthand a "none" ligatures value needs to be

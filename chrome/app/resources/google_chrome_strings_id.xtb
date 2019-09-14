@@ -43,6 +43,8 @@
 <translation id="1873233029667955273">Google Chrome bukan browser default</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome terlalu lawas</translation>
+<translation id="1900795423379050516">Jika setelan tidak muncul pada halaman ini, buka <ph name="LINK_BEGIN" />
+      setelan browser Chrome<ph name="LINK_END" /> Anda</translation>
 <translation id="1915828456209461693">Update baru untuk Chrome telah tersedia dan akan diterapkan segera setelah diluncurkan ulang.</translation>
 <translation id="1919130412786645364">Izinkan login Chrome</translation>
 <translation id="2063848847527508675">Chrome OS harus dimulai ulang untuk menerapkan pembaruan.</translation>
@@ -156,6 +158,8 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, histori, dan s
 <translation id="5543953544073077331">Salinan Chrome lain sedang berjalan. Untuk menjalankan update, tutup salinan tersebut.</translation>
 <translation id="556024056938947818">Google Chrome mencoba menampilkan sandi.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
+<translation id="5657226924540934362">Jika setelan tidak muncul di halaman ini, buka <ph name="LINK_BEGIN" />
+      setelan Chrome OS<ph name="LINK_END" /> Anda</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> mungkin berbahaya, sehingga Chrome memblokirnya.</translation>
 <translation id="5686916850681061684">Sesuaikan dan kontrol Google Chrome. Ada sesuatu yang memerlukan perhatian Anda - klik untuk melihat detailnya.</translation>
 <translation id="5690427481109656848">Google LLC</translation>

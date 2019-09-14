@@ -58,6 +58,7 @@
 <translation id="2509394361235492552">Csatlakozva a következőhöz: <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">MEGJEGYZÉS: ha biztosítani akarja valamennyi billentyűkód elérhetőségét, konfigurálja a Chrome távoliasztal-szolgáltatást a „Megnyitás ablakban” lehetőséggel.</translation>
 <translation id="2540992418118313681">Meg szeretné osztani a számítógép megtekintését és vezérlését egy másik felhasználóval?</translation>
+<translation id="254771646005658629">Engedélyezze, hogy távoli felhasználók használhassák ezt a Mac számítógépet</translation>
 <translation id="2579271889603567289">A gazdagép rendszere összeomlott vagy nem tudott elindulni.</translation>
 <translation id="2599300881200251572">Ez a szolgáltatás engedélyezi a bejövő kapcsolatokat a Chrome távoliasztal-szolgáltatás klienseitől.</translation>
 <translation id="2647232381348739934">Chromoting szolgáltatás</translation>
@@ -182,6 +183,11 @@
 <translation id="5419185025274123272">Nem sikerült az alkalmazás visszaállítása. Küldhet egy jelentést a programhibáról.</translation>
 <translation id="5419418238395129586">Utoljára online: <ph name="DATE" /></translation>
 <translation id="544077782045763683">A gazdagép leállt.</translation>
+<translation id="5463789431147491241">A(z) <ph name="PRODUCT_NAME" /> ezen Mac számítógépen való használatához hajtsa végre ezeket a lépéseket:
+
+Kattintson az alábbi „<ph name="BUTTON_NAME" />” gombra. A biztonsági és adatvédelmi beállításokban jelölje be a következő jelölőnégyzetet: „<ph name="SERVICE_SCRIPT_NAME" />”.
+
+Ha a(z) „<ph name="SERVICE_SCRIPT_NAME" />” már be van jelölve, törölje a bejelölést, majd jelölje be újra a négyzetet.</translation>
 <translation id="5510035215749041527">Leválasztás most</translation>
 <translation id="5593560073513909978">A szolgáltatás átmenetileg nem érhető el. Kérjük, próbálkozzon újra később.</translation>
 <translation id="5601503069213153581">PIN-kód</translation>
@@ -298,12 +304,14 @@
 <translation id="837021510621780684">Erről a számítógépről</translation>
 <translation id="8383794970363966105">A Chromoting használatához adjon hozzá eszközéhez egy Google-fiókot.</translation>
 <translation id="8386846956409881180">A gazdagép beállítása érvénytelen OAuth hitelesítési adatokkal történt.</translation>
+<translation id="8406498562923498210">Válassza ki a Chrome távoliasztal-szolgáltatás környezetében elindítandó munkamenetet. (Előfordulhat, hogy bizonyos munkamenettípusok Chrome távoliasztal-szolgáltatásban és helyi konzolon való egyidejű futtatása nem támogatott.)</translation>
 <translation id="8428213095426709021">Beállítások</translation>
 <translation id="8445362773033888690">Megtekintés a Google Play Áruházban</translation>
 <translation id="8509907436388546015">Asztalintegrációs folyamat</translation>
 <translation id="8513093439376855948">Natív üzenetváltási szerver távoli szerverkezeléshez</translation>
 <translation id="8525306231823319788">Teljes képernyő</translation>
 <translation id="8548209692293300397">Korábban <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) felhasználóként jelentkezett be. A fiók számítógépeinek eléréséhez <ph name="LINK_BEGIN" />jelentkezzen be a Google Chrome-ba<ph name="LINK_END" /> az adott fiókkal, majd telepítse újra a Chrome távoliasztal-szolgáltatást.</translation>
+<translation id="858006550102277544">Megjegyzés</translation>
 <translation id="8642984861538780905">Közepes</translation>
 <translation id="8712909229180978490">Nem látom a mentett fájlokat online, a Google Drive-on.</translation>
 <translation id="8743328882720071828">Szeretné engedélyezni <ph name="CLIENT_USERNAME" /> számára, hogy lássa és irányítsa a számítógépet?</translation>
@@ -321,6 +329,7 @@
 <translation id="9126115402994542723">Ne kérje újra a PIN kódot, amikor erről az eszközről csatlakozom a szerverhez.</translation>
 <translation id="9149580767411232853">A teljes távoli asztal maradjon látható</translation>
 <translation id="9149992051684092333">Az asztal megosztásának megkezdéséhez adja meg az alábbi elérési kódot annak a személynek, aki segít Önnek.</translation>
+<translation id="916856682307586697">Az alapértelmezett XSession indítása</translation>
 <translation id="9188433529406846933">Engedélyezés</translation>
 <translation id="9213184081240281106">A gazdagép beállítása érvénytelen.</translation>
 <translation id="951991426597076286">Elutasítás</translation>

@@ -315,6 +315,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 Handoff doit également être activé dans la section "Général" des paramètres, et vous devez utiliser le même compte iCloud sur vos appareils.</translation>
 <translation id="5551897871312988470">Proposer de traduire</translation>
 <translation id="5556459405103347317">Actualiser</translation>
+<translation id="5592679540098330836">Activer la synchronisation pour <ph name="NAME" /></translation>
 <translation id="5614553682702429503">Enregistrer le mot de passe ?</translation>
 <translation id="5626245204502895507">Impossible de télécharger le fichier pour le moment.</translation>
 <translation id="5631164295104953411">Ajouter un mode de paiement</translation>

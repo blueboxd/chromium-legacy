@@ -43,6 +43,7 @@
 <translation id="1873233029667955273">Google Chrome ist nicht als Ihr Standardbrowser festgelegt</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome ist veraltet.</translation>
+<translation id="1900795423379050516">Wenn Sie auf dieser Seite eine Einstellung nicht finden können, sehen Sie in den <ph name="LINK_BEGIN" />Chromium-Browsereinstellungen<ph name="LINK_END" /> nach</translation>
 <translation id="1915828456209461693">Ein neues Update für Chrome ist verfügbar und wird installiert, sobald Sie den Browser neu starten.</translation>
 <translation id="1919130412786645364">Anmeldung in Chrome zulassen</translation>
 <translation id="2063848847527508675">Chrome OS muss neu gestartet werden, um das Update zu übernehmen.</translation>
@@ -156,6 +157,7 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="5543953544073077331">Andere Instanzen von Chrome sind noch aktiv. Bitte schließen Sie diese, um den Browser zu aktualisieren.</translation>
 <translation id="556024056938947818">Google Chrome versucht, Passwörter anzuzeigen.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
+<translation id="5657226924540934362">Wenn Sie auf dieser Seite eine Einstellung nicht finden können, sehen Sie in den <ph name="LINK_BEGIN" />Einstellungen von Chrome OS<ph name="LINK_END" /> nach</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> ist möglicherweise schädlich und wurde daher von Chrome blockiert.</translation>
 <translation id="5686916850681061684">Sie können Google Chrome anpassen und Einstellungen festlegen. Etwas erfordert Ihre Aufmerksamkeit – klicken Sie, um mehr zu erfahren.</translation>
 <translation id="5690427481109656848">Google LLC</translation>

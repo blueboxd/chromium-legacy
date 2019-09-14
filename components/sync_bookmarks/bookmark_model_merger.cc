@@ -292,6 +292,15 @@ void BookmarkModelMerger::ProcessRemoteCreation(
     const bookmarks::BookmarkNode* local_parent,
     size_t index) {
   const EntityData& remote_update_entity = *remote_update->entity;
+
+  // If specifics do not have a valid GUID, create a new one. Legacy clients do
+  // not populate GUID field and if the originator_client_item_id is not of
+  // valid GUID format to replace it, the field is left blank.
+  if (!base::IsValidGUID(remote_update_entity.specifics.bookmark().guid())) {
+    remote_update->entity->specifics.mutable_bookmark()->set_guid(
+        base::GenerateGUID());
+  }
+
   const bookmarks::BookmarkNode* bookmark_node =
       CreateBookmarkNodeFromSpecifics(
           remote_update_entity.specifics.bookmark(), local_parent, index,
@@ -332,7 +341,9 @@ void BookmarkModelMerger::ProcessLocalCreation(
   // https://cs.chromium.org/chromium/src/components/sync/syncable/mutable_entry.cc?l=237&gsn=CreateEntryKernel
   // Assign a temp server id for the entity. Will be overriden by the actual
   // server id upon receiving commit response.
-  const std::string sync_id = base::GenerateGUID();
+  const bookmarks::BookmarkNode* node = parent->children()[index].get();
+  DCHECK(base::IsValidGUID(node->guid()));
+  const std::string sync_id = node->guid();
   const int64_t server_version = syncer::kUncommittedVersion;
   const base::Time creation_time = base::Time::Now();
   const std::string& suffix = syncer::GenerateSyncableBookmarkHash(
@@ -351,8 +362,6 @@ void BookmarkModelMerger::ProcessLocalCreation(
             predecessor_entity->metadata()->unique_position()),
         suffix);
   }
-
-  const bookmarks::BookmarkNode* node = parent->children()[index].get();
   const sync_pb::EntitySpecifics specifics = CreateSpecificsFromBookmarkNode(
       node, bookmark_model_, /*force_favicon_load=*/true);
   bookmark_tracker_->Add(sync_id, node, server_version, creation_time,

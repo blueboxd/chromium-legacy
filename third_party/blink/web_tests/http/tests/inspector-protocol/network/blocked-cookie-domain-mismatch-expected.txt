@@ -2,7 +2,9 @@ Verifies that cookies blocked for a request of a subdomain of the cookie's domai
 
 requestWillBeSentExtraInfo blocked cookies: [
   {
-    "blockedReason": "DomainMismatch",
+    "blockedReasons": [
+      "DomainMismatch"
+    ],
     "cookie": {
       "name": "name",
       "value": "value",

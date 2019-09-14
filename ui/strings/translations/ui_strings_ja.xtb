@@ -8,14 +8,17 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1分}other{#分}}</translation>
 <translation id="1181037720776840403">削除</translation>
 <translation id="1243314992276662751">アップロード</translation>
+<translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> を共有できませんでした</translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1290982764014248209"><ph name="DRAGGED_APP" />をフォルダ<ph name="FOLDER_NAME" />に移動します。</translation>
+<translation id="1291104554099683393">共有するテキスト ブロックを小さくしてください。</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">おすすめのアプリ</translation>
 <translation id="1368832886055348810">左から右</translation>
 <translation id="1383876407941801731">検索</translation>
 <translation id="1398853756734560583">最大化</translation>
 <translation id="1409544243779336081">おすすめのアプリ</translation>
+<translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> を共有できません</translation>
 <translation id="1498028757988366001">このキーワードは以前に検索したことがあります。「<ph name="QUERY" />」を履歴から削除すると、アカウントから完全に（つまりすべてのデバイスから）削除されます。</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 分 }other{# 分 }}</translation>
 <translation id="1643823602425662293">通知</translation>
@@ -35,6 +38,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">すべて選択(&amp;A)</translation>
 <translation id="1938451708255335766">ウィンドウの表示間隔を調整するには、アプリを再起動してください。</translation>
+<translation id="2006524834898217237">このデバイスがインターネットに接続されているかご確認ください。</translation>
 <translation id="208586643495776849">もう一度お試しください</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1日}other{#日}}</translation>
 <translation id="2148716181193084225">今日</translation>
@@ -76,6 +80,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 日}other{# 日}}</translation>
 <translation id="3295886253693811851">次を使って電話</translation>
 <translation id="335581015389089642">スピーチ</translation>
+<translation id="3389286852084373014">テキストが大きすぎます</translation>
 <translation id="3443810440409579745">タブが共有されました。</translation>
 <translation id="3479552764303398839">後で</translation>
 <translation id="348799646910989694">シェルフは自動的に非表示になります</translation>
@@ -127,7 +132,7 @@
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">左矢印キー</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 分}other{# 分}}</translation>
-<translation id="5763338081255973061">{DAYS,plural, =0{オンライン: 今日}=1{オンライン: 1 日前}other{オンライン: # 日前}}</translation>
+<translation id="5763338081255973061">{DAYS,plural, =0{アクティブ: 今日}=1{アクティブ: 1 日前}other{アクティブ: # 日前}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 日と }other{# 日と }}</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{1年}other{#年}}</translation>
 <translation id="5895138241574237353">再起動</translation>
@@ -151,11 +156,13 @@
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 秒前}other{# 秒前}}</translation>
 <translation id="6430678249303439055">このアプリからのすべての通知をブロックする</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 秒前}other{# 秒前}}</translation>
+<translation id="6539092367496845964">エラーが発生しました。しばらくしてからもう一度お試しください。</translation>
 <translation id="654149438358937226">通知をすべてブロックする</translation>
 <translation id="6567071839949112727">上位要素をクリック</translation>
 <translation id="6578407462441924264">名前なし</translation>
 <translation id="6612467943526193239">キャリブレーションを終了するには Esc キーを押します。</translation>
 <translation id="6620110761915583480">ファイルを保存</translation>
+<translation id="6656912866303152668"><ph name="TARGET_DEVICE_NAME" /> の Chrome で同期がオンになっていることを確認してから、もう一度送信してください。</translation>
 <translation id="6699343763173986273">メディアの次のトラック</translation>
 <translation id="673773751041746814">削除</translation>
 <translation id="6779314412797872738">Android スマートフォンに番号を送信するには、設定で両方のデバイスの<ph name="TROUBLESHOOT_LINK" />にしてください。</translation>
@@ -221,6 +228,7 @@
 <translation id="8876215549894133151">形式:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8926951137623668982">シェルフは常に非表示です</translation>
+<translation id="8996630695507351249"><ph name="TARGET_DEVICE_NAME" /> がインターネットに接続されているかご確認ください。</translation>
 <translation id="9002566407876343676">開く</translation>
 <translation id="9039076430527029379"><ph name="PAGE_NUMBER" />ページの<ph name="ROW_NUMBER" />行、<ph name="COLUMN_NUMBER" />列に移動します。</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 秒}other{# 秒}}</translation>

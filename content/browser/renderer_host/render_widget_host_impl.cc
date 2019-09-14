@@ -863,6 +863,25 @@ void RenderWidgetHostImpl::SynchronizeVisualPropertiesIgnoringPendingAck() {
 
 bool RenderWidgetHostImpl::SynchronizeVisualProperties(
     bool scroll_focused_node_into_view) {
+  // If the RenderViewHost is inactive, then there is no RenderWidget that can
+  // receive visual properties yet, even though we are setting them on the
+  // browser side. Wait until the RenderWidget is not undead before sending the
+  // visual properties.
+  //
+  // When the RenderViewHost becomes active, a SynchronizeVisualProperties()
+  // call does not explicitly get made. That is because RenderWidgets for frames
+  // are created and initialized with a valid VisualProperties already, and once
+  // their initial navigation completes (and they are in the foreground) the
+  // RenderWidget will be shown, which means a VisualProperties update happens
+  // at the time where compositing begins.
+  //
+  // Note that this drops |scroll_focused_node_into_view| but this value does
+  // not make sense for an inactive RenderViewHost's top level RenderWidgetHost,
+  // because there is no frames associated with the RenderWidget when it is
+  // inactive, so there is no focused node, or anything to scroll and display.
+  if (owner_delegate_ && !owner_delegate_->IsMainFrameActive())
+    return false;
+
   // Skip if the |delegate_| has already been detached because
   // it's web contents is being deleted, or if LocalSurfaceIdAllocation is
   // suppressed, as we are first updating our internal state from a child's

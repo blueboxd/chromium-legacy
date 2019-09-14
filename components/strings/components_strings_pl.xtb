@@ -97,9 +97,6 @@
 <translation id="138218114945450791">Jasnoniebieski</translation>
 <translation id="1382194467192730611">Urządzenie USB dozwolone przez administratora</translation>
 <translation id="139305205187523129">Serwer <ph name="HOST_NAME" /> nie wysłał żadnych danych.</translation>
-<translation id="140316286225361634">Strona <ph name="ORIGIN" /> zażądała stosowania zasady bezpieczeństwa
-    do wszystkich jej żądań, a obecnie według tej zasady
-    strona jest uznawana za niebezpieczną.</translation>
 <translation id="1405567553485452995">Jasnozielony</translation>
 <translation id="1407135791313364759">Otwórz wszystkie</translation>
 <translation id="1413809658975081374">Błąd dotyczący prywatności</translation>
@@ -135,6 +132,7 @@
 <translation id="1569487616857761740">Wpisz datę ważności</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Podczas wyświetlania strony wystąpił błąd.</translation>
+<translation id="1588438908519853928">Normalny</translation>
 <translation id="1592005682883173041">Lokalny dostęp do danych</translation>
 <translation id="1594030484168838125">Wybierz</translation>
 <translation id="161042844686301425">Cyjan</translation>
@@ -212,10 +210,6 @@
 <translation id="1981206234434200693">Wyczyść dane historii przeglądania Chrome</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{i jeszcze 1}few{i jeszcze #}many{i jeszcze #}other{i jeszcze #}}</translation>
 <translation id="2003709556000175978">Zresetuj teraz swoje hasło</translation>
-<translation id="20053308747750172">Serwer <ph name="ORIGIN" />, z którym chcesz się połączyć, zażądał stosowania
-    zasady bezpieczeństwa do wszystkich swoich żądań. Teraz dostarczył jednak
-    nieprawidłową zasadę, która uniemożliwia przeglądarce
-    zrealizowanie Twojego żądania dotyczącego strony <ph name="SITE" />.</translation>
 <translation id="2025186561304664664">Ustawiono automatyczne konfigurowanie proxy.</translation>
 <translation id="202813660234680402">Nie, nie dodawaj</translation>
 <translation id="2030481566774242610">Czy chodziło Ci o <ph name="LINK" />?</translation>
@@ -293,10 +287,6 @@
 <translation id="2409589295040002961">Administrator może zdalnie zmienić konfigurację przeglądarki. Aktywność na tym urządzeniu może być zarządzana również poza Chrome. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa mógł zostać odwołany. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
-<translation id="2418081434543109369">Serwer <ph name="ORIGIN" />, z którym chcesz się połączyć, zażądał stosowania
-    zasady bezpieczeństwa do wszystkich swoich żądań. Jednak nie dostarczył zasad,
-    co uniemożliwia przeglądarce zrealizowanie
-    Twojego żądania dotyczącego strony <ph name="SITE" />.</translation>
 <translation id="2463193859425327265">Zmień stronę główną</translation>
 <translation id="2463739503403862330">Wpisz</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -590,6 +580,7 @@
 <translation id="4103249731201008433">Numer seryjny urządzenia jest nieprawidłowy</translation>
 <translation id="410351446219883937">Autoodtwarzanie</translation>
 <translation id="4103763322291513355">Wejdź na stronę &lt;strong&gt;chrome://policy&lt;/strong&gt;, aby wyświetlić czarną listę URL-i oraz inne zasady egzekwowane przez administratora systemu.</translation>
+<translation id="4108231218301530806">Następnym razem do weryfikacji tej karty użyj odcisku palca.</translation>
 <translation id="4110652170750985508">Sprawdź szczegóły płatności</translation>
 <translation id="4112140312785995938">Przewiń do tyłu</translation>
 <translation id="4116663294526079822">Zawsze zezwalaj w tej witrynie</translation>
@@ -792,6 +783,7 @@
 <translation id="5141240743006678641">Szyfruj synchronizowane hasła za pomocą danych logowania Google</translation>
 <translation id="5145883236150621069">W odebranej polityce znajduje się kod błędu</translation>
 <translation id="515292512908731282">C4 (koperta)</translation>
+<translation id="5158275234811857234">Okładka</translation>
 <translation id="5159010409087891077">Otwórz stronę w nowym oknie incognito (⇧⌘N)</translation>
 <translation id="516920405563544094">Wpisz kod CVC karty <ph name="CREDIT_CARD" />. Po potwierdzeniu dane karty z Twojego konta Google zostaną udostępnione tej stronie.</translation>
 <translation id="5169827969064885044">Możesz stracić dostęp do swojego konta organizacji lub paść ofiarą kradzieży tożsamości. Chrome zaleca natychmiastową zmianę hasła.</translation>
@@ -951,6 +943,7 @@
 <translation id="598637245381783098">Nie można otworzyć aplikacji do płatności</translation>
 <translation id="5989320800837274978">Nie określono ani stałych serwerów proxy, ani adresu URL skryptu PAC.</translation>
 <translation id="5990559369517809815">Żądania do serwera zostały zablokowane przez rozszerzenie.</translation>
+<translation id="6000758707621254961">Wyniki wyszukiwania dla zapytania „<ph name="SEARCH_TEXT" />”: <ph name="RESULT_COUNT" /></translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">Rok</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Strona 1}few{Strona #}many{Strona #}other{Strona #}}</translation>
@@ -1009,6 +1002,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Brak}=1{1 hasło (do <ph name="DOMAIN_LIST" />, zsynchronizowano)}=2{2 hasła (do <ph name="DOMAIN_LIST" />, zsynchronizowano)}few{# hasła (do <ph name="DOMAIN_LIST" />, zsynchronizowano)}many{# haseł (do <ph name="DOMAIN_LIST" />, zsynchronizowano)}other{# hasła (do <ph name="DOMAIN_LIST" />, zsynchronizowano)}}</translation>
 <translation id="6358450015545214790">Co to oznacza?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6377268785556383139">1 wynik dla zapytania „<ph name="SEARCH_TEXT" />”</translation>
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Uważaj na możliwe opłaty.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 inna podpowiedź}few{# inne podpowiedzi}many{# innych podpowiedzi}other{# innej podpowiedzi}}</translation>
@@ -1143,10 +1137,6 @@
 <translation id="717330890047184534">Identyfikator GAIA:</translation>
 <translation id="7174545416324379297">Wartości scalone</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> i jeszcze <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" /> i jeszcze <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}many{<ph name="SHIPPING_OPTION_PREVIEW" /> i jeszcze <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> i jeszcze <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
-<translation id="7177397715882417099">Serwer <ph name="ORIGIN" />, z którym chcesz się połączyć, zażądał stosowania
-    zasady bezpieczeństwa do wszystkich swoich żądań. Jednak zamiast
-    dostarczyć zasadę, przekierował przeglądarkę gdzie indziej, uniemożliwiając jej
-    zrealizowanie Twojego żądania dotyczącego strony <ph name="SITE" />.</translation>
 <translation id="7179323680825933600">Zapisuj i automatycznie uzupełniaj informacje o formach płatności</translation>
 <translation id="7180611975245234373">Odśwież</translation>
 <translation id="7182878459783632708">Brak ustawionych zasad</translation>
@@ -1173,6 +1163,7 @@ Dodatkowe informacje:
 <translation id="7300012071106347854">Niebieski kobalt</translation>
 <translation id="7302712225291570345">„<ph name="TEXT" />”</translation>
 <translation id="7303701124147721189">Aby następnym razem zapłacić szybciej, zapisz kartę oraz adres rozliczeniowy na swoim koncie Google i na tym urządzeniu.</translation>
+<translation id="7304030187361489308">Wysoki</translation>
 <translation id="7309308571273880165">Raport o awarii utworzony w dniu: <ph name="CRASH_TIME" /> (użytkownik zażądał przesłania raportu, ale nie został on jeszcze przesłany)</translation>
 <translation id="7313965965371928911">Ostrzeżenia <ph name="BEGIN_LINK" />Bezpiecznego przeglądania<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1534,7 +1525,6 @@ Dodatkowe informacje:
 <translation id="939736085109172342">Nowy folder</translation>
 <translation id="945855313015696284">Sprawdź poniższe informacje i usuń karty z błędami</translation>
 <translation id="951104842009476243">Akceptowane karty debetowe i przedpłacone</translation>
-<translation id="958202389743790697">Zablokowano zgodnie z zasadami bezpieczeństwa strony <ph name="ORIGIN" />.</translation>
 <translation id="962484866189421427">Te treści mogą próbować zainstalować wprowadzające w błąd aplikacje, które udają, że są przeznaczone do czegoś innego niż w rzeczywistości, lub zbierają dane, na podstawie których można Cię śledzić. <ph name="BEGIN_LINK" />Pokaż mimo to<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Oficjalna wersja</translation>
 <translation id="973773823069644502">Dodaj adres dostawy</translation>

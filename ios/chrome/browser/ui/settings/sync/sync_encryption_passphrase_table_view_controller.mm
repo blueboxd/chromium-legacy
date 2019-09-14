@@ -185,6 +185,10 @@ const CGFloat kSpinnerButtonPadding = 18;
       forSectionWithIdentifier:SectionIdentifierPassphrase];
 }
 
+- (BOOL)shouldDismissViewControllerBySwipeDown {
+  return ![passphrase_.text length];
+}
+
 #pragma mark - Items
 
 // Returns a passphrase message item.

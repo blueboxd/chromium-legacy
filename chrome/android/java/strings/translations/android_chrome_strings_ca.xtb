@@ -21,7 +21,6 @@
 <translation id="1146678959555564648">Activa el mode RV</translation>
 <translation id="116280672541001035">Dades utilitzades</translation>
 <translation id="1171770572613082465">Toca el botó Llocs populars per veure les tendències en llocs web</translation>
-<translation id="1172593791219290334">Pàgina d'inici</translation>
 <translation id="1173894706177603556">Canvia el nom</translation>
 <translation id="1175310183703641346">Les adreces d'interès, l'historial, les contrasenyes i altres opcions ja no se sincronitzaran amb el teu Compte de Google</translation>
 <translation id="1178581264944972037">Posa en pausa</translation>
@@ -42,6 +41,7 @@
 <translation id="1258753120186372309">Doodle de Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Fes cerques i explora contingut</translation>
 <translation id="1264974993859112054">Esports</translation>
+<translation id="1266864766717917324">No s'ha pogut compartir <ph name="CONTENT_TYPE" />.</translation>
 <translation id="1272079795634619415">Atura</translation>
 <translation id="1283039547216852943">Toca per desplegar</translation>
 <translation id="1285320974508926690">No tradueixis mai aquest lloc</translation>
@@ -71,6 +71,7 @@
 <translation id="1430915738399379752">Imprimeix</translation>
 <translation id="1445680696957526815">Els components de Chrome no són compatibles entre ells. És possible que Chrome s'estigui actualitzant. Torneu-ho a provar d'aquí a uns quants minuts. Si el problema continua, desinstal·leu Chrome i torneu-lo a instal·lar.</translation>
 <translation id="1446450296470737166">Permet control total disp. MIDI</translation>
+<translation id="1450753235335490080">No es pot compartir <ph name="CONTENT_TYPE" /></translation>
 <translation id="145097072038377568">Aquest permís està desactivat a la configuració d'Android</translation>
 <translation id="1477626028522505441">No s'ha pogut baixar <ph name="FILE_NAME" /> a causa de problemes amb el servidor.</translation>
 <translation id="1501480321619201731">Suprimeix el grup</translation>
@@ -153,6 +154,7 @@
 <translation id="2049961518639794558">Si canvies l'extensió del fitxer, pot ser que el fitxer no es comporti de la manera esperada i que malmeti el dispositiu.</translation>
 <translation id="2056878612599315956">El lloc web s'ha posat en pausa</translation>
 <translation id="2063713494490388661">Toca per cercar</translation>
+<translation id="2067805253194386918">text</translation>
 <translation id="2079545284768500474">Desfés</translation>
 <translation id="2082238445998314030">Resultat <ph name="RESULT_NUMBER" /> de <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">So</translation>
@@ -165,7 +167,6 @@
 <translation id="2131665479022868825">Dades estalviades: <ph name="DATA" /></translation>
 <translation id="213279576345780926">Pestanya <ph name="TAB_TITLE" /> tancada</translation>
 <translation id="2139186145475833000">Afegeix a pantalla d'inici</translation>
-<translation id="2142289305367051020">Aquí tens les teves pàgines preferides</translation>
 <translation id="2146738493024040262">Obre l'aplicació instantània</translation>
 <translation id="2148716181193084225">Avui</translation>
 <translation id="2154484045852737596">Edita la targeta</translation>
@@ -324,6 +325,7 @@
 <translation id="3384347053049321195">Comparteix la imatge</translation>
 <translation id="3386292677130313581">Pregunta'm abans de permetre que els llocs web sàpiguen la meva ubicació (opció recomanada)</translation>
 <translation id="3387650086002190359">No s'ha pogut baixar <ph name="FILE_NAME" /> a causa d'errors amb el sistema de fitxers.</translation>
+<translation id="3389286852084373014">El text és massa llarg</translation>
 <translation id="3398320232533725830">Obre el gestor d'adreces d'interès</translation>
 <translation id="3414952576877147120">Mida:</translation>
 <translation id="3443221991560634068">Torna a carregar la pàgina actual</translation>
@@ -348,6 +350,7 @@
 <translation id="3599863153486145794">Esborra l'historial de tots els dispositius en què tinguis iniciada la sessió. A <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> trobaràs altres maneres d'explorar l'historial de navegació del Compte de Google.</translation>
 <translation id="3600792891314830896">Silencia els llocs web que reprodueixen so</translation>
 <translation id="3616113530831147358">Àudio</translation>
+<translation id="3631987586758005671">S'està compartint amb <ph name="DEVICE_NAME" /></translation>
 <translation id="3632295766818638029">Mostra la contrasenya</translation>
 <translation id="363596933471559332">Inicia la sessió automàticament als llocs web amb les credencials emmagatzemades. Si la funció està desactivada, se us demana sempre que les verifiqueu per iniciar la sessió en un lloc web.</translation>
 <translation id="3658159451045945436">Si el restableixes, s'esborrarà l'historial de l'estalvi de dades, inclosa la llista de llocs web visitats.</translation>
@@ -358,7 +361,6 @@
 <translation id="3739899004075612870">Afegit a les adreces de: <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB en altres aplicacions</translation>
 <translation id="3744111561329211289">Sincronització en segon pla</translation>
-<translation id="3745176700485982507">En aquesta pàgina trobaràs enllaços als teus llocs web preferits</translation>
 <translation id="3771001275138982843">No s'ha pogut baixar l'actualització</translation>
 <translation id="3773755127849930740">Per permetre la vinculació, <ph name="BEGIN_LINK" />activa el Bluetooth<ph name="END_LINK" /></translation>
 <translation id="3775705724665058594">Envia als teus dispositius</translation>
@@ -563,7 +565,6 @@ Assegura't que confies en aquest lloc web abans d'activar el mode RV.</translati
 <translation id="5224771365102442243">Amb vídeo</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> vol cercar dispositius Bluetooth propers. S'han trobat els dispositius següents:</translation>
 <translation id="5233638681132016545">Pestanya nova</translation>
-<translation id="5234764350956374838">Omet</translation>
 <translation id="526421993248218238">No es pot carregar aquesta pàgina</translation>
 <translation id="5271967389191913893">El dispositiu no pot obrir el contingut que s'ha de baixar.</translation>
 <translation id="528192093759286357">Arrossegueu la pantalla des de la part superior i toqueu el botó Enrere per sortir de la pantalla completa.</translation>
@@ -578,8 +579,8 @@ Assegura't que confies en aquest lloc web abans d'activar el mode RV.</translati
 <translation id="5324858694974489420">Configuració parental</translation>
 <translation id="5327248766486351172">Nom</translation>
 <translation id="5335288049665977812">Permet que els llocs web executin JavaScript (opció recomanada)</translation>
+<translation id="5342314432463739672">Sol·licituds de permís</translation>
 <translation id="5357811892247919462">S'ha rebut una pestanya</translation>
-<translation id="5363230136052241468">Toca el botó d'inici per carregar la pàgina Pestanya nova</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> pestanya oberta; toca per canviar de pestanya}other{<ph name="OPEN_TABS_MANY" /> pestanyes obertes; toca per canviar de pestanya}}</translation>
 <translation id="5391532827096253100">La connexió amb aquest lloc web no és segura. Informació del lloc web</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(i 1 més)}other{(i # més)}}</translation>
@@ -748,6 +749,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6532866250404780454">Els llocs web que visitis a Chrome no es mostraran. Se suprimiran tots els temporitzadors del lloc web.</translation>
 <translation id="6534565668554028783">Google ha tardat massa a respondre</translation>
 <translation id="6538442820324228105">S'han baixat <ph name="GBS" /> GB</translation>
+<translation id="6539092367496845964">S'ha produït un error. Torna-ho a provar més tard.</translation>
 <translation id="654446541061731451">Trieu una pestanya per compartir-la.</translation>
 <translation id="6545017243486555795">Esborra totes les dades</translation>
 <translation id="6545864417968258051">Cerca de dispositius Bluetooth</translation>
@@ -802,7 +804,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6912998170423641340">Impedeix que els llocs web llegeixin el text i les imatges del porta-retalls</translation>
 <translation id="6914783257214138813">Tothom que pugui veure el fitxer exportat podrà veure també les teves contrasenyes.</translation>
 <translation id="6942665639005891494">Canvia la ubicació predeterminada de baixada en qualsevol moment amb l'opció del menú Configuració</translation>
-<translation id="6944102653068653326">Toca per carregar la pàgina Pestanya nova</translation>
 <translation id="6945221475159498467">Selecciona</translation>
 <translation id="6963642900430330478">Aquesta pàgina és perillosa. Informació del lloc web</translation>
 <translation id="6963766334940102469">Suprimeix les adreces d'interès</translation>
@@ -879,6 +880,7 @@ El lloc web NO obté accés a la càmera. Només tu pots veure les imatges de la
 <translation id="7493994139787901920"><ph name="VERSION" /> (última actualització: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">dades estalviades</translation>
 <translation id="7498271377022651285">Espereu...</translation>
+<translation id="7510943789645525906">T'avisa si una contrasenya que utilitzes ha patit una violació de les dades</translation>
 <translation id="7514365320538308">Baixa</translation>
 <translation id="751961395872307827">No es pot connectar amb el lloc web</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -996,7 +998,6 @@ El lloc web NO obté accés a la càmera. Només tu pots veure les imatges de la
 <translation id="8284326494547611709">Subtítols</translation>
 <translation id="8300705686683892304">Gestionats per aplicacions</translation>
 <translation id="8310344678080805313">Pestanyes estàndard</translation>
-<translation id="8313455859591948645">Edita la pàgina d'inici</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> i més llocs web</translation>
 <translation id="8327155640814342956">Per gaudir de la millor experiència de navegació, obre Chrome per actualitzar-lo</translation>
 <translation id="8339163506404995330">Les pàgines en <ph name="LANGUAGE" /> no es traduiran</translation>

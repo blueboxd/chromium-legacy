@@ -900,6 +900,23 @@ size_t CountFoldersWithTitlesMatching(int profile, const std::string& title) {
                                       base::UTF8ToUTF16(title));
 }
 
+bool ContainsBookmarkNodeWithGUID(int profile, const std::string& guid) {
+  BookmarkModel* model = GetBookmarkModel(profile);
+  // Check root node separately as iterator does not include it.
+  if (model->root_node()->guid() == guid) {
+    return true;
+  }
+  ui::TreeNodeIterator<const BookmarkNode> iterator(model->root_node());
+  // Walk through the model tree looking for a BookmarkNode whose GUID matches
+  // |guid|.
+  while (iterator.has_next()) {
+    const BookmarkNode* node = iterator.Next();
+    if (node->guid() == guid)
+      return true;
+  }
+  return false;
+}
+
 gfx::Image CreateFavicon(SkColor color) {
   const int dip_width = 16;
   const int dip_height = 16;
@@ -1094,3 +1111,10 @@ BookmarksUrlChecker::BookmarksUrlChecker(int profile,
                                                std::cref(url),
                                                expected_count),
                                     "Bookmark URL counts match.") {}
+
+BookmarksGUIDChecker::BookmarksGUIDChecker(int profile, const std::string& guid)
+    : AwaitMatchStatusChangeChecker(
+          base::BindRepeating(bookmarks_helper::ContainsBookmarkNodeWithGUID,
+                              profile,
+                              guid),
+          "Bookmark GUID exists.") {}

@@ -85,7 +85,8 @@ TEST_F(ServiceUtilCleanerTest, DeleteService) {
   EXPECT_FALSE(DoesServiceExist(service_handle.service_name()));
 }
 
-TEST_F(ServiceUtilCleanerTest, StopAndDeleteRunningService) {
+// Disabled: https://crbug.com/956016
+TEST_F(ServiceUtilCleanerTest, DISABLED_StopAndDeleteRunningService) {
   // Install and launch the service.
   TestScopedServiceHandle service_handle;
   ASSERT_TRUE(service_handle.InstallService());
@@ -108,7 +109,8 @@ TEST_F(ServiceUtilCleanerTest, StopAndDeleteRunningService) {
   EXPECT_FALSE(IsProcessRunning(kTestServiceExecutableName));
 }
 
-TEST_F(ServiceUtilCleanerTest, DeleteRunningService) {
+// Disabled: https://crbug.com/956016
+TEST_F(ServiceUtilCleanerTest, DISABLED_DeleteRunningService) {
   // Install and launch the service.
   TestScopedServiceHandle service_handle;
   ASSERT_TRUE(service_handle.InstallService());

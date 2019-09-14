@@ -12,7 +12,6 @@
 #include "build/branding_buildflags.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
-#include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
@@ -32,7 +31,7 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
     bool upload,
     AutofillClient::SaveCreditCardOptions options,
     const CreditCard& card,
-    std::unique_ptr<base::DictionaryValue> legal_message,
+    const LegalMessageLines& legal_message_lines,
     AutofillClient::UploadSaveCardPromptCallback
         upload_save_card_prompt_callback,
     AutofillClient::LocalSaveCardPromptCallback local_save_card_prompt_callback,
@@ -51,21 +50,10 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
       card_label_(card.NetworkAndLastFourDigits()),
       card_sub_label_(card.AbbreviatedExpirationDateForDisplay(false)),
       card_last_four_digits_(card.LastFourDigits()),
+      legal_message_lines_(legal_message_lines),
       is_off_the_record_(is_off_the_record) {
   DCHECK_EQ(upload, !upload_save_card_prompt_callback_.is_null());
   DCHECK_EQ(upload, local_save_card_prompt_callback_.is_null());
-
-  if (legal_message) {
-    if (!LegalMessageLine::Parse(*legal_message, &legal_messages_,
-                                 /*escape_apostrophes=*/true)) {
-      AutofillMetrics::LogCreditCardInfoBarMetric(
-          AutofillMetrics::INFOBAR_NOT_SHOWN_INVALID_LEGAL_MESSAGE, upload_,
-          options_,
-          pref_service_->GetInteger(
-              prefs::kAutofillAcceptSaveCreditCardPromptState));
-      return;
-    }
-  }
 
   AutofillMetrics::LogCreditCardInfoBarMetric(
       AutofillMetrics::INFOBAR_SHOWN, upload_, options_,
@@ -84,12 +72,6 @@ AutofillSaveCardInfoBarDelegateMobile::
 void AutofillSaveCardInfoBarDelegateMobile::OnLegalMessageLinkClicked(
     GURL url) {
   infobar()->owner()->OpenURL(url, WindowOpenDisposition::NEW_FOREGROUND_TAB);
-}
-
-bool AutofillSaveCardInfoBarDelegateMobile::LegalMessagesParsedSuccessfully() {
-  // If we are uploading to the server, verify that legal lines have been parsed
-  // into |legal_messages_|.
-  return !upload_ || !legal_messages_.empty();
 }
 
 bool AutofillSaveCardInfoBarDelegateMobile::IsGooglePayBrandingEnabled() const {

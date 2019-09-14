@@ -50,6 +50,7 @@
 #include "ios/chrome/browser/app_launcher/app_launcher_flags.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/chrome_switches.h"
+#include "ios/chrome/browser/crash_report/breadcrumbs/features.h"
 #include "ios/chrome/browser/crash_report/crash_report_flags.h"
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #include "ios/chrome/browser/find_in_page/features.h"
@@ -562,6 +563,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"credit-card-scanner", flag_descriptions::kCreditCardScannerName,
      flag_descriptions::kCreditCardScannerDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kCreditCardScanner)},
+    {"ios-breadcrumbs", flag_descriptions::kLogBreadcrumbsName,
+     flag_descriptions::kLogBreadcrumbsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kLogBreadcrumbs)},
 };
 
 // Add all switches from experimental flags to |command_line|.

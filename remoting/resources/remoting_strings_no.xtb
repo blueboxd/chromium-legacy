@@ -58,6 +58,7 @@
 <translation id="2509394361235492552">Koblet til <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">MERK: For å sikre at alle hurtigtastene er tilgjengelige, kan du konfigurere Chrome Eksternt skrivebord til «Åpne som vindu».</translation>
 <translation id="2540992418118313681">Har du lyst til å dele denne datamaskinen slik at en annen bruker kan se og kontrollere den?</translation>
+<translation id="254771646005658629">La eksterne brukere styre denne Macen</translation>
 <translation id="2579271889603567289">Verten kræsjet eller kunne ikke starte.</translation>
 <translation id="2599300881200251572">Med denne tjenesten kan du motta innkommende tilkoblinger fra Chrome Eksternt skrivebord-klienter.</translation>
 <translation id="2647232381348739934">Chromoting-tjeneste</translation>
@@ -182,6 +183,11 @@
 <translation id="5419185025274123272">Programmet kunne ikke tilbakestilles. Du kan likevel sende inn en feilrapport.</translation>
 <translation id="5419418238395129586">Sist på nett: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Verten har slått seg av.</translation>
+<translation id="5463789431147491241">For å bruke <ph name="PRODUCT_NAME" /> på denne Macen, følg disse trinnene:
+
+Velg «<ph name="BUTTON_NAME" />» nedenfor. I innstillinger for sikkerhet og personvern merker du av i boksen ved siden av «<ph name="SERVICE_SCRIPT_NAME" />».
+
+Hvis det allerede er merket av for «<ph name="SERVICE_SCRIPT_NAME" />», fjern avmerkingen og merk deretter av på nytt.</translation>
 <translation id="5510035215749041527">Koble fra nå</translation>
 <translation id="5593560073513909978">Tjenesten er ikke tilgjengelig for øyeblikket. Prøv på nytt senere.</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -298,12 +304,14 @@
 <translation id="837021510621780684">Fra denne datamaskinen</translation>
 <translation id="8383794970363966105">Hvis du vil bruke Chromoting, må du legge til en Google-konto på enheten din.</translation>
 <translation id="8386846956409881180">Verten er konfigurert med ugyldig OAuth-legitimasjon.</translation>
+<translation id="8406498562923498210">Velg økten du vil starte i Chrome Eksternt skrivebord-miljøet ditt. (Merk at enkelte økttyper kanskje ikke støtter samtidig kjøring på Chrome Eksternt skrivebord og på den lokale konsollen.)</translation>
 <translation id="8428213095426709021">Innstillinger</translation>
 <translation id="8445362773033888690">Se oppføringen i Google Play-butikken</translation>
 <translation id="8509907436388546015">Integrasjonsprosess for skrivebord</translation>
 <translation id="8513093439376855948">Innebygd meldingsvert for administrasjon av ekstern vert</translation>
 <translation id="8525306231823319788">Full skjerm</translation>
 <translation id="8548209692293300397">Du har tidligere logget på som <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Hvis du vil ha tilgang til datamaskiner på den kontoen, må du bruke den til å <ph name="LINK_BEGIN" />logge på Chrome<ph name="LINK_END" /> og deretter installere Chrome Eksternt skriverbord på nytt.</translation>
+<translation id="858006550102277544">Kommentar</translation>
 <translation id="8642984861538780905">Akseptabel</translation>
 <translation id="8712909229180978490">Jeg ser ikke de lagrede filene mine på nettet i Google Disk.</translation>
 <translation id="8743328882720071828">Vil du tillate at <ph name="CLIENT_USERNAME" /> kan se og kontrollere datamaskinen din?</translation>
@@ -321,6 +329,7 @@
 <translation id="9126115402994542723">Ikke be om PIN-kode igjen når du kobler til denne verten fra denne enheten.</translation>
 <translation id="9149580767411232853">Hold hele det eksterne skrivebordet synlig</translation>
 <translation id="9149992051684092333">Kom i gang med deling av skrivebordet ved å gi adgangskoden nedenfor til personen som skal hjelpe deg.</translation>
+<translation id="916856682307586697">Start standard XSession</translation>
 <translation id="9188433529406846933">Godkjenn</translation>
 <translation id="9213184081240281106">Ugyldig vertskonfigurasjon.</translation>
 <translation id="951991426597076286">Avvis</translation>

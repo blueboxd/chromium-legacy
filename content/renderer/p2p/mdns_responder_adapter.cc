@@ -7,11 +7,11 @@
 #include <string>
 
 #include "base/bind.h"
-#include "content/child/child_thread_impl.h"
-#include "content/public/common/service_names.mojom.h"
 #include "jingle/glue/utils.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/webrtc/rtc_base/ip_address.h"
 
 namespace content {
@@ -42,8 +42,8 @@ MdnsResponderAdapter::MdnsResponderAdapter() {
   auto request = mojo::MakeRequest(&client);
   thread_safe_client_ =
       network::mojom::ThreadSafeMdnsResponderPtr::Create(std::move(client));
-  DCHECK(ChildThreadImpl::current());
-  ChildThreadImpl::current()->BindHostReceiver(std::move(request));
+  blink::Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+      std::move(request));
 }
 
 MdnsResponderAdapter::~MdnsResponderAdapter() = default;

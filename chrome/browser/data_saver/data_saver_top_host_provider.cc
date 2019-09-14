@@ -110,16 +110,34 @@ void DataSaverTopHostProvider::InitializeHintsFetcherTopHostBlacklist() {
       optimization_guide::prefs::kTimeBlacklistLastInitialized,
       time_clock_->Now().ToDeltaSinceWindowsEpoch().InSecondsF());
 
+  // Set the minimum engagement score to -1.0f. This ensures that in the default
+  // case (where the blacklist size is enough to accommodate all hosts from the
+  // site engagement service), a threshold on the minimum site engagement score
+  // does not disqualify |this| from requesting hints for any host.
+  pref_service_->SetDouble(
+      optimization_guide::prefs::
+          kHintsFetcherDataSaverTopHostBlacklistMinimumEngagementScore,
+      -1.0f);
+
   for (const auto& detail : engagement_details) {
+    if (!detail.origin.SchemeIsHTTPOrHTTPS())
+      continue;
     if (top_host_blacklist->size() >=
         optimization_guide::features::MaxHintsFetcherTopHostBlacklistSize()) {
+      // Set the minimum engagement score to the score of the host that
+      // could not be added to  |top_host_blacklist|. Add a small epsilon value
+      // to the threshold so that any host with score equal to or less than
+      // the threshold is not included in the hints fetcher request.
+      pref_service_->SetDouble(
+          optimization_guide::prefs::
+              kHintsFetcherDataSaverTopHostBlacklistMinimumEngagementScore,
+          std::min(detail.total_score + 0.001f,
+                   optimization_guide::features::
+                       MinTopHostEngagementScoreThreshold()));
       break;
     }
-    if (detail.origin.SchemeIsHTTPOrHTTPS()) {
-      top_host_blacklist->SetBoolKey(
-          optimization_guide::HashHostForDictionary(detail.origin.host()),
-          true);
-    }
+    top_host_blacklist->SetBoolKey(
+        optimization_guide::HashHostForDictionary(detail.origin.host()), true);
   }
 
   UMA_HISTOGRAM_COUNTS_1000(
@@ -312,8 +330,10 @@ std::vector<std::string> DataSaverTopHostProvider::GetTopHosts(
     if (duration_since_blacklist_initialized <=
             optimization_guide::features::
                 DurationApplyLowEngagementScoreThreshold() &&
-        detail.total_score < optimization_guide::features::
-                                 MinTopHostEngagementScoreThreshold()) {
+        detail.total_score <
+            pref_service_->GetDouble(
+                optimization_guide::prefs::
+                    kHintsFetcherDataSaverTopHostBlacklistMinimumEngagementScore)) {
       return top_hosts;
     }
     if (!IsHostBlacklisted(top_host_blacklist, detail.origin.host())) {

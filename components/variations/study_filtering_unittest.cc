@@ -270,6 +270,23 @@ TEST(VariationsStudyFilteringTest, CheckStudyLowEndDevice) {
   EXPECT_TRUE(internal::CheckStudyLowEndDevice(filter, false));
 }
 
+TEST(VariationsStudyFilteringTest, CheckStudyEnterprise) {
+  Study::Filter filter;
+
+  // Check that if the filter is not set, study applies to both enterprise and
+  // non-enterprise clients.
+  EXPECT_TRUE(internal::CheckStudyEnterprise(filter, true));
+  EXPECT_TRUE(internal::CheckStudyEnterprise(filter, false));
+
+  filter.set_is_enterprise(true);
+  EXPECT_TRUE(internal::CheckStudyEnterprise(filter, true));
+  EXPECT_FALSE(internal::CheckStudyEnterprise(filter, false));
+
+  filter.set_is_enterprise(false);
+  EXPECT_FALSE(internal::CheckStudyEnterprise(filter, true));
+  EXPECT_TRUE(internal::CheckStudyEnterprise(filter, false));
+}
+
 TEST(VariationsStudyFilteringTest, CheckStudyStartDate) {
   const base::Time now = base::Time::Now();
   const base::TimeDelta delta = base::TimeDelta::FromHours(1);

@@ -34,6 +34,13 @@ class FormFetcherImpl : public FormFetcher,
 
   ~FormFetcherImpl() override;
 
+  // Returns a MultiStoreFormFetcher if  the password account storage feature is
+  // enabled. Returns a FormFetcherImpl otherwise.
+  static std::unique_ptr<FormFetcherImpl> CreateFormFetcherImpl(
+      PasswordStore::FormDigest form_digest,
+      const PasswordManagerClient* client,
+      bool should_migrate_http_passwords);
+
   // FormFetcher:
   void AddConsumer(FormFetcher::Consumer* consumer) override;
   void RemoveConsumer(FormFetcher::Consumer* consumer) override;
@@ -67,17 +74,28 @@ class FormFetcherImpl : public FormFetcher,
   void ProcessMigratedForms(
       std::vector<std::unique_ptr<autofill::PasswordForm>> forms) override;
 
- private:
-  // Splits |results| into |federated_|, |non_federated_| and |blacklisted_|.
-  void SplitResults(
-      std::vector<std::unique_ptr<autofill::PasswordForm>> results);
+ protected:
+  // PasswordStore results will be fetched for this description.
+  const PasswordStore::FormDigest form_digest_;
+
+  // Client used to obtain a CredentialFilter.
+  const PasswordManagerClient* const client_;
+
+  // State of the fetcher.
+  State state_ = State::NOT_WAITING;
+
+  // False unless FetchDataFromPasswordStore has been called again without the
+  // password store returning results in the meantime.
+  bool need_to_refetch_ = false;
 
   // Processes password form results and forwards them to the |consumers_|.
   void ProcessPasswordStoreResults(
       std::vector<std::unique_ptr<autofill::PasswordForm>> results);
 
-  // PasswordStore results will be fetched for this description.
-  const PasswordStore::FormDigest form_digest_;
+ private:
+  // Splits |results| into |federated_|, |non_federated_| and |blacklisted_|.
+  void SplitResults(
+      std::vector<std::unique_ptr<autofill::PasswordForm>> results);
 
   // Results obtained from PasswordStore:
   std::vector<std::unique_ptr<autofill::PasswordForm>> non_federated_;
@@ -108,16 +126,6 @@ class FormFetcherImpl : public FormFetcher,
 
   // Consumers of the fetcher, all are assumed to outlive |this|.
   std::set<FormFetcher::Consumer*> consumers_;
-
-  // Client used to obtain a CredentialFilter.
-  const PasswordManagerClient* const client_;
-
-  // State of the fetcher.
-  State state_ = State::NOT_WAITING;
-
-  // False unless FetchDataFromPasswordStore has been called again without the
-  // password store returning results in the meantime.
-  bool need_to_refetch_ = false;
 
   // Indicates whether HTTP passwords should be migrated to HTTPS.
   const bool should_migrate_http_passwords_;

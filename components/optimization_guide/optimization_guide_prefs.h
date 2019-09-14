@@ -16,6 +16,8 @@ extern const char kHintsFetcherLastFetchAttempt[];
 extern const char kHintsFetcherDataSaverTopHostBlacklist[];
 extern const char kHintsFetcherDataSaverTopHostBlacklistState[];
 extern const char kTimeBlacklistLastInitialized[];
+extern const char
+    kHintsFetcherDataSaverTopHostBlacklistMinimumEngagementScore[];
 extern const char kHintsFetcherHostsSuccessfullyFetched[];
 extern const char kPendingHintsProcessingVersion[];
 

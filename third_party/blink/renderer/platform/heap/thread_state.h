@@ -61,7 +61,6 @@ class IncrementalMarkingScope;
 }  // namespace incremental_marking_test
 
 class CancelableTaskScheduler;
-class ConcurrentMarkingVisitor;
 class MarkingVisitor;
 class PersistentNode;
 class PersistentRegion;
@@ -298,10 +297,11 @@ class PLATFORM_EXPORT ThreadState final {
   void EnableIncrementalMarkingBarrier();
   void DisableIncrementalMarkingBarrier();
 
-  // Returns true if concurrent markers are still running.
+  // Returns true if concurrent marking is finished (i.e. all current threads
+  // terminated and the worklist is empty)
   bool ConcurrentMarkingStep();
   void ScheduleConcurrentMarking();
-  void PerformConcurrentMark(std::unique_ptr<ConcurrentMarkingVisitor>);
+  void PerformConcurrentMark(int);
 
   void CompleteSweep();
   void NotifySweepDone();
@@ -584,9 +584,9 @@ class PLATFORM_EXPORT ThreadState final {
   GCData current_gc_data_;
 
   std::unique_ptr<CancelableTaskScheduler> marker_scheduler_;
-  uint8_t active_markers_{0};
+  uint8_t active_markers_ = 0;
   base::Lock active_concurrent_markers_lock_;
-  size_t concurrently_marked_bytes_{0};
+  size_t concurrently_marked_bytes_ = 0;
 
   std::unique_ptr<CancelableTaskScheduler> sweeper_scheduler_;
 

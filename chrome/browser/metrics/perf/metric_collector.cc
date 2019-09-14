@@ -210,9 +210,12 @@ void MetricCollector::ScheduleIntervalCollection() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (timer_.IsRunning())
     return;
+  // Schedule periodic collection only if periodic_interval is non-zero. A value
+  // of zero is the escape hatch for turning periodic collection off via Finch.
+  if (collection_params_.periodic_interval.is_zero())
+    return;
 
   const base::TimeTicks now = base::TimeTicks::Now();
-
   base::TimeTicks interval_end =
       next_profiling_interval_start_ + collection_params_.periodic_interval;
   if (now > interval_end) {

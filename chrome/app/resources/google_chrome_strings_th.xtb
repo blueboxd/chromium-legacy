@@ -43,6 +43,7 @@
 <translation id="1873233029667955273">Google Chrome ไม่ใช่เบราว์เซอร์เริ่มต้น</translation>
 <translation id="1874309113135274312">Google Chrome เบต้า (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome ล้าสมัย</translation>
+<translation id="1900795423379050516">หากการตั้งค่าไม่แสดงในหน้านี้ โปรดดูที่<ph name="LINK_BEGIN" />การตั้งค่าเบราว์เซอร์ Chrome<ph name="LINK_END" /></translation>
 <translation id="1915828456209461693">อัปเดตใหม่ของ Chrome พร้อมให้ใช้งานแล้วและระบบจะใช้อัปเดตดังกล่าวเมื่อคุณเปิด Chrome ขึ้นมาใหม่</translation>
 <translation id="1919130412786645364">อนุญาตให้ลงชื่อเข้าใช้ Chrome</translation>
 <translation id="2063848847527508675">ต้องรีสตาร์ท Chrome OS เพื่อใช้การอัปเดต</translation>
@@ -156,6 +157,7 @@
 <translation id="5543953544073077331">ใช้งาน Chrome สำเนาอื่นอยู่ ปิดสำเนานั้นก่อนแล้วค่อยอัปเดต</translation>
 <translation id="556024056938947818">Google Chrome กำลังพยายามแสดงรหัสผ่าน</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
+<translation id="5657226924540934362">หากการตั้งค่าไม่แสดงในหน้านี้ โปรดดูที่<ph name="LINK_BEGIN" />การตั้งค่า Chrome OS<ph name="LINK_END" /></translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> อาจเป็นอันตราย Chrome จึงบล็อกไว้</translation>
 <translation id="5686916850681061684">ปรับแต่งและควบคุม Google Chrome มีสิ่งที่คุณจำเป็นต้องทราบ โปรดคลิกเพื่อดูรายละเอียด</translation>
 <translation id="5690427481109656848">Google LLC</translation>

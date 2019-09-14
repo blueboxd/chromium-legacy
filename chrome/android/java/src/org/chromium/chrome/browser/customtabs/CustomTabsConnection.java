@@ -1235,6 +1235,24 @@ public class CustomTabsConnection {
     }
 
     /**
+     * Calls {@link CustomTabsCallback#extraCallbackWithResult)}.
+     * Wraps calling sendExtraCallbackWithResult in a try/catch so that exceptions thrown by the
+     * host app don't crash Chrome.
+     */
+    @Nullable
+    public Bundle sendExtraCallbackWithResult(CustomTabsSessionToken session, String callbackName,
+            @Nullable Bundle args) {
+        CustomTabsCallback callback = mClientManager.getCallbackForSession(session);
+        if (callback == null) return null;
+
+        try {
+            return callback.extraCallbackWithResult(callbackName, args);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
      * Keeps the application linked with a given session alive.
      *
      * The application is kept alive (that is, raised to at least the current process priority

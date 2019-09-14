@@ -696,8 +696,7 @@ TransformedWritingMode FlexLayoutAlgorithm::GetTransformedWritingMode(
 // static
 StyleContentAlignmentData FlexLayoutAlgorithm::ResolvedJustifyContent(
     const ComputedStyle& style) {
-  const bool is_webkit_box = (style.Display() == EDisplay::kWebkitBox ||
-                              style.Display() == EDisplay::kWebkitInlineBox);
+  const bool is_webkit_box = style.IsDeprecatedWebkitBox();
   ContentPosition position = is_webkit_box
                                  ? BoxPackToContentPosition(style.BoxPack())
                                  : style.ResolvedJustifyContentPosition(
@@ -731,11 +730,8 @@ StyleContentAlignmentData FlexLayoutAlgorithm::ResolvedAlignContent(
 ItemPosition FlexLayoutAlgorithm::AlignmentForChild(
     const ComputedStyle& flexbox_style,
     const ComputedStyle& child_style) {
-  const bool is_webkit_box =
-      (flexbox_style.Display() == EDisplay::kWebkitBox ||
-       flexbox_style.Display() == EDisplay::kWebkitInlineBox);
   ItemPosition align =
-      is_webkit_box
+      flexbox_style.IsDeprecatedWebkitBox()
           ? BoxAlignmentToItemPosition(flexbox_style.BoxAlign())
           : child_style
                 .ResolvedAlignSelf(ItemPosition::kStretch, &flexbox_style)

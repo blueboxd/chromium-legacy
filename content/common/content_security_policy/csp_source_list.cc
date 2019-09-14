@@ -36,6 +36,29 @@ CSPSourceList::CSPSourceList(bool allow_self,
       allow_response_redirects(allow_response_redirects),
       sources(sources) {}
 
+CSPSourceList::CSPSourceList(
+    const network::mojom::CSPSourceList& csp_source_list)
+    : allow_self(false), allow_star(false), allow_response_redirects(false) {
+  for (auto& source : csp_source_list.sources) {
+    // The mojo representation of the source list has 'self' as a source entry,
+    // mark this source list as accepting 'self'.
+    if (source->allow_self) {
+      allow_self = true;
+      continue;
+    }
+    // The mojo representation has a '*' (wildcard) representation as empty
+    // scheme, host and port with is_host_wildcard set to true. Mark the source
+    // list as accepting star.
+    if (source->scheme == "" && source->is_host_wildcard &&
+        source->host == "" && source->port == url::PORT_UNSPECIFIED) {
+      allow_star = true;
+      continue;
+    }
+
+    sources.push_back(CSPSource(*source));
+  }
+}
+
 CSPSourceList::CSPSourceList(const CSPSourceList&) = default;
 CSPSourceList::~CSPSourceList() = default;
 

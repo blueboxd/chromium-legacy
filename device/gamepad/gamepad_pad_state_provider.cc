@@ -66,8 +66,9 @@ void GamepadPadStateProvider::ClearPadState(PadState& state) {
 }
 
 void GamepadPadStateProvider::InitializeDataFetcher(
-    GamepadDataFetcher* fetcher) {
-  fetcher->InitializeProvider(this);
+    GamepadDataFetcher* fetcher,
+    service_manager::Connector* service_manager_connector) {
+  fetcher->InitializeProvider(this, service_manager_connector);
 }
 
 void GamepadPadStateProvider::MapAndSanitizeGamepadData(PadState* pad_state,

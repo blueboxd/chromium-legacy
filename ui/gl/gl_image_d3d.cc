@@ -10,17 +10,18 @@
 
 #ifndef EGL_ANGLE_image_d3d11_texture
 #define EGL_D3D11_TEXTURE_ANGLE 0x3484
+#define EGL_TEXTURE_INTERNAL_FORMAT_ANGLE 0x345D
 #endif /* EGL_ANGLE_image_d3d11_texture */
 
 namespace gl {
 
 GLImageD3D::GLImageD3D(const gfx::Size& size,
-                       gfx::BufferFormat buffer_format,
+                       unsigned internal_format,
                        Microsoft::WRL::ComPtr<ID3D11Texture2D> texture,
                        Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain)
     : GLImage(),
       size_(size),
-      buffer_format_(buffer_format),
+      internal_format_(internal_format),
       texture_(std::move(texture)),
       swap_chain_(std::move(swap_chain)) {
   DCHECK(texture_);
@@ -38,7 +39,8 @@ GLImageD3D::~GLImageD3D() {
 
 bool GLImageD3D::Initialize() {
   DCHECK_EQ(egl_image_, EGL_NO_IMAGE_KHR);
-  const EGLint attribs[] = {EGL_NONE};
+  const EGLint attribs[] = {EGL_TEXTURE_INTERNAL_FORMAT_ANGLE,
+                            GetInternalFormat(), EGL_NONE};
   egl_image_ =
       eglCreateImageKHR(GLSurfaceEGL::GetHardwareDisplay(), EGL_NO_CONTEXT,
                         EGL_D3D11_TEXTURE_ANGLE,
@@ -70,8 +72,7 @@ gfx::Size GLImageD3D::GetSize() {
 }
 
 unsigned GLImageD3D::GetInternalFormat() {
-  return buffer_format_ == gfx::BufferFormat::RGBA_F16 ? GL_RGBA16F_EXT
-                                                       : GL_BGRA8_EXT;
+  return internal_format_;
 }
 
 bool GLImageD3D::BindTexImage(unsigned target) {

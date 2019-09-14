@@ -626,6 +626,28 @@ TEST_F(MetricCollectorTest, ZeroSamplingFactorDisablesTrigger) {
   EXPECT_FALSE(metric_collector_->IsRunning());
 }
 
+TEST_F(MetricCollectorTest, ZeroPeriodicIntervalDisablesCollection) {
+  // Define params with zero periodic interval.
+  CollectionParams test_params;
+  test_params.periodic_interval = base::TimeDelta::FromMilliseconds(0);
+
+  metric_collector_ = std::make_unique<TestMetricCollector>(test_params);
+  metric_collector_->Init();
+  metric_collector_->RecordUserLogin(base::TimeTicks::Now());
+
+  EXPECT_FALSE(metric_collector_->IsRunning())
+      << "Sanity: timer should not be running.";
+
+  // Advance the clock by 10 hours. We should have no profile and timer is not
+  // running.
+  task_environment_.FastForwardBy(base::TimeDelta::FromHours(10));
+
+  EXPECT_FALSE(metric_collector_->IsRunning())
+      << "Sanity: timer should not be running.";
+
+  ASSERT_TRUE(cached_profile_data_.empty());
+}
+
 }  // namespace internal
 
 }  // namespace metrics

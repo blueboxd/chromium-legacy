@@ -71,6 +71,7 @@
 <translation id="1292701964462482250">'Software on your computer is stopping Chrome from safely connecting to the web' (Windows computers only)</translation>
 <translation id="1294154142200295408">Command-line variations</translation>
 <translation id="129553762522093515">Recently closed</translation>
+<translation id="1298536327547837046">Malware Scanning</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Try clearing your cookies<ph name="END_LINK" /></translation>
 <translation id="1307966114820526988">Deprecated Features</translation>
 <translation id="1320233736580025032">Prc1 (Envelope)</translation>
@@ -97,7 +98,6 @@
 <translation id="138218114945450791">Light blue</translation>
 <translation id="1382194467192730611">USB device allowed by your administrator</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> didn’t send any data.</translation>
-<translation id="140316286225361634">The site <ph name="ORIGIN" /> has requested that a security policy will apply to all its request, and this policy presently deems the site unsafe.</translation>
 <translation id="1405567553485452995">Light green</translation>
 <translation id="1407135791313364759">Open all</translation>
 <translation id="1413809658975081374">Privacy error</translation>
@@ -133,6 +133,7 @@
 <translation id="1569487616857761740">Enter expiry date</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Something went wrong while displaying this web page.</translation>
+<translation id="1588438908519853928">Normal</translation>
 <translation id="1592005682883173041">Local Data Access</translation>
 <translation id="1594030484168838125">Choose</translation>
 <translation id="161042844686301425">Cyan</translation>
@@ -210,7 +211,6 @@
 <translation id="1981206234434200693">Clear Chrome's browsing history data</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{and 1 more}other{and # more}}</translation>
 <translation id="2003709556000175978">Reset your password now</translation>
-<translation id="20053308747750172">The server that you are going to, <ph name="ORIGIN" />, has requested that a security policy will be applied to all requests to it. But it has now delivered an invalid policy, which prevents the browser from fulfilling your request for <ph name="SITE" />.</translation>
 <translation id="2025186561304664664">Proxy is set to auto-configured.</translation>
 <translation id="202813660234680402">No, don't add</translation>
 <translation id="2030481566774242610">Did you mean <ph name="LINK" />?</translation>
@@ -288,7 +288,6 @@
 <translation id="2409589295040002961">Your administrator can change your browser setup remotely. Activity on this device may also be managed outside of Chrome. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">This server could not prove that it is <ph name="DOMAIN" />; its security certificate might be revoked. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
-<translation id="2418081434543109369">The server that you are going to, <ph name="ORIGIN" />, has requested that a security policy will be applied to all requests to it. But it has now failed to deliver a policy, which prevents the browser from fulfilling your request for <ph name="SITE" />.</translation>
 <translation id="2463193859425327265">Change home page</translation>
 <translation id="2463739503403862330">Fill in</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -430,6 +429,7 @@
 <translation id="320323717674993345">Cancel payment</translation>
 <translation id="3207960819495026254">Bookmarked</translation>
 <translation id="3209034400446768650">Page may charge money</translation>
+<translation id="3215092763954878852">Couldn't use WebAuthn</translation>
 <translation id="3225919329040284222">The server presented a certificate that doesn't match built-in expectations. These expectations are included for certain, high-security websites in order to protect you.</translation>
 <translation id="3226128629678568754">Press the reload button to resubmit the data needed to load the page.</translation>
 <translation id="3227137524299004712">Microphone</translation>
@@ -566,6 +566,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{None}=1{From 1 site }other{From # sites }}</translation>
 <translation id="397105322502079400">Calculating...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> is blocked</translation>
+<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> has enabled Chrome Enterprise Threat Protection on your browser. Chrome Enterprise Threat Protection has access to some of your data.</translation>
 <translation id="3987940399970879459">Less than 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 web page nearby}other{# web pages nearby}}</translation>
 <translation id="4030383055268325496">&amp;Undo add</translation>
@@ -634,6 +635,7 @@
 <translation id="4277028893293644418">Reset password</translation>
 <translation id="4279811152705618813">Your <ph name="DEVICE_TYPE" /> is managed by <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{This card has been saved in your Google Account}other{These cards have been saved in your Google Account}}</translation>
+<translation id="428847186335018806">Scan files that you download or upload in Chrome.</translation>
 <translation id="42981349822642051">Expand</translation>
 <translation id="4302965934281694568">Chou3 (Envelope)</translation>
 <translation id="4305817255990598646">Switch</translation>
@@ -672,6 +674,7 @@
 <translation id="4506176782989081258">Validation error: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Contacting the system admin</translation>
 <translation id="450710068430902550">Sharing with Administrator</translation>
+<translation id="4508814173490746936">Couldn't use Touch ID</translation>
 <translation id="4510487217173779431">Chou4 (Envelope)</translation>
 <translation id="4515275063822566619">Cards and addresses are from Chrome and your Google Account (<ph name="ACCOUNT_EMAIL" />). You can manage them in <ph name="BEGIN_LINK" />Settings<ph name="END_LINK" />.</translation>
 <translation id="4517607026994743406">Comm-10 (Envelope)</translation>
@@ -767,6 +770,7 @@
 <translation id="5045550434625856497">Incorrect password</translation>
 <translation id="5056549851600133418">Articles for you</translation>
 <translation id="5068524481479508725">A10</translation>
+<translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(1 in use)}other{(# in use)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Checking the proxy address<ph name="END_LINK" /></translation>
 <translation id="5087286274860437796">Server's certificate is not valid at this time.</translation>
 <translation id="5087580092889165836">Add card</translation>
@@ -785,6 +789,7 @@
 <translation id="5141240743006678641">Encrypt synced passwords with your Google credentials</translation>
 <translation id="5145883236150621069">Error code present in the policy response</translation>
 <translation id="515292512908731282">C4 (Envelope)</translation>
+<translation id="5158275234811857234">Cover</translation>
 <translation id="5159010409087891077">Open page in a new Incognito window (⇧⌘N)</translation>
 <translation id="516920405563544094">Enter the CVC for <ph name="CREDIT_CARD" />. Once you confirm, card details from your Google Account will be shared with this site.</translation>
 <translation id="5169827969064885044">You could lose access to your organisation's account or experience identity theft. Chrome recommends changing your password now.</translation>
@@ -944,6 +949,7 @@
 <translation id="598637245381783098">Can’t open payment app</translation>
 <translation id="5989320800837274978">Neither fixed proxy servers nor a .pac script URL are specified.</translation>
 <translation id="5990559369517809815">Requests to the server have been blocked by an extension.</translation>
+<translation id="6000758707621254961"><ph name="RESULT_COUNT" /> results for '<ph name="SEARCH_TEXT" />'</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">Year</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Page 1}other{Page #}}</translation>
@@ -994,6 +1000,7 @@
 <translation id="6302269476990306341">Google Assistant in Chrome stopping</translation>
 <translation id="6305205051461490394"><ph name="URL" /> is unreachable.</translation>
 <translation id="6321917430147971392">Check your DNS settings</translation>
+<translation id="6322182122604171028">Couldn't use Windows Hello</translation>
 <translation id="6328639280570009161">Try disabling network prediction</translation>
 <translation id="6328784461820205019">'Your connection is not private' or '&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;' or '&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;' or '&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;' or '&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;' or 'SSL certificate error'</translation>
 <translation id="6328786501058569169">This site is deceptive</translation>
@@ -1002,6 +1009,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{None}=1{1 password (for <ph name="DOMAIN_LIST" />, synced)}=2{2 passwords (for <ph name="DOMAIN_LIST" />, synced)}other{# passwords (for <ph name="DOMAIN_LIST" />, synced)}}</translation>
 <translation id="6358450015545214790">What do these mean?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6377268785556383139">1 result for '<ph name="SEARCH_TEXT" />'</translation>
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Potential charges ahead.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 other suggestion}other{# other suggestions}}</translation>
@@ -1016,6 +1024,7 @@
 <translation id="6433490469411711332">Edit contact info</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> refused to connect.</translation>
 <translation id="6434309073475700221">Discard</translation>
+<translation id="6435221585574090192">Share data about security events that have been flagged by Chrome Enterprise Threat Protection with your Administrator. These may include page urls, file name and file metadata, your device username and Chrome username.</translation>
 <translation id="6440503408713884761">Ignored</translation>
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">Add more information</translation>
@@ -1060,6 +1069,7 @@
 <translation id="6671697161687535275">Remove form suggestion from Chromium?</translation>
 <translation id="6685834062052613830">Sign out and complete setup</translation>
 <translation id="6689271823431384964">Chrome is offering to save your cards in your Google account because you are signed in. You can change this behaviour in settings. The cardholder name comes from your account.</translation>
+<translation id="6707256370811247129">Scan the contents of the cache and files that you download or upload in Chrome.</translation>
 <translation id="6710213216561001401">Previous</translation>
 <translation id="6710594484020273272">&lt;Type search term&gt;</translation>
 <translation id="671076103358959139">Enrolment Token:</translation>
@@ -1078,6 +1088,7 @@
 <translation id="681021252041861472">Required Field</translation>
 <translation id="6810899417690483278">Customisation ID</translation>
 <translation id="6825578344716086703">You attempted to reach <ph name="DOMAIN" />, but the server presented a certificate signed using a weak signature algorithm (such as SHA-1). This means that the security credentials that the server presented could have been forged, and the server may not be the server that you expected (you may be communicating with an attacker).</translation>
+<translation id="6826370046007623921">Data Loss Prevention</translation>
 <translation id="6831043979455480757">Translate</translation>
 <translation id="6839929833149231406">Area</translation>
 <translation id="6852204201400771460">Reload app?</translation>
@@ -1136,7 +1147,6 @@
 <translation id="717330890047184534">Gaia ID:</translation>
 <translation id="7174545416324379297">Merged</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> and <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> more}other{<ph name="SHIPPING_OPTION_PREVIEW" /> and <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> more}}</translation>
-<translation id="7177397715882417099">The server that you are going to, <ph name="ORIGIN" />, has requested that a security policy will be applied to all requests to it. But instead of delivering a policy, it has redirected the browser elsewhere, which prevents the browser from fulfilling your request for <ph name="SITE" />.</translation>
 <translation id="7179323680825933600">Save and fill payment methods</translation>
 <translation id="7180611975245234373">Refresh</translation>
 <translation id="7182878459783632708">No policies set</translation>
@@ -1163,6 +1173,7 @@ Additional details:
 <translation id="7300012071106347854">Cobalt blue</translation>
 <translation id="7302712225291570345">'<ph name="TEXT" />'</translation>
 <translation id="7303701124147721189">To pay faster next time, store your card and billing address in your Google account and on this device.</translation>
+<translation id="7304030187361489308">High</translation>
 <translation id="7309308571273880165">Crash report captured on <ph name="CRASH_TIME" /> (upload requested by user, not yet uploaded)</translation>
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />Safe Browsing<ph name="END_LINK" /> warnings</translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1224,6 +1235,7 @@ Additional details:
 <translation id="7542995811387359312">Automatic credit card filling is disabled because this form does not use a secure connection.</translation>
 <translation id="7548892272833184391">Fix connection errors</translation>
 <translation id="7549584377607005141">This web page requires data that you entered earlier in order to be properly displayed. You can send this data again, but by doing so you will repeat any action this page previously performed.</translation>
+<translation id="7550637293666041147">Your device username and Chrome username</translation>
 <translation id="7552846755917812628">Try the following tips:</translation>
 <translation id="7554791636758816595">New Tab</translation>
 <translation id="7564049878696755256">You could lose access to your <ph name="ORG_NAME" /> account or experience identity theft. Chrome recommends changing your password now.</translation>
@@ -1238,6 +1250,7 @@ Additional details:
 <translation id="7610193165460212391">Value is out of range <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Exp: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">You already have data that is encrypted using a different version of your Google Account password. Please enter it below.</translation>
+<translation id="7625784245512586808">Chrome Enterprise Threat Protection</translation>
 <translation id="7633909222644580952">Performance data and crash reports</translation>
 <translation id="7637571805876720304">Remove credit card from Chromium?</translation>
 <translation id="7638605456503525968">Serial ports</translation>
@@ -1348,6 +1361,7 @@ Additional details:
 <translation id="8211406090763984747">Connection is secure</translation>
 <translation id="8218327578424803826">Assigned Location:</translation>
 <translation id="8220146938470311105">C7/C6 (Envelope)</translation>
+<translation id="8220639454292072926">Enterprise Reporting</translation>
 <translation id="8225771182978767009">The person who set up this computer has chosen to block this site.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Open page in a new Incognito tab</translation>
@@ -1430,6 +1444,7 @@ Additional details:
 <translation id="8740359287975076522"><ph name="HOST_NAME" />’s &lt;abbr id="dnsDefinition"&gt;DNS address&lt;/abbr&gt; could not be found. Diagnosing the problem.</translation>
 <translation id="874846938927089722">Accepted Credit and Prepaid Cards</translation>
 <translation id="874918643257405732">Bookmark this tab</translation>
+<translation id="8751426954251315517">Please try again next time</translation>
 <translation id="8759274551635299824">This card has expired</translation>
 <translation id="8761567432415473239">Google Safe Browsing recently <ph name="BEGIN_LINK" />found harmful programs<ph name="END_LINK" /> on <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB device</translation>
@@ -1494,6 +1509,7 @@ Additional details:
 <translation id="9080712759204168376">Order Summary</translation>
 <translation id="9089260154716455634">Off-hours policy:</translation>
 <translation id="9095388113577226029">More languages...</translation>
+<translation id="9098981495403789647">Your administrator has enabled Chrome Enterprise Threat Protection on your browser. Chrome Enterprise Threat Protection has access to some of your data.</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> normally uses encryption to protect your information. When Chromium tried to connect to <ph name="SITE" /> this time, the website sent back unusual and incorrect credentials. This may happen when an attacker is trying to pretend to be <ph name="SITE" />, or a Wi-Fi sign-in screen has interrupted the connection. Your information is still secure because Chromium stopped the connection before any data was exchanged.</translation>
 <translation id="9106062320799175032">Add Billing Address</translation>
 <translation id="9114524666733003316">Confirming card...</translation>
@@ -1524,7 +1540,6 @@ Additional details:
 <translation id="939736085109172342">New folder</translation>
 <translation id="945855313015696284">Check the info below and delete any invalid cards</translation>
 <translation id="951104842009476243">Accepted Debit and Prepaid Cards</translation>
-<translation id="958202389743790697">Blocked according to <ph name="ORIGIN" />'s security policy.</translation>
 <translation id="962484866189421427">This content might try to install deceptive apps that pretend to be something else or collect data that may be used to track you. <ph name="BEGIN_LINK" />Show anyway<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Official Build</translation>
 <translation id="973773823069644502">Add delivery address</translation>

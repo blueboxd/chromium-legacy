@@ -38,9 +38,6 @@ const int kMenuExtraMarginFromLeftEdge = 4;
 const int kMenuEdgeEffectivePadding =
     kMenuExtraMarginFromLeftEdge + (kMenuButtonSize - kMenuIconSize) / 2;
 
-const int kHitRegionPadding = 4;
-const int kHitRegionPaddingDense = 2;
-
 const int kTrayPopupInkDropInset = 4;
 const int kTrayPopupInkDropCornerRadius = 2;
 

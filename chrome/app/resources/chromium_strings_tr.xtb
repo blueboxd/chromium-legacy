@@ -192,6 +192,8 @@ Chromium ayarlarınızı kurtaramıyor.</translation>
 <translation id="753534427205733210">{0,plural, =1{Chromium 1 dakika içinde yeniden başlatılacak}other{Chromium # dakika içinde yeniden başlatılacak}}</translation>
 <translation id="7549178288319965365">Chromium OS hakkında</translation>
 <translation id="7561906087460245826">Chromium'daki verileri de temizle (<ph name="URL" />)</translation>
+<translation id="7585853947355360626">Bir ayar bu sayfada görünmüyorsa <ph name="LINK_BEGIN" />
+      Chromium OS ayarlarınıza<ph name="LINK_END" /> bakın</translation>
 <translation id="761356813943268536">Chromium kameranızı ve mikrofonunuzu kullanıyor.</translation>
 <translation id="7617377681829253106">Chromium daha da iyi bir hale geldi</translation>
 <translation id="7686590090926151193">Chromium varsayılan tarayıcınız değil</translation>
@@ -225,6 +227,8 @@ Chromium ayarlarınızı kurtaramıyor.</translation>
 <translation id="8619360774459241877">Chromium başlatılıyor...</translation>
 <translation id="8621669128220841554">Yükleme belirtilmeyen bir hata nedeniyle başarısız oldu. Lütfen Chromium'u tekrar indirin.</translation>
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> cihazınız güncel.</translation>
+<translation id="8682540261359803721">Bir ayar bu sayfada görünmüyorsa <ph name="LINK_BEGIN" />
+      Chromium tarayıcı ayarlarınıza<ph name="LINK_END" /> bakın</translation>
 <translation id="8697124171261953979">Ayrıca Chromium'u başlattığınızda veya Çok Amaçlı Adres Çubuğu'ndan arama yaptığınızda gösterilecek sayfayı da denetler.</translation>
 <translation id="8704119203788522458">Bu sizin Chromium'unuz</translation>
 <translation id="8739167630197873875">Chromium'dan çıktığınızda çerezleri temizlersiniz. Senkronizasyona devam etmek için çerez ayarlarını şurada değiştirin: <ph name="COOKIE_SETTINGS_LINK" />.</translation>

@@ -275,6 +275,11 @@ cr.define('settings_autofill_page', function() {
 
       PolymerTest.clearBody();
       autofillPage = document.createElement('settings-autofill-page');
+      autofillPage.prefs = {
+        profile: {
+          password_manager_leak_detection: {},
+        },
+      };
       document.body.appendChild(autofillPage);
 
       Polymer.dom.flush();

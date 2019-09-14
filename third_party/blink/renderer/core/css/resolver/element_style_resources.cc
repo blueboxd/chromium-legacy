@@ -33,7 +33,7 @@
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/html/lazy_load_image_observer.h"
+#include "third_party/blink/renderer/core/loader/lazy_image_helper.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/content_data.h"
 #include "third_party/blink/renderer/core/style/cursor_data.h"
@@ -222,7 +222,7 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
                 LoadPendingImage(style, To<StylePendingImage>(background_image),
                                  image_request_optimization);
             if (new_image && new_image->IsLazyloadPossiblyDeferred()) {
-              LazyLoadImageObserver::StartMonitoring(
+              LazyImageHelper::StartMonitoring(
                   pseudo_element_ ? pseudo_element_ : element_.Get());
             }
             background_layer->SetImage(new_image);

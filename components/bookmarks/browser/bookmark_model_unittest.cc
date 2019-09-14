@@ -560,8 +560,8 @@ TEST_F(BookmarkModelTest, AddURLWithCreationTimeAndMetaInfo) {
   BookmarkNode::MetaInfoMap meta_info;
   meta_info["foo"] = "bar";
 
-  const BookmarkNode* new_node = model_->AddURLWithCreationTimeAndMetaInfo(
-      root, 0, title, url, time, &meta_info);
+  const BookmarkNode* new_node =
+      model_->AddURL(root, 0, title, url, &meta_info, time);
   AssertObserverCount(1, 0, 0, 0, 0, 0, 0, 0, 0);
   observer_details_.ExpectEquals(root, nullptr, 0, size_t{-1});
 
@@ -578,6 +578,20 @@ TEST_F(BookmarkModelTest, AddURLWithCreationTimeAndMetaInfo) {
   EXPECT_TRUE(new_node->id() != root->id() &&
               new_node->id() != model_->other_node()->id() &&
               new_node->id() != model_->mobile_node()->id());
+}
+
+TEST_F(BookmarkModelTest, AddURLWithGUID) {
+  const BookmarkNode* root = model_->bookmark_bar_node();
+  const base::string16 title(ASCIIToUTF16("foo"));
+  const GURL url("http://foo.com");
+  const Time time = Time::Now() - TimeDelta::FromDays(1);
+  BookmarkNode::MetaInfoMap meta_info;
+  const std::string guid = base::GenerateGUID();
+
+  const BookmarkNode* new_node =
+      model_->AddURL(root, /*index=*/0, title, url, &meta_info, time, guid);
+
+  EXPECT_EQ(guid, new_node->guid());
 }
 
 TEST_F(BookmarkModelTest, AddURLToMobileBookmarks) {
@@ -622,6 +636,18 @@ TEST_F(BookmarkModelTest, AddFolder) {
   model_->AddFolder(root, 0, title);
   AssertObserverCount(1, 0, 0, 0, 0, 0, 0, 0, 0);
   observer_details_.ExpectEquals(root, nullptr, 0, size_t{-1});
+}
+
+TEST_F(BookmarkModelTest, AddFolderWithGUID) {
+  const BookmarkNode* root = model_->bookmark_bar_node();
+  const base::string16 title(ASCIIToUTF16("foo"));
+  BookmarkNode::MetaInfoMap meta_info;
+  const std::string guid = base::GenerateGUID();
+
+  const BookmarkNode* new_node =
+      model_->AddFolder(root, /*index=*/0, title, &meta_info, guid);
+
+  EXPECT_EQ(guid, new_node->guid());
 }
 
 TEST_F(BookmarkModelTest, AddFolderWithWhitespaceTitle) {

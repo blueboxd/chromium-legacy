@@ -15,6 +15,14 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+
+// FullScreen progress threshold in which to toggle between full screen on and
+// off mode for the badge view.
+const double kFullScreenProgressThreshold = 0.85;
+
+}  // namespace
+
 @interface BadgeViewController ()
 
 // Button factory.
@@ -108,8 +116,26 @@
 #pragma mark FullscreenUIElement
 
 - (void)updateForFullscreenProgress:(CGFloat)progress {
-  CGFloat alphaValue = fmax((progress - 0.85) / 0.15, 0);
-  self.displayedBadge.alpha = alphaValue;
+  BOOL badgeViewShouldCollapse = progress <= kFullScreenProgressThreshold;
+  if (badgeViewShouldCollapse) {
+    self.fullScreenBadge.fullScreenOn = YES;
+    // Fade in/out in the FullScreen badge with the FullScreen on
+    // configurations.
+    CGFloat alphaValue = fmax((kFullScreenProgressThreshold - progress) /
+                                  kFullScreenProgressThreshold,
+                              0);
+    self.fullScreenBadge.alpha = alphaValue;
+  } else {
+    self.fullScreenBadge.fullScreenOn = NO;
+    // Fade in/out the FullScreen badge with the FullScreen off configurations
+    // at a speed matching that of the trailing button in the
+    // LocationBarSteadyView.
+    CGFloat alphaValue = fmax((progress - kFullScreenProgressThreshold) /
+                                  (1 - kFullScreenProgressThreshold),
+                              0);
+    self.displayedBadge.alpha = alphaValue;
+    self.fullScreenBadge.alpha = alphaValue;
+  }
 }
 
 #pragma mark - Getter/Setter

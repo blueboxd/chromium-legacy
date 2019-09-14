@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "cc/base/math_util.h"
 #include "cc/paint/render_surface_filters.h"
 #include "components/viz/common/display/renderer_settings.h"
@@ -664,6 +665,15 @@ void SkiaRenderer::BeginDrawingFrame() {
     read_lock_fence = current_frame_resource_fence_;
   }
   resource_provider_->SetReadLockFence(read_lock_fence.get());
+
+#if defined(OS_ANDROID)
+  for (const auto& pass : *current_frame()->render_passes_in_draw_order) {
+    for (auto* quad : pass->quad_list) {
+      for (ResourceId resource_id : quad->resources)
+        resource_provider_->InitializePromotionHintRequest(resource_id);
+    }
+  }
+#endif
 
   if (draw_mode_ != DrawMode::SKPRECORD)
     return;

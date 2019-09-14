@@ -1891,6 +1891,20 @@ void ServiceWorkerGlobalScope::DispatchPaymentRequestEvent(
   PaymentRequestRespondWithObserver* respond_with_observer =
       PaymentRequestRespondWithObserver::Create(this, event_id,
                                                 wait_until_observer);
+
+  // Update respond_with_observer to check for required information specified in
+  // the event_data during response validation.
+  if (event_data->payment_options) {
+    respond_with_observer->set_should_have_payer_name(
+        event_data->payment_options->request_payer_name);
+    respond_with_observer->set_should_have_payer_email(
+        event_data->payment_options->request_payer_email);
+    respond_with_observer->set_should_have_payer_phone(
+        event_data->payment_options->request_payer_phone);
+    respond_with_observer->set_should_have_shipping_info(
+        event_data->payment_options->request_shipping);
+  }
+
   mojo::PendingRemote<payments::mojom::blink::PaymentHandlerHost>
       payment_handler_host = std::move(event_data->payment_handler_host);
   Event* event = PaymentRequestEvent::Create(

@@ -40,7 +40,6 @@
 #include <sys/time.h>
 #include "base/threading/scoped_blocking_call.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
-#include "third_party/blink/renderer/platform/wtf/dtoa/double-conversion.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/thread_specific.h"

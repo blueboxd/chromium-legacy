@@ -112,6 +112,7 @@ TEST_F(ThreadPoolJobTaskSourceTest, Clear) {
     EXPECT_EQ(1U, task_source->GetRemainingConcurrency());
     auto task = registered_task_source_c.Clear();
     std::move(task->task).Run();
+    registered_task_source_c.DidProcessTask();
     EXPECT_EQ(0U, task_source->GetRemainingConcurrency());
   }
   // The task source shouldn't allow any further tasks after Clear.
@@ -122,6 +123,7 @@ TEST_F(ThreadPoolJobTaskSourceTest, Clear) {
   {
     auto task = registered_task_source_d.Clear();
     std::move(task->task).Run();
+    registered_task_source_d.DidProcessTask();
     EXPECT_EQ(0U, task_source->GetRemainingConcurrency());
   }
 
@@ -342,13 +344,9 @@ TEST_F(ThreadPoolJobTaskSourceTest, InvalidDidProcessTask) {
 
   auto registered_task_source =
       RegisteredTaskSource::CreateForTesting(task_source);
-  EXPECT_EQ(registered_task_source.WillRunTask(),
-            TaskSource::RunStatus::kAllowedSaturated);
-  // Can not be called before TakeTask().
-  EXPECT_DCHECK_DEATH(registered_task_source.DidProcessTask());
 
-  auto task = registered_task_source.TakeTask();
-  registered_task_source.DidProcessTask();
+  // Can not be called before WillRunTask().
+  EXPECT_DCHECK_DEATH(registered_task_source.DidProcessTask());
 }
 
 }  // namespace internal

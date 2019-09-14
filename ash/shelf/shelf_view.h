@@ -13,6 +13,7 @@
 #include "ash/app_list/views/app_list_drag_and_drop_host.h"
 #include "ash/ash_export.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model_observer.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
@@ -114,7 +115,8 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
                              public app_list::ApplicationDragAndDropHost,
                              public ShelfTooltipDelegate,
                              public ash::TabletModeObserver,
-                             public VirtualKeyboardModel::Observer {
+                             public VirtualKeyboardModel::Observer,
+                             public ShelfConfig::Observer {
  public:
   ShelfView(ShelfModel* model, Shelf* shelf);
   ~ShelfView() override;
@@ -212,6 +214,9 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // VirtualKeyboardModel::Observer:
   void OnVirtualKeyboardVisibilityChanged() override;
 
+  // ShelfConfig::Observer:
+  void OnShelfConfigUpdated() override;
+
   // Returns true if |event| on the shelf item is going to activate the
   // ShelfItem associated with |view|. Used to determine whether a pending ink
   // drop should be shown or not.
@@ -275,8 +280,8 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   views::View* FindFirstFocusableChild();
   views::View* FindLastFocusableChild();
 
-  // Handles the gesture event.
-  void HandleGestureEvent(ui::GestureEvent* event);
+  // Handles the gesture event. Returns true if |event| has been consumed.
+  bool HandleGestureEvent(const ui::GestureEvent* event);
 
   // Return the view model for test purposes.
   const views::ViewModel* view_model_for_test() const {

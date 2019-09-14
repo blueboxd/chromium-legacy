@@ -20,6 +20,7 @@ include_rules = [
     "+base/rand_util.h",
     "+base/stl_util.h",
     "+base/strings",
+    "+base/third_party/double_conversion",
     "+base/template_util.h",
     "+base/test/metrics/histogram_tester.h",
     "+base/threading",

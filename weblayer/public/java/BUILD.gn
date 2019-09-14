@@ -8,6 +8,7 @@ import("//build/config/android/rules.gni")
 android_library("java") {
   java_files = [
     "org/chromium/weblayer/BrowserController.java",
+    "org/chromium/weblayer/BrowserFragmentImpl.java",
     "org/chromium/weblayer/BrowserObserver.java",
     "org/chromium/weblayer/Navigation.java",
     "org/chromium/weblayer/NavigationController.java",

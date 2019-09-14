@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/stl_util.h"
 #include "base/time/time_override.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -15,7 +16,6 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
-#include "third_party/blink/renderer/platform/wtf/dtoa/utils.h"
 
 namespace blink {
 
@@ -138,7 +138,7 @@ Response InspectorPerformanceAgent::getMetrics(
                base::TimeTicks::Now().since_origin().InSecondsF());
 
   // Renderer instance counters.
-  for (size_t i = 0; i < ARRAY_SIZE(kInstanceCounterNames); ++i) {
+  for (size_t i = 0; i < base::size(kInstanceCounterNames); ++i) {
     AppendMetric(result.get(), kInstanceCounterNames[i],
                  InstanceCounters::CounterValue(
                      static_cast<InstanceCounters::CounterType>(i)));

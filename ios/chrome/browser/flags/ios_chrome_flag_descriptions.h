@@ -77,6 +77,11 @@ extern const char kAutofillRichMetadataQueriesDescription[];
 extern const char kAutofillUseMobileLabelDisambiguationName[];
 extern const char kAutofillUseMobileLabelDisambiguationDescription[];
 
+// Title and description for the flag that controls whether event breadcrumbs
+// are captured.
+extern const char kLogBreadcrumbsName[];
+extern const char kLogBreadcrumbsDescription[];
+
 // Title and description for the flag to control if initial uploading of crash
 // reports is delayed.
 extern const char kBreakpadNoDelayInitialUploadName[];

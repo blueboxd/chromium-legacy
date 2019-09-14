@@ -479,10 +479,6 @@
       Als dit beleid is ingesteld op een geldige URL, downloadt<ph name="PRODUCT_NAME" /> de lijst met sites van die URL en worden de regels toegepast alsof ze zijn geconfigureerd met het <ph name="SITELIST_POLICY_NAME" />-beleid.
 
       Ga naar https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode voor meer informatie over het <ph name="IEEM_SITELIST_POLICY" />-beleid van Internet Explorer</translation>
-<translation id="1839060937202387559">Hardwarestatistieken en ID's rapporteren voor opslagapparaten.
-
-      Als het beleid is ingesteld op 'false', worden de statistieken niet gerapporteerd.
-      Als het beleid is ingesteld op 'true' of als het niet is ingesteld, worden de statistieken gerapporteerd.</translation>
 <translation id="1843117931376765605">Vernieuwingsfrequentie voor gebruikersbeleid</translation>
 <translation id="1844620919405873871">Hiermee configureer je het beleid ten aanzien van snel ontgrendelen.</translation>
 <translation id="1845405905602899692">Kiosk-instellingen</translation>
@@ -3372,15 +3368,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
       Als dit beleid niet wordt ingesteld, kan de gebruiker worden gevraagd of deze wil importeren, of wordt er automatisch geïmporteerd.</translation>
 <translation id="7063895219334505671">Pop-ups toestaan ​​op deze sites</translation>
-<translation id="706568410943497889">Als het beleid is ingesteld op 'True', mag <ph name="PRODUCT_NAME" /> WebRTC-gebeurtenislogboeken verzamelen van Google-services (zoals Google Meet) en deze logboeken uploaden naar Google.
-
-      Als het beleid is ingesteld op 'False' of niet wordt ingesteld, mag <ph name="PRODUCT_NAME" /> deze logboeken niet verzamelen of uploaden.
-
-      Deze logboeken bevatten diagnostische informatie die handig is voor het oplossen van problemen met audio- of videogesprekken in Chrome. Deze informatie betreft bijvoorbeeld het tijdstip en de grootte van verzonden en ontvangen RTP-pakketten, feedback over overbelasting van het netwerk en metadata over de duur en kwaliteit van audio- en videoframes. Deze logboeken bevatten geen audio of video van het gesprek.
-
-      Chrome verzamelt deze gegevens alleen als Chrome wordt getriggerd door webservices van Google, zoals Google Hangouts of Google Meet.
-
-      Google mag deze logboeken aan de hand van de sessie-ID koppelen aan andere logboeken die door de Google-service zelf zijn verzameld. Het doel hiervan is dat fouten makkelijker kunnen worden opgespoord.</translation>
 <translation id="706669471845501145">Sites toestaan bureaubladmeldingen weer te geven</translation>
 <translation id="7068108874199666656">Hiermee kun je een netwerkconfiguratie toepassen voor alle gebruikers van een <ph name="PRODUCT_OS_NAME" />-apparaat. De netwerkconfiguratie is een tekenreeks met json-indeling, zoals gedefinieerd in de Open Network Configuration-indeling.</translation>
 <translation id="7070525176564511548">Het wachtwoord moet elke week (168 uur) worden opgegeven</translation>
@@ -4075,10 +4062,6 @@ De aanbevolen manier om beleidsregels te configureren op Windows, is via GPO, ma
           Als je dit beleid instelt, kunnen gebruikers het niet wijzigen of overschrijven.
 
           Als dit beleid niet is ingesteld, is de functie voor dicteren in eerste instantie uitgeschakeld, maar kan de gebruiker deze op elk gewenst moment inschakelen.</translation>
-<translation id="8292322992383748446">Hardwarestatistieken rapporteren voor SoC-onderdelen.
-
-      Als het beleid is ingesteld op 'false', worden de statistieken niet gerapporteerd.
-      Als het beleid is ingesteld op 'true' of als het niet is ingesteld, worden de statistieken gerapporteerd.</translation>
 <translation id="829337533107201925">Als dit beleid is ingeschakeld, worden beleidsregels van een atomische groep genegeerd die niet dezelfde bron met de hoogste prioriteit van de betreffende groep hebben.
 
       Als dit beleid is uitgeschakeld, worden er geen beleidsregels genegeerd vanwege de bijbehorende bron. Beleidsregels worden alleen genegeerd als er een conflict is en het beleid niet de hoogste prioriteit heeft.
@@ -4114,10 +4097,6 @@ De aanbevolen manier om beleidsregels te configureren op Windows, is via GPO, ma
 <translation id="8367209241899435947">Chrome Cleanup inschakelen op Windows</translation>
 <translation id="8369602308428138533">Vertraging van scherm uitschakelen wanneer op netstroom wordt gewerkt</translation>
 <translation id="8371178326720637170">Hiermee kunnen beheerde extensies de Enterprise Hardware Platform-API gebruiken</translation>
-<translation id="8374747520743832795">Aan voeding gerelateerde hardwarestatistieken en ID's rapporteren.
-
-      Als het beleid is ingesteld op 'false', worden de statistieken niet gerapporteerd.
-      Als het beleid is ingesteld op 'true' of als het niet is ingesteld, worden de statistieken gerapporteerd.</translation>
 <translation id="8380490658357556620">Hiermee wordt het gebruik van relayservers ingeschakeld wanneer externe clients proberen een verbinding met dit apparaat tot stand te brengen.
 
           Als deze instelling is ingeschakeld, kunnen externe clients relayservers gebruiken om verbinding met dit apparaat te maken wanneer er geen rechtstreekse verbinding beschikbaar is (bijvoorbeeld wegens beperkingen van de firewall).

@@ -21,7 +21,6 @@
 <translation id="1146678959555564648">Entrar na RV</translation>
 <translation id="116280672541001035">Dados usados</translation>
 <translation id="1171770572613082465">Toque no botão "Sites famosos" para ver os sites muito acessados</translation>
-<translation id="1172593791219290334">Página de inicialização</translation>
 <translation id="1173894706177603556">Renomear</translation>
 <translation id="1175310183703641346">Seus favoritos, histórico, senhas e outras configurações não serão mais sincronizados com sua Conta do Google</translation>
 <translation id="1178581264944972037">Pausar</translation>
@@ -168,7 +167,6 @@
 <translation id="2131665479022868825"><ph name="DATA" /> salvo(s)</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> fechada</translation>
 <translation id="2139186145475833000">Adicionar à tela inicial</translation>
-<translation id="2142289305367051020">Suas páginas favoritas estão aqui</translation>
 <translation id="2146738493024040262">Abrir Instant App</translation>
 <translation id="2148716181193084225">Hoje</translation>
 <translation id="2154484045852737596">Editar cartão</translation>
@@ -363,7 +361,6 @@
 <translation id="3739899004075612870">Adicionado aos favoritos no <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB de outros apps</translation>
 <translation id="3744111561329211289">Sincronização em segundo plano</translation>
-<translation id="3745176700485982507">Encontre os links para seus sites favoritos nesta página</translation>
 <translation id="3771001275138982843">Não foi possível fazer o download da atualização</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Ativar o Bluetooth<ph name="END_LINK" /> para permitir o pareamento</translation>
 <translation id="3775705724665058594">Enviar para seus dispositivos</translation>
@@ -569,7 +566,6 @@ Verifique se você confia neste site antes de entrar na RV.</translation>
 <translation id="5224771365102442243">Com vídeo</translation>
 <translation id="5230560987958996918">Solicitação de <ph name="SITE" /> para procurar dispositivos Bluetooth próximos. Os seguintes dispositivos foram encontrados:</translation>
 <translation id="5233638681132016545">Nova guia</translation>
-<translation id="5234764350956374838">Dispensar</translation>
 <translation id="526421993248218238">Não foi possível carregar a página</translation>
 <translation id="5271967389191913893">Não é possível abrir no dispositivo o conteúdo a ser transferido por download.</translation>
 <translation id="528192093759286357">Arraste a partir da parte superior e toque no botão "Voltar" para sair da tela cheia.</translation>
@@ -586,7 +582,6 @@ Verifique se você confia neste site antes de entrar na RV.</translation>
 <translation id="5335288049665977812">Permitir que sites executem o JavaScript (recomendado)</translation>
 <translation id="5342314432463739672">Solicitações de permissão</translation>
 <translation id="5357811892247919462">Guia recebida</translation>
-<translation id="5363230136052241468">Toque no botão home para carregar a nova guia</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> guia aberta, toque para alternar}one{<ph name="OPEN_TABS_MANY" /> guia aberta, toque para alternar}other{<ph name="OPEN_TABS_MANY" /> guias abertas, toque para alternar}}</translation>
 <translation id="5391532827096253100">Sua conexão com este site não é segura. Informações do site</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(mais 1)}one{(mais #)}other{(mais #)}}</translation>
@@ -810,7 +805,6 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="6912998170423641340">Impedir que sites leiam textos e imagens da área de transferência</translation>
 <translation id="6914783257214138813">Suas senhas ficarão visíveis para qualquer pessoa que tiver acesso ao arquivo exportado.</translation>
 <translation id="6942665639005891494">Altere o local padrão de download a qualquer momento usando a opção do menu "Configurações"</translation>
-<translation id="6944102653068653326">Toque para carregar a página nova guia</translation>
 <translation id="6945221475159498467">Selecionar</translation>
 <translation id="6963642900430330478">Esta página é perigosa. Informações do site</translation>
 <translation id="6963766334940102469">Excluir favoritos</translation>
@@ -904,7 +898,6 @@ O site NÃO terá acesso à câmera. As imagens da câmera são visíveis apenas
 <translation id="7605594153474022051">A sincronização não está funcionando</translation>
 <translation id="7606077192958116810">Modo Lite ativado. Gerencie-o nas configurações.</translation>
 <translation id="7612619742409846846">Conectado ao Google como</translation>
-<translation id="7618708364256705849">Nenhum dispositivo disponível.</translation>
 <translation id="7619072057915878432">Falha no download do arquivo <ph name="FILE_NAME" /> devido a falhas na rede.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Receber ajuda<ph name="END_LINK1" /> ou <ph name="BEGIN_LINK2" />verificar novamente<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Bem-vindo ao Google Chrome</translation>
@@ -1006,7 +999,6 @@ O site NÃO terá acesso à câmera. As imagens da câmera são visíveis apenas
 <translation id="8284326494547611709">Legendas</translation>
 <translation id="8300705686683892304">Gerenciados por app</translation>
 <translation id="8310344678080805313">Guias padrão</translation>
-<translation id="8313455859591948645">Editar página de inicialização</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> e outros sites</translation>
 <translation id="8327155640814342956">Para ter a melhor experiência de navegação, abra para atualizar o Chrome</translation>
 <translation id="8339163506404995330">Páginas em <ph name="LANGUAGE" /> não serão traduzidas</translation>

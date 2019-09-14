@@ -22,6 +22,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/no_destructor.h"
+#include "base/numerics/ranges.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
@@ -160,7 +161,7 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
       return;
     }
 
-    level = std::max(0.0f, std::min(level, 1.0f));
+    level = base::ClampToRange(level, 0.0f, 1.0f);
     thread_.task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&VolumeControlInternal::SetVolumeOnThread,
                                   base::Unretained(this), source, type, level,
@@ -323,7 +324,7 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
     if (BUILDFLAG(SYSTEM_OWNS_VOLUME)) {
       return;
     }
-    limit = std::max(0.0f, std::min(limit, 1.0f));
+    limit = base::ClampToRange(limit, 0.0f, 1.0f);
     StreamMixer::Get()->SetOutputLimit(
         type, DbFsToScale(VolumeControl::VolumeToDbFS(limit)));
 

@@ -202,9 +202,8 @@ void ProfileWriter::AddBookmarks(
     if (bookmark->is_folder) {
       model->AddFolder(parent, parent->children().size(), bookmark->title);
     } else {
-      model->AddURLWithCreationTimeAndMetaInfo(
-          parent, parent->children().size(), bookmark->title, bookmark->url,
-          bookmark->creation_time, NULL);
+      model->AddURL(parent, parent->children().size(), bookmark->title,
+                    bookmark->url, nullptr, bookmark->creation_time);
     }
   }
 

@@ -104,7 +104,6 @@
 <translation id="2359808026110333948">Continua</translation>
 <translation id="2365393535144473978">En activar les dades mòbils s'activarà el Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
-<translation id="239188844683466770">Activa o desactiva el mode No molestis</translation>
 <translation id="2412593942846481727">Hi ha una actualització disponible</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> és una sessió gestionada per <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Fes clic amb el botó esquerre</translation>
@@ -224,6 +223,7 @@
 <translation id="4181841719683918333">Idiomes</translation>
 <translation id="4195877955194704651">Botó Clics automàtics</translation>
 <translation id="4217571870635786043">Dictat</translation>
+<translation id="421885205185866088">PIN de la targeta intel·ligent per a <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Mostra la configuració de notificacions. Les notificacions estan desactivades.</translation>
 <translation id="4269883910223712419">L'administrador d'aquest dispositiu pot dur a terme les accions següents:</translation>
@@ -239,6 +239,7 @@
 <translation id="4379531060876907730">Aquestes són les eines del llapis òptic</translation>
 <translation id="4389184120735010762">Has premut la tecla de drecera de la lupa acoblada. Vols activar-la?</translation>
 <translation id="4421231901400348175">Es comparteix el control de la pantalla amb <ph name="HELPER_NAME" /> mitjançant l'Assistència remota.</translation>
+<translation id="4430019312045809116">Volum</translation>
 <translation id="4450893287417543264">No ho tornis a mostrar</translation>
 <translation id="4477350412780666475">Pista següent</translation>
 <translation id="4479639480957787382">Ethernet</translation>

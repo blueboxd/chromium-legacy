@@ -168,6 +168,13 @@ Status ExecuteGenerateTestReport(Session* session,
 namespace internal {
 Status ConfigureHeadlessSession(Session* session,
                                 const Capabilities& capabilities);
+
+Status ConfigureSession(Session* session,
+                        const base::DictionaryValue& params,
+                        const base::DictionaryValue** desired_caps,
+                        base::DictionaryValue* merged_caps,
+                        Capabilities* capabilities);
+
 }  // namespace internal
 
 #endif  // CHROME_TEST_CHROMEDRIVER_SESSION_COMMANDS_H_

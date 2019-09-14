@@ -1498,7 +1498,6 @@
 <translation id="321799795901478485">Zip Archiver</translation>
 <translation id="321834671654278338">Linux अनइंस्टॉलर</translation>
 <translation id="3220586366024592812"><ph name="CLOUD_PRINT_NAME" /> कनेक्‍टर प्रक्रिया क्रैश हो गई है. फिर से प्रारंभ करें?</translation>
-<translation id="3221634914176615296">Files ऐप्लिकेशन में डिवाइस की सामग्री देखें.</translation>
 <translation id="3222066309010235055">प्रीरेंडर: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
 <translation id="3225084153129302039">डिफ़ॉल्ट बैंगनी अवतार</translation>
 <translation id="3225319735946384299">कोड हस्ताक्षर</translation>
@@ -1538,7 +1537,6 @@
 <translation id="3281892622610078515">क्वारंटाइन की जाने वाली फ़ाइलें और प्रोग्राम:</translation>
 <translation id="3282568296779691940">Chrome में साइन इन करें</translation>
 <translation id="3285322247471302225">नया &amp;टैब</translation>
-<translation id="3286654161521615710">Chrome ब्राउज़र और <ph name="DEVICE_TYPE" /> लॉन्चर इसका इस्तेमाल करते हैं</translation>
 <translation id="3286737518123001369">अपनी सुरक्षा कुंजी पर सेव किया गया साइन इन डेटा देखें और मिटाएं</translation>
 <translation id="3288047731229977326">डेवलपर मोड में चलने वाले एक्सटेंशन आपके कंप्यूटर को नुकसान पहुंचा सकते हैं. अगर आप डेवलपर नहीं हैं तो, सुरक्षित रहने के लिए आपको डेवलपर मोड मे चलने वाले इन एक्सटेंशन को बंद कर देना चाहिए.</translation>
 <translation id="3289856944988573801">अपडेट की जाँच करने के लिए, कृपया Ethernet या वाई-फ़ाई का उपयोग करें.</translation>
@@ -1760,7 +1758,6 @@
 <translation id="3613134908380545408"><ph name="FOLDER_NAME" /> दिखाएं</translation>
 <translation id="3613422051106148727">नए टैब में &amp;खोलें</translation>
 <translation id="3615073365085224194">उंगली से फ़िंगरप्रिंट सेंसर को छुएं</translation>
-<translation id="3616113530831147358">ऑडियो</translation>
 <translation id="3616741288025931835">ब्राउज़िंग डेटा &amp;साफ़ करें...</translation>
 <translation id="3617891479562106823">बैकग्राउंड उपलब्ध नहीं हैं. बाद में फिर से कोशिश करें.</translation>
 <translation id="3619115746895587757">कैपुचिनो</translation>
@@ -2814,6 +2811,7 @@
 <translation id="5233231016133573565">प्रक्रिया आईडी</translation>
 <translation id="5233638681132016545">नया टैब</translation>
 <translation id="5233736638227740678">&amp;चिपकाएं</translation>
+<translation id="5234764350956374838">खारिज करें</translation>
 <translation id="5235050375939235066">ऐप्लिकेशन अनइंस्टॉल करें?</translation>
 <translation id="5235750401727657667">नया टैब खोलते समय दिखाई देने वाला पेज बदलें</translation>
 <translation id="5238278114306905396">"<ph name="EXTENSION_NAME" />" ऐप्लिकेशन को अपने आप हटा दिया गया था.</translation>
@@ -2853,6 +2851,7 @@
 <translation id="5283677936944177147">ओह!  सिस्टम, डिवाइस का मॉडल या सीरियल नंबर पता नहीं कर सका.</translation>
 <translation id="5284445933715251131">डाउनलोड करना जारी रखें</translation>
 <translation id="5285635972691565180"><ph name="DISPLAY_ID" /> का डिसप्ले</translation>
+<translation id="5286194356314741248">स्‍कैन हो रहा है</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5287425679749926365">आपके खाते</translation>
 <translation id="5288678174502918605">बंद किए गए टैब पु&amp;न: खोलें</translation>
@@ -3484,7 +3483,6 @@
 <translation id="6196854373336333322">एक्सटेंशन "<ph name="EXTENSION_NAME" />" ने आपकी प्रॉक्सी सेटिंग पर नियंत्रण कर लिया है, जिसका अर्थ है कि यह   ऑनलाइन किए जाने वाले काम को बदल सकता है, रोक सकता है या उसे छिप कर सुन सकता है. अगर आप पक्का नहीं हैं कि यह बदलाव क्यों हुआ है, तो संभवत: आप उसे नहीं चाहते हैं.</translation>
 <translation id="6198102561359457428">साइन आउट करें और फिर से साइन इन करें...</translation>
 <translation id="6198252989419008588">पिन बदलें</translation>
-<translation id="6199184144777428084">भाषाएं जोड़ें या सूची का क्रम बदलें</translation>
 <translation id="6201792273624501289">Linux ऐप्लिकेशन</translation>
 <translation id="6202304368170870640">आप अपने डिवाइस में साइन इन करने या उसे अनलॉक करने के लिए अपने पिन का इस्तेमाल कर सकते हैं.</translation>
 <translation id="6206311232642889873">इमेज को कॉपी करें</translation>

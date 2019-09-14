@@ -196,6 +196,8 @@ Chromium haiwezi kufufua mipangilio yako.</translation>
 <translation id="753534427205733210">{0,plural, =1{Chromium itafunguka upya ndani ya dakika 1}other{Chromium itafunguka upya ndani ya dakika #}}</translation>
 <translation id="7549178288319965365">Kuhusu Chromium OS</translation>
 <translation id="7561906087460245826">Futa pia data kwenye Chromium (<ph name="URL" />)</translation>
+<translation id="7585853947355360626">Ikiwa mipangilio haionekani kwenye ukurasa huu, angalia katika.<ph name="LINK_BEGIN" />
+      mipangilio ya mfumo wa uendeshaji wa Chromium<ph name="LINK_END" /></translation>
 <translation id="761356813943268536">Chromium inatumia kamera na maikrofoni yako.</translation>
 <translation id="7617377681829253106">Chromium imeboreshwa</translation>
 <translation id="7686590090926151193">Chromium si kivinjari chako chaguomsingi</translation>
@@ -229,6 +231,8 @@ Chromium haiwezi kufufua mipangilio yako.</translation>
 <translation id="8619360774459241877">Inaanzisha Chromium...</translation>
 <translation id="8621669128220841554">Usakinishaji ulishindwa kwa sababu ya hitilafu isiyobainika. Tafadhali pakua Chromium tena.</translation>
 <translation id="8667808506758191620">Kifaa chako cha <ph name="DEVICE_TYPE" /> kimesasishwa.</translation>
+<translation id="8682540261359803721">Ikiwa mipangilio haionekani katika ukurasa huu, angalia katika <ph name="LINK_BEGIN" />
+      mipangilio ya kivinjari kwenye Chromium<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">Pia inadhibiti ukurasa unaoonyeshwa unapoanzisha Chromium au unapotafuta kutoka Sanduku Kuu.</translation>
 <translation id="8704119203788522458">Hii ni Chromium yako</translation>
 <translation id="8739167630197873875">Utafuta vidakuzi utakapofunga Chromium. Ili uendelee kusawazisha, badilisha mipangilio hii ya <ph name="COOKIE_SETTINGS_LINK" />.</translation>

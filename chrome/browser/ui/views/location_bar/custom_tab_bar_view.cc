@@ -9,6 +9,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -377,10 +378,9 @@ bool CustomTabBarView::ShowPageInfoDialog() {
 
 SkColor CustomTabBarView::GetSecurityChipColor(
     security_state::SecurityLevel security_level) const {
-  OmniboxTint tint = color_utils::IsDark(background_color_)
-                         ? OmniboxTint::DARK
-                         : OmniboxTint::LIGHT;
-  return GetOmniboxSecurityChipColor(tint, security_level);
+  return GetOmniboxSecurityChipColor(
+      &ThemeService::GetThemeProviderForProfile(browser_->profile()),
+      security_level);
 }
 
 gfx::ImageSkia CustomTabBarView::GetLocationIcon(

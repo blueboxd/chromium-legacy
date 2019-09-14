@@ -6,9 +6,6 @@ suite('InternetDetailPage', function() {
   /** @type {InternetDetailPageElement} */
   let internetDetailPage = null;
 
-  /** @type {NetworkingPrivate} */
-  let api_ = null;
-
   /** @type {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
   let mojoApi_ = null;
 
@@ -58,8 +55,7 @@ suite('InternetDetailPage', function() {
       vpnNameTemplate: 'vpnNameTemplate',
     };
 
-    api_ = new chrome.FakeNetworkingPrivate();
-    mojoApi_ = new FakeNetworkConfig(api_);
+    mojoApi_ = new FakeNetworkConfig();
     network_config.MojoInterfaceProviderImpl.getInstance().remote_ = mojoApi_;
 
     // Disable animations so sub-pages open within one event loop.
@@ -73,9 +69,8 @@ suite('InternetDetailPage', function() {
   }
 
   function setNetworksForTest(networks) {
-    api_.resetForTest();
-    api_.addNetworksForTest(networks);
-    api_.onNetworkListChanged.callListeners();
+    mojoApi_.resetForTest();
+    mojoApi_.addNetworksForTest(networks);
   }
 
   function getAllowSharedProxy() {
@@ -92,47 +87,77 @@ suite('InternetDetailPage', function() {
     return button;
   }
 
+  function getManagedProperties(type, name, opt_source) {
+    const result =
+        OncMojo.getDefaultManagedProperties(type, name + '_guid', name);
+    if (opt_source) {
+      result.source = opt_source;
+    }
+    return result;
+  }
+
   setup(function() {
     PolymerTest.clearBody();
     internetDetailPage =
         document.createElement('settings-internet-detail-page');
     assertTrue(!!internetDetailPage);
-    api_.resetForTest();
-    internetDetailPage.networkingPrivate = api_;
+    mojoApi_.resetForTest();
     internetDetailPage.prefs = Object.assign({}, prefs_);
     document.body.appendChild(internetDetailPage);
     return flushAsync();
   });
 
   teardown(function() {
-    internetDetailPage.remove();
-    internetDetailPage = null;
-    settings.resetRouteForTesting();
+    return flushAsync().then(() => {
+      internetDetailPage.close();
+      internetDetailPage.remove();
+      internetDetailPage = null;
+      settings.resetRouteForTesting();
+    });
   });
 
-  suite('DetailsPage', function() {
+  suite('DetailsPageWiFi', function() {
     test('LoadPage', function() {});
 
-    test('WiFi', function() {
-      api_.enableNetworkType('WiFi');
-      setNetworksForTest([{GUID: 'wifi1_guid', Name: 'wifi1', Type: 'WiFi'}]);
+    test('WiFi1', function() {
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, true);
+      setNetworksForTest([
+        OncMojo.getDefaultNetworkState(mojom.NetworkType.kWiFi, 'wifi1'),
+      ]);
+
       internetDetailPage.init('wifi1_guid', 'WiFi', 'wifi1');
       assertEquals('wifi1_guid', internetDetailPage.guid);
       return flushAsync().then(() => {
-        return Promise.all([
-          api_.whenCalled('getManagedProperties'),
-        ]);
+        return mojoApi_.whenCalled('getManagedProperties');
+      });
+    });
+
+    // Sanity test for the suite setup. Makes sure that re-opening the details
+    // page with a different network also succeeds.
+    test('WiFi2', function() {
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, true);
+      setNetworksForTest([
+        OncMojo.getDefaultNetworkState(mojom.NetworkType.kWiFi, 'wifi2'),
+      ]);
+
+      internetDetailPage.init('wifi2_guid', 'WiFi', 'wifi2');
+      assertEquals('wifi2_guid', internetDetailPage.guid);
+      return flushAsync().then(() => {
+        return mojoApi_.whenCalled('getManagedProperties');
       });
     });
 
     test('Proxy Unshared', function() {
-      api_.enableNetworkType('WiFi');
-      setNetworksForTest([{
-        GUID: 'wifi_user_guid',
-        Name: 'wifi_user',
-        Type: 'WiFi',
-        Source: 'User'
-      }]);
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.resetForTest();
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, true);
+      const wifiNetwork =
+          getManagedProperties(mojom.NetworkType.kWiFi, 'wifi_user');
+      wifiNetwork.source = mojom.OncSource.kUser;
+      mojoApi_.setManagedPropertiesForTest(wifiNetwork);
+
       internetDetailPage.init('wifi_user_guid', 'WiFi', 'wifi_user');
       return flushAsync().then(() => {
         const proxySection = internetDetailPage.$$('network-proxy-section');
@@ -144,36 +169,40 @@ suite('InternetDetailPage', function() {
     });
 
     test('Proxy Shared', function() {
-      api_.enableNetworkType('WiFi');
-      setNetworksForTest([{
-        GUID: 'wifi_user_guid',
-        Name: 'wifi_user',
-        Type: 'WiFi',
-        Source: 'Device'
-      }]);
-      internetDetailPage.init('wifi_user_guid', 'WiFi', 'wifi_user');
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.resetForTest();
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, true);
+      const wifiNetwork = getManagedProperties(
+          mojom.NetworkType.kWiFi, 'wifi_device', mojom.OncSource.kDevice);
+      mojoApi_.setManagedPropertiesForTest(wifiNetwork);
+
+      internetDetailPage.init('wifi_device_guid', 'WiFi', 'wifi_device');
       return flushAsync().then(() => {
-        let allowShared = getAllowSharedProxy();
+        const allowShared = getAllowSharedProxy();
         assertFalse(allowShared.hasAttribute('hidden'));
         assertFalse(allowShared.disabled);
       });
     });
 
-    // When proxy settings are managed by a user policy they may respect the
-    // allowd_shared_proxies pref so #allowShared should be visible.
+    // When proxy settings are managed by a user policy but the configuration
+    // is from the shared (device) profile, they still respect the
+    // allowed_shared_proxies pref so #allowShared should be visible.
     // TOD(stevenjb): Improve this: crbug.com/662529.
     test('Proxy Shared User Managed', function() {
-      api_.enableNetworkType('WiFi');
-      setNetworksForTest([{
-        GUID: 'wifi_user_guid',
-        Name: 'wifi_user',
-        Type: 'WiFi',
-        Source: 'Device',
-        ProxySettings: {
-          Type: {Active: 'Manual', Effective: 'UserPolicy', UserEditable: false}
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.resetForTest();
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, true);
+      const wifiNetwork = getManagedProperties(
+          mojom.NetworkType.kWiFi, 'wifi_device', mojom.OncSource.kDevice);
+      wifiNetwork.proxySetings = {
+        type: {
+          activeValue: 'Manual',
+          policySource: mojom.PolicySource.kUserPolicyEnforced
         }
-      }]);
-      internetDetailPage.init('wifi_user_guid', 'WiFi', 'wifi_user');
+      };
+      mojoApi_.setManagedPropertiesForTest(wifiNetwork);
+
+      internetDetailPage.init('wifi_device_guid', 'WiFi', 'wifi_device');
       return flushAsync().then(() => {
         let allowShared = getAllowSharedProxy();
         assertFalse(allowShared.hasAttribute('hidden'));
@@ -184,36 +213,37 @@ suite('InternetDetailPage', function() {
     // When proxy settings are managed by a device policy they may respect the
     // allowd_shared_proxies pref so #allowShared should be visible.
     test('Proxy Shared Device Managed', function() {
-      api_.enableNetworkType('WiFi');
-      setNetworksForTest([{
-        GUID: 'wifi_user_guid',
-        Name: 'wifi_user',
-        Type: 'WiFi',
-        Source: 'Device',
-        ProxySettings: {
-          Type: {
-            Active: 'Manual',
-            Effective: 'DevicePolicy',
-            DeviceEditable: false
-          }
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.resetForTest();
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, true);
+      const wifiNetwork = getManagedProperties(
+          mojom.NetworkType.kWiFi, 'wifi_device', mojom.OncSource.kDevice);
+      wifiNetwork.proxySetings = {
+        type: {
+          activeValue: 'Manual',
+          policySource: mojom.PolicySource.kDevicePolicyEnforced
         }
-      }]);
-      internetDetailPage.init('wifi_user_guid', 'WiFi', 'wifi_user');
+      };
+      mojoApi_.setManagedPropertiesForTest(wifiNetwork);
+
+      internetDetailPage.init('wifi_device_guid', 'WiFi', 'wifi_device');
       return flushAsync().then(() => {
         let allowShared = getAllowSharedProxy();
         assertFalse(allowShared.hasAttribute('hidden'));
         assertFalse(allowShared.disabled);
       });
     });
+  });
 
+  suite('DetailsPageVPN', function() {
     test('VPN config allowed', function() {
-      api_.enableNetworkType('VPN');
-      setNetworksForTest([{
-        GUID: 'vpn_guid',
-        Name: 'vpn_user',
-        Type: 'VPN',
-      }]);
-      internetDetailPage.init('vpn_guid', 'VPN', 'vpn_user');
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kVPN, true);
+      setNetworksForTest([
+        OncMojo.getDefaultNetworkState(mojom.NetworkType.kVPN, 'vpn1'),
+      ]);
+
+      internetDetailPage.init('vpn1_guid', 'VPN', 'vpn1');
       prefs_.vpn_config_allowed.value = true;
       internetDetailPage.prefs = Object.assign({}, prefs_);
       return flushAsync().then(() => {
@@ -224,13 +254,13 @@ suite('InternetDetailPage', function() {
     });
 
     test('VPN config disallowed', function() {
-      api_.enableNetworkType('VPN');
-      setNetworksForTest([{
-        GUID: 'vpn_guid',
-        Name: 'vpn_user',
-        Type: 'VPN',
-      }]);
-      internetDetailPage.init('vpn_guid', 'VPN', 'vpn_user');
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kVPN, true);
+      setNetworksForTest([
+        OncMojo.getDefaultNetworkState(mojom.NetworkType.kVPN, 'vpn1'),
+      ]);
+
+      internetDetailPage.init('vpn1_guid', 'VPN', 'vpn1');
       prefs_.vpn_config_allowed.value = false;
       internetDetailPage.prefs = Object.assign({}, prefs_);
       return flushAsync().then(() => {
@@ -239,56 +269,75 @@ suite('InternetDetailPage', function() {
         assertTrue(!!disconnectButton.$$('cr-policy-pref-indicator'));
       });
     });
+  });
 
-    test('Connect button disabled on cellular scan', function() {
-      api_.enableNetworkType('Cellular');
-      setNetworksForTest([{
-        GUID: 'cell_guid',
-        Name: 'cell_user',
-        Type: 'Cellular',
-        ConnectionState: 'NotConnected',
-        Cellular: {SIMLockStatus: {LockType: 'sim-pin'}}
-      }]);
-      internetDetailPage.init('cell_guid', 'Cellular', 'cell_user');
+  suite('DetailsPageCellular', function() {
+    test('Connect button disabled when not connectable', function() {
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kCellular, true);
+      const cellularNetwork =
+          getManagedProperties(mojom.NetworkType.kCellular, 'cellular');
+      cellularNetwork.connectable = false;
+      mojoApi_.setManagedPropertiesForTest(cellularNetwork);
+
+      internetDetailPage.init('cellular_guid', 'Cellular', 'cellular');
       return flushAsync().then(() => {
         const connectButton = getButton('connect');
+        assertFalse(connectButton.hasAttribute('hidden'));
         assertTrue(connectButton.hasAttribute('disabled'));
       });
     });
 
-    test.only(
-        'Auto Connect toggle updates properly after GUID change', function() {
-          api_.enableNetworkType('WiFi');
-          setNetworksForTest([
-            {
-              GUID: 'wifi1_guid',
-              Name: 'wifi1',
-              Source: CrOnc.Source.USER,
-              Type: 'WiFi',
-              WiFi: {AutoConnect: true, Security: 'None', SSID: 'wifi1'}
-            },
-            {
-              GUID: 'wifi2_guid',
-              Name: 'wifi1',
-              Source: CrOnc.Source.USER,
-              Type: 'WiFi',
-              WiFi: {AutoConnect: false, Security: 'None', SSID: 'wifi2'}
-            }
-          ]);
-          internetDetailPage.init('wifi1_guid', 'WiFi', 'wifi_user');
-          return flushAsync()
-              .then(() => {
-                const toggle = internetDetailPage.$$('#autoConnectToggle');
-                assertTrue(!!toggle);
-                assertTrue(toggle.checked);
-                internetDetailPage.init('wifi2_guid', 'WiFi', 'wifi_user');
-                return flushAsync();
-              })
-              .then(() => {
-                const toggle = internetDetailPage.$$('#autoConnectToggle');
-                assertTrue(!!toggle);
-                assertFalse(toggle.checked);
-              });
-        });
+    test('Cellular Scanning', function() {
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kCellular, true);
+      const cellularNetwork =
+          getManagedProperties(mojom.NetworkType.kCellular, 'cellular');
+      mojoApi_.setManagedPropertiesForTest(cellularNetwork);
+
+      mojoApi_.setDeviceStateForTest({
+        type: mojom.NetworkType.kCellular,
+        deviceState: chromeos.networkConfig.mojom.DeviceStateType.kEnabled,
+        scanning: true,
+      });
+
+      internetDetailPage.init('cellular_guid', 'Cellular', 'cellular');
+      return flushAsync().then(() => {
+        const spinner = internetDetailPage.$$('paper-spinner-lite');
+        assertTrue(!!spinner);
+        assertFalse(spinner.hasAttribute('hidden'));
+      });
+    });
+  });
+
+  suite('DetailsPageAutoConnect', function() {
+    test.only('Auto Connect toggle updates after GUID change', function() {
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, true);
+      const wifi1 = getManagedProperties(
+          mojom.NetworkType.kWiFi, 'wifi1', mojom.OncSource.kDevice);
+      wifi1.wifi.autoConnect = OncMojo.createManagedBool(true);
+      mojoApi_.setManagedPropertiesForTest(wifi1);
+
+      const wifi2 = getManagedProperties(
+          mojom.NetworkType.kWiFi, 'wifi2', mojom.OncSource.kDevice);
+      wifi2.wifi.autoConnect = OncMojo.createManagedBool(false);
+      mojoApi_.setManagedPropertiesForTest(wifi2);
+
+      internetDetailPage.init('wifi1_guid', 'WiFi', 'wifi1');
+      return flushAsync()
+          .then(() => {
+            const toggle = internetDetailPage.$$('#autoConnectToggle');
+            assertTrue(!!toggle);
+            assertTrue(toggle.checked);
+            internetDetailPage.init('wifi2_guid', 'WiFi', 'wifi2');
+            return flushAsync();
+          })
+          .then(() => {
+            const toggle = internetDetailPage.$$('#autoConnectToggle');
+            assertTrue(!!toggle);
+            assertFalse(toggle.checked);
+          });
+    });
   });
 });

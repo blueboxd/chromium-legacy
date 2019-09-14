@@ -8,14 +8,17 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{Dak 1}other{Dak #}}</translation>
 <translation id="1181037720776840403">Ondoa</translation>
 <translation id="1243314992276662751">Pakia</translation>
+<translation id="1266864766717917324">Imeshindwa kushiriki <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1290982764014248209">Hamishia <ph name="DRAGGED_APP" /> kwenye folda ya <ph name="FOLDER_NAME" />.</translation>
+<translation id="1291104554099683393">Jaribu kushiriki maandishi katika sehemu ndogo ndogo.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">PROGRAMU ZINAZOPENDEKEZWA</translation>
 <translation id="1368832886055348810">Kushoto hadi Kulia</translation>
 <translation id="1383876407941801731">Tafuta</translation>
 <translation id="1398853756734560583">Tanua</translation>
 <translation id="1409544243779336081">Pendekezo la programu</translation>
+<translation id="1450753235335490080">Imeshindwa kushiriki <ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">Ulitafuta hoja hii awali. Ukifuta "<ph name="QUERY" />" kwenye historia ya utafutaji, itaondolewa kabisa kwenye akaunti yako katika vifaa vyako vyote.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{Dakika 1 na }other{Dakika # na }}</translation>
 <translation id="1643823602425662293">Arifa</translation>
@@ -35,6 +38,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Chagua &amp;yote</translation>
 <translation id="1938451708255335766">Ili ubadilishe uzito wa onyesho la dirisha, zima kisha uwashe programu hii.</translation>
+<translation id="2006524834898217237">Hakikisha kwamba kifaa hiki kimeunganishwa kwenye intaneti.</translation>
 <translation id="208586643495776849">Tafadhali jaribu tena</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{Siku 1}other{Siku #}}</translation>
 <translation id="2148716181193084225">Leo</translation>
@@ -76,6 +80,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{Siku 1}other{Siku #}}</translation>
 <translation id="3295886253693811851">Piga simu ukitumia</translation>
 <translation id="335581015389089642">Usemi</translation>
+<translation id="3389286852084373014">Maandishi ni makubwa mno</translation>
 <translation id="3443810440409579745">Umepokea kichupo.</translation>
 <translation id="3479552764303398839">Si sasa</translation>
 <translation id="348799646910989694">Rafu itajificha kiotomatiki</translation>
@@ -151,11 +156,13 @@
 <translation id="6404817160109697034">{SECONDS,plural, =1{Sekunde 1 iliyopita}other{Sekunde # zilizopita}}</translation>
 <translation id="6430678249303439055">Zuia arifa zote kutoka programu hii</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Sekunde 1 iliyopita}other{Sekunde # zilizopita}}</translation>
+<translation id="6539092367496845964">Hitilafu fulani imetokea. Jaribu tena baadaye.</translation>
 <translation id="654149438358937226">Zuia arifa zote</translation>
 <translation id="6567071839949112727">bofya kipengee</translation>
 <translation id="6578407462441924264">Isiyo na jina</translation>
 <translation id="6612467943526193239">Ili kuacha kupima, bonyeza Esc.</translation>
 <translation id="6620110761915583480">Hifadhi Faili</translation>
+<translation id="6656912866303152668">Hakikisha kwamba umewasha kipengele cha usawazishaji katika <ph name="TARGET_DEVICE_NAME" /> kwenye Chrome kisha ujaribu kutuma tena.</translation>
 <translation id="6699343763173986273">Wimbo Unaofuata kwenye Media</translation>
 <translation id="673773751041746814">Ufutaji</translation>
 <translation id="6779314412797872738">Ili utume nambari kutoka hapa hadi kwenye simu yako ya Android, <ph name="TROUBLESHOOT_LINK" /> kwenye vifaa vyote viwili katika mipangilio.</translation>
@@ -221,6 +228,7 @@
 <translation id="8876215549894133151">Fomati:</translation>
 <translation id="8901569739625249689">KB <ph name="QUANTITY" /></translation>
 <translation id="8926951137623668982">Rafu inafichwa kila wakati</translation>
+<translation id="8996630695507351249">Hakikisha kwamba <ph name="TARGET_DEVICE_NAME" /> imeunganishwa kwenye intaneti.</translation>
 <translation id="9002566407876343676">fungua</translation>
 <translation id="9039076430527029379">Nenda kwenye Ukurasa wa <ph name="PAGE_NUMBER" />, safu mlalo ya <ph name="ROW_NUMBER" />, safu wima ya <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{Sekunde 1}other{Sekunde #}}</translation>

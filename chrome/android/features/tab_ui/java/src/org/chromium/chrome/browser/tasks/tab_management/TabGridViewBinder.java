@@ -134,14 +134,16 @@ class TabGridViewBinder {
 
     private static void bindClosableTabProperties(
             PropertyModel model, ViewLookupCachingFrameLayout view, PropertyKey propertyKey) {
-        int tabId = model.get(TabProperties.TAB_ID);
         if (TabProperties.TAB_CLOSED_LISTENER == propertyKey) {
             view.fastFindViewById(R.id.action_button).setOnClickListener(v -> {
+                int tabId = model.get(TabProperties.TAB_ID);
                 model.get(TabProperties.TAB_CLOSED_LISTENER).run(tabId);
             });
         } else if (TabProperties.TAB_SELECTED_LISTENER == propertyKey) {
-            view.setOnClickListener(
-                    v -> { model.get(TabProperties.TAB_SELECTED_LISTENER).run(tabId); });
+            view.setOnClickListener(v -> {
+                int tabId = model.get(TabProperties.TAB_ID);
+                model.get(TabProperties.TAB_SELECTED_LISTENER).run(tabId);
+            });
         } else if (TabProperties.CREATE_GROUP_LISTENER == propertyKey) {
             TabListMediator.TabActionListener listener =
                     model.get(TabProperties.CREATE_GROUP_LISTENER);
@@ -149,10 +151,14 @@ class TabGridViewBinder {
                     (ButtonCompat) view.fastFindViewById(R.id.create_group_button);
             if (listener == null) {
                 createGroupButton.setVisibility(View.GONE);
+                createGroupButton.setOnClickListener(null);
                 return;
             }
             createGroupButton.setVisibility(View.VISIBLE);
-            createGroupButton.setOnClickListener(v -> listener.run(tabId));
+            createGroupButton.setOnClickListener(v -> {
+                int tabId = model.get(TabProperties.TAB_ID);
+                listener.run(tabId);
+            });
         } else if (TabProperties.ALPHA == propertyKey) {
             view.setAlpha(model.get(TabProperties.ALPHA));
         } else if (TabProperties.TITLE == propertyKey) {

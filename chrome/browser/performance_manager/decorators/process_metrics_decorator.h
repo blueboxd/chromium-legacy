@@ -12,14 +12,10 @@
 
 namespace performance_manager {
 
-class ProcessNode;
-
 // The ProcessMetricsDecorator is responsible for adorning process nodes with
 // performance metrics.
 class ProcessMetricsDecorator : public GraphOwned {
  public:
-  class Data;
-
   ProcessMetricsDecorator();
   ~ProcessMetricsDecorator() override;
 
@@ -62,18 +58,6 @@ class ProcessMetricsDecorator : public GraphOwned {
 
   base::WeakPtrFactory<ProcessMetricsDecorator> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(ProcessMetricsDecorator);
-};
-
-class ProcessMetricsDecorator::Data {
- public:
-  // This is roughly private, anonymous, non-discardable, resident or swapped
-  // memory in kilobytes. For more details, see https://goo.gl/3kPb9S.
-  uint32_t private_footprint_kb_ = 0;
-
-  // The resident set of this process.
-  uint32_t resident_set_kb_ = 0;
-
-  static Data* GetForTesting(ProcessNode* process_node);
 };
 
 }  // namespace performance_manager

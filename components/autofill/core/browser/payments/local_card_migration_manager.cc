@@ -5,8 +5,8 @@
 #include "components/autofill/core/browser/payments/local_card_migration_manager.h"
 
 #include <stddef.h>
-
 #include <algorithm>
+#include <unordered_map>
 #include <vector>
 
 #include "base/bind.h"
@@ -228,9 +228,19 @@ void LocalCardMigrationManager::OnDidGetUploadDetails(
     observer_for_testing_->OnReceivedGetUploadDetailsResponse();
 
   if (result == AutofillClient::SUCCESS) {
+    LegalMessageLine::Parse(*legal_message, &legal_message_lines_,
+                            /*escape_apostrophes=*/true);
+
+    if (legal_message_lines_.empty()) {
+      AutofillMetrics::LogLocalCardMigrationDecisionMetric(
+          AutofillMetrics::LocalCardMigrationDecisionMetric::
+              NOT_OFFERED_INVALID_LEGAL_MESSAGE);
+      return;
+    }
+
     migration_request_.context_token = context_token;
-    legal_message_ = base::DictionaryValue::From(std::move(legal_message));
     migration_request_.risk_data.clear();
+
     // If we successfully received the legal docs, trigger the offer-to-migrate
     // dialog. If triggered from settings page, we pop-up the main prompt
     // directly. If not, we pop up the intermediate bubble.
@@ -274,6 +284,7 @@ void LocalCardMigrationManager::OnDidGetUploadDetails(
           local_card_migration_origin_,
           AutofillMetrics::INTERMEDIATE_BUBBLE_SHOWN);
     }
+
     // TODO(crbug.com/876895): Clean up the LoadRiskData Bind/BindRepeating
     // usages
     client_->LoadRiskData(base::BindRepeating(
@@ -394,7 +405,7 @@ void LocalCardMigrationManager::ShowMainMigrationDialog() {
       local_card_migration_origin_, AutofillMetrics::MAIN_DIALOG_SHOWN);
   // Pops up a larger, modal dialog showing the local cards to be uploaded.
   client_->ConfirmMigrateLocalCardToCloud(
-      std::move(legal_message_),
+      legal_message_lines_,
       personal_data_manager_->GetAccountInfoForPaymentsServer().email,
       migratable_credit_cards_,
       base::BindOnce(

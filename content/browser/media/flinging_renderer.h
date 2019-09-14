@@ -64,13 +64,19 @@ class CONTENT_EXPORT FlingingRenderer : public media::Renderer,
       std::unique_ptr<media::FlingingController> controller,
       ClientExtensionPtr client_extension);
 
-  void SetTargetPlayState(PlayState state);
+  void SetExpectedPlayState(PlayState state);
 
-  // The state that we expect the remotely playing video to transition into.
-  // This is used to differentiate between state changes that originated from
-  // this device versus external devices.
-  PlayState target_play_state_ = PlayState::UNKNOWN;
-  bool reached_target_play_state_ = false;
+  // The play state that we expect the remote device to reach.
+  // Updated whenever WMPI sends play/pause commands.
+  PlayState expected_play_state_ = PlayState::UNKNOWN;
+
+  // True when the remote device has reached the expected play state.
+  // False when it is transitioning.
+  bool play_state_is_stable_ = false;
+
+  // The last "stable" play state received from the cast device.
+  // Only updated when |play_state_is_stable_| is true.
+  PlayState last_play_state_received_ = PlayState::UNKNOWN;
 
   media::RendererClient* client_;
 

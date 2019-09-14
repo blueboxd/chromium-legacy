@@ -97,9 +97,6 @@
 <translation id="138218114945450791">આછો વાદળી</translation>
 <translation id="1382194467192730611">USB ડિવાઇસને તમારા વ્યવસ્થાપક દ્વારા મંજૂરી આપવામાં આવેલી છે</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> એ કોઈપણ ડેટા મોકલ્યો ન હતો.</translation>
-<translation id="140316286225361634">આ સાઇટ <ph name="ORIGIN" /> દ્વારા વિનંતી કરવામાં આવી છે કે સુરક્ષા પૉલિસી તેની બધી
-    વિનંતી પર લાગુ થશે અને આ પૉલિસી હાલમાં આ સાઇટને અસુરક્ષિત
-    માને છે.</translation>
 <translation id="1405567553485452995">આછો લીલો</translation>
 <translation id="1407135791313364759">બધું ખોલો</translation>
 <translation id="1413809658975081374">ગોપનીયતા ભૂલ</translation>
@@ -135,6 +132,7 @@
 <translation id="1569487616857761740">સમાપ્તિ તારીખ દાખલ કરો</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">આ વેબપેજ બતાવતી વખતે કંઈક ખોટું થયું.</translation>
+<translation id="1588438908519853928">સામાન્ય</translation>
 <translation id="1592005682883173041">સ્થાનિક ડેટા ઍક્સેસ</translation>
 <translation id="1594030484168838125">પસંદ કરો</translation>
 <translation id="161042844686301425">સ્યાન</translation>
@@ -212,10 +210,6 @@
 <translation id="1981206234434200693">Chromeના બ્રાઉઝિંગ ઇતિહાસનો ડેટા સાફ કરો</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{અને 1 વધુ}one{અને # વધુ}other{અને # વધુ}}</translation>
 <translation id="2003709556000175978">તમારો પાસવર્ડ હમણાં જ રીસેટ કરો</translation>
-<translation id="20053308747750172">તમે જેના પર જવાનો પ્રયાસ કરી રહ્યાં છો, તે<ph name="ORIGIN" /> સર્વર દ્વારા વિનંતી
-    કરવામાં આવી છે કે સુરક્ષા પૉલિસી તેના પરની બધી વિનંતીઓ પર લાગુ થશે. પણ તેણે હમણાં
-    અમાન્ય પૉલિસી વિતરિત કરી છે, જે બ્રાઉઝરને તમારી
-    <ph name="SITE" /> માટેની વિનંતી પૂરી કરવાથી અટકાવે છે.</translation>
 <translation id="2025186561304664664">પ્રૉક્સીને ઑટો ગોઠવણી મોડ પર સેટ કરાઈ છે.</translation>
 <translation id="202813660234680402">ના, ઉમેરશો નહીં</translation>
 <translation id="2030481566774242610">શું તમારો અર્થ <ph name="LINK" /> છે?</translation>
@@ -293,10 +287,6 @@
 <translation id="2409589295040002961">તમારા વ્યવસ્થાપક તમારા બ્રાઉઝરનું સેટઅપ રિમોટલી બદલી શકે છે. આ ડિવાઇસ પરની પ્રવૃત્તિ Chromeની બહારથી પણ મેનેજ કરી શકાય છે. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">સરકારી-કાનૂની</translation>
 <translation id="2413528052993050574">આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેનું સુરક્ષા પ્રમાણપત્ર રદબાતલ થયું હશે. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે.</translation>
-<translation id="2418081434543109369">તમે જેના પર જવાનો પ્રયાસ કરી રહ્યાં છો, તે<ph name="ORIGIN" /> સર્વર દ્વારા વિનંતી
-    કરવામાં આવી છે કે સુરક્ષા પૉલિસી તેના પરની બધી વિનંતીઓ પર લાગુ થશે. પણ તે હમણાં
-    પૉલિસી વિતરિત કરવામાં નિષ્ફળ થયું, જે બ્રાઉઝરને તમારી
-   <ph name="SITE" /> માટેની વિનંતી પૂરી કરવાથી અટકાવે છે.</translation>
 <translation id="2463193859425327265">હોમ પેજ બદલો</translation>
 <translation id="2463739503403862330">ભરો</translation>
 <translation id="2465402087343596252">સ્થાપત્ય-E</translation>
@@ -589,6 +579,7 @@
 <translation id="4103249731201008433">ઉપકરણ અનુક્ર્માંક નંબર અમાન્ય છે</translation>
 <translation id="410351446219883937">ઑટોપ્લે</translation>
 <translation id="4103763322291513355">બ્લેકલિસ્ટ કરેલા URL ની સૂચિ અને તમારા સિસ્ટમ વ્યવસ્થાપક દ્વારા લાગુ અન્ય નીતિઓ જોવા માટે &lt;strong&gt;chrome://policy&lt;/strong&gt; ની મુલાકાત લો.</translation>
+<translation id="4108231218301530806">આગલી વખતે આ કાર્ડની ચકાસણી કરવા માટે ફિંગરપ્રિન્ટનો ઉપયોગ કરો.</translation>
 <translation id="4110652170750985508">તમારી ચુકવણીને રિવ્યૂ કરો</translation>
 <translation id="4112140312785995938">પાછળ કરો</translation>
 <translation id="4116663294526079822">હંમેશા આ સાઇટ પર મંજૂરી આપો</translation>
@@ -791,6 +782,7 @@
 <translation id="5141240743006678641">તમારા Google લૉગ ઇન વિગત સાથે સિંક પાસવર્ડને એન્ક્રિપ્ટ કરો</translation>
 <translation id="5145883236150621069">નીતિ પ્રતિક્રિયામાં ભૂલ કોડ હાજર</translation>
 <translation id="515292512908731282">C4 (એન્વલપ)</translation>
+<translation id="5158275234811857234">કવર</translation>
 <translation id="5159010409087891077">એક નવી છુપી વિંડોમાં પેજ ખોલો (⇧⌘N)</translation>
 <translation id="516920405563544094"><ph name="CREDIT_CARD" /> માટે CVC દાખલ કરો. તમે ખાતરી કરી લો, પછી આ સાઇટ સાથે તમારા Google એકાઉન્ટમાંથી કાર્ડની વિગતો શેર કરવામાં આવશે.</translation>
 <translation id="5169827969064885044">તમે તમારી સંસ્થાના એકાઉન્ટ માટે ઍક્સેસ ગુમાવી શકો છો અથવા તમને ઓળખ ચોરીનો અનુભવ થઈ શકે છે. Chrome તમને હમણાં જ તમારો પાસવર્ડ બદલવાની ભલામણ કરે છે.</translation>
@@ -950,6 +942,7 @@
 <translation id="598637245381783098">ચુકવણી ઍપ્લિકેશન ખોલી શકાતી નથી</translation>
 <translation id="5989320800837274978">ફિક્સ્ડ પ્રૉક્સી સર્વર કે .pac સ્ક્રિપ્ટ URL, બેમાંથી કોઈનો પણ ઉલ્લેખ કરેલો નથી.</translation>
 <translation id="5990559369517809815">સર્વર પરની વિનંતિઓને એક્સ્ટેંશન દ્વારા અવરોધિત કરવામાં આવી છે.</translation>
+<translation id="6000758707621254961">'<ph name="SEARCH_TEXT" />' માટે <ph name="RESULT_COUNT" /> પરિણામ</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">વર્ષ</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{પૃષ્ઠ 1}one{પૃષ્ઠ #}other{પૃષ્ઠ #}}</translation>
@@ -1008,6 +1001,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{એકપણ નહીં}=1{1 પાસવર્ડ (<ph name="DOMAIN_LIST" /> માટે, સિંક કરેલા)}=2{2 પાસવર્ડ (<ph name="DOMAIN_LIST" /> માટે, સિંક કરેલા)}one{# પાસવર્ડ (<ph name="DOMAIN_LIST" /> માટે, સિંક કરેલા)}other{# પાસવર્ડ (<ph name="DOMAIN_LIST" /> માટે, સિંક કરેલા)}}</translation>
 <translation id="6358450015545214790">આનો અર્થ શું છે?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6377268785556383139">'<ph name="SEARCH_TEXT" />' માટે 1 પરિણામ</translation>
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">આગળ ઉપર શુલ્ક લાગવાની શક્યતા.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 અન્ય સૂચન}one{# અન્ય સૂચન}other{# અન્ય સૂચન}}</translation>
@@ -1142,10 +1136,6 @@
 <translation id="717330890047184534">Gaia ID:</translation>
 <translation id="7174545416324379297">મર્જ કર્યાં</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> વધુ}one{<ph name="SHIPPING_OPTION_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> વધુ}other{<ph name="SHIPPING_OPTION_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> વધુ}}</translation>
-<translation id="7177397715882417099">તમે જેના પર જવાનો પ્રયાસ કરી રહ્યાં છો, તે<ph name="ORIGIN" /> સર્વર દ્વારા વિનંતી
-    કરવામાં આવી છે કે સુરક્ષા પૉલિસી તેના પરની બધી વિનંતીઓ પર લાગુ થશે. પણ પૉલિસી વિતરિત
-    કરવાને બદલે તેણે બ્રાઉઝરને અન્ય ક્યાંક રીડાયરેક્ટ કર્યુ, જે બ્રાઉઝરને માટેની
-    <ph name="SITE" /> તમારી વિનંતી પૂરી કરવાથી અટકાવે છે.</translation>
 <translation id="7179323680825933600">ચુકવણી પદ્ધતિઓ સાચવો અને ભરો</translation>
 <translation id="7180611975245234373">રિફ્રેશ કરો</translation>
 <translation id="7182878459783632708">કોઈ નીતિઓ  સેટ નથી</translation>
@@ -1172,6 +1162,7 @@
 <translation id="7300012071106347854">ઘેરો વાદળી</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
 <translation id="7303701124147721189">આગલી વખતે વધુ ઝડપથી ચુકવણી કરવા માટે, તમારા કાર્ડ અને બિલિંગ સરનામાને તમારા Google એકાઉન્ટ અને આ ડિવાઇસ પર સ્ટોર કરો.</translation>
+<translation id="7304030187361489308">વધુ ઝડપે</translation>
 <translation id="7309308571273880165">ક્રૅશ રિપોર્ટ <ph name="CRASH_TIME" /> એ કૅપ્ચર કરવામાં આવી (વપરાશકર્તા દ્વારા અપલોડની વિનંતી કરવામાં આવી, હજી સુધી અપલોડ કરેલું નથી)</translation>
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />Safe Browsing<ph name="END_LINK" />ની ચેતવણીઓ</translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1533,7 +1524,6 @@
 <translation id="939736085109172342">નવું ફોલ્ડર</translation>
 <translation id="945855313015696284">નીચેની માહિતી જુઓ અને કોઈપણ અમાન્ય કાર્ડ ડિલીટ કરો</translation>
 <translation id="951104842009476243">સ્વીકૃત ડેબિટ અને પ્રિપેઇડ કાર્ડ</translation>
-<translation id="958202389743790697"><ph name="ORIGIN" />ની સુરક્ષા પૉલિસી અનુસાર બ્લૉક કરેલી છે.</translation>
 <translation id="962484866189421427">આ કન્ટેન્ટ કદાચ ભ્રામક ઍપ ઇન્સ્ટૉલ કરવાનો પ્રયાસ કરે છે કે જે પોતાની ખોટી ઓળખ આપે છે અથવા તમને ટ્રૅક કરવા માટે ઉપયોગમાં લઈ શકાય તેવો ડેટા મેળવે છે. <ph name="BEGIN_LINK" />તો પણ બતાવો<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">આધિકારિક બિલ્ડ</translation>
 <translation id="973773823069644502">વિતરણ માટેનું સરનામું ઉમેરો</translation>

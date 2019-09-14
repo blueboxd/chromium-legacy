@@ -682,11 +682,16 @@ bool PrintViewManagerBase::OpportunisticallyCreatePrintJob(int cookie) {
   return true;
 }
 
+bool PrintViewManagerBase::IsInterstitialOrCrashed() {
+  return web_contents()->ShowingInterstitialPage() ||
+         web_contents()->IsCrashed();
+}
+
 bool PrintViewManagerBase::PrintNowInternal(
     content::RenderFrameHost* rfh,
     std::unique_ptr<IPC::Message> message) {
   // Don't print / print preview interstitials or crashed tabs.
-  if (web_contents()->ShowingInterstitialPage() || web_contents()->IsCrashed())
+  if (IsInterstitialOrCrashed())
     return false;
   return rfh->Send(message.release());
 }

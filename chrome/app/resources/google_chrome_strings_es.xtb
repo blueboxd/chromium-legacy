@@ -47,6 +47,8 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="1873233029667955273">Google Chrome no es tu navegador predeterminado</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome no está actualizado</translation>
+<translation id="1900795423379050516">Si no se muestra algún ajuste en esta página, consulta la <ph name="LINK_BEGIN" />
+      configuración del navegador Chrome<ph name="LINK_END" /></translation>
 <translation id="1915828456209461693">Hay una nueva actualización de Chrome disponible que se aplicará cuando reinicies el dispositivo.</translation>
 <translation id="1919130412786645364">Permitir el inicio de sesión en Chrome</translation>
 <translation id="2063848847527508675">Chrome OS se debe reiniciar para que se aplique la actualización.</translation>
@@ -164,6 +166,8 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="5543953544073077331">Hay otras instancias de Chrome en uso. Ciérralas para poder actualizar.</translation>
 <translation id="556024056938947818">Google Chrome está intentando mostrar contraseñas.</translation>
 <translation id="5566025111015594046">Google Chrome (tráfico mDNS entrante)</translation>
+<translation id="5657226924540934362">Si no se muestra algún ajuste en esta página, consulta la <ph name="LINK_BEGIN" />
+      configuración de Chrome OS<ph name="LINK_END" /></translation>
 <translation id="565744775970812598">Es posible que <ph name="FILE_NAME" /> sea peligroso, por lo que Chrome lo ha bloqueado.</translation>
 <translation id="5686916850681061684">Personaliza y controla Google Chrome. Se requiere tu intervención. Haz clic aquí para obtener más información.</translation>
 <translation id="5690427481109656848">Google LLC</translation>

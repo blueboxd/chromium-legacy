@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -390,6 +391,7 @@ Microsoft::WRL::ComPtr<ISensor> PlatformSensorReaderWin32::GetSensorForType(
   Microsoft::WRL::ComPtr<ISensorCollection> sensor_collection;
   HRESULT hr = sensor_manager->GetSensorsByType(
       sensor_type, sensor_collection.GetAddressOf());
+  base::UmaHistogramSparse("Sensors.Windows.ISensor.Activation.Result", hr);
   if (FAILED(hr) || !sensor_collection)
     return sensor;
 
@@ -423,7 +425,8 @@ void PlatformSensorReaderWin32::SetClient(Client* client) {
 void PlatformSensorReaderWin32::StopSensor() {
   base::AutoLock autolock(lock_);
   if (sensor_active_) {
-    sensor_->SetEventSink(nullptr);
+    HRESULT hr = sensor_->SetEventSink(nullptr);
+    base::UmaHistogramSparse("Sensors.Windows.ISensor.Stop.Result", hr);
     sensor_active_ = false;
   }
 }
@@ -451,7 +454,9 @@ bool PlatformSensorReaderWin32::StartSensor(
 
 void PlatformSensorReaderWin32::ListenSensorEvent() {
   // Set event listener.
-  if (FAILED(sensor_->SetEventSink(event_listener_.get()))) {
+  HRESULT hr = sensor_->SetEventSink(event_listener_.get());
+  base::UmaHistogramSparse("Sensors.Windows.ISensor.Start.Result", hr);
+  if (FAILED(hr)) {
     SensorError();
     StopSensor();
   }

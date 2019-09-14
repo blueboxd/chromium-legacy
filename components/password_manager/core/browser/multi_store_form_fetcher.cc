@@ -3,78 +3,89 @@
 // found in the LICENSE file.
 
 #include "components/password_manager/core/browser/multi_store_form_fetcher.h"
+
 #include "base/logging.h"
+#include "build/build_config.h"
+#include "components/autofill/core/common/save_password_progress_logger.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/statistics_table.h"
 
 using autofill::PasswordForm;
 
+using Logger = autofill::SavePasswordProgressLogger;
+
 namespace password_manager {
 
-MutliStoreFormFetcher::MutliStoreFormFetcher() = default;
+MultiStoreFormFetcher::MultiStoreFormFetcher(
+    PasswordStore::FormDigest form_digest,
+    const PasswordManagerClient* client,
+    bool should_migrate_http_passwords)
+    : FormFetcherImpl(form_digest, client, should_migrate_http_passwords) {}
 
-MutliStoreFormFetcher::~MutliStoreFormFetcher() = default;
+MultiStoreFormFetcher::~MultiStoreFormFetcher() = default;
 
-void MutliStoreFormFetcher::AddConsumer(FormFetcher::Consumer* consumer) {
-  NOTIMPLEMENTED();
+void MultiStoreFormFetcher::Fetch() {
+  if (password_manager_util::IsLoggingActive(client_)) {
+    BrowserSavePasswordProgressLogger logger(client_->GetLogManager());
+    logger.LogMessage(Logger::STRING_FETCH_METHOD);
+    logger.LogNumber(Logger::STRING_FORM_FETCHER_STATE,
+                     static_cast<int>(state_));
+  }
+  if (state_ == State::WAITING) {
+    // There is currently a password store query in progress, need to re-fetch
+    // store results later.
+    need_to_refetch_ = true;
+    return;
+  }
+  // Issue a fetch from the profile password store using the base class
+  // FormFetcherImpl.
+  FormFetcherImpl::Fetch();
+  if (state_ == State::WAITING) {
+    // Fetching from the profile password store is in progress.
+    wait_counter_++;
+  }
+
+  // Issue a fetch from the account password store if available.
+  PasswordStore* account_password_store = client_->GetAccountPasswordStore();
+  if (account_password_store) {
+    account_password_store->GetLogins(form_digest_, this);
+    state_ = State::WAITING;
+    wait_counter_++;
+  }
 }
 
-void MutliStoreFormFetcher::RemoveConsumer(FormFetcher::Consumer* consumer) {
-  NOTIMPLEMENTED();
-}
+void MultiStoreFormFetcher::OnGetPasswordStoreResults(
+    std::vector<std::unique_ptr<PasswordForm>> results) {
+  DCHECK_EQ(State::WAITING, state_);
+  DCHECK_GT(wait_counter_, 0);
 
-FormFetcher::State MutliStoreFormFetcher::GetState() const {
-  NOTIMPLEMENTED();
-  return FormFetcher::State::WAITING;
-}
+  // Store the results.
+  for (auto& form : results)
+    partial_results_.push_back(std::move(form));
 
-const std::vector<InteractionsStats>&
-MutliStoreFormFetcher::GetInteractionsStats() const {
-  NOTIMPLEMENTED();
-  return interactions_stats_;
-}
+  // If we're still awaiting more results, nothing else to do.
+  if (--wait_counter_ > 0)
+    return;
 
-std::vector<const PasswordForm*> MutliStoreFormFetcher::GetNonFederatedMatches()
-    const {
-  NOTIMPLEMENTED();
-  return std::vector<const PasswordForm*>();
-}
+  if (need_to_refetch_) {
+    // The received results are no longer up to date, need to re-request.
+    state_ = State::NOT_WAITING;
+    partial_results_.clear();
+    Fetch();
+    need_to_refetch_ = false;
+    return;
+  }
 
-std::vector<const PasswordForm*> MutliStoreFormFetcher::GetFederatedMatches()
-    const {
-  NOTIMPLEMENTED();
-  return std::vector<const PasswordForm*>();
-}
+  if (password_manager_util::IsLoggingActive(client_)) {
+    BrowserSavePasswordProgressLogger(client_->GetLogManager())
+        .LogNumber(Logger::STRING_ON_GET_STORE_RESULTS_METHOD, results.size());
+  }
 
-std::vector<const PasswordForm*> MutliStoreFormFetcher::GetBlacklistedMatches()
-    const {
-  NOTIMPLEMENTED();
-  return std::vector<const PasswordForm*>();
-}
+  // TODO(crbug.com/1002000): implement password store migration.
 
-const std::vector<const PasswordForm*>&
-MutliStoreFormFetcher::GetAllRelevantMatches() const {
-  NOTIMPLEMENTED();
-  return non_federated_same_scheme_;
-}
+  // TODO(crbug.com/1002000): implement sorting based on "last_time_used"
 
-const std::map<base::string16, const PasswordForm*>&
-MutliStoreFormFetcher::GetBestMatches() const {
-  NOTIMPLEMENTED();
-  return best_matches_;
-}
-
-const PasswordForm* MutliStoreFormFetcher::GetPreferredMatch() const {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
-void MutliStoreFormFetcher::Fetch() {
-  NOTIMPLEMENTED();
-}
-
-std::unique_ptr<FormFetcher> MutliStoreFormFetcher::Clone() {
-  NOTIMPLEMENTED();
-  return nullptr;
+  ProcessPasswordStoreResults(std::move(partial_results_));
 }
 
 }  // namespace password_manager

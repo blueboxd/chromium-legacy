@@ -28,6 +28,7 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
+#include "ash/wm/toplevel_window_event_handler.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "base/command_line.h"
@@ -49,6 +50,7 @@
 #include "ui/events/devices/input_device.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/message_center/message_center.h"
 #include "ui/wm/core/window_util.h"
@@ -1181,6 +1183,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveLeftSnapPreviousRightSnap) {
   EXPECT_EQ(left_window.get(), split_view_controller->left_window());
   EXPECT_EQ(right_window.get(), split_view_controller->right_window());
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_EQ(left_window.get(), window_util::GetActiveWindow());
 }
 
 // Test that if before tablet mode, the active window is snapped on the right
@@ -1198,6 +1201,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveRightSnapPreviousLeftSnap) {
   EXPECT_EQ(left_window.get(), split_view_controller->left_window());
   EXPECT_EQ(right_window.get(), split_view_controller->right_window());
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_EQ(right_window.get(), window_util::GetActiveWindow());
 }
 
 // Test that if before tablet mode, the active window is an ARC window snapped
@@ -1257,7 +1261,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveTransientChildOfLeftSnap) {
   EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller->state());
   EXPECT_EQ(parent.get(), split_view_controller->left_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
-  EXPECT_EQ(parent.get(), window_util::GetActiveWindow());
+  EXPECT_EQ(child.get(), window_util::GetActiveWindow());
 }
 
 // Test that if before tablet mode, the active window is the app list and the
@@ -1284,15 +1288,12 @@ TEST_F(TabletModeControllerTest, StartTabletActiveDraggedPreviousLeftSnap) {
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
   std::unique_ptr<aura::Window> dragged_window = CreateTestWindow();
-  WindowState* dragged_window_state = WindowState::Get(dragged_window.get());
-  dragged_window_state->CreateDragDetails(
-      gfx::Point(), HTNOWHERE,
-      ::wm::WindowMoveSource::WINDOW_MOVE_SOURCE_MOUSE);
-  dragged_window_state->OnDragStarted(HTNOWHERE);
-  ASSERT_TRUE(dragged_window_state->is_dragged());
   std::unique_ptr<aura::Window> snapped_window =
       CreateDesktopWindowSnappedLeft();
   wm::ActivateWindow(dragged_window.get());
+  ASSERT_TRUE(Shell::Get()->toplevel_window_event_handler()->AttemptToStartDrag(
+      dragged_window.get(), gfx::Point(), HTCAPTION,
+      ash::ToplevelWindowEventHandler::EndClosure()));
   tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller->state());
   EXPECT_EQ(snapped_window.get(), split_view_controller->left_window());
@@ -1318,6 +1319,30 @@ TEST_F(TabletModeControllerTest,
   EXPECT_EQ(snapped_window.get(), split_view_controller->left_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
   EXPECT_EQ(snapped_window.get(), window_util::GetActiveWindow());
+}
+
+// Test that if before tablet mode, the active window is being dragged and the
+// previous window is a transient child of a window snapped on the left, then
+// split view is activated with the parent on the left.
+TEST_F(TabletModeControllerTest,
+       StartTabletActiveDraggedPreviousTransientChildOfLeftSnap) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  std::unique_ptr<aura::Window> dragged_window = CreateTestWindow();
+  std::unique_ptr<aura::Window> parent = CreateDesktopWindowSnappedLeft();
+  std::unique_ptr<aura::Window> child =
+      CreateTestWindow(gfx::Rect(), aura::client::WINDOW_TYPE_POPUP);
+  ::wm::AddTransientChild(parent.get(), child.get());
+  wm::ActivateWindow(child.get());
+  wm::ActivateWindow(dragged_window.get());
+  ASSERT_TRUE(Shell::Get()->toplevel_window_event_handler()->AttemptToStartDrag(
+      dragged_window.get(), gfx::Point(), HTCAPTION,
+      ash::ToplevelWindowEventHandler::EndClosure()));
+  tablet_mode_controller()->SetEnabledForTest(true);
+  EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller->state());
+  EXPECT_EQ(parent.get(), split_view_controller->left_window());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_EQ(parent.get(), window_util::GetActiveWindow());
 }
 
 // Test that if before tablet mode, the active window is snapped on the left but

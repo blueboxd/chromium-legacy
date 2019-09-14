@@ -21,7 +21,6 @@
 <translation id="1146678959555564648">Tumia hali ya VR</translation>
 <translation id="116280672541001035">Imetumika</translation>
 <translation id="1171770572613082465">Ona tovuti maarufu kwa kugusa kitufe cha "Tovuti maarufu"</translation>
-<translation id="1172593791219290334">Ukurasa Unaoanza</translation>
 <translation id="1173894706177603556">Ipe jina jipya</translation>
 <translation id="1175310183703641346">Haitasawazisha tena alamisho, historia, manenosiri na zaidi kwenye Akaunti yako ya Google</translation>
 <translation id="1178581264944972037">Sitisha</translation>
@@ -42,6 +41,7 @@
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Tafuta na ugundue</translation>
 <translation id="1264974993859112054">Michezo</translation>
+<translation id="1266864766717917324">Imeshindwa kushiriki <ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">Simamisha</translation>
 <translation id="1283039547216852943">Gusa ili upanue</translation>
 <translation id="1285320974508926690">Kamwe usitafsiri tovuti hii</translation>
@@ -71,6 +71,7 @@
 <translation id="1430915738399379752">Chapisha</translation>
 <translation id="1445680696957526815">Vipengele vya Chrome havioani. Huenda Chrome inajaribu kupata toleo jipya, tafadhali jaribu tena baada ya dakika chache. Ikiwa tatizo litaendelea, jaribu kuondoa na usakinishe upya Chrome.</translation>
 <translation id="1446450296470737166">Ruhusu udhibiti kamili wa vifaa vya MIDI</translation>
+<translation id="1450753235335490080">Imeshindwa kushiriki <ph name="CONTENT_TYPE" /></translation>
 <translation id="145097072038377568">Imezimwa katika Mipangilio ya Android</translation>
 <translation id="1477626028522505441">Kipakuliwa cha <ph name="FILE_NAME" /> hakijafaulu kwa sababu ya matatizo ya seva.</translation>
 <translation id="1501480321619201731">Futa kikundi</translation>
@@ -153,6 +154,7 @@
 <translation id="2049961518639794558">Hatua ya kubadilisha viendelezi vya faili inaweza kusababisha utandaji usiotarajiwa na kudhuru kifaa chako.</translation>
 <translation id="2056878612599315956">Tovuti imesimamishwa</translation>
 <translation id="2063713494490388661">Gusa ili Utafute</translation>
+<translation id="2067805253194386918">maandishi</translation>
 <translation id="2079545284768500474">Tendua</translation>
 <translation id="2082238445998314030">Tokeo <ph name="RESULT_NUMBER" /> kati ya <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Sauti</translation>
@@ -165,7 +167,6 @@
 <translation id="2131665479022868825"><ph name="DATA" /> imeokolewa</translation>
 <translation id="213279576345780926">Umefunga <ph name="TAB_TITLE" /></translation>
 <translation id="2139186145475833000">Ongeza kwenye skrini ya kwanza</translation>
-<translation id="2142289305367051020">Kurasa unazofungua sana zinapatikana hapa</translation>
 <translation id="2146738493024040262">Fungua Programu Inayofunguka Papo Hapo</translation>
 <translation id="2148716181193084225">Leo</translation>
 <translation id="2154484045852737596">Badilisha kadi</translation>
@@ -324,6 +325,7 @@
 <translation id="3384347053049321195">Shiriki picha</translation>
 <translation id="3386292677130313581">Uliza kabla ya kuruhusu tovuti zijue mahali ulipo (inapendekezwa)</translation>
 <translation id="3387650086002190359">Kipakuliwa cha <ph name="FILE_NAME" /> hakijafaulu kwa sababu ya hitilafu za mfumo wa faili.</translation>
+<translation id="3389286852084373014">Maandishi ni makubwa mno</translation>
 <translation id="3398320232533725830">Fungua kidhibiti cha alamisho</translation>
 <translation id="3414952576877147120">Ukubwa:</translation>
 <translation id="3443221991560634068">Pakia upya ukurasa wa sasa</translation>
@@ -348,6 +350,7 @@
 <translation id="3599863153486145794">Hufuta historia kwenye vifaa vyote ulivyotumia kuingia katika akaunti. Huenda Akaunti yako ya Google ikawa na aina nyingine za historia ya kuvinjari kwenye <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Zima sauti katika tovuti</translation>
 <translation id="3616113530831147358">Sauti</translation>
+<translation id="3631987586758005671">Inashiriki kwenye <ph name="DEVICE_NAME" /></translation>
 <translation id="3632295766818638029">Onyesha nenosiri</translation>
 <translation id="363596933471559332">Ingia katika tovuti kiotomatiki kwa kutumia kitambulisho kilichohifadhiwa. Kipengele kikiwa kimezimwa, utaombwa kuthibitisha kila wakati kabla ya kuingia katika tovuti.</translation>
 <translation id="3658159451045945436">Hatua ya kuweka upya hufuta historia ya uokoaji wa data, ikiwa ni pamoja na orodha ya tovuti unazotembelea.</translation>
@@ -358,7 +361,6 @@
 <translation id="3739899004075612870">Imealamishwa katika <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534">Programu nyingine za MB <ph name="MEGABYTES" /></translation>
 <translation id="3744111561329211289">Usawazishaji wa chini chini</translation>
-<translation id="3745176700485982507">Viungo vya tovuti uzipendazo vinaweza kupatikana kwenye ukurasa huu</translation>
 <translation id="3771001275138982843">Imeshindwa kupakua sasisho</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Washa Bluetooth<ph name="END_LINK" /> ili uruhusu kuoanisha</translation>
 <translation id="3775705724665058594">Tuma kwenye vifaa vyako</translation>
@@ -563,7 +565,6 @@ Hakikisha kwamba unaamini tovuti hii kabla ya kuingia katika VR.</translation>
 <translation id="5224771365102442243">Ina video</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> inataka kutafuta vifaa vya Bluetooth vilivyo karibu. Vifaa vifuatavyo vimepatikana:</translation>
 <translation id="5233638681132016545">Kichupo kipya</translation>
-<translation id="5234764350956374838">Ondoa</translation>
 <translation id="526421993248218238">Imeshindwa kupakia ukurasa huu</translation>
 <translation id="5271967389191913893">Kifaa hakiwezi kufungua maudhui yanayopaswa kupakuliwa.</translation>
 <translation id="528192093759286357">Buruta kutoka juu na uguse kitufe cha kurudi nyuma ili uondoke kwenye skrini nzima.</translation>
@@ -578,8 +579,8 @@ Hakikisha kwamba unaamini tovuti hii kabla ya kuingia katika VR.</translation>
 <translation id="5324858694974489420">Mipangilio ya Wazazi</translation>
 <translation id="5327248766486351172">Jina</translation>
 <translation id="5335288049665977812">Ruhusu tovuti zitumie JavaScript (inapendekezwa)</translation>
+<translation id="5342314432463739672">Maombi ya ruhusa</translation>
 <translation id="5357811892247919462">Umepokea kichupo</translation>
-<translation id="5363230136052241468">Gusa kitufe cha ukurasa wa mwanzo ili upakie ukurasa wa kichupo kipya</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{Umefungua kichupo <ph name="OPEN_TABS_ONE" />, gusa ili ubadilishe vichupo}other{Umefungua vichupo <ph name="OPEN_TABS_MANY" />, gusa ili ubadilishe vichupo}}</translation>
 <translation id="5391532827096253100">Muunganisho wako kwenye tovuti hii si salama. Maelezo ya tovuti</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 zaidi)}other{(+ # zaidi)}}</translation>
@@ -747,6 +748,7 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="6532866250404780454">Haitaonyesha tovuti unazotembelea katika Chrome. Itafuta vipima muda vyote kwenye tovuti.</translation>
 <translation id="6534565668554028783">Google imechukua muda mrefu kujibu</translation>
 <translation id="6538442820324228105">Umepakua GB <ph name="GBS" /></translation>
+<translation id="6539092367496845964">Hitilafu fulani imetokea. Jaribu tena baadaye.</translation>
 <translation id="654446541061731451">Chagua kichupo cha kusambaza</translation>
 <translation id="6545017243486555795">Futa Data Yote</translation>
 <translation id="6545864417968258051">Kutafuta Bluetooth</translation>
@@ -801,7 +803,6 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="6912998170423641340">Zuia tovuti zisisome maandishi na picha kutoka ubao wa kunakili</translation>
 <translation id="6914783257214138813">Mtu yeyote anayeweza kuona faili uliyohamisha ataona manenosiri yako.</translation>
 <translation id="6942665639005891494">Badilisha sehemu chaguomsingi ya kupakua wakati wowote ukitumia chaguo la menyu ya Mipangilio</translation>
-<translation id="6944102653068653326">Gusa ili upakie ukurasa wa kichupo kipya</translation>
 <translation id="6945221475159498467">Chagua</translation>
 <translation id="6963642900430330478">Ukurasa huu ni hatari. Maelezo ya tovuti</translation>
 <translation id="6963766334940102469">Futa alamisho</translation>
@@ -877,6 +878,7 @@ Tovuti hii HAIPATI idhini ya kufikia kamera. Ni wewe pekee utaona picha hizi za 
 <translation id="7493994139787901920"><ph name="VERSION" /> (Ilisasishwa <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">data iliyookolewa</translation>
 <translation id="7498271377022651285">Tafadhali subiri...</translation>
+<translation id="7510943789645525906">Hukuonya ikiwa nenosiri unalotumia liliathiriwa na tukio la ufichuzi haramu wa data</translation>
 <translation id="7514365320538308">Pakua</translation>
 <translation id="751961395872307827">Imeshindwa kuunganisha kwenye tovuti</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -994,7 +996,6 @@ Tovuti hii HAIPATI idhini ya kufikia kamera. Ni wewe pekee utaona picha hizi za 
 <translation id="8284326494547611709">Manukuu</translation>
 <translation id="8300705686683892304">Zinazodhibitiwa na programu</translation>
 <translation id="8310344678080805313">Vichupo muundo-msingi</translation>
-<translation id="8313455859591948645">Badilisha ukurasa unaoanza</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> na tovuti zingine</translation>
 <translation id="8327155640814342956">Ili upate hali bora zaidi ya kuvinjari, fungua na usasishe Chrome</translation>
 <translation id="8339163506404995330">Kurasa za <ph name="LANGUAGE" /> hazitatafsiriwa</translation>

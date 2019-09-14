@@ -2,7 +2,9 @@ Verifies that setting a cookie with a domain attribute which does not match the 
 
 Bad domain attribute blocked set-cookies: [
   {
-    "blockedReason": "InvalidDomain",
+    "blockedReasons": [
+      "InvalidDomain"
+    ],
     "cookieLine": "name=value; Domain=cookie.test"
   }
 ]

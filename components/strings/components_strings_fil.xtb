@@ -97,9 +97,6 @@
 <translation id="138218114945450791">Light Blue</translation>
 <translation id="1382194467192730611">USB device na pinapayagan ng iyong administrator</translation>
 <translation id="139305205187523129">Hindi nagpadala ng anumang data ang <ph name="HOST_NAME" />.</translation>
-<translation id="140316286225361634">Hiniling ng site na <ph name="ORIGIN" /> na ilapat ang isang patakaran sa seguridad
-    sa lahat ng kahilingan nito, at kasalukuyang ipinagpapalagay ng patarakang ito na
-    hindi ligtas ang site.</translation>
 <translation id="1405567553485452995">Light Green</translation>
 <translation id="1407135791313364759">Buksan lahat</translation>
 <translation id="1413809658975081374">Error sa privacy</translation>
@@ -135,6 +132,7 @@
 <translation id="1569487616857761740">Ilagay ang petsa ng pag-expire</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Nagkaproblema habang ipinapakita ang webpage na ito.</translation>
+<translation id="1588438908519853928">Normal</translation>
 <translation id="1592005682883173041">Access sa Lokal na Data</translation>
 <translation id="1594030484168838125">Pumili</translation>
 <translation id="161042844686301425">Cyan</translation>
@@ -212,10 +210,6 @@
 <translation id="1981206234434200693">I-clear ang data ng history ng pag-browse sa Chrome</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{at 1 pa}one{at # pa}other{at # pa}}</translation>
 <translation id="2003709556000175978">I-reset na ang iyong password</translation>
-<translation id="20053308747750172">Hiniling ng server na pupuntahan mo, ang <ph name="ORIGIN" />, na
-    ilapat ang isang patakaran sa seguridad sa lahat ng kahilingan dito. Ngunit naghatid ito ngayon
-    ng invalid na patakaran, na pinipigilan ang browser na
-    tuparin ang iyong kahilingan para sa <ph name="SITE" />.</translation>
 <translation id="2025186561304664664">Nakatakda sa awtomatikong naka-configure ang proxy.</translation>
 <translation id="202813660234680402">Hindi, huwag idagdag</translation>
 <translation id="2030481566774242610">Ang ibig mo bang sabihin ay <ph name="LINK" />?</translation>
@@ -293,10 +287,6 @@
 <translation id="2409589295040002961">Mababago ng iyong administrator ang setup ng browser mo nang malayuan. Puwede ring pamahalaan sa labas ng Chrome ang aktibidad sa device na ito. <ph name="BEGIN_LINK" />Matuto Pa<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Hindi mapatunayan ng server na ito na ito ay <ph name="DOMAIN" />; maaaring binawi ang certificate ng seguridad nito. Maaaring dulot ito ng maling configuration o isang umaatake na hinahadlangan ang iyong koneksyon.</translation>
-<translation id="2418081434543109369">Hiniling ng server na pupuntahan mo, ang <ph name="ORIGIN" />, na
-    ilapat ang isang patakaran sa seguridad sa lahat ng kahilingan dito. Ngunit hindi ito
-    nakapaghatid ng patakaran ngayon, na pinipigilan ang browser na tuparin ang
-    ang iyong kahilingan para sa <ph name="SITE" />.</translation>
 <translation id="2463193859425327265">Baguhin ang Home Page</translation>
 <translation id="2463739503403862330">Punan</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -590,6 +580,7 @@
 <translation id="4103249731201008433">Di-wasto ang serial number ng device</translation>
 <translation id="410351446219883937">I-autoplay</translation>
 <translation id="4103763322291513355">Bisitahin ang &lt;strong&gt;chrome://policy&lt;/strong&gt; upang makita ang listahan ng mga naka-blacklist na URL at iba pang mga patakaran na ipinapatupad ng iyong system administrator.</translation>
+<translation id="4108231218301530806">Gamitin ang fingerprint para i-verify ang card na ito sa susunod.</translation>
 <translation id="4110652170750985508">Suriin ang iyong pagbabayad</translation>
 <translation id="4112140312785995938">Mag-seek Pabalik</translation>
 <translation id="4116663294526079822">Palaging payagan sa site na ito</translation>
@@ -792,6 +783,7 @@
 <translation id="5141240743006678641">I-encrypt ang mga naka-sync na password gamit ang iyong mga kredensyal sa Google</translation>
 <translation id="5145883236150621069">May code ng error sa tugon sa patakaran</translation>
 <translation id="515292512908731282">C4 (Envelope)</translation>
+<translation id="5158275234811857234">Cover</translation>
 <translation id="5159010409087891077">Buksan ang page sa bagong Incognito window (⇧⌘N)</translation>
 <translation id="516920405563544094">Ilagay ang CVC para sa <ph name="CREDIT_CARD" />. Pagkatapos mong magkumpirma, ibabahagi sa site na ito ang mga detalye ng card mula sa iyong Google Account.</translation>
 <translation id="5169827969064885044">Maaari kang mawalan ng access sa account ng iyong organisasyon o manakawan ng pagkakakilanlan. Inirerekomenda ng Chrome na palitan ang iyong password ngayon.</translation>
@@ -951,6 +943,7 @@
 <translation id="598637245381783098">Hindi mabuksan ang app sa pagbabayad</translation>
 <translation id="5989320800837274978">Hindi tunukoy ang alinman sa mga hindi nababagong proxy server o isang .pac script URL.</translation>
 <translation id="5990559369517809815">Na-block ng isang extension ang mga kahilingan sa server.</translation>
+<translation id="6000758707621254961"><ph name="RESULT_COUNT" /> (na) resulta para sa '<ph name="SEARCH_TEXT" />'</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">Taon</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Page 1}one{Page #}other{Page #}}</translation>
@@ -1009,6 +1002,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Wala}=1{1 password (para sa <ph name="DOMAIN_LIST" />, naka-sync)}=2{2 password (para sa <ph name="DOMAIN_LIST" />, naka-sync)}one{# password (para sa <ph name="DOMAIN_LIST" />, naka-sync)}other{# na password (para sa <ph name="DOMAIN_LIST" />, naka-sync)}}</translation>
 <translation id="6358450015545214790">Ano ang ibig sabihin ng mga ito?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6377268785556383139">1 resulta para sa '<ph name="SEARCH_TEXT" />'</translation>
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Maaaring magkaroon ng singil.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 pang suhestyon}one{# pang suhestyon}other{# pang suhestyon}}</translation>
@@ -1143,10 +1137,6 @@
 <translation id="717330890047184534">Gaia ID:</translation>
 <translation id="7174545416324379297">Naka-merge</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> at <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> pa}one{<ph name="SHIPPING_OPTION_PREVIEW" /> at <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> pa}other{<ph name="SHIPPING_OPTION_PREVIEW" /> at <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> pa}}</translation>
-<translation id="7177397715882417099">Hiniling ng server na pupuntahan mo, ang <ph name="ORIGIN" />, na
-    ilapat ang isang patakaran sa seguridad sa lahat ng kahilingan dito. Ngunit sa halip na
-    maghatid ng patakaran, na-redirect nito ang browser sa ibang lugar, na pinipigilan
-    ang browser na tuparin ang iyong kahilingan para sa <ph name="SITE" />.</translation>
 <translation id="7179323680825933600">I-save at Punan ang Mga Paraan ng Pagbabayad</translation>
 <translation id="7180611975245234373">I-refresh</translation>
 <translation id="7182878459783632708">Walang nakatakdang mga patakaran</translation>
@@ -1173,6 +1163,7 @@ Mga karagdagang detalye:
 <translation id="7300012071106347854">Cobalt Blue</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
 <translation id="7303701124147721189">Para mas mabilis na makapagbayad sa susunod, i-store ang iyong card at billing address sa iyong Google Account at sa device na ito.</translation>
+<translation id="7304030187361489308">Mataas</translation>
 <translation id="7309308571273880165">Ulat ng pag-crash na nakuha noong <ph name="CRASH_TIME" /> (humiling ng pag-upload ang user, hindi pa naa-upload)</translation>
 <translation id="7313965965371928911">Mga babala sa <ph name="BEGIN_LINK" />Ligtas na Pag-browse<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1534,7 +1525,6 @@ Mga karagdagang detalye:
 <translation id="939736085109172342">Bagong folder</translation>
 <translation id="945855313015696284">Tingnan ang impormasyon sa ibaba at mag-delete ng anumang invalid na card</translation>
 <translation id="951104842009476243">Mga Tinatanggap na Debit at Prepaid Card</translation>
-<translation id="958202389743790697">Na-block alinsunod sa patakaran sa seguridad ng <ph name="ORIGIN" />.</translation>
 <translation id="962484866189421427">Maaaring subukan ng content na itong mag-install ng mga mapanlinlang na app na nagpapanggap na ibang bagay o nangongolekta ng data na maaaring gamitin para subaybayan ka. <ph name="BEGIN_LINK" />Ipakita pa rin<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Official Build</translation>
 <translation id="973773823069644502">Magdagdag ng Address sa Paghahatid</translation>

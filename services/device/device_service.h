@@ -10,7 +10,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/device/geolocation/geolocation_provider.h"
 #include "services/device/geolocation/geolocation_provider_impl.h"
@@ -140,10 +139,12 @@ class DeviceService : public service_manager::Service {
 
   void BindFingerprintReceiver(
       mojo::PendingReceiver<mojom::Fingerprint> receiver);
-  void BindGeolocationConfigRequest(mojom::GeolocationConfigRequest request);
+  void BindGeolocationConfigReceiver(
+      mojo::PendingReceiver<mojom::GeolocationConfig> receiver);
   void BindGeolocationContextReceiver(
       mojo::PendingReceiver<mojom::GeolocationContext> receiver);
-  void BindGeolocationControlRequest(mojom::GeolocationControlRequest request);
+  void BindGeolocationControlReceiver(
+      mojo::PendingReceiver<mojom::GeolocationControl> receiver);
 
 #if defined(OS_LINUX) && defined(USE_UDEV)
   void BindInputDeviceManagerRequest(mojom::InputDeviceManagerRequest request);

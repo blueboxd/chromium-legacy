@@ -43,6 +43,7 @@
 <translation id="1873233029667955273">Nem a Google Chrome az alapértelmezett böngésző</translation>
 <translation id="1874309113135274312">Google Chrome Béta (mDNS-In)</translation>
 <translation id="1877026089748256423">A Chrome elavult</translation>
+<translation id="1900795423379050516">Ha valamelyik beállítás nem látható ezen az oldalon, keresse a <ph name="LINK_BEGIN" />Chrome böngésző beállításai<ph name="LINK_END" /> között</translation>
 <translation id="1915828456209461693">Új Chrome-frissítés jelent meg, amely az újraindítás után azonnal érvénybe lép.</translation>
 <translation id="1919130412786645364">Chrome-bejelentkezés engedélyezése</translation>
 <translation id="2063848847527508675">A frissítés alkalmazásához újra kell indítani a Chrome OS-t.</translation>
@@ -156,6 +157,7 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW" 
 <translation id="5543953544073077331">További Chrome-példányok is futnak. A frissítéshez zárja be őket.</translation>
 <translation id="556024056938947818">A Google Chrome megpróbálja megjeleníteni a jelszavakat.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
+<translation id="5657226924540934362">Ha valamelyik beállítás nem látható ezen az oldalon, keresse a <ph name="LINK_BEGIN" />Chrome OS beállításai<ph name="LINK_END" /> között</translation>
 <translation id="565744775970812598">A(z) <ph name="FILE_NAME" /> veszélyes lehet, ezért a Chrome letiltotta.</translation>
 <translation id="5686916850681061684">A Google Chrome személyre szabása és beállításai Figyelmet kell fordítania valamire – a részletekért kattintson.</translation>
 <translation id="5690427481109656848">Google LLC</translation>

@@ -502,6 +502,14 @@ void ShelfAppButton::ReflectItemStatus(const ShelfItem& item) {
   }
 }
 
+bool ShelfAppButton::IsIconSizeCurrent() {
+  gfx::Insets insets_shadows = gfx::ShadowValue::GetMargin(icon_shadows_);
+  int icon_width =
+      GetIconBounds().width() + insets_shadows.left() + insets_shadows.right();
+
+  return icon_width == ShelfConfig::Get()->button_icon_size();
+}
+
 const char* ShelfAppButton::GetClassName() const {
   return kViewClassName;
 }

@@ -43,6 +43,8 @@
 <translation id="1873233029667955273">Google Chrome nije vaš zadani preglednik</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome je zastario</translation>
+<translation id="1900795423379050516">Ako se postavka ne prikazuje na ovoj stranici, pogledajte <ph name="LINK_BEGIN" />
+      postavke svojeg preglednika Chrome<ph name="LINK_END" /></translation>
 <translation id="1915828456209461693">Dostupno je novo ažuriranje za Chrome i primijenit će se nakon ponovnog pokretanja.</translation>
 <translation id="1919130412786645364">Dopusti prijavu u Chrome</translation>
 <translation id="2063848847527508675">Potrebno je ponovo pokrenuti Chrome OS kako bi se ažuriranje primijenilo.</translation>
@@ -156,6 +158,8 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="5543953544073077331">Pokrenuti su drugi primjerci Chromea. Zatvorite ih radi ažuriranja.</translation>
 <translation id="556024056938947818">Google Chrome pokušava prikazati zaporke.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
+<translation id="5657226924540934362">Ako se postavka ne prikazuje na ovoj stranici, pogledajte <ph name="LINK_BEGIN" />
+      postavke svojeg OS-a Chrome<ph name="LINK_END" /></translation>
 <translation id="565744775970812598">Datoteka <ph name="FILE_NAME" /> mogla bi biti opasna, pa ju je Chrome blokirao.</translation>
 <translation id="5686916850681061684">Prilagodite Google Chrome i upravljajte njime. Trebate obratiti pozornost na nešto – kliknite za pojedinosti.</translation>
 <translation id="5690427481109656848">Google LLC</translation>

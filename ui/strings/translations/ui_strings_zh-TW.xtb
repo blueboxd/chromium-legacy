@@ -8,14 +8,17 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 分鐘}other{# 分鐘}}</translation>
 <translation id="1181037720776840403">移除</translation>
 <translation id="1243314992276662751">上傳</translation>
+<translation id="1266864766717917324">無法分享<ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Windows 鍵</translation>
 <translation id="1290982764014248209">將「<ph name="DRAGGED_APP" />」移到「<ph name="FOLDER_NAME" />」資料夾。</translation>
+<translation id="1291104554099683393">請嘗試將要分享的文字分成多個片段。</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">推薦應用程式</translation>
 <translation id="1368832886055348810">由左至右</translation>
 <translation id="1383876407941801731">搜尋</translation>
 <translation id="1398853756734560583">放到最大</translation>
 <translation id="1409544243779336081">推薦的應用程式</translation>
+<translation id="1450753235335490080">無法分享<ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">你過去曾搜尋這個項目。如果將「<ph name="QUERY" />」從搜尋記錄中刪除，該項目將從你所有裝置上的帳戶記錄中永久移除。</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 分鐘 }other{# 分鐘 }}</translation>
 <translation id="1643823602425662293">通知</translation>
@@ -35,6 +38,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">選取全部(&amp;A)</translation>
 <translation id="1938451708255335766">如要調整視窗顯示密度，請重新啟動應用程式。</translation>
+<translation id="2006524834898217237">請確認此裝置已連上網際網路。</translation>
 <translation id="208586643495776849">請再試一次</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 天}other{# 天}}</translation>
 <translation id="2148716181193084225">今天</translation>
@@ -76,6 +80,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 天}other{# 天}}</translation>
 <translation id="3295886253693811851">透過以下應用程式撥打電話：</translation>
 <translation id="335581015389089642">語音</translation>
+<translation id="3389286852084373014">文字過多</translation>
 <translation id="3443810440409579745">已收到分頁。</translation>
 <translation id="3479552764303398839">現在不要</translation>
 <translation id="348799646910989694">自動隱藏檔案櫃</translation>
@@ -151,11 +156,13 @@
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 秒前}other{# 秒前}}</translation>
 <translation id="6430678249303439055">一律封鎖來自這個應用程式的通知</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 秒前}other{# 秒前}}</translation>
+<translation id="6539092367496845964">發生錯誤，請稍後再試。</translation>
 <translation id="654149438358937226">封鎖所有通知</translation>
 <translation id="6567071839949112727">點選上層項目</translation>
 <translation id="6578407462441924264">未命名</translation>
 <translation id="6612467943526193239">如要結束校正模式，請按下 Esc 鍵。</translation>
 <translation id="6620110761915583480">儲存檔案</translation>
+<translation id="6656912866303152668">請確認「<ph name="TARGET_DEVICE_NAME" />」的 Chrome 同步功能已開啟，然後嘗試重新傳送。</translation>
 <translation id="6699343763173986273">下一首媒體曲目</translation>
 <translation id="673773751041746814">刪除</translation>
 <translation id="6779314412797872738">如要將號碼從這個裝置傳送到你的 Android 手機，請在這兩個裝置的設定中<ph name="TROUBLESHOOT_LINK" />。</translation>
@@ -221,6 +228,7 @@
 <translation id="8876215549894133151">格式：</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8926951137623668982">一律隱藏檔案櫃</translation>
+<translation id="8996630695507351249">請確認「<ph name="TARGET_DEVICE_NAME" />」已連上網際網路。</translation>
 <translation id="9002566407876343676">開啟</translation>
 <translation id="9039076430527029379">移至第 <ph name="PAGE_NUMBER" /> 頁，第 <ph name="ROW_NUMBER" /> 列，第 <ph name="COLUMN_NUMBER" /> 欄。</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 秒}other{# 秒}}</translation>

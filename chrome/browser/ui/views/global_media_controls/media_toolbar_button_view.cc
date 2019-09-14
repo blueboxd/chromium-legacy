@@ -81,13 +81,7 @@ SkColor MediaToolbarButtonView::GetInkDropBaseColor() const {
 }
 
 void MediaToolbarButtonView::UpdateIcon() {
-  // TODO(https://crbug.com/973500): Use actual icon instead of this
-  // placeholder.
-  const gfx::VectorIcon& icon = ::vector_icons::kPlayArrowIcon;
-
-  // TODO(https://crbug.com/973500): When adding the actual icon, have the size
-  // of the icon in the icon definition so we don't need to specify a size here.
-  const int dip_size = 18;
+  const gfx::VectorIcon& icon = ::vector_icons::kQueueMusicIcon;
 
   const SkColor normal_color =
       GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
@@ -95,9 +89,9 @@ void MediaToolbarButtonView::UpdateIcon() {
       ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_INACTIVE);
 
   SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(icon, dip_size, normal_color));
+           gfx::CreateVectorIcon(icon, normal_color));
   SetImage(views::Button::STATE_DISABLED,
-           gfx::CreateVectorIcon(icon, dip_size, disabled_color));
+           gfx::CreateVectorIcon(icon, disabled_color));
 }
 
 void MediaToolbarButtonView::ShowPromo() {

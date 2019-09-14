@@ -26,7 +26,7 @@ chrome_version_file = "//chrome/VERSION"
 
 _script_arguments = []
 
-if (target_os == "mac") {
+if (is_mac) {
   _version_dictionary_template += "patch_hi = @PATCH_HI@ patch_lo = @PATCH_LO@ "
 
   _script_arguments += [
@@ -89,7 +89,7 @@ chrome_version_minor = _result.minor
 chrome_version_build = _result.build
 chrome_version_patch = _result.patch
 
-if (target_os == "mac") {
+if (is_mac) {
   chrome_version_patch_hi = _result.patch_hi
   chrome_version_patch_lo = _result.patch_lo
 

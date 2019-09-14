@@ -182,6 +182,12 @@ void MetricsWebContentsObserver::WillStartNavigationRequest(
   if (!navigation_handle->IsInMainFrame())
     return;
 
+  WillStartNavigationRequestImpl(navigation_handle);
+  has_navigated_ = true;
+}
+
+void MetricsWebContentsObserver::WillStartNavigationRequestImpl(
+    content::NavigationHandle* navigation_handle) {
   UserInitiatedInfo user_initiated_info(
       CreateUserInitiatedInfo(navigation_handle, committed_load_.get()));
   std::unique_ptr<PageLoadTracker> last_aborted =
@@ -214,7 +220,6 @@ void MetricsWebContentsObserver::WillStartNavigationRequest(
                                : GURL::EmptyGURL();
   const GURL& currently_committed_url =
       committed_load_ ? committed_load_->url() : opener_url;
-  has_navigated_ = true;
 
   // We can have two provisional loads in some cases. E.g. a same-site
   // navigation can have a concurrent cross-process navigation started
@@ -228,7 +233,7 @@ void MetricsWebContentsObserver::WillStartNavigationRequest(
       navigation_handle,
       std::make_unique<PageLoadTracker>(
           in_foreground_, embedder_interface_.get(), currently_committed_url,
-          navigation_handle, user_initiated_info, chain_size,
+          !has_navigated_, navigation_handle, user_initiated_info, chain_size,
           chain_size_same_url)));
   DCHECK(insertion_result.second)
       << "provisional_loads_ already contains NavigationHandle.";
@@ -415,6 +420,12 @@ void MetricsWebContentsObserver::DidFinishNavigation(
     }
     return;
   }
+
+  // Not all navigations trigger the WillStartNavigationRequest callback (for
+  // example, navigations to about:blank). DidFinishNavigation is guaranteed to
+  // be called for every navigation, so we also update has_navigated_ here, to
+  // ensure it is set consistently for all navigations.
+  has_navigated_ = true;
 
   std::unique_ptr<PageLoadTracker> finished_nav(
       std::move(provisional_loads_[navigation_handle]));

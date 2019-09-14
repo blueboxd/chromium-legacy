@@ -11,10 +11,14 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/view_class_properties.h"
 
 // Represents one of the colors the user can pick from. Displayed as a solid
 // circle of the given color.
@@ -31,16 +35,16 @@ class ColorPickerElementView : public views::Button,
         color_name_(color_name) {
     DCHECK(selected_callback_);
 
-    SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
     SetAccessibleName(color_name);
+    SetFocusForPlatform();
+    SetInstallFocusRingOnFocus(true);
 
     SetBorder(
         views::CreateEmptyBorder(ChromeLayoutProvider::Get()->GetInsetsMetric(
             views::INSETS_VECTOR_IMAGE_BUTTON)));
 
-    set_has_ink_drop_action_on_click(false);
-    set_ink_drop_base_color(SK_ColorBLACK);
-    SetInkDropMode(InkDropMode::ON);
+    SetInkDropMode(InkDropMode::OFF);
+    set_animate_on_state_change(true);
   }
 
   SkColor color() const { return color_; }
@@ -49,7 +53,7 @@ class ColorPickerElementView : public views::Button,
     if (selected_ == selected)
       return;
     selected_ = selected;
-    UpdateVisualsForSelection(nullptr);
+    SchedulePaint();
   }
 
   bool selected() const { return selected_; }
@@ -78,12 +82,25 @@ class ColorPickerElementView : public views::Button,
 
   gfx::Size CalculatePreferredSize() const override {
     const gfx::Insets insets = GetInsets();
-    gfx::Size size(16, 16);
+    gfx::Size size(24, 24);
     size.Enlarge(insets.width(), insets.height());
     return size;
   }
 
   int GetHeightForWidth(int width) const override { return width; }
+
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
+    if (size() == previous_bounds.size())
+      return;
+
+    // Our highlight path should be slightly larger than the circle we paint.
+    gfx::RectF bounds(GetContentsBounds());
+    bounds.Inset(gfx::Insets(-2.0f));
+    const gfx::PointF center = bounds.CenterPoint();
+    SkPath path;
+    path.addCircle(center.x(), center.y(), bounds.width() / 2.0f);
+    SetProperty(views::kHighlightPathKey, std::move(path));
+  }
 
   void PaintButtonContents(gfx::Canvas* canvas) override {
     // Paint a colored circle surrounded by a bit of empty space.
@@ -97,6 +114,8 @@ class ColorPickerElementView : public views::Button,
     flags.setColor(color_);
     flags.setAntiAlias(true);
     canvas->DrawCircle(bounds.CenterPoint(), bounds.width() / 2.0f, flags);
+
+    PaintSelectionIndicator(canvas);
   }
 
   // views::ButtonListener:
@@ -104,20 +123,43 @@ class ColorPickerElementView : public views::Button,
     DCHECK_EQ(this, sender);
 
     selected_ = !selected_;
-    UpdateVisualsForSelection(&event);
+    SchedulePaint();
     selected_callback_.Run(this);
   }
 
  private:
-  void UpdateVisualsForSelection(const ui::Event* selection_event) {
-    // TODO(crbug.com/989174): display selection a better way; the ink drop is
-    // ugly.
-    AnimateInkDrop(
-        selected_ ? views::InkDropState::ACTIVATED
-                  : views::InkDropState::DEACTIVATED,
-        selection_event != nullptr && selection_event->IsLocatedEvent()
-            ? selection_event->AsLocatedEvent()
-            : nullptr);
+  // Paints a ring in our color circle to indicate selection or mouse hover.
+  // Does nothing if not selected or hovered.
+  void PaintSelectionIndicator(gfx::Canvas* canvas) {
+    // Visual parameters of our ring.
+    constexpr float kInset = 4.0f;
+    constexpr float kThickness = 4.0f;
+    constexpr SkColor kSelectedColor = SK_ColorWHITE;
+    constexpr SkColor kPendingColor = gfx::kGoogleGrey200;
+
+    SkColor paint_color = gfx::kPlaceholderColor;
+    if (selected_) {
+      paint_color = kSelectedColor;
+    } else if (GetVisualState() == STATE_HOVERED ||
+               hover_animation().is_animating()) {
+      const float alpha = gfx::Tween::CalculateValue(
+          gfx::Tween::FAST_OUT_SLOW_IN, hover_animation().GetCurrentValue());
+      paint_color = color_utils::AlphaBlend(kPendingColor, color_, alpha);
+    } else {
+      return;
+    }
+
+    cc::PaintFlags flags;
+    flags.setStyle(cc::PaintFlags::kStroke_Style);
+    flags.setStrokeWidth(kThickness);
+    flags.setAntiAlias(true);
+    flags.setColor(paint_color);
+
+    gfx::RectF indicator_bounds(GetContentsBounds());
+    indicator_bounds.Inset(gfx::InsetsF(kInset));
+    DCHECK(!indicator_bounds.size().IsEmpty());
+    canvas->DrawCircle(indicator_bounds.CenterPoint(),
+                       indicator_bounds.width() / 2.0f, flags);
   }
 
   base::RepeatingCallback<void(ColorPickerElementView*)> selected_callback_;
@@ -146,7 +188,8 @@ ColorPickerView::ColorPickerView(
   }
 
   const int element_spacing = ChromeLayoutProvider::Get()->GetDistanceMetric(
-      views::DISTANCE_RELATED_BUTTON_HORIZONTAL);
+                                  views::DISTANCE_RELATED_BUTTON_HORIZONTAL) /
+                              2;
 
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),

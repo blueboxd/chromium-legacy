@@ -38,7 +38,6 @@
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
-#include "chrome/browser/chromeos/extensions/default_web_app_ids.h"
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
 #include "chrome/browser/chromeos/release_notes/release_notes_storage.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -918,7 +917,7 @@ void AppSearchProvider::UpdateRecommendedResults(
         title = navigation_title;
         app->AddSearchableText(title);
       }
-    } else if (app->id() == chromeos::default_web_apps::kReleaseNotesAppId) {
+    } else if (app->id() == kReleaseNotesAppId) {
       auto release_notes_storage =
           std::make_unique<chromeos::ReleaseNotesStorage>(profile_);
       if (!release_notes_storage->ShouldShowSuggestionChip())

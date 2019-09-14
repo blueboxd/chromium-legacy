@@ -5,14 +5,12 @@
 #include "content/renderer/p2p/socket_dispatcher.h"
 
 #include "base/bind.h"
-#include "base/memory/ref_counted.h"
-#include "content/child/child_process.h"
-#include "content/child/child_thread_impl.h"
-#include "content/public/common/service_names.mojom.h"
+#include "base/memory/scoped_refptr.h"
 #include "content/renderer/p2p/socket_client_impl.h"
-#include "content/renderer/render_view_impl.h"
 #include "services/network/public/cpp/p2p_param_traits.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/modules/p2p/network_list_observer.h"
+#include "third_party/blink/public/platform/platform.h"
 
 namespace content {
 
@@ -73,7 +71,7 @@ void P2PSocketDispatcher::RequestInterfaceIfNecessary() {
   if (!p2p_socket_manager_request_.is_pending())
     return;
 
-  ChildThreadImpl::current()->BindHostReceiver(
+  blink::Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
       std::move(p2p_socket_manager_request_));
 }
 

@@ -55,7 +55,6 @@
 #include "net/websockets/websocket_channel.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/constants.h"
-#include "services/tracing/public/cpp/trace_startup.h"
 
 #if defined(OS_MACOSX)
 #include "content/browser/child_process_task_port_provider_mac.h"
@@ -218,7 +217,24 @@ void BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(
 // static
 void BrowserChildProcessHostImpl::CopyTraceStartupFlags(
     base::CommandLine* cmd_line) {
-  tracing::PropagateTracingFlagsToChildProcessCmdLine(cmd_line);
+  if (tracing::TraceStartupConfig::GetInstance()->IsEnabled()) {
+    const auto trace_config =
+        tracing::TraceStartupConfig::GetInstance()->GetTraceConfig();
+    if (!trace_config.IsArgumentFilterEnabled()) {
+      // The only trace option that we can pass through switches is the record
+      // mode. Other trace options should have the default value.
+      //
+      // TODO(chiniforooshan): Add other trace options to switches if, for
+      // example, they are used in a telemetry test that needs startup trace
+      // events from renderer processes.
+      cmd_line->AppendSwitchASCII(switches::kTraceStartup,
+                                  trace_config.ToCategoryFilterString());
+      cmd_line->AppendSwitchASCII(
+          switches::kTraceStartupRecordMode,
+          base::trace_event::TraceConfig::TraceRecordModeToStr(
+              trace_config.GetTraceRecordMode()));
+    }
+  }
 }
 
 void BrowserChildProcessHostImpl::Launch(

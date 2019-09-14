@@ -125,6 +125,18 @@ error::Error GLES2DecoderPassthroughImpl::HandleDrawArrays(
   return DoDrawArrays(mode, first, count);
 }
 
+error::Error GLES2DecoderPassthroughImpl::HandleDrawArraysIndirect(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::DrawArraysIndirect& c =
+      *static_cast<const volatile gles2::cmds::DrawArraysIndirect*>(cmd_data);
+  GLenum mode = static_cast<GLenum>(c.mode);
+  const void* offset =
+      reinterpret_cast<const void*>(static_cast<uintptr_t>(c.offset));
+
+  return DoDrawArraysIndirect(mode, offset);
+}
+
 error::Error GLES2DecoderPassthroughImpl::HandleDrawElements(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
@@ -137,6 +149,19 @@ error::Error GLES2DecoderPassthroughImpl::HandleDrawElements(
       reinterpret_cast<const GLvoid*>(static_cast<uintptr_t>(c.index_offset));
 
   return DoDrawElements(mode, count, type, indices);
+}
+
+error::Error GLES2DecoderPassthroughImpl::HandleDrawElementsIndirect(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::DrawElementsIndirect& c =
+      *static_cast<const volatile gles2::cmds::DrawElementsIndirect*>(cmd_data);
+  GLenum mode = static_cast<GLenum>(c.mode);
+  GLenum type = static_cast<GLenum>(c.type);
+  const void* offset =
+      reinterpret_cast<const void*>(static_cast<uintptr_t>(c.offset));
+
+  return DoDrawElementsIndirect(mode, type, offset);
 }
 
 error::Error GLES2DecoderPassthroughImpl::HandleGetActiveAttrib(

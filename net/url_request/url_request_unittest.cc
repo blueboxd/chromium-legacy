@@ -54,7 +54,6 @@
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/escape.h"
 #include "net/base/features.h"
-#include "net/base/layered_network_delegate.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
@@ -1395,22 +1394,20 @@ TEST_F(URLRequestTest, DelayedCookieCallback) {
   }
 }
 
-class FilteringTestLayeredNetworkDelegate : public LayeredNetworkDelegate {
+class FilteringTestNetworkDelegate : public TestNetworkDelegate {
  public:
-  FilteringTestLayeredNetworkDelegate(
-      std::unique_ptr<NetworkDelegate> network_delegate)
-      : LayeredNetworkDelegate(std::move((network_delegate))),
-        set_cookie_called_count_(0),
+  FilteringTestNetworkDelegate()
+      : set_cookie_called_count_(0),
         blocked_set_cookie_count_(0),
         block_get_cookies_(false),
         get_cookie_called_count_(0),
         blocked_get_cookie_count_(0) {}
-  ~FilteringTestLayeredNetworkDelegate() override = default;
+  ~FilteringTestNetworkDelegate() override = default;
 
-  bool OnCanSetCookieInternal(const URLRequest& request,
-                              const net::CanonicalCookie& cookie,
-                              CookieOptions* options,
-                              bool allowed_from_caller) override {
+  bool OnCanSetCookie(const URLRequest& request,
+                      const net::CanonicalCookie& cookie,
+                      CookieOptions* options,
+                      bool allowed_from_caller) override {
     // Filter out cookies with the same name as |cookie_name_filter_| and
     // combine with |allowed_from_caller|.
     bool allowed =
@@ -1421,7 +1418,8 @@ class FilteringTestLayeredNetworkDelegate : public LayeredNetworkDelegate {
     if (!allowed)
       ++blocked_set_cookie_count_;
 
-    return allowed;
+    return TestNetworkDelegate::OnCanSetCookie(request, cookie, options,
+                                               allowed);
   }
 
   void SetCookieFilter(std::string filter) {
@@ -1436,9 +1434,9 @@ class FilteringTestLayeredNetworkDelegate : public LayeredNetworkDelegate {
 
   void ResetBlockedSetCookieCount() { blocked_set_cookie_count_ = 0; }
 
-  bool OnCanGetCookiesInternal(const URLRequest& request,
-                               const net::CookieList& cookie,
-                               bool allowed_from_caller) override {
+  bool OnCanGetCookies(const URLRequest& request,
+                       const net::CookieList& cookie_list,
+                       bool allowed_from_caller) override {
     // Filter out cookies if |block_get_cookies_| is set and
     // combine with |allowed_from_caller|.
     bool allowed = allowed_from_caller && !block_get_cookies_;
@@ -1448,7 +1446,7 @@ class FilteringTestLayeredNetworkDelegate : public LayeredNetworkDelegate {
     if (!allowed)
       ++blocked_get_cookie_count_;
 
-    return allowed;
+    return TestNetworkDelegate::OnCanGetCookies(request, cookie_list, allowed);
   }
 
   void set_block_get_cookies() { block_get_cookies_ = true; }
@@ -1471,6 +1469,8 @@ class FilteringTestLayeredNetworkDelegate : public LayeredNetworkDelegate {
   bool block_get_cookies_;
   int get_cookie_called_count_;
   int blocked_get_cookie_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(FilteringTestNetworkDelegate);
 };
 
 TEST_F(URLRequestTest, DelayedCookieCallbackAsync) {
@@ -1481,8 +1481,7 @@ TEST_F(URLRequestTest, DelayedCookieCallbackAsync) {
   std::unique_ptr<DelayedCookieMonster> delayed_cm =
       std::make_unique<DelayedCookieMonster>();
   async_context.set_cookie_store(delayed_cm.get());
-  FilteringTestLayeredNetworkDelegate async_filter_network_delegate(
-      std::make_unique<TestNetworkDelegate>());
+  FilteringTestNetworkDelegate async_filter_network_delegate;
   async_filter_network_delegate.SetCookieFilter("CookieBlockedOnCanGetCookie");
   async_context.set_network_delegate(&async_filter_network_delegate);
   TestDelegate async_delegate;
@@ -1491,8 +1490,7 @@ TEST_F(URLRequestTest, DelayedCookieCallbackAsync) {
   std::unique_ptr<CookieMonster> cm =
       std::make_unique<CookieMonster>(nullptr, nullptr);
   sync_context.set_cookie_store(cm.get());
-  FilteringTestLayeredNetworkDelegate sync_filter_network_delegate(
-      std::make_unique<TestNetworkDelegate>());
+  FilteringTestNetworkDelegate sync_filter_network_delegate;
   sync_filter_network_delegate.SetCookieFilter("CookieBlockedOnCanGetCookie");
   sync_context.set_network_delegate(&sync_filter_network_delegate);
   TestDelegate sync_delegate;
@@ -1519,7 +1517,7 @@ TEST_F(URLRequestTest, DelayedCookieCallbackAsync) {
       {// Fails in SetCanonicalCookie for trying to set a secure cookie
        // on an insecure host.
        "CookieNotSet=1;Secure",
-       // Fail in FilteringTestLayeredNetworkDelegate::CanGetCookie.
+       // Fail in FilteringTestNetworkDelegate::CanGetCookie.
        "CookieBlockedOnCanGetCookie=1",
        // Fails in SetCanonicalCookie for trying to overwrite a secure cookie
        // with an insecure cookie.
@@ -6939,8 +6937,7 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
   HttpTestServer test_server;
   ASSERT_TRUE(test_server.Start());
 
-  FilteringTestLayeredNetworkDelegate network_delegate(
-      std::make_unique<TestNetworkDelegate>());
+  FilteringTestNetworkDelegate network_delegate;
   network_delegate.SetCookieFilter("not_stored_cookie");
   network_delegate.set_block_get_cookies();
   TestURLRequestContext context(true);
@@ -7031,8 +7028,7 @@ TEST_F(URLRequestTestHTTP, AuthChallengeCancelCookieCollect) {
   GURL url_requiring_auth =
       http_test_server()->GetURL("/auth-basic?set-cookie-if-challenged");
 
-  FilteringTestLayeredNetworkDelegate filtering_network_delegate(
-      std::make_unique<TestNetworkDelegate>());
+  FilteringTestNetworkDelegate filtering_network_delegate;
   filtering_network_delegate.SetCookieFilter("got_challenged");
   TestURLRequestContext context(true);
   context.set_network_delegate(&filtering_network_delegate);
@@ -7070,8 +7066,7 @@ TEST_F(URLRequestTestHTTP, AuthChallengeWithFilteredCookies) {
   // Check maybe_stored_cookies is populated first round trip, and cleared on
   // the second.
   {
-    FilteringTestLayeredNetworkDelegate filtering_network_delegate(
-        std::make_unique<TestNetworkDelegate>());
+    FilteringTestNetworkDelegate filtering_network_delegate;
     filtering_network_delegate.SetCookieFilter("got_challenged");
     TestURLRequestContext context(true);
     context.set_network_delegate(&filtering_network_delegate);
@@ -7115,8 +7110,7 @@ TEST_F(URLRequestTestHTTP, AuthChallengeWithFilteredCookies) {
 
   // Check maybe_sent_cookies on first round trip (and cleared for the second).
   {
-    FilteringTestLayeredNetworkDelegate filtering_network_delegate(
-        std::make_unique<TestNetworkDelegate>());
+    FilteringTestNetworkDelegate filtering_network_delegate;
     filtering_network_delegate.set_block_get_cookies();
     TestURLRequestContext context(true);
     context.set_network_delegate(&filtering_network_delegate);
@@ -7456,10 +7450,10 @@ TEST_F(URLRequestTestHTTP, Redirect302PreserveReferenceFragment) {
 TEST_F(URLRequestTestHTTP, RedirectWithFilteredCookies) {
   ASSERT_TRUE(http_test_server()->Start());
 
-  // FilteringTestLayeredNetworkDelegate filters by name, so the names of the
-  // two cookies have to be the same. The values have been set to different
-  // strings (the value of the server-redirect cookies is "true" and set-cookie
-  // is "other") to differentiate between the two round trips.
+  // FilteringTestNetworkDelegate filters by name, so the names of the two
+  // cookies have to be the same. The values have been set to different strings
+  // (the value of the server-redirect cookies is "true" and set-cookie is
+  // "other") to differentiate between the two round trips.
   GURL redirect_to(
       http_test_server()->GetURL("/set-cookie?server-redirect=other"));
 
@@ -7470,8 +7464,7 @@ TEST_F(URLRequestTestHTTP, RedirectWithFilteredCookies) {
       http_test_server()->GetURL("/server-redirect?" + redirect_to.spec()));
   // Check maybe_stored_cookies on first round trip.
   {
-    FilteringTestLayeredNetworkDelegate filtering_network_delegate(
-        std::make_unique<TestNetworkDelegate>());  // Must outlive URLRequest.
+    FilteringTestNetworkDelegate filtering_network_delegate;
     filtering_network_delegate.SetCookieFilter(
         "server-redirect");  // Filter the cookie server-redirect sets.
     TestURLRequestContext context(true);
@@ -7527,8 +7520,7 @@ TEST_F(URLRequestTestHTTP, RedirectWithFilteredCookies) {
 
   // Check maybe_sent_cookies on first round trip.
   {
-    FilteringTestLayeredNetworkDelegate filtering_network_delegate(
-        std::make_unique<TestNetworkDelegate>());
+    FilteringTestNetworkDelegate filtering_network_delegate;
     filtering_network_delegate.set_block_get_cookies();
     TestURLRequestContext context(true);
     context.set_network_delegate(&filtering_network_delegate);
@@ -7613,65 +7605,6 @@ TEST_F(URLRequestTestHTTP, RedirectPreserveFirstPartyURL) {
   EXPECT_EQ(first_party_url, r->site_for_cookies());
 }
 
-TEST_F(URLRequestTestHTTP, RedirectPreserveTopFrameOrigin) {
-  ASSERT_TRUE(http_test_server()->Start());
-
-  GURL url(http_test_server()->GetURL("/redirect302-to-echo"));
-  url::Origin top_frame_origin =
-      url::Origin::Create(GURL("http://example.com"));
-  TestDelegate d;
-
-  std::unique_ptr<URLRequest> r(default_context().CreateRequest(
-      url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-  r->set_top_frame_origin(top_frame_origin);
-
-  r->Start();
-  d.RunUntilComplete();
-
-  EXPECT_EQ(2U, r->url_chain().size());
-  EXPECT_EQ(OK, d.request_status());
-  EXPECT_EQ(top_frame_origin, *r->top_frame_origin());
-}
-
-TEST_F(URLRequestTestHTTP, RedirectPreserveUnsetTopFrameOrigin) {
-  ASSERT_TRUE(http_test_server()->Start());
-
-  GURL url(http_test_server()->GetURL("/redirect302-to-echo"));
-  TestDelegate d;
-
-  std::unique_ptr<URLRequest> r(default_context().CreateRequest(
-      url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-  // Since we're not setting a top frame origin, we wouldn't expect one after
-  // the redirect.
-  r->Start();
-  d.RunUntilComplete();
-
-  EXPECT_EQ(2U, r->url_chain().size());
-  EXPECT_EQ(OK, d.request_status());
-  EXPECT_FALSE(r->top_frame_origin());
-}
-
-TEST_F(URLRequestTestHTTP, RedirectPreserveTopFrameURL) {
-  ASSERT_TRUE(http_test_server()->Start());
-
-  GURL url(http_test_server()->GetURL("/redirect302-to-echo"));
-  url::Origin top_frame_origin =
-      url::Origin::Create(GURL("http://example.com"));
-  TestDelegate d;
-  {
-    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
-        url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-    r->set_top_frame_origin(top_frame_origin);
-
-    r->Start();
-    d.RunUntilComplete();
-
-    EXPECT_EQ(2U, r->url_chain().size());
-    EXPECT_EQ(OK, d.request_status());
-    EXPECT_EQ(top_frame_origin, *r->top_frame_origin());
-  }
-}
-
 TEST_F(URLRequestTestHTTP, RedirectUpdateFirstPartyURL) {
   ASSERT_TRUE(http_test_server()->Start());
 
@@ -7693,26 +7626,6 @@ TEST_F(URLRequestTestHTTP, RedirectUpdateFirstPartyURL) {
     EXPECT_EQ(2U, r->url_chain().size());
     EXPECT_EQ(OK, d.request_status());
     EXPECT_EQ(expected_first_party_url, r->site_for_cookies());
-}
-
-TEST_F(URLRequestTestHTTP, RedirectIgnoreUnsetTopFrameOrigin) {
-  ASSERT_TRUE(http_test_server()->Start());
-
-  GURL url(http_test_server()->GetURL("/redirect302-to-echo"));
-  TestDelegate d;
-
-  std::unique_ptr<URLRequest> r(default_context().CreateRequest(
-      url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-  // Since we're not setting a top frame origin, we wouldn't expect one after
-  // the redirect.
-  r->set_first_party_url_policy(URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT);
-
-  r->Start();
-  d.RunUntilComplete();
-
-  EXPECT_EQ(2U, r->url_chain().size());
-  EXPECT_EQ(OK, d.request_status());
-  EXPECT_FALSE(r->top_frame_origin());
 }
 
 TEST_F(URLRequestTestHTTP, InterceptPost302RedirectGet) {

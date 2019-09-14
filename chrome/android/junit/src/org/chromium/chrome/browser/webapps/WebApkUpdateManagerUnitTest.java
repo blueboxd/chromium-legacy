@@ -380,9 +380,8 @@ public class WebApkUpdateManagerUnitTest {
                                 && manifestData.shareTargetEncType.equals(
                                         SHARE_TARGET_ENC_TYPE_MULTIPART),
                         manifestData.shareTargetFileNames, manifestData.shareTargetFileAccepts),
-                null /* shareTargetActivityName */, false /* forceNavigation */,
-                false /* isSplashProvidedByWebApk */, null /* shareData */,
-                1 /* webApkVersionCode */);
+                false /* forceNavigation */, false /* isSplashProvidedByWebApk */,
+                null /* shareData */, 1 /* webApkVersionCode */);
     }
 
     /**

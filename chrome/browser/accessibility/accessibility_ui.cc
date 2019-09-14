@@ -16,11 +16,13 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/accessibility_tree_formatter.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/favicon_status.h"
@@ -54,6 +56,7 @@ static const char kFaviconUrlField[] = "favicon_url";
 static const char kPidField[] = "pid";
 static const char kAccessibilityModeField[] = "a11y_mode";
 static const char kTypeField[] = "type";
+static const char kImprovementsEnabled[] = "improvementsEnabled";
 
 // Global flags
 static const char kInternal[] = "internal";
@@ -141,6 +144,7 @@ bool ShouldHandleAccessibilityRequestCallback(const std::string& path) {
 
 void HandleAccessibilityRequestCallback(
     content::BrowserContext* current_context,
+    bool improvements_enabled,
     const std::string& path,
     const content::WebUIDataSource::GotDataCallback& callback) {
   DCHECK(ShouldHandleAccessibilityRequestCallback(path));
@@ -226,6 +230,8 @@ void HandleAccessibilityRequestCallback(
 #endif  // !defined(OS_ANDROID)
   data.Set("browsers", std::move(browser_list));
 
+  data.SetBoolean(kImprovementsEnabled, improvements_enabled);
+
   std::string json_string;
   base::JSONWriter::Write(data, &json_string);
 
@@ -247,6 +253,22 @@ std::string RecursiveDumpAXPlatformNodeAsString(ui::AXPlatformNode* node,
   return str;
 }
 
+// Add property filters to the property_filters vector for the given property
+// filter type. The attributes are passed in as a string with each attribute
+// separated by a space.
+void AddPropertyFilters(
+    std::vector<content::AccessibilityTreeFormatter::PropertyFilter>&
+        property_filters,
+    const std::string& attributes,
+    content::AccessibilityTreeFormatter::PropertyFilter::Type type) {
+  for (const std::string& attribute : base::SplitString(
+           attributes, " ", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
+    property_filters.push_back(
+        content::AccessibilityTreeFormatter::PropertyFilter(
+            base::ASCIIToUTF16(attribute), type));
+  }
+}
+
 }  // namespace
 
 AccessibilityUI::AccessibilityUI(content::WebUI* web_ui)
@@ -254,6 +276,9 @@ AccessibilityUI::AccessibilityUI(content::WebUI* web_ui)
   // Set up the chrome://accessibility source.
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUIAccessibilityHost);
+
+  const bool improvements_enabled = base::FeatureList::IsEnabled(
+      features::kAccessibilityInternalsPageImprovements);
 
   // Add required resources.
   html_source->UseStringsJs();
@@ -263,18 +288,23 @@ AccessibilityUI::AccessibilityUI(content::WebUI* web_ui)
   html_source->SetRequestFilter(
       base::BindRepeating(&ShouldHandleAccessibilityRequestCallback),
       base::Bind(&HandleAccessibilityRequestCallback,
-                 web_ui->GetWebContents()->GetBrowserContext()));
+                 web_ui->GetWebContents()->GetBrowserContext(),
+                 improvements_enabled));
 
   content::BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();
   content::WebUIDataSource::Add(browser_context, html_source);
 
-  web_ui->AddMessageHandler(std::make_unique<AccessibilityUIMessageHandler>());
+  web_ui->AddMessageHandler(
+      std::make_unique<AccessibilityUIMessageHandler>(improvements_enabled));
 }
 
 AccessibilityUI::~AccessibilityUI() {}
 
-AccessibilityUIMessageHandler::AccessibilityUIMessageHandler() {}
+AccessibilityUIMessageHandler::AccessibilityUIMessageHandler(
+    bool improvements_enabled)
+    : improvements_enabled_(base::FeatureList::IsEnabled(
+          features::kAccessibilityInternalsPageImprovements)) {}
 
 AccessibilityUIMessageHandler::~AccessibilityUIMessageHandler() {}
 
@@ -427,7 +457,10 @@ void AccessibilityUIMessageHandler::RequestWebContentsTree(
   int process_id;
   int route_id;
   std::string request_type;
-  CHECK_EQ(3U, args->GetSize());
+  std::string allow;
+  std::string allow_empty;
+  std::string deny;
+  CHECK_EQ(6U, args->GetSize());
   CHECK(args->GetString(0, &process_id_str));
   CHECK(args->GetString(1, &route_id_str));
   CHECK(base::StringToInt(process_id_str, &process_id));
@@ -435,6 +468,9 @@ void AccessibilityUIMessageHandler::RequestWebContentsTree(
   CHECK(args->GetString(2, &request_type));
   CHECK(request_type == "showTree" || request_type == "copyTree");
   request_type = "accessibility." + request_type;
+  CHECK(args->GetString(3, &allow));
+  CHECK(args->GetString(4, &allow_empty));
+  CHECK(args->GetString(5, &deny));
 
   AllowJavascript();
   content::RenderViewHost* rvh =
@@ -456,11 +492,23 @@ void AccessibilityUIMessageHandler::RequestWebContentsTree(
   web_contents->SetAccessibilityMode(
       ui::AXMode(ui::AXMode::kNativeAPIs | ui::AXMode::kWebContents));
 
+  std::vector<content::AccessibilityTreeFormatter::PropertyFilter>
+      property_filters;
+  AddPropertyFilters(
+      property_filters, allow,
+      content::AccessibilityTreeFormatter::PropertyFilter::ALLOW);
+  AddPropertyFilters(
+      property_filters, allow_empty,
+      content::AccessibilityTreeFormatter::PropertyFilter::ALLOW_EMPTY);
+  AddPropertyFilters(property_filters, deny,
+                     content::AccessibilityTreeFormatter::PropertyFilter::DENY);
+
   PrefService* pref = Profile::FromWebUI(web_ui())->GetPrefs();
   bool internal = pref->GetBoolean(prefs::kShowInternalAccessibilityTree);
   base::string16 accessibility_contents_utf16 =
-      web_contents->DumpAccessibilityTree(internal);
+      web_contents->DumpAccessibilityTree(internal, property_filters);
   result->SetString("tree", base::UTF16ToUTF8(accessibility_contents_utf16));
+  result->SetBoolean(kImprovementsEnabled, improvements_enabled_);
   CallJavascriptFunction(request_type, *(result.get()));
 }
 

@@ -21,7 +21,6 @@
 <translation id="1146678959555564648">Ava VR</translation>
 <translation id="116280672541001035">Kasutatud</translation>
 <translation id="1171770572613082465">Vaadake populaarseid veebisaite, puudutades nuppu „Popid saidid”</translation>
-<translation id="1172593791219290334">Käivitamisel avatav leht</translation>
 <translation id="1173894706177603556">Muuda nime</translation>
 <translation id="1175310183703641346">Teie järjehoidjaid, ajalugu, paroole ja muud sisu ei sünkroonita enam teie Google'i kontoga</translation>
 <translation id="1178581264944972037">Peata</translation>
@@ -42,6 +41,7 @@
 <translation id="1258753120186372309">Google'i Doodle'i vigurlogo: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Otsimine ja avastamine</translation>
 <translation id="1264974993859112054">Sport</translation>
+<translation id="1266864766717917324">Üksust <ph name="CONTENT_TYPE" /> ei õnnestunud jagada</translation>
 <translation id="1272079795634619415">Peata</translation>
 <translation id="1283039547216852943">Laiendamiseks puudutage</translation>
 <translation id="1285320974508926690">Ära kunagi seda saiti tõlgi</translation>
@@ -71,6 +71,7 @@
 <translation id="1430915738399379752">Printimine</translation>
 <translation id="1445680696957526815">Chrome'i komponendid on omavahel vastuolus. Chrome'i võidakse täiendada, proovige uuesti mõne minuti pärast. Kui probleem ei lahene, proovige Chrome desinstallida ja seejärel uuesti installida.</translation>
 <translation id="1446450296470737166">MIDI-seadm. täieliku juht. lub.</translation>
+<translation id="1450753235335490080">Üksust <ph name="CONTENT_TYPE" /> ei saa jagada</translation>
 <translation id="145097072038377568">Android-seadetes välja lülitatud</translation>
 <translation id="1477626028522505441">Faili <ph name="FILE_NAME" /> allalaadimine ebaõnnestus serveriprobleemide tõttu.</translation>
 <translation id="1501480321619201731">Kustuta grupp</translation>
@@ -153,6 +154,7 @@
 <translation id="2049961518639794558">Faililaiendi muutmisel võib esineda ootamatut käitumist ja see võib teie seadmele ohtlik olla.</translation>
 <translation id="2056878612599315956">Sait on peatatud</translation>
 <translation id="2063713494490388661">Puudutage otsimiseks</translation>
+<translation id="2067805253194386918">tekst</translation>
 <translation id="2079545284768500474">Võta tagasi</translation>
 <translation id="2082238445998314030">Tulemus <ph name="RESULT_NUMBER" />/<ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Heli</translation>
@@ -165,7 +167,6 @@
 <translation id="2131665479022868825"><ph name="DATA" /> salvestati</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> suleti</translation>
 <translation id="2139186145475833000">Avaekraanile lisamine</translation>
-<translation id="2142289305367051020">Teie lemmiklehed on siin</translation>
 <translation id="2146738493024040262">Ava installimata avatav rakendus</translation>
 <translation id="2148716181193084225">Täna</translation>
 <translation id="2154484045852737596">Kaardi muutmine</translation>
@@ -324,6 +325,7 @@
 <translation id="3384347053049321195">Jaga kujutist</translation>
 <translation id="3386292677130313581">Küsi enne saitidele minu asukoha avaldamist (soovitatav)</translation>
 <translation id="3387650086002190359">Faili <ph name="FILE_NAME" /> allalaadimine ebaõnnestus failisüsteemi vigade tõttu.</translation>
+<translation id="3389286852084373014">Tekst on liiga pikk</translation>
 <translation id="3398320232533725830">Järjehoidjate halduri avamine</translation>
 <translation id="3414952576877147120">Suurus:</translation>
 <translation id="3443221991560634068">Praeguse lehe uuesti laadimine</translation>
@@ -348,6 +350,7 @@
 <translation id="3599863153486145794">Kustutab ajaloo kõigist sisselogitud seadmetest. Aadressil <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> võib teie Google'i kontol olla muus vormis sirvimisajalugu.</translation>
 <translation id="3600792891314830896">Heli esitavad saidid vaigistatakse</translation>
 <translation id="3616113530831147358">Heli</translation>
+<translation id="3631987586758005671">Jagamine seadmega <ph name="DEVICE_NAME" /></translation>
 <translation id="3632295766818638029">Parooli kuvamine</translation>
 <translation id="363596933471559332">Teid logitakse salvestatud mandaadiga veebisaitidele automaatselt sisse. Kui funktsioon on välja lülitatud, palutakse teilt kinnitust iga kord enne veebisaidile sisselogimist.</translation>
 <translation id="3658159451045945436">Lähtestamisel kustutatakse säästetud andmemahu ajalugu, sh külastatud saitide loend.</translation>
@@ -358,7 +361,6 @@
 <translation id="3739899004075612870">Teenuses <ph name="PRODUCT_NAME" /> järjehoidj. lisatud</translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB – muud rakendused</translation>
 <translation id="3744111561329211289">Taustal sünkroonimine</translation>
-<translation id="3745176700485982507">Sellelt lehelt leiate oma lemmikveebisaitide lingid</translation>
 <translation id="3771001275138982843">Värskendust ei saanud alla laadida</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Lülitage Bluetooth sisse<ph name="END_LINK" />, et sidumine lubada</translation>
 <translation id="3775705724665058594">Saatmine teie seadmetesse</translation>
@@ -563,7 +565,6 @@ Enne VR-i aktiveerimist veenduge, et sait oleks usaldusväärne.</translation>
 <translation id="5224771365102442243">Videoga</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> soovib otsida läheduses olevaid Bluetooth-seadmeid. Leiti järgmised seadmed:</translation>
 <translation id="5233638681132016545">Uus vaheleht</translation>
-<translation id="5234764350956374838">Loobu</translation>
 <translation id="526421993248218238">Seda lehte ei saa laadida</translation>
 <translation id="5271967389191913893">Seade ei saa allalaaditavat sisu avada.</translation>
 <translation id="528192093759286357">Täisekraanilt väljumiseks lohistage ülaservast alla ja puudutage tagasinuppu.</translation>
@@ -578,8 +579,8 @@ Enne VR-i aktiveerimist veenduge, et sait oleks usaldusväärne.</translation>
 <translation id="5324858694974489420">Vanemlikud seaded</translation>
 <translation id="5327248766486351172">Nimi</translation>
 <translation id="5335288049665977812">Luba saitidel käitada JavaScripti (soovitatav)</translation>
+<translation id="5342314432463739672">Lubade taotlused</translation>
 <translation id="5357811892247919462">Vaheleht võeti vastu</translation>
-<translation id="5363230136052241468">Puudutage uue vahelehe laadimiseks avaekraani nuppu</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> avatud vaheleht, puudutage vahelehtede vahetamiseks}other{<ph name="OPEN_TABS_MANY" /> avatud vahelehte, puudutage vahelehtede vahetamiseks}}</translation>
 <translation id="5391532827096253100">Teie ühendus selle saidiga ei ole turvaline. Saidi teave</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(ja veel 1)}other{(ja veel #)}}</translation>
@@ -748,6 +749,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="6532866250404780454">Chrome'is külastatud saite ei kuvata. Kõik saitide taimerid kustutatakse.</translation>
 <translation id="6534565668554028783">Google'il kulus reageerimiseks liiga kaua aega</translation>
 <translation id="6538442820324228105">Alla on laaditud <ph name="GBS" /> GB</translation>
+<translation id="6539092367496845964">Midagi läks valesti. Proovige hiljem uuesti.</translation>
 <translation id="654446541061731451">Valige kiirega edastatav vaheleht</translation>
 <translation id="6545017243486555795">Kustuta kõik andmed</translation>
 <translation id="6545864417968258051">Bluetoothi otsimine</translation>
@@ -802,7 +804,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="6912998170423641340">Keela saitidel lugeda lõikelaual olevat teksti ja pilte</translation>
 <translation id="6914783257214138813">Teie paroolid on nähtavad kõigile, kes saavad vaadata eksporditud faili.</translation>
 <translation id="6942665639005891494">Allalaadimise vaikeasukohta saab menüü Seaded valikuga alati muuta</translation>
-<translation id="6944102653068653326">Puudutage uue vahelehe laadimiseks</translation>
 <translation id="6945221475159498467">Vali</translation>
 <translation id="6963642900430330478">See leht on ohtlik. Saidi teave</translation>
 <translation id="6963766334940102469">Kustuta järjehoidjad</translation>
@@ -879,6 +880,7 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="7493994139787901920"><ph name="VERSION" /> (värskendati <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">säästetud andmemaht</translation>
 <translation id="7498271377022651285">Oodake ...</translation>
+<translation id="7510943789645525906">Hoiatab teid, kui kasutatav parool oli osa andmetega seotud rikkumisest</translation>
 <translation id="7514365320538308">Laadi alla</translation>
 <translation id="751961395872307827">Saidiga ei saa ühendust luua</translation>
 <translation id="7521387064766892559">Javascript</translation>
@@ -996,7 +998,6 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="8284326494547611709">Subtiitrid</translation>
 <translation id="8300705686683892304">Neid haldab rakendus</translation>
 <translation id="8310344678080805313">Tavapärased vahekaardid</translation>
-<translation id="8313455859591948645">Käivitamisel avatava lehe muutmine</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> ja muud saidid</translation>
 <translation id="8327155640814342956">Parima sirvimiskogemuse tagamiseks avage Chrome, et seda värskendada</translation>
 <translation id="8339163506404995330"><ph name="LANGUAGE" /> keeles olevaid lehti ei tõlgita</translation>

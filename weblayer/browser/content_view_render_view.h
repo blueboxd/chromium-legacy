@@ -54,13 +54,10 @@ class ContentViewRenderView : public content::CompositorClient {
                         const base::android::JavaParamRef<jobject>& obj);
   void SurfaceChanged(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& obj,
-                      jint format,
+                      jboolean can_be_used_with_surface_control,
                       jint width,
                       jint height,
                       const base::android::JavaParamRef<jobject>& surface);
-  void SetOverlayVideoMode(JNIEnv* env,
-                           const base::android::JavaParamRef<jobject>& obj,
-                           bool enabled);
   base::android::ScopedJavaLocalRef<jobject> GetResourceManager(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jobj);
@@ -79,7 +76,6 @@ class ContentViewRenderView : public content::CompositorClient {
   std::unique_ptr<content::Compositor> compositor_;
 
   gfx::NativeWindow root_window_;
-  int current_surface_format_;
 
   // Set as the root-layer of the compositor. Contains |web_contents_layer_|.
   scoped_refptr<cc::Layer> root_container_layer_;

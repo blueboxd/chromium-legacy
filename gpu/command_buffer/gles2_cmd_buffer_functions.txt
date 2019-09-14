@@ -274,6 +274,9 @@ GL_APICALL void         GL_APIENTRY glBindImageTexture (GLuint unit, GLuint text
 GL_APICALL void         GL_APIENTRY glDispatchCompute (GLuint num_groups_x, GLuint num_groups_y, GLuint num_groups_z);
 GL_APICALL void         GL_APIENTRY glDispatchComputeIndirect (GLintptrNotNegative offset);
 
+GL_APICALL void         GL_APIENTRY glDrawArraysIndirect (GLenumDrawMode mode, const void* offset);
+GL_APICALL void         GL_APIENTRY glDrawElementsIndirect (GLenumDrawMode mode, GLenumIndexType type, const void* offset);
+
 GL_APICALL void         GL_APIENTRY glGetProgramInterfaceiv (GLidProgram program, GLenum program_interface, GLenum pname, GLint* params);
 GL_APICALL GLuint       GL_APIENTRY glGetProgramResourceIndex (GLidProgram program, GLenum program_interface, const char* name);
 GL_APICALL void         GL_APIENTRY glGetProgramResourceName (GLidProgram program, GLenum program_interface, GLuint index, GLsizeiNotNegative bufsize, GLsizeiOptional* length, char* name);

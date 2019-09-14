@@ -4,7 +4,9 @@ Browser initiated navigation blocked cookies: []
 
 Javascript initiated navigation blocked cookies: [
   {
-    "blockedReason": "SameSiteStrict",
+    "blockedReasons": [
+      "SameSiteStrict"
+    ],
     "cookie": {
       "name": "name",
       "value": "value",
@@ -22,7 +24,9 @@ Javascript initiated navigation blocked cookies: [
 
 Javascript initiated subresource blocked cookies: [
   {
-    "blockedReason": "SameSiteStrict",
+    "blockedReasons": [
+      "SameSiteStrict"
+    ],
     "cookie": {
       "name": "name",
       "value": "value",

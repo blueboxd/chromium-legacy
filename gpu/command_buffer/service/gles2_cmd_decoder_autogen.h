@@ -4730,6 +4730,18 @@ error::Error GLES2DecoderImpl::HandleDispatchComputeIndirect(
   return error::kUnknownCommand;
 }
 
+error::Error GLES2DecoderImpl::HandleDrawArraysIndirect(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  return error::kUnknownCommand;
+}
+
+error::Error GLES2DecoderImpl::HandleDrawElementsIndirect(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  return error::kUnknownCommand;
+}
+
 error::Error GLES2DecoderImpl::HandleGetProgramInterfaceiv(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {

@@ -12401,6 +12401,84 @@ static_assert(offsetof(DispatchComputeIndirect, header) == 0,
 static_assert(offsetof(DispatchComputeIndirect, offset) == 4,
               "offset of DispatchComputeIndirect offset should be 4");
 
+struct DrawArraysIndirect {
+  typedef DrawArraysIndirect ValueType;
+  static const CommandId kCmdId = kDrawArraysIndirect;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLenum _mode, GLuint _offset) {
+    SetHeader();
+    mode = _mode;
+    offset = _offset;
+  }
+
+  void* Set(void* cmd, GLenum _mode, GLuint _offset) {
+    static_cast<ValueType*>(cmd)->Init(_mode, _offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t mode;
+  uint32_t offset;
+};
+
+static_assert(sizeof(DrawArraysIndirect) == 12,
+              "size of DrawArraysIndirect should be 12");
+static_assert(offsetof(DrawArraysIndirect, header) == 0,
+              "offset of DrawArraysIndirect header should be 0");
+static_assert(offsetof(DrawArraysIndirect, mode) == 4,
+              "offset of DrawArraysIndirect mode should be 4");
+static_assert(offsetof(DrawArraysIndirect, offset) == 8,
+              "offset of DrawArraysIndirect offset should be 8");
+
+struct DrawElementsIndirect {
+  typedef DrawElementsIndirect ValueType;
+  static const CommandId kCmdId = kDrawElementsIndirect;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLenum _mode, GLenum _type, GLuint _offset) {
+    SetHeader();
+    mode = _mode;
+    type = _type;
+    offset = _offset;
+  }
+
+  void* Set(void* cmd, GLenum _mode, GLenum _type, GLuint _offset) {
+    static_cast<ValueType*>(cmd)->Init(_mode, _type, _offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t mode;
+  uint32_t type;
+  uint32_t offset;
+};
+
+static_assert(sizeof(DrawElementsIndirect) == 16,
+              "size of DrawElementsIndirect should be 16");
+static_assert(offsetof(DrawElementsIndirect, header) == 0,
+              "offset of DrawElementsIndirect header should be 0");
+static_assert(offsetof(DrawElementsIndirect, mode) == 4,
+              "offset of DrawElementsIndirect mode should be 4");
+static_assert(offsetof(DrawElementsIndirect, type) == 8,
+              "offset of DrawElementsIndirect type should be 8");
+static_assert(offsetof(DrawElementsIndirect, offset) == 12,
+              "offset of DrawElementsIndirect offset should be 12");
+
 struct GetProgramInterfaceiv {
   typedef GetProgramInterfaceiv ValueType;
   static const CommandId kCmdId = kGetProgramInterfaceiv;

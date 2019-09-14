@@ -868,8 +868,7 @@ LayoutUnit LayoutFlexibleBox::ComputeInnerFlexBaseSizeForChild(
   Length flex_basis = FlexBasisForChild(child);
   // -webkit-box sizes as fit-content instead of max-content.
   if (flex_basis.IsAuto() &&
-      ((StyleRef().Display() == EDisplay::kWebkitBox ||
-        StyleRef().Display() == EDisplay::kWebkitInlineBox) &&
+      (StyleRef().IsDeprecatedWebkitBox() &&
        (StyleRef().BoxOrient() == EBoxOrient::kHorizontal ||
         StyleRef().BoxAlign() != EBoxAlignment::kStretch))) {
     flex_basis = Length(Length::kFitContent);

@@ -21,6 +21,7 @@ namespace viz {
 VIZ_RESOURCE_FORMAT_EXPORT SkColorType
 ResourceFormatToClosestSkColorType(bool gpu_compositing, ResourceFormat format);
 VIZ_RESOURCE_FORMAT_EXPORT int BitsPerPixel(ResourceFormat format);
+VIZ_RESOURCE_FORMAT_EXPORT bool HasAlpha(ResourceFormat format);
 
 // The following functions use unsigned int instead of GLenum, since including
 // third_party/khronos/GLES2/gl2.h causes redefinition errors as

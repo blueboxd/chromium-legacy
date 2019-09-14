@@ -140,7 +140,8 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
 OmniboxPopupContentsView::OmniboxPopupContentsView(
     OmniboxViewViews* omnibox_view,
     OmniboxEditModel* edit_model,
-    LocationBarView* location_bar_view)
+    LocationBarView* location_bar_view,
+    const ui::ThemeProvider* theme_provider)
     : model_(new OmniboxPopupModel(this, edit_model)),
       omnibox_view_(omnibox_view),
       location_bar_view_(location_bar_view) {
@@ -148,7 +149,8 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
   set_owned_by_client();
 
   for (size_t i = 0; i < AutocompleteResult::GetMaxMatches(); ++i) {
-    OmniboxResultView* result_view = new OmniboxResultView(this, i);
+    OmniboxResultView* result_view =
+        new OmniboxResultView(this, i, theme_provider);
     result_view->SetVisible(false);
     AddChildView(result_view);
   }
@@ -184,12 +186,6 @@ gfx::Image OmniboxPopupContentsView::GetMatchIcon(
     const AutocompleteMatch& match,
     SkColor vector_icon_color) const {
   return model_->GetMatchIcon(match, vector_icon_color);
-}
-
-OmniboxTint OmniboxPopupContentsView::CalculateTint() const {
-  // Use LIGHT in tests.
-  return location_bar_view_ ? location_bar_view_->CalculateTint()
-                            : OmniboxTint::LIGHT;
 }
 
 void OmniboxPopupContentsView::SetSelectedLine(size_t index) {

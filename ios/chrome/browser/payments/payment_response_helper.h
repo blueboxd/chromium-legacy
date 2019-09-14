@@ -45,9 +45,9 @@ class PaymentResponseHelper
   ~PaymentResponseHelper() override;
 
   // PaymentInstrument::Delegate
-  void OnInstrumentDetailsReady(
-      const std::string& method_name,
-      const std::string& stringified_details) override;
+  void OnInstrumentDetailsReady(const std::string& method_name,
+                                const std::string& stringified_details,
+                                const PayerData& payer_data) override;
   void OnInstrumentDetailsError(const std::string& error_message) override;
 
  private:

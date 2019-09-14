@@ -97,9 +97,6 @@
 <translation id="138218114945450791">آبی روشن</translation>
 <translation id="1382194467192730611">‏سرپرست دستگاه USB را مجاز کرد</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> داده‌ای ارسال نکرد.</translation>
-<translation id="140316286225361634">سایت <ph name="ORIGIN" /> درخواست کرده است خط‌مشی امنیتی برای همه
-    درخواست‌هایش اعمال شود و این خط‌مشی درحال‌حاضراین  سایت را ناامن
-    می‌داند.</translation>
 <translation id="1405567553485452995">سبز روشن</translation>
 <translation id="1407135791313364759">باز کردن همه</translation>
 <translation id="1413809658975081374">خطای حریم خصوصی</translation>
@@ -135,6 +132,7 @@
 <translation id="1569487616857761740">وارد کردن تاریخ انقضا</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">هنگام نمایش این صفحه وب مشکلی پیش آمد.</translation>
+<translation id="1588438908519853928">معمولی</translation>
 <translation id="1592005682883173041">دسترسی داده محلی</translation>
 <translation id="1594030484168838125">انتخاب</translation>
 <translation id="161042844686301425">فیروزه‌ای</translation>
@@ -212,10 +210,6 @@
 <translation id="1981206234434200693">‏داده‌های سابقه مرور Chrome را پاک کنید</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{و ۱ برنامه دیگر}one{و # برنامه دیگر}other{و # برنامه دیگر}}</translation>
 <translation id="2003709556000175978">هم‌اکنون گذرواژه‌تان را بازنشانی کنید</translation>
-<translation id="20053308747750172">سروری که به آن می‌روید، <ph name="ORIGIN" />, درخواست کرده است
-    برای همه درخواست‌هایش خط‌مشی ایمنی اعمال شود. اما درحال‌حاضر
-    خط‌مشی نامعتبری ارسال شده است که مانع می‌شود مرورگر
-    درخواستتان را برای <ph name="SITE" /> برآورده کند.</translation>
 <translation id="2025186561304664664">پروکسی بر روی پیکربندی خودکار تنظیم شده است.</translation>
 <translation id="202813660234680402">نه، اضافه نشود</translation>
 <translation id="2030481566774242610">منظورتان <ph name="LINK" /> بود؟</translation>
@@ -293,10 +287,6 @@
 <translation id="2409589295040002961">‏سرپرست می‌تواند تنظیم مرورگرتان را ازراه‌دور تغییر دهد. همچنین فعالیت انجام‌شده در این دستگاه می‌تواند از خارج از Chrome مدیریت شود. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ ممکن است گواهی امنیتی آن باطل شده باشد. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصال شما را قطع کرده است.</translation>
-<translation id="2418081434543109369">سروری که به آن می‌روید، <ph name="ORIGIN" />، درخواست کرده است
-    برای همه درخواست‌هایش خط‌مشی ایمنی اعمال شود. اما اکنون
-    خط‌مشی‌ای را ارسال نکرده است که این امر مانع می‌شود مرورگر درخواستتان را
-    برای سایت <ph name="SITE" /> برآورده کند.</translation>
 <translation id="2463193859425327265">صفحه اصلی را تغییر دهید</translation>
 <translation id="2463739503403862330">تکمیل</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -588,6 +578,7 @@
 <translation id="4103249731201008433">شماره سریال دستگاه نامعتبر است</translation>
 <translation id="410351446219883937">پخش خودکار</translation>
 <translation id="4103763322291513355">‏برای مشاهده فهرست نشانی‌های وب ممنوع و سایر خط‌مشی‌های اجباری براساس تصمیم سرپرست سیستم خود از &lt;strong&gt;chrome://policy&lt;/strong&gt; بازدید نمایید.</translation>
+<translation id="4108231218301530806">دفعه بعد از اثر انگشت برای به‌تأیید رساندن این کارت استفاده کنید.</translation>
 <translation id="4110652170750985508">مرور پرداخت</translation>
 <translation id="4112140312785995938">رفتن به عقب</translation>
 <translation id="4116663294526079822">همیشه مجاز در این سایت</translation>
@@ -790,6 +781,7 @@
 <translation id="5141240743006678641">‏رمزگذاری گذرواژه‌های همگام‌سازی شده با اطلاعات کاربری Google شما</translation>
 <translation id="5145883236150621069">کد خطا در پاسخ خط‌مشی موجود است</translation>
 <translation id="515292512908731282">C4 (Envelope)</translation>
+<translation id="5158275234811857234">جلد</translation>
 <translation id="5159010409087891077">‏صفحه را در پنجره «ناشناس» جدیدی باز کنید (N⌘⇧)</translation>
 <translation id="516920405563544094">‏CVC کارت <ph name="CREDIT_CARD" /> را وارد کنید. بعد از تأیید کردن، جزئیات کارت از حساب Google شما با این سایت هم‌رسانی می‌شود.</translation>
 <translation id="5169827969064885044">‏ممکن است دسترسی به حساب سازمانتان را از دست بدهید یا به سرقت هویت دچار شوید. Chrome توصیه می‌کند هم‌اکنون گذرواژه‌تان را تغییر دهید.</translation>
@@ -949,6 +941,7 @@
 <translation id="598637245381783098">برنامه پرداخت باز نشد</translation>
 <translation id="5989320800837274978">‏سرور پروکسی ثابت و URL اسکریپت pac. تعیین نشده‌اند.</translation>
 <translation id="5990559369517809815">درخواست‌های ارسالی به سرور توسط یک برنامهٔ افزودنی مسدود شد.</translation>
+<translation id="6000758707621254961"><ph name="RESULT_COUNT" /> نتیجه برای «<ph name="SEARCH_TEXT" />»</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">سال</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{صفحه ۱}one{صفحه #}other{صفحه #}}</translation>
@@ -1007,6 +1000,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{هیچ‌کدام}=1{۱ گذرواژه (برای <ph name="DOMAIN_LIST" />، همگام‌سازی‌شده)}=2{۲ گذرواژه (برای <ph name="DOMAIN_LIST" />، همگام‌سازی‌شده)}one{# گذرواژه (برای <ph name="DOMAIN_LIST" />، همگام‌سازی‌شده)}other{# گذرواژه (برای <ph name="DOMAIN_LIST" />، همگام‌سازی‌شده)}}</translation>
 <translation id="6358450015545214790">معنی این‌ها چیست؟</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6377268785556383139">۱ نتیجه برای «<ph name="SEARCH_TEXT" />»</translation>
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">احتمالاً هزینه‌هایی اعمال می‌شود.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{۱ پیشنهاد دیگر}one{# پیشنهاد دیگر}other{# پیشنهاد دیگر}}</translation>
@@ -1072,7 +1066,7 @@
 <translation id="6738516213925468394">داده‌ها با  <ph name="BEGIN_LINK" />گذرنویسه همگام‌سازی‌شده<ph name="END_LINK" /> شما در <ph name="TIME" /> رمز می‌شود. برای شروع همگام‌سازی، آن را وارد کنید.</translation>
 <translation id="674375294223700098">خطای ناشناس گواهی سرور.</translation>
 <translation id="6744009308914054259">وقتی درانتظار اتصال هستید، می‌توانید برای خواندن مقاله‌های آفلاین، «بارگیری‌ها» را مشاهده کنید.</translation>
-<translation id="6747611005629681221">هشدار: ویژگی‌های منسوخ‌شده در پیش هستند!</translation>
+<translation id="6747611005629681221">هشدار: ویژگی‌های منسوخ‌شده!</translation>
 <translation id="6753269504797312559">مقدار خط‌‌مشی</translation>
 <translation id="6757797048963528358">دستگاهتان به خواب رفته است.</translation>
 <translation id="6768213884286397650">Hagaki (Postcard)</translation>
@@ -1141,10 +1135,6 @@
 <translation id="717330890047184534">‏شناسه Gaia:</translation>
 <translation id="7174545416324379297">ادغام شد</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> و <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> گزینه دیگر}one{<ph name="SHIPPING_OPTION_PREVIEW" /> و <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> گزینه دیگر}other{<ph name="SHIPPING_OPTION_PREVIEW" /> و <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> گزینه دیگر}}</translation>
-<translation id="7177397715882417099">سروری که به آن می‌روید، <ph name="ORIGIN" />، درخواست کرده است
-    برای همه درخواست‌هایش خط‌مشی ایمنی اعمال شود. اما به‌جای
-    ارسال خط‌مشی، مرورگر را به جای دیگری هدایت کرده است، که مانع می‌شود
-    مرورگر درخواستتان را از <ph name="SITE" /> برآورده کند.</translation>
 <translation id="7179323680825933600">ذخیره و تکمیل روش‌های پرداخت</translation>
 <translation id="7180611975245234373">بازخوانی</translation>
 <translation id="7182878459783632708">هیچ خط‌مشی‌ای تنظیم نشده است</translation>
@@ -1171,6 +1161,7 @@
 <translation id="7300012071106347854">آبی پررنگ</translation>
 <translation id="7302712225291570345">«<ph name="TEXT" />»</translation>
 <translation id="7303701124147721189">‏برای اینکه دفعه بعد پرداخت سریع‌تری داشته باشید، اطلاعات کارت و نشانی صورت‌حسابتان را در حساب Google خود و این دستگاه ذخیره کنید.</translation>
+<translation id="7304030187361489308">بالا</translation>
 <translation id="7309308571273880165">گزارش خرابی ثبت‌شده در <ph name="CRASH_TIME" /> (کاربر درخواست بارگذاری کرده است، هنوز بارگذاری نشده است)</translation>
 <translation id="7313965965371928911">هشدار <ph name="BEGIN_LINK" />مرور ایمن<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1532,7 +1523,6 @@
 <translation id="939736085109172342">پوشهٔ جدید</translation>
 <translation id="945855313015696284">اطلاعات زیر را بررسی و کارت‌های نامعتبر را حذف کنید</translation>
 <translation id="951104842009476243">کارت‌های نقدی و پیش‌پرداخت قابل‌قبول</translation>
-<translation id="958202389743790697">مسدودشده براساس خط‌مشی ایمنی <ph name="ORIGIN" />.</translation>
 <translation id="962484866189421427">این محتوا ممکن است برنامه‌های فریب‌دهنده‌ای نصب کند که وانمود می‌کنند برنامه دیگری هستند یا اینکه داده‌هایی برای ردیابی شما جمع‌آوری می‌کنند. <ph name="BEGIN_LINK" />درهرصورت نشان داده شود<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">ساخت رسمی</translation>
 <translation id="973773823069644502">افزودن نشانی ارسال</translation>

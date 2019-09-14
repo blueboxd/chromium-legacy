@@ -18,8 +18,9 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
-#include "components/printing/common/print_messages.h"
+#include "components/printing/common/print.mojom.h"
 #include "content/public/test/test_renderer_host.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 namespace printing {
 
@@ -40,9 +41,14 @@ class TestPrintViewManager : public PrintViewManagerBase {
   // Mostly copied from PrintViewManager::PrintPreviewNow(). We can't override
   // PrintViewManager since it is a user data class.
   bool PrintPreviewNow(content::RenderFrameHost* rfh, bool has_selection) {
-    auto msg = std::make_unique<PrintMsg_InitiatePrintPreview>(
-        rfh->GetRoutingID(), has_selection);
-    return PrintNowInternal(rfh, std::move(msg));
+    // Don't print / print preview interstitials or crashed tabs.
+    if (IsInterstitialOrCrashed())
+      return false;
+
+    mojom::PrintRenderFrameAssociatedPtr print_render_frame;
+    rfh->GetRemoteAssociatedInterfaces()->GetInterface(&print_render_frame);
+    print_render_frame->InitiatePrintPreview(has_selection);
+    return true;
   }
 
   // Getters for validating arguments to StartPdf...Conversion functions

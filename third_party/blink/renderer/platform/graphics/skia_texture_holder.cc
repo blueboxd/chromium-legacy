@@ -142,7 +142,8 @@ SkiaTextureHolder::~SkiaTextureHolder() {
 }
 
 bool SkiaTextureHolder::IsValid() const {
-  return !!image_ && !!ContextProviderWrapper();
+  return !!image_ && !!ContextProviderWrapper() &&
+         image_->isValid(ContextProvider()->GetGrContext());
 }
 
 }  // namespace blink

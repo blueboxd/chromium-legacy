@@ -133,29 +133,6 @@ TEST_F(CodecImageGroupTest, ImagesRetainRefToGroup) {
   ASSERT_TRUE(was_destroyed);
 }
 
-TEST_F(CodecImageGroupTest, RemovingImageAllowsDestructionOfGroup) {
-  // Removing the last image from the group allows its destruction.
-  Record rec = CreateImageGroup();
-  bool was_destroyed = false;
-  rec.image_group->SetDestructionCallback(
-      base::BindOnce([](bool* flag) -> void { *flag = true; }, &was_destroyed));
-
-  scoped_refptr<CodecImage> image = new MockCodecImage();
-  rec.image_group->AddCodecImage(image.get());
-
-  // Dropping our ref should not delete the group, since the image holds it.
-  CodecImageGroup* image_group_raw = rec.image_group.get();
-  rec.image_group = nullptr;
-  ASSERT_FALSE(was_destroyed);
-
-  // Removing the codec image from the group should allow destruction.  Note
-  // that this also (subtly) tests that the CodecImageGroup clears the
-  // destruction CB that it set on the CodecImage; that callback holds a strong
-  // ref, so the group won't be destroyed if it doesn't.
-  image_group_raw->RemoveCodecImage(image.get());
-  ASSERT_TRUE(was_destroyed);
-}
-
 TEST_F(CodecImageGroupTest, ImageGroupDropsForwardsSurfaceDestruction) {
   // CodecImageGroup should notify all images when the surface is destroyed.  We
   // also verify that the image group drops its ref to the surface bundle, so

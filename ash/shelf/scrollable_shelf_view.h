@@ -11,6 +11,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button_delegate.h"
 #include "ash/shelf/shelf_container_view.h"
+#include "ash/shelf/shelf_tooltip_delegate.h"
 #include "ash/shelf/shelf_view.h"
 #include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/controls/button/button.h"
@@ -23,7 +24,8 @@ namespace ash {
 
 class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
                                        public ShellObserver,
-                                       public ShelfButtonDelegate {
+                                       public ShelfButtonDelegate,
+                                       public ShelfTooltipDelegate {
  public:
   enum LayoutStrategy {
     // The arrow buttons are not shown. It means that there is enough space to
@@ -136,6 +138,14 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // Overridden from ShellObserver:
   void OnShelfAlignmentChanged(aura::Window* root_window) override;
 
+  // ShelfTooltipDelegate:
+  bool ShouldShowTooltipForView(const views::View* view) const override;
+  bool ShouldHideTooltip(const gfx::Point& cursor_location) const override;
+  const std::vector<aura::Window*> GetOpenWindowsForView(
+      views::View* view) override;
+  base::string16 GetTitleForView(const views::View* view) const override;
+  views::View* GetViewForEvent(const ui::Event& event) override;
+
   // Returns the padding inset. Different Padding strategies for three scenarios
   // (1) display centering alignment
   // (2) scrollable shelf centering alignment
@@ -186,6 +196,9 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   views::View* FindFirstFocusableChild();
   views::View* FindLastFocusableChild();
 
+  // Returns the available space on the main axis for shelf icons.
+  int GetSpaceForIcons() const;
+
   LayoutStrategy layout_strategy_ = kNotShowArrowButtons;
 
   // Child views Owned by views hierarchy.
@@ -194,7 +207,7 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   ShelfContainerView* shelf_container_view_ = nullptr;
 
   // Available space to accommodate shelf icons.
-  int space_for_icons_ = 0;
+  gfx::Rect available_space_;
 
   ShelfView* shelf_view_ = nullptr;
 

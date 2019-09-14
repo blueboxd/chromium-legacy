@@ -104,7 +104,6 @@
 <translation id="2359808026110333948">આગળ વધો</translation>
 <translation id="2365393535144473978">મોબાઇલ ડેટા ચાલુ કરવાથી બ્લૂટૂથ ચાલુ થશે.</translation>
 <translation id="2391579633712104609">180°</translation>
-<translation id="239188844683466770">'ખલેલ પાડશો નહીં'ને ટૉગલ કરો</translation>
 <translation id="2412593942846481727">અપડેટ ઉપલબ્ધ છે</translation>
 <translation id="2413728805700750528">મેનેજ કરાયેલ સત્ર <ph name="DISPLAY_NAME" />ને <ph name="DOMAIN" /> દ્વારા મેનેજ કરવામાં આવે છે</translation>
 <translation id="2427507373259914951">લેફ્ટ ક્લિક કરો</translation>
@@ -224,6 +223,7 @@
 <translation id="4181841719683918333">ભાષાઓ</translation>
 <translation id="4195877955194704651">ઑટોમૅટિક ક્લિક બટન</translation>
 <translation id="4217571870635786043">ડિક્ટેશન</translation>
+<translation id="421885205185866088"><ph name="USER_EMAIL_ADDRESS" /> માટે સ્માર્ટ કાર્ડ પિન</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">નોટિફિકેશન સેટિંગ બતાવો. નોટિફિકેશન બંધ છે</translation>
 <translation id="4269883910223712419">આ ઉપકરણના વ્યવસ્થાપકની ક્ષમતા:</translation>
@@ -239,6 +239,7 @@
 <translation id="4379531060876907730">આ છે તમારા સ્ટાઇલસનાં સાધનો</translation>
 <translation id="4389184120735010762">તમે ડૉક કરેલ મૅગ્નિફાયર માટે કીબોર્ડ શૉર્ટકટ દબાવેલ છે. શું તમે તેને ચાલુ કરવા માગો છો?</translation>
 <translation id="4421231901400348175">દૂરસ્થ સહાય વડે <ph name="HELPER_NAME" /> સાથે તમારી સ્ક્રીનનું નિયંત્રણ શેર કરવું.</translation>
+<translation id="4430019312045809116">વૉલ્યૂમ</translation>
 <translation id="4450893287417543264">ફરી બતાવશો નહીં</translation>
 <translation id="4477350412780666475">આગલો ટ્રૅક</translation>
 <translation id="4479639480957787382">ઇથરનેટ</translation>

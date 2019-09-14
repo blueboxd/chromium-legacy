@@ -63,6 +63,7 @@ XRPose* XRTargetRaySpace::getPose(
   // If we don't have a valid base pose (most common when tracking is lost),
   // we can't get a target ray pose regardless of the mode.
   if (!base_pose_matrix) {
+    DVLOG(2) << __func__ << " : base_pose_matrix is null, returning nullptr";
     return nullptr;
   }
 
@@ -83,12 +84,12 @@ XRPose* XRTargetRaySpace::getPose(
       pointer_pose = GetTrackedPointerPose(other_space, *base_pose_matrix);
       break;
     }
-    default: {
-      return nullptr;
-    }
   }
 
   if (!pointer_pose) {
+    DVLOG(2) << __func__ << " : "
+             << "pointer_pose is null, input_source_->TargetRayMode() = "
+             << input_source_->TargetRayMode();
     return nullptr;
   }
 

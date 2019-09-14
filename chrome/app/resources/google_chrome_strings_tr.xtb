@@ -43,6 +43,8 @@
 <translation id="1873233029667955273">Google Chrome varsayılan tarayıcınız değil</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome sürümü eski</translation>
+<translation id="1900795423379050516">Bir ayar bu sayfada görünmüyorsa <ph name="LINK_BEGIN" />
+      Chrome tarayıcı ayarlarınıza<ph name="LINK_END" /> bakın</translation>
 <translation id="1915828456209461693">Chrome için yeni bir güncelleme var. Yeniden başlattığınızda güncelleme hemen uygulanacaktır.</translation>
 <translation id="1919130412786645364">Chrome'da oturum açmaya izin verin</translation>
 <translation id="2063848847527508675">Güncellemenin uygulanması için Chrome OS yeniden başlatılmalıdır.</translation>
@@ -158,6 +160,8 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="5543953544073077331">Chrome'un açık olan kopyaları var. Güncellemek için bunları kapatın.</translation>
 <translation id="556024056938947818">Google Chrome şifreleri göstermeyi deniyor.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
+<translation id="5657226924540934362">Bir ayar bu sayfada görünmüyorsa <ph name="LINK_BEGIN" />
+      Chromium OS ayarlarınıza<ph name="LINK_END" /> bakın</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> tehlikeli olabileceği için Chrome tarafından engellendi.</translation>
 <translation id="5686916850681061684">Google Chrome'u özelleştirin ve kontrol edin. İlgilenmeniz gereken bir konu var. Ayrıntılar için tıklayın.</translation>
 <translation id="5690427481109656848">Google LLC</translation>

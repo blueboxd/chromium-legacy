@@ -33,7 +33,7 @@ namespace weblayer {
 ContentViewRenderView::ContentViewRenderView(JNIEnv* env,
                                              jobject obj,
                                              gfx::NativeWindow root_window)
-    : root_window_(root_window), current_surface_format_(0) {
+    : root_window_(root_window) {
   java_obj_.Reset(env, obj);
 }
 
@@ -86,38 +86,24 @@ void ContentViewRenderView::OnPhysicalBackingSizeChanged(
 
 void ContentViewRenderView::SurfaceCreated(JNIEnv* env,
                                            const JavaParamRef<jobject>& obj) {
-  current_surface_format_ = 0;
   InitCompositor();
 }
 
 void ContentViewRenderView::SurfaceDestroyed(JNIEnv* env,
                                              const JavaParamRef<jobject>& obj) {
   compositor_->SetSurface(nullptr, false);
-  current_surface_format_ = 0;
 }
 
 void ContentViewRenderView::SurfaceChanged(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    jint format,
+    jboolean can_be_used_with_surface_control,
     jint width,
     jint height,
     const JavaParamRef<jobject>& surface) {
-  if (current_surface_format_ != format) {
-    current_surface_format_ = format;
-    compositor_->SetSurface(surface, false /* backed_by_surface_texture */);
-  }
+  // TODO(boliu): Avoid SetSurface if only size changed.
+  compositor_->SetSurface(surface, can_be_used_with_surface_control);
   compositor_->SetWindowBounds(gfx::Size(width, height));
-}
-
-void ContentViewRenderView::SetOverlayVideoMode(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    bool enabled) {
-  compositor_->SetRequiresAlphaChannel(enabled);
-  compositor_->SetBackgroundColor(enabled ? SK_ColorTRANSPARENT
-                                          : SK_ColorWHITE);
-  compositor_->SetNeedsComposite();
 }
 
 base::android::ScopedJavaLocalRef<jobject>

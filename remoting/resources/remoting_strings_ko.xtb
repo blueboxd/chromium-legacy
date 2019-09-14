@@ -58,6 +58,7 @@
 <translation id="2509394361235492552"><ph name="HOSTNAME" />에 연결되었습니다</translation>
 <translation id="2512228156274966424">참고: 모든 단축키를 사용하려면 Chrome 원격 데스크톱을 '창으로 열기'로 설정합니다.</translation>
 <translation id="2540992418118313681">이 컴퓨터를 다른 사용자가 보고 제어하도록 공유하시겠습니까?</translation>
+<translation id="254771646005658629">원격 사용자가 이 Mac 기기를 제어하도록 허용</translation>
 <translation id="2579271889603567289">호스트가 다운되었거나 시작되지 못했습니다.</translation>
 <translation id="2599300881200251572">이 서비스를 이용하면 Chrome 원격 데스크톱 클라이언트로부터의 연결을 수신할 수 있습니다.</translation>
 <translation id="2647232381348739934">Chromoting 서비스</translation>
@@ -182,6 +183,11 @@
 <translation id="5419185025274123272">애플리케이션을 재설정할 수 없지만 버그 보고서를 보낼 수는 있습니다.</translation>
 <translation id="5419418238395129586">최근 온라인 접속일: <ph name="DATE" /></translation>
 <translation id="544077782045763683">호스트가 꺼져 있습니다.</translation>
+<translation id="5463789431147491241">이 Mac 기기에서 <ph name="PRODUCT_NAME" />을(를) 사용하려면 다음 단계를 따르세요.
+
+아래의 ‘<ph name="BUTTON_NAME" />’ 버튼을 선택합니다. 보안 및 개인정보 보호 환경설정에서 ‘<ph name="SERVICE_SCRIPT_NAME" />’ 옆에 있는 체크박스를 선택합니다.
+
+‘<ph name="SERVICE_SCRIPT_NAME" />’이(가) 이미 선택되어 있다면 이를 선택 해제하고 다시 선택해야 할 수도 있습니다.</translation>
 <translation id="5510035215749041527">지금 연결 해제</translation>
 <translation id="5593560073513909978">서비스를 일시적으로 이용할 수 없습니다. 잠시 후 다시 시도해 주세요.</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -298,12 +304,14 @@
 <translation id="837021510621780684">이 컴퓨터에서 시작한 연결</translation>
 <translation id="8383794970363966105">Chromoting을 사용하려면 기기에 Google 계정을 추가해야 합니다.</translation>
 <translation id="8386846956409881180">호스트가 잘못된 OAuth 사용자 인증 정보로 구성되었습니다.</translation>
+<translation id="8406498562923498210">Chrome 원격 데스크톱 환경에서 실행할 세션을 선택하세요. 일부 세션 유형은 Chrome 원격 데스크톱 및 로컬 콘솔에서의 동시 실행을 지원하지 않을 수 있습니다.</translation>
 <translation id="8428213095426709021">설정</translation>
 <translation id="8445362773033888690">Google Play 스토어에서 보기</translation>
 <translation id="8509907436388546015">데스크톱 통합 프로세스</translation>
 <translation id="8513093439376855948">원격 호스트 관리를 위한 기본 메시징 호스트</translation>
 <translation id="8525306231823319788">전체화면</translation>
 <translation id="8548209692293300397">이전에 <ph name="USER_NAME" />(<ph name="USER_EMAIL" />)(으)로 로그인한 적이 있습니다. 이 계정으로 컴퓨터에 액세스하려면 이 계정을 사용해 <ph name="LINK_BEGIN" />Chrome에 로그인<ph name="LINK_END" />하고 Chrome 원격 데스크톱을 다시 설치하세요.</translation>
+<translation id="858006550102277544">설명</translation>
 <translation id="8642984861538780905">보통</translation>
 <translation id="8712909229180978490">Google 드라이브에 저장된 파일을 온라인으로 볼 수 없음</translation>
 <translation id="8743328882720071828"><ph name="CLIENT_USERNAME" />이(가) 컴퓨터를 확인하고 제어할 수 있게 하시겠습니까?</translation>
@@ -321,6 +329,7 @@
 <translation id="9126115402994542723">이 기기에서 이 호스트로 연결할 때 PIN을 다시 요청하지 않습니다.</translation>
 <translation id="9149580767411232853">원격 데스크톱 전체가 보이도록 표시</translation>
 <translation id="9149992051684092333">데스크톱 공유를 시작하려면 내 데스크톱에 액세스하려는 사용자에게 아래 액세스 코드를 알려주세요.</translation>
+<translation id="916856682307586697">기본 XSession 실행</translation>
 <translation id="9188433529406846933">승인</translation>
 <translation id="9213184081240281106">호스트 구성이 잘못되었습니다.</translation>
 <translation id="951991426597076286">거부</translation>

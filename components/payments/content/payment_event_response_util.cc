@@ -39,6 +39,16 @@ base::StringPiece ConvertPaymentEventResponseTypeToErrorString(
       return errors::kPaymentEventTimeout;
     case mojom::PaymentEventResponseType::PAYMENT_HANDLER_INSECURE_NAVIGATION:
       return errors::kPaymentHandlerInsecureNavigation;
+    case mojom::PaymentEventResponseType::PAYER_NAME_EMPTY:
+      return errors::kPayerNameEmpty;
+    case mojom::PaymentEventResponseType::PAYER_EMAIL_EMPTY:
+      return errors::kPayerEmailEmpty;
+    case mojom::PaymentEventResponseType::PAYER_PHONE_EMPTY:
+      return errors::kPayerPhoneEmpty;
+    case mojom::PaymentEventResponseType::SHIPPING_ADDRESS_INVALID:
+      return errors::kShippingAddressInvalid;
+    case mojom::PaymentEventResponseType::SHIPPING_OPTION_EMPTY:
+      return errors::kShippingOptionEmpty;
   }
 }
 

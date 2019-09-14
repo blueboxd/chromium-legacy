@@ -98,7 +98,7 @@ class P2PSocketClientImpl : public blink::P2PSocketClient,
   void OnConnectionError();
 
   P2PSocketDispatcher* dispatcher_;
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
   int socket_id_;
   blink::P2PSocketClientDelegate* delegate_;
   State state_;

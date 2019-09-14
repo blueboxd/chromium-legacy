@@ -2222,6 +2222,15 @@ _FUNCTION_INFO = {
     'defer_draws': True,
     'trace_level': 2,
   },
+  'DrawArraysIndirect': {
+    'type': 'Custom',
+    'impl_func': False,
+    'cmd_args': 'GLenumDrawMode mode, GLuint offset',
+    'trace_level': 2,
+    'es31': True,
+    'unit_test': False,
+    'client_test': False,
+  },
   'DrawElements': {
     'type': 'Custom',
     'impl_func': False,
@@ -2230,6 +2239,15 @@ _FUNCTION_INFO = {
     'client_test': False,
     'defer_draws': True,
     'trace_level': 2,
+  },
+  'DrawElementsIndirect': {
+    'type': 'Custom',
+    'impl_func': False,
+    'cmd_args': 'GLenumDrawMode mode, GLenumIndexType type, GLuint offset',
+    'trace_level': 2,
+    'es31': True,
+    'unit_test': False,
+    'client_test': False,
   },
   'DrawRangeElements': {
     'type': 'NoCommand',

@@ -1043,7 +1043,7 @@ NativePixmapAndSizeInfo::NativePixmapAndSizeInfo() = default;
 NativePixmapAndSizeInfo::~NativePixmapAndSizeInfo() = default;
 
 // static
-const std::string& VaapiWrapper::GetVendorStringForTesting() {
+const std::string& VaapiWrapper::GetVendorString() {
   return VADisplayState::Get()->va_vendor_string();
 }
 

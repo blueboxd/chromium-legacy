@@ -45,9 +45,9 @@ class PaymentResponseHelper
   ~PaymentResponseHelper() override;
 
   // PaymentInstrument::Delegate
-  void OnInstrumentDetailsReady(
-      const std::string& method_name,
-      const std::string& stringified_details) override;
+  void OnInstrumentDetailsReady(const std::string& method_name,
+                                const std::string& stringified_details,
+                                const PayerData& payer_data) override;
   void OnInstrumentDetailsError(const std::string& error_message) override;
 
   mojom::PayerDetailPtr GeneratePayerDetail(
@@ -81,6 +81,11 @@ class PaymentResponseHelper
   // Instrument Details.
   std::string method_name_;
   std::string stringified_details_;
+
+  // Details from payment handler response that will be included in the
+  // PaymentResponse when shipping/contact handling is delegated to the payment
+  // handler.
+  PayerData payer_data_from_instrument_;
 
   base::WeakPtrFactory<PaymentResponseHelper> weak_ptr_factory_{this};
 

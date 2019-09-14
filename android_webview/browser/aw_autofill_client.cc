@@ -4,6 +4,8 @@
 
 #include "android_webview/browser/aw_autofill_client.h"
 
+#include <utility>
+
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_contents.h"
@@ -14,6 +16,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/ui/autofill_popup_delegate.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -123,7 +126,7 @@ void AwAutofillClient::ShowLocalCardMigrationDialog(
 }
 
 void AwAutofillClient::ConfirmMigrateLocalCardToCloud(
-    std::unique_ptr<base::DictionaryValue> legal_message,
+    const autofill::LegalMessageLines& legal_message_lines,
     const std::string& user_email,
     const std::vector<autofill::MigratableCreditCard>& migratable_credit_cards,
     LocalCardMigrationCallback start_migrating_cards_callback) {
@@ -172,7 +175,7 @@ void AwAutofillClient::ConfirmExpirationDateFixFlow(
 
 void AwAutofillClient::ConfirmSaveCreditCardToCloud(
     const autofill::CreditCard& card,
-    std::unique_ptr<base::DictionaryValue> legal_message,
+    const autofill::LegalMessageLines& legal_message_lines,
     SaveCreditCardOptions options,
     UploadSaveCardPromptCallback callback) {
   NOTIMPLEMENTED();

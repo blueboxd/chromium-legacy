@@ -47,6 +47,15 @@ using ServiceWorkerStartCallback =
     base::OnceCallback<void(scoped_refptr<ServiceWorkerVersion>,
                             blink::ServiceWorkerStatusCode)>;
 
+payments::mojom::PaymentHandlerResponsePtr CreateBlankPaymentHandlerResponse(
+    PaymentEventResponseType response_type) {
+  return payments::mojom::PaymentHandlerResponse::New(
+      "" /*=method_name*/, "" /*=stringified_details*/, response_type,
+      base::nullopt /*=payer_name*/, base::nullopt /*=payer_email*/,
+      base::nullopt /*=payer_phone*/, nullptr /*=shipping_address*/,
+      base::nullopt /*=shipping_option*/);
+}
+
 class RespondWithCallbacks;
 
 // A repository to store invoking payment app callback. It is used to abort
@@ -173,8 +182,7 @@ class RespondWithCallbacks
       RunOrPostTaskOnThread(
           FROM_HERE, BrowserThread::UI,
           base::BindOnce(std::move(invoke_payment_app_callback_),
-                         payments::mojom::PaymentHandlerResponse::New(
-                             "", "", response_type)));
+                         CreateBlankPaymentHandlerResponse(response_type)));
     } else if (event_type_ ==
                    ServiceWorkerMetrics::EventType::CAN_MAKE_PAYMENT ||
                event_type_ == ServiceWorkerMetrics::EventType::ABORT_PAYMENT) {
@@ -337,8 +345,7 @@ void DispatchPaymentRequestEvent(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             std::move(callback),
-            payments::mojom::PaymentHandlerResponse::New(
-                "", "",
+            CreateBlankPaymentHandlerResponse(
                 PaymentEventResponseType::PAYMENT_EVENT_BROWSER_ERROR)));
     return;
   }
@@ -420,8 +427,8 @@ void OnInstallPaymentApp(
         browser_context, registration_id, sw_origin, std::move(event_data),
         std::move(callback));
   } else {
-    std::move(callback).Run(payments::mojom::PaymentHandlerResponse::New(
-        "", "", PaymentEventResponseType::PAYMENT_EVENT_BROWSER_ERROR));
+    std::move(callback).Run(CreateBlankPaymentHandlerResponse(
+        PaymentEventResponseType::PAYMENT_EVENT_BROWSER_ERROR));
   }
 }
 
@@ -663,8 +670,7 @@ void PaymentAppProviderImpl::InstallAndInvokePaymentApp(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             std::move(callback),
-            payments::mojom::PaymentHandlerResponse::New(
-                "", "",
+            CreateBlankPaymentHandlerResponse(
                 PaymentEventResponseType::PAYMENT_EVENT_BROWSER_ERROR)));
     return;
   }

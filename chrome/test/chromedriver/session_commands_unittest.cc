@@ -21,6 +21,7 @@
 #include "chrome/test/chromedriver/chrome/stub_chrome.h"
 #include "chrome/test/chromedriver/chrome/stub_web_view.h"
 #include "chrome/test/chromedriver/commands.h"
+#include "chrome/test/chromedriver/logging.h"
 #include "chrome/test/chromedriver/session.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -536,4 +537,118 @@ TEST(SessionCommandsTest, ConfigureHeadlessSession_notHeadless) {
   ASSERT_EQ(kOk, status.code()) << status.message();
   ASSERT_FALSE(session.chrome->GetBrowserInfo()->is_headless);
   ASSERT_FALSE(session.headless_download_directory);
+}
+
+TEST(SessionCommandsTest, ConfigureSession_allSet) {
+  BrowserInfo binfo;
+  MockChrome* chrome = new MockChrome(binfo);
+  Session session("id", std::unique_ptr<Chrome>(chrome));
+
+  const base::DictionaryValue* params_in = nullptr;
+  base::Value value = base::JSONReader::Read(
+                          R"({
+        "capabilities": {
+          "alwaysMatch": { },
+          "firstMatch": [ {
+            "acceptInsecureCerts": false,
+            "browserName": "chrome",
+            "goog:chromeOptions": {
+            },
+            "goog:loggingPrefs": {
+              "driver": "DEBUG"
+            },
+            "pageLoadStrategy": "normal",
+            "timeouts": {
+              "implicit": 57000,
+              "pageLoad": 29000,
+              "script": 21000
+            },
+            "strictFileInteractability": true,
+            "unhandledPromptBehavior": "accept"
+          } ]
+        }
+      })")
+                          .value();
+  ASSERT_TRUE(value.GetAsDictionary(&params_in));
+
+  const base::DictionaryValue* desired_caps_out;
+  base::DictionaryValue merged_out;
+  Capabilities capabilities_out;
+  Status status = internal::ConfigureSession(
+      &session, *params_in, &desired_caps_out, &merged_out, &capabilities_out);
+  ASSERT_EQ(kOk, status.code()) << status.message();
+  // Verify out parameters have been set
+  ASSERT_TRUE(desired_caps_out->is_dict());
+  ASSERT_TRUE(merged_out.is_dict());
+  ASSERT_TRUE(capabilities_out.logging_prefs["driver"]);
+  // Verify session settings are correct
+  ASSERT_EQ(kAccept, session.unhandled_prompt_behavior);
+  ASSERT_EQ(base::TimeDelta::FromSeconds(57), session.implicit_wait);
+  ASSERT_EQ(base::TimeDelta::FromSeconds(29), session.page_load_timeout);
+  ASSERT_EQ(base::TimeDelta::FromSeconds(21), session.script_timeout);
+  ASSERT_TRUE(session.strict_file_interactability);
+  ASSERT_EQ(Log::Level::kDebug, session.driver_log.get()->min_level());
+}
+
+TEST(SessionCommandsTest, ConfigureSession_defaults) {
+  BrowserInfo binfo;
+  MockChrome* chrome = new MockChrome(binfo);
+  Session session("id", std::unique_ptr<Chrome>(chrome));
+
+  const base::DictionaryValue* params_in = nullptr;
+  base::Value value = base::JSONReader::Read(
+                          R"({
+        "capabilities": {
+          "alwaysMatch": { },
+          "firstMatch": [ { } ]
+        }
+      })")
+                          .value();
+  ASSERT_TRUE(value.GetAsDictionary(&params_in));
+  const base::DictionaryValue* desired_caps_out;
+  base::DictionaryValue merged_out;
+  Capabilities capabilities_out;
+
+  Status status = internal::ConfigureSession(
+      &session, *params_in, &desired_caps_out, &merged_out, &capabilities_out);
+  ASSERT_EQ(kOk, status.code()) << status.message();
+  ASSERT_TRUE(desired_caps_out->is_dict());
+  ASSERT_TRUE(merged_out.is_dict());
+  // Testing specific values could be fragile, but want to verify they are set
+  ASSERT_EQ(base::TimeDelta::FromSeconds(0), session.implicit_wait);
+  ASSERT_EQ(base::TimeDelta::FromSeconds(300), session.page_load_timeout);
+  ASSERT_EQ(base::TimeDelta::FromSeconds(30), session.script_timeout);
+  ASSERT_FALSE(session.strict_file_interactability);
+  ASSERT_EQ(Log::Level::kWarning, session.driver_log.get()->min_level());
+  // w3c values:
+  ASSERT_EQ(kDismissAndNotify, session.unhandled_prompt_behavior);
+}
+
+TEST(SessionCommandsTest, ConfigureSession_legacyDefault) {
+  BrowserInfo binfo;
+  MockChrome* chrome = new MockChrome(binfo);
+  Session session("id", std::unique_ptr<Chrome>(chrome));
+
+  const base::DictionaryValue* params_in = nullptr;
+  base::Value value = base::JSONReader::Read(
+                          R"({
+        "desiredCapabilities": {
+          "browserName": "chrome",
+          "goog:chromeOptions": {
+             "w3c": false
+          }
+        }
+      })")
+                          .value();
+  ASSERT_TRUE(value.GetAsDictionary(&params_in));
+  const base::DictionaryValue* desired_caps_out;
+  base::DictionaryValue merged_out;
+  Capabilities capabilities_out;
+
+  Status status = internal::ConfigureSession(
+      &session, *params_in, &desired_caps_out, &merged_out, &capabilities_out);
+  ASSERT_EQ(kOk, status.code()) << status.message();
+  ASSERT_TRUE(desired_caps_out->is_dict());
+  // legacy values:
+  ASSERT_EQ(kIgnore, session.unhandled_prompt_behavior);
 }

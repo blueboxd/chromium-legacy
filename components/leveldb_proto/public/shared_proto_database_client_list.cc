@@ -71,6 +71,8 @@ std::string SharedProtoDatabaseClientList::ProtoDbTypeToString(
       return "DownloadDB";
     case ProtoDbType::VIDEO_DECODE_STATS_DB:
       return "VideoDecodeStatsDB";
+    case ProtoDbType::PRINT_JOB_DATABASE:
+      return "PrintJobDatabase";
     case ProtoDbType::LAST:
       NOTREACHED();
       return std::string();

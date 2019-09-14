@@ -41,10 +41,34 @@ class MODULES_EXPORT PaymentRequestRespondWithObserver final
 
   void Trace(blink::Visitor*) override;
 
+  void set_should_have_payer_name(bool should_have_payer_name) {
+    should_have_payer_name_ = should_have_payer_name;
+  }
+  void set_should_have_payer_email(bool should_have_payer_email) {
+    should_have_payer_email_ = should_have_payer_email;
+  }
+  void set_should_have_payer_phone(bool should_have_payer_phone) {
+    should_have_payer_phone_ = should_have_payer_phone;
+  }
+  void set_should_have_shipping_info(bool should_have_shipping_info) {
+    should_have_shipping_info_ = should_have_shipping_info;
+  }
+
  private:
   void Respond(const String& method_name,
                const String& stringified_details,
-               payments::mojom::blink::PaymentEventResponseType response_type);
+               payments::mojom::blink::PaymentEventResponseType response_type,
+               const String& payer_name,
+               const String& payer_email,
+               const String& payer_phone,
+               payments::mojom::blink::PaymentAddressPtr shipping_address,
+               const String& selected_shipping_option_id);
+  void BlankResponseWithError(
+      payments::mojom::blink::PaymentEventResponseType response_type);
+  bool should_have_payer_name_ = false;
+  bool should_have_payer_email_ = false;
+  bool should_have_payer_phone_ = false;
+  bool should_have_shipping_info_ = false;
 };
 
 }  // namespace blink

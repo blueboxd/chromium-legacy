@@ -626,8 +626,6 @@ void RenderWidget::OnShowHostContextMenu(ContextMenuParams* params) {
 bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
   bool handled = false;
   IPC_BEGIN_MESSAGE_MAP(RenderWidget, message)
-    IPC_MESSAGE_HANDLER(WidgetMsg_SynchronizeVisualProperties,
-                        OnSynchronizeVisualProperties)
     IPC_MESSAGE_HANDLER(WidgetMsg_EnableDeviceEmulation,
                         OnEnableDeviceEmulation)
     IPC_MESSAGE_HANDLER(WidgetMsg_DisableDeviceEmulation,
@@ -666,6 +664,8 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(WidgetMsg_SetIsInert, OnSetIsInert)
     IPC_MESSAGE_HANDLER(WidgetMsg_SetInheritedEffectiveTouchAction,
                         OnSetInheritedEffectiveTouchAction)
+    IPC_MESSAGE_HANDLER(WidgetMsg_SynchronizeVisualProperties,
+                        OnSynchronizeVisualProperties)
     IPC_MESSAGE_HANDLER(WidgetMsg_UpdateRenderThrottlingStatus,
                         OnUpdateRenderThrottlingStatus)
     IPC_MESSAGE_HANDLER(WidgetMsg_WaitForNextFrameForTests,
@@ -1040,22 +1040,38 @@ scoped_refptr<MainThreadEventQueue> RenderWidget::GetInputEventQueue() {
 }
 
 void RenderWidget::OnCursorVisibilityChange(bool is_visible) {
+  // This is a mojo IPC entry point. We don't want IPCs when undead.
+  if (IsUndeadOrProvisional())
+    return;
+
   if (GetWebWidget())
     GetWebWidget()->SetCursorVisibilityState(is_visible);
 }
 
 void RenderWidget::OnFallbackCursorModeToggled(bool is_on) {
+  // This is a mojo IPC entry point. We don't want IPCs when undead.
+  if (IsUndeadOrProvisional())
+    return;
+
   if (GetWebWidget())
     GetWebWidget()->OnFallbackCursorModeToggled(is_on);
 }
 
 void RenderWidget::OnMouseCaptureLost() {
+  // This is a mojo IPC entry point. We don't want IPCs when undead.
+  if (IsUndeadOrProvisional())
+    return;
+
   if (GetWebWidget())
     GetWebWidget()->MouseCaptureLost();
 }
 
 void RenderWidget::OnSetEditCommandsForNextKeyEvent(
     const EditCommands& edit_commands) {
+  // This is a mojo IPC entry point. We don't want IPCs when undead.
+  if (IsUndeadOrProvisional())
+    return;
+
   edit_commands_ = edit_commands;
 }
 
@@ -1065,6 +1081,10 @@ void RenderWidget::OnSetActive(bool active) {
 }
 
 void RenderWidget::OnSetFocus(bool enable) {
+  // This is a mojo IPC entry point. We don't want IPCs when undead.
+  if (IsUndeadOrProvisional())
+    return;
+
   if (delegate())
     delegate()->DidReceiveSetFocusEventForWidget();
   SetFocus(enable);

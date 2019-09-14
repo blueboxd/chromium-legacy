@@ -97,9 +97,6 @@
 <translation id="138218114945450791">Светлоплава</translation>
 <translation id="1382194467192730611">USB уређај који дозвољава администратор</translation>
 <translation id="139305205187523129">Хост <ph name="HOST_NAME" /> није послао никакве податке.</translation>
-<translation id="140316286225361634">Сајт <ph name="ORIGIN" /> је затражио да се безбедносне смернице
-    примене на све захтеве, а ове смернице тренутно процењују да сајт
-    није безбедан.</translation>
 <translation id="1405567553485452995">Светлозелена</translation>
 <translation id="1407135791313364759">Отвори све</translation>
 <translation id="1413809658975081374">Грешка у вези са приватношћу</translation>
@@ -135,6 +132,7 @@
 <translation id="1569487616857761740">Унесите датум истека</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Дошло је до грешке при приказивању ове веб-странице.</translation>
+<translation id="1588438908519853928">Нормалан</translation>
 <translation id="1592005682883173041">Приступ локалним подацима</translation>
 <translation id="1594030484168838125">Одабери</translation>
 <translation id="161042844686301425">Плавозелена</translation>
@@ -212,10 +210,6 @@
 <translation id="1981206234434200693">Обришите податке из историје прегледања у Chrome-у</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{ и још 1}one{и још #}few{и још #}other{и још #}}</translation>
 <translation id="2003709556000175978">Ресетујте лозинку</translation>
-<translation id="20053308747750172">Сервер на који идете, <ph name="ORIGIN" />, затражио је
-    да се безбедносне смернице примене на све захтеве ка њему. Међутим, сада је
-    послао неважеће смернице, па прегледач не може
-    испуни захтев за <ph name="SITE" />.</translation>
 <translation id="2025186561304664664">Прокси је подешен да буде аутоматски конфигурисан.</translation>
 <translation id="202813660234680402">Не, немој да додаш</translation>
 <translation id="2030481566774242610">Да ли сте мислили <ph name="LINK" />?</translation>
@@ -293,10 +287,6 @@
 <translation id="2409589295040002961">Администратор може даљински да промени подешавање прегледача. Активностима на овом уређају се можда управља и ван Chrome-а. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Овај сервер не може да докаже да је <ph name="DOMAIN" />; његов безбедносни сертификат ће можда бити опозван. Узрок томе је можда погрешна конфигурација или нападач који је прекинуо везу.</translation>
-<translation id="2418081434543109369">Сервер на који идете, <ph name="ORIGIN" />, затражио је
-    да се безбедносне смернице примене на све захтеве ка њему. Међутим, слање
-    смерница није успело, па прегледач не може да испуни
-    ваш захтев за <ph name="SITE" />.</translation>
 <translation id="2463193859425327265">Промените почетну страницу</translation>
 <translation id="2463739503403862330">Попуни</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -590,6 +580,7 @@
 <translation id="4103249731201008433">Серијски број уређаја је неважећи</translation>
 <translation id="410351446219883937">Аутоплеј</translation>
 <translation id="4103763322291513355">Посетите &lt;strong&gt;chrome://policy&lt;/strong&gt; да бисте видели листу URL-ова стављених на црну листу и друге смернице које је наметнуо администратор система.</translation>
+<translation id="4108231218301530806">Следећи пут верификуј ову картицу помоћу дигиталног отиска.</translation>
 <translation id="4110652170750985508">Прегледајте уплату</translation>
 <translation id="4112140312785995938">Премотај уназад</translation>
 <translation id="4116663294526079822">Увек дозволи на овом сајту</translation>
@@ -792,6 +783,7 @@
 <translation id="5141240743006678641">Шифруј синхронизоване лозинке помоћу Google акредитива</translation>
 <translation id="5145883236150621069">Кôд грешке је присутан у одговору на смернице</translation>
 <translation id="515292512908731282">C4 (коверат)</translation>
+<translation id="5158275234811857234">Корице</translation>
 <translation id="5159010409087891077">Отворите страницу у новом прозору без архивирања (⇧⌘N)</translation>
 <translation id="516920405563544094">Унесите CVC за картицу <ph name="CREDIT_CARD" />. Када будете потврдили, подаци о картици са Google налога ће се делити са овим сајтом.</translation>
 <translation id="5169827969064885044">Могли бисте да изгубите приступ налогу за организацију или би могло да дође до крађе идентитета. Chrome вам препоручује да одмах промените лозинку.</translation>
@@ -951,6 +943,7 @@
 <translation id="598637245381783098">Отварање апликације за плаћање није успело</translation>
 <translation id="5989320800837274978">Нису наведени ни фиксни прокси сервери нити URL адреса .pac скрипте.</translation>
 <translation id="5990559369517809815">Додатак је блокирао захтеве упућене серверу.</translation>
+<translation id="6000758707621254961"><ph name="RESULT_COUNT" /> резултата за „<ph name="SEARCH_TEXT" />“</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">Година</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{1. страница}one{#. страница}few{#. страница}other{#. страница}}</translation>
@@ -1008,6 +1001,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Ниједна}=1{1 лозинка (за <ph name="DOMAIN_LIST" />, синхронизовано)}=2{2 лозинке (за <ph name="DOMAIN_LIST" />, синхронизовано)}one{# лозинка (за <ph name="DOMAIN_LIST" />, синхронизовано)}few{# лозинке (за <ph name="DOMAIN_LIST" />, синхронизовано)}other{# лозинки (за <ph name="DOMAIN_LIST" />, синхронизовано)}}</translation>
 <translation id="6358450015545214790">Шта ово значи?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6377268785556383139">1 резултат за „<ph name="SEARCH_TEXT" />“</translation>
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Очекују вас потенцијални трошкови.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{још 1 предлог}one{још # предлог}few{још # предлога}other{још # предлога}}</translation>
@@ -1142,10 +1136,6 @@
 <translation id="717330890047184534">Gaia ИД:</translation>
 <translation id="7174545416324379297">Обједињено</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> и још <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" /> и још <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" /> и још <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> и још <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
-<translation id="7177397715882417099">Сервер на који идете, <ph name="ORIGIN" />, затражио је
-    да се безбедносне смернице примене на све захтеве ка њему. Међутим, уместо
-    слања смерница, преусмерио је прегледач ка другој локацији, што спречава
-    прегледач да испуни захтев за <ph name="SITE" />.</translation>
 <translation id="7179323680825933600">Чувај и уноси начине плаћања</translation>
 <translation id="7180611975245234373">Освежи</translation>
 <translation id="7182878459783632708">Нису подешене никакве смернице</translation>
@@ -1172,6 +1162,7 @@
 <translation id="7300012071106347854">Кобалтноплава</translation>
 <translation id="7302712225291570345">„<ph name="TEXT" />“</translation>
 <translation id="7303701124147721189">Да бисте следећи пут платили брже, сачувајте картицу и адресу за обрачун на Google налогу и овом уређају.</translation>
+<translation id="7304030187361489308">Висок</translation>
 <translation id="7309308571273880165">Извештај о отказивању је снимљен <ph name="CRASH_TIME" /> (корисник треба да га отпреми, још увек није отпремљен)</translation>
 <translation id="7313965965371928911">Упозорења у вези са <ph name="BEGIN_LINK" />Безбедним прегледањем<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1534,7 +1525,6 @@
 <translation id="939736085109172342">Нови директоријум</translation>
 <translation id="945855313015696284">Проверите информације у наставку и избришите све неважеће картице</translation>
 <translation id="951104842009476243">Дебитне и припејд картице које се прихватају</translation>
-<translation id="958202389743790697">Блокирано је у складу са безбедносним смерницама (<ph name="ORIGIN" />).</translation>
 <translation id="962484866189421427">Овај садржај можда покушава да инсталира обмањујуће апликације које се претварају да су нешто друго или да прикупљају податке који могу да се користе за праћење. <ph name="BEGIN_LINK" />Прикажи<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Званична верзија</translation>
 <translation id="973773823069644502">Додај адресу за доставу</translation>

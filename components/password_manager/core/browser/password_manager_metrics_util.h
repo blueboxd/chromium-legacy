@@ -307,7 +307,9 @@ enum class GaiaPasswordHashChange {
   CHANGED_IN_CONTENT_AREA = 3,
   // Password hash change event where the account is not syncing.
   NOT_SYNC_PASSWORD_CHANGE = 4,
-  SAVED_SYNC_PASSWORD_CHANGE_COUNT = 5,
+  // Password hash change event for non-GAIA enterprise accounts.
+  NON_GAIA_ENTERPRISE_PASSWORD_CHANGE = 5,
+  SAVED_SYNC_PASSWORD_CHANGE_COUNT = 6,
   kMaxValue = SAVED_SYNC_PASSWORD_CHANGE_COUNT,
 };
 

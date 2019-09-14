@@ -58,6 +58,7 @@
 <translation id="2509394361235492552">Připojeno k zařízení <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">POZNÁMKA: Pokud chcete mít k dispozici všechny klávesové zkratky, povolte v konfiguraci Vzdálené plochy Google možnost Otevřít jako okno.</translation>
 <translation id="2540992418118313681">Chcete tento počítač sdílet s dalším uživatelem, aby jej mohl zobrazit a ovládat?</translation>
+<translation id="254771646005658629">Povolit vzdáleným uživatelům ovládat tento počítač Mac</translation>
 <translation id="2579271889603567289">Hostitelský server selhal, nebo se jej nepodařilo spustit.</translation>
 <translation id="2599300881200251572">Tato služba umožňuje příchozí připojení od klientů Vzdálené plochy Chrome.</translation>
 <translation id="2647232381348739934">Služba funkce Chromoting</translation>
@@ -182,6 +183,11 @@
 <translation id="5419185025274123272">Resetování aplikace se nezdařilo. Stále můžete odeslat zprávu o chybě.</translation>
 <translation id="5419418238395129586">Naposledy online: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Hostitel byl vypnut.</translation>
+<translation id="5463789431147491241">Chcete-li na tomto počítači Mac používat aplikaci <ph name="PRODUCT_NAME" />, postupujte takto:
+
+Níže vyberte tlačítko <ph name="BUTTON_NAME" />. V předvolbách Zabezpečení a soukromí zaškrtněte políčko vedle možnosti <ph name="SERVICE_SCRIPT_NAME" />.
+
+Je-li již políčko <ph name="SERVICE_SCRIPT_NAME" /> zaškrtnuté, zrušte jeho zaškrtnutí a poté ho zaškrtněte znovu.</translation>
 <translation id="5510035215749041527">Odpojit</translation>
 <translation id="5593560073513909978">Služba je dočasně nedostupná. Zkuste to prosím znovu později.</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -298,12 +304,14 @@
 <translation id="837021510621780684">Z tohoto počítače</translation>
 <translation id="8383794970363966105">Chcete-li používat Chromoting, budete do zařízení muset přidat účet Google.</translation>
 <translation id="8386846956409881180">Hostitel je nakonfigurován s neplatnými identifikačními údaji OAuth.</translation>
+<translation id="8406498562923498210">Vyberte relaci, kterou v prostředí vzdálené plochy Chrome chcete spustit. (Upozorňujeme, že některé typy relací nelze spustit na vzdálené ploše Chrome a v místní konzole zároveň.)</translation>
 <translation id="8428213095426709021">Nastavení</translation>
 <translation id="8445362773033888690">Zobrazit v Obchodě Google Play</translation>
 <translation id="8509907436388546015">Proces integrace plochy</translation>
 <translation id="8513093439376855948">Nativní hostitelská aplikace pro komunikaci při správě vzdálených hostitelů</translation>
 <translation id="8525306231823319788">Celá obrazovka</translation>
 <translation id="8548209692293300397">Dříve jste byli přihlášeni pomocí účtu <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Chcete-li získat přístup k počítačům v tomto účtu, <ph name="LINK_BEGIN" />přihlaste se do prohlížeče Google Chrome<ph name="LINK_END" /> pomocí příslušného účtu a znovu nainstalujte Vzdálenou plochu Chrome.</translation>
+<translation id="858006550102277544">Komentář</translation>
 <translation id="8642984861538780905">Přijatelná</translation>
 <translation id="8712909229180978490">Soubory uložené online na Disku Google se nezobrazují.</translation>
 <translation id="8743328882720071828">Chcete uživateli <ph name="CLIENT_USERNAME" /> povolit zobrazit a ovládat váš počítač?</translation>
@@ -321,6 +329,7 @@
 <translation id="9126115402994542723">Při připojování k tomuto hostiteli z tohoto zařízení již nežádat o zadání kódu PIN.</translation>
 <translation id="9149580767411232853">Zajistit, aby byla vidět celá plocha</translation>
 <translation id="9149992051684092333">Chcete-li začít sdílet svoji plochu, poskytněte níže uvedený přístupový kód osobě, která vám bude pomáhat.</translation>
+<translation id="916856682307586697">Spustit výchozí relaci XSession</translation>
 <translation id="9188433529406846933">Autorizovat</translation>
 <translation id="9213184081240281106">Neplatná konfigurace hostitele.</translation>
 <translation id="951991426597076286">Odmítnout</translation>

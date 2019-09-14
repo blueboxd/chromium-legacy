@@ -97,9 +97,6 @@
 <translation id="138218114945450791">Albastru deschis</translation>
 <translation id="1382194467192730611">Dispozitiv USB permis de administrator</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> nu a trimis date.</translation>
-<translation id="140316286225361634">Site-ul <ph name="ORIGIN" /> a solicitat ca o politică de securitate
-    să se aplice tuturor solicitărilor, iar această politică apreciază site-ul
-    ca fiind nesigur.</translation>
 <translation id="1405567553485452995">Verde deschis</translation>
 <translation id="1407135791313364759">Deschideți-le pe toate</translation>
 <translation id="1413809658975081374">Eroare legată de confidențialitate</translation>
@@ -135,6 +132,7 @@
 <translation id="1569487616857761740">Introdu data expirării</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">A apărut o eroare la afișarea paginii web.</translation>
+<translation id="1588438908519853928">Normal</translation>
 <translation id="1592005682883173041">Accesul la datele locale</translation>
 <translation id="1594030484168838125">Alegeți</translation>
 <translation id="161042844686301425">Cyan</translation>
@@ -212,10 +210,6 @@
 <translation id="1981206234434200693">Șterge datele istoricului de navigare ale Chrome</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{și încă una}few{și încă #}other{și încă #}}</translation>
 <translation id="2003709556000175978">Resetează parola acum</translation>
-<translation id="20053308747750172">Serverul pe care dorești să îl accesezi, <ph name="ORIGIN" />, a solicitat
-    ca o politică de securitate să fie aplicată tuturor solicitărilor către el. Dar acum
-    a livrat o politică nevalidă, care împiedică browserul
-    să îți îndeplinească solicitarea pentru <ph name="SITE" />.</translation>
 <translation id="2025186561304664664">Proxy-ul este setat la Configurat automat.</translation>
 <translation id="202813660234680402">Nu, nu adăuga</translation>
 <translation id="2030481566774242610">Ați dorit să scrieți <ph name="LINK" />?</translation>
@@ -293,10 +287,6 @@
 <translation id="2409589295040002961">Administratorul poate schimba configurația browserului de la distanță. Este posibil ca activitatea de pe acest dispozitiv să fie gestionată și din afara Chrome. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; este posibil ca certificatul său de securitate să fie revocat. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
-<translation id="2418081434543109369">Serverul pe care dorești să îl accesezi, <ph name="ORIGIN" />, a solicitat
-    ca o politică de securitate să fie aplicată tuturor solicitărilor către el. Dar acum
-    nu a reușit să livreze o politică, ceea ce împiedică browserul să îți îndeplinească
-    solicitarea pentru <ph name="SITE" />.</translation>
 <translation id="2463193859425327265">Schimbă Pagina principală</translation>
 <translation id="2463739503403862330">Completează</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -588,6 +578,7 @@
 <translation id="4103249731201008433">Numărul de serie al gadgetului este nevalid</translation>
 <translation id="410351446219883937">Redare automată</translation>
 <translation id="4103763322291513355">Accesați &lt;strong&gt;chrome://policy&lt;/strong&gt; pentru a vedea adresele URL introduse pe lista neagră și alte politici impuse de către administratorul de sistem.</translation>
+<translation id="4108231218301530806">Folosește amprenta pentru a confirma cardul data viitoare.</translation>
 <translation id="4110652170750985508">Examinează plata</translation>
 <translation id="4112140312785995938">Derulează înapoi</translation>
 <translation id="4116663294526079822">Permiteți întotdeauna pe acest site</translation>
@@ -790,6 +781,7 @@
 <translation id="5141240743006678641">Criptează parolele sincronizate cu datele de conectare Google</translation>
 <translation id="5145883236150621069">Răspunsul pentru politică include un cod de eroare</translation>
 <translation id="515292512908731282">C4 (Plic)</translation>
+<translation id="5158275234811857234">Copertă</translation>
 <translation id="5159010409087891077">Deschide pagina într-o fereastră incognito nouă (⇧⌘N)</translation>
 <translation id="516920405563544094">Introdu codul CVC pentru <ph name="CREDIT_CARD" />. După ce confirmi, acest site va avea acces la detaliile cardului tău din Contul Google.</translation>
 <translation id="5169827969064885044">Este posibil să pierzi accesul la contul organizației sau să fii victima unui furt de identitate. Chrome îți recomandă să îți schimbi acum parola.</translation>
@@ -948,6 +940,7 @@
 <translation id="598637245381783098">Nu se poate deschide aplicația de plată</translation>
 <translation id="5989320800837274978">Nu sunt specificate nici servere proxy fixe și nici o adresă URL pentru scripturi .pac.</translation>
 <translation id="5990559369517809815">Solicitările trimise la server au fost blocate de o extensie.</translation>
+<translation id="6000758707621254961"><ph name="RESULT_COUNT" /> rezultate pentru „<ph name="SEARCH_TEXT" />”</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">An</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Pagina 1}few{Pagina #}other{Pagina #}}</translation>
@@ -1006,6 +999,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Niciuna}=1{O parolă (pentru <ph name="DOMAIN_LIST" />, sincronizată)}=2{2 parole (pentru <ph name="DOMAIN_LIST" />, sincronizate)}few{# parole (pentru <ph name="DOMAIN_LIST" />, sincronizate)}other{# de parole (pentru <ph name="DOMAIN_LIST" />, sincronizate)}}</translation>
 <translation id="6358450015545214790">Ce înseamnă acestea?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6377268785556383139">Un rezultat pentru „<ph name="SEARCH_TEXT" />”</translation>
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Urmează costuri potențiale.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{o altă sugestie}few{alte # sugestii}other{alte # de sugestii}}</translation>
@@ -1140,10 +1134,6 @@
 <translation id="717330890047184534">Cod Gaia:</translation>
 <translation id="7174545416324379297">Îmbinată</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> și încă <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" /> și încă <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> și încă <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
-<translation id="7177397715882417099">Serverul pe care dorești să îl accesezi, <ph name="ORIGIN" />, a solicitat
-    ca o politică de securitate să fie aplicată tuturor solicitărilor către el. Însă, în loc să
-    livreze o politică, a redirecționat browserul în altă parte, ceea ce împiedică
-    browserul să îți îndeplinească solicitarea pentru <ph name="SITE" />.</translation>
 <translation id="7179323680825933600">Salvează și completează metodele de plată</translation>
 <translation id="7180611975245234373">Actualizați</translation>
 <translation id="7182878459783632708">Nu au fost setate politici</translation>
@@ -1170,6 +1160,7 @@ Detalii suplimentare:
 <translation id="7300012071106347854">Albastru cobalt</translation>
 <translation id="7302712225291570345">„<ph name="TEXT" />”</translation>
 <translation id="7303701124147721189">Pentru a plăti mai rapid data viitoare, stochează cardul și adresa de facturare în Contul Google și pe acest dispozitiv.</translation>
+<translation id="7304030187361489308">Înaltă</translation>
 <translation id="7309308571273880165">Raportul de blocare creat <ph name="CRASH_TIME" /> (utilizatorul a solicitat încărcarea, dar nu a fost încărcat încă)</translation>
 <translation id="7313965965371928911">Avertizări privind <ph name="BEGIN_LINK" />Navigarea sigură<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1532,7 +1523,6 @@ Detalii suplimentare:
 <translation id="939736085109172342">Dosar nou</translation>
 <translation id="945855313015696284">Verifică informațiile de mai jos și șterge cardurile nevalide</translation>
 <translation id="951104842009476243">Carduri de debit și preplătite acceptate</translation>
-<translation id="958202389743790697">Blocat conform politicii de securitate de la <ph name="ORIGIN" />.</translation>
 <translation id="962484866189421427">Acest conținut poate încerca să instaleze aplicații înșelătoare care pretind a fi altceva sau colectează date care pot fi folosite pentru a te urmări. <ph name="BEGIN_LINK" />Afișează oricum<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Versiune oficială</translation>
 <translation id="973773823069644502">Adaugă o adresă de livrare</translation>

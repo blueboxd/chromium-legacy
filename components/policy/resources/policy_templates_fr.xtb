@@ -481,10 +481,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si cette règle est définie sur une URL valide, <ph name="PRODUCT_NAME" /> télécharge la liste des sites à partir de cette URL, puis applique les instructions comme si elles avaient été configurées avec la règle <ph name="SITELIST_POLICY_NAME" />.
 
       Pour en savoir plus sur la règle <ph name="IEEM_SITELIST_POLICY" /> d'Internet Explorer, rendez-vous sur https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode.</translation>
-<translation id="1839060937202387559">Envoyer des rapports sur les statistiques et identifiants matériels pour les appareils de stockage.
-
-      Si cette règle est définie sur "False", les statistiques ne seront pas envoyées.
-      Si cette règle est définie sur "True" ou si elle n'est pas configurée, les statistiques seront envoyées.</translation>
 <translation id="1843117931376765605">Fréquence d'actualisation des règles relatives aux utilisateurs</translation>
 <translation id="1844620919405873871">Permet de configurer les règles associées au déverrouillage rapide.</translation>
 <translation id="1845405905602899692">Paramètres de kiosque</translation>
@@ -3396,17 +3392,6 @@ Si elle est désactivée, les favoris ne sont pas importés.
 
 Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'importation, ou celle-ci peut se faire automatiquement.</translation>
 <translation id="7063895219334505671">Autoriser les fenêtres pop-up sur ces sites</translation>
-<translation id="706568410943497889">
-      Lorsque cette règle est définie sur "True", <ph name="PRODUCT_NAME" /> est autorisé à collecter les journaux d'événements WebRTC à partir des services Google (Google Meet, par exemple) et à les transférer vers Google.
-
-      Si la règle est définie sur "False" ou n'est pas définie, <ph name="PRODUCT_NAME" /> ne peut pas collecter ces journaux ni les transférer.
-
-      Ces journaux contiennent des informations de diagnostic utiles lors du débogage de problèmes liés aux appels audio ou vidéo dans Chrome, telles que l'horodatage et la taille des paquets RTP envoyés et reçus, des commentaires sur l'encombrement du réseau, et des métadonnées relatives à l'horodatage et à la qualité des trames vidéo et audio. Les journaux n'incluent aucun contenu audio ou vidéo des appels.
-
-      Cette collecte de données par Chrome ne peut être déclenchée que par des services Web de Google, tels que Google Hangouts ou Google Meet.
-
-      Google peut associer ces journaux à d'autres journaux collectés par le service Google proprement dit à l'aide d'un ID de session dans le but de faciliter le débogage.
-      </translation>
 <translation id="706669471845501145">Autoriser les sites à afficher des notifications sur le bureau</translation>
 <translation id="7068108874199666656">Permet de transférer l'application de la configuration réseau à tous les utilisateurs d'un appareil fonctionnant avec <ph name="PRODUCT_OS_NAME" />. La configuration réseau correspond à une chaîne formatée par JSON conformément au format de configuration de réseau ouvert.</translation>
 <translation id="7070525176564511548">La saisie du mot de passe est requise toutes les semaines (toutes les 168 heures)</translation>
@@ -4106,10 +4091,6 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
           Si vous configurez cette règle, les utilisateurs ne peuvent pas la modifier ni l'ignorer.
 
           Si cette règle n'est pas définie, la dictée est désactivée au départ, mais les utilisateurs peuvent l'activer à tout moment.</translation>
-<translation id="8292322992383748446">Envoyer des rapports sur les statistiques matérielles pour les composants SoC.
-
-      Si cette règle est définie sur "False", les statistiques ne seront pas envoyées.
-      Si cette règle est définie sur "True" ou si elle n'est pas configurée, les statistiques seront envoyées.</translation>
 <translation id="829337533107201925">Si cette règle est activée, les règles appartenant à un groupe atomique qui ne partagent pas la source avec la plus haute priorité de ce groupe sont ignorées.
 
       Si cette règle est désactivée, aucune règle n'est ignorée en raison de sa source. Des règles ne sont ignorées que s'il existe un conflit et que ces règles n'ont pas la plus haute priorité.
@@ -4145,10 +4126,6 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 <translation id="8367209241899435947">Activer Chrome Cleanup sur Windows</translation>
 <translation id="8369602308428138533">Délai d'arrêt de l'écran (secteur)</translation>
 <translation id="8371178326720637170">Autorise les extensions gérées à utiliser l'API Enterprise Hardware Platform</translation>
-<translation id="8374747520743832795">Envoyer des rapports sur les statistiques et identifiants matériels associés à l'alimentation.
-
-      Si cette règle est définie sur "False", les statistiques ne seront pas envoyées.
-      Si cette règle est définie sur "True" ou si elle n'est pas configurée, les statistiques seront envoyées.</translation>
 <translation id="8380490658357556620">Permet l'utilisation de serveurs relais lorsque les clients distants tentent d'établir une connexion avec ce poste.
 
           Si ce paramètre est activé, les clients distants peuvent utiliser des serveurs relais pour se connecter à ce poste lorsque aucune connexion directe n'est disponible (par exemple, en raison de restrictions du pare-feu).

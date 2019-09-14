@@ -803,7 +803,7 @@ CSSValue* ComputedStyleUtils::ValueForFontStyle(const ComputedStyle& style) {
       *CSSIdentifierValue::Create(CSSValueID::kOblique), *oblique_values);
 }
 
-CSSPrimitiveValue* ComputedStyleUtils::ValueForFontWeight(
+CSSNumericLiteralValue* ComputedStyleUtils::ValueForFontWeight(
     const ComputedStyle& style) {
   return CSSNumericLiteralValue::Create(style.GetFontDescription().Weight(),
                                         CSSPrimitiveValue::UnitType::kNumber);
@@ -1005,13 +1005,18 @@ CSSValue* ComputedStyleUtils::ValueForFontVariantEastAsian(
 }
 
 CSSValue* ComputedStyleUtils::ValueForFont(const ComputedStyle& style) {
-  // Add a slash between size and line-height.
-  CSSValueList* size_and_line_height = CSSValueList::CreateSlashSeparated();
-  size_and_line_height->Append(*ValueForFontSize(style));
-  size_and_line_height->Append(*ValueForLineHeight(style));
+  auto AppendIfNotNormal = [](CSSValueList* list, const CSSValue& value) {
+    auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+    if (identifier_value &&
+        identifier_value->GetValueID() == CSSValueID::kNormal) {
+      return;
+    }
+
+    list->Append(value);
+  };
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  list->Append(*ValueForFontStyle(style));
+  AppendIfNotNormal(list, *ValueForFontStyle(style));
 
   // Check that non-initial font-variant subproperties are not conflicting with
   // this serialization.
@@ -1038,11 +1043,32 @@ CSSValue* ComputedStyleUtils::ValueForFont(const ComputedStyle& style) {
   if (caps_value->GetValueID() != CSSValueID::kNormal &&
       caps_value->GetValueID() != CSSValueID::kSmallCaps)
     return nullptr;
-  list->Append(*caps_value);
+  AppendIfNotNormal(list, *caps_value);
 
-  list->Append(*ValueForFontWeight(style));
-  list->Append(*ValueForFontStretchAsKeyword(style));
-  list->Append(*size_and_line_height);
+  {
+    CSSNumericLiteralValue* font_weight = ValueForFontWeight(style);
+    if (font_weight->DoubleValue() != NormalWeightValue())
+      list->Append(*font_weight);
+  }
+
+  AppendIfNotNormal(list, *ValueForFontStretchAsKeyword(style));
+
+  {
+    CSSValue* line_height = ValueForLineHeight(style);
+    auto* identifier_line_height = DynamicTo<CSSIdentifierValue>(line_height);
+    if (identifier_line_height &&
+        identifier_line_height->GetValueID() == CSSValueID::kNormal) {
+      list->Append(*ValueForFontSize(style));
+    } else {
+      // Add a slash between size and line-height.
+      CSSValueList* size_and_line_height = CSSValueList::CreateSlashSeparated();
+      size_and_line_height->Append(*ValueForFontSize(style));
+      size_and_line_height->Append(*line_height);
+
+      list->Append(*size_and_line_height);
+    }
+  }
+
   list->Append(*ValueForFontFamily(style));
 
   return list;

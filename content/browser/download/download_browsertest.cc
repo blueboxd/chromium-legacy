@@ -888,12 +888,28 @@ class DownloadContentTest : public ContentBrowserTest {
         std::move(factory));
   }
 
+  // Navigate to a URL and wait for a download, expecting that the URL will not
+  // result in a new committed navigation. This is typically the case for most
+  // downloads.
   void NavigateToURLAndWaitForDownload(
       Shell* shell,
       const GURL& url,
       download::DownloadItem::DownloadState expected_terminal_state) {
     std::unique_ptr<DownloadTestObserver> observer(CreateWaiter(shell, 1));
-    NavigateToURL(shell, url);
+    EXPECT_TRUE(NavigateToURLAndExpectNoCommit(shell, url));
+    observer->WaitForFinished();
+    EXPECT_EQ(1u, observer->NumDownloadsSeenInState(expected_terminal_state));
+  }
+
+  // Navigate to a URL, expecting it to commit, and wait for a download. This
+  // is useful when the URL actually commits and then starts a download via
+  // script.
+  void NavigateToCommittedURLAndWaitForDownload(
+      Shell* shell,
+      const GURL& url,
+      download::DownloadItem::DownloadState expected_terminal_state) {
+    std::unique_ptr<DownloadTestObserver> observer(CreateWaiter(shell, 1));
+    EXPECT_TRUE(NavigateToURL(shell, url));
     observer->WaitForFinished();
     EXPECT_EQ(1u, observer->NumDownloadsSeenInState(expected_terminal_state));
   }
@@ -1055,8 +1071,8 @@ class DownloadContentTest : public ContentBrowserTest {
   }
 
   void RegisterServiceWorker(Shell* shell, const std::string& worker_url) {
-    NavigateToURL(
-        shell, embedded_test_server()->GetURL("/register_service_worker.html"));
+    EXPECT_TRUE(NavigateToURL(shell, embedded_test_server()->GetURL(
+                                         "/register_service_worker.html")));
     EXPECT_EQ("DONE", EvalJs(shell, "register('" + worker_url + "')"));
   }
 
@@ -1278,9 +1294,11 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, MultiDownload) {
 
   // Allow the first request to finish.
   std::unique_ptr<DownloadTestObserver> observer2(CreateWaiter(shell(), 1));
-  NavigateToURL(shell(), embedded_test_server()->GetURL(
-                             SlowDownloadHttpResponse::kSlowDownloadHostName,
-                             SlowDownloadHttpResponse::kFinishDownloadUrl));
+  EXPECT_TRUE(NavigateToURL(shell(),
+                            embedded_test_server()->GetURL(
+                                SlowDownloadHttpResponse::kSlowDownloadHostName,
+                                SlowDownloadHttpResponse::kFinishDownloadUrl)));
+
   observer2->WaitForFinished();  // Wait for the third request.
 
   EXPECT_EQ(
@@ -1419,8 +1437,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelAtFinalRename) {
       std::unique_ptr<download::DownloadFileFactory>(file_factory));
 
   // Create a download
-  NavigateToURL(shell(),
-                embedded_test_server()->GetURL("/download/download-test.lib"));
+  EXPECT_TRUE(NavigateToURLAndExpectNoCommit(
+      shell(), embedded_test_server()->GetURL("/download/download-test.lib")));
 
   // Wait until the first (intermediate file) rename and execute the callback.
   file_factory->WaitForSomeCallback();
@@ -1468,8 +1486,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelAtRelease) {
       std::unique_ptr<download::DownloadFileFactory>(file_factory));
 
   // Create a download
-  NavigateToURL(shell(),
-                embedded_test_server()->GetURL("/download/download-test.lib"));
+  EXPECT_TRUE(NavigateToURLAndExpectNoCommit(
+      shell(), embedded_test_server()->GetURL("/download/download-test.lib")));
 
   // Wait until the first (intermediate file) rename and execute the callback.
   file_factory->WaitForSomeCallback();
@@ -1574,8 +1592,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownAtRelease) {
       std::unique_ptr<download::DownloadFileFactory>(file_factory));
 
   // Create a download
-  NavigateToURL(shell(),
-                embedded_test_server()->GetURL("/download/download-test.lib"));
+  EXPECT_TRUE(NavigateToURLAndExpectNoCommit(
+      shell(), embedded_test_server()->GetURL("/download/download-test.lib")));
 
   // Wait until the first (intermediate file) rename and execute the callback.
   file_factory->WaitForSomeCallback();
@@ -3222,8 +3240,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
                                  "application/octet-stream", "Hello"));
   origin_two.StartAcceptingConnections();
 
-  NavigateToURLAndWaitForDownload(shell(), referrer_url,
-                                  download::DownloadItem::COMPLETE);
+  NavigateToCommittedURLAndWaitForDownload(shell(), referrer_url,
+                                           download::DownloadItem::COMPLETE);
 
   std::vector<download::DownloadItem*> downloads;
   DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
@@ -3273,8 +3291,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   origin_one.StartAcceptingConnections();
   origin_two.StartAcceptingConnections();
 
-  NavigateToURLAndWaitForDownload(shell(), referrer_url,
-                                  download::DownloadItem::COMPLETE);
+  NavigateToCommittedURLAndWaitForDownload(shell(), referrer_url,
+                                           download::DownloadItem::COMPLETE);
 
   std::vector<download::DownloadItem*> downloads;
   DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
@@ -3323,7 +3341,9 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
 
   base::string16 expected_title(base::UTF8ToUTF16("hello"));
   TitleWatcher observer(shell()->web_contents(), expected_title);
-  NavigateToURL(shell(), referrer_url);
+  EXPECT_TRUE(
+      NavigateToURL(shell(), referrer_url,
+                    origin_two.GetURL("/download") /* expected_commit_url */));
   ASSERT_EQ(expected_title, observer.WaitAndGetTitle());
 
   std::vector<download::DownloadItem*> downloads;
@@ -3420,7 +3440,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   origin_two.StartAcceptingConnections();
 
   std::unique_ptr<DownloadTestObserver> observer(CreateWaiter(shell(), 1));
-  NavigateToURL(shell(), referrer_url);
+  EXPECT_TRUE(NavigateToURL(shell(), referrer_url));
 
   // Alt-click the link.
   blink::WebMouseEvent mouse_event(
@@ -3465,8 +3485,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeDataUrl) {
   server.ServeFilesFromDirectory(GetTestFilePath("download", ""));
   server.StartAcceptingConnections();
 
-  NavigateToURLAndWaitForDownload(shell(), url,
-                                  download::DownloadItem::COMPLETE);
+  NavigateToCommittedURLAndWaitForDownload(shell(), url,
+                                           download::DownloadItem::COMPLETE);
 
   std::vector<download::DownloadItem*> downloads;
   DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
@@ -3536,7 +3556,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeInvalidURL) {
       std::make_unique<content::TestNavigationObserver>(GURL(kBlockedURL));
   observer->WatchExistingWebContents();
   observer->StartWatchingNewWebContents();
-  NavigateToURL(shell(), url);
+  shell()->LoadURL(url);
   observer->WaitForNavigationFinished();
 }
 
@@ -3994,7 +4014,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, FetchErrorResponseBodyResumption) {
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadFromWebUI) {
   GURL webui_url(
       GetWebUIURL("resources/images/apps/topbar_button_maximize.png"));
-  NavigateToURL(shell(), webui_url);
+  EXPECT_TRUE(NavigateToURL(shell(), webui_url));
   SetupEnsureNoPendingDownloads();
 
   // Creates download parameters with renderer process information.
@@ -4017,7 +4037,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadFromWebUI) {
 // process.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadFromWebUIWithoutRenderer) {
   GURL webui_url("chrome://resources/images/apps/topbar_button_maximize.png");
-  NavigateToURL(shell(), webui_url);
+  EXPECT_TRUE(NavigateToURL(shell(), webui_url));
   SetupEnsureNoPendingDownloads();
 
   // Creates download parameters without any renderer process information.
@@ -4121,7 +4141,7 @@ IN_PROC_BROWSER_TEST_F(MhtmlLoadingTest, AllowRenderMultipartRelatedPage) {
   observer->WatchExistingWebContents();
   observer->StartWatchingNewWebContents();
 
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   observer->WaitForNavigationFinished();
 }
@@ -4133,7 +4153,7 @@ IN_PROC_BROWSER_TEST_F(MhtmlLoadingTest, AllowRenderMessageRfc822Page) {
   observer->WatchExistingWebContents();
   observer->StartWatchingNewWebContents();
 
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   observer->WaitForNavigationFinished();
 }

@@ -92,6 +92,10 @@ struct CreateFrameWidgetParams {
   // new RenderFrame. If the RenderFrame does not need a RenderWidget, this
   // is MSG_ROUTING_NONE and the other parameters are not read.
   int32 routing_id;
+
+  // The initial visual properties of the widget, when the routing_id is not
+  // MSG_ROUTING_NONE.
+  VisualProperties visual_properties;
 };
 
 struct CreateFrameParams {

@@ -1618,41 +1618,43 @@ void ThreadState::ScheduleConcurrentMarking() {
   //
   // TODO(omerkatz): kNumberOfMarkingTasks should be set heuristically instead
   // of a constant.
-  static constexpr int kNumberOfMarkingTasks = 1u;
-  DCHECK_LT(kNumberOfMarkingTasks, Heap().GetMarkingWorklist()->num_tasks());
+  static constexpr int kNumberOfConcurrentMarkingTasks = 1u;
+  DCHECK_LT(kNumberOfConcurrentMarkingTasks,
+            Heap().GetMarkingWorklist()->num_tasks());
 
-  active_markers_ = kNumberOfMarkingTasks;
+  active_markers_ = kNumberOfConcurrentMarkingTasks;
 
-  for (int i = 0; i < kNumberOfMarkingTasks; ++i) {
-    const int task_id = WorklistTaskId::ConcurrentThreadBase + i;
-    marker_scheduler_->ScheduleTask(WTF::CrossThreadBindOnce(
-        &ThreadState::PerformConcurrentMark, WTF::CrossThreadUnretained(this),
-        IsUnifiedGCMarkingInProgress()
-            ? std::make_unique<ConcurrentUnifiedHeapMarkingVisitor>(
-                  this, GetMarkingMode(Heap().Compaction()->IsCompacting()),
-                  GetIsolate(), task_id)
-            : std::make_unique<ConcurrentMarkingVisitor>(
-                  this, GetMarkingMode(Heap().Compaction()->IsCompacting()),
-                  task_id)));
+  for (int i = 0; i < kNumberOfConcurrentMarkingTasks; ++i) {
+    marker_scheduler_->ScheduleTask(
+        WTF::CrossThreadBindOnce(&ThreadState::PerformConcurrentMark,
+                                 WTF::CrossThreadUnretained(this), i));
   }
 }
 
-void ThreadState::PerformConcurrentMark(
-    std::unique_ptr<ConcurrentMarkingVisitor> visitor) {
+void ThreadState::PerformConcurrentMark(int concurrent_marker_id) {
   VLOG(2) << "[state:" << this << "] [threadid:" << CurrentThread() << "] "
           << "ConcurrentMark";
   ThreadHeapStatsCollector::EnabledConcurrentScope stats_scope(
       Heap().stats_collector(), ThreadHeapStatsCollector::kConcurrentMark);
 
-  Heap().AdvanceConcurrentMarking(visitor.get());
+  const int task_id =
+      WorklistTaskId::ConcurrentThreadBase + concurrent_marker_id;
+  std::unique_ptr<ConcurrentMarkingVisitor> concurrent_visitor =
+      IsUnifiedGCMarkingInProgress()
+          ? std::make_unique<ConcurrentUnifiedHeapMarkingVisitor>(
+                this, GetMarkingMode(Heap().Compaction()->IsCompacting()),
+                GetIsolate(), task_id)
+          : std::make_unique<ConcurrentMarkingVisitor>(
+                this, GetMarkingMode(Heap().Compaction()->IsCompacting()),
+                task_id);
+  Heap().AdvanceConcurrentMarking(concurrent_visitor.get());
 
-  visitor->FlushWorklists();
-  const size_t marked_bytes = visitor->marked_bytes();
+  concurrent_visitor->FlushWorklists();
   {
     base::AutoLock lock(active_concurrent_markers_lock_);
     // When marking is done, flush visitor worklists and decrement number of
     // active markers so we know how many markers are left
-    concurrently_marked_bytes_ += marked_bytes;
+    concurrently_marked_bytes_ += concurrent_visitor->marked_bytes();
     --active_markers_;
   }
 }

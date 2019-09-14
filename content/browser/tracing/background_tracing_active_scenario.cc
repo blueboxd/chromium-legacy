@@ -356,25 +356,7 @@ bool BackgroundTracingActiveScenario::StartTracing() {
   uint8_t modes = base::trace_event::TraceLog::RECORDING_MODE;
   if (!chrome_config.event_filters().empty())
     modes |= base::trace_event::TraceLog::FILTERING_MODE;
-
-  // Perfetto backend configures buffer sizes when tracing is started in the
-  // service (see perfetto_config.cc). Zero them out here to avoid DCHECKs in
-  // TraceConfig::Merge.
-  if (tracing::TracingUsesPerfettoBackend()) {
-    chrome_config.SetTraceBufferSizeInKb(0);
-    chrome_config.SetTraceBufferSizeInEvents(0);
-  }
-
-#if defined(OS_ANDROID)
-  // TODO(crbug.com/941318): Re-enable startup tracing for Perfetto backend on
-  // Android once all Perfetto-related deadlocks are resolved.
-  if (!tracing::TracingUsesPerfettoBackend()) {
-    base::trace_event::TraceLog::GetInstance()->SetEnabled(chrome_config,
-                                                           modes);
-  }
-#else   // defined(OS_ANDROID)
   base::trace_event::TraceLog::GetInstance()->SetEnabled(chrome_config, modes);
-#endif  // defined(OS_ANDROID)
 
   DCHECK(!tracing_session_);
   if (base::FeatureList::IsEnabled(features::kBackgroundTracingProtoOutput)) {

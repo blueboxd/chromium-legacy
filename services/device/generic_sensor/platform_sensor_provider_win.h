@@ -29,6 +29,8 @@ class PlatformSensorProviderWin final : public PlatformSensorProvider {
   void SetSensorManagerForTesting(
       Microsoft::WRL::ComPtr<ISensorManager> sensor_manager);
 
+  scoped_refptr<base::SingleThreadTaskRunner> GetComStaTaskRunnerForTesting();
+
  protected:
   // PlatformSensorProvider interface implementation.
   void CreateSensorInternal(mojom::SensorType type,

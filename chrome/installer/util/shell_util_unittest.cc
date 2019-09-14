@@ -846,6 +846,8 @@ TEST_F(ShellUtilRegistryTest, AddFileAssociations) {
       key.Open(HKEY_CURRENT_USER, L"Software\\Classes\\TestApp", KEY_READ));
   EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(L"", &value));
   EXPECT_EQ(L"Test File Type", value);
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(L"FileExtensions", &value));
+  EXPECT_EQ(L".test1;.test2", value);
   ASSERT_EQ(ERROR_SUCCESS,
             key.Open(HKEY_CURRENT_USER,
                      L"Software\\Classes\\TestApp\\DefaultIcon",
@@ -907,9 +909,22 @@ TEST_F(ShellUtilRegistryTest, DeleteFileAssociations) {
       ERROR_SUCCESS,
       key.Open(HKEY_CURRENT_USER, L"Software\\Classes\\TestApp", KEY_READ));
 
-  // We don't currently delete the associations with the particular extensions.
-  // Still, ensure that .test2 is still associated with the other app.
-  // TODO(mgiuca): Update this expectation when we delete the associations.
+  // .test1 and .test2 should no longer be associated with the test app.
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Open(HKEY_CURRENT_USER,
+                     L"Software\\Classes\\.test1\\OpenWithProgids", KEY_READ));
+  EXPECT_FALSE(key.HasValue(L"TestApp"));
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Open(HKEY_CURRENT_USER,
+                     L"Software\\Classes\\.test2\\OpenWithProgids", KEY_READ));
+  EXPECT_FALSE(key.HasValue(L"TestApp"));
+
+  // .test1 should no longer have a default handler.
+  ASSERT_EQ(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER,
+                                    L"Software\\Classes\\.test1", KEY_READ));
+  EXPECT_FALSE(key.HasValue(L""));
+
+  // .test2 should still have the other app as its default handler.
   ASSERT_EQ(
       ERROR_SUCCESS,
       key.Open(HKEY_CURRENT_USER, L"Software\\Classes\\.test2", KEY_READ));

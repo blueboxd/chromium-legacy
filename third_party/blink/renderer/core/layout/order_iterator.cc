@@ -73,10 +73,8 @@ void OrderIterator::Reset() {
 }
 
 int OrderIterator::ResolvedOrder(const LayoutBox& child) const {
-  if (container_box_->StyleRef().Display() == EDisplay::kWebkitBox ||
-      container_box_->StyleRef().Display() == EDisplay::kWebkitInlineBox) {
+  if (container_box_->StyleRef().IsDeprecatedWebkitBox())
     return child.StyleRef().BoxOrdinalGroup();
-  }
   return child.StyleRef().Order();
 }
 

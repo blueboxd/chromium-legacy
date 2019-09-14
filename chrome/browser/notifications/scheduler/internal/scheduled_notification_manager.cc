@@ -53,6 +53,17 @@ bool ValidateNotificationParams(const NotificationParams& params) {
   if (params.enable_ihnr_buttons && !params.notification_data.buttons.empty()) {
     return false;
   }
+
+  // Validate icon bundle data is correct: icon resource id should never be
+  // persisted to disk,since it can change in different versions. Client should
+  // overwrite with Android resource id in BeforeShowNotification callback if it
+  // is required.
+  for (const auto& icon_bundle_map : params.notification_data.icons) {
+    const auto& icon_bundle = icon_bundle_map.second;
+    if (icon_bundle.resource_id)
+      return false;
+  }
+
   return true;
 }
 

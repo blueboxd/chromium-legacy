@@ -96,7 +96,7 @@ constexpr base::TimeDelta kRecordLidAngleInterval =
 // Time that should wait to reset |occlusion_tracker_pauser_| on
 // entering/exiting tablet mode.
 constexpr base::TimeDelta kOcclusionTrackerTimeout =
-    base::TimeDelta::FromMilliseconds(500);
+    base::TimeDelta::FromSeconds(1);
 
 // Histogram names for recording animation smoothness when entering or exiting
 // tablet mode.
@@ -417,7 +417,7 @@ void TabletModeController::RemoveObserver(TabletModeObserver* observer) {
 }
 
 bool TabletModeController::InTabletMode() const {
-  return !!tablet_mode_window_manager_;
+  return state_ == State::kInTabletMode || state_ == State::kEnteringTabletMode;
 }
 
 void TabletModeController::SetEnabledForTest(bool enabled) {
@@ -1072,7 +1072,6 @@ void TabletModeController::TakeScreenshot(aura::Window* top_window) {
   screenshot_window->layer()->RequestCopyOfOutput(
       std::move(screenshot_request));
 
-  top_window->layer()->SetOpacity(1.f);
   for (auto* root : roots)
     root->GetHost()->compositor()->SetAllowLocksToExtendTimeout(false);
 }
@@ -1082,6 +1081,8 @@ void TabletModeController::OnScreenshotTaken(
     std::unique_ptr<viz::CopyOutputResult> copy_result) {
   aura::Window* top_window =
       destroy_observer_ ? destroy_observer_->window() : nullptr;
+  if (top_window)
+    top_window->layer()->SetOpacity(1.f);
   ResetDestroyObserver();
 
   if (!copy_result || copy_result->IsEmpty() || !top_window) {

@@ -323,8 +323,7 @@ bool CalculateStyleShouldForceLegacyLayout(const Element& element,
       return true;
   }
 
-  if (style.Display() == EDisplay::kWebkitBox ||
-      style.Display() == EDisplay::kWebkitInlineBox)
+  if (style.IsDeprecatedWebkitBox())
     return true;
 
   if (!RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled()) {

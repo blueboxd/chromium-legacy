@@ -43,6 +43,8 @@
 <translation id="1873233029667955273">Google Chrome 不是您的默认浏览器</translation>
 <translation id="1874309113135274312">Google Chrome 测试版 (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome版本太旧</translation>
+<translation id="1900795423379050516">如果此页面中未显示某项设置，请在 <ph name="LINK_BEGIN" />
+      Chrome 浏览器设置<ph name="LINK_END" />中查找</translation>
 <translation id="1915828456209461693">Chrome 有一项新的可用更新；一旦您重新启动，系统即会应用这项更新。</translation>
 <translation id="1919130412786645364">允许登录 Chrome</translation>
 <translation id="2063848847527508675">需要重新启动 Chrome 操作系统以应用更新。</translation>
@@ -156,6 +158,8 @@
 <translation id="5543953544073077331">Chrome 的其他副本正在运行。若要更新，请关闭这些副本。</translation>
 <translation id="556024056938947818">Google Chrome 正尝试显示密码。</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
+<translation id="5657226924540934362">如果此页面中未显示某项设置，请在 <ph name="LINK_BEGIN" />
+      Chrome 操作系统设置<ph name="LINK_END" />中查找</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> 可能存在危险，因此 Chrome 已将其拦截。</translation>
 <translation id="5686916850681061684">自定义和控制 Google Chrome。出了点需要您注意的状况 - 点击即可查看详情。</translation>
 <translation id="5690427481109656848">Google LLC</translation>

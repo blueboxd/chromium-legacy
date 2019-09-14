@@ -1298,6 +1298,12 @@ LocalFrame::LazyLoadImageSetting LocalFrame::GetLazyLoadImageSetting() const {
       !GetSettings()->GetLazyLoadEnabled()) {
     return LocalFrame::LazyLoadImageSetting::kDisabled;
   }
+  // Disable explicit and automatic lazyload for backgrounded or prerendered
+  // pages.
+  if (!GetDocument()->IsPageVisible() || GetDocument()->IsPrefetchOnly()) {
+    return LocalFrame::LazyLoadImageSetting::kDisabled;
+  }
+
   if (!RuntimeEnabledFeatures::AutomaticLazyImageLoadingEnabled())
     return LocalFrame::LazyLoadImageSetting::kEnabledExplicit;
   if (RuntimeEnabledFeatures::

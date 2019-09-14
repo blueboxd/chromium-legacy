@@ -86,11 +86,6 @@ struct ReportingPolicy;
 // Builder may be used to create only a single URLRequestContext.
 class NET_EXPORT URLRequestContextBuilder {
  public:
-  // Creates a LayeredDelegate that wraps |inner_network_delegate|.
-  using CreateLayeredNetworkDelegate =
-      base::OnceCallback<std::unique_ptr<NetworkDelegate>(
-          std::unique_ptr<NetworkDelegate> inner_network_delegate)>;
-
   using CreateInterceptingJobFactory =
       base::OnceCallback<std::unique_ptr<URLRequestJobFactory>(
           std::unique_ptr<URLRequestJobFactory> inner_job_factory)>;
@@ -252,12 +247,6 @@ class NET_EXPORT URLRequestContextBuilder {
     network_delegate_ = std::move(delegate);
   }
 
-  // Sets an optional callback that creates a NetworkDelegate wrapping either
-  // the default NetworkDelegate, or the one set by the above method.
-  // TODO(mmenke): Remove this once the network service ships.
-  void SetCreateLayeredNetworkDelegateCallback(
-      CreateLayeredNetworkDelegate create_layered_network_delegate_callback);
-
   // Sets the ProxyDelegate.
   void set_proxy_delegate(std::unique_ptr<ProxyDelegate> proxy_delegate);
 
@@ -393,7 +382,6 @@ class NET_EXPORT URLRequestContextBuilder {
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   std::unique_ptr<SSLConfigService> ssl_config_service_;
   std::unique_ptr<NetworkDelegate> network_delegate_;
-  CreateLayeredNetworkDelegate create_layered_network_delegate_callback_;
   std::unique_ptr<ProxyDelegate> proxy_delegate_;
   std::unique_ptr<CookieStore> cookie_store_;
   std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;

@@ -22,7 +22,8 @@ std::unique_ptr<content::OverlayWindow> content::OverlayWindow::Create(
 
 OverlayWindowAndroid::OverlayWindowAndroid(
     content::PictureInPictureWindowController* controller)
-    : compositor_view_(nullptr),
+    : window_android_(nullptr),
+      compositor_view_(nullptr),
       surface_layer_(cc::SurfaceLayer::Create()),
       bounds_(gfx::Rect(0, 0)),
       controller_(controller) {

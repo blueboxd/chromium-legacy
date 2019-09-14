@@ -11,7 +11,6 @@ import("//chrome/process_version_rc_template.gni")
 group("mac") {
   public_deps = [
     ":copies",
-    ":notarization_sentinel",
   ]
 }
 
@@ -60,24 +59,6 @@ copy("copy_signing") {
 
   outputs = [
     "$_packaging_dir/signing/{{source_file_part}}",
-  ]
-}
-
-action("notarization_sentinel") {
-  visibility = [ ":mac" ]
-
-  script = "//build/redirect_stdout.py"
-
-  _output = "$_packaging_dir/notarize_me.txt"
-
-  args = [
-    rebase_path(_output, root_out_dir),
-    "echo",
-    "yes-1",
-  ]
-
-  outputs = [
-    _output,
   ]
 }
 

@@ -99,7 +99,7 @@ class MediaSessionImplServiceRoutingTest
     sub_frame_ = main_frame_->AppendChild("sub_frame");
 
     empty_metadata_.title = contents()->GetTitle();
-    empty_metadata_.artist = base::ASCIIToUTF16("http://www.example.com");
+    empty_metadata_.source_title = base::ASCIIToUTF16("http://www.example.com");
   }
 
   void TearDown() override {
@@ -175,7 +175,7 @@ class MediaSessionImplServiceRoutingTest
   }
 
   const base::string16& GetSourceTitleForNonEmptyMetadata() const {
-    return empty_metadata_.artist;
+    return empty_metadata_.source_title;
   }
 
   TestRenderFrameHost* main_frame_;
@@ -780,7 +780,7 @@ TEST_F(MediaSessionImplServiceRoutingTest, NotifyObserverOnNavigation) {
 
   media_session::MediaMetadata expected_metadata;
   expected_metadata.title = contents()->GetTitle();
-  expected_metadata.artist = base::ASCIIToUTF16("http://www.google.com");
+  expected_metadata.source_title = base::ASCIIToUTF16("http://www.google.com");
   observer.WaitForExpectedMetadata(expected_metadata);
 }
 
@@ -790,7 +790,7 @@ TEST_F(MediaSessionImplServiceRoutingTest, NotifyObserverOnTitleChange) {
 
   media_session::MediaMetadata expected_metadata;
   expected_metadata.title = base::ASCIIToUTF16("new title");
-  expected_metadata.artist = GetSourceTitleForNonEmptyMetadata();
+  expected_metadata.source_title = GetSourceTitleForNonEmptyMetadata();
 
   contents()->UpdateTitle(contents()->GetMainFrame(), expected_metadata.title,
                           base::i18n::TextDirection::LEFT_TO_RIGHT);

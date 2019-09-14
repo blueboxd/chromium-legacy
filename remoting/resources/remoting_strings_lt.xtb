@@ -58,6 +58,7 @@
 <translation id="2509394361235492552">Prisijungta prie „<ph name="HOSTNAME" />“</translation>
 <translation id="2512228156274966424">PASTABA: jei norite užtikrinti, kad galimi visi spartieji klavišai, galite konfigūruoti „Chrome“ nuotolinio kompiuterio valdymą į „Atidaryti kaip langą“.</translation>
 <translation id="2540992418118313681">Ar norite bendrinti šį kompiuterį su kitu naudotoju, kuris galės matyti ir tvarkyti jo turinį?</translation>
+<translation id="254771646005658629">Leiskite nuotoliniams naudotojams valdyti šį „Mac“ įrenginį</translation>
 <translation id="2579271889603567289">Priegloba užstrigo arba jos nepavyko paleisti.</translation>
 <translation id="2599300881200251572">Naudojant šią paslaugą įgalinami „Chrome“ nuotolinio kompiuterio valdymo klientų prisijungimai.</translation>
 <translation id="2647232381348739934">„Chrome“ nuotolinio ryšio paslauga</translation>
@@ -182,6 +183,11 @@
 <translation id="5419185025274123272">Nepavyko iš naujo nustatyti programos. Vis tiek galite išsiųsti rikto ataskaitą.</translation>
 <translation id="5419418238395129586">Paskutinį kartą prisijungta: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Priegloba išjungta.</translation>
+<translation id="5463789431147491241">Kad <ph name="PRODUCT_NAME" /> veiktų šiame „Mac“, atlikite nurodytus veiksmus.
+
+Toliau pasirinkite mygtuką „<ph name="BUTTON_NAME" />“. Saugos ir privatumo nuostatų skiltyje pažymėkite žymimąjį langelį šalia „<ph name="SERVICE_SCRIPT_NAME" />“.
+
+Jei parinktis „<ph name="SERVICE_SCRIPT_NAME" />“ jau pažymėta, atžymėkite ir pažymėkite ją iš naujo.</translation>
 <translation id="5510035215749041527">Atjungti dabar</translation>
 <translation id="5593560073513909978">Paslauga laikinai negalima. Bandykite dar kartą vėliau.</translation>
 <translation id="5601503069213153581">PIN kodas</translation>
@@ -298,12 +304,14 @@
 <translation id="837021510621780684">Iš šio kompiuterio</translation>
 <translation id="8383794970363966105">Jei norite naudoti „Chrome“ nuotolinį ryšį, įrenginyje turite pridėti „Google“ paskyrą.</translation>
 <translation id="8386846956409881180">Priegloba sukonfigūruota naudojant netinkamus „OAuth“ prisijungimo duomenis.</translation>
+<translation id="8406498562923498210">Pasirinkite sesiją, kurią norite paleisti „Chrome“ nuotolinio kompiuterio valdymo aplinkoje. (Atminkite, kad kai kurių tipų sesijų gali nepavykti vienu metu paleisti „Chrome“ nuotolinio kompiuterio valdymo aplinkoje ir vietiniame pulte.)</translation>
 <translation id="8428213095426709021">Nustatymai</translation>
 <translation id="8445362773033888690">Žr. „Google Play“ parduotuvėje</translation>
 <translation id="8509907436388546015">Darbalaukio integravimo procesas</translation>
 <translation id="8513093439376855948">Vietinė pranešimų priegloba, skirta prieglobai nuotoliniu būdu tvarkyti</translation>
 <translation id="8525306231823319788">Viso ekrano režimas</translation>
 <translation id="8548209692293300397">Anksčiau prisijungėte kaip <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Kad pasiektumėte kompiuterius toje paskyroje, <ph name="LINK_BEGIN" />prisijunkite prie „Google Chrome“<ph name="LINK_END" /> naudodami tą paskyrą ir iš naujo įdiekite „Chrome“ nuotolinį kompiuterio valdymą.</translation>
+<translation id="858006550102277544">Komentaras</translation>
 <translation id="8642984861538780905">Neblogas</translation>
 <translation id="8712909229180978490">Prisijungus nerodomi „Google“ diske išsaugoti failai.</translation>
 <translation id="8743328882720071828">Ar norite leisti <ph name="CLIENT_USERNAME" /> matyti kompiuterio informaciją ir jį valdyti?</translation>
@@ -321,6 +329,7 @@
 <translation id="9126115402994542723">Neprašyti įvesti PIN kodą dar kartą, kai šiuo įrenginiu bus jungiamasi prie šio prieglobos kompiuterio.</translation>
 <translation id="9149580767411232853">Palikti visą nuotolinio kompiuterio valdymo programą matomą</translation>
 <translation id="9149992051684092333">Jei norite pradėti bendrinti darbalaukį, pateikite toliau nurodytą prieigos kodą padėjėjui.</translation>
+<translation id="916856682307586697">Paleisti numatytąją „XSession“ sesiją</translation>
 <translation id="9188433529406846933">Suteikti prieigos teisę</translation>
 <translation id="9213184081240281106">Netinkama prieglobos konfigūracija.</translation>
 <translation id="951991426597076286">Atmesti</translation>

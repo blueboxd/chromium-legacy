@@ -97,9 +97,6 @@
 <translation id="138218114945450791">Світло-синій</translation>
 <translation id="1382194467192730611">Пристрій USB дозволив адміністратор</translation>
 <translation id="139305205187523129">Хост <ph name="HOST_NAME" /> не надіслав дані.</translation>
-<translation id="140316286225361634">Сайт <ph name="ORIGIN" /> попросив, щоб правило безпеки
-    застосовувалося до всіх його запитів. Наразі це правило вважає цей сайт
-    ненадійним.</translation>
 <translation id="1405567553485452995">Світло-зелений</translation>
 <translation id="1407135791313364759">Відкрити все</translation>
 <translation id="1413809658975081374">Помилка через порушення конфіденційності</translation>
@@ -135,6 +132,7 @@
 <translation id="1569487616857761740">Введіть дату закінчення терміну дії</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Під час завантаженння цієї сторінки сталася помилка.</translation>
+<translation id="1588438908519853928">Звичайний</translation>
 <translation id="1592005682883173041">Доступ до локальних даних</translation>
 <translation id="1594030484168838125">Вибрати</translation>
 <translation id="161042844686301425">Бірюзовий</translation>
@@ -212,10 +210,6 @@
 <translation id="1981206234434200693">Очистити дані історії веб-перегляду Chrome</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{і ще 1}one{і ще #}few{і ще #}many{і ще #}other{і ще #}}</translation>
 <translation id="2003709556000175978">Скиньте пароль</translation>
-<translation id="20053308747750172">Сервер, на який ви переходите (<ph name="ORIGIN" />), попросив, щоб
-    до всіх його запитів застосовувалося правило безпеки. Однак зараз він
-    повернув недійсне правило, яке не дозволяє веб-переглядачу
-    виконати вам запит для сайту <ph name="SITE" />.</translation>
 <translation id="2025186561304664664">Проксі-сервер установлено на автоматичне налаштування.</translation>
 <translation id="202813660234680402">Ні, не додавати</translation>
 <translation id="2030481566774242610">Можливо, ви мали на увазі <ph name="LINK" />?</translation>
@@ -293,10 +287,6 @@
 <translation id="2409589295040002961">Адміністратор може змінити налаштування веб-переглядача віддалено. Діями на цьому пристрої можна керувати за межами Chrome. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Цей сервер не зміг довести, що він – домен <ph name="DOMAIN" />. Можливо, його сертифікат безпеки відкликано. Імовірні причини: неправильна конфігурація або хтось намагається перехопити ваше з’єднання.</translation>
-<translation id="2418081434543109369">Сервер, на який ви переходите (<ph name="ORIGIN" />), попросив, щоб
-    до всіх його запитів застосовувалося правило безпеки. Однак зараз він
-    не повертає правило, що не дозволяє веб-переглядачу виконати
-    ваш запит для сайту <ph name="SITE" />.</translation>
 <translation id="2463193859425327265">Змінити домашню сторінку</translation>
 <translation id="2463739503403862330">Заповнити</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -588,6 +578,7 @@
 <translation id="4103249731201008433">Недійсний серійний номер пристрою</translation>
 <translation id="410351446219883937">Автовідтворення</translation>
 <translation id="4103763322291513355">Перейдіть на сторінку &lt;strong&gt;chrome://policy&lt;/strong&gt;, щоб переглянути список URL-адрес із "чорного" списку й інші правила, що примусово застосовується системним адміністратором.</translation>
+<translation id="4108231218301530806">Підтвердити цю картку наступного разу можна цифровим відбитком.</translation>
 <translation id="4110652170750985508">Переглянути платіж</translation>
 <translation id="4112140312785995938">Перейти назад</translation>
 <translation id="4116663294526079822">Завжди дозволяти на цьому сайті</translation>
@@ -790,6 +781,7 @@
 <translation id="5141240743006678641">Шифрувати синхронізовані паролі за допомогою облікових даних Google</translation>
 <translation id="5145883236150621069">Відповідь правила містить код помилки</translation>
 <translation id="515292512908731282">C4 (конверт)</translation>
+<translation id="5158275234811857234">Обкладинка</translation>
 <translation id="5159010409087891077">Відкрийте сторінку в анонімному вікні (⇧⌘N)</translation>
 <translation id="516920405563544094">Введіть код CVC картки <ph name="CREDIT_CARD" />. Щойно ви підтвердите дані картки в обліковому записі Google, цей сайт отримає доступ до них.</translation>
 <translation id="5169827969064885044">Ви можете втратити доступ до облікового запису організації, або хтось може викрасти вашу особисту інформацію. Chrome радить змінити пароль.</translation>
@@ -948,6 +940,7 @@
 <translation id="598637245381783098">Неможливо відкрити додаток для платежів</translation>
 <translation id="5989320800837274978">Не вказано ні фіксованих проксі-серверів, ні URL-адрес сценарію .pac.</translation>
 <translation id="5990559369517809815">Надсилання запитів на сервер заблоковано розширенням.</translation>
+<translation id="6000758707621254961">Результатів для запиту "<ph name="SEARCH_TEXT" />": <ph name="RESULT_COUNT" /></translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">Рік</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Сторінка 1}one{Сторінка #}few{Сторінка #}many{Сторінка #}other{Сторінка #}}</translation>
@@ -1006,6 +999,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Немає}=1{1 пароль (для <ph name="DOMAIN_LIST" />, синхронізовано)}=2{2 паролі (для <ph name="DOMAIN_LIST" />, синхронізовано)}one{# пароль (для <ph name="DOMAIN_LIST" />, синхронізовано)}few{# паролі (для <ph name="DOMAIN_LIST" />, синхронізовано)}many{# паролів (для <ph name="DOMAIN_LIST" />, синхронізовано)}other{# пароля (для <ph name="DOMAIN_LIST" />, синхронізовано)}}</translation>
 <translation id="6358450015545214790">Що це означає?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6377268785556383139">1 результат для запиту "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Можливе стягнення плати.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{і ще 1 пропозиція}one{і ще # пропозиція}few{і ще # пропозиції}many{і ще # пропозицій}other{і ще # пропозиції}}</translation>
@@ -1140,10 +1134,6 @@
 <translation id="717330890047184534">Ідентифікатор GAIA:</translation>
 <translation id="7174545416324379297">Об'єднано</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}many{<ph name="SHIPPING_OPTION_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
-<translation id="7177397715882417099">Сервер, на який ви переходите (<ph name="ORIGIN" />), попросив, щоб
-    до всіх його запитів застосовувалося правило безпеки. Однак замість
-    повернення правила він переспрямовує веб-переглядач, що не дозволяє
-    йому виконати ваш запит для сайту <ph name="SITE" />.</translation>
 <translation id="7179323680825933600">Зберігати й заповнювати способи оплати</translation>
 <translation id="7180611975245234373">Оновити</translation>
 <translation id="7182878459783632708">Правила не встановлено</translation>
@@ -1170,6 +1160,7 @@
 <translation id="7300012071106347854">Кобальтовий</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
 <translation id="7303701124147721189">Щоб наступного разу платити швидше, збережіть дані картки та платіжну адресу в обліковому записі Google і на цьому пристрої.</translation>
+<translation id="7304030187361489308">Високий</translation>
 <translation id="7309308571273880165">Звіт про аварійне завершення роботи створено <ph name="CRASH_TIME" /> (ще не завантажено)</translation>
 <translation id="7313965965371928911">Застереження <ph name="BEGIN_LINK" />Безпечного перегляду<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1532,7 +1523,6 @@
 <translation id="939736085109172342">Нова папка</translation>
 <translation id="945855313015696284">Перевірте дані нижче й видаліть недійсні картки.</translation>
 <translation id="951104842009476243">Дебетові та передплачені картки, які приймаються до оплати</translation>
-<translation id="958202389743790697">Заблоковано відповідно до правила безпеки <ph name="ORIGIN" />.</translation>
 <translation id="962484866189421427">Ця сторінка може намагатися встановлювати оманливі додатки, які видають себе за інший вміст, або збирати дані для відстеження ваших дій. <ph name="BEGIN_LINK" />Усе одно показати<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Розробка</translation>
 <translation id="973773823069644502">Додати адресу доставки</translation>

@@ -364,7 +364,7 @@ TEST_F(SearchIPCRouterTest, IgnoreLogSuggestionEventWithValueMsg) {
 TEST_F(SearchIPCRouterTest, ProcessLogMostVisitedImpressionMsg) {
   const ntp_tiles::NTPTileImpression impression(
       3, ntp_tiles::TileSource::SUGGESTIONS_SERVICE,
-      ntp_tiles::TileTitleSource::UNKNOWN, ntp_tiles::TileVisualType::THUMBNAIL,
+      ntp_tiles::TileTitleSource::UNKNOWN, ntp_tiles::TileVisualType::ICON_REAL,
       favicon_base::IconType::kInvalid, base::Time(), GURL());
   NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
   SetupMockDelegateAndPolicy();
@@ -381,7 +381,7 @@ TEST_F(SearchIPCRouterTest, ProcessLogMostVisitedImpressionMsg) {
 TEST_F(SearchIPCRouterTest, ProcessLogMostVisitedNavigationMsg) {
   const ntp_tiles::NTPTileImpression impression(
       3, ntp_tiles::TileSource::SUGGESTIONS_SERVICE,
-      ntp_tiles::TileTitleSource::UNKNOWN, ntp_tiles::TileVisualType::THUMBNAIL,
+      ntp_tiles::TileTitleSource::UNKNOWN, ntp_tiles::TileVisualType::ICON_REAL,
       favicon_base::IconType::kInvalid, base::Time(), GURL());
   NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
   SetupMockDelegateAndPolicy();

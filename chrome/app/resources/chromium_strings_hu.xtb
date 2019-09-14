@@ -192,6 +192,7 @@ A Chromium nem tudja visszaállítani a beállításait.</translation>
 <translation id="753534427205733210">{0,plural, =1{A Chromium 1 percen belül újraindul}other{A Chromium # percen belül újraindul}}</translation>
 <translation id="7549178288319965365">A Chromium OS névjegye</translation>
 <translation id="7561906087460245826">Az adatokat is törölje a Chromiumból (<ph name="URL" />)</translation>
+<translation id="7585853947355360626">Ha valamelyik beállítás nem látható ezen az oldalon, keresse a <ph name="LINK_BEGIN" />Chromium OS beállításai<ph name="LINK_END" /> között</translation>
 <translation id="761356813943268536">A Chromium használja a kamerát és a mikrofont.</translation>
 <translation id="7617377681829253106">A Chromium még jobb lett</translation>
 <translation id="7686590090926151193">A Chromium nem az alapértelmezett böngésző</translation>
@@ -225,6 +226,7 @@ A Chromium nem tudja visszaállítani a beállításait.</translation>
 <translation id="8619360774459241877">Chromium indítása…</translation>
 <translation id="8621669128220841554">A telepítés egy meg nem határozott hiba miatt nem sikerült. Kérjük, töltse le újra a Chromiumot.</translation>
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> eszköze naprakész.</translation>
+<translation id="8682540261359803721">Ha valamelyik beállítás nem látható ezen az oldalon, keresse a <ph name="LINK_BEGIN" />Chromium böngésző beállításai<ph name="LINK_END" /> között</translation>
 <translation id="8697124171261953979">Továbbá azt is szabályozza, hogy melyik oldal jelenik meg a Chromium indításakor vagy a cím- és keresősávban indított kereséskor.</translation>
 <translation id="8704119203788522458">Ez az Ön Chromiumja</translation>
 <translation id="8739167630197873875">Törli a cookie-kat, amikor bezárja a Chromiumot. A szinkronizálás folytatásához szükség van a következő módosítására: <ph name="COOKIE_SETTINGS_LINK" />.</translation>

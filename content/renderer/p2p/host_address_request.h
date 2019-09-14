@@ -50,7 +50,7 @@ class P2PAsyncAddressResolver
   void OnResponse(const net::IPAddressList& address);
 
   P2PSocketDispatcher* dispatcher_;
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   // State must be accessed from delegate thread only.
   State state_;

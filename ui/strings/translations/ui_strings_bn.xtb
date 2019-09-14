@@ -8,14 +8,17 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{১ মিনিট}one{# মিনিট}other{# মিনিট}}</translation>
 <translation id="1181037720776840403">সরান</translation>
 <translation id="1243314992276662751">আপলোড</translation>
+<translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> শেয়ার করা যায়নি</translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1290982764014248209"><ph name="DRAGGED_APP" />কে <ph name="FOLDER_NAME" /> ফোল্ডারে সরান।</translation>
+<translation id="1291104554099683393">টেক্সটটি ছোট ছোট ভাগে ভাগ করে পাঠানোর চেষ্টা করুন।</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">প্রস্তাবিত অ্যাপ</translation>
 <translation id="1368832886055348810">বাঁ থেকে ডান</translation>
 <translation id="1383876407941801731">সার্চ করুন</translation>
 <translation id="1398853756734560583">বড় করুন</translation>
 <translation id="1409544243779336081">অ্যাপের সাজেশন</translation>
+<translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> শেয়ার করা যাচ্ছে না</translation>
 <translation id="1498028757988366001">আপনি এটি আগেও সার্চ করেছেন। ইতিহাস থেকে "<ph name="QUERY" />" সরিয়ে দিলে, আপনার সব ডিভাইসের অ্যাকাউন্ট থেকে সেটি স্থায়ীভাবে মুছে যাবে।</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{১ মিনিট এবং }one{# মিনিট এবং }other{# মিনিট এবং }}</translation>
 <translation id="1643823602425662293">বিজ্ঞপ্তি</translation>
@@ -35,6 +38,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;সকল বেছে নিন</translation>
 <translation id="1938451708255335766">উইন্ডো স্ক্রিনের রেজোলিউশন অ্যাডজাস্ট করতে অ্যাপটি রিস্টার্ট করুন।</translation>
+<translation id="2006524834898217237">এই ডিভাইস ইন্টারনেটে কানেক্ট করা আছে কিনা দেখে নিন।</translation>
 <translation id="208586643495776849">আবার চেষ্টা করুন</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{১ দিন}one{# দিন}other{# দিন}}</translation>
 <translation id="2148716181193084225">আজ</translation>
@@ -76,6 +80,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{১ দিন}one{# দিন}other{# দিন}}</translation>
 <translation id="3295886253693811851">এগুলি দিয়ে কল করুন</translation>
 <translation id="335581015389089642">স্পিচ</translation>
+<translation id="3389286852084373014">টেক্সটটি অনেক বড়</translation>
 <translation id="3443810440409579745">ট্যাব পাওয়া গেছে।</translation>
 <translation id="3479552764303398839">এখনই নয়</translation>
 <translation id="348799646910989694">শেল্ফ অটোমেটিক লুকানো হবে</translation>
@@ -151,11 +156,13 @@
 <translation id="6404817160109697034">{SECONDS,plural, =1{১ সেকেন্ড পূর্বে}one{# সেকেন্ড পূর্বে}other{# সেকেন্ড পূর্বে}}</translation>
 <translation id="6430678249303439055">এই অ্যাপ থেকে সমস্ত বিজ্ঞপ্তি ব্লক করুন</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{১ সেকেন্ড আগে}one{# সেকেন্ড আগে}other{# সেকেন্ড আগে}}</translation>
+<translation id="6539092367496845964">কোনও সমস্যা হয়েছে। পরে আবার চেষ্টা করুন।</translation>
 <translation id="654149438358937226">সমস্ত বিজ্ঞপ্তি ব্লক করুন</translation>
 <translation id="6567071839949112727">এটি সম্পর্কিত একটি পুরানো আইটেমে ক্লিক করুন</translation>
 <translation id="6578407462441924264">নামবিহীন</translation>
 <translation id="6612467943526193239">ক্রমাঙ্কন থেকে বেরিয়ে যেতে Esc টিপুন।</translation>
 <translation id="6620110761915583480">ফাইল সেভ করুন</translation>
+<translation id="6656912866303152668"><ph name="TARGET_DEVICE_NAME" /> Chrome-এ সিঙ্ক করার ফিচার চালু করে রেখেছে কিনা দেখে নিন।</translation>
 <translation id="6699343763173986273">মিডিয়া পরবর্তী ট্র্যাক</translation>
 <translation id="673773751041746814">মোছা হচ্ছে</translation>
 <translation id="6779314412797872738">এখান থেকে আপনার Android ফোনে কোনও নম্বর পাঠাতে, সেটিংসে গিয়ে দুটি ডিভাইসের জন্য <ph name="TROUBLESHOOT_LINK" />।</translation>
@@ -221,6 +228,7 @@
 <translation id="8876215549894133151">ফর্ম্যাট:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> কেবি</translation>
 <translation id="8926951137623668982">শেল্ফ সবসময় লুকানো থাকবে</translation>
+<translation id="8996630695507351249"><ph name="TARGET_DEVICE_NAME" /> ইন্টারনেটে কানেক্ট করা আছে কিনা দেখে নিন।</translation>
 <translation id="9002566407876343676">খুলুন</translation>
 <translation id="9039076430527029379"><ph name="PAGE_NUMBER" /> নম্বর পৃষ্ঠার <ph name="ROW_NUMBER" /> নম্বর সারির <ph name="COLUMN_NUMBER" /> নম্বর কলামে যান।</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{১ সেকেন্ড}one{# সেকেন্ড}other{# সেকেন্ড}}</translation>

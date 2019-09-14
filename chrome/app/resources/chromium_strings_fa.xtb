@@ -192,6 +192,8 @@ Chromium قادر به بازیابی تنظیمات شما نیست.</translati
 <translation id="753534427205733210">{0,plural, =1{‏Chromium ‏۱ دقیقه دیگر راه‌اندازی مجدد می‌شود}one{‏Chromium ‏# دقیقه دیگر راه‌اندازی مجدد می‌شود}other{‏Chromium ‏# دقیقه دیگر راه‌اندازی مجدد می‌شود}}</translation>
 <translation id="7549178288319965365">‏درباره سیستم عامل Chromium </translation>
 <translation id="7561906087460245826">‏همچنین داده‌ها از Chromium پاک شود (<ph name="URL" />)</translation>
+<translation id="7585853947355360626">‏اگر تنظیمی در این صفحه نشان داده نمی‌شود، در <ph name="LINK_BEGIN" />
+      تنظیمات مرورگر Chromium<ph name="LINK_END" /> آن را کنید</translation>
 <translation id="761356813943268536">‏Chromium درحال استفاده از دوربین و میکروفون شما است.</translation>
 <translation id="7617377681829253106">‏Chromium اکنون بهتر شده است</translation>
 <translation id="7686590090926151193">‏Chromium مرورگر پیش‌فرض شما نیست</translation>
@@ -225,6 +227,8 @@ Chromium قادر به بازیابی تنظیمات شما نیست.</translati
 <translation id="8619360774459241877">‏درحال راه‌اندازی Chromium…</translation>
 <translation id="8621669128220841554">‏به دلیل خطای نامشخص، نصب ناموفق بود. لطفاً دوباره Chromium را بارگیری کنید.</translation>
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> شما به‌ روز است.</translation>
+<translation id="8682540261359803721">‏اگر تنظیمی در این صفحه نشان داده نمی‌شود، در <ph name="LINK_BEGIN" />
+      تنظیمات مرورگر Chromium<ph name="LINK_END" /> آن را پیدا کنید</translation>
 <translation id="8697124171261953979">‏این برنامه همچنین صفحه‌ای را که هنگام راه‌اندازی Chromium یا جستجو از Omnibox نشان داده می‌شود، کنترل می‌کند.</translation>
 <translation id="8704119203788522458">‏این Chromium شماست</translation>
 <translation id="8739167630197873875">‏هنگام خروج از Chromium، کوکی‌ها را پاک می‌کنید. برای اینکه همگام‌سازی ادامه یابد، این <ph name="COOKIE_SETTINGS_LINK" /> را تغییر دهید.</translation>

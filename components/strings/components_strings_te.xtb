@@ -99,7 +99,6 @@
 <translation id="138218114945450791">లేత నీలి రంగు</translation>
 <translation id="1382194467192730611">మీ నిర్వాహకుడు అనుమతించే USB పరికరం</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> డేటా ఏదీ పంపలేదు.</translation>
-<translation id="140316286225361634">సైట్ <ph name="ORIGIN" /> యొక్క అన్ని అభ్యర్థనలకు భద్రతా విధానం వర్తిస్తుందని సైట్ తెలియజేసింది మరియు ప్రస్తుతం ఈ విధానం ప్రకారం సైట్‌ సురక్షితం కాదు.</translation>
 <translation id="1405567553485452995">లేత ఆకుపచ్చ రంగు</translation>
 <translation id="1407135791313364759">అన్నీ తెరువు</translation>
 <translation id="1413809658975081374">గోప్యతా ఎర్రర్</translation>
@@ -135,6 +134,7 @@
 <translation id="1569487616857761740">గడువు ముగింపు తేదీని నమోదు చేయండి</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">ఈ వెబ్ పేజీని ప్రదర్శిస్తున్నప్పుడు ఏదో తప్పు జరిగింది.</translation>
+<translation id="1588438908519853928">సాధారణ</translation>
 <translation id="1592005682883173041">స్థానిక డేటా యాక్సెస్</translation>
 <translation id="1594030484168838125">ఎంచుకోండి</translation>
 <translation id="161042844686301425">నీలి ఆకుపచ్చ</translation>
@@ -212,7 +212,6 @@
 <translation id="1981206234434200693">Chrome బ్రౌజింగ్ చరిత్ర డేటాని తీసివేయి</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{మరియు మరొకటి}other{మరియు మరో #}}</translation>
 <translation id="2003709556000175978">ఇప్పుడే మీ పాస్‌వర్డ్‌ని రీసెట్ చేయండి</translation>
-<translation id="20053308747750172">మీరు వెళ్లాలనుకుంటున్న సర్వర్ <ph name="ORIGIN" /> దానికి చేసే అన్ని అభ్యర్థనలకు భద్రతా విధానం వర్తిస్తుందని తెలియజేసింది. కానీ అది ఇప్పుడు చెల్లుబాటు కాని విధానాన్ని డెలివరీ చేసింది, ఇది <ph name="SITE" />కోసం మీరు అభ్యర్థనను అనుమతించడంలో బ్రౌజర్‌ను నివారిస్తుంది.</translation>
 <translation id="2025186561304664664">ప్రాక్సీ ఆటోమేటిక్‌గా కాన్ఫిగర్ చేయబడేలా సెట్ చేయబడింది.</translation>
 <translation id="202813660234680402">వద్దు, జోడించవద్దు</translation>
 <translation id="2030481566774242610">మీ ఉద్దేశ్యం <ph name="LINK" />?</translation>
@@ -290,7 +289,6 @@
 <translation id="2409589295040002961">మీ నిర్వాహకుడు మీ బ్రౌజర్ సెటప్‌ను రిమోట్ విధానంలో మార్చవచ్చు. ఈ పరికరంలోని కార్యకలాపాన్ని Chrome వెలుపల కూడా నిర్వహిస్తుండవచ్చు. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">ప్రభుత్వం-న్యాయ సంబంధిత</translation>
 <translation id="2413528052993050574">ఈ సర్వర్ <ph name="DOMAIN" /> అని నిరూపించుకోలేకపోయింది; దీని భద్రతా ప్రమాణపత్రం ఉపసంహరించబడి ఉండవచ్చు. ఇది తప్పుగా కాన్ఫిగర్ చేయడం వలన లేదా దాడిచేసే వ్యక్తి మీ కనెక్షన్‌కు అంతరాయం కలిగించడం వలన జరిగి ఉండవచ్చు.</translation>
-<translation id="2418081434543109369">మీరు వెళ్లాలనుకుంటున్న సర్వర్ <ph name="ORIGIN" /> దానికి చేసే అన్ని అభ్యర్థనలకు భద్రతా విధానం వర్తిస్తుందని తెలియజేసింది. కానీ అది ఇప్పుడు విధానాన్ని డెలివరీ చేయడంలో విఫలమైంది, దీని వలన <ph name="SITE" /> కోసం మీ అభ్యర్థనను ఆమోదించడంలో బ్రౌజర్‌ను నివారిస్తుంది.</translation>
 <translation id="2463193859425327265">హోమ్ పేజీని మార్చు</translation>
 <translation id="2463739503403862330">పూరించు</translation>
 <translation id="2465402087343596252">ఆర్కిటెక్చర్-E</translation>
@@ -784,6 +782,7 @@
 <translation id="5141240743006678641">మీ Google ఆధారాలతో సింక్ చేయ‌బ‌డిన పాస్‌వర్డ్‌లను ఎన్‌క్రిప్ట్ చేయండి</translation>
 <translation id="5145883236150621069">విధాన ప్రతిస్పందనలో ఎర్రర్ కోడ్ ఉంది</translation>
 <translation id="515292512908731282">C4 (ఎన్వలప్)</translation>
+<translation id="5158275234811857234">ముఖచిత్రం</translation>
 <translation id="5159010409087891077">కొత్త అజ్ఞాత విండోలో పేజీని తెరవండి (⇧⌘N)</translation>
 <translation id="516920405563544094"><ph name="CREDIT_CARD" /> కార్డ్ CVCని నమోదు చేయండి. మీరు నిర్ధారించిన తర్వాత, మీ Google ఖాతా నుండి కార్డ్ వివరాలు ఈ సైట్‌తో షేర్ చేయబడతాయి.</translation>
 <translation id="5169827969064885044">మీరు మీ సంస్థ ఖాతాకు యాక్సెస్‌ను కోల్పోవచ్చు. లేదా గుర్తింపు స‌మాచారం చౌర్యానికి గురికావచ్చు. మీరు ఇప్పుడే మీ పాస్‌వర్డ్‌ను మార్చాల్సిందిగా Chrome సిఫార్సు చేస్తోంది.</translation>
@@ -942,6 +941,7 @@
 <translation id="598637245381783098">చెల్లింపు యాప్‌ను తెరవడం సాధ్యం కాదు</translation>
 <translation id="5989320800837274978">స్థిర ప్రాక్సీ సర్వర్‌లు లేదా ఒక .pac స్క్రిప్ట్ URL పేర్కొనబడలేదు.</translation>
 <translation id="5990559369517809815">సర్వర్‌కు అభ్యర్థనలను ఒక ఎక్సటెన్షన్ బ్లాక్ చేయబడ్డాయి.</translation>
+<translation id="6000758707621254961">'<ph name="SEARCH_TEXT" />' అనే దానికి <ph name="RESULT_COUNT" /> ఫలితాలు లభించాయి</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">సంవత్సరం</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{పేజీ 1}other{పేజీ #}}</translation>
@@ -1000,6 +1000,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{ఏవీ లేవు}=1{1 పాస్‌వర్డ్ (<ph name="DOMAIN_LIST" />కు చెందినది, సింక్ చేయబడింది)}=2{2 పాస్‌వర్డ్‌లు (<ph name="DOMAIN_LIST" />కు చెందినవి, సింక్ చేయబడ్డాయి)}other{# పాస్‌వర్డ్‌లు (<ph name="DOMAIN_LIST" />కు చెందినవి, సింక్ చేయబడ్డాయి)}}</translation>
 <translation id="6358450015545214790">దీని అర్ధం ఏమిటి?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6377268785556383139">'<ph name="SEARCH_TEXT" />' అనే దానికి 1 ఫలితం మాత్రమే లభించింది</translation>
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">కొనసాగించడం వల్ల ఛార్జ్‌లు చెల్లించాల్సి రావచ్చు.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 ఇతర సూచన}other{# ఇతర సూచనలు}}</translation>
@@ -1134,7 +1135,6 @@
 <translation id="717330890047184534">Gaia ID:</translation>
 <translation id="7174545416324379297">విలీనం చేయబడ్డాయి</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
-<translation id="7177397715882417099">మీరు వెళ్లాలనుకుంటున్న సర్వర్ <ph name="ORIGIN" /> దానికి చేసే అన్ని అభ్యర్థనలకు భద్రతా విధానం వర్తిస్తుందని తెలియజేసింది. కానీ విధానాన్ని డెలివరీ చేయడానికి బదులు అది బ్రౌజర్‌ను మరెక్కడికో మళ్లించింది, దీని వలన <ph name="SITE" /> కోసం మీ అభ్యర్థనను పూర్తి చేయకుండా బ్రౌజర్‌ను నివారిస్తుంది.</translation>
 <translation id="7179323680825933600">చెల్లింపు పద్ధతులను సేవ్ చేసి, పూరించు</translation>
 <translation id="7180611975245234373">రిఫ్రెష్ చేయి</translation>
 <translation id="7182878459783632708">విధానాలను సెట్ చేయలేదు</translation>
@@ -1161,6 +1161,7 @@
 <translation id="7300012071106347854">నల్ల కావిరాయి నీలం</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
 <translation id="7303701124147721189">తర్వాతిసారి మరింత వేగంగా చెల్లించడానికి, మీ కార్డ్, బిల్లింగ్ చిరునామాలను మీ Google ఖాతాలో, అలాగే ఈ పరికరంలో నిల్వ చేయండి.</translation>
+<translation id="7304030187361489308">అధికం</translation>
 <translation id="7309308571273880165"><ph name="CRASH_TIME" /> తేదీన క్యాప్చ‌ర్ చేయ‌బ‌డిన‌ క్రాష్ నివేదిక (అప్‌లోడ్ చేయాల్సిందిగా వినియోగదారుకు అభ్యర్థన, ఇంకా అప్‌లోడ్ చేయలేదు)</translation>
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />సురక్షిత బ్రౌజింగ్<ph name="END_LINK" /> హెచ్చరికలు</translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1522,7 +1523,6 @@
 <translation id="939736085109172342">క్రొత్త  ఫోల్డర్</translation>
 <translation id="945855313015696284">ఈ కింది వివరాలను ఒక్కసారి పరిశీలించి చెల్లని కార్డ్‌లు ఏమైనా ఉంటే తొలగించండి</translation>
 <translation id="951104842009476243">ఆమోదించే డెబిట్ మరియు ప్రీపెయిడ్ కార్డ్‌లు</translation>
-<translation id="958202389743790697"><ph name="ORIGIN" /> యొక్క భద్రతా విధానం ప్రకారం బ్లాక్ చేయబడింది.</translation>
 <translation id="962484866189421427">ఈ కంటెంట్ వేరేవాటిలా కనిపించే మోసపూరిత యాప్‌లను ఇన్‌స్టాల్ చేయడానికి ప్రయత్నించవచ్చు లేదా మిమ్మల్ని ట్రాక్ చేయడానికి ఉపయోగించే డేటాని సేకరించవచ్చు. <ph name="BEGIN_LINK" />అయినప్పటికీ, చూపించు<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">అధికారిక బిల్డ్</translation>
 <translation id="973773823069644502">డెలివరీ చిరునామాను జోడించండి</translation>

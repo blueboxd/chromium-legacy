@@ -518,6 +518,23 @@
     <dimen name="payments_request_bottom_bar_vertical_padding">10dp</dimen>
     <dimen name="payments_request_bottom_bar_horizontal_padding">16dp</dimen>
 
+    <!-- Microtransaction UI spacing -->
+    <dimen name="microtransaction_amount_currency_spacing">4dp</dimen>
+    <dimen name="microtransaction_app_icon_bottom_spacing">20dp</dimen>
+    <dimen name="microtransaction_app_icon_horizontal_spacing">10dp</dimen>
+    <dimen name="microtransaction_content_bottom_spacing">26dp</dimen>
+    <dimen name="microtransaction_content_icon_spacing">8dp</dimen>
+    <dimen name="microtransaction_content_top_spacing">78dp</dimen>
+    <dimen name="microtransaction_drag_handle_spacing">8dp</dimen>
+    <dimen name="microtransaction_large_text_vertical_spacing">8dp</dimen>
+    <dimen name="microtransaction_spacing">16dp</dimen>
+    <dimen name="microtransaction_toolbar_small_status_text_top_spacing">2dp</dimen>
+
+    <!-- Microtransaction UI element sizes -->
+    <dimen name="microtransaction_content_icon_size">56dp</dimen>
+    <dimen name="microtransaction_separator_width">0.5dp</dimen>
+    <dimen name="microtransaction_toolbar_icon_size">36dp</dimen>
+
     <!-- Preferences dimensions
          pref_autofill_field_horizontal_padding exists because TextInputLayouts have an internal
          padding set.

@@ -82,7 +82,8 @@
         </cr-network-icon>
         <div id="networkState" class="title settings-box-text"
             connected$="[[isConnectedState_(managedProperties_)]]"
-            error$="[[outOfRange_]]">
+            error$="[[isConnectionErrorState_(
+                managedProperties_, outOfRange_)]]">
           [[getStateText_(managedProperties_, outOfRange_)]]
         </div>
         <template is="dom-if"

@@ -2282,6 +2282,8 @@ bool TabStrip::TitlebarBackgroundIsTransparent() const {
 }
 
 void TabStrip::CompleteAnimationAndLayout() {
+  ExitTabClosingMode();
+
   // If |bounds_animator_| is running, it owns destroying tabs when close
   // animations complete.  Otherwise, |layout_helper_| does.
   if (bounds_animator_.IsAnimating()) {

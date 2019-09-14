@@ -6,9 +6,6 @@ suite('InternetSubpage', function() {
   /** @type {?SettingsInternetSubpageElement} */
   let internetSubpage = null;
 
-  /** @type {?NetworkingPrivate} */
-  let api_ = null;
-
   /** @type {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
   let mojoApi_ = null;
 
@@ -40,8 +37,7 @@ suite('InternetSubpage', function() {
       vpnNameTemplate: 'vpnNameTemplate',
     };
 
-    api_ = new chrome.FakeNetworkingPrivate();
-    mojoApi_ = new FakeNetworkConfig(api_);
+    mojoApi_ = new FakeNetworkConfig();
     network_config.MojoInterfaceProviderImpl.getInstance().remote_ = mojoApi_;
 
     // Disable animations so sub-pages open within one event loop.
@@ -55,20 +51,18 @@ suite('InternetSubpage', function() {
   }
 
   function setNetworksForTest(type, networks) {
-    api_.resetForTest();
-    api_.enableNetworkType(type);
-    api_.addNetworksForTest(networks);
+    mojoApi_.resetForTest();
+    mojoApi_.setNetworkTypeEnabledState(type, true);
+    mojoApi_.addNetworksForTest(networks);
     internetSubpage.defaultNetwork = networks[0];
     internetSubpage.deviceState = mojoApi_.getDeviceStateForTest(type);
-    api_.onNetworkListChanged.callListeners();
   }
 
   setup(function() {
     PolymerTest.clearBody();
     internetSubpage = document.createElement('settings-internet-subpage');
     assertTrue(!!internetSubpage);
-    api_.resetForTest();
-    internetSubpage.networkingPrivate = api_;
+    mojoApi_.resetForTest();
     document.body.appendChild(internetSubpage);
     internetSubpage.init();
     return flushAsync();
@@ -82,9 +76,10 @@ suite('InternetSubpage', function() {
 
   suite('SubPage', function() {
     test('WiFi', function() {
-      setNetworksForTest('WiFi', [
-        {GUID: 'wifi1_guid', Name: 'wifi1', Type: 'WiFi'},
-        {GUID: 'wifi12_guid', Name: 'wifi2', Type: 'WiFi'},
+      const mojom = chromeos.networkConfig.mojom;
+      setNetworksForTest(mojom.NetworkType.kWiFi, [
+        OncMojo.getDefaultNetworkState(mojom.NetworkType.kWiFi, 'wifi1'),
+        OncMojo.getDefaultNetworkState(mojom.NetworkType.kWiFi, 'wifi2'),
       ]);
       return flushAsync().then(() => {
         assertEquals(2, internetSubpage.networkStateList_.length);
@@ -98,9 +93,10 @@ suite('InternetSubpage', function() {
     });
 
     test('Tether', function() {
-      setNetworksForTest('Tether', [
-        {GUID: 'tether1_guid', Name: 'tether1', Type: 'Tether'},
-        {GUID: 'tether2_guid', Name: 'tether2', Type: 'Tether'},
+      const mojom = chromeos.networkConfig.mojom;
+      setNetworksForTest(mojom.NetworkType.kTether, [
+        OncMojo.getDefaultNetworkState(mojom.NetworkType.kTether, 'tether1'),
+        OncMojo.getDefaultNetworkState(mojom.NetworkType.kTether, 'tether2'),
       ]);
       return flushAsync().then(() => {
         assertEquals(2, internetSubpage.networkStateList_.length);
@@ -118,14 +114,18 @@ suite('InternetSubpage', function() {
     });
 
     test('Tether plus Cellular', function() {
-      api_.enableNetworkType('Tether');
-      setNetworksForTest('Cellular', [
-        {GUID: 'cellular1_guid', Name: 'cellular1', Type: 'Cellular'},
-        {GUID: 'tether1_guid', Name: 'tether1', Type: 'Tether'},
-        {GUID: 'tether2_guid', Name: 'tether2', Type: 'Tether'},
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kTether);
+      setNetworksForTest(mojom.NetworkType.kCellular, [
+        OncMojo.getDefaultNetworkState(
+            mojom.NetworkType.kCellular, 'cellular1'),
+        OncMojo.getDefaultNetworkState(mojom.NetworkType.kTether, 'tether1'),
+        OncMojo.getDefaultNetworkState(mojom.NetworkType.kTether, 'tether2'),
       ]);
-      internetSubpage.tetherDeviceState =
-          mojoApi_.deviceToMojo({Type: 'Tether', State: 'Enabled'});
+      internetSubpage.tetherDeviceState = {
+        type: mojom.NetworkType.kTether,
+        deviceState: mojom.DeviceStateType.kEnabled
+      };
       return flushAsync().then(() => {
         assertEquals(3, internetSubpage.networkStateList_.length);
         const toggle = internetSubpage.$$('#deviceEnabledButton');
@@ -141,92 +141,86 @@ suite('InternetSubpage', function() {
     });
 
     test('VPN', function() {
+      const mojom = chromeos.networkConfig.mojom;
       internetSubpage.vpnProviders = [
         {
-          type: chromeos.networkConfig.mojom.VpnType.kExtension,
+          type: mojom.VpnType.kExtension,
           providerId: 'extension_id1',
           providerName: 'MyExtensionVPN1',
           appId: 'extension_id1',
           lastLaunchTime: {internalValue: 0},
         },
         {
-          type: chromeos.networkConfig.mojom.VpnType.kExtension,
+          type: mojom.VpnType.kExtension,
           providerId: 'extension_id2',
           providerName: 'MyExtensionVPN2',
           appId: 'extension_id2',
           lastLaunchTime: {internalValue: 0},
         },
         {
-          type: chromeos.networkConfig.mojom.VpnType.kArc,
+          type: mojom.VpnType.kArc,
           providerId: 'vpn.app.package1',
           providerName: 'MyArcVPN1',
           appId: 'arcid1',
           lastLaunchTime: {internalValue: 1},
         },
       ];
-      setNetworksForTest('VPN', [
-        {GUID: 'vpn1_guid', Name: 'vpn1', Type: 'VPN'},
-        {GUID: 'vpn2_guid', Name: 'vpn1', Type: 'VPN'},
+      setNetworksForTest(mojom.NetworkType.kVPN, [
+        OncMojo.getDefaultNetworkState(mojom.NetworkType.kVPN, 'vpn1'),
+        OncMojo.getDefaultNetworkState(mojom.NetworkType.kVPN, 'vpn2'),
         {
-          GUID: 'third_party1_vpn1_guid',
-          Name: 'vpn3',
-          Type: 'VPN',
-          VPN: {
-            Type: 'ThirdPartyVPN',
-            ThirdPartyVPN: {
-              ExtensionID: 'extension_id1',
-              ProviderName: 'MyExntensionVPN1',
-            }
+          guid: 'extension1_vpn1_guid',
+          name: 'vpn3',
+          type: mojom.NetworkType.kVPN,
+          connectionState: mojom.ConnectionStateType.kNotConnected,
+          vpn: {
+            type: mojom.VpnType.kExtension,
+            providerId: 'extension_id1',
+            providerName: 'MyExntensionVPN1',
           }
         },
         {
-          GUID: 'third_party1_vpn2_guid',
-          Name: 'vpn4',
-          Type: 'VPN',
-          VPN: {
-            Type: 'ThirdPartyVPN',
-            ThirdPartyVPN: {
-              ExtensionID: 'extension_id1',
-              ProviderName: 'MyExntensionVPN1',
-            }
+          guid: 'extension1_vpn2_guid',
+          name: 'vpn4',
+          type: mojom.NetworkType.kVPN,
+          connectionState: mojom.ConnectionStateType.kNotConnected,
+          vpn: {
+            type: mojom.VpnType.kExtension,
+            providerId: 'extension_id1',
+            providerName: 'MyExntensionVPN1',
           }
         },
         {
-          GUID: 'third_party2_vpn1_guid',
-          Name: 'vpn5',
-          Type: 'VPN',
-          VPN: {
-            Type: 'ThirdPartyVPN',
-            ThirdPartyVPN: {
-              ExtensionID: 'extension_id2',
-              ProviderName: 'MyExntensionVPN2',
-            }
+          guid: 'extension2_vpn1_guid',
+          name: 'vpn5',
+          type: mojom.NetworkType.kVPN,
+          connectionState: mojom.ConnectionStateType.kNotConnected,
+          vpn: {
+            type: mojom.VpnType.kExtension,
+            providerId: 'extension_id2',
+            providerName: 'MyExntensionVPN2',
           }
         },
         {
-          GUID: 'arc_vpn1_guid',
-          Name: 'vpn6',
-          Type: 'VPN',
-          ConnectionState: 'Connected',
-          VPN: {
-            Type: 'ARCVPN',
-            ThirdPartyVPN: {
-              ExtensionID: 'vpn.app.package1',
-              ProviderName: 'MyArcVPN1',
-            }
+          guid: 'arc_vpn1_guid',
+          name: 'vpn6',
+          type: mojom.NetworkType.kVPN,
+          connectionState: mojom.ConnectionStateType.kConnected,
+          vpn: {
+            type: mojom.VpnType.kArc,
+            providerId: 'vpn.app.package1',
+            providerName: 'MyArcVPN1',
           }
         },
         {
-          GUID: 'arc_vpn2_guid',
-          Name: 'vpn7',
-          Type: 'VPN',
-          ConnectionState: 'NotConnected',
-          VPN: {
-            Type: 'ARCVPN',
-            ThirdPartyVPN: {
-              ExtensionID: 'vpn.app.package1',
-              ProviderName: 'MyArcVPN1',
-            }
+          guid: 'arc_vpn2_guid',
+          name: 'vpn7',
+          type: mojom.NetworkType.kVPN,
+          connectionState: mojom.ConnectionStateType.kNotConnected,
+          vpn: {
+            type: mojom.VpnType.kArc,
+            providerId: 'vpn.app.package1',
+            providerName: 'MyArcVPN1',
           }
         },
       ]);

@@ -21,7 +21,6 @@
 <translation id="1146678959555564648">VR-ൽ പ്രവേശിക്കുക</translation>
 <translation id="116280672541001035">ഉപയോഗിച്ചത്</translation>
 <translation id="1171770572613082465">"മികച്ച സൈറ്റുകൾ" ബട്ടൺ ടാപ്പ് ചെയ്‌ത് ജനപ്രിയ വെബ്‌സൈറ്റുകൾ കാണുക</translation>
-<translation id="1172593791219290334">ആരംഭ പേജ്</translation>
 <translation id="1173894706177603556">പേരുമാറ്റുക</translation>
 <translation id="1175310183703641346">നിങ്ങളുടെ ബുക്ക്‌മാർക്കുകൾ, ചരിത്രം, പാസ്‌വേഡുകൾ എന്നിവയും മറ്റും ഇനിയങ്ങോട്ട് Google അക്കൗണ്ടുമായി സമന്വയിപ്പിക്കില്ല</translation>
 <translation id="1178581264944972037">അല്പംനിര്‍ത്തൂ</translation>
@@ -165,7 +164,6 @@
 <translation id="2131665479022868825"><ph name="DATA" /> ലാഭിച്ചു</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> അടച്ചു</translation>
 <translation id="2139186145475833000">ഹോംസ്‌ക്രീനിൽ ചേർക്കുക</translation>
-<translation id="2142289305367051020">നിങ്ങളുടെ പ്രിയപ്പെട്ട പേജുകൾ ഇവിടെയുണ്ട്</translation>
 <translation id="2146738493024040262">തൽക്ഷണ ആപ്പ് തുറക്കുക</translation>
 <translation id="2148716181193084225">ഇന്ന്</translation>
 <translation id="2154484045852737596">കാർഡ് എഡിറ്റുചെയ്യുക</translation>
@@ -358,7 +356,6 @@
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> എന്നതിൽ ബുക്ക്‌മാർക്ക് ചെയ്‌തു</translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB മറ്റ് ആപ്പുകൾ</translation>
 <translation id="3744111561329211289">പശ്ചാത്തല സമന്വയിപ്പിക്കൽ</translation>
-<translation id="3745176700485982507">നിങ്ങളുടെ പ്രിയപ്പെട്ട വെബ്‌സൈറ്റുകളിലേക്കുള്ള ലിങ്കുകൾ ഈ പേജിൽ കണ്ടെത്താനാവും</translation>
 <translation id="3771001275138982843">അപ്‌ഡേറ്റ് ഡൗൺലോഡ് ചെയ്യാനായില്ല</translation>
 <translation id="3773755127849930740">ജോടിയാക്കാൻ, <ph name="BEGIN_LINK" />Bluetooth ഓണാക്കുക<ph name="END_LINK" /></translation>
 <translation id="3775705724665058594">നിങ്ങളുടെ ഉപകരണങ്ങളിലേക്ക് അയയ്‌ക്കുക</translation>
@@ -563,7 +560,6 @@ VR-ൽ പ്രവേശിക്കുന്നതിന് മുമ്പ്
 <translation id="5224771365102442243">വീഡിയോ ഉണ്ട്</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> എന്നതിന് സമീപമുള്ള Bluetooth ഉപകരണങ്ങൾ സ്‌കാൻ ചെയ്യണമെന്നുണ്ട്. ഇനിപ്പറയുന്ന ഉപകരണങ്ങൾ കണ്ടെത്തി:</translation>
 <translation id="5233638681132016545">പുതിയ ടാബ്</translation>
-<translation id="5234764350956374838">ബഹിഷ്‌ക്കരിക്കുക</translation>
 <translation id="526421993248218238">ഈ പേജ് ലോഡ് ചെയ്യാനായില്ല</translation>
 <translation id="5271967389191913893">ഡൗൺലോഡ് ചെയ്യേണ്ട ഉള്ളടക്കം ഉപകരണത്തിന് തുറക്കാനാവില്ല.</translation>
 <translation id="528192093759286357">പൂർണ്ണ സ്‌ക്രീനിൽ നിന്ന് പുറത്തുകടക്കാൻ, മുകളിൽ നിന്ന് വലിച്ചിട്ട് ബാക്ക് ബട്ടണിൽ സ്‌പർശിക്കുക.</translation>
@@ -579,7 +575,6 @@ VR-ൽ പ്രവേശിക്കുന്നതിന് മുമ്പ്
 <translation id="5327248766486351172">പേര്</translation>
 <translation id="5335288049665977812">JavaScript റൺ ചെയ്യാൻ സൈറ്റുകളെ അനുവദിക്കുക (ശുപാർശചെയ്‌തിരിക്കുന്നു)</translation>
 <translation id="5357811892247919462">ടാബ് സ്വീകരിച്ചു</translation>
-<translation id="5363230136052241468">പുതിയ ടാബ് പേജ് ലോഡ് ചെയ്യാൻ ഹോം ബട്ടൺ ടാപ്പ് ചെയ്യുക</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> ടാബ് തുറന്നിരിക്കുന്നു, ടാബുകൾ മാറാനായി ടാപ്പ് ചെയ്യുക}other{<ph name="OPEN_TABS_MANY" /> ടാബുകൾ തുറന്നിരിക്കുന്നു, മാറാനായി ടാപ്പ് ചെയ്യുക}}</translation>
 <translation id="5391532827096253100">ഈ സൈറ്റിലേക്കുള്ള നിങ്ങളുടെ കണക്ഷൻ സുരക്ഷിതമല്ല. സൈറ്റ് വിവരങ്ങള്‍</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ ഒരെണ്ണം കൂടി)}other{(+ # എണ്ണം കൂടി)}}</translation>
@@ -802,7 +797,6 @@ VR-ൽ പ്രവേശിക്കുന്നതിന് മുമ്പ്
 <translation id="6912998170423641340">ക്ലിപ്പ്ബോർഡിൽ നിന്ന് ചിത്രങ്ങളും ടെക്‌സ്‌റ്റും റീഡ് ചെയ്യുന്നതിൽ നിന്ന് സൈറ്റുകളെ ബ്ലോക്ക് ചെയ്യുക</translation>
 <translation id="6914783257214138813">എക്‌സ്പോർട്ട് ചെയ്ത ഫയൽ കാണാനാകുന്ന ഏതൊരാൾക്കും നിങ്ങളുടെ പാസ്‌വേഡും കാണാനാകും.</translation>
 <translation id="6942665639005891494">ക്രമീകരണ മെനു ഓപ്‌ഷൻ ഉപയോഗിച്ച്, ഏതുസമയത്തും ഡിഫോൾട്ട് ഡൗൺലോഡ് ലൊക്കേഷൻ മാറ്റുക.</translation>
-<translation id="6944102653068653326">പുതിയ ടാബ് പേജ് ലോഡ് ചെയ്യാൻ ടാപ്പ് ചെയ്യുക</translation>
 <translation id="6945221475159498467">തിരഞ്ഞെടുക്കുക</translation>
 <translation id="6963642900430330478">ഈ പേജ് അപകടകരമാണ്. സൈറ്റ് വിവരങ്ങള്‍</translation>
 <translation id="6963766334940102469">ബുക്ക്‌മാർക്കുകൾ ഇല്ലാതാക്കുക</translation>
@@ -996,7 +990,6 @@ VR-ൽ പ്രവേശിക്കുന്നതിന് മുമ്പ്
 <translation id="8284326494547611709">അടിക്കുറിപ്പുകൾ</translation>
 <translation id="8300705686683892304">ആപ്പ് മാനേജ് ചെയ്യുന്നത്</translation>
 <translation id="8310344678080805313">സ്റ്റാൻഡേർഡ് ടാബുകൾ</translation>
-<translation id="8313455859591948645">ആരംഭ പേജ് എഡിറ്റ് ചെയ്യുക</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> ഡൊമെയ്‌നും കൂടുതൽ സൈറ്റുകളും</translation>
 <translation id="8327155640814342956">മികച്ച ബ്രൗസിംഗ് അനുഭവത്തിന് Chrome അപ്‌ഡേറ്റ് ചെയ്യുക</translation>
 <translation id="8339163506404995330"><ph name="LANGUAGE" /> ഭാഷയിലുള്ള പേജുകൾ വിവർത്തനം ചെയ്യില്ല</translation>

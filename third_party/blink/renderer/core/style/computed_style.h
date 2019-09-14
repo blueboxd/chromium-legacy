@@ -1198,6 +1198,11 @@ class ComputedStyle : public ComputedStyleBase,
   void ClearIncrementDirectives();
   void ClearResetDirectives();
 
+  bool IsDeprecatedWebkitBox() const {
+    return Display() == EDisplay::kWebkitBox ||
+           Display() == EDisplay::kWebkitInlineBox;
+  }
+
   // Variables.
   bool HasVariables() const;
   CORE_EXPORT StyleInheritedVariables* InheritedVariables() const;
@@ -1253,24 +1258,20 @@ class ComputedStyle : public ComputedStyleBase,
 
   // Flex utility functions.
   bool ResolvedIsColumnFlexDirection() const {
-    if (Display() == EDisplay::kWebkitBox ||
-        Display() == EDisplay::kWebkitInlineBox) {
+    if (IsDeprecatedWebkitBox())
       return BoxOrient() == EBoxOrient::kVertical;
-    }
     return FlexDirection() == EFlexDirection::kColumn ||
            FlexDirection() == EFlexDirection::kColumnReverse;
   }
   bool ResolvedIsColumnReverseFlexDirection() const {
-    if (Display() == EDisplay::kWebkitBox ||
-        Display() == EDisplay::kWebkitInlineBox) {
+    if (IsDeprecatedWebkitBox()) {
       return BoxOrient() == EBoxOrient::kVertical &&
              BoxDirection() == EBoxDirection::kReverse;
     }
     return FlexDirection() == EFlexDirection::kColumnReverse;
   }
   bool ResolvedIsRowReverseFlexDirection() const {
-    if (Display() == EDisplay::kWebkitBox ||
-        Display() == EDisplay::kWebkitInlineBox) {
+    if (IsDeprecatedWebkitBox()) {
       return BoxOrient() == EBoxOrient::kHorizontal &&
              BoxDirection() == EBoxDirection::kReverse;
     }
@@ -1281,17 +1282,13 @@ class ComputedStyle : public ComputedStyleBase,
     return DataEquivalent(BoxReflect(), other.BoxReflect());
   }
   float ResolvedFlexGrow(const ComputedStyle& box_style) const {
-    if (box_style.Display() == EDisplay::kWebkitBox ||
-        box_style.Display() == EDisplay::kWebkitInlineBox) {
+    if (box_style.IsDeprecatedWebkitBox())
       return BoxFlex() > 0 ? BoxFlex() : 0.0f;
-    }
     return FlexGrow();
   }
   float ResolvedFlexShrink(const ComputedStyle& box_style) const {
-    if (box_style.Display() == EDisplay::kWebkitBox ||
-        box_style.Display() == EDisplay::kWebkitInlineBox) {
+    if (box_style.IsDeprecatedWebkitBox())
       return BoxFlex() > 0 ? BoxFlex() : 0.0f;
-    }
     return FlexShrink();
   }
 

@@ -5,7 +5,6 @@
 #include "ash/shelf/shelf_navigation_widget.h"
 
 #include "ash/focus_cycler.h"
-#include "ash/public/cpp/shelf_config.h"
 #include "ash/shelf/back_button.h"
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf.h"
@@ -105,10 +104,6 @@ ShelfNavigationWidget::Delegate::Delegate(Shelf* shelf, ShelfView* shelf_view) {
   GetViewAccessibility().OverrideNextFocus(
       shelf->shelf_widget()->hotseat_widget());
   GetViewAccessibility().OverridePreviousFocus(shelf->GetStatusAreaWidget());
-
-  SetBackground(views::CreateRoundedRectBackground(
-      ShelfConfig::Get()->shelf_control_permanent_highlight_background(),
-      ShelfConfig::Get()->control_border_radius()));
 }
 
 ShelfNavigationWidget::Delegate::~Delegate() = default;
@@ -144,6 +139,7 @@ ShelfNavigationWidget::ShelfNavigationWidget(Shelf* shelf,
   bounds_animator_->SetAnimationDuration(kBackButtonOpacityAnimationDuration);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
+  ShelfConfig::Get()->AddObserver(this);
 }
 
 ShelfNavigationWidget::~ShelfNavigationWidget() {
@@ -151,6 +147,7 @@ ShelfNavigationWidget::~ShelfNavigationWidget() {
   if (Shell::Get()->tablet_mode_controller())
     Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
+  ShelfConfig::Get()->RemoveObserver(this);
 }
 
 void ShelfNavigationWidget::Initialize(aura::Window* container) {
@@ -227,6 +224,10 @@ void ShelfNavigationWidget::OnImplicitAnimationsCompleted() {
     GetBackButton()->SetVisible(false);
 }
 
+void ShelfNavigationWidget::OnShelfConfigUpdated() {
+  UpdateLayout();
+}
+
 void ShelfNavigationWidget::UpdateLayout() {
   const bool tablet_mode = IsTabletMode();
   // Show the back button right away so that the animation is visible.
@@ -244,6 +245,11 @@ void ShelfNavigationWidget::UpdateLayout() {
   bounds_animator_->AnimateViewTo(
       GetHomeButton(),
       tablet_mode ? GetSecondButtonBounds() : GetFirstButtonBounds());
+  GetBackButton()->SetBoundsRect(GetFirstButtonBounds());
+
+  delegate_->SetBackground(views::CreateRoundedRectBackground(
+      ShelfConfig::Get()->shelf_control_permanent_highlight_background(),
+      ShelfConfig::Get()->control_border_radius()));
 }
 
 }  // namespace ash

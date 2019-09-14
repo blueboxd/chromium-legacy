@@ -21,7 +21,7 @@ namespace {
 static const int kNumberOfGamepads = Gamepads::kItemsLengthCap;
 }
 
-class ConnectionListener : public device::GamepadConsumer {
+class ConnectionListener : public GamepadConsumer {
  public:
   ConnectionListener() { ClearCounters(); }
 
@@ -79,10 +79,11 @@ class GamepadServiceTest : public testing::Test {
   }
 
   void SetUp() override;
+  void TearDown() override;
 
  private:
   base::test::SingleThreadTaskEnvironment task_environment_;
-  device::MockGamepadDataFetcher* fetcher_;
+  MockGamepadDataFetcher* fetcher_;
   GamepadService* service_;
   std::unique_ptr<ConnectionListener> connection_listener_;
   std::unique_ptr<ConnectionListener> connection_listener2_;
@@ -99,17 +100,20 @@ GamepadServiceTest::GamepadServiceTest() {
   test_data_.items[0].buttons_length = 1;
 }
 
-GamepadServiceTest::~GamepadServiceTest() {
-  delete service_;
-}
+GamepadServiceTest::~GamepadServiceTest() = default;
 
 void GamepadServiceTest::SetUp() {
-  fetcher_ = new device::MockGamepadDataFetcher(test_data_);
-  service_ =
-      new GamepadService(std::unique_ptr<device::GamepadDataFetcher>(fetcher_));
-  connection_listener_.reset((new ConnectionListener));
+  auto fetcher = std::make_unique<MockGamepadDataFetcher>(test_data_);
+  fetcher_ = fetcher.get();
+  service_ = new GamepadService(std::move(fetcher));
+  connection_listener_ = std::make_unique<ConnectionListener>();
   service_->SetSanitizationEnabled(false);
   service_->ConsumerBecameActive(connection_listener_.get());
+}
+
+void GamepadServiceTest::TearDown() {
+  // Calling SetInstance will destroy the GamepadService instance.
+  GamepadService::SetInstance(nullptr);
 }
 
 void GamepadServiceTest::InitializeSecondConsumer() {
@@ -238,8 +242,7 @@ TEST_F(GamepadServiceTest, ReloadTest) {
   EXPECT_EQ(0, GetDisconnectedCounter());
 }
 
-// Flaky, see https://crbug.com/795170
-TEST_F(GamepadServiceTest, DISABLED_SecondConsumerGestureTest) {
+TEST_F(GamepadServiceTest, SecondConsumerGestureTest) {
   WaitForData();
   EXPECT_EQ(0, GetConnectedCounter());
   EXPECT_EQ(0, GetDisconnectedCounter());

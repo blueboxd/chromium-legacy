@@ -39,7 +39,6 @@
 #include "net/disk_cache/blockfile/experiments.h"
 #include "net/disk_cache/blockfile/file.h"
 #include "net/disk_cache/blockfile/histogram_macros.h"
-#include "net/disk_cache/blockfile/webfonts_histogram.h"
 #include "net/disk_cache/cache_util.h"
 
 // Provide a BackendImpl object to macros from histogram_macros.h.
@@ -521,9 +520,6 @@ scoped_refptr<EntryImpl> BackendImpl::OpenEntryImpl(const std::string& key) {
   if (cache_entry && ENTRY_NORMAL != cache_entry->entry()->Data()->state) {
     // The entry was already evicted.
     cache_entry = nullptr;
-    web_fonts_histogram::RecordEvictedEntry(key);
-  } else if (!cache_entry) {
-    web_fonts_histogram::RecordCacheMiss(key);
   }
 
   int current_size = data_->header.num_bytes / (1024 * 1024);
@@ -548,7 +544,6 @@ scoped_refptr<EntryImpl> BackendImpl::OpenEntryImpl(const std::string& key) {
   CACHE_UMA(HOURS, "AllOpenByUseHours.Hit", 0,
             static_cast<base::HistogramBase::Sample>(use_hours));
   stats_.OnEvent(Stats::OPEN_HIT);
-  web_fonts_histogram::RecordCacheHit(cache_entry.get());
   return cache_entry;
 }
 

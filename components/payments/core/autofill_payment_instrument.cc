@@ -233,7 +233,8 @@ void AutofillPaymentInstrument::GenerateBasicCardResponse() {
           ->ToDictionaryValue();
   std::string stringified_details;
   base::JSONWriter::Write(*response_value, &stringified_details);
-  delegate_->OnInstrumentDetailsReady(method_name_, stringified_details);
+  delegate_->OnInstrumentDetailsReady(method_name_, stringified_details,
+                                      PayerData());
 
   delegate_ = nullptr;
   cvc_ = base::UTF8ToUTF16("");

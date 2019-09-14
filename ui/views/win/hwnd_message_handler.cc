@@ -2328,12 +2328,6 @@ LRESULT HWNDMessageHandler::OnNCUAHDrawFrame(UINT message,
   return 0;
 }
 
-LRESULT HWNDMessageHandler::OnNotify(int w_param, NMHDR* l_param) {
-  LRESULT l_result = 0;
-  SetMsgHandled(delegate_->HandleTooltipNotify(w_param, l_param, &l_result));
-  return l_result;
-}
-
 void HWNDMessageHandler::OnPaint(HDC dc) {
   // Call BeginPaint()/EndPaint() around the paint handling, as that seems
   // to do more to actually validate the window's drawing region. This only

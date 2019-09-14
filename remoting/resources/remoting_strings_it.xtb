@@ -58,6 +58,7 @@
 <translation id="2509394361235492552">Connessione a <ph name="HOSTNAME" /> effettuata</translation>
 <translation id="2512228156274966424">NOTA. Per assicurarti che siano disponibili tutte le scorciatoie da tastiera, puoi configurare l'opzione "Apri in una finestra" per Chrome Remote Desktop.</translation>
 <translation id="2540992418118313681">Vuoi condividere questo computer con un altro utente che potrà accedervi e controllarlo?</translation>
+<translation id="254771646005658629">Consenti agli utenti remoti di controllare questo Mac</translation>
 <translation id="2579271889603567289">L'host si è arrestato in modo anomalo o non si è avviato.</translation>
 <translation id="2599300881200251572">Questo servizio consente connessioni in entrata da client Chrome Remote Desktop.</translation>
 <translation id="2647232381348739934">Servizio Chromoting</translation>
@@ -182,6 +183,11 @@
 <translation id="5419185025274123272">Impossibile ripristinare l'applicazione. Puoi comunque inviare una segnalazione di bug.</translation>
 <translation id="5419418238395129586">Ultimo collegamento online: <ph name="DATE" /></translation>
 <translation id="544077782045763683">L'host è stato chiuso.</translation>
+<translation id="5463789431147491241">Per usare <ph name="PRODUCT_NAME" /> su questo Mac, svolgi i seguenti passaggi:
+
+Seleziona "<ph name="BUTTON_NAME" />" sotto. Nelle preferenze Sicurezza e Privacy, seleziona la casella "<ph name="SERVICE_SCRIPT_NAME" />".
+
+Se la casella "<ph name="SERVICE_SCRIPT_NAME" />" è già selezionata, deselezionala e selezionala di nuovo.</translation>
 <translation id="5510035215749041527">Scollegati ora</translation>
 <translation id="5593560073513909978">Il servizio non è al momento disponibile. Riprova più tardi.</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -298,12 +304,14 @@
 <translation id="837021510621780684">Da questo computer</translation>
 <translation id="8383794970363966105">Per poter utilizzare Chromoting devi aggiungere un Account Google sul dispositivo.</translation>
 <translation id="8386846956409881180">L'host è stato configurato con credenziali OAuth non valide.</translation>
+<translation id="8406498562923498210">Seleziona una sessione da avviare nell'ambiente Chrome Remote Desktop. Tieni presente che alcuni tipi di sessioni potrebbero non essere supportati contemporaneamente in Chrome Remote Desktop e sulla console locale.</translation>
 <translation id="8428213095426709021">Impostazioni</translation>
 <translation id="8445362773033888690">Visualizza nel Google Play Store</translation>
 <translation id="8509907436388546015">Processo di integrazione desktop</translation>
 <translation id="8513093439376855948">Host messaggi nativi per gestione host da remoto</translation>
 <translation id="8525306231823319788">Schermo intero</translation>
 <translation id="8548209692293300397">Hai già eseguito l'accesso come <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Per accedere ai tuoi computer nell'account in questione, <ph name="LINK_BEGIN" />accedi a Google Chrome<ph name="LINK_END" /> con tale account e installa di nuovo Chrome Remote Desktop.</translation>
+<translation id="858006550102277544">Commento</translation>
 <translation id="8642984861538780905">Media</translation>
 <translation id="8712909229180978490">Non riesco a trovare i miei file salvati online su Google Drive.</translation>
 <translation id="8743328882720071828">Vuoi consentire a <ph name="CLIENT_USERNAME" /> di visualizzare e controllare il tuo computer?</translation>
@@ -321,6 +329,7 @@
 <translation id="9126115402994542723">Non chiedere di nuovo il PIN per il collegamento a questo host da questo dispositivo.</translation>
 <translation id="9149580767411232853">Mantieni visibile l'intero desktop remoto</translation>
 <translation id="9149992051684092333">Per iniziare a condividere il desktop, fornisci il seguente codice di accesso alla persona che ti aiuterà.</translation>
+<translation id="916856682307586697">Viene avviata la XSession predefinita</translation>
 <translation id="9188433529406846933">Autorizza</translation>
 <translation id="9213184081240281106">Configurazione host non valida.</translation>
 <translation id="951991426597076286">Rifiuta</translation>

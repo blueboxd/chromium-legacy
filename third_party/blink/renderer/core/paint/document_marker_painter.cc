@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/document_marker_painter.h"
 
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
@@ -81,7 +82,7 @@ sk_sp<PaintRecord> RecordMarker(Color blink_color) {
   flags.setAntiAlias(true);
   flags.setColor(color);
   flags.setShader(PaintShader::MakeLinearGradient(
-      pts, colors, nullptr, ARRAY_SIZE(colors), SkTileMode::kClamp));
+      pts, colors, nullptr, base::size(colors), SkTileMode::kClamp));
   PaintRecorder recorder;
   recorder.beginRecording(kMarkerWidth, kMarkerHeight);
   recorder.getRecordingCanvas()->drawOval(SkRect::MakeWH(2 * kR, 2 * kR),

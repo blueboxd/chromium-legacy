@@ -2,7 +2,9 @@ Verifies that cookies not within the current path of the request to a domain sen
 
 requestWillBeSentExtraInfo blocked cookies: [
   {
-    "blockedReason": "NotOnPath",
+    "blockedReasons": [
+      "NotOnPath"
+    ],
     "cookie": {
       "name": "name",
       "value": "value",

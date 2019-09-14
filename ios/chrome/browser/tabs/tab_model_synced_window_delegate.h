@@ -21,8 +21,9 @@ class SyncedTabDelegate;
 class TabModelSyncedWindowDelegate : public sync_sessions::SyncedWindowDelegate,
                                      public WebStateListObserver {
  public:
+  // This constructor does not add the constructed object as an observere of
+  // |web_state_list|; calling code is expected to do that.
   explicit TabModelSyncedWindowDelegate(WebStateList* web_state_list);
-  ~TabModelSyncedWindowDelegate() override;
 
   // Return the tab id for the tab at |index|.
   SessionID GetTabIdAt(int index) const override;

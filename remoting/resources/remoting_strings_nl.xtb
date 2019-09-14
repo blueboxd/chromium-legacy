@@ -58,6 +58,7 @@
 <translation id="2509394361235492552">Verbonden met <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">Opmerking: als je er zeker van wilt zijn dat alle sneltoetsen beschikbaar zijn, kun je Chrome Remote Desktop configureren om de modus 'Openen als venster' te gebruiken.</translation>
 <translation id="2540992418118313681">Wil je deze computer delen zodat een andere gebruiker deze kan bekijken en bedienen?</translation>
+<translation id="254771646005658629">Externe gebruikers toestaan om deze Mac te beheren</translation>
 <translation id="2579271889603567289">De host is gecrasht of kan niet worden gestart.</translation>
 <translation id="2599300881200251572">Met deze service worden inkomende verbindingen van Chrome Remote Desktop-clients ingeschakeld.</translation>
 <translation id="2647232381348739934">Chromoting-service</translation>
@@ -182,6 +183,11 @@
 <translation id="5419185025274123272">Kan de app niet opnieuw instellen. Je kunt nog steeds een foutmelding verzenden.</translation>
 <translation id="5419418238395129586">Laatst online: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Host is afgesloten.</translation>
+<translation id="5463789431147491241">Volg deze stappen om <ph name="PRODUCT_NAME" /> te gebruiken op deze Mac:
+
+Selecteer '<ph name="BUTTON_NAME" />' hieronder. Vink in je voorkeuren voor beveiliging en privacy het selectievakje naast '<ph name="SERVICE_SCRIPT_NAME" />' aan.
+
+Als '<ph name="SERVICE_SCRIPT_NAME" />' al is aangevinkt, vink je dit uit en opnieuw aan.</translation>
 <translation id="5510035215749041527">Nu verbinding verbreken</translation>
 <translation id="5593560073513909978">De service is tijdelijk niet beschikbaar. Probeer het later opnieuw.</translation>
 <translation id="5601503069213153581">Pincode</translation>
@@ -298,12 +304,14 @@
 <translation id="837021510621780684">Vanaf deze computer</translation>
 <translation id="8383794970363966105">Als je Chromoting wilt gebruiken, moet je een Google-account aan je apparaat toevoegen</translation>
 <translation id="8386846956409881180">Host is geconfigureerd met ongeldige OAuth-inloggegevens.</translation>
+<translation id="8406498562923498210">Selecteer een sessie om te starten in je Chrome Remote Desktop-omgeving. (Houd er rekening mee dat bepaalde sessietypen niet tegelijkertijd kunnen worden uitgevoerd in Chrome Remote Desktop en op de lokale console.)</translation>
 <translation id="8428213095426709021">Instellingen</translation>
 <translation id="8445362773033888690">Bekijken in de Google Play Store</translation>
 <translation id="8509907436388546015">Desktopintegratieproces</translation>
 <translation id="8513093439376855948">Systeemeigen berichthost voor extern hostbeheer</translation>
 <translation id="8525306231823319788">Volledig scherm</translation>
 <translation id="8548209692293300397">Je bent eerder ingelogd als <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Als je toegang wilt tot je computers met dat account, <ph name="LINK_BEGIN" />log je in bij Google Chrome<ph name="LINK_END" /> met dat account en installeer je Chrome Remote Desktop opnieuw.</translation>
+<translation id="858006550102277544">Reactie</translation>
 <translation id="8642984861538780905">Redelijk</translation>
 <translation id="8712909229180978490">Ik kan mijn opgeslagen bestanden niet online zien in Google Drive.</translation>
 <translation id="8743328882720071828">Wil je toestaan dat <ph name="CLIENT_USERNAME" /> je computer ziet en beheert?</translation>
@@ -321,6 +329,7 @@
 <translation id="9126115402994542723">Niet meer vragen naar een pincode bij het aansluiten van dit apparaat op deze host.</translation>
 <translation id="9149580767411232853">Volledig extern bureaublad zichtbaar houden</translation>
 <translation id="9149992051684092333">Om je bureaublad te delen, geef je de onderstaande toegangscode aan de persoon die je gaat helpen.</translation>
+<translation id="916856682307586697">De standaard XSession starten</translation>
 <translation id="9188433529406846933">Autoriseren</translation>
 <translation id="9213184081240281106">Ongeldige hostconfiguratie.</translation>
 <translation id="951991426597076286">Afwijzen</translation>

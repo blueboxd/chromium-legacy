@@ -68,9 +68,9 @@ const CGFloat kSuggestionHorizontalMargin = 6;
   }
 }
 
-- (void)resetContentInsetAndDelegate {
+- (void)resetContentInsetAndDelegateAnimated:(BOOL)animated {
   self.delegate = nil;
-  [UIView animateWithDuration:0.2
+  [UIView animateWithDuration:animated ? 0.2 : 0.0
                    animations:^{
                      self.contentInset = UIEdgeInsetsZero;
                    }];

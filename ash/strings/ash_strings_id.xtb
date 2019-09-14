@@ -104,7 +104,6 @@
 <translation id="2359808026110333948">Lanjutkan</translation>
 <translation id="2365393535144473978">Mengaktifkan data seluler akan mengaktifkan Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
-<translation id="239188844683466770">Alihkan mode Jangan ganggu</translation>
 <translation id="2412593942846481727">Update tersedia</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> adalah sesi terkelola yang dikelola oleh <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Klik kiri</translation>
@@ -224,6 +223,7 @@
 <translation id="4181841719683918333">Bahasa</translation>
 <translation id="4195877955194704651">Tombol klik otomatis</translation>
 <translation id="4217571870635786043">Dikte</translation>
+<translation id="421885205185866088">PIN kartu smart untuk <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Tampilkan setelan notifikasi. Notifikasi nonaktif.</translation>
 <translation id="4269883910223712419">Admin perangkat ini memiliki kemampuan untuk:</translation>
@@ -239,6 +239,7 @@
 <translation id="4379531060876907730">Ini adalah fitur stilus</translation>
 <translation id="4389184120735010762">Anda menekan pintasan keyboard untuk kaca pembesar yang terpasang di dok. Ingin mengaktifkannya?</translation>
 <translation id="4421231901400348175">Berbagi kontrol layar dengan <ph name="HELPER_NAME" /> via Remote Assistance.</translation>
+<translation id="4430019312045809116">Volume</translation>
 <translation id="4450893287417543264">Jangan tampilkan lagi</translation>
 <translation id="4477350412780666475">Lagu Berikutnya</translation>
 <translation id="4479639480957787382">Ethernet</translation>

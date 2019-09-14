@@ -71,19 +71,14 @@ perfetto::TraceConfig GetDefaultPerfettoConfig(
   // 5 seconds of the trace (if we wrap around perfetto's central buffer).
   perfetto_config.mutable_incremental_state_config()->set_clear_period_ms(5000);
 
-  // We strip the process filter from the config string we send to Perfetto, so
-  // perfetto doesn't reject it from a future TracingService::ChangeTraceConfig
-  // call due to being an unsupported update. We also strip the trace buffer
-  // size configuration to prevent chrome from rejecting an update to it after
-  // startup tracing via TraceConfig::Merge (see trace_startup.cc). For
-  // perfetto, the buffer size is configured via perfetto's buffer config and
-  // only affects the perfetto service.
-  base::trace_event::TraceConfig stripped_config(chrome_config);
-  stripped_config.SetProcessFilterConfig(
+  // We strip the process filter from the config string we send to Perfetto,
+  // so perfetto doesn't reject it from a future
+  // TracingService::ChangeTraceConfig call due to being an unsupported
+  // update.
+  base::trace_event::TraceConfig processfilter_stripped_config(chrome_config);
+  processfilter_stripped_config.SetProcessFilterConfig(
       base::trace_event::TraceConfig::ProcessFilterConfig());
-  stripped_config.SetTraceBufferSizeInKb(0);
-  stripped_config.SetTraceBufferSizeInEvents(0);
-  std::string chrome_config_string = stripped_config.ToString();
+  std::string chrome_config_string = processfilter_stripped_config.ToString();
 
   // Capture actual trace events.
   auto* trace_event_data_source = AddDataSourceConfig(

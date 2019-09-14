@@ -194,6 +194,8 @@ Chromium ei voi palauttaa asetuksiasi.</translation>
 <translation id="753534427205733210">{0,plural, =1{Chromium käynnistetään uudelleen 1 minuutin kuluttua}other{Chromium käynnistetään uudelleen # minuutin kuluttua}}</translation>
 <translation id="7549178288319965365">Tietoja Chromium-käyttöjärjestelmästä</translation>
 <translation id="7561906087460245826">Poista data myös Chromiumista (<ph name="URL" />)</translation>
+<translation id="7585853947355360626">Jos asetus ei näy tällä sivulla, siirry <ph name="LINK_BEGIN" />
+    Chromium-käyttöjärjestelmän asetuksiin<ph name="LINK_END" />.</translation>
 <translation id="761356813943268536">Chromium käyttää kameraasi ja mikrofoniasi.</translation>
 <translation id="7617377681829253106">Chromium on nyt entistä parempi</translation>
 <translation id="7686590090926151193">Chromium ei ole oletusselain.</translation>
@@ -227,6 +229,8 @@ Chromium ei voi palauttaa asetuksiasi.</translation>
 <translation id="8619360774459241877">Käynnistetään Chromiumia…</translation>
 <translation id="8621669128220841554">Asennus epäonnistui määrittelemättömän virheen vuoksi. Lataa Chromium uudelleen.</translation>
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> on ajan tasalla.</translation>
+<translation id="8682540261359803721">Jos asetus ei näy tällä sivulla, siirry <ph name="LINK_BEGIN" />
+    Chromiumin selainasetuksiin<ph name="LINK_END" />.</translation>
 <translation id="8697124171261953979">Määrittää myös Chromiumin ja omnibox-hakujen aloitussivun.</translation>
 <translation id="8704119203788522458">Tämä on oma Chromiumisi</translation>
 <translation id="8739167630197873875">Tyhjennät evästeet, kun suljet Chromiumin. Jos haluat jatkaa synkronointia, vaihda <ph name="COOKIE_SETTINGS_LINK" />.</translation>

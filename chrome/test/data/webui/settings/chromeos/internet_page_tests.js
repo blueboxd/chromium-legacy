@@ -9,9 +9,6 @@ suite('InternetPage', function() {
   /** @type {?NetworkSummaryElement} */
   let networkSummary_ = null;
 
-  /** @type {?NetworkingPrivate} */
-  let api_ = null;
-
   /** @type {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
   let mojoApi_ = null;
 
@@ -43,8 +40,7 @@ suite('InternetPage', function() {
       vpnNameTemplate: 'vpnNameTemplate',
     };
 
-    api_ = new chrome.FakeNetworkingPrivate();
-    mojoApi_ = new FakeNetworkConfig(api_);
+    mojoApi_ = new FakeNetworkConfig();
     network_config.MojoInterfaceProviderImpl.getInstance().remote_ = mojoApi_;
 
     // Disable animations so sub-pages open within one event loop.
@@ -58,24 +54,22 @@ suite('InternetPage', function() {
   }
 
   function setNetworksForTest(networks) {
-    api_.resetForTest();
-    api_.addNetworksForTest(networks);
-    api_.onNetworkListChanged.callListeners();
+    mojoApi_.resetForTest();
+    mojoApi_.addNetworksForTest(networks);
   }
 
   setup(function() {
     PolymerTest.clearBody();
     internetPage = document.createElement('settings-internet-page');
     assertTrue(!!internetPage);
-    api_.resetForTest();
-    internetPage.networkingPrivate = api_;
+    mojoApi_.resetForTest();
     document.body.appendChild(internetPage);
     networkSummary_ = internetPage.$$('network-summary');
     assertTrue(!!networkSummary_);
     return flushAsync().then(() => {
       return Promise.all([
-        api_.whenCalled('getNetworks'),
-        api_.whenCalled('getDeviceStates'),
+        mojoApi_.whenCalled('getNetworkStateList'),
+        mojoApi_.whenCalled('getDeviceStateList'),
       ]);
     });
   });
@@ -106,11 +100,12 @@ suite('InternetPage', function() {
     });
 
     test('WiFi', function() {
+      const mojom = chromeos.networkConfig.mojom;
       setNetworksForTest([
-        {GUID: 'wifi1_guid', Name: 'wifi1', Type: 'WiFi'},
-        {GUID: 'wifi12_guid', Name: 'wifi2', Type: 'WiFi'},
+        OncMojo.getDefaultNetworkState(mojom.NetworkType.kWiFi, 'wifi1'),
+        OncMojo.getDefaultNetworkState(mojom.NetworkType.kWiFi, 'wifi2'),
       ]);
-      api_.enableNetworkType('WiFi');
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, true);
       return flushAsync().then(() => {
         const wifi = networkSummary_.$$('#WiFi');
         assertTrue(!!wifi);
@@ -119,15 +114,19 @@ suite('InternetPage', function() {
     });
 
     test('WiFiToggle', function() {
+      const mojom = chromeos.networkConfig.mojom;
       // Make WiFi an available but disabled technology.
-      api_.disableNetworkType('WiFi');
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, false);
       return flushAsync().then(() => {
         const wifi = networkSummary_.$$('#WiFi');
         assertTrue(!!wifi);
 
         // Ensure that the initial state is disabled and the toggle is
         // enabled but unchecked.
-        assertEquals('Disabled', api_.getDeviceStateForTest('WiFi').State);
+        let wifiDevice =
+            mojoApi_.getDeviceStateForTest(mojom.NetworkType.kWiFi);
+        assertTrue(!!wifiDevice);
+        assertEquals(mojom.DeviceStateType.kDisabled, wifiDevice.deviceState);
         const toggle = wifi.$$('#deviceEnabledButton');
         assertTrue(!!toggle);
         assertFalse(toggle.disabled);
@@ -137,29 +136,33 @@ suite('InternetPage', function() {
         toggle.click();
         return flushAsync().then(() => {
           assertTrue(toggle.checked);
-          assertEquals('Enabled', api_.getDeviceStateForTest('WiFi').State);
+          let wifiDevice =
+              mojoApi_.getDeviceStateForTest(mojom.NetworkType.kWiFi);
+          assertTrue(!!wifiDevice);
+          assertEquals(mojom.DeviceStateType.kEnabled, wifiDevice.deviceState);
         });
       });
     });
 
     test('VpnProviders', function() {
+      const mojom = chromeos.networkConfig.mojom;
       mojoApi_.setVpnProvidersForTest([
         {
-          type: chromeos.networkConfig.mojom.VpnType.kExtension,
+          type: mojom.VpnType.kExtension,
           providerId: 'extension_id1',
           providerName: 'MyExtensionVPN1',
           appId: 'extension_id1',
           lastLaunchTime: {internalValue: 0},
         },
         {
-          type: chromeos.networkConfig.mojom.VpnType.kArc,
+          type: mojom.VpnType.kArc,
           providerId: 'vpn.app.package1',
           providerName: 'MyArcVPN1',
           appId: 'arcid1',
           lastLaunchTime: {internalValue: 1},
         },
         {
-          type: chromeos.networkConfig.mojom.VpnType.kArc,
+          type: mojom.VpnType.kArc,
           providerId: 'vpn.app.package2',
           providerName: 'MyArcVPN2',
           appId: 'arcid2',

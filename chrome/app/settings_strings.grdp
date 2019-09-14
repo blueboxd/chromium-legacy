@@ -702,6 +702,9 @@
     <message name="IDS_SETTINGS_ANDROID_APPS_REMOVE" desc="Label for the control to open a dialog confirming removal of the Google Play Store.">
       Remove Google Play Store
     </message>
+    <message name="IDS_SETTINGS_ANDROID_APPS_REMOVE_BUTTON" desc="Label for the button for the removal of the Google Play Store">
+      Remove
+    </message>
 
     <message name="IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_TITLE" desc="Title of the confirmation dialog for disabling android apps.">
       Remove Android apps?
@@ -968,9 +971,6 @@
   </message>
   <message name="IDS_SETTINGS_PASSWORDS_LEAK_DETECTION_SIGNED_OUT_ENABLED_DESC" desc="Text that describes the 'Password Leak Detection' functionality to signed-out users who have not disabled the feature.">
     Google can check if your passwords were part of a data breach. This will be turned on when you sign in with your Google Account.
-  </message>
-  <message name="IDS_SETTINGS_PASSWORDS_LEAK_DETECTION_DESC" desc="Text that describes the 'Password Leak Detection' functionality to users">
-    Show a warning when you use an unsafe password that was a part of data breach. It is available for signed-in users only.
   </message>
   <message name="IDS_SETTINGS_PASSWORDS_SAVED_HEADING" desc="The title for a list of username/site/password items. These items are already saved by the browser and can be deleted/edited.">
     Saved Passwords
@@ -2343,6 +2343,12 @@
     </message>
     <message name="IDS_SETTINGS_INTERNET_WIFI_NETWORK_OUT_OF_RANGE" desc="Text shown when viewing the Wi-Fi network detail page when the currently-viewed Wi-Fi network has been lost (e.g., has gone out of range).">
       Network out of range
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_CELLULAR_CONTACT_SPECIFIC_CARRIER" desc="Text shown when the Chromebook cannot connect to a cellular network, which alerts the user to contact a specific carrier.">
+      Trouble connecting. Please contact <ph name="CARRIER_NAME">$1<ex>Google Fi</ex></ph> for assistance.
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_CELLULAR_CONTACT_DEFAULT_CARRIER" desc="Text shown when the Chromebook cannot connect to a cellular network, which alerts the user to contact their carrier.">
+      Trouble connecting. Please contact your carrier for assistance.
     </message>
     <message name="IDS_SETTINGS_INTERNET_TETHER_PHONE_OUT_OF_RANGE" desc="Text shown when viewing the Tether network detail page when the currently-viewed Tether network has been lost (e.g., has gone out of range). Because Tether networks are provided by Android phones, we use the word 'phone' here instead of 'network'.">
       Unable to detect your phone

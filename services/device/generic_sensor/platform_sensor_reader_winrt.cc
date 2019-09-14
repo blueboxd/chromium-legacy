@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/win/core_winrt_util.h"
 #include "services/device/generic_sensor/generic_sensor_consts.h"
 #include "services/device/public/mojom/sensor.mojom.h"
@@ -54,6 +55,10 @@ using ABI::Windows::Foundation::DateTime;
 using ABI::Windows::Foundation::ITypedEventHandler;
 using Microsoft::WRL::Callback;
 using Microsoft::WRL::ComPtr;
+
+void RecordSensorStartResult(HRESULT result) {
+  base::UmaHistogramSparse("Sensors.Windows.WinRT.Start.Result", result);
+}
 
 double GetAngleBetweenOrientationSamples(SensorReading reading1,
                                          SensorReading reading2) {
@@ -191,8 +196,11 @@ PlatformSensorReaderWinrtBase<runtime_class_id,
   if (FAILED(hr))
     return SensorWinrtCreateFailure::kErrorISensorWinrtStaticsActivationFailed;
 
-  if (FAILED(sensor_statics->GetDefault(&sensor_)))
+  hr = sensor_statics->GetDefault(&sensor_);
+  base::UmaHistogramSparse("Sensors.Windows.WinRT.Activation.Result", hr);
+  if (FAILED(hr)) {
     return SensorWinrtCreateFailure::kErrorGetDefaultSensorFailed;
+  }
 
   // GetDefault() returns null if the sensor does not exist
   if (!sensor_)
@@ -270,6 +278,7 @@ bool PlatformSensorReaderWinrtBase<runtime_class_id,
     if (FAILED(hr)) {
       DLOG(ERROR) << "Failed to set report interval: "
                   << logging::SystemErrorCodeToString(hr);
+      RecordSensorStartResult(hr);
       return false;
     }
 
@@ -283,10 +292,12 @@ bool PlatformSensorReaderWinrtBase<runtime_class_id,
     if (FAILED(hr)) {
       DLOG(ERROR) << "Failed to add reading callback handler: "
                   << logging::SystemErrorCodeToString(hr);
+      RecordSensorStartResult(hr);
       return false;
     }
 
     reading_callback_token_ = event_token;
+    RecordSensorStartResult(hr);
   }
 
   return true;
@@ -309,6 +320,7 @@ void PlatformSensorReaderWinrtBase<
     HRESULT hr =
         sensor_->remove_ReadingChanged(reading_callback_token_.value());
 
+    base::UmaHistogramSparse("Sensors.Windows.WinRT.Stop.Result", hr);
     if (FAILED(hr)) {
       DLOG(ERROR) << "Failed to remove ALS reading callback handler: "
                   << logging::SystemErrorCodeToString(hr);

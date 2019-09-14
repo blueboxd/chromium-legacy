@@ -136,4 +136,14 @@ void OptimizationGuideWebContentsObserver::
   inflight_optimization_guide_navigation_datas_.erase(navigation_id);
 }
 
+void OptimizationGuideWebContentsObserver::UpdateSessionTimingStatistics(
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!optimization_guide_keyed_service_)
+    return;
+
+  optimization_guide_keyed_service_->UpdateSessionFCP(
+      timing.paint_timing->first_contentful_paint.value());
+}
+
 WEB_CONTENTS_USER_DATA_KEY_IMPL(OptimizationGuideWebContentsObserver)

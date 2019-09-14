@@ -43,6 +43,8 @@
 <translation id="1873233029667955273">Google Chrome не является браузером по умолчанию.</translation>
 <translation id="1874309113135274312">Google Chrome (бета, mDNS-In)</translation>
 <translation id="1877026089748256423">Версия Chrome устарела</translation>
+<translation id="1900795423379050516">Если нужного параметра нет на этой странице, откройте <ph name="LINK_BEGIN" />
+      настройки браузера Chrome<ph name="LINK_END" />.</translation>
 <translation id="1915828456209461693">Для Chrome доступно обновление. Оно будет установлено при перезапуске браузера.</translation>
 <translation id="1919130412786645364">Разрешить вход в Chrome</translation>
 <translation id="2063848847527508675">Перезагрузите Chrome OS, чтобы установить обновление.</translation>
@@ -156,6 +158,8 @@
 <translation id="5543953544073077331">Запущены другие экземпляры Chrome. Чтобы выполнить обновление, закройте их.</translation>
 <translation id="556024056938947818">Вводимые пароли будут отображаться в Google Chrome.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
+<translation id="5657226924540934362">Если нужного параметра нет на этой странице, откройте <ph name="LINK_BEGIN" />
+      настройки Chrome OS<ph name="LINK_END" />.</translation>
 <translation id="565744775970812598">Chrome заблокировал файл <ph name="FILE_NAME" /> как потенциально опасный.</translation>
 <translation id="5686916850681061684">Настройка и управление Google Chrome Требуется ваше внимание. Нажмите, чтобы получить подробную информацию.</translation>
 <translation id="5690427481109656848">Google LLC</translation>

@@ -88,12 +88,10 @@ static NSTimeInterval MFAnimationDuration = 0.2;
   [UIView animateWithDuration:animated ? MFAnimationDuration : 0
                    animations:^{
                      [self resetTintColors];
-                     // Workaround the |hidden| property in stacked views.
-                     if (!self.keyboardButton.hidden) {
-                       self.keyboardButton.hidden = YES;
-                       self.keyboardButton.alpha = 0.0;
-                     }
                    }];
+  if (!self.keyboardButton.hidden) {
+    [self setKeyboardButtonHidden:YES animated:animated];
+  }
 }
 
 #pragma mark - Setters
@@ -234,8 +232,8 @@ static NSTimeInterval MFAnimationDuration = 0.2;
   return [UIColor colorNamed:kToolbarButtonColor];
 }
 
-- (void)animateKeyboardButtonHidden:(BOOL)hidden {
-  [UIView animateWithDuration:MFAnimationDuration
+- (void)setKeyboardButtonHidden:(BOOL)hidden animated:(BOOL)animated {
+  [UIView animateWithDuration:animated ? MFAnimationDuration : 0
                    animations:^{
                      // Workaround setting more than once the |hidden| property
                      // in stacked views.
@@ -253,14 +251,13 @@ static NSTimeInterval MFAnimationDuration = 0.2;
 
 - (void)keyboardButtonPressed {
   base::RecordAction(base::UserMetricsAction("ManualFallback_Close"));
-  [self animateKeyboardButtonHidden:YES];
-  [self resetTintColors];
+  [self resetAnimated:YES];
   [self.delegate keyboardButtonPressed];
 }
 
 - (void)passwordButtonPressed:(UIButton*)sender {
   base::RecordAction(base::UserMetricsAction("ManualFallback_OpenPassword"));
-  [self animateKeyboardButtonHidden:NO];
+  [self setKeyboardButtonHidden:NO animated:YES];
   [self resetTintColors];
   [self.passwordButton setTintColor:[UIColor colorNamed:kBlueColor]];
   [self.delegate passwordButtonPressed:sender];
@@ -268,7 +265,7 @@ static NSTimeInterval MFAnimationDuration = 0.2;
 
 - (void)cardButtonPressed:(UIButton*)sender {
   base::RecordAction(base::UserMetricsAction("ManualFallback_OpenCreditCard"));
-  [self animateKeyboardButtonHidden:NO];
+  [self setKeyboardButtonHidden:NO animated:YES];
   [self resetTintColors];
   [self.cardsButton setTintColor:[UIColor colorNamed:kBlueColor]];
   [self.delegate cardButtonPressed:sender];
@@ -276,7 +273,7 @@ static NSTimeInterval MFAnimationDuration = 0.2;
 
 - (void)accountButtonPressed:(UIButton*)sender {
   base::RecordAction(base::UserMetricsAction("ManualFallback_OpenProfile"));
-  [self animateKeyboardButtonHidden:NO];
+  [self setKeyboardButtonHidden:NO animated:YES];
   [self resetTintColors];
   [self.accountButton setTintColor:[UIColor colorNamed:kBlueColor]];
   [self.delegate accountButtonPressed:sender];

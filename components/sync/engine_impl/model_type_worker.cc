@@ -339,13 +339,33 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
         !specifics.bookmark().has_title() && !update_entity.name().empty()) {
       data->specifics.mutable_bookmark()->set_title(update_entity.name());
     }
+    // Legacy clients don't populate the guid field in the BookmarkSpecifics, so
+    // we use the originator_client_item_id instead, if it is a valid GUID.
+    // Otherwise, we leave the field empty.
+    if (model_type == BOOKMARKS && !update_entity.deleted() &&
+        !base::IsValidGUID(specifics.bookmark().guid()) &&
+        base::IsValidGUID(update_entity.originator_client_item_id())) {
+      data->specifics.mutable_bookmark()->set_guid(
+          update_entity.originator_client_item_id());
+    }
     response_data->entity = std::move(data);
     return SUCCESS;
   }
+  // Deleted entities should not be encrypted.
+  DCHECK(!update_entity.deleted());
   if (cryptographer && cryptographer->CanDecrypt(specifics.encrypted())) {
     // Encrypted and we know the key.
     if (!DecryptSpecifics(*cryptographer, specifics, &data->specifics)) {
       return FAILED_TO_DECRYPT;
+    }
+
+    // Legacy clients don't populate the guid field in the BookmarkSpecifics, so
+    // we use the originator_client_item_id instead, if it is a valid GUID.
+    // Otherwise, we leave the field empty.
+    if (model_type == BOOKMARKS && !data->specifics.bookmark().has_guid() &&
+        base::IsValidGUID(update_entity.originator_client_item_id())) {
+      data->specifics.mutable_bookmark()->set_guid(
+          update_entity.originator_client_item_id());
     }
     response_data->entity = std::move(data);
     response_data->encryption_key_name = specifics.encrypted().key_name();
@@ -542,6 +562,7 @@ void ModelTypeWorker::DecryptStoredEntities() {
        it != entries_pending_decryption_.end();) {
     const UpdateResponseData& encrypted_update = *it->second;
     const EntityData& data = *encrypted_update.entity;
+    DCHECK(!data.is_deleted());
 
     sync_pb::EntitySpecifics specifics;
     std::string encryption_key_name;
@@ -580,6 +601,13 @@ void ModelTypeWorker::DecryptStoredEntities() {
     decrypted_update->encryption_key_name = encryption_key_name;
     decrypted_update->entity = std::move(it->second->entity);
     decrypted_update->entity->specifics = std::move(specifics);
+    if (decrypted_update->entity->specifics.has_bookmark() &&
+        !decrypted_update->entity->specifics.bookmark().has_guid() &&
+        base::IsValidGUID(
+            decrypted_update->entity->originator_client_item_id)) {
+      decrypted_update->entity->specifics.mutable_bookmark()->set_guid(
+          decrypted_update->entity->originator_client_item_id);
+    }
     pending_updates_.push_back(std::move(decrypted_update));
     it = entries_pending_decryption_.erase(it);
   }

@@ -111,6 +111,11 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
 void NGOutOfFlowLayoutPart::Run(const LayoutBox* only_layout) {
   Vector<NGLogicalOutOfFlowPositionedNode> candidates;
   const LayoutObject* current_container = container_builder_->GetLayoutObject();
+  // If the container is display-locked, then we skip the layout of descendants,
+  // so we can early out immediately.
+  if (current_container->LayoutBlockedByDisplayLock(
+          DisplayLockLifecycleTarget::kChildren))
+    return;
 
   container_builder_->SwapOutOfFlowPositionedCandidates(&candidates,
                                                         current_container);

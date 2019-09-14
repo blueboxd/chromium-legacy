@@ -32,7 +32,8 @@ PaymentResponseHelper::~PaymentResponseHelper() {}
 
 void PaymentResponseHelper::OnInstrumentDetailsReady(
     const std::string& method_name,
-    const std::string& stringified_details) {
+    const std::string& stringified_details,
+    const PayerData& payer_data) {
   method_name_ = method_name;
   stringified_details_ = stringified_details;
 

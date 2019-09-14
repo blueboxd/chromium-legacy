@@ -4,13 +4,20 @@
 <translation id="1337821341856692531">Continuing without entering your current Windows password might cause irreversible loss of information.</translation>
 <translation id="1383286653814676580">Used to run Google Credential Provider sign-in page.</translation>
 <translation id="1894475569413661128">Sign in using your work account.</translation>
+<translation id="2329184763010379754">Only the user that locked this computer is allowed to sign in.</translation>
+<translation id="2398071111662077301">Unable to load Google sign-in screen due to an issue in your Chrome installation. Contact your administrator.</translation>
 <translation id="2469311484561825731">Signing in to your work account failed. Make sure that the computer has an Internet connection, then try again.</translation>
+<translation id="2679096858700291438">You entered an incorrect Windows password. Please try again.</translation>
+<translation id="2831078752570172210">Your account has been locked out. Please contact your system administrator.</translation>
+<translation id="2844349213149998955">Signing in with a personal account on this device is not allowed. Please log in with a work account.</translation>
 <translation id="3306357053520292004">A user on this computer was already added using this account. Please sign in with a different account.</translation>
 <translation id="3968372833844047539">Only Gsuite Enterprise users are allowed to log in.</translation>
 <translation id="4057329986137569701">An internal error occurred.</translation>
 <translation id="4267670563222825190">No domain user could be found for your account. Please contact your administrator.</translation>
 <translation id="4300229033992784001">Your account password has changed. Please enter your current Windows password in order to sync your Windows account with your work account.</translation>
 <translation id="4706454071748629324">Failed to add a new user. This computer only allows one user to be created using a work account.</translation>
+<translation id="6033715878377252112">Google Credential Provider for Windows helper</translation>
+<translation id="6149399665202317746">Google Credential Provider for Windows</translation>
 <translation id="6312494990035843744">Signing in with a work account on this domain is not allowed. Try a different account.</translation>
 <translation id="6463752215771576050">Unable to enrol this computer for enterprise management.  Please sign in with a different work account.</translation>
 <translation id="6657585470893396449">Password</translation>
@@ -22,5 +29,7 @@
 <translation id="8639729688781680518">Forgot Windows Password</translation>
 <translation id="866458870819756755">A user could not be created.</translation>
 <translation id="8875753657315897487">Sign in using your work account</translation>
+<translation id="8973975512230260387">Your session has expired. Sign in using your Google work account.</translation>
+<translation id="9055998212250844221">User account created by Google Credential Provider for Windows</translation>
 <translation id="9135619837062629367">Signing in with this account is not allowed. Try a different account.</translation>
 </translationbundle>

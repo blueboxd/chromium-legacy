@@ -8,14 +8,17 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 m}other{# m}}</translation>
 <translation id="1181037720776840403">Rimuovi</translation>
 <translation id="1243314992276662751">Carica</translation>
+<translation id="1266864766717917324">Impossibile condividere <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1290982764014248209">Sposta <ph name="DRAGGED_APP" /> nella cartella <ph name="FOLDER_NAME" />.</translation>
+<translation id="1291104554099683393">Prova a condividere il testo in parti più piccole.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">APP CONSIGLIATE</translation>
 <translation id="1368832886055348810">Da sinistra a destra</translation>
 <translation id="1383876407941801731">Cerca</translation>
 <translation id="1398853756734560583">Ingrandisci</translation>
 <translation id="1409544243779336081">Consiglio applicazione</translation>
+<translation id="1450753235335490080">Impossibile condividere <ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">Hai eseguito questa ricerca in precedenza. Se elimini "<ph name="QUERY" />" dalla cronologia, la query verrà rimossa in modo permanente dal tuo account su tutti i tuoi dispositivi.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuto e }other{# minuti e }}</translation>
 <translation id="1643823602425662293">Notifica</translation>
@@ -35,6 +38,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Seleziona &amp;tutto</translation>
 <translation id="1938451708255335766">Riavvia l'app per regolare la densità della visualizzazione della finestra.</translation>
+<translation id="2006524834898217237">Assicurati che questo dispositivo sia connesso a Internet.</translation>
 <translation id="208586643495776849">Riprova</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 g}other{# gg}}</translation>
 <translation id="2148716181193084225">Oggi</translation>
@@ -76,6 +80,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 giorno}other{# giorni}}</translation>
 <translation id="3295886253693811851">Chiama da</translation>
 <translation id="335581015389089642">Voce</translation>
+<translation id="3389286852084373014">Il testo è troppo grande</translation>
 <translation id="3443810440409579745">Scheda ricevuta.</translation>
 <translation id="3479552764303398839">Non adesso</translation>
 <translation id="348799646910989694">Shelf nascosto in automatico</translation>
@@ -151,11 +156,13 @@
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 sec fa}other{# sec fa}}</translation>
 <translation id="6430678249303439055">Blocca tutte le notifiche da questa app</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 secondo fa}other{# secondi fa}}</translation>
+<translation id="6539092367496845964">Si è verificato un problema. Riprova più tardi.</translation>
 <translation id="654149438358937226">Blocca tutte le notifiche</translation>
 <translation id="6567071839949112727">fai clic su predecessore</translation>
 <translation id="6578407462441924264">Senza nome</translation>
 <translation id="6612467943526193239">Per uscire dalla calibrazione premi Esc.</translation>
 <translation id="6620110761915583480">Salva file</translation>
+<translation id="6656912866303152668">Assicurati che in Chrome sia attiva la sincronizzazione di <ph name="TARGET_DEVICE_NAME" />, quindi riprova a inviare.</translation>
 <translation id="6699343763173986273">Traccia successiva contenuti multimediali</translation>
 <translation id="673773751041746814">Eliminazione</translation>
 <translation id="6779314412797872738">Per inviare un numero da qui al tuo telefono Android, <ph name="TROUBLESHOOT_LINK" /> per entrambi i dispositivi nelle impostazioni.</translation>
@@ -221,6 +228,7 @@
 <translation id="8876215549894133151">Formato:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> kB</translation>
 <translation id="8926951137623668982">Shelf sempre nascosto</translation>
+<translation id="8996630695507351249">Assicurati che il dispositivo <ph name="TARGET_DEVICE_NAME" /> sia connesso a Internet.</translation>
 <translation id="9002566407876343676">apri</translation>
 <translation id="9039076430527029379">Vai alla Pagina <ph name="PAGE_NUMBER" />, riga <ph name="ROW_NUMBER" />, colonna <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 sec}other{# sec}}</translation>

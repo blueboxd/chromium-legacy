@@ -118,21 +118,14 @@ class COMPONENT_EXPORT(LEVELDB_PROTO) SharedProtoDatabase
       const std::string& client_db_id,
       SharedClientInitCallback callback,
       scoped_refptr<base::SequencedTaskRunner> callback_task_runner);
-  void InitMetadataDatabase(bool create_shared_db_if_missing,
-                            int attempt,
-                            bool corruption);
-  void OnMetadataInitComplete(bool create_shared_db_if_missing,
-                              int attempt,
-                              bool corruption,
-                              bool success);
-  void OnGetGlobalMetadata(bool create_shared_db_if_missing,
-                           bool corruption,
+  void InitMetadataDatabase(int attempt, bool corruption);
+  void OnMetadataInitComplete(int attempt, bool corruption, bool success);
+  void OnGetGlobalMetadata(bool corruption,
                            bool success,
                            std::unique_ptr<SharedDBMetadataProto> proto);
-  void OnFinishCorruptionCountWrite(bool create_shared_db_if_missing,
-                                    bool success);
-  void InitDatabase(bool create_shared_db_if_missing);
-  void OnDatabaseInit(Enums::InitStatus status);
+  void OnFinishCorruptionCountWrite(bool success);
+  void InitDatabase();
+  void OnDatabaseInit(bool create_if_missing, Enums::InitStatus status);
   void CheckCorruptionAndRunInitCallback(
       const std::string& client_db_id,
       SharedClientInitCallback callback,
@@ -178,6 +171,7 @@ class COMPONENT_EXPORT(LEVELDB_PROTO) SharedProtoDatabase
   Enums::InitStatus init_status_ = Enums::InitStatus::kNotInitialized;
 
   base::queue<std::unique_ptr<InitRequest>> outstanding_init_requests_;
+  bool create_if_missing_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SharedProtoDatabase);
 };

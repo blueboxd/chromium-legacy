@@ -194,6 +194,8 @@
 <translation id="753534427205733210">{0,plural, =1{‏ستتم إعادة تشغيل Chromium في غضون دقيقة واحدة}zero{‏ستتم إعادة تشغيل Chromium في غضون # دقيقة}two{‏ستتم إعادة تشغيل Chromium في غضون دقيقتين}few{‏ستتم إعادة تشغيل Chromium في غضون # دقائق}many{‏ستتم إعادة تشغيل Chromium في غضون # دقيقةً}other{‏ستتم إعادة تشغيل Chromium في غضون # دقيقة}}</translation>
 <translation id="7549178288319965365">‏حول نظام التشغيل Chromium</translation>
 <translation id="7561906087460245826">‏محو البيانات من Chromium أيضًا (<ph name="URL" />)</translation>
+<translation id="7585853947355360626">‏في حال عدم عرض إعداد على هذه الصفحة، ابحث عن <ph name="LINK_BEGIN" />
+    إعدادات نظام التشغيل Chromium<ph name="LINK_END" /></translation>
 <translation id="761356813943268536">‏يستخدم Chromium الكاميرا والميكروفون.</translation>
 <translation id="7617377681829253106">‏Chromium أصبح أفضل</translation>
 <translation id="7686590090926151193">‏Chromium ليس متصفحك التلقائي.</translation>
@@ -227,6 +229,8 @@
 <translation id="8619360774459241877">‏جارٍ إطلاق Chromium...</translation>
 <translation id="8621669128220841554">‏تعذّر التثبيت نظرًا لحدوث خطأ غير محدد. يُرجى إعادة تنزيل Chromium.</translation>
 <translation id="8667808506758191620">جهاز <ph name="DEVICE_TYPE" /> مُحدّث.</translation>
+<translation id="8682540261359803721">‏في حال عدم عرض إعداد على هذه الصفحة، ابحث عن <ph name="LINK_BEGIN" />
+    إعدادات متصفِّح Chromium<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">‏كما أنها تتحكم في الصفحة التي تظهر عند تشغيل Chromium أو إجراء بحث من المربع متعدد الاستخدامات.</translation>
 <translation id="8704119203788522458">‏هذا هو Chromium الخاص بك</translation>
 <translation id="8739167630197873875">‏يتم محو ملفات تعريف الارتباط عند الخروج من Chromium. لمواصلة عملية المزامنة، يمكنك تغيير هذا <ph name="COOKIE_SETTINGS_LINK" />.</translation>

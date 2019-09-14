@@ -447,9 +447,6 @@
       如果此政策设为一个有效网址，<ph name="PRODUCT_NAME" /> 就会从该网址下载网站列表，并会应用相应规则，就好像这些规则是使用 <ph name="SITELIST_POLICY_NAME" /> 政策配置的一样。
 
       要详细了解 Internet Explorer 的 <ph name="IEEM_SITELIST_POLICY" /> 政策，请访问 https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
-<translation id="1839060937202387559">报告存储设备的硬件统计信息和标识符。
-
-      如果此政策设为 false，系统将不会报告这些统计信息。如果此政策设为 true 或未设置，系统将会报告这些统计信息。</translation>
 <translation id="1843117931376765605">用户策略的更新频率</translation>
 <translation id="1844620919405873871">配置快速解锁相关政策。</translation>
 <translation id="1845405905602899692">自助服务终端设置</translation>
@@ -1775,7 +1772,7 @@
           此政策仅供 <ph name="PRODUCT_NAME" /> 在内部使用。</translation>
 <translation id="4209297478239988291">启用“自动点击”无障碍功能。
 
-          此功能负责在不按鼠标或触控板的情况下，通过将鼠标指针悬停在想点击的对象上进行点击。
+          此功能让用户无需实际点按鼠标或触控板，只需将指针悬停在想点击的对象上即可进行点击。
 
           如果此政策设为“enabled”，“自动点击”将始终处于启用状态。
 
@@ -2770,7 +2767,7 @@
 <translation id="614662973812186053">此政策亦用于控制对 Android 使用情况和诊断数据的收集。</translation>
 <translation id="6150961766041720393">以列表形式指定：对于哪些网域，系统不需检查上传的文件、从剪贴板复制并粘贴的数据或者拖放的数据是否合规。仅当 <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> 设为“enabled”时，才会用到此政策。
 
-      如果此政策未设置或设为一个空的网域列表，系统便需要检查所有内容的合规性。
+      如果此政策未设置或设为一个空的网域列表，系统会检查所有内容的合规性。
       </translation>
 <translation id="6153048425064249648">此政策用于控制可将浏览器操作信息上传到 Google 管理控制台的 <ph name="PRODUCT_NAME" /> 云端报告。
 
@@ -2846,7 +2843,7 @@
 <translation id="6281043242780654992">配置本地消息传递政策。不允许黑名单中列出的本地消息传递主机（除非相应主机已列入白名单）。</translation>
 <translation id="6282799760374509080">是否允许音频捕获</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6305895953906663275">此政策用于控制 <ph name="PRODUCT_NAME" /> 在以下情况下的行为：用户尝试上传或下载的文件太大（50MB 或更大），无法发送以进行恶意软件扫描或内容合规性扫描。此限制仅适用于需要扫描的文件，是否需要扫描取决于 <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />、<ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> 以及用于控制已启用检查功能的网域列表的政策。
+<translation id="6305895953906663275">此政策用于控制 <ph name="PRODUCT_NAME" /> 在以下情况下的行为：用户尝试上传或下载的文件太大（50MB 或更大），无法发送给服务器进行恶意软件扫描或内容合规性扫描。此限制仅适用于需要扫描的文件，是否需要扫描取决于 <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />、<ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> 以及用于控制已启用检查功能的网域列表的政策。
 
       如果此政策未设置或设为“无”，则 <ph name="PRODUCT_NAME" /> 允许用户上传或下载任何大小的文件。
 
@@ -3211,17 +3208,6 @@
 <translation id="7049373494483449255">允许 <ph name="PRODUCT_NAME" />将文档提交到 <ph name="CLOUD_PRINT_NAME" />进行打印。请注意：这只会影响 <ph name="PRODUCT_NAME" />中的 <ph name="CLOUD_PRINT_NAME" />支持，并不会禁止用户在网站上提交打印作业。如果启用或未配置此设置，用户就可以通过 <ph name="PRODUCT_NAME" />的打印对话框使用 <ph name="CLOUD_PRINT_NAME" />进行打印。如果停用此设置，用户就无法通过 <ph name="PRODUCT_NAME" />的打印对话框使用 <ph name="CLOUD_PRINT_NAME" />进行打印。</translation>
 <translation id="7053678646221257043">如果启用此政策，就会强制从当前默认浏览器导入书签，还会影响导入对话框。如果停用此政策，就不会导入书签。如果未设置此政策，系统就会询问用户是否导入书签，或者系统自动进行导入。</translation>
 <translation id="7063895219334505671">在这些网站上允许弹出式窗口</translation>
-<translation id="706568410943497889">
-      如果此政策设为 true，<ph name="PRODUCT_NAME" /> 便可以从 Google 服务（例如 Google Meet）收集 WebRTC 事件日志，并将这些日志上传到 Google。
-
-      如果此政策设为 false 或未设置，<ph name="PRODUCT_NAME" /> 将不能收集或上传此类日志。
-
-      这些日志中包含一些诊断信息，例如 RTP 数据包的收发时间和大小、网络拥堵情况反馈，以及与语音和视频帧的时间和质量相关的元数据。在调试 Chrome 中的语音或视频通话问题时，这些信息非常有用。这些日志不包含通话的语音或视频内容。
-
-      这项由 Chrome 进行的数据收集操作只能由 Google 的网络服务（例如 Google 环聊或 Google Meet）触发。
-
-      Google 可能会通过会话 ID 将这些日志与 Google 服务自身收集的其他日志相关联，以便更轻松地进行调试。
-      </translation>
 <translation id="706669471845501145">允许网站显示桌面通知</translation>
 <translation id="7068108874199666656">允许将要对所有用户应用的网络配置推送到 <ph name="PRODUCT_OS_NAME" />设备。网络配置是 JSON 格式的字符串，由开放网络配置格式定义。</translation>
 <translation id="7070525176564511548">每周（168 小时）必须输入一次密码</translation>
@@ -3300,7 +3286,7 @@
 
       “<ph name="SECURE_DNS_MODE_SECURE" />”模式仅会发送 DNS-over-HTTPS 查询；如果出错了，将无法解析。
 
-      在 <ph name="ANDROID_VERSION" /> 及更高版本中，如果 DNS-over-TLS 处于活动状态，<ph name="PRODUCT_NAME" /> 将不会发送不安全的 DNS 请求。
+      在 <ph name="ANDROID_VERSION" /> 及更高版本中，如果 DNS-over-TLS 处于活跃状态，<ph name="PRODUCT_NAME" /> 将不会发送不安全的 DNS 请求。
 
       如果未设置此政策，浏览器可能会向与用户配置的系统解析器关联的解析器发送 DNS-over-HTTPS 请求。</translation>
 <translation id="7158064522994309072">此政策可控制使用哪个命令在替代浏览器中打开网址。
@@ -3462,11 +3448,11 @@
       </translation>
 <translation id="7360181094056034924">控制 <ph name="PRODUCT_NAME" /> 如何处理被视为需要扫描的上传数据和下载数据。延迟交付意味着 <ph name="PRODUCT_NAME" /> 将不会允许用户访问已下载的文件、选择要上传的文件、从剪贴板复制并粘贴数据或者拖放数据，直到系统扫描完相应内容并获悉扫描结果。此限制仅适用于需要扫描的文件或数据，是否需要扫描取决于 <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />、<ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> 以及用于控制已启用检查功能的网域列表的政策。
 
-      如果此政策未设置或设为“无”，则 <ph name="PRODUCT_NAME" /> 不会延迟上传任何文件，不会从剪贴板复制并粘贴数据或者拖放数据，也不会延迟访问任何已下载的文件。扫描将在后台进行。
+      如果此政策未设置或设为“无”，则 <ph name="PRODUCT_NAME" /> 不会延迟上传任何文件，不会延迟从剪贴板复制并粘贴数据或者拖放数据，也不会延迟访问任何已下载的文件。扫描将在后台进行。
 
       如果此政策设为“延迟交付下载内容”，用户将无法访问已下载的文件，直到系统扫描完这些文件并获悉扫描结果。
 
-      如果此政策设为“延迟交付上传内容”，并且用户尝试上传文件、从剪贴板复制并粘贴数据或者拖放数据，那么在系统扫描完相应内容并获悉扫描结果之前，用户的操作不会继续。
+      如果此政策设为“延迟交付上传内容”，并且用户尝试上传文件、从剪贴板复制并粘贴数据或者拖放数据，那么在系统扫描完相应内容并获悉扫描结果之前，用户的操作不会得到后续处理。
 
       如果此政策设为“延迟交付上传内容和下载内容”，则 <ph name="PRODUCT_NAME" /> 将根据“延迟交付下载内容”和“延迟交付上传内容”所述的规则操作。
       </translation>
@@ -3840,7 +3826,7 @@
 <translation id="8158758865057576716">允许创建 <ph name="PRODUCT_NAME" /> 个人资料数据的漫游副本。</translation>
 <translation id="8159760979508295709">启用“光标突出显示”无障碍功能。
 
-          此功能负责在移动鼠标光标时突出显示其周围的区域。
+          此功能负责在鼠标光标移动时突出显示其周围的区域。
 
           如果此政策设为“enabled”，“光标突出显示”将始终处于启用状态。
 
@@ -3899,14 +3885,11 @@
           如果您设置了此政策，用户将无法更改或覆盖它。
 
           如果未设置此政策，则“语音输入”最初会处于停用状态，但用户可以随时启用该功能。</translation>
-<translation id="8292322992383748446">报告 SoC 组件的硬件统计信息。
-
-      如果此政策设为 false，系统将不会报告这些统计信息。如果此政策设为 true 或未设置，系统将会报告这些统计信息。</translation>
 <translation id="829337533107201925">如果启用了此政策，那么对于同一政策原子组，系统将忽略组内与具有最高优先级的政策不属于同一来源的政策。
 
       如果停用了此政策，则系统不会因来源而忽略任何政策。仅当相应政策与其他政策冲突且不具有最高优先级时，系统才会忽略它们。
 
-      如果此政策是从云端来源中进行设置，则无法针对特定用户</translation>
+      如果此政策是根据云端来源而设置的，则无法针对特定用户</translation>
 <translation id="8294750666104911727">XX-UA-Compatible 设置为chrome=1的网页通常在“<ph name="PRODUCT_FRAME_NAME" />”中进行渲染，而不考虑“ChromeFrameRendererSettings”政策。
 
           如果启用了该设置，将不扫描网页的元标记。
@@ -3937,9 +3920,6 @@
 <translation id="8367209241899435947">在 Windows 系统上启用 Chrome 清理功能</translation>
 <translation id="8369602308428138533">使用交流电源供电时的屏幕关闭延迟时间</translation>
 <translation id="8371178326720637170">允许托管扩展程序使用 Enterprise Hardware Platform API</translation>
-<translation id="8374747520743832795">报告与电源相关的硬件统计信息和标识符。
-
-      如果此政策设为 false，系统将不会报告这些统计信息。如果此政策设为 true 或未设置，系统将会报告这些统计信息。</translation>
 <translation id="8380490658357556620">当远程客户端尝试与此计算机建立连接时，允许使用中继服务器。
 
           此设置处于启用状态时，如果远程客户端无法直接连接到此计算机（例如：因为受防火墙限制），则可通过中继服务器来建立连接。
@@ -4257,7 +4237,7 @@
       此政策的值应以秒为单位。</translation>
 <translation id="9035086760683255833">启用“键盘焦点突出显示”无障碍功能。
 
-          此功能负责通过键盘突出显示具有焦点的对象。
+          此功能负责突出显示通过键盘操作成为焦点的对象。
 
           如果此政策设为“enabled”，“键盘焦点突出显示”将始终处于启用状态。
 

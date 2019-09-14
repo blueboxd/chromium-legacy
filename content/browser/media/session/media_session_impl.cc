@@ -1342,12 +1342,7 @@ void MediaSessionImpl::RebuildAndNotifyMetadataChanged() {
           ? content_client->GetLocalizedString(IDS_MEDIA_SESSION_FILE_SOURCE)
           : url_formatter::FormatOriginForSecurityDisplay(
                 url::Origin::Create(url));
-
-  if (metadata.artist.empty()) {
-    metadata.artist = formatted_origin;
-  } else {
-    metadata.source_title = formatted_origin;
-  }
+  metadata.source_title = formatted_origin;
 
   // If we have no artwork in |images_| or the arwork has changed then we should
   // update it with the latest artwork from the routed service.

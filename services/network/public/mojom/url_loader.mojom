@@ -112,25 +112,6 @@ struct URLRequest {
   // done if there really is no way to determine the correct value.
   url.mojom.Url site_for_cookies;
 
-  // A non-null |top_frame_origin| contains the origin of the top frame of the
-  // page making the request. |top_frame_origin| depends on the context making
-  // the request.
-  // - If a page is making the request, it is the origin of the top-level
-  //   frame of the page. This is set for the navigation and subresource
-  //   requests.
-  // - If a dedicated worker is making the request, it is the top-frame
-  //   origin of its creator (which may be a page or a dedicated worker).
-  // - If a shared worker or a service worker is making the request, it is null,
-  //   including for both the main script request and subresource requests.
-  //
-  // In some other cases(?) |top_frame_origin| may be null.
-  //
-  // Note that this is experimental.
-  //
-  // TODO(crbug.com/911299, crbug.com/978968): This field will most likely be
-  // removed at some point.
-  url.mojom.Origin? top_frame_origin;
-
   // Boolean indicating whether SameSite cookies are allowed to be attached
   // to the request. It should be used as additional input to network side
   // checks.

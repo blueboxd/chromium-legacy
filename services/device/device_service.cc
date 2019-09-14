@@ -145,11 +145,11 @@ void DeviceService::OnStart() {
   registry_.AddInterface<mojom::Fingerprint>(base::Bind(
       &DeviceService::BindFingerprintReceiver, base::Unretained(this)));
   registry_.AddInterface<mojom::GeolocationConfig>(base::BindRepeating(
-      &DeviceService::BindGeolocationConfigRequest, base::Unretained(this)));
+      &DeviceService::BindGeolocationConfigReceiver, base::Unretained(this)));
   registry_.AddInterface<mojom::GeolocationContext>(base::Bind(
       &DeviceService::BindGeolocationContextReceiver, base::Unretained(this)));
   registry_.AddInterface<mojom::GeolocationControl>(base::Bind(
-      &DeviceService::BindGeolocationControlRequest, base::Unretained(this)));
+      &DeviceService::BindGeolocationControlReceiver, base::Unretained(this)));
   registry_.AddInterface<mojom::PowerMonitor>(base::Bind(
       &DeviceService::BindPowerMonitorRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::PublicIpAddressGeolocationProvider>(
@@ -280,9 +280,9 @@ void DeviceService::BindFingerprintReceiver(
   Fingerprint::Create(std::move(receiver));
 }
 
-void DeviceService::BindGeolocationConfigRequest(
-    mojom::GeolocationConfigRequest request) {
-  GeolocationConfig::Create(std::move(request));
+void DeviceService::BindGeolocationConfigReceiver(
+    mojo::PendingReceiver<mojom::GeolocationConfig> receiver) {
+  GeolocationConfig::Create(std::move(receiver));
 }
 
 void DeviceService::BindGeolocationContextReceiver(
@@ -290,10 +290,10 @@ void DeviceService::BindGeolocationContextReceiver(
   GeolocationContext::Create(std::move(receiver));
 }
 
-void DeviceService::BindGeolocationControlRequest(
-    mojom::GeolocationControlRequest request) {
-  GeolocationProviderImpl::GetInstance()->BindGeolocationControlRequest(
-      std::move(request));
+void DeviceService::BindGeolocationControlReceiver(
+    mojo::PendingReceiver<mojom::GeolocationControl> receiver) {
+  GeolocationProviderImpl::GetInstance()->BindGeolocationControlReceiver(
+      std::move(receiver));
 }
 
 void DeviceService::BindPowerMonitorRequest(

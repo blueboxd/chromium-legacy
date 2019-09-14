@@ -7,6 +7,7 @@
 
 #include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
@@ -70,6 +71,12 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationView
   void SetExpanded(bool expanded);
   void UpdateCornerRadius(int top_radius, int bottom_radius);
 
+  // When |forced_expanded_state| has a value, the notification will be forced
+  // into that expanded state and the user won't be given a button to toggle the
+  // expanded state. Subsequent |SetExpanded()| calls will be ignored until
+  // |SetForcedExpandedState(nullptr)| is called.
+  void SetForcedExpandedState(bool* forced_expanded_state);
+
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
@@ -120,6 +127,9 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationView
 
   // Whether this notification is expanded or not.
   bool expanded_ = false;
+
+  // Used to force the notification to remain in a specific expanded state.
+  base::Optional<bool> forced_expanded_state_;
 
   // Set of enabled actions.
   std::set<media_session::mojom::MediaSessionAction> enabled_actions_;

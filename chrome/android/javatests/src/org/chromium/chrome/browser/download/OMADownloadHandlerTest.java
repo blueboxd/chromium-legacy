@@ -14,6 +14,7 @@ import android.support.test.filters.SmallTest;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,8 +30,12 @@ import org.chromium.chrome.browser.download.DownloadManagerBridge.DownloadQueryR
 import org.chromium.chrome.browser.download.OMADownloadHandler.OMAInfo;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.components.offline_items_collection.OfflineItemState;
+import org.chromium.components.offline_items_collection.UpdateDelta;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.io.ByteArrayInputStream;
@@ -49,8 +54,45 @@ public class OMADownloadHandlerTest {
     private static final String PENDING_OMA_DOWNLOADS = "PendingOMADownloads";
     private static final String INSTALL_NOTIFY_URI = "http://test/test";
 
+    private TestInfoBarController mTestInfoBarController;
+
+    @Before
+    public void before() {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mTestInfoBarController = new TestInfoBarController();
+            DownloadManagerService.getDownloadManagerService().setInfoBarControllerForTesting(
+                    mTestInfoBarController);
+        });
+    }
+
     private Context getTestContext() {
         return new AdvancedMockContext(InstrumentationRegistry.getTargetContext());
+    }
+
+    /**
+     * Mock implementation of the DownloadInfoBarController.
+     */
+    static class TestInfoBarController extends DownloadInfoBarController {
+        public boolean mDownloadStarted;
+        public OfflineItem mLastUpdatedItem;
+
+        public TestInfoBarController() {
+            super(false);
+        }
+
+        @Override
+        public void onDownloadStarted() {
+            mDownloadStarted = true;
+        }
+
+        @Override
+        public void onItemUpdated(OfflineItem item, UpdateDelta updateDelta) {
+            mLastUpdatedItem = item;
+        }
+
+        public OfflineItem getLastUpdatedItem() {
+            return mLastUpdatedItem;
+        }
     }
 
     /**
@@ -329,7 +371,8 @@ public class OMADownloadHandlerTest {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return snackbarController.mSucceeded;
+                OfflineItem item = mTestInfoBarController.getLastUpdatedItem();
+                return item != null && item.state == OfflineItemState.COMPLETE;
             }
         });
 
@@ -378,7 +421,7 @@ public class OMADownloadHandlerTest {
             CriteriaHelper.pollUiThread(new Criteria() {
                 @Override
                 public boolean isSatisfied() {
-                    return omaHandler.mDownloadId != 0;
+                    return omaHandler.mDownloadId != 0 && mTestInfoBarController.mDownloadStarted;
                 }
             });
 

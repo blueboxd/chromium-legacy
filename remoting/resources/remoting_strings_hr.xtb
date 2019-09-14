@@ -58,6 +58,7 @@
 <translation id="2509394361235492552">Povezano s računalom <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">NAPOMENA: kako biste osigurali dostupnost svih tipkovničkih prečaca, možete konfigurirati udaljenu radnu površinu Chrome da se otvara kao prozor.</translation>
 <translation id="2540992418118313681">Želite li dijeliti ovo računalo tako da ga neki drugi korisnik može vidjeti i upravljati njime?</translation>
+<translation id="254771646005658629">Dopusti udaljenim korisnicima da upravljaju ovim Macom</translation>
 <translation id="2579271889603567289">Host se srušio ili se nije pokrenuo.</translation>
 <translation id="2599300881200251572">Ta usluga omogućuje dolazne veze s klijenata Udaljene radne površine Chrome.</translation>
 <translation id="2647232381348739934">Usluga Chromoting</translation>
@@ -182,6 +183,11 @@
 <translation id="5419185025274123272">Vraćanje aplikacije na zadano nije uspjelo. I dalje možete poslati izvješće o programskim pogreškama.</translation>
 <translation id="5419418238395129586">Zadnji put online: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Host je isključen.</translation>
+<translation id="5463789431147491241">Da biste na ovom Macu upotrebljavali <ph name="PRODUCT_NAME" />, slijedite ove korake:
+
+Odaberite „<ph name="BUTTON_NAME" />” u nastavku. U postavkama za sigurnost i privatnost potvrdite okvir opcije „<ph name="SERVICE_SCRIPT_NAME" />”.
+
+Ako je opcija „'<ph name="SERVICE_SCRIPT_NAME" />” već potvrđena, poništite odabir i potom ga ponovo potvrdite.</translation>
 <translation id="5510035215749041527">Prekini vezu odmah</translation>
 <translation id="5593560073513909978">Usluga je privremeno nedostupna. Pokušajte ponovo kasnije.</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -298,12 +304,14 @@
 <translation id="837021510621780684">S ovog računala</translation>
 <translation id="8383794970363966105">Da biste upotrebljavali Chromoting, uređaju morate dodati Google račun.</translation>
 <translation id="8386846956409881180">Host je konfiguriran s nevažećim vjerodajnicama za OAuth.</translation>
+<translation id="8406498562923498210">Odaberite sesiju koju ćete pokrenuti u okruženju Udaljene radne površine Chrome. (Imajte na umu da neke vrste sesija možda ne podržavaju istovremeni rad na Udaljenoj radnoj površini Chrome i na lokalnoj konzoli.)</translation>
 <translation id="8428213095426709021">Postavke</translation>
 <translation id="8445362773033888690">Prikaz u Trgovini Google Play</translation>
 <translation id="8509907436388546015">Postupak integracije radne površine</translation>
 <translation id="8513093439376855948">Lokalni host za slanje poruka za upravljanje udaljenim hostom</translation>
 <translation id="8525306231823319788">Cijeli zaslon</translation>
 <translation id="8548209692293300397">Prethodno ste se prijavili kao <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Da biste pristupali svojim računalima putem tog računa, <ph name="LINK_BEGIN" />prijavite se na Google Chrome<ph name="LINK_END" /> tim računom i ponovo instalirajte Udaljenu radnu površinu Chrome.</translation>
+<translation id="858006550102277544">Komentiraj</translation>
 <translation id="8642984861538780905">Solidna</translation>
 <translation id="8712909229180978490">Ne vidim svoje spremljene datoteke na mreži na Google disku.</translation>
 <translation id="8743328882720071828">Želite li dopustiti da <ph name="CLIENT_USERNAME" /> vidi ovo računalo i upravlja njime?</translation>
@@ -321,6 +329,7 @@
 <translation id="9126115402994542723">Nemoj ponovo tražiti PIN prilikom povezivanja s tim hostom s ovog uređaja.</translation>
 <translation id="9149580767411232853">Zadrži cijelu udaljenu radnu površinu vidljivom</translation>
 <translation id="9149992051684092333">Da biste započeli dijeliti radnu površinu, pošaljite pristupni kôd u nastavku osobi koja će vam pomagati.</translation>
+<translation id="916856682307586697">Pokrenite zadanu Xsesiju</translation>
 <translation id="9188433529406846933">Autoriziraj</translation>
 <translation id="9213184081240281106">Nevažeća konfiguracija hosta.</translation>
 <translation id="951991426597076286">Odbijam</translation>

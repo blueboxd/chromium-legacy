@@ -36,6 +36,7 @@
 #include "ash/shelf/shelf_controller.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_navigation_widget.h"
+#include "ash/shelf/shelf_test_util.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shelf/shelf_widget.h"
@@ -2900,13 +2901,7 @@ TEST_F(ShelfLayoutManagerTest, ShelfItemRespondToGestureEvent) {
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->MoveMouseTo(0, 0);
 
-  // Add ShelfItem.
-  ShelfController* controller = Shell::Get()->shelf_controller();
-  const std::string app_id("app_id");
-  ShelfItem item;
-  item.type = TYPE_APP;
-  item.id = ShelfID(app_id);
-  controller->model()->Add(item);
+  ShelfTestUtil::AddAppShortcut("app_id", TYPE_APP);
 
   // Turn on the auto-hide mode for shelf. Check the initial states.
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
@@ -3350,13 +3345,7 @@ TEST_F(ShelfLayoutManagerTest, ShelfRemainsCenteredOnSecondDisplay) {
       display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]);
   EXPECT_NE(display_1, display_2);
 
-  // Add an app shortcut.
-  ShelfController* controller = Shell::Get()->shelf_controller();
-  const std::string app_id("app_id");
-  ShelfItem item;
-  item.type = TYPE_PINNED_APP;
-  item.id = ShelfID(app_id);
-  controller->model()->Add(item);
+  ShelfTestUtil::AddAppShortcut("app_id", TYPE_PINNED_APP);
   gfx::Point app_center_1 = shelf_1->GetShelfViewForTesting()
                                 ->first_visible_button_for_testing()
                                 ->bounds()
@@ -3385,11 +3374,8 @@ TEST_F(ShelfLayoutManagerTest, ShelfShowsPinnedAppsOnOtherDisplays) {
   auto add_app = []() {
     ShelfController* controller = Shell::Get()->shelf_controller();
     int n_apps = controller->model()->item_count();
-    const std::string app_id("app_id_" + base::NumberToString(n_apps));
-    ShelfItem item;
-    item.type = TYPE_PINNED_APP;
-    item.id = ShelfID(app_id);
-    controller->model()->Add(item);
+    ShelfTestUtil::AddAppShortcut("app_id_" + base::NumberToString(n_apps),
+                                  TYPE_PINNED_APP);
   };
 
   // Keep this low so that all apps fit at the center of the screen on all

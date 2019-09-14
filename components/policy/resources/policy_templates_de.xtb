@@ -477,10 +477,6 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
       Wenn für die Richtlinie eine gültige URL angegeben ist, lädt <ph name="PRODUCT_NAME" /> die Websiteliste von dieser URL herunter und wendet die Regeln so an, als wären sie mit der Richtlinie "<ph name="SITELIST_POLICY_NAME" />" konfiguriert worden.
 
       Weitere Informationen zur Richtlinie "<ph name="IEEM_SITELIST_POLICY" />" von Internet Explorer finden Sie unter https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
-<translation id="1839060937202387559">Sie können Hardwarestatistiken und Kennzeichnungen für Speichergeräte melden.
-
-      Wird die Richtlinie auf "false" gesetzt, werden keine Statistiken gemeldet.
-      Wird die Richtlinie auf "true" gesetzt oder nicht konfiguriert, werden Statistiken gemeldet.</translation>
 <translation id="1843117931376765605">Aktualisierungsrate für Nutzerrichtlinien</translation>
 <translation id="1844620919405873871">Konfiguriert Richtlinien zum schnellen Entsperren.</translation>
 <translation id="1845405905602899692">Kioskeinstellungen</translation>
@@ -3281,17 +3277,6 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 <translation id="7049373494483449255">Ermöglicht es <ph name="PRODUCT_NAME" />, Dokumente zum Drucken an <ph name="CLOUD_PRINT_NAME" /> zu senden. Hinweis: Dies wirkt sich nur auf die <ph name="CLOUD_PRINT_NAME" />-Unterstützung in <ph name="PRODUCT_NAME" /> aus. Die Richtlinie verhindert nicht, dass Nutzer Druckaufträge auf Websites geben. Wenn diese Einstellung aktiviert oder nicht konfiguriert ist, können Nutzer im <ph name="PRODUCT_NAME" />-Druckdialog über <ph name="CLOUD_PRINT_NAME" /> drucken. Sollte die Einstellung deaktiviert sein, können Nutzer im <ph name="PRODUCT_NAME" />-Druckdialog über <ph name="CLOUD_PRINT_NAME" /> nicht drucken.</translation>
 <translation id="7053678646221257043">Bei Aktivierung erzwingt diese Richtlinie, dass die Lesezeichen vom aktuellen Standardbrowser importiert werden. Wenn Sie deaktiviert ist, werden keine Lesezeichen importiert. Sollte Sie nicht konfiguriert sein, wird der Nutzer gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
 <translation id="7063895219334505671">Pop-ups auf diesen Websites zulassen</translation>
-<translation id="706568410943497889">
-      Wenn diese Richtlinie auf "true" gesetzt ist, darf <ph name="PRODUCT_NAME" /> WebRTC-Ereignisprotokolle aus Google-Diensten, wie z. B. Hangouts Meet, speichern und die Protokolle bei Google hochladen.
-
-      Ist die Richtlinie auf "false" gesetzt oder nicht festgelegt, darf <ph name="PRODUCT_NAME" /> solche Protokolle nicht speichern oder hochladen.
-
-      Diese Protokolle enthalten Diagnoseinformationen, die bei der Fehlerbehebung bei Audio- oder Videoanrufen in Chrome hilfreich sein können. Dazu zählen die Uhrzeit und die Größe gesendeter und empfangener RTP-Pakete, Feedback zur Auslastung des Netzwerks und Metadaten zur Länge und Qualität von Audio- und Videoframes. Die Protokolle enthalten keine Audio- oder Videoinhalte aus dem Anruf.
-
-      Das Erfassen dieser Daten kann nur von den Google-Webdiensten ausgelöst werden, etwa von Google Hangouts oder Hangouts Meet.
-
-      Google kann diese Protokolle anhand einer Sitzungs-ID mit anderen Protokollen verknüpfen, die vom Google-Dienst selbst erstellt wurden. Dies dient dazu, Fehler leichter zu beheben.
-      </translation>
 <translation id="706669471845501145">Anzeige von Desktop-Benachrichtigungen durch Websites zulassen</translation>
 <translation id="7068108874199666656">Diese Richtlinie ermöglicht, Netzwerkkonfigurationen für alle Nutzer eines <ph name="PRODUCT_OS_NAME" />-Geräts zu übernehmen. Die Netzwerkkonfiguration ist ein String im JSON-Format, der der Definition des Open Network Configuration-Formats entspricht.</translation>
 <translation id="7070525176564511548">Passworteingabe wöchentlich erforderlich (alle 168 Stunden)</translation>
@@ -3972,10 +3957,6 @@ Unter Windows ist es empfehlenswert, Richtlinien über Gruppenrichtlinienobjekte
           Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
 
           Ist die Richtlinie nicht konfiguriert, ist die Spracheingabe anfangs deaktiviert, kann jedoch vom Nutzer jederzeit aktiviert werden.</translation>
-<translation id="8292322992383748446">Sie können Hardwarestatistiken für SoC-Komponenten melden.
-
-      Wird die Richtlinie auf "false" gesetzt, werden keine Statistiken gemeldet.
-      Wird die Richtlinie auf "true" gesetzt oder nicht konfiguriert, werden Statistiken gemeldet.</translation>
 <translation id="829337533107201925">Ist diese Richtlinie aktiviert, werden Richtlinien aus atomischen Gruppen, die eine andere Quelle als die Quelle mit der höchsten Priorität der entsprechenden Gruppe haben, ignoriert.
 
       Wenn die Richtlinie deaktiviert ist, werden Richtlinien nicht aufgrund ihrer Quelle ignoriert. Sie werden dann nur ignoriert, wenn ein Konflikt besteht und sie nicht die höchste Priorität haben.
@@ -4011,10 +3992,6 @@ Unter Windows ist es empfehlenswert, Richtlinien über Gruppenrichtlinienobjekte
 <translation id="8367209241899435947">Chrome Cleanup Tool unter Windows aktivieren</translation>
 <translation id="8369602308428138533">Verzögerung für die Bildschirmabschaltung im Netzbetrieb</translation>
 <translation id="8371178326720637170">Ermöglicht verwalteten Erweiterungen, die Enterprise Hardware Platform API zu verwenden</translation>
-<translation id="8374747520743832795">Sie können Hardwarestatistiken und Kennzeichnungen im Zusammenhang mit der Stromversorgung melden.
-
-      Wird die Richtlinie auf "false" gesetzt, werden keine Statistiken gemeldet.
-      Wird die Richtlinie auf "true" gesetzt oder nicht konfiguriert, werden Statistiken gemeldet.</translation>
 <translation id="8380490658357556620">Ermöglicht den Einsatz von Relayservern, wenn Remote-Clients versuchen, eine Verbindung zu diesem Computer herzustellen.
 
           Ist diese Einstellung aktiviert, können Remote-Clients über Relayserver eine Verbindung zu diesem Computer herstellen, sofern keine direkte Verbindung verfügbar ist, zum Beispiel aufgrund von Firewallbeschränkungen.

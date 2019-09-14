@@ -58,6 +58,7 @@
 <translation id="2509394361235492552">Conectado a <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">NOTA: Para asegurarte de que todas las combinaciones de teclas para acceso directo estén disponibles, puedes configurar Escritorio remoto de Chrome en "Abrir como ventana".</translation>
 <translation id="2540992418118313681">¿Quieres compartir esta computadora con otro usuario para que la vea y la controle?</translation>
+<translation id="254771646005658629">Permite que los usuarios remotos controlen esta Mac</translation>
 <translation id="2579271889603567289">El host se bloqueó o no pudo iniciarse.</translation>
 <translation id="2599300881200251572">Este servicio permite conexiones entrantes de los clientes del Escritorio remoto de Chrome.</translation>
 <translation id="2647232381348739934">Servicio de Chromoting</translation>
@@ -182,6 +183,11 @@
 <translation id="5419185025274123272">No se pudo restablecer la aplicación. Puedes enviar un informe de errores.</translation>
 <translation id="5419418238395129586">Última conexión: <ph name="DATE" /></translation>
 <translation id="544077782045763683">El host se cerró.</translation>
+<translation id="5463789431147491241">Para usar <ph name="PRODUCT_NAME" /> en esta Mac, sigue estos pasos:
+
+Selecciona el botón "<ph name="BUTTON_NAME" />" que se encuentra a continuación. En las preferencias de Seguridad y privacidad, marca la casilla que aparece junto a "<ph name="SERVICE_SCRIPT_NAME" />".
+
+Si ya está seleccionada la opción "<ph name="SERVICE_SCRIPT_NAME" />", desmárcala y vuelve a marcarla.</translation>
 <translation id="5510035215749041527">Desconectar ahora</translation>
 <translation id="5593560073513909978">El servicio no está disponible temporalmente. Vuelve a intentarlo más tarde.</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -298,12 +304,14 @@
 <translation id="837021510621780684">Desde esta computadora</translation>
 <translation id="8383794970363966105">Para utilizar Chromoting, debes agregar una cuenta de Google en el dispositivo.</translation>
 <translation id="8386846956409881180">El host está configurado con credenciales OAuth que no son válidas.</translation>
+<translation id="8406498562923498210">Selecciona la sesión que quieras ejecutar en el entorno del Escritorio remoto de Chrome. (Ten en cuenta que algunos tipos de sesión no son compatibles con la ejecución simultánea en el Escritorio remoto de Chrome y la consola local).</translation>
 <translation id="8428213095426709021">Configuración</translation>
 <translation id="8445362773033888690">Ver en Google Play Store</translation>
 <translation id="8509907436388546015">Proceso de integración de escritorio</translation>
 <translation id="8513093439376855948">Host de mensajería nativa para administración de host remota</translation>
 <translation id="8525306231823319788">Pantalla completa</translation>
 <translation id="8548209692293300397">Accediste previamente como <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Para acceder a las computadoras en esa cuenta, <ph name="LINK_BEGIN" />accede a Google Chrome<ph name="LINK_END" /> con esa cuenta y vuelve a instalar Escritorio remoto de Chrome.</translation>
+<translation id="858006550102277544">Comentario</translation>
 <translation id="8642984861538780905">Aceptable</translation>
 <translation id="8712909229180978490">No puedo ver mis archivos guardados en línea en Google Drive.</translation>
 <translation id="8743328882720071828">¿Deseas permitir que <ph name="CLIENT_USERNAME" /> vea y controle tu computadora?</translation>
@@ -321,6 +329,7 @@
 <translation id="9126115402994542723">No volver a pedir un PIN al conectarse a este host desde este dispositivo</translation>
 <translation id="9149580767411232853">Mantiene todo el escritorio remoto visible</translation>
 <translation id="9149992051684092333">Para comenzar a compartir tu escritorio, proporciona el código de acceso que aparece a continuación a la persona que te asistirá.</translation>
+<translation id="916856682307586697">Iniciar la XSession predeterminada</translation>
 <translation id="9188433529406846933">Autorizar</translation>
 <translation id="9213184081240281106">Configuración del host no válida</translation>
 <translation id="951991426597076286">Rechazar</translation>

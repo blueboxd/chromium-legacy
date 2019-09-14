@@ -76,6 +76,28 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   // Called when tablet mode starts and ends.
   void OnTabletModeChanged(bool started);
 
+  // Calculates the apps container or apps grid margin depending on the
+  // available content bounds, and search box size (the later is not used
+  // if |for_full_container_bounds| is false).
+  // |available_bounds| - The bounds available to lay out either full apps
+  //      container or apps grid (depending on |for_full_contaier_bounds|).
+  // |search_box_size| - The expected search box size. Used to determine the
+  //      the amount of space in apps container available to the apps grid
+  //      (if calaulating margins for apps grid, |available_bounds| should
+  //      not contain the search box, so this value will not be used in that
+  //      case).
+  // |for_full_container_bounds| - Whether the bounds are being calculated
+  //      for the whole apps container, or just the apps grid. It should be true
+  //      iff app_list_features::IsScalableAppListEnabled().
+  //
+  // NOTE: This should not call into ContentsView::GetSearchBoxBounds*()
+  // methods, as CalculateMarginsForAvailableBounds is used to calculate the
+  // search box bounds.
+  const gfx::Insets& CalculateMarginsForAvailableBounds(
+      const gfx::Rect& available_bounds,
+      const gfx::Size& search_box_size,
+      bool for_full_container_bounds);
+
   // views::View overrides:
   void Layout() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
@@ -108,8 +130,9 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
     SHOW_ITEM_REPARENT,
   };
 
-  // Gets the suggestion chips container fullscreen Y coordinate.
-  int GetSuggestionChipContainerFullscreenY() const;
+  // Returns the AppListConfig for the app list view this AppsContainerView
+  // belongs to.
+  const AppListConfig& GetAppListConfig() const;
 
   void SetShowState(ShowState show_state, bool show_apps_with_animation);
 
@@ -117,13 +140,21 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   // true. This is used to trap focus within the folder when it is opened.
   void DisableFocusForShowingActiveFolder(bool disabled);
 
+  // Gets the suggestion chips container top margin for the app list transition
+  // progress.
+  int GetSuggestionChipContainerTopMargin(float progress) const;
+
   // Returns expected suggestion chip container's y position based on the app
   // list transition progress.
   int GetExpectedSuggestionChipY(float progress);
 
-  // Returns true if columns and rows number of |apps_grid_view_| should be
-  // switched.
-  bool ShouldSwitchColsAndRows() const;
+  struct GridLayout {
+    int columns;
+    int rows;
+  };
+  // Returns the number of columns and rows |apps_grid_view_| should display,
+  // depending on the current display work area size.
+  GridLayout CalculateGridLayout() const;
 
   ContentsView* contents_view_;  // Not owned.
 
@@ -140,6 +171,17 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   // view. This is used in dragging to avoid duplicate calculation of apps grid
   // view's y position.
   int chip_grid_y_distance_ = 0;
+
+  struct CachedContainerMargins {
+    gfx::Size bounds_size;
+    gfx::Size search_box_size;
+    gfx::Insets margins;
+  };
+  // The last result returned by CalculateMarginsForAvailableBounds() -
+  // subsequent calls to that method will return the result cached in
+  // |cached_container_margins_|, provided the method arguments match the cached
+  // arguments (otherwise the margins will be recalculated).
+  CachedContainerMargins cached_container_margins_;
 
   DISALLOW_COPY_AND_ASSIGN(AppsContainerView);
 };

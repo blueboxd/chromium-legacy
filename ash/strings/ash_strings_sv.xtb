@@ -104,7 +104,6 @@
 <translation id="2359808026110333948">Fortsätt</translation>
 <translation id="2365393535144473978">Om du aktiverar mobildata aktiveras Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
-<translation id="239188844683466770">Aktivera och inaktivera Stör ej</translation>
 <translation id="2412593942846481727">Det finns en uppdatering</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> är en hanterad session som hanteras av <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Vänsterklicka</translation>
@@ -224,6 +223,7 @@
 <translation id="4181841719683918333">Språk</translation>
 <translation id="4195877955194704651">Knapp för Automatiska klick</translation>
 <translation id="4217571870635786043">Diktering</translation>
+<translation id="421885205185866088">Pinkod till smartkort för <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Visa aviseringsinställningar. Aviseringar har inaktiverats</translation>
 <translation id="4269883910223712419">Enhetens administratör kan</translation>
@@ -239,6 +239,7 @@
 <translation id="4379531060876907730">Här är dina verktyg för e-penna</translation>
 <translation id="4389184120735010762">Du tryckte på kortkommandot för dockad skärmförstoring. Vill du aktivera funktionen?</translation>
 <translation id="4421231901400348175">Dela kontroll över skärmen med <ph name="HELPER_NAME" /> via Fjärrhjälp.</translation>
+<translation id="4430019312045809116">Volym</translation>
 <translation id="4450893287417543264">Visa inte igen</translation>
 <translation id="4477350412780666475">Nästa spår</translation>
 <translation id="4479639480957787382">Ethernet</translation>

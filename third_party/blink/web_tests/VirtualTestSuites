@@ -1128,5 +1128,10 @@
     "prefix": "json-modules",
     "base": "external/wpt/html/semantics/scripting-1/the-script-element/json-module",
     "args": ["--enable-blink-features=JSONModules"]
+  },
+  {
+    "prefix": "out-of-blink-frame-ancestors",
+    "base": "external/wpt/content-security-policy/frame-ancestors",
+    "args": ["--enable-features=OutOfBlinkFrameAncestors"]
   }
 ]

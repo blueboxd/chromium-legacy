@@ -150,7 +150,7 @@ class AutocompleteHistoryManagerTest : public testing::Test {
                          date_last_used);
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   scoped_refptr<MockWebDataService> web_data_service_;
   std::unique_ptr<AutocompleteHistoryManager> autocomplete_manager_;
   std::unique_ptr<PrefService> prefs_;

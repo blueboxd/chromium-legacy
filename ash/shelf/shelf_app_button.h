@@ -88,6 +88,9 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton {
   // Update button state from ShelfItem.
   void ReflectItemStatus(const ShelfItem& item);
 
+  // Returns whether the icon size is up to date.
+  bool IsIconSizeCurrent();
+
  protected:
   // ui::EventHandler overrides:
   void OnGestureEvent(ui::GestureEvent* event) override;

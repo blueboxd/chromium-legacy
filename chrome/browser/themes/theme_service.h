@@ -311,6 +311,13 @@ class ThemeService : public content::NotificationObserver,
 
   bool DisableExtension(const std::string& extension_id);
 
+  // Given a theme property ID |id|, returns the corresponding omnibox color
+  // overridden by the system theme.  Returns base::nullopt if the color is not
+  // overridden, or if |id| does not correspond to an omnibox color.
+  base::Optional<SkColor> GetOmniboxColor(int id,
+                                          bool incognito,
+                                          bool* has_custom_color) const;
+
   ui::ResourceBundle& rb_;
   Profile* profile_;
 

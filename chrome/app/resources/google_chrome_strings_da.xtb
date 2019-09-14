@@ -43,6 +43,8 @@
 <translation id="1873233029667955273">Google Chrome er ikke din standardbrowser</translation>
 <translation id="1874309113135274312">Google Chrome beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome er forældet</translation>
+<translation id="1900795423379050516">Hvis en indstilling ikke vises på denne side, kan du kigge i <ph name="LINK_BEGIN" />
+      indstillingerne for Chrome-browseren<ph name="LINK_END" /></translation>
 <translation id="1915828456209461693">Der er en tilgængelig Chrome-opdatering, som anvendes, så snart du genstarter.</translation>
 <translation id="1919130412786645364">Tillad login i Chrome</translation>
 <translation id="2063848847527508675">Chrome OS skal genstartes, før opdateringen kan anvendes.</translation>
@@ -156,6 +158,8 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="5543953544073077331">Der kører andre kopier af Chrome. Luk dem for at fortsætte opdateringen.</translation>
 <translation id="556024056938947818">Google Chrome forsøger at vise adgangskoder.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
+<translation id="5657226924540934362">Hvis en indstilling ikke vises på denne side, kan du kigge i <ph name="LINK_BEGIN" />
+      indstillingerne for Chrome OS<ph name="LINK_END" /></translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> kan være skadelig, så Chrome har blokeret den.</translation>
 <translation id="5686916850681061684">Tilpas og administrer Google Chrome. Noget kræver din opmærksomhed – klik for at få oplysninger.</translation>
 <translation id="5690427481109656848">Google LLC</translation>

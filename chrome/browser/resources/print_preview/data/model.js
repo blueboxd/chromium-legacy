@@ -484,8 +484,8 @@ Polymer({
   observers: [
     'updateSettingsFromDestination_(destination.capabilities)',
     'updateSettingsAvailabilityFromDocumentSettings_(' +
-        'documentSettings.isModifiable, documentSettings.hasCssMediaStyles,' +
-        'documentSettings.hasSelection)',
+        'documentSettings.isModifiable, documentSettings.isPdf,' +
+        'documentSettings.hasCssMediaStyles, documentSettings.hasSelection)',
     'updateHeaderFooterAvailable_(' +
         'margins, settings.margins.value, ' +
         'settings.customMargins.value, settings.mediaSize.value)',
@@ -726,6 +726,9 @@ Polymer({
       return;
     }
 
+    this.setSettingPath_(
+        'pagesPerSheet.available',
+        this.documentSettings.isModifiable || this.documentSettings.isPdf);
     this.setSettingPath_(
         'margins.available', this.documentSettings.isModifiable);
     this.setSettingPath_(

@@ -27,7 +27,7 @@
 #include <algorithm>
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
-#include "third_party/blink/renderer/platform/wtf/dtoa/dtoa.h"
+#include "third_party/blink/renderer/platform/wtf/dtoa.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/text/case_map.h"

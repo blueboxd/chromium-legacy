@@ -58,6 +58,7 @@
 <translation id="2509394361235492552">已连接到“<ph name="HOSTNAME" />”</translation>
 <translation id="2512228156274966424">注意：为确保所有键盘快捷键都能正常使用，请将 Chrome 远程桌面配置为“在窗口中打开”。</translation>
 <translation id="2540992418118313681">您要与其他用户共享此计算机的查看和控制权限吗？</translation>
+<translation id="254771646005658629">允许远程用户控制此 Mac</translation>
 <translation id="2579271889603567289">主机已崩溃或未能顺利启动。</translation>
 <translation id="2599300881200251572">此服务允许来自 Chrome 远程桌面客户端的连接。</translation>
 <translation id="2647232381348739934">Chrome 远程访问服务</translation>
@@ -182,6 +183,11 @@
 <translation id="5419185025274123272">无法重置该应用。您仍可以发送错误报告。</translation>
 <translation id="5419418238395129586">上次在线日期：<ph name="DATE" /></translation>
 <translation id="544077782045763683">主机已关机。</translation>
+<translation id="5463789431147491241">要在此 Mac 上使用 <ph name="PRODUCT_NAME" />，请按以下步骤操作：
+
+选择下方的“<ph name="BUTTON_NAME" />”。在“安全性与隐私”偏好设置中，勾选“<ph name="SERVICE_SCRIPT_NAME" />”旁边的复选框。
+
+如果“<ph name="SERVICE_SCRIPT_NAME" />”已处于选中状态，请先取消选中，然后再次勾选。</translation>
 <translation id="5510035215749041527">立即断开</translation>
 <translation id="5593560073513909978">此服务暂时无法使用。请稍后再试。</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -298,12 +304,14 @@
 <translation id="837021510621780684">来自此计算机</translation>
 <translation id="8383794970363966105">要使用Chrome远程访问，您需要先为自己的设备添加一个Google帐号。</translation>
 <translation id="8386846956409881180">为主机指定的 OAuth 凭据无效。</translation>
+<translation id="8406498562923498210">请选择一个要在 Chrome 远程桌面环境下启动的会话。（注意：某些会话类型可能不支持同时在 Chrome 远程桌面和本地控制台运行。）</translation>
 <translation id="8428213095426709021">设置</translation>
 <translation id="8445362773033888690">在Google Play商店中查看</translation>
 <translation id="8509907436388546015">桌面集成进程</translation>
 <translation id="8513093439376855948">用于远程主机管理的本地消息传递主机</translation>
 <translation id="8525306231823319788">全屏</translation>
 <translation id="8548209692293300397">您之前曾使用 <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) 登录。要访问该帐号名下的计算机，请使用该帐号<ph name="LINK_BEGIN" />登录 Google Chrome<ph name="LINK_END" />，然后重新安装 Chrome 远程桌面。</translation>
+<translation id="858006550102277544">备注</translation>
 <translation id="8642984861538780905">一般</translation>
 <translation id="8712909229180978490">我无法在 Google 云端硬盘中在线查看自己保存的文件。</translation>
 <translation id="8743328882720071828">您要允许 <ph name="CLIENT_USERNAME" /> 查看和控制您的计算机吗？</translation>
@@ -321,6 +329,7 @@
 <translation id="9126115402994542723">从这台设备连接到此主机时不再要求输入PIN码。</translation>
 <translation id="9149580767411232853">使整个远程桌面都可见</translation>
 <translation id="9149992051684092333">要开始共享您的桌面，请将下面的访问代码提供给协助您的人员。</translation>
+<translation id="916856682307586697">启动默认的 XSession</translation>
 <translation id="9188433529406846933">授权</translation>
 <translation id="9213184081240281106">主机配置无效。</translation>
 <translation id="951991426597076286">拒绝</translation>

@@ -48,6 +48,8 @@ jumbo_static_library("core") {
       "autofill_payment_instrument.h",
       "basic_card_response.cc",
       "basic_card_response.h",
+      "payer_data.cc",
+      "payer_data.h",
       "payment_address.cc",
       "payment_address.h",
       "payment_instrument.cc",

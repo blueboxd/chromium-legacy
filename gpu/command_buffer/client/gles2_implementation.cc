@@ -1375,6 +1375,33 @@ void GLES2Implementation::DrawElementsImpl(GLenum mode,
   CheckGLError();
 }
 
+void GLES2Implementation::DrawElementsIndirect(GLenum mode,
+                                               GLenum type,
+                                               const void* offset) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glDrawElementsIndirect("
+                     << GLES2Util::GetStringDrawMode(mode) << ", "
+                     << GLES2Util::GetStringIndexType(type) << ", " << offset
+                     << ")");
+  if (!ValidateOffset("glDrawElementsIndirect",
+                      reinterpret_cast<GLintptr>(offset))) {
+    return;
+  }
+  // This is for WebGL 2.0 Compute which doesn't support client side arrays
+  if (vertex_array_object_manager_->bound_element_array_buffer() == 0) {
+    SetGLError(GL_INVALID_OPERATION, "glDrawElementsIndirect",
+               "No element array buffer");
+    return;
+  }
+  if (vertex_array_object_manager_->SupportsClientSideBuffers()) {
+    SetGLError(GL_INVALID_OPERATION, "glDrawElementsIndirect",
+               "Missing array buffer for vertex attribute");
+    return;
+  }
+  helper_->DrawElementsIndirect(mode, type, ToGLuint(offset));
+  CheckGLError();
+}
+
 void GLES2Implementation::Flush() {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glFlush()");
@@ -5203,6 +5230,25 @@ void GLES2Implementation::DrawArrays(GLenum mode, GLint first, GLsizei count) {
   }
   helper_->DrawArrays(mode, first, count);
   RestoreArrayBuffer(simulated);
+  CheckGLError();
+}
+
+void GLES2Implementation::DrawArraysIndirect(GLenum mode, const void* offset) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glDrawArraysIndirect("
+                     << GLES2Util::GetStringDrawMode(mode) << ", " << offset
+                     << ")");
+  if (!ValidateOffset("glDrawArraysIndirect",
+                      reinterpret_cast<GLintptr>(offset))) {
+    return;
+  }
+  // This is for WebGL 2.0 Compute which doesn't support client side arrays
+  if (vertex_array_object_manager_->SupportsClientSideBuffers()) {
+    SetGLError(GL_INVALID_OPERATION, "glDrawArraysIndirect",
+               "Missing array buffer for vertex attribute");
+    return;
+  }
+  helper_->DrawArraysIndirect(mode, ToGLuint(offset));
   CheckGLError();
 }
 

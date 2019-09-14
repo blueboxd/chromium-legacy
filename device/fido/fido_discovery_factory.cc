@@ -46,6 +46,10 @@ std::unique_ptr<FidoDiscoveryBase> CreateUsbFidoDiscovery(
 FidoDiscoveryFactory::FidoDiscoveryFactory() = default;
 FidoDiscoveryFactory::~FidoDiscoveryFactory() = default;
 
+void FidoDiscoveryFactory::ResetRequestState() {
+  request_state_ = {};
+}
+
 std::unique_ptr<FidoDiscoveryBase> FidoDiscoveryFactory::Create(
     FidoTransportProtocol transport,
     service_manager::Connector* connector) {
@@ -55,10 +59,13 @@ std::unique_ptr<FidoDiscoveryBase> FidoDiscoveryFactory::Create(
     case FidoTransportProtocol::kBluetoothLowEnergy:
       return std::make_unique<FidoBleDiscovery>();
     case FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy:
-      if (cable_data_.has_value() || qr_generator_key_.has_value()) {
+      if (request_state_.cable_data_.has_value() ||
+          request_state_.qr_generator_key_.has_value()) {
         return std::make_unique<FidoCableDiscovery>(
-            cable_data_.value_or(std::vector<CableDiscoveryData>()),
-            qr_generator_key_, cable_pairing_callback_);
+            request_state_.cable_data_.value_or(
+                std::vector<CableDiscoveryData>()),
+            request_state_.qr_generator_key_,
+            request_state_.cable_pairing_callback_);
       }
       return nullptr;
     case FidoTransportProtocol::kNearFieldCommunication:
@@ -81,14 +88,14 @@ std::unique_ptr<FidoDiscoveryBase> FidoDiscoveryFactory::Create(
 void FidoDiscoveryFactory::set_cable_data(
     std::vector<CableDiscoveryData> cable_data,
     base::Optional<QRGeneratorKey> qr_generator_key) {
-  cable_data_ = std::move(cable_data);
-  qr_generator_key_ = std::move(qr_generator_key);
+  request_state_.cable_data_ = std::move(cable_data);
+  request_state_.qr_generator_key_ = std::move(qr_generator_key);
 }
 
 void FidoDiscoveryFactory::set_cable_pairing_callback(
     base::RepeatingCallback<void(std::unique_ptr<CableDiscoveryData>)>
         pairing_callback) {
-  cable_pairing_callback_.emplace(std::move(pairing_callback));
+  request_state_.cable_pairing_callback_.emplace(std::move(pairing_callback));
 }
 
 #if defined(OS_WIN)
@@ -113,5 +120,8 @@ FidoDiscoveryFactory::MaybeCreateWinWebAuthnApiDiscovery() {
              : nullptr;
 }
 #endif  // defined(OS_WIN)
+
+FidoDiscoveryFactory::RequestState::RequestState() = default;
+FidoDiscoveryFactory::RequestState::~RequestState() = default;
 
 }  // namespace device

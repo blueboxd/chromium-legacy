@@ -332,6 +332,12 @@ void XRFrameProvider::ProcessScheduledFrame(
   }
 
   if (immersive_session_) {
+    // Prior to updating input source state, update the state needed to create
+    // presentation frame as newly created presentation frame will get passed to
+    // the input source select[/start/end] events.
+    immersive_session_->UpdatePresentationFrameState(
+        high_res_now_ms, getPoseMatrix(frame_pose_), frame_data);
+
     if (frame_pose_) {
       base::span<const device::mojom::blink::XRInputSourceStatePtr>
           input_states;
@@ -352,12 +358,11 @@ void XRFrameProvider::ProcessScheduledFrame(
 
     // Check if immersive session is still set as OnPoseReset may have allowed a
     // ForceEndSession to be triggered.
-    if (!immersive_session_)
+    if (!immersive_session_) {
       return;
+    }
 
     // If there's an immersive session active only process its frame.
-    std::unique_ptr<TransformationMatrix> pose_matrix =
-        getPoseMatrix(frame_pose_);
 #if DCHECK_IS_ON()
     // Sanity check: if drawing into a shared buffer, the optional mailbox
     // holder must be present. Exception is the first immersive frame after a
@@ -375,14 +380,8 @@ void XRFrameProvider::ProcessScheduledFrame(
     if (frame_data && frame_data->stage_parameters_updated) {
       immersive_session_->UpdateStageParameters(frame_data->stage_parameters);
     }
-    if (frame_data) {
-      immersive_session_->OnFrame(
-          high_res_now_ms, std::move(pose_matrix), buffer_mailbox_holder_,
-          frame_data->detected_planes_data, frame_data->anchors_data);
-    } else {
-      immersive_session_->OnFrame(high_res_now_ms, std::move(pose_matrix),
-                                  buffer_mailbox_holder_, nullptr, nullptr);
-    }
+
+    immersive_session_->OnFrame(high_res_now_ms, buffer_mailbox_holder_);
   } else {
     // In the process of fulfilling the frame requests for each session they are
     // extremely likely to request another frame. Work off of a separate list
@@ -398,6 +397,12 @@ void XRFrameProvider::ProcessScheduledFrame(
       // process anything further.
       if (session->ended())
         continue;
+
+      // Prior to updating input source state, update the state needed to create
+      // presentation frame as newly created presentation frame will get passed
+      // to the input source select[/start/end] events.
+      session->UpdatePresentationFrameState(
+          high_res_now_ms, getPoseMatrix(frame_pose_), frame_data);
 
       if (frame_pose_) {
         base::span<const device::mojom::blink::XRInputSourceStatePtr>
@@ -421,16 +426,7 @@ void XRFrameProvider::ProcessScheduledFrame(
       if (session->ended())
         continue;
 
-      std::unique_ptr<TransformationMatrix> pose_matrix =
-          getPoseMatrix(frame_pose_);
-      if (frame_data) {
-        session->OnFrame(high_res_now_ms, std::move(pose_matrix), base::nullopt,
-                         frame_data->detected_planes_data,
-                         frame_data->anchors_data);
-      } else {
-        session->OnFrame(high_res_now_ms, std::move(pose_matrix), base::nullopt,
-                         nullptr, nullptr);
-      }
+      session->OnFrame(high_res_now_ms, base::nullopt);
     }
 
     processing_sessions_.clear();

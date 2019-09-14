@@ -105,16 +105,12 @@ CGFloat const kInputAccessoryHeight = 44.0f;
                                   view);
 }
 
-- (void)unlockManualFallbackView {
-  [self.formSuggestionView resetContentInsetAndDelegate];
-}
-
 - (void)lockManualFallbackView {
   [self.formSuggestionView lockTrailingView];
 }
 
-- (void)resetManualFallbackIcons {
-  [self.manualFillAccessoryViewController resetAnimated:YES];
+- (void)reset {
+  [self resetAnimated:YES];
 }
 
 #pragma mark - FormInputAccessoryConsumer
@@ -151,8 +147,7 @@ CGFloat const kInputAccessoryHeight = 44.0f;
     // Restore the keyboard in these cases, but allow the user to return to see
     // the info in Manual Fallback.
     if (keyboardState.isPicker) {
-      [self.manualFillAccessoryViewController resetAnimated:NO];
-      [self unlockManualFallbackView];
+      [self resetAnimated:NO];
       [self.keyboardReplacementView removeFromSuperview];
       self.keyboardReplacementView = nil;
       return;
@@ -268,6 +263,12 @@ CGFloat const kInputAccessoryHeight = 44.0f;
 }
 
 #pragma mark - Private
+
+// Resets this view to its original state. Can be animated.
+- (void)resetAnimated:(BOOL)animated {
+  [self.formSuggestionView resetContentInsetAndDelegateAnimated:animated];
+  [self.manualFillAccessoryViewController resetAnimated:animated];
+}
 
 // Create formSuggestionView if not done yet.
 - (void)createFormSuggestionViewIfNeeded {

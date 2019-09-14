@@ -1652,7 +1652,10 @@ static LayoutUnit ComputeContentSize(
       break;
 
     LayoutUnit inline_size = line_info.Width();
-    DCHECK_EQ(inline_size, line_info.ComputeWidth().ClampNegativeToZero());
+    // Text measurement is done using floats which may introduce small rounding
+    // errors for near-saturated values.
+    DCHECK_EQ(inline_size.Round(),
+              line_info.ComputeWidth().ClampNegativeToZero().Round());
 
     for (auto* floating_object : floats_for_min_max) {
       DCHECK(floating_object->IsFloating());
@@ -1685,11 +1688,17 @@ static LayoutUnit ComputeContentSize(
   if (mode == NGLineBreakerMode::kMinContent) {
     *max_size_out = max_size_from_min_size.Finish(items_data.items.end());
     // Check the max size matches to the value computed from 2 pass.
-    DCHECK_EQ(**max_size_out,
-              ComputeContentSize(node, container_writing_mode, input,
-                                 NGLineBreakerMode::kMaxContent, max_size_cache,
-                                 nullptr))
-        << node.GetLayoutBox();
+#if DCHECK_IS_ON()
+    LayoutUnit content_size = ComputeContentSize(
+        node, container_writing_mode, input, NGLineBreakerMode::kMaxContent,
+        max_size_cache, nullptr);
+    bool values_might_be_saturated =
+        (*max_size_out)->MightBeSaturated() || content_size.MightBeSaturated();
+    if (!values_might_be_saturated) {
+      DCHECK_EQ((*max_size_out)->Round(), content_size.Round())
+          << node.GetLayoutBox();
+    }
+#endif
   }
 
   return result;

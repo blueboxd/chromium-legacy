@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/accessibility_tree_formatter.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/mhtml_generation_result.h"
 #include "content/public/browser/navigation_controller.h"
@@ -399,7 +400,10 @@ class WebContents : public PageNavigator,
 
   virtual void SetAccessibilityMode(ui::AXMode mode) = 0;
 
-  virtual base::string16 DumpAccessibilityTree(bool internal) = 0;
+  virtual base::string16 DumpAccessibilityTree(
+      bool internal,
+      std::vector<content::AccessibilityTreeFormatter::PropertyFilter>
+          property_filters) = 0;
 
   virtual const PageImportanceSignals& GetPageImportanceSignals() = 0;
 

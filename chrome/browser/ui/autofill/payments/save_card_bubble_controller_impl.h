@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/autofill/payments/save_card_ui.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/sync_utils.h"
 #include "components/security_state/core/security_state.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -57,9 +58,9 @@ class SaveCardBubbleControllerImpl
 
   // Sets up the controller and offers to upload the |card| to Google Payments.
   // |save_card_prompt_callback| will be invoked once the user makes a decision
-  // with respect to the offer-to-save prompt. The contents of |legal_message|
-  // will be displayed in the bubble. A textfield confirming the cardholder name
-  // will appear in the bubble if
+  // with respect to the offer-to-save prompt. The contents of
+  // |legal_message_lines| will be displayed in the bubble. A textfield
+  // confirming the cardholder name will appear in the bubble if
   // |options.should_request_name_from_user| is true. A pair of
   // dropdowns for entering the expiration date will appear in the bubble if
   // |options.should_request_expiration_date_from_user| is
@@ -71,7 +72,7 @@ class SaveCardBubbleControllerImpl
   // dynamic change form.
   void OfferUploadSave(
       const CreditCard& card,
-      std::unique_ptr<base::DictionaryValue> legal_message,
+      const LegalMessageLines& legal_message_lines,
       AutofillClient::SaveCreditCardOptions options,
       AutofillClient::UploadSaveCardPromptCallback save_card_prompt_callback);
 

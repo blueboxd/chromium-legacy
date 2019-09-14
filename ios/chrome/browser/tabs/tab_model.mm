@@ -31,6 +31,7 @@
 #import "ios/chrome/browser/chrome_url_util.h"
 #include "ios/chrome/browser/crash_loop_detection_util.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
+#import "ios/chrome/browser/main/browser_web_state_list_delegate.h"
 #import "ios/chrome/browser/metrics/tab_usage_recorder.h"
 #import "ios/chrome/browser/prerender/prerender_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
@@ -43,7 +44,6 @@
 #import "ios/chrome/browser/tabs/tab_model_list.h"
 #import "ios/chrome/browser/tabs/tab_model_selected_tab_observer.h"
 #import "ios/chrome/browser/tabs/tab_model_synced_window_delegate.h"
-#import "ios/chrome/browser/tabs/tab_model_web_state_list_delegate.h"
 #import "ios/chrome/browser/tabs/tab_parenting_observer.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
@@ -229,8 +229,9 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   // WebStateListObserverBridges.
   NSArray<id<WebStateListObserving>>* _retainedWebStateListObservers;
 
-  // The delegate for sync.
-  std::unique_ptr<TabModelSyncedWindowDelegate> _syncedWindowDelegate;
+  // The delegate for sync (the actual object will be owned by the observers
+  // vector, above).
+  TabModelSyncedWindowDelegate* _syncedWindowDelegate;
 
   // Counters for metrics.
   WebStateListMetricsObserver* _webStateListMetricsObserver;
@@ -267,10 +268,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 
 #pragma mark - Public methods
 
-- (TabModelSyncedWindowDelegate*)syncedWindowDelegate {
-  return _syncedWindowDelegate.get();
-}
-
 - (TabUsageRecorder*)tabUsageRecorder {
   return _tabUsageRecorder.get();
 }
@@ -296,7 +293,7 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 - (instancetype)initWithSessionService:(SessionServiceIOS*)service
                           browserState:(ios::ChromeBrowserState*)browserState {
   if ((self = [super init])) {
-    _webStateListDelegate = std::make_unique<TabModelWebStateListDelegate>();
+    _webStateListDelegate = std::make_unique<BrowserWebStateListDelegate>();
     _webStateList = std::make_unique<WebStateList>(_webStateListDelegate.get());
 
     _browserState = browserState;
@@ -313,8 +310,13 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
           _webStateList.get(),
           PrerenderServiceFactory::GetForBrowserState(browserState));
     }
-    _syncedWindowDelegate =
+    std::unique_ptr<TabModelSyncedWindowDelegate> syncedWindowDelegate =
         std::make_unique<TabModelSyncedWindowDelegate>(_webStateList.get());
+
+    // Keep a weak ref to the the window delegate, which is then moved into
+    // the web state list observers list.
+    _syncedWindowDelegate = syncedWindowDelegate.get();
+    _webStateListObservers.push_back(std::move(syncedWindowDelegate));
 
     // There must be a valid session service defined to consume session windows.
     DCHECK(service);

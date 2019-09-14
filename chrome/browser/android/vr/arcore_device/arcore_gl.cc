@@ -384,14 +384,6 @@ void ArCoreGl::GetFrameData(
   gpu::MailboxHolder buffer_holder =
       ar_image_transport_->TransferFrame(transfer_size_, uv_transform_);
 
-  if (pose) {
-    mojom::XRInputSourceStatePtr input_state = GetInputSourceState();
-    if (input_state) {
-      input_states_.push_back(std::move(input_state));
-      pose->input_state = std::move(input_states_);
-    }
-  }
-
   // Create the frame data to return to the renderer.
   frame_data->pose = std::move(pose);
   frame_data->buffer_holder = buffer_holder;
@@ -409,6 +401,7 @@ void ArCoreGl::GetFrameData(
   // Post a task to finish processing the frame so any calls to
   // RequestHitTest() that were made during this function, which can block
   // on the arcore_->Update() call above, can be processed in this frame.
+  // Additionally, this gives a chance for OnScreenTouch() tasks to run.
   gl_thread_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&ArCoreGl::ProcessFrame, weak_ptr_factory_.GetWeakPtr(),
@@ -639,6 +632,14 @@ void ArCoreGl::ProcessFrame(
 
   DCHECK(IsOnGlThread());
   DCHECK(is_initialized_);
+
+  if (frame_data->pose) {
+    mojom::XRInputSourceStatePtr input_state = GetInputSourceState();
+    if (input_state) {
+      input_states_.push_back(std::move(input_state));
+      frame_data->pose->input_state = std::move(input_states_);
+    }
+  }
 
   // The timing requirements for hit-test are documented here:
   // https://github.com/immersive-web/hit-test/blob/master/explainer.md#timing

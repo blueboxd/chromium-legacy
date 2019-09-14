@@ -40,7 +40,7 @@ class SplitCompatClassAdapter extends ClassVisitor {
             TypeUtils.getMethodDescriptor(MODULE_INSTALLER_CLASS_NAME);
     private static final String INIT_ACTIVITY_METHOD_NAME = "initActivity";
     private static final String INIT_ACTIVITY_DESCRIPTOR =
-            TypeUtils.getMethodDescriptor(VOID, CONTEXT);
+            TypeUtils.getMethodDescriptor(VOID, ANDROID_APP_ACTIVITY_CLASS_NAME);
 
     private boolean mShouldTransform;
 

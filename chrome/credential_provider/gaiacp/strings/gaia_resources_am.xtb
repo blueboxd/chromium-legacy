@@ -4,13 +4,20 @@
 <translation id="1337821341856692531">የእርስዎን አሁን ያለውን የ Windows የይለፍ ቃል ሳያስገቡ መቀጠል መልሶ ሊገኝ የማይችል የመረጃ መጥፋትን ሊያስከትል ይችል ይሆናል።</translation>
 <translation id="1383286653814676580">የGoogle ምስክርነት አቅራቢ መግቢያ ገጽን ለማሄድ ስራ ላይ ይውላል።</translation>
 <translation id="1894475569413661128">የስራ መለያዎን በመጠቀም በመለያ ይግቡ።</translation>
+<translation id="2329184763010379754">ይህን ኮምፒውተር የቆለፈው ተጠቃሚ ብቻ በመለያ እንዲገባ ይፈቀድለታል።</translation>
+<translation id="2398071111662077301">በእርስዎ Chrome ጭነት ላይ ባለ ችግር ምክንያት የGoogle በመለያ መግቢያ ማያ ገጽን መጫን አልተቻለም። የእርስዎን አስተዳዳሪ ያነጋግሩ</translation>
 <translation id="2469311484561825731">ወደ የስራ መለያዎ መግባት አልተሳካም። ኮምፒውተሩ የበይነመረብ ግንኙነት እንዳለው ያረጋግጡ፣ ከዚያ እንደገና ይሞክሩ።</translation>
+<translation id="2679096858700291438">ትክክል ያልሆነ የ Windows ይለፍ ቃልን አስገብተዋል። እባክዎ እንደገና ይሞክሩ።</translation>
+<translation id="2831078752570172210">የእርስዎ መለያ ተቆልፎ ወጥቷል። እባክዎ የእርስዎን የሥርዓት አስተዳዳሪ ያነጋግሩ።</translation>
+<translation id="2844349213149998955">በዚህ መሣሪያ ላይ የግል መለያ ጋር በመለያ መግባት አይፈቀድም። እባክዎ በሥራ መለያ ይግቡ።</translation>
 <translation id="3306357053520292004">በዚህ ኮምፒውተር ላይ ያለ ተጠቃሚ አስቀድሞ ይህን መለያ በመጠቀም ታክሏል። እባክዎ በተለየ መለያ ይግቡ።</translation>
 <translation id="3968372833844047539">Gsuite Enterprise ተጠቃሚዎች ብቻ በመለያ እንዲገቡ ይፈቀድላቸዋል።</translation>
 <translation id="4057329986137569701">አንድ ውስጣዊ ስህተት ተከስቷል።</translation>
 <translation id="4267670563222825190">ምንም የጎራ ተጠቃሚ ለእርስዎ መለያ ሊገኝ አልተቻለም። እባክዎ አስተዳዳሪዎን ያነጋግሩ።</translation>
 <translation id="4300229033992784001">የመለያዎ ይለፍ ቅቃል ተቀይሯል። የWindows መለያዎን ከስራ መለያዎ ጋር ለማሳመር እባክዎ የአሁኑ የWindows ይለፍ ቃልዎን ያስገቡ።</translation>
 <translation id="4706454071748629324">አዲስ ተጠቃሚን ማከል አልተቻለም። ይህ ኮምፒውተር የስራ መለያን በመጠቀም አንድ ተጠቃሚ ብቻ እንዲፈጠር ነው የሚፈቅደው።</translation>
+<translation id="6033715878377252112">Google ምስክርነት አቅራቢ ለ Windows አጋዥ</translation>
+<translation id="6149399665202317746">Google ምስክርነት አቅራቢ ለ Windows</translation>
 <translation id="6312494990035843744">በዚህ ጎራ ላይ በስራ መለያ መግባት አይፈቀድም። የተለየ መለያ ይሞክሩ።</translation>
 <translation id="6463752215771576050">ይህን ኮምፒውተር ለድርጅት አስተዳደር ማስመዝገብ አልተቻለም።  እባክዎ በተለየ የስራ መለያ ይግቡ።</translation>
 <translation id="6657585470893396449">የይለፍ ቃል፦</translation>
@@ -22,5 +29,7 @@
 <translation id="8639729688781680518">የ Windows ይለፍ ቃል ረስቼያለሁ</translation>
 <translation id="866458870819756755">ተጠቃሚ ሊፈጠር አልቻለም።</translation>
 <translation id="8875753657315897487">የስራ መለያዎን በመጠቀም በመለያ ይግቡ</translation>
+<translation id="8973975512230260387">ከፍለ ጊዜዎ ጊዜው አልፎበታል። የGoogle ሥራ መለያዎን በመጠቀም በመለያ ይግቡ።</translation>
+<translation id="9055998212250844221">በ Google ምስክርነት አቅራቢ ለ Windows የተፈጠረ የተጠቃሚ መለያ</translation>
 <translation id="9135619837062629367">በዚህ መለያ መግባት አይፈቀድም። የተለየ መለያ ይሞክሩ።</translation>
 </translationbundle>

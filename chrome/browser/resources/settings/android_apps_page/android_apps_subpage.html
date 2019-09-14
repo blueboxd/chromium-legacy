@@ -23,8 +23,15 @@
     </template>
 
     <template is="dom-if" if="[[allowRemove_(prefs.arc.enabled.*)]]">
-      <cr-link-row id="remove" class="hr" on-click="onRemoveTap_"
-          label="$i18n{androidAppsRemove}"></cr-link-row>
+      <div id="remove" class="settings-box">
+        <div id="androidRemoveLabel" class="start">
+            $i18n{androidAppsRemove}
+        </div>
+        <cr-button on-click="onRemoveTap_"
+          aria-labelledby="androidRemoveLabel">
+           $i18n{androidAppsRemoveButton}
+        </cr-button>
+      </div>
     </template>
 
     <!-- Confirm disable android apps dialog -->

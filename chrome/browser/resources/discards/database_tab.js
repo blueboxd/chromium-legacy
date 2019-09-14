@@ -7,10 +7,10 @@ cr.define('database_tab', function() {
 
   /**
    * Compares two db rows by their origin.
-   * @param {mojom.SiteCharacteristicsDatabaseEntry} a The first value being
-   *     compared.
-   * @param {mojom.SiteCharacteristicsDatabaseEntry} b The second value being
-   *     compared.
+   * @param {discards.mojom.SiteCharacteristicsDatabaseEntry} a The first value
+   *     being compared.
+   * @param {discards.mojom.SiteCharacteristicsDatabaseEntry} b The second value
+   *     being compared.
    * @return {number} A negative number if a < b, 0 if a == b, and a positive
    *     number if a > b.
    */
@@ -20,10 +20,10 @@ cr.define('database_tab', function() {
 
   /**
    * Compares two db rows by their dirty bit.
-   * @param {mojom.SiteCharacteristicsDatabaseEntry} a The first value being
-   *     compared.
-   * @param {mojom.SiteCharacteristicsDatabaseEntry} b The second value being
-   *     compared.
+   * @param {discards.mojom.SiteCharacteristicsDatabaseEntry} a The first value
+   *     being compared.
+   * @param {discards.mojom.SiteCharacteristicsDatabaseEntry} b The second value
+   *     being compared.
    * @return {number} A negative number if a < b, 0 if a == b, and a positive
    *     number if a > b.
    */
@@ -33,10 +33,10 @@ cr.define('database_tab', function() {
 
   /**
    * Compares two db rows by their last load time.
-   * @param {mojom.SiteCharacteristicsDatabaseEntry} a The first value being
-   *     compared.
-   * @param {mojom.SiteCharacteristicsDatabaseEntry} b The second value being
-   *     compared.
+   * @param {discards.mojom.SiteCharacteristicsDatabaseEntry} a The first value
+   *     being compared.
+   * @param {discards.mojom.SiteCharacteristicsDatabaseEntry} b The second value
+   *     being compared.
    * @return {number} A negative number if a < b, 0 if a == b, and a positive
    *     number if a > b.
    */
@@ -46,10 +46,10 @@ cr.define('database_tab', function() {
 
   /**
    * Compares two db rows by their CPU usage.
-   * @param {mojom.SiteCharacteristicsDatabaseEntry} a The first value being
-   *     compared.
-   * @param {mojom.SiteCharacteristicsDatabaseEntry} b The second value being
-   *     compared.
+   * @param {discards.mojom.SiteCharacteristicsDatabaseEntry} a The first value
+   *     being compared.
+   * @param {discards.mojom.SiteCharacteristicsDatabaseEntry} b The second value
+   *     being compared.
    * @return {number} A negative number if a < b, 0 if a == b, and a positive
    *     number if a > b.
    */
@@ -63,10 +63,10 @@ cr.define('database_tab', function() {
 
   /**
    * Compares two db rows by their memory usage.
-   * @param {mojom.SiteCharacteristicsDatabaseEntry} a The first value being
-   *     compared.
-   * @param {mojom.SiteCharacteristicsDatabaseEntry} b The second value being
-   *     compared.
+   * @param {discards.mojom.SiteCharacteristicsDatabaseEntry} a The first value
+   *     being compared.
+   * @param {discards.mojom.SiteCharacteristicsDatabaseEntry} b The second value
+   *     being compared.
    * @return {number} A negative number if a < b, 0 if a == b, and a positive
    *     number if a > b.
    */
@@ -82,10 +82,10 @@ cr.define('database_tab', function() {
 
   /**
    * Compares two db rows by their load duration.
-   * @param {mojom.SiteCharacteristicsDatabaseEntry} a The first value being
-   *     compared.
-   * @param {mojom.SiteCharacteristicsDatabaseEntry} b The second value being
-   *     compared.
+   * @param {discards.mojom.SiteCharacteristicsDatabaseEntry} a The first value
+   *     being compared.
+   * @param {discards.mojom.SiteCharacteristicsDatabaseEntry} b The second value
+   *     being compared.
    * @return {number} A negative number if a < b, 0 if a == b, and a positive
    *     number if a > b.
    */
@@ -101,8 +101,8 @@ cr.define('database_tab', function() {
 
   /**
    * @param {string} sortKey The sort key to get a function for.
-   * @return {function(mojom.SiteCharacteristicsDatabaseEntry,
-                       mojom.SiteCharacteristicsDatabaseEntry): number}
+   * @return {function(discards.mojom.SiteCharacteristicsDatabaseEntry,
+                       discards.mojom.SiteCharacteristicsDatabaseEntry): number}
    *     A comparison function that compares two tab infos, returns
    *     negative number if a < b, 0 if a == b, and a positive
    *     number if a > b.
@@ -194,7 +194,7 @@ Polymer({
   properties: {
     /**
      * List of database rows.
-     * @private {?Array<!mojom.SiteCharacteristicsDatabaseEntry>}
+     * @private {?Array<!discards.mojom.SiteCharacteristicsDatabaseEntry>}
      */
     rows_: {
       type: Array,
@@ -202,7 +202,7 @@ Polymer({
 
     /**
      * The database size response.
-     * @private {!mojom.SiteCharacteristicsDatabaseSize}
+     * @private {!discards.mojom.SiteCharacteristicsDatabaseSize}
      */
     size_: {
       type: Object,
@@ -227,7 +227,7 @@ Polymer({
   /** @private {!Object} */
   requestedOrigins_: {},
 
-  /** @private {?mojom.DiscardsDetailsProviderRemote} */
+  /** @private {?discards.mojom.DetailsProviderRemote} */
   discardsDetailsProvider_: null,
 
   /** @override */
@@ -399,7 +399,7 @@ Polymer({
   },
 
   /**
-   * @param {?mojom.SiteCharacteristicsFeature} feature The feature
+   * @param {?discards.mojom.SiteCharacteristicsFeature} feature The feature
    *     in question.
    * @return {string} A human-readable string representing the feature.
    * @private

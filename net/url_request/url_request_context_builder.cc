@@ -331,12 +331,6 @@ void URLRequestContextBuilder::set_host_resolver_factory(
   host_resolver_factory_ = factory;
 }
 
-void URLRequestContextBuilder::SetCreateLayeredNetworkDelegateCallback(
-    CreateLayeredNetworkDelegate create_layered_network_delegate_callback) {
-  create_layered_network_delegate_callback_ =
-      std::move(create_layered_network_delegate_callback);
-}
-
 void URLRequestContextBuilder::set_proxy_delegate(
     std::unique_ptr<ProxyDelegate> proxy_delegate) {
   proxy_delegate_ = std::move(proxy_delegate);
@@ -378,11 +372,7 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   }
 
   if (!network_delegate_)
-    network_delegate_.reset(new BasicNetworkDelegate);
-  if (create_layered_network_delegate_callback_) {
-    network_delegate_ = std::move(create_layered_network_delegate_callback_)
-                            .Run(std::move(network_delegate_));
-  }
+    network_delegate_ = std::make_unique<BasicNetworkDelegate>();
   storage->set_network_delegate(std::move(network_delegate_));
 
   if (net_log_) {

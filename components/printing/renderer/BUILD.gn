@@ -12,6 +12,7 @@ static_library("renderer") {
   deps = [
     "//base",
     "//components/printing/common",
+    "//components/printing/common:mojo_interfaces",
     "//components/resources",
     "//content/public/common",
     "//content/public/renderer",

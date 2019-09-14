@@ -26,7 +26,7 @@ class AccessibilityUI : public content::WebUIController {
 
 class AccessibilityUIMessageHandler : public content::WebUIMessageHandler {
  public:
-  AccessibilityUIMessageHandler();
+  explicit AccessibilityUIMessageHandler(bool improvements_enabled);
   ~AccessibilityUIMessageHandler() override;
 
   void RegisterMessages() override;
@@ -34,6 +34,8 @@ class AccessibilityUIMessageHandler : public content::WebUIMessageHandler {
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
+  bool improvements_enabled_;
+
   void ToggleAccessibility(const base::ListValue* args);
   void SetGlobalFlag(const base::ListValue* args);
   void RequestWebContentsTree(const base::ListValue* args);

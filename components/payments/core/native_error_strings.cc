@@ -99,6 +99,15 @@ const char kNotInitialized[] = "Not initialized.";
 
 const char kNotShown[] = "Not shown.";
 
+const char kPayerEmailEmpty[] =
+    "Payment app returned invalid response. Missing field \"payerEmail\".";
+
+const char kPayerNameEmpty[] =
+    "Payment app returned invalid response. Missing field \"payerName\".";
+
+const char kPayerPhoneEmpty[] =
+    "Payment app returned invalid response. Missing field \"payerPhone\".";
+
 const char kPaymentManifestCrossSiteRedirectNotAllowed[] =
     "Cross-site redirect from \"$1\" to \"$2\" not allowed for payment "
     "manifests.";
@@ -145,6 +154,12 @@ const char kPaymentHandlerInsecureNavigation[] =
 
 const char kSinglePaymentMethodNotSupportedFormat[] =
     "The payment method $ is not supported.";
+
+const char kShippingAddressInvalid[] =
+    "Payment app returned invalid shipping address in response.";
+
+const char kShippingOptionEmpty[] =
+    "Payment app returned invalid response. Missing field \"shipping option\".";
 
 }  // namespace errors
 }  // namespace payments

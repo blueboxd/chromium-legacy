@@ -9,6 +9,7 @@ cr.exportPath('print_preview');
  *   hasCssMediaStyles: boolean,
  *   hasSelection: boolean,
  *   isModifiable: boolean,
+ *   isPdf: boolean,
  *   isScalingDisabled: boolean,
  *   fitToPageScaling: number,
  *   pageCount: number,
@@ -48,6 +49,7 @@ Polymer({
           hasCssMediaStyles: false,
           hasSelection: false,
           isModifiable: true,
+          isPdf: false,
           isScalingDisabled: false,
           fitToPageScaling: 100,
           pageCount: 0,
@@ -113,13 +115,16 @@ Polymer({
   /**
    * Initializes the state of the data model.
    * @param {boolean} isModifiable Whether the document is modifiable.
+   * @param {boolean} isPdf Whether the document is PDF.
    * @param {string} title Title of the document.
    * @param {boolean} hasSelection Whether the document has user-selected
    *     content.
    */
-  init: function(isModifiable, title, hasSelection) {
+  init: function(isModifiable, isPdf, title, hasSelection) {
     this.isInitialized_ = true;
     this.set('documentSettings.isModifiable', isModifiable);
+    // TODO(crbug.com/702995): Remove once Flash is deprecated.
+    this.set('documentSettings.isPdf', isPdf);
     this.set('documentSettings.title', title);
     this.set('documentSettings.hasSelection', hasSelection);
   },

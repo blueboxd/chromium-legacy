@@ -208,6 +208,9 @@ void SharedProtoDatabase::Init(
     const std::string& client_db_id,
     SharedClientInitCallback callback,
     scoped_refptr<base::SequencedTaskRunner> callback_task_runner) {
+  // Try to create the db if any initialization request asked to do so.
+  create_if_missing_ = create_if_missing || create_if_missing_;
+
   switch (init_state_) {
     case InitState::kNotAttempted:
       outstanding_init_requests_.emplace(std::make_unique<InitRequest>(
@@ -215,8 +218,7 @@ void SharedProtoDatabase::Init(
 
       init_state_ = InitState::kInProgress;
       // First, try to initialize the metadata database.
-      InitMetadataDatabase(create_if_missing, 0 /* attempt */,
-                           false /* corruption */);
+      InitMetadataDatabase(0 /* attempt */, false /* corruption */);
       break;
 
     case InitState::kInProgress:
@@ -243,7 +245,7 @@ void SharedProtoDatabase::Init(
       break;
 
     case InitState::kNotFound:
-      if (create_if_missing) {
+      if (create_if_missing_) {
         // If the shared DB doesn't exist and we should create it if missing,
         // then we skip initializing the metadata DB and initialize the shared
         // DB directly.
@@ -251,7 +253,7 @@ void SharedProtoDatabase::Init(
         outstanding_init_requests_.emplace(std::make_unique<InitRequest>(
             std::move(callback), std::move(callback_task_runner),
             client_db_id));
-        InitDatabase(create_if_missing);
+        InitDatabase();
       } else {
         // If the shared DB doesn't exist and we shouldn't create it if missing,
         // then we run the callback with kInvalidOperation (which is not found).
@@ -284,12 +286,12 @@ void SharedProtoDatabase::ProcessInitRequests(Enums::InitStatus status) {
 // the event that the metadata DB is corrupt, at least one retry will be made
 // so that we create the DB from scratch again.
 // |corruption| lets us know whether the retries are because of corruption.
-void SharedProtoDatabase::InitMetadataDatabase(bool create_shared_db_if_missing,
-                                               int attempt,
-                                               bool corruption) {
+void SharedProtoDatabase::InitMetadataDatabase(int attempt, bool corruption) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(on_task_runner_);
 
   if (attempt >= kMaxInitMetaDatabaseAttempts) {
+    // TODO(crbug/1003951): |attempt| is always 0, need to save it and do the
+    // retry, or delete it.
     init_state_ = InitState::kFailure;
     init_status_ = Enums::InitStatus::kError;
     ProcessInitRequests(init_status_);
@@ -302,11 +304,10 @@ void SharedProtoDatabase::InitMetadataDatabase(bool create_shared_db_if_missing,
   metadata_db_wrapper_->Init(
       kMetadataDatabaseName, metadata_path, CreateSimpleOptions(),
       base::BindOnce(&SharedProtoDatabase::OnMetadataInitComplete, this,
-                     create_shared_db_if_missing, attempt, corruption));
+                     attempt, corruption));
 }
 
 void SharedProtoDatabase::OnMetadataInitComplete(
-    bool create_shared_db_if_missing,
     int attempt,
     bool corruption,
     bool success) {
@@ -325,11 +326,10 @@ void SharedProtoDatabase::OnMetadataInitComplete(
   metadata_db_wrapper_->GetEntry(
       std::string(kGlobalMetadataKey),
       base::BindOnce(&SharedProtoDatabase::OnGetGlobalMetadata, this,
-                     create_shared_db_if_missing, corruption));
+                     corruption));
 }
 
 void SharedProtoDatabase::OnGetGlobalMetadata(
-    bool create_shared_db_if_missing,
     bool corruption,
     bool success,
     std::unique_ptr<SharedDBMetadataProto> proto) {
@@ -337,7 +337,7 @@ void SharedProtoDatabase::OnGetGlobalMetadata(
   if (success && proto) {
     // It existed so let's update our internal |corruption_count_|
     metadata_ = std::move(proto);
-    InitDatabase(create_shared_db_if_missing);
+    InitDatabase();
     return;
   }
 
@@ -347,12 +347,10 @@ void SharedProtoDatabase::OnGetGlobalMetadata(
   metadata_->set_corruptions(corruption ? 1U : 0U);
   metadata_->clear_migration_status();
   CommitUpdatedGlobalMetadata(
-      base::BindOnce(&SharedProtoDatabase::OnFinishCorruptionCountWrite, this,
-                     create_shared_db_if_missing));
+      base::BindOnce(&SharedProtoDatabase::OnFinishCorruptionCountWrite, this));
 }
 
 void SharedProtoDatabase::OnFinishCorruptionCountWrite(
-    bool create_shared_db_if_missing,
     bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(on_task_runner_);
   // TODO(thildebr): Should we retry a few times if we fail this? It feels like
@@ -365,13 +363,13 @@ void SharedProtoDatabase::OnFinishCorruptionCountWrite(
     return;
   }
 
-  InitDatabase(create_shared_db_if_missing);
+  InitDatabase();
 }
 
-void SharedProtoDatabase::InitDatabase(bool create_shared_db_if_missing) {
+void SharedProtoDatabase::InitDatabase() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(on_task_runner_);
   auto options = CreateSimpleOptions();
-  options.create_if_missing = create_shared_db_if_missing;
+  options.create_if_missing = create_if_missing_;
   db_wrapper_->SetMetricsId(kSharedProtoDatabaseUmaName);
   // |db_wrapper_| uses the same SequencedTaskRunner that Init is called on,
   // so OnDatabaseInit will be called on the same sequence after Init.
@@ -379,10 +377,12 @@ void SharedProtoDatabase::InitDatabase(bool create_shared_db_if_missing) {
   // the InitState will be final after Init is called.
   db_wrapper_->InitWithDatabase(
       db_.get(), db_dir_, options, false /* destroy_on_corruption */,
-      base::BindOnce(&SharedProtoDatabase::OnDatabaseInit, this));
+      base::BindOnce(&SharedProtoDatabase::OnDatabaseInit, this,
+                     create_if_missing_));
 }
 
-void SharedProtoDatabase::OnDatabaseInit(Enums::InitStatus status) {
+void SharedProtoDatabase::OnDatabaseInit(bool create_if_missing,
+                                         Enums::InitStatus status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(on_task_runner_);
 
   // Update the corruption counter locally and in the database.
@@ -400,6 +400,16 @@ void SharedProtoDatabase::OnDatabaseInit(Enums::InitStatus status) {
     return;
   }
 
+  // If the previous initialization didn't create the database but a following
+  // request tries to create the db. Redo the initialization and create db.
+  if (create_if_missing_ && !create_if_missing &&
+      status == Enums::InitStatus::kInvalidOperation) {
+    DCHECK(init_state_ == InitState::kInProgress ||
+           init_state_ == InitState::kNotFound);
+    InitDatabase();
+    return;
+  }
+
   init_status_ = status;
 
   switch (status) {
@@ -407,6 +417,7 @@ void SharedProtoDatabase::OnDatabaseInit(Enums::InitStatus status) {
       init_state_ = InitState::kSuccess;
       break;
     case Enums::InitStatus::kInvalidOperation:
+      DCHECK(!create_if_missing);
       init_state_ = InitState::kNotFound;
       break;
     case Enums::InitStatus::kError:

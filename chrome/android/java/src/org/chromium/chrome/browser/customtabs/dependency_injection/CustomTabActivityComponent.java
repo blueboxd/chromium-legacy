@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.customtabs.dependency_injection;
 
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityCoordinator;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityClientConnectionKeeper;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TwaFinishHandler;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityLifecycleUmaTracker;
 import org.chromium.chrome.browser.customtabs.CustomTabBottomBarDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabCompositorContentInitializer;
@@ -49,6 +50,7 @@ public interface CustomTabActivityComponent extends ChromeActivityComponent {
     CustomTabCompositorContentInitializer resolveCompositorContentInitializer();
     CustomTabSessionHandler resolveSessionHandler();
     CustomTabActivityClientConnectionKeeper resolveConnectionKeeper();
+    TwaFinishHandler resolveTwaFinishHandler();
 
     CustomTabTabPersistencePolicy resolveTabPersistencePolicy(); // For testing
 }

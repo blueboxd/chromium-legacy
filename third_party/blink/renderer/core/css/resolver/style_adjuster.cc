@@ -417,8 +417,7 @@ static void AdjustStyleForDisplay(ComputedStyle& style,
   // setting of block-flow to anything other than TopToBottomWritingMode.
   // https://bugs.webkit.org/show_bug.cgi?id=46418 - Flexible box support.
   if (style.GetWritingMode() != WritingMode::kHorizontalTb &&
-      (style.Display() == EDisplay::kWebkitBox ||
-       style.Display() == EDisplay::kWebkitInlineBox)) {
+      style.IsDeprecatedWebkitBox()) {
     style.SetWritingMode(WritingMode::kHorizontalTb);
     style.UpdateFontOrientation();
   }

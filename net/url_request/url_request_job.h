@@ -104,10 +104,6 @@ class NET_EXPORT URLRequestJob {
   // more info.
   int Read(IOBuffer* buf, int buf_size);
 
-  // Stops further caching of this request, if any. For more info, see
-  // URLRequest::StopCaching().
-  virtual void StopCaching();
-
   // Get the number of bytes received from network. The values returned by this
   // will never decrease over the lifetime of the URLRequestJob.
   virtual int64_t GetTotalReceivedBytes() const;
@@ -395,11 +391,6 @@ class NET_EXPORT URLRequestJob {
   // Takes care of the notification initiated by OnDone() to avoid re-entering
   // the URLRequest::Delegate.
   void NotifyDone();
-
-  // Subclasses may implement this method to record packet arrival times.
-  // The default implementation does nothing.  Only invoked when bytes have been
-  // read since the last invocation.
-  virtual void UpdatePacketReadTimes();
 
   // Indicates that the job is done producing data, either it has completed
   // all the data or an error has been encountered. Set exclusively by

@@ -89,8 +89,9 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   size_t shared_buffer_page_size_kb() const override;
   perfetto::SharedMemoryArbiter* GetInProcessShmemArbiter() override;
 
-  void BindClientAndHostPipesForTesting(mojom::ProducerClientRequest,
-                                        mojom::ProducerHostPtrInfo);
+  void BindClientAndHostPipesForTesting(
+      mojom::ProducerClientRequest,
+      mojo::PendingRemote<mojom::ProducerHost>);
   void ResetSequenceForTesting();
 
  protected:

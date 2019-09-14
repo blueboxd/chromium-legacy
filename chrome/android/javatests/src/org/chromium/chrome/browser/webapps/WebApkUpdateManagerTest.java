@@ -165,9 +165,9 @@ public class WebApkUpdateManagerTest {
                     creationData.isPrimaryIconMaskable, false /* isSplashIconMaskable */, "",
                     WebApkVersion.REQUEST_UPDATE_FOR_SHELL_APK_VERSION, creationData.manifestUrl,
                     creationData.startUrl, WebApkDistributor.BROWSER,
-                    creationData.iconUrlToMurmur2HashMap, null, null /*shareTargetActivityName*/,
-                    false /* forceNavigation */, false /* isSplashProvidedByWebApk */,
-                    null /* shareData */, 1 /* webApkVersionCode */
+                    creationData.iconUrlToMurmur2HashMap, null, false /* forceNavigation */,
+                    false /* isSplashProvidedByWebApk */, null /* shareData */,
+                    1 /* webApkVersionCode */
 
             );
             updateManager.updateIfNeeded(mTab, info);

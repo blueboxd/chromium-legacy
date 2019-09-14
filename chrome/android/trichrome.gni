@@ -71,8 +71,7 @@ template("trichrome_library_apk_tmpl") {
       r_java_root_package_name = "trichrome_lib"
       app_as_shared_lib = true
     }
-    use_chromium_linker = chromium_linker_supported
-    use_modern_linker = use_chromium_linker
+    use_chromium_linker = false
 
     uncompress_shared_libraries = true
     uncompress_dex = use_uncompressed_dex

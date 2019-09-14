@@ -21,7 +21,6 @@
 <translation id="1146678959555564648">Pokreni VR</translation>
 <translation id="116280672541001035">Iskorišteno</translation>
 <translation id="1171770572613082465">Dodirom na gumb "Najpopularnije web-lokacije" pogledajte popularne web-lokacije</translation>
-<translation id="1172593791219290334">Početna stranica</translation>
 <translation id="1173894706177603556">Preimenuj</translation>
 <translation id="1175310183703641346">Vaše oznake, povijest, zaporke i druge stavke više se neće sinkronizirati s vašim Google računom</translation>
 <translation id="1178581264944972037">Pauziraj</translation>
@@ -42,6 +41,7 @@
 <translation id="1258753120186372309">Googleov doodle logotip: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Pretraživanje i istraživanje</translation>
 <translation id="1264974993859112054">Sport</translation>
+<translation id="1266864766717917324">Nije moguće podijeliti <ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">Zaustavi</translation>
 <translation id="1283039547216852943">Dodirnite za proširivanje</translation>
 <translation id="1285320974508926690">Nikad nemoj prevoditi ovu web-lokaciju</translation>
@@ -71,6 +71,7 @@
 <translation id="1430915738399379752">Ispis</translation>
 <translation id="1445680696957526815">Chromeove komponente nisu međusobno kompatibilne. Chrome se možda nadograđuje, pa pokušajte ponovo za nekoliko minuta. Ako se problem nastavi, pokušajte deinstalirati i ponovo instalirati Chrome.</translation>
 <translation id="1446450296470737166">Omogući potpuni nadzor za MIDI</translation>
+<translation id="1450753235335490080">Nije moguće dijeliti <ph name="CONTENT_TYPE" /></translation>
 <translation id="145097072038377568">Isključeno u postavkama Androida</translation>
 <translation id="1477626028522505441">Preuzimanje datoteke <ph name="FILE_NAME" /> nije uspjelo zbog poteškoća s poslužiteljem.</translation>
 <translation id="1501480321619201731">Izbriši grupu</translation>
@@ -153,6 +154,7 @@
 <translation id="2049961518639794558">Promjena datotečnog nastavka može dovesti do neočekivanog ponašanja i oštetiti uređaj.</translation>
 <translation id="2056878612599315956">Web-lokacija pauzirana</translation>
 <translation id="2063713494490388661">Dodirnite za pretraživanje</translation>
+<translation id="2067805253194386918">SMS</translation>
 <translation id="2079545284768500474">Poništi</translation>
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" /> od <ph name="TOTAL_RESULTS" /> rezultata</translation>
 <translation id="2091887806945687916">Zvuk</translation>
@@ -165,7 +167,6 @@
 <translation id="2131665479022868825"><ph name="DATA" /> spremljeno</translation>
 <translation id="213279576345780926">Zatvorena je kartica <ph name="TAB_TITLE" /></translation>
 <translation id="2139186145475833000">Dodaj na početni zaslon</translation>
-<translation id="2142289305367051020">Ovdje su vaše omiljene stranice</translation>
 <translation id="2146738493024040262">Otvori instant aplikaciju</translation>
 <translation id="2148716181193084225">Danas</translation>
 <translation id="2154484045852737596">Uredite karticu</translation>
@@ -324,6 +325,7 @@
 <translation id="3384347053049321195">Dijeli sliku</translation>
 <translation id="3386292677130313581">Web-lokacije moraju tražiti dopuštenje za pristup lokaciji (preporučeno)</translation>
 <translation id="3387650086002190359">Preuzimanje datoteke <ph name="FILE_NAME" /> nije uspjelo zbog nepoznate pogreške sustava datoteka.</translation>
+<translation id="3389286852084373014">Tekst je prevelik</translation>
 <translation id="3398320232533725830">Otvaranje upravitelja oznaka</translation>
 <translation id="3414952576877147120">Veličina:</translation>
 <translation id="3443221991560634068">Ponovno učitavanje trenutačne stranice</translation>
@@ -348,6 +350,7 @@
 <translation id="3599863153486145794">Briše povijest na svim uređajima na kojima ste prijavljeni. Na vašem Google računu možda postoje drugi oblici povijesti pregledavanja na stranici <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Isključen je zvuk na web-lokacijama koje ga reproduciraju</translation>
 <translation id="3616113530831147358">Audio</translation>
+<translation id="3631987586758005671">Dijeljenje s uređajem <ph name="DEVICE_NAME" /></translation>
 <translation id="3632295766818638029">Prikaži zaporku</translation>
 <translation id="363596933471559332">Automatski se prijavite na web-lokacije pomoću spremljenih vjerodajnica. Kada je ta značajka isključena, tražit će se potvrda prije svakog prijavljivanja na web-lokaciju.</translation>
 <translation id="3658159451045945436">Vraćanjem na zadano briše se povijest uštede podataka, uključujući popis posjećenih web-lokacija.</translation>
@@ -358,7 +361,6 @@
 <translation id="3739899004075612870">Označeno u pregledniku <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB ostale aplikacije</translation>
 <translation id="3744111561329211289">Sinkronizacija u pozadini</translation>
-<translation id="3745176700485982507">Na ovoj stranici možete pronaći veze na svoje omiljene web-lokacije</translation>
 <translation id="3771001275138982843">Preuzimanje ažuriranja nije uspjelo</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Uključite Bluetooth<ph name="END_LINK" /> da biste omogućili uparivanje</translation>
 <translation id="3775705724665058594">Pošaljite na svoje uređaje</translation>
@@ -563,7 +565,6 @@ Prije nego što pokrenete VR, provjerite je li ta web-lokacija pouzdana.</transl
 <translation id="5224771365102442243">S videozapisom</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> želi potražiti Bluetooth uređaje u blizini. Pronađeni su sljedeći uređaji:</translation>
 <translation id="5233638681132016545">Nova kartica</translation>
-<translation id="5234764350956374838">Odbaci</translation>
 <translation id="526421993248218238">Učitavanje stranice nije uspjelo</translation>
 <translation id="5271967389191913893">Uređaj ne može otvoriti sadržaj za preuzimanje.</translation>
 <translation id="528192093759286357">Povucite od vrha zaslona i dodirnite gumb Natrag da biste zatvorili prikaz na cijelom zaslonu.</translation>
@@ -578,8 +579,8 @@ Prije nego što pokrenete VR, provjerite je li ta web-lokacija pouzdana.</transl
 <translation id="5324858694974489420">Postavke nadređenog računa</translation>
 <translation id="5327248766486351172">Naziv</translation>
 <translation id="5335288049665977812">Web-lokacije mogu pokretati JavaScript (preporučeno)</translation>
+<translation id="5342314432463739672">Zahtjevi za dopuštenje</translation>
 <translation id="5357811892247919462">Primljena je kartica</translation>
-<translation id="5363230136052241468">Dodirnite gumb početnog zaslona za učitavanje web-stranice nove kartice</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> otvorena kartica, dodirnite da biste prešli na drugu karticu}one{<ph name="OPEN_TABS_MANY" /> otvorena kartica, dodirnite da biste prešli na drugu karticu}few{<ph name="OPEN_TABS_MANY" /> otvorene kartice, dodirnite da biste prešli na drugu karticu}other{<ph name="OPEN_TABS_MANY" /> otvorenih kartica, dodirnite da biste prešli na drugu karticu}}</translation>
 <translation id="5391532827096253100">Veza s web-lokacijom nije sigurna. Informacije o web-lokaciji</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ još 1)}one{(+ još #)}few{(+ još #)}other{(+ još #)}}</translation>
@@ -748,6 +749,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="6532866250404780454">Web-lokacije koje otvorite u Chromeu neće se prikazivati. Izbrisat će se svi tajmeri za web-lokacije.</translation>
 <translation id="6534565668554028783">Googleu je bilo potrebno previše vremena za odgovor</translation>
 <translation id="6538442820324228105">Preuzeto <ph name="GBS" /> GB</translation>
+<translation id="6539092367496845964">Nešto nije u redu. Pokušajte ponovo kasnije.</translation>
 <translation id="654446541061731451">Odaberite karticu za emitiranje</translation>
 <translation id="6545017243486555795">Izbriši sve podatke</translation>
 <translation id="6545864417968258051">Traženje Bluetootha</translation>
@@ -802,7 +804,6 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="6912998170423641340">Blokiraj web-lokacijama čitanje teksta i slika iz međuspremnika</translation>
 <translation id="6914783257214138813">Vaše zaporke bit će vidljive svima koji vide izvezenu datoteku.</translation>
 <translation id="6942665639005891494">Zadanu lokaciju preuzimanja možete promijeniti kad god želite putem opcije u izborniku Postavke</translation>
-<translation id="6944102653068653326">Dodirnite za učitavanje web-stranice nove kartice</translation>
 <translation id="6945221475159498467">Odaberi</translation>
 <translation id="6963642900430330478">Ta je stranica opasna. Informacije o web-lokaciji</translation>
 <translation id="6963766334940102469">Brisanje oznaka</translation>
@@ -879,6 +880,7 @@ Web-lokacija NE dobiva pristup fotoaparatu. Slike fotoaparata možete vidjeti sa
 <translation id="7493994139787901920"><ph name="VERSION" /> (ažurirano <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">spremljeni podaci</translation>
 <translation id="7498271377022651285">Pričekajte…</translation>
+<translation id="7510943789645525906">Upozorava ako je zaporka koju upotrebljavate bila obuhvaćena povredom podataka</translation>
 <translation id="7514365320538308">Preuzmi</translation>
 <translation id="751961395872307827">Povezivanje s web-lokacijom nije uspjelo</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -996,7 +998,6 @@ Web-lokacija NE dobiva pristup fotoaparatu. Slike fotoaparata možete vidjeti sa
 <translation id="8284326494547611709">Titlovi</translation>
 <translation id="8300705686683892304">Upravlja aplikacija</translation>
 <translation id="8310344678080805313">Standardne kartice</translation>
-<translation id="8313455859591948645">Uređivanje početne stranice</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> i druge web-lokacije</translation>
 <translation id="8327155640814342956">Za najbolji doživljaj pregledavanja otvorite Chrome da bi se ažurirao</translation>
 <translation id="8339163506404995330">Neće se prevoditi <ph name="LANGUAGE" /></translation>

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -44,10 +45,7 @@ class MEDIA_GPU_EXPORT CodecImage
   // Also note that, presently, only destruction does this.  However, with
   // pooling, there will be a way to mark a CodecImage as unused without
   // destroying it.
-  using NowUnusedCB = base::OnceCallback<void(CodecImage*)>;
-
-  // A callback for observing CodecImage destruction.
-  using DestructionCB = base::OnceCallback<void(CodecImage*)>;
+  using UnusedCB = base::OnceCallback<void(CodecImage*)>;
 
   CodecImage();
 
@@ -60,8 +58,9 @@ class MEDIA_GPU_EXPORT CodecImage
       scoped_refptr<CodecBufferWaitCoordinator> codec_buffer_wait_coordinator,
       PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb);
 
-  void SetNowUnusedCB(NowUnusedCB now_unused_cb);
-  void SetDestructionCB(DestructionCB destruction_cb);
+  // Add a callback that will be called when we're marked as unused.  Does not
+  // replace previous callbacks.  Order of callbacks is not guaranteed.
+  void AddUnusedCB(UnusedCB unused_cb);
 
   // gl::GLImage implementation
   gfx::Size GetSize() override;
@@ -188,9 +187,7 @@ class MEDIA_GPU_EXPORT CodecImage
   // Callback to notify about promotion hints and overlay position.
   PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb_;
 
-  NowUnusedCB now_unused_cb_;
-
-  DestructionCB destruction_cb_;
+  std::vector<UnusedCB> unused_cbs_;
 
   bool was_tex_image_bound_ = false;
 

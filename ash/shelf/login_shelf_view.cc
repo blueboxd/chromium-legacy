@@ -32,6 +32,7 @@
 #include "base/callback_helpers.h"
 #include "base/metrics/user_metrics.h"
 #include "base/sequence_checker.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "skia/ext/image_operations.h"
 #include "ui/accessibility/ax_node_data.h"

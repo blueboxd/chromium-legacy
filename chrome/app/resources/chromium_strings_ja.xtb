@@ -194,6 +194,8 @@
 <translation id="753534427205733210">{0,plural, =1{Chromium は 1 分後に再起動されます}other{Chromium は # 分後に再起動されます}}</translation>
 <translation id="7549178288319965365">Chromium OS について</translation>
 <translation id="7561906087460245826">Chromium のデータ（<ph name="URL" />）も消去する</translation>
+<translation id="7585853947355360626">このページに設定が表示されない場合は、<ph name="LINK_BEGIN" />
+      Chromium OS の設定<ph name="LINK_END" />を確認してください</translation>
 <translation id="761356813943268536">Chromium がカメラとマイクを使用しています。</translation>
 <translation id="7617377681829253106">進化する Chromium</translation>
 <translation id="7686590090926151193">Chromium はデフォルトのブラウザとして設定されていません</translation>
@@ -227,6 +229,8 @@
 <translation id="8619360774459241877">Chromium を起動しています...</translation>
 <translation id="8621669128220841554">原因不明のエラーによりインストールに失敗しました。Chromium をもう一度ダウンロードしてください。</translation>
 <translation id="8667808506758191620">お使いの <ph name="DEVICE_TYPE" /> は最新です。</translation>
+<translation id="8682540261359803721">このページに設定が表示されない場合は、<ph name="LINK_BEGIN" />
+      Chromium ブラウザの設定<ph name="LINK_END" />を確認してください</translation>
 <translation id="8697124171261953979">この拡張機能では、Chromium の起動時、またはアドレスバーからの検索時に表示されるページも制御されます。</translation>
 <translation id="8704119203788522458">自分好みに設定</translation>
 <translation id="8739167630197873875">Chromium の終了時に Cookie を削除するよう設定しています。同期を継続するにはこちらの<ph name="COOKIE_SETTINGS_LINK" />を変更してください。</translation>

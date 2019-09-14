@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/guid.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
@@ -119,6 +120,11 @@ sync_pb::EntitySpecifics CreateSpecificsFromBookmarkNode(
   if (!node->is_folder()) {
     bm_specifics->set_url(node->url().spec());
   }
+
+  DCHECK(!node->guid().empty());
+  DCHECK(base::IsValidGUID(node->guid()));
+
+  bm_specifics->set_guid(node->guid());
   bm_specifics->set_title(SpecificsTitleFromNodeTitle(node->GetTitle()));
   bm_specifics->set_creation_time_us(
       node->date_added().ToDeltaSinceWindowsEpoch().InMicroseconds());
@@ -167,23 +173,24 @@ const bookmarks::BookmarkNode* CreateBookmarkNodeFromSpecifics(
   DCHECK(parent);
   DCHECK(model);
   DCHECK(favicon_service);
+  DCHECK(base::IsValidGUID(specifics.guid()));
 
   bookmarks::BookmarkNode::MetaInfoMap metainfo =
       GetBookmarkMetaInfo(specifics);
   const bookmarks::BookmarkNode* node;
   if (is_folder) {
-    node = model->AddFolderWithMetaInfo(
-        parent, index, NodeTitleFromSpecificsTitle(specifics.title()),
-        &metainfo);
+    node = model->AddFolder(parent, index,
+                            NodeTitleFromSpecificsTitle(specifics.title()),
+                            &metainfo, specifics.guid());
   } else {
     const int64_t create_time_us = specifics.creation_time_us();
     base::Time create_time = base::Time::FromDeltaSinceWindowsEpoch(
         // Use FromDeltaSinceWindowsEpoch because create_time_us has
         // always used the Windows epoch.
         base::TimeDelta::FromMicroseconds(create_time_us));
-    node = model->AddURLWithCreationTimeAndMetaInfo(
+    node = model->AddURL(
         parent, index, NodeTitleFromSpecificsTitle(specifics.title()),
-        GURL(specifics.url()), create_time, &metainfo);
+        GURL(specifics.url()), &metainfo, create_time, specifics.guid());
   }
   if (node) {
     SetBookmarkFaviconFromSpecifics(specifics, node, favicon_service);

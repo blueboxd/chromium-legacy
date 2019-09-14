@@ -1134,8 +1134,7 @@ TEST_F(DirectCompositionPixelTest, SwapChainImage) {
   ASSERT_TRUE(front_buffer_texture);
 
   auto front_buffer_image = base::MakeRefCounted<GLImageD3D>(
-      swap_chain_size, gfx::BufferFormat::BGRA_8888, front_buffer_texture,
-      swap_chain);
+      swap_chain_size, GL_BGRA_EXT, front_buffer_texture, swap_chain);
   ASSERT_TRUE(front_buffer_image->Initialize());
 
   Microsoft::WRL::ComPtr<ID3D11Texture2D> back_buffer_texture;

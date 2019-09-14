@@ -45,6 +45,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="1873233029667955273">Google Chrome nie je váš predvolený prehliadač</translation>
 <translation id="1874309113135274312">Google Chrome beta verzie (mDNS-In)</translation>
 <translation id="1877026089748256423">Prehliadač Chrome je zastaraný</translation>
+<translation id="1900795423379050516">Ak nie je určité nastavenie zobrazené na tejto stránke, skontrolujte <ph name="LINK_BEGIN" />nastavenia prehliadača Chrome<ph name="LINK_END" /></translation>
 <translation id="1915828456209461693">K dispozícii je aktualizácia pre Chrome, ktorá bude uplatnená po najbližšom opätovnom spustení.</translation>
 <translation id="1919130412786645364">Povoliť prihlásenie do Chromu</translation>
 <translation id="2063848847527508675">Ak chcete uplatniť aktualizáciu, musíte reštartovať systém Chrome OS.</translation>
@@ -162,6 +163,7 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="5543953544073077331">Chrome je spustený v ďalších oknách. Ak ho chcete aktualizovať, zavrite ich.</translation>
 <translation id="556024056938947818">Prehliadač Google Chrome sa snaží zobraziť heslá.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
+<translation id="5657226924540934362">Ak nie je určité nastavenie zobrazené na tejto stránke, skontrolujte <ph name="LINK_BEGIN" />nastavenia operačného systému Chrome OS<ph name="LINK_END" /></translation>
 <translation id="565744775970812598">Súbor <ph name="FILE_NAME" /> môže byť nebezpečný, a preto ho Chrome zablokoval.</translation>
 <translation id="5686916850681061684">Prispôsobte a ovládajte Google Chrome. Vyžaduje sa vaša pozornosť. Podrobnosti získate kliknutím.</translation>
 <translation id="5690427481109656848">Google LLC</translation>

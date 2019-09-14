@@ -2494,6 +2494,22 @@ void DispatchComputeIndirect(GLintptr offset) {
   }
 }
 
+void DrawArraysIndirect(GLenum mode, GLuint offset) {
+  gles2::cmds::DrawArraysIndirect* c =
+      GetCmdSpace<gles2::cmds::DrawArraysIndirect>();
+  if (c) {
+    c->Init(mode, offset);
+  }
+}
+
+void DrawElementsIndirect(GLenum mode, GLenum type, GLuint offset) {
+  gles2::cmds::DrawElementsIndirect* c =
+      GetCmdSpace<gles2::cmds::DrawElementsIndirect>();
+  if (c) {
+    c->Init(mode, type, offset);
+  }
+}
+
 void GetProgramInterfaceiv(GLuint program,
                            GLenum program_interface,
                            GLenum pname,

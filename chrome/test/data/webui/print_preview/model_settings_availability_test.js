@@ -16,6 +16,7 @@ cr.define('model_settings_availability_test', function() {
         hasCssMediaStyles: false,
         hasSelection: false,
         isModifiable: true,
+        isPdf: false,
         isScalingDisabled: false,
         fitToPageScaling: 100,
         pageCount: 3,
@@ -507,6 +508,27 @@ cr.define('model_settings_availability_test', function() {
       model.set('documentSettings.isModifiable', false);
       assertFalse(model.settings.selectionOnly.available);
       assertFalse(model.settings.selectionOnly.setFromUi);
+    });
+
+    test('pages per sheet', function() {
+      // Pages per sheet is available everywhere except for Flash content.
+      // With the default settings for Blink content, it is available.
+      model.set('documentSettings.isModifiable', true);
+      model.set('documentSettings.isPdf', false);
+      assertTrue(model.settings.pagesPerSheet.available);
+
+      // This state should never occur, but if it does, |isModifiable| takes
+      // precedence and this is still interpreted as Blink content.
+      model.set('documentSettings.isPdf', true);
+      assertTrue(model.settings.pagesPerSheet.available);
+
+      // Still available for PDF content.
+      model.set('documentSettings.isModifiable', false);
+      assertTrue(model.settings.pagesPerSheet.available);
+
+      // Not available for Flash content.
+      model.set('documentSettings.isPdf', false);
+      assertFalse(model.settings.pagesPerSheet.available);
     });
 
     if (cr.isChromeOS) {

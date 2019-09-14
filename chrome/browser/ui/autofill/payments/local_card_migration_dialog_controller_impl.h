@@ -12,6 +12,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/ui/autofill/payments/local_card_migration_controller_observer.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/ui/payments/local_card_migration_dialog_controller.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -32,7 +33,7 @@ class LocalCardMigrationDialogControllerImpl
   ~LocalCardMigrationDialogControllerImpl() override;
 
   void ShowOfferDialog(
-      std::unique_ptr<base::DictionaryValue> legal_message,
+      const LegalMessageLines& legal_message_lines,
       const std::string& user_email,
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       AutofillClient::LocalCardMigrationCallback

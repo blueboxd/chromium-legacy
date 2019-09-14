@@ -8,8 +8,11 @@
 
 namespace notifications {
 
-IconBundle::IconBundle() = default;
-IconBundle::IconBundle(SkBitmap skbitmap) : bitmap(std::move(skbitmap)) {}
+IconBundle::IconBundle() : resource_id(0) {}
+IconBundle::IconBundle(SkBitmap skbitmap)
+    : bitmap(std::move(skbitmap)), resource_id(0) {}
+IconBundle::IconBundle(int resource_id) : resource_id(resource_id) {}
+IconBundle::IconBundle(const IconBundle& other) = default;
 IconBundle::~IconBundle() = default;
 
 }  // namespace notifications

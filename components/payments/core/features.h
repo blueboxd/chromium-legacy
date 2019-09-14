@@ -56,6 +56,9 @@ extern const base::Feature kStrictHasEnrolledAutofillInstrument;
 // Used to enable skip-to-GPay experimental flow.
 extern const base::Feature kPaymentRequestSkipToGPay;
 
+// Controls whether the microtransaction features are enabled.
+extern const base::Feature kWebPaymentMicrotransaction;
+
 }  // namespace features
 }  // namespace payments
 

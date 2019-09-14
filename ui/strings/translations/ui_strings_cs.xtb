@@ -8,14 +8,17 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min}few{# min}many{# min}other{# min}}</translation>
 <translation id="1181037720776840403">Odebrat</translation>
 <translation id="1243314992276662751">Nahrát</translation>
+<translation id="1266864766717917324">Sdílení obsahu typu <ph name="CONTENT_TYPE" /> se nezdařilo</translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1290982764014248209">Přesunout aplikaci <ph name="DRAGGED_APP" />do složky <ph name="FOLDER_NAME" />.</translation>
+<translation id="1291104554099683393">Zkuste text sdílet po menších částech.</translation>
 <translation id="1293699935367580298">Klávesa Esc</translation>
 <translation id="1306549533752902673">DOPORUČENÉ APLIKACE</translation>
 <translation id="1368832886055348810">Zleva doprava</translation>
 <translation id="1383876407941801731">Vyhledávání</translation>
 <translation id="1398853756734560583">Maximalizovat</translation>
 <translation id="1409544243779336081">Doporučení aplikace</translation>
+<translation id="1450753235335490080">Sdílení obsahu typu <ph name="CONTENT_TYPE" /> se nezdařilo</translation>
 <translation id="1498028757988366001">Toto jste v minulosti vyhledávali. Když dotaz „<ph name="QUERY" />“ vymažete z historie, bude trvale odstraněn z vašeho účtu na všech zařízeních.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuta a  }few{# minuty a  }many{# minuty a  }other{# minut a  }}</translation>
 <translation id="1643823602425662293">Oznámení</translation>
@@ -35,6 +38,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;Vybrat vše</translation>
 <translation id="1938451708255335766">Chcete-li upravit kompaktnost zobrazení okna, restartujte aplikaci.</translation>
+<translation id="2006524834898217237">Zkontrolujte, zda je toto zařízení připojeno k internetu.</translation>
 <translation id="208586643495776849">Zkuste to znovu</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 d}few{# d}many{# d}other{# d}}</translation>
 <translation id="2148716181193084225">Dnes</translation>
@@ -76,6 +80,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 den}few{# dny}many{# dne}other{# dnů}}</translation>
 <translation id="3295886253693811851">Zavolat pomocí služby</translation>
 <translation id="335581015389089642">Řeč</translation>
+<translation id="3389286852084373014">Text je příliš dlouhý</translation>
 <translation id="3443810440409579745">Byla přijata karta.</translation>
 <translation id="3479552764303398839">Teď ne</translation>
 <translation id="348799646910989694">Polička byla automaticky skryta</translation>
@@ -151,11 +156,13 @@
 <translation id="6404817160109697034">{SECONDS,plural, =1{Před 1 s}few{Před # s}many{Před # s}other{Před # s}}</translation>
 <translation id="6430678249303439055">Blokovat všechna oznámení z této aplikace</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{před sekundou}few{před # sekundami}many{před # sekundy}other{před # sekundami}}</translation>
+<translation id="6539092367496845964">Něco se pokazilo. Zkuste to později.</translation>
 <translation id="654149438358937226">Blokovat všechna oznámení</translation>
 <translation id="6567071839949112727">kliknutí na nadřazený prvek</translation>
 <translation id="6578407462441924264">Bez názvu</translation>
 <translation id="6612467943526193239">Kalibraci ukončíte stisknutím klávesy Esc.</translation>
 <translation id="6620110761915583480">Uložit soubor</translation>
+<translation id="6656912866303152668">Zkontrolujte, zda je v Chromu na zařízení <ph name="TARGET_DEVICE_NAME" /> zapnutá synchronizace, a poté zkuste odeslání opakovat.</translation>
 <translation id="6699343763173986273">Média – další skladba</translation>
 <translation id="673773751041746814">Smazání</translation>
 <translation id="6779314412797872738">Chcete-li si odsud poslat číslo na telefon Android, v nastavení obou zařízení <ph name="TROUBLESHOOT_LINK" />.</translation>
@@ -221,6 +228,7 @@
 <translation id="8876215549894133151">Formát:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> kB</translation>
 <translation id="8926951137623668982">Polička je vždy skrytá</translation>
+<translation id="8996630695507351249">Zkontrolujte, zda je zařízení <ph name="TARGET_DEVICE_NAME" /> připojené k internetu.</translation>
 <translation id="9002566407876343676">otevřít</translation>
 <translation id="9039076430527029379">Přesunout na stránku <ph name="PAGE_NUMBER" />, řádek <ph name="ROW_NUMBER" />, sloupec <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}few{# s}many{# s}other{# s}}</translation>

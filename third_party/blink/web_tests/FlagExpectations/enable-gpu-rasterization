@@ -1,13 +1,3 @@
-# Blur
-crbug.com/972621 images/color-profile-image-filter-all.html [ Skip ]
-crbug.com/972621 images/rgb-png-with-cmyk-color-profile.html [ Skip ]
-crbug.com/972621 images/ycbcr-with-cmyk-color-profile.html [ Skip ]
-crbug.com/972621 images/yuv-decode-eligible/color-profile-filter.html [ Skip ]
-crbug.com/972621 images/yuv-decode-eligible/color-profile-layer-filter.html [ Skip ]
-crbug.com/972621 media/video-poster-scale.html [ Skip ]
-crbug.com/972621 transforms/shadows.html [ Skip ]
-crbug.com/972621 transforms/svg-vs-css.xhtml [ Skip ]
-
 # Input timing doesn't match screenshots
 crbug.com/935970 compositing/gestures/gesture-tapHighlight-img-and-text.html [ Skip ]
 crbug.com/935970 compositing/gestures/gesture-tapHighlight-multicol.html [ Skip ]
@@ -27,7 +17,6 @@ crbug.com/935970 images/drag-image-transformed-child.html [ Skip ]
 crbug.com/935970 images/drag-image-transformed-parent.html [ Skip ]
 crbug.com/935970 images/drag-image.html [ Skip ]
 crbug.com/935970 images/server-side-imagemap.html [ Skip ]
-crbug.com/935970 media/color-profile-video-poster-image.html [ Skip ]
 crbug.com/935970 media/controls-drag-timebar.html [ Skip ]
 crbug.com/935970 media/controls-timeline.html [ Skip ]
 crbug.com/935970 media/controls/video-enter-exit-fullscreen-while-hovering-shows-controls.html [ Skip ]

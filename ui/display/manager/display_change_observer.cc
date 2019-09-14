@@ -45,8 +45,8 @@ struct DeviceScaleFactorDPIThreshold {
 // Update the list of zoom levels whenever a new device scale factor is added
 // here. See zoom level list in /ui/display/manager/display_util.cc
 const DeviceScaleFactorDPIThreshold kThresholdTableForInternal[] = {
-    {320.f, 2.5f},  {270.0f, 2.25f}, {220.0f, 2.0f},
-    {180.0f, 1.6f}, {150.0f, 1.25f}, {0.0f, 1.0f},
+    {320.f, 2.66666f}, {270.0f, 2.25f}, {230.0f, 2.0f}, {220.0f, 1.77777f},
+    {180.0f, 1.6f},    {150.0f, 1.25f}, {0.0f, 1.0f},
 };
 
 // Returns a list of display modes for the given |output| that doesn't exclude

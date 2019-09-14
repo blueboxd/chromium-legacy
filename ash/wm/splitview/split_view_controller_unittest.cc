@@ -470,6 +470,11 @@ TEST_F(SplitViewControllerTest, WindowStateChangeTest) {
 
   // 2 - Then test two snapped window scenario.
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  // Reactivate |window1| because it is the one that we will be maximizing and
+  // fullscreening. When |window1| goes out of scope at the end of the test, it
+  // will be a full screen window, and if it is not the active window, then the
+  // destructor will cause a |DCHECK| failure in |ash::WindowState::Get|.
+  wm::ActivateWindow(window1.get());
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
   split_view_controller()->SnapWindow(window2.get(),
                                       SplitViewController::RIGHT);
@@ -553,10 +558,14 @@ TEST_F(SplitViewControllerTest, ExitOverviewTest) {
   EXPECT_EQ(split_view_controller()->InSplitViewMode(), true);
   EXPECT_EQ(split_view_controller()->state(), SplitViewState::kLeftSnapped);
   EXPECT_EQ(split_view_controller()->left_window(), window1.get());
+  // Activate |window1| in preparation to verify that it stays active when
+  // overview mode is ended.
+  wm::ActivateWindow(window1.get());
 
   ToggleOverview();
   EXPECT_EQ(split_view_controller()->state(), SplitViewState::kBothSnapped);
   EXPECT_EQ(split_view_controller()->right_window(), window3.get());
+  EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
   CheckOverviewEnterExitHistogram("ExitInSplitView", {1, 0}, {0, 1});
 }
 
@@ -2840,6 +2849,7 @@ TEST_F(SplitViewTabDraggingTest, DragMaximizedWindow) {
   EXPECT_EQ(split_view_controller()->state(), SplitViewState::kBothSnapped);
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
   EXPECT_TRUE(window1->GetProperty(kCanAttachToAnotherWindowKey));
+  EXPECT_EQ(window1.get(), window_util::GetActiveWindow());
 
   EndSplitView();
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());

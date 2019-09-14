@@ -21,6 +21,7 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
 import org.chromium.weblayer.BrowserController;
+import org.chromium.weblayer.BrowserFragmentImpl;
 import org.chromium.weblayer.BrowserObserver;
 import org.chromium.weblayer.Profile;
 import org.chromium.weblayer.WebLayer;
@@ -32,21 +33,22 @@ public class WebLayerShellActivity extends FragmentActivity {
     private static final String TAG = "WebLayerShell";
 
     private Profile mProfile;
+    private BrowserFragmentImpl mBrowserFragment;
     private BrowserController mBrowserController;
     private EditText mUrlView;
     private View mMainView;
 
     public static class ShellFragment extends Fragment {
-        private BrowserController mBrowserController;
+        private BrowserFragmentImpl mBrowserFragment;
 
-        ShellFragment(BrowserController browserController) {
-            mBrowserController = browserController;
+        ShellFragment(BrowserFragmentImpl browserFragment) {
+            mBrowserFragment = browserFragment;
         }
 
         @Override
         public View onCreateView(
                 LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-            return mBrowserController.onCreateView();
+            return mBrowserFragment.onCreateView();
         }
     }
 
@@ -84,13 +86,14 @@ public class WebLayerShellActivity extends FragmentActivity {
         });
 
         mProfile = WebLayer.getInstance().createProfile(null);
-        mBrowserController = mProfile.createBrowserController(this);
+        mBrowserFragment = mProfile.createBrowserFragment(this);
+        mBrowserController = mBrowserFragment.getBrowserController();
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.add(viewId, new ShellFragment(mBrowserController));
+        transaction.add(viewId, new ShellFragment(mBrowserFragment));
         transaction.commit();
 
-        mBrowserController.setTopView(mUrlView);
+        mBrowserFragment.setTopView(mUrlView);
         loadUrl("http://google.com");
         mBrowserController.addObserver(new BrowserObserver() {
             @Override
@@ -103,13 +106,27 @@ public class WebLayerShellActivity extends FragmentActivity {
     @Override
     protected void onDestroy() {
         if (mProfile != null) mProfile.destroy();
-        if (mBrowserController != null) mBrowserController.destroy();
+        if (mBrowserFragment != null) mBrowserFragment.destroy();
         super.onDestroy();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        zoomIn();
+    }
+
+    private void zoomIn() {
+        mMainView.animate().scaleX(0.5f).scaleY(0.5f).setDuration(1000).withEndAction(() -> zoomOut());
+    }
+
+    private void zoomOut() {
+        mMainView.animate().scaleX(1.f).scaleY(1.f).setDuration(1000).withEndAction(() -> zoomIn());
     }
 
     private void loadUrl(String url) {

@@ -123,7 +123,6 @@ class CORE_EXPORT ScrollAnimatorCompositorCoordinator
     return impl_only_animation_adjustment_;
   }
 
-  void ResetAnimationIds();
   bool AddAnimation(std::unique_ptr<CompositorKeyframeModel>);
   void RemoveAnimation();
   virtual void AbortAnimation();
@@ -159,6 +158,7 @@ class CORE_EXPORT ScrollAnimatorCompositorCoordinator
   CompositorAnimation* GetCompositorAnimation() const override;
 
   friend class Internals;
+  friend class TestScrollAnimator;
   // TODO(ymalik): Tests are added as friends to access m_RunState. Use the
   // runStateForTesting accessor instead.
   FRIEND_TEST_ALL_PREFIXES(ScrollAnimatorTest, MainThreadStates);
@@ -176,8 +176,7 @@ class CORE_EXPORT ScrollAnimatorCompositorCoordinator
   // the animation is present.
   CompositorElementId element_id_;
   RunState run_state_;
-  int compositor_animation_id_;
-  int compositor_animation_group_id_;
+  int compositor_animation_id() const { return compositor_animation_id_; }
 
   // An adjustment to the scroll offset on the main thread that may affect
   // impl-only scroll offset animations.
@@ -195,6 +194,9 @@ class CORE_EXPORT ScrollAnimatorCompositorCoordinator
   // Accesses compositing state and should only be called when in or after
   // DocumentLifecycle::LifecycleState::CompositingClean.
   void TakeOverImplOnlyScrollOffsetAnimation();
+
+  int compositor_animation_id_;
+  int compositor_animation_group_id_;
 };
 
 }  // namespace blink

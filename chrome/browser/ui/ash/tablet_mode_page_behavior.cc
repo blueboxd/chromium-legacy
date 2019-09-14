@@ -35,11 +35,11 @@ void TabletModePageBehavior::OnTabletModeToggled(bool enabled) {
   ui::MaterialDesignController::OnTabletModeToggled(enabled);
 }
 
-void TabletModePageBehavior::OnTabletModeStarted() {
+void TabletModePageBehavior::OnTabletModeStarting() {
   OnTabletModeToggled(true);
 }
 
-void TabletModePageBehavior::OnTabletModeEnded() {
+void TabletModePageBehavior::OnTabletModeEnding() {
   OnTabletModeToggled(false);
 }
 

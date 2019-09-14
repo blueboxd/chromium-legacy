@@ -78,9 +78,7 @@ void BrailleControllerImpl::TryLoadLibBrlApi() {
   // These versions of libbrlapi work the same for the functions we
   // are using.  (0.6.0 adds brlapi_writeWText).
   static const char* const kSupportedVersions[] = {
-    "libbrlapi.so.0.5",
-    "libbrlapi.so.0.6"
-  };
+      "libbrlapi.so.0.5", "libbrlapi.so.0.6", "libbrlapi.so.0.7"};
   for (size_t i = 0; i < base::size(kSupportedVersions); ++i) {
     if (libbrlapi_loader_.Load(kSupportedVersions[i]))
       return;

@@ -251,7 +251,6 @@ crbug.com/1002049 external/wpt/css/mediaqueries/aspect-ratio-006.html [ Failure 
 
 # Display locking failures
 crbug.com/955533 wpt_internal/display-lock/sizing/overflow-auto-with-overflow.html [ Failure ]
-crbug.com/1000702 wpt_internal/display-lock/rendersubtree/sizing/get-bounding-client-rect-block-layout.html [ Failure ]
 
 # MSAN failure
 crbug.com/996625 inspector-protocol/accessibility/accessibility-getFullAXTree-display-locked.js [ Skip ]
@@ -676,6 +675,8 @@ crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 # [css-ui]
 # Layout team disagrees with the spec for this particular test.
 crbug.com/591099 external/wpt/css/css-ui/text-overflow-015.html [ Failure ]
+
+crbug.com/1003506 external/wpt/css/css-flexbox/percentage-heights-007.html [ Failure ]
 
 # ====== Layout team owned tests to here ======
 
@@ -2352,12 +2353,6 @@ crbug.com/821455 editing/pasteboard/drag-files-to-editable-element.html [ Failur
 crbug.com/688613 external/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-audio-is-silence.https.html [ Skip ]
 crbug.com/688613 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-audio-is-silence.https.html [ Skip ]
 crbug.com/688613 virtual/audio-service/external/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-audio-is-silence.https.html [ Skip ]
-
-# Disabled until v8 roll, which brings new async stepping mechanism.
-crbug.com/1000475 inspector-protocol/debugger/message-channel-async-stack.js [ Skip ]
-crbug.com/1000475 inspector-protocol/worker/worker-constructor-async-stacks.js [ Skip ]
-crbug.com/1000475 inspector-protocol/worker/worker-on-message-async-stacks.js [ Skip ]
-crbug.com/1000475 inspector-protocol/worker/worker-post-message-async-stacks.js [ Skip ]
 
 crbug.com/766135 fast/dom/Window/redirect-with-timer.html [ Timeout Pass ]
 

@@ -43,6 +43,10 @@ class MediaNotificationContainerImpl
   void OnExpanded(bool expanded) override;
   void OnMediaSessionInfoChanged(
       const media_session::mojom::MediaSessionInfoPtr& session_info) override;
+  void OnVisibleActionsChanged(
+      const std::set<media_session::mojom::MediaSessionAction>& actions)
+      override;
+  void OnMediaArtworkChanged(const gfx::ImageSkia& image) override;
   void OnForegoundColorChanged(SkColor color) override;
 
   // views::ButtonListener:
@@ -50,6 +54,9 @@ class MediaNotificationContainerImpl
 
  private:
   void UpdateDismissButtonIcon();
+
+  // Updates the forced expanded state of |view_|.
+  void ForceExpandedState();
 
   // The MediaNotificationContainerImpl is owned by the
   // MediaNotificationListView which is owned by the MediaDialogView, so the raw
@@ -66,6 +73,9 @@ class MediaNotificationContainerImpl
   std::unique_ptr<media_message_center::MediaNotificationView> view_;
 
   SkColor foreground_color_;
+
+  bool has_artwork_ = false;
+  bool has_many_actions_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MediaNotificationContainerImpl);
 };

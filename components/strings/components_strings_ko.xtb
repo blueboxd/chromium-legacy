@@ -97,9 +97,6 @@
 <translation id="138218114945450791">하늘색</translation>
 <translation id="1382194467192730611">관리자가 허용한 USB 기기</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" />에서 전송한 데이터가 없습니다.</translation>
-<translation id="140316286225361634">사이트 <ph name="ORIGIN" />이(가) 모든 요청에 보안 정책을
-    적용하도록 요청했으며 현재 이 정책에 따르면 이 사이트는
-    안전하지 않습니다.</translation>
 <translation id="1405567553485452995">연한 녹색</translation>
 <translation id="1407135791313364759">모두 열기</translation>
 <translation id="1413809658975081374">개인정보 보호 오류</translation>
@@ -135,6 +132,7 @@
 <translation id="1569487616857761740">만료일 입력</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">이 웹페이지를 표시하는 도중 문제가 발생했습니다.</translation>
+<translation id="1588438908519853928">일반</translation>
 <translation id="1592005682883173041">로컬 데이터 액세스</translation>
 <translation id="1594030484168838125">선택</translation>
 <translation id="161042844686301425">청록색</translation>
@@ -212,10 +210,6 @@
 <translation id="1981206234434200693">Chrome 인터넷 사용 기록 삭제</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{외 1개}other{외 #개}}</translation>
 <translation id="2003709556000175978">지금 비밀번호 재설정</translation>
-<translation id="20053308747750172">대상 서버인 <ph name="ORIGIN" />에서 모든 요청에
-    보안 정책 적용을 요청했습니다. 하지만 현재
-    잘못된 정책이 제공되어 브라우저가 <ph name="SITE" />에 대한 요청을
-    처리할 수 없습니다.</translation>
 <translation id="2025186561304664664">프록시가 자동 설정되도록 지정됩니다.</translation>
 <translation id="202813660234680402">아니요, 추가하지 않습니다</translation>
 <translation id="2030481566774242610"><ph name="LINK" />을(를) 찾으셨나요?</translation>
@@ -293,10 +287,6 @@
 <translation id="2409589295040002961">관리자가 원격으로 브라우저 설정을 변경할 수 있습니다. 이 기기의 활동은 Chrome 외부에서 관리될 수도 있습니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 서버의 보안 인증서가 취소될 수 있습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
-<translation id="2418081434543109369">대상 서버인 <ph name="ORIGIN" />에서 모든 요청에
-    보안 정책 적용을 요청했습니다. 하지만 현재
-    정책 전달에 실패하여 브라우저가 <ph name="SITE" />에 대한 요청을
-    처리할 수 없습니다.</translation>
 <translation id="2463193859425327265">홈페이지 변경</translation>
 <translation id="2463739503403862330">입력</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -588,6 +578,7 @@
 <translation id="4103249731201008433">기기 일련번호가 잘못됨</translation>
 <translation id="410351446219883937">자동재생</translation>
 <translation id="4103763322291513355">차단된 URL 및 시스템 관리자가 설정한 기타 정책 목록을 확인하려면 &lt;strong&gt;chrome://policy&lt;/strong&gt;를 방문하세요.</translation>
+<translation id="4108231218301530806">다음번에 지문을 사용해 이 카드를 인증합니다.</translation>
 <translation id="4110652170750985508">결제 검토</translation>
 <translation id="4112140312785995938">뒤로 탐색</translation>
 <translation id="4116663294526079822">이 사이트에서 항상 허용</translation>
@@ -790,6 +781,7 @@
 <translation id="5141240743006678641">동기화 비밀번호를 Google 자격증명으로 암호화</translation>
 <translation id="5145883236150621069">정책 응답에 오류 코드가 포함되어 있음</translation>
 <translation id="515292512908731282">C4(봉투)</translation>
+<translation id="5158275234811857234">표지</translation>
 <translation id="5159010409087891077">새 시크릿 창에서 페이지 열기(⇧⌘N)</translation>
 <translation id="516920405563544094"><ph name="CREDIT_CARD" /> 카드의 CVC를 입력하세요. 카드를 확인하면 Google 계정의 카드 세부정보가 이 사이트와 공유됩니다.</translation>
 <translation id="5169827969064885044">조직의 계정에 액세스할 수 없게 되거나 신원 도용이 발생할 수도 있습니다. 지금 비밀번호를 변경하는 것이 좋습니다.</translation>
@@ -948,6 +940,7 @@
 <translation id="598637245381783098">결제 앱을 열 수 없습니다.</translation>
 <translation id="5989320800837274978">고정 프록시 서버와 .pac 스크립트 URL이 모두 지정되지 않았습니다.</translation>
 <translation id="5990559369517809815">서버에 대한 요청이 확장 프로그램에 의해 차단되었습니다.</translation>
+<translation id="6000758707621254961">'<ph name="SEARCH_TEXT" />' 검색결과 <ph name="RESULT_COUNT" />개</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">연도</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{1페이지}other{#페이지}}</translation>
@@ -1006,6 +999,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{없음}=1{비밀번호 1개(도메인: <ph name="DOMAIN_LIST" />, 동기화됨)}=2{비밀번호 2개(도메인: <ph name="DOMAIN_LIST" />, 동기화됨)}other{비밀번호 #개(도메인: <ph name="DOMAIN_LIST" />, 동기화됨)}}</translation>
 <translation id="6358450015545214790">자세히 알아보기</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6377268785556383139">'<ph name="SEARCH_TEXT" />' 검색결과 1개</translation>
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">해당 사이트에서 비용이 청구될 수 있음</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{그 외 제안 1건}other{그 외 제안 #건}}</translation>
@@ -1140,10 +1134,6 @@
 <translation id="717330890047184534">GAIA ID:</translation>
 <translation id="7174545416324379297">병합됨</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> 외 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />개}other{<ph name="SHIPPING_OPTION_PREVIEW" /> 외 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />개}}</translation>
-<translation id="7177397715882417099">대상 서버인 <ph name="ORIGIN" />에서 모든 요청에
-    보안 정책 적용을 요청했습니다. 하지만 
-    정책을 전달하는 대신 브라우저를 다른 곳으로 리디렉션하여
-    브라우저가 <ph name="SITE" />에 대한 요청을 처리할 수 없습니다.</translation>
 <translation id="7179323680825933600">결제 수단 저장 및 자동 입력</translation>
 <translation id="7180611975245234373">새로고침</translation>
 <translation id="7182878459783632708">설정된 정책 없음</translation>
@@ -1170,6 +1160,7 @@
 <translation id="7300012071106347854">코발트 녹색</translation>
 <translation id="7302712225291570345">‘<ph name="TEXT" />’</translation>
 <translation id="7303701124147721189">다음번에 더 빠르게 결제할 수 있도록 Google 계정과 기기에 카드 및 청구서 수신 주소를 저장하세요.</translation>
+<translation id="7304030187361489308">높음</translation>
 <translation id="7309308571273880165"><ph name="CRASH_TIME" />에 캡처된 비정상 종료 보고서(사용자가 업로드를 요청했으나 아직 업로드되지 않음)</translation>
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />세이프 브라우징<ph name="END_LINK" /> 경고</translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1530,7 +1521,6 @@
 <translation id="939736085109172342">새 폴더</translation>
 <translation id="945855313015696284">아래 정보를 확인하고 잘못된 카드를 삭제하세요.</translation>
 <translation id="951104842009476243">사용 가능한 직불카드 및 선불카드</translation>
-<translation id="958202389743790697"><ph name="ORIGIN" />의 보안 정책에 따라 차단되었습니다</translation>
 <translation id="962484866189421427">이 콘텐츠에서 다른 앱인 것처럼 가장하거나 사용자를 추적하는 데 사용될 수 있는 데이터를 수집하는 사기성 앱을 설치할 수도 있습니다. <ph name="BEGIN_LINK" />그래도 표시하기<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">공식 빌드</translation>
 <translation id="973773823069644502">배달 주소 추가</translation>

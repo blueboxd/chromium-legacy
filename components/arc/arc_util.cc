@@ -278,7 +278,9 @@ int32_t GetLcdDensityForDeviceScaleFactor(float device_scale_factor) {
     return 280;
   if (std::abs(device_scale_factor - 1.6f) < kEpsilon)
     return 213;  // TVDPI
-  if (std::abs(device_scale_factor - 2.5f) < kEpsilon)
+  if (std::abs(device_scale_factor - 1.777f) < kEpsilon)
+    return 240;  // HDPI
+  if (std::abs(device_scale_factor - 2.666f) < kEpsilon)
     return 320;  // XHDPI
 
   constexpr float kChromeScaleToAndroidScaleRatio = 0.75f;

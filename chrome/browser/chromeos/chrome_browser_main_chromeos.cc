@@ -706,8 +706,6 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
 
   session_termination_manager_ =
       std::make_unique<chromeos::SessionTerminationManager>();
-  lock_to_single_user_manager_ =
-      std::make_unique<policy::LockToSingleUserManager>();
 
   ChromeBrowserMainPartsLinux::PreMainMessageLoopRun();
 }
@@ -736,6 +734,10 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // This forces the ProfileManager to be created and register for the
   // notification it needs to track the logged in user.
   g_browser_process->profile_manager();
+
+  // Must come after User Manager is inited.
+  lock_to_single_user_manager_ =
+      std::make_unique<policy::LockToSingleUserManager>();
 
   // AccessibilityManager and SystemKeyEventListener use InputMethodManager.
   input_method::Initialize();

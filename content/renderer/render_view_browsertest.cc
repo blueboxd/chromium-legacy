@@ -468,6 +468,14 @@ class RenderViewImplScaleFactorTest : public RenderViewImplTest {
   }
 
   void SetDeviceScaleFactor(float dsf) {
+    view()->GetWidget()->OnSynchronizeVisualProperties(
+        MakeVisualPropertiesWithDeviceScaleFactor(dsf));
+    ASSERT_EQ(dsf, view()->GetWidget()->GetWebScreenInfo().device_scale_factor);
+    ASSERT_EQ(dsf,
+              view()->GetWidget()->GetOriginalScreenInfo().device_scale_factor);
+  }
+
+  VisualProperties MakeVisualPropertiesWithDeviceScaleFactor(float dsf) {
     VisualProperties visual_properties;
     visual_properties.screen_info.device_scale_factor = dsf;
     visual_properties.new_size = gfx::Size(100, 100);
@@ -485,10 +493,7 @@ class RenderViewImplScaleFactorTest : public RenderViewImplTest {
         viz::LocalSurfaceIdAllocation(
             viz::LocalSurfaceId(1, 1, base::UnguessableToken::Create()),
             base::TimeTicks::Now());
-    view()->GetWidget()->OnSynchronizeVisualProperties(visual_properties);
-    ASSERT_EQ(dsf, view()->GetWidget()->GetWebScreenInfo().device_scale_factor);
-    ASSERT_EQ(dsf,
-              view()->GetWidget()->GetOriginalScreenInfo().device_scale_factor);
+    return visual_properties;
   }
 
   void TestEmulatedSizeDprDsf(int width, int height, float dpr,
@@ -1049,8 +1054,12 @@ TEST_F(RenderViewImplEnableZoomForDSFTest, UpdateDSFAfterSwapIn) {
       stub_browser_interface_broker;
   ignore_result(stub_browser_interface_broker.InitWithNewPipeAndPassReceiver());
 
+  // The new frame is initialized with |device_scale| as the device scale
+  // factor.
   mojom::CreateFrameWidgetParams widget_params;
-  widget_params.routing_id = view()->GetRoutingID();
+  widget_params.routing_id = view()->GetWidget()->routing_id();
+  widget_params.visual_properties =
+      MakeVisualPropertiesWithDeviceScaleFactor(device_scale);
   RenderFrameImpl::CreateFrame(
       routing_id, std::move(stub_interface_provider),
       std::move(stub_document_interface_broker_content),
@@ -2723,7 +2732,7 @@ TEST_F(RenderViewImplScaleFactorTest, AutoResizeWithoutZoomForDSF) {
   EXPECT_EQ(size_at_1x, size_at_2x);
 }
 
-TEST_F(RenderViewImplScaleFactorTest, ZoomLevelUpdate) {
+TEST_F(RenderViewImplTest, ZoomLevelUpdate) {
   // 0 is the default zoom level, nothing will change.
   SetZoomLevel(0);
   EXPECT_NEAR(0.0, GetZoomLevel(), 0.01);

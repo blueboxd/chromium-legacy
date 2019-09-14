@@ -97,9 +97,6 @@
 <translation id="138218114945450791">Xanh lam nhạt</translation>
 <translation id="1382194467192730611">Thiết bị USB được quản trị viên của bạn cho phép</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> không gửi bất kỳ dữ liệu nào.</translation>
-<translation id="140316286225361634">Trang web <ph name="ORIGIN" /> đã yêu cầu phải áp dụng một
-    chính sách bảo mật cho tất cả các yêu cầu của trang đó, và chính sách này hiện cho rằng trang web đó
-    không an toàn.</translation>
 <translation id="1405567553485452995">Xanh lục nhạt</translation>
 <translation id="1407135791313364759">Mở tất cả</translation>
 <translation id="1413809658975081374">Lỗi bảo mật</translation>
@@ -135,6 +132,7 @@
 <translation id="1569487616857761740">Nhập ngày hết hạn</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Đã xảy ra lỗi khi hiển thị trang web này.</translation>
+<translation id="1588438908519853928">Bình thường</translation>
 <translation id="1592005682883173041">Quyền truy cập dữ liệu cục bộ</translation>
 <translation id="1594030484168838125">Chọn</translation>
 <translation id="161042844686301425">Lục lam</translation>
@@ -212,10 +210,6 @@
 <translation id="1981206234434200693">Xóa dữ liệu lịch sử duyệt web của Chrome</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{và 1 ứng dụng khác}other{và # ứng dụng khác}}</translation>
 <translation id="2003709556000175978">Đặt lại mật khẩu của bạn ngay bây giờ</translation>
-<translation id="20053308747750172">Máy chủ bạn định truy cập vào, <ph name="ORIGIN" />, đã yêu cầu phải áp dụng
-    một chính sách bảo mật cho tất cả các yêu cầu được gửi tới máy chủ đó. Tuy nhiên, máy chủ đó hiện đã
-    cung cấp một chính sách không hợp lệ, khiến cho trình duyệt
-    không hoàn tất được yêu cầu truy cập vào <ph name="SITE" /> của bạn.</translation>
 <translation id="2025186561304664664">Proxy được đặt thành định cấu hình tự động.</translation>
 <translation id="202813660234680402">Không, không thêm</translation>
 <translation id="2030481566774242610">Ý của bạn là <ph name="LINK" />?</translation>
@@ -293,10 +287,6 @@
 <translation id="2409589295040002961">Quản trị viên có thể thay đổi quy trình thiết lập trình duyệt của bạn từ xa. Hoạt động trên thiết bị này cũng có thể được quản lý bên ngoài Chrome. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này có thể đã bị thu hồi. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
-<translation id="2418081434543109369">Máy chủ bạn định truy cập vào, <ph name="ORIGIN" />, đã yêu cầu phải áp dụng
-    một chính sách bảo mật cho tất cả các yêu cầu được gửi tới máy chủ đó. Tuy nhiên, hiện máy chủ đó
-    không cung cấp được chính sách, điều này khiến cho trình duyệt không hoàn tất được
-    yêu cầu truy cập vào <ph name="SITE" /> của bạn.</translation>
 <translation id="2463193859425327265">Thay đổi trang chủ</translation>
 <translation id="2463739503403862330">Điền</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -590,6 +580,7 @@
 <translation id="4103249731201008433">Số sê-ri thiết bị không hợp lệ</translation>
 <translation id="410351446219883937">Tự động phát</translation>
 <translation id="4103763322291513355">Truy cập &lt;strong&gt;chrome://policy&lt;/strong&gt; để xem danh sách các URL bị chặn quyền truy cập và các chính sách khác bị quản trị viên hệ thống buộc phải thực thi.</translation>
+<translation id="4108231218301530806">Dùng vân tay để xác minh thẻ này vào lần tới.</translation>
 <translation id="4110652170750985508">Xem xét thanh toán của bạn</translation>
 <translation id="4112140312785995938">Tua lùi</translation>
 <translation id="4116663294526079822">Luôn cho phép trên trang web này</translation>
@@ -792,6 +783,7 @@
 <translation id="5141240743006678641">Mã hóa mật khẩu đã đồng bộ hóa với thông tin đăng nhập Google của bạn</translation>
 <translation id="5145883236150621069">Mã lỗi có trong phản hồi chính sách</translation>
 <translation id="515292512908731282">C4 (Phong bì)</translation>
+<translation id="5158275234811857234">Trang bìa</translation>
 <translation id="5159010409087891077">Mở trang trong cửa sổ Ẩn danh mới (⇧⌘N)</translation>
 <translation id="516920405563544094">Hãy nhập số CVC của <ph name="CREDIT_CARD" />. Sau khi bạn xác nhận, thông tin chi tiết thẻ trong Tài khoản Google của bạn sẽ được chia sẻ với trang web này.</translation>
 <translation id="5169827969064885044">Bạn có thể mất quyền truy cập vào tài khoản của tổ chức mình hoặc bị đánh cắp danh tính. Chrome khuyên bạn nên thay đổi mật khẩu ngay bây giờ.</translation>
@@ -951,6 +943,7 @@
 <translation id="598637245381783098">Không thể mở ứng dụng thanh toán</translation>
 <translation id="5989320800837274978">Cả máy chủ proxy cố định và URL tập lệnh .pac đều chưa được chỉ định.</translation>
 <translation id="5990559369517809815">Tiện ích đã chặn yêu cầu tới máy chủ.</translation>
+<translation id="6000758707621254961"><ph name="RESULT_COUNT" /> kết quả cho '<ph name="SEARCH_TEXT" />'</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">Năm</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Trang 1}other{Trang #}}</translation>
@@ -1009,6 +1002,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Không có}=1{1 mật khẩu (cho <ph name="DOMAIN_LIST" />, đã đồng bộ hóa)}=2{2 mật khẩu (cho <ph name="DOMAIN_LIST" />, đã đồng bộ hóa)}other{# mật khẩu (cho <ph name="DOMAIN_LIST" />, đã đồng bộ hóa)}}</translation>
 <translation id="6358450015545214790">Những phần này có ý nghĩa gì?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6377268785556383139">1 kết quả cho '<ph name="SEARCH_TEXT" />'</translation>
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Nếu tiếp tục, bạn có thể bị tính phí.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 đề xuất khác}other{# đề xuất khác}}</translation>
@@ -1143,10 +1137,6 @@
 <translation id="717330890047184534">ID Gaia:</translation>
 <translation id="7174545416324379297">Đã hợp nhất</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> và <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> tùy chọn giao hàng khác}other{<ph name="SHIPPING_OPTION_PREVIEW" /> và <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> tùy chọn giao hàng khác}}</translation>
-<translation id="7177397715882417099">Máy chủ bạn định truy cập vào, <ph name="ORIGIN" />, đã yêu cầu phải áp dụng
-    một chính sách bảo mật cho tất cả các yêu cầu được gửi tới máy chủ đó. Tuy nhiên, thay vì
-    cung cấp một chính sách thì máy chủ đó đã chuyển hướng trình duyệt tới một nơi khác, điều này khiến cho
-    trình duyệt không hoàn tất được yêu cầu truy cập vào <ph name="SITE" /> của bạn.</translation>
 <translation id="7179323680825933600">Lưu và điền phương thức thanh toán</translation>
 <translation id="7180611975245234373">Làm mới</translation>
 <translation id="7182878459783632708">Không có chính sách nào được đặt</translation>
@@ -1173,6 +1163,7 @@ Thông tin chi tiết bổ sung:
 <translation id="7300012071106347854">Xanh thẩm</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
 <translation id="7303701124147721189">Để thanh toán nhanh hơn vào lần tới, hãy lưu địa chỉ thanh toán và thông tin thẻ vào thiết bị này và Tài khoản Google của bạn.</translation>
+<translation id="7304030187361489308">Cao</translation>
 <translation id="7309308571273880165">Báo cáo sự cố được ghi lại vào <ph name="CRASH_TIME" /> (người dùng yêu cầu tải lên, nhưng chưa được tải lên)</translation>
 <translation id="7313965965371928911">Cảnh báo <ph name="BEGIN_LINK" />Duyệt web an toàn<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1535,7 +1526,6 @@ Thông tin chi tiết bổ sung:
 <translation id="939736085109172342">Thư mục mới</translation>
 <translation id="945855313015696284">Kiểm tra thông tin bên dưới và xóa mọi thẻ không hợp lệ</translation>
 <translation id="951104842009476243">Thẻ ghi nợ và thẻ trả trước được chấp nhận</translation>
-<translation id="958202389743790697">Bị chặn theo chính sách bảo mật của <ph name="ORIGIN" />.</translation>
 <translation id="962484866189421427">Nội dung này có thể tìm cách cài đặt ứng dụng lừa đảo giả mạo nội dung khác hoặc thu thập dữ liệu có thể được dùng để theo dõi bạn. <ph name="BEGIN_LINK" />Vẫn hiển thị<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Phiên bản Chính thức</translation>
 <translation id="973773823069644502">Thêm địa chỉ giao hàng</translation>

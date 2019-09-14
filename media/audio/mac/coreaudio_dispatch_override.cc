@@ -97,14 +97,23 @@ bool AddressIsPauseOrResume(intptr_t address) {
 
   DCHECK_EQ(strcmp(info.dli_fname, kCoreAudioPath), 0);
 
+  // Before Mac OSX 10.10, this code is not applied because dyld is not
+  // available.
+  // From Mac OSX 10.10 to 10.15 (excluded) the target functions that trigger
+  // the interposition are HALC_IOContext_ResumeIO and HALC_IOContext_PauseIO
+  // for respectively resume and pause.
+  // With MacOSX 10.15 the target functions have changed to _XIOContext_ResumeIO
+  // and _XIOContext_PauseIO for respectively resume and pause.
   if (!resumeio_callsite && info.dli_sname &&
-      strcmp(info.dli_sname, "HALC_IOContext_ResumeIO") == 0) {
+      (strcmp(info.dli_sname, "HALC_IOContext_ResumeIO") == 0 ||
+       strcmp(info.dli_sname, "_XIOContext_ResumeIO") == 0)) {
     resumeio_callsite = address;
     base::subtle::NoBarrier_CompareAndSwap(&g_resumeio_callsite, 0,
                                            resumeio_callsite);
     LogCallsiteLookupEvent(LOOKUP_RESUMEIO_CALLSITE_FOUND);
   } else if (!pauseio_callsite && info.dli_sname &&
-             strcmp(info.dli_sname, "HALC_IOContext_PauseIO") == 0) {
+             (strcmp(info.dli_sname, "HALC_IOContext_PauseIO") == 0 ||
+              strcmp(info.dli_sname, "_XIOContext_PauseIO") == 0)) {
     pauseio_callsite = address;
     base::subtle::NoBarrier_CompareAndSwap(&g_pauseio_callsite, 0,
                                            pauseio_callsite);

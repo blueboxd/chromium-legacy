@@ -8,14 +8,17 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min}other{# min}}</translation>
 <translation id="1181037720776840403">Ta bort</translation>
 <translation id="1243314992276662751">Ladda upp</translation>
+<translation id="1266864766717917324">Det gick inte att dela <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1290982764014248209">Flytta <ph name="DRAGGED_APP" /> till mappen <ph name="FOLDER_NAME" />.</translation>
+<translation id="1291104554099683393">Testa att dela upp texten i mindre bitar.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">REKOMMENDERADE APPAR</translation>
 <translation id="1368832886055348810">Vänster till höger</translation>
 <translation id="1383876407941801731">Sök</translation>
 <translation id="1398853756734560583">Maximera</translation>
 <translation id="1409544243779336081">Apprekommendation</translation>
+<translation id="1450753235335490080">Det gick inte att dela <ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">Du har sökt efter detta tidigare. Om du raderar <ph name="QUERY" /> från historiken tas förslaget bort från ditt konto på alla enheter.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minut och }other{# minuter och }}</translation>
 <translation id="1643823602425662293">Avisering</translation>
@@ -35,6 +38,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Välj &amp;alla</translation>
 <translation id="1938451708255335766">Starta om appen om du vill anpassa visningstätheten för fönstret.</translation>
+<translation id="2006524834898217237">Kontrollera att enheten är ansluten till internet.</translation>
 <translation id="208586643495776849">Försök igen</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 d}other{# d}}</translation>
 <translation id="2148716181193084225">Idag</translation>
@@ -76,6 +80,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 dag}other{# dagar}}</translation>
 <translation id="3295886253693811851">Ring från</translation>
 <translation id="335581015389089642">Tal</translation>
+<translation id="3389286852084373014">Texten är för stor</translation>
 <translation id="3443810440409579745">En flik har tagits emot.</translation>
 <translation id="3479552764303398839">Inte nu</translation>
 <translation id="348799646910989694">Hyllan döljs automatiskt</translation>
@@ -151,11 +156,13 @@
 <translation id="6404817160109697034">{SECONDS,plural, =1{för 1 sek sedan}other{för # sek sedan}}</translation>
 <translation id="6430678249303439055">Blockera alla aviseringar från den här appen</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 sekund sedan}other{# sekunder sedan}}</translation>
+<translation id="6539092367496845964">Något gick fel. Försök igen senare.</translation>
 <translation id="654149438358937226">Blockera alla aviseringar</translation>
 <translation id="6567071839949112727">klicka på det överordnade objektet</translation>
 <translation id="6578407462441924264">Namnlös</translation>
 <translation id="6612467943526193239">Tryck på Esc för att avsluta kalibreringen.</translation>
 <translation id="6620110761915583480">Spara fil</translation>
+<translation id="6656912866303152668">Kontrollera att synkronisering är aktiverat i Chrome på <ph name="TARGET_DEVICE_NAME" /> och försök skicka igen.</translation>
 <translation id="6699343763173986273">Nästa spår</translation>
 <translation id="673773751041746814">Borttagning</translation>
 <translation id="6779314412797872738"><ph name="TROUBLESHOOT_LINK" /> i inställningarna för båda enheterna om du vill skicka ett nummer till Android-telefonen härifrån.</translation>
@@ -221,6 +228,7 @@
 <translation id="8876215549894133151">Format:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> kB</translation>
 <translation id="8926951137623668982">Hyllan döljs alltid</translation>
+<translation id="8996630695507351249">Kontrollera att <ph name="TARGET_DEVICE_NAME" /> är ansluten till internet.</translation>
 <translation id="9002566407876343676">öppna</translation>
 <translation id="9039076430527029379">Flytta till sidan <ph name="PAGE_NUMBER" />, rad <ph name="ROW_NUMBER" />, kolumn <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 sek}other{# sek}}</translation>

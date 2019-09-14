@@ -21,7 +21,6 @@
 <translation id="1146678959555564648">Angiv VR</translation>
 <translation id="116280672541001035">Brugt</translation>
 <translation id="1171770572613082465">Se populære websites ved at trykke på knappen "Topwebsites"</translation>
-<translation id="1172593791219290334">Opstartsside</translation>
 <translation id="1173894706177603556">Omdøb</translation>
 <translation id="1175310183703641346">Dine bogmærker, din historik, dine adgangskoder og meget andet bliver ikke længere synkroniseret med din Google-konto</translation>
 <translation id="1178581264944972037">Pause</translation>
@@ -42,6 +41,7 @@
 <translation id="1258753120186372309">Google-doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Søg, og udforsk</translation>
 <translation id="1264974993859112054">Sport</translation>
+<translation id="1266864766717917324">Det var ikke muligt at dele <ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1283039547216852943">Tryk for at udvide</translation>
 <translation id="1285320974508926690">Oversæt aldrig dette website</translation>
@@ -71,6 +71,7 @@
 <translation id="1430915738399379752">Udskriv</translation>
 <translation id="1445680696957526815">Chromes komponenter er ikke kompatible med hinanden. Chrome er muligvis ved at opgradere. Prøv igen om et par minutter. Hvis problemet fortsætter, kan du prøve at afinstallere og geninstallere Chrome.</translation>
 <translation id="1446450296470737166">Tillad fuld kontrol over MIDI-enheder</translation>
+<translation id="1450753235335490080">Delingen af <ph name="CONTENT_TYPE" /> mislykkedes</translation>
 <translation id="145097072038377568">Deaktiveret i indstillingerne for Android</translation>
 <translation id="1477626028522505441">Download af <ph name="FILE_NAME" /> mislykkedes på grund af serverproblemer.</translation>
 <translation id="1501480321619201731">Slet gruppe</translation>
@@ -153,6 +154,7 @@
 <translation id="2049961518639794558">Ændring af filtypen kan medføre uventet adfærd og være skadeligt for enheden.</translation>
 <translation id="2056878612599315956">Websitet er sat på pause</translation>
 <translation id="2063713494490388661">Tryk for at søge</translation>
+<translation id="2067805253194386918">tekst</translation>
 <translation id="2079545284768500474">Fortryd</translation>
 <translation id="2082238445998314030">Resultat <ph name="RESULT_NUMBER" /> af <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Lyd</translation>
@@ -165,7 +167,6 @@
 <translation id="2131665479022868825"><ph name="DATA" /> sparet</translation>
 <translation id="213279576345780926">Lukkede <ph name="TAB_TITLE" /></translation>
 <translation id="2139186145475833000">Føj til startskærm</translation>
-<translation id="2142289305367051020">Dine favoritsider vises her</translation>
 <translation id="2146738493024040262">Åbn instant app</translation>
 <translation id="2148716181193084225">I dag</translation>
 <translation id="2154484045852737596">Rediger kort</translation>
@@ -324,6 +325,7 @@
 <translation id="3384347053049321195">Del billede</translation>
 <translation id="3386292677130313581">Spørg, om websites må få adgang til din placering (anbefales)</translation>
 <translation id="3387650086002190359">Download af <ph name="FILE_NAME" /> mislykkedes på grund af fejl i filsystemet.</translation>
+<translation id="3389286852084373014">Teksten er for lang</translation>
 <translation id="3398320232533725830">Åbn bogmærkeadministratoren</translation>
 <translation id="3414952576877147120">Størrelse:</translation>
 <translation id="3443221991560634068">Genindlæs den aktuelle side</translation>
@@ -348,6 +350,7 @@
 <translation id="3599863153486145794">Rydder historikken på alle enheder, hvor du er logget ind. Din Google-konto kan have andre former for browserhistorik på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Lyden slås fra for websites, der afspiller lyd</translation>
 <translation id="3616113530831147358">Lyd</translation>
+<translation id="3631987586758005671">Deler med <ph name="DEVICE_NAME" /></translation>
 <translation id="3632295766818638029">Vis adgangskoden</translation>
 <translation id="363596933471559332">Log automatisk ind på websites med gemte loginoplysninger. Når funktionen er slået fra, bliver du bedt om at bekræfte, hver gang du vil logge ind på et website.</translation>
 <translation id="3658159451045945436">En nulstilling sletter din historik for databesparelser, herunder listen over de websites, du har besøgt.</translation>
@@ -358,7 +361,6 @@
 <translation id="3739899004075612870">Tilføjet som bogmærke i <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB af andre apps</translation>
 <translation id="3744111561329211289">Synkronisering i baggrunden</translation>
-<translation id="3745176700485982507">Du kan finde links til dine yndlingswebsites på denne side</translation>
 <translation id="3771001275138982843">Opdateringen kunne ikke downloades</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Slå Bluetooth til<ph name="END_LINK" /> for at tillade parring</translation>
 <translation id="3775705724665058594">Send til dine enheder</translation>
@@ -563,7 +565,6 @@ Sørg for, at du har tillid til dette website, før du starter VR.</translation>
 <translation id="5224771365102442243">Med video</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> vil gerne søge efter Bluetooth-enheder i nærheden. Følgende enheder blev fundet:</translation>
 <translation id="5233638681132016545">Ny fane</translation>
-<translation id="5234764350956374838">Luk</translation>
 <translation id="526421993248218238">Siden kunne ikke indlæses</translation>
 <translation id="5271967389191913893">Enheden kan ikke åbne det indhold, der skal downloades.</translation>
 <translation id="528192093759286357">Træk fra toppen, og tryk på tilbageknappen igen for at afslutte fuld skærm.</translation>
@@ -578,8 +579,8 @@ Sørg for, at du har tillid til dette website, før du starter VR.</translation>
 <translation id="5324858694974489420">Indstillinger for børnesikring</translation>
 <translation id="5327248766486351172">Navn</translation>
 <translation id="5335288049665977812">Tillad, at websites kører JavaScript (anbefales)</translation>
+<translation id="5342314432463739672">Anmodninger om tilladelse</translation>
 <translation id="5357811892247919462">Du har modtaget en fane</translation>
-<translation id="5363230136052241468">Tryk på knappen Hjem for at indlæse siden Ny fane</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> åben fane – tryk for at skifte fane}one{<ph name="OPEN_TABS_MANY" /> åben fane – tryk for at skifte fane}other{<ph name="OPEN_TABS_MANY" /> åbne faner – tryk for at skifte fane}}</translation>
 <translation id="5391532827096253100">Din forbindelse til dette website er ikke sikker. Websiteoplysninger</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 anden)}one{(+ # anden)}other{(+ # andre)}}</translation>
@@ -748,6 +749,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6532866250404780454">Websites, du besøger i Chrome, vises ikke. Alle timere for websites slettes.</translation>
 <translation id="6534565668554028783">Google var for lang tid om at svare</translation>
 <translation id="6538442820324228105">Der er downloadet <ph name="GBS" /> GB</translation>
+<translation id="6539092367496845964">Der opstod en fejl. Prøv igen senere.</translation>
 <translation id="654446541061731451">Vælg en fane, der skal overføres</translation>
 <translation id="6545017243486555795">Ryd alle data</translation>
 <translation id="6545864417968258051">Bluetooth-scanning</translation>
@@ -802,7 +804,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6912998170423641340">Bloker websites, så de ikke kan læse tekst og billeder fra udklipsholderen</translation>
 <translation id="6914783257214138813">Dine adgangskoder vil være synlige for alle, der kan se den eksporterede fil.</translation>
 <translation id="6942665639005891494">Du kan til enhver tid ændre standardplaceringen for downloads via menuen Indstillinger</translation>
-<translation id="6944102653068653326">Tryk for at indlæse siden Ny fane</translation>
 <translation id="6945221475159498467">Vælg</translation>
 <translation id="6963642900430330478">Denne side er farlig. Websiteoplysninger</translation>
 <translation id="6963766334940102469">Slet bogmærker</translation>
@@ -879,6 +880,7 @@ Websitet får IKKE adgang til kameraet. Kameraets billeder kan kun ses af dig.</
 <translation id="7493994139787901920"><ph name="VERSION" /> (Opdateret <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">databesparelse</translation>
 <translation id="7498271377022651285">Vent…</translation>
+<translation id="7510943789645525906">Advarer dig, hvis en adgangskode, du bruger, har været berørt af et brud på datasikkerheden</translation>
 <translation id="7514365320538308">Download</translation>
 <translation id="751961395872307827">Der kunne ikke oprettes forbindelse til websitet</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -996,7 +998,6 @@ Websitet får IKKE adgang til kameraet. Kameraets billeder kan kun ses af dig.</
 <translation id="8284326494547611709">Undertekster</translation>
 <translation id="8300705686683892304">Administreres af en app</translation>
 <translation id="8310344678080805313">Standardfaner</translation>
-<translation id="8313455859591948645">Rediger opstartsside</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> og andre websites</translation>
 <translation id="8327155640814342956">Opdater Chrome for at få den bedste browseroplevelse</translation>
 <translation id="8339163506404995330">Sider på <ph name="LANGUAGE" /> oversættes ikke</translation>

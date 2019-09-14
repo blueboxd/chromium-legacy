@@ -192,32 +192,27 @@ class BookmarkModel : public BookmarkUndoProvider,
   // If not on the main thread you *must* invoke BlockTillLoaded first.
   void GetBookmarks(std::vector<UrlAndTitle>* urls);
 
-  // Adds a new folder node at the specified position.
-  const BookmarkNode* AddFolder(const BookmarkNode* parent,
-                                size_t index,
-                                const base::string16& title);
-
-  // Adds a new folder with meta info.
-  const BookmarkNode* AddFolderWithMetaInfo(
+  // Adds a new folder node at the specified position with the given |guid| and
+  // |meta_info|. If a GUID is provided, it must be a valid version 4 GUID,
+  // otherwise a new one is generated to replace it.
+  const BookmarkNode* AddFolder(
       const BookmarkNode* parent,
       size_t index,
       const base::string16& title,
-      const BookmarkNode::MetaInfoMap* meta_info);
+      const BookmarkNode::MetaInfoMap* meta_info = nullptr,
+      base::Optional<std::string> guid = base::nullopt);
 
-  // Adds a url at the specified position.
-  const BookmarkNode* AddURL(const BookmarkNode* parent,
-                             size_t index,
-                             const base::string16& title,
-                             const GURL& url);
-
-  // Adds a url with a specific creation date and meta info.
-  const BookmarkNode* AddURLWithCreationTimeAndMetaInfo(
+  // Adds a url at the specified position with the given |creation_time|,
+  // |meta_info| and |guid|. If a GUID is provided, it must be a valid version 4
+  // GUID, otherwise a new one is generated to replace it.
+  const BookmarkNode* AddURL(
       const BookmarkNode* parent,
       size_t index,
       const base::string16& title,
       const GURL& url,
-      const base::Time& creation_time,
-      const BookmarkNode::MetaInfoMap* meta_info);
+      const BookmarkNode::MetaInfoMap* meta_info = nullptr,
+      base::Optional<base::Time> creation_time = base::nullopt,
+      base::Optional<std::string> guid = base::nullopt);
 
   // Sorts the children of |parent|, notifying observers by way of the
   // BookmarkNodeChildrenReordered method.

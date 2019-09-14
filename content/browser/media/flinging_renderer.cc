@@ -105,10 +105,10 @@ void FlingingRenderer::StartPlayingFrom(base::TimeDelta time) {
 void FlingingRenderer::SetPlaybackRate(double playback_rate) {
   DVLOG(2) << __func__;
   if (playback_rate == 0) {
-    SetTargetPlayState(PlayState::PAUSED);
+    SetExpectedPlayState(PlayState::PAUSED);
     controller_->GetMediaController()->Pause();
   } else {
-    SetTargetPlayState(PlayState::PLAYING);
+    SetExpectedPlayState(PlayState::PLAYING);
     controller_->GetMediaController()->Play();
   }
 }
@@ -122,18 +122,19 @@ base::TimeDelta FlingingRenderer::GetMediaTime() {
   return controller_->GetApproximateCurrentTime();
 }
 
-void FlingingRenderer::SetTargetPlayState(PlayState state) {
+void FlingingRenderer::SetExpectedPlayState(PlayState state) {
   DVLOG(3) << __func__ << " : state " << static_cast<int>(state);
   DCHECK(state == PlayState::PLAYING || state == PlayState::PAUSED);
-  reached_target_play_state_ = false;
-  target_play_state_ = state;
+
+  expected_play_state_ = state;
+  play_state_is_stable_ = (expected_play_state_ == last_play_state_received_);
 }
 
 void FlingingRenderer::OnMediaStatusUpdated(const media::MediaStatus& status) {
   const auto& current_state = status.state;
 
-  if (current_state == target_play_state_)
-    reached_target_play_state_ = true;
+  if (current_state == expected_play_state_)
+    play_state_is_stable_ = true;
 
   // Because we can get a MediaStatus update at any time from the device, only
   // handle state updates after we have reached the target state.
@@ -146,7 +147,7 @@ void FlingingRenderer::OnMediaStatusUpdated(const media::MediaStatus& status) {
   //   queue a new PLAYING.
   // - The local device enters a tick/tock feedback loop of constantly
   //   requesting the wrong state of PLAYING/PAUSED.
-  if (!reached_target_play_state_)
+  if (!play_state_is_stable_)
     return;
 
   // Ignore all non PLAYING/PAUSED states.
@@ -160,10 +161,12 @@ void FlingingRenderer::OnMediaStatusUpdated(const media::MediaStatus& status) {
     return;
   }
 
-  // We previously reached a stable target PlayState, and the cast device has
-  // reached a new stable PlayState without WMPI having asked for it.
-  // Let WMPI know it should update itself.
-  if (current_state != target_play_state_)
+  // Save whether the remote device is currently playing or paused.
+  last_play_state_received_ = current_state;
+
+  // If the remote device's play state has toggled and we didn't initiate it,
+  // notify WMPI to update it's own play/pause state.
+  if (last_play_state_received_ != expected_play_state_)
     client_extension_->OnRemotePlayStateChange(current_state);
 }
 

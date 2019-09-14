@@ -476,10 +476,6 @@
       Cuando esta política se establece con una URL válida, <ph name="PRODUCT_NAME" /> descarga la lista de sitios de esa URL y aplica las reglas como si se hubieran configurado con la política <ph name="SITELIST_POLICY_NAME" />.
 
       Para obtener más información sobre la política <ph name="IEEM_SITELIST_POLICY" /> de Internet Explorer, consulta: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
-<translation id="1839060937202387559">Envía informes sobre las estadísticas de hardware y los identificadores para los dispositivos de almacenamiento.
-
-      Si esta política se configura como falsa, no se enviarán las estadísticas.
-      Si se configura como verdadera o no se configura, se enviarán las estadísticas.</translation>
 <translation id="1843117931376765605">Frecuencia de actualización de la política de usuario</translation>
 <translation id="1844620919405873871">Configura políticas relacionadas con el desbloqueo rápido.</translation>
 <translation id="1845405905602899692">Configuración del kiosco</translation>
@@ -3289,17 +3285,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7049373494483449255">Habilita a <ph name="PRODUCT_NAME" /> para enviar documentos a <ph name="CLOUD_PRINT_NAME" /> para la impresión. NOTA: Esto solo afecta el soporte de <ph name="CLOUD_PRINT_NAME" /> en <ph name="PRODUCT_NAME" />. No evita que los usuarios envíen trabajos de impresión en las páginas web. Si se habilita esta opción o no se configura, los usuarios podrán imprimir en <ph name="CLOUD_PRINT_NAME" /> desde el cuadro de diálogo de impresión de <ph name="PRODUCT_NAME" />. Si se inhabilita esta configuración, los usuarios no podrán imprimir en <ph name="CLOUD_PRINT_NAME" /> desde el cuadro de diálogo de impresión de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7053678646221257043">Esta política, si se habilita, fuerza la importación de los favoritos del navegador predeterminado actual. Si se habilita, esta política también afecta el cuadro de diálogo de importación. Si se inhabilita, no se importará ningún marcador. Si no se configura, se le puede preguntar al usuario si desea importar o la importación puede realizarse de forma automática.</translation>
 <translation id="7063895219334505671">Permitir ventanas emergentes en estos sitios</translation>
-<translation id="706568410943497889">
-      Si se establece la política como verdadera, se permitirá que <ph name="PRODUCT_NAME" /> recopile registros de acontecimientos de WebRTC de los servicios de Google (p. ej., Google Meet) y suba esos registros a Google.
-
-      Si se establece como falsa o no se establece, <ph name="PRODUCT_NAME" /> no podrá recopilar ni subir los registros.
-
-      Estos registros contienen información de diagnóstico que resulta útil para depurar problemas con llamadas de video o audio en Chrome, como el momento en que se enviaron y recibieron paquetes RTP (y el tamaño de estos), comentarios sobre la congestión en la red y metadatos sobre el tiempo y la calidad de los cuadros de video y audio. Estos registros no tienen contenido de audio ni video de la llamada.
-
-      Esta colección de datos de Chrome solo se puede activar a través de los servicios web de Google, como Google Hangouts o Google Meet.
-
-      Con el fin de simplificar la depuración, Google puede asociar estos registros, por medio de un ID de sesión, con otros registros recopilados por el servicio de Google en sí.
-      </translation>
 <translation id="706669471845501145">Permitir que los sitios muestren notificaciones de escritorio.</translation>
 <translation id="7068108874199666656">Permite aplicar la configuración de red a todos los usuarios de un dispositivo <ph name="PRODUCT_OS_NAME" />. La configuración de red es una cadena escrita en formato JSON, como la define el formato que se describe en Open Network Configuration.</translation>
 <translation id="7070525176564511548">Se requiere el ingreso de la contraseña cada semana (168 horas)</translation>
@@ -3993,10 +3978,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
           Si estableces esta política, los usuarios no podrán cambiarla ni anularla.
 
           Si no la estableces, la función de dictado estará inicialmente inhabilitada, pero el usuario podrá habilitarla en cualquier momento.</translation>
-<translation id="8292322992383748446">Envía informes sobre las estadísticas de hardware para los componentes de SoC.
-
-      Si esta política se configura como falsa, no se enviarán las estadísticas.
-      Si se configura como verdadera o no se configura, se enviarán las estadísticas.</translation>
 <translation id="829337533107201925">Si se habilita esta política, se ignorarán las políticas procedentes de un grupo atómico que no comparta el origen con la prioridad más alta de ese grupo.
 
       Si se habilita esta política, no se ignorará ninguna política debido a su origen. Solo se ignorarán las políticas en caso de conflicto y si la política no tiene la prioridad más alta.
@@ -4032,10 +4013,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="8367209241899435947">Habilitar "Limpiar Chrome" en Windows</translation>
 <translation id="8369602308428138533">Demora de pantalla apagada con alimentación de CA</translation>
 <translation id="8371178326720637170">Habilitar las extensiones administradas para usar la API de Enterprise Hardware Platform</translation>
-<translation id="8374747520743832795">Envía informes sobre las estadísticas de hardware y los identificadores relacionados con la energía.
-
-      Si esta política se configura como falsa, no se enviarán las estadísticas.
-      Si se configura como verdadera o no se configura, se enviarán las estadísticas.</translation>
 <translation id="8380490658357556620">Habilita el uso de servidores de retransmisión cuando los clientes remotos intentan establecer una conexión con esta computadora.
 
           Si se habilita esta configuración, los clientes remotos podrán utilizar servidores de retransmisión para conectarse a esta computadora si no hay ninguna conexión directa disponible (por ejemplo, a causa de restricciones del firewall).

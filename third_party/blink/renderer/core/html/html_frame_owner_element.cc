@@ -117,6 +117,10 @@ bool ShouldLazilyLoadFrame(const Document& document,
     return false;
   }
 
+  // Disable explicit and automatic lazyload for backgrounded pages.
+  if (!document.IsPageVisible())
+    return false;
+
   if (is_loading_attr_lazy)
     return true;
   if (!RuntimeEnabledFeatures::AutomaticLazyFrameLoadingEnabled())

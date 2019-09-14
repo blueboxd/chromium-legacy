@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -44,7 +45,8 @@ class UnifiedMessageCenterBubble;
 // UnifiedSystemTrayBubble is the actual menu bubble shown above the system tray
 // after the user clicks on it. The UnifiedSystemTrayBubble is created and owned
 // by this class.
-class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
+class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
+                                     public ShelfConfig::Observer {
  public:
   explicit UnifiedSystemTray(Shelf* shelf);
   ~UnifiedSystemTray() override;
@@ -110,6 +112,9 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   const char* GetClassName() const override;
+
+  // ShelfConfig::Observer:
+  void OnShelfConfigUpdated() override;
 
   UnifiedSystemTrayModel* model() { return model_.get(); }
   UnifiedSystemTrayBubble* bubble() { return bubble_.get(); }

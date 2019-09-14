@@ -56,7 +56,8 @@ class TabletModeTransitionTest : public UIPerformanceTest {
   void SetUpOnMainThread() override {
     UIPerformanceTest::SetUpOnMainThread();
 
-    constexpr int additional_browsers = 5;
+    // Eight windows is the number we want to get a good performance on.
+    constexpr int additional_browsers = 7;
     constexpr int cost_per_browser = 100;
     for (int i = 0; i < additional_browsers; ++i)
       CreateBrowser(browser()->profile());

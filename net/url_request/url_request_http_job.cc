@@ -284,10 +284,7 @@ URLRequestHttpJob::URLRequestHttpJob(
       server_auth_state_(AUTH_STATE_DONT_NEED_AUTH),
       read_in_progress_(false),
       throttling_entry_(nullptr),
-      is_cached_content_(false),
-      packet_timing_enabled_(false),
       done_(false),
-      bytes_observed_in_packets_(0),
       awaiting_callback_(false),
       http_user_agent_settings_(http_user_agent_settings),
       total_received_bytes_from_previous_transactions_(0),
@@ -403,11 +400,7 @@ void URLRequestHttpJob::NotifyHeadersComplete() {
 
   response_info_ = transaction_->GetResponseInfo();
 
-  // Save boolean, as we'll need this info at destruction time, and filters may
-  // also need this info.
-  is_cached_content_ = response_info_->was_cached;
-
-  if (!is_cached_content_ && throttling_entry_.get())
+  if (!response_info_->was_cached && throttling_entry_.get())
     throttling_entry_->UpdateWithResponse(GetResponseCode());
 
   // The ordering of these calls is not important.
@@ -1313,11 +1306,6 @@ int URLRequestHttpJob::ReadRawData(IOBuffer* buf, int buf_size) {
   return rv;
 }
 
-void URLRequestHttpJob::StopCaching() {
-  if (transaction_.get())
-    transaction_->StopCaching();
-}
-
 int64_t URLRequestHttpJob::GetTotalReceivedBytes() const {
   int64_t total_received_bytes =
       total_received_bytes_from_previous_transactions_;
@@ -1382,20 +1370,6 @@ void URLRequestHttpJob::ResetTimer() {
     return;
   }
   request_creation_time_ = base::Time::Now();
-}
-
-void URLRequestHttpJob::UpdatePacketReadTimes() {
-  if (!packet_timing_enabled_)
-    return;
-
-  DCHECK_GT(prefilter_bytes_read(), bytes_observed_in_packets_);
-
-  base::Time now(base::Time::Now());
-  if (!bytes_observed_in_packets_)
-    request_time_snapshot_ = now;
-  final_packet_time_ = now;
-
-  bytes_observed_in_packets_ = prefilter_bytes_read();
 }
 
 void URLRequestHttpJob::SetRequestHeadersCallback(

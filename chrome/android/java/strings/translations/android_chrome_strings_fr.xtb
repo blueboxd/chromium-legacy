@@ -21,7 +21,6 @@
 <translation id="1146678959555564648">Activer la réalité virtuelle</translation>
 <translation id="116280672541001035">Utilisées</translation>
 <translation id="1171770572613082465">Appuyez sur le bouton "Sites populaires" pour afficher les sites Web les plus visités</translation>
-<translation id="1172593791219290334">Page de démarrage</translation>
 <translation id="1173894706177603556">Renommer</translation>
 <translation id="1175310183703641346">Vos favoris, votre historique, vos mots de passe et d'autres paramètres ne seront plus synchronisés avec votre compte Google</translation>
 <translation id="1178581264944972037">Suspendre</translation>
@@ -42,6 +41,7 @@
 <translation id="1258753120186372309">Doodle : <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Rechercher et explorer</translation>
 <translation id="1264974993859112054">Sports</translation>
+<translation id="1266864766717917324">Impossible de partager le contenu suivant : <ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">Arrêter</translation>
 <translation id="1283039547216852943">Appuyer pour développer</translation>
 <translation id="1285320974508926690">Ne jamais traduire ce site</translation>
@@ -71,6 +71,7 @@
 <translation id="1430915738399379752">Imprimer</translation>
 <translation id="1445680696957526815">Les composants de Chrome ne sont pas compatibles entre eux. Une mise à jour de Chrome est peut-être en cours. Veuillez réessayer dans quelques minutes. Si le problème persiste, veuillez désinstaller Chrome, puis le réinstaller.</translation>
 <translation id="1446450296470737166">Autoriser le contrôle complet des appareils MIDI</translation>
+<translation id="1450753235335490080">Impossible de partager le contenu suivant : <ph name="CONTENT_TYPE" /></translation>
 <translation id="145097072038377568">Désactivée dans les paramètres Android</translation>
 <translation id="1477626028522505441">Échec du téléchargement du fichier "<ph name="FILE_NAME" />" en raison de problèmes liés au serveur.</translation>
 <translation id="1501480321619201731">Supprimer le groupe</translation>
@@ -153,6 +154,7 @@
 <translation id="2049961518639794558">La modification de l'extension de fichier peut entraîner un comportement inattendu, dommageable pour votre appareil.</translation>
 <translation id="2056878612599315956">Site en pause</translation>
 <translation id="2063713494490388661">Appuyer pour rechercher</translation>
+<translation id="2067805253194386918">texte</translation>
 <translation id="2079545284768500474">Annuler</translation>
 <translation id="2082238445998314030">Résultat <ph name="RESULT_NUMBER" /> sur <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Son</translation>
@@ -165,7 +167,6 @@
 <translation id="2131665479022868825"><ph name="DATA" /> économisés</translation>
 <translation id="213279576345780926">L'onglet "<ph name="TAB_TITLE" />" a été fermé.</translation>
 <translation id="2139186145475833000">Ajouter à l'écran d'accueil</translation>
-<translation id="2142289305367051020">Vos pages préférées sont ici</translation>
 <translation id="2146738493024040262">Ouvrir l'appli instantanée</translation>
 <translation id="2148716181193084225">Aujourd'hui</translation>
 <translation id="2154484045852737596">Modifier la carte</translation>
@@ -324,6 +325,7 @@
 <translation id="3384347053049321195">Partager l'image</translation>
 <translation id="3386292677130313581">Demander avant d'autoriser des sites à accéder à ma position (recommandé)</translation>
 <translation id="3387650086002190359">Échec du téléchargement du fichier "<ph name="FILE_NAME" />" en raison d'erreurs liées au système de fichiers.</translation>
+<translation id="3389286852084373014">Volume de texte trop important</translation>
 <translation id="3398320232533725830">Ouvrir le gestionnaire de favoris</translation>
 <translation id="3414952576877147120">Taille :</translation>
 <translation id="3443221991560634068">Actualiser la page active</translation>
@@ -348,6 +350,7 @@
 <translation id="3599863153486145794">Efface l'historique de tous les appareils sur lesquels vous êtes connecté à votre compte Google. Ce dernier peut conserver d'autres formes d'historique de navigation sur la page <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Couper le son des sites</translation>
 <translation id="3616113530831147358">Audio</translation>
+<translation id="3631987586758005671">Partage avec <ph name="DEVICE_NAME" />…</translation>
 <translation id="3632295766818638029">Afficher le mot de passe</translation>
 <translation id="363596933471559332">Connexion automatique aux sites Web à l'aide des identifiants enregistrés. Lorsque la fonctionnalité est désactivée, vous êtes invité à effectuer la validation avant chaque connexion à un site Web.</translation>
 <translation id="3658159451045945436">Le processus de réinitialisation efface l'historique de l'économiseur de données, y compris la liste des sites consultés.</translation>
@@ -358,7 +361,6 @@
 <translation id="3739899004075612870">Favori ajouté dans <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> Mo par d'autres applis</translation>
 <translation id="3744111561329211289">Synchronisation en arrière-plan</translation>
-<translation id="3745176700485982507">Cette page inclut des liens vers vos sites Web préférés</translation>
 <translation id="3771001275138982843">Impossible de télécharger la mise à jour</translation>
 <translation id="3773755127849930740">Pour permettre l'association, <ph name="BEGIN_LINK" />activez le Bluetooth<ph name="END_LINK" /></translation>
 <translation id="3775705724665058594">Envoyer à vos appareils</translation>
@@ -563,7 +565,6 @@ N'activez la RV que si vous faites confiance à ce site.</translation>
 <translation id="5224771365102442243">Avec vidéo</translation>
 <translation id="5230560987958996918">Le site <ph name="SITE" /> souhaite rechercher les appareils Bluetooth à proximité. Les appareils suivants ont été détectés :</translation>
 <translation id="5233638681132016545">Nouvel onglet</translation>
-<translation id="5234764350956374838">Ignorer</translation>
 <translation id="526421993248218238">Impossible de charger cette page</translation>
 <translation id="5271967389191913893">Impossible d'ouvrir le contenu à télécharger sur l'appareil.</translation>
 <translation id="528192093759286357">Pour quitter le mode plein écran, faites glisser un doigt du haut vers le bas, puis appuyez sur le bouton Retour.</translation>
@@ -578,8 +579,8 @@ N'activez la RV que si vous faites confiance à ce site.</translation>
 <translation id="5324858694974489420">Paramètres parentaux</translation>
 <translation id="5327248766486351172">Nom</translation>
 <translation id="5335288049665977812">Autoriser les sites à exécuter JavaScript (recommandé)</translation>
+<translation id="5342314432463739672">Demandes d'autorisation</translation>
 <translation id="5357811892247919462">Onglet reçu</translation>
-<translation id="5363230136052241468">Appuyez sur le bouton d'accueil pour charger la page "Nouvel onglet"</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> onglet ouvert, appuyez pour changer d'onglet}one{<ph name="OPEN_TABS_MANY" /> onglet ouvert, appuyez pour changer d'onglet}other{<ph name="OPEN_TABS_MANY" /> onglets ouverts, appuyez pour changer d'onglet}}</translation>
 <translation id="5391532827096253100">Votre connexion à ce site n'est pas sécurisée. Informations sur le site</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 autre)}one{(+ # autre)}other{(+ # autres)}}</translation>
@@ -748,6 +749,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6532866250404780454">Les sites que vous consultez dans Chrome ne s'afficheront pas. Tous les minuteurs de site seront supprimés.</translation>
 <translation id="6534565668554028783">Google a mis trop de temps à répondre</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> Go téléchargé(s)</translation>
+<translation id="6539092367496845964">Un problème est survenu. Réessayez plus tard.</translation>
 <translation id="654446541061731451">Sélectionnez un onglet à partager.</translation>
 <translation id="6545017243486555795">Supprimer toutes les données</translation>
 <translation id="6545864417968258051">Recherche Bluetooth</translation>
@@ -802,7 +804,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6912998170423641340">Interdire aux sites d'accéder en lecture au texte et aux images du presse-papiers</translation>
 <translation id="6914783257214138813">Toute personne ayant accès au fichier exporté pourra voir ces mots de passe.</translation>
 <translation id="6942665639005891494">Modifier à tout moment l'emplacement de téléchargement par défaut à l'aide de l'option de menu "Paramètres"</translation>
-<translation id="6944102653068653326">Appuyez pour charger la page "Nouvel onglet"</translation>
 <translation id="6945221475159498467">Sélectionner</translation>
 <translation id="6963642900430330478">Cette page est dangereuse. Informations sur le site</translation>
 <translation id="6963766334940102469">Supprimer des favoris</translation>
@@ -879,6 +880,7 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="7493994139787901920"><ph name="VERSION" /> (Dernière mise à jour <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">de données économisées</translation>
 <translation id="7498271377022651285">Veuillez patienter…</translation>
+<translation id="7510943789645525906">Recevez une alerte si l'un de vos mots de passe est compromis suite à une violation de données</translation>
 <translation id="7514365320538308">Télécharger</translation>
 <translation id="751961395872307827">Impossible de se connecter au site</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -996,7 +998,6 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="8284326494547611709">Sous-titres</translation>
 <translation id="8300705686683892304">Gérés par l'application</translation>
 <translation id="8310344678080805313">Onglets standards</translation>
-<translation id="8313455859591948645">Modifier la page de démarrage</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> et autres sites</translation>
 <translation id="8327155640814342956">Pour une expérience de navigation optimale, ouvrez pour mettre à jour Chrome</translation>
 <translation id="8339163506404995330">Les pages en <ph name="LANGUAGE" /> ne seront pas traduites</translation>

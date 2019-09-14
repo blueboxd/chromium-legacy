@@ -101,7 +101,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   };
 
   // Returns the VAAPI vendor string (obtained using vaQueryVendorString()).
-  static const std::string& GetVendorStringForTesting();
+  static const std::string& GetVendorString();
 
   // Return an instance of VaapiWrapper initialized for |va_profile| and
   // |mode|. |report_error_to_uma_cb| will be called independently from

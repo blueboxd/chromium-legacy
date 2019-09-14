@@ -8,14 +8,17 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min.}one{# min.}other{# min.}}</translation>
 <translation id="1181037720776840403">Fjern</translation>
 <translation id="1243314992276662751">Upload</translation>
+<translation id="1266864766717917324">Det var ikke muligt at dele <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1290982764014248209">Flyt <ph name="DRAGGED_APP" /> til mappen <ph name="FOLDER_NAME" />.</translation>
+<translation id="1291104554099683393">Prøv at dele kortere stykker tekst.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">ANBEFALEDE APPS</translation>
 <translation id="1368832886055348810">Venstre til højre</translation>
 <translation id="1383876407941801731">Søg</translation>
 <translation id="1398853756734560583">Maksimér</translation>
 <translation id="1409544243779336081">Anbefalet app</translation>
+<translation id="1450753235335490080">Delingen af <ph name="CONTENT_TYPE" /> mislykkedes</translation>
 <translation id="1498028757988366001">Du har tidligere søgt efter dette. Hvis du sletter "<ph name="QUERY" />" fra din historik, fjernes den permanent på fra din konto på alle dine enheder.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minut og }one{# minutter og }other{# minutter og }}</translation>
 <translation id="1643823602425662293">Notifikation</translation>
@@ -35,6 +38,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Vælg &amp;alle</translation>
 <translation id="1938451708255335766">Genstart appen for at justere visningstætheden i vinduet.</translation>
+<translation id="2006524834898217237">Sørg for, at denne enhed har forbindelse til internettet.</translation>
 <translation id="208586643495776849">Prøv igen</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 d}one{# d}other{# d}}</translation>
 <translation id="2148716181193084225">I dag</translation>
@@ -76,6 +80,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 dag}one{# dage}other{# dage}}</translation>
 <translation id="3295886253693811851">Ring op fra</translation>
 <translation id="335581015389089642">Tale</translation>
+<translation id="3389286852084373014">Teksten er for lang</translation>
 <translation id="3443810440409579745">Du har modtaget en fane.</translation>
 <translation id="3479552764303398839">Ikke nu</translation>
 <translation id="348799646910989694">Hylden skjules automatisk</translation>
@@ -151,11 +156,13 @@
 <translation id="6404817160109697034">{SECONDS,plural, =1{for 1 sek. siden}one{for # sek. siden}other{for # sek. siden}}</translation>
 <translation id="6430678249303439055">Bloker alle notifikationer fra denne app</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{For 1 sekund siden}one{For # sekund siden}other{For # sekunder siden}}</translation>
+<translation id="6539092367496845964">Der opstod en fejl. Prøv igen senere.</translation>
 <translation id="654149438358937226">Bloker alle notifikationer</translation>
 <translation id="6567071839949112727">klik på overordnet element</translation>
 <translation id="6578407462441924264">Uden navn</translation>
 <translation id="6612467943526193239">Tryk på Esc for at afslutte kalibreringen.</translation>
 <translation id="6620110761915583480">Gem fil</translation>
+<translation id="6656912866303152668">Sørg for, at synkronisering i Chrome er aktiveret på <ph name="TARGET_DEVICE_NAME" />, og prøv så at sende igen.</translation>
 <translation id="6699343763173986273">Medie: Næste nummer</translation>
 <translation id="673773751041746814">Sletning</translation>
 <translation id="6779314412797872738">Hvis du vil sende et nummer herfra til din Android-telefon, skal du <ph name="TROUBLESHOOT_LINK" /> i indstillingerne på begge enheder.</translation>
@@ -221,6 +228,7 @@
 <translation id="8876215549894133151">Format:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> kB</translation>
 <translation id="8926951137623668982">Hylden er altid skjult</translation>
+<translation id="8996630695507351249">Sørg for, at <ph name="TARGET_DEVICE_NAME" /> har internetforbindelse.</translation>
 <translation id="9002566407876343676">åbn</translation>
 <translation id="9039076430527029379">Gå til side <ph name="PAGE_NUMBER" />, række <ph name="ROW_NUMBER" />, kolonne <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 sek.}one{# sek.}other{# sek.}}</translation>

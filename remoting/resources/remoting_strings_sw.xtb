@@ -58,6 +58,7 @@
 <translation id="2509394361235492552">Imeunganisha kwenye <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">KUMBUKA: Ili kuhakikisha kuwa mikato yote ya kibodi inapatikana, unaweza kusanidi Kompyuta ya Mbali ya Chrome ili "Ifungue kama dirisha'’.</translation>
 <translation id="2540992418118313681">Ungependa kushiriki kompyuta hii kwa mtumiaji mwingine ili kuangalia na kudhibiti?</translation>
+<translation id="254771646005658629">Ruhusu watumiaji wadhibiti Mac hii kutoka mbali</translation>
 <translation id="2579271889603567289">Kompyuta pangishi imeacha kufanya kazi au imeshindwa kufunguka.</translation>
 <translation id="2599300881200251572">Huduma hii inawezesha miunganisho inayoingia kutoka kwa viteja vya Kompyuta za Mbali za Chrome</translation>
 <translation id="2647232381348739934">Huduma ya Chromoting</translation>
@@ -182,6 +183,9 @@
 <translation id="5419185025274123272">Haikuweza kuweka upya programu. Bado unaweza kutuma ripoti ya hitilafu.</translation>
 <translation id="5419418238395129586">Mara ya mwisho kuwa mtandaoni: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Pangishi imezima.</translation>
+<translation id="5463789431147491241">Ili utumie <ph name="PRODUCT_NAME" /> kwenye Mac hii, fuata hatua hizi:
+Chagua '<ph name="BUTTON_NAME" />' hapa chini. Katika sehemu ya mapendeleo yako ya Usalama na Faragha, chagua kisanduku kilicho karibu na '<ph name="SERVICE_SCRIPT_NAME" />'.
+Ikiwa '<ph name="SERVICE_SCRIPT_NAME" />' tayari imechaguliwa, batilisha uteuzi kisha uichague tena.</translation>
 <translation id="5510035215749041527">Ondoa sasa</translation>
 <translation id="5593560073513909978">Huduma haipatikani kwa muda. Tafadhali jaribu tena baadaye.</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -298,12 +302,14 @@
 <translation id="837021510621780684">Kutoka kwenye kompyuta hii</translation>
 <translation id="8383794970363966105">Ili Kutumia Chrome ya mbali, itabidi uongeze Akaunti ya Google kwenye kifaa chako.</translation>
 <translation id="8386846956409881180">Seva pangishi imesanidiwa pamoja na kitambulisho cha OAuth ambacho si sahihi.</translation>
+<translation id="8406498562923498210">Chagua kipindi cha uzinduzi katika mazingira yako ya Programu ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali. (Kumbuka kwamba huenda baadhi ya aina za vipindi haziwezi kutekelezwa katika Programu ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali na kwenye dashibodi ya kifaa kwa wakati mmoja.)</translation>
 <translation id="8428213095426709021">Mipangilio</translation>
 <translation id="8445362773033888690">Angalia katika Duka la Google Play</translation>
 <translation id="8509907436388546015">Mchakato wa Muingiliano wa Eneo-kazi</translation>
 <translation id="8513093439376855948">Mpangishi wa ujumbe halisi kwa usimamizi wa mpangishi wa mbali</translation>
 <translation id="8525306231823319788">Skrini nzima</translation>
 <translation id="8548209692293300397">Mwanzoni uliingia katika akaunti kama <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Ili kufikia kompyuta zako katika akaunti hiyo, <ph name="LINK_BEGIN" />ingia katika Google Chrome<ph name="LINK_END" /> kwa akaunti hiyo na usakinishe tena Kompyuta ya Mbali kwenye Chrome.</translation>
+<translation id="858006550102277544">Maoni</translation>
 <translation id="8642984861538780905">Wastani</translation>
 <translation id="8712909229180978490">Siwezi kuona faili zangu zilizohifadhiwa mtandaoni katika Hifadhi ya Google.</translation>
 <translation id="8743328882720071828">Ungependa kuruhusu <ph name="CLIENT_USERNAME" /> aone na adhibiti kompyuta yako?</translation>
@@ -321,6 +327,7 @@
 <translation id="9126115402994542723">Usiulize PIN tena unapounganisha kwenye seva pangishi kutoka kwenye kifaa hiki.</translation>
 <translation id="9149580767411232853">Hakikisha kuwa kompyuta ya mbali inaonekana</translation>
 <translation id="9149992051684092333">Ili uanze kushiriki enezo-kazi lako, toa msimbo wa ufikiji hapa chini kwa mtu atakayekuwa akikusaidia.</translation>
+<translation id="916856682307586697">Anzisha XSession chaguomsingi</translation>
 <translation id="9188433529406846933">Idhinisha</translation>
 <translation id="9213184081240281106">Usanidi wa seva pangishi si sahihi.</translation>
 <translation id="951991426597076286">Kataa</translation>

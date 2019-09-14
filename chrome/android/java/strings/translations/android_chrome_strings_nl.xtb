@@ -21,7 +21,6 @@
 <translation id="1146678959555564648">VR activeren</translation>
 <translation id="116280672541001035">Gebruikt</translation>
 <translation id="1171770572613082465">Bekijk populaire websites door op de knop Topsites te tikken</translation>
-<translation id="1172593791219290334">Startpagina</translation>
 <translation id="1173894706177603556">Naam wijzigen</translation>
 <translation id="1175310183703641346">Je bladwijzers, geschiedenis, wachtwoorden en meer worden niet meer gesynchroniseerd met je Google-account</translation>
 <translation id="1178581264944972037">Onderbreken</translation>
@@ -42,6 +41,7 @@
 <translation id="1258753120186372309">Google-doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Zoeken en verkennen</translation>
 <translation id="1264974993859112054">Sport</translation>
+<translation id="1266864766717917324">Kan <ph name="CONTENT_TYPE" /> niet delen</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1283039547216852943">Tik om uit te vouwen</translation>
 <translation id="1285320974508926690">Deze site nooit vertalen</translation>
@@ -71,6 +71,7 @@
 <translation id="1430915738399379752">Afdrukken</translation>
 <translation id="1445680696957526815">Onderdelen van Chrome zijn incompatibel met elkaar. Chrome wordt mogelijk geüpgraded. Wacht enkele minuten. Als het probleem blijft optreden, verwijder je Chrome en installeer je het programma opnieuw.</translation>
 <translation id="1446450296470737166">Volledig beheer van MIDI-apparaten toestaan</translation>
+<translation id="1450753235335490080">Kan <ph name="CONTENT_TYPE" /> niet delen</translation>
 <translation id="145097072038377568">Uitgeschakeld in Android-instellingen</translation>
 <translation id="1477626028522505441">Downloaden van <ph name="FILE_NAME" /> is mislukt door serverproblemen.</translation>
 <translation id="1501480321619201731">Groep verwijderen</translation>
@@ -153,6 +154,7 @@
 <translation id="2049961518639794558">Als je de bestandsextensie wijzigt, kan dit leiden tot onverwacht gedrag en schade aan je apparaat.</translation>
 <translation id="2056878612599315956">Site onderbroken</translation>
 <translation id="2063713494490388661">Tikken om te zoeken</translation>
+<translation id="2067805253194386918">sms</translation>
 <translation id="2079545284768500474">Ongedaan maken</translation>
 <translation id="2082238445998314030">Resultaat <ph name="RESULT_NUMBER" /> van <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Geluid</translation>
@@ -165,7 +167,6 @@
 <translation id="2131665479022868825"><ph name="DATA" /> bespaard</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> gesloten</translation>
 <translation id="2139186145475833000">Toevoegen aan startscherm</translation>
-<translation id="2142289305367051020">Hier vind je je favoriete pagina's</translation>
 <translation id="2146738493024040262">Instant-app openen</translation>
 <translation id="2148716181193084225">Vandaag</translation>
 <translation id="2154484045852737596">Pas bewerken</translation>
@@ -324,6 +325,7 @@
 <translation id="3384347053049321195">Afbeelding delen</translation>
 <translation id="3386292677130313581">Vragen of je sites toegang wilt verlenen tot je locatie (aanbevolen)</translation>
 <translation id="3387650086002190359">Downloaden van <ph name="FILE_NAME" /> is mislukt door fouten in het bestandssysteem.</translation>
+<translation id="3389286852084373014">Tekst is te groot</translation>
 <translation id="3398320232533725830">Bladwijzerbeheer openen</translation>
 <translation id="3414952576877147120">Grootte:</translation>
 <translation id="3443221991560634068">De huidige pagina opnieuw laden</translation>
@@ -348,6 +350,7 @@
 <translation id="3599863153486145794">Hiermee wordt de geschiedenis van alle ingelogde apparaten gewist. Er kunnen andere vormen van browsegeschiedenis zijn opgeslagen voor je Google-account op <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Sites dempen die geluid afspelen</translation>
 <translation id="3616113530831147358">Audio</translation>
+<translation id="3631987586758005671">Delen met <ph name="DEVICE_NAME" /></translation>
 <translation id="3632295766818638029">Maskering van wachtwoord ongedaan maken</translation>
 <translation id="363596933471559332">Automatisch inloggen bij websites met de opgeslagen inloggegevens. Wanneer de functie is uitgeschakeld, word je elke keer om verificatie gevraagd voordat je wordt ingelogd bij een website.</translation>
 <translation id="3658159451045945436">Als je reset, wordt je databesparingsgeschiedenis gewist, waaronder de lijst met bezochte sites.</translation>
@@ -358,7 +361,6 @@
 <translation id="3739899004075612870">Bladwijzer toegevoegd in <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB voor andere apps</translation>
 <translation id="3744111561329211289">Synchronisatie op de achtergrond</translation>
-<translation id="3745176700485982507">Links naar je favoriete websites vind je op deze pagina</translation>
 <translation id="3771001275138982843">Kan de update niet downloaden</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Schakel Bluetooth in<ph name="END_LINK" /> om te koppelen</translation>
 <translation id="3775705724665058594">Verzenden naar je apparaten</translation>
@@ -534,7 +536,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5013696553129441713">Geen nieuwe suggesties</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5033865233969348410">De site kan mogelijk informatie over je verzamelen wanneer VR actief is, zoals:
-  -  je fysieke kenmerken, zoals je lengte
+  -  je fysieke kenmerken, bijvoorbeeld je lengte
 
 Controleer of je de site vertrouwt voordat je VR activeert.</translation>
 <translation id="5039804452771397117">Toestaan</translation>
@@ -563,7 +565,6 @@ Controleer of je de site vertrouwt voordat je VR activeert.</translation>
 <translation id="5224771365102442243">Met video</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> wil scannen naar Bluetooth-apparaten in de buurt. De volgende apparaten zijn gevonden:</translation>
 <translation id="5233638681132016545">Nieuw tabblad</translation>
-<translation id="5234764350956374838">Sluiten</translation>
 <translation id="526421993248218238">Kan deze pagina niet laden</translation>
 <translation id="5271967389191913893">Het apparaat kan de content niet openen die moet worden gedownload.</translation>
 <translation id="528192093759286357">Sleep vanaf de bovenkant en tik op de knop Terug om het volledige scherm te sluiten.</translation>
@@ -578,8 +579,8 @@ Controleer of je de site vertrouwt voordat je VR activeert.</translation>
 <translation id="5324858694974489420">Instellingen voor ouders</translation>
 <translation id="5327248766486351172">Naam</translation>
 <translation id="5335288049665977812">Sites toestaan JavaScript uit te voeren (aanbevolen)</translation>
+<translation id="5342314432463739672">Rechtenverzoeken</translation>
 <translation id="5357811892247919462">Tabblad ontvangen</translation>
-<translation id="5363230136052241468">Tik op de startknop om de nieuwe tabbladpagina te laden</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> geopend tabblad, tik om tussen tabbladen te schakelen}other{<ph name="OPEN_TABS_MANY" /> geopende tabbladen, tik om tussen tabbladen te schakelen}}</translation>
 <translation id="5391532827096253100">Je verbinding met deze site is niet beveiligd. Site-informatie</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(en nog 1)}other{(en nog #)}}</translation>
@@ -613,7 +614,7 @@ Controleer of je de site vertrouwt voordat je VR activeert.</translation>
 <translation id="5527111080432883924">Vragen voordat sites toestemming krijgen om tekst en afbeeldingen vanaf het klembord te lezen (aanbevolen)</translation>
 <translation id="5530766185686772672">Incognitotabbladen sluiten</translation>
 <translation id="5534334044554683961">De site kan mogelijk informatie over je verzamelen wanneer VR actief is, zoals:
-  -   je fysieke kenmerken, zoals je lengte
+  -   je fysieke kenmerken, bijvoorbeeld je lengte
   -   de indeling van je kamer
 
 Controleer of je de site vertrouwt voordat je VR activeert.</translation>
@@ -748,6 +749,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6532866250404780454">Sites die je in Chrome bezoekt, worden niet weergegeven. Alle sitetimers worden verwijderd.</translation>
 <translation id="6534565668554028783">Het duurt te lang voordat Google reageert</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB gedownload</translation>
+<translation id="6539092367496845964">Er is iets misgegaan. Probeer het later opnieuw.</translation>
 <translation id="654446541061731451">Selecteer een tabblad om te beamen</translation>
 <translation id="6545017243486555795">Alle gegevens wissen</translation>
 <translation id="6545864417968258051">Bluetooth-scannen</translation>
@@ -802,7 +804,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6912998170423641340">Voorkomen dat sites tekst en afbeeldingen vanaf het klembord kunnen lezen</translation>
 <translation id="6914783257214138813">Je wachtwoorden zijn zichtbaar voor iedereen die het geëxporteerde bestand kan bekijken.</translation>
 <translation id="6942665639005891494">Je kunt via de menuoptie Instellingen op elk gewenst moment de standaard downloadlocatie wijzigen</translation>
-<translation id="6944102653068653326">Tik om de nieuwe tabbladpagina te laden</translation>
 <translation id="6945221475159498467">Selecteren</translation>
 <translation id="6963642900430330478">Deze pagina is gevaarlijk. Site-informatie</translation>
 <translation id="6963766334940102469">Bladwijzers verwijderen</translation>
@@ -879,6 +880,7 @@ De site krijgt GEEN toegang tot de camera. De camerabeelden zijn alleen zichtbaa
 <translation id="7493994139787901920"><ph name="VERSION" /> (geüpdatet: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">data bespaard</translation>
 <translation id="7498271377022651285">Een ogenblik geduld…</translation>
+<translation id="7510943789645525906">Hiermee word je gewaarschuwd als een wachtwoord dat je gebruikt, betrokken was bij een gegevenslek</translation>
 <translation id="7514365320538308">Downloaden</translation>
 <translation id="751961395872307827">Kan geen verbinding maken met de site</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -996,7 +998,6 @@ De site krijgt GEEN toegang tot de camera. De camerabeelden zijn alleen zichtbaa
 <translation id="8284326494547611709">Ondertiteling</translation>
 <translation id="8300705686683892304">Beheerd door app</translation>
 <translation id="8310344678080805313">Standaardtabbladen</translation>
-<translation id="8313455859591948645">Startpagina bewerken</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> en meer sites</translation>
 <translation id="8327155640814342956">Update Chrome om optimaal te kunnen browsen op internet</translation>
 <translation id="8339163506404995330">Pagina's in het <ph name="LANGUAGE" /> worden niet vertaald</translation>

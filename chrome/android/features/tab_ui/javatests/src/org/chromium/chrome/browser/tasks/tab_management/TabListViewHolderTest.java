@@ -37,6 +37,7 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
+import org.chromium.ui.widget.ButtonCompat;
 
 import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -48,6 +49,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class TabListViewHolderTest extends DummyUiActivityTestCase {
+    private static final int TAB1_ID = 456;
+    private static final int TAB2_ID = 789;
+
     private ViewGroup mTabGridView;
     private PropertyModel mGridModel;
     private PropertyModelChangeProcessor mGridMCP;
@@ -81,18 +85,33 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
                 @Override
                 public void run(int tabId) {
                     mCloseClicked.set(true);
+                    mCloseTabId.set(tabId);
                 }
             };
     private AtomicBoolean mCloseClicked = new AtomicBoolean();
+    private AtomicInteger mCloseTabId = new AtomicInteger();
 
     private TabListMediator.TabActionListener mMockSelectedListener =
             new TabListMediator.TabActionListener() {
                 @Override
                 public void run(int tabId) {
                     mSelectClicked.set(true);
+                    mSelectTabId.set(tabId);
                 }
             };
     private AtomicBoolean mSelectClicked = new AtomicBoolean();
+    private AtomicInteger mSelectTabId = new AtomicInteger();
+
+    private TabListMediator.TabActionListener mMockCreateGroupButtonListener =
+            new TabListMediator.TabActionListener() {
+                @Override
+                public void run(int tabId) {
+                    mCreateGroupButtonClicked.set(true);
+                    mCreateGroupTabId.set(tabId);
+                }
+            };
+    private AtomicBoolean mCreateGroupButtonClicked = new AtomicBoolean();
+    private AtomicInteger mCreateGroupTabId = new AtomicInteger();
     private boolean mShouldReturnBitmap;
 
     @Override
@@ -120,6 +139,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
         mSelectionDelegate = new SelectionDelegate<>();
 
         mGridModel = new PropertyModel.Builder(TabProperties.ALL_KEYS_TAB_GRID)
+                             .with(TabProperties.TAB_ID, TAB1_ID)
                              .with(TabProperties.TAB_SELECTED_LISTENER, mMockSelectedListener)
                              .with(TabProperties.TAB_CLOSED_LISTENER, mMockCloseListener)
                              .with(TabProperties.SELECTED_TAB_BACKGROUND_DRAWABLE_ID,
@@ -356,9 +376,21 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     @MediumTest
     @UiThreadTest
     public void testClickToSelect() throws Exception {
+        Assert.assertFalse(mSelectClicked.get());
         mTabGridView.performClick();
         Assert.assertTrue(mSelectClicked.get());
         mSelectClicked.set(false);
+        int firstSelectId = mSelectTabId.get();
+        Assert.assertEquals(TAB1_ID, firstSelectId);
+
+        mGridModel.set(TabProperties.TAB_ID, TAB2_ID);
+        mTabGridView.performClick();
+        Assert.assertTrue(mSelectClicked.get());
+        mSelectClicked.set(false);
+        int secondSelectId = mSelectTabId.get();
+        // When TAB_ID in PropertyModel is updated, binder should select tab with updated tab ID.
+        Assert.assertEquals(TAB2_ID, secondSelectId);
+        Assert.assertNotEquals(firstSelectId, secondSelectId);
 
         ImageButton button = mTabStripView.findViewById(R.id.tab_strip_item_button);
         mStripModel.set(TabProperties.IS_SELECTED, false);
@@ -387,9 +419,21 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     public void testClickToClose() throws Exception {
         ImageView actionButton = mTabGridView.findViewById(R.id.action_button);
         ImageButton button = mTabStripView.findViewById(R.id.tab_strip_item_button);
+        Assert.assertFalse(mCloseClicked.get());
         actionButton.performClick();
         Assert.assertTrue(mCloseClicked.get());
         mCloseClicked.set(false);
+        int firstCloseId = mCloseTabId.get();
+        Assert.assertEquals(TAB1_ID, firstCloseId);
+
+        mGridModel.set(TabProperties.TAB_ID, TAB2_ID);
+        actionButton.performClick();
+        Assert.assertTrue(mCloseClicked.get());
+        mCloseClicked.set(false);
+        int secondClosed = mCloseTabId.get();
+        // When TAB_ID in PropertyModel is updated, binder should close tab with updated tab ID.
+        Assert.assertEquals(TAB2_ID, secondClosed);
+        Assert.assertNotEquals(firstCloseId, secondClosed);
 
         mStripModel.set(TabProperties.IS_SELECTED, true);
         button.performClick();
@@ -399,6 +443,40 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
         mStripModel.set(TabProperties.IS_SELECTED, false);
         button.performClick();
         Assert.assertFalse(mCloseClicked.get());
+    }
+
+    @Test
+    @MediumTest
+    @UiThreadTest
+    public void testSetCreateGroupListener() throws Exception {
+        ButtonCompat actionButton = mTabGridView.findViewById(R.id.create_group_button);
+        // By default, the create group button is invisible.
+        Assert.assertEquals(View.GONE, actionButton.getVisibility());
+
+        // When setup with actual listener, the button should be visible.
+        mGridModel.set(TabProperties.CREATE_GROUP_LISTENER, mMockCreateGroupButtonListener);
+        Assert.assertEquals(View.VISIBLE, actionButton.getVisibility());
+        Assert.assertFalse(mCreateGroupButtonClicked.get());
+        actionButton.performClick();
+        Assert.assertTrue(mCreateGroupButtonClicked.get());
+        mCreateGroupButtonClicked.set(false);
+        int firstCreateGroupId = mCreateGroupTabId.get();
+        Assert.assertEquals(TAB1_ID, firstCreateGroupId);
+
+        mGridModel.set(TabProperties.TAB_ID, TAB2_ID);
+        actionButton.performClick();
+        Assert.assertTrue(mCreateGroupButtonClicked.get());
+        mCreateGroupButtonClicked.set(false);
+        int secondCreateGroupId = mCreateGroupTabId.get();
+        // When TAB_ID in PropertyModel is updated, binder should create group with updated tab ID.
+        Assert.assertEquals(TAB2_ID, secondCreateGroupId);
+        Assert.assertNotEquals(firstCreateGroupId, secondCreateGroupId);
+
+        mGridModel.set(TabProperties.CREATE_GROUP_LISTENER, null);
+        actionButton.performClick();
+        Assert.assertFalse(mCreateGroupButtonClicked.get());
+        // When CREATE_GROUP_LISTENER is set to null, the button should be invisible.
+        Assert.assertEquals(View.GONE, actionButton.getVisibility());
     }
 
     @Override

@@ -6,8 +6,6 @@
 #define ASH_SYSTEM_TRAY_TRAY_CONSTANTS_H_
 
 #include "ash/ash_export.h"
-#include "base/macros.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -60,10 +58,6 @@ extern const int kTrayToggleButtonWidth;
 
 // Constants for the title row.
 constexpr int kTitleRowProgressBarHeight = 2;
-
-// Extra padding used to adjust hitting region around tray items.
-extern const int kHitRegionPadding;
-extern const int kHitRegionPaddingDense;
 
 // Width of lines used to separate menu items (e.g. input method menu).
 constexpr int kMenuSeparatorWidth = 1;
@@ -178,22 +172,6 @@ constexpr int kUnifiedTopShortcutButtonMinSpacing = 4;
 // Constants used in the title row of a detailed view in UnifiedSystemTray.
 constexpr gfx::Insets kUnifiedDetailedViewTitlePadding(0, 0, 0, 16);
 constexpr int kUnifiedDetailedViewTitleRowHeight = 64;
-
-class TrayConstants {
- public:
-  static int hit_region_padding() {
-    return UseNewHotseatShelfUi() ? kHitRegionPaddingDense : kHitRegionPadding;
-  }
-
- private:
-  static bool UseNewHotseatShelfUi() {
-    static bool use_new_hotseat_shelf_ui =
-        chromeos::switches::ShouldShowShelfHotseat();
-    return use_new_hotseat_shelf_ui;
-  }
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(TrayConstants);
-};
 
 }  // namespace ash
 

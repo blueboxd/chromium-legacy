@@ -4153,6 +4153,31 @@ TEST_F(GLES2FormatTest, DispatchComputeIndirect) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, DrawArraysIndirect) {
+  cmds::DrawArraysIndirect& cmd = *GetBufferAs<cmds::DrawArraysIndirect>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<GLuint>(12));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::DrawArraysIndirect::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.mode);
+  EXPECT_EQ(static_cast<GLuint>(12), cmd.offset);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, DrawElementsIndirect) {
+  cmds::DrawElementsIndirect& cmd = *GetBufferAs<cmds::DrawElementsIndirect>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLenum>(11),
+                           static_cast<GLenum>(12), static_cast<GLuint>(13));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::DrawElementsIndirect::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.mode);
+  EXPECT_EQ(static_cast<GLenum>(12), cmd.type);
+  EXPECT_EQ(static_cast<GLuint>(13), cmd.offset);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, GetProgramInterfaceiv) {
   cmds::GetProgramInterfaceiv& cmd =
       *GetBufferAs<cmds::GetProgramInterfaceiv>();

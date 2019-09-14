@@ -21,7 +21,6 @@
 <translation id="1146678959555564648">VR માં દાખલ થાઓ</translation>
 <translation id="116280672541001035">વપરાયેલ</translation>
 <translation id="1171770572613082465">"લોકપ્રિય સાઇટ" બટન પર ટૅપ કરીને લોકપ્રિય વેબસાઇટ જુઓ</translation>
-<translation id="1172593791219290334">સ્ટાર્ટઅપ પેજ</translation>
 <translation id="1173894706177603556">નામ બદલો</translation>
 <translation id="1175310183703641346">તમારા બુકમાર્ક, ઇતિહાસ, પાસવર્ડ અને અન્ય બાબતો હવેથી Google એકાઉન્ટ પર સિંક થશે નહીં</translation>
 <translation id="1178581264944972037">થોભો</translation>
@@ -42,6 +41,7 @@
 <translation id="1258753120186372309">Google ડૂડલ: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">શોધો તેમજ શોધખોળ કરો</translation>
 <translation id="1264974993859112054">રમત-ગમત</translation>
+<translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> શેર કરી શકાયો નથી</translation>
 <translation id="1272079795634619415">રોકો</translation>
 <translation id="1283039547216852943">વિસ્તૃત કરવા માટે ટૅપ કરો</translation>
 <translation id="1285320974508926690">આ સાઇટનું ક્યારેય ભાષાંતર કરશો નહીં</translation>
@@ -71,6 +71,7 @@
 <translation id="1430915738399379752">પ્રિન્ટ</translation>
 <translation id="1445680696957526815">Chrome ના ઘટકો એકબીજાની સાથે અસંગત છે. Chrome અપગ્રેડ થઈ રહ્યું હોઈ શકે છે, કૃપા કરીને થોડીવારમાં ફરી પ્રયાસ કરો. જો સમસ્યા ચાલુ રહે છે, તો Chrome ને અનઇન્સ્ટોલ કરીને ફરીથી ઇન્સ્ટોલ કરવાનો પ્રયાસ કરો.</translation>
 <translation id="1446450296470737166">MIDI ઉપકરણોના પૂર્ણ નિયંત્રણની મંજૂરી આપો</translation>
+<translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> શેર કરી શકતાં નથી</translation>
 <translation id="145097072038377568">Android સેટિંગ્સમાં બંધ કરી</translation>
 <translation id="1477626028522505441">સર્વર સમસ્યાઓને કારણે <ph name="FILE_NAME" /> ડાઉનલોડ નિષ્ફળ થયું.</translation>
 <translation id="1501480321619201731">જૂથ ડિલીટ કરો</translation>
@@ -153,6 +154,7 @@
 <translation id="2049961518639794558">ફાઇલનું એક્સ્ટેંશન બદલવાથી અનપેક્ષિત વર્તણૂકનું કારણ બની શકે છે અને તમારા ડિવાઇસ માટે નુકસાનકારક હશે.</translation>
 <translation id="2056878612599315956">સાઇટ રોકવામાં આવી</translation>
 <translation id="2063713494490388661">શોધવા માટે ટેપ કરો</translation>
+<translation id="2067805253194386918">ટેક્સ્ટ</translation>
 <translation id="2079545284768500474">છેલ્લો ફેરફાર રદ કરો</translation>
 <translation id="2082238445998314030"><ph name="TOTAL_RESULTS" /> માંથી <ph name="RESULT_NUMBER" /> પરિણામ</translation>
 <translation id="2091887806945687916">ધ્વનિ</translation>
@@ -165,7 +167,6 @@
 <translation id="2131665479022868825"><ph name="DATA" /> સાચવ્યો</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> બંધ કર્યું છે</translation>
 <translation id="2139186145475833000">હોમસ્ક્રીન પર ઉમેરો</translation>
-<translation id="2142289305367051020">તમારા મનપસંદ પેજ અહીં છે</translation>
 <translation id="2146738493024040262">ઝટપટ ઍપ્લિકેશન ખોલો</translation>
 <translation id="2148716181193084225">આજે</translation>
 <translation id="2154484045852737596">કાર્ડમાં ફેરફાર કરો</translation>
@@ -324,6 +325,7 @@
 <translation id="3384347053049321195">છબી શેર કરો</translation>
 <translation id="3386292677130313581">સાઇટ્સને તમારા સ્થાનને જાણવાની મંજૂરી આપતાં પહેલાં પૂછો (ભલામણ કરેલ)</translation>
 <translation id="3387650086002190359">ફાઇલ સિસ્ટમ ભૂલોના કારણે <ph name="FILE_NAME" /> ડાઉનલોડ નિષ્ફળ થયું.</translation>
+<translation id="3389286852084373014">ટેક્સ્ટ ખૂબ મોટી છે</translation>
 <translation id="3398320232533725830">બુકમાર્ક્સ સંચાલક ખોલો</translation>
 <translation id="3414952576877147120">કદ:</translation>
 <translation id="3443221991560634068">વર્તમાન પૃષ્ઠ ફરીથી લોડ કરો</translation>
@@ -348,6 +350,7 @@
 <translation id="3599863153486145794">બધા સાઇન ઇન કરેલ ડિવાઇસમાંથી ઇતિહાસ સાફ કરે છે. તમારા Google એકાઉન્ટમાં <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> પર બ્રાઉઝિંગ ઇતિહાસના બીજા સ્વરૂપો હોય શકે.</translation>
 <translation id="3600792891314830896">જે સાઇટ અવાજ ચલાવતી હોય તેઓનો અવાજ બંધ કરો</translation>
 <translation id="3616113530831147358">ઑડિઓ</translation>
+<translation id="3631987586758005671"><ph name="DEVICE_NAME" /> પર શેર કરી રહ્યાં છે</translation>
 <translation id="3632295766818638029">પાસવર્ડ બતાવો</translation>
 <translation id="363596933471559332">સંગ્રહિત ઓળખપત્રોનો ઉપયોગ કરીને વેબસાઇટ્સમાં આપમેળે સાઇન ઇન કરો. જ્યારે સુવિધા બંધ હોય છે, ત્યારે વેબસાઇટમાં સાઇન ઇન કરતાં પહેલાં દર વખતે તમને ચકાસણી માટે કહેવામાં આવશે.</translation>
 <translation id="3658159451045945436">રીસેટ કરવાથી મુલાકાત લીધેલી સાઇટની સૂચિ સહિત તમારા ડેટા બચતના ઇતિહાસને કાઢી નાખે છે.</translation>
@@ -358,7 +361,6 @@
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> માં બુકમાર્ક કર્યું</translation>
 <translation id="3744111309925758534">અન્ય અ‍ૅપ્લિકેશનો દ્વારા <ph name="MEGABYTES" /> MB</translation>
 <translation id="3744111561329211289">પૃષ્ઠભૂમિ સમન્વયન</translation>
-<translation id="3745176700485982507">તમારી મનપસંદ વેબસાઇટની લિંક આ પેજ પર મળી શકે છે</translation>
 <translation id="3771001275138982843">અપડેટ ડાઉનલોડ કરી શકાઈ નથી</translation>
 <translation id="3773755127849930740">જોડી કરવાની મંજૂરી આપવા માટે <ph name="BEGIN_LINK" />Bluetooth ચાલુ કરો<ph name="END_LINK" /></translation>
 <translation id="3775705724665058594">તમારા ડિવાઇસ પર મોકલો</translation>
@@ -563,7 +565,6 @@ VR મોડમાં દાખલ થતા પહેલા ખાતરી ક
 <translation id="5224771365102442243">વીડિયો દ્વારા</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> નજીકના બ્લૂટૂથ ડિવાઇસ માટે સ્કૅન કરવા માગે છે. નીચે મુજબના ડિવાઇસ મળ્યા છે:</translation>
 <translation id="5233638681132016545">નવું ટૅબ</translation>
-<translation id="5234764350956374838">કાઢી નાખો</translation>
 <translation id="526421993248218238">આ પેજ લોડ કરી શકાતું નથી</translation>
 <translation id="5271967389191913893">ડિવાઇસ, ડાઉનલોડ કરવાની કન્ટેન્ટ ખોલી શકતું નથી.</translation>
 <translation id="528192093759286357">પૂર્ણસ્ક્રીનથી બહાર નીકળવા માટે ઉપરથી ખેંચો અને પાછળ બટનને ટચ કરો.</translation>
@@ -578,8 +579,8 @@ VR મોડમાં દાખલ થતા પહેલા ખાતરી ક
 <translation id="5324858694974489420">પેરેંટલ સેટિંગ્સ</translation>
 <translation id="5327248766486351172">નામ</translation>
 <translation id="5335288049665977812">સાઇટ્સને JavaScript ચલાવાની મંજૂરી આપો (ભલામણ કરેલ)</translation>
+<translation id="5342314432463739672">પરવાનગીની વિનંતી કરી</translation>
 <translation id="5357811892247919462">ટૅબ પ્રાપ્ત થયું</translation>
-<translation id="5363230136052241468">નવું ટૅબ પેજ લોડ કરવા માટે હોમ બટનને ટૅપ કરો</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> ખુલ્લી ટૅબ, ટૅબને સ્વિચ કરવા માટે ટૅપ કરો}one{<ph name="OPEN_TABS_MANY" /> ખુલ્લી ટૅબ, ટૅબને સ્વિચ કરવા માટે ટૅપ કરો}other{<ph name="OPEN_TABS_MANY" /> ખુલ્લી ટૅબ, ટૅબને સ્વિચ કરવા માટે ટૅપ કરો}}</translation>
 <translation id="5391532827096253100">આ સાઇટ સાથેનું તમારું કનેક્શન સુરક્ષિત નથી. સાઇટની માહિતી</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ વધુ 1)}one{(+ વધુ #)}other{(+ વધુ #)}}</translation>
@@ -748,6 +749,7 @@ VR મોડમાં દાખલ થતા પહેલા ખાતરી ક
 <translation id="6532866250404780454">Chromeમાં તમે મુલાકાત લીધેલી સાઇટ બતાવવામાં આવશે નહીં. સાઇટના બધા ટાઇમર ડિલીટ કરવામાં આવશે.</translation>
 <translation id="6534565668554028783">પ્રતિભાવ આપવા માટે Googleએ ઘણો સમય લીધો</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB ડાઉનલોડ કર્યા</translation>
+<translation id="6539092367496845964">કંઈક ખોટું થયું હતું. થોડીવાર પછી ફરી પ્રયાસ કરો.</translation>
 <translation id="654446541061731451">બીમ કરવા માટે એક ટેબ પસંદ કરો</translation>
 <translation id="6545017243486555795">બધો ડેટા સાફ કરો</translation>
 <translation id="6545864417968258051">બ્લૂટૂથ સ્કૅનિંગ</translation>
@@ -802,7 +804,6 @@ VR મોડમાં દાખલ થતા પહેલા ખાતરી ક
 <translation id="6912998170423641340">બધી સાઇટને ક્લિપબોર્ડ પરની ટેક્સ્ટ અને છબીઓ વાંચવાથી બ્લૉક કરો</translation>
 <translation id="6914783257214138813">જે કોઈપણ તમારી નિકાસ કરેલ પાસવર્ડની ફાઇલને જોઈ શકશે, તેમને તમારા પાસવર્ડ પણ દૃશ્યક્ષમ થશે.</translation>
 <translation id="6942665639005891494">સેટિંગ મેનૂ વિકલ્પનો ઉપયોગ કરીને ડિફૉલ્ટ ડાઉનલોડ સ્થાનને કોઈપણ સમયે બદલો</translation>
-<translation id="6944102653068653326">નવું ટૅબ પેજ લોડ કરવા માટે ટૅપ કરો</translation>
 <translation id="6945221475159498467">પસંદ કરો</translation>
 <translation id="6963642900430330478">આ પેજ જોખમી છે. સાઇટની માહિતી</translation>
 <translation id="6963766334940102469">બુકમાર્ક્સ ડિલીટ કરો</translation>
@@ -879,6 +880,7 @@ VR મોડમાં દાખલ થતા પહેલા ખાતરી ક
 <translation id="7493994139787901920"><ph name="VERSION" /> (અપડેટ કર્યું <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">ડેટા બચત</translation>
 <translation id="7498271377022651285">કૃપા કરીને રાહ જુઓ…</translation>
+<translation id="7510943789645525906">જો તમે ઉપયોગમાં લો છો તે પાસવર્ડ ડેટા ઉલ્લંઘનનો ભાગ હતો તો તમને ચેતવણી આપે છે</translation>
 <translation id="7514365320538308">ડાઉનલોડ કરો</translation>
 <translation id="751961395872307827">સાઇટ સાથે કનેક્ટ કરી શકાતું નથી</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -996,7 +998,6 @@ VR મોડમાં દાખલ થતા પહેલા ખાતરી ક
 <translation id="8284326494547611709">કૅપ્શન્સ</translation>
 <translation id="8300705686683892304">ઍપ દ્વારા મેનેજ થતી</translation>
 <translation id="8310344678080805313">માનક ટેબ્સ</translation>
-<translation id="8313455859591948645">સ્ટાર્ટઅપ પેજમાં ફેરફાર કરો</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> અને વધુ સાઇટ</translation>
 <translation id="8327155640814342956">બ્રાઉઝિંગનો શ્રેષ્ઠ અનુભવ મેળવવા અપડેટ કરવા માટે Chrome ખોલો</translation>
 <translation id="8339163506404995330"><ph name="LANGUAGE" />માં છે તે પેજનો અનુવાદ થશે નહીં</translation>

@@ -10,7 +10,6 @@
 #include <windows.h>
 #include <wrl/client.h>
 
-#include "ui/gfx/buffer_types.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_image.h"
 
@@ -18,8 +17,13 @@ namespace gl {
 
 class GL_EXPORT GLImageD3D : public GLImage {
  public:
+  // Creates a GLImage backed by a D3D11 |texture| with given |size| and GL
+  // unsized |internal_format|, optionally associated with |swap_chain|.  The
+  // |internal_format| is passed to ANGLE and used for GL operations.  It may be
+  // different from the internal format associated with the  DXGI_FORMAT of the
+  // texture (e.g. RGB instead of BGRA_EXT for DXGI_FORMAT_B8G8R8A8_UNORM).
   GLImageD3D(const gfx::Size& size,
-             gfx::BufferFormat buffer_format,
+             unsigned internal_format,
              Microsoft::WRL::ComPtr<ID3D11Texture2D> texture,
              Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain);
 
@@ -63,7 +67,7 @@ class GL_EXPORT GLImageD3D : public GLImage {
   ~GLImageD3D() override;
 
   const gfx::Size size_;
-  const gfx::BufferFormat buffer_format_;
+  const unsigned internal_format_; /* GLenum */
   void* egl_image_ = nullptr; /* EGLImageKHR */
   Microsoft::WRL::ComPtr<ID3D11Texture2D> texture_;
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain_;

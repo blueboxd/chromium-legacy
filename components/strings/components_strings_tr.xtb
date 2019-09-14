@@ -97,9 +97,6 @@
 <translation id="138218114945450791">Açık Mavi</translation>
 <translation id="1382194467192730611">Yöneticiniz USB cihaza izin veriyor</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> hiç veri göndermedi.</translation>
-<translation id="140316286225361634"><ph name="ORIGIN" /> sitesi tüm istekleri için bir güvenlik politikasının
-    geçerli olmasını talep etti ve bu politika şu anda sitenin güvenli olmadığını
-    belirtiyor.</translation>
 <translation id="1405567553485452995">Açık Yeşil</translation>
 <translation id="1407135791313364759">Tümünü aç</translation>
 <translation id="1413809658975081374">Gizlilik hatası</translation>
@@ -135,6 +132,7 @@
 <translation id="1569487616857761740">Son kullanma tarihi girin</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Bu web sayfasını görüntülerken bir hata oluştu.</translation>
+<translation id="1588438908519853928">Normal</translation>
 <translation id="1592005682883173041">Yerel Veri Erişimi</translation>
 <translation id="1594030484168838125">Seç</translation>
 <translation id="161042844686301425">Camgöbeği</translation>
@@ -212,10 +210,6 @@
 <translation id="1981206234434200693">Chrome'un tarama geçmişi verilerini temizleyin</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{ve 1 uygulama daha}other{ve # uygulama daha}}</translation>
 <translation id="2003709556000175978">Şifrenizi şimdi sıfırlayın</translation>
-<translation id="20053308747750172">Gittiğiniz sunucu (<ph name="ORIGIN" />) kendisine gelen tüm isteklere
-    bir güvenlik politikasının uygulanmasını talep etmişti. Ancak şimdi
-    geçersiz bir politika sunduğu için tarayıcı, <ph name="SITE" /> sitesiyle ilgili
-    isteğinizi yerine getiremiyor.</translation>
 <translation id="2025186561304664664">Proxy, otomatik yapılandırıldı değerine ayarlandı.</translation>
 <translation id="202813660234680402">Hayır, ekleme</translation>
 <translation id="2030481566774242610">Şunu mu demek istediniz?: <ph name="LINK" /></translation>
@@ -293,10 +287,6 @@
 <translation id="2409589295040002961">Yöneticiniz, tarayıcınızın kurulumunu uzaktan değiştirebilir. Bu cihazdaki etkinlikler Chrome dışında da yönetilebilir. <ph name="BEGIN_LINK" />Daha Fazla Bilgi<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Güvenlik sertifikası iptal edilmiş olabilir. Bu durum, bir yanlış yapılandırmadan veya bağlantıya müdahale eden bir saldırgandan kaynaklanıyor olabilir.</translation>
-<translation id="2418081434543109369">Gittiğiniz sunucu (<ph name="ORIGIN" />) kendisine gelen tüm isteklere
-    bir güvenlik politikasının uygulanmasını talep etmişti. Ancak şimdi
-    politika sunamadığı için tarayıcı, <ph name="SITE" /> sitesiyle ilgili isteğinizi
-    yerine getiremiyor.</translation>
 <translation id="2463193859425327265">Ana Sayfayı değiştir</translation>
 <translation id="2463739503403862330">Doldur</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -588,6 +578,7 @@
 <translation id="4103249731201008433">Cihazın seri numarası geçersiz</translation>
 <translation id="410351446219883937">Otomatik oynatma</translation>
 <translation id="4103763322291513355">Kara listeye alınmış URL'lerin ve sistem yöneticinizin zorunlu tuttuğu diğer politikaların listesini görmek için &lt;strong&gt;chrome://policy&lt;/strong&gt; adresini ziyaret edin.</translation>
+<translation id="4108231218301530806">Bu kartı doğrulamak için bir dahaki sefere parmak izi kullan.</translation>
 <translation id="4110652170750985508">Ödemenizi inceleyin</translation>
 <translation id="4112140312785995938">Geri Sar</translation>
 <translation id="4116663294526079822">Bu sitede her zaman izin ver</translation>
@@ -790,6 +781,7 @@
 <translation id="5141240743006678641">Senkronize edilen şifreleri Google kimlik bilgileriyle şifrele</translation>
 <translation id="5145883236150621069">Politika yanıtında hata kodu var</translation>
 <translation id="515292512908731282">C4 (Zarf)</translation>
+<translation id="5158275234811857234">Kapak</translation>
 <translation id="5159010409087891077">Sayfayı yeni Gizli pencerede açın (⇧⌘N)</translation>
 <translation id="516920405563544094"><ph name="CREDIT_CARD" /> numaralı kartın CVC kodunu girin. Onayladığınızda Google Hesabınızdaki kart bilgileriniz bu siteyle paylaşılır.</translation>
 <translation id="5169827969064885044">Kuruluşunuzun hesabına erişimi kaybedebilir veya kimlik hırsızlığına maruz kalabilirsiniz. Chrome, şifrenizi hemen değiştirmenizi önerir.</translation>
@@ -949,6 +941,7 @@
 <translation id="598637245381783098">Ödeme uygulaması açılamıyor</translation>
 <translation id="5989320800837274978">Sabit proxy sunucular veya bir .pac komut dosyası URL'si belirtilmedi.</translation>
 <translation id="5990559369517809815">Sunucuya gönderilen istekler bir uzantı tarafından engellendi.</translation>
+<translation id="6000758707621254961">"<ph name="SEARCH_TEXT" />" için bulunan <ph name="RESULT_COUNT" /> sonuç gösteriliyor</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">Yıl</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{1. sayfa}other{#. sayfa}}</translation>
@@ -1007,6 +1000,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Yok}=1{1 şifre (<ph name="DOMAIN_LIST" /> için, senkronize edildi)}=2{2 şifre (<ph name="DOMAIN_LIST" /> için, senkronize edildi)}other{# şifre (<ph name="DOMAIN_LIST" /> için, senkronize edildi)}}</translation>
 <translation id="6358450015545214790">Bunlar ne anlama geliyor?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6377268785556383139">"<ph name="SEARCH_TEXT" />" için bulunan 1 sonuç gösteriliyor</translation>
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Devam etmeniz halinde ödeme yapmanız gerekebilir.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 öneri daha}other{# öneri daha}}</translation>
@@ -1141,10 +1135,6 @@
 <translation id="717330890047184534">Gaia Kimliği:</translation>
 <translation id="7174545416324379297">Birleştirildi</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> ve <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> seçenek daha}other{<ph name="SHIPPING_OPTION_PREVIEW" /> ve <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> seçenek daha}}</translation>
-<translation id="7177397715882417099">Gittiğiniz sunucu (<ph name="ORIGIN" />) kendisine gelen tüm isteklere
-    bir güvenlik politikasının uygulanmasını talep etmişti. Ancak bir politika
-    sunmak yerine tarayıcıyı başka bir yere yönlendirdiği için tarayıcı, <ph name="SITE" />
-    sitesiyle ilgili isteğinizi yerine getiremiyor.</translation>
 <translation id="7179323680825933600">Ödeme Yöntemlerini Kaydet ve Doldur</translation>
 <translation id="7180611975245234373">Yenile</translation>
 <translation id="7182878459783632708">Hiçbir politika ayarlanmamış</translation>
@@ -1171,6 +1161,7 @@ Ek ayrıntılar:
 <translation id="7300012071106347854">Çini Mavisi</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
 <translation id="7303701124147721189">Gelecek sefer daha hızlı ödeme yapabilmek için kartınızı ve fatura adresinizi Google hesabınızda ve bu cihazda depolayın.</translation>
+<translation id="7304030187361489308">İnce</translation>
 <translation id="7309308571273880165">Kilitlenme raporu yakalandı (<ph name="CRASH_TIME" />) (yükleme kullanıcı tarafından istendi, ancak henüz yüklenmedi)</translation>
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />Güvenli Tarama<ph name="END_LINK" /> uyarıları</translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1533,7 +1524,6 @@ Ek ayrıntılar:
 <translation id="939736085109172342">Yeni klasör</translation>
 <translation id="945855313015696284">Aşağıdaki bilgileri kontrol edin ve geçersiz kartları silin</translation>
 <translation id="951104842009476243">Kabul Edilen Banka ve Ön Ödemeli Kartlar</translation>
-<translation id="958202389743790697"><ph name="ORIGIN" /> sitesinin güvenlik politikası uyarınca engellendi.</translation>
 <translation id="962484866189421427">Bu içerik başka bir şeyi taklit eden aldatıcı uygulamalar yükleyebilir veya sizi izlemek için kullanılabilecek veriler toplayabilir. <ph name="BEGIN_LINK" />Yine de göster<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Resmi Derleme</translation>
 <translation id="973773823069644502">Teslimat Adresi Ekle</translation>

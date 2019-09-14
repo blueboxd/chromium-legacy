@@ -680,7 +680,7 @@ const base::Feature kSystemWebApps{"SystemWebApps",
 
 // Enables or disables the App Management UI.
 const base::Feature kAppManagement{"AppManagement",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Disable downloads of unsafe file types over insecure transports if initiated
 // from a secure page

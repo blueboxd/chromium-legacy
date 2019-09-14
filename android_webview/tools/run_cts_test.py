@@ -8,7 +8,7 @@ import tempfile
 import sys
 import unittest
 
-import mock
+import mock  # pylint: disable=import-error
 import run_cts
 
 sys.path.append(os.path.join(

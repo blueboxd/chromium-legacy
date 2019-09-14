@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "base/numerics/ranges.h"
 #include "chromecast/media/cma/backend/audio_fader.h"
 #include "chromecast/media/cma/backend/audio_output_redirector_input.h"
 #include "chromecast/media/cma/backend/filter_group.h"
@@ -301,7 +302,7 @@ void MixerInput::SetContentTypeVolume(float volume, int fade_ms) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(content_type_ != AudioContentType::kOther);
 
-  type_volume_multiplier_ = std::max(0.0f, std::min(volume, 1.0f));
+  type_volume_multiplier_ = base::ClampToRange(volume, 0.0f, 1.0f);
   float target_volume = TargetVolume();
   LOG(INFO) << device_id_ << "(" << source_
             << "): type volume = " << type_volume_multiplier_
@@ -335,7 +336,7 @@ float MixerInput::TargetVolume() {
   // Volume is clamped after all gains have been multiplied, to avoid clipping.
   // TODO(kmackay): Consider removing this clamp and use a postprocessor filter
   // to avoid clipping instead.
-  return std::max(0.0f, std::min(volume, 1.0f));
+  return base::ClampToRange(volume, 0.0f, 1.0f);
 }
 
 float MixerInput::InstantaneousVolume() {

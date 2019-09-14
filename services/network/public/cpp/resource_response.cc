@@ -5,6 +5,7 @@
 #include "services/network/public/cpp/resource_response.h"
 
 #include "net/http/http_response_headers.h"
+#include "services/network/public/cpp/content_security_policy.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace network {
@@ -85,6 +86,8 @@ ResourceResponseHead::ResourceResponseHead(
   intercepted_by_plugin = url_response_head->intercepted_by_plugin;
   is_legacy_tls_version = url_response_head->is_legacy_tls_version;
   auth_challenge_info = url_response_head->auth_challenge_info;
+  content_security_policy =
+      ContentSecurityPolicy(url_response_head->content_security_policy.Clone());
   request_start = url_response_head->request_start;
   response_start = url_response_head->response_start;
   origin_policy = url_response_head->origin_policy;
@@ -150,6 +153,7 @@ scoped_refptr<ResourceResponse> ResourceResponse::DeepCopy() const {
   new_response->head.intercepted_by_plugin = head.intercepted_by_plugin;
   new_response->head.is_legacy_tls_version = head.is_legacy_tls_version;
   new_response->head.auth_challenge_info = head.auth_challenge_info;
+  new_response->head.content_security_policy = head.content_security_policy;
   new_response->head.origin_policy = head.origin_policy;
   new_response->head.recursive_prefetch_token = head.recursive_prefetch_token;
   return new_response;
@@ -191,7 +195,8 @@ ResourceResponseHead::operator mojom::URLResponseHeadPtr() const {
       async_revalidation_requested, did_mime_sniff,
       is_signed_exchange_inner_response, was_in_prefetch_cache,
       intercepted_by_plugin, is_legacy_tls_version, auth_challenge_info,
-      request_start, response_start, origin_policy, recursive_prefetch_token);
+      content_security_policy, request_start, response_start, origin_policy,
+      recursive_prefetch_token);
 }
 
 }  // namespace network

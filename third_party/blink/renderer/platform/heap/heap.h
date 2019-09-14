@@ -57,6 +57,7 @@ class IncrementalMarkingScopeBase;
 }  // namespace incremental_marking_test
 
 class AddressCache;
+class ConcurrentMarkingVisitor;
 class ThreadHeapStatsCollector;
 class PagePool;
 class ProcessHeapReporter;

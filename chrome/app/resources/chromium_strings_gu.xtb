@@ -196,6 +196,8 @@ Chromium તમારી સેટિંગ્સને પુનઃપ્રા
 <translation id="753534427205733210">{0,plural, =1{Chromium 1 મિનિટમાં ફરીથી લૉન્ચ થશે}one{Chromium # મિનિટમાં ફરીથી લૉન્ચ થશે}other{Chromium # મિનિટમાં ફરીથી લૉન્ચ થશે}}</translation>
 <translation id="7549178288319965365">Chromium OS વિશે</translation>
 <translation id="7561906087460245826">Chromiumમાંથી પણ ડેટા કાઢી નાખો (<ph name="URL" />)</translation>
+<translation id="7585853947355360626">જો આ પેજ પર સેટિંગ બતાવેલું ન હોય, તો તમારા <ph name="LINK_BEGIN" />
+      Chromium OS સેટિંગ<ph name="LINK_END" />માં જુઓ</translation>
 <translation id="761356813943268536">Chromium તમારા કેમેરા અને માઇક્રોફોનનો ઉપયોગ કરી રહ્યું છે.</translation>
 <translation id="7617377681829253106">Chromium હવે પહેલાંથી બહેતર બન્યું છે</translation>
 <translation id="7686590090926151193">Chromium તમારું ડિફૉલ્ટ બ્રાઉઝર નથી</translation>
@@ -229,6 +231,8 @@ Chromium તમારી સેટિંગ્સને પુનઃપ્રા
 <translation id="8619360774459241877">Chromium લૉન્ચ કરી રહ્યાં છીએ…</translation>
 <translation id="8621669128220841554">અનુલ્લેખિત ભૂલને કારણે ઇન્સ્ટોલેશન નિષ્ફળ રહ્યું. કૃપા કરીને Chromium ફરીથી ડાઉનલોડ કરો.</translation>
 <translation id="8667808506758191620">તમારું <ph name="DEVICE_TYPE" /> અપ ટૂ ડેટ છે.</translation>
+<translation id="8682540261359803721">જો આ પેજ પર સેટિંગ બતાવેલું ન હોય, તો તમારા <ph name="LINK_BEGIN" />
+      Chromium બ્રાઉઝર સેટિંગ<ph name="LINK_END" />માં જુઓ</translation>
 <translation id="8697124171261953979">જ્યારે તમે Chromium શરૂ કરો અથવા ઑમ્નિબૉક્સ પરથી શોધ કરો ત્યારે કયું પૃષ્ઠ બતાવવામાં આવે તે તેનું પણ નિયંત્રણ કરે છે.</translation>
 <translation id="8704119203788522458">આ તમારું Chromium છે</translation>
 <translation id="8739167630197873875">જ્યારે તમે Chromiumમાંથી બહાર નીકળો ત્યારે કુકી સાફ કરો. સિંક ચાલુ રાખવા માટે, આ <ph name="COOKIE_SETTINGS_LINK" />માં ફેરફાર કરો.</translation>

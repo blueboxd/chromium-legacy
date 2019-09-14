@@ -11,3 +11,11 @@ imageset("incognito_badge") {
     "incognito_badge.imageset/incognito_badge@3x.png",
   ]
 }
+
+imageset("incognito_small_badge") {
+  sources = [
+    "incognito_small_badge.imageset/Contents.json",
+    "incognito_small_badge.imageset/incognito_small_badge@2x.png",
+    "incognito_small_badge.imageset/incognito_small_badge@3x.png",
+  ]
+}

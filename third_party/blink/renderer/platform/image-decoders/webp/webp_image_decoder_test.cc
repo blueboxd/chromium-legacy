@@ -37,7 +37,6 @@
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder_test_helpers.h"
-#include "third_party/blink/renderer/platform/wtf/dtoa/utils.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 

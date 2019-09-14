@@ -58,6 +58,7 @@
 <translation id="2509394361235492552">متصل به <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">‏توجه: برای اطمینان از اینکه همه میان‌برهای صفحه‌کلید در دسترس است، می‌توانید کنترل رایانه ازراه‌دور Chrome را روی «بازکردن به‌عنوان پنجره» پیکربندی کنید.</translation>
 <translation id="2540992418118313681">می‌خواهید این رایانه را برای کاربر دیگر جهت مشاهده و کنترل به اشتراک بگذارید؟</translation>
+<translation id="254771646005658629">‏به کاربران راه دور اجازه دهید این Mac را کنترل کنند</translation>
 <translation id="2579271889603567289">میزبان خراب شد یا راه‌اندازی نشد.</translation>
 <translation id="2599300881200251572">‏این سرویس اتصال ورودی از کلاینت‌های کنترل رایانه ازراه‌دور Chrome را فعال می‌کند.</translation>
 <translation id="2647232381348739934">‏سرویس کار با Chrome</translation>
@@ -182,6 +183,11 @@
 <translation id="5419185025274123272">برنامه بازنشانی نمی‌شود. همچنان می‌توانید یک گزارش اشکال ارسال کنید.</translation>
 <translation id="5419418238395129586">آخرین حضور آنلاین: <ph name="DATE" /></translation>
 <translation id="544077782045763683">میزبان خاموش شد.</translation>
+<translation id="5463789431147491241">‏برای استفاده از <ph name="PRODUCT_NAME" /> در این Mac، این مراحل را دنبال کنید:
+
+«<ph name="BUTTON_NAME" />» را در زیر انتخاب کنید. در اولویت‌های «امنیت و حریم‌خصوصی»، کادر کنار «<ph name="SERVICE_SCRIPT_NAME" />» را علامت بزنید.
+
+اگر «<ph name="SERVICE_SCRIPT_NAME" />» ازقبل علامت زده شده است، علامت آن را بردارید و دوباره علامت بزنید.</translation>
 <translation id="5510035215749041527">قطع ارتباط</translation>
 <translation id="5593560073513909978">سرویس موقتاً در دسترس نیست. لطفاً بعداً دوباره امتحان کنید.</translation>
 <translation id="5601503069213153581">پین</translation>
@@ -299,12 +305,14 @@
 <translation id="837021510621780684">از این رایانه</translation>
 <translation id="8383794970363966105">‏برای استفاده از کار با Chrome ازراه‌دور، باید یک حساب Google به دستگاهتان اضافه کنید.</translation>
 <translation id="8386846956409881180">‏میزبان با اعتبارنامه OAuth نامعتبری پیکربندی شده است.</translation>
+<translation id="8406498562923498210">‏جلسه‌ای را برای راه‌اندازی در محیط «کنترل کامپیوتر از راه دور Chrome» انتخاب کنید. (توجه داشته باشید که ممکن است اجرای برخی انواع جلسه‌ها در «کنترل کامپیوتر از راه دور Chrome» و کنسول محلی به‌طور هم‌زمان پشتیبانی نشود)</translation>
 <translation id="8428213095426709021">تنظیمات</translation>
 <translation id="8445362773033888690">‏مشاهده در فروشگاه Google Play</translation>
 <translation id="8509907436388546015">فرآیند یکپارچگی با دسک‌تاپ</translation>
 <translation id="8513093439376855948">میزبان پیام‌رسانی بومی برای کنترل ازراه‌دور مدیریت میزبان</translation>
 <translation id="8525306231823319788">تمام صفحه</translation>
 <translation id="8548209692293300397">‏قبلاً با <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) وارد سیستم شده بودید. برای دسترسی به رایانه‌های آن حساب، با آن حساب <ph name="LINK_BEGIN" />وارد Google Chrome شوید<ph name="LINK_END" /> و کنترل رایانه ازراه‌دور Chrome را دوباره نصب کنید.</translation>
+<translation id="858006550102277544">نظر</translation>
 <translation id="8642984861538780905">نسبتاً خوب</translation>
 <translation id="8712909229180978490">‏نمی‌توانم فایل‌های ذخیره شده‌ام را آنلاین در Google Drive ببینم.</translation>
 <translation id="8743328882720071828">می‌خواهید به <ph name="CLIENT_USERNAME" /> اجازه دهید که رایانه‌تان را ببیند و کنترل کند؟</translation>
@@ -322,6 +330,7 @@
 <translation id="9126115402994542723">هنگام اتصال به میزبان از این دستگاه، پین دوباره درخواست نشود.</translation>
 <translation id="9149580767411232853">مرئی نگه‌داشتن کل رایانه ازراه‌دور</translation>
 <translation id="9149992051684092333">‏برای شروع اشتراک‎گذاری دسک‎تاپ خود، کد دسترسی زیر را به شخصی بدهید که به شما کمک می‎کند.</translation>
+<translation id="916856682307586697">‏XSession پیش‌فرض راه‌اندازی شود</translation>
 <translation id="9188433529406846933">ارائهٔ مجوز</translation>
 <translation id="9213184081240281106">پیکربندی میزبان نامعتبر است.</translation>
 <translation id="951991426597076286">رد کردن</translation>

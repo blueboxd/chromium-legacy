@@ -97,9 +97,6 @@
 <translation id="138218114945450791">Világoskék</translation>
 <translation id="1382194467192730611">A rendszergazda által engedélyezett USB-eszköz</translation>
 <translation id="139305205187523129">A(z) <ph name="HOST_NAME" /> nem küldött adatokat.</translation>
-<translation id="140316286225361634">A(z) <ph name="ORIGIN" /> webhely azt kérte, hogy egy adott biztonsági házirend
-    legyen alkalmazva az összes kérésére, és ez a házirend jelenleg
-    nem biztonságosnak ítéli meg a webhelyet.</translation>
 <translation id="1405567553485452995">Világoszöld</translation>
 <translation id="1407135791313364759">Összes megnyitása</translation>
 <translation id="1413809658975081374">Adatvédelmi hiba</translation>
@@ -135,6 +132,7 @@
 <translation id="1569487616857761740">Adja meg a lejárat dátumát</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Valami nem sikerült a weboldal megjelenítése során.</translation>
+<translation id="1588438908519853928">Normál</translation>
 <translation id="1592005682883173041">Helyi adatok elérése</translation>
 <translation id="1594030484168838125">Kiválaszt</translation>
 <translation id="161042844686301425">Cián</translation>
@@ -212,10 +210,6 @@
 <translation id="1981206234434200693">Törölje a Chrome böngészési előzményeit</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{és 1 további}other{és # további}}</translation>
 <translation id="2003709556000175978">Jelszó visszaállítása</translation>
-<translation id="20053308747750172">A felkeresni kívánt szerver (<ph name="ORIGIN" />) egy adott biztonsági házirend
-    alkalmazását kérte az összes hozzá irányuló kérés esetében. De most
-    érvénytelen házirendet mutatott be, amely megakadályozza, hogy a böngésző
-    teljesítse a(z) <ph name="SITE" /> webhelyre irányuló kérelmet.</translation>
 <translation id="2025186561304664664">Automatikusan konfigurálhatóra beállított proxy.</translation>
 <translation id="202813660234680402">Nem adom hozzá</translation>
 <translation id="2030481566774242610">Erre gondolt: <ph name="LINK" />?</translation>
@@ -293,10 +287,6 @@
 <translation id="2409589295040002961">A rendszergazda távolról tudja módosítani a böngészőbeállításokat. Az is lehetséges, hogy az eszközön végzett tevékenységeket a Chrome-on kívülről felügyelik. <ph name="BEGIN_LINK" />További információ.<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványát visszavonhatták. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
-<translation id="2418081434543109369">A felkeresni kívánt szerver (<ph name="ORIGIN" />) egy adott biztonsági házirend
-    alkalmazását kérte az összes hozzá irányuló kérés esetében. De most nem sikerült
-    bemutatnia a házirendet, így a böngésző nem tudja teljesíteni
-    a(z) <ph name="SITE" /> webhelyre irányuló kérelmet.</translation>
 <translation id="2463193859425327265">Kezdőlap módosítása</translation>
 <translation id="2463739503403862330">Kitöltés</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -586,6 +576,7 @@
 <translation id="4103249731201008433">Az eszköz sorozatszáma érvénytelen</translation>
 <translation id="410351446219883937">Automatikus lejátszás</translation>
 <translation id="4103763322291513355">Látogasson el a &lt;strong&gt;chrome://policy&lt;/strong&gt; oldalra a feketelistán lévő URL-ek és egyéb, a rendszergazda által előírt szabályok megtekintéséhez.</translation>
+<translation id="4108231218301530806">Ujjlenyomat használata ennek a kártyának az igazolására a következő alkalommal.</translation>
 <translation id="4110652170750985508">Befizetés áttekintése</translation>
 <translation id="4112140312785995938">Ugrás visszafelé</translation>
 <translation id="4116663294526079822">Mindig engedélyezze ezen az oldalon</translation>
@@ -788,6 +779,7 @@
 <translation id="5141240743006678641">A szinkronizált jelszavak titkosítása a Google hitelesítési adataival</translation>
 <translation id="5145883236150621069">Az irányelv válasza hibakódot tartalmaz</translation>
 <translation id="515292512908731282">C4 (boríték)</translation>
+<translation id="5158275234811857234">Borító</translation>
 <translation id="5159010409087891077">Oldal megnyitása új inkognitóablakban (⇧⌘N)</translation>
 <translation id="516920405563544094">Adja meg a(z) <ph name="CREDIT_CARD" /> kártya CVC-kódját. A megerősítést követően a böngésző megosztja majd az Ön Google-fiókjából származó kártyaadatokat ezzel a webhellyel.</translation>
 <translation id="5169827969064885044">Elveszítheti a hozzáférést szervezete fiókjához, vagy visszaélhetnek személyes adataival. A Chrome azt javasolja, hogy azonnal módosítsa jelszavát.</translation>
@@ -946,6 +938,7 @@
 <translation id="598637245381783098">Nem sikerült megnyitni a fizetőalkalmazást</translation>
 <translation id="5989320800837274978">Sem fix proxyszerver, sem pedig .pac típusú szkript URL-címe nincs megadva.</translation>
 <translation id="5990559369517809815">A szerver felé irányuló kéréseket egy bővítmény blokkolja.</translation>
+<translation id="6000758707621254961"><ph name="RESULT_COUNT" /> találat a következőre: <ph name="SEARCH_TEXT" /></translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">Év</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{1. oldal}other{#. oldal}}</translation>
@@ -1004,6 +997,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Nincs}=1{1 jelszó (a következő domainekhez: <ph name="DOMAIN_LIST" />, szinkronizálva)}=2{2 jelszó (a következő domainekhez: <ph name="DOMAIN_LIST" />, szinkronizálva)}other{# jelszó (a következő domainekhez: <ph name="DOMAIN_LIST" />, szinkronizálva)}}</translation>
 <translation id="6358450015545214790">Mit jelent ez?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6377268785556383139">1 találat a következőre: <ph name="SEARCH_TEXT" /></translation>
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Itt fizetésre próbálhatják rávenni.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 egyéb javaslat}other{# egyéb javaslat}}</translation>
@@ -1138,10 +1132,6 @@
 <translation id="717330890047184534">Gaia-azonosító:</translation>
 <translation id="7174545416324379297">Egyesítve</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> és további <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> és további <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
-<translation id="7177397715882417099">A felkeresni kívánt szerver (<ph name="ORIGIN" />) egy adott biztonsági házirend
-    alkalmazását kérte az összes hozzá irányuló kérés esetében. De ahelyett, hogy
-    átadta volna a házirendet, átirányította máshova a böngészőt, megakadályozva,
-    hogy a böngésző teljesítse a(z) <ph name="SITE" /> webhelyre irányuló kérelmet.</translation>
 <translation id="7179323680825933600">Fizetési módok mentése és betöltése</translation>
 <translation id="7180611975245234373">Frissítés</translation>
 <translation id="7182878459783632708">Nincsenek beállított házirendek</translation>
@@ -1168,6 +1158,7 @@ További részletek:
 <translation id="7300012071106347854">Kobaltkék</translation>
 <translation id="7302712225291570345">„<ph name="TEXT" />”</translation>
 <translation id="7303701124147721189">A következő alkalommal gyorsabban fizethet, ha kártyáját és számlázási címét eltárolja Google-fiókjában és ezen az eszközön.</translation>
+<translation id="7304030187361489308">Magas</translation>
 <translation id="7309308571273880165">Hibajelentés készült: <ph name="CRASH_TIME" /> (a felhasználó által kért feltöltés – még nincs feltöltve)</translation>
 <translation id="7313965965371928911">A <ph name="BEGIN_LINK" />Biztonságos böngészés<ph name="END_LINK" /> figyelmeztetései</translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1530,7 +1521,6 @@ További részletek:
 <translation id="939736085109172342">Új mappa</translation>
 <translation id="945855313015696284">Ellenőrizze az alábbi adatokat, és törölje az érvénytelen kártyákat</translation>
 <translation id="951104842009476243">Elfogadott bank- és feltöltőkártyák</translation>
-<translation id="958202389743790697">Letiltva a(z) <ph name="ORIGIN" /> biztonsági házirendje miatt.</translation>
 <translation id="962484866189421427">Ez a tartalom megtévesztő alkalmazásokat telepíthet, amelyek más alkalmazásnak tettethetik magukat, illetve az Ön nyomon követésére alkalmas adatokat gyűjthetnek. <ph name="BEGIN_LINK" />Megjelenítés mindenképpen<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Hivatalos verzió</translation>
 <translation id="973773823069644502">Kézbesítési cím hozzáadása</translation>

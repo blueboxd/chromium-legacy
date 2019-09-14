@@ -58,6 +58,7 @@
 <translation id="2509394361235492552">Connectat a <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">NOTA: Per assegurar-vos que totes les tecles de drecera estiguin disponibles, podeu configurar l'escriptori remot de Chrome amb l'opció "Obre com a finestra".</translation>
 <translation id="2540992418118313681">Voleu compartir aquest ordinador perquè un altre usuari el pugui veure i controlar?</translation>
+<translation id="254771646005658629">Permet que els usuaris remots controlin aquest Mac</translation>
 <translation id="2579271889603567289">L'amfitrió s'ha bloquejat o no s'ha pogut iniciar.</translation>
 <translation id="2599300881200251572">Aquest servei permet les connexions entrants de clients de l'escriptori remot de Chrome.</translation>
 <translation id="2647232381348739934">Servei de Chromoting</translation>
@@ -182,6 +183,11 @@
 <translation id="5419185025274123272">No es pot restablir l'aplicació. Podeu enviar un informe d'errors.</translation>
 <translation id="5419418238395129586">Última connexió: <ph name="DATE" /></translation>
 <translation id="544077782045763683">L'amfitrió s'ha tancat.</translation>
+<translation id="5463789431147491241">Per fer servir <ph name="PRODUCT_NAME" /> en aquest Mac, segueix aquests passos:
+
+Selecciona <ph name="BUTTON_NAME" /> més avall. A les preferències de Seguretat i privadesa, marca la casella corresponent a <ph name="SERVICE_SCRIPT_NAME" />.
+
+Si l'opció <ph name="SERVICE_SCRIPT_NAME" /> ja està marcada, desmarca-la i torna-la a marcar.</translation>
 <translation id="5510035215749041527">Desconnecta ara</translation>
 <translation id="5593560073513909978">El servei està temporalment no disponible. Torneu-ho a provar més tard.</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -298,12 +304,14 @@
 <translation id="837021510621780684">Des d'aquest ordinador</translation>
 <translation id="8383794970363966105">Per utilitzar Chromoting, haureu d'afegir un compte de Google al dispositiu.</translation>
 <translation id="8386846956409881180">L'amfitrió està configurat amb unes credencials d'OAuth no vàlides.</translation>
+<translation id="8406498562923498210">Selecciona una sessió per iniciar a l'entorn d'Escriptori remot de Chrome. Tingues en compte que pot ser que alguns tipus de sessió no es puguin executar a Escriptori remot de Chrome i a la consola local simultàniament.</translation>
 <translation id="8428213095426709021">Configuració</translation>
 <translation id="8445362773033888690">Mostra a Google Play Store</translation>
 <translation id="8509907436388546015">Procés d'integració de l'escriptori</translation>
 <translation id="8513093439376855948">Amfitrió de missatgeria nativa per a la gestió remota de l'amfitrió</translation>
 <translation id="8525306231823319788">Pantalla completa</translation>
 <translation id="8548209692293300397">Heu iniciat la sessió anteriorment com a <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Per accedir als ordinadors d'aquest compte, <ph name="LINK_BEGIN" />inicieu la sessió a Google Chrome<ph name="LINK_END" /> amb el compte en qüestió i torneu a instal·lar l'escriptori remot de Chrome.</translation>
+<translation id="858006550102277544">Comentari</translation>
 <translation id="8642984861538780905">Suficient</translation>
 <translation id="8712909229180978490">No puc veure els meus fitxers desats en línia a Google Drive.</translation>
 <translation id="8743328882720071828">Vols permetre que <ph name="CLIENT_USERNAME" /> pugui veure i controlar l'ordinador?</translation>
@@ -321,6 +329,7 @@
 <translation id="9126115402994542723">No tornis a demanar el PIN en connectar amb aquest amfitrió des d'aquest dispositiu</translation>
 <translation id="9149580767411232853">Mantén tot l'escriptori remot visible</translation>
 <translation id="9149992051684092333">Per començar a compartir l'escriptori, proporcioneu el codi d'accés següent a la persona que us oferirà assistència.</translation>
+<translation id="916856682307586697">Inicia la sessió X predeterminada</translation>
 <translation id="9188433529406846933">Autoritza</translation>
 <translation id="9213184081240281106">La configuració de l'amfitrió no és vàlida.</translation>
 <translation id="951991426597076286">Rebutja</translation>

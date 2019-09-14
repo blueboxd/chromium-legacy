@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/location.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "jingle/glue/utils.h"
 #include "third_party/blink/public/common/features.h"
@@ -28,7 +27,7 @@ P2PAsyncAddressResolver::~P2PAsyncAddressResolver() {
 
 void P2PAsyncAddressResolver::Start(const rtc::SocketAddress& host_name,
                                     DoneCallback done_callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_EQ(STATE_CREATED, state_);
 
   state_ = STATE_SENT;
@@ -42,7 +41,7 @@ void P2PAsyncAddressResolver::Start(const rtc::SocketAddress& host_name,
 }
 
 void P2PAsyncAddressResolver::Cancel() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (state_ != STATE_FINISHED)
     state_ = STATE_FINISHED;
@@ -51,7 +50,7 @@ void P2PAsyncAddressResolver::Cancel() {
 }
 
 void P2PAsyncAddressResolver::OnResponse(const net::IPAddressList& addresses) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (state_ == STATE_SENT) {
     state_ = STATE_FINISHED;
     std::move(done_callback_).Run(addresses);

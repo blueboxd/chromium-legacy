@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/platform/fonts/shaping/caching_word_shaper.h"
 
 #include <memory>
+
+#include "base/stl_util.h"
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
@@ -235,13 +237,13 @@ TEST_F(CachingWordShaperTest, SegmentEmojiPilotJudgeSequence) {
   // the latter including a variation selector.
   const UChar kStr[] = {0xD83D, 0xDC68, 0xD83C, 0xDFFB, 0x200D, 0x2696, 0xFE0F,
                         0xD83D, 0xDC68, 0xD83C, 0xDFFB, 0x200D, 0x2708, 0xFE0F};
-  TextRun text_run(kStr, ARRAY_SIZE(kStr));
+  TextRun text_run(kStr, base::size(kStr));
 
   scoped_refptr<const ShapeResult> word_result;
   CachingWordShapeIterator iterator(cache.get(), text_run, &font);
 
   ASSERT_TRUE(iterator.Next(&word_result));
-  EXPECT_EQ(ARRAY_SIZE(kStr), word_result->NumCharacters());
+  EXPECT_EQ(base::size(kStr), word_result->NumCharacters());
 
   ASSERT_FALSE(iterator.Next(&word_result));
 }
@@ -303,7 +305,7 @@ TEST_F(CachingWordShaperTest, SegmentEmojiSubdivisionFlags) {
                         0xDC73, 0xDB40, 0xDC63, 0xDB40, 0xDC74, 0xDB40, 0xDC7F,
                         0xD83C, 0xDFF4, 0xDB40, 0xDC67, 0xDB40, 0xDC62, 0xDB40,
                         0xDC65, 0xDB40, 0xDC6E, 0xDB40, 0xDC67, 0xDB40, 0xDC7F};
-  TextRun text_run(kStr, ARRAY_SIZE(kStr));
+  TextRun text_run(kStr, base::size(kStr));
 
   scoped_refptr<const ShapeResult> word_result;
   CachingWordShapeIterator iterator(cache.get(), text_run, &font);

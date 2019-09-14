@@ -367,9 +367,6 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
     // situation (the alpha channel is zeroed), requiring more fixups.
     GLuint rgb_workaround_texture_id = 0;
 
-    // The mailbox for |rgb_workaround_texture_id|.
-    gpu::Mailbox rgb_workaround_mailbox;
-
     // The mailbox used to send this buffer to the compositor.
     gpu::Mailbox mailbox;
 

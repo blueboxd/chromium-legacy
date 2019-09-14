@@ -34,6 +34,11 @@ enum PaymentEventResponseType {
   PAYMENT_EVENT_BROWSER_ERROR,
   PAYMENT_EVENT_TIMEOUT,
   PAYMENT_HANDLER_INSECURE_NAVIGATION,
+  PAYER_NAME_EMPTY,
+  PAYER_EMAIL_EMPTY,
+  PAYER_PHONE_EMPTY,
+  SHIPPING_ADDRESS_INVALID,
+  SHIPPING_OPTION_EMPTY,
 };
 
 // This struct is provided to hold a payment instrument from render
@@ -105,6 +110,8 @@ struct PaymentRequestEventData {
   PaymentCurrencyAmount total;
   array<PaymentDetailsModifier> modifiers;
   string instrument_key;
+  PaymentOptions? payment_options;
+  array<PaymentShippingOption>? shipping_options;
 
   // Handles events raised by the payment handler, such as "payment method
   // changed" event. Null in content_browsertests.
@@ -117,6 +124,11 @@ struct PaymentHandlerResponse {
   string method_name;
   string stringified_details;
   PaymentEventResponseType response_type;
+  string? payer_name;
+  string? payer_email;
+  string? payer_phone;
+  PaymentAddress? shipping_address;
+  string? shipping_option;
 };
 
 // This interface is provided to pass a payment handler response from payment

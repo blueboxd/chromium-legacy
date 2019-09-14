@@ -42,8 +42,12 @@ import org.chromium.chrome.browser.content.ContentUtils;
 import org.chromium.chrome.browser.download.DownloadManagerBridge.DownloadEnqueueRequest;
 import org.chromium.chrome.browser.download.DownloadManagerBridge.DownloadEnqueueResponse;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.download.R;
 import org.chromium.components.download.DownloadCollectionBridge;
+import org.chromium.components.offline_items_collection.LegacyHelpers;
+import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.ui.UiUtils;
 
 import java.io.DataOutputStream;
@@ -859,18 +863,44 @@ public class OMADownloadHandler extends BroadcastReceiver {
                 if (result.downloadStatus == DownloadManagerService.DownloadStatus.COMPLETE) {
                     onDownloadCompleted(item.getDownloadInfo(), downloadId, installNotifyURI);
                     removeOMADownloadFromSharedPrefs(downloadId);
-                    mDownloadSnackbarController.onDownloadSucceeded(item.getDownloadInfo(),
-                            DownloadSnackbarController.INVALID_NOTIFICATION_ID, downloadId,
-                            canResolve, true);
+                    if (FeatureUtilities.isDownloadProgressInfoBarEnabled()) {
+                        showDownloadOnInfoBar(item, result.downloadStatus);
+                    } else {
+                        mDownloadSnackbarController.onDownloadSucceeded(item.getDownloadInfo(),
+                                DownloadSnackbarController.INVALID_NOTIFICATION_ID, downloadId,
+                                canResolve, true);
+                    }
+
                 } else if (result.downloadStatus == DownloadManagerService.DownloadStatus.FAILED) {
                     onDownloadFailed(item.getDownloadInfo(), downloadId, result.failureReason,
                             installNotifyURI);
                     removeOMADownloadFromSharedPrefs(downloadId);
-                    DownloadManagerService.getDownloadManagerService().onDownloadFailed(
-                            item, result.failureReason);
+                    if (FeatureUtilities.isDownloadProgressInfoBarEnabled()) {
+                        // TODO(shaktisahu): Find a way to pass the failure reason.
+                        showDownloadOnInfoBar(item, result.downloadStatus);
+                    } else {
+                        DownloadManagerService.getDownloadManagerService().onDownloadFailed(
+                                item, result.failureReason);
+                    }
                 }
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    private void showDownloadOnInfoBar(DownloadItem downloadItem, int downloadStatus) {
+        DownloadInfoBarController infobarController =
+                DownloadManagerService.getDownloadManagerService().getInfoBarController(
+                        downloadItem.getDownloadInfo().isOffTheRecord());
+        if (infobarController == null) return;
+        OfflineItem offlineItem = DownloadInfo.createOfflineItem(downloadItem.getDownloadInfo());
+        offlineItem.id.namespace = LegacyHelpers.LEGACY_ANDROID_DOWNLOAD_NAMESPACE;
+        if (downloadStatus == DownloadManagerService.DownloadStatus.COMPLETE) {
+            offlineItem.state = OfflineItemState.COMPLETE;
+        } else if (downloadStatus == DownloadManagerService.DownloadStatus.FAILED) {
+            offlineItem.state = OfflineItemState.FAILED;
+        }
+
+        infobarController.onItemUpdated(offlineItem, null);
     }
 
     /**

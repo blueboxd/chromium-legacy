@@ -92,15 +92,6 @@ function initializeEditDialog(page) {
 }
 
 /**
- * @param {!NetworkingPrivate} api
- * @param {!Array<crOnc.NetworkStateProperties>} networks
- */
-function setNetworksForTest(api, networks) {
-  api.resetForTest();
-  api.addNetworksForTest(networks);
-}
-
-/**
  * @param {string} expectedMessage
  * @param {!HTMLElement} toast
  * @private
@@ -217,19 +208,16 @@ suite('CupsSavedPrintersTests', function() {
   /** @type {?Array<!CupsPrinterInfo>} */
   let printerList = null;
 
-  /** @type {NetworkingPrivate} */
-  let api_;
-
   /** @type {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
   let mojoApi_;
 
   suiteSetup(function() {
-    api_ = new chrome.FakeNetworkingPrivate();
-    mojoApi_ = new FakeNetworkConfig(api_);
+    mojoApi_ = new FakeNetworkConfig();
     network_config.MojoInterfaceProviderImpl.getInstance().remote_ = mojoApi_;
   });
 
   setup(function() {
+    const mojom = chromeos.networkConfig.mojom;
     printerList = [
       createCupsPrinterInfo('google', '4', 'id4'),
       createCupsPrinterInfo('test1', '1', 'id1'),
@@ -245,14 +233,12 @@ suite('CupsSavedPrintersTests', function() {
     settings.CupsPrintersBrowserProxyImpl.instance_ = cupsPrintersBrowserProxy;
 
     // Simulate internet connection.
-    api_.resetForTest();
-    setNetworksForTest(api_, [{
-                         GUID: 'wifi1_guid',
-                         Name: 'wifi1',
-                         Type: 'WiFi',
-                         ConnectionState: 'Connected',
-                       }]);
-    api_.enableNetworkType('WiFi');
+    mojoApi_.resetForTest();
+    mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, true);
+    const wifi1 =
+        OncMojo.getDefaultNetworkState(mojom.NetworkType.kWiFi, 'wifi');
+    wifi1.connectionState = mojom.ConnectionStateType.kConnected;
+    mojoApi_.addNetworksForTest([wifi1]);
 
     PolymerTest.clearBody();
     settings.navigateTo(settings.routes.CUPS_PRINTERS);
@@ -268,7 +254,7 @@ suite('CupsSavedPrintersTests', function() {
   });
 
   teardown(function() {
-    api_.resetForTest();
+    mojoApi_.resetForTest();
     cupsPrintersBrowserProxy.reset();
     page.remove();
     savedPrintersElement = null;
@@ -452,54 +438,27 @@ suite('CupsNearbyPrintersTests', function() {
   /** @type {?settings.TestCupsPrintersBrowserProxy} */
   let cupsPrintersBrowserProxy = null;
 
-  /** @type {?NetworkingPrivate} */
-  let api_;
-
   /** @type {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
   let mojoApi_;
 
-  /** @type {!Array<crOnc.NetworkStateProperties>} networks */
-  let activeNetworks_;
-
-  /**
-   * @param {string} guid
-   * @param {string} state
-   */
-  function setNetworkConnectionState(guid, state) {
-    let network = activeNetworks_.find((state) => {
-      return state.GUID == guid;
-    });
-    assertTrue(!!network);
-    network.ConnectionState = state;
-
-    // TODO(jimmyxgong): Remove this hack by moving |networkStateToMojo_| to
-    // onc_mojo.js.
-    mojoApi_.getNetworkState(network.GUID).then(({result}) => {
-      api_.onActiveNetworksChanged.callListeners([result]);
-    });
-  }
-
   suiteSetup(function() {
-    api_ = new chrome.FakeNetworkingPrivate();
-    mojoApi_ = new FakeNetworkConfig(api_);
+    mojoApi_ = new FakeNetworkConfig();
     network_config.MojoInterfaceProviderImpl.getInstance().remote_ = mojoApi_;
   });
 
   setup(function() {
+    const mojom = chromeos.networkConfig.mojom;
     cupsPrintersBrowserProxy =
         new printerBrowserProxy.TestCupsPrintersBrowserProxy;
 
     settings.CupsPrintersBrowserProxyImpl.instance_ = cupsPrintersBrowserProxy;
 
     // Simulate internet connection.
-    api_.resetForTest();
-    activeNetworks_ = [{
-      GUID: 'wifi1_guid',
-      Name: 'wifi1',
-      Type: 'WiFi',
-      ConnectionState: 'Online',
-    }];
-    setNetworksForTest(api_, activeNetworks_);
+    mojoApi_.resetForTest();
+    const wifi1 =
+        OncMojo.getDefaultNetworkState(mojom.NetworkType.kWiFi, 'wifi1');
+    wifi1.connectionState = mojom.ConnectionStateType.kOnline;
+    mojoApi_.addNetworksForTest([wifi1]);
 
     PolymerTest.clearBody();
     settings.navigateTo(settings.routes.CUPS_PRINTERS);
@@ -515,7 +474,7 @@ suite('CupsNearbyPrintersTests', function() {
   });
 
   teardown(function() {
-    api_.resetForTest();
+    mojoApi_.resetForTest();
     cupsPrintersBrowserProxy.reset();
     page.remove();
     nearbyPrintersElement = null;
@@ -711,7 +670,9 @@ suite('CupsNearbyPrintersTests', function() {
 
   test('NetworkConnectedButNoInternet', function() {
     // Simulate connecting to a network with no internet connection.
-    setNetworkConnectionState('wifi1_guid', 'Connected');
+    mojoApi_.setNetworkConnectionStateForTest(
+        'wifi1_guid',
+        chromeos.networkConfig.mojom.ConnectionStateType.kConnected);
     return test_util.flushTasks().then(() => {
       // We require internet to be able to add a new printer. Connecting to
       // a network without connectivity should be equivalent to not being
@@ -724,7 +685,9 @@ suite('CupsNearbyPrintersTests', function() {
 
   test('checkNetworkConnection', function() {
     // Simulate disconnecting from a network.
-    setNetworkConnectionState('wifi1_guid', 'NotConnected');
+    mojoApi_.setNetworkConnectionStateForTest(
+        'wifi1_guid',
+        chromeos.networkConfig.mojom.ConnectionStateType.kNotConnected);
     return test_util.flushTasks()
         .then(() => {
           // Expect offline text to show up when no internet is
@@ -734,7 +697,9 @@ suite('CupsNearbyPrintersTests', function() {
           assertTrue(!!page.$$('#addManualPrinterIcon').disabled);
 
           // Simulate connecting to a network with connectivity.
-          setNetworkConnectionState('wifi1_guid', 'Online');
+          mojoApi_.setNetworkConnectionStateForTest(
+              'wifi1_guid',
+              chromeos.networkConfig.mojom.ConnectionStateType.kOnline);
           return test_util.flushTasks();
         })
         .then(() => {

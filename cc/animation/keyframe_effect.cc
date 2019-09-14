@@ -248,6 +248,21 @@ void KeyframeEffect::AddKeyframeModel(
                keyframe_model->group() == existing_keyframe_model->group();
       }));
 
+  if (keyframe_model->target_property_id() == TargetProperty::SCROLL_OFFSET) {
+    // We should never have more than one scroll offset animation queued on the
+    // same scrolling element as this would result in multiple automated
+    // scrolls.
+    DCHECK(std::none_of(
+        keyframe_models_.begin(), keyframe_models_.end(),
+        [&](const auto& existing_keyframe_model) {
+          return existing_keyframe_model->target_property_id() ==
+                     TargetProperty::SCROLL_OFFSET &&
+                 !existing_keyframe_model->is_finished() &&
+                 (!existing_keyframe_model->is_controlling_instance() ||
+                  existing_keyframe_model->affects_pending_elements());
+        }));
+  }
+
   keyframe_models_.push_back(std::move(keyframe_model));
 
   if (has_bound_element_animations()) {

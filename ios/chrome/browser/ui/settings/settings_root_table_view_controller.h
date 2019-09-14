@@ -81,6 +81,11 @@ extern NSString* const kSettingsToolbarDeleteButtonId;
 // * Removes the transparent veil.
 - (void)allowUserInteraction;
 
+// Returns YES. Subclasses can override to prevent a swipe down dismissal. This
+// is useful when the ViewController contains editable fields and accidental
+// dismissals want to be avoided.
+- (BOOL)shouldDismissViewControllerBySwipeDown;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_SETTINGS_ROOT_TABLE_VIEW_CONTROLLER_H_

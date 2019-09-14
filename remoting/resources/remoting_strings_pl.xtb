@@ -58,6 +58,7 @@
 <translation id="2509394361235492552">Połączono z: <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">UWAGA: aby wszystkie skróty klawiszowe były dostępne, ustaw Pulpit zdalny Chrome na „Otwórz jako okno”.</translation>
 <translation id="2540992418118313681">Chcesz udostępnić ten komputer innemu użytkownikowi, by mógł przeglądać jego zawartość i sterować nim?</translation>
+<translation id="254771646005658629">Zezwól użytkownikom zdalnym na sterowanie tym Makiem</translation>
 <translation id="2579271889603567289">Host nie uruchomił się lub wystąpił na nim błąd.</translation>
 <translation id="2599300881200251572">Ta usługa umożliwia obsługę połączeń przychodzących z klientów Pulpitu zdalnego Chrome.</translation>
 <translation id="2647232381348739934">Usługa Chromoting</translation>
@@ -182,6 +183,11 @@
 <translation id="5419185025274123272">Nie można zresetować aplikacji. Wciąż możesz przesłać zgłoszenie błędu.</translation>
 <translation id="5419418238395129586">Ostatnio online: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Host został wyłączony.</translation>
+<translation id="5463789431147491241">Aby używać <ph name="PRODUCT_NAME" /> na tym Maku:
+
+Kliknij „<ph name="BUTTON_NAME" />” poniżej. W ustawieniach Bezpieczeństwo i prywatność zaznacz „<ph name="SERVICE_SCRIPT_NAME" />”.
+
+Jeśli pole „<ph name="SERVICE_SCRIPT_NAME" />” jest już zaznaczone, odznacz je i zaznacz ponownie.</translation>
 <translation id="5510035215749041527">Odłącz teraz</translation>
 <translation id="5593560073513909978">Usługa jest tymczasowo niedostępna. Spróbuj ponownie później.</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -298,12 +304,14 @@
 <translation id="837021510621780684">Z tego komputera</translation>
 <translation id="8383794970363966105">Aby użyć funkcji Chromoting, musisz dodać do urządzenia konto Google.</translation>
 <translation id="8386846956409881180">Host został skonfigurowany z nieprawidłowymi danymi logowania protokołu OAuth.</translation>
+<translation id="8406498562923498210">Wybierz sesję, którą chcesz uruchomić w środowisku Pulpitu zdalnego Chrome. (Uwaga: niektóre typy sesji nie mogą działać jednocześnie w Pulpicie zdalnym Chrome i na konsoli lokalnej).</translation>
 <translation id="8428213095426709021">Ustawienia</translation>
 <translation id="8445362773033888690">Wyświetl w Sklepie Google Play</translation>
 <translation id="8509907436388546015">Proces integracji pulpitu</translation>
 <translation id="8513093439376855948">Host natywnego przesyłania komunikatów do zdalnego zarządzania hostem</translation>
 <translation id="8525306231823319788">Pełny ekran</translation>
 <translation id="8548209692293300397">Poprzednio logowałeś się jako <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Aby uzyskać dostęp do swoich komputerów na tym koncie, <ph name="LINK_BEGIN" />zaloguj się na to konto w Google Chrome<ph name="LINK_END" /> i ponownie zainstaluj Pulpit zdalny Chrome.</translation>
+<translation id="858006550102277544">Komentarz</translation>
 <translation id="8642984861538780905">Średnia</translation>
 <translation id="8712909229180978490">Nie widzę moich plików zapisanych na Dysku Google, gdy jestem online.</translation>
 <translation id="8743328882720071828">Czy chcesz zezwolić użytkownikowi <ph name="CLIENT_USERNAME" /> na przeglądanie zawartości Twojego komputera i sterowanie nim?</translation>
@@ -321,6 +329,7 @@
 <translation id="9126115402994542723">Nie pytaj ponownie o kod PIN, gdy bieżące urządzenie będzie łączyć się z tym hostem.</translation>
 <translation id="9149580767411232853">Pulpit zdalny ma być widoczny w całości</translation>
 <translation id="9149992051684092333">Aby udostępnić pulpit, podaj poniższy kod dostępu osobie, która będzie Ci pomagać.</translation>
+<translation id="916856682307586697">Uruchom domyślną sesję X</translation>
 <translation id="9188433529406846933">Autoryzuj</translation>
 <translation id="9213184081240281106">Nieprawidłowa konfiguracja hosta.</translation>
 <translation id="951991426597076286">Odrzuć</translation>

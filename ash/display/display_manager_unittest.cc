@@ -4493,4 +4493,16 @@ TEST_F(DisplayManagerTest, SoftwareMirrorRotationForNonTablet) {
   EXPECT_EQ(gfx::RectF(100.0f, 0.0f, 600.0f, 800.0f), transformed_rect3);
 }
 
+TEST_F(DisplayManagerTest, DPSizeTest) {
+  display::test::DisplayManagerTestApi(display_manager())
+      .SetFirstDisplayAsInternalDisplay();
+  UpdateDisplay("3840x2160*2.66666");
+  EXPECT_EQ(gfx::Size(1440, 810),
+            display::Screen::GetScreen()->GetPrimaryDisplay().size());
+
+  UpdateDisplay("1920x1200*1.77777");
+  EXPECT_EQ(gfx::Size(1080, 675),
+            display::Screen::GetScreen()->GetPrimaryDisplay().size());
+}
+
 }  // namespace ash

@@ -28,8 +28,8 @@ class TabletModePageBehavior : public ash::TabletModeObserver,
   void OnTabletModeToggled(bool enabled);
 
   // ash::TabletModeObserver:
-  void OnTabletModeStarted() override;
-  void OnTabletModeEnded() override;
+  void OnTabletModeStarting() override;
+  void OnTabletModeEnding() override;
   void OnTabletControllerDestroyed() override;
 
   // BrowserTabStripTrackerDelegate:

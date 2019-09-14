@@ -6,7 +6,9 @@ Javascript initiated navigation blocked cookies: []
 
 Javascript initiated subresource blocked cookies: [
   {
-    "blockedReason": "SameSiteLax",
+    "blockedReasons": [
+      "SameSiteLax"
+    ],
     "cookie": {
       "name": "name",
       "value": "value",

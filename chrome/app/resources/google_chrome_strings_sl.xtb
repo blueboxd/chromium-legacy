@@ -47,6 +47,8 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="1873233029667955273">Google Chrome ni privzeti brskalnik</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome je zastarel</translation>
+<translation id="1900795423379050516">Če nastavitev ni prikazana na tej strani, preverite <ph name="LINK_BEGIN" />
+      nastavitve brskalnika Chrome<ph name="LINK_END" /></translation>
 <translation id="1915828456209461693">Na voljo je nova posodobitev za Chrome, ki bo nameščena, takoj ko ga znova zaženete.</translation>
 <translation id="1919130412786645364">Omogočanje prijave v Chrome</translation>
 <translation id="2063848847527508675">Če želite namestiti posodobitev, morate znova zagnati OS Chrome.</translation>
@@ -164,6 +166,8 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="5543953544073077331">Izvajajo se druge kopije Chroma. Če želite opraviti posodobitev, jih zaprite.</translation>
 <translation id="556024056938947818">Google Chrome poskuša prikazati gesla.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
+<translation id="5657226924540934362">Če nastavitev ni prikazana na tej strani, preverite <ph name="LINK_BEGIN" />
+      nastavitve sistema OS Chrome<ph name="LINK_END" /></translation>
 <translation id="565744775970812598">Datoteka <ph name="FILE_NAME" /> je morda nevarna, zato jo je Chrome blokiral.</translation>
 <translation id="5686916850681061684">Prilagajanje in nadziranje Google Chroma. Nekaj morate preveriti – kliknite za podrobnosti.</translation>
 <translation id="5690427481109656848">Google LLC</translation>

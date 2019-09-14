@@ -21,7 +21,6 @@
 <translation id="1146678959555564648">Entra nella VR</translation>
 <translation id="116280672541001035">Utilizzati</translation>
 <translation id="1171770572613082465">Scopri i siti web più visitati toccando il pulsante "Siti principali"</translation>
-<translation id="1172593791219290334">Pagina iniziale</translation>
 <translation id="1173894706177603556">Rinomina</translation>
 <translation id="1175310183703641346">I preferiti, la cronologia, le password e altre impostazioni non verranno più sincronizzati con il tuo Account Google</translation>
 <translation id="1178581264944972037">Pausa</translation>
@@ -42,6 +41,7 @@
 <translation id="1258753120186372309">Doodle di Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Cerca ed esplora</translation>
 <translation id="1264974993859112054">Sport</translation>
+<translation id="1266864766717917324">Impossibile condividere <ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">Interrompi</translation>
 <translation id="1283039547216852943">Tocca per espandere</translation>
 <translation id="1285320974508926690">Non tradurre mai questo sito</translation>
@@ -71,6 +71,7 @@
 <translation id="1430915738399379752">Stampa</translation>
 <translation id="1445680696957526815">I componenti di Chrome non sono compatibili tra loro. Potrebbe essere in corso l'upgrade di Chrome, riprova tra qualche minuto. Se il problema persiste, prova a disinstallare e reinstallare Chrome.</translation>
 <translation id="1446450296470737166">Controllo completo dispos. MIDI</translation>
+<translation id="1450753235335490080">Impossibile condividere <ph name="CONTENT_TYPE" /></translation>
 <translation id="145097072038377568">Disattivata in Impostazioni Android</translation>
 <translation id="1477626028522505441">Download di <ph name="FILE_NAME" /> non riuscito a causa di problemi del server.</translation>
 <translation id="1501480321619201731">Elimina gruppo</translation>
@@ -153,6 +154,7 @@
 <translation id="2049961518639794558">La modifica dell'estensione del file potrebbe causare un comportamento imprevisto e potrebbe danneggiare il dispositivo.</translation>
 <translation id="2056878612599315956">Sito in pausa</translation>
 <translation id="2063713494490388661">Tocca per cercare</translation>
+<translation id="2067805253194386918">testo</translation>
 <translation id="2079545284768500474">Annulla</translation>
 <translation id="2082238445998314030">Risultato <ph name="RESULT_NUMBER" /> di <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Audio</translation>
@@ -165,7 +167,6 @@
 <translation id="2131665479022868825">Dati risparmiati: <ph name="DATA" /></translation>
 <translation id="213279576345780926">La scheda <ph name="TAB_TITLE" /> è stata chiusa</translation>
 <translation id="2139186145475833000">Aggiungi a schermata Home</translation>
-<translation id="2142289305367051020">Qui puoi trovare le tue pagine preferite</translation>
 <translation id="2146738493024040262">Apri l'app istantanea</translation>
 <translation id="2148716181193084225">Oggi</translation>
 <translation id="2154484045852737596">Modifica la carta</translation>
@@ -324,6 +325,7 @@
 <translation id="3384347053049321195">Condividi immagine</translation>
 <translation id="3386292677130313581">Chiedi conferma prima di consentire ai siti di conoscere la tua posizione (opzione consigliata)</translation>
 <translation id="3387650086002190359">Download di <ph name="FILE_NAME" /> non riuscito a causa di errori del file system.</translation>
+<translation id="3389286852084373014">Il testo è troppo grande</translation>
 <translation id="3398320232533725830">Apri Gestione Preferiti</translation>
 <translation id="3414952576877147120">Dimensioni:</translation>
 <translation id="3443221991560634068">Ricarica la pagina corrente</translation>
@@ -348,6 +350,7 @@
 <translation id="3599863153486145794">Consente di cancellare la cronologia da tutti i dispositivi su cui hai eseguito l'accesso. Il tuo Account Google potrebbe avere altri tipi di cronologia di navigazione all'indirizzo <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Disattiva l'audio nei siti che riproducono suoni</translation>
 <translation id="3616113530831147358">Audio</translation>
+<translation id="3631987586758005671">Condivisione con <ph name="DEVICE_NAME" /></translation>
 <translation id="3632295766818638029">Visualizza password</translation>
 <translation id="363596933471559332">Accedi automaticamente ai siti web utilizzando credenziali memorizzate. Quando la funzione non è attiva, ti viene chiesta la verifica prima di ogni accesso ai siti web.</translation>
 <translation id="3658159451045945436">La reimpostazione elimina la tua cronologia dei dati risparmiati, incluso l'elenco dei siti web visitati.</translation>
@@ -358,7 +361,6 @@
 <translation id="3739899004075612870">Aggiunto ai preferiti di <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB per altre app</translation>
 <translation id="3744111561329211289">Sincronizzazione in background</translation>
-<translation id="3745176700485982507">In questa pagina puoi trovare i link ai tuoi siti web preferiti</translation>
 <translation id="3771001275138982843">Impossibile scaricare l'aggiornamento</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Attiva il Bluetooth<ph name="END_LINK" /> per consentire l'accoppiamento</translation>
 <translation id="3775705724665058594">Invia ai tuoi dispositivi</translation>
@@ -563,7 +565,6 @@ Prima di accedere alla VR, verifica che questo sito sia attendibile.</translatio
 <translation id="5224771365102442243">Con video</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> richiede di eseguire la scansione per rilevare dispositivi Bluetooth nelle vicinanze. Sono stati rilevati i seguenti dispositivi:</translation>
 <translation id="5233638681132016545">Nuova scheda</translation>
-<translation id="5234764350956374838">Ignora</translation>
 <translation id="526421993248218238">Impossibile caricare la pagina</translation>
 <translation id="5271967389191913893">Non è possibile aprire i contenuti da scaricare sul dispositivo.</translation>
 <translation id="528192093759286357">Trascina dall'alto e tocca il pulsante Indietro per uscire dalla modalità a schermo intero.</translation>
@@ -578,8 +579,8 @@ Prima di accedere alla VR, verifica che questo sito sia attendibile.</translatio
 <translation id="5324858694974489420">Impostazioni controllo genitori</translation>
 <translation id="5327248766486351172">Nome</translation>
 <translation id="5335288049665977812">Consenti l'esecuzione di JavaScript nei siti (opzione consigliata)</translation>
+<translation id="5342314432463739672">Richieste di autorizzazione</translation>
 <translation id="5357811892247919462">Scheda ricevuta</translation>
-<translation id="5363230136052241468">Tocca il pulsante Home per caricare la pagina Nuova scheda</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> scheda aperta, tocca per cambiare scheda}other{<ph name="OPEN_TABS_MANY" /> schede aperte, tocca per cambiare scheda}}</translation>
 <translation id="5391532827096253100">La tua connessione al sito non è sicura. Informazioni sul sito</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 altro)}other{(+ altri #)}}</translation>
@@ -748,6 +749,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6532866250404780454">I siti che visiti in Chrome non verranno mostrati. Tutti i timer dei siti saranno eliminati.</translation>
 <translation id="6534565668554028783">Google ha impiegato troppo tempo a rispondere</translation>
 <translation id="6538442820324228105">Sono stati scaricati <ph name="GBS" /> GB</translation>
+<translation id="6539092367496845964">Si è verificato un problema. Riprova più tardi.</translation>
 <translation id="654446541061731451">Seleziona una scheda da trasmettere</translation>
 <translation id="6545017243486555795">Cancella tutti i dati</translation>
 <translation id="6545864417968258051">Scansione Bluetooth</translation>
@@ -802,7 +804,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6912998170423641340">Impedisci ai siti di leggere testo e immagini negli appunti</translation>
 <translation id="6914783257214138813">Le tue password saranno visibili a chiunque abbia accesso al file esportato.</translation>
 <translation id="6942665639005891494">Modifica in qualsiasi momento il percorso di download predefinito utilizzando l'opzione del menu Impostazioni</translation>
-<translation id="6944102653068653326">Tocca per caricare la pagina Nuova scheda</translation>
 <translation id="6945221475159498467">Seleziona</translation>
 <translation id="6963642900430330478">Questa pagina è pericolosa Informazioni sul sito</translation>
 <translation id="6963766334940102469">Elimina Preferiti</translation>
@@ -879,6 +880,7 @@ Il sito NON ottiene l'accesso alla videocamera. Le immagini della videocamera so
 <translation id="7493994139787901920"><ph name="VERSION" /> (Ultimo aggiornamento: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">di dati risparmiati</translation>
 <translation id="7498271377022651285">Attendi…</translation>
+<translation id="7510943789645525906">Ricevi un avviso se una tua password è stata oggetto di una violazione dei dati</translation>
 <translation id="7514365320538308">Scarica</translation>
 <translation id="751961395872307827">Impossibile connettersi al sito</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -996,7 +998,6 @@ Il sito NON ottiene l'accesso alla videocamera. Le immagini della videocamera so
 <translation id="8284326494547611709">Sottotitoli</translation>
 <translation id="8300705686683892304">Gestiti dall'app</translation>
 <translation id="8310344678080805313">Schede standard</translation>
-<translation id="8313455859591948645">Modifica la pagina iniziale</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> e altri siti</translation>
 <translation id="8327155640814342956">Per un'esperienza di navigazione ottimale, apri per aggiornare Chrome</translation>
 <translation id="8339163506404995330">Le pagine in <ph name="LANGUAGE" /> non verranno tradotte</translation>

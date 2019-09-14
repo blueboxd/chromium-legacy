@@ -67,3 +67,8 @@
 # histogram is not recorded before the end of the test.
 -SignedExchangeRequestHandlerBrowserTest.Simple/3
 -SignedExchangeRequestHandlerBrowserTest.VariantMatch/3
+
+# Check failed: !is_active().
+# https://crbug.com/1003744
+-NavigationBaseBrowserTest.BackForwardInOldDocumentCancelPendingNavigation/1
+-NavigationBaseBrowserTest.BackForwardInOldDocumentCancelPendingNavigation/0

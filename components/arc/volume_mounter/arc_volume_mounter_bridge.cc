@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/task/post_task.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/disks/disk.h"
@@ -205,9 +206,18 @@ void ArcVolumeMounterBridge::OnMountEvent(
   if (!volume_mounter_instance)
     return;
 
+  const bool visible = IsVisibleToAndroidApps(fs_uuid);
   volume_mounter_instance->OnMountEvent(mojom::MountPointInfo::New(
       event, mount_info.source_path, mount_info.mount_path, fs_uuid,
-      device_label, device_type, IsVisibleToAndroidApps(fs_uuid)));
+      device_label, device_type, visible));
+  if (event == DiskMountManager::MountEvent::MOUNTING &&
+      (device_type == chromeos::DeviceType::DEVICE_TYPE_USB ||
+       device_type == chromeos::DeviceType::DEVICE_TYPE_SD)) {
+    // Record visibilities of the mounted devices only when they are removable
+    // storages (e.g. USB sticks or SD cards).
+    base::UmaHistogramBoolean("Arc.ExternalStorage.MountedMediaVisibility",
+                              visible);
+  }
 }
 
 void ArcVolumeMounterBridge::RequestAllMountPoints() {

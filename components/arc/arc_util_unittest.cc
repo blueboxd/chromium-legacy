@@ -252,9 +252,10 @@ TEST_F(ArcUtilTest, ScaleFactorToDensity) {
   EXPECT_EQ(160, GetLcdDensityForDeviceScaleFactor(1.0f));
   EXPECT_EQ(160, GetLcdDensityForDeviceScaleFactor(1.25f));
   EXPECT_EQ(213, GetLcdDensityForDeviceScaleFactor(1.6f));
+  EXPECT_EQ(240, GetLcdDensityForDeviceScaleFactor(1.7777777f));
   EXPECT_EQ(240, GetLcdDensityForDeviceScaleFactor(2.0f));
   EXPECT_EQ(280, GetLcdDensityForDeviceScaleFactor(2.25f));
-  EXPECT_EQ(320, GetLcdDensityForDeviceScaleFactor(2.5f));
+  EXPECT_EQ(320, GetLcdDensityForDeviceScaleFactor(2.6666666f));
 
   // Bad scale factors shouldn't blow up.
   EXPECT_EQ(160, GetLcdDensityForDeviceScaleFactor(0.5f));

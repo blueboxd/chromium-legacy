@@ -2,6 +2,7 @@ alph@chromium.org
 caseq@chromium.org
 dgozman@chromium.org
 pfeldman@chromium.org
+yangguo@chromium.org
 
 # Changes to remote debugging protocol require devtools review to
 # ensure backwards compatibility and committment to maintain.

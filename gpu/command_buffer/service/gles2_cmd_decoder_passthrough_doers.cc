@@ -1152,12 +1152,33 @@ error::Error GLES2DecoderPassthroughImpl::DoDrawArrays(GLenum mode,
   return error::kNoError;
 }
 
+error::Error GLES2DecoderPassthroughImpl::DoDrawArraysIndirect(
+    GLenum mode,
+    const void* offset) {
+  BindPendingImagesForSamplersIfNeeded();
+  // TODO(jiajie.hu@intel.com): Use glDrawArraysIndirectRobustANGLEFn() when
+  // it's ready in ANGLE.
+  api()->glDrawArraysIndirectFn(mode, offset);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderPassthroughImpl::DoDrawElements(GLenum mode,
                                                          GLsizei count,
                                                          GLenum type,
                                                          const void* indices) {
   BindPendingImagesForSamplersIfNeeded();
   api()->glDrawElementsFn(mode, count, type, indices);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderPassthroughImpl::DoDrawElementsIndirect(
+    GLenum mode,
+    GLenum type,
+    const void* offset) {
+  BindPendingImagesForSamplersIfNeeded();
+  // TODO(jiajie.hu@intel.com): Use glDrawElementsIndirectRobustANGLEFn() when
+  // it's ready in ANGLE.
+  api()->glDrawElementsIndirectFn(mode, type, offset);
   return error::kNoError;
 }
 

@@ -48,8 +48,6 @@ blink_core_sources("workers") {
     "threaded_worklet_messaging_proxy.h",
     "threaded_worklet_object_proxy.cc",
     "threaded_worklet_object_proxy.h",
-    "worker_animation_frame_provider.cc",
-    "worker_animation_frame_provider.h",
     "worker_backing_thread.cc",
     "worker_backing_thread.h",
     "worker_backing_thread_startup_data.h",

@@ -43,6 +43,8 @@
 <translation id="1873233029667955273">Google Chrome не є веб-переглядачем за умовчанням</translation>
 <translation id="1874309113135274312">Бета-версія Google Chrome (mDNS-In)</translation>
 <translation id="1877026089748256423">Версія Chrome застаріла</translation>
+<translation id="1900795423379050516">Якщо налаштування не з'явиться на цій сторінці, пошукайте його в <ph name="LINK_BEGIN" />
+      налаштуваннях веб-переглядача Chrome<ph name="LINK_END" /></translation>
 <translation id="1915828456209461693">Доступне оновлення Chrome, його буде застосовано відразу після перезапуску.</translation>
 <translation id="1919130412786645364">Дозволити вхід у Chrome</translation>
 <translation id="2063848847527508675">Щоб застосувати це оновлення, потрібно перезапустити ОС Chrome.</translation>
@@ -156,6 +158,8 @@
 <translation id="5543953544073077331">Запущено інші копії Chrome. Щоб оновити, закрийте їх.</translation>
 <translation id="556024056938947818">Google Chrome намагається показати паролі.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
+<translation id="5657226924540934362">Якщо налаштування не з'явиться на цій сторінці, пошукайте його в <ph name="LINK_BEGIN" />
+      налаштуваннях ОС Chrome<ph name="LINK_END" /></translation>
 <translation id="565744775970812598">Файл <ph name="FILE_NAME" /> може бути небезпечним, тому Chrome заблокував його.</translation>
 <translation id="5686916850681061684">Налаштовуйте й керуйте Google Chrome. Якщо з’явиться сповіщення, натисніть його, щоб дізнатися більше.</translation>
 <translation id="5690427481109656848">Google LLC</translation>

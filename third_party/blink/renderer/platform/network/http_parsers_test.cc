@@ -8,7 +8,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
-#include "third_party/blink/renderer/platform/wtf/dtoa/utils.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 

@@ -129,9 +129,9 @@ base::string16 GetTitleForButton(ConfirmInfoBarDelegate* delegate,
                           self.infoBarDelegate->card_sub_label())];
 
   // Legal messages, if any.
-  if (!self.infoBarDelegate->legal_messages().empty()) {
+  if (!self.infoBarDelegate->legal_message_lines().empty()) {
     NSMutableArray* legalMessages = [[NSMutableArray alloc] init];
-    for (const auto& line : self.infoBarDelegate->legal_messages()) {
+    for (const auto& line : self.infoBarDelegate->legal_message_lines()) {
       MessageWithLinks* message = [[MessageWithLinks alloc] init];
       message.messageText = base::SysUTF16ToNSString(line.text());
       NSMutableArray* linkRanges = [[NSMutableArray alloc] init];

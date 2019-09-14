@@ -21,7 +21,6 @@
 <translation id="1146678959555564648">進入 VR</translation>
 <translation id="116280672541001035">使用量</translation>
 <translation id="1171770572613082465">輕觸 [熱門網站] 按鈕，即可查看熱門網站</translation>
-<translation id="1172593791219290334">起始網頁</translation>
 <translation id="1173894706177603556">重新命名</translation>
 <translation id="1175310183703641346">系統會將你的書籤、歷史記錄、密碼和其他設定與你的 Google 帳戶保持同步。</translation>
 <translation id="1178581264944972037">暫停</translation>
@@ -42,6 +41,7 @@
 <translation id="1258753120186372309">Google Doodle：<ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">搜尋及探索</translation>
 <translation id="1264974993859112054">運動資訊</translation>
+<translation id="1266864766717917324">無法分享<ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">停止</translation>
 <translation id="1283039547216852943">輕觸即可展開</translation>
 <translation id="1285320974508926690">一律不翻譯此網站</translation>
@@ -71,6 +71,7 @@
 <translation id="1430915738399379752">列印</translation>
 <translation id="1445680696957526815">出現元件互不相容的情況，這可能是因為 Chrome 目前正在進行升級，請稍候片刻再試。如果問題持續發生，請先將 Chrome 移除，然後重新安裝一次。</translation>
 <translation id="1446450296470737166">允許完整控制 MIDI 裝置</translation>
+<translation id="1450753235335490080">無法分享<ph name="CONTENT_TYPE" /></translation>
 <translation id="145097072038377568">已在 Android 設定中關閉</translation>
 <translation id="1477626028522505441">伺服器發生問題，因此無法下載 <ph name="FILE_NAME" />。</translation>
 <translation id="1501480321619201731">刪除群組</translation>
@@ -153,6 +154,7 @@
 <translation id="2049961518639794558">變更副檔名可能會造成未預期的問題，也可能會對裝置造成損害。</translation>
 <translation id="2056878612599315956">網站已暫停</translation>
 <translation id="2063713494490388661">輕觸搜尋</translation>
+<translation id="2067805253194386918">文字</translation>
 <translation id="2079545284768500474">復原</translation>
 <translation id="2082238445998314030">第 <ph name="RESULT_NUMBER" /> 個結果，共 <ph name="TOTAL_RESULTS" /> 個</translation>
 <translation id="2091887806945687916">音訊</translation>
@@ -165,7 +167,6 @@
 <translation id="2131665479022868825">已節省 <ph name="DATA" /></translation>
 <translation id="213279576345780926">已關閉「<ph name="TAB_TITLE" />」</translation>
 <translation id="2139186145475833000">加到主畫面</translation>
-<translation id="2142289305367051020">這裡會顯示你最常瀏覽的網頁</translation>
 <translation id="2146738493024040262">開啟免安裝應用程式</translation>
 <translation id="2148716181193084225">今天</translation>
 <translation id="2154484045852737596">編輯卡片資訊</translation>
@@ -324,6 +325,7 @@
 <translation id="3384347053049321195">分享圖片</translation>
 <translation id="3386292677130313581">允許網站存取你的位置資訊前，必須先詢問你 (建議)</translation>
 <translation id="3387650086002190359">檔案系統發生錯誤，因此無法下載 <ph name="FILE_NAME" />。</translation>
+<translation id="3389286852084373014">文字過多</translation>
 <translation id="3398320232533725830">開啟書籤管理員</translation>
 <translation id="3414952576877147120">空間大小：</translation>
 <translation id="3443221991560634068">重新載入目前網頁</translation>
@@ -348,6 +350,7 @@
 <translation id="3599863153486145794">將歷史記錄從所有登入帳戶的裝置上清除。你的 Google 帳戶可能會儲存其他形式的瀏覽記錄，請參閱 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />。</translation>
 <translation id="3600792891314830896">將播放音訊的網站設為靜音</translation>
 <translation id="3616113530831147358">音訊</translation>
+<translation id="3631987586758005671">正在分享至「<ph name="DEVICE_NAME" />」</translation>
 <translation id="3632295766818638029">取消密碼遮罩</translation>
 <translation id="363596933471559332">自動使用已儲存的憑證登入網站。如果關閉這項功能，每次在您登入網站之前，網站一律會要求驗證。</translation>
 <translation id="3658159451045945436">如果確認重設，系統會清除你的數據用量節省記錄，包括你造訪過的網站清單。</translation>
@@ -358,7 +361,6 @@
 <translation id="3739899004075612870">已加入 <ph name="PRODUCT_NAME" /> 書籤</translation>
 <translation id="3744111309925758534">其他應用程式佔 <ph name="MEGABYTES" /> MB</translation>
 <translation id="3744111561329211289">背景同步處理</translation>
-<translation id="3745176700485982507">這個頁面列出了你的常用網站連結</translation>
 <translation id="3771001275138982843">無法下載更新</translation>
 <translation id="3773755127849930740">如要允許配對，請<ph name="BEGIN_LINK" />開啟藍牙功能<ph name="END_LINK" /></translation>
 <translation id="3775705724665058594">傳送至你的裝置</translation>
@@ -563,7 +565,6 @@
 <translation id="5224771365102442243">含有影片</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> 要求掃描附近的藍牙裝置。已找到下列裝置：</translation>
 <translation id="5233638681132016545">新增分頁</translation>
-<translation id="5234764350956374838">關閉</translation>
 <translation id="526421993248218238">無法載入這個網頁</translation>
 <translation id="5271967389191913893">裝置無法開啟您要下載的這項內容。</translation>
 <translation id="528192093759286357">從頂端拖曳並輕觸返回按鈕即可結束全螢幕模式。</translation>
@@ -578,8 +579,8 @@
 <translation id="5324858694974489420">家長設定</translation>
 <translation id="5327248766486351172">名稱</translation>
 <translation id="5335288049665977812">允許網站執行 JavaScript (建議)</translation>
+<translation id="5342314432463739672">權限要求</translation>
 <translation id="5357811892247919462">已收到分頁</translation>
-<translation id="5363230136052241468">輕觸 [首頁] 按鈕即可載入新分頁</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{已開啟 <ph name="OPEN_TABS_ONE" /> 個分頁，輕觸即可切換分頁}other{已開啟 <ph name="OPEN_TABS_MANY" /> 個分頁，輕觸即可切換分頁}}</translation>
 <translation id="5391532827096253100">你與這個網站的連線不安全。網站資訊</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(還有 1 個)}other{(還有 # 個)}}</translation>
@@ -748,6 +749,7 @@
 <translation id="6532866250404780454">數位健康將不會顯示你透過 Chrome 造訪的網站。所有網站計時器也將遭到刪除。</translation>
 <translation id="6534565668554028783">Google 的回應時間過長</translation>
 <translation id="6538442820324228105">已下載 <ph name="GBS" /> GB</translation>
+<translation id="6539092367496845964">發生錯誤，請稍後再試。</translation>
 <translation id="654446541061731451">選取要傳輸的分頁</translation>
 <translation id="6545017243486555795">清除所有資料</translation>
 <translation id="6545864417968258051">藍牙掃描</translation>
@@ -802,7 +804,6 @@
 <translation id="6912998170423641340">禁止網站讀取剪貼簿中的文字和圖片</translation>
 <translation id="6914783257214138813">凡是可查看匯出的檔案的使用者都能看到你的密碼。</translation>
 <translation id="6942665639005891494">你隨時可以使用 [設定] 選單選項變更預設的下載位置</translation>
-<translation id="6944102653068653326">輕觸即可載入新分頁</translation>
 <translation id="6945221475159498467">選取</translation>
 <translation id="6963642900430330478">這個網頁不安全。網站資訊</translation>
 <translation id="6963766334940102469">刪除書籤</translation>
@@ -879,6 +880,7 @@
 <translation id="7493994139787901920"><ph name="VERSION" /> (上次更新時間：<ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">(已節省的數據量)</translation>
 <translation id="7498271377022651285">請稍候…</translation>
+<translation id="7510943789645525906">在發生線上資料侵害事件時向你發出警告</translation>
 <translation id="7514365320538308">下載</translation>
 <translation id="751961395872307827">無法連線至網站</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -996,7 +998,6 @@
 <translation id="8284326494547611709">字幕</translation>
 <translation id="8300705686683892304">由應用程式管理</translation>
 <translation id="8310344678080805313">標準分頁</translation>
-<translation id="8313455859591948645">編輯起始網頁</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> 和其他網站</translation>
 <translation id="8327155640814342956">為獲得最佳瀏覽體驗，請開啟 Chrome 進行更新</translation>
 <translation id="8339163506404995330">系統將不會翻譯<ph name="LANGUAGE" />網頁</translation>

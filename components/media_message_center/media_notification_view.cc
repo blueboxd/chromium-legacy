@@ -242,6 +242,22 @@ void MediaNotificationView::UpdateCornerRadius(int top_radius,
   }
 }
 
+void MediaNotificationView::SetForcedExpandedState(
+    bool* forced_expanded_state) {
+  if (forced_expanded_state) {
+    if (forced_expanded_state_ == *forced_expanded_state)
+      return;
+    forced_expanded_state_ = *forced_expanded_state;
+  } else {
+    if (!forced_expanded_state_.has_value())
+      return;
+    forced_expanded_state_ = base::nullopt;
+  }
+
+  header_row_->SetExpandButtonEnabled(IsExpandable());
+  UpdateViewForExpandedState();
+}
+
 void MediaNotificationView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kListItem;
   node_data->AddStringAttribute(
@@ -340,6 +356,8 @@ void MediaNotificationView::UpdateWithMediaArtwork(
 
   UpdateForegroundColor();
 
+  container_->OnMediaArtworkChanged(image);
+
   PreferredSizeChanged();
   Layout();
   SchedulePaint();
@@ -364,6 +382,8 @@ void MediaNotificationView::UpdateActionButtonsVisibility() {
     if (should_invalidate)
       action_button->InvalidateLayout();
   }
+
+  container_->OnVisibleActionsChanged(visible_actions);
 }
 
 void MediaNotificationView::UpdateViewForExpandedState() {
@@ -428,6 +448,9 @@ MediaNotificationView::GetMediaNotificationBackground() {
 }
 
 bool MediaNotificationView::IsExpandable() const {
+  if (forced_expanded_state_.has_value())
+    return false;
+
   std::set<MediaSessionAction> ignored_actions = {
       GetPlayPauseIgnoredAction(GetActionFromButtonTag(*play_pause_button_))};
 
@@ -439,6 +462,8 @@ bool MediaNotificationView::IsExpandable() const {
 }
 
 bool MediaNotificationView::IsActuallyExpanded() const {
+  if (forced_expanded_state_.has_value())
+    return forced_expanded_state_.value();
   return expanded_ && IsExpandable();
 }
 

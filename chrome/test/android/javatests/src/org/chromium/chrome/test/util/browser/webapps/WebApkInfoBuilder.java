@@ -51,7 +51,7 @@ public class WebApkInfoBuilder {
                 false /* isPrimaryIconMaskable */, false /* isSplashIconMaskable */,
                 mWebApkPackageName, /* shellApkVersion */ 1, mManifestUrl, mUrl,
                 WebApkDistributor.BROWSER,
-                new HashMap<String, String>() /* iconUrlToMurmur2HashMap */, null, null,
+                new HashMap<String, String>() /* iconUrlToMurmur2HashMap */, null,
                 false /* forceNavigation */, false /* isSplashProvidedByWebApk */, null,
                 1 /* webApkVersionCode */);
     }

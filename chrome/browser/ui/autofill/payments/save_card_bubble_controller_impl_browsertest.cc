@@ -18,6 +18,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {
@@ -30,7 +31,7 @@ class SaveCardBubbleControllerImplTest : public DialogBrowserTest {
     DialogBrowserTest::SetUpCommandLine(command_line);
   }
 
-  std::unique_ptr<base::DictionaryValue> GetTestLegalMessage() {
+  LegalMessageLines GetTestLegalMessage() {
     std::unique_ptr<base::Value> value(base::JSONReader::ReadDeprecated(
         "{"
         "  \"line\" : [ {"
@@ -46,7 +47,10 @@ class SaveCardBubbleControllerImplTest : public DialogBrowserTest {
         "}"));
     base::DictionaryValue* dictionary;
     value->GetAsDictionary(&dictionary);
-    return dictionary->CreateDeepCopy();
+    LegalMessageLines legal_message_lines;
+    LegalMessageLine::Parse(*dictionary, &legal_message_lines,
+                            /*escape_apostrophes=*/true);
+    return legal_message_lines;
   }
 
   // DialogBrowserTest:

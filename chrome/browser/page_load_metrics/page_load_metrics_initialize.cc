@@ -30,6 +30,7 @@
 #include "chrome/browser/page_load_metrics/observers/no_state_prefetch_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/offline_page_previews_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/omnibox_suggestion_used_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/optimization_guide_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/previews_lite_page_redirect_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/previews_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/previews_ukm_observer.h"
@@ -110,6 +111,8 @@ void PageLoadMetricsEmbedder::RegisterObservers(
     tracker->AddObserver(
         std::make_unique<
             previews::OfflinePagePreviewsPageLoadMetricsObserver>());
+    tracker->AddObserver(
+        std::make_unique<OptimizationGuidePageLoadMetricsObserver>());
     tracker->AddObserver(
         std::make_unique<PreviewsLitePageRedirectMetricsObserver>());
     tracker->AddObserver(

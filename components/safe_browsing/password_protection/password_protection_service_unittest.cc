@@ -889,8 +889,15 @@ TEST_P(PasswordProtectionServiceTest,
   std::unique_ptr<content::WebContents> web_contents = GetWebContents();
 
   // Initiate a saved password entry request (w/ no sync password).
+  AccountInfo account_info;
+  account_info.account_id = "account_id";
+  account_info.email = "email";
+  account_info.gaia = "gaia";
+  EXPECT_CALL(*password_protection_service_, GetSignedInNonSyncAccount(_))
+      .WillRepeatedly(Return(account_info));
+
   InitializeAndStartPasswordEntryRequest(
-      PasswordType::SAVED_PASSWORD, {"example.com"},
+      PasswordType::OTHER_GAIA_PASSWORD, {"gmail.com"},
       false /* match whitelist */, 10000 /* timeout in ms*/,
       web_contents.get());
   password_protection_service_->WaitForResponse();

@@ -21,6 +21,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/nqe/effective_connection_type.h"
+#include "services/network/public/cpp/content_security_policy.h"
 #include "services/network/public/cpp/http_raw_request_response_info.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "url/gurl.h"
@@ -212,6 +213,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP) ResourceResponseInfo {
 
   // See URLResponseHead mojo documentation.
   base::Optional<base::UnguessableToken> recursive_prefetch_token;
+
+  // The parsed content security policy from the response headers.
+  ContentSecurityPolicy content_security_policy;
 
   // NOTE: When adding or changing fields here, also update
   // ResourceResponse::DeepCopy in resource_response.cc.

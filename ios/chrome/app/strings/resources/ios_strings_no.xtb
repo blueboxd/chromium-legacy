@@ -315,6 +315,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 Handoff må også være aktivert i Generelt-delen av Innstillinger, og enhetene må bruke samme iCloud-konto.</translation>
 <translation id="5551897871312988470">Tilby å oversette</translation>
 <translation id="5556459405103347317">Last inn på nytt</translation>
+<translation id="5592679540098330836">Slå på synkronisering for <ph name="NAME" /></translation>
 <translation id="5614553682702429503">Vil du lagre passordet?</translation>
 <translation id="5626245204502895507">Filen kan ikke lastes ned for øyeblikket.</translation>
 <translation id="5631164295104953411">Legg til betalingsmåte</translation>

@@ -208,7 +208,7 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
 #endif
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
-                mojom::DiscardsDetailsProvider, mojom::WebUIGraphDump,
+                discards::mojom::DetailsProvider, discards::mojom::GraphDump,
 #endif
 #if defined(OS_CHROMEOS)
                 add_supervision::mojom::AddSupervisionHandler,

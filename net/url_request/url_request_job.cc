@@ -127,10 +127,6 @@ int URLRequestJob::Read(IOBuffer* buf, int buf_size) {
   return result;
 }
 
-void URLRequestJob::StopCaching() {
-  // Nothing to do here.
-}
-
 int64_t URLRequestJob::GetTotalReceivedBytes() const {
   return 0;
 }
@@ -719,10 +715,6 @@ void URLRequestJob::RecordBytesRead(int bytes_read) {
            << " pre bytes read = " << bytes_read
            << " pre total = " << prefilter_bytes_read()
            << " post total = " << postfilter_bytes_read();
-  UpdatePacketReadTimes();  // Facilitate stats recording if it is active.
-}
-
-void URLRequestJob::UpdatePacketReadTimes() {
 }
 
 }  // namespace net

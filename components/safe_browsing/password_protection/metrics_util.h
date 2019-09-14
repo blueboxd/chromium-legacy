@@ -36,7 +36,6 @@ extern const char kGSuiteNonSyncPasswordEntryRequestOutcomeHistogram[];
 extern const char kGSuiteSyncPasswordEntryVerdictHistogram[];
 
 extern const char kGSuiteSyncPasswordEntryRequestOutcomeHistogram[];
-extern const char kGSuiteSyncPasswordEntryVerdictHistogram[];
 extern const char kGSuiteNonSyncPasswordEntryVerdictHistogram[];
 extern const char kGmailSyncPasswordEntryVerdictHistogram[];
 extern const char kGmailNonSyncPasswordEntryVerdictHistogram[];
@@ -46,9 +45,6 @@ extern const char kGSuiteSyncPasswordPageInfoHistogram[];
 extern const char kGSuiteNonSyncPasswordPageInfoHistogram[];
 extern const char kGSuiteSyncPasswordWarningDialogHistogram[];
 extern const char kGSuiteNonSyncPasswordWarningDialogHistogram[];
-extern const char kPasswordOnFocusRequestOutcomeHistogram[];
-extern const char kGSuiteSyncPasswordPageInfoHistogram[];
-extern const char kGSuiteSyncPasswordWarningDialogHistogram[];
 extern const char kPasswordOnFocusRequestOutcomeHistogram[];
 extern const char kPasswordOnFocusVerdictHistogram[];
 extern const char kNonSyncPasswordEntryRequestOutcomeHistogram[];

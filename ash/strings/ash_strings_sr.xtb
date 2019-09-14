@@ -104,7 +104,6 @@
 <translation id="2359808026110333948">Наставите</translation>
 <translation id="2365393535144473978">Ако омогућите мобилне податке, омогућавате Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
-<translation id="239188844683466770">Укључите/искључите Не узнемиравај</translation>
 <translation id="2412593942846481727">Доступно је ажурирање</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> је сесија којом управља <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Леви клик</translation>
@@ -224,6 +223,7 @@
 <translation id="4181841719683918333">Језици</translation>
 <translation id="4195877955194704651">Аутоматски кликови на дугмад</translation>
 <translation id="4217571870635786043">Диктирање</translation>
+<translation id="421885205185866088">PIN паметне картице за <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Прегледајте подешавања обавештења. Обавештења су искључена</translation>
 <translation id="4269883910223712419">Администратор овог уређаја може:</translation>
@@ -239,6 +239,7 @@
 <translation id="4379531060876907730">Ово су алатке за писаљку</translation>
 <translation id="4389184120735010762">Притиснули сте тастерску пречицу за монтирану лупу екрана. Желите ли да је укључите?</translation>
 <translation id="4421231901400348175">Делите контролу над екраном са особом <ph name="HELPER_NAME" /> преко Даљинске помоћи.</translation>
+<translation id="4430019312045809116">Јачина звука</translation>
 <translation id="4450893287417543264">Не приказуј поново</translation>
 <translation id="4477350412780666475">Следећа песма</translation>
 <translation id="4479639480957787382">Етернет</translation>

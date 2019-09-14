@@ -32,7 +32,6 @@ const CGFloat kButtonCircularCornerRadiusDivisor = 2.0;
 + (instancetype)badgeButtonWithType:(BadgeType)badgeType {
   BadgeButton* button = [self buttonWithType:UIButtonTypeSystem];
   button.badgeType = badgeType;
-
   return button;
 }
 
@@ -52,6 +51,35 @@ const CGFloat kButtonCircularCornerRadiusDivisor = 2.0;
                      animations:changeTintColor];
   } else {
     changeTintColor();
+  }
+}
+
+- (void)setFullScreenOn:(BOOL)fullScreenOn {
+  if (_fullScreenOn == fullScreenOn) {
+    return;
+  }
+  _fullScreenOn = fullScreenOn;
+  [self configureImage];
+}
+
+#pragma mark - Setters
+
+- (void)setImage:(UIImage*)image {
+  _image = image;
+  if (!self.fullScreenOn) {
+    [self configureImage];
+  }
+}
+
+#pragma mark - Private
+
+- (void)configureImage {
+  if (self.fullScreenOn && self.fullScreenImage) {
+    [self setImage:self.fullScreenImage forState:UIControlStateNormal];
+    [self setImage:self.fullScreenImage forState:UIControlStateDisabled];
+  } else {
+    [self setImage:self.image forState:UIControlStateNormal];
+    [self setImage:self.image forState:UIControlStateDisabled];
   }
 }
 

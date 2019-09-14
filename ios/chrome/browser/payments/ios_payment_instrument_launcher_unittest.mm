@@ -35,9 +35,9 @@ class FakePaymentInstrumentDelegate : public PaymentInstrument::Delegate {
  public:
   FakePaymentInstrumentDelegate() {}
 
-  void OnInstrumentDetailsReady(
-      const std::string& method_name,
-      const std::string& stringified_details) override {
+  void OnInstrumentDetailsReady(const std::string& method_name,
+                                const std::string& stringified_details,
+                                const PayerData& payer_data) override {
     if (run_loop_)
       run_loop_->Quit();
     on_instrument_details_ready_called_ = true;

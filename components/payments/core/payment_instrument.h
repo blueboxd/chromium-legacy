@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/payments/core/payer_data.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace payments {
@@ -32,7 +33,8 @@ class PaymentInstrument {
     // stringified details.
     virtual void OnInstrumentDetailsReady(
         const std::string& method_name,
-        const std::string& stringified_details) = 0;
+        const std::string& stringified_details,
+        const PayerData& payer_data) = 0;
 
     // Should be called with a developer-facing error message to be used when
     // rejecting PaymentRequest.show().

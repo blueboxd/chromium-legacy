@@ -104,7 +104,6 @@
 <translation id="2359808026110333948">Tiếp tục</translation>
 <translation id="2365393535144473978">Bật dữ liệu di động sẽ bật Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
-<translation id="239188844683466770">Bật/tắt trạng thái Không làm phiền</translation>
 <translation id="2412593942846481727">Đã có bản cập nhật</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> là một phiên được <ph name="DOMAIN" /> quản lý</translation>
 <translation id="2427507373259914951">Nhấp chuột trái</translation>
@@ -224,6 +223,7 @@
 <translation id="4181841719683918333">Ngôn ngữ</translation>
 <translation id="4195877955194704651">Nút Lượt nhấp tự động</translation>
 <translation id="4217571870635786043">Nhập bằng giọng nói</translation>
+<translation id="421885205185866088">Mã PIN của thẻ thông minh cho <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Hiển thị các tùy chọn cài đặt thông báo. Thông báo hiện đang tắt</translation>
 <translation id="4269883910223712419">Quản trị viên của thiết bị này có thể:</translation>
@@ -239,6 +239,7 @@
 <translation id="4379531060876907730">Đây là các công cụ bút dành cho bút cảm ứng</translation>
 <translation id="4389184120735010762">Bạn đã nhấn phím tắt của tính năng phóng to ở vị trí cố định. Bạn có muốn bật tính năng này không?</translation>
 <translation id="4421231901400348175">Chia sẻ quyền kiểm soát màn hình của bạn với <ph name="HELPER_NAME" /> qua Trợ giúp từ xa.</translation>
+<translation id="4430019312045809116">Âm lượng</translation>
 <translation id="4450893287417543264">Không hiển thị lại</translation>
 <translation id="4477350412780666475">Bản nhạc tiếp theo</translation>
 <translation id="4479639480957787382">Ethernet</translation>

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_PRINTING_HISTORY_PRINT_JOB_INFO_CONVERSIONS_H_
 #define CHROME_BROWSER_CHROMEOS_PRINTING_HISTORY_PRINT_JOB_INFO_CONVERSIONS_H_
 
+#include "chrome/browser/chromeos/printing/cups_print_job.h"
 #include "chrome/browser/chromeos/printing/history/print_job_info.pb.h"
 #include "printing/print_settings.h"
 
@@ -15,6 +16,11 @@ namespace chromeos {
 // history.
 printing::proto::PrintSettings PrintSettingsToProto(
     const ::printing::PrintSettings& settings);
+
+printing::proto::PrintJobInfo CupsPrintJobToProto(
+    const CupsPrintJob& print_job,
+    const std::string& id,
+    const base::Time& completion_time);
 
 }  // namespace chromeos
 

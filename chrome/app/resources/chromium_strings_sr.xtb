@@ -196,6 +196,8 @@ Chromium не може да врати подешавања.</translation>
 <translation id="753534427205733210">{0,plural, =1{Поново ћемо покренути Chromium за 1 минут}one{Поново ћемо покренути Chromium # минут}few{Поново ћемо покренути Chromium # минута}other{Поново ћемо покренути Chromium # минута}}</translation>
 <translation id="7549178288319965365">О Chromium ОС-у</translation>
 <translation id="7561906087460245826">Обриши податке и из Chromium-а (<ph name="URL" />)</translation>
+<translation id="7585853947355360626">Ако се подешавање не приказује на овој страници, потражите га у <ph name="LINK_BEGIN" />
+      подешавањима Chromium ОС-а<ph name="LINK_END" /></translation>
 <translation id="761356813943268536">Chromium користи камеру и микрофон.</translation>
 <translation id="7617377681829253106">Управо смо побољшали Chromium</translation>
 <translation id="7686590090926151193">Chromium није подразумевани прегледач</translation>
@@ -229,6 +231,8 @@ Chromium не може да врати подешавања.</translation>
 <translation id="8619360774459241877">Покреће се Chromium...</translation>
 <translation id="8621669128220841554">Инсталација није успела због неодређене грешке. Преузмите Chromium поново.</translation>
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> је ажуриран.</translation>
+<translation id="8682540261359803721">Ако се подешавање не приказује на овој страници, потражите га у <ph name="LINK_BEGIN" />
+      подешавањима Chromium прегледача<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">Контролише и страницу која се приказује када покренете Chromium или претражујете из омнибокса.</translation>
 <translation id="8704119203788522458">Ово је ваш Chromium</translation>
 <translation id="8739167630197873875">Када изађете из Chromium-а, колачићи се бришу. Да бисте наставили са синхронизацијом, промените подешавање <ph name="COOKIE_SETTINGS_LINK" />.</translation>

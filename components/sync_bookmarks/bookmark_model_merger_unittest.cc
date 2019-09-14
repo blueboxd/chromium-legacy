@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/guid.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
@@ -45,6 +46,7 @@ std::unique_ptr<syncer::UpdateResponseData> CreateUpdateResponseData(
 
   sync_pb::BookmarkSpecifics* bookmark_specifics =
       data->specifics.mutable_bookmark();
+  bookmark_specifics->set_guid(base::GenerateGUID());
   bookmark_specifics->set_title(title);
   bookmark_specifics->set_url(url);
   bookmark_specifics->set_icon_url(icon_url);
@@ -548,6 +550,40 @@ TEST(BookmarkModelMergerTest,
   // model and the tracker.
   EXPECT_THAT(bookmark_bar_node->children().size(), Eq(1u));
   EXPECT_THAT(tracker.TrackedEntitiesCountForTest(), Eq(2U));
+}
+
+TEST(BookmarkModelMergerTest, ShouldMergeRemoteCreationWithoutGUID) {
+  const std::string kId = "Id";
+  const std::string kTitle = "Title";
+
+  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model =
+      bookmarks::TestBookmarkClient::CreateModel();
+  EXPECT_EQ(bookmark_model->bookmark_bar_node()->children().size(), 0u);
+
+  // -------- The remote model --------
+  const std::string suffix = syncer::UniquePosition::RandomSuffix();
+  syncer::UniquePosition pos = syncer::UniquePosition::InitialPosition(suffix);
+
+  syncer::UpdateResponseDataList updates;
+  updates.push_back(CreateBookmarkBarNodeUpdateData());
+  updates.push_back(CreateUpdateResponseData(
+      /*server_id=*/kId, /*parent_id=*/kBookmarkBarId, kTitle,
+      /*url=*/std::string(),
+      /*is_folder=*/true, /*unique_position=*/pos));
+  // Set GUID to be empty.
+  updates[1]->entity->specifics.mutable_bookmark()->set_guid("");
+
+  SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
+                                std::make_unique<sync_pb::ModelTypeState>());
+  testing::NiceMock<favicon::MockFaviconService> favicon_service;
+  BookmarkModelMerger(&updates, bookmark_model.get(), &favicon_service,
+                      &tracker)
+      .Merge();
+
+  // Node should have been created and new GUID should have been set.
+  EXPECT_EQ(bookmark_model->bookmark_bar_node()->children().size(), 1u);
+  EXPECT_TRUE(base::IsValidGUID(
+      bookmark_model->bookmark_bar_node()->children()[0].get()->guid()));
 }
 
 }  // namespace sync_bookmarks

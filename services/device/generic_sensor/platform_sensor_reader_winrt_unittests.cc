@@ -7,6 +7,7 @@
 #include <objbase.h>
 
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/win/core_winrt_util.h"
 #include "base/win/scoped_com_initializer.h"
@@ -532,7 +533,7 @@ class FakeSensorFactoryWinrt
                                          SensorReadingChangedEventArgs>>
       fake_sensor_;
 
-  void SetRemoveReadingChangedReturnCode(HRESULT return_code) {
+  void SetGetDefaultReturnCode(HRESULT return_code) {
     get_default_return_code_ = return_code;
   }
 
@@ -558,14 +559,13 @@ TEST_F(PlatformSensorReaderTestWinrt, FailedSensorCreate) {
       ABI::Windows::Devices::Sensors::LightSensorReadingChangedEventArgs>>();
 
   auto sensor = std::make_unique<PlatformSensorReaderWinrtLightSensor>();
-  fake_sensor_factory->fake_sensor_ = nullptr;
   sensor->InitForTests(base::BindLambdaForTesting(
       [&](ABI::Windows::Devices::Sensors::ILightSensorStatics** sensor_factory)
           -> HRESULT { return fake_sensor_factory.CopyTo(sensor_factory); }));
-  EXPECT_EQ(sensor->Initialize(),
-            SensorWinrtCreateFailure::kErrorDefaultSensorNull);
 
-  fake_sensor_factory->SetRemoveReadingChangedReturnCode(E_FAIL);
+  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+
+  fake_sensor_factory->SetGetDefaultReturnCode(E_FAIL);
   EXPECT_EQ(sensor->Initialize(),
             SensorWinrtCreateFailure::kErrorGetDefaultSensorFailed);
 
@@ -1714,6 +1714,145 @@ TEST_F(PlatformSensorReaderTestWinrt, AbsOrientationQuatThresholding) {
   threshold_helper(true);
 
   sensor->StopSensor();
+}
+
+// Tests the sensor activation histogram tracks sensor activation return
+// codes correctly.
+TEST_F(PlatformSensorReaderTestWinrt, CheckSensorActivationHistogram) {
+  auto fake_sensor_factory = Microsoft::WRL::Make<FakeSensorFactoryWinrt<
+      ABI::Windows::Devices::Sensors::ILightSensorStatics,
+      ABI::Windows::Devices::Sensors::ILightSensor,
+      ABI::Windows::Devices::Sensors::LightSensor,
+      ABI::Windows::Devices::Sensors::ILightSensorReading,
+      ABI::Windows::Devices::Sensors::ILightSensorReadingChangedEventArgs,
+      ABI::Windows::Devices::Sensors::LightSensorReadingChangedEventArgs>>();
+
+  auto sensor = std::make_unique<PlatformSensorReaderWinrtLightSensor>();
+  sensor->InitForTests(base::BindLambdaForTesting(
+      [&](ABI::Windows::Devices::Sensors::ILightSensorStatics** sensor_factory)
+          -> HRESULT { return fake_sensor_factory.CopyTo(sensor_factory); }));
+  base::HistogramTester histogram_tester;
+
+  // Trigger S_OK
+  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+
+  EXPECT_EQ(histogram_tester.GetBucketCount(
+                "Sensors.Windows.WinRT.Activation.Result", S_OK),
+            1);
+
+  // Trigger E_ACCESSDENIED twice
+  fake_sensor_factory->SetGetDefaultReturnCode(E_ACCESSDENIED);
+  EXPECT_EQ(sensor->Initialize(),
+            SensorWinrtCreateFailure::kErrorGetDefaultSensorFailed);
+
+  EXPECT_EQ(histogram_tester.GetBucketCount(
+                "Sensors.Windows.WinRT.Activation.Result", E_ACCESSDENIED),
+            1);
+
+  EXPECT_EQ(sensor->Initialize(),
+            SensorWinrtCreateFailure::kErrorGetDefaultSensorFailed);
+
+  EXPECT_EQ(histogram_tester.GetBucketCount(
+                "Sensors.Windows.WinRT.Activation.Result", E_ACCESSDENIED),
+            2);
+
+  histogram_tester.ExpectTotalCount("Sensors.Windows.WinRT.Activation.Result",
+                                    3);
+}
+
+// Tests the sensor start histogram tracks sensor start return codes
+// correctly.
+TEST_F(PlatformSensorReaderTestWinrt, CheckSensorStartHistogram) {
+  auto fake_sensor_factory = Microsoft::WRL::Make<FakeSensorFactoryWinrt<
+      ABI::Windows::Devices::Sensors::ILightSensorStatics,
+      ABI::Windows::Devices::Sensors::ILightSensor,
+      ABI::Windows::Devices::Sensors::LightSensor,
+      ABI::Windows::Devices::Sensors::ILightSensorReading,
+      ABI::Windows::Devices::Sensors::ILightSensorReadingChangedEventArgs,
+      ABI::Windows::Devices::Sensors::LightSensorReadingChangedEventArgs>>();
+  auto fake_sensor = fake_sensor_factory->fake_sensor_;
+
+  auto sensor = std::make_unique<PlatformSensorReaderWinrtLightSensor>();
+  sensor->InitForTests(base::BindLambdaForTesting(
+      [&](ABI::Windows::Devices::Sensors::ILightSensorStatics** sensor_factory)
+          -> HRESULT { return fake_sensor_factory.CopyTo(sensor_factory); }));
+  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+  base::HistogramTester histogram_tester;
+
+  // Trigger S_OK
+  PlatformSensorConfiguration sensor_config(kExpectedReportFrequencySet);
+  EXPECT_TRUE(sensor->StartSensor(sensor_config));
+  sensor->StopSensor();
+  EXPECT_EQ(histogram_tester.GetBucketCount(
+                "Sensors.Windows.WinRT.Start.Result", S_OK),
+            1);
+
+  // Trigger E_POINTER due to setting report interval failure
+  fake_sensor->SetPutReportIntervalReturnCode(E_POINTER);
+  EXPECT_FALSE(sensor->StartSensor(sensor_config));
+  EXPECT_EQ(histogram_tester.GetBucketCount(
+                "Sensors.Windows.WinRT.Start.Result", E_POINTER),
+            1);
+  fake_sensor->SetPutReportIntervalReturnCode(S_OK);
+
+  // Trigger E_FAIL twice due to reading changed registration failure
+  fake_sensor->SetAddReadingChangedReturnCode(E_FAIL);
+  EXPECT_FALSE(sensor->StartSensor(sensor_config));
+  EXPECT_EQ(histogram_tester.GetBucketCount(
+                "Sensors.Windows.WinRT.Start.Result", E_FAIL),
+            1);
+
+  EXPECT_FALSE(sensor->StartSensor(sensor_config));
+  EXPECT_EQ(histogram_tester.GetBucketCount(
+                "Sensors.Windows.WinRT.Start.Result", E_FAIL),
+            2);
+
+  histogram_tester.ExpectTotalCount("Sensors.Windows.WinRT.Start.Result", 4);
+}
+
+// Tests the sensor stop histogram tracks sensor stop return codes
+// correctly.
+TEST_F(PlatformSensorReaderTestWinrt, CheckSensorStopHistogram) {
+  auto fake_sensor_factory = Microsoft::WRL::Make<FakeSensorFactoryWinrt<
+      ABI::Windows::Devices::Sensors::ILightSensorStatics,
+      ABI::Windows::Devices::Sensors::ILightSensor,
+      ABI::Windows::Devices::Sensors::LightSensor,
+      ABI::Windows::Devices::Sensors::ILightSensorReading,
+      ABI::Windows::Devices::Sensors::ILightSensorReadingChangedEventArgs,
+      ABI::Windows::Devices::Sensors::LightSensorReadingChangedEventArgs>>();
+  auto fake_sensor = fake_sensor_factory->fake_sensor_;
+
+  auto sensor = std::make_unique<PlatformSensorReaderWinrtLightSensor>();
+  sensor->InitForTests(base::BindLambdaForTesting(
+      [&](ABI::Windows::Devices::Sensors::ILightSensorStatics** sensor_factory)
+          -> HRESULT { return fake_sensor_factory.CopyTo(sensor_factory); }));
+  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+  base::HistogramTester histogram_tester;
+
+  // Trigger E_UNEXPECTED
+  PlatformSensorConfiguration sensor_config(kExpectedReportFrequencySet);
+  fake_sensor->SetRemoveReadingChangedReturnCode(E_UNEXPECTED);
+  EXPECT_TRUE(sensor->StartSensor(sensor_config));
+  sensor->StopSensor();
+  EXPECT_EQ(histogram_tester.GetBucketCount("Sensors.Windows.WinRT.Stop.Result",
+                                            E_UNEXPECTED),
+            1);
+
+  // Trigger S_OK twice
+  fake_sensor->SetRemoveReadingChangedReturnCode(S_OK);
+  EXPECT_TRUE(sensor->StartSensor(sensor_config));
+  sensor->StopSensor();
+  EXPECT_EQ(histogram_tester.GetBucketCount("Sensors.Windows.WinRT.Stop.Result",
+                                            S_OK),
+            1);
+
+  EXPECT_TRUE(sensor->StartSensor(sensor_config));
+  sensor->StopSensor();
+  EXPECT_EQ(histogram_tester.GetBucketCount("Sensors.Windows.WinRT.Stop.Result",
+                                            S_OK),
+            2);
+
+  histogram_tester.ExpectTotalCount("Sensors.Windows.WinRT.Stop.Result", 3);
 }
 
 }  // namespace device

@@ -358,11 +358,6 @@ IPC_STRUCT_END()
 
 // Messages sent from the browser to the renderer.
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-// Tells the RenderFrame to initiate print preview for the entire document.
-IPC_MESSAGE_ROUTED1(PrintMsg_InitiatePrintPreview, bool /* has_selection */)
-#endif
-
 // Tells the RenderFrame to initiate printing or print preview for a particular
 // node, depending on which mode the RenderFrame is in.
 IPC_MESSAGE_ROUTED0(PrintMsg_PrintNodeUnderContextMenu)

@@ -183,10 +183,7 @@ class TestVariationsServiceClient : public VariationsServiceClient {
     *parameter = restrict_parameter_;
     return true;
   }
-
-  void set_restrict_parameter(const std::string& value) {
-    restrict_parameter_ = value;
-  }
+  bool IsEnterprise() override { return false; }
 
  private:
   // VariationsServiceClient:

@@ -82,7 +82,7 @@ class CodecImageTest : public testing::Test {
   enum ImageKind { kOverlay, kTextureOwner };
   scoped_refptr<CodecImage> NewImage(
       ImageKind kind,
-      CodecImage::DestructionCB destruction_cb = base::DoNothing()) {
+      CodecImage::UnusedCB now_unused_cb = base::DoNothing()) {
     std::unique_ptr<CodecOutputBuffer> buffer;
     wrapper_->DequeueOutputBuffer(nullptr, nullptr, &buffer);
     scoped_refptr<CodecImage> image = new CodecImage();
@@ -92,7 +92,7 @@ class CodecImageTest : public testing::Test {
         base::BindRepeating(&PromotionHintReceiver::OnPromotionHint,
                             base::Unretained(&promotion_hint_receiver_)));
 
-    image->SetDestructionCB(std::move(destruction_cb));
+    image->AddUnusedCB(std::move(now_unused_cb));
     return image;
   }
 
@@ -120,18 +120,16 @@ class CodecImageTestExplicitBind : public CodecImageTest {
   bool BindsTextureOnUpdate() override { return false; }
 };
 
-TEST_F(CodecImageTest, NowUnusedCBRuns) {
-  base::MockCallback<CodecImage::NowUnusedCB> cb;
+TEST_F(CodecImageTest, UnusedCBRunsOnDestruction) {
+  // Add multiple UnusedCBs and verify that they are all run when the CodecImage
+  // is destroyed.
+  base::MockCallback<CodecImage::UnusedCB> cb_1;
+  base::MockCallback<CodecImage::UnusedCB> cb_2;
   auto i = NewImage(kOverlay);
-  i->SetNowUnusedCB(cb.Get());
-  EXPECT_CALL(cb, Run(i.get()));
-  i = nullptr;
-}
-
-TEST_F(CodecImageTest, DestructionCBRuns) {
-  base::MockCallback<CodecImage::DestructionCB> cb;
-  auto i = NewImage(kOverlay, cb.Get());
-  EXPECT_CALL(cb, Run(i.get()));
+  i->AddUnusedCB(cb_1.Get());
+  i->AddUnusedCB(cb_2.Get());
+  EXPECT_CALL(cb_1, Run(i.get()));
+  EXPECT_CALL(cb_2, Run(i.get()));
   i = nullptr;
 }
 

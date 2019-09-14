@@ -4,6 +4,7 @@
 
 #include "components/optimization_guide/optimization_guide_prefs.h"
 
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/prefs/pref_registry_simple.h"
 
 namespace optimization_guide {
@@ -32,6 +33,11 @@ const char kHintsFetcherDataSaverTopHostBlacklistState[] =
 // epoch.
 const char kTimeBlacklistLastInitialized[] =
     "optimization_guide.hintsfetcher.time_blacklist_last_initialized";
+
+// If a host has site engagement score less than the value stored in this pref,
+// then hints fetcher may not fetch hints for that host.
+const char kHintsFetcherDataSaverTopHostBlacklistMinimumEngagementScore[] =
+    "optimization_guide.hintsfetcher.top_host_blacklist_min_engagement_score";
 
 // A dictionary pref that stores hosts that have had hints successfully fetched
 // from the remote Optimization Guide Server. The entry for each host contains
@@ -62,6 +68,17 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
       PrefRegistry::LOSSY_PREF);
   registry->RegisterDoublePref(kTimeBlacklistLastInitialized, 0,
                                PrefRegistry::LOSSY_PREF);
+
+  // Use a default value of MinTopHostEngagementScoreThreshold() for the
+  // threshold. This ensures that the users for which this pref can't be
+  // computed (possibly because they had the blacklist initialized before this
+  // pref was added to the code) use the default value for the site engagement
+  // threshold.
+  registry->RegisterDoublePref(
+      kHintsFetcherDataSaverTopHostBlacklistMinimumEngagementScore,
+      optimization_guide::features::MinTopHostEngagementScoreThreshold(),
+      PrefRegistry::LOSSY_PREF);
+
   registry->RegisterStringPref(kPendingHintsProcessingVersion, "",
                                PrefRegistry::LOSSY_PREF);
 }

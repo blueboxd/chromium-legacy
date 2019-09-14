@@ -205,6 +205,10 @@ size_t CountBookmarksWithUrlsMatching(int profile,
 size_t CountFoldersWithTitlesMatching(int profile, const std::string& title)
     WARN_UNUSED_RESULT;
 
+// Returns whether there exists a BookmarkNode in the bookmark model of
+// profile |profile| whose GUID matches the string |guid|.
+bool ContainsBookmarkNodeWithGUID(int profile, const std::string& guid);
+
 // Creates a favicon of |color| with image reps of the platform's supported
 // scale factors (eg MacOS) in addition to 1x.
 gfx::Image CreateFavicon(SkColor color);
@@ -311,6 +315,12 @@ class ServerBookmarksEqualityChecker : public SingleClientStatusChangeChecker {
 class BookmarksUrlChecker : public AwaitMatchStatusChangeChecker {
  public:
   BookmarksUrlChecker(int profile, const GURL& url, int expected_count);
+};
+
+// Checker used to block until there exists a bookmark with the given GUID.
+class BookmarksGUIDChecker : public AwaitMatchStatusChangeChecker {
+ public:
+  BookmarksGUIDChecker(int profile_index, const std::string& guid);
 };
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_BOOKMARKS_HELPER_H_

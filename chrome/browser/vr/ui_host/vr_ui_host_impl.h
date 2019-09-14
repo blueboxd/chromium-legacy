@@ -17,6 +17,7 @@
 #include "chrome/browser/vr/service/vr_ui_host.h"
 #include "components/bubble/bubble_manager.h"
 #include "content/public/browser/web_contents.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/geolocation_config.mojom.h"
 
 namespace vr {
@@ -120,7 +121,7 @@ class VRUiHostImpl : public VRUiHost,
   bool indicators_visible_ = false;
   bool indicators_showing_first_time_ = true;
 
-  device::mojom::GeolocationConfigPtr geolocation_config_;
+  mojo::Remote<device::mojom::GeolocationConfig> geolocation_config_;
   base::CancelableClosure poll_capturing_state_task_;
 
   THREAD_CHECKER(thread_checker_);

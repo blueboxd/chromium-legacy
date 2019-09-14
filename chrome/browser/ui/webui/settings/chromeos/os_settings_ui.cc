@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/wallpaper_handler.h"
 #include "chrome/browser/ui/webui/settings/downloads_handler.h"
 #include "chrome/browser/ui/webui/settings/extension_control_handler.h"
+#include "chrome/browser/ui/webui/settings/font_handler.h"
 #include "chrome/browser/ui/webui/settings/languages_handler.h"
 #include "chrome/browser/ui/webui/settings/people_handler.h"
 #include "chrome/browser/ui/webui/settings/profile_info_handler.h"
@@ -84,6 +85,7 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
       std::make_unique<::settings::DownloadsHandler>(profile));
   AddSettingsPageUIHandler(
       std::make_unique<::settings::ExtensionControlHandler>());
+  AddSettingsPageUIHandler(std::make_unique<::settings::FontHandler>(web_ui));
   AddSettingsPageUIHandler(
       std::make_unique<::settings::LanguagesHandler>(web_ui));
   AddSettingsPageUIHandler(

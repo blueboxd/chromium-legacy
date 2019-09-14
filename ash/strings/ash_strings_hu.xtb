@@ -104,7 +104,6 @@
 <translation id="2359808026110333948">Tovább</translation>
 <translation id="2365393535144473978">A mobiladat-kapcsolat engedélyezésével a Bluetooth is bekapcsol.</translation>
 <translation id="2391579633712104609">180°</translation>
-<translation id="239188844683466770">A Ne zavarjanak funkció átkapcsolása</translation>
 <translation id="2412593942846481727">Rendelkezésre áll frissítés</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> – <ph name="DOMAIN" /> által felügyelt munkamenet</translation>
 <translation id="2427507373259914951">Kattintás bal egérgombbal</translation>
@@ -225,6 +224,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4181841719683918333">Nyelvek</translation>
 <translation id="4195877955194704651">Automatikus kattintás az adott gombon</translation>
 <translation id="4217571870635786043">Diktálás</translation>
+<translation id="421885205185866088">Intelligens kártya PIN-kódja a(z) <ph name="USER_EMAIL_ADDRESS" /> e-mail-címhez</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Az értesítési beállítások megjelenítése. Az értesítések ki vannak kapcsolva</translation>
 <translation id="4269883910223712419">Az eszköz rendszergazdája a következőket végezheti el:</translation>
@@ -240,6 +240,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4379531060876907730">Ezek az érintőceruza-eszközök</translation>
 <translation id="4389184120735010762">Lenyomta a dokkolt nagyító billentyűparancsát. Bekapcsolja a funkciót?</translation>
 <translation id="4421231901400348175">A képernyő irányításának megosztása <ph name="HELPER_NAME" /> segítővel a Távsegítség szolgáltatás keretein belül.</translation>
+<translation id="4430019312045809116">Hangerő</translation>
 <translation id="4450893287417543264">Ne jelenjen meg többé</translation>
 <translation id="4477350412780666475">Következő szám</translation>
 <translation id="4479639480957787382">Ethernet</translation>

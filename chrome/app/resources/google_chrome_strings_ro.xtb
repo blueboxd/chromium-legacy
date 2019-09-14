@@ -43,6 +43,8 @@
 <translation id="1873233029667955273">Google Chrome nu este browserul prestabilit</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome nu este actualizat</translation>
+<translation id="1900795423379050516">Dacă o setare nu apare în pagină, încearcă <ph name="LINK_BEGIN" />
+    setările browserului Chrome<ph name="LINK_END" /></translation>
 <translation id="1915828456209461693">Este disponibilă o nouă actualizare pentru Chrome, iar aceasta va fi aplicată după repornire.</translation>
 <translation id="1919130412786645364">Permite conectarea la Chrome</translation>
 <translation id="2063848847527508675">Pentru a se aplica actualizarea, sistemul de operare Chrome trebuie să fie repornit.</translation>
@@ -156,6 +158,8 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="5543953544073077331">Alte copii de Chrome rulează acum. Pentru a actualiza, închide-le.</translation>
 <translation id="556024056938947818">Google Chrome încearcă să afișeze parolele.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
+<translation id="5657226924540934362">Dacă o setare nu apare în pagină, încearcă <ph name="LINK_BEGIN" />
+    setările sistemului de operare Chrome<ph name="LINK_END" /></translation>
 <translation id="565744775970812598">Este posibil ca <ph name="FILE_NAME" /> să fie periculos, așadar Chrome l-a blocat.</translation>
 <translation id="5686916850681061684">Personalizează și controlează Google Chrome. Ceva are nevoie de atenția ta – dă clic pentru detalii.</translation>
 <translation id="5690427481109656848">Google LLC</translation>

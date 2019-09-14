@@ -545,6 +545,7 @@ test("gl_unittests") {
   if (is_win) {
     sources += [
       "direct_composition_surface_win_unittest.cc",
+      "gl_image_d3d_unittest.cc",
       "gl_image_dxgi_unittest.cc",
       "wgl_api_unittest.cc",
     ]

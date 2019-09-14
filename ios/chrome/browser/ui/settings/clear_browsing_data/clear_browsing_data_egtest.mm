@@ -40,21 +40,8 @@ using chrome_test_util::SettingsMenuPrivacyButton;
                                              clearBrowsingDataDialogLabel)];
 }
 
-// Test that opening the clear browsing data dialog does not cause a crash
-// with the old UI.
-- (void)testOpenClearBrowsingDataDialogOldUI {
-  _featureList.InitAndDisableFeature(kNewClearBrowsingDataUI);
-
-  [self openClearBrowsingDataDialog];
-  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
-      performAction:grey_tap()];
-}
-
-// Test that opening the clear browsing data dialog does not cause a crash
-// with the new UI.
-- (void)testOpenClearBrowsingDataDialogNewUI {
-  _featureList.InitAndEnableFeature(kNewClearBrowsingDataUI);
-
+// Test that opening the clear browsing data dialog does not crash.
+- (void)testOpenClearBrowsingDataDialogUI {
   [self openClearBrowsingDataDialog];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];

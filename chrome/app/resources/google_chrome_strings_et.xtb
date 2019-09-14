@@ -45,6 +45,8 @@
 <translation id="1873233029667955273">Google Chrome ei ole vaikebrauser</translation>
 <translation id="1874309113135274312">Google Chrome'i beetaversioon (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome on aegunud</translation>
+<translation id="1900795423379050516">Kui seadet sellel lehel ei kuvata, vaadake oma <ph name="LINK_BEGIN" />
+      Chrome'i brauseri seadeid<ph name="LINK_END" /></translation>
 <translation id="1915828456209461693">Saadaval on uus Chrome'i värskendus, mis rakendatakse taaskäivitamisel.</translation>
 <translation id="1919130412786645364">Luba Chrome'i sisselogimine</translation>
 <translation id="2063848847527508675">Chrome OS tuleb värskenduse rakendamiseks taaskäivitada.</translation>
@@ -160,6 +162,8 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="5543953544073077331">Muud Chrome'i eksemplarid töötavad. Värskendamiseks sulgege need.</translation>
 <translation id="556024056938947818">Google Chrome püüab näidata paroole.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
+<translation id="5657226924540934362">Kui seadet sellel lehel ei kuvata, vaadake oma <ph name="LINK_BEGIN" />
+      Chrome OS-i seadeid<ph name="LINK_END" /></translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> võib olla ohtlik, mistõttu Chrome blokeeris selle.</translation>
 <translation id="5686916850681061684">Kohandage ja hallake Google Chrome'i. Miski vajab teie tähelepanu – klõpsake üksikasjade nägemiseks.</translation>
 <translation id="5690427481109656848">Google LLC</translation>

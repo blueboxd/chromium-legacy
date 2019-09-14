@@ -133,6 +133,8 @@ TEST_F(BookmarkModelObserverImplTest,
       bookmark_tracker()->GetEntitiesWithLocalChanges(kMaxEntries);
   ASSERT_THAT(local_changes.size(), 1U);
   EXPECT_THAT(local_changes[0]->bookmark_node(), Eq(bookmark_node));
+  EXPECT_THAT(local_changes[0]->metadata()->server_id(),
+              Eq(bookmark_node->guid()));
 }
 
 TEST_F(BookmarkModelObserverImplTest,

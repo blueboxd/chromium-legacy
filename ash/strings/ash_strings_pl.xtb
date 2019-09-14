@@ -104,7 +104,6 @@
 <translation id="2359808026110333948">Dalej</translation>
 <translation id="2365393535144473978">Wraz z mobilną transmisją danych zostanie włączony Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
-<translation id="239188844683466770">Włącz lub wyłącz tryb Nie przeszkadzać</translation>
 <translation id="2412593942846481727">Dostępna aktualizacja</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> jest sesją zarządzaną, którą zarządza <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Kliknięcie lewym przyciskiem</translation>
@@ -224,6 +223,7 @@
 <translation id="4181841719683918333">Języki</translation>
 <translation id="4195877955194704651">Automatyczne klikanie przycisku</translation>
 <translation id="4217571870635786043">Dyktowanie</translation>
+<translation id="421885205185866088">PIN karty elektronicznej dla <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Pokaż ustawienia powiadomień. Powiadomienia są wyłączone.</translation>
 <translation id="4269883910223712419">Administrator tego urządzenia może:</translation>
@@ -239,6 +239,7 @@
 <translation id="4379531060876907730">To są Twoje narzędzia rysika</translation>
 <translation id="4389184120735010762">Naciśnięto skrót klawiszowy lupy zadokowanej. Czy chcesz ją włączyć?</translation>
 <translation id="4421231901400348175">Udostępnianie sterowania ekranem użytkownikowi <ph name="HELPER_NAME" /> przy użyciu pomocy zdalnej.</translation>
+<translation id="4430019312045809116">Głośność</translation>
 <translation id="4450893287417543264">Nie pokazuj ponownie</translation>
 <translation id="4477350412780666475">Następny utwór</translation>
 <translation id="4479639480957787382">Ethernet</translation>

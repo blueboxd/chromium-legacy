@@ -23121,6 +23121,7 @@ should be able to be added at any place in this file.
       label="For DownloadPageScreenshot feature."/>
   <suffix name="ExploreSitesTile" label="For Explore Sites feature."/>
   <suffix name="FeedCardMenu" label="For FeedCardMenu feature."/>
+  <suffix name="GlobalMediaControls" label="For GlobalMediaControls feature."/>
   <suffix name="HomePageButton" label="For HomePageButton feature."/>
   <suffix name="HomepageTile" label="For HomepageTile feature."/>
   <suffix name="IncognitoWindow" label="For IncognitoWindow feature."/>

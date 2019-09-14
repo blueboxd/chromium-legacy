@@ -956,6 +956,8 @@ jumbo_split_static_library("browser") {
     "optimization_guide/optimization_guide_keyed_service_factory.h",
     "optimization_guide/optimization_guide_navigation_data.cc",
     "optimization_guide/optimization_guide_navigation_data.h",
+    "optimization_guide/optimization_guide_session_statistic.cc",
+    "optimization_guide/optimization_guide_session_statistic.h",
     "optimization_guide/optimization_guide_web_contents_observer.cc",
     "optimization_guide/optimization_guide_web_contents_observer.h",
     "page_load_metrics/metrics_navigation_throttle.cc",
@@ -1012,6 +1014,8 @@ jumbo_split_static_library("browser") {
     "page_load_metrics/observers/offline_page_previews_page_load_metrics_observer.h",
     "page_load_metrics/observers/omnibox_suggestion_used_page_load_metrics_observer.cc",
     "page_load_metrics/observers/omnibox_suggestion_used_page_load_metrics_observer.h",
+    "page_load_metrics/observers/optimization_guide_page_load_metrics_observer.cc",
+    "page_load_metrics/observers/optimization_guide_page_load_metrics_observer.h",
     "page_load_metrics/observers/previews_lite_page_redirect_metrics_observer.cc",
     "page_load_metrics/observers/previews_lite_page_redirect_metrics_observer.h",
     "page_load_metrics/observers/previews_page_load_metrics_observer.cc",
@@ -4312,6 +4316,8 @@ jumbo_split_static_library("browser") {
         "printing/pwg_raster_converter.cc",
         "printing/pwg_raster_converter.h",
       ]
+
+      deps += [ "//components/printing/common:mojo_interfaces" ]
 
       if (is_posix || is_fuchsia) {
         sources += [ "printing/print_dialog_cloud_posix.cc" ]

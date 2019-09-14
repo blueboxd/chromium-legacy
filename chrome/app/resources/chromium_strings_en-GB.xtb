@@ -92,6 +92,8 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4230135487732243613">Link my Chromium data to this account</translation>
 <translation id="4271805377592243930">Get help with Chromium</translation>
 <translation id="4285930937574705105">Installation failed due to unspecified error. If Google Chrome is currently running, please close it and try again.</translation>
+<translation id="4371648796594901282">For Chromium OS details, please see <ph name="LINK_BEGIN" />
+      About Chromium OS<ph name="LINK_END" /></translation>
 <translation id="4407044323746248786">Exit Chromium anyway?</translation>
 <translation id="4415566066719264597">Let Chromium Run in the Background</translation>
 <translation id="4423735387467980091">Customise and control Chromium</translation>
@@ -124,6 +126,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="5623402015214259806">{0,plural, =0{A Chromium update is available}=1{A Chromium update is available}other{A Chromium update has been available for # days}}</translation>
 <translation id="5631814766731275228">Chromium name and picture</translation>
 <translation id="5634636535844844681">Chromium requires Windows 7 or higher.</translation>
+<translation id="5653831366781983928">Please restart Chromium now</translation>
 <translation id="5680901439334282664">sign in to Chromium</translation>
 <translation id="5698481217667032250">Display Chromium in this language</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -166,6 +169,7 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="6734080038664603509">Update &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium is already installed for all users on your computer.</translation>
 <translation id="6810143991807788455">Help make Chromium better by reporting the current settings</translation>
+<translation id="6847869444787758381">Chromium lets you know if your passwords are ever compromised</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (copied to Chromium)</translation>
 <translation id="6868056391275687737">Other copies of Chromium are running. To update, close them.</translation>

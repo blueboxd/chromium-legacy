@@ -8,14 +8,17 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min}other{# min}}</translation>
 <translation id="1181037720776840403">Poista</translation>
 <translation id="1243314992276662751">Lähetä</translation>
+<translation id="1266864766717917324">Jakaminen epäonnistui: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1290982764014248209">Siirrä <ph name="DRAGGED_APP" /> kansioon <ph name="FOLDER_NAME" />.</translation>
+<translation id="1291104554099683393">Kokeile jakaa teksti pienempinä pätkinä.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">SOVELLUSSUOSITUKSET</translation>
 <translation id="1368832886055348810">Vasemmalta oikealle</translation>
 <translation id="1383876407941801731">Haku</translation>
 <translation id="1398853756734560583">Suurenna</translation>
 <translation id="1409544243779336081">Sovellussuositus</translation>
+<translation id="1450753235335490080">Jakaminen ei onnistu: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">Hait tätä aiemmin. Jos <ph name="QUERY" /> poistetaan historiastasi, se poistetaan pysyvästi tililtäsi kaikilla laitteillasi.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuutti ja }other{# minuuttia ja }}</translation>
 <translation id="1643823602425662293">Ilmoitus</translation>
@@ -35,6 +38,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Valitse &amp;kaikki</translation>
 <translation id="1938451708255335766">Muuta ikkunoiden näyttötiheyttä käynnistämällä sovellus uudelleen.</translation>
+<translation id="2006524834898217237">Varmista, että laite on yhteydessä internetiin.</translation>
 <translation id="208586643495776849">Yritä uudelleen</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 p}other{# p}}</translation>
 <translation id="2148716181193084225">Tänään</translation>
@@ -76,6 +80,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 päivä}other{# päivää}}</translation>
 <translation id="3295886253693811851">Soita puhelu:</translation>
 <translation id="335581015389089642">Puhe</translation>
+<translation id="3389286852084373014">Teksti on liian suuri</translation>
 <translation id="3443810440409579745">Välilehti vastaanotettu</translation>
 <translation id="3479552764303398839">Ei nyt</translation>
 <translation id="348799646910989694">Hylly piilotettu automaattisesti</translation>
@@ -151,11 +156,13 @@
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 s sitten}other{# s sitten}}</translation>
 <translation id="6430678249303439055">Estä kaikki tämän sovelluksen ilmoitukset</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 sekunti sitten}other{# sekuntia sitten}}</translation>
+<translation id="6539092367496845964">Jotain meni vikaan. Yritä myöhemmin uudelleen.</translation>
 <translation id="654149438358937226">Estä kaikki ilmoitukset</translation>
 <translation id="6567071839949112727">klikkaa edeltäjää</translation>
 <translation id="6578407462441924264">Nimetön</translation>
 <translation id="6612467943526193239">Poistu kalibroinnista painamalla Esc.</translation>
 <translation id="6620110761915583480">Tallenna tiedosto</translation>
+<translation id="6656912866303152668">Varmista, että <ph name="TARGET_DEVICE_NAME" /> käyttää synkronointia Chromessa, ja yritä lähettämistä sitten uudelleen.</translation>
 <translation id="6699343763173986273">Media: seuraava kappale</translation>
 <translation id="673773751041746814">Poisto</translation>
 <translation id="6779314412797872738">Jos haluat lähettää numeron tältä laitteelta Android-puhelimeesi, <ph name="TROUBLESHOOT_LINK" /> molempien laitteiden asetuksista.</translation>
@@ -221,6 +228,7 @@
 <translation id="8876215549894133151">Muoto:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> kt</translation>
 <translation id="8926951137623668982">Hylly piilotetaan aina</translation>
+<translation id="8996630695507351249">Varmista, että <ph name="TARGET_DEVICE_NAME" /> on yhteydessä internetiin.</translation>
 <translation id="9002566407876343676">avata</translation>
 <translation id="9039076430527029379">Avaa sivu <ph name="PAGE_NUMBER" />, rivi <ph name="ROW_NUMBER" />, sarake <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}other{# s}}</translation>

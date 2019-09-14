@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/guid.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -76,6 +77,7 @@ TEST(BookmarkSpecificsConversionsTest, ShouldCreateSpecificsFromBookmarkNode) {
   sync_pb::EntitySpecifics specifics = CreateSpecificsFromBookmarkNode(
       node, model.get(), /*force_favicon_load=*/false);
   const sync_pb::BookmarkSpecifics& bm_specifics = specifics.bookmark();
+  EXPECT_THAT(bm_specifics.guid(), Eq(node->guid()));
   EXPECT_THAT(bm_specifics.title(), Eq(kTitle));
   EXPECT_THAT(GURL(bm_specifics.url()), Eq(kUrl));
   EXPECT_THAT(
@@ -168,6 +170,7 @@ TEST(BookmarkSpecificsConversionsTest,
 
 TEST(BookmarkSpecificsConversionsTest, ShouldCreateBookmarkNodeFromSpecifics) {
   const GURL kUrl("http://www.url.com");
+  const std::string kGuid = base::GenerateGUID();
   const std::string kTitle = "Title";
   const base::Time kTime = base::Time::Now();
   const GURL kIconUrl("http://www.icon-url.com");
@@ -179,6 +182,7 @@ TEST(BookmarkSpecificsConversionsTest, ShouldCreateBookmarkNodeFromSpecifics) {
   sync_pb::EntitySpecifics specifics;
   sync_pb::BookmarkSpecifics* bm_specifics = specifics.mutable_bookmark();
   bm_specifics->set_url(kUrl.spec());
+  bm_specifics->set_guid(kGuid);
   bm_specifics->set_icon_url(kIconUrl.spec());
   bm_specifics->set_favicon("PNG");
   bm_specifics->set_title(kTitle);
@@ -203,6 +207,7 @@ TEST(BookmarkSpecificsConversionsTest, ShouldCreateBookmarkNodeFromSpecifics) {
       /*parent=*/model->bookmark_bar_node(), /*index=*/0,
       /*is_folder=*/false, model.get(), &favicon_service);
   ASSERT_THAT(node, NotNull());
+  EXPECT_THAT(node->guid(), Eq(kGuid));
   EXPECT_THAT(node->GetTitle(), Eq(base::UTF8ToUTF16(kTitle)));
   EXPECT_THAT(node->url(), Eq(kUrl));
   EXPECT_THAT(node->date_added(), Eq(kTime));
@@ -216,6 +221,7 @@ TEST(BookmarkSpecificsConversionsTest, ShouldCreateBookmarkNodeFromSpecifics) {
 
 TEST(BookmarkSpecificsConversionsTest,
      ShouldCreateBookmarkNodeFromSpecificsWithIllegalTitle) {
+  const std::string kGuid = base::GenerateGUID();
   std::unique_ptr<bookmarks::BookmarkModel> model =
       bookmarks::TestBookmarkClient::CreateModel();
   testing::NiceMock<favicon::MockFaviconService> favicon_service;
@@ -227,6 +233,7 @@ TEST(BookmarkSpecificsConversionsTest,
     sync_pb::EntitySpecifics specifics;
     sync_pb::BookmarkSpecifics* bm_specifics = specifics.mutable_bookmark();
     bm_specifics->set_url("http://www.url.com");
+    bm_specifics->set_guid(kGuid);
     // Legacy clients append an extra space to illegal clients.
     bm_specifics->set_title(illegal_title + " ");
     const bookmarks::BookmarkNode* node = CreateBookmarkNodeFromSpecifics(
@@ -242,12 +249,14 @@ TEST(BookmarkSpecificsConversionsTest,
 TEST(BookmarkSpecificsConversionsTest,
      ShouldCreateBookmarkNodeFromSpecificsWithFaviconAndWithoutIconUrl) {
   const GURL kUrl("http://www.url.com");
+  const std::string kGuid = base::GenerateGUID();
   const std::string kTitle = "Title";
   const GURL kIconUrl("http://www.icon-url.com");
 
   sync_pb::EntitySpecifics specifics;
   sync_pb::BookmarkSpecifics* bm_specifics = specifics.mutable_bookmark();
   bm_specifics->set_url(kUrl.spec());
+  bm_specifics->set_guid(kGuid);
   bm_specifics->set_favicon("PNG");
   bm_specifics->set_title(kTitle);
 
@@ -266,6 +275,7 @@ TEST(BookmarkSpecificsConversionsTest,
 
 TEST(BookmarkSpecificsConversionsTest, ShouldUpdateBookmarkNodeFromSpecifics) {
   const GURL kUrl("http://www.url.com");
+  const std::string kGuid = base::GenerateGUID();
   const std::string kTitle = "Title";
   const base::Time kTime = base::Time::Now();
   const std::string kKey1 = "key1";
@@ -293,6 +303,7 @@ TEST(BookmarkSpecificsConversionsTest, ShouldUpdateBookmarkNodeFromSpecifics) {
   sync_pb::EntitySpecifics specifics;
   sync_pb::BookmarkSpecifics* bm_specifics = specifics.mutable_bookmark();
   bm_specifics->set_url(kNewUrl.spec());
+  bm_specifics->set_guid(kGuid);
   bm_specifics->set_icon_url(kNewIconUrl.spec());
   bm_specifics->set_favicon("PNG");
   bm_specifics->set_title(kNewTitle);
@@ -357,6 +368,7 @@ TEST(BookmarkSpecificsConversionsTest, ShouldBeValidBookmarkSpecifics) {
 
   // URL is irrelevant for a folder.
   bm_specifics->set_url("INVALID_URL");
+  bm_specifics->set_guid(base::GenerateGUID());
   EXPECT_TRUE(IsValidBookmarkSpecifics(*bm_specifics, /*is_folder=*/true));
 
   bm_specifics->set_url("http://www.valid-url.com");
@@ -369,6 +381,7 @@ TEST(BookmarkSpecificsConversionsTest,
   sync_pb::BookmarkSpecifics* bm_specifics = specifics.mutable_bookmark();
   bm_specifics->set_url("http://www.valid-url.com");
   bm_specifics->set_favicon("PNG");
+  bm_specifics->set_guid(base::GenerateGUID());
   EXPECT_TRUE(IsValidBookmarkSpecifics(*bm_specifics, /*is_folder=*/false));
 }
 
@@ -378,6 +391,7 @@ TEST(BookmarkSpecificsConversionsTest,
   sync_pb::BookmarkSpecifics* bm_specifics = specifics.mutable_bookmark();
   bm_specifics->set_url("http://www.valid-url.com");
   bm_specifics->set_icon_url("http://www.valid-icon-url.com");
+  bm_specifics->set_guid(base::GenerateGUID());
   EXPECT_FALSE(IsValidBookmarkSpecifics(*bm_specifics, /*is_folder=*/false));
 }
 

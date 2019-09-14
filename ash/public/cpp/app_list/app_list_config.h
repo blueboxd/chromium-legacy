@@ -65,6 +65,7 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   int grid_focus_corner_radius() const { return grid_focus_corner_radius_; }
   SkColor grid_title_color() const { return grid_title_color_; }
   int grid_fadeout_zone_height() const { return grid_fadeout_zone_height_; }
+  int grid_fadeout_mask_height() const { return grid_fadeout_mask_height_; }
   int search_tile_icon_dimension() const { return search_tile_icon_dimension_; }
   int search_tile_badge_icon_dimension() const {
     return search_tile_badge_icon_dimension_;
@@ -257,8 +258,13 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   const int grid_focus_dimension_;
   const int grid_focus_corner_radius_;
 
-  // The vertical insets in the apps grid rezerved for the grid fade out mask.
+  // The vertical insets in the apps grid reserved for the grid fade out area.
   const int grid_fadeout_zone_height_;
+
+  // The height of the masked area in the grid fade out zone.
+  // This is different from |grid_fadeout_zone_height_|, which may include
+  // additional margin outside the fadeout mask.
+  const int grid_fadeout_mask_height_;
 
   // The icon dimension of tile views in search result page view.
   const int search_tile_icon_dimension_;

@@ -376,10 +376,22 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
      * recents.
      */
     protected void handleFinishAndClose() {
-        if (useSeparateTask()) {
-            ApiCompatibilityUtils.finishAndRemoveTask(this);
+        Runnable defaultBehavior = () -> {
+            if (useSeparateTask()) {
+                ApiCompatibilityUtils.finishAndRemoveTask(this);
+            } else {
+                finish();
+            }
+        };
+        if (mIntentDataProvider.isTrustedWebActivity()) {
+            // TODO(pshmakov): extract all finishing logic from CustomTabActivity.
+            // In addition to TwaFinishHandler, create DefaultFinishHandler, PaymentsFinishHandler,
+            // and SeparateTaskActivityFinishHandler, all implementing
+            // CustomTabActivityNavigationController#FinishHandler. Pass the mode enum into
+            // CustomTabActivityModule, so that it can provide the correct implementation.
+            getComponent().resolveTwaFinishHandler().onFinish(defaultBehavior);
         } else {
-            finish();
+            defaultBehavior.run();
         }
     }
 

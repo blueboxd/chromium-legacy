@@ -8,14 +8,17 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 мин}other{# мин}}</translation>
 <translation id="1181037720776840403">Премахване</translation>
 <translation id="1243314992276662751">Качване</translation>
+<translation id="1266864766717917324">Споделянето на <ph name="CONTENT_TYPE" /> не бе възможно</translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1290982764014248209">Преместване на <ph name="DRAGGED_APP" /> в папката <ph name="FOLDER_NAME" />.</translation>
+<translation id="1291104554099683393">Опитайте да споделите текста на по-малки части.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">ПРЕПОРЪЧАНИ ПРИЛОЖЕНИЯ</translation>
 <translation id="1368832886055348810">Отляво надясно</translation>
 <translation id="1383876407941801731">Търсене</translation>
 <translation id="1398853756734560583">Увеличаване</translation>
 <translation id="1409544243779336081">Препоръка за приложение</translation>
+<translation id="1450753235335490080">Споделянето на <ph name="CONTENT_TYPE" /> не е възможно</translation>
 <translation id="1498028757988366001">Тази заявка е сред предишните ви търсения. Изтриването на „<ph name="QUERY" />“ от историята ви ще я премахне за постоянно от профила ви на всичките ви устройства.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 минута и }other{# минути и }}</translation>
 <translation id="1643823602425662293">Известие</translation>
@@ -35,6 +38,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">&amp;Избиране на всички</translation>
 <translation id="1938451708255335766">За да коригирате плътността за показване на прозорците, рестартирайте приложението.</translation>
+<translation id="2006524834898217237">Проверете дали устройството е свързано с интернет.</translation>
 <translation id="208586643495776849">Моля, опитайте отново</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 д.}other{# д.}}</translation>
 <translation id="2148716181193084225">Днес</translation>
@@ -76,6 +80,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 ден}other{# дни}}</translation>
 <translation id="3295886253693811851">Извършване на обаждане от</translation>
 <translation id="335581015389089642">Speech</translation>
+<translation id="3389286852084373014">Текстът е твърде голям</translation>
 <translation id="3443810440409579745">Получен раздел.</translation>
 <translation id="3479552764303398839">Не сега</translation>
 <translation id="348799646910989694">Лавицата се скрива автоматично</translation>
@@ -151,11 +156,13 @@
 <translation id="6404817160109697034">{SECONDS,plural, =1{Преди 1 сек}other{Преди # сек}}</translation>
 <translation id="6430678249303439055">Блокиране на всички известия от това приложение</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Преди 1 секунда}other{Преди # секунди}}</translation>
+<translation id="6539092367496845964">Нещо се обърка. Опитайте пак по-късно.</translation>
 <translation id="654149438358937226">Блокиране на всички известия</translation>
 <translation id="6567071839949112727">кликване върху елемента предшественик</translation>
 <translation id="6578407462441924264">Без име</translation>
 <translation id="6612467943526193239">За изход от калибрирането натиснете Esc.</translation>
 <translation id="6620110761915583480">Запазване на файл</translation>
+<translation id="6656912866303152668">Проверете дали синхронизацията в Chrome е включена за <ph name="TARGET_DEVICE_NAME" /> и опитайте да изпратите отново.</translation>
 <translation id="6699343763173986273">Мултимедия, следващият запис</translation>
 <translation id="673773751041746814">Изтриване</translation>
 <translation id="6779314412797872738">За да изпратите номер оттук до телефона си с Android, <ph name="TROUBLESHOOT_LINK" /> в настройките и на двете устройства.</translation>
@@ -221,6 +228,7 @@
 <translation id="8876215549894133151">Формат:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KБ</translation>
 <translation id="8926951137623668982">Лавицата е винаги скрита</translation>
+<translation id="8996630695507351249">Проверете дали <ph name="TARGET_DEVICE_NAME" /> има връзка с интернет.</translation>
 <translation id="9002566407876343676">отварям</translation>
 <translation id="9039076430527029379">Преместване на страница <ph name="PAGE_NUMBER" />, ред <ph name="ROW_NUMBER" />, колона <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 сек}other{# сек}}</translation>

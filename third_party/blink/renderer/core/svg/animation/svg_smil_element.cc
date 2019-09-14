@@ -59,7 +59,7 @@ SMILTime ComputeNextRepeatTime(SMILTime interval_begin,
   DCHECK_LE(interval_begin, presentation_time);
   SMILTime time_in_interval = presentation_time - interval_begin;
   SMILTime time_until_next_repeat =
-      simple_duration - fmod(time_in_interval.Value(), simple_duration.Value());
+      simple_duration - (time_in_interval % simple_duration);
   return presentation_time + time_until_next_repeat;
 }
 
@@ -836,7 +836,7 @@ SMILInterval SVGSMILElement::ResolveInterval(
       }
       temp_end = ResolveActiveEnd(temp_begin, temp_end);
     }
-    if (!first || (temp_end > 0 || (!temp_begin.Value() && !temp_end.Value())))
+    if (!first || (temp_end > 0 || (!temp_begin && !temp_end)))
       return SMILInterval(temp_begin, temp_end);
 
     begin_after = temp_end;
@@ -878,7 +878,7 @@ SMILTime SVGSMILElement::NextInterestingTime(SMILTime presentation_time) const {
   } else if (interval_.EndsAfter(presentation_time)) {
     next_interesting_interval_time = interval_.end;
     SMILTime simple_duration = SimpleDuration();
-    if (simple_duration.IsFinite() && simple_duration.Value()) {
+    if (simple_duration) {
       SMILTime next_repeat_time = ComputeNextRepeatTime(
           interval_.begin, simple_duration, presentation_time);
       DCHECK(next_repeat_time.IsFinite());
@@ -1002,7 +1002,7 @@ const SMILInterval& SVGSMILElement::GetActiveInterval(SMILTime elapsed) const {
 
 unsigned SVGSMILElement::CalculateAnimationRepeat(SMILTime elapsed) const {
   const SMILTime simple_duration = SimpleDuration();
-  if (simple_duration.IsIndefinite() || !simple_duration)
+  if (!simple_duration)
     return 0;
   DCHECK(simple_duration.IsFinite());
   const SMILInterval& active_interval = GetActiveInterval(elapsed);
@@ -1010,18 +1010,17 @@ unsigned SVGSMILElement::CalculateAnimationRepeat(SMILTime elapsed) const {
 
   SMILTime active_time = elapsed - active_interval.begin;
   SMILTime repeating_duration = RepeatingDuration();
+  int64_t repeat;
   if (elapsed >= active_interval.end || active_time > repeating_duration) {
     if (!repeating_duration.IsFinite())
       return 0;
-    unsigned repeat = static_cast<unsigned>(repeating_duration.Value() /
-                                            simple_duration.Value());
-    if (!fmod(repeating_duration.Value(), simple_duration.Value()))
-      return repeat - 1;
-    return repeat;
+    repeat = repeating_duration / simple_duration;
+    if (!(repeating_duration % simple_duration))
+      repeat--;
+  } else {
+    repeat = active_time / simple_duration;
   }
-  unsigned repeat =
-      static_cast<unsigned>(active_time.Value() / simple_duration.Value());
-  return repeat;
+  return clampTo<unsigned>(repeat);
 }
 
 float SVGSMILElement::CalculateAnimationPercent(SMILTime elapsed) const {
@@ -1046,15 +1045,17 @@ float SVGSMILElement::CalculateAnimationPercent(SMILTime elapsed) const {
     SMILTime last_active_duration = repeating_duration;
     if (elapsed >= active_interval.end)
       last_active_duration = active_interval.end - active_interval.begin;
-    double percent = last_active_duration.Value() / simple_duration.Value();
+    double percent = last_active_duration.InternalValueAsDouble() /
+                     simple_duration.InternalValueAsDouble();
     percent = percent - floor(percent);
     float epsilon = std::numeric_limits<float>::epsilon();
     if (percent < epsilon || 1 - percent < epsilon)
       return 1.0f;
     return clampTo<float>(percent);
   }
-  double simple_time = fmod(active_time.Value(), simple_duration.Value());
-  return clampTo<float>(simple_time / simple_duration.Value());
+  SMILTime simple_time = active_time % simple_duration;
+  return clampTo<float>(simple_time.InternalValueAsDouble() /
+                        simple_duration.InternalValueAsDouble());
 }
 
 SMILTime SVGSMILElement::NextProgressTime(SMILTime presentation_time) const {

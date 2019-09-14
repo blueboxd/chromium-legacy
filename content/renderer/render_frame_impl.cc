@@ -1711,6 +1711,17 @@ void RenderFrameImpl::CreateFrame(
     render_frame->owned_render_widget_ = std::move(render_widget);
   }
 
+  if (widget_params.routing_id != MSG_ROUTING_NONE) {
+    DCHECK(render_frame->render_widget_);
+    // The RenderWidget should start with valid VisualProperties, including a
+    // non-zero size. While RenderWidget would not normally receive IPCs and
+    // thus would not get VisualProperty updates while the frame is provisional,
+    // we need at least one update to them in order to meet expectations in the
+    // renderer, and that update comes as part of the CreateFrame message.
+    render_frame->render_widget_->OnSynchronizeVisualProperties(
+        widget_params.visual_properties);
+  }
+
   if (has_committed_real_load)
     render_frame->frame_->SetCommittedFirstRealLoad();
 

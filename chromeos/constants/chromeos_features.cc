@@ -19,7 +19,7 @@ const base::Feature kInstantTetheringBackgroundAdvertisementSupport{
 // Controls whether to enable Chrome OS Account Manager.
 // Rollout controlled by Finch.
 const base::Feature kAccountManager{"ChromeOSAccountManager",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables adaptive OOBE UX.
 const base::Feature kAdaptiveOobe{"AdaptiveOobe",

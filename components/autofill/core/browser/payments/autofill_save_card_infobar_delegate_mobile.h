@@ -17,10 +17,6 @@
 
 class PrefService;
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace autofill {
 
 class CreditCard;
@@ -33,7 +29,7 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
       bool upload,
       AutofillClient::SaveCreditCardOptions options,
       const CreditCard& card,
-      std::unique_ptr<base::DictionaryValue> legal_message,
+      const LegalMessageLines& legal_message_lines,
       AutofillClient::UploadSaveCardPromptCallback
           upload_save_card_prompt_callback,
       AutofillClient::LocalSaveCardPromptCallback
@@ -47,14 +43,12 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
   int issuer_icon_id() const { return issuer_icon_id_; }
   const base::string16& card_label() const { return card_label_; }
   const base::string16& card_sub_label() const { return card_sub_label_; }
-  const LegalMessageLines& legal_messages() const { return legal_messages_; }
+  const LegalMessageLines& legal_message_lines() const {
+    return legal_message_lines_;
+  }
 
   // Called when a link in the legal message text was clicked.
   void OnLegalMessageLinkClicked(GURL url);
-
-  // Ensures the InfoBar is not shown if legal messages failed to parse.
-  // Legal messages are only specified for the upload case, not for local save.
-  bool LegalMessagesParsedSuccessfully();
 
   // Google Pay branding is enabled with a flag and only for cards upstreamed
   // to Google.
@@ -117,8 +111,8 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
   // The last four digits of the card for which save is being offered.
   base::string16 card_last_four_digits_;
 
-  // The legal messages to show in the content of the infobar.
-  LegalMessageLines legal_messages_;
+  // The legal message lines to show in the content of the infobar.
+  const LegalMessageLines& legal_message_lines_;
 
   // Whether the save is offered while off the record
   bool is_off_the_record_;

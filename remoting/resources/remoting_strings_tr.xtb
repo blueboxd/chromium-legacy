@@ -58,6 +58,7 @@
 <translation id="2509394361235492552"><ph name="HOSTNAME" /> adlı ana makineye bağlandı</translation>
 <translation id="2512228156274966424">NOT: Tüm klavye kısayollarının kullanılabilir olmasını sağlamak için Chrome Uzaktan Masaüstü'nü 'Pencere olarak aç' modunda yapılandırabilirsiniz.</translation>
 <translation id="2540992418118313681">Bu bilgisayarı başka bir kullanıcının görmesi ve kontrol etmesi için paylaşmak istiyor musunuz?</translation>
+<translation id="254771646005658629">Uzak kullanıcıların bu Mac'i kontrol etmesine izin verin</translation>
 <translation id="2579271889603567289">Ana makine kilitlendi veya başlatılamadı.</translation>
 <translation id="2599300881200251572">Bu hizmet Chrome Uzaktan Masaüstü istemcilerinden gelen bağlantıları etkinleştirir.</translation>
 <translation id="2647232381348739934">Chromoting Hizmeti</translation>
@@ -182,6 +183,11 @@
 <translation id="5419185025274123272">Uygulama sıfırlanamadı. Hâlâ bir hata raporu gönderebilirsiniz.</translation>
 <translation id="5419418238395129586">Son çevrimiçi olduğu tarih: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Ana makine kapatıldı.</translation>
+<translation id="5463789431147491241"><ph name="PRODUCT_NAME" /> uygulamasını bu Mac'te kullanmak için aşağıdaki adımları uygulayın:
+
+Aşağıda "<ph name="BUTTON_NAME" />" düğmesini seçin. Güvenlik ve Gizlilik tercihlerinizde "<ph name="SERVICE_SCRIPT_NAME" />" komut dosyası adının yanındaki kutuyu işaretleyin.
+
+"<ph name="SERVICE_SCRIPT_NAME" />" zaten işaretliyse işaretini kaldırın ve ardından tekrar işaretleyin.</translation>
 <translation id="5510035215749041527">Bağlantıyı şimdi kes</translation>
 <translation id="5593560073513909978">Hizmet geçici olarak kullanılamıyor. Lütfen daha sonra tekrar deneyin.</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -298,12 +304,14 @@
 <translation id="837021510621780684">Bu bilgisayardan</translation>
 <translation id="8383794970363966105">Chromoting'i kullanmak için cihazınıza Google Hesabı eklemeniz gerekir.</translation>
 <translation id="8386846956409881180">Ana makine, geçersiz OAuth kimlik bilgileriyle yapılandırılmış.</translation>
+<translation id="8406498562923498210">Chrome Uzaktan Masaüstü ortamınızda başlatmak için bir oturum seçin. (Bazı oturum türlerinin Chrome Uzaktan Masaüstü'nde ve yerel konsolda aynı anda çalışmayı desteklemeyebileceğini unutmayın.)</translation>
 <translation id="8428213095426709021">Ayarlar</translation>
 <translation id="8445362773033888690">Google Play Store'da görüntüle</translation>
 <translation id="8509907436388546015">Masaüstü Entegrasyon İşlemi</translation>
 <translation id="8513093439376855948">Remoting ana bilgisayar yönetimi için yerel mesajlaşma ana makinesi</translation>
 <translation id="8525306231823319788">Tam ekran</translation>
 <translation id="8548209692293300397">Daha önce <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) olarak oturum açmıştınız. Bu hesapla bilgisayarlarınıza erişmek için bu hesabı kullanarak <ph name="LINK_BEGIN" />Google Chrome'da oturum açın<ph name="LINK_END" /> ve Chrome Uzaktan Masaüstü'nü yeniden yükleyin.</translation>
+<translation id="858006550102277544">Yorum</translation>
 <translation id="8642984861538780905">Orta</translation>
 <translation id="8712909229180978490">Google Drive'daki kaydedilmiş dosyalarımı çevrimiçi olarak göremiyorum.</translation>
 <translation id="8743328882720071828"><ph name="CLIENT_USERNAME" /> kullanıcısının bilgisayarınızı görmesine ve kontrol etmesine izin vermek istiyor musunuz?</translation>
@@ -321,6 +329,7 @@
 <translation id="9126115402994542723">Bu cihazdan bu ana makineye bağlantı kurarken bir daha PIN sorma.</translation>
 <translation id="9149580767411232853">Uzak masaüstünün tamamının görünür olmasını sağla</translation>
 <translation id="9149992051684092333">Masaüstünüzü paylaşmaya başlamak için, size yardımcı olacak kişiye aşağıdaki erişim kodunu verin.</translation>
+<translation id="916856682307586697">Varsayılan XSession'ı başlat</translation>
 <translation id="9188433529406846933">Yetkilendir</translation>
 <translation id="9213184081240281106">Ana makinenin yapılandırması geçersiz.</translation>
 <translation id="951991426597076286">Reddet</translation>

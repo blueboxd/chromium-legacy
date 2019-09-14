@@ -29,6 +29,7 @@
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/data_channel_manager.h"
+#include "remoting/protocol/display_size.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/input_event_tracker.h"
 #include "remoting/protocol/input_filter.h"
@@ -169,8 +170,7 @@ class ClientSession : public protocol::HostStub,
   // Creates a proxy for sending clipboard events to the client.
   std::unique_ptr<protocol::ClipboardStub> CreateClipboardProxy();
 
-  void SetMouseClampingFilter(const webrtc::DesktopSize& size,
-                              const webrtc::DesktopVector& dpi);
+  void SetMouseClampingFilter(const DisplaySize& size);
 
   // protocol::VideoStream::Observer implementation.
   void OnVideoSizeChanged(protocol::VideoStream* stream,

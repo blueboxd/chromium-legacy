@@ -5168,4 +5168,40 @@ TEST_F(CreditCardSaveManagerTest, UploadSaveOfferedForSupportedCard) {
   EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
 }
 
+// Tests that if payment client returns an invalid legal message upload should
+// not be offered.
+TEST_F(CreditCardSaveManagerTest, InvalidLegalMessageInOnDidGetUploadDetails) {
+  payments_client_->SetUseInvalidLegalMessageInGetUploadDetails(true);
+
+  // Create, fill and submit an address form in order to establish a recent
+  // profile which can be selected for the upload request.
+  FormData address_form;
+  test::CreateTestAddressFormData(&address_form);
+  FormsSeen(std::vector<FormData>(1, address_form));
+
+  ManuallyFillAddressForm("Flo", "Master", "77401", "US", &address_form);
+  FormSubmitted(address_form);
+
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, and submit.
+  const char* const card_number = "4111111111111111";
+  credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
+  credit_card_form.fields[1].value = ASCIIToUTF16(card_number);
+  credit_card_form.fields[2].value = ASCIIToUTF16(NextMonth());
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
+  credit_card_form.fields[4].value = ASCIIToUTF16("123");
+
+  base::HistogramTester histogram_tester;
+  FormSubmitted(credit_card_form);
+
+  // Verify that the correct histogram entries were logged.
+  ExpectCardUploadDecision(
+      histogram_tester,
+      AutofillMetrics::UPLOAD_NOT_OFFERED_INVALID_LEGAL_MESSAGE);
+}
+
 }  // namespace autofill

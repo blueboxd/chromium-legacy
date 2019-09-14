@@ -81,10 +81,10 @@ void DisplayAgentAndroid::ShowNotification(
       ConvertUTF16ToJavaString(env, notification_data->message));
 
   for (const auto& icon : notification_data->icons) {
-    // TODO(hesen): Support Android resource Id.
-    Java_DisplayAgent_addIconWithBitmap(
-        env, java_notification_data, static_cast<int>(icon.first /*IconType*/),
-        gfx::ConvertToJavaBitmap(&icon.second.bitmap));
+    Java_DisplayAgent_addIcon(env, java_notification_data,
+                              static_cast<int>(icon.first /*IconType*/),
+                              gfx::ConvertToJavaBitmap(&icon.second.bitmap),
+                              static_cast<jint>(icon.second.resource_id));
   }
 
   for (size_t i = 0; i < notification_data->buttons.size(); ++i) {

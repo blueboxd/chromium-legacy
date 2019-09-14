@@ -103,6 +103,10 @@ const char kAutofillUseMobileLabelDisambiguationDescription[] =
     "When enabled, Autofill suggestions' labels are displayed using a "
     "mobile-friendly format.";
 
+extern const char kLogBreadcrumbsName[] = "Log Breadcrumb Events";
+extern const char kLogBreadcrumbsDescription[] =
+    "When enabled, breadcrumb events will be logged.";
+
 const char kBreakpadNoDelayInitialUploadName[] =
     "Remove delay on initial crash upload";
 const char kBreakpadNoDelayInitialUploadDescription[] =

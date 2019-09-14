@@ -14,7 +14,6 @@
 #include "ui/views/controls/button/button.h"
 
 class Profile;
-enum class OmniboxTint;
 
 namespace views {
 class Label;
@@ -53,7 +52,6 @@ class KeywordHintView : public views::Button {
 
   int GetCornerRadius() const;
 
-  LocationBarView* location_bar_view_ = nullptr;
   Profile* profile_ = nullptr;
 
   views::Label* leading_label_ = nullptr;

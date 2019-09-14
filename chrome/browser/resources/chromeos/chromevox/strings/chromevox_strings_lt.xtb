@@ -233,6 +233,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="27527859628328957">Pereiti prie kito elemento, kurį galima fokusuoti</translation>
 <translation id="2770781857296573485">Pradėti grupės tyrinėjimą</translation>
 <translation id="2777845298774924149">Išeita</translation>
+<translation id="2783001728278437613">{COUNT,plural, =1{dar #}one{dar #}few{dar #}many{dar #}other{dar #}}</translation>
 <translation id="2784959586797362050">Kaip visada galite atsiųsti atsiliepimų tiesiogiai mums paspaudę „Search“ + a, tada i. Nekantriai laukiame sužinoti jūsų nuomonę.</translation>
 <translation id="2800204403141299078">Daugiau skirtingų elementų nėra.</translation>
 <translation id="2800780099804980316">Nėra ankstesnės 1 lygio antraštės.</translation>
@@ -715,6 +716,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="5956928062748260866">Dialogo langas</translation>
 <translation id="5963413905009737549">Skiltis</translation>
 <translation id="5968607524793740041">Rodyti kontekstinį meniu</translation>
+<translation id="597121107011153418">{COUNT,plural, =1{su # elementu}one{su # elementu}few{su # elementais}many{su # elemento}other{su # elementų}}</translation>
 <translation id="5981446804259161541">Šviesiai žydra spalva</translation>
 <translation id="5983179082906765664">Padidinti naršymo detalumą</translation>
 <translation id="5992285135956208197">Grafikos dokumentas</translation>

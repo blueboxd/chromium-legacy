@@ -196,6 +196,7 @@ Chromium nemůže vaše nastavení obnovit.</translation>
 <translation id="753534427205733210">{0,plural, =1{Chromium se za 1 minutu restartuje}few{Chromium se za # minuty restartuje}many{Chromium se za # minuty restartuje}other{Chromium se za # minut restartuje}}</translation>
 <translation id="7549178288319965365">O systému Chromium OS</translation>
 <translation id="7561906087460245826">Také vymazat data z prohlížeče Chromium (<ph name="URL" />)</translation>
+<translation id="7585853947355360626">Pokud některé nastavení na této stránce není zobrazeno, podívejte se do <ph name="LINK_BEGIN" />nastavení systému Chromium OS<ph name="LINK_END" /></translation>
 <translation id="761356813943268536">Chromium používá vaši kameru a mikrofon.</translation>
 <translation id="7617377681829253106">Prohlížeč Chromium je opět o něco lepší</translation>
 <translation id="7686590090926151193">Chromium není vaším výchozím prohlížečem</translation>
@@ -229,6 +230,7 @@ Chromium nemůže vaše nastavení obnovit.</translation>
 <translation id="8619360774459241877">Spouštění prohlížeče Chromium...</translation>
 <translation id="8621669128220841554">Instalace se z neznámého důvodu nezdařila. Stáhněte prosím Chromium znovu.</translation>
 <translation id="8667808506758191620">Vaše zařízení <ph name="DEVICE_TYPE" /> je aktuální.</translation>
+<translation id="8682540261359803721">Pokud některé nastavení na této stránce není zobrazeno, podívejte se do <ph name="LINK_BEGIN" />nastavení prohlížeče Chromium<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">Také řídí, která stránka se zobrazí po spuštění prohlížeče Chromium nebo při vyhledávání v omniboxu.</translation>
 <translation id="8704119203788522458">Toto je váš prohlížeč Chromium</translation>
 <translation id="8739167630197873875">Při ukončení prohlížeče Chromium mažete soubory cookie. Chcete-li pokračovat v synchronizaci, změňte toto <ph name="COOKIE_SETTINGS_LINK" />.</translation>

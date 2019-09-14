@@ -6,17 +6,12 @@
 #define UI_VIEWS_VIEWS_FEATURES_H_
 
 #include "base/feature_list.h"
-#include "build/build_config.h"
 #include "ui/views/views_export.h"
 
 namespace views {
 namespace features {
 
 // Please keep alphabetized.
-#if defined(OS_WIN)
-VIEWS_EXPORT extern const base::Feature kEnableAuraTooltipsOnWindows;
-#endif  // OS_WIN
-
 VIEWS_EXPORT extern const base::Feature kEnableMDRoundedCornersOnDialogs;
 VIEWS_EXPORT extern const base::Feature kEnableViewPaintOptimization;
 

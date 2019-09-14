@@ -277,22 +277,14 @@ void TraceEventDataSource::RegisterWithTraceLog() {
       &TraceEventDataSource::OnAddTraceEvent,
       &TraceEventDataSource::FlushCurrentThread,
       &TraceEventDataSource::OnUpdateDuration);
-  base::AutoLock l(lock_);
-  is_enabled_ = true;
 }
 
 void TraceEventDataSource::UnregisterFromTraceLog() {
   RegisterTracedValueProtoWriter(false);
   TraceLog::GetInstance()->SetAddTraceEventOverrides(nullptr, nullptr, nullptr);
   base::AutoLock l(lock_);
-  is_enabled_ = false;
   flushing_trace_log_ = false;
   DCHECK(!flush_complete_task_);
-}
-
-bool TraceEventDataSource::IsEnabled() {
-  base::AutoLock l(lock_);
-  return is_enabled_;
 }
 
 void TraceEventDataSource::SetupStartupTracing(bool privacy_filtering_enabled) {

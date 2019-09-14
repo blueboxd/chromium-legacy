@@ -194,6 +194,8 @@
 <translation id="753534427205733210">{0,plural, =1{ஒரு நிமிடத்தில் Chromium மீண்டும் தொடங்கும்}other{# நிமிடங்களில் Chromium மீண்டும் தொடங்கும்}}</translation>
 <translation id="7549178288319965365">Chromium OS அறிமுகம்</translation>
 <translation id="7561906087460245826">Chromiumமிலிருந்தும் தரவை அழி (<ph name="URL" />)</translation>
+<translation id="7585853947355360626">இந்தப் பக்கத்தில் ஏதேனும் ஓர் அமைப்பு காட்டப்படவில்லை எனில் அதை <ph name="LINK_BEGIN" />
+      Chromium OS அமைப்புகளில்<ph name="LINK_END" /> பார்க்கவும்</translation>
 <translation id="761356813943268536">Chromium உங்கள் கேமராவையும் மைக்ரோஃபோனையும் பயன்படுத்துகிறது.</translation>
 <translation id="7617377681829253106">Chromium இன்னும் சிறப்படைந்துள்ளது</translation>
 <translation id="7686590090926151193">Chromium, உங்கள் இயல்புநிலை உலாவியாக இல்லை</translation>
@@ -227,6 +229,8 @@
 <translation id="8619360774459241877">Chromiumமைத் தொடங்குகிறது...</translation>
 <translation id="8621669128220841554">குறிப்பிடப்படாத பிழை காரணமாக நிறுவல் தோல்வியடைந்தது. Chromiumமை மீண்டும் பதிவிறக்கம் செய்க.</translation>
 <translation id="8667808506758191620">உங்கள் <ph name="DEVICE_TYPE" /> புதுப்பித்த நிலையில் உள்ளது.</translation>
+<translation id="8682540261359803721">இந்தப் பக்கத்தில் ஏதேனும் ஓர் அமைப்பு காட்டப்படவில்லை எனில் அதை <ph name="LINK_BEGIN" />
+      Chromium உலாவி அமைப்புகளில்<ph name="LINK_END" /> பார்க்கவும்</translation>
 <translation id="8697124171261953979">Chromiumமைத் தொடங்கும்போது அல்லது சர்வபுலத்திலிருந்து தேடலை மேற்கொள்ளும்போது காண்பிக்கப்படும் பக்கத்தையும் இது கட்டுப்படுத்துகிறது.</translation>
 <translation id="8704119203788522458">இது உங்கள் Chromium ஆகும்</translation>
 <translation id="8739167630197873875">நீங்கள் Chromiumமை விட்டு வெளியேறும் போது குக்கீகளை அழிக்கும் ஒத்திசைவைத் தொடர இந்த <ph name="COOKIE_SETTINGS_LINK" /> ஐ மாற்றவும்.</translation>

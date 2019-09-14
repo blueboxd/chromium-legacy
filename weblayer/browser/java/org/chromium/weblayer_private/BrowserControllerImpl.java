@@ -65,9 +65,9 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
 
         mWindowAndroid = new ActivityWindowAndroid(context);
         mContentViewRenderView = new ContentViewRenderView(context);
-        mWindowAndroid.setAnimationPlaceholderView(mContentViewRenderView.getSurfaceView());
 
-        mContentViewRenderView.onNativeLibraryLoaded(mWindowAndroid);
+        mContentViewRenderView.onNativeLibraryLoaded(
+                mWindowAndroid, ContentViewRenderView.MODE_SURFACE_VIEW);
 
         mNativeBrowserController = nativeCreateBrowserController(profile.getNativeProfile());
         mWebContents = nativeGetWebContents(mNativeBrowserController);

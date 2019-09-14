@@ -194,6 +194,8 @@ O Chromium não consegue recuperar as suas definições.</translation>
 <translation id="753534427205733210">{0,plural, =1{O Chromium será reiniciado dentro de 1 minuto}other{O Chromium será reiniciado dentro de # minutos}}</translation>
 <translation id="7549178288319965365">Acerca do SO Chromium</translation>
 <translation id="7561906087460245826">Limpar também os dados do Chromium (<ph name="URL" />)</translation>
+<translation id="7585853947355360626">Se não encontrar uma definição nesta página, procure nas <ph name="LINK_BEGIN" />
+      Definições do Chromium OS<ph name="LINK_END" />.</translation>
 <translation id="761356813943268536">O Chromium está a utilizar a câmara e o microfone.</translation>
 <translation id="7617377681829253106">O Chromium está ainda melhor</translation>
 <translation id="7686590090926151193">O Chromium não é o seu navegador predefinido.</translation>
@@ -227,6 +229,8 @@ O Chromium não consegue recuperar as suas definições.</translation>
 <translation id="8619360774459241877">A iniciar o Chromium…</translation>
 <translation id="8621669128220841554">A instalação falhou devido a um erro não especificado. Transfira novamente o Chromium .</translation>
 <translation id="8667808506758191620">O seu <ph name="DEVICE_TYPE" /> está atualizado.</translation>
+<translation id="8682540261359803721">Se não encontrar uma definição nesta página, procure nas <ph name="LINK_BEGIN" />
+      Definições do navegador Chromium<ph name="LINK_END" />.</translation>
 <translation id="8697124171261953979">Também controla a página apresentada quando inicia o Chromium ou pesquisa a partir da Caixa geral.</translation>
 <translation id="8704119203788522458">Este é o seu Chromium</translation>
 <translation id="8739167630197873875">Os cookies são eliminados quando sai do Chromium. Para continuar a sincronizar, altere <ph name="COOKIE_SETTINGS_LINK" />.</translation>

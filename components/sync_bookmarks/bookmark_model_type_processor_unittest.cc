@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
+#include "base/guid.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -61,6 +62,7 @@ std::unique_ptr<syncer::UpdateResponseData> CreateUpdateResponseData(
 
   sync_pb::BookmarkSpecifics* bookmark_specifics =
       data->specifics.mutable_bookmark();
+  bookmark_specifics->set_guid(base::GenerateGUID());
   bookmark_specifics->set_title(bookmark_info.title);
   if (bookmark_info.url.empty()) {
     data->is_folder = true;

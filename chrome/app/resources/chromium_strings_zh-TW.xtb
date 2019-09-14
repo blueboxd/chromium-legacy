@@ -194,6 +194,8 @@ Chromium 無法復原你的設定。</translation>
 <translation id="753534427205733210">{0,plural, =1{Chromium 將在 1 分鐘後重新啟動}other{Chromium 將在 # 分鐘後重新啟動}}</translation>
 <translation id="7549178288319965365">關於 Chromium 作業系統</translation>
 <translation id="7561906087460245826">一併清除 Chromium 中的資料 (<ph name="URL" />)</translation>
+<translation id="7585853947355360626">如果這個頁面上未顯示你的設定，請檢查 <ph name="LINK_BEGIN" />
+      Chromium 作業系統設定<ph name="LINK_END" /></translation>
 <translation id="761356813943268536">Chromium 正在使用你的攝影機和麥克風。</translation>
 <translation id="7617377681829253106">Chromium 變得更進步了</translation>
 <translation id="7686590090926151193">Chromium 不是你的預設瀏覽器</translation>
@@ -227,6 +229,8 @@ Chromium 無法復原你的設定。</translation>
 <translation id="8619360774459241877">正在啟動 Chromium…</translation>
 <translation id="8621669128220841554">不明錯誤導致安裝失敗，請重新下載 Chromium。</translation>
 <translation id="8667808506758191620">您的 <ph name="DEVICE_TYPE" /> 已搭載最新版作業系統。</translation>
+<translation id="8682540261359803721">如果這個頁面上未顯示你的設定，請檢查 <ph name="LINK_BEGIN" />
+      Chromium 瀏覽器設定<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">這個擴充功能也會控管 Chromium 啟動時或你使用網址列搜尋時所顯示的網頁。</translation>
 <translation id="8704119203788522458">這是你專屬的 Chromium</translation>
 <translation id="8739167630197873875">當你關閉 Chromium 時，系統會清除 Cookie。如要保持同步，請變更這項<ph name="COOKIE_SETTINGS_LINK" />。</translation>

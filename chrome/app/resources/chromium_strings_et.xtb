@@ -194,6 +194,8 @@ Chromium ei saa teie seadeid taastada.</translation>
 <translation id="753534427205733210">{0,plural, =1{Chromium käivitatakse uuesti 1 minuti pärast}other{Chromium käivitatakse uuesti # minuti pärast}}</translation>
 <translation id="7549178288319965365">Teave Chromium OS-i kohta</translation>
 <translation id="7561906087460245826">Kustuta andmed ka Chromiumist (<ph name="URL" />)</translation>
+<translation id="7585853947355360626">Kui seadet sellel lehel ei kuvata, vaadake oma <ph name="LINK_BEGIN" />
+      Chromium OS-i seadeid<ph name="LINK_END" /></translation>
 <translation id="761356813943268536">Chromium kasutab kaamerat ja mikrofoni.</translation>
 <translation id="7617377681829253106">Chromium muutus just paremaks</translation>
 <translation id="7686590090926151193">Chromium ei ole teie vaikebrauser</translation>
@@ -227,6 +229,8 @@ Chromium ei saa teie seadeid taastada.</translation>
 <translation id="8619360774459241877">Chromiumi käivitamine …</translation>
 <translation id="8621669128220841554">Installimine ebaõnnestus tundmatu vea tõttu. Laadige Chromium uuesti alla.</translation>
 <translation id="8667808506758191620">Teie <ph name="DEVICE_TYPE" /> on ajakohane.</translation>
+<translation id="8682540261359803721">Kui seadet sellel lehel ei kuvata, vaadake oma <ph name="LINK_BEGIN" />
+      Chromiumi brauseri seadeid<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">Lisaks juhib see seda, mis leht kuvatakse Chromiumi käivitamisel või omnikastikeses otsingu tegemisel.</translation>
 <translation id="8704119203788522458">See on teie Chromium</translation>
 <translation id="8739167630197873875">Chromiumi sulgemisel kustutatakse küpsisefailid. Sünkroonimise jätkamiseks muutke seda: <ph name="COOKIE_SETTINGS_LINK" />.</translation>

@@ -1235,6 +1235,7 @@ _ANDROID_SPECIFIC_PYDEPS_FILES = [
     'chrome/android/features/create_stripped_java_factory.pydeps',
     'net/tools/testserver/testserver.pydeps',
     'third_party/android_platform/development/scripts/stack.pydeps',
+    'tools/android/avd/avd.pydeps',
 ]
 
 

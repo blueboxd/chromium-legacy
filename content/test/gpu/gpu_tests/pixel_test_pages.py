@@ -980,6 +980,23 @@ class PixelTestPages(object):
             'color': [0, 255, 0],
           },
         ]),
+
+      PixelTestPage(
+        'pixel_canvas_low_latency_webgl_alpha_false.html',
+        base_name + '_CanvasLowLatencyWebGLSwapChainAlphaFalse',
+        test_rect=[0, 0, 200, 200],
+        revision=0, # not used
+        browser_args=browser_args + ['--enable-webgl-swap-chain'],
+        tolerance=0,
+        expected_colors=[
+          SCALE_FACTOR_OVERRIDES,
+          {
+            'comment': 'green',
+            'location': [1, 1],
+            'size': [98, 98],
+            'color': [0, 255, 0, 255],
+          },
+        ]),
     ]
 
   # Only add these tests on platforms where SwiftShader is enabled.

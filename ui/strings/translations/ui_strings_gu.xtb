@@ -8,14 +8,17 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 મિ}one{# મિ}other{# મિ}}</translation>
 <translation id="1181037720776840403">કાઢી નાખો</translation>
 <translation id="1243314992276662751">અપલોડ કરો</translation>
+<translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> શેર કરી શકાયો નથી</translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1290982764014248209"><ph name="DRAGGED_APP" />ને <ph name="FOLDER_NAME" /> ફોલ્ડરમાં ખસેડો.</translation>
+<translation id="1291104554099683393">ટેક્સ્ટને નાના-નાના ટૂકડામાં શેર કરી જુઓ.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">ભલામણ કરેલ ઍપ</translation>
 <translation id="1368832886055348810">ડાબેથી જમણે</translation>
 <translation id="1383876407941801731">શોધો</translation>
 <translation id="1398853756734560583">મોટું કરો</translation>
 <translation id="1409544243779336081">ઍપ માટે સુઝાવ</translation>
+<translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> શેર કરી શકતાં નથી</translation>
 <translation id="1498028757988366001">તમે આ અગાઉ શોધ્યું હતું. "<ph name="QUERY" />"ને તમારા સ્થાન ઇતિહાસમાંથી ડિલીટ કરવાથી તેને તમારા બધા ડિવાઇસ પરના તમારા એકાઉન્ટમાંથી કાઢી નાખવામાં આવશે.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 મિનિટ અને }one{# મિનિટ અને }other{# મિનિટ અને }}</translation>
 <translation id="1643823602425662293">સૂચના</translation>
@@ -35,6 +38,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;બધા પસંદ કરો</translation>
 <translation id="1938451708255335766">વિંડો ડિસ્પ્લે ઘનતાને ગોઠવવા માટે, ઍપને ફરીથી શરૂ કરો.</translation>
+<translation id="2006524834898217237">ખાતરી કરો કે આ ડિવાઇસ ઇન્ટરનેટ સાથે કનેક્ટ કરેલું છે.</translation>
 <translation id="208586643495776849">કૃપા કરીને ફરી પ્રયાસ કરો</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 દિ}one{# દિ}other{# દિ}}</translation>
 <translation id="2148716181193084225">આજે</translation>
@@ -76,6 +80,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 દિવસ}one{# દિવસ}other{# દિવસ}}</translation>
 <translation id="3295886253693811851">આ ડિવાઇસ વડે કૉલ કરો</translation>
 <translation id="335581015389089642">ભાષા</translation>
+<translation id="3389286852084373014">ટેક્સ્ટ ખૂબ મોટી છે</translation>
 <translation id="3443810440409579745">ટૅબ પ્રાપ્ત થયું.</translation>
 <translation id="3479552764303398839">હમણાં નહીં</translation>
 <translation id="348799646910989694">શેલ્ફ ઑટોમૅટિક રીતે છુપાવવામાં આવશે</translation>
@@ -151,11 +156,13 @@
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 સે પહેલાં}one{# સે પહેલાં}other{# સે પહેલાં}}</translation>
 <translation id="6430678249303439055">આ ઍપના બધા નોટિફિકેશનો અવરોધિત કરો</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 સેકંડ પહેલાં}one{# સેકંડ પહેલાં}other{# સેકંડ પહેલાં}}</translation>
+<translation id="6539092367496845964">કંઈક ખોટું થયું હતું. થોડીવાર પછી ફરી પ્રયાસ કરો.</translation>
 <translation id="654149438358937226">તમામ નોટિફિકેશનને બ્લૉક કરો</translation>
 <translation id="6567071839949112727">ઍન્સેસ્ટર પર ક્લિક કરો</translation>
 <translation id="6578407462441924264">અનામાંકિત</translation>
 <translation id="6612467943526193239">કેલિબ્રેશનથી બહાર નીકળવા માટે Esc દબાવો.</translation>
 <translation id="6620110761915583480">ફાઇલ સાચવો</translation>
+<translation id="6656912866303152668"><ph name="TARGET_DEVICE_NAME" />એ Chromeમાં સિંક ચાલુ કર્યું હોય તેની ખાતરી કરો અને પછી ફરી મોકલી જુઓ.</translation>
 <translation id="6699343763173986273">મીડિયા આગલો ટ્રૅક</translation>
 <translation id="673773751041746814">ડિલીટ કરો</translation>
 <translation id="6779314412797872738">અહીંથી તમારા Android ફોન પર નંબર મોકલવા માટે, સેટિંગમાં બંને ડિવાઇસ માટે <ph name="TROUBLESHOOT_LINK" />.</translation>
@@ -221,6 +228,7 @@
 <translation id="8876215549894133151">ફોર્મેટ:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8926951137623668982">શેલ્ફ હંમેશાં છુપાવવામાં આવે છે</translation>
+<translation id="8996630695507351249"><ph name="TARGET_DEVICE_NAME" /> ઇન્ટરનેટ સાથે કનેક્ટ થયેલું હોવાની ખાતરી કરો.</translation>
 <translation id="9002566407876343676">ખોલો</translation>
 <translation id="9039076430527029379">પેજ <ph name="PAGE_NUMBER" />, પંક્તિ <ph name="ROW_NUMBER" />, કૉલમ <ph name="COLUMN_NUMBER" /> પર ખસેડો.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 સે}one{# સે}other{# સે}}</translation>

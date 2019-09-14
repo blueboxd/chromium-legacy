@@ -148,12 +148,6 @@ const base::Feature kOmniboxPedalSuggestions{"OmniboxPedalSuggestions",
 const base::Feature kOmniboxSuggestionTransparencyOptions{
     "OmniboxSuggestionTransparencyOptions", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature that shows an alternate separator before the description of
-// omnibox matches. In English, this changes the separator from '-' to '|'.
-const base::Feature kOmniboxAlternateMatchDescriptionSeparator{
-    "OmniboxAlternateMatchDescriptionSeparator",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Feature to enable clipboard provider to suggest copied text.
 const base::Feature kEnableClipboardProviderTextSuggestions{
   "OmniboxEnableClipboardProviderTextSuggestions",

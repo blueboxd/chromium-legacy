@@ -19,6 +19,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/no_destructor.h"
+#include "base/numerics/ranges.h"
 #include "chromecast/base/init_command_line_shlib.h"
 #include "chromecast/base/serializers.h"
 #include "chromecast/chromecast_buildflags.h"
@@ -83,7 +84,7 @@ void VolumeControlAndroid::SetVolume(VolumeChangeSource source,
     return;
   }
 
-  level = std::max(0.0f, std::min(level, 1.0f));
+  level = base::ClampToRange(level, 0.0f, 1.0f);
   // The input level value is in the kMedia (MUSIC) volume table domain.
   float mapped_level =
       MapIntoDifferentVolumeTableDomain(AudioContentType::kMedia, type, level);
@@ -119,7 +120,7 @@ void VolumeControlAndroid::SetOutputLimit(AudioContentType type, float limit) {
   }
 
   // The input limit is in the kMedia (MUSIC) volume table domain.
-  limit = std::max(0.0f, std::min(limit, 1.0f));
+  limit = base::ClampToRange(limit, 0.0f, 1.0f);
   float limit_db = VolumeToDbFSCached(AudioContentType::kMedia, limit);
   AudioSinkManager::Get()->SetOutputLimitDb(type, limit_db);
 }

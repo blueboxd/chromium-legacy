@@ -1,7 +1,3 @@
-# Tests fail even with a fuzzy pixel diff. They require a re-baseline.
-crbug.com/954328 media/video-layer-crash.html [ Failure ]
-crbug.com/954328 transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
-
 # Native Failures
 # Backing Failure
 crbug.com/978628 media/remoteplayback/prompt-twice-throws.html [ Skip ]
@@ -10,15 +6,6 @@ crbug.com/978628 media/audio-delete-while-slider-thumb-clicked.html [ Skip ]
 crbug.com/978628 media/video-controls-overflow-menu-fullscreen-button.html [ Skip ]
 crbug.com/978628 media/video-persistence.html [ Skip ]
 crbug.com/978628 media/video-src-blob.html [ Skip ]
-
-# Blur
-crbug.com/972621 images/color-profile-image-filter-all.html [ Skip ]
-crbug.com/972621 images/rgb-png-with-cmyk-color-profile.html [ Skip ]
-crbug.com/972621 images/ycbcr-with-cmyk-color-profile.html [ Skip ]
-crbug.com/972621 images/yuv-decode-eligible/color-profile-filter.html [ Skip ]
-crbug.com/972621 media/color-profile-video-poster-image.html [ Skip ]
-crbug.com/972621 transforms/shadows.html [ Skip ]
-crbug.com/972621 transforms/svg-vs-css.xhtml [ Skip ]
 
 # Input timing doesn't match screenshots
 crbug.com/935970 compositing/gestures/gesture-tapHighlight-img-and-text.html [ Skip ]
@@ -60,13 +47,6 @@ crbug.com/935970 media/video-controls-visibility-multimodal-mouse-after-touch.ht
 crbug.com/935970 media/video-controls-visibility-multimodal-touch-after-mouse.html [ Skip ]
 crbug.com/935970 media/video-controls-visible-audio-only.html [ Skip ]
 
-# Pixel Dump Crash
-crbug.com/963542 images/yuv-decode-eligible/color-profile-layer-filter.html [ Skip ]
-crbug.com/963542 media/alpha-video-playback.html [ Skip ]
-
-# Rebaseline
-crbug.com/972637 media/video-poster-scale.html [ Skip ]
-
 # Need a Vulkan native specific baseline.
 crbug.com/993384 compositing/geometry/vertical-scroll-composited.html [ Skip ]
 crbug.com/993384 compositing/lots-of-img-layers.html [ Skip ]
@@ -80,3 +60,9 @@ crbug.com/993384 css3/blending/effect-background-blend-mode-tiled.html [ Skip ]
 crbug.com/993384 css3/blending/effect-background-blend-mode.html [ Skip ]
 crbug.com/993384 css3/masking/mask-repeat-space-border.html [ Skip ]
 crbug.com/993384 images/color-profile-background-image-space.html [ Skip ]
+crbug.com/993384 media/video-layer-crash.html [ Skip ]
+crbug.com/993384 transforms/transformed-document-element.html [ Skip ]
+crbug.com/993384 transforms/3d/point-mapping/3d-point-mapping-deep.html [ Skip ]
+
+# Not rendering the rightmost frame.
+crbug.com/1001616 media/alpha-video-playback.html [ Skip ]

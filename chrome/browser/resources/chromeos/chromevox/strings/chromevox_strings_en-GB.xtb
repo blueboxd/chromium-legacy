@@ -233,6 +233,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="27527859628328957">Jump to next focusable item</translation>
 <translation id="2770781857296573485">Enter group exploration</translation>
 <translation id="2777845298774924149">Exited</translation>
+<translation id="2783001728278437613">{COUNT,plural, =1{+#}other{+#}}</translation>
 <translation id="2784959586797362050">As always, you can send us feedback directly by pressing Search+a then i. We're eager to hear from you.</translation>
 <translation id="2800204403141299078">No more different elements.</translation>
 <translation id="2800780099804980316">No previous level 1 heading.</translation>
@@ -715,6 +716,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="5956928062748260866">Dialogue</translation>
 <translation id="5963413905009737549">Section</translation>
 <translation id="5968607524793740041">Show context menu</translation>
+<translation id="597121107011153418">{COUNT,plural, =1{with # item}other{with # items}}</translation>
 <translation id="5981446804259161541">Light Cyan</translation>
 <translation id="5983179082906765664">Increase navigation granularity</translation>
 <translation id="5992285135956208197">Graphics document</translation>

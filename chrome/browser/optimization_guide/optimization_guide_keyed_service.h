@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/optimization_guide/optimization_guide_decider.h"
 #include "components/optimization_guide/proto/hints.pb.h"
@@ -33,6 +34,7 @@ class TopHostProvider;
 }  // namespace optimization_guide
 
 class OptimizationGuideHintsManager;
+class OptimizationGuideSessionStatistic;
 
 class OptimizationGuideKeyedService
     : public KeyedService,
@@ -78,11 +80,21 @@ class OptimizationGuideKeyedService
   // KeyedService implementation:
   void Shutdown() override;
 
+  // Update |session_fcp_| with the provided fcp value.
+  void UpdateSessionFCP(base::TimeDelta fcp);
+
+  OptimizationGuideSessionStatistic* GetSessionFCPForTesting() const {
+    return session_fcp_.get();
+  }
+
  private:
   content::BrowserContext* browser_context_;
 
   // Manages the storing, loading, and fetching of hints.
   std::unique_ptr<OptimizationGuideHintsManager> hints_manager_;
+
+  // The current session's FCP statistics for HTTP/HTTPS navigations.
+  std::unique_ptr<OptimizationGuideSessionStatistic> session_fcp_;
 
   // The top host provider to use for fetching information for the user's top
   // hosts. Will be null if the user has not consented to this type of browser

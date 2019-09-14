@@ -49,6 +49,8 @@ Polymer({
     } else {
       this.deletePrefListItem('arc.visible_external_storages', this.uuid);
     }
+    chrome.metricsPrivate.recordBoolean(
+        'Arc.ExternalStorage.SetVisible', visible);
   },
 
   /**

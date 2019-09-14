@@ -58,6 +58,7 @@
 <translation id="2509394361235492552">Đã kết nối với <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">LƯU Ý: Nhằm đảm bảo rằng tất cả các phím tắt đều khả dụng, bạn có thể định cấu hình Chrome Remote Desktop để ‘Mở dưới dạng cửa sổ’.</translation>
 <translation id="2540992418118313681">Bạn có muốn chia sẻ máy tính này cho một người dùng khác xem và kiểm soát không?</translation>
+<translation id="254771646005658629">Cho phép người dùng từ xa điều khiển máy Mac này</translation>
 <translation id="2579271889603567289">Máy chủ đã bị lỗi hoặc không khởi động được.</translation>
 <translation id="2599300881200251572">Dịch vụ này kích hoạt các kết nối đến từ ứng dụng khách Chrome Remote Desktop.</translation>
 <translation id="2647232381348739934">Dịch vụ kết nối từ xa trên Chrome</translation>
@@ -182,6 +183,11 @@
 <translation id="5419185025274123272">Không thể đặt lại ứng dụng. Bạn sẽ vẫn có thể gửi báo cáo lỗi.</translation>
 <translation id="5419418238395129586">Lần trực tuyến gần đây nhất: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Máy chủ đã tắt.</translation>
+<translation id="5463789431147491241">Để sử dụng <ph name="PRODUCT_NAME" /> trên máy Mac này, hãy làm theo các bước sau:
+
+Chọn nút '<ph name="BUTTON_NAME" />' dưới đây. Trong phần tùy chọn Bảo mật và quyền riêng tư, hãy chọn hộp bên cạnh '<ph name="SERVICE_SCRIPT_NAME" />'.
+
+Nếu bạn đã chọn '<ph name="SERVICE_SCRIPT_NAME" />', hãy bỏ chọn hộp này rồi chọn lại.</translation>
 <translation id="5510035215749041527">Ngắt kết nối ngay bây giờ</translation>
 <translation id="5593560073513909978">Dịch vụ tạm thời không khả dụng. Vui lòng thử lại sau.</translation>
 <translation id="5601503069213153581">Mã PIN</translation>
@@ -298,12 +304,14 @@
 <translation id="837021510621780684">Từ máy tính này</translation>
 <translation id="8383794970363966105">Để sử dụng Kết nối từ xa trên Chrome, bạn cần thêm một tài khoản Google cho thiết bị của mình.</translation>
 <translation id="8386846956409881180">Máy chủ được định cấu hình bằng thông tin xác thực OAuth không hợp lệ.</translation>
+<translation id="8406498562923498210">Chọn một phiên để chạy trong môi trường Chrome Remote Desktop. (Xin lưu ý rằng một số loại phiên có thể chưa chạy được đồng thời trong Chrome Remote Desktop và trên bảng điều khiển cục bộ.)</translation>
 <translation id="8428213095426709021">Cài đặt</translation>
 <translation id="8445362773033888690">Xem trong Cửa hàng Google Play</translation>
 <translation id="8509907436388546015">Quá trình tích hợp máy tính để bàn</translation>
 <translation id="8513093439376855948">Máy chủ nhắn tin gốc dành cho quản lý máy chủ từ xa</translation>
 <translation id="8525306231823319788">Toàn màn hình</translation>
 <translation id="8548209692293300397">Trước đó, bạn đã đăng nhập bằng <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />).  Để truy cập máy tính của bạn bằng tài khoản đó, hãy <ph name="LINK_BEGIN" />đăng nhập vào Google Chrome<ph name="LINK_END" /> bằng tài khoản đó và cài đặt lại Chrome Remote Desktop.</translation>
+<translation id="858006550102277544">Nhận xét</translation>
 <translation id="8642984861538780905">Khá tốt</translation>
 <translation id="8712909229180978490">Tôi không thể xem các tệp đã lưu của mình trực tuyến trong Google Drive.</translation>
 <translation id="8743328882720071828">Bạn có muốn cho phép <ph name="CLIENT_USERNAME" /> xem và điều khiển máy tính của mình không?</translation>
@@ -321,6 +329,7 @@
 <translation id="9126115402994542723">Không yêu cầu lại mã PIN khi kết nối với máy chủ này từ thiết bị này.</translation>
 <translation id="9149580767411232853">Duy trì hiển thị toàn bộ màn hình nền từ xa</translation>
 <translation id="9149992051684092333">Để bắt đầu chia sẻ máy tính của bạn, hãy cung cấp mã truy cập bên dưới cho người sẽ trợ giúp bạn.</translation>
+<translation id="916856682307586697">Chạy XSession mặc định</translation>
 <translation id="9188433529406846933">Cho phép</translation>
 <translation id="9213184081240281106">Cấu hình máy chủ không hợp lệ.</translation>
 <translation id="951991426597076286">Từ chối</translation>

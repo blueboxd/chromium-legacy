@@ -463,10 +463,6 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
       Jika kebijakan ini disetel ke URL yang valid, <ph name="PRODUCT_NAME" /> akan mendownload daftar situs dari URL tersebut, dan menerapkan aturan seolah-olah aturan tersebut dikonfigurasi dengan kebijakan <ph name="SITELIST_POLICY_NAME" />.
 
       Untuk informasi selengkapnya terkait kebijakan <ph name="IEEM_SITELIST_POLICY" /> Internet Explorer: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
-<translation id="1839060937202387559">Melaporkan ID dan statistik hardware untuk perangkat penyimpanan.
-
-      Jika kebijakan disetel ke false, statistik tidak akan dilaporkan.
-      Jika disetel ke true atau tidak disetel, statistik akan dilaporkan.</translation>
 <translation id="1843117931376765605">Segarkan peringkat untuk kebijakan pengguna</translation>
 <translation id="1844620919405873871">Mengonfigurasi kebijakan terkait buka kunci cepat.</translation>
 <translation id="1845405905602899692">Setelan Kios</translation>
@@ -1572,7 +1568,7 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 
       Jika kebijakan ini ditetapkan ke <ph name="BR_ENABLED" />, status awal pencadangan dan pemulihan Android adalah diaktifkan.
 
-      Jika kebijakan ini ditetapkan ke <ph name="BR_UNDER_USER_CONTROL" />, pengguna akan diminta memilih apakah mereka ingin menggunakan pencadangan dan pemulihan Android atau tidak. Jika pengguna mengaktifkan pencadangan dan pemulihan, data aplikasi Android akan diupload ke server backup Android dan dipulihkan dari server tersebut setelah penginstalan ulang untuk aplikasi yang kompatibel.
+      Jika kebijakan ini ditetapkan ke <ph name="BR_UNDER_USER_CONTROL" />, pengguna akan diminta memilih apakah mereka ingin menggunakan pencadangan dan pemulihan Android atau tidak. Jika pengguna mengaktifkan pencadangan dan pemulihan, data aplikasi Android akan diupload ke server cadangan Android dan dipulihkan dari server tersebut setelah penginstalan ulang untuk aplikasi yang kompatibel.
 
       Perhatikan bahwa kebijakan ini mengontrol status pencadangan dan pemulihan Android selama penyiapan awal saja. Pengguna dapat membuka setelan Android setelahnya dan mengaktifkan/menonaktifkan pencadangan dan pemulihan Android.</translation>
 <translation id="3831376478177535007">Jika setelan ini diaktifkan, <ph name="PRODUCT_NAME" /> akan mengizinkan sertifikat yang dikeluarkan oleh operasi Symantec Corporation's Legacy PKI untuk dipercaya jika tidak berhasil memvalidasi dan menjangkau Sertifikat CA yang dikenal.
@@ -3265,17 +3261,6 @@ Kebijakan ini hanya berlaku jika dukungan aplikasi Linux diaktifkan.</translatio
 <translation id="7049373494483449255">Mengizinkan <ph name="PRODUCT_NAME" /> mengirimkan dokumen ke <ph name="CLOUD_PRINT_NAME" /> untuk pencetakan. CATATAN: Setelan ini hanya memengaruhi dukungan <ph name="CLOUD_PRINT_NAME" /> dalam <ph name="PRODUCT_NAME" />. Setelan ini tidak mencegah pengguna mengirimkan pekerjaan cetak di situs web. Jika setelan ini diaktifkan atau tidak dikonfigurasi, pengguna dapat mencetak ke <ph name="CLOUD_PRINT_NAME" /> dari dialog cetak <ph name="PRODUCT_NAME" />. Jika setelan ini dinonaktifkan, pengguna tidak dapat mencetak ke <ph name="CLOUD_PRINT_NAME" /> dari dialog pencetakan <ph name="PRODUCT_NAME" /></translation>
 <translation id="7053678646221257043">Kebijakan ini memaksa bookmark diimpor dari browser default saat ini, jika diaktifkan. Jika diaktifkan, kebijakan ini juga memengaruhi dialog impor. Jika dinonaktifkan, tidak ada bookmark yang diimpor. Jika tidak disetel, pengguna mungkin akan diminta untuk mengimpor, atau pengimporan dapat terjadi secara otomatis.</translation>
 <translation id="7063895219334505671">Izinkan pop-up di situs ini</translation>
-<translation id="706568410943497889">
-      Jika kebijakan disetel ke true, <ph name="PRODUCT_NAME" /> diizinkan untuk mengumpulkan log aktivitas WebRTC dari layanan Google (mis., Google Meet), dan mengupload log tersebut ke Google.
-
-      Jika kebijakan disetel ke false, atau tidak disetel, <ph name="PRODUCT_NAME" /> mungkin tidak mengumpulkan atau mengupload log tersebut.
-
-      Log ini berisi informasi diagnostik yang berguna saat melakukan debug masalah pada panggilan audio atau video call di Chrome, seperti waktu dan ukuran paket RTP yang dikirim serta diterima, masukan tentang kemacetan di jaringan, dan metadata tentang waktu dan kualitas frame audio dan video. Log ini tidak berisi konten audio atau video dari panggilan.
-
-      Pengumpulan data oleh Chrome ini hanya dapat dipicu oleh layanan web Google, seperti Google Hangouts atau Google Meet.
-
-      Google dapat mengaitkan log ini, melalui ID sesi, dengan log lain yang dikumpulkan oleh layanan Google itu sendiri. Ini dimaksudkan agar debug lebih mudah.
-      </translation>
 <translation id="706669471845501145">Izinkan situs menampilkan pemberitahuan desktop</translation>
 <translation id="7068108874199666656">Memungkinkan pendorongan konfigurasi jaringan untuk diterapkan pada semua pengguna ke perangkat <ph name="PRODUCT_OS_NAME" />. Konfigurasi jaringan adalah string berformat JSON seperti yang didefinisikan oleh format Konfigurasi Jaringan Terbuka.</translation>
 <translation id="7070525176564511548">Sandi harus dimasukkan setiap minggu (168 jam)</translation>
@@ -3955,10 +3940,6 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
           Jika Anda menetapkan kebijakan ini, pengguna tidak dapat mengubah atau menggantinya.
 
           Jika kebijakan ini tidak ditetapkan, dikte mula-mula akan dinonaktifkan, tetapi dapat diaktifkan oleh pengguna kapan saja.</translation>
-<translation id="8292322992383748446">Melaporkan statistik hardware untuk komponen SoC.
-
-      Jika kebijakan disetel ke false, statistik tidak akan dilaporkan.
-      Jika disetel ke true atau tidak disetel, statistik akan dilaporkan.</translation>
 <translation id="829337533107201925">Jika kebijakan ini diaktifkan, kebijakan yang muncul dari grup atom yang tidak membagikan sumbernya dengan prioritas tertinggi grup akan diabaikan.
 
       Jika kebijakan ini dinonaktifkan, tidak ada kebijakan yang akan diabaikan karena sumbernya. Kebijakan hanya akan diabaikan jika terdapat konflik dan tidak memiliki prioritas tertinggi.
@@ -3994,10 +3975,6 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
 <translation id="8367209241899435947">Aktifkan Pembersih Chrome di Windows</translation>
 <translation id="8369602308428138533">Penundaan mematikan layar saat menggunakan daya AC</translation>
 <translation id="8371178326720637170">Memungkinkan ekstensi terkelola untuk menggunakan Enterprise Hardware Platform API</translation>
-<translation id="8374747520743832795">Melaporkan ID dan statistik hardware yang terkait dengan daya.
-
-      Jika kebijakan disetel ke false, statistik tidak akan dilaporkan.
-      Jika disetel ke true atau tidak disetel, statistik akan dilaporkan.</translation>
 <translation id="8380490658357556620">Memungkinkan penggunaan server relai saat klien jarak jauh mencoba membuat koneksi ke komputer ini.
 
           Jika setelan ini diaktifkan, klien jarak jauh dapat menggunakan server relai untuk tersambung ke komputer ini saat koneksi langsung tidak tersedia (misalnya karena pembatasan firewall).

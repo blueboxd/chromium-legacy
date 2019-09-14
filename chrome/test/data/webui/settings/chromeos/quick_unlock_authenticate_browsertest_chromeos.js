@@ -415,6 +415,7 @@ cr.define('settings_people_page_quick_unlock', function() {
       let titleDiv = null;
       let problemDiv = null;
       let pinKeyboard = null;
+      let pinInput = null;
       let backButton = null;
       let continueButton = null;
 
@@ -443,11 +444,33 @@ cr.define('settings_people_page_quick_unlock', function() {
         titleDiv = getFromElement('div[slot=title]');
         problemDiv = getFromElement('#problemDiv');
         pinKeyboard = getFromElement('pin-keyboard');
+        pinInput = pinKeyboard.$.pinInput;
         backButton = getFromElement('cr-button[class="cancel-button"]');
         continueButton = getFromElement('cr-button[class="action-button"]');
 
         assertTrue(isVisible(backButton));
         assertTrue(isVisible(continueButton));
+      });
+
+      test('Text input blocked', () => {
+        let event = new KeyboardEvent(
+            'keydown', {cancelable: true, key: 'a', keyCode: 65});
+        pinInput.dispatchEvent(event);
+        assertTrue(event.defaultPrevented);
+      });
+
+      test('Numeric input not blocked', () => {
+        let event = new KeyboardEvent(
+            'keydown', {cancelable: true, key: '1', keyCode: 49});
+        pinInput.dispatchEvent(event);
+        assertFalse(event.defaultPrevented);
+      });
+
+      test('System keys not blocked', () => {
+        let event = new KeyboardEvent(
+            'keydown', {cancelable: true, key: 'BrightnessUp', keyCode: 217});
+        pinInput.dispatchEvent(event);
+        assertFalse(event.defaultPrevented);
       });
 
       // The continue button and title change text between the setup and confirm

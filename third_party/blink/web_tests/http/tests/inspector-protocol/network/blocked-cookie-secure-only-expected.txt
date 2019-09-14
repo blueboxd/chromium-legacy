@@ -2,7 +2,9 @@ Verifies that storing and sending Secure cookies over http sends Network.*ExtraI
 
 ResponseReceivedExtraInfo blocked cookies: [
   {
-    "blockedReason": "SecureOnly",
+    "blockedReasons": [
+      "SecureOnly"
+    ],
     "cookieLine": "name=value; Secure",
     "cookie": {
       "name": "name",
@@ -20,7 +22,9 @@ ResponseReceivedExtraInfo blocked cookies: [
 
 RequestWillBeSentExtraInfo blocked cookies: [
   {
-    "blockedReason": "SecureOnly",
+    "blockedReasons": [
+      "SecureOnly"
+    ],
     "cookie": {
       "name": "name",
       "value": "value",

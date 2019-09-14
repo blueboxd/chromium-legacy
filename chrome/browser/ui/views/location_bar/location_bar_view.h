@@ -45,7 +45,6 @@ class KeywordHintView;
 class LocationIconView;
 enum class OmniboxPart;
 class OmniboxPopupView;
-enum class OmniboxTint;
 class OmniboxPageActionIconContainerView;
 class Profile;
 class SelectedKeywordView;
@@ -119,7 +118,7 @@ class LocationBarView : public LocationBar,
   // be called when the receiving instance is attached to a view container.
   bool IsInitialized() const;
 
-  // Helper to get the color for |part| using the current CalculateTint().
+  // Helper to get the color for |part| using the current ThemeProvider.
   SkColor GetColor(OmniboxPart part) const;
 
   // Returns the location bar border color blended with the toolbar color.
@@ -246,9 +245,6 @@ class LocationBarView : public LocationBar,
   gfx::ImageSkia GetLocationIcon(LocationIconView::Delegate::IconFetchedCallback
                                      on_icon_fetched) const override;
   SkColor GetLocationIconInkDropColor() const override;
-
-  // Gets the theme color tint for the location bar and results.
-  OmniboxTint CalculateTint() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SecurityIndicatorTest, CheckIndicatorText);

@@ -41,22 +41,16 @@ class LazyLoadImageObserver final
 
   LazyLoadImageObserver();
 
-  static void StartMonitoring(
-      Element*,
-      DeferralMessage deferral_message = DeferralMessage::kNone);
-  static void StopMonitoring(Element*);
+  void StartMonitoringNearViewport(Document*, Element*, DeferralMessage);
+  void StopMonitoring(Element*);
 
-  static void StartTrackingVisibilityMetrics(HTMLImageElement*);
-  static void RecordMetricsOnLoadFinished(HTMLImageElement*);
+  void StartMonitoringVisibility(Document*, HTMLImageElement*);
+  void OnLoadFinished(HTMLImageElement*);
 
   void Trace(Visitor*);
 
  private:
-  void StartMonitoringNearViewport(Document*, Element*, DeferralMessage);
   void LoadIfNearViewport(const HeapVector<Member<IntersectionObserverEntry>>&);
-
-  void StartMonitoringVisibility(Document*, HTMLImageElement*);
-  void OnLoadFinished(HTMLImageElement*);
 
   void OnVisibilityChanged(
       const HeapVector<Member<IntersectionObserverEntry>>&);

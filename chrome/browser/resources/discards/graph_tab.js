@@ -5,9 +5,9 @@
 cr.define('graph_tab', function() {
   'use strict';
   /**
-   * @implements {mojom.WebUIGraphChangeStreamInterface}
+   * @implements {discards.mojom.GraphChangeStreamInterface}
    */
-  class WebUIGraphChangeStreamImpl {
+  class DiscardsGraphChangeStreamImpl {
     constructor(contentWindow) {
       this.contentWindow_ = contentWindow;
     }
@@ -62,7 +62,7 @@ cr.define('graph_tab', function() {
   }
 
   return {
-    WebUIGraphChangeStreamImpl: WebUIGraphChangeStreamImpl,
+    DiscardsGraphChangeStreamImpl: DiscardsGraphChangeStreamImpl,
   };
 });
 
@@ -72,20 +72,20 @@ Polymer({
   /**
    * The Mojo graph data source.
    *
-   * @private {mojom.WebUIGraphDumpRemote}
+   * @private {discards.mojom.GraphDumpRemote}
    */
   graphDump_: null,
 
   /**
    * The graph change listener.
    *
-   * @private {mojom.WebUIGraphChangeStreamInterface}
+   * @private {discards.mojom.GraphChangeStreamInterface}
    */
   changeListener_: null,
 
   /** @override */
   ready: function() {
-    this.graphDump_ = mojom.WebUIGraphDump.getRemote();
+    this.graphDump_ = discards.mojom.GraphDump.getRemote();
   },
 
   /** @override */
@@ -97,10 +97,10 @@ Polymer({
 
   /** @private */
   onWebViewReady_: function() {
-    this.changeListener_ =
-        new graph_tab.WebUIGraphChangeStreamImpl(this.$.webView.contentWindow);
+    this.changeListener_ = new graph_tab.DiscardsGraphChangeStreamImpl(
+        this.$.webView.contentWindow);
     this.client_ =
-        new mojom.WebUIGraphChangeStreamReceiver(this.changeListener_);
+        new discards.mojom.GraphChangeStreamReceiver(this.changeListener_);
     // Save helper to work around closure compiler bug: https://crbug.com/969212
     const helper = this.client_.$;
 

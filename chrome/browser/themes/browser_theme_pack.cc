@@ -255,6 +255,8 @@ constexpr StringToIntTable kOverwritableColorTable[] = {
     {"tab_text", TP::COLOR_TAB_TEXT},
     {"toolbar", TP::COLOR_TOOLBAR},
     {"toolbar_button_icon", TP::COLOR_TOOLBAR_BUTTON_ICON},
+    {"omnibox_text", TP::COLOR_OMNIBOX_TEXT},
+    {"omnibox_background", TP::COLOR_OMNIBOX_BACKGROUND},
     {"ntp_background", TP::COLOR_NTP_BACKGROUND},
     {"ntp_header", TP::COLOR_NTP_HEADER},
     {"ntp_link", TP::COLOR_NTP_LINK},

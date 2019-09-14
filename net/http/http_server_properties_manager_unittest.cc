@@ -157,7 +157,8 @@ base::Value ServerInfoMapToValue(
           [](std::unique_ptr<HttpServerProperties::ServerInfoMap>
                  server_info_map,
              const IPAddress& last_quic_address,
-             std::unique_ptr<QuicServerInfoMap> quic_server_info_map,
+             std::unique_ptr<HttpServerProperties::QuicServerInfoMap>
+                 quic_server_info_map,
              std::unique_ptr<BrokenAlternativeServiceList>
                  broken_alternative_service_list,
              std::unique_ptr<RecentlyBrokenAlternativeServices>
@@ -168,7 +169,8 @@ base::Value ServerInfoMapToValue(
       base::DefaultTickClock::GetInstance());
   manager.WriteToPrefs(
       server_info_map, HttpServerPropertiesManager::GetCannonicalSuffix(),
-      IPAddress() /* last_quic_address */, QuicServerInfoMap(10),
+      IPAddress() /* last_quic_address */,
+      HttpServerProperties::QuicServerInfoMap(10),
       BrokenAlternativeServiceList(), RecentlyBrokenAlternativeServices(10),
       base::OnceClosure());
 
@@ -194,7 +196,8 @@ std::unique_ptr<HttpServerProperties::ServerInfoMap> ValueToServerInfoMap(
           [&](std::unique_ptr<HttpServerProperties::ServerInfoMap>
                   server_info_map,
               const IPAddress& last_quic_address,
-              std::unique_ptr<QuicServerInfoMap> quic_server_info_map,
+              std::unique_ptr<HttpServerProperties::QuicServerInfoMap>
+                  quic_server_info_map,
               std::unique_ptr<BrokenAlternativeServiceList>
                   broken_alternative_service_list,
               std::unique_ptr<RecentlyBrokenAlternativeServices>
@@ -927,12 +930,14 @@ TEST_F(HttpServerPropertiesManagerTest, QuicServerInfo) {
   InitializePrefs();
 
   quic::QuicServerId mail_quic_server_id("mail.google.com", 80, false);
-  EXPECT_EQ(nullptr,
-            http_server_props_->GetQuicServerInfo(mail_quic_server_id));
+  EXPECT_EQ(nullptr, http_server_props_->GetQuicServerInfo(
+                         mail_quic_server_id, NetworkIsolationKey()));
   std::string quic_server_info1("quic_server_info1");
-  http_server_props_->SetQuicServerInfo(mail_quic_server_id, quic_server_info1);
+  http_server_props_->SetQuicServerInfo(
+      mail_quic_server_id, NetworkIsolationKey(), quic_server_info1);
   // Another task should not be scheduled.
-  http_server_props_->SetQuicServerInfo(mail_quic_server_id, quic_server_info1);
+  http_server_props_->SetQuicServerInfo(
+      mail_quic_server_id, NetworkIsolationKey(), quic_server_info1);
 
   // Run the task.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
@@ -940,11 +945,12 @@ TEST_F(HttpServerPropertiesManagerTest, QuicServerInfo) {
   FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
-  EXPECT_EQ(quic_server_info1,
-            *http_server_props_->GetQuicServerInfo(mail_quic_server_id));
+  EXPECT_EQ(quic_server_info1, *http_server_props_->GetQuicServerInfo(
+                                   mail_quic_server_id, NetworkIsolationKey()));
 
   // Another task should not be scheduled.
-  http_server_props_->SetQuicServerInfo(mail_quic_server_id, quic_server_info1);
+  http_server_props_->SetQuicServerInfo(
+      mail_quic_server_id, NetworkIsolationKey(), quic_server_info1);
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
   EXPECT_EQ(0u, GetPendingMainThreadTaskCount());
 }
@@ -980,7 +986,8 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   http_server_props_->SetServerNetworkStats(spdy_server, NetworkIsolationKey(),
                                             stats);
 
-  http_server_props_->SetQuicServerInfo(mail_quic_server_id, quic_server_info1);
+  http_server_props_->SetQuicServerInfo(
+      mail_quic_server_id, NetworkIsolationKey(), quic_server_info1);
 
   // Advance time by just enough so that the prefs update task is executed but
   // not the task to expire the brokenness of |broken_alternative_service|.
@@ -998,8 +1005,8 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   const ServerNetworkStats* stats1 = http_server_props_->GetServerNetworkStats(
       spdy_server, NetworkIsolationKey());
   EXPECT_EQ(10, stats1->srtt.ToInternalValue());
-  EXPECT_EQ(quic_server_info1,
-            *http_server_props_->GetQuicServerInfo(mail_quic_server_id));
+  EXPECT_EQ(quic_server_info1, *http_server_props_->GetQuicServerInfo(
+                                   mail_quic_server_id, NetworkIsolationKey()));
 
   // Clear http server data, which should instantly update prefs.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
@@ -1024,8 +1031,8 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   const ServerNetworkStats* stats2 = http_server_props_->GetServerNetworkStats(
       spdy_server, NetworkIsolationKey());
   EXPECT_EQ(nullptr, stats2);
-  EXPECT_EQ(nullptr,
-            http_server_props_->GetQuicServerInfo(mail_quic_server_id));
+  EXPECT_EQ(nullptr, http_server_props_->GetQuicServerInfo(
+                         mail_quic_server_id, NetworkIsolationKey()));
 }
 
 // https://crbug.com/444956: Add 200 alternative_service servers followed by
@@ -1143,7 +1150,8 @@ TEST_F(HttpServerPropertiesManagerTest, UpdatePrefsWithCache) {
   // #5: Set quic_server_info string.
   quic::QuicServerId mail_quic_server_id("mail.google.com", 80, false);
   std::string quic_server_info1("quic_server_info1");
-  http_server_props_->SetQuicServerInfo(mail_quic_server_id, quic_server_info1);
+  http_server_props_->SetQuicServerInfo(
+      mail_quic_server_id, NetworkIsolationKey(), quic_server_info1);
 
   // #6: Set SupportsQuic.
   IPAddress actual_address(127, 0, 0, 1);
@@ -1217,8 +1225,9 @@ TEST_F(HttpServerPropertiesManagerTest, UpdatePrefsWithCache) {
       "{\"broken_count\":1,\"host\":\"foo.google.com\",\"isolation\":[],"
       "\"port\":444,\"protocol_str\":\"h2\"}],"
       "\"quic_servers\":"
-      "{\"https://mail.google.com:80\":"
-      "{\"server_info\":\"quic_server_info1\"}},"
+      "[{\"isolation\":[],"
+      "\"server_id\":\"https://mail.google.com:80\","
+      "\"server_info\":\"quic_server_info1\"}],"
       "\"servers\":["
       "{\"alternative_service\":[{\"advertised_versions\":[],"
       "\"expiration\":\"13756212000000000\",\"port\":443,"
@@ -1506,7 +1515,8 @@ TEST_F(HttpServerPropertiesManagerTest, PersistAdvertisedVersionsToPref) {
   // #4: Set quic_server_info string.
   quic::QuicServerId mail_quic_server_id("mail.google.com", 80, false);
   std::string quic_server_info1("quic_server_info1");
-  http_server_props_->SetQuicServerInfo(mail_quic_server_id, quic_server_info1);
+  http_server_props_->SetQuicServerInfo(
+      mail_quic_server_id, NetworkIsolationKey(), quic_server_info1);
 
   // #5: Set SupportsQuic.
   IPAddress actual_address(127, 0, 0, 1);
@@ -1520,8 +1530,11 @@ TEST_F(HttpServerPropertiesManagerTest, PersistAdvertisedVersionsToPref) {
 
   // Verify preferences with correct advertised version field.
   const char expected_json[] =
-      "{\"quic_servers\":{\"https://mail.google.com:80\":{"
-      "\"server_info\":\"quic_server_info1\"}},\"servers\":["
+      "{\"quic_servers\":["
+      "{\"isolation\":[],"
+      "\"server_id\":\"https://mail.google.com:80\","
+      "\"server_info\":\"quic_server_info1\"}],"
+      "\"servers\":["
       "{\"alternative_service\":[{"
       "\"advertised_versions\":[39,46],\"expiration\":\"13756212000000000\","
       "\"port\":443,\"protocol_str\":\"quic\"},{\"advertised_versions\":[],"
@@ -1625,7 +1638,8 @@ TEST_F(HttpServerPropertiesManagerTest,
   // Set quic_server_info string.
   quic::QuicServerId mail_quic_server_id("mail.google.com", 80, false);
   std::string quic_server_info1("quic_server_info1");
-  http_server_props_->SetQuicServerInfo(mail_quic_server_id, quic_server_info1);
+  http_server_props_->SetQuicServerInfo(
+      mail_quic_server_id, NetworkIsolationKey(), quic_server_info1);
 
   // Set SupportsQuic.
   IPAddress actual_address(127, 0, 0, 1);
@@ -1639,8 +1653,11 @@ TEST_F(HttpServerPropertiesManagerTest,
 
   // Verify preferences with correct advertised version field.
   const char expected_json[] =
-      "{\"quic_servers\":{\"https://mail.google.com:80\":"
-      "{\"server_info\":\"quic_server_info1\"}},\"servers\":["
+      "{\"quic_servers\":"
+      "[{\"isolation\":[],"
+      "\"server_id\":\"https://mail.google.com:80\","
+      "\"server_info\":\"quic_server_info1\"}],"
+      "\"servers\":["
       "{\"alternative_service\":[{\"advertised_versions\":[46],"
       "\"expiration\":\"13756212000000000\",\"port\":443,"
       "\"protocol_str\":\"quic\"}],"
@@ -1679,8 +1696,11 @@ TEST_F(HttpServerPropertiesManagerTest,
 
   // Verify preferences updated with new advertised versions.
   const char expected_json_updated[] =
-      "{\"quic_servers\":{\"https://mail.google.com:80\":"
-      "{\"server_info\":\"quic_server_info1\"}},\"servers\":["
+      "{\"quic_servers\":"
+      "[{\"isolation\":[],"
+      "\"server_id\":\"https://mail.google.com:80\","
+      "\"server_info\":\"quic_server_info1\"}],"
+      "\"servers\":["
       "{\"alternative_service\":[{\"advertised_versions\":[39,46],"
       "\"expiration\":\"13756212000000000\",\"port\":443,"
       "\"protocol_str\":\"quic\"}],"
@@ -1753,10 +1773,11 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
       "{\"broken_count\":3,"
       "\"host\":\"cached_rbroken\",\"isolation\":[],"
       "\"port\":443,\"protocol_str\":\"quic\"}],"
-      "\"quic_servers\":{"
-      "\"https://mail.google.com:80\":{"
+      "\"quic_servers\":["
+      "{\"isolation\":[],"
+      "\"server_id\":\"https://mail.google.com:80\","
       "\"server_info\":\"quic_server_info1\"}"
-      "},"
+      "],"
       "\"servers\":["
       "{\"server\":\"https://www.google.com:80\","
       "\"isolation\":[],"
@@ -1972,7 +1993,7 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   // Verify QUIC server info.
   //
   const std::string* quic_server_info = http_server_props_->GetQuicServerInfo(
-      quic::QuicServerId("mail.google.com", 80, false));
+      quic::QuicServerId("mail.google.com", 80, false), NetworkIsolationKey());
   EXPECT_EQ("quic_server_info1", *quic_server_info);
 
   //
@@ -2654,6 +2675,331 @@ TEST_F(HttpServerPropertiesManagerTest,
   base::JSONWriter::Write(*unowned_pref_delegate->GetServerProperties(),
                           &preferences_json);
   EXPECT_EQ("{\"servers\":[],\"version\":5}", preferences_json);
+}
+
+// Tests a full round trip with a NetworkIsolationKey, using the
+// HttpServerProperties interface and setting QuicServerInfo.
+TEST_F(HttpServerPropertiesManagerTest,
+       NetworkIsolationKeyQuicServerInfoRoundTrip) {
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo1.test/"));
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://foo2.test/"));
+
+  const quic::QuicServerId kServer1("foo", 443,
+                                    false /* privacy_mode_enabled */);
+  const quic::QuicServerId kServer2("foo", 443,
+                                    true /* privacy_mode_enabled */);
+
+  const char kQuicServerInfo1[] = "info1";
+  const char kQuicServerInfo2[] = "info2";
+  const char kQuicServerInfo3[] = "info3";
+
+  for (auto save_network_isolation_key_mode : kNetworkIsolationKeyModes) {
+    SCOPED_TRACE(static_cast<int>(save_network_isolation_key_mode));
+
+    // Save prefs using |save_network_isolation_key_mode|.
+    std::unique_ptr<base::DictionaryValue> saved_value;
+    {
+      // Configure the the feature.
+      std::unique_ptr<base::test::ScopedFeatureList> feature_list =
+          SetNetworkIsolationKeyMode(save_network_isolation_key_mode);
+
+      // The NetworkIsolationKey constructor checks the field trial state, so
+      // need to create the keys only after setting up the field trials.
+      const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+      const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+
+      // Create and initialize an HttpServerProperties, must be done after
+      // setting the feature.
+      std::unique_ptr<MockPrefDelegate> pref_delegate =
+          std::make_unique<MockPrefDelegate>();
+      MockPrefDelegate* unowned_pref_delegate = pref_delegate.get();
+      std::unique_ptr<HttpServerProperties> properties =
+          std::make_unique<HttpServerProperties>(std::move(pref_delegate),
+                                                 /*net_log=*/nullptr,
+                                                 GetMockTickClock());
+      unowned_pref_delegate->InitializePrefs(base::DictionaryValue());
+
+      // Set kServer1 to kQuicServerInfo1 in the context of
+      // kNetworkIsolationKey1, Set kServer2 to kQuicServerInfo2 in the context
+      // of kNetworkIsolationKey2, and kServer1 to kQuicServerInfo3 in the
+      // context of NetworkIsolationKey().
+      properties->SetQuicServerInfo(kServer1, kNetworkIsolationKey1,
+                                    kQuicServerInfo1);
+      properties->SetQuicServerInfo(kServer2, kNetworkIsolationKey2,
+                                    kQuicServerInfo2);
+      properties->SetQuicServerInfo(kServer1, NetworkIsolationKey(),
+                                    kQuicServerInfo3);
+
+      // Verify values were set.
+      if (save_network_isolation_key_mode !=
+          NetworkIsolationKeyMode::kDisabled) {
+        EXPECT_EQ(kQuicServerInfo1, *properties->GetQuicServerInfo(
+                                        kServer1, kNetworkIsolationKey1));
+        EXPECT_EQ(nullptr, properties->GetQuicServerInfo(
+                               kServer1, kNetworkIsolationKey2));
+        EXPECT_EQ(kQuicServerInfo3, *properties->GetQuicServerInfo(
+                                        kServer1, NetworkIsolationKey()));
+
+        EXPECT_EQ(nullptr, properties->GetQuicServerInfo(
+                               kServer2, kNetworkIsolationKey1));
+        EXPECT_EQ(kQuicServerInfo2, *properties->GetQuicServerInfo(
+                                        kServer2, kNetworkIsolationKey2));
+        EXPECT_EQ(nullptr, properties->GetQuicServerInfo(
+                               kServer2, NetworkIsolationKey()));
+      } else {
+        EXPECT_EQ(kQuicServerInfo3, *properties->GetQuicServerInfo(
+                                        kServer1, NetworkIsolationKey()));
+        EXPECT_EQ(kQuicServerInfo2, *properties->GetQuicServerInfo(
+                                        kServer2, NetworkIsolationKey()));
+      }
+
+      // Wait until the data's been written to prefs, and then create a copy of
+      // the prefs data.
+      FastForwardBy(HttpServerProperties::GetUpdatePrefsDelayForTesting());
+      saved_value =
+          unowned_pref_delegate->GetServerProperties()->CreateDeepCopy();
+    }
+
+    // Now try and load the data in each of the feature modes.
+    for (auto load_network_isolation_key_mode : kNetworkIsolationKeyModes) {
+      SCOPED_TRACE(static_cast<int>(load_network_isolation_key_mode));
+
+      std::unique_ptr<base::test::ScopedFeatureList> feature_list =
+          SetNetworkIsolationKeyMode(load_network_isolation_key_mode);
+
+      // The NetworkIsolationKey constructor checks the field trial state, so
+      // need to create the keys only after setting up the field trials.
+      const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+      const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+
+      // Create a new HttpServerProperties, loading the data from before.
+      std::unique_ptr<MockPrefDelegate> pref_delegate =
+          std::make_unique<MockPrefDelegate>();
+      MockPrefDelegate* unowned_pref_delegate = pref_delegate.get();
+      std::unique_ptr<HttpServerProperties> properties =
+          std::make_unique<HttpServerProperties>(std::move(pref_delegate),
+                                                 /*net_log=*/nullptr,
+                                                 GetMockTickClock());
+      unowned_pref_delegate->InitializePrefs(*saved_value);
+
+      if (save_network_isolation_key_mode ==
+          NetworkIsolationKeyMode::kDisabled) {
+        // If NetworkIsolationKey was disabled when saving, entries were saved
+        // with an empty NetworkIsolationKey, which should always be loaded
+        // successfully. This is needed to continue to support consumers that
+        // don't use NetworkIsolationKeys.
+        EXPECT_EQ(kQuicServerInfo3, *properties->GetQuicServerInfo(
+                                        kServer1, NetworkIsolationKey()));
+        EXPECT_EQ(kQuicServerInfo2, *properties->GetQuicServerInfo(
+                                        kServer2, NetworkIsolationKey()));
+        if (load_network_isolation_key_mode !=
+            NetworkIsolationKeyMode::kDisabled) {
+          EXPECT_EQ(nullptr, properties->GetQuicServerInfo(
+                                 kServer1, kNetworkIsolationKey1));
+          EXPECT_EQ(nullptr, properties->GetQuicServerInfo(
+                                 kServer1, kNetworkIsolationKey2));
+
+          EXPECT_EQ(nullptr, properties->GetQuicServerInfo(
+                                 kServer2, kNetworkIsolationKey1));
+          EXPECT_EQ(nullptr, properties->GetQuicServerInfo(
+                                 kServer2, kNetworkIsolationKey2));
+        }
+      } else if (save_network_isolation_key_mode ==
+                 load_network_isolation_key_mode) {
+        // If the save and load modes are the same, the load should succeed, and
+        // the network isolation keys should match.
+        EXPECT_EQ(kQuicServerInfo1, *properties->GetQuicServerInfo(
+                                        kServer1, kNetworkIsolationKey1));
+        EXPECT_EQ(nullptr, properties->GetQuicServerInfo(
+                               kServer1, kNetworkIsolationKey2));
+        EXPECT_EQ(kQuicServerInfo3, *properties->GetQuicServerInfo(
+                                        kServer1, NetworkIsolationKey()));
+
+        EXPECT_EQ(nullptr, properties->GetQuicServerInfo(
+                               kServer2, kNetworkIsolationKey1));
+        EXPECT_EQ(kQuicServerInfo2, *properties->GetQuicServerInfo(
+                                        kServer2, kNetworkIsolationKey2));
+        EXPECT_EQ(nullptr, properties->GetQuicServerInfo(
+                               kServer2, NetworkIsolationKey()));
+      } else {
+        // Otherwise, only the value set with an empty NetworkIsolationKey
+        // should have been loaded successfully.
+        EXPECT_EQ(kQuicServerInfo3, *properties->GetQuicServerInfo(
+                                        kServer1, NetworkIsolationKey()));
+
+        EXPECT_EQ(nullptr, properties->GetQuicServerInfo(
+                               kServer2, kNetworkIsolationKey1));
+        EXPECT_EQ(nullptr, properties->GetQuicServerInfo(
+                               kServer2, kNetworkIsolationKey2));
+        EXPECT_EQ(nullptr, properties->GetQuicServerInfo(
+                               kServer2, NetworkIsolationKey()));
+
+        // There should be no cross-contamination of NetworkIsolationKeys, if
+        // NetworkIsolationKeys are enabled.
+        if (load_network_isolation_key_mode !=
+            NetworkIsolationKeyMode::kDisabled) {
+          EXPECT_EQ(nullptr, properties->GetQuicServerInfo(
+                                 kServer1, kNetworkIsolationKey1));
+          EXPECT_EQ(nullptr, properties->GetQuicServerInfo(
+                                 kServer1, kNetworkIsolationKey2));
+        }
+      }
+    }
+  }
+}
+
+// Tests a full round trip to prefs and back in the canonical suffix for
+// QuicServerInfo case. Enable NetworkIsolationKeys, as they have some
+// interactions with the canonical suffix logic.
+TEST_F(HttpServerPropertiesManagerTest,
+       NetworkIsolationKeyQuicServerInfoCanonicalSuffixRoundTrip) {
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+  const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+
+  // Three servers with the same canonical suffix (".c.youtube.com").
+  const quic::QuicServerId kServer1("foo.c.youtube.com", 443,
+                                    false /* privacy_mode_enabled */);
+  const quic::QuicServerId kServer2("bar.c.youtube.com", 443,
+                                    false /* privacy_mode_enabled */);
+  const quic::QuicServerId kServer3("baz.c.youtube.com", 443,
+                                    false /* privacy_mode_enabled */);
+
+  const char kQuicServerInfo1[] = "info1";
+  const char kQuicServerInfo2[] = "info2";
+  const char kQuicServerInfo3[] = "info3";
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPartitionHttpServerPropertiesByNetworkIsolationKey);
+
+  // Create and initialize an HttpServerProperties with no state.
+  std::unique_ptr<MockPrefDelegate> pref_delegate =
+      std::make_unique<MockPrefDelegate>();
+  MockPrefDelegate* unowned_pref_delegate = pref_delegate.get();
+  std::unique_ptr<HttpServerProperties> properties =
+      std::make_unique<HttpServerProperties>(std::move(pref_delegate),
+                                             /*net_log=*/nullptr,
+                                             GetMockTickClock());
+  unowned_pref_delegate->InitializePrefs(base::DictionaryValue());
+
+  // Set kQuicServerInfo1 for kServer1 using kNetworkIsolationKey1. That
+  // information should be retrieved when fetching information for any server
+  // with the same canonical suffix, when using kNetworkIsolationKey1.
+  properties->SetQuicServerInfo(kServer1, kNetworkIsolationKey1,
+                                kQuicServerInfo1);
+  EXPECT_EQ(kQuicServerInfo1,
+            *properties->GetQuicServerInfo(kServer1, kNetworkIsolationKey1));
+  EXPECT_EQ(kQuicServerInfo1,
+            *properties->GetQuicServerInfo(kServer2, kNetworkIsolationKey1));
+  EXPECT_EQ(kQuicServerInfo1,
+            *properties->GetQuicServerInfo(kServer3, kNetworkIsolationKey1));
+  EXPECT_FALSE(properties->GetQuicServerInfo(kServer1, kNetworkIsolationKey2));
+
+  // Set kQuicServerInfo2 for kServer2 using kNetworkIsolationKey1. It should
+  // not affect information retrieved for kServer1, but should for kServer2 and
+  // kServer3.
+  properties->SetQuicServerInfo(kServer2, kNetworkIsolationKey1,
+                                kQuicServerInfo2);
+  EXPECT_EQ(kQuicServerInfo1,
+            *properties->GetQuicServerInfo(kServer1, kNetworkIsolationKey1));
+  EXPECT_EQ(kQuicServerInfo2,
+            *properties->GetQuicServerInfo(kServer2, kNetworkIsolationKey1));
+  EXPECT_EQ(kQuicServerInfo2,
+            *properties->GetQuicServerInfo(kServer3, kNetworkIsolationKey1));
+  EXPECT_FALSE(properties->GetQuicServerInfo(kServer1, kNetworkIsolationKey2));
+
+  // Set kQuicServerInfo3 for kServer1 using kNetworkIsolationKey2. It should
+  // not affect information stored for kNetworkIsolationKey1.
+  properties->SetQuicServerInfo(kServer1, kNetworkIsolationKey2,
+                                kQuicServerInfo3);
+  EXPECT_EQ(kQuicServerInfo1,
+            *properties->GetQuicServerInfo(kServer1, kNetworkIsolationKey1));
+  EXPECT_EQ(kQuicServerInfo2,
+            *properties->GetQuicServerInfo(kServer2, kNetworkIsolationKey1));
+  EXPECT_EQ(kQuicServerInfo2,
+            *properties->GetQuicServerInfo(kServer3, kNetworkIsolationKey1));
+  EXPECT_EQ(kQuicServerInfo3,
+            *properties->GetQuicServerInfo(kServer1, kNetworkIsolationKey2));
+  EXPECT_EQ(kQuicServerInfo3,
+            *properties->GetQuicServerInfo(kServer2, kNetworkIsolationKey2));
+  EXPECT_EQ(kQuicServerInfo3,
+            *properties->GetQuicServerInfo(kServer3, kNetworkIsolationKey2));
+
+  // Wait until the data's been written to prefs, and then tear down the
+  // HttpServerProperties.
+  FastForwardBy(HttpServerProperties::GetUpdatePrefsDelayForTesting());
+  std::unique_ptr<base::DictionaryValue> saved_value =
+      unowned_pref_delegate->GetServerProperties()->CreateDeepCopy();
+  properties.reset();
+
+  // Create a new HttpServerProperties using the value saved to prefs above.
+  pref_delegate = std::make_unique<MockPrefDelegate>();
+  unowned_pref_delegate = pref_delegate.get();
+  properties = std::make_unique<HttpServerProperties>(
+      std::move(pref_delegate), /*net_log=*/nullptr, GetMockTickClock());
+  unowned_pref_delegate->InitializePrefs(*saved_value);
+
+  // All values should have been saved and be retrievable by suffix-matching
+  // servers.
+  //
+  // TODO(mmenke): The rest of this test corresponds exactly to behavior in
+  // CanonicalSuffixRoundTripWithNetworkIsolationKey. It seems like these lines
+  // should correspond as well.
+  EXPECT_EQ(kQuicServerInfo1,
+            *properties->GetQuicServerInfo(kServer1, kNetworkIsolationKey1));
+  EXPECT_EQ(kQuicServerInfo2,
+            *properties->GetQuicServerInfo(kServer2, kNetworkIsolationKey1));
+  EXPECT_EQ(kQuicServerInfo2,
+            *properties->GetQuicServerInfo(kServer3, kNetworkIsolationKey1));
+  EXPECT_EQ(kQuicServerInfo3,
+            *properties->GetQuicServerInfo(kServer1, kNetworkIsolationKey2));
+  EXPECT_EQ(kQuicServerInfo3,
+            *properties->GetQuicServerInfo(kServer2, kNetworkIsolationKey2));
+  EXPECT_EQ(kQuicServerInfo3,
+            *properties->GetQuicServerInfo(kServer3, kNetworkIsolationKey2));
+}
+
+// Make sure QuicServerInfo associated with NetworkIsolationKeys with opaque
+// origins aren't saved.
+TEST_F(HttpServerPropertiesManagerTest,
+       NetworkIsolationKeyQuicServerInfoOpaqueOrigin) {
+  const url::Origin kOpaqueOrigin =
+      url::Origin::Create(GURL("data:text/plain,Hello World"));
+  const NetworkIsolationKey kNetworkIsolationKey(kOpaqueOrigin, kOpaqueOrigin);
+  const quic::QuicServerId kServer("foo", 443,
+                                   false /* privacy_mode_enabled */);
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPartitionHttpServerPropertiesByNetworkIsolationKey);
+
+  // Create and initialize an HttpServerProperties, must be done after
+  // setting the feature.
+  std::unique_ptr<MockPrefDelegate> pref_delegate =
+      std::make_unique<MockPrefDelegate>();
+  MockPrefDelegate* unowned_pref_delegate = pref_delegate.get();
+  std::unique_ptr<HttpServerProperties> properties =
+      std::make_unique<HttpServerProperties>(std::move(pref_delegate),
+                                             /*net_log=*/nullptr,
+                                             GetMockTickClock());
+  unowned_pref_delegate->InitializePrefs(base::DictionaryValue());
+
+  properties->SetQuicServerInfo(kServer, kNetworkIsolationKey,
+                                "QuicServerInfo");
+  EXPECT_TRUE(properties->GetQuicServerInfo(kServer, kNetworkIsolationKey));
+
+  // Wait until the data's been written to prefs, and then create a copy of
+  // the prefs data.
+  FastForwardBy(HttpServerProperties::GetUpdatePrefsDelayForTesting());
+
+  // No information should have been saved to prefs.
+  std::string preferences_json;
+  base::JSONWriter::Write(*unowned_pref_delegate->GetServerProperties(),
+                          &preferences_json);
+  EXPECT_EQ("{\"quic_servers\":[],\"servers\":[],\"version\":5}",
+            preferences_json);
 }
 
 }  // namespace net

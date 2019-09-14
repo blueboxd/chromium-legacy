@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "third_party/blink/public/mojom/payments/payment_request.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -60,6 +61,12 @@ PaymentRequestEvent::PaymentRequestEvent(
                      ? initializer->modifiers()
                      : HeapVector<Member<PaymentDetailsModifier>>()),
       instrument_key_(initializer->instrumentKey()),
+      payment_options_(initializer->hasPaymentOptions()
+                           ? initializer->paymentOptions()
+                           : PaymentOptions::Create()),
+      shipping_options_(initializer->hasShippingOptions()
+                            ? initializer->shippingOptions()
+                            : HeapVector<Member<PaymentShippingOption>>()),
       observer_(respond_with_observer) {
   if (!host.is_valid())
     return;
@@ -103,6 +110,19 @@ PaymentRequestEvent::modifiers() const {
 
 const String& PaymentRequestEvent::instrumentKey() const {
   return instrument_key_;
+}
+
+const ScriptValue PaymentRequestEvent::paymentOptions(
+    ScriptState* script_state) const {
+  if (!payment_options_)
+    return ScriptValue::CreateNull(script_state);
+  return ScriptValue::From(script_state, payment_options_);
+}
+
+const HeapVector<Member<PaymentShippingOption>>&
+PaymentRequestEvent::shippingOptions(bool& is_null) const {
+  is_null = shipping_options_.IsEmpty();
+  return shipping_options_;
 }
 
 ScriptPromise PaymentRequestEvent::openWindow(ScriptState* script_state,
@@ -215,6 +235,8 @@ void PaymentRequestEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(method_data_);
   visitor->Trace(total_);
   visitor->Trace(modifiers_);
+  visitor->Trace(payment_options_);
+  visitor->Trace(shipping_options_);
   visitor->Trace(change_payment_method_resolver_);
   visitor->Trace(observer_);
   ExtendableEvent::Trace(visitor);

@@ -8,14 +8,17 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{دقيقة واحدة}zero{# دقيقة}two{دقيقتان (#)}few{# دقائق}many{# دقيقة}other{# دقيقة}}</translation>
 <translation id="1181037720776840403">إزالة</translation>
 <translation id="1243314992276662751">تحميل</translation>
+<translation id="1266864766717917324">تعذَّرت مشاركة <ph name="CONTENT_TYPE" />.</translation>
 <translation id="1269641567813814718">الفوز</translation>
 <translation id="1290982764014248209">نقل <ph name="DRAGGED_APP" /> إلى مجلد <ph name="FOLDER_NAME" />.</translation>
+<translation id="1291104554099683393">يُرجى تجربة مشاركة النص في مجموعات أصغر.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">تطبيقات مقترحة</translation>
 <translation id="1368832886055348810">من اليسار لليمين</translation>
 <translation id="1383876407941801731">البحث</translation>
 <translation id="1398853756734560583">تكبير</translation>
 <translation id="1409544243779336081">اقتراح التطبيقات</translation>
+<translation id="1450753235335490080">تعذَّرت مشاركة <ph name="CONTENT_TYPE" />.</translation>
 <translation id="1498028757988366001">لقد بحثت عن هذا الموضوع من قبل. سيؤدي حذف "<ph name="QUERY" />" من السجل إلى إزالته نهائيًا من حسابك على جميع أجهزتك.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{دقيقة واحدة و }zero{# من الدقائق و }two{دقيقتان (#) و }few{# دقائق و }many{# دقيقة و }other{# من الدقائق و }}</translation>
 <translation id="1643823602425662293">الإشعار</translation>
@@ -35,6 +38,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">تح&amp;ديد الكلّ</translation>
 <translation id="1938451708255335766">لتعديل كثافة عرض النافذة، يمكنك إعادة تشغيل التطبيق.</translation>
+<translation id="2006524834898217237">عليك التأكُّد من اتصال الجهاز بالإنترنت.</translation>
 <translation id="208586643495776849">يُرجى إعادة المحاولة</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{يوم واحد}zero{# يوم}two{يومان (#)}few{# أيام}many{# يومًا}other{# يوم}}</translation>
 <translation id="2148716181193084225">اليوم</translation>
@@ -76,6 +80,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{يوم واحد}zero{# من الأيام}two{يومان (#)}few{# أيام}many{# يومًا}other{# من الأيام}}</translation>
 <translation id="3295886253693811851">إجراء اتصال باستخدام</translation>
 <translation id="335581015389089642">الحديث</translation>
+<translation id="3389286852084373014">النص كبير جدًا</translation>
 <translation id="3443810440409579745">تم استلام علامة تبويب.</translation>
 <translation id="3479552764303398839">ليس الآن</translation>
 <translation id="348799646910989694">إخفاء الرف تلقائيًا</translation>
@@ -151,11 +156,13 @@
 <translation id="6404817160109697034">{SECONDS,plural, =1{قبل ثانية واحدة}zero{ قبل # من الثواني}two{ قبل ثانيتين (#)}few{قبل # ثوانٍ}many{قبل # ثانية}other{قبل # من الثواني}}</translation>
 <translation id="6430678249303439055">حظر جميع الإشعارات  الواردة من هذا التطبيق</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{قبل ثانية واحدة}zero{قبل # ثانية}two{قبل ثانيتين (#)}few{قبل # ثوانٍ}many{قبل # ثانية}other{قبل # ثانية}}</translation>
+<translation id="6539092367496845964">حدث خطأ. يُرجى إعادة المحاولة لاحقًا.</translation>
 <translation id="654149438358937226">حظر جميع الإشعارات</translation>
 <translation id="6567071839949112727">النقر على العنصر الأصل</translation>
 <translation id="6578407462441924264">بدون اسم</translation>
 <translation id="6612467943526193239">‏للخروج من المعايرة، اضغط على Esc.</translation>
 <translation id="6620110761915583480">حفظ الملف</translation>
+<translation id="6656912866303152668">‏يُرجى التأكُّد من تفعيل الجهاز <ph name="TARGET_DEVICE_NAME" /> للمزامنة في Chrome، ثم حاول بعد ذلك الإرسال مرة أخرى.</translation>
 <translation id="6699343763173986273">المقطع الصوتي التالي للوسائط</translation>
 <translation id="673773751041746814">حذف</translation>
 <translation id="6779314412797872738">‏لإرسال رقم من هنا إلى هاتف Android، يمكنك <ph name="TROUBLESHOOT_LINK" /> لكلا الجهازين في الإعدادات.</translation>
@@ -221,6 +228,7 @@
 <translation id="8876215549894133151">التنسيق:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> كيلوبايت</translation>
 <translation id="8926951137623668982">إخفاء الرف دائمًا</translation>
+<translation id="8996630695507351249">عليك التأكُّد أن الجهاز <ph name="TARGET_DEVICE_NAME" /> متصل بالإنترنت.</translation>
 <translation id="9002566407876343676">الفتح</translation>
 <translation id="9039076430527029379">الانتقال إلى صفحة <ph name="PAGE_NUMBER" /> أو صف <ph name="ROW_NUMBER" /> أو عمود <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{ثانية واحدة}zero{# ثانية}two{ثانيتان (#)}few{# ثوانٍ}many{# ثانية}other{# من الثواني}}</translation>

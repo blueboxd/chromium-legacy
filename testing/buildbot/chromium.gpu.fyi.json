@@ -1693,38 +1693,6 @@
           "--browser=release_x64",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-cmd-decoder=validating --force_high_performance_gpu",
-          "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "webgl2_conformance_d3d11_validating_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "intel-hd-630-win10-stable",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "idempotent": false,
-          "shards": 20
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release_x64",
-          "--passthrough",
-          "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
           "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
@@ -2342,36 +2310,6 @@
           "--browser=release_x64",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d11 --use-cmd-decoder=validating --force_high_performance_gpu"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "webgl_conformance_d3d11_validating_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "nvidia-quadro-p400-win10-stable",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "idempotent": false,
-          "shards": 2
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release_x64",
-          "--passthrough",
-          "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9 --use-cmd-decoder=passthrough --force_high_performance_gpu"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -2380,36 +2318,6 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "webgl_conformance_d3d9_passthrough_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "nvidia-quadro-p400-win10-stable",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "idempotent": false,
-          "shards": 2
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release_x64",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d9 --use-cmd-decoder=validating --force_high_performance_gpu"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "webgl_conformance_d3d9_validating_tests",
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -11840,23 +11748,11 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          },
           "shards": 4
         },
         "test": "angle_end2end_tests"
@@ -11877,23 +11773,11 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "expiration": 21600
         },
         "test": "angle_unittests"
       },
@@ -11915,23 +11799,11 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "expiration": 21600
         },
         "test": "browser_tests"
       },
@@ -11950,23 +11822,11 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "expiration": 21600
         },
         "test": "gl_tests"
       },
@@ -11984,23 +11844,11 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "expiration": 21600
         },
         "test": "gl_unittests"
       },
@@ -12018,23 +11866,11 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "expiration": 21600
         },
         "test": "gles2_conform_test"
       },
@@ -12049,23 +11885,11 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "expiration": 21600
         },
         "test": "gpu_unittests"
       },
@@ -12084,23 +11908,11 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "expiration": 21600
         },
         "test": "services_unittests"
       },
@@ -12115,23 +11927,11 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "expiration": 21600
         },
         "test": "swiftshader_unittests"
       }
@@ -12159,24 +11959,12 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
-          "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -12201,24 +11989,12 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
-          "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -12243,24 +12019,12 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
-          "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -12285,24 +12049,12 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
-          "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -12331,24 +12083,12 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
-          "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -12380,24 +12120,12 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
-          "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -12437,24 +12165,12 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
           "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          },
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
@@ -12481,24 +12197,12 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
-          "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -12523,24 +12227,12 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
-          "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -12567,24 +12259,12 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
           "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          },
           "shards": 20
         }
       },
@@ -12610,24 +12290,12 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
           "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          },
           "shards": 2
         }
       },
@@ -12653,24 +12321,12 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
           "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          },
           "shards": 2
         }
       }
@@ -12694,23 +12350,11 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          },
           "shards": 4
         },
         "test": "angle_end2end_tests"
@@ -12731,23 +12375,11 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "expiration": 21600
         },
         "test": "angle_unittests"
       },
@@ -12769,23 +12401,11 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "expiration": 21600
         },
         "test": "browser_tests"
       },
@@ -12804,23 +12424,11 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "expiration": 21600
         },
         "test": "gl_tests"
       },
@@ -12838,23 +12446,11 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "expiration": 21600
         },
         "test": "gl_unittests"
       },
@@ -12872,23 +12468,11 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "expiration": 21600
         },
         "test": "gles2_conform_test"
       },
@@ -12903,23 +12487,11 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "expiration": 21600
         },
         "test": "gpu_unittests"
       },
@@ -12938,23 +12510,11 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "expiration": 21600
         },
         "test": "services_unittests"
       },
@@ -12969,23 +12529,11 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "expiration": 21600
         },
         "test": "swiftshader_unittests"
       }
@@ -13013,24 +12561,12 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
-          "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -13055,24 +12591,12 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
-          "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -13097,24 +12621,12 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
-          "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -13139,24 +12651,12 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
-          "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -13185,24 +12685,12 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
-          "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -13234,24 +12722,12 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
-          "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -13291,24 +12767,12 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
           "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          },
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
@@ -13335,24 +12799,12 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
-          "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -13377,24 +12829,12 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
-          "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -13421,24 +12861,12 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
           "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          },
           "shards": 20
         }
       },
@@ -13464,24 +12892,12 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
           "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          },
           "shards": 2
         }
       },
@@ -13507,24 +12923,12 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
           "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          },
           "shards": 2
         }
       }
@@ -13548,23 +12952,11 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          },
           "shards": 4
         },
         "test": "angle_end2end_tests"
@@ -13585,23 +12977,11 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "expiration": 21600
         },
         "test": "angle_unittests"
       },
@@ -13623,23 +13003,11 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "expiration": 21600
         },
         "test": "browser_tests"
       },
@@ -13658,23 +13026,11 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "expiration": 21600
         },
         "test": "gl_tests"
       },
@@ -13692,23 +13048,11 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "expiration": 21600
         },
         "test": "gl_unittests"
       },
@@ -13726,23 +13070,11 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "expiration": 21600
         },
         "test": "gles2_conform_test"
       },
@@ -13757,23 +13089,11 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "expiration": 21600
         },
         "test": "gpu_unittests"
       },
@@ -13792,23 +13112,11 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "expiration": 21600
         },
         "test": "services_unittests"
       },
@@ -13823,23 +13131,11 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "expiration": 21600
         },
         "test": "swiftshader_unittests"
       }
@@ -13867,24 +13163,12 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
-          "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -13909,24 +13193,12 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
-          "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -13951,24 +13223,12 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
-          "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -13993,24 +13253,12 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
-          "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -14039,24 +13287,12 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
-          "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -14088,24 +13324,12 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
-          "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -14145,24 +13369,12 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
           "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          },
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
@@ -14189,24 +13401,12 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
-          "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -14231,24 +13431,12 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
-          "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -14275,24 +13463,12 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
           "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          },
           "shards": 20
         }
       },
@@ -14318,24 +13494,12 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
           "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          },
           "shards": 2
         }
       },
@@ -14361,24 +13525,12 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.4",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
           "idempotent": false,
-          "optional_dimensions": {
-            "300": [
-              {
-                "os": "Mac-10.14.4"
-              }
-            ],
-            "600": [
-              {
-                "os": "Mac-10.14.5"
-              }
-            ]
-          },
           "shards": 2
         }
       }
@@ -23013,45 +22165,6 @@
           "--browser=release_x64",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d11 --use-cmd-decoder=validating --force_high_performance_gpu"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "webgl_conformance_d3d11_validating_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "nvidia-quadro-p400-win10-stable",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "idempotent": false,
-          "shards": 2
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release_x64",
-          "--passthrough",
-          "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9 --use-cmd-decoder=passthrough --force_high_performance_gpu"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -23060,45 +22173,6 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "webgl_conformance_d3d9_passthrough_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "nvidia-quadro-p400-win10-stable",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "idempotent": false,
-          "shards": 2
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release_x64",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d9 --use-cmd-decoder=validating --force_high_performance_gpu"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "webgl_conformance_d3d9_validating_tests",
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -23896,36 +22970,6 @@
           "--browser=debug_x64",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d11 --use-cmd-decoder=validating --force_high_performance_gpu"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "webgl_conformance_d3d11_validating_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "nvidia-quadro-p400-win10-stable",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "idempotent": false,
-          "shards": 2
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=debug_x64",
-          "--passthrough",
-          "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9 --use-cmd-decoder=passthrough --force_high_performance_gpu"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -23934,36 +22978,6 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "webgl_conformance_d3d9_passthrough_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "nvidia-quadro-p400-win10-stable",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "idempotent": false,
-          "shards": 2
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=debug_x64",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d9 --use-cmd-decoder=validating --force_high_performance_gpu"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "webgl_conformance_d3d9_validating_tests",
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -24800,39 +23814,6 @@
           ],
           "expiration": 21600,
           "idempotent": false
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release_x64",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-cmd-decoder=validating --force_high_performance_gpu",
-          "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "webgl2_conformance_d3d11_validating_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-26.20.100.6912",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "expiration": 21600,
-          "idempotent": false,
-          "shards": 20
         }
       },
       {
@@ -25911,37 +24892,6 @@
           "--browser=release_x64",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d11 --use-cmd-decoder=validating --force_high_performance_gpu"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "webgl_conformance_d3d11_validating_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "10de:1cb3-26.21.14.3102",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "expiration": 21600,
-          "idempotent": false,
-          "shards": 2
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release_x64",
-          "--passthrough",
-          "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9 --use-cmd-decoder=passthrough --force_high_performance_gpu"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -25950,37 +24900,6 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "webgl_conformance_d3d9_passthrough_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "10de:1cb3-26.21.14.3102",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "expiration": 21600,
-          "idempotent": false,
-          "shards": 2
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release_x64",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d9 --use-cmd-decoder=validating --force_high_performance_gpu"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "webgl_conformance_d3d9_validating_tests",
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -26861,37 +25780,6 @@
           "--browser=release_x64",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d9 --use-cmd-decoder=validating --force_high_performance_gpu"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "webgl_conformance_d3d9_validating_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "1002:699f",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "expiration": 21600,
-          "idempotent": false,
-          "shards": 2
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release_x64",
-          "--passthrough",
-          "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -27706,38 +26594,6 @@
             }
           ],
           "idempotent": false
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release_x64",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-cmd-decoder=validating --force_high_performance_gpu",
-          "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "webgl2_conformance_d3d11_validating_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "intel-hd-630-win10-stable",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "idempotent": false,
-          "shards": 20
         }
       },
       {
@@ -28680,39 +27536,6 @@
           ],
           "expiration": 14400,
           "idempotent": false
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release_x64",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-cmd-decoder=validating --force_high_performance_gpu",
-          "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "webgl2_conformance_d3d11_validating_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "intel-uhd-630-win10-stable",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "expiration": 14400,
-          "idempotent": false,
-          "shards": 20
         }
       },
       {
@@ -29751,37 +28574,6 @@
           "--browser=release_x64",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d11 --use-cmd-decoder=validating --force_high_performance_gpu"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "webgl_conformance_d3d11_validating_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "10de:2184",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "expiration": 21600,
-          "idempotent": false,
-          "shards": 2
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release_x64",
-          "--passthrough",
-          "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9 --use-cmd-decoder=passthrough --force_high_performance_gpu"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -29790,37 +28582,6 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "webgl_conformance_d3d9_passthrough_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "10de:2184",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "expiration": 21600,
-          "idempotent": false,
-          "shards": 2
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release_x64",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d9 --use-cmd-decoder=validating --force_high_performance_gpu"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "webgl_conformance_d3d9_validating_tests",
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -31072,45 +29833,6 @@
           "--browser=release_x64",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d11 --use-cmd-decoder=validating --force_high_performance_gpu"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "webgl_conformance_d3d11_validating_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "nvidia-quadro-p400-win10-stable",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "idempotent": false,
-          "shards": 2
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release_x64",
-          "--passthrough",
-          "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9 --use-cmd-decoder=passthrough --force_high_performance_gpu"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -31119,45 +29841,6 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "webgl_conformance_d3d9_passthrough_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "nvidia-quadro-p400-win10-stable",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "idempotent": false,
-          "shards": 2
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release_x64",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d9 --use-cmd-decoder=validating --force_high_performance_gpu"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "webgl_conformance_d3d9_validating_tests",
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -33338,37 +32021,6 @@
           "--browser=debug",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d11 --use-cmd-decoder=validating --force_high_performance_gpu"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "webgl_conformance_d3d11_validating_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "1002:6613",
-              "os": "Windows-2008ServerR2-SP1",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "expiration": 21600,
-          "idempotent": false,
-          "shards": 2
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=debug",
-          "--passthrough",
-          "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9 --use-cmd-decoder=passthrough --force_high_performance_gpu"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -33377,37 +32029,6 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "webgl_conformance_d3d9_passthrough_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "1002:6613",
-              "os": "Windows-2008ServerR2-SP1",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "expiration": 21600,
-          "idempotent": false,
-          "shards": 2
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=debug",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d9 --use-cmd-decoder=validating --force_high_performance_gpu"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "webgl_conformance_d3d9_validating_tests",
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -34180,37 +32801,6 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "webgl_conformance_d3d9_passthrough_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "1002:6613",
-              "os": "Windows-2008ServerR2-SP1",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "expiration": 21600,
-          "idempotent": false,
-          "shards": 2
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d9 --use-cmd-decoder=validating --force_high_performance_gpu"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "webgl_conformance_d3d9_validating_tests",
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -35240,46 +33830,6 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d11 --use-cmd-decoder=validating --force_high_performance_gpu"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "webgl_conformance_d3d11_validating_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "10de:1cb3-24.21.14.1195",
-              "os": "Windows-2008ServerR2-SP1",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "expiration": 21600,
-          "idempotent": false,
-          "shards": 2
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-24.21.14.1195\", \"os\": \"Windows-2008ServerR2-SP1\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9 --use-cmd-decoder=passthrough --force_high_performance_gpu"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -35288,46 +33838,6 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "webgl_conformance_d3d9_passthrough_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "10de:1cb3-24.21.14.1195",
-              "os": "Windows-2008ServerR2-SP1",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "expiration": 21600,
-          "idempotent": false,
-          "shards": 2
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-24.21.14.1195\", \"os\": \"Windows-2008ServerR2-SP1\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d9 --use-cmd-decoder=validating --force_high_performance_gpu"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "webgl_conformance_d3d9_validating_tests",
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -36480,46 +34990,6 @@
           "--browser=release_x64",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d11 --use-cmd-decoder=validating --force_high_performance_gpu"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "webgl_conformance_d3d11_validating_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "10de:1cb3-24.21.14.1195",
-              "os": "Windows-2008ServerR2-SP1",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "expiration": 21600,
-          "idempotent": false,
-          "shards": 2
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-24.21.14.1195\", \"os\": \"Windows-2008ServerR2-SP1\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-23.21.14.1195\", \"os\": \"Windows-2008ServerR2-SP1\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release_x64",
-          "--passthrough",
-          "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9 --use-cmd-decoder=passthrough --force_high_performance_gpu"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -36528,46 +34998,6 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "webgl_conformance_d3d9_passthrough_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "10de:1cb3-24.21.14.1195",
-              "os": "Windows-2008ServerR2-SP1",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "expiration": 21600,
-          "idempotent": false,
-          "shards": 2
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-24.21.14.1195\", \"os\": \"Windows-2008ServerR2-SP1\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-23.21.14.1195\", \"os\": \"Windows-2008ServerR2-SP1\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release_x64",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d9 --use-cmd-decoder=validating --force_high_performance_gpu"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "webgl_conformance_d3d9_validating_tests",
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,

@@ -58,6 +58,7 @@
 <translation id="2509394361235492552">متصل بـ <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">‏ملاحظة: للتأكد من توفر كل اختصارات لوحة المفاتيح، يمكنك تهيئة ميزة سطح المكتب البعيد من Chrome على "فتح كنافذة".</translation>
 <translation id="2540992418118313681">هل ترغب في مشاركة هذا الكمبيوتر مع مستخدم آخر للمشاهدة والتحكم؟</translation>
+<translation id="254771646005658629">‏السماح للمستخدمين بالتحكُّم في نظام التشغيل Mac هذا عن بُعد</translation>
 <translation id="2579271889603567289">تعطّل المضيف أو تعذّر بدء تشغيله.</translation>
 <translation id="2599300881200251572">‏تمكن هذه الخدمة الاتصالات الواردة من عملاء سطح المكتب البعيد من Chrome.</translation>
 <translation id="2647232381348739934">‏خدمة التوافق مع نظام التشغيل Chrome</translation>
@@ -183,6 +184,11 @@
 <translation id="5419185025274123272">تعذر إعادة ضبط التطبيق. لا يزال بإمكانك إرسال تقرير للإبلاغ عن خلل.</translation>
 <translation id="5419418238395129586">آخر اتصال بالإنترنت: <ph name="DATE" /></translation>
 <translation id="544077782045763683">تم إيقاف تشغيل المضيف.</translation>
+<translation id="5463789431147491241">‏لاستخدام <ph name="PRODUCT_NAME" /> على نظام التشغيل Mac هذا، يُرجى اتّباع هذه الخطوات:
+
+اختَر '<ph name="BUTTON_NAME" />' أدناه. في إعدادات "الأمان والخصوصية" المفضَّلة، ضع علامة في المربع بجانب '<ph name="SERVICE_SCRIPT_NAME" />'.
+
+في حال تم وضع علامة في المربع بجانب '<ph name="SERVICE_SCRIPT_NAME" />' من قبل، عليك إزالة العلامة ثم وضعها مرة أخرى.</translation>
 <translation id="5510035215749041527">إلغاء الربط الآن</translation>
 <translation id="5593560073513909978">الخدمة غير متاحة مؤقتًا. يُرجى إعادة المحاولة لاحقًا.</translation>
 <translation id="5601503069213153581">رقم التعريف الشخصي</translation>
@@ -299,12 +305,14 @@
 <translation id="837021510621780684">من هذا الكمبيوتر</translation>
 <translation id="8383794970363966105">‏لاستخدام التوافق مع نظام التشغيل Chrome، يجب إضافة حساب في Google إلى جهازك.</translation>
 <translation id="8386846956409881180">‏تمت تهيئة المضيف بواسطة بيانات اعتماد OAuth غير صالحة.</translation>
+<translation id="8406498562923498210">‏عليك اختيار جلسة لإطلاقها ضمن بيئة سطح المكتب البعيد من Chrome. تجدر الإشارة إلى أنه يمكن ألا تدعم بعض أنواع الجلسات التشغيل ضمن سطح المكتب البعيد من Chrome وعلى وحدة التحكُّم المحلية في آنٍ واحد.)</translation>
 <translation id="8428213095426709021">الإعدادات</translation>
 <translation id="8445362773033888690">‏عرض في متجر Google Play</translation>
 <translation id="8509907436388546015">عملية دمج سطح المكتب</translation>
 <translation id="8513093439376855948">مضيف الرسائل الأصلي لإدارة المضيف عن بُعد</translation>
 <translation id="8525306231823319788">ملء الشاشة</translation>
 <translation id="8548209692293300397">‏لقد سجّلت الدخول سابقًا كالآتي <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />).  للوصول إلى أجهزة الكمبيوتر من خلال هذا الحساب، <ph name="LINK_BEGIN" />سجّل الدخول إلى Google Chrome<ph name="LINK_END" /> بهذا الحساب ثم أعد تثبيت سطح المكتب البعيد من Chrome.</translation>
+<translation id="858006550102277544">تعليق</translation>
 <translation id="8642984861538780905">متوسطة</translation>
 <translation id="8712909229180978490">‏لا أستطيع أن أرى الملفات المحفوظة على الإنترنت في Google Drive.</translation>
 <translation id="8743328882720071828">هل تريد السماح لـ <ph name="CLIENT_USERNAME" /> برؤية جهاز الكمبيوتر والتحكم فيه؟</translation>
@@ -323,6 +331,7 @@
 <translation id="9126115402994542723">عدم المطالبة برقم التعريف الشخصي مرة أخرى عند الاتصال بهذا المضيف من هذا الجهاز.</translation>
 <translation id="9149580767411232853">إظهار سطح المكتب البعيد بالكامل</translation>
 <translation id="9149992051684092333">لبدء مشاركة سطح المكتب، امنح رمز الدخول أدناه للشخص الذي سيساعدك.</translation>
+<translation id="916856682307586697">‏إطلاق XSession التلقائي</translation>
 <translation id="9188433529406846933">تفويض</translation>
 <translation id="9213184081240281106">تهيئة المضيف غير صالحة.</translation>
 <translation id="951991426597076286">رفض</translation>

@@ -21,7 +21,6 @@
 <translation id="1146678959555564648">‏כניסה למצב VR</translation>
 <translation id="116280672541001035">צרכת</translation>
 <translation id="1171770572613082465">הקשה על הלחצן "אתרים נבחרים" תציג אתרים פופולריים</translation>
-<translation id="1172593791219290334">דף פתיחה</translation>
 <translation id="1173894706177603556">שנה שם</translation>
 <translation id="1175310183703641346">‏הסנכרון של הסימניות, ההיסטוריה, הסיסמאות ונתונים אחרים שלך עם חשבון Google יופסק</translation>
 <translation id="1178581264944972037">השהה</translation>
@@ -42,6 +41,7 @@
 <translation id="1258753120186372309">‏דודל של Google‏: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">חיפוש ודפדוף</translation>
 <translation id="1264974993859112054">ספורט</translation>
+<translation id="1266864766717917324">לא ניתן היה לשתף את ה<ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">הפסק</translation>
 <translation id="1283039547216852943">הקש כדי להרחיב</translation>
 <translation id="1285320974508926690">איני רוצה לקבל תרגום של אתר זה</translation>
@@ -71,6 +71,7 @@
 <translation id="1430915738399379752">הדפסה</translation>
 <translation id="1445680696957526815">‏הרכיבים של Chrome אינם תואמים זה לזה. ייתכן ש-Chrome מבצע שדרוג, נסה שוב בעוד כמה דקות. אם הבעיה נמשכת, נסה להסיר את Chrome ולהתקין אותו מחדש.</translation>
 <translation id="1446450296470737166">‏התר שליטה מלאה על מכשירי MIDI</translation>
+<translation id="1450753235335490080">לא ניתן לשתף את ה<ph name="CONTENT_TYPE" /></translation>
 <translation id="145097072038377568">‏כבוי בהגדרות Android</translation>
 <translation id="1477626028522505441">הורדת <ph name="FILE_NAME" /> נכשלה עקב בעיות בשרת.</translation>
 <translation id="1501480321619201731">מחיקת קבוצה</translation>
@@ -153,6 +154,7 @@
 <translation id="2049961518639794558">שינוי סיומת הקובץ עלולה לגרום להתנהגות בלתי צפויה ולהזיק למכשיר.</translation>
 <translation id="2056878612599315956">האתר מושהה</translation>
 <translation id="2063713494490388661">הקש כדי לחפש</translation>
+<translation id="2067805253194386918">טקסט</translation>
 <translation id="2079545284768500474">ביטול הפעולה</translation>
 <translation id="2082238445998314030">תוצאה <ph name="RESULT_NUMBER" /> מתוך <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">צליל</translation>
@@ -165,7 +167,6 @@
 <translation id="2131665479022868825"><ph name="DATA" /> נשמרו</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> נסגר</translation>
 <translation id="2139186145475833000">הוספה לדף הבית</translation>
-<translation id="2142289305367051020">כאן נמצאים הדפים המועדפים שלך</translation>
 <translation id="2146738493024040262">פתח אפליקציית אינסטנט</translation>
 <translation id="2148716181193084225">היום</translation>
 <translation id="2154484045852737596">עריכת כרטיס</translation>
@@ -324,6 +325,7 @@
 <translation id="3384347053049321195">שיתוף תמונה</translation>
 <translation id="3386292677130313581">יש לשאול לפני שמאפשרים לאתרים לדעת מה המיקום שלך (מומלץ)</translation>
 <translation id="3387650086002190359">הורדת <ph name="FILE_NAME" /> נכשלה עקב שגיאות במערכת הקבצים.</translation>
+<translation id="3389286852084373014">הטקסט ארוך מדי</translation>
 <translation id="3398320232533725830">פתח את מנהל הסימניות</translation>
 <translation id="3414952576877147120">גודל:</translation>
 <translation id="3443221991560634068">טען מחדש את הדף הנוכחי</translation>
@@ -348,6 +350,7 @@
 <translation id="3599863153486145794">‏ניקוי ההיסטוריה מכל המכשירים שבהם המשתמש נכנס לחשבון. ייתכן שלחשבון Google שלך יהיו צורות אחרות של היסטוריית גלישה בכתובת <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">השתקת אתרים שמשמיעים צלילים</translation>
 <translation id="3616113530831147358">אודיו</translation>
+<translation id="3631987586758005671">השיתוף עם <ph name="DEVICE_NAME" /> מתבצע</translation>
 <translation id="3632295766818638029">חשוף סיסמה</translation>
 <translation id="363596933471559332">כניסה אוטומטית לאתרים באמצעות פרטי כניסה מאוחסנים. כשתכונה זו כבויה, יהיה עליך לבצע אימות לפני כל כניסה לאתר.</translation>
 <translation id="3658159451045945436">האיפוס גורם למחיקת ההיסטוריה של החיסכון בנתונים, כולל רשימת האתרים שביקרת בהם.</translation>
@@ -358,7 +361,6 @@
 <translation id="3739899004075612870">נוסף לסימניות ב-<ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534">‏‎<ph name="MEGABYTES" /> MB ליישומים אחרים</translation>
 <translation id="3744111561329211289">סינכרון ברקע</translation>
-<translation id="3745176700485982507">בדף הזה נמצאים קישורים לאתרים המועדפים שלך</translation>
 <translation id="3771001275138982843">לא ניתן היה להוריד את העדכון</translation>
 <translation id="3773755127849930740">‏<ph name="BEGIN_LINK" />הפעל את Bluetooth<ph name="END_LINK" /> כדי לאפשר התאמה</translation>
 <translation id="3775705724665058594">שליחה אל המכשירים שלך</translation>
@@ -563,7 +565,6 @@
 <translation id="5224771365102442243">כולל סרטון</translation>
 <translation id="5230560987958996918">‏<ph name="SITE" /> מבקש לבצע סריקה כדי לאתר מכשירי Bluetooth בקרבת מקום. המכשירים הבאים נמצאו:</translation>
 <translation id="5233638681132016545">כרטיסייה חדשה</translation>
-<translation id="5234764350956374838">סגור</translation>
 <translation id="526421993248218238">לא ניתן לטעון את הדף</translation>
 <translation id="5271967389191913893">המכשיר לא מצליח לפתוח את התוכן להורדה.</translation>
 <translation id="528192093759286357">כדי לצאת ממסך מלא, גרור מלמעלה וגע בלחצן 'הקודם'.</translation>
@@ -578,8 +579,8 @@
 <translation id="5324858694974489420">הגדרות הורים</translation>
 <translation id="5327248766486351172">שם</translation>
 <translation id="5335288049665977812">‏אפשר לאתרים להריץ JavaScript (מומלץ)</translation>
+<translation id="5342314432463739672">בקשות הרשאה</translation>
 <translation id="5357811892247919462">התקבלה כרטיסייה</translation>
-<translation id="5363230136052241468">כדי לטעון את דף הכרטיסייה החדשה, צריך להקיש על הלחצן הראשי</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{כרטיסייה פתוחה אחת (<ph name="OPEN_TABS_ONE" />), יש להקיש כדי להחליף כרטיסיות}two{<ph name="OPEN_TABS_MANY" /> כרטיסיות פתוחות, יש להקיש כדי להחליף כרטיסיות}many{<ph name="OPEN_TABS_MANY" /> כרטיסיות פתוחות, יש להקיש כדי להחליף כרטיסיות}other{<ph name="OPEN_TABS_MANY" /> כרטיסיות פתוחות, יש להקיש כדי להחליף כרטיסיות}}</translation>
 <translation id="5391532827096253100">החיבור שלך לאתר הזה לא מאובטח. פרטי האתר</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(ועוד 1)}two{(ועוד #)}many{(ועוד #)}other{(ועוד #)}}</translation>
@@ -748,6 +749,7 @@
 <translation id="6532866250404780454">‏אתרים שנכנסים אליהם ב-Chrome לא יופיעו. כל הטיימרים של האתרים יימחקו.</translation>
 <translation id="6534565668554028783">‏ל-Google נדרש זמן רב מדי להגיב</translation>
 <translation id="6538442820324228105">‏בוצעה הורדה של GB <ph name="GBS" /></translation>
+<translation id="6539092367496845964">משהו השתבש. יש לנסות שוב מאוחר יותר.</translation>
 <translation id="654446541061731451">בחר כרטיסייה להעברת התוכן שלה</translation>
 <translation id="6545017243486555795">נקה את כל הנתונים</translation>
 <translation id="6545864417968258051">‏סריקת Bluetooth</translation>
@@ -802,7 +804,6 @@
 <translation id="6912998170423641340">חסימת היכולת של אתרים לקרוא טקסט ותמונות מלוח העריכה</translation>
 <translation id="6914783257214138813">כל מי שיוכל לגשת אל הקובץ המיוצא יוכל לראות את הסיסמאות שלך.</translation>
 <translation id="6942665639005891494">ניתן תמיד לשנות את מיקום ברירת המחדל להורדות דרך האפשרות 'הגדרות' בתפריט</translation>
-<translation id="6944102653068653326">צריך להקיש כדי לטעון את דף הכרטיסייה החדשה</translation>
 <translation id="6945221475159498467">בחירה</translation>
 <translation id="6963642900430330478">הדף הזה מסוכן. פרטי האתר</translation>
 <translation id="6963766334940102469">מחק סימניות</translation>
@@ -879,6 +880,7 @@
 <translation id="7493994139787901920"><ph name="VERSION" /> (עודכן <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">חסכון בחבילת הגלישה</translation>
 <translation id="7498271377022651285">המתן…</translation>
+<translation id="7510943789645525906">תוצג אזהרה אם סיסמה שלך דלפה עקב פרצה באבטחת מידע</translation>
 <translation id="7514365320538308">הורדה</translation>
 <translation id="751961395872307827">לא ניתן להתחבר לאתר</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -996,7 +998,6 @@
 <translation id="8284326494547611709">כתוביות</translation>
 <translation id="8300705686683892304">מנוהלים על-ידי אפליקציה</translation>
 <translation id="8310344678080805313">כרטיסיות רגילות</translation>
-<translation id="8313455859591948645">עריכת דף הפתיחה</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> ועוד אתרים</translation>
 <translation id="8327155640814342956">‏כדי ליהנות מחוויית הגלישה הטובה ביותר, יש לפתוח את Chrome כדי לעדכן אותו</translation>
 <translation id="8339163506404995330">דפים ב<ph name="LANGUAGE" /> לא יתורגמו</translation>

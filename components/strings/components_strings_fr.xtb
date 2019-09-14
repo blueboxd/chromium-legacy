@@ -97,7 +97,6 @@
 <translation id="138218114945450791">Bleu clair</translation>
 <translation id="1382194467192730611">Appareil USB autorisé par votre administrateur</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> n'a envoyé aucune donnée.</translation>
-<translation id="140316286225361634">Le site <ph name="ORIGIN" /> a exigé qu'une règle de sécurité soit appliquée à toutes ses demandes, et cette règle considère que le site n'est pas sûr actuellement.</translation>
 <translation id="1405567553485452995">Vert clair</translation>
 <translation id="1407135791313364759">Tout ouvrir</translation>
 <translation id="1413809658975081374">Erreur liée à la confidentialité</translation>
@@ -133,6 +132,7 @@
 <translation id="1569487616857761740">Saisir la date d'expiration</translation>
 <translation id="1581080074034554886">Code CVC :</translation>
 <translation id="1583429793053364125">Une erreur s'est produite lors de l'affichage de la page Web.</translation>
+<translation id="1588438908519853928">Standard</translation>
 <translation id="1592005682883173041">Accès aux données locales</translation>
 <translation id="1594030484168838125">Sélectionner</translation>
 <translation id="161042844686301425">Cyan</translation>
@@ -210,7 +210,6 @@
 <translation id="1981206234434200693">Effacer les données de l'historique de navigation de Chrome</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{et 1 autre}one{et # autre}other{et # autres}}</translation>
 <translation id="2003709556000175978">Réinitialiser votre mot de passe maintenant</translation>
-<translation id="20053308747750172">Le serveur auquel vous accédez, <ph name="ORIGIN" />, a exigé qu'une règle de sécurité soit appliquée à toutes les demandes qu'il reçoit. Cependant, une règle non valide vient d'être émise, ce qui empêche le navigateur de répondre à votre demande pour <ph name="SITE" />.</translation>
 <translation id="2025186561304664664">Le proxy est défini sur la configuration automatique.</translation>
 <translation id="202813660234680402">Non, ne pas ajouter</translation>
 <translation id="2030481566774242610">Essayez avec <ph name="LINK" /></translation>
@@ -288,7 +287,6 @@
 <translation id="2409589295040002961">Votre administrateur peut modifier à distance la configuration de votre navigateur. Il est possible que l'activité sur cet appareil soit gérée en dehors de Chrome. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />. Il se peut que son certificat de sécurité ait été révoqué. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
-<translation id="2418081434543109369">Le serveur auquel vous accédez, <ph name="ORIGIN" />, a exigé qu'une règle de sécurité soit appliquée à toutes les demandes qu'il reçoit. Cependant, la règle n'a pas pu être émise, ce qui empêche le navigateur de répondre à votre demande pour <ph name="SITE" />.</translation>
 <translation id="2463193859425327265">Changer de page d'accueil</translation>
 <translation id="2463739503403862330">Remplir</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -580,6 +578,7 @@
 <translation id="4103249731201008433">Le numéro de série de l'appareil n'est pas valide.</translation>
 <translation id="410351446219883937">Lecture automatique</translation>
 <translation id="4103763322291513355">Accédez à &lt;strong&gt;chrome://policy&lt;/strong&gt; pour consulter une liste des URL ajoutées à la liste noire et des autres règles définies par votre administrateur système.</translation>
+<translation id="4108231218301530806">Utiliser votre empreinte pour valider la carte la prochaine fois.</translation>
 <translation id="4110652170750985508">Vérifier votre paiement</translation>
 <translation id="4112140312785995938">Retour rapide</translation>
 <translation id="4116663294526079822">Toujours autoriser sur ce site</translation>
@@ -782,6 +781,7 @@
 <translation id="5141240743006678641">Chiffrer les mots de passe synchronisés avec vos informations de connexion Google</translation>
 <translation id="5145883236150621069">Code d'erreur présent dans la réponse de la règle.</translation>
 <translation id="515292512908731282">C4 (enveloppe)</translation>
+<translation id="5158275234811857234">Couverture</translation>
 <translation id="5159010409087891077">Ouvrir la page dans une nouvelle fenêtre de navigation privée (⇧⌘N)</translation>
 <translation id="516920405563544094">Saisissez le code CVC de la carte <ph name="CREDIT_CARD" />. Une fois la validation effectuée, les informations relatives à la carte de votre compte Google seront partagées avec ce site.</translation>
 <translation id="5169827969064885044">Vous risquez de perdre l'accès au compte de votre organisation ou d'être victime d'usurpation d'identité. L'équipe Chrome vous recommande de modifier votre mot de passe maintenant.</translation>
@@ -940,6 +940,7 @@
 <translation id="598637245381783098">Impossible d'ouvrir l'application de paiement</translation>
 <translation id="5989320800837274978">Aucun serveur proxy déterminé ou URL de script .pac n'a été indiqué.</translation>
 <translation id="5990559369517809815">Les requêtes vers le serveur ont été bloquées par une extension.</translation>
+<translation id="6000758707621254961"><ph name="RESULT_COUNT" /> résultats pour "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">Année</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Page 1}one{Page #}other{Page #}}</translation>
@@ -998,6 +999,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Aucun}=1{1 mot de passe (associé à <ph name="DOMAIN_LIST" /> ; synchronisé)}=2{2 mots de passe (associés à <ph name="DOMAIN_LIST" /> ; synchronisés)}one{# mot de passe (associé à <ph name="DOMAIN_LIST" /> ; synchronisé)}other{# mots de passe (associés à <ph name="DOMAIN_LIST" /> ; synchronisés)}}</translation>
 <translation id="6358450015545214790">Qu'est-ce que c'est ?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6377268785556383139">1 résultat pour "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Des frais peuvent vous être facturés</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 autre suggestion}one{# autre suggestion}other{# autres suggestions}}</translation>
@@ -1132,7 +1134,6 @@
 <translation id="717330890047184534">Identifiant GAIA : </translation>
 <translation id="7174545416324379297">Valeurs fusionnées</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> et <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> autre}one{<ph name="SHIPPING_OPTION_PREVIEW" /> et <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> autre}other{<ph name="SHIPPING_OPTION_PREVIEW" /> et <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> autres}}</translation>
-<translation id="7177397715882417099">Le serveur auquel vous accédez, <ph name="ORIGIN" />, a exigé qu'une règle de sécurité soit appliquée à toutes les demandes qu'il reçoit. Cependant, au lieu d'émettre une règle, il a redirigé le navigateur vers une autre destination, ce qui empêche ce dernier de répondre à votre demande pour <ph name="SITE" />.</translation>
 <translation id="7179323680825933600">Enregistrer et renseigner les modes de paiement</translation>
 <translation id="7180611975245234373">Actualiser</translation>
 <translation id="7182878459783632708">Aucune règle n'est définie</translation>
@@ -1159,6 +1160,7 @@ Informations supplémentaires :
 <translation id="7300012071106347854">Bleu cobalt</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
 <translation id="7303701124147721189">Pour régler vos achats plus rapidement la prochaine fois, enregistrez votre carte et votre adresse de facturation dans votre compte Google, ainsi que sur cet appareil.</translation>
+<translation id="7304030187361489308">Aigu</translation>
 <translation id="7309308571273880165">Rapport d'erreur enregistré le <ph name="CRASH_TIME" /> (importation demandée par l'utilisateur, mais non effectuée)</translation>
 <translation id="7313965965371928911">Avertissements relatifs à la <ph name="BEGIN_LINK" />navigation sécurisée<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1520,7 +1522,6 @@ Informations supplémentaires :
 <translation id="939736085109172342">Nouveau dossier</translation>
 <translation id="945855313015696284">Vérifiez les informations ci-dessous et supprimez les cartes non valides</translation>
 <translation id="951104842009476243">Cartes de débit et cartes prépayées acceptées</translation>
-<translation id="958202389743790697">Bloqué selon la règle de sécurité de <ph name="ORIGIN" />.</translation>
 <translation id="962484866189421427">Ce contenu peut essayer d'installer des applications trompeuses se faisant passer pour d'autres, ou de collecter des données afin de vous surveiller. <ph name="BEGIN_LINK" />Je souhaite y accéder malgré tout.<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Build officiel</translation>
 <translation id="973773823069644502">Ajouter une adresse d'expédition</translation>

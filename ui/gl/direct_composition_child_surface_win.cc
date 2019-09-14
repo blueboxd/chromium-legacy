@@ -253,6 +253,17 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
     return false;
   }
 
+  gl::GLContext* context = gl::GLContext::GetCurrent();
+  if (!context) {
+    DLOG(ERROR) << "gl::GLContext::GetCurrent() returned nullptr";
+    return false;
+  }
+  gl::GLSurface* surface = gl::GLSurface::GetCurrent();
+  if (!surface) {
+    DLOG(ERROR) << "gl::GLSurface::GetCurrent() returned nullptr";
+    return false;
+  }
+
   DXGI_FORMAT dxgi_format = ColorSpaceUtils::GetDXGIFormat(color_space_);
 
   if (!dcomp_surface_ && enable_dc_layers_) {
@@ -357,10 +368,6 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
 
   // We make current with the same surface (could be the parent), but its
   // handle has changed to |real_surface_|.
-  gl::GLContext* context = gl::GLContext::GetCurrent();
-  DCHECK(context);
-  gl::GLSurface* surface = gl::GLSurface::GetCurrent();
-  DCHECK(surface);
   if (!context->MakeCurrent(surface)) {
     DLOG(ERROR) << "Failed to make current in SetDrawRectangle";
     return false;

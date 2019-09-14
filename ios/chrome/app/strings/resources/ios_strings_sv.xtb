@@ -315,6 +315,7 @@ Din data har krypterats med lösenfrasen för synkronisering. Ange den om du vil
 Du måste även aktivera Handoff i avsnittet Allmänt i inställningarna och samma iCloud-konto måste användas på enheterna.</translation>
 <translation id="5551897871312988470">Erbjud översättning</translation>
 <translation id="5556459405103347317">Hämta igen</translation>
+<translation id="5592679540098330836">Aktivera synkronisering för <ph name="NAME" /></translation>
 <translation id="5614553682702429503">Vill du spara lösenordet?</translation>
 <translation id="5626245204502895507">Det gick inte att ladda ned filen just nu.</translation>
 <translation id="5631164295104953411">Lägg till betalningsmetod</translation>

@@ -315,6 +315,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 Handoff peab olema lubatud seadete jaotises General ja seadmed peavad kasutama sama iCloudi kontot.</translation>
 <translation id="5551897871312988470">Paku tõlkimist</translation>
 <translation id="5556459405103347317">Laadi uuesti</translation>
+<translation id="5592679540098330836">Sünkroonimise sisselülitamine kasutaja <ph name="NAME" /> jaoks</translation>
 <translation id="5614553682702429503">Kas salvestada parool?</translation>
 <translation id="5626245204502895507">Faili ei õnnestunud praegu alla laadida.</translation>
 <translation id="5631164295104953411">Lisage makseviis</translation>

@@ -433,13 +433,16 @@ public class WebApkInfoTest {
      */
     @Test
     public void testOverrideShareTargetSourceIfLaunchedFromFileSharing() {
+        Bundle shareActivityBundle = new Bundle();
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
+
         Bundle bundle = new Bundle();
         bundle.putString(WebApkMetaDataKeys.START_URL, START_URL);
         WebApkTestHelper.registerWebApkWithMetaData(
-                WEBAPK_PACKAGE_NAME, bundle, null /* shareTargetMetaData */);
+                WEBAPK_PACKAGE_NAME, bundle, new Bundle[] {shareActivityBundle});
 
         Intent intent = createMinimalWebApkIntent(WEBAPK_PACKAGE_NAME, START_URL);
-
+        intent.setAction(Intent.ACTION_SEND);
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_SELECTED_SHARE_TARGET_ACTIVITY_CLASS_NAME,
                 "something");
         ArrayList<Uri> uris = new ArrayList<>();
@@ -525,11 +528,16 @@ public class WebApkInfoTest {
      */
     @Test
     public void testShareDataUriString() {
+        Bundle shareActivityBundle = new Bundle();
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
+
         Bundle bundle = new Bundle();
         bundle.putString(WebApkMetaDataKeys.START_URL, START_URL);
-        WebApkTestHelper.registerWebApkWithMetaData(WEBAPK_PACKAGE_NAME, bundle, null);
+        WebApkTestHelper.registerWebApkWithMetaData(
+                WEBAPK_PACKAGE_NAME, bundle, new Bundle[] {shareActivityBundle});
 
         Intent intent = createMinimalWebApkIntent(WEBAPK_PACKAGE_NAME, START_URL);
+        intent.setAction(Intent.ACTION_SEND);
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_SELECTED_SHARE_TARGET_ACTIVITY_CLASS_NAME,
                 WebApkTestHelper.getGeneratedShareTargetActivityClassName(0));
         Uri sharedFileUri = Uri.parse("mock-uri-1");
@@ -548,11 +556,16 @@ public class WebApkInfoTest {
      */
     @Test
     public void testShareDataUriList() {
+        Bundle shareActivityBundle = new Bundle();
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
+
         Bundle bundle = new Bundle();
         bundle.putString(WebApkMetaDataKeys.START_URL, START_URL);
-        WebApkTestHelper.registerWebApkWithMetaData(WEBAPK_PACKAGE_NAME, bundle, null);
+        WebApkTestHelper.registerWebApkWithMetaData(
+                WEBAPK_PACKAGE_NAME, bundle, new Bundle[] {shareActivityBundle});
 
         Intent intent = createMinimalWebApkIntent(WEBAPK_PACKAGE_NAME, START_URL);
+        intent.setAction(Intent.ACTION_SEND);
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_SELECTED_SHARE_TARGET_ACTIVITY_CLASS_NAME,
                 WebApkTestHelper.getGeneratedShareTargetActivityClassName(0));
         Uri sharedFileUri = Uri.parse("mock-uri-1");

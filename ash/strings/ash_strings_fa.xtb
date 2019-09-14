@@ -104,7 +104,6 @@
 <translation id="2359808026110333948">ادامه</translation>
 <translation id="2365393535144473978">فعال کردن داده تلفن همراه، بلوتوث را فعال می‌کند.</translation>
 <translation id="2391579633712104609">۱۸۰°</translation>
-<translation id="239188844683466770">روشن/خاموش کردن «مزاحم نشوید»</translation>
 <translation id="2412593942846481727">به‌روزرسانی دردسترس است</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> جلسه مدیریت‌شده‌ای است که توسط <ph name="DOMAIN" /> مدیریت می‌شود</translation>
 <translation id="2427507373259914951">کلیک چپ</translation>
@@ -224,6 +223,7 @@
 <translation id="4181841719683918333">زبان‌ها</translation>
 <translation id="4195877955194704651">دکمه کلیک خودکار</translation>
 <translation id="4217571870635786043">املا</translation>
+<translation id="421885205185866088">پین کارت هوشمند برای <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">نمایش تنظیمات اعلان. اعلان‌ها خاموش است</translation>
 <translation id="4269883910223712419">سرپرست این دستگاه می‌تواند:</translation>
@@ -239,6 +239,7 @@
 <translation id="4379531060876907730">این‌ها ابزارهای قلم شما هستند</translation>
 <translation id="4389184120735010762">میان‌بر صفحه‌کلید مربوط به ذره‌بین متصل را فشار دادید. می‌خواهید آن را روشن کنید؟</translation>
 <translation id="4421231901400348175">هم‌رسانی کنترل صفحه‌تان با <ph name="HELPER_NAME" /> از طریق راهنمایی ازراه‌دور.</translation>
+<translation id="4430019312045809116">میزان صدا</translation>
 <translation id="4450893287417543264">دیگر نشان داده نشود</translation>
 <translation id="4477350412780666475">آهنگ بعدی</translation>
 <translation id="4479639480957787382">اترنت</translation>

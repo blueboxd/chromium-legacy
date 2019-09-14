@@ -53,4 +53,8 @@ bool AwVariationsServiceClient::OverridesRestrictParameter(
   return false;
 }
 
+bool AwVariationsServiceClient::IsEnterprise() {
+  return false;
+}
+
 }  // namespace android_webview

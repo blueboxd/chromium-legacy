@@ -84,6 +84,9 @@ XRPose* XRFrame::getPose(XRSpace* space_A,
   }
 
   if (!space_A || !space_B) {
+    DVLOG(2) << __func__
+             << " : space_A or space_B is null, space_A =" << space_A
+             << ", space_B = " << space_B;
     return nullptr;
   }
 

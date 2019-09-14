@@ -59,6 +59,9 @@ class GLImageTestDelegateBase {
  public:
   virtual ~GLImageTestDelegateBase() {}
 
+  virtual void DidSetUp() {}
+  virtual void WillTearDown() {}
+
   virtual base::Optional<GLImplementation> GetPreferedGLImplementation() const;
   virtual bool SkipTest() const;
 };
@@ -74,8 +77,10 @@ class GLImageTest : public testing::Test {
     context_ =
         gl::init::CreateGLContext(nullptr, surface_.get(), GLContextAttribs());
     context_->MakeCurrent(surface_.get());
+    delegate_.DidSetUp();
   }
   void TearDown() override {
+    delegate_.WillTearDown();
     context_->ReleaseCurrent(surface_.get());
     context_ = nullptr;
     surface_ = nullptr;

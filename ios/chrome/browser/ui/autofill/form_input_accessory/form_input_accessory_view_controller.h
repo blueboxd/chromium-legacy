@@ -22,17 +22,13 @@
 // Presents a view above the keyboard.
 - (void)presentView:(UIView*)view;
 
-// Frees the manual fallback icons as the first option in the suggestions bar,
-// and animates any suggestion back to their original position.
-- (void)unlockManualFallbackView;
-
 // Shows the manual fallback icons as the first option in the suggestions bar,
 // and locks them in that position.
 - (void)lockManualFallbackView;
 
 // Tells the view to restore the manual fallback icons to a clean state. That
-// means no icon selected.
-- (void)resetManualFallbackIcons;
+// means no icon selected and the manual fallback view is unlocked.
+- (void)reset;
 
 // Instances an object with the desired delegate.
 //

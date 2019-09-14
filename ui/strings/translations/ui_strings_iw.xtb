@@ -8,14 +8,17 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{דקה}two{# דק}many{# דק}other{# דק}}</translation>
 <translation id="1181037720776840403">הסרה</translation>
 <translation id="1243314992276662751">העלה</translation>
+<translation id="1266864766717917324">לא ניתן היה לשתף את ה<ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1290982764014248209">העברת <ph name="DRAGGED_APP" /> אל התיקייה <ph name="FOLDER_NAME" />.</translation>
+<translation id="1291104554099683393">אפשר לנסות לשתף את הטקסט במקטעים קטנים יותר.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">אפליקציות מומלצות</translation>
 <translation id="1368832886055348810">משמאל לימין</translation>
 <translation id="1383876407941801731">חפש</translation>
 <translation id="1398853756734560583">הגדל</translation>
 <translation id="1409544243779336081">המלצה על אפליקציה</translation>
+<translation id="1450753235335490080">לא ניתן לשתף את ה<ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">חיפשת את השאילתה הזו בעבר. מחיקת "<ph name="QUERY" />" מההיסטוריה תסיר אותה באופן סופי מהחשבון בכל המכשירים שברשותך.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{דקה אחת ו }two{# דקות ו }many{# דקות ו }other{# דקות ו }}</translation>
 <translation id="1643823602425662293">הודעה</translation>
@@ -23,7 +26,7 @@
 <translation id="1710340000377843106">עכשיו</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{דקה אחת}two{# דקות}many{# דקות}other{# דקות}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
-<translation id="1801827354178857021">תקופה</translation>
+<translation id="1801827354178857021">נקודה</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{חודש אחד}two{חודשיים}many{# חודשים}other{# חודשים}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
 <translation id="1812519734428420144">דירוג כוכבים: <ph name="RATING_SCORE" /></translation>
@@ -35,6 +38,7 @@
 <translation id="1884435127456172652">%<ph name="NUMBER" /></translation>
 <translation id="1901303067676059328">בחר &amp;הכל</translation>
 <translation id="1938451708255335766">כדי להתאים את דחיסות התצוגה של החלון, צריך להפעיל מחדש את האפליקציה.</translation>
+<translation id="2006524834898217237">יש לוודא שהמכשיר הזה מחובר לאינטרנט.</translation>
 <translation id="208586643495776849">יש לנסות שוב</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{יום}two{# ימ}many{# ימ}other{# ימ}}</translation>
 <translation id="2148716181193084225">היום</translation>
@@ -76,6 +80,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{יום אחד}two{יומיים}many{# ימים}other{# ימים}}</translation>
 <translation id="3295886253693811851">התקשרות באמצעות</translation>
 <translation id="335581015389089642">דיבור</translation>
+<translation id="3389286852084373014">הטקסט ארוך מדי</translation>
 <translation id="3443810440409579745">כרטיסייה התקבלה.</translation>
 <translation id="3479552764303398839">לא עכשיו</translation>
 <translation id="348799646910989694">המדף יוסתר באופן אוטומטי</translation>
@@ -151,11 +156,13 @@
 <translation id="6404817160109697034">{SECONDS,plural, =1{לפני שנ‘ אחת}two{לפני # שנ‘}many{לפני # שנ‘}other{לפני # שנ‘}}</translation>
 <translation id="6430678249303439055">חסימת כל ההודעות מהאפליקציה הזו</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{לפני שנייה אחת}two{לפני # שניות}many{לפני # שניות}other{לפני # שניות}}</translation>
+<translation id="6539092367496845964">משהו השתבש. יש לנסות שוב מאוחר יותר.</translation>
 <translation id="654149438358937226">חסימת כל ההודעות</translation>
 <translation id="6567071839949112727">לחיצה על אב</translation>
 <translation id="6578407462441924264">ללא שם</translation>
 <translation id="6612467943526193239">‏הקש על Esc כדי לצאת מהכיול.</translation>
 <translation id="6620110761915583480">שמור קובץ</translation>
+<translation id="6656912866303152668">‏יש לוודא שהסנכרון עם <ph name="TARGET_DEVICE_NAME" /> הופעל ב-Chrome, ולאחר מכן לנסות את השליחה שוב.</translation>
 <translation id="6699343763173986273">הרצועה הבאה במדיה</translation>
 <translation id="673773751041746814">מחיקה</translation>
 <translation id="6779314412797872738">‏כדי לשלוח מכאן מספר לטלפון ה-Android שלך, יש <ph name="TROUBLESHOOT_LINK" /> בהגדרות של שני המכשירים.</translation>
@@ -221,6 +228,7 @@
 <translation id="8876215549894133151">פורמט:</translation>
 <translation id="8901569739625249689">‏<ph name="QUANTITY" /> KB‏</translation>
 <translation id="8926951137623668982">המדף תמיד מוסתר</translation>
+<translation id="8996630695507351249">יש לוודא ש-<ph name="TARGET_DEVICE_NAME" /> מחובר לאינטרנט.</translation>
 <translation id="9002566407876343676">פתיחה</translation>
 <translation id="9039076430527029379">מעבר אל הדף <ph name="PAGE_NUMBER" />, שורה <ph name="ROW_NUMBER" />, עמודה <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{שנ‘ אחת}two{# שנ‘}many{# שנ‘}other{# שנ‘}}</translation>

@@ -6,18 +6,24 @@ package org.chromium.weblayer_private;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.PixelFormat;
+import android.graphics.SurfaceTexture;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.TextureView;
 import android.view.View;
 import android.widget.FrameLayout;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.resources.ResourceManager;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /***
  * This view is used by a ContentView to render its content.
@@ -27,14 +33,33 @@ import org.chromium.ui.resources.ResourceManager;
  */
 @JNINamespace("weblayer")
 public class ContentViewRenderView extends FrameLayout {
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({MODE_UNINITIALIZED, MODE_SURFACE_VIEW, MODE_SURFACE_VIEW})
+    public @interface Mode {}
+    private static final int MODE_UNINITIALIZED = -1;
+    public static final int MODE_SURFACE_VIEW = 0;
+    public static final int MODE_TEXTURE_VIEW = 1;
+
+    // This is mode that is requested by client.
+    @Mode
+    private int mRequestedMode;
+    // This is the mode that last supplied the Surface to the compositor.
+    @Mode
+    private int mCurrentMode;
+
     // The native side of this object.
     private long mNativeContentViewRenderView;
-    private SurfaceHolder.Callback mSurfaceCallback;
+
     private WindowAndroid mWindowAndroid;
+    private WebContents mWebContents;
 
-    private final SurfaceView mSurfaceView;
-    protected WebContents mWebContents;
+    private SurfaceHolder.Callback mSurfaceCallback;
+    private SurfaceView mSurfaceView;
 
+    private TextureView mTextureView;
+    private TextureView.SurfaceTextureListener mSurfaceTextureListener;
+
+    private int mBackgroundColor;
     private int mWidth;
     private int mHeight;
 
@@ -48,14 +73,10 @@ public class ContentViewRenderView extends FrameLayout {
     public ContentViewRenderView(Context context) {
         super(context);
 
-        mSurfaceView = createSurfaceView(getContext());
-        mSurfaceView.setZOrderMediaOverlay(true);
+        mCurrentMode = MODE_UNINITIALIZED;
+        mRequestedMode = MODE_UNINITIALIZED;
 
-        setSurfaceViewBackgroundColor(Color.WHITE);
-        addView(mSurfaceView,
-                new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
-                        FrameLayout.LayoutParams.MATCH_PARENT));
-        mSurfaceView.setVisibility(GONE);
+        setBackgroundColor(Color.WHITE);
     }
 
     /**
@@ -63,29 +84,60 @@ public class ContentViewRenderView extends FrameLayout {
      * Native code should add/remove the layers to be rendered through the ContentViewLayerRenderer.
      * @param rootWindow The {@link WindowAndroid} this render view should be linked to.
      */
-    public void onNativeLibraryLoaded(WindowAndroid rootWindow) {
-        assert !mSurfaceView.getHolder().getSurface().isValid()
-            : "Surface created before native library loaded.";
+    public void onNativeLibraryLoaded(WindowAndroid rootWindow, @Mode int mode) {
         assert rootWindow != null;
         mNativeContentViewRenderView = nativeInit(rootWindow);
         assert mNativeContentViewRenderView != 0;
         mWindowAndroid = rootWindow;
+        requestMode(mode);
+    }
+
+    public void requestMode(@Mode int mode) {
+        assert mode == MODE_SURFACE_VIEW || mode == MODE_TEXTURE_VIEW;
+        if (mode == MODE_SURFACE_VIEW) {
+            mRequestedMode = mode;
+            initializeSurfaceView();
+        } else if (mode == MODE_TEXTURE_VIEW) {
+            mRequestedMode = mode;
+            initializeTextureView();
+        } else {
+            throw new RuntimeException("Unexpected mode: " + mode);
+        }
+    }
+
+    private void setCurrentMode(@Mode int mode) {
+        if (mCurrentMode == mode) return;
+
+        if (mCurrentMode == MODE_SURFACE_VIEW) {
+            uninitializeSurfaceView();
+        } else if (mCurrentMode == MODE_TEXTURE_VIEW) {
+            uninitializeTextureView();
+        }
+        mCurrentMode = mode;
+    }
+
+    private void initializeSurfaceView() {
+        if (mCurrentMode == MODE_SURFACE_VIEW) {
+            assert mSurfaceView != null;
+            assert mSurfaceCallback != null;
+            return;
+        }
+        if (mSurfaceView != null) return;
+
+        mSurfaceView = new SurfaceView(getContext());
+        mSurfaceView.setZOrderMediaOverlay(true);
+        mSurfaceView.setBackgroundColor(mBackgroundColor);
+        mWindowAndroid.setAnimationPlaceholderView(mSurfaceView);
+
         mSurfaceCallback = new SurfaceHolder.Callback() {
             @Override
-            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-                assert mNativeContentViewRenderView != 0;
-                nativeSurfaceChanged(
-                        mNativeContentViewRenderView, format, width, height, holder.getSurface());
-                if (mWebContents != null) {
-                    nativeOnPhysicalBackingSizeChanged(
-                            mNativeContentViewRenderView, mWebContents, width, height);
-                }
-            }
-
-            @Override
             public void surfaceCreated(SurfaceHolder holder) {
-                assert mNativeContentViewRenderView != 0;
-                nativeSurfaceCreated(mNativeContentViewRenderView);
+                if (mRequestedMode != MODE_SURFACE_VIEW) {
+                    uninitializeSurfaceView();
+                    return;
+                }
+                setCurrentMode(MODE_SURFACE_VIEW);
+                ContentViewRenderView.this.surfaceCreated();
 
                 // On pre-M Android, layers start in the hidden state until a relayout happens.
                 // There is a bug that manifests itself when entering overlay mode on pre-M devices,
@@ -93,18 +145,100 @@ public class ContentViewRenderView extends FrameLayout {
                 // worked around by forcibly re-setting the visibility of the surface view.
                 // Otherwise, the screen stays black, and some tests fail.
                 mSurfaceView.setVisibility(mSurfaceView.getVisibility());
+            }
 
-                onReadyToRender();
+            @Override
+            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+                if (mCurrentMode != MODE_SURFACE_VIEW) return;
+
+                ContentViewRenderView.this.surfaceChanged(holder.getSurface(), true, width, height);
             }
 
             @Override
             public void surfaceDestroyed(SurfaceHolder holder) {
-                assert mNativeContentViewRenderView != 0;
-                nativeSurfaceDestroyed(mNativeContentViewRenderView);
+                if (mCurrentMode != MODE_SURFACE_VIEW) return;
+                ContentViewRenderView.this.surfaceDestroyed();
             }
         };
         mSurfaceView.getHolder().addCallback(mSurfaceCallback);
+
+        addView(mSurfaceView,
+                new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
+                        FrameLayout.LayoutParams.MATCH_PARENT));
         mSurfaceView.setVisibility(VISIBLE);
+    }
+
+    private void uninitializeSurfaceView() {
+        if (mSurfaceView == null) return;
+        removeView(mSurfaceView);
+        mWindowAndroid.setAnimationPlaceholderView(null);
+        mSurfaceView.getHolder().removeCallback(mSurfaceCallback);
+        mSurfaceCallback = null;
+        mSurfaceView = null;
+    }
+
+    private void initializeTextureView() {
+        if (mCurrentMode == MODE_TEXTURE_VIEW) {
+            assert mTextureView != null;
+            return;
+        }
+        if (mTextureView != null) return;
+
+        mTextureView = new TextureView(getContext());
+
+        mSurfaceTextureListener = new TextureView.SurfaceTextureListener() {
+            private SurfaceTexture mCurrentSurfaceTexture;
+            private Surface mCurrentSurface;
+
+            @Override
+            public void onSurfaceTextureAvailable(
+                    SurfaceTexture surfaceTexture, int width, int height) {
+                if (mRequestedMode != MODE_TEXTURE_VIEW) {
+                    uninitializeTextureView();
+                    return;
+                }
+                setCurrentMode(MODE_TEXTURE_VIEW);
+
+                ContentViewRenderView.this.surfaceCreated();
+                onSurfaceTextureSizeChanged(surfaceTexture, width, height);
+            }
+
+            @Override
+            public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
+                if (mCurrentMode != MODE_TEXTURE_VIEW) return true;
+
+                ContentViewRenderView.this.surfaceDestroyed();
+                return true;
+            }
+
+            @Override
+            public void onSurfaceTextureSizeChanged(
+                    SurfaceTexture surfaceTexture, int width, int height) {
+                if (mCurrentMode != MODE_TEXTURE_VIEW) return;
+
+                if (mCurrentSurfaceTexture != surfaceTexture) {
+                    mCurrentSurfaceTexture = surfaceTexture;
+                    mCurrentSurface = new Surface(mCurrentSurfaceTexture);
+                }
+                ContentViewRenderView.this.surfaceChanged(mCurrentSurface, false, width, height);
+            }
+
+            @Override
+            public void onSurfaceTextureUpdated(SurfaceTexture surfaceTexture) {}
+        };
+        mTextureView.setSurfaceTextureListener(mSurfaceTextureListener);
+        mTextureView.setVisibility(VISIBLE);
+        addView(mTextureView,
+                new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
+                        FrameLayout.LayoutParams.MATCH_PARENT));
+    }
+
+    private void uninitializeTextureView() {
+        if (mTextureView == null) return;
+        removeView(mTextureView);
+        mTextureView.setSurfaceTextureListener(null);
+        mSurfaceTextureListener = null;
+        mTextureView = null;
     }
 
     @Override
@@ -131,22 +265,18 @@ public class ContentViewRenderView extends FrameLayout {
     }
 
     /**
-     * Sets the background color of the surface view.  This method is necessary because the
-     * background color of ContentViewRenderView itself is covered by the background of
+     * Sets the background color of the surface / texture view.  This method is necessary because
+     * the background color of ContentViewRenderView itself is covered by the background of
      * SurfaceView.
      * @param color The color of the background.
      */
-    public void setSurfaceViewBackgroundColor(int color) {
+    @Override
+    public void setBackgroundColor(int color) {
+        super.setBackgroundColor(color);
+        mBackgroundColor = color;
         if (mSurfaceView != null) {
             mSurfaceView.setBackgroundColor(color);
         }
-    }
-
-    /**
-     * Gets the SurfaceView for this ContentViewRenderView
-     */
-    public SurfaceView getSurfaceView() {
-        return mSurfaceView;
     }
 
     /**
@@ -154,7 +284,9 @@ public class ContentViewRenderView extends FrameLayout {
      * native resource can be freed.
      */
     public void destroy() {
-        mSurfaceView.getHolder().removeCallback(mSurfaceCallback);
+        setCurrentMode(MODE_UNINITIALIZED);
+        uninitializeSurfaceView();
+        uninitializeTextureView();
         mWindowAndroid = null;
         nativeDestroy(mNativeContentViewRenderView);
         mNativeContentViewRenderView = 0;
@@ -172,50 +304,38 @@ public class ContentViewRenderView extends FrameLayout {
         nativeSetCurrentWebContents(mNativeContentViewRenderView, webContents);
     }
 
-    /**
-     * This method should be subclassed to provide actions to be performed once the view is ready to
-     * render.
-     */
-    protected void onReadyToRender() {}
-
-    /**
-     * This method could be subclassed optionally to provide a custom SurfaceView object to
-     * this ContentViewRenderView.
-     * @param context The context used to create the SurfaceView object.
-     * @return The created SurfaceView object.
-     */
-    protected SurfaceView createSurfaceView(Context context) {
-        return new SurfaceView(context);
-    }
-
-    /**
-     * @return whether the surface view is initialized and ready to render.
-     */
-    public boolean isInitialized() {
-        return mSurfaceView.getHolder().getSurface() != null;
-    }
-
-    /**
-     * Enter or leave overlay video mode.
-     * @param enabled Whether overlay mode is enabled.
-     */
-    public void setOverlayVideoMode(boolean enabled) {
-        int format = enabled ? PixelFormat.TRANSLUCENT : PixelFormat.OPAQUE;
-        mSurfaceView.getHolder().setFormat(format);
-        nativeSetOverlayVideoMode(mNativeContentViewRenderView, enabled);
-    }
-
     public ResourceManager getResourceManager() {
         return nativeGetResourceManager(mNativeContentViewRenderView);
     }
 
+    private void surfaceCreated() {
+        assert mNativeContentViewRenderView != 0;
+        nativeSurfaceCreated(mNativeContentViewRenderView);
+    }
+
+    private void surfaceChanged(
+            Surface surface, boolean canBeUsedWithSurfaceControl, int width, int height) {
+        assert mNativeContentViewRenderView != 0;
+        nativeSurfaceChanged(
+                mNativeContentViewRenderView, canBeUsedWithSurfaceControl, width, height, surface);
+        if (mWebContents != null) {
+            nativeOnPhysicalBackingSizeChanged(
+                    mNativeContentViewRenderView, mWebContents, width, height);
+        }
+    }
+
+    private void surfaceDestroyed() {
+        assert mNativeContentViewRenderView != 0;
+        nativeSurfaceDestroyed(mNativeContentViewRenderView);
+    }
+
     @CalledByNative
     private void didSwapFrame() {
-        if (mSurfaceView.getBackground() != null) {
+        if (mSurfaceView != null && mSurfaceView.getBackground() != null) {
             post(new Runnable() {
                 @Override
                 public void run() {
-                    mSurfaceView.setBackgroundResource(0);
+                    if (mSurfaceView != null) mSurfaceView.setBackgroundResource(0);
                 }
             });
         }
@@ -233,9 +353,7 @@ public class ContentViewRenderView extends FrameLayout {
             long nativeContentViewRenderView, WebContents webContents, int width, int height);
     private native void nativeSurfaceCreated(long nativeContentViewRenderView);
     private native void nativeSurfaceDestroyed(long nativeContentViewRenderView);
-    private native void nativeSurfaceChanged(
-            long nativeContentViewRenderView, int format, int width, int height, Surface surface);
-    private native void nativeSetOverlayVideoMode(
-            long nativeContentViewRenderView, boolean enabled);
+    private native void nativeSurfaceChanged(long nativeContentViewRenderView,
+            boolean canBeUsedWithSurfaceControl, int width, int height, Surface surface);
     private native ResourceManager nativeGetResourceManager(long nativeContentViewRenderView);
 }

@@ -58,6 +58,7 @@
 <translation id="2509394361235492552">Yhdistetty isäntään <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">Huomaa: voit varmistaa kaikkien pikanäppäinten käytettävyyden, kun määrität Chrome-etäkäytön avautumaan ikkunassa.</translation>
 <translation id="2540992418118313681">Haluatko jakaa tämän tietokoneen niin, että toinen käyttäjä voi käyttää ja valvoa sitä?</translation>
+<translation id="254771646005658629">Anna etäkäyttäjien hallita tätä Macia</translation>
 <translation id="2579271889603567289">Isäntä kaatui tai sen käynnistäminen epäonnistui.</translation>
 <translation id="2599300881200251572">Tämä palvelu mahdollistaa Chrome-etäkäytön asiakkaiden muodostamat yhteydet.</translation>
 <translation id="2647232381348739934">Chromoting-palvelu</translation>
@@ -182,6 +183,11 @@
 <translation id="5419185025274123272">Sovelluksen nollaus epäonnistui. Voit silti lähettää vikailmoituksen.</translation>
 <translation id="5419418238395129586">Yhdistetty verkkoon viimeksi: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Isäntä on offline-tilassa.</translation>
+<translation id="5463789431147491241">Jotta <ph name="PRODUCT_NAME" /> olisi käytettävissä tällä Macilla, tee nämä vaiheet:
+
+Valitse alta <ph name="BUTTON_NAME" />. Valitse tietosuoja- ja yksityisyysvalinnoista ruutu <ph name="SERVICE_SCRIPT_NAME" />.
+
+Jos <ph name="SERVICE_SCRIPT_NAME" /> on jo valittu, poista valinta ja valitse se uudelleen.</translation>
 <translation id="5510035215749041527">Katkaise yhteys nyt</translation>
 <translation id="5593560073513909978">Palvelu ei ole tällä hetkellä käytettävissä. Yritä myöhemmin uudelleen.</translation>
 <translation id="5601503069213153581">PIN-koodi</translation>
@@ -298,12 +304,14 @@
 <translation id="837021510621780684">Tältä tietokoneelta</translation>
 <translation id="8383794970363966105">Sinun on lisättävä laitteeseesi Google-tili, jotta voit käyttää Chromotingia.</translation>
 <translation id="8386846956409881180">Isännälle on määritetty virheelliset OAuth-kirjautumistiedot.</translation>
+<translation id="8406498562923498210">Valitse käyttökerta, jonka haluat käynnistää Chrome-etäkäyttöympäristössä. (Huomaa, että jotkin käyttökertatyypit eivät välttämättä toimi yhtä aikaa Chrome-etäkäytöllä ja paikallisella konsolilla.)</translation>
 <translation id="8428213095426709021">Asetukset</translation>
 <translation id="8445362773033888690">Tarkastele Google Play Kaupassa</translation>
 <translation id="8509907436388546015">Tietokoneen integrointiprosessi</translation>
 <translation id="8513093439376855948">Viestiliikenteen alkuperäinen isäntä etäisännän hallinnalle</translation>
 <translation id="8525306231823319788">Koko näyttö</translation>
 <translation id="8548209692293300397">Olet aiemmin kirjautunut sisään käyttäjänä <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Jos haluat käyttää tietokoneitasi tämän tilin kautta, <ph name="LINK_BEGIN" />kirjaudu Google Chromeen<ph name="LINK_END" /> kyseisellä tilillä ja asenna Chrome-etäkäyttö uudelleen.</translation>
+<translation id="858006550102277544">Kommentti</translation>
 <translation id="8642984861538780905">Kohtalainen</translation>
 <translation id="8712909229180978490">Tallennetut Google Drive -tiedostoni eivät näy verkossa.</translation>
 <translation id="8743328882720071828">Haluatko sallia sen, että <ph name="CLIENT_USERNAME" /> voi nähdä ja ohjata tietokonettasi?</translation>
@@ -321,6 +329,7 @@
 <translation id="9126115402994542723">Älä kysy PIN-koodia uudelleen yhdistettäessä tähän isäntään tältä laitteelta.</translation>
 <translation id="9149580767411232853">Pidä koko etätyöpöytä näkyvissä</translation>
 <translation id="9149992051684092333">Aloita työpöydän jakaminen antamalla käyttökoodi sinua avustavalle henkilölle.</translation>
+<translation id="916856682307586697">Käynnistä XSession-oletuskäyttökerta</translation>
 <translation id="9188433529406846933">Valtuuta</translation>
 <translation id="9213184081240281106">Isännän omistajan määritykset ovat virheelliset.</translation>
 <translation id="951991426597076286">Hylkää</translation>

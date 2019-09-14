@@ -31,14 +31,16 @@ OmniboxTabSwitchButton::OmniboxTabSwitchButton(
     OmniboxResultView* result_view,
     const base::string16& hint,
     const base::string16& hint_short,
-    const gfx::VectorIcon& icon)
+    const gfx::VectorIcon& icon,
+    const ui::ThemeProvider* theme_provider)
     : MdTextButton(result_view, views::style::CONTEXT_BUTTON_MD),
       popup_contents_view_(popup_contents_view),
       result_view_(result_view),
       initialized_(false),
       animation_(new gfx::SlideAnimation(this)),
       hint_(hint),
-      hint_short_(hint_short) {
+      hint_short_(hint_short),
+      theme_provider_(theme_provider) {
   SetBgColorOverride(GetBackgroundColor());
   SetImage(STATE_NORMAL, gfx::CreateVectorIcon(
                              icon, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
@@ -181,18 +183,16 @@ SkPath OmniboxTabSwitchButton::GetFocusRingPath() const {
 }
 
 SkColor OmniboxTabSwitchButton::GetBackgroundColor() const {
-  return GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND,
-                         result_view_->CalculateTint(),
+  return GetOmniboxColor(theme_provider_, OmniboxPart::RESULTS_BACKGROUND,
                          state() == STATE_HOVERED ? OmniboxPartState::HOVERED
                                                   : OmniboxPartState::NORMAL);
 }
 
 void OmniboxTabSwitchButton::SetPressed() {
-  SetBgColorOverride(
-      color_utils::AlphaBlend(GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND,
-                                              result_view_->CalculateTint(),
-                                              OmniboxPartState::SELECTED),
-                              SK_ColorBLACK, 0.8f));
+  SetBgColorOverride(color_utils::AlphaBlend(
+      GetOmniboxColor(theme_provider_, OmniboxPart::RESULTS_BACKGROUND,
+                      OmniboxPartState::SELECTED),
+      SK_ColorBLACK, 0.8f));
 }
 
 size_t OmniboxTabSwitchButton::CalculateGoalWidth(size_t parent_width,

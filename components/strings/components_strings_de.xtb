@@ -97,7 +97,6 @@
 <translation id="138218114945450791">Hellblau</translation>
 <translation id="1382194467192730611">USB-Gerät wurde von Ihrem Administrator zugelassen</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> hat keine Daten gesendet.</translation>
-<translation id="140316286225361634">Die Website <ph name="ORIGIN" /> verlangt, dass für alle ihre Anfragen eine Sicherheitsrichtlinie gilt. Gemäß dieser Richtlinie wird die Website derzeit als unsicher betrachtet.</translation>
 <translation id="1405567553485452995">Hellgrün</translation>
 <translation id="1407135791313364759">Alle öffnen</translation>
 <translation id="1413809658975081374">Datenschutzfehler</translation>
@@ -133,6 +132,7 @@
 <translation id="1569487616857761740">Ablaufdatum eingeben</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Fehler beim Anzeigen dieser Webseite.</translation>
+<translation id="1588438908519853928">Normal</translation>
 <translation id="1592005682883173041">Zugriff auf lokale Daten</translation>
 <translation id="1594030484168838125">Auswählen</translation>
 <translation id="161042844686301425">Cyan</translation>
@@ -210,7 +210,6 @@
 <translation id="1981206234434200693">Chrome-Browserverlauf löschen</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{und 1 weitere}other{und # weitere}}</translation>
 <translation id="2003709556000175978">Jetzt Passwort zurücksetzen</translation>
-<translation id="20053308747750172">Der Server <ph name="ORIGIN" />, zu dem Sie gehen, verlangt, dass auf alle an ihn gerichteten Anfragen eine Sicherheitsrichtlinie angewendet wird. Jetzt hat er aber eine ungültige Richtlinie bereitgestellt, was den Browser daran hindert, Ihre Anfrage für <ph name="SITE" /> auszuführen.</translation>
 <translation id="2025186561304664664">Proxy ist auf automatische Konfiguration eingestellt.</translation>
 <translation id="202813660234680402">Nein, nicht hinzufügen</translation>
 <translation id="2030481566774242610">Meinten Sie <ph name="LINK" />?</translation>
@@ -288,7 +287,6 @@
 <translation id="2409589295040002961">Ihr Administrator kann die Browsereinstellungen per Remotezugriff ändern. Aktivitäten auf diesem Gerät können auch außerhalb von Chrome verwaltet werden. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wurde möglicherweise widerrufen. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
-<translation id="2418081434543109369">Der Server <ph name="ORIGIN" />, zu dem Sie gehen, verlangt, dass auf alle an ihn gerichteten Anfragen eine Sicherheitsrichtlinie angewendet wird. Aber er hat keine Richtlinie bereitgestellt, was den Browser daran hindert, Ihre Anfrage für <ph name="SITE" /> auszuführen.</translation>
 <translation id="2463193859425327265">Startseite ändern</translation>
 <translation id="2463739503403862330">Ausfüllen</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -464,7 +462,7 @@
 <translation id="3399952811970034796">Lieferadresse</translation>
 <translation id="3422248202833853650">Versuchen Sie, andere Programme zu beenden, um Speicher freizugeben.</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> ist momentan nicht erreichbar.</translation>
-<translation id="3427092606871434483">Zulassen (Standardeinstellung)</translation>
+<translation id="3427092606871434483">Zulassen (Standard)</translation>
 <translation id="3427342743765426898">&amp;Bearbeiten wiederholen</translation>
 <translation id="342781501876943858">Chromium empfiehlt, Ihr Passwort zurückzusetzen, wenn Sie es auf anderen Websites verwendet haben.</translation>
 <translation id="3431636764301398940">Diese Karte für dieses Gerät speichern</translation>
@@ -578,6 +576,7 @@
 <translation id="4103249731201008433">Seriennummer des Geräts ist ungültig.</translation>
 <translation id="410351446219883937">Autoplay</translation>
 <translation id="4103763322291513355">Unter &lt;strong&gt;chrome://policy&lt;/strong&gt; finden Sie eine Liste der blockierten URLs und andere Richtlinien, die durch Ihren Systemadministrator erzwungen werden.</translation>
+<translation id="4108231218301530806">Diese Karte das nächste Mal per Fingerabdruck bestätigen.</translation>
 <translation id="4110652170750985508">Zahlung überprüfen</translation>
 <translation id="4112140312785995938">Zurück springen</translation>
 <translation id="4116663294526079822">Auf dieser Website immer zulassen</translation>
@@ -633,7 +632,7 @@
 <translation id="4302965934281694568">Chou3 (Umschlag)</translation>
 <translation id="4305817255990598646">Wechseln</translation>
 <translation id="4312613361423056926">B2</translation>
-<translation id="4312866146174492540">Blockieren (Standardeinstellung)</translation>
+<translation id="4312866146174492540">Blockieren (Standard)</translation>
 <translation id="4318566738941496689">Gerätename und Netzwerkadresse</translation>
 <translation id="4325863107915753736">Der Artikel wurde nicht gefunden.</translation>
 <translation id="4326324639298822553">Prüfen Sie Ihr Ablaufdatum und versuchen Sie es dann erneut</translation>
@@ -780,6 +779,7 @@
 <translation id="5141240743006678641">Synchronisierte Passwörter mit Ihren Google-Anmeldeinformationen verschlüsseln</translation>
 <translation id="5145883236150621069">Fehlercode in der Richtlinienantwort</translation>
 <translation id="515292512908731282">C4 (Umschlag)</translation>
+<translation id="5158275234811857234">Titelseite</translation>
 <translation id="5159010409087891077">Seite in einem neuen Inkognitofenster öffnen (⇧⌘N)</translation>
 <translation id="516920405563544094">Geben Sie die Kartenprüfnummer (CVC) für <ph name="CREDIT_CARD" /> ein. Nach erfolgter Bestätigung werden die Kartendetails Ihres Google-Kontos an diese Website weitergegeben.</translation>
 <translation id="5169827969064885044">Sie könnten den Zugriff auf das Konto Ihres Unternehmens verlieren oder zum Opfer von Identitätsdiebstahl werden. Chrome empfiehlt Ihnen, Ihr Passwort jetzt zu ändern.</translation>
@@ -938,6 +938,7 @@
 <translation id="598637245381783098">Fehler beim Öffnen der Zahlungs-App</translation>
 <translation id="5989320800837274978">Weder feste Proxyserver noch eine PAC-Skript-URL sind festgelegt.</translation>
 <translation id="5990559369517809815">Anfragen an den Server wurden durch eine Erweiterung blockiert.</translation>
+<translation id="6000758707621254961"><ph name="RESULT_COUNT" /> Ergebnisse für "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">Jahr</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Seite 1}other{Seite #}}</translation>
@@ -996,6 +997,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Keins}=1{1 Passwort (für <ph name="DOMAIN_LIST" />, synchronisiert)}=2{2 Passwörter (für <ph name="DOMAIN_LIST" />, synchronisiert)}other{# Passwörter (für <ph name="DOMAIN_LIST" />, synchronisiert)}}</translation>
 <translation id="6358450015545214790">Was bedeuten diese Hinweise?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6377268785556383139">1 Ergebnis für "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Warnung vor möglichen Kosten.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 weiterer Vorschlag}other{# weitere Vorschläge}}</translation>
@@ -1130,7 +1132,6 @@
 <translation id="717330890047184534">GAIA-ID: </translation>
 <translation id="7174545416324379297">Zusammengeführt</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> und <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> weitere}other{<ph name="SHIPPING_OPTION_PREVIEW" /> und <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> weitere}}</translation>
-<translation id="7177397715882417099">Der Server <ph name="ORIGIN" />, zu dem Sie gehen, verlangt, dass auf alle an ihn gerichteten Anfragen eine Sicherheitsrichtlinie angewendet wird. Aber statt eine Richtlinie bereitzustellen, hat er den Browser weitergeleitet, was den Browser daran hindert, Ihre Anfrage für <ph name="SITE" /> auszuführen.</translation>
 <translation id="7179323680825933600">Zahlungsmethoden speichern und ausfüllen</translation>
 <translation id="7180611975245234373">Aktualisieren</translation>
 <translation id="7182878459783632708">Keine Richtlinien festgelegt</translation>
@@ -1157,6 +1158,7 @@ Weitere Details:
 <translation id="7300012071106347854">Kobaltblau</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
 <translation id="7303701124147721189">Damit Zahlungen zukünftig schneller abgewickelt werden können, speichern Sie Ihre Kreditkartendaten und Ihre Rechnungsadresse in Ihrem Google-Konto und auf diesem Gerät.</translation>
+<translation id="7304030187361489308">Hoch</translation>
 <translation id="7309308571273880165">Absturzbericht erfasst: <ph name="CRASH_TIME" /> (Upload wurde vom Nutzer angefordert, aber noch nicht abgeschlossen)</translation>
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />Safe Browsing<ph name="END_LINK" />-Warnmeldungen</translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1305,7 +1307,7 @@ Weitere Details:
 <translation id="8034522405403831421">Diese Seite ist auf <ph name="SOURCE_LANGUAGE" />. In folgende Sprache übersetzen: <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8035152190676905274">Stift</translation>
 <translation id="8037117624646282037">Nutzer, die das Gerät vor Kurzem verwendet haben</translation>
-<translation id="8037357227543935929">Nachfragen (Standardeinstellung)</translation>
+<translation id="8037357227543935929">Nachfragen (Standard)</translation>
 <translation id="803771048473350947">Datei</translation>
 <translation id="8041089156583427627">Feedback geben</translation>
 <translation id="8041940743680923270">Globalen Standard verwenden (Fragen)</translation>
@@ -1520,7 +1522,6 @@ Weitere Details:
 <translation id="939736085109172342">Neuer Ordner</translation>
 <translation id="945855313015696284">Lesen Sie sich die unten stehenden Informationen durch und löschen Sie ungültige Karten</translation>
 <translation id="951104842009476243">Akzeptierte Debit- und Prepaidkarten</translation>
-<translation id="958202389743790697">Gemäß der Sicherheitsrichtlinie von <ph name="ORIGIN" /> blockiert.</translation>
 <translation id="962484866189421427">Dieser Inhalt könnte betrügerische Apps installieren, die scheinbar einem anderen Zweck dienen oder Daten erfassen, um Sie auszuspionieren. <ph name="BEGIN_LINK" />Trotzdem zeigen<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Offizieller Build</translation>
 <translation id="973773823069644502">Lieferadresse hinzufügen</translation>

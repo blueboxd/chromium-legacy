@@ -97,9 +97,6 @@
 <translation id="138218114945450791">светлосиньо</translation>
 <translation id="1382194467192730611">USB устройството е разрешено от администратора</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> не изпрати данни.</translation>
-<translation id="140316286225361634">Сайтът <ph name="ORIGIN" /> е поискал за всички негови заявки
-да е в сила правило за сигурност, според което понастоящем той е
-опасен.</translation>
 <translation id="1405567553485452995">светлозелено</translation>
 <translation id="1407135791313364759">Отваряне на всички</translation>
 <translation id="1413809658975081374">Грешка, свързана в поверителността</translation>
@@ -135,6 +132,7 @@
 <translation id="1569487616857761740">Въведете дата на валидност</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Възникна проблем при показването на тази уеб страница.</translation>
+<translation id="1588438908519853928">Нормално</translation>
 <translation id="1592005682883173041">Достъп до локални данни</translation>
 <translation id="1594030484168838125">Избор</translation>
 <translation id="161042844686301425">синьозелено</translation>
@@ -212,10 +210,6 @@
 <translation id="1981206234434200693">Изчистване на данните за историята на сърфиране в Chrome</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{и още 1}other{и още #}}</translation>
 <translation id="2003709556000175978">Задайте повторно паролата си сега</translation>
-<translation id="20053308747750172">Сървърът, който отваряте (<ph name="ORIGIN" />), е поискал
-за всички заявки към него да се прилага правило за сигурност. Сега обаче той
-предостави невалидно правило, което не позволява на браузъра
-да изпълни заявката ви за <ph name="SITE" />.</translation>
 <translation id="2025186561304664664">За прокси сървъра е зададена автоматична конфигурация.</translation>
 <translation id="202813660234680402">Не, не искам</translation>
 <translation id="2030481566774242610">Може би имахте предвид <ph name="LINK" />?</translation>
@@ -293,10 +287,6 @@
 <translation id="2409589295040002961">Администраторът ви може отдалечено да променя настройките на браузъра. Възможно е активността на това устройство да се управлява и извън Chrome. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Сървърът не можа да докаже, че е <ph name="DOMAIN" />; възможно е сертификатът му за сигурност да е оттеглен. Това може да се дължи на неправилно конфигуриране или на прихващане на връзката ви от атакуващ.</translation>
-<translation id="2418081434543109369">Сървърът, който отваряте (<ph name="ORIGIN" />), е поискал
-за всички заявки към него да се прилага правило за сигурност. Той обаче
-не успя да предостави правило, така че браузърът не може да изпълни
-заявката ви за <ph name="SITE" />.</translation>
 <translation id="2463193859425327265">Промяна на началната страница</translation>
 <translation id="2463739503403862330">Попълване</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -588,6 +578,7 @@
 <translation id="4103249731201008433">Серийният номер на устройството е невалиден</translation>
 <translation id="410351446219883937">Автоматично възпроизвеждане</translation>
 <translation id="4103763322291513355">Посетете &lt;strong&gt;chrome://policy&lt;/strong&gt;, за да видите изброени URL адресите в черния списък и другите правила, наложени от системния ви администратор.</translation>
+<translation id="4108231218301530806">Използване на пръстов отпечатък за потвърждаване на тази карта следващия път.</translation>
 <translation id="4110652170750985508">Преглед на плащането ви</translation>
 <translation id="4112140312785995938">Придвижване назад</translation>
 <translation id="4116663294526079822">Разрешаване винаги на този сайт</translation>
@@ -790,6 +781,7 @@
 <translation id="5141240743006678641">Синхронизираните пароли да се шифроват с идентификационните ви данни за Google</translation>
 <translation id="5145883236150621069">В отговора за правилото присъства код на грешка</translation>
 <translation id="515292512908731282">C4 (плик)</translation>
+<translation id="5158275234811857234">Корица</translation>
 <translation id="5159010409087891077">Отворете страницата в нов прозорец в режим „инкогнито“ (⇧⌘N).</translation>
 <translation id="516920405563544094">Въведете кода за проверка за <ph name="CREDIT_CARD" />. След като потвърдите картата си, данните за нея от профила ви в Google ще бъдат споделени с този сайт.</translation>
 <translation id="5169827969064885044">Възможно е да загубите достъп до профила си в организацията или самоличността ви да бъде открадната. Chrome препоръчва да промените паролата си сега.</translation>
@@ -948,6 +940,7 @@
 <translation id="598637245381783098">Приложението за плащане не може да се отвори</translation>
 <translation id="5989320800837274978">Не са посочени нито фиксирани прокси сървъри, нито URL адрес на скрипт във формат .pac.</translation>
 <translation id="5990559369517809815">Заявките към сървъра са блокирани от разширение.</translation>
+<translation id="6000758707621254961"><ph name="RESULT_COUNT" /> резултата за „<ph name="SEARCH_TEXT" />“</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">Година</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Страница 1}other{Страница #}}</translation>
@@ -1006,6 +999,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Няма}=1{1 парола (за <ph name="DOMAIN_LIST" />, синхронизирана)}=2{2 пароли (за <ph name="DOMAIN_LIST" />, синхронизирани)}other{# пароли (за <ph name="DOMAIN_LIST" />, синхронизирани)}}</translation>
 <translation id="6358450015545214790">Какво означават тези неща?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6377268785556383139">1 резултат за „<ph name="SEARCH_TEXT" />“</translation>
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Възможно е таксуване.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{още 1 предложение}other{още # предложения}}</translation>
@@ -1140,10 +1134,6 @@
 <translation id="717330890047184534">Идентификатор в GAIA:</translation>
 <translation id="7174545416324379297">Обединени стойности</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> и още <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> и още <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
-<translation id="7177397715882417099">Сървърът, който отваряте (<ph name="ORIGIN" />), е поискал
-за всички заявки към него да се прилага правило за сигурност. Вместо обаче
-да предостави правило, той е пренасочил браузъра другаде, което не позволява
-на Chrome да изпълни заявката ви за <ph name="SITE" />.</translation>
 <translation id="7179323680825933600">Запазване и попълване на начини на плащане</translation>
 <translation id="7180611975245234373">Опресняване</translation>
 <translation id="7182878459783632708">Няма зададени правила</translation>
@@ -1170,6 +1160,7 @@
 <translation id="7300012071106347854">кобалтовосиньо</translation>
 <translation id="7302712225291570345">„<ph name="TEXT" />“</translation>
 <translation id="7303701124147721189">За да платите по-бързо следващия път, запазете картата и адреса си за фактуриране в профила си в Google и на това устройство.</translation>
+<translation id="7304030187361489308">Висока</translation>
 <translation id="7309308571273880165">Сигнал за срив, записан в/ъв <ph name="CRASH_TIME" /> (потребителят е заявил качване, което още не е извършено)</translation>
 <translation id="7313965965371928911">Предупреждения от <ph name="BEGIN_LINK" />Безопасно сърфиране<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1531,7 +1522,6 @@
 <translation id="939736085109172342">Нова папка</translation>
 <translation id="945855313015696284">Проверете информацията по-долу и изтрийте невалидните карти</translation>
 <translation id="951104842009476243">Приемани дебитни и предплатени карти</translation>
-<translation id="958202389743790697">Блокирано съгласно правилото за сигурност на <ph name="ORIGIN" />.</translation>
 <translation id="962484866189421427">Въпросното съдържание може да се опита да инсталира измамни приложения, които се представят за нещо друго или събират данни, които може да се използват за проследяването ви. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Официално издание</translation>
 <translation id="973773823069644502">Добавяне на адрес за бърза доставка</translation>

@@ -813,9 +813,6 @@ extern const char kUseMultiloginEndpointDescription[];
 extern const char kOfferStoreUnmaskedWalletCardsName[];
 extern const char kOfferStoreUnmaskedWalletCardsDescription[];
 
-extern const char kOmniboxAlternateMatchDescriptionSeparatorName[];
-extern const char kOmniboxAlternateMatchDescriptionSeparatorDescription[];
-
 extern const char kOmniboxAutocompleteTitlesName[];
 extern const char kOmniboxAutocompleteTitlesDescription[];
 
@@ -1742,9 +1739,6 @@ extern const char kCloudPrintXpsDescription[];
 
 extern const char kD3D11VideoDecoderName[];
 extern const char kD3D11VideoDecoderDescription[];
-
-extern const char kEnableAuraTooltipsOnWindowsName[];
-extern const char kEnableAuraTooltipsOnWindowsDescription[];
 
 extern const char kEnableGpuAppcontainerName[];
 extern const char kEnableGpuAppcontainerDescription[];

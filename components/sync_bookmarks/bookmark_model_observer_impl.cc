@@ -93,8 +93,11 @@ void BookmarkModelObserverImpl::BookmarkNodeAdded(
   // Similar to the directory implementation here:
   // https://cs.chromium.org/chromium/src/components/sync/syncable/mutable_entry.cc?l=237&gsn=CreateEntryKernel
   // Assign a temp server id for the entity. Will be overriden by the actual
-  // server id upon receiving commit response.
-  const std::string sync_id = base::GenerateGUID();
+  // server id upon receiving commit response. As this value later populates the
+  // originator_client_item_id field in EntityData, which replaces the GUID in
+  // legacy clients, it is set to the node's actual GUID.
+  DCHECK(base::IsValidGUID(node->guid()));
+  const std::string sync_id = node->guid();
   const int64_t server_version = syncer::kUncommittedVersion;
   const base::Time creation_time = base::Time::Now();
   const sync_pb::UniquePosition unique_position =

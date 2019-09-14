@@ -20,7 +20,6 @@ struct AutocompleteMatch;
 class LocationBarView;
 class OmniboxEditModel;
 class OmniboxResultView;
-enum class OmniboxTint;
 class OmniboxViewViews;
 
 // A view representing the contents of the autocomplete popup.
@@ -28,7 +27,8 @@ class OmniboxPopupContentsView : public views::View, public OmniboxPopupView {
  public:
   OmniboxPopupContentsView(OmniboxViewViews* omnibox_view,
                            OmniboxEditModel* edit_model,
-                           LocationBarView* location_bar_view);
+                           LocationBarView* location_bar_view,
+                           const ui::ThemeProvider* theme_provider);
   ~OmniboxPopupContentsView() override;
 
   OmniboxPopupModel* model() const { return model_.get(); }
@@ -45,9 +45,6 @@ class OmniboxPopupContentsView : public views::View, public OmniboxPopupView {
   // available as a vector icon, it will be |vector_icon_color|.
   gfx::Image GetMatchIcon(const AutocompleteMatch& match,
                           SkColor vector_icon_color) const;
-
-  // Returns the theme color tint (e.g. dark or light).
-  OmniboxTint CalculateTint() const;
 
   // Sets the line specified by |index| as selected.
   virtual void SetSelectedLine(size_t index);

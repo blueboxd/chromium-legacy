@@ -183,7 +183,7 @@ SkRRect FocusRing::RingRectFromPathRect(const SkRRect& rrect) const {
 
 SkPath GetHighlightPath(const View* view) {
   SkPath path = GetHighlightPathInternal(view);
-  if (view->flip_canvas_on_paint_for_rtl_ui()) {
+  if (view->flip_canvas_on_paint_for_rtl_ui() && base::i18n::IsRTL()) {
     gfx::Point center = view->GetLocalBounds().CenterPoint();
     SkMatrix flip;
     flip.setScale(-1, 1, center.x(), center.y());

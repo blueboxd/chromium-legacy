@@ -104,7 +104,6 @@
 <translation id="2359808026110333948">המשך</translation>
 <translation id="2365393535144473978">‏כשמפעילים את חבילת הגלישה, מופעלת גם תקשורת Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
-<translation id="239188844683466770">הפעלה או השבתה של מצב 'נא לא להפריע'</translation>
 <translation id="2412593942846481727">יש עדכון זמין</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> הוא סשן מנוהל שמנוהל על-ידי <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">לחיצה שמאלית</translation>
@@ -224,6 +223,7 @@
 <translation id="4181841719683918333">שפות</translation>
 <translation id="4195877955194704651">לחצן קליקים אוטומטיים</translation>
 <translation id="4217571870635786043">הכתבה</translation>
+<translation id="421885205185866088">קוד אימות של כרטיס חכם עבור <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">צפייה בהגדרות של הודעות. ההודעות מושבתות</translation>
 <translation id="4269883910223712419">מנהל המכשיר הזה יכול:</translation>
@@ -239,6 +239,7 @@
 <translation id="4379531060876907730">אלה כלי הסטיילוס שלך</translation>
 <translation id="4389184120735010762">הקשת על מקש הקיצור של זכוכית מגדלת במצב עגינה. להפעיל אותה?</translation>
 <translation id="4421231901400348175">שיתוף השליטה במסך עם <ph name="HELPER_NAME" /> דרך סיוע מרחוק.</translation>
+<translation id="4430019312045809116">עוצמת קול</translation>
 <translation id="4450893287417543264">אין להציג שוב</translation>
 <translation id="4477350412780666475">הטראק הבא</translation>
 <translation id="4479639480957787382">אתרנט</translation>

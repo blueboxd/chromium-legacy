@@ -43,9 +43,9 @@ public final class Profile {
         }
     }
 
-    public BrowserController createBrowserController(Context context) {
+    public BrowserFragmentImpl createBrowserFragment(Context context) {
         try {
-            return new BrowserController(
+            return new BrowserFragmentImpl(
                     mImpl.createBrowserController(ObjectWrapper.wrap(context)));
         } catch (RemoteException e) {
             throw new APICallException(e);

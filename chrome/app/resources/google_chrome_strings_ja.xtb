@@ -43,6 +43,8 @@
 <translation id="1873233029667955273">Google Chrome はデフォルトのブラウザとして設定されていません</translation>
 <translation id="1874309113135274312">Google Chrome ベータ版（mDNS-In）</translation>
 <translation id="1877026089748256423">Chrome は古いバージョンです</translation>
+<translation id="1900795423379050516">このページに設定が表示されない場合は、<ph name="LINK_BEGIN" />
+      Chrome ブラウザの設定<ph name="LINK_END" />を確認してください</translation>
 <translation id="1915828456209461693">Chrome の新しいアップデートを利用できます。再起動するとすぐにアップデートが適用されます。</translation>
 <translation id="1919130412786645364">Chrome へのログインを許可する</translation>
 <translation id="2063848847527508675">アップデートを適用するには、Chrome OS を再起動する必要があります。</translation>
@@ -156,6 +158,8 @@
 <translation id="5543953544073077331">Chrome の他のコピーが動作しています。更新するには他のコピーを終了してください。</translation>
 <translation id="556024056938947818">Google Chrome はパスワードを表示しようとしています。</translation>
 <translation id="5566025111015594046">Google Chrome（mDNS インバウンド）</translation>
+<translation id="5657226924540934362">このページに設定が表示されない場合は、<ph name="LINK_BEGIN" />
+      Chrome OS の設定<ph name="LINK_END" />を確認してください</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> は危険なファイルの可能性があるため、Chrome でブロックしました。</translation>
 <translation id="5686916850681061684">Google Chrome をカスタマイズ、制御します。確認の必要な項目があります。クリックして詳細をご覧ください。</translation>
 <translation id="5690427481109656848">Google LLC</translation>

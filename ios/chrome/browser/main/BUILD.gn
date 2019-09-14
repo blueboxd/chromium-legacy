@@ -8,6 +8,8 @@ source_set("main") {
     "browser_impl.h",
     "browser_impl.mm",
     "browser_observer.h",
+    "browser_web_state_list_delegate.h",
+    "browser_web_state_list_delegate.mm",
   ]
   deps = [
     "//base",

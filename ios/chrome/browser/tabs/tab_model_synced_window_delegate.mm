@@ -18,14 +18,9 @@
 TabModelSyncedWindowDelegate::TabModelSyncedWindowDelegate(
     WebStateList* web_state_list)
     : web_state_list_(web_state_list), session_id_(SessionID::NewUnique()) {
-  web_state_list_->AddObserver(this);
   for (int index = 0; index < web_state_list_->count(); ++index) {
     SetWindowIdForWebState(web_state_list_->GetWebStateAt(index));
   }
-}
-
-TabModelSyncedWindowDelegate::~TabModelSyncedWindowDelegate() {
-  web_state_list_->RemoveObserver(this);
 }
 
 SessionID TabModelSyncedWindowDelegate::GetTabIdAt(int index) const {

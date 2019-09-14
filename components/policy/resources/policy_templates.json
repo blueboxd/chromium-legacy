@@ -6442,7 +6442,6 @@
         'per_profile': True,
       },
       'example_value': True,
-      'default_for_enterprise_users': True,
       'id': 584,
       'caption': '''Enables the concept of policy atomic groups''',
       'tags': [],

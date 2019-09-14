@@ -8,14 +8,17 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min}other{# min}}</translation>
 <translation id="1181037720776840403">Entfernen</translation>
 <translation id="1243314992276662751">Hochladen</translation>
+<translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> konnte nicht geteilt werden</translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1290982764014248209"><ph name="DRAGGED_APP" /> in den Ordner <ph name="FOLDER_NAME" /> verschieben.</translation>
+<translation id="1291104554099683393">Bitte teilen Sie den Text in mehrere Abschnitte ein.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">EMPFOHLENE APPS</translation>
 <translation id="1368832886055348810">Rechtsläufig</translation>
 <translation id="1383876407941801731">Suchen</translation>
 <translation id="1398853756734560583">Vergrößern</translation>
 <translation id="1409544243779336081">App-Empfehlung</translation>
+<translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> kann nicht geteilt werden</translation>
 <translation id="1498028757988366001">Danach haben Sie schon einmal gesucht. Wenn Sie "<ph name="QUERY" />" aus Ihrem Verlauf löschen, wird diese Suchanfrage dauerhaft von allen Geräten in Ihrem Konto entfernt.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 Minute und  }other{# Minuten und  }}</translation>
 <translation id="1643823602425662293">Benachrichtigung</translation>
@@ -35,6 +38,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;Alles auswählen</translation>
 <translation id="1938451708255335766">Wenn Sie die Anzeigedichte der App-Fenster anpassen möchten, starten Sie die App neu.</translation>
+<translation id="2006524834898217237">Prüfen Sie, ob das Gerät mit dem Internet verbunden ist.</translation>
 <translation id="208586643495776849">Versuchen Sie es bitte noch einmal</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 Tag}other{# Tage}}</translation>
 <translation id="2148716181193084225">Heute</translation>
@@ -76,6 +80,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 Tag}other{# Tage}}</translation>
 <translation id="3295886253693811851">Anruf starten mit</translation>
 <translation id="335581015389089642">Sprachausgabe</translation>
+<translation id="3389286852084373014">SMS zu lang</translation>
 <translation id="3443810440409579745">Tab erhalten.</translation>
 <translation id="3479552764303398839">Jetzt nicht</translation>
 <translation id="348799646910989694">Ablage automatisch ausgeblendet</translation>
@@ -151,11 +156,13 @@
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 Sek. her}other{# Sek. her}}</translation>
 <translation id="6430678249303439055">Alle Benachrichtigungen von dieser App blockieren</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Vor 1 Sekunde}other{Vor # Sekunden}}</translation>
+<translation id="6539092367496845964">Ein Fehler ist aufgetreten. Versuchen Sie es später noch einmal.</translation>
 <translation id="654149438358937226">Alle Benachrichtigungen blockieren</translation>
 <translation id="6567071839949112727">Auf Vorgängerelement klicken</translation>
 <translation id="6578407462441924264">Unbenannt</translation>
 <translation id="6612467943526193239">Zum Abbrechen der Kalibrierung ESC drücken.</translation>
 <translation id="6620110761915583480">Datei speichern</translation>
+<translation id="6656912866303152668">Prüfen Sie, ob auf "<ph name="TARGET_DEVICE_NAME" />" die Synchronisierung in Chrome aktiviert ist, und versuchen Sie es dann noch einmal.</translation>
 <translation id="6699343763173986273">Medien – nächster Titel</translation>
 <translation id="673773751041746814">Löschen</translation>
 <translation id="6779314412797872738">Wenn Sie eine Nummer von diesem Gerät an Ihr Android-Smartphone senden möchten, müssen Sie für beide Geräte in den Einstellungen die <ph name="TROUBLESHOOT_LINK" />.</translation>
@@ -221,6 +228,7 @@
 <translation id="8876215549894133151">Format:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8926951137623668982">Ablage immer ausgeblendet</translation>
+<translation id="8996630695507351249">Prüfen Sie, ob "<ph name="TARGET_DEVICE_NAME" />" mit dem Internet verbunden ist.</translation>
 <translation id="9002566407876343676">Öffnen</translation>
 <translation id="9039076430527029379">Zu Seite <ph name="PAGE_NUMBER" />, Zeile <ph name="ROW_NUMBER" />, Spalte <ph name="COLUMN_NUMBER" /> verschieben.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 Sek.}other{# Sek.}}</translation>

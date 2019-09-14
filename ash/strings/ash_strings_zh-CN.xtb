@@ -104,7 +104,6 @@
 <translation id="2359808026110333948">继续</translation>
 <translation id="2365393535144473978">如果您启用移动数据网络，蓝牙亦会随之开启。</translation>
 <translation id="2391579633712104609">180°</translation>
-<translation id="239188844683466770">切换“请勿打扰”模式</translation>
 <translation id="2412593942846481727">有可用的更新</translation>
 <translation id="2413728805700750528">“<ph name="DISPLAY_NAME" />”是一个由 <ph name="DOMAIN" /> 管理的受管理自助服务终端</translation>
 <translation id="2427507373259914951">点击鼠标左键</translation>
@@ -224,6 +223,7 @@
 <translation id="4181841719683918333">语言</translation>
 <translation id="4195877955194704651">“自动点击”按钮</translation>
 <translation id="4217571870635786043">语音输入</translation>
+<translation id="421885205185866088"><ph name="USER_EMAIL_ADDRESS" /> 的智能卡 PIN 码</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">显示通知设置。通知已关闭</translation>
 <translation id="4269883910223712419">此设备的管理员能够：</translation>
@@ -239,6 +239,7 @@
 <translation id="4379531060876907730">这些是您的触控笔工具</translation>
 <translation id="4389184120735010762">您按下了停靠放大镜的键盘快捷键。要开启这项功能吗？</translation>
 <translation id="4421231901400348175">正在通过远程协助与<ph name="HELPER_NAME" />共享您屏幕的控制权限。</translation>
+<translation id="4430019312045809116">音量</translation>
 <translation id="4450893287417543264">不再显示</translation>
 <translation id="4477350412780666475">下一曲</translation>
 <translation id="4479639480957787382">以太网</translation>

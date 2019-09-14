@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.download;
 
 import android.app.Activity;
+import android.app.DownloadManager;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -683,7 +684,11 @@ public class DownloadUtils {
      */
     public static void openItem(
             ContentId contentId, boolean isOffTheRecord, @DownloadOpenSource int source) {
-        if (LegacyHelpers.isLegacyOfflinePage(contentId)) {
+        if (LegacyHelpers.isLegacyAndroidDownload(contentId)) {
+            ContextUtils.getApplicationContext().startActivity(
+                    new Intent(DownloadManager.ACTION_VIEW_DOWNLOADS)
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+        } else if (LegacyHelpers.isLegacyOfflinePage(contentId)) {
             OfflineContentAggregatorFactory.get().openItem(LaunchLocation.PROGRESS_BAR, contentId);
         } else {
             DownloadManagerService.getDownloadManagerService().openDownload(

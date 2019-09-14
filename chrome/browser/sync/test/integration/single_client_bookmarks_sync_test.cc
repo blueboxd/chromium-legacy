@@ -4,6 +4,7 @@
 
 #include <utility>
 
+#include "base/guid.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -34,6 +35,7 @@ using bookmarks::UrlAndTitle;
 using bookmarks_helper::AddFolder;
 using bookmarks_helper::AddURL;
 using bookmarks_helper::CheckHasNoFavicon;
+using bookmarks_helper::ContainsBookmarkNodeWithGUID;
 using bookmarks_helper::CountBookmarksWithTitlesMatching;
 using bookmarks_helper::CountBookmarksWithUrlsMatching;
 using bookmarks_helper::CountFoldersWithTitlesMatching;
@@ -783,6 +785,210 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
   EXPECT_EQ(
       0, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.BOOKMARK",
                                          /*REMOTE_INITIAL_UPDATE=*/5));
+}
+
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
+                       ApplyRemoteCreationWithValidGUID) {
+  // This test is only relevant for USS code path.
+  if (!base::FeatureList::IsEnabled(switches::kSyncUSSBookmarks))
+    return;
+
+  // Start syncing.
+  DisableVerifier();
+  ASSERT_TRUE(SetupSync());
+  ASSERT_EQ(0u, GetBookmarkBarNode(kSingleProfileIndex)->children().size());
+
+  // Create a bookmark folder with a valid GUID.
+  fake_server::EntityBuilderFactory entity_builder_factory;
+  fake_server::BookmarkEntityBuilder bookmark_builder =
+      entity_builder_factory.NewBookmarkEntityBuilder("Seattle Sounders FC");
+
+  // Issue remote creation with a valid GUID.
+  std::unique_ptr<syncer::LoopbackServerEntity> folder =
+      bookmark_builder.BuildFolder(/*is_legacy=*/false);
+  const std::string guid = folder.get()->GetSpecifics().bookmark().guid();
+  ASSERT_TRUE(base::IsValidGUID(guid));
+  ASSERT_FALSE(ContainsBookmarkNodeWithGUID(kSingleProfileIndex, guid));
+  fake_server_->InjectEntity(std::move(folder));
+
+  // A folder should have been added with the corresponding GUID.
+  EXPECT_TRUE(BookmarksGUIDChecker(kSingleProfileIndex, guid).Wait());
+  EXPECT_EQ(1u, GetBookmarkBarNode(kSingleProfileIndex)->children().size());
+  EXPECT_EQ(
+      guid,
+      GetBookmarkBarNode(kSingleProfileIndex)->children()[0].get()->guid());
+}
+
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
+                       ApplyRemoteCreationWithoutValidGUID) {
+  // This test is only relevant for USS code path.
+  if (!base::FeatureList::IsEnabled(switches::kSyncUSSBookmarks))
+    return;
+
+  // Start syncing.
+  DisableVerifier();
+  ASSERT_TRUE(SetupSync());
+  ASSERT_EQ(0u, GetBookmarkBarNode(kSingleProfileIndex)->children().size());
+
+  const std::string originator_client_item_id = base::GenerateGUID();
+  ASSERT_FALSE(ContainsBookmarkNodeWithGUID(kSingleProfileIndex,
+                                            originator_client_item_id));
+
+  fake_server::EntityBuilderFactory entity_builder_factory;
+  fake_server::BookmarkEntityBuilder bookmark_builder =
+      entity_builder_factory.NewBookmarkEntityBuilder(
+          "Seattle Sounders FC", originator_client_item_id);
+
+  // Issue remote creation without a valid GUID but with a valid
+  // originator_client_item_id.
+  std::unique_ptr<syncer::LoopbackServerEntity> folder =
+      bookmark_builder.BuildFolder(/*is_legacy=*/true);
+  ASSERT_TRUE(folder.get()->GetSpecifics().bookmark().guid().empty());
+  fake_server_->InjectEntity(std::move(folder));
+
+  // A bookmark folder should have been added with the originator_client_item_id
+  // as the GUID.
+  EXPECT_TRUE(
+      BookmarksGUIDChecker(kSingleProfileIndex, originator_client_item_id)
+          .Wait());
+  EXPECT_EQ(1u, GetBookmarkBarNode(kSingleProfileIndex)->children().size());
+  EXPECT_EQ(
+      originator_client_item_id,
+      GetBookmarkBarNode(kSingleProfileIndex)->children()[0].get()->guid());
+}
+
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
+                       ApplyRemoteCreationWithoutValidGUIDOrOCII) {
+  // This test is only relevant for USS code path.
+  if (!base::FeatureList::IsEnabled(switches::kSyncUSSBookmarks))
+    return;
+
+  // Start syncing.
+  DisableVerifier();
+  ASSERT_TRUE(SetupSync());
+  ASSERT_EQ(0u, GetBookmarkBarNode(kSingleProfileIndex)->children().size());
+
+  GURL url = GURL("http://foo.com");
+  const std::string originator_client_item_id = "INVALID OCII";
+
+  fake_server::EntityBuilderFactory entity_builder_factory;
+  fake_server::BookmarkEntityBuilder bookmark_builder =
+      entity_builder_factory.NewBookmarkEntityBuilder(
+          "Seattle Sounders FC", originator_client_item_id);
+
+  // Issue remote creation without a valid GUID or a valid
+  // originator_client_item_id.
+  std::unique_ptr<syncer::LoopbackServerEntity> bookmark =
+      bookmark_builder.BuildBookmark(url, /*is_legacy=*/true);
+  ASSERT_TRUE(bookmark.get()->GetSpecifics().bookmark().guid().empty());
+  fake_server_->InjectEntity(std::move(bookmark));
+
+  // A bookmark should have been added with a newly assigned valid GUID.
+  EXPECT_TRUE(BookmarksUrlChecker(kSingleProfileIndex, url, 1).Wait());
+  EXPECT_EQ(1u, GetBookmarkBarNode(kSingleProfileIndex)->children().size());
+  EXPECT_TRUE(base::IsValidGUID(
+      GetBookmarkBarNode(kSingleProfileIndex)->children()[0].get()->guid()));
+  EXPECT_FALSE(ContainsBookmarkNodeWithGUID(kSingleProfileIndex,
+                                            originator_client_item_id));
+}
+
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
+                       MergeRemoteCreationWithValidGUID) {
+  // This test is only relevant for USS code path.
+  if (!base::FeatureList::IsEnabled(switches::kSyncUSSBookmarks))
+    return;
+
+  const GURL url = GURL("http://www.foo.com");
+  fake_server::EntityBuilderFactory entity_builder_factory;
+  fake_server::BookmarkEntityBuilder bookmark_builder =
+      entity_builder_factory.NewBookmarkEntityBuilder("Seattle Sounders FC");
+
+  // Create bookmark in server with a valid GUID.
+  std::unique_ptr<syncer::LoopbackServerEntity> bookmark =
+      bookmark_builder.BuildBookmark(url, /*is_legacy=*/false);
+  const std::string guid = bookmark.get()->GetSpecifics().bookmark().guid();
+  ASSERT_TRUE(base::IsValidGUID(guid));
+  fake_server_->InjectEntity(std::move(bookmark));
+
+  // Start syncing.
+  DisableVerifier();
+  ASSERT_TRUE(SetupClients());
+  ASSERT_EQ(0u, GetBookmarkBarNode(kSingleProfileIndex)->children().size());
+  ASSERT_TRUE(SetupSync());
+
+  // A bookmark should have been added with the corresponding GUID.
+  EXPECT_TRUE(BookmarksUrlChecker(kSingleProfileIndex, url, 1).Wait());
+  EXPECT_EQ(1u, GetBookmarkBarNode(kSingleProfileIndex)->children().size());
+  EXPECT_TRUE(ContainsBookmarkNodeWithGUID(kSingleProfileIndex, guid));
+}
+
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
+                       MergeRemoteCreationWithoutValidGUID) {
+  // This test is only relevant for USS code path.
+  if (!base::FeatureList::IsEnabled(switches::kSyncUSSBookmarks))
+    return;
+
+  const GURL url = GURL("http://www.foo.com");
+  const std::string originator_client_item_id = base::GenerateGUID();
+  fake_server::EntityBuilderFactory entity_builder_factory;
+  fake_server::BookmarkEntityBuilder bookmark_builder =
+      entity_builder_factory.NewBookmarkEntityBuilder(
+          "Seattle Sounders FC", originator_client_item_id);
+
+  // Create bookmark in server without a valid GUID but with a valid
+  // originator_client_item_id.
+  std::unique_ptr<syncer::LoopbackServerEntity> bookmark =
+      bookmark_builder.BuildBookmark(url, /*is_legacy=*/true);
+  ASSERT_TRUE(bookmark.get()->GetSpecifics().bookmark().guid().empty());
+  fake_server_->InjectEntity(std::move(bookmark));
+
+  // Start syncing.
+  DisableVerifier();
+  ASSERT_TRUE(SetupClients());
+  ASSERT_EQ(0u, GetBookmarkBarNode(kSingleProfileIndex)->children().size());
+  ASSERT_TRUE(SetupSync());
+
+  // A bookmark should have been added with the originator_client_item_id as the
+  // GUID.
+  EXPECT_TRUE(BookmarksUrlChecker(kSingleProfileIndex, url, 1).Wait());
+  EXPECT_EQ(1u, GetBookmarkBarNode(kSingleProfileIndex)->children().size());
+  EXPECT_TRUE(ContainsBookmarkNodeWithGUID(kSingleProfileIndex,
+                                           originator_client_item_id));
+}
+
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
+                       MergeRemoteCreationWithoutValidGUIDOrOCII) {
+  // This test is only relevant for USS code path.
+  if (!base::FeatureList::IsEnabled(switches::kSyncUSSBookmarks))
+    return;
+
+  const GURL url = GURL("http://www.foo.com");
+  const std::string originator_client_item_id = "INVALID OCII";
+  fake_server::EntityBuilderFactory entity_builder_factory;
+  fake_server::BookmarkEntityBuilder bookmark_builder =
+      entity_builder_factory.NewBookmarkEntityBuilder(
+          "Seattle Sounders FC", originator_client_item_id);
+
+  // Create bookmark in server without a valid GUID and without a valid
+  // originator_client_item_id.
+  std::unique_ptr<syncer::LoopbackServerEntity> bookmark =
+      bookmark_builder.BuildBookmark(url, /*is_legacy=*/true);
+  ASSERT_TRUE(bookmark.get()->GetSpecifics().bookmark().guid().empty());
+  fake_server_->InjectEntity(std::move(bookmark));
+
+  // Start syncing.
+  DisableVerifier();
+  ASSERT_TRUE(SetupClients());
+  ASSERT_EQ(0u, GetBookmarkBarNode(kSingleProfileIndex)->children().size());
+  ASSERT_TRUE(SetupSync());
+
+  // A bookmark should have been added with a newly assigned valid GUID.
+  EXPECT_TRUE(BookmarksUrlChecker(kSingleProfileIndex, url, 1).Wait());
+  EXPECT_EQ(1u, GetBookmarkBarNode(kSingleProfileIndex)->children().size());
+  EXPECT_TRUE(base::IsValidGUID(
+      GetBookmarkBarNode(kSingleProfileIndex)->children()[0].get()->guid()));
+  EXPECT_FALSE(ContainsBookmarkNodeWithGUID(kSingleProfileIndex,
+                                            originator_client_item_id));
 }
 
 INSTANTIATE_TEST_SUITE_P(USS,

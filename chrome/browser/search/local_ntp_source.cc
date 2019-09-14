@@ -300,10 +300,7 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
 
     // Realbox
     AddString(translated_strings.get(), "realboxSeparator",
-              base::FeatureList::IsEnabled(
-                  omnibox::kOmniboxAlternateMatchDescriptionSeparator)
-                  ? IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR_ALTERNATE
-                  : IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR);
+              IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR);
   }
 
   return translated_strings;

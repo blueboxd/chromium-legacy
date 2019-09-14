@@ -194,6 +194,7 @@ Chromium kann Ihre Einstellungen nicht wiederherstellen.</translation>
 <translation id="753534427205733210">{0,plural, =1{Chromium wird in einer Minute neu gestartet}other{Chromium wird in # Minuten neu gestartet}}</translation>
 <translation id="7549178288319965365">Über Chromium OS</translation>
 <translation id="7561906087460245826">Daten aus Chromium ebenfalls löschen (<ph name="URL" />)</translation>
+<translation id="7585853947355360626">Wenn Sie auf dieser Seite eine Einstellung nicht finden können, sehen Sie in den <ph name="LINK_BEGIN" />Einstellungen von Chromium OS<ph name="LINK_END" /> nach</translation>
 <translation id="761356813943268536">Chromium verwendet Ihre Kamera und Ihr Mikrofon.</translation>
 <translation id="7617377681829253106">Chromium ist jetzt noch besser</translation>
 <translation id="7686590090926151193">Chromium ist nicht als Ihr Standardbrowser festgelegt</translation>
@@ -227,6 +228,7 @@ Chromium kann Ihre Einstellungen nicht wiederherstellen.</translation>
 <translation id="8619360774459241877">Chromium wird gestartet…</translation>
 <translation id="8621669128220841554">Die Installation konnte aufgrund eines undefinierten Fehlers nicht abgeschlossen werden. Bitte laden Sie Chromium erneut herunter.</translation>
 <translation id="8667808506758191620">Ihr <ph name="DEVICE_TYPE" /> ist auf dem neuesten Stand.</translation>
+<translation id="8682540261359803721">Wenn Sie auf dieser Seite eine Einstellung nicht finden können, sehen Sie in den <ph name="LINK_BEGIN" />Chromium-Browsereinstellungen<ph name="LINK_END" /> nach</translation>
 <translation id="8697124171261953979">Die Erweiterung legt auch fest, welche Seite beim Start von Chromium oder bei der Suche über die Omnibox angezeigt wird.</translation>
 <translation id="8704119203788522458">Dies ist Ihr persönlicher Chromium-Browser</translation>
 <translation id="8739167630197873875">Cookies werden gelöscht, wenn Sie Chromium beenden. Ändern Sie <ph name="COOKIE_SETTINGS_LINK" />, wenn die Synchronisierung fortgesetzt werden soll.</translation>

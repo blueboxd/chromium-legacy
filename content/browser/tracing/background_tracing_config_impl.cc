@@ -529,7 +529,8 @@ TraceConfig BackgroundTracingConfigImpl::GetConfigForCategoryPreset(
     case BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_POWER:
       return TraceConfig(
           "benchmark,toplevel,ipc,base,audio,compositor,gpu,media,memory,midi,"
-          "native,omnibox,renderer,skia,task_scheduler,ui,v8,views,webaudio",
+          "native,omnibox,renderer,skia,task_scheduler,ui,v8,views,webaudio,"
+          "disabled-by-default-cpu_profiler",
           record_mode);
     case BackgroundTracingConfigImpl::CategoryPreset::BLINK_STYLE:
       return TraceConfig("blink_style", record_mode);

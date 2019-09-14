@@ -1393,10 +1393,7 @@ customize.richerPicker_resetSelectedOptions = function() {
   customize.selectedOptions.background = null;
   customize.selectedOptions.backgroundData = null;
 
-  // Reset color selection.
-  customize.richerPicker_removeSelectedState(customize.selectedOptions.color);
-  customize.selectedOptions.color = null;
-  customize.preselectedOptions.colorsMenuTile = null;
+  customize.resetColorsSelectedOptions();
 
   customize.richerPicker_preselectShortcutOptions();
 };
@@ -1461,7 +1458,7 @@ customize.richerPicker_resetCustomizationMenu = function() {
   customize.richerPicker_resetSelectedOptions();
   customize.richerPicker_resetImageMenu();
   customize.richerPicker_hideOpenSubmenu();
-  customize.resetColorsMenu();
+  customize.resetColorPicker();
 };
 
 /**
@@ -2244,14 +2241,22 @@ customize.colorPickerTileInteraction = function(event) {
 };
 
 /**
- * Loads Colors menu elements.
+ * Loads Colors menu elements and initializes the selected state.
  */
 customize.loadColorsMenu = function() {
-  if (customize.colorsMenuLoaded) {
-    customize.colorsMenuPreselectTile();
-    return;
+  if (!customize.colorsMenuLoaded) {
+    customize.loadColorMenuTiles();
+    customize.colorsMenuLoaded = true;
   }
 
+  customize.resetColorsSelectedOptions();
+  customize.colorsMenuOnThemeChange();
+};
+
+/**
+ * Loads Colors menu tiles, e.g. color picker, default tile and color tiles.
+ */
+customize.loadColorMenuTiles = function() {
   const colorsColl = ntpApiHandle.getColorsInfo();
   for (let i = 0; i < colorsColl.length; ++i) {
     // After 4 color tiles create an empty tile to take the place of the color
@@ -2303,15 +2308,11 @@ customize.loadColorsMenu = function() {
     $(customize.IDS.COLOR_PICKER).onchange =
         customize.colorPickerTileInteraction;
   }
-
-  customize.colorsMenuOnThemeChange();
-
-  customize.colorsMenuLoaded = true;
 };
 
 /**
- * Update webstore theme info and preselect Colors menu tile according to the
- * theme update.
+ * Update webstore theme info and preselect Colors menu tile according to
+ * the theme update.
  */
 customize.colorsMenuOnThemeChange = function() {
   // Update webstore theme information.
@@ -2330,6 +2331,10 @@ customize.colorsMenuOnThemeChange = function() {
           customize.selectedOptions.color);
       customize.selectedOptions.color = null;
     }
+    if (!customize.preselectedOptions.colorsMenuTile) {
+      customize.preselectedOptions.colorsMenuTile =
+          $(customize.IDS.COLORS_THEME);
+    }
   } else {
     $(customize.IDS.COLORS_THEME).classList.remove(customize.CLASSES.VISIBLE);
 
@@ -2343,7 +2348,6 @@ customize.colorsMenuOnThemeChange = function() {
  */
 customize.colorsMenuPreselectTile = function() {
   const themeInfo = assert(ntpApiHandle.themeBackgroundInfo);
-
   let tile;
   if (themeInfo.usingDefaultTheme) {
     tile = $(customize.IDS.COLORS_DEFAULT_ICON);
@@ -2383,6 +2387,7 @@ customize.colorsMenuPreselectTile = function() {
     if (!customize.preselectedOptions.colorsMenuTile) {
       customize.preselectedOptions.colorsMenuTile = tile;
     }
+
     customize.updateColorsMenuTileSelection(
         /** @type HTMLElement */ (tile));
   }
@@ -2393,11 +2398,8 @@ customize.colorsMenuPreselectTile = function() {
  * menu.
  */
 customize.isColorOptionSelected = function() {
-  return (!customize.preselectedOptions.colorsMenuTile &&
-          customize.selectedOptions.color) ||
-      (customize.preselectedOptions.colorsMenuTile &&
-       customize.selectedOptions.color.id !==
-           customize.preselectedOptions.colorsMenuTile.id);
+  return customize.preselectedOptions.colorsMenuTile !==
+      customize.selectedOptions.color;
 };
 
 /**
@@ -2428,16 +2430,24 @@ customize.cancelColor = function() {
 };
 
 /**
- * Reset Colors Menu elements to the default state, specifically the color
- * picker.
+ * Reset color picker to its default state.
  */
-customize.resetColorsMenu = function() {
+customize.resetColorPicker = function() {
   customize.customColorPicked = customize.defaultCustomColor;
   $(customize.IDS.COLOR_PICKER).value = null;
   $(customize.IDS.COLORS_MENU).style.setProperty('--custom-color-border', '');
   $(customize.IDS.COLORS_MENU).style.setProperty('--custom-color-dark', '');
   $(customize.IDS.COLORS_MENU).style.setProperty('--custom-color-light', '');
   $(customize.IDS.COLOR_PICKER_ICON).classList.toggle('white', false);
+};
+
+/**
+ * Reset color selection.
+ */
+customize.resetColorsSelectedOptions = function() {
+  customize.richerPicker_removeSelectedState(customize.selectedOptions.color);
+  customize.selectedOptions.color = null;
+  customize.preselectedOptions.colorsMenuTile = null;
 };
 
 /**

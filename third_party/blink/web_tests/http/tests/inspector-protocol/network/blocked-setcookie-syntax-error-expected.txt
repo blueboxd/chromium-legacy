@@ -2,7 +2,9 @@ Verifies that receiving a set-cookie header with invalid syntax sends a Network.
 
 Invalid syntax blocked set-cookies: [
   {
-    "blockedReason": "SyntaxError",
+    "blockedReasons": [
+      "SyntaxError"
+    ],
     "cookieLine": "name=val\tue"
   }
 ]

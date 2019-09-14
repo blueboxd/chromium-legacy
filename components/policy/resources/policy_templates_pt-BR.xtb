@@ -95,6 +95,7 @@
       Se esta política não for definida, os GPOs salvos em cache poderão ser reutilizados por até 25 horas.
 
       Se esta política for definida como 0, o armazenamento de GPO em cache será desativado. Isso aumenta a carga do servidor, já que o download dos GPOs será feito novamente a cada busca da política, mesmo se não houver alteração.</translation>
+<translation id="1111470455889178048">Enviar uploads e downloads do usuário para verificação</translation>
 <translation id="1117462881884985156">O <ph name="PRODUCT_NAME" /> ignorará qualquer proxy para a lista de hosts apresentada aqui.
 
           Esta política só terá efeito caso você tenha selecionado as configurações manuais de proxy em "Escolher o modo de especificar as configurações do servidor proxy" e se a política <ph name="PROXY_SETTINGS_POLICY_NAME" /> não tiver sido especificada.
@@ -391,6 +392,7 @@ Cada item da lista da política é uma string que contém um código de extensã
       permitidos.</translation>
 <translation id="1634989431648355062">Permitir o plug-in <ph name="FLASH_PLUGIN_NAME" /> nestes sites</translation>
 <translation id="1645793986494086629">Esquema:</translation>
+<translation id="1648816843164517573">Lista de nomes que contornarão a verificação de política HSTS</translation>
 <translation id="1653229475925941921">Se esta política for definida, ela controlará o tipo de lupa ativada. Configurar a política como "Nenhuma" desativará a lupa.
 
           Se você definir esta política, os usuários não poderão alterá-la ou substituí-la.
@@ -471,10 +473,6 @@ Cada item da lista da política é uma string que contém um código de extensã
       Quando a política for definida como um URL válido, o download da lista de sites desse URL será realizado no <ph name="PRODUCT_NAME" />, e as regras serão aplicadas como se tivessem sido configuradas com a política <ph name="SITELIST_POLICY_NAME" />.
 
       Para ver mais informações sobre a política <ph name="IEEM_SITELIST_POLICY" /> do Internet Explorer, acesse: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
-<translation id="1839060937202387559">Faz o relatório de estatísticas de hardware e identificadores para dispositivos de armazenamento.
-
-      Se a política for definida como falsa, as estatísticas não serão informadas.
-      Se for definida como verdadeira ou não for configurada, as estatísticas serão informadas.</translation>
 <translation id="1843117931376765605">Taxa de atualização da política do usuário</translation>
 <translation id="1844620919405873871">Configura as políticas relacionadas ao desbloqueio rápido.</translation>
 <translation id="1845405905602899692">Configurações de quiosque</translation>
@@ -884,6 +882,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 <translation id="254653220329944566">Ativa a geração de relatórios em nuvem do <ph name="PRODUCT_NAME" /></translation>
 <translation id="2548572254685798999">Fornecer informações sobre o "Navegação segura"</translation>
 <translation id="2550593661567988768">Apenas impressão simplex</translation>
+<translation id="2551520365302988324">Enviar uploads do usuário para verificação</translation>
 <translation id="2552966063069741410">Fuso horário</translation>
 <translation id="2562339630163277285">Especifica o URL do mecanismo de pesquisa usado para fornecer resultados instantâneos. O URL deve conter a string <ph name="SEARCH_TERM_MARKER" />, que será substituída no instante da consulta pelo texto que o usuário digitou até o momento.
 
@@ -956,6 +955,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 <translation id="2665422249821137126">Ativar o cursor grande na tela de login</translation>
 <translation id="2672012807430078509">Controles que ativam o NTLM como protocolo de autenticação para ativações de PMEs</translation>
 <translation id="267596348720209223">Especifica a codificação de caracteres suportados pelo mecanismo de pesquisa. Codificações são nomes de código da página como UTF-8, GB2312 e ISO-8859-1. Eles são testados na ordem fornecida. Esta política é opcional. Se não for definida, será utilizado o padrão, UTF-8. Esta política só é respeitada se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
+<translation id="2679827548357140943">Lista de domínios que precisam de verificação de malware para conteúdo enviado por upload</translation>
 <translation id="268577405881275241">Ativar o recurso de proxy de compactação de dados</translation>
 <translation id="2693108589792503178">Configure o URL de alteração de senha.</translation>
 <translation id="2694143893026486692">Lupa ancorada ativada</translation>
@@ -1328,6 +1328,10 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 <translation id="332771718998993005">Determina o nome anunciado como um destino do <ph name="PRODUCT_NAME" />.
 
           Se essa política for definida como uma string não vazia, essa string será usada como o nome do destino do <ph name="PRODUCT_NAME" />. Caso contrário, o nome do destino será o nome do dispositivo. Se essa política não for definida, o nome do destino será o nome do dispositivo, e o proprietário do dispositivo (ou um usuário do domínio que está gerenciando o dispositivo) poderá alterá-lo. O nome é limitado a 24 caracteres.</translation>
+<translation id="3331950121151548952">Lista de domínios que precisam de verificação de malware para conteúdo enviado por upload.  A política será usada apenas se <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> for definida como um valor que permita ou imponha verificações de malware para uploads.
+
+      Se a política não for configurada ou for definida como uma lista vazia de domínios, nenhum conteúdo enviado por upload será verificado quanto à existência de malwares.
+      </translation>
 <translation id="3335468714959531450">Permite que você defina uma lista de padrões de URL que especifica sites com permissão para definir cookies.
 
           Se esta política não for definida, o valor global padrão será usado para todos os sites da política "DefaultCookiesSetting", caso ela tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.
@@ -1395,6 +1399,15 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
           Se esta política for definida como "Falsa" ou não for definida, os intervalos de gerenciamento de energia e o limite de duração da sessão começarão a ser contados imediatamente após o início da sessão.</translation>
 <translation id="3478024346823118645">Limpa os dados do usuário ao sair</translation>
 <translation id="3480961938508521469">Carregar totalmente a bateria na velocidade padrão.</translation>
+<translation id="3483729306380590354">Configurar o início do carregamento personalizado da bateria, em porcentagem.
+
+          A bateria começará a ser carregada ao chegar no valor inicial do carregamento personalizado.
+
+          <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> precisa ficar pelo menos cinco pontos percentuais abaixo de <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" />.
+
+          Esta política só será usada se <ph name="DEVICE_BATTERY_CHARGE_MODE_NAME" /> for definida como <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME" />.
+
+          Se esta política não for configurada ou estiver indefinida, o modo de carga <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME" /> da bateria será aplicado.</translation>
 <translation id="348495353354674884">Ativar teclado virtual</translation>
 <translation id="3487623755010328395">
         Se esta política for configurada, <ph name="PRODUCT_NAME" /> tentará se registrar e aplicar a política de nuvem associada a todos os perfis.
@@ -1828,6 +1841,15 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
           Se você definir esta política, o usuário não poderá alterá-la ou modificá-la.
 
           Se esta política não for definida, o clique automático ficará desativado inicialmente, mas poderá ser ativado pelo usuário a qualquer momento.</translation>
+<translation id="4215197846797661927">Definir a configuração do dia para o modo avançado de carregamento de bateria.
+
+          Esta política será usada apenas se <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> estiver definida como verdadeira.
+
+          Se esta política não for configurada ou estiver indefinida, o modo avançado de carregamento de bateria ficará sempre desativado.
+
+          Observação: <ph name="CHARGE_START_TIME_FIELD_NAME" /> precisa ser menor que <ph name="CHARGE_END_TIME_FIELD_NAME" />.
+
+          Observação: os valores permitidos para o campo <ph name="MINUTE_FIELD_NAME" /> em <ph name="CHARGE_START_TIME_FIELD_NAME" /> e <ph name="CHARGE_END_TIME_FIELD_NAME" /> são 0, 15, 30 e 45.</translation>
 <translation id="4224610387358583899">Tempo de espera para bloqueio de tela</translation>
 <translation id="423797045246308574">Permite que você defina uma lista de padrões de URL que especificam sites que não têm permissão para usar a geração de chaves. Se um padrão de URL estiver na política "KeygenAllowedForUrls", ela substituirá essas exceções.
 
@@ -1893,6 +1915,17 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
           O valor da política precisa ser especificado em milissegundos. Os valores são ajustados para serem menores ou iguais ao intervalo de inatividade.
 
           A mensagem de aviso só será mostrada se a ação de inatividade for para sair ou encerrar.</translation>
+<translation id="4342827592971649626">Esta política controla a verificação detalhada de downloads do usuário com o "Navegação segura". Se ela não for definida ou a configuração padrão "Não verificar arquivos" for escolhida, os downloads do usuário não serão verificados pelo "Navegação segura".
+
+      Se "Proibir a verificação de arquivos"' for escolhida, os usuários serão proibidos de verificar os downloads. Isso difere do padrão, já que alguns usuários (como os da "Proteção Avançada") conseguem enviar downloads para verificação. Essa configuração impedirá que esses usuários façam a verificação.
+
+      Se ela for definida como "Enviar downloads do usuário para verificação", os downloads serão enviados pela rede para que o "Navegação segura" faça a verificação de malware.
+
+      Se ela for definida como "Enviar uploads do usuário para verificação", os uploads serão enviados pela rede para que o "Navegação segura" faça a verificação de malware.
+
+      Se for definida como "Enviar uploads e downloads do usuário para verificação", ela seguirá as regras descritas em "Enviar uploads do usuário para verificação" e "Enviar downloads do usuário para verificação".
+
+      Consulte as políticas <ph name="DELAY_DELIVER_UNTIL_VERDICT_POLICY_NAME" /> e <ph name="UNSAFE_EVENTS_REPORTING_ENABLED" /> para ver detalhes sobre como os resultados da verificação são exibidos para o usuário e o administrador.</translation>
 <translation id="4344356660952451291">Lista de domínios que precisam ter a conformidade do conteúdo de download verificada</translation>
 <translation id="4346674324214534449">Permite que você determine se os anúncios devem ser bloqueados em sites com anúncios invasivos.
 
@@ -2443,6 +2476,16 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
       Se você definir esta política, os usuários não poderão alterá-la ou substituí-la.
 
       Se a política não for definida, os usuários poderão escolher uma imagem para ser exibida na área de trabalho e na tela de login.</translation>
+<translation id="5437214086679373363">Controla se os usuários podem fazer upload ou download de arquivos protegidos por senha quando a verificação for obrigatória.  Essa restrição aplica-se apenas a arquivos que precisam ser verificados, conforme determinado por <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> e pelas políticas que controlam a lista de domínios com verificações ativadas.
+
+      Se esta política for definida como "Nenhum", o <ph name="PRODUCT_NAME" /> bloqueará o upload ou o download de arquivos protegidos por senha.
+
+      Se esta política for definida como "Permitir downloads", o <ph name="PRODUCT_NAME" /> permitirá que o usuário faça o download de arquivos protegidos por senha.
+
+      Se esta política for definida como "Permitir uploads", o <ph name="PRODUCT_NAME" /> permitirá que o usuário faça upload de arquivos protegidos por senha.
+
+      Se esta política não for definida ou for definida como "Permitir uploads e downloads", o <ph name="PRODUCT_NAME" /> se comportará de acordo com as regras descritas em "Permitir downloads" e "Permitir uploads".
+      </translation>
 <translation id="5437733496511628148">Ativar esta configuração impede que os cookies sejam definidos por elementos de páginas da Web que não sejam do domínio que está na barra de endereço do navegador.
 
       A desativação desta configuração permite que os cookies sejam definidos por elementos de páginas da Web que não sejam do domínio que está na barra de endereço do navegador e impede os usuários de alterar essa configuração.
@@ -3272,17 +3315,6 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
 <translation id="7049373494483449255">Permite que <ph name="PRODUCT_NAME" /> envie documentos a <ph name="CLOUD_PRINT_NAME" /> para impressão. OBSERVAÇÃO: isto só afeta o suporte do <ph name="CLOUD_PRINT_NAME" /> no <ph name="PRODUCT_NAME" />. Isto não impede que usuários enviem trabalhos de impressão em websites. Se esta configuração for ativada ou não configurada, os usuários podem imprimir no <ph name="CLOUD_PRINT_NAME" /> a partir da caixa de diálogo de impressão do <ph name="PRODUCT_NAME" />. Se esta configuração for desativada, os usuários não poderão imprimir no <ph name="CLOUD_PRINT_NAME" /> a partir da caixa de diálogo de impressão do <ph name="PRODUCT_NAME" /></translation>
 <translation id="7053678646221257043">Se ativada, esta política força a importação dos favoritos a partir do navegador padrão atual. Se ativada, esta política também afeta a caixa de diálogo de importação. Se desativada, nenhum favorito é importado. Se não for definida, o usuário pode ser solicitado a responder se deseja importar ou a importação pode ocorrer automaticamente.</translation>
 <translation id="7063895219334505671">Permitir pop-ups nestes sites</translation>
-<translation id="706568410943497889">
-      Se a política for definida como verdadeira, o <ph name="PRODUCT_NAME" /> poderá coletar logs de eventos WebRTC dos serviços do Google (por exemplo, Google Meet) e fazer upload desses logs para o Google.
-
-      Se a política for definida como falsa ou não for definida, o <ph name="PRODUCT_NAME" /> não poderá coletar nem fazer upload desses logs.
-
-      Esses logs contêm informações de diagnóstico importantes ao depurar problemas com chamadas de áudio ou videochamadas no Chrome, como o horário e o tamanho de pacotes RTP enviados e recebidos, feedback sobre congestionamento na rede e metadados sobre o horário e a qualidade de frames de áudio e vídeo. Esses registros não possuem conteúdo de áudio ou vídeo da chamada.
-
-      Essa coleta de dados feita pelo Chrome só pode ser acionada pelos serviços da Web do Google, como o Hangouts ou o Google Meet.
-
-      Por meio de um código de sessão, o Google pode associar esses logs com outros coletados pelo próprio serviço do Google, com a finalidade de facilitar a depuração.
-      </translation>
 <translation id="706669471845501145">Permitir que os sites exibam notificações da área de trabalho</translation>
 <translation id="7068108874199666656">Permite que a configuração de rede seja aplicada a todos os usuários de dispositivos <ph name="PRODUCT_OS_NAME" />. A configuração de rede é uma string formatada em JSON, conforme definido pelo formato Open Network Configuration.</translation>
 <translation id="7070525176564511548">A senha precisa ser digitada uma vez por semana (a cada 168 horas).</translation>
@@ -3346,13 +3378,32 @@ Se esta política não for definida, não haverá restrições quanto aos usuár
 
       Para mais informações sobre a política <ph name="IEEM_SITELIST_POLICY" /> do Internet Explorer, acesse: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">URLs que terão acesso a dispositivos de captura de vídeo sem solicitação</translation>
+<translation id="713712866686796666">Definir a configuração do dia para a economia de energia no período de pico.
+
+          Esta política será usada apenas se <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" /> estiver definida como verdadeira.
+
+          Se esta política não for configurada ou estiver indefinida, a economia de energia no período de pico sempre estará desativada.
+
+          Observação: os valores permitidos para o campo <ph name="MINUTE_FIELD_NAME" /> em <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> e <ph name="CHARGE_START_TIME_FIELD_NAME" /> são 0, 15, 30 e 45.</translation>
 <translation id="7138678301420049075">Outro</translation>
+<translation id="7139809614375682935">Configurar a parada personalizada do carregamento da bateria, em porcentagem.
+
+          A bateria para de carregar ao atingir o valor de parada de carga personalizada.
+
+          <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> precisa ficar pelo menos cinco pontos percentuais abaixo de <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" />.
+
+          Esta política só será usada se <ph name="DEVICE_BATTERY_CHARGE_MODE_NAME" /> for definida como <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME" />.
+
+          Se esta política não for configurada ou estiver indefinida, o modo de carga <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME" /> da bateria será aplicado.</translation>
 <translation id="7140629953254369759">Orienta o <ph name="PRODUCT_OS_NAME" /> a usar a configuração do programador de tarefas identificada pelo nome especificado.
 
       Esta política pode ser definida como "conservadora" ou "desempenho". No primeiro caso, as configurações do programador de tarefas são ajustadas para proporcionar estabilidade. No segundo, o objetivo é ter o máximo de desempenho.
 
       Se a política não for definida, o usuário poderá escolher.</translation>
 <translation id="7145335384492396213">Modo padrão de impressão com PIN</translation>
+<translation id="7149042336307555519"> Os tipos de conexão permitidos para uso em atualizações de SO. Atualizações de SO podem gerar uma grande sobrecarga na conexão devido ao tamanho e podem incorrer em custo adicional. Portanto, elas não são, por padrão, ativadas para tipos de conexão considerados caros (atualmente apenas "celular").
+
+      Os identificadores de tipo de conexão reconhecidos são <ph name="CONNECTION_TYPE_ETHERNET_NAME" />, <ph name="CONNECTION_TYPE_WIFI_NAME" /> e <ph name="CONNECTION_TYPE_CELLULAR_NAME" />.</translation>
 <translation id="7152605873936173525">Controla o modo do resolvedor de DNS sobre HTTPS. Esta política definirá apenas o modo padrão para cada consulta. O modo pode ser modificado para tipos especiais de consultas, como solicitações para resolver um nome do host de servidor DNS sobre HTTPS.
 
       O modo <ph name="SECURE_DNS_MODE_OFF" /> desativará o DNS sobre HTTPS.
@@ -3385,6 +3436,17 @@ Se esta política não for definida, não haverá restrições quanto aos usuár
           Se esta política estiver definida como false, as solicitações de wake lock de tela serão rebaixadas a solicitações de wake lock do sistema.</translation>
 <translation id="7177857088692019405">Desbloqueio rápido</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
+<translation id="7187447094921703950">Ativar a política de gerenciamento da economia de energia no período de pico.
+
+          A economia de energia no período de pico diz respeito a uma política que economiza energia pela redução do uso de corrente alternada nos períodos de alto consumo durante o dia. É possível definir um horário de início e término da economia de energia no período de pico para cada dia da semana. Durante esses períodos, o sistema será executado usando a bateria mesmo se estiver conectado à corrente alternada, desde que a bateria se mantenha acima do limite especificado. Depois do horário de término especificado, o sistema será executado usando energia de corrente alternada (se conectado), mas a bateria não será carregada. O sistema voltará a funcionar normalmente, usando corrente alternada e carregando a bateria, depois do horário de início de carregamento especificado.
+
+          Se esta política for definida como verdadeira e se <ph name="DEVICE_POWER_PEAK_SHIFT_BATTERY_THRESHOLD_NAME" /> e <ph name="DEVICE_POWER_PEAK_SHIFT_DAY_CONFIG_NAME" /> estiverem definidas, a economia de energia no período de pico estará sempre ativada, se for compatível com o dispositivo.
+
+          Se esta política estiver definida como falsa, a economia de energia no período de pico estará sempre desativada.
+
+          Se você definir esta política, o usuário não poderá alterá-la ou substituí-la.
+
+          Se esta política não for definida, a economia de energia no período de pico ficará inicialmente desativada e não poderá ser ativada pelo usuário.</translation>
 <translation id="718956142899066210">Tipos de conexão permitidos para atualizações</translation>
 <translation id="7190286937411178540">Ativar o recurso de acessibilidade que destaca o objeto em foco por meio do teclado</translation>
 <translation id="7194407337890404814">Nome do provedor de pesquisa padrão</translation>
@@ -3967,10 +4029,6 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
           Se você definir esta política, o usuário não poderá alterá-la ou modificá-la.
 
           Se a política não for definida, o ditado ficará desativado inicialmente, mas poderá ser ativado pelo usuário a qualquer momento.</translation>
-<translation id="8292322992383748446">Faz o relatório de estatísticas de hardware para componentes de SoC.
-
-      Se a política for definida como falsa, as estatísticas não serão informadas.
-      Se for definida como verdadeira ou não for configurada, as estatísticas serão informadas.</translation>
 <translation id="829337533107201925">Se a política for ativada, as políticas vindas de um grupo atômico que não compartilhe a fonte com prioridade mais alta do grupo serão ignoradas.
 
       Se esta política for desativada, nenhuma política será ignorada devido à fonte. Políticas serão ignoradas apenas se houver um conflito e a política não tiver a prioridade mais alta.
@@ -4002,10 +4060,6 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="8367209241899435947">Ativa o recurso "Varredura do Chrome" no Windows</translation>
 <translation id="8369602308428138533">Intervalo de desligamento da tela no funcionamento com alimentação CA</translation>
 <translation id="8371178326720637170">Permitir que extensões gerenciadas usem a API Enterprise Hardware Platform</translation>
-<translation id="8374747520743832795">Faz o relatório de estatísticas de hardware e identificadores relacionados à energia.
-
-      Se a política for definida como falsa, as estatísticas não serão informadas.
-      Se for definida como verdadeira ou não for configurada, as estatísticas serão informadas.</translation>
 <translation id="8380490658357556620">Permite o uso de servidores relay quando clientes remotos estiverem tentando estabelecer uma conexão com a máquina.
 
           Se esta configuração for ativada, os clientes remotos poderão usar servidores relay para se conectar a essa máquina quando uma conexão direta não estiver disponível (por exemplo, devido a restrições de firewall).
@@ -4014,6 +4068,17 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 
           Se esta política não for definida, a configuração será ativada.</translation>
 <translation id="8382184662529825177">Permitir o uso de declaração remota para proteção de conteúdo no dispositivo</translation>
+<translation id="8382693763260501307">Ativar a política de gerenciamento de energia para o modo avançado de carregamento de bateria.
+
+          Esse modo permite que o usuário maximize a integridade da bateria. No modo avançado, o sistema usará um algoritmo de carregamento padrão e outras técnicas fora do horário de trabalho para maximizar a integridade da bateria. Durante o horário de trabalho, um carregamento expresso será usado. Esse carregamento permite que a bateria seja carregada mais rapidamente para que atinja a carga completa logo. Para cada dia, o período em que o sistema será mais utilizado é especificado pelo horário de início e a duração.
+
+          Se esta política for definida como verdadeira e <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_DAY_CONFIG_NAME" /> estiver definida, o modo avançado de carregamento da bateria sempre ficará ativado se ele for compatível com o dispositivo.
+
+          Se esta política for definida como falsa, o modo avançado de carregamento da bateria ficará sempre desativado.
+
+          Se você definir esta política, o usuário não poderá alterá-la ou substituí-la.
+
+          Se esta política não for definida, o modo avançado de carregamento da bateria será desativado e não poderá ser ativado pelo usuário.</translation>
 <translation id="838870586332499308">Ativa roaming de dados</translation>
 <translation id="8390049129576938611">Desativa o visualizador de PDF interno no <ph name="PRODUCT_NAME" />. Em vez disso, ela o trata como um download e permite que o usuário abra os arquivos em PDF com o aplicativo padrão.
 
@@ -4216,9 +4281,15 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
       Se esta política for definida, o conjunto de aplicativos será fixado e não poderá ser alterado pelo usuário.
 
       Se esta política não for definida, o usuário poderá alterar a lista apps fixados no acesso rápido.</translation>
+<translation id="8779504970846195767">Definir o limite de bateria (em porcentagem) para a economia de energia no período de pico.
+
+          Esta política será usada apenas se <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" /> estiver definida como verdadeira.
+
+          Se esta política não for configurada ou estiver indefinida, a economia de energia no período de pico sempre estará desativada.</translation>
 <translation id="8798099450830957504">Padrão</translation>
 <translation id="8800453707696044281">Configurar a parada personalizada do carregamento da bateria, em porcentagem</translation>
 <translation id="8801680448782904838">Notifica um usuário de que a reinicialização do navegador ou do dispositivo é recomendada ou obrigatória</translation>
+<translation id="8802816494059596691">Os nomes de host especificados nesta lista estarão isentos da verificação de política HSTS que poderia fazer upgrade de solicitações de http para https. Apenas nomes de host de etiqueta única são permitidos nesta política. Nomes de host precisam ser canonizados: todo IDN precisa ser convertido para o formato de etiqueta A, e todas as letras ASCII precisam estar em caixa-baixa. Esta política se aplica apenas aos nomes de host especificados. Ela não se aplica a subdomínios dos nomes especificados.</translation>
 <translation id="8818173863808665831">Informar a localização geográfica do dispositivo. 
 
       Se a política não for configurada, ou for configurada como falsa, o local não será informado.</translation>
@@ -4381,6 +4452,17 @@ Se você ativar esta configuração, o <ph name="PRODUCT_NAME" /> e os apps ARC 
       Se o valor da política for definido para um token que mapeia para um Quick Fix Build, o dispositivo será atualizado para o Quick Fix Build correspondente se a atualização não estiver bloqueada por outra política.
 
       Se essa política não for definida, ou se o valor dela não mapear para um Quick Fix Build, o dispositivo não será atualizado para um Quick Fix Build. Se o dispositivo já estiver executando um Quick Fix Build, e a política não estiver mais definida ou o valor não mapear mais para um Quick Fix Build, o dispositivo será atualizado para uma versão normal caso a atualização não seja bloqueada por outra política.</translation>
+<translation id="9053158112041032237">Especifica a política de gerenciamento de energia para o modo de carregamento de bateria.
+
+          Controle dinamicamente o carregamento da bateria para minimizar o desgaste devido ao estresse e aumentar a duração da bateria.
+
+          Se o modo personalizado de carregamento da bateria for selecionado, <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> e <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" /> precisarão ser especificadas.
+
+          Se esta política for definida, o modo de carregamento da bateria será aplicado, se compatível com o dispositivo.
+
+          Se esta política não for definida e a política for compatível com o dispositivo, o modo padrão de carregamento da bateria será aplicado e não poderá ser alterado pelo usuário.
+
+          Observação: se <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> for especificada, ela substituirá esta política.</translation>
 <translation id="9054012305936267950">Esta política controla o comportamento de login no navegador. Ela permite especificar se o usuário pode fazer login no <ph name="PRODUCT_NAME" /> com a própria conta e usar os serviços relacionados a ela, como a Sincronização do Chrome.
 
       Se a política for definida como "Desativar login no navegador", não será possível fazer login no navegador e usar os serviços baseados na conta. Nesse caso, os recursos do navegador, como a Sincronização do Chrome, não poderão ser usados e ficarão indisponíveis. Se o usuário estiver conectado e a política for definida como "Desativada", ele será desconectado na próxima vez que executar o Chrome, mas os dados locais do perfil dele, como favoritos e senhas, serão preservados. O usuário ainda conseguirá fazer login e usar os serviços do Google na Web, como o Gmail.

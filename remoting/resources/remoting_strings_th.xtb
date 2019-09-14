@@ -58,6 +58,7 @@
 <translation id="2509394361235492552">เชื่อมต่อกับ <ph name="HOSTNAME" /> แล้ว</translation>
 <translation id="2512228156274966424">หมายเหตุ: เพื่อให้มั่นใจว่าทุกแป้นพิมพ์ลัดพร้อมใช้งาน คุณสามารถกำหนดค่า Chrome Remote Desktop เป็น "เปิดเป็นหน้าต่าง"</translation>
 <translation id="2540992418118313681">คุณต้องการจะแชร์คอมพิวเตอร์เครื่องนี้เพื่อให้ผู้ใช้อื่นเห็นและควบคุมไหม</translation>
+<translation id="254771646005658629">อนุญาตให้ผู้ใช้ระยะไกลควบคุม Mac เครื่องนี้</translation>
 <translation id="2579271889603567289">โฮสต์ขัดข้องหรือเริ่มต้นไม่สำเร็จ</translation>
 <translation id="2599300881200251572">บริการนี้จะช่วยให้สามารถใช้การเชื่อมต่อขาเข้าจากไคลเอ็นต์ Chrome Remote Desktop</translation>
 <translation id="2647232381348739934">Chromoting Service</translation>
@@ -182,6 +183,11 @@
 <translation id="5419185025274123272">ไม่สามารถรีเซ็ตแอปพลิเคชันนี้ คุณยังคงสามารถส่งรายงานข้อบกพร่องได้</translation>
 <translation id="5419418238395129586">ออนไลน์ครั้งล่าสุด: <ph name="DATE" /></translation>
 <translation id="544077782045763683">โฮสต์ปิดตัวลงแล้ว</translation>
+<translation id="5463789431147491241">ทำตามขั้นตอนต่อไปนี้เพื่อใช้ <ph name="PRODUCT_NAME" /> ใน Mac เครื่องนี้
+
+เลือก "<ph name="BUTTON_NAME" />" ด้านล่าง ในค่ากำหนดความปลอดภัยและความเป็นส่วนตัว ให้เลือกช่องข้างๆ "<ph name="SERVICE_SCRIPT_NAME" />"
+
+หากมีการเลือก "<ph name="SERVICE_SCRIPT_NAME" />" ไว้อยู่แล้ว ให้ยกเลิกการเลือกแล้วเลือกอีกครั้ง</translation>
 <translation id="5510035215749041527">ยกเลิกการเชื่อมต่อเลย</translation>
 <translation id="5593560073513909978">ไม่สามารถให้บริการนี้ได้ชั่วคราว โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -298,12 +304,14 @@
 <translation id="837021510621780684">จากคอมพิวเตอร์เครื่องนี้</translation>
 <translation id="8383794970363966105">ในการใช้ Chromoting คุณจะต้องเพิ่มบัญชี Google ลงในอุปกรณ์ของคุณ</translation>
 <translation id="8386846956409881180">โฮสต์ได้รับการกำหนดค่าด้วยข้อมูลรับรอง OAuth ที่ไม่ถูกต้อง</translation>
+<translation id="8406498562923498210">เลือกเซสชันที่จะเปิดภายในสภาพแวดล้อม Chrome Remote Desktop (โปรดทราบว่าเซสชันบางประเภทอาจไม่รองรับการทำงานภายใน Chrome Remote Desktop และในคอนโซลในเครื่องพร้อมกัน)</translation>
 <translation id="8428213095426709021">การตั้งค่า</translation>
 <translation id="8445362773033888690">ดูใน Google Play Store</translation>
 <translation id="8509907436388546015">Desktop Integration Process</translation>
 <translation id="8513093439376855948">โฮสต์การรับส่งข้อความดั้งเดิมสำหรับการจัดการโฮสต์ระยะไกล</translation>
 <translation id="8525306231823319788">เต็มหน้าจอ</translation>
 <translation id="8548209692293300397">ก่อนหน้านี้คุณได้ลงชื่อเข้าใช้เป็น <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)  หากต้องการเข้าถึงคอมพิวเตอร์ในบัญชีนั้น ให้<ph name="LINK_BEGIN" />ลงชื่อเข้าใช้ Google Chrome<ph name="LINK_END" /> ด้วยบัญชีนั้นและติดตั้ง Chrome Remote Desktop อีกครั้ง</translation>
+<translation id="858006550102277544">ความคิดเห็น</translation>
 <translation id="8642984861538780905">พอใช้</translation>
 <translation id="8712909229180978490">ฉันไม่เห็นไฟล์ที่บันทึกไว้แบบออนไลน์ใน Google ไดรฟ์</translation>
 <translation id="8743328882720071828">คุณต้องการให้ <ph name="CLIENT_USERNAME" /> มองเห็นและควบคุมคอมพิวเตอร์ของคุณไหม</translation>
@@ -321,6 +329,7 @@
 <translation id="9126115402994542723">อย่าขอ PIN อีกเมื่อเชื่อมต่อไปยังโฮสต์นี้จากอุปกรณ์เครื่องนี้</translation>
 <translation id="9149580767411232853">แสดงเดสก์ท็อประยะไกลทั้งหมด</translation>
 <translation id="9149992051684092333">หากต้องการเริ่มการแชร์เดสก์ท็อปของคุณ โปรดให้รหัสการเข้าถึงที่ด้านล่างนี้แก่บุคคลที่จะให้ความช่วยเหลือคุณ</translation>
+<translation id="916856682307586697">เปิด XSession เริ่มต้น</translation>
 <translation id="9188433529406846933">ให้สิทธิ์</translation>
 <translation id="9213184081240281106">การกำหนดค่าโฮสต์ไม่ถูกต้อง</translation>
 <translation id="951991426597076286">ปฏิเสธ</translation>

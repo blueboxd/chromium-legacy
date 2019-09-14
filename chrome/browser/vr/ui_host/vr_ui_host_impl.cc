@@ -137,8 +137,9 @@ VRUiHostImpl::VRUiHostImpl(device::mojom::XRDeviceId device_id,
     runtime->AddObserver(this);
   }
 
-  content::GetSystemConnector()->BindInterface(device::mojom::kServiceName,
-                                               &geolocation_config_);
+  content::GetSystemConnector()->Connect(
+      device::mojom::kServiceName,
+      geolocation_config_.BindNewPipeAndPassReceiver());
 }
 
 VRUiHostImpl::~VRUiHostImpl() {

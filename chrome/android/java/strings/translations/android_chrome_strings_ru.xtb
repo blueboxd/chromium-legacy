@@ -21,7 +21,6 @@
 <translation id="1146678959555564648">Войти в режим VR</translation>
 <translation id="116280672541001035">Использовано</translation>
 <translation id="1171770572613082465">Чтобы перейти к списку популярных сайтов, нажмите кнопку "Топ сайтов"</translation>
-<translation id="1172593791219290334">Стартовая страница</translation>
 <translation id="1173894706177603556">Переименовать</translation>
 <translation id="1175310183703641346">Ваши закладки, пароли, история и настройки больше не будут синхронизироваться с аккаунтом Google</translation>
 <translation id="1178581264944972037">Пауза</translation>
@@ -42,6 +41,7 @@
 <translation id="1258753120186372309">Дудл Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Поиск и рекомендации</translation>
 <translation id="1264974993859112054">Спорт</translation>
+<translation id="1266864766717917324">Не удалось отправить: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">Остановить</translation>
 <translation id="1283039547216852943">Нажмите, чтобы развернуть</translation>
 <translation id="1285320974508926690">Никогда не переводить этот сайт</translation>
@@ -71,6 +71,7 @@
 <translation id="1430915738399379752">Печать</translation>
 <translation id="1445680696957526815">Компоненты Chrome несовместимы друг с другом. Возможно, выполняется обновление. Повторите попытку через несколько минут. Если проблема не исчезнет, переустановите браузер.</translation>
 <translation id="1446450296470737166">Полный доступ к управлению MIDI-устройствами</translation>
+<translation id="1450753235335490080">Не удается отправить: <ph name="CONTENT_TYPE" /></translation>
 <translation id="145097072038377568">Отключено в настройках Android</translation>
 <translation id="1477626028522505441">Не удалось скачать файл <ph name="FILE_NAME" /> из-за неполадок на сервере.</translation>
 <translation id="1501480321619201731">Удалить группу</translation>
@@ -153,6 +154,7 @@
 <translation id="2049961518639794558">Изменение расширения файла может привести к сбоям и нанести вред устройству.</translation>
 <translation id="2056878612599315956">Доступ к сайту приостановлен</translation>
 <translation id="2063713494490388661">Нажмите для поиска</translation>
+<translation id="2067805253194386918">текст</translation>
 <translation id="2079545284768500474">Отмена</translation>
 <translation id="2082238445998314030">Результат <ph name="RESULT_NUMBER" />, всего <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Звук</translation>
@@ -165,7 +167,6 @@
 <translation id="2131665479022868825">Сэкономлено: <ph name="DATA" /></translation>
 <translation id="213279576345780926">Вкладка "<ph name="TAB_TITLE" />" закрыта</translation>
 <translation id="2139186145475833000">Добавить на главный экран</translation>
-<translation id="2142289305367051020">Часто посещаемые страницы</translation>
 <translation id="2146738493024040262">Открыть приложение с мгновенным запуском</translation>
 <translation id="2148716181193084225">Сегодня</translation>
 <translation id="2154484045852737596">Изменение данных карты</translation>
@@ -324,6 +325,7 @@
 <translation id="3384347053049321195">Поделиться изображением</translation>
 <translation id="3386292677130313581">Запрашивать разрешение на доступ к данным о местоположении (рекомендуется)</translation>
 <translation id="3387650086002190359">Не удалось скачать файл <ph name="FILE_NAME" /> из-за ошибок файловой системы.</translation>
+<translation id="3389286852084373014">Сообщение слишком длинное</translation>
 <translation id="3398320232533725830">Открыть диспетчер закладок</translation>
 <translation id="3414952576877147120">Размер:</translation>
 <translation id="3443221991560634068">Обновить страницу</translation>
@@ -348,6 +350,7 @@
 <translation id="3599863153486145794">Удаление истории со всех устройств, на которых выполнен вход в аккаунт. Информация о других ваших действиях в Интернете может также храниться на странице <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Отключить звуки на сайтах</translation>
 <translation id="3616113530831147358">Аудио</translation>
+<translation id="3631987586758005671">Отправка на устройство "<ph name="DEVICE_NAME" />"…</translation>
 <translation id="3632295766818638029">Показать пароль</translation>
 <translation id="363596933471559332">Входить на веб-сайты с помощью сохраненного имени пользователя и пароля. Когда функция отключена, эти данные нужно указывать при каждом входе.</translation>
 <translation id="3658159451045945436">Будет удалена вся информация о сэкономленных данных, в том числе список просмотренных сайтов.</translation>
@@ -358,7 +361,6 @@
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" />: добавлена закладка</translation>
 <translation id="3744111309925758534">Другие приложения: <ph name="MEGABYTES" /> МБ</translation>
 <translation id="3744111561329211289">Фоновая синхронизация</translation>
-<translation id="3745176700485982507">На этой странице собраны ссылки на ваши любимые сайты</translation>
 <translation id="3771001275138982843">Не удалось скачать обновление.</translation>
 <translation id="3773755127849930740">Чтобы разрешить подключение, <ph name="BEGIN_LINK" />включите Bluetooth<ph name="END_LINK" /></translation>
 <translation id="3775705724665058594">Отправка на свои устройства</translation>
@@ -563,7 +565,6 @@
 <translation id="5224771365102442243">Есть видео</translation>
 <translation id="5230560987958996918">Сайт <ph name="SITE" /> ищет устройства Bluetooth поблизости. Обнаружены следующие устройства:</translation>
 <translation id="5233638681132016545">Новая вкладка</translation>
-<translation id="5234764350956374838">Закрыть</translation>
 <translation id="526421993248218238">Не удалось загрузить страницу</translation>
 <translation id="5271967389191913893">Не удается открыть скачанный контент.</translation>
 <translation id="528192093759286357">Чтобы выйти из полноэкранного режима, проведите по экрану сверху вниз и нажмите кнопку "Назад".</translation>
@@ -578,8 +579,8 @@
 <translation id="5324858694974489420">Родительские настройки</translation>
 <translation id="5327248766486351172">Название</translation>
 <translation id="5335288049665977812">Разрешить сайтам использовать JavaScript (рекомендуется)</translation>
+<translation id="5342314432463739672">Запросы на получение разрешений</translation>
 <translation id="5357811892247919462">Вкладка получена.</translation>
-<translation id="5363230136052241468">Нажмите кнопку главного экрана, чтобы открыть страницу быстрого доступа</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{Открыта <ph name="OPEN_TABS_ONE" /> вкладка. Нажмите для переключения.}one{Открыта <ph name="OPEN_TABS_MANY" /> вкладка. Нажмите для переключения.}few{Открыто <ph name="OPEN_TABS_MANY" /> вкладки. Нажмите для переключения.}many{Открыто <ph name="OPEN_TABS_MANY" /> вкладок. Нажмите для переключения.}other{Открыто <ph name="OPEN_TABS_MANY" /> вкладки. Нажмите для переключения.}}</translation>
 <translation id="5391532827096253100">Подключение к сайту не защищено. Информация о сайте</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(и ещё 1)}one{(и ещё #)}few{(и ещё #)}many{(и ещё #)}other{(и ещё #)}}</translation>
@@ -748,6 +749,7 @@
 <translation id="6532866250404780454">В сервисе больше не будут отображаться данные о сайтах, которые вы посещаете в Chrome. Кроме того, будут удалены все таймеры сайтов.</translation>
 <translation id="6534565668554028783">Превышено время ожидания ответа от Google</translation>
 <translation id="6538442820324228105">Скачано <ph name="GBS" /> ГБ</translation>
+<translation id="6539092367496845964">Произошла ошибка. Повторите попытку позже.</translation>
 <translation id="654446541061731451">Выберите вкладку для передачи</translation>
 <translation id="6545017243486555795">Удалить все данные</translation>
 <translation id="6545864417968258051">Поиск Bluetooth-устройств</translation>
@@ -802,7 +804,6 @@
 <translation id="6912998170423641340">Блокировать сайтам доступ к тексту и изображениям, скопированным в буфер обмена</translation>
 <translation id="6914783257214138813">Ваши пароли будут видны всем, у кого есть доступ к файлу экспорта.</translation>
 <translation id="6942665639005891494">Вы можете в любой момент изменить расположение скачиваемых файлов по умолчанию, воспользовавшись меню "Настройки".</translation>
-<translation id="6944102653068653326">Нажмите, чтобы открыть страницу быстрого доступа</translation>
 <translation id="6945221475159498467">Выбрать</translation>
 <translation id="6963642900430330478">Эта страница представляет опасность. Информация о сайте</translation>
 <translation id="6963766334940102469">Удалить закладки</translation>
@@ -879,6 +880,7 @@
 <translation id="7493994139787901920"><ph name="VERSION" /> (последнее обновление: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">сэкономлено</translation>
 <translation id="7498271377022651285">Подождите…</translation>
+<translation id="7510943789645525906">Предупреждать, если пароль скомпрометирован в результате утечки данных</translation>
 <translation id="7514365320538308">Скачать</translation>
 <translation id="751961395872307827">Не удалось подключиться к сайту</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -996,7 +998,6 @@
 <translation id="8284326494547611709">Титры</translation>
 <translation id="8300705686683892304">Под управлением приложения</translation>
 <translation id="8310344678080805313">Обычные вкладки</translation>
-<translation id="8313455859591948645">Изменение стартовой страницы</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> и другие сайты</translation>
 <translation id="8327155640814342956">Чтобы работать в браузере было удобнее, откройте Chrome и установите обновление.</translation>
 <translation id="8339163506404995330">Страницы на этом языке (<ph name="LANGUAGE" />) не будут переводиться автоматически</translation>

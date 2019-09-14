@@ -158,7 +158,8 @@ class CONTENT_EXPORT AccessibilityTreeFormatter
 
   static base::string16 DumpAccessibilityTreeFromManager(
       BrowserAccessibilityManager* ax_mgr,
-      bool internal);
+      bool internal,
+      std::vector<PropertyFilter> property_filters);
 
   // Set regular expression filters that apply to each property of every node
   // before it's output.

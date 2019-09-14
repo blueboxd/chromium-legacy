@@ -44,8 +44,10 @@ public class PageLoadMetrics {
          *
          * @param webContents the WebContents this metrics is related to.
          * @param navigationId the unique id of a navigation this metrics is related to.
+         * @param isFirstNavigationInWebContents whether this is the first nav in the WebContents.
          */
-        default void onNewNavigation(WebContents webContents, long navigationId) {}
+        default void onNewNavigation(WebContents webContents, long navigationId,
+                boolean isFirstNavigationInWebContents) {}
 
         /**
          * Called when Network Quality Estimate is available, once per page load, when the
@@ -166,11 +168,12 @@ public class PageLoadMetrics {
     }
 
     @CalledByNative
-    static void onNewNavigation(WebContents webContents, long navigationId) {
+    static void onNewNavigation(
+            WebContents webContents, long navigationId, boolean isFirstNavigationInWebContents) {
         ThreadUtils.assertOnUiThread();
         if (sObservers == null) return;
         for (Observer observer : sObservers) {
-            observer.onNewNavigation(webContents, navigationId);
+            observer.onNewNavigation(webContents, navigationId, isFirstNavigationInWebContents);
         }
     }
 

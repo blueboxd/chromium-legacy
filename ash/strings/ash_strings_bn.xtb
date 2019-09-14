@@ -104,7 +104,6 @@
 <translation id="2359808026110333948">চালিয়ে যান</translation>
 <translation id="2365393535144473978">মোবাইল ডেটা সক্ষম করলে ব্লুটুথও সক্ষম হয়ে যাবে।</translation>
 <translation id="2391579633712104609">১৮০°</translation>
-<translation id="239188844683466770">'বিরক্ত করবে না' মোড টগল করুন</translation>
 <translation id="2412593942846481727">আপডেট উপলভ্য</translation>
 <translation id="2413728805700750528"><ph name="DOMAIN" /> দ্বারা পরিচালিত <ph name="DISPLAY_NAME" /> একটি পরিচালিত সেশন</translation>
 <translation id="2427507373259914951">বাঁদিকের বোতামে ক্লিক করুন</translation>
@@ -224,6 +223,7 @@
 <translation id="4181841719683918333">ভাষাসমূহ</translation>
 <translation id="4195877955194704651">অটোমেটিক ক্লিক বোতাম</translation>
 <translation id="4217571870635786043">ডিক্টেশন</translation>
+<translation id="421885205185866088"><ph name="USER_EMAIL_ADDRESS" />-এর স্মার্ট কার্ড পিন</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">বিজ্ঞপ্তি সেটিংস দেখান। বিজ্ঞপ্তি বন্ধ আছে</translation>
 <translation id="4269883910223712419">এই ডিভাইসের প্রশাসক এগুলি করতে পারেন:</translation>
@@ -239,6 +239,7 @@
 <translation id="4379531060876907730">এগুলি হল আপনার স্টাইলাস টুল</translation>
 <translation id="4389184120735010762">ডক করা ম্যাগনিফায়ারের জন্য আপনি কীবোর্ড শর্টকাট টিপেছেন। আপনি কি এটি চালু করতে চান?</translation>
 <translation id="4421231901400348175">রিমোট সহায়কের মাধ্যমে <ph name="HELPER_NAME" />-এর সাথে আপনার স্ক্রিন নিয়ন্ত্রন ভাগ করুন৷</translation>
+<translation id="4430019312045809116">ভলিউম</translation>
 <translation id="4450893287417543264">আর দেখতে চাই না</translation>
 <translation id="4477350412780666475">পরের ট্র্যাক চালান</translation>
 <translation id="4479639480957787382">ইথারনেট</translation>

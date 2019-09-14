@@ -2255,9 +2255,11 @@ enum class EnterTabSwitcherSnapshotResult {
 - (void)closeSettingsAnimated:(BOOL)animated
                    completion:(ProceduralBlock)completion {
   if (_settingsNavigationController) {
-    [_settingsNavigationController settingsWillBeDismissed];
+    [_settingsNavigationController cleanUpSettings];
     UIViewController* presentingViewController =
         [_settingsNavigationController presentingViewController];
+    // If presentingViewController is nil it means the VC was already dismissed
+    // by some other action like swiping down.
     DCHECK(presentingViewController);
     [presentingViewController dismissViewControllerAnimated:animated
                                                  completion:completion];
@@ -2633,6 +2635,11 @@ enum class EnterTabSwitcherSnapshotResult {
 
 - (void)closeSettings {
   [self closeSettingsUI];
+}
+
+- (void)settingsWasDismissed {
+  [_settingsNavigationController cleanUpSettings];
+  _settingsNavigationController = nil;
 }
 
 - (id<ApplicationCommands, BrowserCommands>)dispatcherForSettings {

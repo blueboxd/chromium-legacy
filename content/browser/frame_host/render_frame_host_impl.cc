@@ -1113,6 +1113,7 @@ void RenderFrameHostImpl::LeaveBackForwardCache() {
 
 void RenderFrameHostImpl::OnGrantedMediaStreamAccess() {
   was_granted_media_access_ = true;
+  MaybeEvictFromBackForwardCache();
 }
 
 void RenderFrameHostImpl::OnPortalActivated(
@@ -1853,6 +1854,8 @@ bool RenderFrameHostImpl::CreateRenderFrame(int previous_routing_id,
   if (GetLocalRenderWidgetHost()) {
     params->widget_params->routing_id =
         GetLocalRenderWidgetHost()->GetRoutingID();
+    params->widget_params->visual_properties =
+        GetLocalRenderWidgetHost()->GetVisualProperties();
   } else {
     // MSG_ROUTING_NONE will prevent a new RenderWidget from being created in
     // the renderer process.

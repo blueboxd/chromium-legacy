@@ -422,6 +422,9 @@ DesktopAutomationHandler.prototype = {
     if (!node.root)
       return;
 
+    // Update the focused root url, which gets used as part of focus recovery.
+    this.lastRootUrl_ = node.root.docUrl || '';
+
     var event = new CustomAutomationEvent(EventType.FOCUS, node, evt.eventFrom);
     this.onEventDefault(event);
 

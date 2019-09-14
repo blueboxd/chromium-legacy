@@ -21,6 +21,7 @@ public class PageLoadMetricsObserver implements PageLoadMetrics.Observer {
     private final CustomTabsConnection mConnection;
     private final CustomTabsSessionToken mSession;
     private final Tab mTab;
+    private Long mNavigationId;
 
     public PageLoadMetricsObserver(CustomTabsConnection connection,
             CustomTabsSessionToken session, Tab tab) {
@@ -30,9 +31,18 @@ public class PageLoadMetricsObserver implements PageLoadMetrics.Observer {
     }
 
     @Override
+    public void onNewNavigation(
+            WebContents webContents, long navigationId, boolean isFirstNavigationInWebContents) {
+        if (isFirstNavigationInWebContents && webContents == mTab.getWebContents()) {
+            assert mNavigationId == null;
+            mNavigationId = navigationId;
+        }
+    }
+
+    @Override
     public void onNetworkQualityEstimate(WebContents webContents, long navigationId,
             int effectiveConnectionType, long httpRttMs, long transportRttMs) {
-        if (webContents != mTab.getWebContents()) return;
+        if (!shouldNotifyPageLoadMetrics(webContents, navigationId)) return;
 
         Bundle args = new Bundle();
         args.putLong(PageLoadMetrics.EFFECTIVE_CONNECTION_TYPE, effectiveConnectionType);
@@ -46,7 +56,7 @@ public class PageLoadMetricsObserver implements PageLoadMetrics.Observer {
     @Override
     public void onFirstContentfulPaint(WebContents webContents, long navigationId,
             long navigationStartTick, long firstContentfulPaintMs) {
-        if (webContents != mTab.getWebContents()) return;
+        if (!shouldNotifyPageLoadMetrics(webContents, navigationId)) return;
 
         mConnection.notifySinglePageLoadMetric(mSession, PageLoadMetrics.FIRST_CONTENTFUL_PAINT,
                 navigationStartTick, firstContentfulPaintMs);
@@ -56,7 +66,7 @@ public class PageLoadMetricsObserver implements PageLoadMetrics.Observer {
     public void onLargestContentfulPaint(WebContents webContents, long navigationId,
             long navigationStartTick, long largestContentfulPaintMs,
             long largestContentfulPaintSize) {
-        if (webContents != mTab.getWebContents()) return;
+        if (!shouldNotifyPageLoadMetrics(webContents, navigationId)) return;
 
         Bundle args = mConnection.createBundleWithNavigationStartAndPageLoadMetric(
                 PageLoadMetrics.LARGEST_CONTENTFUL_PAINT, navigationStartTick,
@@ -68,17 +78,17 @@ public class PageLoadMetricsObserver implements PageLoadMetrics.Observer {
     @Override
     public void onLoadEventStart(WebContents webContents, long navigationId,
             long navigationStartTick, long loadEventStartMs) {
-        if (webContents != mTab.getWebContents()) return;
+        if (!shouldNotifyPageLoadMetrics(webContents, navigationId)) return;
 
-        mConnection.notifySinglePageLoadMetric(mSession, PageLoadMetrics.LOAD_EVENT_START,
-                navigationStartTick, loadEventStartMs);
+        mConnection.notifySinglePageLoadMetric(
+                mSession, PageLoadMetrics.LOAD_EVENT_START, navigationStartTick, loadEventStartMs);
     }
 
     @Override
     public void onLoadedMainResource(WebContents webContents, long navigationId,
             long dnsStartMs, long dnsEndMs, long connectStartMs, long connectEndMs,
             long requestStartMs, long sendStartMs, long sendEndMs) {
-        if (webContents != mTab.getWebContents()) return;
+        if (!shouldNotifyPageLoadMetrics(webContents, navigationId)) return;
 
         Bundle args = new Bundle();
         args.putLong(PageLoadMetrics.DOMAIN_LOOKUP_START, dnsStartMs);
@@ -94,7 +104,7 @@ public class PageLoadMetricsObserver implements PageLoadMetrics.Observer {
     @Override
     public void onFirstInputDelay(
             WebContents webContents, long navigationId, long firstInputDelayMs) {
-        if (webContents != mTab.getWebContents()) return;
+        if (!shouldNotifyPageLoadMetrics(webContents, navigationId)) return;
 
         Bundle args = new Bundle();
         args.putLong(PageLoadMetrics.FIRST_INPUT_DELAY, firstInputDelayMs);
@@ -104,12 +114,17 @@ public class PageLoadMetricsObserver implements PageLoadMetrics.Observer {
     @Override
     public void onLayoutShiftScore(WebContents webContents, long navigationId,
             float layoutShiftScoreBeforeInputOrScroll, float layoutShiftScoreOverall) {
-        if (webContents != mTab.getWebContents()) return;
+        if (!shouldNotifyPageLoadMetrics(webContents, navigationId)) return;
 
         Bundle args = new Bundle();
         args.putFloat(PageLoadMetrics.LAYOUT_SHIFT_SCORE, layoutShiftScoreOverall);
         args.putFloat(PageLoadMetrics.LAYOUT_SHIFT_SCORE_BEFORE_INPUT_OR_SCROLL,
                 layoutShiftScoreBeforeInputOrScroll);
         mConnection.notifyPageLoadMetrics(mSession, args);
+    }
+
+    private boolean shouldNotifyPageLoadMetrics(WebContents webContents, long navigationId) {
+        return webContents == mTab.getWebContents() && null != mNavigationId
+                && navigationId == mNavigationId;
     }
 }

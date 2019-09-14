@@ -21,7 +21,6 @@
 <translation id="1146678959555564648">VR を入力</translation>
 <translation id="116280672541001035">使用量</translation>
 <translation id="1171770572613082465">人気のウェブサイトを表示するには、[上位のサイト] ボタンをタップします</translation>
-<translation id="1172593791219290334">起動ページ</translation>
 <translation id="1173894706177603556">名前を変更</translation>
 <translation id="1175310183703641346">ブックマーク、履歴、パスワードなどの設定は Google アカウントと同期されなくなります</translation>
 <translation id="1178581264944972037">一時停止</translation>
@@ -42,6 +41,7 @@
 <translation id="1258753120186372309">Google Doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">検索</translation>
 <translation id="1264974993859112054">スポーツ</translation>
+<translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> を共有できませんでした</translation>
 <translation id="1272079795634619415">中止</translation>
 <translation id="1283039547216852943">タップして展開</translation>
 <translation id="1285320974508926690">このサイトは翻訳しない</translation>
@@ -71,6 +71,7 @@
 <translation id="1430915738399379752">印刷</translation>
 <translation id="1445680696957526815">Chrome のコンポーネント同士に互換性がありません。Chrome が更新中の可能性があります。しばらくしてからもう一度お試しください。問題が続く場合は、Chrome をいったんアンインストールし、再インストールしてみてください。</translation>
 <translation id="1446450296470737166">MIDI機器のフルコントロールを許可</translation>
+<translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> を共有できません</translation>
 <translation id="145097072038377568">Android の設定で無効</translation>
 <translation id="1477626028522505441">サーバーで問題が発生したため、<ph name="FILE_NAME" /> をダウンロードできませんでした。</translation>
 <translation id="1501480321619201731">グループを削除</translation>
@@ -153,6 +154,7 @@
 <translation id="2049961518639794558">ファイル拡張子を変更すると、予期しない動作が発生し、デバイスに損害を及ぼす可能性があります。</translation>
 <translation id="2056878612599315956">サイト一時停止中</translation>
 <translation id="2063713494490388661">タップして検索</translation>
+<translation id="2067805253194386918">テキスト</translation>
 <translation id="2079545284768500474">元に戻す</translation>
 <translation id="2082238445998314030">結果 <ph name="TOTAL_RESULTS" /> 件中 <ph name="RESULT_NUMBER" /> 件目</translation>
 <translation id="2091887806945687916">音声</translation>
@@ -165,7 +167,6 @@
 <translation id="2131665479022868825"><ph name="DATA" /> 削減しました</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> を閉じました</translation>
 <translation id="2139186145475833000">ホーム画面に追加</translation>
-<translation id="2142289305367051020">お気に入りのページがここに表示されます</translation>
 <translation id="2146738493024040262">プレビュー アプリを開く</translation>
 <translation id="2148716181193084225">今日</translation>
 <translation id="2154484045852737596">カードを編集</translation>
@@ -324,6 +325,7 @@
 <translation id="3384347053049321195">画像を共有</translation>
 <translation id="3386292677130313581">サイトに現在地の認識を許可する前に確認する（推奨）</translation>
 <translation id="3387650086002190359">ファイル システムでエラーが発生したため、<ph name="FILE_NAME" /> をダウンロードできませんでした。</translation>
+<translation id="3389286852084373014">テキストが大きすぎます</translation>
 <translation id="3398320232533725830">ブックマーク マネージャを開く</translation>
 <translation id="3414952576877147120">サイズ:</translation>
 <translation id="3443221991560634068">現在のページを再読み込みする</translation>
@@ -348,6 +350,7 @@
 <translation id="3599863153486145794">ログインしているすべてのデバイスの履歴を削除します。お使いの Google アカウントの <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> に、他の形式の閲覧履歴が記録されている場合があります。</translation>
 <translation id="3600792891314830896">音声が再生されるサイトをミュートする</translation>
 <translation id="3616113530831147358">音声</translation>
+<translation id="3631987586758005671"><ph name="DEVICE_NAME" /> と共有しています</translation>
 <translation id="3632295766818638029">パスワードを表示</translation>
 <translation id="363596933471559332">保存されている認証情報を使用してウェブサイトに自動的にログインします。この機能がオフの場合は、ウェブサイトにログインするときに毎回確認を求められます。</translation>
 <translation id="3658159451045945436">リセットすると、アクセスしたサイトのリストなど、節約したデータの履歴が削除されます。</translation>
@@ -358,7 +361,6 @@
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> にブックマークしました</translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB を他のアプリで使用中</translation>
 <translation id="3744111561329211289">バックグラウンド同期</translation>
-<translation id="3745176700485982507">お気に入りのウェブサイトのリンクはこのページでご覧いただけます</translation>
 <translation id="3771001275138982843">アップデートをダウンロードできませんでした</translation>
 <translation id="3773755127849930740">ペア設定するには <ph name="BEGIN_LINK" />Bluetooth をオン<ph name="END_LINK" />にしてください</translation>
 <translation id="3775705724665058594">お使いのデバイスに送信</translation>
@@ -563,7 +565,6 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="5224771365102442243">動画あり</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> が近くの Bluetooth デバイスのスキャンを求めています。検出済みのデバイスは次のとおりです。</translation>
 <translation id="5233638681132016545">新しいタブ</translation>
-<translation id="5234764350956374838">閉じる</translation>
 <translation id="526421993248218238">ページを読み込めません</translation>
 <translation id="5271967389191913893">デバイスでダウンロード コンテンツを開くことができません。</translation>
 <translation id="528192093759286357">全画面表示を終了するには、上からドラッグして、戻るボタンをタップします。</translation>
@@ -578,8 +579,8 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="5324858694974489420">保護者設定</translation>
 <translation id="5327248766486351172">名前</translation>
 <translation id="5335288049665977812">サイトに Javascript の実行を許可する（推奨）</translation>
+<translation id="5342314432463739672">権限のリクエスト</translation>
 <translation id="5357811892247919462">タブが共有されました</translation>
-<translation id="5363230136052241468">新しいタブの画面を読み込むには、ホームボタンをタップします</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> 個のタブが開いています。タブを切り替えるにはタップします}other{<ph name="OPEN_TABS_MANY" /> 個のタブが開いています。タブを切り替えるにはタップします}}</translation>
 <translation id="5391532827096253100">このサイトへの接続は保護されていません。サイト情報</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{（他 1 件）}other{（他 # 件）}}</translation>
@@ -614,7 +615,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="5530766185686772672">シークレットタブを閉じる</translation>
 <translation id="5534334044554683961">VR の使用中、このサイトで次の情報が把握される場合があります。
   -   あなたの身体的特徴（身長など）
-  -   あなたの部屋の間取り
+  -   あなたの部屋のレイアウト
 
 VR を開始する前に、信頼できるサイトかどうかを確認してください。</translation>
 <translation id="5534640966246046842">サイトがコピーされました</translation>
@@ -748,6 +749,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="6532866250404780454">Chrome でアクセスしたサイトは表示されなくなり、サイトに設定したタイマーはすべて削除されます。</translation>
 <translation id="6534565668554028783">Google からの応答に時間がかかりすぎています</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB をダウンロード済み</translation>
+<translation id="6539092367496845964">エラーが発生しました。しばらくしてからもう一度お試しください。</translation>
 <translation id="654446541061731451">ビームするにはタブを選択してください</translation>
 <translation id="6545017243486555795">すべてのデータを削除</translation>
 <translation id="6545864417968258051">Bluetooth のスキャン</translation>
@@ -802,7 +804,6 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="6912998170423641340">サイトによるクリップボードのテキストや画像の読み取りをブロックする</translation>
 <translation id="6914783257214138813">エクスポートしたファイルを閲覧できるユーザーにパスワードを知られてしまう可能性があります。</translation>
 <translation id="6942665639005891494">デフォルトのダウンロード保存先は [設定] メニューでいつでも変更できます</translation>
-<translation id="6944102653068653326">タップすると新しいタブの画面が読み込まれます</translation>
 <translation id="6945221475159498467">選択</translation>
 <translation id="6963642900430330478">このページは危険です。サイト情報</translation>
 <translation id="6963766334940102469">ブックマークを削除</translation>
@@ -879,6 +880,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="7493994139787901920"><ph name="VERSION" />（<ph name="TIME_SINCE_UPDATE" />に更新）</translation>
 <translation id="7494974237137038751">データ削減量</translation>
 <translation id="7498271377022651285">お待ちください…</translation>
+<translation id="7510943789645525906">使用しているパスワードがデータ侵害を受けた場合に警告する</translation>
 <translation id="7514365320538308">ダウンロード</translation>
 <translation id="751961395872307827">サイトに接続できません</translation>
 <translation id="7521387064766892559">Javascript</translation>
@@ -996,7 +998,6 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="8284326494547611709">字幕</translation>
 <translation id="8300705686683892304">アプリによる管理</translation>
 <translation id="8310344678080805313">標準のタブ</translation>
-<translation id="8313455859591948645">起動ページの編集</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> とその他のサイト</translation>
 <translation id="8327155640814342956">快適にご利用いただけるよう、Chrome を開いて更新することをおすすめします</translation>
 <translation id="8339163506404995330"><ph name="LANGUAGE" />のページは翻訳されません</translation>

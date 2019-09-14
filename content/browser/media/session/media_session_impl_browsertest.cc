@@ -2211,7 +2211,7 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
 
   media_session::MediaMetadata expected_metadata;
   expected_metadata.title = shell()->web_contents()->GetTitle();
-  expected_metadata.artist = GetExpectedSourceTitle();
+  expected_metadata.source_title = GetExpectedSourceTitle();
   observer.WaitForExpectedMetadata(expected_metadata);
 }
 
@@ -2482,7 +2482,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest, MetadataWhenFileUrlScheme) {
 
   media_session::MediaMetadata expected_metadata;
   expected_metadata.title = shell()->web_contents()->GetTitle();
-  expected_metadata.artist = base::ASCIIToUTF16("Local File");
+  expected_metadata.source_title = base::ASCIIToUTF16("Local File");
   observer.WaitForExpectedMetadata(expected_metadata);
 }
 

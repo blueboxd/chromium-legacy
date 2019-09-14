@@ -194,6 +194,8 @@ Chromium kan ikke gjenopprette innstillingen dine.</translation>
 <translation id="753534427205733210">{0,plural, =1{Chromium startes på nytt om 1 minutt}other{Chromium startes på nytt om # minutter}}</translation>
 <translation id="7549178288319965365">Om Chromium OS</translation>
 <translation id="7561906087460245826">Fjern dataene fra Chromium også (<ph name="URL" />)</translation>
+<translation id="7585853947355360626">Hvis en innstilling ikke vises på denne siden, kan du gå til <ph name="LINK_BEGIN" />
+    innstillingene for Chromium OS<ph name="LINK_END" /></translation>
 <translation id="761356813943268536">Chromium bruker kameraet og mikrofonen din.</translation>
 <translation id="7617377681829253106">Nå er Chromium blitt enda bedre</translation>
 <translation id="7686590090926151193">Chromium er ikke standardnettleseren din</translation>
@@ -227,6 +229,8 @@ Chromium kan ikke gjenopprette innstillingen dine.</translation>
 <translation id="8619360774459241877">Starter Chromium ...</translation>
 <translation id="8621669128220841554">Installeringen mislyktes på grunn av en uspesifisert feil. Last ned Chromium på nytt.</translation>
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" />-enheten er oppdatert.</translation>
+<translation id="8682540261359803721">Hvis en innstilling ikke vises på denne siden, kan du gå til <ph name="LINK_BEGIN" />
+    nettleserinnstillingene for Chromium<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">Den styrer også hvilken side som vises når du starter Chromium eller søker fra multifunksjonsfeltet.</translation>
 <translation id="8704119203788522458">Dette er din Chromium</translation>
 <translation id="8739167630197873875">Du sletter informasjonskapsler når du avslutter Chromium. For å fortsette å synkronisere, endre denne <ph name="COOKIE_SETTINGS_LINK" />.</translation>

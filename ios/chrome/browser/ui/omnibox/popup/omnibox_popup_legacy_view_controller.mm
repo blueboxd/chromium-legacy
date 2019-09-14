@@ -41,6 +41,14 @@ const CGFloat kAnswerRowHeight = 64.0;
   NSArray* _rows;
 }
 
+// A flag to track if since the last viewWillAppear, the view ever adopted a
+// non-zero size. This is a pretty sad workaround for the new iOS 13 behaviour
+// where the half-autolayout, half-manual layout code of this legacy class ends
+// up sizing cells to a zero width because -layoutRows is never called on the
+// first appearance. This should be removed, together with this class, when the
+// non-legacy OmniboxPopupViewController becomes the default.
+@property(nonatomic, assign) BOOL viewHadNonZeroWidth;
+
 @end
 
 @implementation OmniboxPopupLegacyViewController
@@ -90,6 +98,26 @@ const CGFloat kAnswerRowHeight = 64.0;
         [self layoutRows];
       }
                       completion:nil];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+  [super viewWillAppear:animated];
+  if (self.view.bounds.size.width == 0) {
+    self.viewHadNonZeroWidth = NO;
+  }
+}
+
+- (void)viewDidLayoutSubviews {
+  [super viewDidLayoutSubviews];
+
+  // This method will be called multiple times, including after the self-sizing
+  // table view will have taken its final (non-zero) size. Calling -layoutRows
+  // will result in another viewDidLayoutSubviews call, so a flag is necessary
+  // to avoid an infinite loop.
+  if (self.view.bounds.size.width > 0 && !self.viewHadNonZeroWidth) {
+    self.viewHadNonZeroWidth = YES;
+    [self layoutRows];
+  }
 }
 
 #pragma mark -

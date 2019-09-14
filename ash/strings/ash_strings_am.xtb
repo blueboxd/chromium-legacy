@@ -88,6 +88,7 @@
 <translation id="2127372758936585790">አነስተኛ ኃይል ያለው ባትሪ መሙያ</translation>
 <translation id="2135456203358955318">የተተከለ ማጉያ</translation>
 <translation id="2144487987174258011">Adobe Flash Playerን ለማዘመን ዳግም ያስጀምሩ</translation>
+<translation id="2148902151539191989">ይመለሱ</translation>
 <translation id="2208323208084708176">የተዋሃደ የዴስክቶፕ ሁነታ</translation>
 <translation id="2220572644011485463">ፒን ወይም የይለፍ ቃል</translation>
 <translation id="225680501294068881">መሣሪያዎችን በመቃኘት ላይ...</translation>
@@ -104,7 +105,6 @@
 <translation id="2359808026110333948">ቀጥል</translation>
 <translation id="2365393535144473978">የተንቀሳቃሽ ስልክ ውሂብን ማንቃት ብሉቱዝን ያነቃል።</translation>
 <translation id="2391579633712104609">180°</translation>
-<translation id="239188844683466770">አትረብሽ የሚለውን አብራ ወይም አጥፋ</translation>
 <translation id="2412593942846481727">ዝማኔ ይገኛል</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> በ<ph name="DOMAIN" /> የሚተዳደር ክፍለ-ጊዜ ነው</translation>
 <translation id="2427507373259914951">የግራ ጠቅታ</translation>
@@ -224,6 +224,7 @@
 <translation id="4181841719683918333">ቋንቋዎች</translation>
 <translation id="4195877955194704651">ራስሰር ጠቅታዎች አዝራር</translation>
 <translation id="4217571870635786043">በቃል ማስጻፍ</translation>
+<translation id="421885205185866088">ለ <ph name="USER_EMAIL_ADDRESS" /> የዘመናዊ ካርድ ፒን</translation>
 <translation id="4239069858505860023">ጂፒአርኤስ</translation>
 <translation id="4261870227682513959">የማሳወቂያ ቅንብሮችን አሳይ። ማሳወቂያዎች ጠፍተዋል</translation>
 <translation id="4269883910223712419">የዚህ መሣሪያ የሚከተሉትን የማድረግ ችሎታ አለው፦</translation>
@@ -239,6 +240,7 @@
 <translation id="4379531060876907730">እነዚህ የእርስዎ የስታይለስ መሣሪያዎች ናቸው</translation>
 <translation id="4389184120735010762">የተተከለ የማጉያ የቁልፍ ሰሌዳ አቋራጩን ተጭነዋል። ሊያበሩት ይፈልጋሉ?</translation>
 <translation id="4421231901400348175">የማያ ገጽዎን ቁጥጥር በርቀት እርዳታ በኩል ለ<ph name="HELPER_NAME" /> በማጋራት ላይ።</translation>
+<translation id="4430019312045809116">ድምፅ</translation>
 <translation id="4450893287417543264">ዳግም አታሳይ</translation>
 <translation id="4477350412780666475">ቀጣይ ትራክ</translation>
 <translation id="4479639480957787382">ኢተርኔት</translation>
@@ -261,6 +263,7 @@
 <translation id="4778095205580009397">የGoogle ረዳቱ በማሳያ ክፍለ-ጊዜ ውስጥ አይገኝም።</translation>
 <translation id="479989351350248267">ፈልግ</translation>
 <translation id="4804818685124855865">ግንኙነት አቋርጥ</translation>
+<translation id="4814539958450445987">በመለያ መግቢያ ማያ ገጽ</translation>
 <translation id="4831034276697007977">ራስሰር ጠቅ ማድረጎችን ማጥፋት እንደሚፈልጉ እርግጠኛ ነዎት?</translation>
 <translation id="4849058404725798627">ነገርየውን ከቁልፍ ሰሌዳ ትኩረት ጋር አድምቅ</translation>
 <translation id="485592688953820832">ምንም እርምጃ የለም (ባለበት አቁም)</translation>

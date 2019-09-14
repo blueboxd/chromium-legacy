@@ -183,18 +183,22 @@ void ChromotingClient::SetVideoLayout(const protocol::VideoLayout& layout) {
   const protocol::VideoTrackLayout& track_layout = layout.video_track(0);
   int x_dpi = track_layout.has_x_dpi() ? track_layout.x_dpi() : kDefaultDpi;
   int y_dpi = track_layout.has_y_dpi() ? track_layout.y_dpi() : kDefaultDpi;
+  if (x_dpi != y_dpi) {
+    LOG(WARNING) << "Mismatched x,y dpi. x=" << x_dpi << " y=" << y_dpi;
+  }
 
   webrtc::DesktopSize size_dips(track_layout.width(), track_layout.height());
-  webrtc::DesktopSize size_pixels(size_dips.width() * x_dpi / kDefaultDpi,
-                                  size_dips.height() * y_dpi / kDefaultDpi);
-  user_interface_->SetDesktopSize(size_pixels,
-                                  webrtc::DesktopVector(x_dpi, y_dpi));
+  webrtc::DesktopSize size_px(size_dips.width() * x_dpi / kDefaultDpi,
+                              size_dips.height() * y_dpi / kDefaultDpi);
+  user_interface_->SetDesktopSize(size_px, webrtc::DesktopVector(x_dpi, y_dpi));
 
-  mouse_input_scaler_.set_input_size(webrtc::DesktopSize(size_pixels));
-  mouse_input_scaler_.set_output_size(
-      connection_->config().protocol() == protocol::SessionConfig::Protocol::ICE
-          ? webrtc::DesktopSize(size_pixels)
-          : webrtc::DesktopSize(size_dips));
+  mouse_input_scaler_.set_input_size(size_px.width(), size_px.height());
+  if (connection_->config().protocol() ==
+      protocol::SessionConfig::Protocol::ICE) {
+    mouse_input_scaler_.set_output_size(size_px.width(), size_px.height());
+  } else {
+    mouse_input_scaler_.set_output_size(size_dips.width(), size_dips.height());
+  }
 }
 
 void ChromotingClient::InjectClipboardEvent(

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.widget.dragreorder;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Color;
+import android.support.annotation.Nullable;
 import android.support.v4.graphics.ColorUtils;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
@@ -50,9 +51,15 @@ public abstract class DragReorderableListAdapter<T> extends RecyclerView.Adapter
      * A callback for touch actions on drag-reorderable lists.
      */
     private class DragTouchCallback extends ItemTouchHelper.Callback {
+        // The view that is being dragged now; null means no view is being dragged now;
+        private @Nullable ViewHolder mBeingDragged;
+
         @Override
         public int getMovementFlags(RecyclerView recyclerView, ViewHolder viewHolder) {
-            if (isActivelyDraggable(viewHolder)) {
+            // this method may be called multiple times until the view is dropped
+            // ensure there is only one bookmark being dragged
+            if ((mBeingDragged == viewHolder || mBeingDragged == null)
+                    && isActivelyDraggable(viewHolder)) {
                 return makeMovementFlags(
                         ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0 /* swipe flags */);
             }
@@ -64,7 +71,6 @@ public abstract class DragReorderableListAdapter<T> extends RecyclerView.Adapter
             int from = current.getAdapterPosition();
             int to = target.getAdapterPosition();
             if (from == to) return false;
-
             Collections.swap(mElements, from, to);
             notifyItemMoved(from, to);
             return true;
@@ -74,7 +80,9 @@ public abstract class DragReorderableListAdapter<T> extends RecyclerView.Adapter
         public void onSelectedChanged(ViewHolder viewHolder, int actionState) {
             super.onSelectedChanged(viewHolder, actionState);
 
-            if (actionState == ItemTouchHelper.ACTION_STATE_DRAG) {
+            // similar to getMovementFlags, this method may be called multiple times
+            if (actionState == ItemTouchHelper.ACTION_STATE_DRAG && mBeingDragged != viewHolder) {
+                mBeingDragged = viewHolder;
                 mStart = viewHolder.getAdapterPosition();
                 onDragStateChange(true);
                 updateVisualState(true, viewHolder);
@@ -88,6 +96,8 @@ public abstract class DragReorderableListAdapter<T> extends RecyclerView.Adapter
                 // Commit the position change for the dragged item when it's dropped.
                 setOrder(mElements);
             }
+            // the row has been dropped, even though it is possible at same row
+            mBeingDragged = null;
             onDragStateChange(false);
             updateVisualState(false, viewHolder);
         }

@@ -57,16 +57,11 @@ public class WebApkExtras {
     public final Map<String, String> iconUrlToMurmur2HashMap;
 
     /**
-     * ShareTarget data for {@link shareTargetActivityName}
+     * ShareTarget data
      * TODO(pkotwicz): Remove this property in favor of
      * {@link BrowserServicesIntentDataProvider#shareTarget()}
      */
     public final ShareTarget shareTarget;
-
-    /**
-     * Name of activity or activity alias in WebAPK which handles share intents.
-     */
-    public final String shareTargetActivityName;
 
     /**
      * Whether the WebAPK
@@ -93,16 +88,15 @@ public class WebApkExtras {
                 false /* isSplashIconMaskable */, 0 /* shellApkVersion */, null /* manifestUrl */,
                 null /* manifestStartUrl */, WebApkDistributor.OTHER,
                 null /* iconUrlToMurmur2HashMap */, new ShareTarget(),
-                null /* shareTargetActivityName */, false /* isSplashProvidedByWebApk */,
-                null /* shareData */, 0 /* webApkVersionCode */);
+                false /* isSplashProvidedByWebApk */, null /* shareData */,
+                0 /* webApkVersionCode */);
     }
 
     public WebApkExtras(String webApkPackageName, WebappIcon badgeIcon, WebappIcon splashIcon,
             boolean isSplashIconMaskable, int shellApkVersion, String manifestUrl,
             String manifestStartUrl, @WebApkDistributor int distributor,
             Map<String, String> iconUrlToMurmur2HashMap, ShareTarget shareTarget,
-            String shareTargetActivityName, boolean isSplashProvidedByWebApk, ShareData shareData,
-            int webApkVersionCode) {
+            boolean isSplashProvidedByWebApk, ShareData shareData, int webApkVersionCode) {
         this.webApkPackageName = webApkPackageName;
         this.badgeIcon = badgeIcon;
         this.splashIcon = splashIcon;
@@ -113,7 +107,6 @@ public class WebApkExtras {
         this.distributor = distributor;
         this.iconUrlToMurmur2HashMap = iconUrlToMurmur2HashMap;
         this.shareTarget = shareTarget;
-        this.shareTargetActivityName = shareTargetActivityName;
         this.isSplashProvidedByWebApk = isSplashProvidedByWebApk;
         this.shareData = shareData;
         this.webApkVersionCode = webApkVersionCode;

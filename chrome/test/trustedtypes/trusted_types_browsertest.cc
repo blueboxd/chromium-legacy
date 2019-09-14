@@ -163,49 +163,54 @@ class TrustedTypesBrowserTest : public InProcessBrowserTest {
 // header|in <meta>) and content security policy (absent|in header|in <meta>).
 // The test fixture will generate the appropriate page based on the URL path.
 
-IN_PROC_BROWSER_TEST_F(TrustedTypesBrowserTest, PagePlainX) {
+// crbug.com/1003738: Mark tests as MANUAL until that issue is fixed.
+// (See: BrowserTestBase::ShouldSkipManualTests)
+
+IN_PROC_BROWSER_TEST_F(TrustedTypesBrowserTest, MANUAL_PagePlain) {
   EXPECT_EQ(base::ASCIIToUTF16(kTitleDisabled),
             NavigateToAndReturnTitle("/page.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(TrustedTypesBrowserTest, PageWithTokenInHeader) {
+IN_PROC_BROWSER_TEST_F(TrustedTypesBrowserTest, MANUAL_PageWithTokenInHeader) {
   EXPECT_EQ(base::ASCIIToUTF16(kTitleAvailable),
             NavigateToAndReturnTitle("/page-otheader.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(TrustedTypesBrowserTest, PageWithTokenInMeta) {
+IN_PROC_BROWSER_TEST_F(TrustedTypesBrowserTest, MANUAL_PageWithTokenInMeta) {
   EXPECT_EQ(base::ASCIIToUTF16(kTitleAvailable),
             NavigateToAndReturnTitle("/page-otmeta.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(TrustedTypesBrowserTest, PageWithCSPInHeaderX) {
+IN_PROC_BROWSER_TEST_F(TrustedTypesBrowserTest, MANUAL_PageWithCSPInHeaderX) {
   EXPECT_EQ(base::ASCIIToUTF16(kTitleDisabled),
             NavigateToAndReturnTitle("/page-cspheader.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(TrustedTypesBrowserTest, PageWithCSPAndTokenInHeader) {
+IN_PROC_BROWSER_TEST_F(TrustedTypesBrowserTest,
+                       MANUAL_PageWithCSPAndTokenInHeader) {
   EXPECT_EQ(base::ASCIIToUTF16(kTitleEnabled),
             NavigateToAndReturnTitle("/page-cspheader-otheader.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(TrustedTypesBrowserTest,
-                       PageWithCSPInHeaderAndTokenInMeta) {
+                       MANUAL_PageWithCSPInHeaderAndTokenInMeta) {
   EXPECT_EQ(base::ASCIIToUTF16(kTitleEnabled),
             NavigateToAndReturnTitle("/page-cspheader-otmeta.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(TrustedTypesBrowserTest, PageWithCSPInMetaX) {
+IN_PROC_BROWSER_TEST_F(TrustedTypesBrowserTest, MANUAL_PageWithCSPInMetaX) {
   EXPECT_EQ(base::ASCIIToUTF16(kTitleDisabled),
             NavigateToAndReturnTitle("/page-cspmeta.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(TrustedTypesBrowserTest,
-                       PageWithCSPInMetaAndTokenInHeader) {
+                       MANUAL_PageWithCSPInMetaAndTokenInHeader) {
   EXPECT_EQ(base::ASCIIToUTF16(kTitleEnabled),
             NavigateToAndReturnTitle("/page-cspmeta-otheader.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(TrustedTypesBrowserTest, PageWithCSPAndTokenInMeta) {
+IN_PROC_BROWSER_TEST_F(TrustedTypesBrowserTest,
+                       MANUAL_PageWithCSPAndTokenInMeta) {
   EXPECT_EQ(base::ASCIIToUTF16(kTitleEnabled),
             NavigateToAndReturnTitle("/page-cspmeta-otmeta.html"));
 }

@@ -134,6 +134,47 @@ found in the LICENSE file.
         To disable accessibility, run Chrome with this flag:
         <pre>--disable-renderer-accessibility</pre>
       </p>
+
+      <div id="filters">
+        <h2>Filters:</h2>
+        <p>
+          Use filters to match the attributes and attribute values you want
+          included in the output. Filters can contain simple wildcards (*) only,
+          they're not regular expressions. Attributes are separated by spaces.
+        </p>
+
+        <div>
+          <label for="filter-allow">
+            Allow:
+          </label>
+          <input id="filter-allow" aria-describedby="allow_secondary" value="*">
+        </div>
+        <div id="allow_secondary" class="secondary">
+          Include these attributes. Empty attributes are skipped.
+        </div>
+
+        <div>
+          <label for="filter-allow-empty">
+            Allow empty:
+          </label>
+          <input id="filter-allow-empty"
+                 aria-describedby="allow-empty_secondary">
+        </div>
+        <div id="allow-empty_secondary" class="secondary">
+          Include these attributes, even if they are empty.
+        </div>
+
+        <div>
+          <label for="filter-deny">
+            Deny:
+          </label>
+          <input id="filter-deny" aria-describedby="deny_secondary">
+        </div>
+        <div id="deny_secondary" class="secondary">
+          Exclude these attributes.
+        </div>
+      </div>
+
     </div>
   </div>
 

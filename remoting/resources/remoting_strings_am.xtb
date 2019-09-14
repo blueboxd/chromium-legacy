@@ -58,6 +58,7 @@
 <translation id="2509394361235492552">ከ<ph name="HOSTNAME" /> ጋር ተገናኝቷል</translation>
 <translation id="2512228156274966424">ማሳሰቢያ፦ ሁሉም የቁልፍ ሰሌዳ አቋራጮች የሚገኙ መሆናቸውን ለማረጋገጥ Chrome የርቀት ዴስክቶፕ ወደ «እንደ መስኮት ክፈት» ማዋቀር ይችላሉ።</translation>
 <translation id="2540992418118313681">ሌላ ተጠቃሚ ይህን ኮምፒውተር እንዲመለከት እና እንዲቆጣጠር ማጋራት ይፈልጋሉ?</translation>
+<translation id="254771646005658629">ይህንን Mac በርቀት ያሉ ተጠቃሚዎች እንዲቆጣጠሩ ፍቀድ</translation>
 <translation id="2579271889603567289">አስተናጋጅ ተበላሽቷል ወይም መጀመር አልቻለም።</translation>
 <translation id="2599300881200251572">ይህ አገልግሎት ከChrome የርቀት ዴስክቶፕ ደንበኞች ገቢ ግንኙነቶችን ያነቃል።</translation>
 <translation id="2647232381348739934">Chromoting አገልግሎት</translation>
@@ -182,6 +183,11 @@
 <translation id="5419185025274123272">መተግበሪያውን ዳግም ማስጀመር አልተቻለም። አሁንም የሳንካ ሪፖርት መላክ ይችላሉ።</translation>
 <translation id="5419418238395129586">መጨረሻ መስመር ላይ የነበረው በ፦ <ph name="DATE" /></translation>
 <translation id="544077782045763683">አስተናጋጅ ተዘግቷል።</translation>
+<translation id="5463789431147491241"><ph name="PRODUCT_NAME" /> ን በዚህ Mac ላይ ለመጠቀም፣ እነዚህን እርምጃዎች ይከተሉ፦
+
+ከዚህ በታች «<ph name="BUTTON_NAME" />» ን ይምረጡ። በእርስዎ የደኅንነት እና የግላዊነት ምርጫዎች ውስጥ፣ ከ«<ph name="SERVICE_SCRIPT_NAME" />» ቀጥሎ ያለውን ሣጥን ምልክት ያድርጉትበት።
+
+«<ph name="SERVICE_SCRIPT_NAME" />» ቀደም ብሎ ምልክት የተደረገበት ከሆነ፣ ምልክት እንዳይኖረው ያድርጉ ኣኣን በመቀጠል መልሰው እንደገና ምልክት ያድርጉበት።</translation>
 <translation id="5510035215749041527">አሁን አቋርጥ</translation>
 <translation id="5593560073513909978">አገልግሎቱ ለጊዜው አይገኝም። እባክዎ ቆይተው እንደገና ይሞክሩ።</translation>
 <translation id="5601503069213153581">ፒን</translation>
@@ -298,12 +304,14 @@
 <translation id="837021510621780684">ከዚህ ኮምፒውተር</translation>
 <translation id="8383794970363966105">Chromotingን ለመጠቀም የአንድ የGoogle መለያ በመሣሪያዎ ላይ ማከል አለብዎት።</translation>
 <translation id="8386846956409881180">አስተናጋጅ ልክ ባልሆኑ የOAuth ምስክርነቶች ነው የተዋቀረው።</translation>
+<translation id="8406498562923498210">በእርስዎ የ Chrome የሩቅ ዴስክቶፕ ድባብ ውስጥ ለማስጀመር ክፍለ ጊዜ ይምረጡ። (አንዳንድ የክፍለ ጊዜ ዓይነቶች በ Chrome ሩቅ ዴስክቶፕ እና በአካባቢ ኮንሶል ላይ በአንድ ጊዜ አንድ ላይ መሥራትን ላይደግፉ እንደሚችሉ ልብ ይበሉ።)</translation>
 <translation id="8428213095426709021">ቅንብሮች</translation>
 <translation id="8445362773033888690">በGoogle Play መደብር ውስጥ ይመልከቱ</translation>
 <translation id="8509907436388546015">ዴስክቶፕ የማዋሃድ ሂደት</translation>
 <translation id="8513093439376855948">ቤተኛ የመልዕክት መላኪያ አስተናጋጅ ለርቀት አስተናጋጅ አስተዳደር</translation>
 <translation id="8525306231823319788">ሙሉ ማያ ገጽ</translation>
 <translation id="8548209692293300397">ከዚህ ቀደም እንደ <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) ሆነው ገብተዋል። በዚያ መለያ ውስጥ የእርስዎን ኮምፒውተሮች ለመድረስ በዚያ መለያ <ph name="LINK_BEGIN" />ወደ Google Chrome ይግቡ<ph name="LINK_END" />ና የChrome ርቀት ዴስክቶፕን ዳግም ይጫኑት።</translation>
+<translation id="858006550102277544">አስተያየት</translation>
 <translation id="8642984861538780905">ደህና</translation>
 <translation id="8712909229180978490">የእኔን በGoogle አንጻፊ ላይ የተቀመጡ ፋይሎች ማየት አልችልም።</translation>
 <translation id="8743328882720071828"><ph name="CLIENT_USERNAME" /> የእርስዎን ኮምፒውተር እንዲመለከት እና እንዲቆጣጠር እንዲፈቀድለት ይፈልጋሉr?</translation>
@@ -321,6 +329,7 @@
 <translation id="9126115402994542723">ከዚህ መሣሪያ ሆኜ ከዚህ አስተናጋጅ ጋር ስገናኝ ዳግም ፒን አትጠይቅ።</translation>
 <translation id="9149580767411232853">መላውን የርቀት ዴስክቶፕ የሚታይ እንደሆነ አድርገው ያቆዩት</translation>
 <translation id="9149992051684092333">ዴስክቶፕዎን ማጋራት ለመጀመር ከታች ያለውን የመዳረሻ ኮድ ለሚረዳዎ ሰው ይስጡት።</translation>
+<translation id="916856682307586697">ነባሪውን XSession አስጀምር</translation>
 <translation id="9188433529406846933">ፈቀዳ ይስጡ</translation>
 <translation id="9213184081240281106">ልክ ያልሆነ የአስተናጋጅ ውቅር።</translation>
 <translation id="951991426597076286">አትቀበል</translation>

@@ -42,7 +42,7 @@ enum class ProtoDbType {
   HINT_CACHE_STORE = 20,
   DOWNLOAD_DB = 21,
   VIDEO_DECODE_STATS_DB = 22,
-
+  PRINT_JOB_DATABASE = 23,
   LAST,
 };
 
@@ -52,6 +52,8 @@ constexpr ProtoDbType kWhitelistedDbForSharedImpl[]{
     ProtoDbType::NOTIFICATION_SCHEDULER_ICON_STORE,
     ProtoDbType::NOTIFICATION_SCHEDULER_IMPRESSION_STORE,
     ProtoDbType::NOTIFICATION_SCHEDULER_NOTIFICATION_STORE,
+    ProtoDbType::PRINT_JOB_DATABASE,
+
     ProtoDbType::LAST,  // Marks the end of list.
 };
 

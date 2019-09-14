@@ -44,7 +44,8 @@ PaymentResponseHelper::PaymentResponseHelper(
   is_waiting_for_instrument_details_ = true;
 
   // Start to normalize the shipping address, if necessary.
-  if (spec_->request_shipping()) {
+  if (spec_->request_shipping() &&
+      !selected_instrument_->HandlesShippingAddress()) {
     DCHECK(selected_shipping_profile);
     DCHECK(spec_->selected_shipping_option());
 
@@ -66,12 +67,20 @@ PaymentResponseHelper::~PaymentResponseHelper() {}
 
 void PaymentResponseHelper::OnInstrumentDetailsReady(
     const std::string& method_name,
-    const std::string& stringified_details) {
+    const std::string& stringified_details,
+    const PayerData& payer_data) {
   if (!is_waiting_for_instrument_details_)
     return;
 
   method_name_ = method_name;
   stringified_details_ = stringified_details;
+  payer_data_from_instrument_.payer_name = payer_data.payer_name;
+  payer_data_from_instrument_.payer_email = payer_data.payer_email;
+  payer_data_from_instrument_.payer_phone = payer_data.payer_phone;
+  payer_data_from_instrument_.shipping_address =
+      payer_data.shipping_address.Clone();
+  payer_data_from_instrument_.selected_shipping_option_id =
+      payer_data.selected_shipping_option_id;
   is_waiting_for_instrument_details_ = false;
 
   if (!is_waiting_for_shipping_address_normalization_)
@@ -106,30 +115,42 @@ mojom::PayerDetailPtr PaymentResponseHelper::GeneratePayerDetail(
   mojom::PayerDetailPtr payer = mojom::PayerDetail::New();
 
   if (spec_->request_payer_name()) {
-    DCHECK(selected_contact_profile);
-    payer->name = base::UTF16ToUTF8(
-        selected_contact_profile->GetInfo(autofill::NAME_FULL, app_locale_));
+    if (selected_instrument_->HandlesPayerName()) {
+      payer->name = payer_data_from_instrument_.payer_name;
+    } else {
+      DCHECK(selected_contact_profile);
+      payer->name = base::UTF16ToUTF8(
+          selected_contact_profile->GetInfo(autofill::NAME_FULL, app_locale_));
+    }
   }
   if (spec_->request_payer_email()) {
-    DCHECK(selected_contact_profile);
-    payer->email = base::UTF16ToUTF8(
-        selected_contact_profile->GetRawInfo(autofill::EMAIL_ADDRESS));
+    if (selected_instrument_->HandlesPayerEmail()) {
+      payer->email = payer_data_from_instrument_.payer_email;
+    } else {
+      DCHECK(selected_contact_profile);
+      payer->email = base::UTF16ToUTF8(
+          selected_contact_profile->GetRawInfo(autofill::EMAIL_ADDRESS));
+    }
   }
   if (spec_->request_payer_phone()) {
-    DCHECK(selected_contact_profile);
+    if (selected_instrument_->HandlesPayerPhone()) {
+      payer->phone = payer_data_from_instrument_.payer_phone;
+    } else {
+      DCHECK(selected_contact_profile);
 
-    // Try to format the phone number to the E.164 format to send in the Payment
-    // Response, as defined in the Payment Request spec. If it's not possible,
-    // send the original. More info at:
-    // https://w3c.github.io/payment-request/#paymentrequest-updated-algorithm
-    const std::string original_number =
-        base::UTF16ToUTF8(selected_contact_profile->GetInfo(
-            autofill::PHONE_HOME_WHOLE_NUMBER, app_locale_));
+      // Try to format the phone number to the E.164 format to send in the
+      // Payment Response, as defined in the Payment Request spec. If it's not
+      // possible, send the original. More info at:
+      // https://w3c.github.io/payment-request/#paymentrequest-updated-algorithm
+      const std::string original_number =
+          base::UTF16ToUTF8(selected_contact_profile->GetInfo(
+              autofill::PHONE_HOME_WHOLE_NUMBER, app_locale_));
 
-    const std::string default_region_code =
-        autofill::AutofillCountry::CountryCodeForLocale(app_locale_);
-    payer->phone = autofill::i18n::FormatPhoneForResponse(original_number,
-                                                          default_region_code);
+      const std::string default_region_code =
+          autofill::AutofillCountry::CountryCodeForLocale(app_locale_);
+      payer->phone = autofill::i18n::FormatPhoneForResponse(
+          original_number, default_region_code);
+    }
   }
 
   return payer;
@@ -152,10 +173,17 @@ void PaymentResponseHelper::GeneratePaymentResponse() {
 
   // Shipping Address section
   if (spec_->request_shipping()) {
-    payment_response->shipping_address =
-        data_util::GetPaymentAddressFromAutofillProfile(shipping_address_,
-                                                        app_locale_);
-    payment_response->shipping_option = spec_->selected_shipping_option()->id;
+    if (selected_instrument_->HandlesShippingAddress()) {
+      payment_response->shipping_address =
+          std::move(payer_data_from_instrument_.shipping_address);
+      payment_response->shipping_option =
+          payer_data_from_instrument_.selected_shipping_option_id;
+    } else {
+      payment_response->shipping_address =
+          data_util::GetPaymentAddressFromAutofillProfile(shipping_address_,
+                                                          app_locale_);
+      payment_response->shipping_option = spec_->selected_shipping_option()->id;
+    }
   }
 
   // Contact Details section.

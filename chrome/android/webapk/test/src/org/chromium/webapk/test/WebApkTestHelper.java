@@ -124,7 +124,7 @@ public class WebApkTestHelper {
             String packageName, String activityClassName, Bundle metaData) {
         ActivityInfo activityInfo = new ActivityInfo();
         activityInfo.packageName = packageName;
-        activityInfo.targetActivity = activityClassName;
+        activityInfo.name = activityClassName;
         activityInfo.metaData = metaData;
         return activityInfo;
     }

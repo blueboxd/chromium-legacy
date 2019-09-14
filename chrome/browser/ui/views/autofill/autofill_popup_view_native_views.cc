@@ -894,9 +894,9 @@ void AutofillPopupViewNativeViews::Show() {
 }
 
 void AutofillPopupViewNativeViews::Hide() {
+  NotifyAccessibilityEvent(ax::mojom::Event::kExpandedChanged, true);
   // The controller is no longer valid after it hides us.
   controller_ = nullptr;
-  NotifyAccessibilityEvent(ax::mojom::Event::kExpandedChanged, true);
   DoHide();
 }
 

@@ -1930,11 +1930,18 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
         // Remove this once navigation refactor is done.
         GURL itemURL = item->GetURL();
         self.navigationManagerImpl->CommitPendingItem(context->ReleaseItem());
-        web::NavigationItem* lastCommittedItem =
-            self.navigationManagerImpl->GetLastCommittedItem();
-        [self.delegate navigationHandler:self
-                          setDocumentURL:lastCommittedItem->GetURL()
-                                 context:context];
+        if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+          [self.delegate navigationHandler:self
+                            setDocumentURL:itemURL
+                                   context:context];
+        } else {
+          web::NavigationItem* lastCommittedItem =
+              self.navigationManagerImpl->GetLastCommittedItem();
+          DCHECK_EQ(itemURL, lastCommittedItem->GetURL());
+          [self.delegate navigationHandler:self
+                            setDocumentURL:lastCommittedItem->GetURL()
+                                   context:context];
+        }
 
         // If |context| is a placeholder navigation, this is the second part of
         // the error page load for a provisional load failure. Rewrite the

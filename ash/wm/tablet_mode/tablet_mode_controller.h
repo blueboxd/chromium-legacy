@@ -119,6 +119,9 @@ class ASH_EXPORT TabletModeController
   // TabletMode:
   void AddObserver(TabletModeObserver* observer) override;
   void RemoveObserver(TabletModeObserver* observer) override;
+  // We are considered in tablet mode when |tablet_mode_window_manager_| is
+  // about to be initialized. When it is about to be shutdown, we are considered
+  // out of tablet mode.
   bool InTabletMode() const override;
   void SetEnabledForTest(bool enabled) override;
 
@@ -296,7 +299,7 @@ class ASH_EXPORT TabletModeController
   void OnScreenshotTaken(base::OnceClosure on_screenshot_taken,
                          std::unique_ptr<viz::CopyOutputResult> copy_result);
 
-  // The maximized window manager (if enabled).
+  // The tablet window manager (if enabled).
   std::unique_ptr<TabletModeWindowManager> tablet_mode_window_manager_;
 
   // A helper class which when instantiated will block native events from the

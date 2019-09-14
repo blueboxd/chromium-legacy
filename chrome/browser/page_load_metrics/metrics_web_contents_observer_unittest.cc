@@ -65,7 +65,8 @@ class TestPageLoadMetricsObserver : public PageLoadMetricsObserver {
       std::vector<ExtraRequestCompleteInfo>* loaded_resources,
       std::vector<GURL>* observed_committed_urls,
       std::vector<GURL>* observed_aborted_urls,
-      std::vector<mojom::PageLoadFeatures>* observed_features)
+      std::vector<mojom::PageLoadFeatures>* observed_features,
+      base::Optional<bool>* is_first_navigation_in_web_contents)
       : updated_timings_(updated_timings),
         updated_subframe_timings_(updated_subframe_timings),
         complete_timings_(complete_timings),
@@ -73,12 +74,16 @@ class TestPageLoadMetricsObserver : public PageLoadMetricsObserver {
         loaded_resources_(loaded_resources),
         observed_features_(observed_features),
         observed_committed_urls_(observed_committed_urls),
-        observed_aborted_urls_(observed_aborted_urls) {}
+        observed_aborted_urls_(observed_aborted_urls),
+        is_first_navigation_in_web_contents_(
+            is_first_navigation_in_web_contents) {}
 
   ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
-               const GURL& currently_committed_url,
-               bool started_in_foreground) override {
+                        const GURL& currently_committed_url,
+                        bool started_in_foreground) override {
     observed_committed_urls_->push_back(currently_committed_url);
+    *is_first_navigation_in_web_contents_ =
+        GetDelegate().IsFirstNavigationInWebContents();
     return CONTINUE_OBSERVING;
   }
 
@@ -131,6 +136,7 @@ class TestPageLoadMetricsObserver : public PageLoadMetricsObserver {
   std::vector<mojom::PageLoadFeatures>* const observed_features_;
   std::vector<GURL>* const observed_committed_urls_;
   std::vector<GURL>* const observed_aborted_urls_;
+  base::Optional<bool>* is_first_navigation_in_web_contents_;
 };
 
 // Test PageLoadMetricsObserver that stops observing page loads with certain
@@ -176,7 +182,8 @@ class TestPageLoadMetricsEmbedderInterface
     tracker->AddObserver(std::make_unique<TestPageLoadMetricsObserver>(
         &updated_timings_, &updated_subframe_timings_, &complete_timings_,
         &updated_cpu_timings_, &loaded_resources_, &observed_committed_urls_,
-        &observed_aborted_urls_, &observed_features_));
+        &observed_aborted_urls_, &observed_features_,
+        &is_first_navigation_in_web_contents_));
     tracker->AddObserver(std::make_unique<FilteringPageLoadMetricsObserver>(
         &completed_filtered_urls_));
   }
@@ -215,6 +222,10 @@ class TestPageLoadMetricsEmbedderInterface
     return observed_features_;
   }
 
+  const base::Optional<bool>& is_first_navigation_in_web_contents() const {
+    return is_first_navigation_in_web_contents_;
+  }
+
   const std::vector<ExtraRequestCompleteInfo>& loaded_resources() const {
     return loaded_resources_;
   }
@@ -234,6 +245,7 @@ class TestPageLoadMetricsEmbedderInterface
   std::vector<ExtraRequestCompleteInfo> loaded_resources_;
   std::vector<GURL> completed_filtered_urls_;
   std::vector<mojom::PageLoadFeatures> observed_features_;
+  base::Optional<bool> is_first_navigation_in_web_contents_;
   bool is_ntp_;
 };
 
@@ -391,6 +403,10 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
     return embedder_interface_->observed_features();
   }
 
+  const base::Optional<bool>& is_first_navigation_in_web_contents() const {
+    return embedder_interface_->is_first_navigation_in_web_contents();
+  }
+
   const std::vector<GURL>& completed_filtered_urls() const {
     return embedder_interface_->completed_filtered_urls();
   }
@@ -427,9 +443,12 @@ TEST_F(MetricsWebContentsObserverTest, SuccessfulMainFrameNavigation) {
       content::WebContentsTester::For(web_contents());
 
   ASSERT_TRUE(observed_committed_urls_from_on_start().empty());
+  ASSERT_FALSE(is_first_navigation_in_web_contents().has_value());
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
   ASSERT_EQ(1u, observed_committed_urls_from_on_start().size());
   ASSERT_TRUE(observed_committed_urls_from_on_start().at(0).is_empty());
+  ASSERT_TRUE(is_first_navigation_in_web_contents().has_value());
+  ASSERT_TRUE(is_first_navigation_in_web_contents().value());
 
   ASSERT_EQ(0, CountUpdatedTimingReported());
   SimulateTimingUpdate(timing);
@@ -437,6 +456,7 @@ TEST_F(MetricsWebContentsObserverTest, SuccessfulMainFrameNavigation) {
   ASSERT_EQ(0, CountCompleteTimingReported());
 
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
+  ASSERT_FALSE(is_first_navigation_in_web_contents().value());
   ASSERT_EQ(1, CountCompleteTimingReported());
   ASSERT_EQ(0, CountEmptyCompleteTimingReported());
   ASSERT_EQ(2u, observed_committed_urls_from_on_start().size());
@@ -563,6 +583,14 @@ TEST_F(MetricsWebContentsObserverTest, DontLogNewTabPage) {
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
   ASSERT_EQ(0, CountUpdatedTimingReported());
   ASSERT_EQ(0, CountCompleteTimingReported());
+
+  // Ensure that NTP and other untracked loads are still accounted for as part
+  // of keeping track of the first navigation in the WebContents.
+  embedder_interface_->set_is_ntp(false);
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+  ASSERT_TRUE(is_first_navigation_in_web_contents().has_value());
+  ASSERT_FALSE(is_first_navigation_in_web_contents().value());
+
   CheckErrorEvent(ERR_IPC_WITH_NO_RELEVANT_LOAD, 1);
   CheckTotalErrorEvents();
 }
@@ -582,6 +610,11 @@ TEST_F(MetricsWebContentsObserverTest, DontLogIrrelevantNavigation) {
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
   ASSERT_EQ(0, CountUpdatedTimingReported());
   ASSERT_EQ(0, CountCompleteTimingReported());
+
+  // Ensure that NTP and other untracked loads are still accounted for as part
+  // of keeping track of the first navigation in the WebContents.
+  ASSERT_TRUE(is_first_navigation_in_web_contents().has_value());
+  ASSERT_FALSE(is_first_navigation_in_web_contents().value());
 
   CheckErrorEvent(ERR_IPC_FROM_BAD_URL_SCHEME, 1);
   CheckErrorEvent(ERR_IPC_WITH_NO_RELEVANT_LOAD, 1);

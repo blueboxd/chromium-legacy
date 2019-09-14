@@ -91,7 +91,7 @@ UkmService::UkmService(PrefService* pref_service,
   // MetricsServiceClient outlives UkmService, and
   // MetricsReportingScheduler is tied to the lifetime of |this|.
   const base::Callback<base::TimeDelta(void)>& get_upload_interval_callback =
-      base::Bind(&metrics::MetricsServiceClient::GetStandardUploadInterval,
+      base::Bind(&metrics::MetricsServiceClient::GetUploadInterval,
                  base::Unretained(client_));
   scheduler_.reset(new ukm::UkmRotationScheduler(rotate_callback,
                                                  get_upload_interval_callback));

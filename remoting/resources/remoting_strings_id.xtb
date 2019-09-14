@@ -58,6 +58,7 @@
 <translation id="2509394361235492552">Terhubung ke <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">CATATAN: Untuk memastikan bahwa semua pintasan keyboard tersedia, Anda dapat mengonfigurasi Chrome Desktop Jarak Jauh menjadi ‘Buka sebagai jendela’.</translation>
 <translation id="2540992418118313681">Ingin membagikan komputer ini agar dapat dilihat dan dikontrol oleh pengguna lain?</translation>
+<translation id="254771646005658629">Izinkan pengguna jarak jauh untuk mengontrol Mac ini</translation>
 <translation id="2579271889603567289">Host error atau gagal dimulai.</translation>
 <translation id="2599300881200251572">Layanan ini mengaktifkan sambungan masuk dari klien Chrome Desktop Jarak Jauh.</translation>
 <translation id="2647232381348739934">Layanan Chromoting</translation>
@@ -182,6 +183,11 @@
 <translation id="5419185025274123272">Tidak dapat menyetel ulang aplikasi. Anda masih dapat mengirim laporan bug.</translation>
 <translation id="5419418238395129586">Online terakhir: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Hosting telah dimatikan.</translation>
+<translation id="5463789431147491241">Untuk menggunakan <ph name="PRODUCT_NAME" /> pada Mac ini, ikuti langkah-langkah berikut:
+
+Pilih '<ph name="BUTTON_NAME" />' di bawah. Dalam preferensi Keamanan dan Privasi, centang kotak di samping '<ph name="SERVICE_SCRIPT_NAME" />'.
+
+Jika '<ph name="SERVICE_SCRIPT_NAME" />' telah tercentang, hapus centang lalu centang lagi.</translation>
 <translation id="5510035215749041527">Putuskan hubungan sekarang</translation>
 <translation id="5593560073513909978">Layanan kami tidak tersedia untuk sementara. Coba lagi nanti.</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -298,12 +304,14 @@
 <translation id="837021510621780684">Dari komputer ini</translation>
 <translation id="8383794970363966105">Untuk menggunakan Chromoting, Anda perlu menambahkan Akun Google ke perangkat.</translation>
 <translation id="8386846956409881180">Host dikonfigurasi dengan kredensial OAuth yang tidak valid.</translation>
+<translation id="8406498562923498210">Pilih sesi untuk diluncurkan dalam lingkungan Chrome Desktop Jarak Jauh Anda. (Perlu diperhatikan bahwa beberapa jenis sesi mungkin tidak dapat berjalan dalam Chrome Desktop Jarak Jauh dan di konsol lokal secara bersamaan.)</translation>
 <translation id="8428213095426709021">Setelan</translation>
 <translation id="8445362773033888690">Lihat di Google Play Store</translation>
 <translation id="8509907436388546015">Proses Integrasi Desktop</translation>
 <translation id="8513093439376855948">Hosting perpesanan asli untuk pengelolaan hosting jarak jauh</translation>
 <translation id="8525306231823319788">Layar penuh</translation>
 <translation id="8548209692293300397">Sebelumnya, Anda telah login sebagai <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Untuk mengakses komputer menggunakan akun tersebut, <ph name="LINK_BEGIN" />masuk ke Google Chrome<ph name="LINK_END" /> dengan akun tersebut dan instal kembali Chrome Desktop Jarak Jauh.</translation>
+<translation id="858006550102277544">Komentar</translation>
 <translation id="8642984861538780905">Sedang</translation>
 <translation id="8712909229180978490">Saya tidak dapat melihat file saya yang tersimpan secara online di Google Drive.</translation>
 <translation id="8743328882720071828">Izinkan <ph name="CLIENT_USERNAME" /> melihat dan mengontrol komputer Anda?</translation>
@@ -321,6 +329,7 @@
 <translation id="9126115402994542723">Jangan minta PIN lagi saat menyambungkan ke hosting ini dari perangkat ini.</translation>
 <translation id="9149580767411232853">Pertahankan agar keseluruhan desktop jarak jauh tetap terlihat</translation>
 <translation id="9149992051684092333">Untuk mulai berbagi desktop, berikan kode akses di bawah kepada orang yang akan membantu Anda.</translation>
+<translation id="916856682307586697">Luncurkan XSession default</translation>
 <translation id="9188433529406846933">Beri Otorisasi</translation>
 <translation id="9213184081240281106">Konfigurasi host tidak valid.</translation>
 <translation id="951991426597076286">Tolak</translation>

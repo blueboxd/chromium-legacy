@@ -235,46 +235,14 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
                          Session* session,
                          const base::DictionaryValue& params,
                          std::unique_ptr<base::Value>* value) {
-  session->driver_log.reset(
-      new WebDriverLog(WebDriverLog::kDriverType, Log::kAll));
   const base::DictionaryValue* desired_caps;
   base::DictionaryValue merged_caps;
 
-  session->w3c_compliant = GetW3CSetting(params);
-  if (session->w3c_compliant) {
-    Status status = ProcessCapabilities(params, &merged_caps);
-    if (status.IsError())
-      return status;
-    desired_caps = &merged_caps;
-  } else if (!params.GetDictionary("desiredCapabilities", &desired_caps)) {
-    return Status(kSessionNotCreated,
-                  "Missing or invalid capabilities");
-  }
-
   Capabilities capabilities;
-  Status status = capabilities.Parse(*desired_caps, session->w3c_compliant);
+  Status status = internal::ConfigureSession(session, params, &desired_caps,
+                                             &merged_caps, &capabilities);
   if (status.IsError())
     return status;
-
-  if (capabilities.unhandled_prompt_behavior.length() > 0) {
-    session->unhandled_prompt_behavior = capabilities.unhandled_prompt_behavior;
-  } else {
-    // W3C spec (https://www.w3.org/TR/webdriver/#dfn-handle-any-user-prompts)
-    // shows the default behavior to be dismiss and notify. For backward
-    // compatibility, in legacy mode default behavior is not handling prompt.
-    session->unhandled_prompt_behavior =
-        session->w3c_compliant ? kDismissAndNotify : kIgnore;
-  }
-
-  session->implicit_wait = capabilities.implicit_wait_timeout;
-  session->page_load_timeout = capabilities.page_load_timeout;
-  session->script_timeout = capabilities.script_timeout;
-  session->strict_file_interactability =
-        capabilities.strict_file_interactability;
-  Log::Level driver_level = Log::kWarning;
-  if (capabilities.logging_prefs.count(WebDriverLog::kDriverType))
-    driver_level = capabilities.logging_prefs[WebDriverLog::kDriverType];
-  session->driver_log->set_min_level(driver_level);
 
   // Create Log's and DevToolsEventListener's for ones that are DevTools-based.
   // Session will own the Log's, Chrome will own the listeners.
@@ -335,6 +303,52 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
 }  // namespace
 
 namespace internal {
+
+Status ConfigureSession(Session* session,
+                        const base::DictionaryValue& params,
+                        const base::DictionaryValue** desired_caps,
+                        base::DictionaryValue* merged_caps,
+                        Capabilities* capabilities) {
+  session->driver_log.reset(
+      new WebDriverLog(WebDriverLog::kDriverType, Log::kAll));
+
+  session->w3c_compliant = GetW3CSetting(params);
+  if (session->w3c_compliant) {
+    Status status = ProcessCapabilities(params, merged_caps);
+    if (status.IsError())
+      return status;
+    *desired_caps = merged_caps;
+  } else if (!params.GetDictionary("desiredCapabilities", desired_caps)) {
+    return Status(kSessionNotCreated, "Missing or invalid capabilities");
+  }
+
+  Status status = capabilities->Parse(**desired_caps, session->w3c_compliant);
+  if (status.IsError())
+    return status;
+
+  if (capabilities->unhandled_prompt_behavior.length() > 0) {
+    session->unhandled_prompt_behavior =
+        capabilities->unhandled_prompt_behavior;
+  } else {
+    // W3C spec (https://www.w3.org/TR/webdriver/#dfn-handle-any-user-prompts)
+    // shows the default behavior to be dismiss and notify. For backward
+    // compatibility, in legacy mode default behavior is not handling prompt.
+    session->unhandled_prompt_behavior =
+        session->w3c_compliant ? kDismissAndNotify : kIgnore;
+  }
+
+  session->implicit_wait = capabilities->implicit_wait_timeout;
+  session->page_load_timeout = capabilities->page_load_timeout;
+  session->script_timeout = capabilities->script_timeout;
+  session->strict_file_interactability =
+      capabilities->strict_file_interactability;
+  Log::Level driver_level = Log::kWarning;
+  if (capabilities->logging_prefs.count(WebDriverLog::kDriverType))
+    driver_level = capabilities->logging_prefs[WebDriverLog::kDriverType];
+  session->driver_log->set_min_level(driver_level);
+
+  return Status(kOk);
+}
 
 Status ConfigureHeadlessSession(Session* session,
                                 const Capabilities& capabilities) {

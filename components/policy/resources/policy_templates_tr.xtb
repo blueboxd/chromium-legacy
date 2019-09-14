@@ -86,6 +86,7 @@
       Bu politika ayarlanmadan bırakılırsa, önbelleğe alınmış GPO'lar 25 saate kadar yeniden kullanılabilir.
 
       Bu politika 0 değerine ayarlanırsa, GPO önbelleğe alma devre dışı bırakılır. Her politika getirildiğinde GPO'lar (değişmeseler bile) tekrar indirildiği için bu işlemin sunucu yükünü artıracağını unutmayın.</translation>
+<translation id="1111470455889178048">Kullanıcının yüklediklerini ve indirdiklerini tarama için gönder</translation>
 <translation id="1117462881884985156"><ph name="PRODUCT_NAME" />, burada belirtilen ana makine listesi için tüm proxy'leri atlar.
 
           Bu politika yalnızca "Proxy sunucu ayarlarının nasıl belirtileceğini seçin" alanında manuel proxy ayarlarını seçtiyseniz ve <ph name="PROXY_SETTINGS_POLICY_NAME" /> politikası belirtilmediyse uygulanır.
@@ -392,6 +393,7 @@
       izin verilmez.</translation>
 <translation id="1634989431648355062">Bu sitelerde <ph name="FLASH_PLUGIN_NAME" /> eklentisine izin ver</translation>
 <translation id="1645793986494086629">Şema:</translation>
+<translation id="1648816843164517573">HSTS politika kontrolünü atlayacak olan isimlerin listesi</translation>
 <translation id="1653229475925941921">Bu politika ayarlanırsa, etkinleştirilmiş olan ekran büyütecinin türünü belirler. Politikayı "None" ("Yok") değerine ayarlamak, ekran büyütecini devre dışı bırakır.
 
           Bu politikayı ayarlarsanız kullanıcılar bunu değiştiremez veya geçersiz kılamazlar.
@@ -472,10 +474,6 @@
       Bu politika geçerli bir URL'ye ayarlandığında, <ph name="PRODUCT_NAME" />, site listesini o URL'den indirir ve kuralları, <ph name="SITELIST_POLICY_NAME" /> politikasıyla yapılandırılmışlar gibi uygular.
 
       Internet Explorer'ın <ph name="IEEM_SITELIST_POLICY" /> politikası hakkında daha fazla bilgiyi https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode adresinde bulabilirsiniz</translation>
-<translation id="1839060937202387559">Depolama cihazlarına ait donanım istatistiklerini ve tanımlayıcıları bildirir.
-
-      Politika false (yanlış) değerine ayarlanırsa istatistikler bildirilmez.
-      Politika true (doğru) değerine ayarlanırsa veya ayarlanmadan bırakılırsa istatistikler bildirilir.</translation>
 <translation id="1843117931376765605">Kullanıcı politikası için yenileme hızı</translation>
 <translation id="1844620919405873871">Hızlı kilit açmayla ilgili politikaları yapılandırır.</translation>
 <translation id="1845405905602899692">Kiosk ayarları</translation>
@@ -901,6 +899,7 @@
 <translation id="254653220329944566"><ph name="PRODUCT_NAME" /> bulut raporlamayı etkinleştirir</translation>
 <translation id="2548572254685798999">Güvenli Tarama bilgilerini bildirme</translation>
 <translation id="2550593661567988768">Yalnızca tek yönlü yazdır</translation>
+<translation id="2551520365302988324">Kullanıcının yüklediklerini tarama için gönder</translation>
 <translation id="2552966063069741410">Saat dilimi</translation>
 <translation id="2562339630163277285">Anında arama sonuçları sağlamak için kullanılan arama motorunun URL'sini belirtir. URL, <ph name="SEARCH_TERM_MARKER" /> dizesini içermelidir. Sorgu sırasında, kullanıcının girdiği metin bu dizenin yerini alır.
 
@@ -981,6 +980,7 @@
           Bu politika isteğe bağlıdır. Ayarlanmazsa, varsayılan değer olan UTF-8 kullanılır.
 
           Bu politika, yalnızca 'DefaultSearchProviderEnabled' politikası etkinleştirilirse dikkate alınır.</translation>
+<translation id="2679827548357140943">Yüklenen içeriğin kötü amaçlı yazılım için denetlenmesini gerektiren alan adlarının listesi</translation>
 <translation id="268577405881275241">Veri sıkıştırma proxy özelliğini etkinleştir</translation>
 <translation id="2693108589792503178">Şifre değiştirme URL'sini yapılandırır.</translation>
 <translation id="2694143893026486692">Yerleştirilmiş büyüteç etkin</translation>
@@ -1358,6 +1358,10 @@
 <translation id="332771718998993005"><ph name="PRODUCT_NAME" /> hedefi olarak tanıtılan adı belirleyin.
 
           Bu politika boş olmayan bir dizeye ayarlanırsa, söz konusu dize <ph name="PRODUCT_NAME" /> hedefinin adı olarak kullanılır. Aksi halde hedef adı cihaz adı olur. Bu politika ayarlanmazsa hedef adı cihaz adı olur ve cihaz sahibi (veya alandan cihazı yöneten bir kullanıcı), adı değiştirme iznine sahip olur. Ad, 24 karakterle sınırlıdır.</translation>
+<translation id="3331950121151548952">Yüklenen içeriğin kötü amaçlı yazılım için denetlenmesini gerektiren alan adlarının listesi.  Bu politika yalnızca <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> yüklemeler için kötü amaçlı yazılım yüklemelerini kontrol etmeye izin veren veya zorunlu kılan bir değere ayarlanmışsa kullanılır.
+
+      Bu politika ayarlanmazsa veya alan adları listesi boş olarak ayarlanırsa yüklenen hiçbir içeriğin kötü amaçlı yazılım olup olmadığı denetlenmez.
+      </translation>
 <translation id="3335468714959531450">Çerez ayarlamasına izin verilen sitelerin belirtildiği bir URL kalıpları listesi oluşturmanıza olanak tanır.
 
           Bu politika ayarlanmadan bırakılırsa, "DefaultCookiesSetting" politikası ayarlandıysa buradaki değer, aksi takdirde kullanıcının kişisel yapılandırması tüm siteler için genel varsayılan değer olarak kullanılır.
@@ -1425,6 +1429,15 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
          Bu politika Yanlış seçeneğine ayarlanır veya ayarlanmadan bırakılırsa güç yönetimi gecikmeleri ve oturum süresi sınırı oturumun başında hemen çalışmaya başlar.</translation>
 <translation id="3478024346823118645">Çıkışta kullanıcı verilerini sil</translation>
 <translation id="3480961938508521469">Pili standart bir hızda tam olarak şarj et.</translation>
+<translation id="3483729306380590354">Pil şarjı için özel şarj başlatma değerini yüzde olarak ayarlayın.
+
+          Pil şarjı için özel şarj başlatma değerine ulaşıldığında pil şarj olmaya başlar.
+
+          <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" />, <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" /> değerinin en az yüzde beş altında olmalıdır.
+
+          Bu politika sadece <ph name="DEVICE_BATTERY_CHARGE_MODE_NAME" /> ayarı <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME" /> seçeneğine ayarlanmışsa kullanılır.
+
+          Bu politika yapılandırılmaz veya ayarlanmamış olarak bırakılırsa <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME" /> pil şarj modu uygulanır.</translation>
 <translation id="348495353354674884">Sanal klavyeyi etkinleştir</translation>
 <translation id="3487623755010328395">
         Bu politika ayarlanırsa <ph name="PRODUCT_NAME" /> kendisini kaydetmeye çalışır ve tüm profiller için ilişkili bulut politikasını uygular.
@@ -1870,6 +1883,15 @@ politikayı geçersiz kılamaz.
           Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamazlar.
 
           Bu politika ayarlanmadan bırakılırsa otomatik tıklama başlangıçta devre dışıdır ancak istenildiğinde kullanıcı tarafından etkinleştirilebilir.</translation>
+<translation id="4215197846797661927">Gelişmiş pil şarj modu gün yapılandırmasını ayarla.
+
+          Bu politika sadece <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> ayarı true (doğru) değerine ayarlanmışsa kullanılır.
+
+          Bu politika yapılandırılmaz veya ayarlanmadan bırakılırsa gelişmiş pil şarj modu her zaman devre dışı olur.
+
+          Not: <ph name="CHARGE_START_TIME_FIELD_NAME" /> değeri, <ph name="CHARGE_END_TIME_FIELD_NAME" /> değerinden küçük olmalıdır.
+
+          Not: <ph name="CHARGE_START_TIME_FIELD_NAME" /> ve <ph name="CHARGE_END_TIME_FIELD_NAME" /> dahilinde <ph name="MINUTE_FIELD_NAME" /> alanı için izin verilen değerler 0, 15, 30, 45'tir.</translation>
 <translation id="4224610387358583899">Ekran kilidi bekleme süresi</translation>
 <translation id="423797045246308574">Anahtar oluşturmasına izin verilmeyen siteleri belirten bir URL kalıpları listesi ayarlamanıza olanak tanır. Bir URL kalıbı "KeygenBlockedForUrls" içindeyse, bu istisnalar geçersiz kılınır.
 
@@ -1935,6 +1957,17 @@ politikayı geçersiz kılamaz.
           Politika değeri milisaniye olarak belirtilmelidir. Değerler boşta kalma gecikmesinin altında veya o gecikmeye eşit olacak şekilde ayarlanır.
 
           Uyarı mesajı yalnızca boşta kalma işlemi, çıkış yapma veya cihazı kapatma olduğunda gösterilir.</translation>
+<translation id="4342827592971649626">Bu politika kullanıcıların indirdiklerine Güvenli Tarama ile derin tarama uygulanmasını denetler. Ayarlanmaz veya varsayılan değere yani, “Dosyaları tarama” olarak ayarlanırsa kullanıcıların indirdiği dosyalar Güvenli Tarama ile taranmaz.
+
+      “Dosyaların taranmasını yasakla” olarak ayarlanırsa kullanıcıların indirdikleri dosyaları taramalarına izin verilmez. Belirli kullanıcılar (ör. Gelişmiş Koruma kullanıcıları) indirdikleri dosyaları taramaya gönderebildikleri için bu ayar varsayılan ayardan farklıdır. Bu ayar, bu tür kullanıcıların tarama yapmasını önler.
+
+      "Kullanıcıların indirdiklerini tarama için gönder" seçeneğine ayarlanırsa kullanıcıların indirdikleri dosyalar kötü amaçlı yazılım taraması için ağ üzerinden Güvenli Tarama'ya gönderilir.
+
+      "Kullanıcıların yükledikleri tarama için gönder" seçeneğine ayarlanırsa kullanıcıların yükledikleri dosyalar kötü amaçlı yazılım taraması için ağ üzerinden Güvenli Tarama'ya gönderilir.
+
+      "Kullanıcının yüklediklerini ve indirdiklerini tarama için gönder" seçeneğine ayarlanırsa "Kullanıcının yüklediklerini tarama için gönder" ve "Kullanıcının indirdiklerini tarama için gönder" ayarlarında açıklanan kurallara göre davranır.
+
+      Tarama sonuçlarının kullanıcıya ve yöneticiye nasıl gösterildiğiyle ilgili ayrıntılar için <ph name="DELAY_DELIVER_UNTIL_VERDICT_POLICY_NAME" /> ve <ph name="UNSAFE_EVENTS_REPORTING_ENABLED" /> politikalarına bakın.</translation>
 <translation id="4344356660952451291">İndirilen içeriğin uyumluluk için denetlenmesini gerektiren alan adlarının listesi</translation>
 <translation id="4346674324214534449">Araya giren reklamların yer aldığı sitelerde reklamların engellenip engellenmeyeceğini ayarlamanıza olanak tanır.
 
@@ -2524,6 +2557,16 @@ Bu politika ayarlanmadan bırakılırsa kullanıcı sistemde yüklü herhangi bi
       Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamazlar.
 
       Bu politika ayarlanmadan bırakılırsa kullanıcı, masaüstünde ve giriş ekranı arka planında görüntülenmek üzere bir resim seçebilir.</translation>
+<translation id="5437214086679373363">Taramanın gerekli olduğu durumlarda kullanıcıların şifre korumalı dosyaları yüklemelerine veya indirmelerine izin verilip verilmeyeceğini denetler.  Bu sınırlama, yalnızca <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> ve denetimlerin etkinleştirilmiş olduğu alan adları listesini denetleyen politikalar tarafından belirlendiği şekilde tarama gerektiren dosyalar için geçerlidir.
+
+      Bu politika “Hiçbiri” olarak ayarlanırsa <ph name="PRODUCT_NAME" /> kullanıcının şifre korumalı dosyaları yüklemesini veya indirmesini engeller.
+
+      Bu politika “İndirilenlere izin ver” olarak ayarlanırsa <ph name="PRODUCT_NAME" /> kullanıcının şifre korumalı dosyaları indirmesine izin verir.
+
+      Bu politika “Yüklemelere izin ver” olarak ayarlanırsa <ph name="PRODUCT_NAME" /> kullanıcının şifre korumalı dosyaları yüklemesine izin verir.
+
+      Bu politika ayarlanmaz veya “Yüklemelere ve indirilenlere izin ver” olarak ayarlanırsa <ph name="PRODUCT_NAME" /> “İndirilenlere izin ver” ve “Yüklemelere izin ver” ayarlarında açıklanan kurallara göre davranır.
+      </translation>
 <translation id="5437733496511628148">Bu ayar etkinleştirildiğinde, tarayıcının adres çubuğundaki alan adına ait olmayan web sayfası öğelerinin çerez yerleştirmesi engellenir.
 
       Bu ayar devre dışı bırakıldığında, tarayıcının adres çubuğundaki alan adına ait olmayan web sayfası öğelerinin çerez yerleştirmesine izin verilir ve kullanıcıların bu ayarı değiştirmeleri engellenir.
@@ -3371,17 +3414,6 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 
       Ayarlanmazsa, kullanıcıdan içe aktarma işlemini gerçekleştirmesi istenebilir veya içe aktarma otomatik olarak gerçekleşebilir.</translation>
 <translation id="7063895219334505671">Bu sitelerde pop-up'lara izin ver</translation>
-<translation id="706568410943497889">
-      Bu politika doğru (true) değerine ayarlanırsa, <ph name="PRODUCT_NAME" /> ürünün Google hizmetlerinden (ör. Google Meet) WebRTC etkinlik günlüklerini toplamasına ve bu günlükleri Google'a yüklemesine izin verilir.
-
-     Bu politika yanlış (false) değerine ayarlanır veya ayarlanmadan bırakılırsa, <ph name="PRODUCT_NAME" /> ürünü bu tür günlükleri toplayamaz veya yükleyemez.
-
-      Bu günlükler, Chrome'daki sesli veya görüntülü çağrılarla ilgili, gönderilen ve alınan RTP paketlerinin saati ve boyutu, ağdaki tıkanmayla ilgili geri bildirim ve ses ile video karelerinin zamanı ve kalitesiyle ilgili meta veriler gibi sorunların ayıklanmasında yararlı olacak teşhis bilgilerini içerir.
-
-      Chrome'un gerçekleştirdiği bu veri toplama işlemi yalnızca Google Hangouts veya Google Meet gibi bir Google web hizmeti tarafından tetiklenebilir.
-
-      Google bu günlükleri bir oturum kimliği aracılığıyla, Google hizmetinin kendisi tarafından toplanan diğer günlüklerle ilişkilendirebilir; bu özellikle, hata ayıklamayı kolaylaştırmak amaçlanmıştır.
-      </translation>
 <translation id="706669471845501145">Sitelerin masaüstü bildirimi göstermesine izin ver</translation>
 <translation id="7068108874199666656">Bir <ph name="PRODUCT_OS_NAME" /> cihazın tüm kullanıcıları için uygulanacak ağ yapılandırmasını aktarmaya olanak tanır. Ağ yapılandırması, Açık Ağ Yapılandırması biçimiyle tanımlanmış JSON biçimli bir dizedir.</translation>
 <translation id="7070525176564511548">Her hafta (168 saatte bir) şifre girilmesi gerekiyor</translation>
@@ -3445,13 +3477,32 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 
       Internet Explorer'ın <ph name="IEEM_SITELIST_POLICY" /> politikası hakkında daha fazla bilgiyi https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode adresinde bulabilirsiniz.</translation>
 <translation id="7132877481099023201">Soru sorulmadan video yakalama cihazlarına erişim verilecek URL'ler</translation>
+<translation id="713712866686796666">Güç tüketimi en üst düzeydeyken pil kullanımına geçilecek gün yapılandırmasını ayarlar.
+
+          Bu politika sadece <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" /> ayarı true (doğru) değerine ayarlanmışsa kullanılır.
+
+          Bu politika yapılandırılmaz veya ayarlanmadan bırakılırsa güç tüketimi en üst düzeydeyken pil kullanımına geçme ayarı her zaman devre dışı bırakılır.
+
+          Not: <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> ve <ph name="CHARGE_START_TIME_FIELD_NAME" /> içinde <ph name="MINUTE_FIELD_NAME" /> alanı için izin verilen değerler 0, 15, 30, 45'tir.</translation>
 <translation id="7138678301420049075">Diğer</translation>
+<translation id="7139809614375682935">Pil şarjı için özel şarj durdurma değerini yüzde olarak ayarlayın.
+
+          Özel şarj durma değerine ulaştığında pilin şarj edilmesi durur.
+
+          <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" />, <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" /> değerinin en az yüzde beş altında olmalıdır.
+
+          Bu politika sadece <ph name="DEVICE_BATTERY_CHARGE_MODE_NAME" /> ayarı <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME" /> seçeneğine ayarlanmışsa kullanılır.
+
+          Bu politika yapılandırılmaz veya ayarlanmamış olarak bırakılırsa <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME" /> pil şarj modu uygulanır.</translation>
 <translation id="7140629953254369759"><ph name="PRODUCT_OS_NAME" /> işletim sistemine, belirtilen adla tanımlanan görev planlayıcı yapılandırmasını kullanma talimatı verir.
 
       Bu politika "güvenli" ve "performans" değerlerine ayarlanabilir. Bu değerler sırasıyla kararlılık ve maksimum performans için ayarlanmış görev planlayıcı yapılandırmalarını seçer.
 
       Bu politika ayarlanmadan bırakılırsa, kullanıcı kendi seçimini yapabilir.</translation>
 <translation id="7145335384492396213">Varsayılan PIN ile yazdırma modu</translation>
+<translation id="7149042336307555519"> OS güncellemeleri için kullanılmasına izin verilen bağlantı türleri. OS güncellemeleri, boyutları nedeniyle muhtemelen bağlantı üzerine ağır yük getirir ve ek maliyete neden olabilir. Bu nedenle, pahalı kabul edilen bağlantı türleri için (şu anda yalnızca "hücresel" bağlantı) varsayılan olarak etkin değildir.
+
+      Tanınan bağlantı türü tanımlayıcıları şunlardır: <ph name="CONNECTION_TYPE_ETHERNET_NAME" />, <ph name="CONNECTION_TYPE_WIFI_NAME" /> ve <ph name="CONNECTION_TYPE_CELLULAR_NAME" />.</translation>
 <translation id="7152605873936173525">DNS-over-HTTPS çözümleyicisinin modunu denetler. Lütfen bu politikanın yalnızca her sorgu için varsayılan modu ayarlayacağını unutmayın. Bu mod, bir DNS-over-HTTPS sunucu ana makine adını çözümleme istekleri gibi özel türdeki sorgular için geçersiz kılınabilir.
 
       <ph name="SECURE_DNS_MODE_OFF" /> modu DNS-over-HTTPS'i devre dışı bırakacaktır.
@@ -3484,6 +3535,17 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
           Bu politika false (yanlış) değerine ayarlanırsa, ekran uyanık kalma kilidi istekleri, sıralamada sistem uyanık kalma kilidi isteklerinin altına düşürülür.</translation>
 <translation id="7177857088692019405">Hızlı kilit aç</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
+<translation id="7187447094921703950">Güç tüketimi en üst düzeydeyken pil kullanımına geçme güç yönetimi politikasını etkinleştirir.
+
+          Güç Tüketimi En Üst Düzeydeyken Pil Kullanımına Geçme, gün içinde kullanımın en yüksek olduğu zamanlarda alternatif akım kullanımını minimuma indiren bir güç tasarrufu politikasıdır. Hafta içi her gün için Güç Tüketimi En Üst Düzeydeyken Pil Kullanımına Geçme modu için bir başlangıç ve bitiş saati ayarlanabilir. Bu saatler sırasında, alternatif akım takılı olsa bile, pil belirtilen eşiğin üzerinde olduğu sürece sistem pille çalışır. Bitiş saati sona erdikten sonra sistem, takılı haldeyse alternatif akımı kullanarak çalışır, ancak pil şarj olmaz. Sistem, belirtilen Şarj Başlangıç saatinden sonra alternatif akımı kullanarak ve pili şarj ederek tekrar normal şekilde çalışır.
+
+          Politika true (doğru) değerine ayarlanır ve <ph name="DEVICE_POWER_PEAK_SHIFT_BATTERY_THRESHOLD_NAME" />, <ph name="DEVICE_POWER_PEAK_SHIFT_DAY_CONFIG_NAME" /> ayarlanırsa, cihazda desteklenmesi durumunda güç tüketimi en üst düzeydeyken pil kullanımına geçme ayarı her zaman etkinleştirilir.
+
+          Politika false (yanlış) olarak ayarlanırsa güç tüketimi en üst düzeydeyken pil kullanımına geçme ayarı devre dışı bırakılır.
+
+          Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamazlar.
+
+          Bu politika ayarlanmazsa güç tüketimi en üst düzeydeyken pil kullanımına geçme ayarı başlangıçta devre dışı bırakılır ve kullanıcı tarafından etkinleştirilemez.</translation>
 <translation id="718956142899066210">Güncellemeler için izin verilen bağlantı türleri</translation>
 <translation id="7190286937411178540">Klavye odağını vurgulama erişilebilirlik özelliğini etkinleştir</translation>
 <translation id="7194407337890404814">Varsayılan arama sağlayıcının adı</translation>
@@ -4078,10 +4140,6 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
           Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamazlar.
 
           Bu politika ayarlanmadan bırakılırsa dikte başlangıçta devre dışıdır ancak istenildiğinde kullanıcı tarafından etkinleştirilebilir.</translation>
-<translation id="8292322992383748446">SoC bileşenlerine ait donanım istatistiklerini bildirir.
-
-      Politika false (yanlış) değerine ayarlanırsa istatistikler bildirilmez.
-      Politika true (doğru) değerine ayarlanırsa veya ayarlanmadan bırakılırsa istatistikler bildirilir.</translation>
 <translation id="829337533107201925">Bu politika etkinleştirilirse bir atom grubundan gelen ve o gruptan en yüksek öncelikle aynı kaynağı paylaşmayan politikalar yok sayılacaktır.
 
       Bu politika devre dışı bırakılırsa hiçbir politika kaynağından dolayı yoksayılmayacaktır. Politikalar yalnızca bir çakışma olduğunda ve o politika en yüksek önceliğe sahip olmadığında yoksayılacaktır.
@@ -4117,10 +4175,6 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
 <translation id="8367209241899435947">Windows'da Chrome Temizleme Aracı'nı etkinleştir</translation>
 <translation id="8369602308428138533">AC güçle çalışırken ekran kapatma gecikmesi</translation>
 <translation id="8371178326720637170">Yönetilen uzantıların Kurumsal Donanım Platformu API'sini kullanmasını sağlar</translation>
-<translation id="8374747520743832795">Güçle ilgili donanım istatistiklerini ve tanımlayıcıları bildirir.
-
-      Politika false (yanlış) değerine ayarlanırsa istatistikler bildirilmez.
-      Politika true (doğru) değerine ayarlanırsa veya ayarlanmadan bırakılırsa istatistikler bildirilir.</translation>
 <translation id="8380490658357556620">Uzak istemciler bu makineyle bağlantı kurmaya çalıştıklarında geçiş sunucularının kullanımını etkinleştirir.
 
           Bu ayar etkinleştirilirse, uzak istemciler, güvenlik duvarı kısıtlamaları gibi nedenlerden dolayı doğrudan bağlantı olmadığında geçiş sunucularını kullanarak bu makineye bağlanabilirler.
@@ -4129,6 +4183,17 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
 
           Bu politika ayarlanmadan bırakılırsa ayar etkinleştirilir.</translation>
 <translation id="8382184662529825177">Cihazda içerik koruma için uzak onay kullanımını etkinleştir</translation>
+<translation id="8382693763260501307">Gelişmiş pil şarj modu güç yönetim politikasını etkinleştir.
+
+          Gelişmiş Pil Şarj Modu, kullanıcının pil sağlığını maksimuma çıkarmasına olanak verir. Gelişmiş Şarj Modu'nda, sistem pil sağlığını maksimuma çıkarmak için mesai saatleri dışında standart şarj algoritmasını ve diğer teknikleri kullanır. Mesai saatlerinde ise bir hızlı şarj yöntemi kullanılır. Bu hızlı şarj, pilin daha hızlı şarj edilmesini sağlar; dolayısıyla pil kısa sürede tam şarj kapasitesine ulaşır. Her gün için, sistemin en yoğun şekilde kullanılacağı zaman başlangıç saati ve süre ile belirtilir.
+
+          Bu politika true (doğru) seçeneğine ayarlıyken ayrıca <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_DAY_CONFIG_NAME" /> özelliği de ayarlanmışsa gelişmiş pil şarj modu cihazda desteklenmesi durumunda her zaman etkin olur.
+
+          Bu politika false (yanlış) seçeneğine ayarlanırsa gelişmiş pil şarj modu her zaman devre dışı olur.
+
+          Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamazlar.
+
+          Bu politika ayarlanmadan bırakılırsa gelişmiş pil şarj modu devre dışı bırakılır ve kullanıcı tarafından etkinleştirilemez.</translation>
 <translation id="838870586332499308">Veri dolaşımını etkinleştir</translation>
 <translation id="8390049129576938611"><ph name="PRODUCT_NAME" /> içindeki dahili PDF görüntüleyiciyi devre dışı bırakır. Bunun yerine, dosyayı indirilecek dosya olarak ele alır ve kullanıcının PDF dosyalarını varsayılan uygulamayla açmasına olanak tanır.
 
@@ -4325,9 +4390,15 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
       Bu politika yapılandırılırsa, uygulama seti sabittir ve kullanıcı tarafından değiştirilemez.
 
       Bu politika ayarlanmadan bırakılırsa, kullanıcı başlatıcıdaki sabitlenmiş uygulamalar listesini değiştirebilir.</translation>
+<translation id="8779504970846195767">Güç tüketimi en üst düzeydeyken pil kullanımına geçme eşiği yüzdesini ayarlar.
+
+          Bu politika sadece <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" /> ayarı true (doğru) değerine ayarlanmışsa kullanılır.
+
+          Bu politika yapılandırılmaz veya ayarlanmadan bırakılırsa güç tüketimi en üst düzeydeyken pil kullanımına geçme ayarı her zaman devre dışı bırakılır.</translation>
 <translation id="8798099450830957504">Varsayılan</translation>
 <translation id="8800453707696044281">Pil şarjı için özel şarj durdurma değerini yüzde olarak ayarla</translation>
 <translation id="8801680448782904838">Kullanıcıya tarayıcının veya cihazın yeniden başlatılmasının önerildiğini ya da gerektiğini bildir</translation>
+<translation id="8802816494059596691">Bu listede belirtilen ana makine adları, istekleri http'den https'ye yükseltebilecek HSTS politika kontrolünden muaf tutulur. Bu politikada yalnızca tek etiketli ana makine adlarına izin verilir. Ana makine adları standartlaştırılmalıdır: Tüm IDN'ler A-etiket biçimine dönüştürülmeli ve tüm ASCII harfleri küçük harf olmalıdır. Bu politika yalnızca belirtilen spesifik ana makine adları için geçerlidir; belirtilen adların alt alanları için geçerli değildir</translation>
 <translation id="8818173863808665831">Cihazın coğrafi konumunu bildirin.
 
       Bu politika ayarlanmazsa veya yanlış seçeneğine ayarlanırsa konum bildirilmez.</translation>
@@ -4473,6 +4544,17 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
       Politika değeri bir Hızlı Düzeltme Derlemesi'ne eşlenen bir belirtece ayarlanırsa ve güncelleme başka bir politika tarafından engellenmemişse cihaz, ilgili Hızlı Düzeltme Derlemesi'ne güncellenir.
 
       Bu politika ayarlanmazsa veya değeri bir Hızlı Düzeltme Derlemesi ile eşlenmezse cihaz, bir Hızlı Düzeltme Derlemesi'ne güncellenmez. Cihaz zaten bir Hızlı Düzeltme Derlemesi çalıştırıyorsa ve politika artık ayarlı değilse veya değeri, artık bir Hızlı Düzeltme Derlemesi ile eşlenmiyorsa cihaz, güncellemenin başka bir politika tarafından engellenmemesi durumunda normal bir derlemeye güncellenir.</translation>
+<translation id="9053158112041032237">Pil şarj modu güç yönetimi politikasını belirtir.
+
+          Pil stresi nedeniyle pilin aşınmasını en aza indirmek ve pil ömrünü uzatmak için pil şarjını dinamik olarak denetler.
+
+          Özel pil şarj modu seçildiyse, <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> ve <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" /> belirtilmelidir.
+
+          Bu politika ayarlanmışsa cihazda desteklendiği takdirde pil şarj modu uygulanır.
+
+          Bu politika ayarlanmadan bırakılmış ve politika cihazda destekleniyorsa standart pil şarj modu uygulanır ve kullanıcı tarafından değiştirilemez.
+
+          Not: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> belirtilmişse bu politikayı geçersiz kılar.</translation>
 <translation id="9054012305936267950">Bu politika, tarayıcının oturum açma davranışını denetler. Kullanıcının hesabıyla <ph name="PRODUCT_NAME" /> ürününde oturum açıp açamayacağını ve Chrome senkronizasyonu gibi hesapla ilgili hizmetleri kullanıp kullanamayacağını belirtmenize olanak tanır.
 
       Politika, "Tarayıcıda oturum açmayı devre dışı bırak" olarak ayarlanmışsa, kullanıcı tarayıcıda oturum açamaz ve hesaba dayalı hizmetleri kullanamaz. Bu durumda, Chrome senkronizasyonu gibi tarayıcı seviyesindeki özellikler kullanılamaz. Kullanıcı oturum açmışsa ve politika "Devre dışı" olarak ayarlanmışsa, Chrome'u bir sonraki çalıştırmalarında oturumları kapatılır. Ancak yer işaretleri, şifreler gibi yerel profil verileri korunur. Kullanıcı yine de Gmail gibi Google web hizmetlerinde oturum açabilir ve bu hizmetleri kullanabilir.

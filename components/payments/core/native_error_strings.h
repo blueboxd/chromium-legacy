@@ -131,6 +131,15 @@ extern const char kNotInitialized[];
 // Used when PaymentRequest::Show() has not been called, but should have been.
 extern const char kNotShown[];
 
+// The payment handler responded with an empty "payer name" field.
+extern const char kPayerNameEmpty[];
+
+// The payment handler responded with an empty "payer email" field.
+extern const char kPayerEmailEmpty[];
+
+// The payment handler responded with an empty "payer phone" field.
+extern const char kPayerPhoneEmpty[];
+
 // Used for errors about cross-site redirects from A to B. This format should be
 // used with base::ReplaceStringPlaceholders(fmt, {A, B}, nullptr).
 extern const char kPaymentManifestCrossSiteRedirectNotAllowed[];
@@ -177,6 +186,12 @@ extern const char kReachedMaximumNumberOfRedirects[];
 // supported. This format should be used with base::ReplaceChars() function,
 // where "$" is the character to replace.
 extern const char kSinglePaymentMethodNotSupportedFormat[];
+
+// The payment handler responded with an invalid shipping address.
+extern const char kShippingAddressInvalid[];
+
+// The payment handler responded with an empty "shipping option" field.
+extern const char kShippingOptionEmpty[];
 
 }  // namespace errors
 }  // namespace payments

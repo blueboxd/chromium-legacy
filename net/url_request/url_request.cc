@@ -606,7 +606,6 @@ URLRequest::URLRequest(const GURL& url,
       received_response_content_length_(0),
       creation_time_(base::TimeTicks::Now()),
       raw_header_size_(0),
-      is_pac_request_(false),
       traffic_annotation_(traffic_annotation),
       upgrade_if_insecure_(false) {
   // Sanity check out environment.
@@ -815,11 +814,6 @@ bool URLRequest::Read(IOBuffer* dest, int dest_size, int* bytes_read) {
   }
 
   return false;
-}
-
-void URLRequest::StopCaching() {
-  DCHECK(job_.get());
-  job_->StopCaching();
 }
 
 void URLRequest::NotifyReceivedRedirect(const RedirectInfo& redirect_info,

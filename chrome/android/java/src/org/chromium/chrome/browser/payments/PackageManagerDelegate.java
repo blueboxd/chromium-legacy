@@ -25,6 +25,15 @@ import java.util.List;
 /** Abstraction of Android's package manager to enable testing. */
 public class PackageManagerDelegate {
     /**
+     * Checks whether the system has the given feature.
+     * @param feature The feature to check.
+     * @return Whether the system has the given feature.
+     */
+    public boolean hasSystemFeature(String feature) {
+        return ContextUtils.getApplicationContext().getPackageManager().hasSystemFeature(feature);
+    }
+
+    /**
      * Retrieves package information of an installed application.
      *
      * @param packageName The package name of an installed application.

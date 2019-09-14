@@ -19,11 +19,12 @@
 class QuicSimpleServerFactory : public quic::QuicToyServer::ServerFactory {
   std::unique_ptr<quic::QuicSpdyServerBase> CreateServer(
       quic::QuicSimpleServerBackend* backend,
-      std::unique_ptr<quic::ProofSource> proof_source) override {
+      std::unique_ptr<quic::ProofSource> proof_source,
+      const quic::ParsedQuicVersionVector& supported_versions) override {
     return std::make_unique<net::QuicSimpleServer>(
         std::move(proof_source), config_,
-        quic::QuicCryptoServerConfig::ConfigOptions(),
-        quic::AllSupportedVersions(), backend);
+        quic::QuicCryptoServerConfig::ConfigOptions(), supported_versions,
+        backend);
   }
 
  private:

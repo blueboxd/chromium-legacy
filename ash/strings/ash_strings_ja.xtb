@@ -104,7 +104,6 @@
 <translation id="2359808026110333948">続行</translation>
 <translation id="2365393535144473978">モバイルデータ通信を有効にすると、Bluetooth も有効になります。</translation>
 <translation id="2391579633712104609">180°</translation>
-<translation id="239188844683466770">サイレント モードを切り替え</translation>
 <translation id="2412593942846481727">アップデートが利用可能</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> は <ph name="DOMAIN" /> が管理する管理対象セッションです</translation>
 <translation id="2427507373259914951">左クリック</translation>
@@ -224,6 +223,7 @@
 <translation id="4181841719683918333">言語</translation>
 <translation id="4195877955194704651">自動クリックボタン</translation>
 <translation id="4217571870635786043">音声入力</translation>
+<translation id="421885205185866088"><ph name="USER_EMAIL_ADDRESS" /> のスマートカードの PIN</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">通知設定を表示します。通知はオフです</translation>
 <translation id="4269883910223712419">このデバイスの管理者は以下を行うことができます。</translation>
@@ -239,6 +239,7 @@
 <translation id="4379531060876907730">タッチペン ツール</translation>
 <translation id="4389184120735010762">拡大鏡（ドッキング）のキーボード ショートカットを押しました。この機能をオンにしますか？</translation>
 <translation id="4421231901400348175">リモート サポート経由で <ph name="HELPER_NAME" /> と画面の制御を共有しています。</translation>
+<translation id="4430019312045809116">音量</translation>
 <translation id="4450893287417543264">次回から表示しない</translation>
 <translation id="4477350412780666475">次の曲</translation>
 <translation id="4479639480957787382">イーサネット</translation>
@@ -561,5 +562,5 @@
 <translation id="938963181863597773">カレンダーに予定は入ってる？</translation>
 <translation id="945522503751344254">フィードバックを送信</translation>
 <translation id="98515147261107953">横</translation>
-<translation id="990277280839877440">ウィンドウ「<ph name="WINDOW_TITILE" />」を閉じました。</translation>
+<translation id="990277280839877440">「<ph name="WINDOW_TITILE" />」のウィンドウを閉じました。</translation>
 </translationbundle>

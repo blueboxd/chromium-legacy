@@ -2,7 +2,9 @@ Verifies that making cross origin requests which set SameSite=Strict cookies sen
 
 Javascript initiated subresource blocked set-cookies: [
   {
-    "blockedReason": "SameSiteStrict",
+    "blockedReasons": [
+      "SameSiteStrict"
+    ],
     "cookieLine": "name=value; SameSite=Strict",
     "cookie": {
       "name": "name",

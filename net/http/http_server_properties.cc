@@ -73,6 +73,30 @@ bool HttpServerProperties::ServerInfoMapKey::operator<(
          std::tie(other.server, other.network_isolation_key);
 }
 
+HttpServerProperties::QuicServerInfoMapKey::QuicServerInfoMapKey(
+    const quic::QuicServerId& server_id,
+    const NetworkIsolationKey& network_isolation_key,
+    bool use_network_isolation_key)
+    : server_id(server_id),
+      network_isolation_key(use_network_isolation_key ? network_isolation_key
+                                                      : NetworkIsolationKey()) {
+}
+
+HttpServerProperties::QuicServerInfoMapKey::~QuicServerInfoMapKey() = default;
+
+bool HttpServerProperties::QuicServerInfoMapKey::operator<(
+    const QuicServerInfoMapKey& other) const {
+  return std::tie(server_id, network_isolation_key) <
+         std::tie(other.server_id, other.network_isolation_key);
+}
+
+// Used in tests.
+bool HttpServerProperties::QuicServerInfoMapKey::operator==(
+    const QuicServerInfoMapKey& other) const {
+  return std::tie(server_id, network_isolation_key) ==
+         std::tie(other.server_id, other.network_isolation_key);
+}
+
 HttpServerProperties::ServerInfoMap::ServerInfoMap()
     : base::MRUCache<ServerInfoMapKey, ServerInfo>(kMaxServerInfoEntries) {}
 
@@ -684,43 +708,51 @@ const ServerNetworkStats* HttpServerProperties::GetServerNetworkStats(
 
 void HttpServerProperties::SetQuicServerInfo(
     const quic::QuicServerId& server_id,
+    const NetworkIsolationKey& network_isolation_key,
     const std::string& server_info) {
-  auto it = quic_server_info_map_.Peek(server_id);
+  QuicServerInfoMapKey key =
+      CreateQuicServerInfoKey(server_id, network_isolation_key);
+  auto it = quic_server_info_map_.Peek(key);
   bool changed =
       (it == quic_server_info_map_.end() || it->second != server_info);
-  quic_server_info_map_.Put(server_id, server_info);
-  UpdateCanonicalServerInfoMap(server_id);
+  quic_server_info_map_.Put(key, server_info);
+  UpdateCanonicalServerInfoMap(key);
   if (changed)
     MaybeQueueWriteProperties();
 }
 
 const std::string* HttpServerProperties::GetQuicServerInfo(
-    const quic::QuicServerId& server_id) {
-  auto it = quic_server_info_map_.Get(server_id);
+    const quic::QuicServerId& server_id,
+    const NetworkIsolationKey& network_isolation_key) {
+  QuicServerInfoMapKey key =
+      CreateQuicServerInfoKey(server_id, network_isolation_key);
+  auto it = quic_server_info_map_.Get(key);
   if (it != quic_server_info_map_.end()) {
     // Since |canonical_server_info_map_| should always map to the most
     // recent host, update it with the one that became MRU in
     // |quic_server_info_map_|.
-    UpdateCanonicalServerInfoMap(server_id);
+    UpdateCanonicalServerInfoMap(key);
     return &it->second;
   }
 
   // If the exact match for |server_id| wasn't found, check
   // |canonical_server_info_map_| whether there is server info for a host with
   // the same canonical host suffix.
-  auto canonical_itr = GetCanonicalServerInfoHost(server_id);
+  auto canonical_itr = GetCanonicalServerInfoHost(key);
   if (canonical_itr == canonical_server_info_map_.end())
     return nullptr;
 
   // When search in |quic_server_info_map_|, do not change the MRU order.
-  it = quic_server_info_map_.Peek(canonical_itr->second);
+  it = quic_server_info_map_.Peek(
+      CreateQuicServerInfoKey(canonical_itr->second, network_isolation_key));
   if (it != quic_server_info_map_.end())
     return &it->second;
 
   return nullptr;
 }
 
-const QuicServerInfoMap& HttpServerProperties::quic_server_info_map() const {
+const HttpServerProperties::QuicServerInfoMap&
+HttpServerProperties::quic_server_info_map() const {
   return quic_server_info_map_;
 }
 
@@ -745,7 +777,7 @@ void HttpServerProperties::SetMaxServerConfigsStoredInProperties(
   QuicServerInfoMap temp_map(max_server_configs_stored_in_properties_);
   // Update the |canonical_server_info_map_| as well, so it stays in sync with
   // |quic_server_info_map_|.
-  canonical_server_info_map_ = CanonicalServerInfoMap();
+  canonical_server_info_map_ = QuicCanonicalMap();
   for (auto it = quic_server_info_map_.rbegin();
        it != quic_server_info_map_.rend(); ++it) {
     temp_map.Put(it->first, it->second);
@@ -807,6 +839,14 @@ base::TimeDelta HttpServerProperties::GetUpdatePrefsDelayForTesting() {
   return kUpdatePrefsDelay;
 }
 
+HttpServerProperties::QuicServerInfoMapKey
+HttpServerProperties::CreateQuicServerInfoKey(
+    const quic::QuicServerId& server_id,
+    const NetworkIsolationKey& network_isolation_key) const {
+  return QuicServerInfoMapKey(server_id, network_isolation_key,
+                              use_network_isolation_key_);
+}
+
 HttpServerProperties::ServerInfoMapKey
 HttpServerProperties::CreateServerInfoKey(
     const url::SchemeHostPort& server,
@@ -852,7 +892,7 @@ HttpServerProperties::GetIteratorWithAlternativeServiceInfo(
   return server_info_map_.end();
 }
 
-HttpServerProperties::CanonicalAltSvcMap::const_iterator
+HttpServerProperties::CanonicalMap::const_iterator
 HttpServerProperties::GetCanonicalAltSvcHost(
     const url::SchemeHostPort& server,
     const net::NetworkIsolationKey& network_isolation_key) const {
@@ -870,15 +910,19 @@ HttpServerProperties::GetCanonicalAltSvcHost(
       CreateServerInfoKey(canonical_server, network_isolation_key));
 }
 
-HttpServerProperties::CanonicalServerInfoMap::const_iterator
+HttpServerProperties::QuicCanonicalMap::const_iterator
 HttpServerProperties::GetCanonicalServerInfoHost(
-    const quic::QuicServerId& server) const {
-  const std::string* canonical_suffix = GetCanonicalSuffix(server.host());
+    const QuicServerInfoMapKey& key) const {
+  const std::string* canonical_suffix =
+      GetCanonicalSuffix(key.server_id.host());
   if (canonical_suffix == nullptr)
     return canonical_server_info_map_.end();
 
-  HostPortPair canonical_pair(*canonical_suffix, server.port());
-  return canonical_server_info_map_.find(canonical_pair);
+  quic::QuicServerId canonical_server_id(*canonical_suffix,
+                                         key.server_id.privacy_mode_enabled(),
+                                         key.server_id.port());
+  return canonical_server_info_map_.find(
+      CreateQuicServerInfoKey(canonical_server_id, key.network_isolation_key));
 }
 
 void HttpServerProperties::RemoveAltSvcCanonicalHost(
@@ -892,12 +936,15 @@ void HttpServerProperties::RemoveAltSvcCanonicalHost(
 }
 
 void HttpServerProperties::UpdateCanonicalServerInfoMap(
-    const quic::QuicServerId& server) {
-  const std::string* suffix = GetCanonicalSuffix(server.host());
-  if (suffix) {
-    HostPortPair canonical_pair(*suffix, server.port());
-    canonical_server_info_map_[canonical_pair] = server;
-  }
+    const QuicServerInfoMapKey& key) {
+  const std::string* suffix = GetCanonicalSuffix(key.server_id.host());
+  if (!suffix)
+    return;
+  quic::QuicServerId canonical_server(
+      *suffix, key.server_id.privacy_mode_enabled(), key.server_id.port());
+
+  canonical_server_info_map_[CreateQuicServerInfoKey(
+      canonical_server, key.network_isolation_key)] = key.server_id;
 }
 
 const std::string* HttpServerProperties::GetCanonicalSuffix(

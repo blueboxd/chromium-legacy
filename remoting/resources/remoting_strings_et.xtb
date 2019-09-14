@@ -58,6 +58,7 @@
 <translation id="2509394361235492552">Ühendatud hostiga <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">MÄRKUS: kõigi klaviatuuri otseteede saadavuse tagamiseks saate rakenduse Chrome Remote Desktop seadistada valikule „Ava aknana”.</translation>
 <translation id="2540992418118313681">Kas soovite jagada seda arvutit teise kasutajaga, nii et ta saab seda kasutada ja juhtida?</translation>
+<translation id="254771646005658629">Kaugkasutajatel selle Maci haldamise lubamine</translation>
 <translation id="2579271889603567289">Host jooksis kokku või selle käivitamine ebaõnnestus.</translation>
 <translation id="2599300881200251572">See teenus lubab sissetulevad ühendused Chrome Remote Desktopi klientidelt.</translation>
 <translation id="2647232381348739934">Chromootimise teenus</translation>
@@ -182,6 +183,11 @@
 <translation id="5419185025274123272">Rakendust ei saanud lähtestada. Saate siiski saata veaaruande.</translation>
 <translation id="5419418238395129586">Viimati veebis: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Host on välja lülitatud.</translation>
+<translation id="5463789431147491241">Teenuse <ph name="PRODUCT_NAME" /> kasutamiseks selles Macis toimige järgmiselt.
+
+Valige allpool nupp „<ph name="BUTTON_NAME" />”. Märkige turva- ja privaatsuseelistustes ruut „<ph name="SERVICE_SCRIPT_NAME" />”.
+
+Kui ruut „<ph name="SERVICE_SCRIPT_NAME" />” on juba märgitud, eemaldage märge ja märkige siis ruut uuesti.</translation>
 <translation id="5510035215749041527">Katkesta kohe ühendus</translation>
 <translation id="5593560073513909978">Teenus on ajutiselt kättesaamatu. Proovige hiljem uuesti.</translation>
 <translation id="5601503069213153581">PIN-kood</translation>
@@ -298,12 +304,14 @@
 <translation id="837021510621780684">Sellest arvutist</translation>
 <translation id="8383794970363966105">Chromootimise kasutamiseks peate lisama seadmele Google'i konto.</translation>
 <translation id="8386846956409881180">Host on seadistatud sobimatu OAuth-mandaadiga.</translation>
+<translation id="8406498562923498210">Valige seanss, mis Chrome Remote Desktopi keskkonnas käivitada. (Pange tähele, et teatud tüüpi seansside puhul ei pruugita toetada seansi samaaegset käitamist Chrome Remote Desktopis ja kohalikus konsoolis.)</translation>
 <translation id="8428213095426709021">Seaded</translation>
 <translation id="8445362773033888690">Kuva Google Play poes</translation>
 <translation id="8509907436388546015">Arvuti integreerimisprotsess</translation>
 <translation id="8513093439376855948">Omasõnumside hostimine hosti haldamise kaugjuhtimiseks</translation>
 <translation id="8525306231823319788">Täisekraan</translation>
 <translation id="8548209692293300397">Olete varem sisse loginud kasutajana <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Sellel kontol oma arvutitele juurdepääsemiseks <ph name="LINK_BEGIN" />logige Google Chrome'i sisse<ph name="LINK_END" /> selle kontoga ja installige Chrome Remote Desktop uuesti.</translation>
+<translation id="858006550102277544">Kommentaar</translation>
 <translation id="8642984861538780905">Rahuldav</translation>
 <translation id="8712909229180978490">Ma ei näe võrgus oma salvestatud faile Google Drive'is.</translation>
 <translation id="8743328882720071828">Kas lubate kasutajal <ph name="CLIENT_USERNAME" /> oma arvutit vaadata ja juhtida?</translation>
@@ -321,6 +329,7 @@
 <translation id="9126115402994542723">Ära küsi PIN-koodi uuesti, kui sellest seadmest selle hostiga ühendus luuakse.</translation>
 <translation id="9149580767411232853">Kogu kaugtöölaud hoitakse nähtaval</translation>
 <translation id="9149992051684092333">Arvuti jagamise alustamiseks andke allolev pääsukood inimesele, kes teid aitama hakkab.</translation>
+<translation id="916856682307586697">XSession-vaikeseansi käivitamine</translation>
 <translation id="9188433529406846933">Volita</translation>
 <translation id="9213184081240281106">Sobimatu hosti seadistus.</translation>
 <translation id="951991426597076286">Keeldu</translation>

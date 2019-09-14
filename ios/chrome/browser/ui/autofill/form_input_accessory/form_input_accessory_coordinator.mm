@@ -175,7 +175,7 @@
   if (base::ios::IsRunningOnIOS13OrLater() && IsIPadIdiom()) {
     [self stopChildren];
     [self.formInputAccessoryMediator enableSuggestions];
-    [self.formInputAccessoryViewController resetManualFallbackIcons];
+    [self.formInputAccessoryViewController reset];
   }
 }
 
@@ -184,7 +184,7 @@
 - (void)keyboardButtonPressed {
   [self stopChildren];
   [self.formInputAccessoryMediator enableSuggestions];
-  [self.formInputAccessoryViewController unlockManualFallbackView];
+  [self.formInputAccessoryViewController reset];
 }
 
 - (void)accountButtonPressed:(UIButton*)sender {
@@ -213,7 +213,7 @@
 - (void)fallbackCoordinatorDidDismissPopover:
     (FallbackCoordinator*)fallbackCoordinator {
   [self.formInputAccessoryMediator enableSuggestions];
-  [self.formInputAccessoryViewController resetManualFallbackIcons];
+  [self.formInputAccessoryViewController reset];
 }
 
 #pragma mark - PasswordCoordinatorDelegate

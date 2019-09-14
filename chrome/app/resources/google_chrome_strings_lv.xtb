@@ -45,6 +45,8 @@
 <translation id="1873233029667955273">Google Chrome nav jūsu noklusējuma pārlūks.</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome versija ir novecojusi.</translation>
+<translation id="1900795423379050516">Ja šajā lapā iestatījums nav pieejams, skatiet to sadaļā <ph name="LINK_BEGIN" />
+      Pārlūkprogrammas Chrome iestatījumi<ph name="LINK_END" />.</translation>
 <translation id="1915828456209461693">Pieejams Chrome atjauninājums, un tas tiks lietots, tiklīdz restartēsiet pārlūku.</translation>
 <translation id="1919130412786645364">Atļaut pierakstīties pārlūkā Chrome</translation>
 <translation id="2063848847527508675">Lai lietotu atjauninājumu, Chrome OS ir jārestartē.</translation>
@@ -160,6 +162,8 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="5543953544073077331">Darbojas citas Chrome kopijas. Lai veiktu atjaunināšanu, aizveriet tās.</translation>
 <translation id="556024056938947818">Google Chrome mēģina rādīt paroles.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS ienākošā datplūsma)</translation>
+<translation id="5657226924540934362">Ja šajā lapā iestatījums nav pieejams, skatiet to sadaļā <ph name="LINK_BEGIN" />
+      Chrome OS iestatījumi<ph name="LINK_END" />.</translation>
 <translation id="565744775970812598">Fails <ph name="FILE_NAME" /> var būt bīstams, tādēļ Chrome to bloķēja.</translation>
 <translation id="5686916850681061684">Pielāgojiet un kontrolējiet pārlūkprogrammu Google Chrome. Ir nepieciešama jūsu uzmanība. Noklikšķiniet, lai skatītu plašāku informāciju.</translation>
 <translation id="5690427481109656848">Google LLC</translation>

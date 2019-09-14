@@ -90,7 +90,7 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
   [_alertCoordinator executeCancelHandler];
   [_alertCoordinator stop];
   if (_navigationController) {
-    [_navigationController settingsWillBeDismissed];
+    [_navigationController cleanUpSettings];
     _navigationController = nil;
     [[_delegate presentingViewController] dismissViewControllerAnimated:NO
                                                              completion:nil];
@@ -418,7 +418,7 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
     strongSelf->_navigationController = nil;
     [[strongSelf delegate] didChooseClearDataPolicy:shouldClearData];
   };
-  [_navigationController settingsWillBeDismissed];
+  [_navigationController cleanUpSettings];
   [[_delegate presentingViewController] dismissViewControllerAnimated:YES
                                                            completion:block];
 }
@@ -436,9 +436,16 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
     strongSelf->_navigationController = nil;
     [[strongSelf delegate] didChooseCancel];
   };
-  [_navigationController settingsWillBeDismissed];
+  [_navigationController cleanUpSettings];
   [[_delegate presentingViewController] dismissViewControllerAnimated:YES
                                                            completion:block];
+}
+
+- (void)settingsWasDismissed {
+  base::RecordAction(base::UserMetricsAction("Signin_ImportDataPrompt_Cancel"));
+  [self.delegate didChooseCancel];
+  [_navigationController cleanUpSettings];
+  _navigationController = nil;
 }
 
 - (id<ApplicationCommands, BrowserCommands>)dispatcherForSettings {

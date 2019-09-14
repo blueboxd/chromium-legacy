@@ -73,6 +73,10 @@ class PrintViewManagerBase : public content::NotificationObserver,
  protected:
   explicit PrintViewManagerBase(content::WebContents* web_contents);
 
+  // Helper method for checking whether the WebContents is showing an
+  // interstitial page or is crashed.
+  bool IsInterstitialOrCrashed();
+
   // Helper method for Print*Now().
   bool PrintNowInternal(content::RenderFrameHost* rfh,
                         std::unique_ptr<IPC::Message> message);

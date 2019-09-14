@@ -58,6 +58,7 @@
 <translation id="2509394361235492552">Conectat la <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">NOTĂ: pentru a vă asigura că toate comenzile rapide de la tastatură sunt disponibile, puteți seta Desktop la distanță Chrome în modul „Deschideți ca fereastră”.</translation>
 <translation id="2540992418118313681">Dorești să permiți accesul la acest computer altui utilizator, pentru ca acesta să îl poată vedea și controla?</translation>
+<translation id="254771646005658629">Permite utilizatorilor la distanță să controleze acest Mac</translation>
 <translation id="2579271889603567289">Gazda s-a blocat sau nu a pornit.</translation>
 <translation id="2599300881200251572">Acest serviciu permite conexiuni primite de la clienți Desktop la distanță Chrome.</translation>
 <translation id="2647232381348739934">Serviciul Chromoting</translation>
@@ -182,6 +183,11 @@
 <translation id="5419185025274123272">Aplicația nu a putut fi resetată. Poți totuși să trimiți un raport de eroare.</translation>
 <translation id="5419418238395129586">Ultima dată online: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Gazda a fost închisă.</translation>
+<translation id="5463789431147491241">Pentru a folosi <ph name="PRODUCT_NAME" /> pe acest Mac, urmează acești pași:
+
+selectează „<ph name="BUTTON_NAME" />” de mai jos; în preferințele pentru securitate și confidențialitate, bifează caseta de lângă „<ph name="SERVICE_SCRIPT_NAME" />”;
+
+dacă opțiunea „<ph name="SERVICE_SCRIPT_NAME" />” este deja bifată, debifeaz-o și bifeaz-o din nou.</translation>
 <translation id="5510035215749041527">Deconectează acum</translation>
 <translation id="5593560073513909978">Serviciul este temporar indisponibil. Încercați din nou mai târziu.</translation>
 <translation id="5601503069213153581">Cod PIN</translation>
@@ -298,12 +304,14 @@
 <translation id="837021510621780684">De la acest computer</translation>
 <translation id="8383794970363966105">Pentru a folosi Chromoting, va trebui să adăugați un Cont Google pe dispozitiv.</translation>
 <translation id="8386846956409881180">Gazda este configurată cu date de conectare OAuth nevalide.</translation>
+<translation id="8406498562923498210">Selectează o sesiune pe care să o lansezi în mediul Desktop la distanță Chrome. (Reține că este posibil ca unele tipuri de sesiuni să nu accepte rularea simultană în Desktop la distanță Chrome și pe consola locală.)</translation>
 <translation id="8428213095426709021">Setări</translation>
 <translation id="8445362773033888690">Vedeți în Magazin Google Play</translation>
 <translation id="8509907436388546015">Proces de integrare desktop</translation>
 <translation id="8513093439376855948">Gazda de mesagerie nativă pentru gestionarea gazdei la distanță</translation>
 <translation id="8525306231823319788">Ecran complet</translation>
 <translation id="8548209692293300397">Anterior te-ai conectat ca <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Pentru a accesa computerele în contul respectiv, <ph name="LINK_BEGIN" />conectează-te la Google Chrome<ph name="LINK_END" /> folosind contul respectiv și reinstalează Desktop la distanță Chrome.</translation>
+<translation id="858006550102277544">Comentariu</translation>
 <translation id="8642984861538780905">Acceptabilă</translation>
 <translation id="8712909229180978490">Nu pot vedea fișierele salvate online în Google Drive.</translation>
 <translation id="8743328882720071828">Dorești să-i permiți utilizatorului <ph name="CLIENT_USERNAME" /> să vadă și să îți controleze computerul?</translation>
@@ -321,6 +329,7 @@
 <translation id="9126115402994542723">Nu mai solicita un cod PIN când mă conectez la această gazdă de pe acest dispozitiv.</translation>
 <translation id="9149580767411232853">Păstrează vizibil tot desktopul la distanță</translation>
 <translation id="9149992051684092333">Pentru a începe să permiteți accesul la desktopul dvs., trimiteți codul de acces de mai jos persoanei care vă va oferi asistență.</translation>
+<translation id="916856682307586697">Lansează sesiunea XSession prestabilită</translation>
 <translation id="9188433529406846933">Autorizați</translation>
 <translation id="9213184081240281106">Configurație nevalidă a gazdei.</translation>
 <translation id="951991426597076286">Refuză</translation>

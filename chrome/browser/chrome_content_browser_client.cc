@@ -5156,6 +5156,19 @@ bool ChromeContentBrowserClient::HandleWebUI(
     return true;  // Return true to update the displayed URL.
   }
 
+#if defined(OS_WIN)
+  // TODO(crbug.com/1003960): Remove when issue is resolved.
+  if (url->SchemeIs(content::kChromeUIScheme) &&
+      url->host() == chrome::kChromeUIWelcomeWin10Host) {
+    url::Replacements<char> replacements;
+    replacements.SetHost(
+        chrome::kChromeUIWelcomeHost,
+        url::Component(0, strlen(chrome::kChromeUIWelcomeHost)));
+    *url = url->ReplaceComponents(replacements);
+    return true;
+  }
+#endif  // defined(OS_WIN)
+
   if (!ChromeWebUIControllerFactory::GetInstance()->UseWebUIForURL(
           browser_context, *url)) {
     return false;
@@ -5196,6 +5209,16 @@ bool ChromeContentBrowserClient::ShowPaymentHandlerWindow(
 bool ChromeContentBrowserClient::HandleWebUIReverse(
     GURL* url,
     content::BrowserContext* browser_context) {
+#if defined(OS_WIN)
+  // TODO(crbug.com/1003960): Remove when issue is resolved.
+  // No need to actually reverse-rewrite the URL, but return true to update the
+  // displayed URL when rewriting chrome://welcome-win10 to chrome://welcome.
+  if (url->SchemeIs(content::kChromeUIScheme) &&
+      url->host() == chrome::kChromeUIWelcomeHost) {
+    return true;
+  }
+#endif  // defined(OS_WIN)
+
   // No need to actually reverse-rewrite the URL, but return true to update the
   // displayed URL when rewriting chrome://help to chrome://settings/help.
   return url->SchemeIs(content::kChromeUIScheme) &&

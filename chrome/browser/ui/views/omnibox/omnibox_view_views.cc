@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/omnibox/clipboard_utils.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -240,7 +241,9 @@ void OmniboxViewViews::Init() {
 
     // Initialize the popup view using the same font.
     popup_view_.reset(
-        new OmniboxPopupContentsView(this, model(), location_bar_view_));
+        new OmniboxPopupContentsView(this, model(), location_bar_view_,
+                                     &ThemeService::GetThemeProviderForProfile(
+                                         location_bar_view_->profile())));
   }
 
   // Override the default FocusableBorder from Textfield, since the

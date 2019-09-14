@@ -91,6 +91,7 @@ bool Sequence::DidProcessTask(TaskSource::Transaction* transaction) {
   // WillRunTask().
   DCHECK(has_worker_);
   has_worker_ = false;
+  // See comment on TaskSource::task_runner_ for lifetime management details.
   if (queue_.empty()) {
     ReleaseTaskRunner();
     return false;
@@ -108,20 +109,17 @@ SequenceSortKey Sequence::GetSortKey() const {
 
 Optional<Task> Sequence::Clear(TaskSource::Transaction* transaction) {
   CheckedAutoLockMaybe auto_lock(transaction ? nullptr : &lock_);
-  has_worker_ = false;
-  return base::make_optional<Task>(
-      FROM_HERE,
-      base::BindOnce(
-          [](scoped_refptr<Sequence> self, base::queue<Task> queue) {
-            bool queue_was_empty = queue.empty();
-            while (!queue.empty())
-              queue.pop();
-            if (!queue_was_empty) {
-              self->ReleaseTaskRunner();
-            }
-          },
-          scoped_refptr<Sequence>(this), std::move(queue_)),
-      TimeDelta());
+  // See comment on TaskSource::task_runner_ for lifetime management details.
+  if (!queue_.empty() && !has_worker_)
+    ReleaseTaskRunner();
+  return base::make_optional<Task>(FROM_HERE,
+                                   base::BindOnce(
+                                       [](base::queue<Task> queue) {
+                                         while (!queue.empty())
+                                           queue.pop();
+                                       },
+                                       std::move(queue_)),
+                                   TimeDelta());
 }
 
 void Sequence::ReleaseTaskRunner() {

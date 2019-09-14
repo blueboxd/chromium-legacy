@@ -38,19 +38,19 @@ class MouseInputFilterTest : public testing::Test {
 
   // Set the size of the client viewing rectangle.
   void SetClientSize(int width, int height) {
-    mouse_filter_.set_input_size(webrtc::DesktopSize(width, height));
+    mouse_filter_.set_input_size(width, height);
   }
 
   // Set the size of the host desktop. For multimon, this is the bounding box
   // that encloses all displays.
   void SetHostDesktop(int width, int height) {
-    mouse_filter_.set_output_size(webrtc::DesktopSize(width, height));
+    mouse_filter_.set_output_size(width, height);
   }
 
   // Set the size and offset of a single display in a multimon setup.
   void SetHostMultimonSingleDisplay(int x, int y, int width, int height) {
     mouse_filter_.set_output_offset(webrtc::DesktopVector(x, y));
-    mouse_filter_.set_output_size(webrtc::DesktopSize(width, height));
+    mouse_filter_.set_output_size(width, height);
   }
 
   void InjectMouse(const Point& point, bool swap = false) {

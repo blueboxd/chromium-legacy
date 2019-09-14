@@ -102,6 +102,11 @@ class PageLoadMetricsObserverDelegate {
 
   // UKM SourceId for the current page load.
   virtual ukm::SourceId GetSourceId() const = 0;
+
+  // Whether the associated navigation is the first navigation in its associated
+  // WebContents. Note that, for newly opened tabs that display the New Tab
+  // Page, the New Tab Page is considered the first navigation in that tab.
+  virtual bool IsFirstNavigationInWebContents() const = 0;
 };
 
 }  // namespace page_load_metrics

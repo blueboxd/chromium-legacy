@@ -304,25 +304,6 @@ TEST_F(MediaNotificationControllerImplTest, HandleNullMediaSessionInfo) {
   ExpectNotificationCount(0);
 }
 
-TEST_F(MediaNotificationControllerImplTest, MediaMetadata_NoArtist) {
-  base::UnguessableToken id = base::UnguessableToken::Create();
-
-  ExpectNotificationCount(0);
-
-  Shell::Get()->media_notification_controller()->OnFocusGained(
-      GetRequestStateWithId(id));
-
-  media_session::MediaMetadata metadata;
-  metadata.title = base::ASCIIToUTF16("title");
-
-  Shell::Get()
-      ->media_notification_controller()
-      ->GetItem(id.ToString())
-      ->MediaSessionMetadataChanged(metadata);
-
-  ExpectNotificationCount(0);
-}
-
 TEST_F(MediaNotificationControllerImplTest, MediaMetadata_NoTitle) {
   base::UnguessableToken id = base::UnguessableToken::Create();
 

@@ -8,14 +8,17 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min.}few{# min.}other{# min.}}</translation>
 <translation id="1181037720776840403">Elimină</translation>
 <translation id="1243314992276662751">Încărcați</translation>
+<translation id="1266864766717917324">Nu s-a trimis <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1290982764014248209">Mută <ph name="DRAGGED_APP" /> în dosarul <ph name="FOLDER_NAME" />.</translation>
+<translation id="1291104554099683393">Împarte textul în fragmente mai mici.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">APLICAȚII RECOMANDATE</translation>
 <translation id="1368832886055348810">De la stânga la dreapta</translation>
 <translation id="1383876407941801731">Caută</translation>
 <translation id="1398853756734560583">Maximizează</translation>
 <translation id="1409544243779336081">Recomandarea aplicației</translation>
+<translation id="1450753235335490080">Nu se poate trimite <ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">Ai mai căutat asta. Dacă ștergi „<ph name="QUERY" />” din istoric, se va elimina definitiv din contul tău, de pe toate dispozitivele.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{Un minut și  }few{# minute și  }other{# de minute și  }}</translation>
 <translation id="1643823602425662293">Notificare</translation>
@@ -35,6 +38,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Select&amp;ează tot</translation>
 <translation id="1938451708255335766">Pentru a regla densitatea afișajului ferestrei, repornește aplicația.</translation>
+<translation id="2006524834898217237">Verifică dacă dispozitivul este conectat la internet.</translation>
 <translation id="208586643495776849">Încearcă din nou</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 zi}few{# zile}other{# zile}}</translation>
 <translation id="2148716181193084225">Astăzi</translation>
@@ -76,6 +80,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{O zi}few{# zile}other{# de zile}}</translation>
 <translation id="3295886253693811851">Apelează de pe</translation>
 <translation id="335581015389089642">Voce</translation>
+<translation id="3389286852084373014">Textul este prea mare</translation>
 <translation id="3443810440409579745">Fila a fost primită.</translation>
 <translation id="3479552764303398839">Nu acum</translation>
 <translation id="348799646910989694">Raft ascuns automat</translation>
@@ -151,11 +156,13 @@
 <translation id="6404817160109697034">{SECONDS,plural, =1{Acum o sec.}few{Acum # sec}other{Acum # sec}}</translation>
 <translation id="6430678249303439055">Blochează toate notificările de la această aplicație</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Acum 1 secundă}few{Acum # secunde}other{Acum # de secunde}}</translation>
+<translation id="6539092367496845964">A apărut o eroare. Încearcă din nou mai târziu.</translation>
 <translation id="654149438358937226">Blochează toate notificările</translation>
 <translation id="6567071839949112727">dă clic pe predecesor</translation>
 <translation id="6578407462441924264">Nedenumit</translation>
 <translation id="6612467943526193239">Pentru a ieși din calibrare, apasă pe Esc.</translation>
 <translation id="6620110761915583480">Salvează fișierul</translation>
+<translation id="6656912866303152668">Asigură-te că <ph name="TARGET_DEVICE_NAME" /> are sincronizarea activată în Chrome, apoi încearcă să trimiți din nou.</translation>
 <translation id="6699343763173986273">Melodia următoare din conținutul media</translation>
 <translation id="673773751041746814">Ștergere</translation>
 <translation id="6779314412797872738">Pentru a trimite un număr de aici pe telefonul Android, <ph name="TROUBLESHOOT_LINK" /> pentru ambele dispozitive din setări.</translation>
@@ -221,6 +228,7 @@
 <translation id="8876215549894133151">Format:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KO</translation>
 <translation id="8926951137623668982">Raftul este ascuns mereu</translation>
+<translation id="8996630695507351249">Asigură-te că <ph name="TARGET_DEVICE_NAME" /> este conectat la internet.</translation>
 <translation id="9002566407876343676">deschide</translation>
 <translation id="9039076430527029379">Mută la pagina <ph name="PAGE_NUMBER" />, rândul <ph name="ROW_NUMBER" />, coloana <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{O sec.}few{# sec.}other{# sec.}}</translation>

@@ -99,6 +99,10 @@ class MetricsServiceClient {
       metrics::MetricsLogUploader::MetricServiceType service_type,
       const MetricsLogUploader::UploadCallback& on_upload_complete) = 0;
 
+  // Returns the interval between upload attempts. Checks if debugging flags
+  // have been set, otherwise defaults to GetStandardUploadInterval().
+  base::TimeDelta GetUploadInterval();
+
   // Returns the standard interval between upload attempts.
   virtual base::TimeDelta GetStandardUploadInterval() = 0;
 

@@ -250,7 +250,7 @@ void MetricsService::InitializeMetricsRecordingState() {
       upload_callback,
       // MetricsServiceClient outlives MetricsService, and
       // MetricsRotationScheduler is tied to the lifetime of |this|.
-      base::Bind(&MetricsServiceClient::GetStandardUploadInterval,
+      base::Bind(&MetricsServiceClient::GetUploadInterval,
                  base::Unretained(client_))));
 
   // Init() has to be called after LogCrash() in order for LogCrash() to work.

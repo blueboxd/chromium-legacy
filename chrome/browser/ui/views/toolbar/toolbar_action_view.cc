@@ -29,6 +29,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_source.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -136,6 +137,11 @@ bool ToolbarActionView::IsTriggerableEvent(const ui::Event& event) {
 }
 
 SkColor ToolbarActionView::GetInkDropBaseColor() const {
+  if (delegate_->ShownInsideMenu()) {
+    return color_utils::GetColorWithMaxContrast(
+        GetNativeTheme()->GetSystemColor(
+            ui::NativeTheme::kColorId_MenuBackgroundColor));
+  }
   return GetToolbarInkDropBaseColor(this);
 }
 

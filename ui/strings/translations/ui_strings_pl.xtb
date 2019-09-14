@@ -8,14 +8,17 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min}few{# min}many{# min}other{# min}}</translation>
 <translation id="1181037720776840403">Usuń</translation>
 <translation id="1243314992276662751">Prześlij</translation>
+<translation id="1266864766717917324">Nie udało się udostępnić <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Windows</translation>
 <translation id="1290982764014248209">Przenieś aplikację <ph name="DRAGGED_APP" /> do folderu <ph name="FOLDER_NAME" />.</translation>
+<translation id="1291104554099683393">Spróbuj udostępnić jego mniejsze fragmenty.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">POLECANE APLIKACJE</translation>
 <translation id="1368832886055348810">Od lewej do prawej</translation>
 <translation id="1383876407941801731">Szukaj</translation>
 <translation id="1398853756734560583">Maksymalizuj</translation>
 <translation id="1409544243779336081">Rekomendacja aplikacji</translation>
+<translation id="1450753235335490080">Nie udało się udostępnić <ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">Z Twojej historii wyszukiwania. Jeśli usuniesz zapytanie „<ph name="QUERY" />” z historii, zostanie ono trwale usunięte z Twojego konta na wszystkich urządzeniach.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuta i }few{# minuty i }many{# minut i }other{# minuty i }}</translation>
 <translation id="1643823602425662293">Powiadomienie</translation>
@@ -35,6 +38,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Zaznacz &amp;wszystko</translation>
 <translation id="1938451708255335766">Aby dostosować gęstość wyświetlania okien, ponownie uruchom aplikację.</translation>
+<translation id="2006524834898217237">Upewnij się, że to urządzenie jest połączone z internetem.</translation>
 <translation id="208586643495776849">Spróbuj ponownie</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 dzień}few{# dni}many{# dni}other{# dnia}}</translation>
 <translation id="2148716181193084225">Dzisiaj</translation>
@@ -76,6 +80,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 dzień}few{# dni}many{# dni}other{# dnia}}</translation>
 <translation id="3295886253693811851">Zadzwoń z:</translation>
 <translation id="335581015389089642">Mowa</translation>
+<translation id="3389286852084373014">Tekst jest za długi</translation>
 <translation id="3443810440409579745">Odebrano kartę.</translation>
 <translation id="3479552764303398839">Nie teraz</translation>
 <translation id="348799646910989694">Półka ukryta automatycznie</translation>
@@ -151,11 +156,13 @@
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 s temu}few{# s temu}many{# s temu}other{# s temu}}</translation>
 <translation id="6430678249303439055">Blokuj wszystkie powiadomienia z tej aplikacji</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{sekundę temu}few{# sekundy temu}many{# sekund temu}other{# sekundy temu}}</translation>
+<translation id="6539092367496845964">Coś poszło nie tak. Spróbuj później.</translation>
 <translation id="654149438358937226">Blokuj wszystkie powiadomienia</translation>
 <translation id="6567071839949112727">kliknij element nadrzędny</translation>
 <translation id="6578407462441924264">Bez nazwy</translation>
 <translation id="6612467943526193239">Aby zakończyć kalibrację, naciśnij Esc.</translation>
 <translation id="6620110761915583480">Zapisz plik</translation>
+<translation id="6656912866303152668">Upewnij się, że <ph name="TARGET_DEVICE_NAME" /> ma w Chrome włączoną synchronizację, a potem spróbuj wysłać ponownie.</translation>
 <translation id="6699343763173986273">Następny utwór multimedialny</translation>
 <translation id="673773751041746814">Usunięcie</translation>
 <translation id="6779314412797872738">Aby przesłać stąd numer na swój telefon z Androidem, <ph name="TROUBLESHOOT_LINK" /> obu urządzeń w ustawieniach.</translation>
@@ -221,6 +228,7 @@
 <translation id="8876215549894133151">Format:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> kB</translation>
 <translation id="8926951137623668982">Półka zawsze ukryta</translation>
+<translation id="8996630695507351249">Upewnij się, że <ph name="TARGET_DEVICE_NAME" /> jest połączony z internetem.</translation>
 <translation id="9002566407876343676">otwórz</translation>
 <translation id="9039076430527029379">Przenieś na stronę <ph name="PAGE_NUMBER" />, do wiersza <ph name="ROW_NUMBER" />, kolumny <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}few{# s}many{# s}other{# s}}</translation>

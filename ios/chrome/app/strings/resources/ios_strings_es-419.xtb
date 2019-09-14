@@ -315,6 +315,7 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 Handoff también debe estar habilitado en la sección General de la configuración, y los dispositivos deben utilizar la misma cuenta de iCloud.</translation>
 <translation id="5551897871312988470">Ofrecer la traducción</translation>
 <translation id="5556459405103347317">Cargar de nuevo</translation>
+<translation id="5592679540098330836">Activa la sincronización para <ph name="NAME" /></translation>
 <translation id="5614553682702429503">¿Quieres guardar la contraseña?</translation>
 <translation id="5626245204502895507">No se pudo descargar el archivo esta vez.</translation>
 <translation id="5631164295104953411">Agregar forma de pago</translation>

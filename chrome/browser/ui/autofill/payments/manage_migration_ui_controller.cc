@@ -36,13 +36,13 @@ void ManageMigrationUiController::ShowBubble(
 }
 
 void ManageMigrationUiController::ShowOfferDialog(
-    std::unique_ptr<base::DictionaryValue> legal_message,
+    const LegalMessageLines& legal_message_lines,
     const std::string& user_email,
     const std::vector<MigratableCreditCard>& migratable_credit_cards,
     AutofillClient::LocalCardMigrationCallback start_migrating_cards_callback) {
   flow_step_ = LocalCardMigrationFlowStep::OFFER_DIALOG;
   dialog_controller_->ShowOfferDialog(
-      std::move(legal_message), user_email, migratable_credit_cards,
+      legal_message_lines, user_email, migratable_credit_cards,
       std::move(start_migrating_cards_callback));
 }
 

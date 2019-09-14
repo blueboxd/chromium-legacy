@@ -189,12 +189,14 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
      * @param total            The PaymentItem that represents the total cost of the payment.
      * @param modifiers        Payment method specific modifiers to the payment items and the total.
      * @param host             The host of the payment handler.
+     * @param isMicrotrans     Whether the payment handler should be invoked in the microtransaction
+     *                         mode.
      * @param callback         Called after the payment app is finished running.
      */
     public static void invokePaymentApp(WebContents webContents, long registrationId,
             String swScope, String origin, String iframeOrigin, String paymentRequestId,
             Set<PaymentMethodData> methodData, PaymentItem total,
-            Set<PaymentDetailsModifier> modifiers, PaymentHandlerHost host,
+            Set<PaymentDetailsModifier> modifiers, PaymentHandlerHost host, boolean isMicrotrans,
             PaymentInstrument.InstrumentDetailsCallback callback) {
         ThreadUtils.assertOnUiThread();
 
@@ -202,7 +204,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
                 swScope, origin, iframeOrigin, paymentRequestId,
                 methodData.toArray(new PaymentMethodData[0]), total,
                 modifiers.toArray(new PaymentDetailsModifier[0]),
-                host.getNativePaymentHandlerHost(), callback);
+                host.getNativePaymentHandlerHost(), isMicrotrans, callback);
     }
 
     /**
@@ -487,7 +489,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
                 String serviceWorkerScope, String topOrigin, String paymentRequestOrigin,
                 String paymentRequestId, PaymentMethodData[] methodData, PaymentItem total,
                 PaymentDetailsModifier[] modifiers, long nativePaymentHandlerObject,
-                PaymentInstrument.InstrumentDetailsCallback callback);
+                boolean isMicrotrans, PaymentInstrument.InstrumentDetailsCallback callback);
         void installAndInvokePaymentApp(WebContents webContents, String topOrigin,
                 String paymentRequestOrigin, String paymentRequestId,
                 PaymentMethodData[] methodData, PaymentItem total,

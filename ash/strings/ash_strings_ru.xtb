@@ -104,7 +104,6 @@
 <translation id="2359808026110333948">Продолжить</translation>
 <translation id="2365393535144473978">Вместе с мобильным Интернетом включится Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
-<translation id="239188844683466770">Изменить настройки режима "Не беспокоить"</translation>
 <translation id="2412593942846481727">Доступно обновление</translation>
 <translation id="2413728805700750528">Управляемый сеанс "<ph name="DISPLAY_NAME" />" выполняется в домене <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Нажатие на левую кнопку мыши</translation>
@@ -224,6 +223,7 @@
 <translation id="4181841719683918333">Языки</translation>
 <translation id="4195877955194704651">Меню "Автоматическое нажатие"</translation>
 <translation id="4217571870635786043">Голосовой ввод</translation>
+<translation id="421885205185866088">PIN-код для смарт-карты пользователя <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Показать настройки уведомлений. Уведомления отключены.</translation>
 <translation id="4269883910223712419">Администратор этого устройства имеет возможность:</translation>
@@ -239,6 +239,7 @@
 <translation id="4379531060876907730">Инструменты для работы со стилусом</translation>
 <translation id="4389184120735010762">Вы нажали сочетание клавиш для включения закрепленной лупы. Выполнить это действие?</translation>
 <translation id="4421231901400348175">Доступ к экрану для <ph name="HELPER_NAME" /> с помощью удаленного помощника</translation>
+<translation id="4430019312045809116">Объем</translation>
 <translation id="4450893287417543264">Больше не показывать</translation>
 <translation id="4477350412780666475">Следующий трек</translation>
 <translation id="4479639480957787382">Ethernet</translation>

@@ -2379,7 +2379,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_angle_win_gtests',
           'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
-          'gpu_telemetry_tests': 'gpu_angle_win_intel_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_angle_win_intel_nvidia_telemetry_tests',
         },
       },
       'ANGLE GPU Win10 x64 Release (NVIDIA)': {
@@ -2391,7 +2391,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_angle_win_gtests',
           'isolated_scripts': 'gpu_angle_fyi_win_optional_isolated_scripts',
-          'gpu_telemetry_tests': 'gpu_angle_win_nvidia_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_angle_win_intel_nvidia_telemetry_tests',
         },
       },
       # END Fake builder used as mirror targets for ANGLE's GPU tryservers
@@ -2786,7 +2786,7 @@
           'amd_8870m',
           'gpu_pool',
           'limited_capacity_bot',
-          'mac_10.14',
+          'mac_10.14.4',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_release_gtests',
@@ -2800,7 +2800,7 @@
           'gpu_pool',
           'intel_iris_5100',
           'limited_capacity_bot',
-          'mac_10.14',
+          'mac_10.14.4',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_release_gtests',
@@ -2812,7 +2812,7 @@
         'browser_config': 'release',
         'mixins': [
           'gpu_pool',
-          'mac_10.14',
+          'mac_10.14.4',
           'limited_capacity_bot',
           'nvidia_750m_mac_edition',
         ],
@@ -3129,7 +3129,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_win_amd_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fyi_win_nvidia_amd_release_telemetry_tests',
         },
       },
       'Win10 FYI x64 Release (Intel HD 630)': {
@@ -3263,7 +3263,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win7_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_win_amd_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fyi_win_nvidia_amd_release_telemetry_tests',
         },
       },
       'Win7 FYI Release (NVIDIA)': {
@@ -3275,7 +3275,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win7_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_win7_nvidia_release_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fyi_win_nvidia_amd_release_telemetry_tests',
         },
         'use_multi_dimension_trigger_script': True,
       },
@@ -3298,7 +3298,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win7_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_win7_nvidia_release_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fyi_win_nvidia_amd_release_telemetry_tests',
         },
         'use_multi_dimension_trigger_script': True,
         'alternate_swarming_dimensions': [

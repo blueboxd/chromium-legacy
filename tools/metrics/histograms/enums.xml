@@ -3683,6 +3683,7 @@ Unknown properties are collapsed to zero. -->
   <int value="15" label="Upload was offered for a non-focusable form"/>
   <int value="16" label="Card was not in a supported bin range"/>
   <int value="17" label="Upload was offered for a dynamic form"/>
+  <int value="18" label="Invalid legal message detected"/>
 </enum>
 
 <enum name="AutofillCardUploadEnabled">
@@ -4132,6 +4133,7 @@ Unknown properties are collapsed to zero. -->
   <int value="6" label="All cards are unsupported"/>
   <int value="7" label="Single local card"/>
   <int value="8" label="User used unsupported local card"/>
+  <int value="9" label="Invalid legal message detected"/>
 </enum>
 
 <enum name="AutofillLocalCardMigrationDialogOffer">
@@ -13629,8 +13631,8 @@ Called by update_net_error_codes.py.-->
   <int value="92" label="Incognito Window Counter"/>
   <int value="93" label="Crostini App Uninstaller"/>
   <int value="94" label="Crostini Container Upgrade"/>
-  <int value="95" label="Incognito Menu"/>
-  <int value="96" label="Phone Chooser"/>
+  <int value="95" label="Cookie Controls"/>
+  <int value="96" label="Crostini Ansible Software Config"/>
 </enum>
 
 <enum name="DialogOriginRelationship">
@@ -25747,6 +25749,31 @@ Called by update_net_error_codes.py.-->
   <int value="19" label="Manage Plugin VM sharing toast startup"/>
 </enum>
 
+<enum name="FileManagerNotificationType">
+  <int value="0" label="DEVICE_NAVIGATION_ALLOW_APP_ACCESS"/>
+  <int value="1" label="DEVICE_NAVIGATION_APPS_HAVE_ACCESS"/>
+  <int value="2" label="DEVICE_NAVIGATION"/>
+  <int value="3" label="DEVICE_NAVIGATION_READONLY_POLICY"/>
+  <int value="4" label="DEVICE_IMPORT"/>
+  <int value="5" label="DEVICE_FAIL"/>
+  <int value="6" label="DEVICE_FAIL_UNKNOWN"/>
+  <int value="7" label="DEVICE_FAIL_UNKNOWN_READONLY"/>
+  <int value="8" label="DEVICE_EXTERNAL_STORAGE_DISABLED"/>
+  <int value="9" label="DEVICE_HARD_UNPLUGGED"/>
+  <int value="10" label="FORMAT_START"/>
+  <int value="11" label="FORMAT_SUCCESS"/>
+  <int value="12" label="FORMAT_FAIL"/>
+  <int value="13" label="RENAME_FAIL"/>
+</enum>
+
+<enum name="FileManagerNotificationUserAction">
+  <int value="0" label="OPEN_SETTINGS_FOR_ARC_STORAGE"/>
+  <int value="1" label="OPEM_MEDIA_DEVICE_NAVIGATION"/>
+  <int value="2" label="OPEN_MEDIA_DEVICE_NAVIGATION_ARC"/>
+  <int value="3" label="OPEN_MEDIA_DEVICE_FAIL"/>
+  <int value="4" label="OPEN_MEDIA_DEVICE_IMPORT"/>
+</enum>
+
 <enum name="FileManagerQuickViewWayToOpen">
   <int value="0" label="Context menu"/>
   <int value="1" label="Space key"/>
@@ -26347,7 +26374,11 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Cleared on Chrome sign-out"/>
   <int value="3" label="Changed in the content area"/>
   <int value="4"
-      label="Password hash change event where the account is not syncing"/>
+      label="Password hash change event where the GSuite/Gmail account is not
+             syncing"/>
+  <int value="5"
+      label="Password hash change event where the account is a non-GAIA
+             enterprise account"/>
 </enum>
 
 <enum name="GaiaSessionRestoreOutcome">
@@ -44145,11 +44176,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="DeprecatedThumbnailDefault">
     Deprecated: The item displays a default graphic in place of a thumbnail.
   </int>
-  <int value="7" label="Thumbnail">
-    The item displays a thumbnail of the page.
+  <int value="7" label="Obsolete: Thumbnail">
+    The item displays a thumbnail of the page. Removed 9/2019.
   </int>
-  <int value="8" label="ThumbnailFailed">
-    The item displays a default gray box in place of a thumbnail.
+  <int value="8" label="Obsolete: ThumbnailFailed">
+    The item displays a default gray box in place of a thumbnail. Removed
+    9/2019.
   </int>
 </enum>
 

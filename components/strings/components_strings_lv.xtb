@@ -97,8 +97,6 @@
 <translation id="138218114945450791">Gaiši zila</translation>
 <translation id="1382194467192730611">USB ierīce, ko atļauj jūsu administrators</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> nenosūtīja nekādus datus.</translation>
-<translation id="140316286225361634">Vietne <ph name="ORIGIN" /> ir pieprasījusi, lai drošības politika
-     attiektos uz visu tās pieprasījumu, un saskaņā ar šo politiku šobrīd vietne tiek uzskatīta par nedrošu.</translation>
 <translation id="1405567553485452995">Gaiši zaļa</translation>
 <translation id="1407135791313364759">Atvērt visas</translation>
 <translation id="1413809658975081374">Konfidencialitātes kļūda</translation>
@@ -134,6 +132,7 @@
 <translation id="1569487616857761740">Ievadīt derīguma termiņu</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Šīs tīmekļa lapas rādīšanas laikā radās kļūda.</translation>
+<translation id="1588438908519853928">Parasts</translation>
 <translation id="1592005682883173041">Piekļuve lokālajiem datiem</translation>
 <translation id="1594030484168838125">Izvēlēties</translation>
 <translation id="161042844686301425">Ciānzila</translation>
@@ -211,7 +210,6 @@
 <translation id="1981206234434200693">Notīrīt Chrome pārlūkošanas vēstures datus</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{un vēl 1}zero{un vēl #}one{un vēl #}other{un vēl #}}</translation>
 <translation id="2003709556000175978">Nekavējoties atiestatiet paroli</translation>
-<translation id="20053308747750172">Visiem pieprasījumiem uz serveri <ph name="ORIGIN" /> tiek piemērota drošības politika. Taču tagad serveris ir iesniedzis nederīgu politiku, kas neļauj pārlūkam izpildīt jūsu pieprasījumu vietnei <ph name="SITE" />.</translation>
 <translation id="2025186561304664664">Starpniekserverim ir iestatīta autokonfigurācija.</translation>
 <translation id="202813660234680402">Nē, nepievienot</translation>
 <translation id="2030481566774242610">Vai domājāt <ph name="LINK" />?</translation>
@@ -289,7 +287,6 @@
 <translation id="2409589295040002961">Jūsu administrators var attālināti mainīt jūsu pārlūka iestatījumus. Darbību šajā ierīcē var pārvaldīt arī ārpus Chrome. <ph name="BEGIN_LINK" />Uzzināt vairāk<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Šis serveris nevarēja pierādīt, ka šī ir vietne <ph name="DOMAIN" />; tās drošības sertifikāts, iespējams, ir atsaukts. Iespējams, tas ir nepareizas konfigurācijas dēļ vai arī kāds ir ļaunprātīgi izmantojis jūsu savienojumu.</translation>
-<translation id="2418081434543109369">Visiem pieprasījumiem uz serveri <ph name="ORIGIN" /> tiek piemērota drošības politika. Bet tagad serveris nevar iesniegt politiku, kas neļauj pārlūkam izpildīt jūsu pieprasījumu vietnei <ph name="SITE" />.</translation>
 <translation id="2463193859425327265">Mainīt sākumlapu</translation>
 <translation id="2463739503403862330">Aizpildīt</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -580,6 +577,7 @@
 <translation id="4103249731201008433">Ierīces sērijas numurs nav derīgs.</translation>
 <translation id="410351446219883937">Automātiskā atskaņošana</translation>
 <translation id="4103763322291513355">Apmeklējiet vietni &lt;strong&gt;chrome://policy&lt;/strong&gt;, lai skatītu melnajā sarakstā iekļautos vietrāžus URL, kā arī citas politikas, ko noteicis sistēmas administrators.</translation>
+<translation id="4108231218301530806">Nākamreiz izmantot pirksta nospiedumu, lai verificētu šo karti</translation>
 <translation id="4110652170750985508">Maksājuma pārskatīšana</translation>
 <translation id="4112140312785995938">Pārtīt atpakaļ</translation>
 <translation id="4116663294526079822">Vienmēr atļaut šajā vietnē</translation>
@@ -782,6 +780,7 @@
 <translation id="5141240743006678641">Šifrēt sinhronizētās paroles, izmantojot Google akreditācijas datus</translation>
 <translation id="5145883236150621069">Politikas atbildē ir kļūdas kods.</translation>
 <translation id="515292512908731282">C4 (aploksne)</translation>
+<translation id="5158275234811857234">Vāks</translation>
 <translation id="5159010409087891077">Atvērt lapu jaunā inkognito režīma logā (⇧⌘N)</translation>
 <translation id="516920405563544094">Ievadiet kredītkartes <ph name="CREDIT_CARD" /> CVC kodu. Pēc apstiprināšanas kartes informācija no Google konta tiks kopīgota ar šo vietni.</translation>
 <translation id="5169827969064885044">Varat zaudēt piekļuvi savam organizācijas kontam, vai jūsu identitāte var tikt nozagta. Chrome iesaka nekavējoties nomainīt paroli.</translation>
@@ -940,6 +939,7 @@
 <translation id="598637245381783098">Nevar atvērt maksājumu lietotni</translation>
 <translation id="5989320800837274978">Nav norādīti nedz fiksēti starpniekserveri, nedz .pac skripta URL.</translation>
 <translation id="5990559369517809815">Paplašinājums ir bloķējis pieprasījumus serverim.</translation>
+<translation id="6000758707621254961"><ph name="RESULT_COUNT" /> rezultāti vaicājumam “<ph name="SEARCH_TEXT" />”</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">Gads</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{1. lapa}zero{#. lapa}one{#. lapa}other{#. lapa}}</translation>
@@ -998,6 +998,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Nav}=1{1 parole (šādiem domēniem: <ph name="DOMAIN_LIST" />, sinhronizēta)}=2{2 paroles (šādiem domēniem: <ph name="DOMAIN_LIST" />, sinhronizētas)}zero{# paroļu (šādiem domēniem: <ph name="DOMAIN_LIST" />, sinhronizētas)}one{# parole (šādiem domēniem: <ph name="DOMAIN_LIST" />, sinhronizētas)}other{# paroles (šādiem domēniem: <ph name="DOMAIN_LIST" />, sinhronizētas)}}</translation>
 <translation id="6358450015545214790">Ko tas nozīmē?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6377268785556383139">1 rezultāts vaicājumam “<ph name="SEARCH_TEXT" />”</translation>
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Iespējams, tiks pieprasīta maksa.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{vēl 1 ieteikums}zero{vēl # ieteikumi}one{vēl # ieteikums}other{vēl # ieteikumi}}</translation>
@@ -1132,7 +1133,6 @@
 <translation id="717330890047184534">GAIA ID:</translation>
 <translation id="7174545416324379297">Apvienota</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> un vēl <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}zero{<ph name="SHIPPING_OPTION_PREVIEW" /> un vēl <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" /> un vēl <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> un vēl <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
-<translation id="7177397715882417099">Visiem pieprasījumiem uz serveri <ph name="ORIGIN" />tiek piemērota drošības politika. Taču tā vietā, lai iesniegtu politiku, serveris ir novirzījis pārlūku citur, un tas neļauj pārlūkam izpildīt jūsu pieprasījumu vietnei <ph name="SITE" />.</translation>
 <translation id="7179323680825933600">Saglabāt un aizpildīt maksājumu veidus</translation>
 <translation id="7180611975245234373">Atsvaidzināt</translation>
 <translation id="7182878459783632708">Nav iestatīta neviena politika</translation>
@@ -1159,6 +1159,7 @@ Papildu informācija:
 <translation id="7300012071106347854">Kobalta zila</translation>
 <translation id="7302712225291570345">“<ph name="TEXT" />”</translation>
 <translation id="7303701124147721189">Lai nākamreiz veiktu maksājumu ātrāk, glabājiet kartes datus un norēķinu adresi savā Google kontā un šajā ierīcē.</translation>
+<translation id="7304030187361489308">Augsts</translation>
 <translation id="7309308571273880165">Avārijas pārskats notverts: <ph name="CRASH_TIME" /> (augšupielādi pieprasījis lietotājs; augšupielāde vēl nav veikta)</translation>
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />Drošas pārlūkošanas<ph name="END_LINK" /> brīdinājumi</translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1521,7 +1522,6 @@ Papildu informācija:
 <translation id="939736085109172342">Jauna mape</translation>
 <translation id="945855313015696284">Pārbaudiet tālāk sniegto informāciju un dzēsiet visas nederīgās kartītes.</translation>
 <translation id="951104842009476243">Atbalstītās debetkartes un priekšapmaksas kartes</translation>
-<translation id="958202389743790697">Bloķēts, pamatojoties uz <ph name="ORIGIN" /> drošības politiku.</translation>
 <translation id="962484866189421427">Šis saturs jūsu ierīcē var mēģināt instalēt maldinošas lietotnes, kas tiek uzdodas par cita veida saturu, vai vākt datus, kas var tikt izmantoti jūsu izsekošanai. <ph name="BEGIN_LINK" />Tāpat rādīt<ph name="END_LINK" />.</translation>
 <translation id="969892804517981540">Oficiālā Uzbūve</translation>
 <translation id="973773823069644502">Pievienot piegādes adresi</translation>

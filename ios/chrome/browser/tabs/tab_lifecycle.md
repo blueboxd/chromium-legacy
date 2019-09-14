@@ -11,7 +11,7 @@ AttachTabHelper(web_state.get());
 ````
 
 When a `WebState` is added to a `TabModel`'s `WebStateList`,
-`TabModelWebStateListDelegate` will invoke `AttachTabHelpers` if necessary.
+`BrowserWebStateListDelegate` will invoke `AttachTabHelpers` if necessary.
 
 ```cpp
 TabModel* tab_model = ...;

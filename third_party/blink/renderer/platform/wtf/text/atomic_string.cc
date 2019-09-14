@@ -23,7 +23,7 @@
 
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
-#include "third_party/blink/renderer/platform/wtf/dtoa/dtoa.h"
+#include "third_party/blink/renderer/platform/wtf/dtoa.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_table.h"
 #include "third_party/blink/renderer/platform/wtf/text/case_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_impl.h"

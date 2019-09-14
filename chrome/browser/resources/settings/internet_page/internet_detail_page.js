@@ -593,6 +593,17 @@ Polymer({
           this.i18n('networkOutOfRange');
     }
 
+    if (managedProperties.type == mojom.NetworkType.kCellular &&
+        !managedProperties.connectable) {
+      if (managedProperties.cellular.homeProvider &&
+          managedProperties.cellular.homeProvider.name) {
+        return this.i18n(
+            'cellularContactSpecificCarrier',
+            managedProperties.cellular.homeProvider.name);
+      }
+      return this.i18n('cellularContactDefaultCarrier');
+    }
+
     return this.i18n(
         OncMojo.getConnectionStateString(managedProperties.connectionState));
   },
@@ -634,6 +645,29 @@ Polymer({
   isConnectedState_: function(managedProperties) {
     return !!managedProperties &&
         OncMojo.connectionStateIsConnected(managedProperties.connectionState);
+  },
+
+  /**
+   * @param {!mojom.ManagedProperties|undefined} managedProperties
+   * @param {boolean} outOfRange
+   * @return {boolean} True if the network shown cannot initiate a connection.
+   * @private
+   */
+  isConnectionErrorState_: function(managedProperties, outOfRange) {
+    if (outOfRange) {
+      return true;
+    }
+
+    if (!managedProperties) {
+      return false;
+    }
+
+    // It's still possible to initiate a connection to a network if it is not
+    // connectable as long as the network has an associated configuration flow.
+    // Cellular networks do not have a configuration flow, so a Cellular network
+    // that is not connectable represents an error state.
+    return managedProperties.type == mojom.NetworkType.kCellular &&
+        !managedProperties.connectable;
   },
 
   /**

@@ -64,6 +64,11 @@ cr.define('accessibility', function() {
   }
 
   function requestTree(data, element) {
+    const improvementsEnabled = data['improvementsEnabled'];
+    const allow = improvementsEnabled ? $('filter-allow').value : '*';
+    const allowEmpty = improvementsEnabled ? $('filter-allow-empty').value : '';
+    const deny = improvementsEnabled ? $('filter-deny').value : '';
+
     // The calling |element| is a button with an id of the format
     // <treeId>:<requestType>, where requestType is one of 'showTree',
     // 'copyTree'. Send the request type to C++ so is calls the corresponding
@@ -76,9 +81,10 @@ cr.define('accessibility', function() {
             'requestNativeUITree', [String(data.sessionId), requestType]);
       }, delay);
     } else {
-      chrome.send(
-          'requestWebContentsTree',
-          [String(data.processId), String(data.routeId), requestType]);
+      chrome.send('requestWebContentsTree', [
+        String(data.processId), String(data.routeId), requestType, allow,
+        allowEmpty, deny
+      ]);
     }
   }
 
@@ -104,6 +110,12 @@ cr.define('accessibility', function() {
     const browsers = data['browsers'];
     for (let i = 0; i < browsers.length; i++) {
       addToBrowsersList(browsers[i]);
+    }
+
+    // Remove filters if the flag is not enabled.
+    if (!data['improvementsEnabled']) {
+      const filtersEl = $('filters');
+      filtersEl.parentNode.removeChild(filtersEl);
     }
   }
 

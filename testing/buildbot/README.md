@@ -88,9 +88,19 @@ When adding tests or bumping timeouts, care must be taken to ensure the
 infrastructure has capacity to handle the extra load.  This is especially true
 for the established
 [Chromium CQ builders](https://chromium.googlesource.com/chromium/src/+/master/infra/config/branch/cq.cfg),
-as they operate under strict execution requirements. Make sure to get an
-infrastructure engineer on the Crossover Team to sign off that there is both
-buildbot and swarming capacity available.
+as they operate under strict execution requirements. Make sure to get a resource
+owner or a member of Chrome Browser Core EngProd to sign off that there is both
+builder and swarmed test shard capacity available.
+
+In particular, pay attention to the capacity of the builder which compiles and
+then triggers and collects swarming task shards. If you're adding a new test
+suite to a bot, and know that the test suite adds one hour of testing time to
+the swarming shards, and know that you have enough swarmed capacity to handle
+that one hour of testing, that's a good start. But if that test *also* happens
+to run in shards which take 10 minutes longer than any other shards on that
+current bot, that means that the top-level builder will also take 10 minutes
+longer to run -- or 20 minutes longer if there are failures and retries. Ensure
+that the builder pool has enough capacity to handle that increase as well.
 
 ## How to use the generate_buildbot_json tool
 ### Test suites

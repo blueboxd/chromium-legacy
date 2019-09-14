@@ -94,8 +94,9 @@ MailboxTextureHolder::MailboxTextureHolder(
   if (!ContextProviderWrapper())
     return;
 
-  ContextProviderWrapper()->Utils()->GetMailboxForSkImage(
-      mailbox_, texture_target_, image, filter);
+  if (!ContextProviderWrapper()->Utils()->GetMailboxForSkImage(
+          mailbox_, texture_target_, image, filter))
+    return;
 
   InitCommon();
 }

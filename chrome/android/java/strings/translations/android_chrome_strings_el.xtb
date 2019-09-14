@@ -21,7 +21,6 @@
 <translation id="1146678959555564648">Εισαγωγή VR</translation>
 <translation id="116280672541001035">Χρησιμοποιήθηκαν</translation>
 <translation id="1171770572613082465">Δείτε δημοφιλείς ιστοτόπους πατώντας το κουμπί "Κορυφαίοι ιστότοποι"</translation>
-<translation id="1172593791219290334">Σελίδα εκκίνησης</translation>
 <translation id="1173894706177603556">Μετονομασία</translation>
 <translation id="1175310183703641346">Οι σελιδοδείκτες, το ιστορικό, οι κωδικοί πρόσβασης και άλλα στοιχεία δεν θα συγχρονίζονται πλέον με τον Λογαριασμό σας Google</translation>
 <translation id="1178581264944972037">Παύση</translation>
@@ -42,6 +41,7 @@
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Αναζήτηση και εξερεύνηση</translation>
 <translation id="1264974993859112054">Αθλητικά</translation>
+<translation id="1266864766717917324">Δεν ήταν δυνατή η κοινοποίηση <ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">Διακοπή</translation>
 <translation id="1283039547216852943">Πατήστε για ανάπτυξη</translation>
 <translation id="1285320974508926690">Να μην γίνεται ποτέ μετάφραση αυτού του ιστότοπου</translation>
@@ -71,6 +71,7 @@
 <translation id="1430915738399379752">Εκτύπωση</translation>
 <translation id="1445680696957526815">Τα στοιχεία του Chrome δεν είναι συμβατά μεταξύ τους. Το Chrome ενδεχομένως να αναβαθμίζεται. Δοκιμάστε ξανά σε λίγα λεπτά. Αν το πρόβλημα παραμένει, δοκιμάστε να απεγκαταστήσετε και να εγκαταστήσετε ξανά το Chrome.</translation>
 <translation id="1446450296470737166">Να επιτρέπεται πλήρης έλεγχος σε MIDI</translation>
+<translation id="1450753235335490080">Δεν είναι δυνατή η κοινοποίηση <ph name="CONTENT_TYPE" /></translation>
 <translation id="145097072038377568">Έχει απενεργοποιηθεί στις Ρυθμίσεις Android</translation>
 <translation id="1477626028522505441">Η λήψη του αρχείου <ph name="FILE_NAME" /> απέτυχε λόγω προβλημάτων στον διακομιστή.</translation>
 <translation id="1501480321619201731">Διαγραφή ομάδας</translation>
@@ -153,6 +154,7 @@
 <translation id="2049961518639794558">Η αλλαγή της επέκτασης του αρχείου μπορεί να έχει απρόβλεπτα αποτελέσματα και να βλάψει τη συσκευή.</translation>
 <translation id="2056878612599315956">Ο ιστότοπος τέθηκε σε παύση</translation>
 <translation id="2063713494490388661">Πατήστε για αναζήτηση</translation>
+<translation id="2067805253194386918">κείμενο</translation>
 <translation id="2079545284768500474">Αναίρεση</translation>
 <translation id="2082238445998314030">Αποτέλεσμα <ph name="RESULT_NUMBER" /> από <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Ήχος</translation>
@@ -165,7 +167,6 @@
 <translation id="2131665479022868825">Αποθηκεύτηκαν <ph name="DATA" /></translation>
 <translation id="213279576345780926">Η καρτέλα <ph name="TAB_TITLE" /> έκλεισε</translation>
 <translation id="2139186145475833000">Προσθήκη στην αρχική οθόνη</translation>
-<translation id="2142289305367051020">Οι αγαπημένες σας σελίδες είναι εδώ</translation>
 <translation id="2146738493024040262">Άνοιγμα Instant Εφαρμογής</translation>
 <translation id="2148716181193084225">Σήμερα</translation>
 <translation id="2154484045852737596">Επεξεργασία κάρτας</translation>
@@ -324,6 +325,7 @@
 <translation id="3384347053049321195">Κοινοποίηση εικόνας</translation>
 <translation id="3386292677130313581">Να γίνεται ερώτηση προτού επιτραπεί η κοινοποίηση της τοποθεσίας σας σε ιστότοπους (συνιστάται)</translation>
 <translation id="3387650086002190359">Η λήψη του αρχείου <ph name="FILE_NAME" /> απέτυχε λόγω σφαλμάτων του συστήματος αρχείων.</translation>
+<translation id="3389286852084373014">Το κείμενο είναι υπερβολικά μεγάλο</translation>
 <translation id="3398320232533725830">Άνοιγμα του διαχειριστή σελιδοδεικτών</translation>
 <translation id="3414952576877147120">Μέγεθος:</translation>
 <translation id="3443221991560634068">Επαναφόρτωση της τρέχουσας σελίδας</translation>
@@ -348,6 +350,7 @@
 <translation id="3599863153486145794">Διαγράφει το ιστορικό από όλες τις συνδεδεμένες συσκευές. Ο Λογαριασμός σας Google ενδέχεται να διαθέτει άλλες μορφές ιστορικού περιήγησης στη διεύθυνση <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Σίγαση ιστοτόπων που αναπαράγουν ήχο</translation>
 <translation id="3616113530831147358">Ήχος</translation>
+<translation id="3631987586758005671">Κοινοποίηση σε <ph name="DEVICE_NAME" /></translation>
 <translation id="3632295766818638029">Αποκάλυψη κωδικού πρόσβασης</translation>
 <translation id="363596933471559332">Αυτόματη σύνδεση σε ιστότοπους με χρήση αποθηκευμένων διαπιστευτηρίων. Όταν η λειτουργία είναι απενεργοποιημένη, θα σας ζητείται επαλήθευση κάθε φορά πριν από τη σύνδεση σε έναν ιστότοπο.</translation>
 <translation id="3658159451045945436">Η επαναφορά διαγράφει το ιστορικό των αποθηκευμένων δεδομένων, συμπεριλαμβανομένης της λίστας ιστοτόπων που έχετε επισκεφτεί.</translation>
@@ -358,7 +361,6 @@
 <translation id="3739899004075612870">Ο σελιδοδείκτης προστέθηκε στο <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB από άλλες εφαρμογές</translation>
 <translation id="3744111561329211289">Συγχρονισμός παρασκηνίου</translation>
-<translation id="3745176700485982507">Μπορείτε να βρείτε συνδέσμους στους αγαπημένους σας ιστοτόπους σε αυτήν τη σελίδα</translation>
 <translation id="3771001275138982843">Δεν ήταν δυνατή η λήψη της ενημέρωσης</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Ενεργοποιήστε το Bluetooth<ph name="END_LINK" />, για να επιτρέψετε τη σύζευξη</translation>
 <translation id="3775705724665058594">Αποστολή στις συσκευές σας</translation>
@@ -563,7 +565,6 @@
 <translation id="5224771365102442243">Με βίντεο</translation>
 <translation id="5230560987958996918">Ο ιστότοπος <ph name="SITE" /> θέλει να κάνει σάρωση για κοντινές συσκευές Bluetooth. Βρέθηκαν οι παρακάτω συσκευές:</translation>
 <translation id="5233638681132016545">Νέα καρτέλα</translation>
-<translation id="5234764350956374838">Παράβλεψη</translation>
 <translation id="526421993248218238">Δεν είναι δυνατή η φόρτωση αυτής της σελίδας</translation>
 <translation id="5271967389191913893">Η συσκευή δεν μπορεί να ανοίξει το περιεχόμενο προς λήψη.</translation>
 <translation id="528192093759286357">Σύρετε από το επάνω τμήμα και αγγίξτε το κουμπί επιστροφής για έξοδο από την πλήρη οθόνη.</translation>
@@ -578,8 +579,8 @@
 <translation id="5324858694974489420">Ρυθμίσεις γονικού ελέγχου</translation>
 <translation id="5327248766486351172">Όνομα</translation>
 <translation id="5335288049665977812">Να επιτρέπεται στους ιστότοπους να εκτελούν JavaScript (συνιστάται)</translation>
+<translation id="5342314432463739672">Αιτήματα για άδειες</translation>
 <translation id="5357811892247919462">Έγινε λήψη της καρτέλας</translation>
-<translation id="5363230136052241468">Πατήστε το κουμπί αρχικής οθόνης για να φορτώσετε τη σελίδα σε νέα καρτέλα</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> ανοιχτή καρτέλα, πατήστε για εναλλαγή καρτελών}other{<ph name="OPEN_TABS_MANY" /> ανοιχτές καρτέλες, πατήστε για εναλλαγή καρτελών}}</translation>
 <translation id="5391532827096253100">Η σύνδεσή σας σε αυτόν τον ιστότοπο δεν είναι ασφαλής. Πληροφορίες ιστοτόπου</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 ακόμη)}other{(+ # ακόμη)}}</translation>
@@ -748,6 +749,7 @@
 <translation id="6532866250404780454">Δεν θα εμφανίζονται οι ιστότοποι που επισκέπτεστε στο Chrome. Όλα τα χρονόμετρα ιστοτόπων θα διαγραφούν.</translation>
 <translation id="6534565668554028783">Η απάντηση από το Google καθυστέρησε υπερβολικά</translation>
 <translation id="6538442820324228105">Έγινε λήψη <ph name="GBS" /> GB</translation>
+<translation id="6539092367496845964">Παρουσιάστηκε κάποιο πρόβλημα. Δοκιμάστε ξανά αργότερα.</translation>
 <translation id="654446541061731451">Επιλέξτε μια καρτέλα για ζεύξη</translation>
 <translation id="6545017243486555795">Διαγραφή όλων των δεδομένων</translation>
 <translation id="6545864417968258051">Σάρωση Bluetooth</translation>
@@ -802,7 +804,6 @@
 <translation id="6912998170423641340">Αποκλεισμός ιστοτόπων από ανάγνωση κειμένου και εικόνων από το πρόχειρο</translation>
 <translation id="6914783257214138813">Οι κωδικοί πρόσβασής σας θα είναι ορατοί σε οποιονδήποτε μπορεί να δει το αρχείο εξαγωγής.</translation>
 <translation id="6942665639005891494">Αλλάξτε την προεπιλεγμένη τοποθεσία λήψης ανά πάσα στιγμή χρησιμοποιώντας την επιλογή μενού "Ρυθμίσεις"</translation>
-<translation id="6944102653068653326">Πατήστε για να φορτώσετε τη σελίδα σε νέα καρτέλα</translation>
 <translation id="6945221475159498467">Επιλογή</translation>
 <translation id="6963642900430330478">Αυτή η σελίδα είναι επικίνδυνη. Πληροφορίες ιστοτόπου</translation>
 <translation id="6963766334940102469">Διαγραφή σελιδοδεικτών</translation>
@@ -879,6 +880,7 @@
 <translation id="7493994139787901920"><ph name="VERSION" /> (Ενημέρωση στις <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">δεδομένα που εξοικονομήθηκαν</translation>
 <translation id="7498271377022651285">Περιμένετε…</translation>
+<translation id="7510943789645525906">Σας προειδοποιεί σε περίπτωση που ο κωδικός πρόσβασης που χρησιμοποιείτε ήταν μέρος μιας παραβίασης δεδομένων.</translation>
 <translation id="7514365320538308">Λήψη</translation>
 <translation id="751961395872307827">Δεν είναι δυνατή η σύνδεση στον ιστότοπο</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -996,7 +998,6 @@
 <translation id="8284326494547611709">Υπότιτλοι</translation>
 <translation id="8300705686683892304">Διαχείριση από εφαρμογή</translation>
 <translation id="8310344678080805313">Τυπικές καρτέλες</translation>
-<translation id="8313455859591948645">Επεξεργασία σελίδας εκκίνησης</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> και άλλους ιστοτόπους</translation>
 <translation id="8327155640814342956">Για την καλύτερη δυνατή εμπειρία περιήγησης, ανοίξτε το Chrome για να το ενημερώσετε</translation>
 <translation id="8339163506404995330">Οι σελίδες στα <ph name="LANGUAGE" /> δεν θα μεταφράζονται</translation>

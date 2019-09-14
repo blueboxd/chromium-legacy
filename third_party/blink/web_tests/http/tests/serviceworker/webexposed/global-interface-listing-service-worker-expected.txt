@@ -1048,8 +1048,10 @@ interface PaymentRequestEvent : ExtendableEvent
     getter instrumentKey
     getter methodData
     getter modifiers
+    getter paymentOptions
     getter paymentRequestId
     getter paymentRequestOrigin
+    getter shippingOptions
     getter topOrigin
     getter total
     method changePaymentMethod

@@ -47,6 +47,8 @@
 <translation id="1873233029667955273">Chrome이 기본 브라우저로 설정되어 있지 않습니다</translation>
 <translation id="1874309113135274312">Chrome 베타(mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome이 이전 버전임</translation>
+<translation id="1900795423379050516">페이지에 표시되지 않는 설정이 있다면 <ph name="LINK_BEGIN" />
+      Chrome 브라우저 설정<ph name="LINK_END" />을 확인해 보세요.</translation>
 <translation id="1915828456209461693">Chrome 업데이트가 있습니다. 다시 시작하면 바로 업데이트됩니다.</translation>
 <translation id="1919130412786645364">Chrome 로그인 허용</translation>
 <translation id="2063848847527508675">업데이트를 적용하려면 Chrome OS를 다시 시작해야 합니다.</translation>
@@ -164,6 +166,8 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="5543953544073077331">다른 Chrome 버전이 실행 중입니다. 업데이트하려면 실행 중인 버전을 종료하세요.</translation>
 <translation id="556024056938947818">Chrome에서 비밀번호를 표시하려고 합니다.</translation>
 <translation id="5566025111015594046">Chrome(mDNS-In)</translation>
+<translation id="5657226924540934362">페이지에 표시되지 않는 설정이 있다면 <ph name="LINK_BEGIN" />
+      Chrome OS 설정<ph name="LINK_END" />을 확인해 보세요.</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" />은(는) 위험할 수 있으므로 Chrome에서 차단했습니다.</translation>
 <translation id="5686916850681061684">Chrome을 맞춤설정 및 제어합니다. 확인이 필요한 항목이 있습니다. 클릭하여 세부정보를 보세요.</translation>
 <translation id="5690427481109656848">Google LLC</translation>

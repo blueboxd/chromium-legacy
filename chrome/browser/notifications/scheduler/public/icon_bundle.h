@@ -14,12 +14,16 @@ namespace notifications {
 struct IconBundle {
   IconBundle();
   explicit IconBundle(SkBitmap skbitmap);
+  explicit IconBundle(int resource_id);
+  IconBundle(const IconBundle& other);
   ~IconBundle();
 
   // The icon bitmap.
   SkBitmap bitmap;
 
-  // TODO(hesen): Handle Android Id.
+  // Android resource Id. Do not set it until BeforeShowNotification. Default is
+  // 0, representing no resource_id.
+  int resource_id;
 };
 
 }  // namespace notifications

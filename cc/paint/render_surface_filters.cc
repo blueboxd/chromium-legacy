@@ -147,7 +147,11 @@ void GetSepiaMatrix(float amount, float matrix[20]) {
 
 sk_sp<PaintFilter> CreateMatrixImageFilter(const float matrix[20],
                                            sk_sp<PaintFilter> input) {
-  return sk_make_sp<ColorFilterPaintFilter>(SkColorFilters::Matrix(matrix),
+  auto color_filter = SkColorFilters::Matrix(matrix);
+  if (!color_filter)
+    return nullptr;
+
+  return sk_make_sp<ColorFilterPaintFilter>(std::move(color_filter),
                                             std::move(input));
 }
 

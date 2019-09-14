@@ -52,6 +52,8 @@ static_library("protocol") {
     "data_channel_manager.cc",
     "data_channel_manager.h",
     "datagram_channel_factory.h",
+    "display_size.cc",
+    "display_size.h",
     "errors.cc",
     "errors.h",
     "file_transfer_helpers.cc",

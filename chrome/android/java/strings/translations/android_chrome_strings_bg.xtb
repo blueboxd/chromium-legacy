@@ -21,7 +21,6 @@
 <translation id="1146678959555564648">Вход във VR</translation>
 <translation id="116280672541001035">Използвани</translation>
 <translation id="1171770572613082465">Вижте популярните уебсайтове, като докоснете бутона „Водещи сайтове“</translation>
-<translation id="1172593791219290334">Страница при стартиране</translation>
 <translation id="1173894706177603556">Преименуване</translation>
 <translation id="1175310183703641346">Вашите отметки, история, пароли и др. повече няма да се синхронизират с профила ви в Google</translation>
 <translation id="1178581264944972037">Пауза</translation>
@@ -42,6 +41,7 @@
 <translation id="1258753120186372309">Драскулка на Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Търсене и разглеждане</translation>
 <translation id="1264974993859112054">Спорт</translation>
+<translation id="1266864766717917324">Споделянето на <ph name="CONTENT_TYPE" /> не бе възможно</translation>
 <translation id="1272079795634619415">Стоп</translation>
 <translation id="1283039547216852943">Докоснете за разгъване</translation>
 <translation id="1285320974508926690">Този сайт да не се превежда никога</translation>
@@ -71,6 +71,7 @@
 <translation id="1430915738399379752">Печат</translation>
 <translation id="1445680696957526815">Компонентите на Chrome не са съвместими един с друг. Възможно е браузърът да се надстройва. Моля, опитайте отново след няколко минути. Ако проблемът не се отстрани, пробвайте да деинсталирате и да инсталирате отново Chrome.</translation>
 <translation id="1446450296470737166">Разр. на пълния контрол над MIDI</translation>
+<translation id="1450753235335490080">Споделянето на <ph name="CONTENT_TYPE" /> не е възможно</translation>
 <translation id="145097072038377568">Изключено от настройките на Android</translation>
 <translation id="1477626028522505441">Изтеглянето на „<ph name="FILE_NAME" />“ не бе успешно поради проблеми в сървъра.</translation>
 <translation id="1501480321619201731">Изтриване на групата</translation>
@@ -153,6 +154,7 @@
 <translation id="2049961518639794558">Промяната на файловото разширение може да доведе до неочаквано поведение и да повреди устройството ви.</translation>
 <translation id="2056878612599315956">Сайтът е на пауза</translation>
 <translation id="2063713494490388661">Търсене с докосване</translation>
+<translation id="2067805253194386918">текст</translation>
 <translation id="2079545284768500474">Отмяна</translation>
 <translation id="2082238445998314030">Резултат <ph name="RESULT_NUMBER" /> от <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Звук</translation>
@@ -165,7 +167,6 @@
 <translation id="2131665479022868825">Спестихте <ph name="DATA" /></translation>
 <translation id="213279576345780926">Затворихте „<ph name="TAB_TITLE" />“</translation>
 <translation id="2139186145475833000">Добавяне към началния екран</translation>
-<translation id="2142289305367051020">Любимите ви страници са тук</translation>
 <translation id="2146738493024040262">Отваряне на мигновеното приложение</translation>
 <translation id="2148716181193084225">Днес</translation>
 <translation id="2154484045852737596">Редактиране на картата</translation>
@@ -324,6 +325,7 @@
 <translation id="3384347053049321195">Споделяне на изображението</translation>
 <translation id="3386292677130313581">Извеждане на запитване, преди на сайтовете да се разреши достъп до местоположението ви (препоръчително)</translation>
 <translation id="3387650086002190359">Изтеглянето на „<ph name="FILE_NAME" />“ не бе успешно поради грешки във файловата система.</translation>
+<translation id="3389286852084373014">Текстът е твърде голям</translation>
 <translation id="3398320232533725830">Отваряне на диспечера на отметките</translation>
 <translation id="3414952576877147120">Размер:</translation>
 <translation id="3443221991560634068">Презареждане на текущата страница</translation>
@@ -348,6 +350,7 @@
 <translation id="3599863153486145794">Изчиства историята от всички устройства, на които сте влезли в профила си в Google. В него може да има други видове история на сърфиране, съхранявани на адрес <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Спиране на звука, възпроизвеждан от сайтовете</translation>
 <translation id="3616113530831147358">Аудио</translation>
+<translation id="3631987586758005671">Споделя се с(ъс) <ph name="DEVICE_NAME" /></translation>
 <translation id="3632295766818638029">Показване на паролата</translation>
 <translation id="363596933471559332">Автоматично влизане в уебсайтове посредством съхранявани идентификационни данни. Когато функцията е изключена, ще трябва да потвърждавате всяко влизане в профил в уебсайт.</translation>
 <translation id="3658159451045945436">Така ще изтриете историята на спестените данни, включително списъка с посетени сайтове.</translation>
@@ -358,7 +361,6 @@
 <translation id="3739899004075612870">Отметката бе запазена в/ъв <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534">Други приложения: <ph name="MEGABYTES" /> МБ</translation>
 <translation id="3744111561329211289">Синхронизиране на заден план</translation>
-<translation id="3745176700485982507">На тази страница можете да намерите връзки към любимите си уебсайтове</translation>
 <translation id="3771001275138982843">Актуализацията не можа да бъде изтеглена</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Включете Bluetooth<ph name="END_LINK" />, за да разрешите сдвояването</translation>
 <translation id="3775705724665058594">Изпращане до устройствата ви</translation>
@@ -563,7 +565,6 @@
 <translation id="5224771365102442243">С видеоклип</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> иска да сканира за устройства с Bluetooth в близост. Намерени са следните:</translation>
 <translation id="5233638681132016545">Нов раздел</translation>
-<translation id="5234764350956374838">Отхвърляне</translation>
 <translation id="526421993248218238">Тази страница не може да се зареди</translation>
 <translation id="5271967389191913893">Устройството не може да отвори съдържанието за изтегляне.</translation>
 <translation id="528192093759286357">Плъзнете пръст от горната част на екрана и докоснете бутона за връщане назад, за да излезете от режима на цял екран.</translation>
@@ -578,8 +579,8 @@
 <translation id="5324858694974489420">Родителски настройки</translation>
 <translation id="5327248766486351172">Име</translation>
 <translation id="5335288049665977812">Разрешаване на сайтовете да изпълняват JavaScript (препоръчително)</translation>
+<translation id="5342314432463739672">Искания за разрешение</translation>
 <translation id="5357811892247919462">Получихте раздел</translation>
-<translation id="5363230136052241468">Докоснете бутона „Начало“, за да се зареди нов раздел</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> отворен раздел. Докоснете за превключване между разделите}other{<ph name="OPEN_TABS_MANY" /> отворени раздела. Докоснете за превключване между тях}}</translation>
 <translation id="5391532827096253100">Връзката ви с този сайт не е защитена. Информация за сайта</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(и още 1)}other{(и още #)}}</translation>
@@ -748,6 +749,7 @@
 <translation id="6532866250404780454">Посетените от вас сайтове в Chrome няма да се показват. Всички таймери за сайтове ще бъдат изтрити.</translation>
 <translation id="6534565668554028783">Google не отговаря твърде дълго време</translation>
 <translation id="6538442820324228105">Изтеглено: <ph name="GBS" /> ГБ</translation>
+<translation id="6539092367496845964">Нещо се обърка. Опитайте пак по-късно.</translation>
 <translation id="654446541061731451">Изберете раздел за излъчване</translation>
 <translation id="6545017243486555795">Изчистване на всички данни</translation>
 <translation id="6545864417968258051">Сканиране за устройства с Bluetooth</translation>
@@ -802,7 +804,6 @@
 <translation id="6912998170423641340">Забраняване на сайтовете да четат текста и изображенията от буферната памет</translation>
 <translation id="6914783257214138813">Паролите ви ще бъдат видими за всички, които могат да видят експортирания файл.</translation>
 <translation id="6942665639005891494">Променете стандартното местоположение за изтегляне по всяко време чрез опцията в менюто „Настройки“</translation>
-<translation id="6944102653068653326">Докоснете за зареждане на нов раздел</translation>
 <translation id="6945221475159498467">Избиране</translation>
 <translation id="6963642900430330478">Тази страница е опасна. Информация за сайта</translation>
 <translation id="6963766334940102469">Изтриване на отметките</translation>
@@ -879,6 +880,7 @@
 <translation id="7493994139787901920"><ph name="VERSION" /> (Актуализирано: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">спестени данни</translation>
 <translation id="7498271377022651285">Моля, изчакайте...</translation>
+<translation id="7510943789645525906">Предупреждава ви, ако използвана от вас парола е изтекла при нарушение на сигурността на данните</translation>
 <translation id="7514365320538308">Изтегляне</translation>
 <translation id="751961395872307827">Не може да се установи връзка със сайта</translation>
 <translation id="7521387064766892559">Javascript</translation>
@@ -996,7 +998,6 @@
 <translation id="8284326494547611709">Надписи</translation>
 <translation id="8300705686683892304">Управлявани от приложение</translation>
 <translation id="8310344678080805313">Стандартни раздели</translation>
-<translation id="8313455859591948645">Редактиране на страницата при стартиране</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> и още сайтове</translation>
 <translation id="8327155640814342956">За оптимално сърфиране отворете, за да актуализирате Chrome</translation>
 <translation id="8339163506404995330">Страниците на <ph name="LANGUAGE" /> няма да се превеждат</translation>

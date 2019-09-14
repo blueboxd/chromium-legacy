@@ -97,9 +97,6 @@
 <translation id="138218114945450791">হালকা নীল</translation>
 <translation id="1382194467192730611">আপনার অ্যাডমিনিস্ট্রেটর ইউএসবি ডিভাইস ব্যবহার করার অনুমতি দিয়েছেন</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> কোনো তথ্য পাঠায়নি।</translation>
-<translation id="140316286225361634"><ph name="ORIGIN" /> সাইটটি অনুরোধ জানিয়েছে যে সাইটের সব অনুরোধের জন্যই
-    নিরাপত্তা সংক্রান্ত নীতি প্রযুক্ত হবে এবং এই নীতি বর্তমানে
-    সাইটটিকে নিরাপদ নয় বলে মনে করছে।</translation>
 <translation id="1405567553485452995">হালকা সবুজ</translation>
 <translation id="1407135791313364759">সব খুলুন</translation>
 <translation id="1413809658975081374">গোপনীয়তা ত্রুটি</translation>
@@ -135,6 +132,7 @@
 <translation id="1569487616857761740">মেয়াদ শেষ হওয়ার তারিখ লিখুন</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">এই ওয়েবপৃষ্ঠাটি দেখানোর সময় কোনো সমস্যা হয়েছে।</translation>
+<translation id="1588438908519853928">সাধারণ</translation>
 <translation id="1592005682883173041">স্থানীয় ডেটা অ্যাক্সেস</translation>
 <translation id="1594030484168838125">বেছে নিন</translation>
 <translation id="161042844686301425">নীলাভ</translation>
@@ -213,10 +211,6 @@
 <translation id="1981206234434200693">Chrome-এর ব্রাউজিং ইতিহাসের ডেটা মুছুন</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{এবং আরও ১টি}one{এবং আরও #টি}other{এবং আরও #টি}}</translation>
 <translation id="2003709556000175978">আপনার পাসওয়ার্ড রিসেট করুন</translation>
-<translation id="20053308747750172">আপনি যে সার্ভারে যাচ্ছেন, <ph name="ORIGIN" />, সেটিতে করা যেকোনও অনুরোধের জন্যই একটি নিরাপত্তা নীতি
-    প্রযুক্ত হবে বলে সেটি জানাচ্ছে। কিন্তু এখন এটি
-    একটি ভুল নীতি পাঠিয়েছে বলে ব্রাউজার আপনার অনুরোধ করা <ph name="SITE" />
-    দেখাতে পারছে না।</translation>
 <translation id="2025186561304664664">অটো কনফিগার করতে প্রক্সি সেট করা হয়৷</translation>
 <translation id="202813660234680402">না, সেভ করতে হবে না</translation>
 <translation id="2030481566774242610">আপনি কি <ph name="LINK" /> বোঝাতে চেয়েছিলেন?</translation>
@@ -294,10 +288,6 @@
 <translation id="2409589295040002961">আপনার অ্যাডমিনিস্ট্রেটর রিমোট লোকেশন থেকে আপনার ব্রাউজারের সেট-আপ পরিবর্তন করতে পারেন। Chrome-এর বাইরে থেকে এই ডিভাইসের অ্যাক্টিভিটি ম্যানেজ করা যেতে পারে। <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">এই সার্ভার প্রমাণ করতে পারেনি যে এটি <ph name="DOMAIN" />; এর নিরাপত্তা সার্টিফিকেট প্রত্যাহার করা হতে পারে। কোনো ভুল কনফিগারেশনের কারণে অথবা কোনো আক্রমণকারী আপনার সংযোগ মাঝপথে আটকে দিচ্ছে বলে এমনটা হতে পারে।</translation>
-<translation id="2418081434543109369">আপনি যে সার্ভারে যাচ্ছেন, <ph name="ORIGIN" />, সেটিতে করা যেকোনও অনুরোধের জন্যই একটি নিরাপত্তা নীতি
-    প্রযুক্ত হবে বলে সেটি জানাচ্ছে। কিন্তু এটি
-    নীতি পাঠাতে পারেনি বলে ব্রাউজার আপনার অনুরোধ করা
-    <ph name="SITE" /> দেখাতে পারছে না।</translation>
 <translation id="2463193859425327265">হোম পৃষ্ঠা পরিবর্তন করুন</translation>
 <translation id="2463739503403862330">পূরণ করুন</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -591,6 +581,7 @@
 <translation id="4103249731201008433">ডিভাইসের ক্রমিক সংখ্যা ভুল</translation>
 <translation id="410351446219883937">স্বতঃচালানো</translation>
 <translation id="4103763322291513355">কালো তালিকাভুক্ত ইউআরএলগুলির তালিকা এবং আপনার সিস্টেম অ্যাডমিনিস্ট্রেটরের প্রয়োগ করা অন্যান্য নীতিগুলি দেখার জন্য &lt;strong&gt;chrome://policy&lt;/strong&gt;-এ যান৷</translation>
+<translation id="4108231218301530806">পরের বার এই কার্ড যাচাই করতে ফিঙ্গারপ্রিন্ট ব্যবহার করুন।</translation>
 <translation id="4110652170750985508">আপনার পেমেন্টের রিভিউ</translation>
 <translation id="4112140312785995938">পিছিয়ে যান</translation>
 <translation id="4116663294526079822">এই সাইটে সর্বদা অনুমতি দিন</translation>
@@ -793,6 +784,7 @@
 <translation id="5141240743006678641">আপনার Google সার্টিফিকেটের সাথে সিঙ্ক করা পাসওয়ার্ডগুলি এনক্রিপ্ট করুন৷</translation>
 <translation id="5145883236150621069">নীতি প্রতিক্রিয়ার মধ্যে ত্রুটি কোড উপস্থিত</translation>
 <translation id="515292512908731282">C4 (Envelope)</translation>
+<translation id="5158275234811857234">কভার</translation>
 <translation id="5159010409087891077">নতুন ছদ্মবেশী উইন্ডোতে (⇧⌘N) করে একটি পৃষ্ঠা খুলুন</translation>
 <translation id="516920405563544094"><ph name="CREDIT_CARD" />-এর জন্য সিভিসি লিখুন। আপনি কনফার্ম করার পর আপনার Google অ্যাকাউন্ট থেকে কার্ডের বিবরণ এই সাইটে শেয়ার করা হবে।</translation>
 <translation id="5169827969064885044">আপনি নিজের প্রতিষ্ঠানের অ্যাকাউন্টের অ্যাক্সেস হারাতে পারেন অথবা আপনার পরিচয় চুরি হয়ে যেতে পারে। Chrome এখনই আপনার পাসওয়ার্ড পরিবর্তন করার আর্জি জানাচ্ছে।</translation>
@@ -952,6 +944,7 @@
 <translation id="598637245381783098">পেমেন্ট অ্যাপ খোলা যাচ্ছে না</translation>
 <translation id="5989320800837274978">কোনো নির্ধারিত প্রক্সি সার্ভার অথবা একটি.pac স্ক্রিপ্ট UR সুর্নিদিষ্টভাবে উল্লেখ করা হয়নি৷</translation>
 <translation id="5990559369517809815">সার্ভারে অনুরোধগুলি একটি এক্সটেনশন দিয়ে ব্লক করা আছে৷</translation>
+<translation id="6000758707621254961">'<ph name="SEARCH_TEXT" />'-এর জন্য <ph name="RESULT_COUNT" />টি ফলাফল</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">বছর</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{পৃষ্ঠা ১}one{পৃষ্ঠা #}other{পৃষ্ঠা #}}</translation>
@@ -1009,6 +1002,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{একটিও নয়}=1{১টি পাসওয়ার্ড (<ph name="DOMAIN_LIST" />-এর জন্য, সিঙ্ক করা হয়েছে)}=2{২টি পাসওয়ার্ড (<ph name="DOMAIN_LIST" />-এর জন্য, সিঙ্ক করা হয়েছে)}one{#টি পাসওয়ার্ড (<ph name="DOMAIN_LIST" />-এর জন্য, সিঙ্ক করা হয়েছে)}other{#টি পাসওয়ার্ড (<ph name="DOMAIN_LIST" />-এর জন্য, সিঙ্ক করা হয়েছে)}}</translation>
 <translation id="6358450015545214790">এর অর্থ কী?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6377268785556383139">'<ph name="SEARCH_TEXT" />'-এর জন্য ১টি ফলাফল</translation>
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">চালিয়ে গেলে চার্জ দিতে হতে পারে।</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{আরও ১টি প্রস্তাব}one{অন্যান্য #টি প্রস্তাব}other{অন্যান্য #টি প্রস্তাব}}</translation>
@@ -1143,10 +1137,6 @@
 <translation id="717330890047184534">Gaia আইডি:</translation>
 <translation id="7174545416324379297">মার্জ করা হয়েছে</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> এবং আরও <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />টি}one{<ph name="SHIPPING_OPTION_PREVIEW" /> এবং আরও <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />টি}other{<ph name="SHIPPING_OPTION_PREVIEW" /> এবং আরও <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />টি}}</translation>
-<translation id="7177397715882417099">আপনি যে সার্ভারে যাচ্ছেন, <ph name="ORIGIN" />, সেটিতে করা যেকোনও অনুরোধের জন্যই একটি নিরাপত্তা নীতি
-    প্রযুক্ত হবে বলে সেটি জানাচ্ছে। কিন্তু এটি
-     নীতি পাঠানোর পরিবর্তে ব্রাউজারকে অন্য কোথাও রিডাইরেক্ট করে দিয়েছে বলে
-    ব্রাউজার আপনার অনুরোধ করা <ph name="SITE" /> দেখাতে পারছে না।</translation>
 <translation id="7179323680825933600">পেমেন্টের পদ্ধতিগুলি সেভ করুন এবং আপনা-আপনি পূরণ করুন</translation>
 <translation id="7180611975245234373">রিফ্রেশ করুন</translation>
 <translation id="7182878459783632708">কোন নীতি সেট করা নেই</translation>
@@ -1173,6 +1163,7 @@
 <translation id="7300012071106347854">কোবাল্ট নীল</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
 <translation id="7303701124147721189">পরের বার আরও দ্রুত পে করতে, আপনার Google অ্যাকাউন্টে এবং এই ডিভাইসে কার্ড ও বিলিংয়ের ঠিকানা সেভ করে রাখুন।</translation>
+<translation id="7304030187361489308">বেশি</translation>
 <translation id="7309308571273880165"><ph name="CRASH_TIME" /> এ ক্র্যাশ রিপোর্ট ক্যাপচার করা হয়েছে (ব্যবহারকারী আপলোডের অনুরোধ করেছেন, এখনও আপলোড করা হয়নি)</translation>
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />Safe Browsing<ph name="END_LINK" /> সংক্রান্ত সতর্কতা</translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1534,7 +1525,6 @@
 <translation id="939736085109172342">নতুন ফোল্ডার</translation>
 <translation id="945855313015696284">নিচে দেওয়া তথ্য পরীক্ষা করুন এবং কোনও ভুল কার্ড থাকলে তা মুছে ফেলুন</translation>
 <translation id="951104842009476243">এই ডেবিট ও প্রিপেড কার্ডগুলি গ্রহণ করা হয়</translation>
-<translation id="958202389743790697"><ph name="ORIGIN" />-এর নিরাপত্তা সংক্রান্ত নীতি অনুযায়ী ব্লক করা হয়েছে।</translation>
 <translation id="962484866189421427">এই কন্টেন্টটি প্রতারণামূলক অ্যাপ ইনস্টল করে দিতে পারে যেগুলি অন্যান্য আপের থেকে আলাদা করা যায় না অথবা যেগুলি এমন ডেটা সংগ্রহ করে যা দিয়ে আপনার উপরে নজর রাখা যাবে। <ph name="BEGIN_LINK" />তবুও এটি দেখতে চাই<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">অফিসিয়াল বিল্ড</translation>
 <translation id="973773823069644502">ডেলিভারি ঠিকানা যোগ করুন</translation>

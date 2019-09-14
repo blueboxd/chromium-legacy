@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/android/view_android.h"
 
@@ -82,7 +83,7 @@ class AwAutofillClient : public autofill::AutofillClient,
   void ShowLocalCardMigrationDialog(
       base::OnceClosure show_migration_dialog_closure) override;
   void ConfirmMigrateLocalCardToCloud(
-      std::unique_ptr<base::DictionaryValue> legal_message,
+      const autofill::LegalMessageLines& legal_message_lines,
       const std::string& user_email,
       const std::vector<autofill::MigratableCreditCard>&
           migratable_credit_cards,
@@ -108,7 +109,7 @@ class AwAutofillClient : public autofill::AutofillClient,
           callback) override;
   void ConfirmSaveCreditCardToCloud(
       const autofill::CreditCard& card,
-      std::unique_ptr<base::DictionaryValue> legal_message,
+      const autofill::LegalMessageLines& legal_message_lines,
       SaveCreditCardOptions options,
       UploadSaveCardPromptCallback callback) override;
   void CreditCardUploadCompleted(bool card_saved) override;

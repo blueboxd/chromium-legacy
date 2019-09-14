@@ -19,6 +19,7 @@
 <translation id="2501953888035679275">በካሜራዎ ፎቶዎችን ያንሱ እና ቪዲዮዎችን ይቅረጹ።</translation>
 <translation id="2549985041256363841">መቅረጽ ጀምር</translation>
 <translation id="2599796128805996109">የኋላ ካሜራ</translation>
+<translation id="2912439424121107408">ወደ ውጭ መላክ በዚህ መሣሪያ ላይ አይደገፍም</translation>
 <translation id="2968794441791257519">በካሜራው የተነሱ ፎቶዎች ወይም የተቀረጹ ቪዲዮዎች ወደ የውርዶች አቃፊው ይወሰዳሉ። በፋይሎች ውስጥ ሊደርሱባቸው ይችላሉ።
 
         የማከማቻ ፈቃዶች ያላቸው መተግበሪያዎች የእርስዎ ፎቶዎች እና ቪዲዮዎች መዳረሻ ይኖራቸዋል።</translation>
@@ -41,10 +42,12 @@
         ካሜራው በትክክል ተገናኝቶ ከሆነ እባክዎ ይፈትሹ።</translation>
 <translation id="5152121255775685072">ወደ ማዕከለ-ሥዕላት ሂድ</translation>
 <translation id="5671277269877808209">ካሬ</translation>
+<translation id="5775960006311140197">ወደ ውጭ መላክ ሁነታ</translation>
 <translation id="5869546221129391014">ፍርግርግ</translation>
 <translation id="6040143037577758943">ዝጋ</translation>
 <translation id="6073451960410192870">መቅረጽ አቁም</translation>
 <translation id="6165508094623778733">የበለጠ ለመረዳት</translation>
+<translation id="6197807149213783179">የዲበ ውሂብ አስቀምጥ</translation>
 <translation id="6233780560267770709">3 በ 3</translation>
 <translation id="6243827288366940320">ወርቃማ ውድር</translation>
 <translation id="6248749904681914629">ውጫዊ ካሜራ</translation>
@@ -66,6 +69,7 @@
 <translation id="8261506727792406068">ሰርዝ</translation>
 <translation id="8428213095426709021">ቅንብሮች</translation>
 <translation id="8687491812650032292">ኤችዲ <ph name="HEIGHT" />ፒ (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8732462232047530626">የቅድመ እይታ ዲበ ውሂብ</translation>
 <translation id="8815966864175525708">የቁም ፎቶ ለማንሳት ይቀይሩ</translation>
 <translation id="8870695351537079478">መቅረጽ መጀመር አልተቻለም</translation>
 <translation id="9045155556724273246">10 ሰከንዶች</translation>

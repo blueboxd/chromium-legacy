@@ -21,7 +21,6 @@
 <translation id="1146678959555564648">Zadať VR</translation>
 <translation id="116280672541001035">Použité</translation>
 <translation id="1171770572613082465">Klepnutím na tlačidlo Hlavné weby zobrazíte obľúbené webové stránky</translation>
-<translation id="1172593791219290334">Stránka pri spustení</translation>
 <translation id="1173894706177603556">Premenovať</translation>
 <translation id="1175310183703641346">Záložky, história, heslá a ďalší obsah sa už nebudú synchronizovať s vaším účtom Google</translation>
 <translation id="1178581264944972037">Pozastaviť</translation>
@@ -42,6 +41,7 @@
 <translation id="1258753120186372309">Sviatočné logo Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Prehľadať a preskúmať</translation>
 <translation id="1264974993859112054">Šport</translation>
+<translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> sa nepodarilo zdieľať</translation>
 <translation id="1272079795634619415">Zastaviť</translation>
 <translation id="1283039547216852943">Klepnutím rozbaliť</translation>
 <translation id="1285320974508926690">Nikdy neprekladať tieto webové stránky</translation>
@@ -71,6 +71,7 @@
 <translation id="1430915738399379752">Tlačiť</translation>
 <translation id="1445680696957526815">Komponenty prehliadača Chrome sú vzájomne nekompatibilné. Chrome možno inštaluje inováciu. Skúste to znova o niekoľko minút. Ak problém pretrváva, skúste prehliadač Chrome odinštalovať a znovu nainštalovať.</translation>
 <translation id="1446450296470737166">Povoliť úplné ovlád. zar. MIDI</translation>
+<translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> sa nedá zdieľať</translation>
 <translation id="145097072038377568">Vypnuté v nastaveniach Androidu</translation>
 <translation id="1477626028522505441">Súbor <ph name="FILE_NAME" /> sa nepodarilo stiahnuť z dôvodu problémov so serverom.</translation>
 <translation id="1501480321619201731">Odstrániť skupinu</translation>
@@ -153,6 +154,7 @@
 <translation id="2049961518639794558">Ak zmeníte príponu súboru, môže to viesť neočakávanému správaniu a poškodeniu zariadenia.</translation>
 <translation id="2056878612599315956">Web je pozastavený</translation>
 <translation id="2063713494490388661">Vyhľadávanie klepnutím</translation>
+<translation id="2067805253194386918">text</translation>
 <translation id="2079545284768500474">Späť</translation>
 <translation id="2082238445998314030">Výsledok <ph name="RESULT_NUMBER" /> z <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Zvuk</translation>
@@ -165,7 +167,6 @@
 <translation id="2131665479022868825">Uložené: <ph name="DATA" /></translation>
 <translation id="213279576345780926">Karta <ph name="TAB_TITLE" /> je zavretá</translation>
 <translation id="2139186145475833000">Pridať na plochu</translation>
-<translation id="2142289305367051020">Tu nájdete svoje obľúbené stránky</translation>
 <translation id="2146738493024040262">Otvoriť okamžitú aplikáciu</translation>
 <translation id="2148716181193084225">Dnes</translation>
 <translation id="2154484045852737596">Úprava karty</translation>
@@ -324,6 +325,7 @@
 <translation id="3384347053049321195">Zdieľať obrázok</translation>
 <translation id="3386292677130313581">Pýtať sa, či chcete povoliť webu zisťovať vašu polohu (odporúčané)</translation>
 <translation id="3387650086002190359">Súbor <ph name="FILE_NAME" /> sa nepodarilo stiahnuť z dôvodu chýb systému súborov.</translation>
+<translation id="3389286852084373014">Text je príliš veľký</translation>
 <translation id="3398320232533725830">Otvorenie správcu záložiek</translation>
 <translation id="3414952576877147120">Veľkosť:</translation>
 <translation id="3443221991560634068">Opätovné načítanie aktuálnej stránky</translation>
@@ -348,6 +350,7 @@
 <translation id="3599863153486145794">Vymaže históriu zo všetkých prihlásených zariadení. Váš účet Google môže mať ďalšie formy histórie prehliadania na adrese <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Stlmiť weby, ktoré prehrávajú zvuk</translation>
 <translation id="3616113530831147358">Zvuk</translation>
+<translation id="3631987586758005671">Zdieľa sa so zariadením <ph name="DEVICE_NAME" /></translation>
 <translation id="3632295766818638029">Odhaliť heslo</translation>
 <translation id="363596933471559332">Povolí automatické prihlasovanie na webové stránky pomocou uložených poverení. Keď je funkcia vypnutá, zobrazí sa výzva na overenie vždy pred prihlásením na web.</translation>
 <translation id="3658159451045945436">Obnovením vymažete svoju históriu úspory dát aj zoznam navštívených webov.</translation>
@@ -358,7 +361,6 @@
 <translation id="3739899004075612870">Pridané do záložiek <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534">Ďalšie aplikácie: <ph name="MEGABYTES" /> MB</translation>
 <translation id="3744111561329211289">Synchronizácia na pozadí</translation>
-<translation id="3745176700485982507">Na tejto stránke nájdete odkazy na svoje obľúbené weby</translation>
 <translation id="3771001275138982843">Aktualizáciu sa nepodarilo stiahnuť</translation>
 <translation id="3773755127849930740">Povoľte párovanie <ph name="BEGIN_LINK" />zapnutím rozhrania Bluetooth<ph name="END_LINK" /></translation>
 <translation id="3775705724665058594">Odoslanie do zariadení</translation>
@@ -563,7 +565,6 @@ Pred prechodom do VR skontrolujte, či tomuto webu dôverujete.</translation>
 <translation id="5224771365102442243">S videom</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> chce vyhľadávať zariadenia Bluetooth nablízku. Našli sa tieto zariadenia:</translation>
 <translation id="5233638681132016545">Nová karta</translation>
-<translation id="5234764350956374838">Zatvoriť</translation>
 <translation id="526421993248218238">Táto stránka sa nedá načítať</translation>
 <translation id="5271967389191913893">Zariadenie nemôže otvoriť obsah na stiahnutie</translation>
 <translation id="528192093759286357">Režim celej obrazovky ukončíte potiahnutím z hornej časti a klepnutím na tlačidlo Späť.</translation>
@@ -578,8 +579,8 @@ Pred prechodom do VR skontrolujte, či tomuto webu dôverujete.</translation>
 <translation id="5324858694974489420">Rodičovské nastavenia</translation>
 <translation id="5327248766486351172">Názov</translation>
 <translation id="5335288049665977812">Povoliť webom spúšťať JavaScript (odporúča sa)</translation>
+<translation id="5342314432463739672">Žiadosti o povolenie</translation>
 <translation id="5357811892247919462">Karta bola prijatá</translation>
-<translation id="5363230136052241468">Klepnutím na tlačidlo plochy načítate stránku na novej karte</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> otvorená karta, karty prepnete klepnutím}few{<ph name="OPEN_TABS_MANY" /> otvorené karty, karty prepnete klepnutím}many{<ph name="OPEN_TABS_MANY" /> open tabs, tap to switch tabs}other{<ph name="OPEN_TABS_MANY" /> otvorených kariet, karty prepnete klepnutím}}</translation>
 <translation id="5391532827096253100">Spojenie s týmto webom nie je zabezpečené. Informácie o webe</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 ďalšie)}few{(+ # ďalšie)}many{(+ # more)}other{(+ # ďalších)}}</translation>
@@ -748,6 +749,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="6532866250404780454">Weby, ktoré navštívite v Chrome, sa nezobrazia. Odstránia sa všetky časovače webov.</translation>
 <translation id="6534565668554028783">Odpoveď Googlu trvala príliš dlho</translation>
 <translation id="6538442820324228105">Stiahnuté: <ph name="GBS" /> GB</translation>
+<translation id="6539092367496845964">Vyskytol sa problém. Skúste to znova neskôr.</translation>
 <translation id="654446541061731451">Vyberte kartu, ktorú chcete preniesť</translation>
 <translation id="6545017243486555795">Vymazať všetky dáta</translation>
 <translation id="6545864417968258051">Vyhľadávanie zariadení Bluetooth</translation>
@@ -802,7 +804,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="6912998170423641340">Zakázať webom čítať text a obrázky v schránke</translation>
 <translation id="6914783257214138813">Vaše heslá uvidí každý, kto si môže zobraziť exportovaný súbor.</translation>
 <translation id="6942665639005891494">Kedykoľvek zmeniť predvolené umiestnenie stiahnutých súborov pomocou možnosti ponuky Nastavenia</translation>
-<translation id="6944102653068653326">Klepnutím načítate stránku na novej karte</translation>
 <translation id="6945221475159498467">Vybrať</translation>
 <translation id="6963642900430330478">Táto stránka je nebezpečná. Informácie o webe</translation>
 <translation id="6963766334940102469">Odstrániť záložky</translation>
@@ -879,6 +880,7 @@ Web NEZÍSKA prístup k fotoaparátu. Obrázky fotoaparátu sú viditeľné iba
 <translation id="7493994139787901920"><ph name="VERSION" /> (Aktualizované <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">uložené dáta</translation>
 <translation id="7498271377022651285">Čakajte…</translation>
+<translation id="7510943789645525906">Upozorní vás, ak heslo, ktoré používate, bolo súčasťou porušenia ochrany údajov</translation>
 <translation id="7514365320538308">Stiahnuť</translation>
 <translation id="751961395872307827">Nedá sa pripojiť k webu</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -996,7 +998,6 @@ Web NEZÍSKA prístup k fotoaparátu. Obrázky fotoaparátu sú viditeľné iba
 <translation id="8284326494547611709">Titulky</translation>
 <translation id="8300705686683892304">Spravované aplikáciou</translation>
 <translation id="8310344678080805313">Štandardné karty</translation>
-<translation id="8313455859591948645">Úprava stránky pri spustení</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> a ďalšie weby</translation>
 <translation id="8327155640814342956">Ak chcete zlepšiť prehliadanie, otvorte Chrome a aktualizujte ho</translation>
 <translation id="8339163506404995330">Stránky v jazyku <ph name="LANGUAGE" /> nebudú prekladané</translation>

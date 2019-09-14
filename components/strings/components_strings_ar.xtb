@@ -97,9 +97,6 @@
 <translation id="138218114945450791">أزرق فاتح</translation>
 <translation id="1382194467192730611">‏سماح المشرف بجهاز USB</translation>
 <translation id="139305205187523129">لم يرسل <ph name="HOST_NAME" /> أي بيانات.</translation>
-<translation id="140316286225361634">طلب الموقع الإلكتروني <ph name="ORIGIN" /> تطبيق سياسة الأمان
-    على جميع طلباته، وتعتبر هذه السياسة الموقع الإلكتروني
-    غير آمن حاليًا.</translation>
 <translation id="1405567553485452995">أخضر فاتح</translation>
 <translation id="1407135791313364759">فتح الكل</translation>
 <translation id="1413809658975081374">خطأ في الخصوصية</translation>
@@ -135,6 +132,7 @@
 <translation id="1569487616857761740">إدخال تاريخ انتهاء الصلاحية</translation>
 <translation id="1581080074034554886">‏رمز التحقق من البطاقة (CVC)</translation>
 <translation id="1583429793053364125">حدث خطأ ما أثناء عرض صفحة الويب هذه.</translation>
+<translation id="1588438908519853928">عادي</translation>
 <translation id="1592005682883173041">الوصول إلى البيانات المحلية</translation>
 <translation id="1594030484168838125">اختيار</translation>
 <translation id="161042844686301425">سماوي</translation>
@@ -212,10 +210,6 @@
 <translation id="1981206234434200693">‏محو بيانات سجلّ التصفُّح على Chrome</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{وتطبيق آخر}zero{و# تطبيق آخر}two{وتطبيقان (#) آخران}few{و# تطبيقات أخرى}many{و# تطبيقًا آخر}other{و# تطبيق آخر}}</translation>
 <translation id="2003709556000175978">إعادة تعيين كلمة المرورالآن</translation>
-<translation id="20053308747750172">لقد طلب الخادم الذي تنتقل إليه، <ph name="ORIGIN" />، أن
-    يتم تطبيق سياسة الأمان على جميع الطلبات المقدَّمة إليه. ولكن تم عرض
-    سياسة غير صالحة الآن، التي تمنع المتصفَّح من
-    توصيل الطلب لموقع <ph name="SITE" />.</translation>
 <translation id="2025186561304664664">تم تعيين الخادم الوكيل على التهيئة التلقائية.</translation>
 <translation id="202813660234680402">لا، عدم الإضافة</translation>
 <translation id="2030481566774242610">هل تقصد <ph name="LINK" />؟</translation>
@@ -293,10 +287,6 @@
 <translation id="2409589295040002961">‏يمكن لمشرفك تغيير إعداد المتصفّح عن بُعد. وقد تتم أيضًا إدارة النشاط على هذا الجهاز خارج Chrome. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان ربما تم إلغاء صلاحيتها. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض اتصالك.</translation>
-<translation id="2418081434543109369">لقد طلب الخادم الذي تنتقل إليه، <ph name="ORIGIN" />، أن
-    يتم تطبيق سياسة الأمان على جميع الطلبات المقدَّمة إليه. لكن
-    تعذّر الآن عرض سياسة تمنع المتصفِّح من توصيل 
-    طلبك لموقع <ph name="SITE" />.</translation>
 <translation id="2463193859425327265">تغيير الصفحة الرئيسية</translation>
 <translation id="2463739503403862330">ملء</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -590,6 +580,7 @@
 <translation id="4103249731201008433">الرقم التسلسلي للجهاز غير صالح</translation>
 <translation id="410351446219883937">التشغيل التلقائي</translation>
 <translation id="4103763322291513355">‏انتقل إلى &lt;strong&gt;chrome://policy&lt;/strong&gt; لمشاهدة قائمة بعناوين URL المضافة إلى القائمة السوداء والسياسات الأخرى التي فرضها مشرف النظام.</translation>
+<translation id="4108231218301530806">استخدام بصمة الإصبع لإثبات ملكيتك لهذه البطاقة المرة القادمة.</translation>
 <translation id="4110652170750985508">مراجعة الدفعة</translation>
 <translation id="4112140312785995938">الانتقال إلى الخلف</translation>
 <translation id="4116663294526079822">إلغاء الحظر دومًا على هذا الموقع</translation>
@@ -792,6 +783,7 @@
 <translation id="5141240743006678641">‏تشفير كلمات المرور المتزامنة باستخدام بيانات اعتماد Google</translation>
 <translation id="5145883236150621069">يوجد رمز خطأ في استجابة السياسة</translation>
 <translation id="515292512908731282">‏C4 (مغلف)</translation>
+<translation id="5158275234811857234">غلاف</translation>
 <translation id="5159010409087891077">‏يمكنك فتح الصفحة في نافذة جديدة للتصفح المتخفي (⇧⌘N)</translation>
 <translation id="516920405563544094">‏يمكنك إدخال رمز التحقُّق من البطاقة (CVC) لبطاقة <ph name="CREDIT_CARD" />. وبعد التأكيد، ستتم مشاركة تفاصيل البطاقة من حسابك على Google مع هذا الموقع الإلكتروني.</translation>
 <translation id="5169827969064885044">‏قد تفقد إمكانية الوصول إلى حساب مؤسستك أو تتعرَّض لسرقة هويتك. لذا، يوصي Chrome بتغيير كلمة مرورك الآن.</translation>
@@ -950,6 +942,7 @@
 <translation id="598637245381783098">لا يمكن فتح تطبيق الدفع</translation>
 <translation id="5989320800837274978">‏لم يتم تحديد أي من الخوادم الوكيلة الثابتة ولا عنوان URL للنص البرمجي pac.</translation>
 <translation id="5990559369517809815">تم حظر الطلبات المقدمة إلى الخادم بواسطة إحدى الإضافات.</translation>
+<translation id="6000758707621254961"><ph name="RESULT_COUNT" /> من نتائج البحث عن "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">عام</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{صفحة 1}zero{صفحة #}two{صفحة #}few{صفحة #}many{صفحة #}other{صفحة #}}</translation>
@@ -1008,6 +1001,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{ما من كلمات مرور}=1{كلمة مرور واحدة (للقائمة <ph name="DOMAIN_LIST" />، تمت المزامنة)}=2{كلمتا مرور (للقائمة <ph name="DOMAIN_LIST" />، تمت المزامنة)}few{# كلمات مرور (للقائمة <ph name="DOMAIN_LIST" />، تمت المزامنة)}many{# كلمة مرور (للقائمة <ph name="DOMAIN_LIST" />، تمت المزامنة)}other{# كلمة مرور (للقائمة <ph name="DOMAIN_LIST" />، تمت المزامنة)}}</translation>
 <translation id="6358450015545214790">ماذا تعني هذه الأقسام؟</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6377268785556383139">نتيجة بحث واحدة عن "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">رسوم محتملة في انتظارك.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{اقتراح واحد آخر}zero{# اقتراح آخر}two{اقتراحان آخران (#)}few{# اقتراحات أخرى}many{# اقتراحًا آخر}other{# اقتراح آخر}}</translation>
@@ -1142,10 +1136,6 @@
 <translation id="717330890047184534">‏معرّف GAIA:</translation>
 <translation id="7174545416324379297">تم الدمج</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> وخيار <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> آخر}two{<ph name="SHIPPING_OPTION_PREVIEW" /> وخياران (<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />) آخران}few{<ph name="SHIPPING_OPTION_PREVIEW" /> و<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> خيارات أخرى}many{<ph name="SHIPPING_OPTION_PREVIEW" /> و<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> خيارًا آخر}other{<ph name="SHIPPING_OPTION_PREVIEW" /> و<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> خيار آخر}}</translation>
-<translation id="7177397715882417099">لقد طلب الخادم الذي تنتقل إليه، <ph name="ORIGIN" />، أن
-    يتم تطبيق سياسة الأمان على جميع الطلبات المقدَّمة إليه. ولكن بدلاً من
-    عرض السياسة، تمت إعادة توجيه المتصفِّح إلى مكان آخر، ما يمنع
-    المتصفِّح من توصيل الطلب لموقع <ph name="SITE" />.</translation>
 <translation id="7179323680825933600">حفظ طرق الدفع وملؤها</translation>
 <translation id="7180611975245234373">إعادة التحميل</translation>
 <translation id="7182878459783632708">لم يتم تعيين أي سياسات</translation>
@@ -1172,6 +1162,7 @@
 <translation id="7300012071106347854">أزرق كوبالت</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
 <translation id="7303701124147721189">‏للدفع بشكلٍ أسرع في المرة القادمة، عليك تخزين تفاصيل البطاقة المصرفية وعنوان إرسال الفواتير في حسابك على Google وعلى هذا الجهاز.</translation>
+<translation id="7304030187361489308">مرتفع</translation>
 <translation id="7309308571273880165">تقرير الأعطال الذي تم الحصول عليه في <ph name="CRASH_TIME" /> (التحميل مطلوب بواسطة المستخدم، لم يتم التحميل بعد)</translation>
 <translation id="7313965965371928911">تحذيرات <ph name="BEGIN_LINK" />التصفُّح الآمن<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1534,7 +1525,6 @@
 <translation id="939736085109172342">مجلد جديد</translation>
 <translation id="945855313015696284">يجب التحقُّق من المعلومات الواردة أدناه وحذف أي بطاقات غير صالحة</translation>
 <translation id="951104842009476243">بطاقات السحب الآلي وبطاقات الدفع المسبق المقبولة</translation>
-<translation id="958202389743790697">تم الحظر وفقًا لسياسة أمان <ph name="ORIGIN" />.</translation>
 <translation id="962484866189421427">قد يحاول هذا المحتوى تثبيت تطبيقات مضللة تظهر كبرامج أخرى أو تجمع بيانات قد تُستخدم لتتبعك. <ph name="BEGIN_LINK" />العرض على أي حال<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">البنية الرسمية</translation>
 <translation id="973773823069644502">إضافة عنوان التسليم للمستخدم</translation>

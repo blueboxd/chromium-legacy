@@ -58,6 +58,7 @@
 <translation id="2509394361235492552">Verbunden mit <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">HINWEIS: Sie können in Chrome Remote Desktop die Option zum Öffnen als Fenster einstellen, damit alle Tastenkombinationen verfügbar sind.</translation>
 <translation id="2540992418118313681">Möchten Sie diesen Computer für einen anderen Nutzer zur Ansicht und Steuerung freigeben?</translation>
+<translation id="254771646005658629">Zulassen, dass Remote-Nutzer auf diesen Mac zugreifen</translation>
 <translation id="2579271889603567289">Der Host ist abgestürzt oder konnte nicht gestartet werden.</translation>
 <translation id="2599300881200251572">Dieser Dienst ermöglicht eingehende Verbindungen von Chrome Remote Desktop-Clients.</translation>
 <translation id="2647232381348739934">Chromoting Service</translation>
@@ -182,6 +183,11 @@
 <translation id="5419185025274123272">Die App konnte nicht zurückgesetzt werden. Sie können einen Fehlerbericht senden.</translation>
 <translation id="5419418238395129586">Zuletzt online: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Der Host wurde heruntergefahren.</translation>
+<translation id="5463789431147491241">Wenn Sie <ph name="PRODUCT_NAME" /> auf diesem Mac verwenden möchten, gehen Sie so vor:
+
+Wählen Sie unten "<ph name="BUTTON_NAME" />" aus. Wählen Sie im Sicherheits- und Datenschutzfenster das Kästchen neben "<ph name="SERVICE_SCRIPT_NAME" />" aus.
+
+Wenn "<ph name="SERVICE_SCRIPT_NAME" />" bereits ausgewählt ist, entfernen Sie das Häkchen und wählen Sie das Kästchen noch einmal aus.</translation>
 <translation id="5510035215749041527">Verbindung jetzt aufheben</translation>
 <translation id="5593560073513909978">Der Dienst ist vorübergehend nicht verfügbar. Bitte versuchen Sie es später erneut.</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -298,12 +304,14 @@
 <translation id="837021510621780684">Von diesem Computer</translation>
 <translation id="8383794970363966105">Wenn Sie Chromoting verwenden möchten, fügen Sie ein Google-Konto zu Ihrem Gerät hinzu.</translation>
 <translation id="8386846956409881180">Der Host wurde mit ungültigen OAuth-Anmeldedaten konfiguriert.</translation>
+<translation id="8406498562923498210">Wählen Sie die Sitzung aus, die auf Ihrem Chrome Remote Desktop gestartet werden soll. Beachten Sie jedoch, dass einige Sitzungstypen nicht gleichzeitig auf dem Chrome Remote Desktop und in der lokalen Konsole ausgeführt werden können.</translation>
 <translation id="8428213095426709021">Einstellungen</translation>
 <translation id="8445362773033888690">Im Google Play Store ansehen</translation>
 <translation id="8509907436388546015">Desktop-Integrationsprozess</translation>
 <translation id="8513093439376855948">Nativer Nachrichtenhost zur Verwaltung von Remoting-Host</translation>
 <translation id="8525306231823319788">Vollbildmodus</translation>
 <translation id="8548209692293300397">Sie haben sich zuvor als <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) angemeldet. Damit Sie auf Ihre Computer in diesem Konto zugreifen können, <ph name="LINK_BEGIN" />melden Sie sich mit diesem Konto in Google Chrome an<ph name="LINK_END" /> und installieren Sie Chrome Remote Desktop erneut.</translation>
+<translation id="858006550102277544">Kommentar</translation>
 <translation id="8642984861538780905">Ausreichend</translation>
 <translation id="8712909229180978490">Meine online gespeicherten Dateien werden nicht im Google Drive angezeigt.</translation>
 <translation id="8743328882720071828">Möchten Sie zulassen, dass <ph name="CLIENT_USERNAME" /> auf Ihren Computer zugreifen und diesen steuern kann?</translation>
@@ -321,6 +329,7 @@
 <translation id="9126115402994542723">Beim Verbinden des Geräts mit diesem Host nicht mehr nach der PIN fragen</translation>
 <translation id="9149580767411232853">Der gesamte Remote-Desktop soll sichtbar bleiben</translation>
 <translation id="9149992051684092333">Teilen Sie zur Freigabe Ihres Desktops zunächst der Person, die Sie unterstützen wird, den unten stehenden Zugriffscode mit.</translation>
+<translation id="916856682307586697">Standard-XSession starten</translation>
 <translation id="9188433529406846933">Autorisieren</translation>
 <translation id="9213184081240281106">Ungültige Hostkonfiguration</translation>
 <translation id="951991426597076286">Ablehnen</translation>

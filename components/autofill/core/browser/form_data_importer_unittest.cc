@@ -223,8 +223,8 @@ class FormDataImporterTestBase {
     run_loop.Run();
   }
 
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::UI};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::UI};
   std::unique_ptr<PrefService> prefs_;
   scoped_refptr<AutofillWebDataService> autofill_database_service_;
   scoped_refptr<WebDatabaseService> web_database_;

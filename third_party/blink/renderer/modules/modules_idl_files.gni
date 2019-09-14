@@ -707,6 +707,7 @@ modules_dictionary_idl_files =
           "payments/image_object.idl",
           "payments/merchant_validation_event_init.idl",
           "payments/payer_errors.idl",
+          "payments/payment_address_init.idl",
           "payments/payment_currency_amount.idl",
           "payments/payment_details_base.idl",
           "payments/payment_details_init.idl",

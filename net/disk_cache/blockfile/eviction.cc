@@ -47,7 +47,6 @@
 #include "net/disk_cache/blockfile/experiments.h"
 #include "net/disk_cache/blockfile/histogram_macros.h"
 #include "net/disk_cache/blockfile/trace.h"
-#include "net/disk_cache/blockfile/webfonts_histogram.h"
 
 // Provide a BackendImpl object to macros from histogram_macros.h.
 #define CACHE_UMA_BACKEND_IMPL_OBJ backend_
@@ -290,7 +289,6 @@ bool Eviction::EvictEntry(CacheRankingsBlock* node, bool empty,
     return false;
   }
 
-  web_fonts_histogram::RecordEviction(entry.get());
   ReportTrimTimes(entry.get());
   if (empty || !new_eviction_) {
     entry->DoomImpl();

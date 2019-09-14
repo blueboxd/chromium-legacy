@@ -44,10 +44,8 @@ std::unique_ptr<ui::ScopedMakeCurrent> MakeCurrentIfNeeded(
 CodecImage::CodecImage() = default;
 
 CodecImage::~CodecImage() {
-  if (now_unused_cb_)
-    std::move(now_unused_cb_).Run(this);
-  if (destruction_cb_)
-    std::move(destruction_cb_).Run(this);
+  for (auto& cb : unused_cbs_)
+    std::move(cb).Run(this);
 }
 
 void CodecImage::Initialize(
@@ -61,12 +59,8 @@ void CodecImage::Initialize(
   promotion_hint_cb_ = std::move(promotion_hint_cb);
 }
 
-void CodecImage::SetNowUnusedCB(NowUnusedCB now_unused_cb) {
-  now_unused_cb_ = std::move(now_unused_cb);
-}
-
-void CodecImage::SetDestructionCB(DestructionCB destruction_cb) {
-  destruction_cb_ = std::move(destruction_cb);
+void CodecImage::AddUnusedCB(UnusedCB unused_cb) {
+  unused_cbs_.push_back(std::move(unused_cb));
 }
 
 gfx::Size CodecImage::GetSize() {

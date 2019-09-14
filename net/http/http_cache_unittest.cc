@@ -786,6 +786,54 @@ TEST_F(HttpCacheTest, SimpleGET) {
   TestLoadTimingNetworkRequest(load_timing_info);
 }
 
+class HttpCacheTest_SplitCacheFeature
+    : public HttpCacheTest,
+      public ::testing::WithParamInterface<bool> {
+ public:
+  void SetUp() override {
+    feature_list_.InitWithFeatureState(
+        net::features::kSplitCacheByNetworkIsolationKey, GetParam());
+    HttpCacheTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_P(HttpCacheTest_SplitCacheFeature, SimpleGETVerifyGoogleFontMetrics) {
+  base::HistogramTester histograms;
+  const std::string histogram_name = "WebFont.HttpCacheStatus_roboto";
+
+  url::Origin origin_a = url::Origin::Create(GURL("http://www.a.com"));
+
+  MockHttpCache cache;
+
+  MockTransaction transaction(kSimpleGET_Transaction);
+  transaction.url = "http://themes.googleusercontent.com/static/fonts/roboto";
+  AddMockTransaction(&transaction);
+  MockHttpRequest request(transaction);
+  request.network_isolation_key = NetworkIsolationKey(origin_a, origin_a);
+
+  // Attempt to populate the cache.
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, request,
+                                nullptr);
+
+  histograms.ExpectUniqueSample(
+      histogram_name, static_cast<int>(CacheEntryStatus::ENTRY_NOT_IN_CACHE),
+      1);
+
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, request,
+                                nullptr);
+
+  histograms.ExpectBucketCount(
+      histogram_name, static_cast<int>(CacheEntryStatus::ENTRY_USED), 1);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    HttpCacheTest_SplitCacheFeature,
+    testing::Bool());
+
 TEST_F(HttpCacheTest, SimpleGETNoDiskCache) {
   MockHttpCache cache;
 

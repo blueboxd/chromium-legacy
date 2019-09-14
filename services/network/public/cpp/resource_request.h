@@ -57,7 +57,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   std::string method = "GET";
   GURL url;
   GURL site_for_cookies;
-  base::Optional<url::Origin> top_frame_origin;
   bool attach_same_site_cookies = false;
   bool update_first_party_url_on_redirect = false;
   base::Optional<url::Origin> request_initiator;

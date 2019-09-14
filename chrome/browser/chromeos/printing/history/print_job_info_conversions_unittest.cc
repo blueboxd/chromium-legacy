@@ -4,16 +4,28 @@
 
 #include "chrome/browser/chromeos/printing/history/print_job_info_conversions.h"
 
+#include "base/time/time_override.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
+
+namespace pp = printing::proto;
 
 namespace {
 
 constexpr int kWidth = 297000;
 constexpr int kHeight = 420000;
-
 constexpr char kVendorId[] = "iso_a3_297x420mm";
+
+constexpr char kName[] = "name";
+constexpr char kUri[] = "ipp://192.168.1.5";
+
+constexpr char kTitle[] = "title";
+constexpr char kId[] = "id";
+constexpr char kSourceId[] = "extension:123";
+constexpr int kJobCreationTime = 1000;
+constexpr int kJobDuration = 10 * 1000;
+constexpr int kPagesNumber = 3;
 
 }  // namespace
 
@@ -27,18 +39,64 @@ TEST(PrintJobInfoConversionsTest, PrintSettingsToProto) {
   settings.set_requested_media(media);
   settings.set_copies(2);
 
-  printing::proto::PrintSettings settings_proto =
-      PrintSettingsToProto(settings);
-  const printing::proto::MediaSize& media_size = settings_proto.media_size();
+  pp::PrintSettings settings_proto = PrintSettingsToProto(settings);
+  const pp::MediaSize& media_size = settings_proto.media_size();
 
-  EXPECT_EQ(printing::proto::PrintSettings_ColorMode_COLOR,
-            settings_proto.color());
-  EXPECT_EQ(printing::proto::PrintSettings_DuplexMode_TWO_SIDED_LONG_EDGE,
+  EXPECT_EQ(pp::PrintSettings_ColorMode_COLOR, settings_proto.color());
+  EXPECT_EQ(pp::PrintSettings_DuplexMode_TWO_SIDED_LONG_EDGE,
             settings_proto.duplex());
   EXPECT_EQ(kWidth, media_size.width());
   EXPECT_EQ(kHeight, media_size.height());
   EXPECT_EQ(kVendorId, media_size.vendor_id());
   EXPECT_EQ(2, settings_proto.copies());
+}
+
+TEST(PrintJobInfoConversionsTest, CupsPrintJobToProto) {
+  // Override time so that base::Time::Now() always returns 1 second after the
+  // epoch in Unix-like system (Jan 1, 1970).
+  base::subtle::ScopedTimeClockOverrides time_override(
+      []() {
+        return base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(1);
+      },
+      nullptr, nullptr);
+
+  chromeos::Printer printer;
+  printer.set_display_name(kName);
+  printer.set_uri(kUri);
+  printer.set_source(chromeos::Printer::Source::SRC_POLICY);
+
+  pp::PrintSettings settings;
+  settings.set_color(pp::PrintSettings_ColorMode_COLOR);
+
+  // CupsPrintJob computes the start time of the print job, that's why we have
+  // to override base::Time::now() value for the test.
+  CupsPrintJob cups_print_job(printer, /*job_id=*/0, kTitle, kPagesNumber,
+                              ::printing::PrintJob::Source::PRINT_PREVIEW,
+                              kSourceId, settings);
+  cups_print_job.set_state(CupsPrintJob::State::STATE_FAILED);
+  base::Time completion_time =
+      base::Time::Now() + base::TimeDelta::FromSeconds(10);
+
+  pp::PrintJobInfo print_job_info_proto =
+      CupsPrintJobToProto(cups_print_job, kId, completion_time);
+  const pp::Printer& printer_proto = print_job_info_proto.printer();
+
+  EXPECT_EQ(kId, print_job_info_proto.id());
+  EXPECT_EQ(kTitle, print_job_info_proto.title());
+  EXPECT_EQ(pp::PrintJobInfo_PrintJobSource_PRINT_PREVIEW,
+            print_job_info_proto.source());
+  EXPECT_EQ(kSourceId, print_job_info_proto.source_id());
+  EXPECT_EQ(pp::PrintJobInfo_PrintJobStatus_FAILED,
+            print_job_info_proto.status());
+  EXPECT_EQ(kJobCreationTime, print_job_info_proto.creation_time());
+  EXPECT_EQ(kJobCreationTime + kJobDuration,
+            print_job_info_proto.completion_time());
+  EXPECT_EQ(kName, printer_proto.name());
+  EXPECT_EQ(kUri, printer_proto.uri());
+  EXPECT_EQ(pp::Printer_PrinterSource_POLICY, printer_proto.source());
+  EXPECT_EQ(pp::PrintSettings_ColorMode_COLOR,
+            print_job_info_proto.settings().color());
+  EXPECT_EQ(kPagesNumber, print_job_info_proto.number_of_pages());
 }
 
 }  // namespace chromeos

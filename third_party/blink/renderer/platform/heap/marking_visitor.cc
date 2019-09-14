@@ -32,12 +32,7 @@ MarkingVisitorBase::MarkingVisitorBase(ThreadState* state,
       backing_store_callback_worklist_(Heap().GetBackingStoreCallbackWorklist(),
                                        task_id),
       marking_mode_(marking_mode),
-      task_id_(task_id) {
-  DCHECK(state->InAtomicMarkingPause());
-#if DCHECK_IS_ON()
-  DCHECK(state->CheckThread());
-#endif  // DCHECK_IS_ON
-}
+      task_id_(task_id) {}
 
 void MarkingVisitorBase::FlushCompactionWorklists() {
   movable_reference_worklist_.FlushToGlobal();
@@ -206,8 +201,7 @@ ConcurrentMarkingVisitor::ConcurrentMarkingVisitor(ThreadState* state,
                                                    MarkingMode marking_mode,
                                                    int task_id)
     : MarkingVisitorBase(state, marking_mode, task_id) {
-  DCHECK(state->InAtomicMarkingPause());
-  DCHECK(state->CheckThread());
+  DCHECK(!state->CheckThread());
   DCHECK_NE(WorklistTaskId::MutatorThread, task_id);
 }
 

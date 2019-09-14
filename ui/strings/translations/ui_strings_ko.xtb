@@ -8,14 +8,17 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1분}other{#분}}</translation>
 <translation id="1181037720776840403">삭제</translation>
 <translation id="1243314992276662751">업로드</translation>
+<translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> 공유할 수 없음</translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1290982764014248209"><ph name="DRAGGED_APP" /> 앱을 <ph name="FOLDER_NAME" /> 폴더로 이동합니다.</translation>
+<translation id="1291104554099683393">좀 더 짧은 길이로 텍스트를 쪼갠 다음 공유해 보세요.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">추천 앱</translation>
 <translation id="1368832886055348810">왼쪽에서 오른쪽으로</translation>
 <translation id="1383876407941801731">검색</translation>
 <translation id="1398853756734560583">최대화</translation>
 <translation id="1409544243779336081">앱 추천</translation>
+<translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> 공유할 수 없음</translation>
 <translation id="1498028757988366001">이전에 검색한 내용입니다. 기록에서 '<ph name="QUERY" />'을(를) 삭제하면 계정과 연결된 모든 기기에서 완전히 삭제됩니다.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1분 }other{#분 }}</translation>
 <translation id="1643823602425662293">알림</translation>
@@ -35,6 +38,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">전체 선택(&amp;A)</translation>
 <translation id="1938451708255335766">창 표시 밀도를 조정하려면 앱을 다시 시작하세요.</translation>
+<translation id="2006524834898217237">기기가 인터넷에 연결되어 있는지 확인하세요.</translation>
 <translation id="208586643495776849">다시 시도해 주세요.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1일}other{#일}}</translation>
 <translation id="2148716181193084225">오늘</translation>
@@ -76,6 +80,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1일}other{#일}}</translation>
 <translation id="3295886253693811851">사용 가능한 전화 서비스</translation>
 <translation id="335581015389089642">음성</translation>
+<translation id="3389286852084373014">텍스트가 너무 큼</translation>
 <translation id="3443810440409579745">탭을 수신했습니다.</translation>
 <translation id="3479552764303398839">나중에</translation>
 <translation id="348799646910989694">실행기 자동 숨김</translation>
@@ -151,11 +156,13 @@
 <translation id="6404817160109697034">{SECONDS,plural, =1{1초 전}other{#초 전}}</translation>
 <translation id="6430678249303439055">이 앱의 모든 알림 차단</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1초 전}other{#초 전}}</translation>
+<translation id="6539092367496845964">문제가 발생했습니다. 나중에 다시 시도해 보세요.</translation>
 <translation id="654149438358937226">모든 알림 차단</translation>
 <translation id="6567071839949112727">상위 개체 클릭</translation>
 <translation id="6578407462441924264">이름 없음</translation>
 <translation id="6612467943526193239">보정을 종료하려면 Esc를 누르세요.</translation>
 <translation id="6620110761915583480">파일 저장</translation>
+<translation id="6656912866303152668"><ph name="TARGET_DEVICE_NAME" />에서 Chrome 동기화가 사용 설정되어 있는지 확인한 다음 다시 보내 보세요.</translation>
 <translation id="6699343763173986273">미디어 다음 트랙</translation>
 <translation id="673773751041746814">삭제</translation>
 <translation id="6779314412797872738">여기에서 Android 휴대전화로 번호를 전송하려면 두 기기 모두 설정에서 <ph name="TROUBLESHOOT_LINK" />하세요.</translation>
@@ -221,6 +228,7 @@
 <translation id="8876215549894133151">형식:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" />KB</translation>
 <translation id="8926951137623668982">실행기 항상 숨김</translation>
+<translation id="8996630695507351249"><ph name="TARGET_DEVICE_NAME" />이(가) 인터넷에 연결되어 있는지 확인하세요.</translation>
 <translation id="9002566407876343676">열기</translation>
 <translation id="9039076430527029379"><ph name="PAGE_NUMBER" />페이지, <ph name="ROW_NUMBER" />행, <ph name="COLUMN_NUMBER" />열로 이동합니다.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1초}other{#초}}</translation>

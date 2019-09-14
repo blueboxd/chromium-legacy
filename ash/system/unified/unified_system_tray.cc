@@ -129,7 +129,9 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
       quiet_mode_view_(new QuietModeView(shelf)),
       time_view_(new tray::TimeTrayItemView(shelf)) {
   tray_container()->SetMargin(
-      kUnifiedTrayContentPadding - TrayConstants::hit_region_padding(), 0);
+      kUnifiedTrayContentPadding -
+          ShelfConfig::Get()->status_area_hit_region_padding(),
+      0);
   tray_container()->AddChildView(current_locale_view_);
   tray_container()->AddChildView(ime_mode_view_);
   tray_container()->AddChildView(managed_device_view_);
@@ -151,9 +153,13 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
 
   SetInkDropMode(InkDropMode::ON);
   set_separator_visibility(false);
+
+  ShelfConfig::Get()->AddObserver(this);
 }
 
 UnifiedSystemTray::~UnifiedSystemTray() {
+  ShelfConfig::Get()->RemoveObserver(this);
+
   message_center_bubble_.reset();
   // Close bubble immediately when the bubble is closed on dtor.
   if (bubble_)
@@ -242,6 +248,15 @@ void UnifiedSystemTray::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 
 const char* UnifiedSystemTray::GetClassName() const {
   return "UnifiedSystemTray";
+}
+
+void UnifiedSystemTray::OnShelfConfigUpdated() {
+  // Ensure the margin is updated correctly depending on whether dense shelf
+  // is currently shown or not.
+  tray_container()->SetMargin(
+      kUnifiedTrayContentPadding -
+          ShelfConfig::Get()->status_area_hit_region_padding(),
+      0);
 }
 
 void UnifiedSystemTray::SetTrayEnabled(bool enabled) {

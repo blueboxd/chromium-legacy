@@ -36,6 +36,7 @@
 #include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_observer.h"
+#include "ash/shelf/shelf_test_util.h"
 #include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shelf/shelf_widget.h"
@@ -327,13 +328,8 @@ class ShelfViewTest : public AshTestBase {
  protected:
   // Add shelf items of various types, and optionally wait for animations.
   ShelfID AddItem(ShelfItemType type, bool wait_for_animations) {
-    ShelfItem item;
-    item.type = type;
-    if (type == TYPE_APP)
-      item.status = STATUS_RUNNING;
-
-    item.id = ShelfID(base::NumberToString(id_++));
-    model_->Add(item);
+    ShelfItem item =
+        ShelfTestUtil::AddAppShortcut(base::NumberToString(id_++), type);
     // Set a delegate; some tests require one to select the item.
     model_->SetShelfItemDelegate(item.id,
                                  std::make_unique<ShelfItemSelectionTracker>());

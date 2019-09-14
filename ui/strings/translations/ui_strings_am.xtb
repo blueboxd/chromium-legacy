@@ -8,14 +8,17 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1ደ}one{#ደ}other{#ደ}}</translation>
 <translation id="1181037720776840403">አስወግድ</translation>
 <translation id="1243314992276662751">ስቀል</translation>
+<translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> ን ማጋራት አልተቻለም።</translation>
 <translation id="1269641567813814718">ማሸነፍ</translation>
 <translation id="1290982764014248209"><ph name="DRAGGED_APP" />ን ወደ አቃፊ <ph name="FOLDER_NAME" /> ይውሰዱ።</translation>
+<translation id="1291104554099683393">በትናንሽ ክፍሎች ጽሑፉን ለማጋራት ይሞክሩ።</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">የሚመከሩ መተግበሪያዎች</translation>
 <translation id="1368832886055348810">ከግራ ወደ ቀኝ</translation>
 <translation id="1383876407941801731">ፍለጋ </translation>
 <translation id="1398853756734560583">አስፋ</translation>
 <translation id="1409544243779336081">የመተግበሪያ ምክር</translation>
+<translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> ን ማጋራት አይቻልም</translation>
 <translation id="1498028757988366001">እርስዎ ይህን ከዚህ በፊት ፍለጋ አድርገውለታል። «<ph name="QUERY" />»ን ከታሪክዎ መሰረዝ በሁሉም መሣሪያዎችዎ ላይ እስከመጨረሻው ከመለያዎ ያስወግደዋል።</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 ደቂቃ እና }one{# ደቂቃዎች እና }other{# ደቂቃዎች እና }}</translation>
 <translation id="1643823602425662293">ማሳወቂያ</translation>
@@ -35,6 +38,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;ሁሉንም ምረጥ</translation>
 <translation id="1938451708255335766">የመስኮቱን የማሳያ ትፍገት ለማስተካከል መተግበሪያውን ዳግም ያስጀምሩት።</translation>
+<translation id="2006524834898217237">ይህ መሣሪያ ወደ በይነ መረብ እንደተገናኘ እርግጠኛ ይሁኑ።</translation>
 <translation id="208586643495776849">እባክዎ እንደገና ይሞክሩ</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1ቀ}one{#ቀ}other{#ቀ}}</translation>
 <translation id="2148716181193084225">ዛሬ</translation>
@@ -76,6 +80,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 ቀን}one{# ቀኖች}other{# ቀኖች}}</translation>
 <translation id="3295886253693811851">ከዚህ ላይ ጥሪ ያድርጉ</translation>
 <translation id="335581015389089642">ንግግር</translation>
+<translation id="3389286852084373014">ጽሑፍ ከልክ በላይ ግዙፍ ነው</translation>
 <translation id="3443810440409579745">ትር ደርሷል።</translation>
 <translation id="3479552764303398839">አሁን አይደለም</translation>
 <translation id="348799646910989694">መደርደሪያ በራስ-ሰር ተደብቋል</translation>
@@ -108,6 +113,7 @@
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 ወር ቀርቷል}one{# ወሮች ቀርተዋል}other{# ወሮች ቀርተዋል}}</translation>
 <translation id="4841881773802181781">ማስገባት</translation>
 <translation id="4881695831933465202">ክፈት</translation>
+<translation id="4888938634149558681">ጥሪ ያድርጉ</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 ሰከንድ}one{# ሰከንዶች}other{# ሰከንዶች}}</translation>
 <translation id="4971687151119236543">የሚዲያ ቀዳሚ ትራክ</translation>
 <translation id="5046499563572181734">እዚህ መታ ያድርጉ</translation>
@@ -151,11 +157,13 @@
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 ሰከንድ በፊት}one{# ሰከንዶች በፊት}other{# ሰከንዶች በፊት}}</translation>
 <translation id="6430678249303439055">ከዚህ መተግበሪያ የሚመጡ ሁሉንም ማሳወቂያዎች አግድ</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{ከ1 ሰከንድ በፊት}one{ከ# ሰከንዶች በፊት}other{ከ# ሰከንዶች በፊት}}</translation>
+<translation id="6539092367496845964">የሆነ ችግር ተፈጥሯል። ቆይተው እንደገና ይሞክሩ።</translation>
 <translation id="654149438358937226">ሁሉንም ማሳወቂያዎች አግድ</translation>
 <translation id="6567071839949112727">ዘር ማንዘርን ጠቅ አድርግ</translation>
 <translation id="6578407462441924264">ያልተሰየመ</translation>
 <translation id="6612467943526193239">ከመቃኘት ለመውጣት Escን ይጫኑ።</translation>
 <translation id="6620110761915583480">ፋይል አስቀምጥ</translation>
+<translation id="6656912866303152668"><ph name="TARGET_DEVICE_NAME" /> በ Chrome ውስጥ ስምረት እንደበራለት ያረጋግጡ እና በመቀጠል እንደገና ለመላክ ይሞክሩ።</translation>
 <translation id="6699343763173986273">የሚዲያ ቀጣይ ትራክ</translation>
 <translation id="673773751041746814">ስረዛ</translation>
 <translation id="6779314412797872738">አንድ ቁጥር ከዚህ ወደ የእርስዎ Android ስልክ ለመላክ <ph name="TROUBLESHOOT_LINK" /> በቅንብሮች ውስጥ ሁለቱንም መሣሪያዎች ይፈልጋል።</translation>
@@ -221,6 +229,7 @@
 <translation id="8876215549894133151">ቅርጸት፦</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> ኪባ</translation>
 <translation id="8926951137623668982">መደርደሪያ ሁልጊዜ ይደበቃል</translation>
+<translation id="8996630695507351249"><ph name="TARGET_DEVICE_NAME" /> ከበይነ መረብ ጋር መገናኘቱን ያረጋግጡ።</translation>
 <translation id="9002566407876343676">ክፈት</translation>
 <translation id="9039076430527029379">ወደ ገጽ <ph name="PAGE_NUMBER" />፣ ረድፍ <ph name="ROW_NUMBER" />፣ አምድ <ph name="COLUMN_NUMBER" /> ይውሰዱ።</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 ሰከን}one{# ሰከን}other{# ሰከን}}</translation>

@@ -146,8 +146,8 @@ TEST_F(PaymentRequestPaymentResponseHelperTest, PaymentResponse) {
 
   PaymentResponseHelper payment_response_helper(consumer_mock,
                                                 payment_request());
-  payment_response_helper.OnInstrumentDetailsReady(GetMethodName(),
-                                                   GetStringifiedDetails());
+  payment_response_helper.OnInstrumentDetailsReady(
+      GetMethodName(), GetStringifiedDetails(), PayerData());
 }
 
 // Tests that the generated PaymentResponse has a shipping address only if one
@@ -172,8 +172,8 @@ TEST_F(PaymentRequestPaymentResponseHelperTest, PaymentResponseNoShipping) {
   payment_request()->web_payment_request().options.request_shipping = false;
   PaymentResponseHelper payment_response_helper(consumer_mock,
                                                 payment_request());
-  payment_response_helper.OnInstrumentDetailsReady(GetMethodName(),
-                                                   GetStringifiedDetails());
+  payment_response_helper.OnInstrumentDetailsReady(
+      GetMethodName(), GetStringifiedDetails(), PayerData());
 }
 
 // Tests that the generated PaymentResponse has contact information only if it
@@ -198,8 +198,8 @@ TEST_F(PaymentRequestPaymentResponseHelperTest, PaymentResponseNoContact) {
   payment_request()->web_payment_request().options.request_payer_email = false;
   PaymentResponseHelper payment_response_helper(consumer_mock,
                                                 payment_request());
-  payment_response_helper.OnInstrumentDetailsReady(GetMethodName(),
-                                                   GetStringifiedDetails());
+  payment_response_helper.OnInstrumentDetailsReady(
+      GetMethodName(), GetStringifiedDetails(), PayerData());
 }
 
 // Tests that the generated PaymentResponse has contact information only if it
@@ -223,8 +223,8 @@ TEST_F(PaymentRequestPaymentResponseHelperTest, PaymentResponseOneContact) {
   payment_request()->web_payment_request().options.request_payer_email = false;
   PaymentResponseHelper payment_response_helper(consumer_mock,
                                                 payment_request());
-  payment_response_helper.OnInstrumentDetailsReady(GetMethodName(),
-                                                   GetStringifiedDetails());
+  payment_response_helper.OnInstrumentDetailsReady(
+      GetMethodName(), GetStringifiedDetails(), PayerData());
 }
 
 // Tests that the generated PaymentResponse has contact information only if it
@@ -248,8 +248,8 @@ TEST_F(PaymentRequestPaymentResponseHelperTest, PaymentResponseSomeContact) {
   payment_request()->web_payment_request().options.request_payer_phone = false;
   PaymentResponseHelper payment_response_helper(consumer_mock,
                                                 payment_request());
-  payment_response_helper.OnInstrumentDetailsReady(GetMethodName(),
-                                                   GetStringifiedDetails());
+  payment_response_helper.OnInstrumentDetailsReady(
+      GetMethodName(), GetStringifiedDetails(), PayerData());
 }
 
 // Tests that the phone number in the contact information of the generated
@@ -275,8 +275,8 @@ TEST_F(PaymentRequestPaymentResponseHelperTest,
   payment_request()->web_payment_request().options.request_payer_email = false;
   PaymentResponseHelper payment_response_helper(consumer_mock,
                                                 payment_request());
-  payment_response_helper.OnInstrumentDetailsReady(GetMethodName(),
-                                                   GetStringifiedDetails());
+  payment_response_helper.OnInstrumentDetailsReady(
+      GetMethodName(), GetStringifiedDetails(), PayerData());
 }
 
 // Tests that the phone number in the contact information of the generated
@@ -303,8 +303,8 @@ TEST_F(PaymentRequestPaymentResponseHelperTest,
   payment_request()->web_payment_request().options.request_payer_email = false;
   PaymentResponseHelper payment_response_helper(consumer_mock,
                                                 payment_request());
-  payment_response_helper.OnInstrumentDetailsReady(GetMethodName(),
-                                                   GetStringifiedDetails());
+  payment_response_helper.OnInstrumentDetailsReady(
+      GetMethodName(), GetStringifiedDetails(), PayerData());
 }
 
 }  // payments

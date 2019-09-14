@@ -75,10 +75,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static const GURL& site_for_cookies(const network::ResourceRequest& request) {
     return request.site_for_cookies;
   }
-  static const base::Optional<url::Origin>& top_frame_origin(
-      const network::ResourceRequest& request) {
-    return request.top_frame_origin;
-  }
   static bool attach_same_site_cookies(
       const network::ResourceRequest& request) {
     return request.attach_same_site_cookies;

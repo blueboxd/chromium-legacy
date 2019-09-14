@@ -19,15 +19,6 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// TODO(crbug.com/961039): Fix memory leaks in tests and re-enable on LSAN.
-#ifdef LEAK_SANITIZER
-#define MAYBE_AddAndRemoveSwitchPro DISABLED_AddAndRemoveSwitchPro
-#define MAYBE_UnsupportedDeviceIsIgnored DISABLED_UnsupportedDeviceIsIgnored
-#else
-#define MAYBE_AddAndRemoveSwitchPro AddAndRemoveSwitchPro
-#define MAYBE_UnsupportedDeviceIsIgnored UnsupportedDeviceIsIgnored
-#endif
-
 namespace device {
 
 namespace {
@@ -65,8 +56,9 @@ class NintendoDataFetcherTest : public DeviceServiceTestBase {
     fetcher_ = fetcher.get();
     auto polling_thread = std::make_unique<base::Thread>("polling thread");
     polling_thread_ = polling_thread.get();
-    provider_.reset(new GamepadProvider(nullptr, std::move(fetcher),
-                                        std::move(polling_thread)));
+    provider_ = std::make_unique<GamepadProvider>(
+        /*connection_change_client=*/nullptr, connector()->Clone(),
+        std::move(fetcher), std::move(polling_thread));
 
     RunUntilIdle();
   }
@@ -89,7 +81,7 @@ class NintendoDataFetcherTest : public DeviceServiceTestBase {
   DISALLOW_COPY_AND_ASSIGN(NintendoDataFetcherTest);
 };
 
-TEST_F(NintendoDataFetcherTest, MAYBE_UnsupportedDeviceIsIgnored) {
+TEST_F(NintendoDataFetcherTest, UnsupportedDeviceIsIgnored) {
   // Simulate an unsupported, non-Nintendo HID device.
   auto collection = mojom::HidCollectionInfo::New();
   collection->usage = mojom::HidUsageAndPage::New(0, 0);
@@ -110,7 +102,7 @@ TEST_F(NintendoDataFetcherTest, MAYBE_UnsupportedDeviceIsIgnored) {
   RunUntilIdle();
 }
 
-TEST_F(NintendoDataFetcherTest, MAYBE_AddAndRemoveSwitchPro) {
+TEST_F(NintendoDataFetcherTest, AddAndRemoveSwitchPro) {
   // Simulate a Switch Pro over USB.
   auto collection = mojom::HidCollectionInfo::New();
   collection->usage = mojom::HidUsageAndPage::New(0, 0);

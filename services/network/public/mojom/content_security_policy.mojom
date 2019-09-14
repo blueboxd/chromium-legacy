@@ -17,3 +17,7 @@ struct CSPSource {
 struct CSPSourceList {
   array<CSPSource> sources;
 };
+
+struct ContentSecurityPolicy {
+  CSPSourceList? frame_ancestors;
+};

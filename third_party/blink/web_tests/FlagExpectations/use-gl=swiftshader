@@ -1,5 +1,1 @@
-# Incorrect Blurring
-crbug.com/972621 media/controls/paint-controls-webkit-appearance-none-custom-bg.html [ Skip ]
-crbug.com/972621 media/controls/paint-controls-webkit-appearance-none.html [ Skip ]
-crbug.com/972621 media/video-no-audio.html [ Skip ]
-crbug.com/972621 transforms/transformed-document-element.html [ Skip ]
+# TODO(jonross): Remove once Finch completes.

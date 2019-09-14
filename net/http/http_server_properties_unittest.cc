@@ -2478,18 +2478,21 @@ TEST_F(HttpServerPropertiesTest, ClearServerNetworkStats) {
                                                  NetworkIsolationKey()));
 }
 
-typedef HttpServerPropertiesTest QuicServerInfoServerPropertiesTest;
-
-TEST_F(QuicServerInfoServerPropertiesTest, Set) {
+TEST_F(HttpServerPropertiesTest, OnQuicServerInfoMapLoaded) {
   quic::QuicServerId google_quic_server_id("www.google.com", 443, true);
+  HttpServerProperties::QuicServerInfoMapKey google_key(
+      google_quic_server_id, NetworkIsolationKey(),
+      false /* use_network_isolation_key */);
 
   const int kMaxQuicServerEntries = 10;
   impl_.SetMaxServerConfigsStoredInProperties(kMaxQuicServerEntries);
   EXPECT_EQ(10u, impl_.quic_server_info_map().max_size());
 
   // Check empty map.
-  std::unique_ptr<QuicServerInfoMap> init_quic_server_info_map =
-      std::make_unique<QuicServerInfoMap>(kMaxQuicServerEntries);
+  std::unique_ptr<HttpServerProperties::QuicServerInfoMap>
+      init_quic_server_info_map =
+          std::make_unique<HttpServerProperties::QuicServerInfoMap>(
+              kMaxQuicServerEntries);
   impl_.OnQuicServerInfoMapLoadedForTesting(
       std::move(init_quic_server_info_map));
   EXPECT_EQ(0u, impl_.quic_server_info_map().size());
@@ -2497,15 +2500,17 @@ TEST_F(QuicServerInfoServerPropertiesTest, Set) {
   // Check by initializing with www.google.com:443.
   std::string google_server_info("google_quic_server_info");
   init_quic_server_info_map =
-      std::make_unique<QuicServerInfoMap>(kMaxQuicServerEntries);
-  init_quic_server_info_map->Put(google_quic_server_id, google_server_info);
+      std::make_unique<HttpServerProperties::QuicServerInfoMap>(
+          kMaxQuicServerEntries);
+  init_quic_server_info_map->Put(google_key, google_server_info);
   impl_.OnQuicServerInfoMapLoadedForTesting(
       std::move(init_quic_server_info_map));
 
   // Verify data for www.google.com:443.
   EXPECT_EQ(1u, impl_.quic_server_info_map().size());
-  EXPECT_EQ(google_server_info,
-            *impl_.GetQuicServerInfo(google_quic_server_id));
+  EXPECT_EQ(
+      google_server_info,
+      *impl_.GetQuicServerInfo(google_quic_server_id, NetworkIsolationKey()));
 
   // Test recency order and overwriting of data.
   //
@@ -2513,43 +2518,54 @@ TEST_F(QuicServerInfoServerPropertiesTest, Set) {
   // SetQuicServerInfoMap(), because |quic_server_info_map| has an
   // entry for |docs_server|.
   quic::QuicServerId docs_quic_server_id("docs.google.com", 443, true);
+  HttpServerProperties::QuicServerInfoMapKey docs_key(
+      docs_quic_server_id, NetworkIsolationKey(),
+      false /* use_network_isolation_key */);
   std::string docs_server_info("docs_quic_server_info");
-  impl_.SetQuicServerInfo(docs_quic_server_id, docs_server_info);
+  impl_.SetQuicServerInfo(docs_quic_server_id, NetworkIsolationKey(),
+                          docs_server_info);
 
   // Recency order will be |docs_server| and |google_server|.
-  const QuicServerInfoMap& map = impl_.quic_server_info_map();
+  const HttpServerProperties::QuicServerInfoMap& map =
+      impl_.quic_server_info_map();
   ASSERT_EQ(2u, map.size());
   auto map_it = map.begin();
-  EXPECT_EQ(map_it->first, docs_quic_server_id);
+  EXPECT_EQ(map_it->first, docs_key);
   EXPECT_EQ(docs_server_info, map_it->second);
   ++map_it;
-  EXPECT_EQ(map_it->first, google_quic_server_id);
+  EXPECT_EQ(map_it->first, google_key);
   EXPECT_EQ(google_server_info, map_it->second);
 
   // Prepare |quic_server_info_map| to be loaded by
   // SetQuicServerInfoMap().
-  std::unique_ptr<QuicServerInfoMap> quic_server_info_map =
-      std::make_unique<QuicServerInfoMap>(kMaxQuicServerEntries);
+  std::unique_ptr<HttpServerProperties::QuicServerInfoMap>
+      quic_server_info_map =
+          std::make_unique<HttpServerProperties::QuicServerInfoMap>(
+              kMaxQuicServerEntries);
   // Change the values for |docs_server|.
   std::string new_docs_server_info("new_docs_quic_server_info");
-  quic_server_info_map->Put(docs_quic_server_id, new_docs_server_info);
+  quic_server_info_map->Put(docs_key, new_docs_server_info);
   // Add data for mail.google.com:443.
   quic::QuicServerId mail_quic_server_id("mail.google.com", 443, true);
+  HttpServerProperties::QuicServerInfoMapKey mail_key(
+      mail_quic_server_id, NetworkIsolationKey(),
+      false /* use_network_isolation_key */);
   std::string mail_server_info("mail_quic_server_info");
-  quic_server_info_map->Put(mail_quic_server_id, mail_server_info);
+  quic_server_info_map->Put(mail_key, mail_server_info);
   impl_.OnQuicServerInfoMapLoadedForTesting(std::move(quic_server_info_map));
 
   // Recency order will be |docs_server|, |google_server| and |mail_server|.
-  const QuicServerInfoMap& memory_map = impl_.quic_server_info_map();
+  const HttpServerProperties::QuicServerInfoMap& memory_map =
+      impl_.quic_server_info_map();
   ASSERT_EQ(3u, memory_map.size());
   auto memory_map_it = memory_map.begin();
-  EXPECT_EQ(memory_map_it->first, docs_quic_server_id);
+  EXPECT_EQ(memory_map_it->first, docs_key);
   EXPECT_EQ(new_docs_server_info, memory_map_it->second);
   ++memory_map_it;
-  EXPECT_EQ(memory_map_it->first, google_quic_server_id);
+  EXPECT_EQ(memory_map_it->first, google_key);
   EXPECT_EQ(google_server_info, memory_map_it->second);
   ++memory_map_it;
-  EXPECT_EQ(memory_map_it->first, mail_quic_server_id);
+  EXPECT_EQ(memory_map_it->first, mail_key);
   EXPECT_EQ(mail_server_info, memory_map_it->second);
 
   // Shrink the size of |quic_server_info_map| and verify the MRU order is
@@ -2557,119 +2573,276 @@ TEST_F(QuicServerInfoServerPropertiesTest, Set) {
   impl_.SetMaxServerConfigsStoredInProperties(2);
   EXPECT_EQ(2u, impl_.quic_server_info_map().max_size());
 
-  const QuicServerInfoMap& memory_map1 = impl_.quic_server_info_map();
+  const HttpServerProperties::QuicServerInfoMap& memory_map1 =
+      impl_.quic_server_info_map();
   ASSERT_EQ(2u, memory_map1.size());
   auto memory_map1_it = memory_map1.begin();
-  EXPECT_EQ(memory_map1_it->first, docs_quic_server_id);
+  EXPECT_EQ(memory_map1_it->first, docs_key);
   EXPECT_EQ(new_docs_server_info, memory_map1_it->second);
   ++memory_map1_it;
-  EXPECT_EQ(memory_map1_it->first, google_quic_server_id);
+  EXPECT_EQ(memory_map1_it->first, google_key);
   EXPECT_EQ(google_server_info, memory_map1_it->second);
   // |QuicServerInfo| for |mail_quic_server_id| shouldn't be there.
-  EXPECT_EQ(nullptr, impl_.GetQuicServerInfo(mail_quic_server_id));
+  EXPECT_EQ(nullptr, impl_.GetQuicServerInfo(mail_quic_server_id,
+                                             NetworkIsolationKey()));
 }
 
-TEST_F(QuicServerInfoServerPropertiesTest, SetQuicServerInfo) {
-  quic::QuicServerId quic_server_id("foo", 80, true);
-  EXPECT_EQ(0u, impl_.quic_server_info_map().size());
+TEST_F(HttpServerPropertiesTest, SetQuicServerInfo) {
+  quic::QuicServerId server1("foo", 80, false /* privacy_mode_enabled */);
+  quic::QuicServerId server2("foo", 80, true /* privacy_mode_enabled */);
 
   std::string quic_server_info1("quic_server_info1");
-  impl_.SetQuicServerInfo(quic_server_id, quic_server_info1);
+  std::string quic_server_info2("quic_server_info2");
+  std::string quic_server_info3("quic_server_info3");
 
-  EXPECT_EQ(1u, impl_.quic_server_info_map().size());
-  EXPECT_EQ(quic_server_info1, *(impl_.GetQuicServerInfo(quic_server_id)));
+  // Without network isolation keys enabled for HttpServerProperties, passing in
+  // a NetworkIsolationKey should have no effect on behavior.
+  impl_.SetQuicServerInfo(server1, NetworkIsolationKey(), quic_server_info1);
+  EXPECT_EQ(quic_server_info1,
+            *(impl_.GetQuicServerInfo(server1, NetworkIsolationKey())));
+  EXPECT_FALSE(impl_.GetQuicServerInfo(server2, NetworkIsolationKey()));
+  EXPECT_EQ(quic_server_info1,
+            *(impl_.GetQuicServerInfo(server1, network_isolation_key1_)));
+  EXPECT_FALSE(impl_.GetQuicServerInfo(server2, network_isolation_key1_));
+
+  impl_.SetQuicServerInfo(server2, network_isolation_key1_, quic_server_info2);
+  EXPECT_EQ(quic_server_info1,
+            *(impl_.GetQuicServerInfo(server1, NetworkIsolationKey())));
+  EXPECT_EQ(quic_server_info2,
+            *(impl_.GetQuicServerInfo(server2, NetworkIsolationKey())));
+  EXPECT_EQ(quic_server_info1,
+            *(impl_.GetQuicServerInfo(server1, network_isolation_key1_)));
+  EXPECT_EQ(quic_server_info2,
+            *(impl_.GetQuicServerInfo(server2, network_isolation_key1_)));
+
+  impl_.SetQuicServerInfo(server1, network_isolation_key1_, quic_server_info3);
+  EXPECT_EQ(quic_server_info3,
+            *(impl_.GetQuicServerInfo(server1, NetworkIsolationKey())));
+  EXPECT_EQ(quic_server_info2,
+            *(impl_.GetQuicServerInfo(server2, NetworkIsolationKey())));
+  EXPECT_EQ(quic_server_info3,
+            *(impl_.GetQuicServerInfo(server1, network_isolation_key1_)));
+  EXPECT_EQ(quic_server_info2,
+            *(impl_.GetQuicServerInfo(server2, network_isolation_key1_)));
 
   impl_.Clear(base::OnceClosure());
-  EXPECT_EQ(0u, impl_.quic_server_info_map().size());
-  EXPECT_EQ(nullptr, impl_.GetQuicServerInfo(quic_server_id));
+  EXPECT_FALSE(impl_.GetQuicServerInfo(server1, NetworkIsolationKey()));
+  EXPECT_FALSE(impl_.GetQuicServerInfo(server2, NetworkIsolationKey()));
+  EXPECT_FALSE(impl_.GetQuicServerInfo(server1, network_isolation_key1_));
+  EXPECT_FALSE(impl_.GetQuicServerInfo(server2, network_isolation_key1_));
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPartitionHttpServerPropertiesByNetworkIsolationKey);
+  // Since HttpServerProperties caches the feature value, have to create a new
+  // one.
+  HttpServerProperties properties(nullptr /* pref_delegate */,
+                                  nullptr /* net_log */, test_tick_clock_,
+                                  &test_clock_);
+
+  properties.SetQuicServerInfo(server1, NetworkIsolationKey(),
+                               quic_server_info1);
+  EXPECT_EQ(quic_server_info1,
+            *(properties.GetQuicServerInfo(server1, NetworkIsolationKey())));
+  EXPECT_FALSE(properties.GetQuicServerInfo(server2, NetworkIsolationKey()));
+  EXPECT_FALSE(properties.GetQuicServerInfo(server1, network_isolation_key1_));
+  EXPECT_FALSE(properties.GetQuicServerInfo(server2, network_isolation_key1_));
+
+  properties.SetQuicServerInfo(server1, network_isolation_key1_,
+                               quic_server_info2);
+  EXPECT_EQ(quic_server_info1,
+            *(properties.GetQuicServerInfo(server1, NetworkIsolationKey())));
+  EXPECT_FALSE(properties.GetQuicServerInfo(server2, NetworkIsolationKey()));
+  EXPECT_EQ(quic_server_info2,
+            *(properties.GetQuicServerInfo(server1, network_isolation_key1_)));
+  EXPECT_FALSE(properties.GetQuicServerInfo(server2, network_isolation_key1_));
+
+  properties.SetQuicServerInfo(server2, network_isolation_key1_,
+                               quic_server_info3);
+  EXPECT_EQ(quic_server_info1,
+            *(properties.GetQuicServerInfo(server1, NetworkIsolationKey())));
+  EXPECT_FALSE(properties.GetQuicServerInfo(server2, NetworkIsolationKey()));
+  EXPECT_EQ(quic_server_info2,
+            *(properties.GetQuicServerInfo(server1, network_isolation_key1_)));
+  EXPECT_EQ(quic_server_info3,
+            *(properties.GetQuicServerInfo(server2, network_isolation_key1_)));
+
+  properties.Clear(base::OnceClosure());
+  EXPECT_FALSE(properties.GetQuicServerInfo(server1, NetworkIsolationKey()));
+  EXPECT_FALSE(properties.GetQuicServerInfo(server2, NetworkIsolationKey()));
+  EXPECT_FALSE(properties.GetQuicServerInfo(server1, network_isolation_key1_));
+  EXPECT_FALSE(properties.GetQuicServerInfo(server2, network_isolation_key1_));
 }
 
 // Tests that GetQuicServerInfo() returns server info of a host
 // with the same canonical suffix when there is no exact host match.
-TEST_F(QuicServerInfoServerPropertiesTest, TestCanonicalSuffixMatch) {
+TEST_F(HttpServerPropertiesTest, QuicServerInfoCanonicalSuffixMatch) {
   // Set up HttpServerProperties.
-  // Add a host that has the same canonical suffix.
+  // Add a host with a canonical suffix.
   quic::QuicServerId foo_server_id("foo.googlevideo.com", 443, false);
   std::string foo_server_info("foo_server_info");
-  impl_.SetQuicServerInfo(foo_server_id, foo_server_info);
+  impl_.SetQuicServerInfo(foo_server_id, NetworkIsolationKey(),
+                          foo_server_info);
 
   // Add a host that has a different canonical suffix.
   quic::QuicServerId baz_server_id("baz.video.com", 443, false);
   std::string baz_server_info("baz_server_info");
-  impl_.SetQuicServerInfo(baz_server_id, baz_server_info);
+  impl_.SetQuicServerInfo(baz_server_id, NetworkIsolationKey(),
+                          baz_server_info);
 
-  // Create quic::QuicServerId with a host that has the same canonical suffix.
+  // Create SchemeHostPort with a host that has the initial canonical suffix.
   quic::QuicServerId bar_server_id("bar.googlevideo.com", 443, false);
 
   // Check the the server info associated with "foo" is returned for "bar".
-  const std::string* bar_server_info = impl_.GetQuicServerInfo(bar_server_id);
+  const std::string* bar_server_info =
+      impl_.GetQuicServerInfo(bar_server_id, NetworkIsolationKey());
   ASSERT_TRUE(bar_server_info != nullptr);
-  EXPECT_STREQ(foo_server_info.c_str(), bar_server_info->c_str());
+  EXPECT_EQ(foo_server_info, *bar_server_info);
+}
+
+// Make sure that canonical suffices respect NetworkIsolationKeys when using
+// QuicServerInfo methods.
+TEST_F(HttpServerPropertiesTest,
+       QuicServerInfoCanonicalSuffixMatchWithNetworkIsolationKey) {
+  // Two servers with same canonical suffix.
+  quic::QuicServerId server1("foo.googlevideo.com", 80,
+                             false /* privacy_mode_enabled */);
+  quic::QuicServerId server2("bar.googlevideo.com", 80,
+                             false /* privacy_mode_enabled */);
+
+  std::string server_info1("server_info1");
+  std::string server_info2("server_info2");
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPartitionHttpServerPropertiesByNetworkIsolationKey);
+  // Since HttpServerProperties caches the feature value, have to create a new
+  // one.
+  HttpServerProperties properties(nullptr /* pref_delegate */,
+                                  nullptr /* net_log */, test_tick_clock_,
+                                  &test_clock_);
+
+  // Set QuicServerInfo for one canononical suffix and
+  // |network_isolation_key1_|. It should be accessible via another
+  // SchemeHostPort, but only when the NetworkIsolationKeys match.
+  properties.SetQuicServerInfo(server1, network_isolation_key1_, server_info1);
+  const std::string* fetched_server_info =
+      properties.GetQuicServerInfo(server1, network_isolation_key1_);
+  ASSERT_TRUE(fetched_server_info);
+  EXPECT_EQ(server_info1, *fetched_server_info);
+  fetched_server_info =
+      properties.GetQuicServerInfo(server2, network_isolation_key1_);
+  ASSERT_TRUE(fetched_server_info);
+  EXPECT_EQ(server_info1, *fetched_server_info);
+  EXPECT_FALSE(properties.GetQuicServerInfo(server1, network_isolation_key2_));
+  EXPECT_FALSE(properties.GetQuicServerInfo(server2, network_isolation_key2_));
+  EXPECT_FALSE(properties.GetQuicServerInfo(server1, NetworkIsolationKey()));
+  EXPECT_FALSE(properties.GetQuicServerInfo(server2, NetworkIsolationKey()));
+
+  // Set different QuicServerInfo for the same canononical suffix and
+  // |network_isolation_key2_|. Both infos should be retriveable by using the
+  // different NetworkIsolationKeys.
+  properties.SetQuicServerInfo(server1, network_isolation_key2_, server_info2);
+  fetched_server_info =
+      properties.GetQuicServerInfo(server1, network_isolation_key1_);
+  ASSERT_TRUE(fetched_server_info);
+  EXPECT_EQ(server_info1, *fetched_server_info);
+  fetched_server_info =
+      properties.GetQuicServerInfo(server2, network_isolation_key1_);
+  ASSERT_TRUE(fetched_server_info);
+  EXPECT_EQ(server_info1, *fetched_server_info);
+  fetched_server_info =
+      properties.GetQuicServerInfo(server1, network_isolation_key2_);
+  ASSERT_TRUE(fetched_server_info);
+  EXPECT_EQ(server_info2, *fetched_server_info);
+  fetched_server_info =
+      properties.GetQuicServerInfo(server2, network_isolation_key2_);
+  ASSERT_TRUE(fetched_server_info);
+  EXPECT_EQ(server_info2, *fetched_server_info);
+  EXPECT_FALSE(properties.GetQuicServerInfo(server1, NetworkIsolationKey()));
+  EXPECT_FALSE(properties.GetQuicServerInfo(server2, NetworkIsolationKey()));
+
+  // Clearing should destroy all information.
+  properties.Clear(base::OnceClosure());
+  EXPECT_FALSE(properties.GetQuicServerInfo(server1, network_isolation_key1_));
+  EXPECT_FALSE(properties.GetQuicServerInfo(server2, network_isolation_key1_));
+  EXPECT_FALSE(properties.GetQuicServerInfo(server1, network_isolation_key2_));
+  EXPECT_FALSE(properties.GetQuicServerInfo(server2, network_isolation_key2_));
+  EXPECT_FALSE(properties.GetQuicServerInfo(server1, NetworkIsolationKey()));
+  EXPECT_FALSE(properties.GetQuicServerInfo(server2, NetworkIsolationKey()));
 }
 
 // Verifies that GetQuicServerInfo() returns the MRU entry if multiple records
 // match a given canonical host.
-TEST_F(QuicServerInfoServerPropertiesTest,
-       TestCanonicalSuffixMatchReturnsMruEntry) {
+TEST_F(HttpServerPropertiesTest,
+       QuicServerInfoCanonicalSuffixMatchReturnsMruEntry) {
   // Set up HttpServerProperties by adding two hosts with the same canonical
   // suffixes.
   quic::QuicServerId h1_server_id("h1.googlevideo.com", 443, false);
   std::string h1_server_info("h1_server_info");
-  impl_.SetQuicServerInfo(h1_server_id, h1_server_info);
+  impl_.SetQuicServerInfo(h1_server_id, NetworkIsolationKey(), h1_server_info);
 
   quic::QuicServerId h2_server_id("h2.googlevideo.com", 443, false);
   std::string h2_server_info("h2_server_info");
-  impl_.SetQuicServerInfo(h2_server_id, h2_server_info);
+  impl_.SetQuicServerInfo(h2_server_id, NetworkIsolationKey(), h2_server_info);
 
   // Create quic::QuicServerId to use for the search.
   quic::QuicServerId foo_server_id("foo.googlevideo.com", 443, false);
 
   // Check that 'h2' info is returned since it is MRU.
-  const std::string* server_info = impl_.GetQuicServerInfo(foo_server_id);
+  const std::string* server_info =
+      impl_.GetQuicServerInfo(foo_server_id, NetworkIsolationKey());
   ASSERT_TRUE(server_info != nullptr);
-  EXPECT_STREQ(h2_server_info.c_str(), server_info->c_str());
+  EXPECT_EQ(h2_server_info, *server_info);
 
   // Access 'h1' info, so it becomes MRU.
-  impl_.GetQuicServerInfo(h1_server_id);
+  impl_.GetQuicServerInfo(h1_server_id, NetworkIsolationKey());
 
   // Check that 'h1' info is returned since it is MRU now.
-  server_info = impl_.GetQuicServerInfo(foo_server_id);
+  server_info = impl_.GetQuicServerInfo(foo_server_id, NetworkIsolationKey());
   ASSERT_TRUE(server_info != nullptr);
-  EXPECT_STREQ(h1_server_info.c_str(), server_info->c_str());
+  EXPECT_EQ(h1_server_info, *server_info);
 }
 
 // Verifies that |GetQuicServerInfo| doesn't change the MRU order of the server
 // info map when a record is matched based on a canonical name.
-TEST_F(QuicServerInfoServerPropertiesTest,
-       TestCanonicalSuffixMatchDoesntChangeOrder) {
+TEST_F(HttpServerPropertiesTest,
+       QuicServerInfoCanonicalSuffixMatchDoesntChangeOrder) {
   // Add a host with a matching canonical name.
   quic::QuicServerId h1_server_id("h1.googlevideo.com", 443, false);
+  HttpServerProperties::QuicServerInfoMapKey h1_key(
+      h1_server_id, NetworkIsolationKey(),
+      false /* use_network_isolation_key */);
   std::string h1_server_info("h1_server_info");
-  impl_.SetQuicServerInfo(h1_server_id, h1_server_info);
+  impl_.SetQuicServerInfo(h1_server_id, NetworkIsolationKey(), h1_server_info);
 
   // Add a host hosts with a non-matching canonical name.
   quic::QuicServerId h2_server_id("h2.video.com", 443, false);
+  HttpServerProperties::QuicServerInfoMapKey h2_key(
+      h2_server_id, NetworkIsolationKey(),
+      false /* use_network_isolation_key */);
   std::string h2_server_info("h2_server_info");
-  impl_.SetQuicServerInfo(h2_server_id, h2_server_info);
+  impl_.SetQuicServerInfo(h2_server_id, NetworkIsolationKey(), h2_server_info);
 
   // Check that "h2.video.com" is the MRU entry in the map.
-  EXPECT_EQ(h2_server_id, impl_.quic_server_info_map().begin()->first);
+  EXPECT_EQ(h2_key, impl_.quic_server_info_map().begin()->first);
 
   // Search for the entry that matches the canonical name
   // ("h1.googlevideo.com").
   quic::QuicServerId foo_server_id("foo.googlevideo.com", 443, false);
-  const std::string* server_info = impl_.GetQuicServerInfo(foo_server_id);
+  const std::string* server_info =
+      impl_.GetQuicServerInfo(foo_server_id, NetworkIsolationKey());
   ASSERT_TRUE(server_info != nullptr);
 
   // Check that the search (although successful) hasn't changed the MRU order of
   // the map.
-  EXPECT_EQ(h2_server_id, impl_.quic_server_info_map().begin()->first);
+  EXPECT_EQ(h2_key, impl_.quic_server_info_map().begin()->first);
 
   // Search for "h1.googlevideo.com" directly, so it becomes MRU
-  impl_.GetQuicServerInfo(h1_server_id);
+  impl_.GetQuicServerInfo(h1_server_id, NetworkIsolationKey());
 
   // Check that "h1.googlevideo.com" is the MRU entry now.
-  EXPECT_EQ(h1_server_id, impl_.quic_server_info_map().begin()->first);
+  EXPECT_EQ(h1_key, impl_.quic_server_info_map().begin()->first);
 }
 
 // Tests that the canonical host matching works for hosts stored in memory cache
@@ -2677,44 +2850,53 @@ TEST_F(QuicServerInfoServerPropertiesTest,
 // using SetQuicServerInfo() and SetQuicServerInfoMap() is taken into
 // cosideration when searching for server info for a host with the same
 // canonical suffix.
-TEST_F(QuicServerInfoServerPropertiesTest, TestCanonicalSuffixMatchSetInfoMap) {
+TEST_F(HttpServerPropertiesTest, QuicServerInfoCanonicalSuffixMatchSetInfoMap) {
   // Add a host info using SetQuicServerInfo(). That will simulate an info
   // entry stored in memory cache.
   quic::QuicServerId h1_server_id("h1.googlevideo.com", 443, false);
   std::string h1_server_info("h1_server_info_memory_cache");
-  impl_.SetQuicServerInfo(h1_server_id, h1_server_info);
+  impl_.SetQuicServerInfo(h1_server_id, NetworkIsolationKey(), h1_server_info);
 
   // Prepare a map with host info and add it using SetQuicServerInfoMap(). That
   // will simulate info records read from the persistence storage.
   quic::QuicServerId h2_server_id("h2.googlevideo.com", 443, false);
+  HttpServerProperties::QuicServerInfoMapKey h2_key(
+      h2_server_id, NetworkIsolationKey(),
+      false /* use_network_isolation_key */);
   std::string h2_server_info("h2_server_info_from_disk");
 
   quic::QuicServerId h3_server_id("h3.ggpht.com", 443, false);
+  HttpServerProperties::QuicServerInfoMapKey h3_key(
+      h3_server_id, NetworkIsolationKey(),
+      false /* use_network_isolation_key */);
   std::string h3_server_info("h3_server_info_from_disk");
 
   const int kMaxQuicServerEntries = 10;
   impl_.SetMaxServerConfigsStoredInProperties(kMaxQuicServerEntries);
 
-  std::unique_ptr<QuicServerInfoMap> quic_server_info_map(
-      new QuicServerInfoMap(kMaxQuicServerEntries));
-  quic_server_info_map->Put(h2_server_id, h2_server_info);
-  quic_server_info_map->Put(h3_server_id, h3_server_info);
+  std::unique_ptr<HttpServerProperties::QuicServerInfoMap>
+      quic_server_info_map =
+          std::make_unique<HttpServerProperties::QuicServerInfoMap>(
+              kMaxQuicServerEntries);
+  quic_server_info_map->Put(h2_key, h2_server_info);
+  quic_server_info_map->Put(h3_key, h3_server_info);
   impl_.OnQuicServerInfoMapLoadedForTesting(std::move(quic_server_info_map));
 
   // Check that the server info from the memory cache is returned since unique
   // entries from the memory cache are added after entries from the
   // persistence storage and, therefore, are most recently used.
   quic::QuicServerId foo_server_id("foo.googlevideo.com", 443, false);
-  const std::string* server_info = impl_.GetQuicServerInfo(foo_server_id);
+  const std::string* server_info =
+      impl_.GetQuicServerInfo(foo_server_id, NetworkIsolationKey());
   ASSERT_TRUE(server_info != nullptr);
-  EXPECT_STREQ(h1_server_info.c_str(), server_info->c_str());
+  EXPECT_EQ(h1_server_info, *server_info);
 
   // Check that server info that was added using SetQuicServerInfoMap() can be
   // found.
   foo_server_id = quic::QuicServerId("foo.ggpht.com", 443, false);
-  server_info = impl_.GetQuicServerInfo(foo_server_id);
+  server_info = impl_.GetQuicServerInfo(foo_server_id, NetworkIsolationKey());
   ASSERT_TRUE(server_info != nullptr);
-  EXPECT_STREQ(h3_server_info.c_str(), server_info->c_str());
+  EXPECT_EQ(h3_server_info, *server_info);
 }
 
 }  // namespace

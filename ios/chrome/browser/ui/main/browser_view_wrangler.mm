@@ -252,13 +252,13 @@
 - (void)setMainBrowser:(std::unique_ptr<Browser>)mainBrowser {
   if (_mainBrowser.get()) {
     TabModel* tabModel = self.mainBrowser->GetTabModel();
-    breakpad::StopMonitoringTabStateForWebStateList(tabModel.webStateList);
-    breakpad::StopMonitoringURLsForWebStateList(tabModel.webStateList);
+    WebStateList* webStateList = self.mainBrowser->GetWebStateList();
+    breakpad::StopMonitoringTabStateForWebStateList(webStateList);
+    breakpad::StopMonitoringURLsForWebStateList(webStateList);
     [tabModel browserStateDestroyed];
-    _activeWebStateObservationForwarders[tabModel.webStateList] = nullptr;
-    tabModel.webStateList->RemoveObserver(_webStateListObserver.get());
-    tabModel.webStateList->RemoveObserver(
-        _webStateListForwardingObserver.get());
+    _activeWebStateObservationForwarders[webStateList] = nullptr;
+    webStateList->RemoveObserver(_webStateListObserver.get());
+    webStateList->RemoveObserver(_webStateListForwardingObserver.get());
   }
 
   _mainBrowser = std::move(mainBrowser);
@@ -267,12 +267,12 @@
 - (void)setOtrBrowser:(std::unique_ptr<Browser>)otrBrowser {
   if (_otrBrowser.get()) {
     TabModel* tabModel = self.otrBrowser->GetTabModel();
-    breakpad::StopMonitoringTabStateForWebStateList(tabModel.webStateList);
+    WebStateList* webStateList = self.otrBrowser->GetWebStateList();
+    breakpad::StopMonitoringTabStateForWebStateList(webStateList);
     [tabModel browserStateDestroyed];
-    _activeWebStateObservationForwarders[tabModel.webStateList] = nullptr;
-    tabModel.webStateList->RemoveObserver(_webStateListObserver.get());
-    tabModel.webStateList->RemoveObserver(
-        _webStateListForwardingObserver.get());
+    _activeWebStateObservationForwarders[webStateList] = nullptr;
+    webStateList->RemoveObserver(_webStateListObserver.get());
+    webStateList->RemoveObserver(_webStateListForwardingObserver.get());
   }
 
   _otrBrowser = std::move(otrBrowser);

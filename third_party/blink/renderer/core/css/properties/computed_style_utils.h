@@ -19,9 +19,10 @@ namespace blink {
 
 using namespace cssvalue;
 
-class ComputedStyle;
+class CSSNumericLiteralValue;
 class CSSStyleValue;
 class CSSValue;
+class ComputedStyle;
 class StyleColor;
 class StylePropertyShorthand;
 
@@ -104,7 +105,7 @@ class ComputedStyleUtils {
   static CSSPrimitiveValue* ValueForFontSize(const ComputedStyle&);
   static CSSPrimitiveValue* ValueForFontStretch(const ComputedStyle&);
   static CSSValue* ValueForFontStyle(const ComputedStyle&);
-  static CSSPrimitiveValue* ValueForFontWeight(const ComputedStyle&);
+  static CSSNumericLiteralValue* ValueForFontWeight(const ComputedStyle&);
   static CSSIdentifierValue* ValueForFontVariantCaps(const ComputedStyle&);
   static CSSValue* ValueForFontVariantLigatures(const ComputedStyle&);
   static CSSValue* ValueForFontVariantNumeric(const ComputedStyle&);

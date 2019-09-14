@@ -85,10 +85,8 @@ const gfx::VectorIcon& SendTabToSelfIconView::GetVectorIcon() const {
 }
 
 SkColor SendTabToSelfIconView::GetTextColor() const {
-  return GetOmniboxColor(OmniboxPart::LOCATION_BAR_TEXT_DEFAULT,
-                         GetNativeTheme()->ShouldUseDarkColors()
-                             ? OmniboxTint::DARK
-                             : OmniboxTint::LIGHT);
+  return GetOmniboxColor(GetThemeProvider(),
+                         OmniboxPart::LOCATION_BAR_TEXT_DEFAULT);
 }
 
 base::string16 SendTabToSelfIconView::GetTextForTooltipAndAccessibleName()

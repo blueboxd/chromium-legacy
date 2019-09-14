@@ -21,7 +21,6 @@
 <translation id="1146678959555564648">Zapnout VR</translation>
 <translation id="116280672541001035">Využito</translation>
 <translation id="1171770572613082465">Populární weby zobrazíte klepnutím na tlačítko Top weby</translation>
-<translation id="1172593791219290334">Počáteční stránka</translation>
 <translation id="1173894706177603556">Přejmenovat</translation>
 <translation id="1175310183703641346">Vaše záložky, historie, hesla a další nastavení budou synchronizovány do účtu Google.</translation>
 <translation id="1178581264944972037">Pozastavit</translation>
@@ -42,6 +41,7 @@
 <translation id="1258753120186372309">Sváteční logo Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Vyhledávání a prozkoumávání</translation>
 <translation id="1264974993859112054">Sport</translation>
+<translation id="1266864766717917324">Sdílení obsahu typu <ph name="CONTENT_TYPE" /> se nezdařilo</translation>
 <translation id="1272079795634619415">Zastavit</translation>
 <translation id="1283039547216852943">Klepnutím rozbalíte</translation>
 <translation id="1285320974508926690">Tento web nikdy nepřekládat</translation>
@@ -71,6 +71,7 @@
 <translation id="1430915738399379752">Tisk</translation>
 <translation id="1445680696957526815">Komponenty prohlížeče Chrome navzájem nejsou kompatibilní. Je možné, že se Chrome zrovna upgraduje. Pokud problém přetrvává, zkuste Chrome odinstalovat a poté znovu nainstalovat.</translation>
 <translation id="1446450296470737166">Povolit úplné ovládání zařízení MIDI</translation>
+<translation id="1450753235335490080">Sdílení obsahu typu <ph name="CONTENT_TYPE" /> se nezdařilo</translation>
 <translation id="145097072038377568">Vypnuto v Nastavení pro Android</translation>
 <translation id="1477626028522505441">Stažení souboru <ph name="FILE_NAME" /> se nezdařilo z důvodu problémů se serverem.</translation>
 <translation id="1501480321619201731">Smazat skupinu</translation>
@@ -153,6 +154,7 @@
 <translation id="2049961518639794558">Změna přípony souboru může vést k neočekávanému chování a může být pro zařízení škodlivá.</translation>
 <translation id="2056878612599315956">Web je pozastaven</translation>
 <translation id="2063713494490388661">Vyhledání klepnutím</translation>
+<translation id="2067805253194386918">text</translation>
 <translation id="2079545284768500474">Vrátit zpět</translation>
 <translation id="2082238445998314030">Výsledek <ph name="RESULT_NUMBER" /> z <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Zvuk</translation>
@@ -165,7 +167,6 @@
 <translation id="2131665479022868825">Uspořeno: <ph name="DATA" /></translation>
 <translation id="213279576345780926">Karta <ph name="TAB_TITLE" /> byla zavřena.</translation>
 <translation id="2139186145475833000">Přidat na plochu</translation>
-<translation id="2142289305367051020">Zde jsou vaše oblíbené stránky</translation>
 <translation id="2146738493024040262">Otevřít okamžitou aplikaci</translation>
 <translation id="2148716181193084225">Dnes</translation>
 <translation id="2154484045852737596">Úprava karty</translation>
@@ -324,6 +325,7 @@
 <translation id="3384347053049321195">Sdílet obrázek</translation>
 <translation id="3386292677130313581">Pokud web bude chtít znát vaši polohu, zobrazit dotaz (doporučeno)</translation>
 <translation id="3387650086002190359">Stažení souboru <ph name="FILE_NAME" /> se nezdařilo z důvodu chyb systému souborů.</translation>
+<translation id="3389286852084373014">Text je příliš dlouhý</translation>
 <translation id="3398320232533725830">Otevřít správce záložek</translation>
 <translation id="3414952576877147120">Velikost:</translation>
 <translation id="3443221991560634068">Znovu načíst aktuální stránku</translation>
@@ -348,6 +350,7 @@
 <translation id="3599863153486145794">Vymaže historii ze všech zařízení, na kterých jste přihlášeni. Na stránce <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> mohou být k dispozici další druhy historie prohlížení zaznamenané ve vašem účtu Google.</translation>
 <translation id="3600792891314830896">Ztlumit weby, které přehrávají zvuky</translation>
 <translation id="3616113530831147358">Zvuk</translation>
+<translation id="3631987586758005671">Sdílení se zařízením <ph name="DEVICE_NAME" /></translation>
 <translation id="3632295766818638029">Zrušit maskování hesla</translation>
 <translation id="363596933471559332">Přihlašovat se na weby automaticky pomocí uložených identifikačních údajů. Když je tato funkce vypnutá, budete před každým přihlášením na web požádáni o ověření.</translation>
 <translation id="3658159451045945436">Resetováním vymažete historii úspory dat, včetně seznamu navštívených webů.</translation>
@@ -358,7 +361,6 @@
 <translation id="3739899004075612870">Přidáno do záložek (<ph name="PRODUCT_NAME" />)</translation>
 <translation id="3744111309925758534">Ostatní aplikace: <ph name="MEGABYTES" /> MB</translation>
 <translation id="3744111561329211289">Synchronizace na pozadí</translation>
-<translation id="3745176700485982507">Na této stránce najdete odkazy na své oblíbené weby</translation>
 <translation id="3771001275138982843">Aktualizaci nelze stáhnout</translation>
 <translation id="3773755127849930740">Chcete-li povolit párování, <ph name="BEGIN_LINK" />zapněte Bluetooth<ph name="END_LINK" />.</translation>
 <translation id="3775705724665058594">Odeslat na vaše zařízení</translation>
@@ -563,7 +565,6 @@ Před přechodem do režimu virtuální reality zkontrolujte, zda tomuto webu d�
 <translation id="5224771365102442243">S videem</translation>
 <translation id="5230560987958996918">Web <ph name="SITE" /> chce vyhledat zařízení Bluetooth v okolí. Byla nalezena následující zařízení:</translation>
 <translation id="5233638681132016545">Nová karta</translation>
-<translation id="5234764350956374838">Zavřít</translation>
 <translation id="526421993248218238">Stránku nelze načíst</translation>
 <translation id="5271967389191913893">Zařízení obsah ke stažení nemůže otevřít.</translation>
 <translation id="528192093759286357">Režim celé obrazovky ukončíte přetažením z horního okraje obrazovky a klepnutím na tlačítko Zpět.</translation>
@@ -578,8 +579,8 @@ Před přechodem do režimu virtuální reality zkontrolujte, zda tomuto webu d�
 <translation id="5324858694974489420">Rodičovská nastavení</translation>
 <translation id="5327248766486351172">Jméno</translation>
 <translation id="5335288049665977812">Povolit webům spouštět JavaScript (doporučeno)</translation>
+<translation id="5342314432463739672">Žádosti o oprávnění</translation>
 <translation id="5357811892247919462">Byla přijata karta</translation>
-<translation id="5363230136052241468">Klepnutím na tlačítko plochy načtete stránku nové karty</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{Je otevřená <ph name="OPEN_TABS_ONE" /> karta, můžete mezi nimi přepínat klepnutím}few{Je otevřených <ph name="OPEN_TABS_MANY" /> karet, můžete mezi nimi přepínat klepnutím}many{Je otevřených <ph name="OPEN_TABS_MANY" /> karty, můžete mezi nimi přepínat klepnutím}other{Je otevřených <ph name="OPEN_TABS_MANY" /> karet, můžete mezi nimi přepínat klepnutím}}</translation>
 <translation id="5391532827096253100">Spojení s tímto webem není zabezpečené. Informace o webu</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 další)}few{(+ # další)}many{(+ # další)}other{(+ # dalších)}}</translation>
@@ -748,6 +749,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6532866250404780454">Weby navštívené v Chromu se nebudou zobrazovat. Všechny časovače webů budou smazány.</translation>
 <translation id="6534565668554028783">Odpověď Googlu trvala příliš dlouho</translation>
 <translation id="6538442820324228105">Staženo: <ph name="GBS" /> GB</translation>
+<translation id="6539092367496845964">Něco se pokazilo. Zkuste to později.</translation>
 <translation id="654446541061731451">Vyberte kartu, kterou chcete přenést</translation>
 <translation id="6545017243486555795">Vymazat všechna data</translation>
 <translation id="6545864417968258051">Vyhledávání Bluetooth</translation>
@@ -802,7 +804,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6912998170423641340">Blokovat webům přístup k textu a obrázkům zkopírovaným do schránky</translation>
 <translation id="6914783257214138813">Vaše hesla uvidí každý, kdo může zobrazit exportovaný soubor.</translation>
 <translation id="6942665639005891494">Výchozí umístění pro stažené soubory můžete kdykoliv změnit pomocí možnosti v nabídce Nastavení.</translation>
-<translation id="6944102653068653326">Klepnutím načtete stránku nové karty</translation>
 <translation id="6945221475159498467">Vybrat</translation>
 <translation id="6963642900430330478">Tato stránka je nebezpečná. Informace o webu</translation>
 <translation id="6963766334940102469">Smazat záložky</translation>
@@ -879,6 +880,7 @@ Web NEZÍSKÁ přístup k fotoaparátu. Fotky z fotoaparátu uvidíte pouze vy
 <translation id="7493994139787901920"><ph name="VERSION" /> (aktualizováno <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">uspořená data</translation>
 <translation id="7498271377022651285">Čekejte prosím…</translation>
+<translation id="7510943789645525906">Upozorní vás, pokud vaše heslo bylo součástí porušení zabezpečení údajů</translation>
 <translation id="7514365320538308">Stáhnout</translation>
 <translation id="751961395872307827">K webu se nelze připojit</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -996,7 +998,6 @@ Web NEZÍSKÁ přístup k fotoaparátu. Fotky z fotoaparátu uvidíte pouze vy
 <translation id="8284326494547611709">Titulky</translation>
 <translation id="8300705686683892304">Spravováno aplikací</translation>
 <translation id="8310344678080805313">Standardní karty</translation>
-<translation id="8313455859591948645">Úprava počáteční stránky</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> a další weby</translation>
 <translation id="8327155640814342956">Chcete-li mít při procházení nejlepší prostředí a funkce, aktualizujte Chrome</translation>
 <translation id="8339163506404995330">Stránky v jazyce <ph name="LANGUAGE" /> nebudou překládány</translation>

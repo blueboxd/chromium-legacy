@@ -644,6 +644,7 @@ Shell::~Shell() {
 
   // Depends on |tablet_mode_controller_|.
   shelf_controller_->Shutdown();
+  shelf_config_->Shutdown();
 
   // Destroy |home_screen_controller_| before |app_list_controller_| since
   // the former delegates to the latter.
@@ -979,6 +980,7 @@ void Shell::Init(
   accelerator_controller_ = std::make_unique<AcceleratorControllerImpl>();
 
   shelf_config_ = std::make_unique<ShelfConfig>();
+  shelf_config_->Init();
   shelf_controller_ = std::make_unique<ShelfController>();
 
   magnifier_key_scroll_handler_ = MagnifierKeyScroller::CreateHandler();

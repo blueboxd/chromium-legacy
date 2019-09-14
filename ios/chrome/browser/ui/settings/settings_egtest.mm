@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
@@ -547,6 +548,34 @@ id<GREYMatcher> BandwidthSettingsButton() {
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
+}
+
+// Verifies that the Settings screen can be swiped down to dismiss, and clean up
+// is performed allowing a new presentation.
+- (void)testSettingsSwipeDownDismiss {
+  if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 12 and lower.");
+  }
+
+  [ChromeEarlGreyUI openSettingsMenu];
+
+  // Check that Settings is presented.
+  [[EarlGrey selectElementWithMatcher:SettingsCollectionView()]
+      assertWithMatcher:grey_notNil()];
+
+  // Swipe TableView down.
+  [[EarlGrey selectElementWithMatcher:SettingsCollectionView()]
+      performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
+
+  // Check that Settings has been dismissed.
+  [[EarlGrey selectElementWithMatcher:SettingsCollectionView()]
+      assertWithMatcher:grey_nil()];
+
+  // Re-Open Settings to confirm SwipeDown cleaned up properly and Settings can
+  // be shown again.
+  [ChromeEarlGreyUI openSettingsMenu];
+  [[EarlGrey selectElementWithMatcher:SettingsCollectionView()]
+      assertWithMatcher:grey_notNil()];
 }
 
 // Verifies the UI elements are accessible on the Settings page.

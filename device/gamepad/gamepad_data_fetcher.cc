@@ -19,14 +19,17 @@ void RunCallbackOnCallbackThread(
 }
 }  // namespace
 
-GamepadDataFetcher::GamepadDataFetcher() : provider_(nullptr) {}
+GamepadDataFetcher::GamepadDataFetcher() = default;
 
 GamepadDataFetcher::~GamepadDataFetcher() = default;
 
-void GamepadDataFetcher::InitializeProvider(GamepadPadStateProvider* provider) {
+void GamepadDataFetcher::InitializeProvider(
+    GamepadPadStateProvider* provider,
+    service_manager::Connector* service_manager_connector) {
   DCHECK(provider);
 
   provider_ = provider;
+  service_manager_connector_ = service_manager_connector;
   OnAddedToProvider();
 }
 

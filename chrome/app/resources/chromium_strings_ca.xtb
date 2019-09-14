@@ -194,6 +194,7 @@ Chromium no pot recuperar la configuració.</translation>
 <translation id="753534427205733210">{0,plural, =1{Chromium es reiniciarà d'aquí a 1 minut}other{Chromium es reiniciarà d'aquí a # minuts}}</translation>
 <translation id="7549178288319965365">About Chromium OS</translation>
 <translation id="7561906087460245826">Esborra també les dades de Chromium (<ph name="URL" />)</translation>
+<translation id="7585853947355360626">Si alguna opció de configuració no es mostra en aquesta pàgina, consulta la <ph name="LINK_BEGIN" />configuració de Chromium OS<ph name="LINK_END" />.</translation>
 <translation id="761356813943268536">Chromium està utilitzant la càmera i el micròfon.</translation>
 <translation id="7617377681829253106">Chromium és millor que mai</translation>
 <translation id="7686590090926151193">Chromium no és el navegador predeterminat</translation>
@@ -227,6 +228,7 @@ Chromium no pot recuperar la configuració.</translation>
 <translation id="8619360774459241877">S'està iniciant Chromium...</translation>
 <translation id="8621669128220841554">La instal·lació ha fallat a causa d'un error no especificat. Torneu a baixar Chromium.</translation>
 <translation id="8667808506758191620">El dispositiu <ph name="DEVICE_TYPE" /> està actualitzat.</translation>
+<translation id="8682540261359803721">Si alguna opció de configuració no es mostra en aquesta pàgina, consulta la <ph name="LINK_BEGIN" />configuració del navegador Chromium<ph name="LINK_END" />.</translation>
 <translation id="8697124171261953979">També controla la pàgina que es mostra quan inicieu Chromium o quan feu una cerca des de l'omnibox.</translation>
 <translation id="8704119203788522458">Aquest és el vostre Chromium</translation>
 <translation id="8739167630197873875">Has indicat que s'esborrin les galetes en sortir de Chromium. Per continuar la sincronització, canvia aquestes <ph name="COOKIE_SETTINGS_LINK" />.</translation>

@@ -148,7 +148,7 @@ class AutofillAssistantTest : public testing::Test {
     return static_cast<CardUnmaskDelegate*>(full_card_request);
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   TestAutofillClient autofill_client_;
   testing::NiceMock<TestAutofillDriver> autofill_driver_;
   TestPersonalDataManager pdm_;

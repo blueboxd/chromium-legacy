@@ -38,6 +38,9 @@ CodecImageGroup::CodecImageGroup(
 }
 
 CodecImageGroup::~CodecImageGroup() {
+  // Since every CodecImage should hold a strong ref to us until it becomes
+  // unused, we shouldn't be destroyed with any outstanding images.
+  DCHECK(images_.empty());
   CHECK(task_runner_->RunsTasksInCurrentSequence());
 }
 
@@ -54,21 +57,14 @@ void CodecImageGroup::AddCodecImage(CodecImage* image) {
   images_.insert(image);
 
   // Bind a strong ref to |this| so that the callback will prevent us from being
-  // destroyed until the CodecImage is destroyed.
-  image->SetDestructionCB(
-      base::BindRepeating(&CodecImageGroup::OnCodecImageDestroyed,
-                          scoped_refptr<CodecImageGroup>(this)));
+  // destroyed until the CodecImage is no longer in use for drawing.  In that
+  // case, it doesn't need |surface_bundle_|, nor does it need to be notified
+  // if the overlay is destroyed.
+  image->AddUnusedCB(
+      base::BindRepeating(&CodecImageGroup::OnCodecImageUnused, this));
 }
 
-void CodecImageGroup::RemoveCodecImage(CodecImage* image) {
-  // Temporary: crbug.com/986783 .
-  CHECK(task_runner_->RunsTasksInCurrentSequence());
-  images_.erase(image);
-  // Clear the destruction CB, since it has a strong ref to us.
-  image->SetDestructionCB(CodecImage::DestructionCB());
-}
-
-void CodecImageGroup::OnCodecImageDestroyed(CodecImage* image) {
+void CodecImageGroup::OnCodecImageUnused(CodecImage* image) {
   // Temporary: crbug.com/986783 .
   CHECK(task_runner_->RunsTasksInCurrentSequence());
   images_.erase(image);

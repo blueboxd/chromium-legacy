@@ -482,10 +482,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 정책이 유효한 URL로 설정되면 <ph name="PRODUCT_NAME" />이(가) 해당 URL로부터 사이트 목록을 다운로드하며, <ph name="SITELIST_POLICY_NAME" /> 정책으로 규칙이 구성된 경우 규칙을 적용합니다.
 
       Internet Explorer의 <ph name="IEEM_SITELIST_POLICY" /> 정책은 https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode에서 자세히 살펴보세요.</translation>
-<translation id="1839060937202387559">저장장치용 하드웨어 통계 및 식별자를 보고합니다.
-
-      이 정책이 False로 설정되면 통계가 보고되지 않습니다.
-      True로 설정되거나 설정되지 않으면 통계가 보고됩니다.</translation>
 <translation id="1843117931376765605">사용자 정책에 대한 새로고침 빈도</translation>
 <translation id="1844620919405873871">빠른 잠금 해제 관련 정책을 설정합니다.</translation>
 <translation id="1845405905602899692">키오스크 설정</translation>
@@ -3405,17 +3401,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       설정하지 않으면 북마크를 가져올지 여부를 사용자에게 확인하거나 자동으로 가져올 수 있습니다.</translation>
 <translation id="7063895219334505671">이러한 사이트에서 팝업 허용</translation>
-<translation id="706568410943497889">
-      이 정책이 true로 설정되어 있으면 <ph name="PRODUCT_NAME" />에서 Google 서비스(예: Google Meet)에서 WebRTC 이벤트 로그를 수집하고 이러한 로그를 Google로 업로드할 수 있도록 허용합니다.
-
-      이 정책이 false로 설정되어 있거나 설정되어 있지 않으면 <ph name="PRODUCT_NAME" />에서 이러한 로그를 수집하거나 업로드할 수 없습니다.
-
-      이러한 로그에는 주고받는 RTP 패킷의 시간 및 크기, 네트워크 혼잡에 관한 의견, 오디오/동영상 프레임의 시간 및 품질에 관한 메타데이터 등과 같이 Chrome에서 음성/화상 통화 시 발생하는 문제를 디버깅할 때 유용한 진단 정보가 포함됩니다. 이러한 로그에는 통화의 음성 또는 동영상 콘텐츠가 포함되어 있지 않습니다.
-
-      Chrome에 의한 이러한 데이터 수집은 Google 행아웃, Google Meet와 같은 Google 웹 서비스에 의해서만 실행됩니다.
-
-      Google에서는 이러한 로그를 세션 ID를 통해 Google 서비스 자체에서 수집한 다른 로그와 연결할 수 있습니다. 이는 디버깅을 더 쉽게 하기 위해서입니다.
-      </translation>
 <translation id="706669471845501145">사이트에서 데스크톱 알림을 표시하도록 허용</translation>
 <translation id="7068108874199666656">네트워크 설정을 푸시하여 모든 <ph name="PRODUCT_OS_NAME" /> 기기 사용자의 기기에 적용할 수 있도록 합니다. 네트워크 설정은 오픈 네트워크 구성 형식에 정의된 JSON 형식 문자열입니다.</translation>
 <translation id="7070525176564511548">매주(168시간) 비밀번호를 입력해야 합니다.</translation>
@@ -4115,10 +4100,6 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
           정책이 설정되면 사용자가 변경하거나 재정의할 수 없습니다.
 
           정책이 설정되지 않은 경우 처음에는 음성기록이 사용 중지되어 있으나 사용자가 언제든지 사용 설정할 수 있습니다.</translation>
-<translation id="8292322992383748446">SoC 구성요소의 하드웨어 통계를 보고합니다.
-
-      이 정책이 False로 설정되면 통계가 보고되지 않습니다.
-      True로 설정되거나 설정되지 않으면 통계가 보고됩니다.</translation>
 <translation id="829337533107201925">정책이 사용 설정되면 전체 그룹에서 가져온 정책 중 우선순위가 가장 높은 출처를 공유하지 않는 정책이 무시됩니다.
 
       정책이 사용 중지되면 정책이 출처로 인해 무시되지 않습니다. 충돌이 있으며 정책에 가장 높은 우선순위가 없는 경우에만 정책이 무시됩니다.
@@ -4154,10 +4135,6 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 <translation id="8367209241899435947">Windows에서 Chrome 정리도구 사용 설정</translation>
 <translation id="8369602308428138533">AC 전원으로 실행할 때 화면 꺼짐 지연</translation>
 <translation id="8371178326720637170">관리되는 확장 프로그램에서 Enterprise Hardware Platform API를 사용할 수 있도록 허용합니다.</translation>
-<translation id="8374747520743832795">전원과 관련된 하드웨어 통계 및 식별자를 보고합니다.
-
-      이 정책이 False로 설정되면 통계가 보고되지 않습니다.
-      True로 설정되거나 설정되지 않으면 통계가 보고됩니다.</translation>
 <translation id="8380490658357556620">원격 클라이언트가 이 컴퓨터에 연결을 설정하려고 할 때 릴레이 서버를 사용 설정합니다.
 
           이 설정을 사용하면 직접 연결을 사용할 수 없을 때 원격 클라이언트가 릴레이 서버를 사용하여 이 컴퓨터에 연결할 수 있습니다(예: 방화벽으로 인해 제한되는 경우).

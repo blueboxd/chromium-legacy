@@ -206,16 +206,6 @@ thresholding.
 The modernization changes will be broken down into several incremental
 changes to keep change lists to a reviewable size:
 
-### Change list 7: Add metrics
-
-- Feature Work:
-  - Add metrics as defined in section 6 following these
-    [steps](https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histograms/README.md#Enum-Histograms).
-- Testing
-  - Create unit tests for new histograms, see [HistogramTester](https://cs.chromium.org/chromium/src/base/test/metrics/histogram_tester.h?q=HistogramTester&sq=package:chromium&dr=CSs&l=25)
-    as an example.
-  - Run histogram tests as defined [here](https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histograms/README.md#Testing).
-
 ### Change list 8: Roll out new Windows.Devices.Sensors implementation to users
 
 - Feature Work:

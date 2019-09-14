@@ -89,11 +89,13 @@
 
       #toggleContainer {
         align-items: center;
+        color: var(--cr-primary-text-color);
         display: flex;
         font: inherit;
         justify-content: center;
         margin-bottom: 0;
         margin-top: 0;
+        padding: 0;
       }
 
       #toggleSpacer {
@@ -114,7 +116,7 @@
             </div>
             <cr-icon-button class="icon-clear"
                 id="closeBrowserSettings"
-                aria-label="$i18n{clear}"
+                title="$i18n{close}"
                 on-click="onBrowserSettingsBannerClosed_">
             </cr-icon-button>
           </div>

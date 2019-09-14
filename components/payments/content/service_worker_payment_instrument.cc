@@ -293,6 +293,57 @@ ServiceWorkerPaymentInstrument::CreatePaymentRequestEventData() {
     }
   }
 
+  if (HandlesPayerName()) {
+    DCHECK(spec_->request_payer_name());
+
+    if (!event_data->payment_options)
+      event_data->payment_options = mojom::PaymentOptions::New();
+
+    event_data->payment_options->request_payer_name = true;
+  }
+
+  if (HandlesPayerEmail()) {
+    DCHECK(spec_->request_payer_email());
+
+    if (!event_data->payment_options)
+      event_data->payment_options = mojom::PaymentOptions::New();
+
+    event_data->payment_options->request_payer_email = true;
+  }
+
+  if (HandlesPayerPhone()) {
+    DCHECK(spec_->request_payer_phone());
+
+    if (!event_data->payment_options)
+      event_data->payment_options = mojom::PaymentOptions::New();
+
+    event_data->payment_options->request_payer_phone = true;
+  }
+
+  if (HandlesShippingAddress()) {
+    DCHECK(spec_->request_shipping());
+
+    if (!event_data->payment_options)
+      event_data->payment_options = mojom::PaymentOptions::New();
+
+    event_data->payment_options->request_shipping = true;
+    event_data->payment_options->shipping_type =
+        mojom::PaymentShippingType::SHIPPING;
+    if (spec_->shipping_type() == PaymentShippingType::DELIVERY) {
+      event_data->payment_options->shipping_type =
+          mojom::PaymentShippingType::DELIVERY;
+    } else if (spec_->shipping_type() == PaymentShippingType::PICKUP) {
+      event_data->payment_options->shipping_type =
+          mojom::PaymentShippingType::PICKUP;
+    }
+
+    event_data->shipping_options =
+        std::vector<mojom::PaymentShippingOptionPtr>();
+    for (const auto& option : spec_->GetShippingOptions()) {
+      event_data->shipping_options->push_back(option.Clone());
+    }
+  }
+
   event_data->payment_handler_host = std::move(payment_handler_host_);
 
   return event_data;
@@ -307,11 +358,21 @@ void ServiceWorkerPaymentInstrument::OnPaymentAppInvoked(
       mojom::PaymentEventResponseType::PAYMENT_EVENT_SUCCESS) {
     DCHECK(!response->method_name.empty());
     DCHECK(!response->stringified_details.empty());
-    delegate_->OnInstrumentDetailsReady(response->method_name,
-                                        response->stringified_details);
+    delegate_->OnInstrumentDetailsReady(
+        response->method_name, response->stringified_details,
+        PayerData(response->payer_name.value_or(""),
+                  response->payer_email.value_or(""),
+                  response->payer_phone.value_or(""),
+                  std::move(response->shipping_address),
+                  response->shipping_option.value_or("")));
   } else {
     DCHECK(response->method_name.empty());
     DCHECK(response->stringified_details.empty());
+    DCHECK(response->payer_name.value_or("").empty());
+    DCHECK(response->payer_email.value_or("").empty());
+    DCHECK(response->payer_phone.value_or("").empty());
+    DCHECK(!response->shipping_address);
+    DCHECK(response->shipping_option.value_or("").empty());
     delegate_->OnInstrumentDetailsError(std::string(
         ConvertPaymentEventResponseTypeToErrorString(response->response_type)));
   }

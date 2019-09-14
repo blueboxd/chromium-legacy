@@ -43,6 +43,8 @@
 <translation id="1873233029667955273">Google Chrome er ikke standardnettleseren din</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS – inn)</translation>
 <translation id="1877026089748256423">Chrome er utdatert</translation>
+<translation id="1900795423379050516">Hvis en innstilling ikke vises på denne siden, kan du gå til <ph name="LINK_BEGIN" />
+    nettleserinnstillingene for Chrome<ph name="LINK_END" /></translation>
 <translation id="1915828456209461693">En ny oppdatering for Chrome er tilgjengelig og tas i bruk når du starter Chrome på nytt.</translation>
 <translation id="1919130412786645364">Tillat Chome-pålogging</translation>
 <translation id="2063848847527508675">Chrome OS må startes på nytt for at oppdateringen skal tas i bruk.</translation>
@@ -156,6 +158,8 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="5543953544073077331">Andre kopier av Chrome kjører. For å oppdatere må du lukke dem.</translation>
 <translation id="556024056938947818">Google Chrome prøver å vise passord.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-Inn)</translation>
+<translation id="5657226924540934362">Hvis en innstilling ikke vises på denne siden, kan du gå til <ph name="LINK_BEGIN" />
+    innstillingene for Chrome OS<ph name="LINK_END" /></translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> kan være farlig, så Chrome har blokkert den.</translation>
 <translation id="5686916850681061684">Tilpass og kontrollér Google Chrome. Det er noe du må se på – klikk for mer informasjon.</translation>
 <translation id="5690427481109656848">Google LLC</translation>

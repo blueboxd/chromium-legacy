@@ -92,6 +92,8 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="4230135487732243613">Susisieti „Chromium“ duomenis su šia paskyra?</translation>
 <translation id="4271805377592243930">Gaukite pagalbos dėl „Chromium“</translation>
 <translation id="4285930937574705105">Diegimas nepavyko dėl nežinomos klaidos. Jei šiuo metu veikia „Chromium“, uždarykite ir pabandykite iš naujo.</translation>
+<translation id="4371648796594901282">Jei reikia išsamios informacijos apie „Chromium“ OS, žr. <ph name="LINK_BEGIN" />
+      „Apie „Chromium“ OS“<ph name="LINK_END" /></translation>
 <translation id="4407044323746248786">Vis tiek išeiti iš „Chromium“?</translation>
 <translation id="4415566066719264597">„Chromium“ leidimas fone</translation>
 <translation id="4423735387467980091">Tinkinkite ir valdykite „Chromium“</translation>
@@ -124,6 +126,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="5623402015214259806">{0,plural, =0{Pasiekiamas „Chromium“ naujinys}=1{Pasiekiamas „Chromium“ naujinys}one{„Chromium“ naujinys pasiekiamas # dieną}few{„Chromium“ naujinys pasiekiamas # dienas}many{„Chromium“ naujinys pasiekiamas # dienos}other{„Chromium“ naujinys pasiekiamas # dienų}}</translation>
 <translation id="5631814766731275228">„Chromium“ pavadinimas ir paveikslėlis</translation>
 <translation id="5634636535844844681">Kad būtų galima naudoti „Chromium“, reikalinga 7 ar naujesnės versijos „Windows“.</translation>
+<translation id="5653831366781983928">Dabar iš naujo paleiskite „Chromium“</translation>
 <translation id="5680901439334282664">prisijunkite prie „Chromium“</translation>
 <translation id="5698481217667032250">Pateikti „Chromium“ šia kalba</translation>
 <translation id="5820394555380036790">„Chromium“ OS</translation>
@@ -166,6 +169,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="6734080038664603509">&amp;„Chromium“ naujinys</translation>
 <translation id="6734291798041940871">„Chromium“ jau įdiegta visiems kompiuterio naudotojams.</translation>
 <translation id="6810143991807788455">Padėkite tobulinti „Chromium“ pateikę ataskaitą apie dabartinius nustatymus</translation>
+<translation id="6847869444787758381">„Chromium“ praneš, jei slaptažodžiai bus pažeisti</translation>
 <translation id="6857782730669500492">„Chromium“ – „<ph name="PAGE_TITLE" />“</translation>
 <translation id="6863361426438995919">„Google Pay“ (nukopijuota į „Chromium“)</translation>
 <translation id="6868056391275687737">Veikia kitos „Chromium“ kopijos. Norėdami atnaujinti, jas uždarykite.</translation>
@@ -196,6 +200,8 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="753534427205733210">{0,plural, =1{„Chromium“ bus paleista iš naujo po 1 minutės}one{„Chromium“ bus paleista iš naujo po # minutės}few{„Chromium“ bus paleista iš naujo po # minučių}many{„Chromium“ bus paleista iš naujo po # minutės}other{„Chromium“ bus paleista iš naujo po # minučių}}</translation>
 <translation id="7549178288319965365">Apie „Chromium“ OS</translation>
 <translation id="7561906087460245826">Taip pat išvalyti duomenis iš „Chromium“ (<ph name="URL" />)</translation>
+<translation id="7585853947355360626">Jei nustatymai šiame puslapyje nerodomi, jų ieškokite <ph name="LINK_BEGIN" />
+      naršyklės „Chromium“ nustatymuose<ph name="LINK_END" /></translation>
 <translation id="761356813943268536">„Chromium“ naudoja jūsų fotoaparatą ir mikrofoną.</translation>
 <translation id="7617377681829253106">„Chromium“ dabar dar tobulesnė</translation>
 <translation id="7686590090926151193">„Chromium“ nėra numatytoji naršyklė</translation>
@@ -229,6 +235,8 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="8619360774459241877">Pristatoma „Chromium“...</translation>
 <translation id="8621669128220841554">Nepavyko įdiegti dėl nenurodytos klaidos. Atsisiųskite „Chromium“ dar kartą.</translation>
 <translation id="8667808506758191620">Jūsų „<ph name="DEVICE_TYPE" />“ atnaujintas.</translation>
+<translation id="8682540261359803721">Jei nustatymai šiame puslapyje nerodomi, jų ieškokite <ph name="LINK_BEGIN" />
+      naršyklės „Chromium“ nustatymuose<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">Ji taip pat kontroliuoja, koks puslapis rodomas, kai paleidžiate „Chromium“ arba ieškote „Omnibox“.</translation>
 <translation id="8704119203788522458">Tai jūsų „Chromium“</translation>
 <translation id="8739167630197873875">Išeidami iš „Chromium“ išvalote slapukus. Jei norite toliau sinchronizuoti, pakeiskite šį <ph name="COOKIE_SETTINGS_LINK" />.</translation>

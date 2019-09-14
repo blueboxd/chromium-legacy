@@ -58,6 +58,7 @@
 <translation id="2509394361235492552"><ph name="HOSTNAME" /> に接続されました</translation>
 <translation id="2512228156274966424">注: すべてのキーボード ショートカットを使用できるようにするには、Chrome リモート デスクトップを [ウィンドウとして開く] に設定してください。</translation>
 <translation id="2540992418118313681">このパソコンの閲覧と制御の権限を別のユーザーと共有しますか？</translation>
+<translation id="254771646005658629">リモート ユーザーがこの Mac を管理できるようにする</translation>
 <translation id="2579271889603567289">ホストがクラッシュしたか、ホストを起動できませんでした。</translation>
 <translation id="2599300881200251572">このサービスにより、Chrome リモート デスクトップ クライアントからの着信接続が有効になります。</translation>
 <translation id="2647232381348739934">Chromoting サービス</translation>
@@ -182,6 +183,11 @@
 <translation id="5419185025274123272">アプリケーションをリセットできませんでした。バグレポートの送信は可能です。</translation>
 <translation id="5419418238395129586">前回のインターネット接続日: <ph name="DATE" /></translation>
 <translation id="544077782045763683">ホストはシャットダウンしました。</translation>
+<translation id="5463789431147491241">この Mac で <ph name="PRODUCT_NAME" /> を使用するには、次の手順を行ってください。
+
+下の [<ph name="BUTTON_NAME" />] を選択します。[セキュリティとプライバシー] の設定で、[<ph name="SERVICE_SCRIPT_NAME" />] の横のチェックボックスをオンにします。
+
+[<ph name="SERVICE_SCRIPT_NAME" />] がすでにオンになっている場合は、一度オフにしてからオンにします。</translation>
 <translation id="5510035215749041527">切断</translation>
 <translation id="5593560073513909978">このサービスは一時的に利用できなくなっています。しばらくしてからもう一度お試しください。</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -298,12 +304,14 @@
 <translation id="837021510621780684">このパソコンからの接続</translation>
 <translation id="8383794970363966105">Chromoting を使用するには、お使いのデバイスに Google アカウントを追加する必要があります。</translation>
 <translation id="8386846956409881180">ホストの設定で無効な OAuth 認証情報が指定されています。</translation>
+<translation id="8406498562923498210">Chrome リモート デスクトップ環境で開始するセッションを選択してください（一部のセッション タイプは、Chrome リモート デスクトップとローカルのコンソールで同時に実行できない場合があります）。</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8445362773033888690">Google Playストアで見る</translation>
 <translation id="8509907436388546015">デスクトップ統合プロセス</translation>
 <translation id="8513093439376855948">リモート ホスト管理用のネイティブ·メッセージング·ホスト</translation>
 <translation id="8525306231823319788">全画面表示</translation>
 <translation id="8548209692293300397">以前に <ph name="USER_NAME" />（<ph name="USER_EMAIL" />）としてログインしています。このアカウントでパソコンにアクセスするには、このアカウントで <ph name="LINK_BEGIN" />Google Chrome にログイン<ph name="LINK_END" />し、Chrome リモート デスクトップを再インストールしてください。</translation>
+<translation id="858006550102277544">説明</translation>
 <translation id="8642984861538780905">中程度</translation>
 <translation id="8712909229180978490">Google ドライブに保存したファイルをオンラインで表示できない。</translation>
 <translation id="8743328882720071828"><ph name="CLIENT_USERNAME" /> にパソコンの閲覧と制御を許可しますか？</translation>
@@ -321,6 +329,7 @@
 <translation id="9126115402994542723">このデバイスからこのホストに接続するときに PIN の再入力を要求しない。</translation>
 <translation id="9149580767411232853">リモート デスクトップ全体が見える状態を維持します</translation>
 <translation id="9149992051684092333">デスクトップの共有を開始するには、共有するユーザーに以下のアクセス コードをお知らせください。</translation>
+<translation id="916856682307586697">デフォルトの XSession を起動</translation>
 <translation id="9188433529406846933">承認</translation>
 <translation id="9213184081240281106">ホストの設定が無効です。</translation>
 <translation id="951991426597076286">同意しない</translation>

@@ -821,8 +821,8 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
 
   const BookmarkNode* node;
   if (sync_node->GetIsFolder()) {
-    node = model->AddFolderWithMetaInfo(parent, index, title,
-                                        GetBookmarkMetaInfo(sync_node).get());
+    node = model->AddFolder(parent, index, title,
+                            GetBookmarkMetaInfo(sync_node).get());
   } else {
     // 'creation_time_us' was added in m24. Assume a time of 0 means now.
     const sync_pb::BookmarkSpecifics& specifics =
@@ -830,9 +830,8 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
     const int64_t create_time_internal = specifics.creation_time_us();
     base::Time create_time = (create_time_internal == 0) ?
         base::Time::Now() : base::Time::FromInternalValue(create_time_internal);
-    node = model->AddURLWithCreationTimeAndMetaInfo(
-        parent, index, title, url, create_time,
-        GetBookmarkMetaInfo(sync_node).get());
+    node = model->AddURL(parent, index, title, url,
+                         GetBookmarkMetaInfo(sync_node).get(), create_time);
     if (node)
       SetBookmarkFavicon(sync_node, node, favicon_service);
   }

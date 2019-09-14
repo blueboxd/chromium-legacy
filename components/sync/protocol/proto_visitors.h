@@ -198,6 +198,7 @@ VISIT_PROTO_FIELDS(const sync_pb::AutofillWalletSpecifics& proto) {
 VISIT_PROTO_FIELDS(const sync_pb::BookmarkSpecifics& proto) {
   VISIT(url);
   VISIT_BYTES(favicon);
+  VISIT(guid);
   VISIT(title);
   VISIT(creation_time_us);
   VISIT(icon_url);

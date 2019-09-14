@@ -559,7 +559,7 @@ bool SVGSVGElement::animationsPaused() const {
 }
 
 float SVGSVGElement::getCurrentTime() const {
-  return clampTo<float>(time_container_->Elapsed());
+  return clampTo<float>(time_container_->Elapsed().InSecondsF());
 }
 
 void SVGSVGElement::setCurrentTime(float seconds) {

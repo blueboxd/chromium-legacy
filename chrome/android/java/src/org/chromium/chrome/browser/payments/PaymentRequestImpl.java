@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.page_info.CertificateChainHelper;
+import org.chromium.chrome.browser.payments.micro.MicrotransactionCoordinator;
 import org.chromium.chrome.browser.payments.ui.ContactDetailsSection;
 import org.chromium.chrome.browser.payments.ui.LineItem;
 import org.chromium.chrome.browser.payments.ui.PaymentInformation;
@@ -366,6 +367,7 @@ public class PaymentRequestImpl
     private int mPaymentMethodsSectionAdditionalTextResourceId;
     private SectionInformation mPaymentMethodsSection;
     private PaymentRequestUI mUI;
+    private MicrotransactionCoordinator mMicrotransactionUi;
     private Callback<PaymentInformation> mPaymentInformationCallback;
     private PaymentInstrument mInvokedPaymentInstrument;
     private boolean mMerchantSupportsAutofillPaymentInstruments;
@@ -814,7 +816,7 @@ public class PaymentRequestImpl
     public void show(boolean isUserGesture, boolean waitForUpdatedDetails) {
         if (mClient == null) return;
 
-        if (mUI != null) {
+        if (mUI != null || mMicrotransactionUi != null) {
             // Can be triggered only by a compromised renderer. In normal operation, calling show()
             // twice on the same instance of PaymentRequest in JavaScript is rejected at the
             // renderer level.
@@ -865,6 +867,11 @@ public class PaymentRequestImpl
                 && !mWaitForUpdatedDetails) {
             assert !mPaymentMethodsSection.isEmpty();
 
+            if (isMicrotransactionUiApplicable()) {
+                triggerMicrotransactionUi(chromeActivity);
+                return;
+            }
+
             PaymentInstrument selectedInstrument =
                     (PaymentInstrument) mPaymentMethodsSection.getSelectedItem();
             if (!buildUI(chromeActivity)) return;
@@ -893,6 +900,65 @@ public class PaymentRequestImpl
                         selectedInstrument);
             }
         }
+    }
+
+    /** @return Whether the microtransaction UI should be shown. */
+    private boolean isMicrotransactionUiApplicable() {
+        if (!mIsUserGestureShow || mPaymentMethodsSection.getSize() != 1) return false;
+
+        PaymentInstrument instrument = (PaymentInstrument) mPaymentMethodsSection.getSelectedItem();
+        if (!instrument.isReadyForMicrotransaction()
+                || TextUtils.isEmpty(instrument.accountBalance())) {
+            return false;
+        }
+
+        return PaymentsExperimentalFeatures.isEnabled(
+                ChromeFeatureList.WEB_PAYMENT_MICROTRANSACTION);
+    }
+
+    /**
+     * Triggers the microtransaction UI.
+     * @param chromeActivity The Android activity for the Chrome UI that will host the
+     *                       microtransaction UI.
+     */
+    private void triggerMicrotransactionUi(ChromeActivity chromeActivity) {
+        mMicrotransactionUi = new MicrotransactionCoordinator();
+        if (mMicrotransactionUi.show(chromeActivity, chromeActivity.getBottomSheetController(),
+                    (PaymentInstrument) mPaymentMethodsSection.getSelectedItem(),
+                    mCurrencyFormatterMap.get(mRawTotal.amount.currency),
+                    mUiShoppingCart.getTotal(), this::onMicrotransactionUiConfirmed,
+                    this::onMicrotransactionUiDismissed)) {
+            setIsAnyPaymentRequestShowing(true);
+            mDidRecordShowEvent = true;
+            mShouldRecordAbortReason = true;
+            mJourneyLogger.setEventOccurred(Event.SHOWN);
+            return;
+        }
+
+        disconnectFromClientWithDebugMessage(ErrorStrings.MICROTRANSACTION_UI_SUPPRESSED);
+    }
+
+    private void onMicrotransactionUiConfirmed(PaymentInstrument instrument) {
+        mJourneyLogger.recordTransactionAmount(
+                mRawTotal.amount.currency, mRawTotal.amount.value, false /*completed*/);
+        instrument.setMicrontransactionMode();
+        onPayClicked(
+                null /* selectedShippingAddress */, null /* selectedShippingOption */, instrument);
+    }
+
+    private void onMicrotransactionUiDismissed() {
+        onDismiss();
+    }
+
+    private void onMicrotransactionUiErroredAndClosed() {
+        closeClient();
+        closeUIAndDestroyNativeObjects(/*immediateClose=*/true);
+    }
+
+    private void onMicrotransactionUiCompletedAndClosed() {
+        if (mClient != null) mClient.onComplete();
+        closeClient();
+        closeUIAndDestroyNativeObjects(/*immediateClose=*/true);
     }
 
     private static Map<String, PaymentMethodData> getValidatedMethodData(
@@ -1861,6 +1927,17 @@ public class PaymentRequestImpl
         PaymentPreferencesUtil.setPaymentInstrumentLastUseDate(
                 selectedPaymentMethod.getIdentifier(), System.currentTimeMillis());
 
+        if (mMicrotransactionUi != null) {
+            if (result == PaymentComplete.FAIL) {
+                mMicrotransactionUi.showErrorAndClose(this::onMicrotransactionUiErroredAndClosed,
+                        R.string.payments_error_message);
+            } else {
+                mMicrotransactionUi.showCompleteAndClose(
+                        this::onMicrotransactionUiCompletedAndClosed);
+            }
+            return;
+        }
+
         closeUIAndDestroyNativeObjects(/*immediateClose=*/PaymentComplete.FAIL != result);
     }
 
@@ -2339,7 +2416,9 @@ public class PaymentRequestImpl
 
         // Showing the payment request UI if we were previously skipping it so the loading
         // spinner shows up until the merchant notifies that payment was completed.
-        if (mShouldSkipShowingPaymentRequestUi) mUI.showProcessingMessageAfterUiSkip();
+        if (mShouldSkipShowingPaymentRequestUi && mUI != null) {
+            mUI.showProcessingMessageAfterUiSkip();
+        }
 
         mJourneyLogger.setEventOccurred(Event.RECEIVED_INSTRUMENT_DETAILS);
 
@@ -2365,6 +2444,13 @@ public class PaymentRequestImpl
     public void onInstrumentDetailsError(String errorMessage) {
         if (mClient == null) return;
         mInvokedPaymentInstrument = null;
+        if (mMicrotransactionUi != null) {
+            mJourneyLogger.setAborted(AbortReason.ABORTED_BY_USER);
+            mMicrotransactionUi.showErrorAndClose(
+                    this::onMicrotransactionUiErroredAndClosed, R.string.payments_error_message);
+            return;
+        }
+
         // When skipping UI, any errors/cancel from fetching instrument details should abort
         // payment.
         if (mShouldSkipShowingPaymentRequestUi) {
@@ -2453,15 +2539,21 @@ public class PaymentRequestImpl
      *                       always pass "true."
      */
     private void closeUIAndDestroyNativeObjects(boolean immediateClose) {
+        if (mMicrotransactionUi != null) {
+            mMicrotransactionUi.hide();
+            mMicrotransactionUi = null;
+        }
+
         if (mUI != null) {
             mUI.close(immediateClose, () -> {
                 if (mClient != null) mClient.onComplete();
                 closeClient();
             });
             mUI = null;
-            mIsCurrentPaymentRequestShowing = false;
-            setIsAnyPaymentRequestShowing(false);
         }
+
+        mIsCurrentPaymentRequestShowing = false;
+        setIsAnyPaymentRequestShowing(false);
 
         if (mPaymentMethodsSection != null) {
             for (int i = 0; i < mPaymentMethodsSection.getSize(); i++) {

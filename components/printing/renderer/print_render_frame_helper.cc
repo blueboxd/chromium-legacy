@@ -39,6 +39,7 @@
 #include "printing/buildflags/buildflags.h"
 #include "printing/metafile_skia.h"
 #include "printing/units.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
@@ -1072,9 +1073,14 @@ PrintRenderFrameHelper::PrintRenderFrameHelper(
     std::unique_ptr<Delegate> delegate)
     : content::RenderFrameObserver(render_frame),
       content::RenderFrameObserverTracker<PrintRenderFrameHelper>(render_frame),
-      delegate_(std::move(delegate)) {
+      delegate_(std::move(delegate)),
+      print_render_frame_binding_(this) {
   if (!delegate_->IsPrintPreviewEnabled())
     DisablePreview();
+
+  render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
+      base::BindRepeating(&PrintRenderFrameHelper::OnPrintRenderFrameRequest,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 PrintRenderFrameHelper::~PrintRenderFrameHelper() {}
@@ -1164,7 +1170,6 @@ bool PrintRenderFrameHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(PrintMsg_PrintPages, OnPrintPages)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintForSystemDialog, OnPrintForSystemDialog)
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-    IPC_MESSAGE_HANDLER(PrintMsg_InitiatePrintPreview, OnInitiatePrintPreview)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintPreview, OnPrintPreview)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintingDone, OnPrintingDone)
     IPC_MESSAGE_HANDLER(PrintMsg_ClosePrintPreviewDialog,
@@ -1187,6 +1192,32 @@ void PrintRenderFrameHelper::OnDestruct() {
     return;
   }
   delete this;
+}
+
+void PrintRenderFrameHelper::OnPrintRenderFrameRequest(
+    mojom::PrintRenderFrameAssociatedRequest request) {
+  print_render_frame_binding_.Bind(std::move(request));
+}
+
+void PrintRenderFrameHelper::InitiatePrintPreview(bool has_selection) {
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  if (ipc_nesting_level_ > 1)
+    return;
+
+  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
+
+  // If we are printing a PDF extension frame, find the plugin node and print
+  // that instead.
+  auto plugin = delegate_->GetPdfElement(frame);
+  if (!plugin.IsNull()) {
+    PrintNode(plugin);
+    return;
+  }
+  print_preview_context_.InitWithFrame(frame);
+  RequestPrintPreview(has_selection
+                          ? PRINT_PREVIEW_USER_INITIATED_SELECTION
+                          : PRINT_PREVIEW_USER_INITIATED_ENTIRE_FRAME);
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 }
 
 void PrintRenderFrameHelper::OnPrintPages() {
@@ -1529,25 +1560,6 @@ void PrintRenderFrameHelper::OnSetPrintingEnabled(bool enabled) {
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-void PrintRenderFrameHelper::OnInitiatePrintPreview(bool has_selection) {
-  if (ipc_nesting_level_ > 1)
-    return;
-
-  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
-
-  // If we are printing a PDF extension frame, find the plugin node and print
-  // that instead.
-  auto plugin = delegate_->GetPdfElement(frame);
-  if (!plugin.IsNull()) {
-    PrintNode(plugin);
-    return;
-  }
-  print_preview_context_.InitWithFrame(frame);
-  RequestPrintPreview(has_selection
-                          ? PRINT_PREVIEW_USER_INITIATED_SELECTION
-                          : PRINT_PREVIEW_USER_INITIATED_ENTIRE_FRAME);
-}
-
 void PrintRenderFrameHelper::OnClosePrintPreviewDialog() {
   print_preview_context_.source_frame()->DispatchAfterPrintEvent();
 }

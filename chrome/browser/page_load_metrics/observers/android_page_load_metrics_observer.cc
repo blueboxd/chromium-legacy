@@ -156,8 +156,9 @@ void AndroidPageLoadMetricsObserver::ReportNewNavigation() {
   base::android::ScopedJavaLocalRef<jobject> java_web_contents =
       GetDelegate().GetWebContents()->GetJavaWebContents();
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_PageLoadMetrics_onNewNavigation(env, java_web_contents,
-                                       static_cast<jlong>(navigation_id_));
+  Java_PageLoadMetrics_onNewNavigation(
+      env, java_web_contents, static_cast<jlong>(navigation_id_),
+      static_cast<jboolean>(GetDelegate().IsFirstNavigationInWebContents()));
 }
 
 void AndroidPageLoadMetricsObserver::ReportBufferedMetrics(

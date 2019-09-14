@@ -5,12 +5,14 @@
 #include "chrome/browser/ui/views/omnibox/rounded_omnibox_results_frame.h"
 
 #include "build/build_config.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/painter.h"
 
@@ -128,9 +130,9 @@ RoundedOmniboxResultsFrame::RoundedOmniboxResultsFrame(
   contents_host_->layer()->SetFillsBoundsOpaquely(false);
 
   // Use a solid background. Note this is clipped to get rounded corners.
-  const OmniboxTint tint = location_bar->CalculateTint();
-  const SkColor background_color =
-      GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND, tint);
+  const SkColor background_color = GetOmniboxColor(
+      &ThemeService::GetThemeProviderForProfile(location_bar->profile()),
+      OmniboxPart::RESULTS_BACKGROUND);
   contents_host_->SetBackground(views::CreateSolidBackground(background_color));
 
   // Use a textured mask to clip contents. This doesn't work on Windows
@@ -156,8 +158,9 @@ RoundedOmniboxResultsFrame::RoundedOmniboxResultsFrame(
   border->SetCornerRadius(corner_radius);
   border->set_md_shadow_elevation(kElevation);
   // Use a darker shadow that's more visible on darker tints.
-  border->set_md_shadow_color(tint == OmniboxTint::DARK ? SK_ColorBLACK
-                                                        : gfx::kGoogleGrey800);
+  border->set_md_shadow_color(color_utils::IsDark(background_color)
+                                  ? SK_ColorBLACK
+                                  : gfx::kGoogleGrey800);
 
   SetBorder(std::move(border));
 

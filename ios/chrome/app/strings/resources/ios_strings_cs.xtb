@@ -315,6 +315,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 Funkce Handoff musí být povolena také v Nastavení v sekci Obecné a zařízení musejí používat stejný účet iCloud.</translation>
 <translation id="5551897871312988470">Nabízet překlad</translation>
 <translation id="5556459405103347317">Načíst znovu</translation>
+<translation id="5592679540098330836">Zapnout synchronizaci pro: <ph name="NAME" /></translation>
 <translation id="5614553682702429503">Uložit heslo?</translation>
 <translation id="5626245204502895507">Soubor v tuto chvíli nelze stáhnout.</translation>
 <translation id="5631164295104953411">Přidat platební metodu</translation>

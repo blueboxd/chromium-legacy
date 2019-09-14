@@ -175,10 +175,14 @@ error::Error DoDispatchCompute(GLuint num_groups_x,
                                GLuint num_groups_z);
 error::Error DoDispatchComputeIndirect(GLintptr offset);
 error::Error DoDrawArrays(GLenum mode, GLint first, GLsizei count);
+error::Error DoDrawArraysIndirect(GLenum mode, const void* offset);
 error::Error DoDrawElements(GLenum mode,
                             GLsizei count,
                             GLenum type,
                             const void* indices);
+error::Error DoDrawElementsIndirect(GLenum mode,
+                                    GLenum type,
+                                    const void* offset);
 error::Error DoEnable(GLenum cap);
 error::Error DoEnableVertexAttribArray(GLuint index);
 error::Error DoFenceSync(GLenum condition, GLbitfield flags, GLuint client_id);

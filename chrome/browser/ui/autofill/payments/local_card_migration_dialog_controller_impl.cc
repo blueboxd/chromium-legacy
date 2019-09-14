@@ -5,6 +5,9 @@
 #include "chrome/browser/ui/autofill/payments/local_card_migration_dialog_controller_impl.h"
 
 #include <stddef.h>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -52,21 +55,14 @@ LocalCardMigrationDialogControllerImpl::
 }
 
 void LocalCardMigrationDialogControllerImpl::ShowOfferDialog(
-    std::unique_ptr<base::DictionaryValue> legal_message,
+    const LegalMessageLines& legal_message_lines,
     const std::string& user_email,
     const std::vector<MigratableCreditCard>& migratable_credit_cards,
     AutofillClient::LocalCardMigrationCallback start_migrating_cards_callback) {
   if (local_card_migration_dialog_)
     local_card_migration_dialog_->CloseDialog();
 
-  if (!LegalMessageLine::Parse(*legal_message, &legal_message_lines_,
-                               /*escape_apostrophes=*/true)) {
-    AutofillMetrics::LogLocalCardMigrationDialogOfferMetric(
-        AutofillMetrics::
-            LOCAL_CARD_MIGRATION_DIALOG_NOT_SHOWN_INVALID_LEGAL_MESSAGE);
-    return;
-  }
-
+  legal_message_lines_ = legal_message_lines;
   view_state_ = LocalCardMigrationDialogState::kOffered;
   // Need to create the icon first otherwise the dialog will not be shown.
   UpdateLocalCardMigrationIcon();

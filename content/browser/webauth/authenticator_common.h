@@ -174,7 +174,7 @@ class CONTENT_EXPORT AuthenticatorCommon {
   // The request delegate decides whether to present the user with a visual
   // error before the request is finally resolved with |status|.
   void SignalFailureToRequestDelegate(
-      const ::device::FidoAuthenticator* authenticator,
+      const device::FidoAuthenticator* authenticator,
       AuthenticatorRequestClientDelegate::InterestingFailureReason reason,
       blink::mojom::AuthenticatorStatus status);
 
@@ -193,7 +193,7 @@ class CONTENT_EXPORT AuthenticatorCommon {
   RenderFrameHost* const render_frame_host_;
   service_manager::Connector* connector_ = nullptr;
   base::flat_set<device::FidoTransportProtocol> transports_;
-
+  device::FidoDiscoveryFactory* discovery_factory_ = nullptr;
   std::unique_ptr<device::FidoRequestHandlerBase> request_;
   blink::mojom::Authenticator::MakeCredentialCallback
       make_credential_response_callback_;

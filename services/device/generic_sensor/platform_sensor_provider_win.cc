@@ -32,6 +32,11 @@ void PlatformSensorProviderWin::SetSensorManagerForTesting(
   sensor_manager_ = sensor_manager;
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+PlatformSensorProviderWin::GetComStaTaskRunnerForTesting() {
+  return com_sta_task_runner_;
+}
+
 void PlatformSensorProviderWin::CreateSensorInternal(
     mojom::SensorType type,
     SensorReadingSharedBuffer* reading_buffer,

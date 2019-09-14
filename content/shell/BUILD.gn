@@ -953,6 +953,9 @@ group("content_shell_crash_test") {
     "//testing/scripts/content_shell_crash_test.py",
     "//testing/xvfb.py",
   ]
+  if (is_mac && !use_system_xcode) {
+    data += [ mac_bin_path + "otool" ]
+  }
   if (is_posix) {
     data += [
       "//components/crash/content/tools/generate_breakpad_symbols.py",

@@ -55,6 +55,8 @@ blink_core_sources("loader") {
     "importance_attribute.h",
     "interactive_detector.cc",
     "interactive_detector.h",
+    "lazy_image_helper.cc",
+    "lazy_image_helper.h",
     "link_load_parameters.cc",
     "link_load_parameters.h",
     "link_loader.cc",

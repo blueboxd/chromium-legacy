@@ -43,6 +43,8 @@
 <translation id="1873233029667955273">O Google Chrome não é o seu navegador predefinido.</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">O Chrome está desatualizado</translation>
+<translation id="1900795423379050516">Se não encontrar uma definição nesta página, procure nas <ph name="LINK_BEGIN" />
+      Definições do navegador Chrome<ph name="LINK_END" />.</translation>
 <translation id="1915828456209461693">Está disponível uma atualização para o Chrome que será aplicada logo que o reinicie.</translation>
 <translation id="1919130412786645364">Permitir o início de sessão no Chrome</translation>
 <translation id="2063848847527508675">O Chrome OS tem de ser reiniciado para aplicar a atualização.</translation>
@@ -156,6 +158,8 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="5543953544073077331">Estão em execução outras cópias do Chrome. Para atualizar, encerre-as.</translation>
 <translation id="556024056938947818">O Google Chrome está a tentar mostrar palavras-passe.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
+<translation id="5657226924540934362">Se não encontrar uma definição nesta página, procure nas <ph name="LINK_BEGIN" />
+      Definições do Chrome OS<ph name="LINK_END" />.</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> pode ser perigoso, por isso o Chrome bloqueou-o.</translation>
 <translation id="5686916850681061684">Personalize e controle o Google Chrome. É necessária a sua atenção – clique para obter detalhes.</translation>
 <translation id="5690427481109656848">Google LLC</translation>

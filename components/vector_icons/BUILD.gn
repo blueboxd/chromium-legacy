@@ -50,6 +50,7 @@ aggregate_vector_icons("components_vector_icons") {
     "pause.icon",
     "play_arrow.icon",
     "protocol_handler.icon",
+    "queue_music.icon",
     "reload.icon",
     "replay.icon",
     "screen_share.icon",

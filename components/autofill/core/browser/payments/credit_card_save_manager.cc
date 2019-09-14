@@ -41,7 +41,9 @@
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_util.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "url/gurl.h"
 
@@ -357,6 +359,23 @@ void CreditCardSaveManager::OnDidGetUploadDetails(
   if (observer_for_testing_)
     observer_for_testing_->OnReceivedGetUploadDetailsResponse();
   if (result == AutofillClient::SUCCESS) {
+    LegalMessageLine::Parse(*legal_message, &legal_message_lines_,
+                            /*escape_apostrophes=*/true);
+
+    if (legal_message_lines_.empty()) {
+      // Parsing legal messages failed, so upload should not be offered.
+      // Offer local card save if card is not already saved locally.
+      if (!uploading_local_card_) {
+        AttemptToOfferCardLocalSave(from_dynamic_change_form_,
+                                    has_non_focusable_field_,
+                                    upload_request_.card);
+      }
+      upload_decision_metrics_ |=
+          AutofillMetrics::UPLOAD_NOT_OFFERED_INVALID_LEGAL_MESSAGE;
+      LogCardUploadDecisions(upload_decision_metrics_);
+      return;
+    }
+
     // Do *not* call payments_client_->Prepare() here. We shouldn't send
     // credentials until the user has explicitly accepted a prompt to upload.
     if (!supported_card_bin_ranges.empty() &&
@@ -374,7 +393,6 @@ void CreditCardSaveManager::OnDidGetUploadDetails(
       return;
     }
     upload_request_.context_token = context_token;
-    legal_message_ = base::DictionaryValue::From(std::move(legal_message));
     OfferCardUploadSave();
   } else {
     // If the upload details request failed and we *know* we have all possible
@@ -454,7 +472,7 @@ void CreditCardSaveManager::OfferCardUploadSave() {
   if (!is_mobile_build || show_save_prompt_.value_or(true)) {
     user_did_accept_upload_prompt_ = false;
     client_->ConfirmSaveCreditCardToCloud(
-        upload_request_.card, std::move(legal_message_),
+        upload_request_.card, legal_message_lines_,
         AutofillClient::SaveCreditCardOptions()
             .with_from_dynamic_change_form(from_dynamic_change_form_)
             .with_has_non_focusable_field(has_non_focusable_field_)

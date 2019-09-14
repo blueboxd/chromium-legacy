@@ -10,3 +10,11 @@ interface PrintRenderer {
   // TODO(jschettler): Add methods to render a print document and signal the
   // close of Chrome print preview.
 };
+
+// Render process interface exposed to the browser to handle most of the
+// printing grunt work for RenderView.
+interface PrintRenderFrame {
+  // Tells the RenderFrame to initiate print preview for the entire
+  // document.
+  InitiatePrintPreview(bool has_selection);
+};

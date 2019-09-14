@@ -58,6 +58,7 @@
 <translation id="2509394361235492552"><ph name="HOSTNAME" /> સાથે કનેક્ટ કર્યું</translation>
 <translation id="2512228156274966424">નોંધ: બધા કીબોર્ડ શોર્ટકટ્સ ઉપલબ્ધ છે તેની ખાતરી કરવા, તમે Chrome રીમોટ ડેસ્કટૉપને 'વિંડો તરીકે ખોલો' પર ગોઠવી શકો છો.</translation>
 <translation id="2540992418118313681">શું તમે આ કમ્પ્યુટર બીજા વપરાશકર્તા માટે જોવા અને નિયંત્રિત કરવા માટે શેર કરવા માંગો છો?</translation>
+<translation id="254771646005658629">રીમોટ વપરાશકર્તાઓને આ Macનું નિયંત્રણ કરવાની મંજૂરી આપો</translation>
 <translation id="2579271889603567289">હોસ્ટ ક્રૅશ થયું અથવા શરૂ કરવામાં નિષ્ફળ થયું.</translation>
 <translation id="2599300881200251572">આ સેવા Chrome રીમોટ ડેસ્કટૉપ ક્લાઇન્ટ્સ પાસેથી આવતા કનેક્શન્સ સક્ષમ કરે છે.</translation>
 <translation id="2647232381348739934">Chromoting સેવા</translation>
@@ -182,6 +183,11 @@
 <translation id="5419185025274123272">ઍપ્લિકેશન ફરીથી સેટ કરી શકાઈ નથી. તમે હજી પણ બગ રિપોર્ટ મોકલી શકો છો.</translation>
 <translation id="5419418238395129586">છેલ્લે ઑનલાઇન: <ph name="DATE" /></translation>
 <translation id="544077782045763683">હોસ્ટ શટ ડાઉન થયું છે.</translation>
+<translation id="5463789431147491241">આ Mac પર <ph name="PRODUCT_NAME" />નો ઉપયોગ કરવા માટે, આ પગલાંને ફૉલો કરો:
+
+નીચે '<ph name="BUTTON_NAME" />' પસંદ કરો. તમારી સુરક્ષા અને પ્રાઇવસી પસંદગીઓમાં, '<ph name="SERVICE_SCRIPT_NAME" />'ની પાસેના બૉક્સને ચેક કરો.
+
+જો '<ph name="SERVICE_SCRIPT_NAME" />' પહેલાંથી ચેક કરેલું હોય, તો તેને અનચેક કરો અને પછી તેને ફરી ચેક કરો.</translation>
 <translation id="5510035215749041527">હવે ડિસ્કનેક્ટ કરો</translation>
 <translation id="5593560073513909978">અમારી સેવા અસ્થાયી રીતે અનુપલબ્ધ છે. કૃપા કરીને પછીથી ફરી પ્રયાસ કરો.</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -298,12 +304,14 @@
 <translation id="837021510621780684">આ કમ્પ્યુટરથી</translation>
 <translation id="8383794970363966105">Chromoting નો ઉપયોગ કરવા માટે, તમારે તમારા ડિવાઇસ પર એક Google એકાઉન્ટ ઉમેરવાની જરૂર છે.</translation>
 <translation id="8386846956409881180">હોસ્ટ અમાન્ય OAuth ઓળખપત્રો સાથે ગોઠવાયું છે.</translation>
+<translation id="8406498562923498210">તમારા Chrome રીમોટ ડેસ્કટૉપ એન્વાયરમેન્ટ અંતર્ગત લૉન્ચ કરવા માટેનું સત્ર પસંદ કરો. (નોંધ કરો કે અમુક સત્રના પ્રકાર Chrome રીમોટ ડેસ્કટૉપ અંતર્ગત અને સ્થાનિક કન્સોલ પર કદાચ એકસાથે ન ચાલે.)</translation>
 <translation id="8428213095426709021">સેટિંગ્સ</translation>
 <translation id="8445362773033888690">Google Play સ્ટોરમાં જુઓ</translation>
 <translation id="8509907436388546015">ડેસ્કટોપ ઇન્ટીગ્રેશન પ્રક્રિયા</translation>
 <translation id="8513093439376855948">હોસ્ટ સંચાલનને રિમોટ કરવા માટે મૂળ મેસેજિંગ હોસ્ટ</translation>
 <translation id="8525306231823319788">પૂર્ણ સ્ક્રીન</translation>
 <translation id="8548209692293300397">તમે પૂર્વમાં <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) તરીકે સાઇન ઇન થયેલા.  તે એકાઉન્ટમાં તમારા કમ્પ્યુટરને ઍક્સેસ કરવા માટે, તે એકાઉન્ટ વડે <ph name="LINK_BEGIN" />Google Chromeમાં સાઇન ઇન કરો<ph name="LINK_END" /> અને Chrome રીમોટ ડેસ્કટૉપ ફરીથી ઇન્સ્ટોલ કરો.</translation>
+<translation id="858006550102277544">કોમેન્ટ</translation>
 <translation id="8642984861538780905">સારી</translation>
 <translation id="8712909229180978490">મને Google ડ્રાઇવમાં મારી સાચવેલી ફાઇલો ઓન-લાઇન દેખાતી નથી.</translation>
 <translation id="8743328882720071828">શું તમે <ph name="CLIENT_USERNAME" />ને તમારા કમ્પ્યુટરને જોવા અને નિયંત્રિત કરવાની મંજૂરી આપવા માગો છો?</translation>
@@ -321,6 +329,7 @@
 <translation id="9126115402994542723">આ ઉપકરણથી આ હોસ્ટ સાથે કનેક્ટ કરતી વખતે ફરીથી PIN માટે પૂછશો નહીં.</translation>
 <translation id="9149580767411232853">સમગ્ર રિમોટ ડેસ્કટૉપ દૃશ્યક્ષમ રાખો</translation>
 <translation id="9149992051684092333">તમારા ડેસ્કટૉપને શેર કરવાનું પ્રારંભ કરવા માટે, જે વ્યક્તિ તમારી પાસે સહાય કરશે તેને નીચે આપેલો ઍક્સેસ કોડ આપો.</translation>
+<translation id="916856682307586697">ડિફૉલ્ટ XSessionને લૉન્ચ કરો</translation>
 <translation id="9188433529406846933">અધિકૃત કરો</translation>
 <translation id="9213184081240281106">અમાન્ય હોસ્ટ ગોઠવણી.</translation>
 <translation id="951991426597076286">નકારો</translation>

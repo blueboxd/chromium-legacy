@@ -9,6 +9,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Icon;
+import android.os.Build;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -59,11 +61,22 @@ public class DisplayAgent {
      * Contains icon info on the notification.
      */
     private static class IconBundle {
-        // TODO(hesen): Support Android resource ID.
         public final Bitmap bitmap;
+        public final int resourceId;
+
+        public IconBundle() {
+            bitmap = null;
+            resourceId = 0;
+        }
 
         public IconBundle(Bitmap bitmap) {
             this.bitmap = bitmap;
+            this.resourceId = 0;
+        }
+
+        public IconBundle(int resourceId) {
+            this.bitmap = null;
+            this.resourceId = resourceId;
         }
     }
 
@@ -104,9 +117,14 @@ public class DisplayAgent {
     }
 
     @CalledByNative
-    private static void addIconWithBitmap(
-            NotificationData notificationData, @IconType int type, Bitmap bitmap) {
-        notificationData.icons.put(type, new IconBundle(bitmap));
+    private static void addIcon(
+            NotificationData notificationData, @IconType int type, Bitmap bitmap, int resourceId) {
+        assert ((bitmap == null && resourceId != 0) || (bitmap != null && resourceId == 0));
+        if (resourceId != 0) {
+            notificationData.icons.put(type, new IconBundle(resourceId));
+        } else {
+            notificationData.icons.put(type, new IconBundle(bitmap));
+        }
     }
 
     @CalledByNative
@@ -217,6 +235,7 @@ public class DisplayAgent {
         // TODO(xingliu): Plumb platform specific data from native.
         // mode and provide correct notification id. Support buttons.
         Context context = ContextUtils.getApplicationContext();
+
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory.createChromeNotificationBuilder(true /* preferCompat */,
                         platformData.channel, null /* remoteAppPackageName */,
@@ -225,10 +244,25 @@ public class DisplayAgent {
         builder.setContentTitle(notificationData.title);
         builder.setContentText(notificationData.message);
 
-        // TODO(hesen): Support setting small icon from native with Android resource Id.
-        builder.setSmallIcon(R.drawable.ic_chrome);
+        boolean hasSmallIcon = notificationData.icons.containsKey(IconType.SMALL_ICON);
 
-        if (notificationData.icons.containsKey(IconType.LARGE_ICON)) {
+        if (hasSmallIcon && notificationData.icons.get(IconType.SMALL_ICON).bitmap != null
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            // Use bitmap as small icon.
+            Icon smallIcon =
+                    Icon.createWithBitmap(notificationData.icons.get(IconType.SMALL_ICON).bitmap);
+            builder.setSmallIcon(smallIcon);
+        } else {
+            // Use resource Id as small icon, if invalid, use default Chrome icon instead.
+            int resourceId = R.drawable.ic_chrome;
+            if (hasSmallIcon && notificationData.icons.get(IconType.SMALL_ICON).resourceId != 0) {
+                resourceId = notificationData.icons.get(IconType.SMALL_ICON).resourceId;
+            }
+            builder.setSmallIcon(resourceId);
+        }
+
+        if (notificationData.icons.containsKey(IconType.LARGE_ICON)
+                && notificationData.icons.get(IconType.LARGE_ICON).bitmap != null) {
             builder.setLargeIcon(notificationData.icons.get(IconType.LARGE_ICON).bitmap);
         }
 

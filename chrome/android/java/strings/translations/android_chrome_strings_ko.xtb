@@ -21,7 +21,6 @@
 <translation id="1146678959555564648">VR 시작</translation>
 <translation id="116280672541001035">사용</translation>
 <translation id="1171770572613082465">'인기 사이트' 버튼을 탭하여 인기 웹사이트를 확인하세요.</translation>
-<translation id="1172593791219290334">시작 페이지</translation>
 <translation id="1173894706177603556">이름 바꾸기</translation>
 <translation id="1175310183703641346">북마크, 방문 기록, 비밀번호 등이 더 이상 Google 계정과 동기화되지 않습니다.</translation>
 <translation id="1178581264944972037">일시중지</translation>
@@ -42,6 +41,7 @@
 <translation id="1258753120186372309">Google 기념일 로고: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">검색 및 탐색</translation>
 <translation id="1264974993859112054">스포츠</translation>
+<translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> 공유할 수 없음</translation>
 <translation id="1272079795634619415">중지</translation>
 <translation id="1283039547216852943">탭하여 펼치기</translation>
 <translation id="1285320974508926690">이 사이트 번역 안함</translation>
@@ -71,6 +71,7 @@
 <translation id="1430915738399379752">인쇄</translation>
 <translation id="1445680696957526815">Chrome의 구성요소가 서로 호환되지 않습니다. Chrome이 업그레이드 중일 수 있으니 몇 분 후에 다시 시도하세요. 문제가 계속되면 Chrome을 제거하고 다시 설치해 보세요.</translation>
 <translation id="1446450296470737166">MIDI 기기의 전체 제어 허용</translation>
+<translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> 공유할 수 없음</translation>
 <translation id="145097072038377568">Android 설정에서 사용이 중지됨</translation>
 <translation id="1477626028522505441">서버 문제로 인해 <ph name="FILE_NAME" />을(를) 다운로드할 수 없습니다.</translation>
 <translation id="1501480321619201731">그룹 삭제</translation>
@@ -153,6 +154,7 @@
 <translation id="2049961518639794558">파일 확장자를 변경하면 예기치 못한 동작이 발생하거나 기기가 손상될 수 있습니다.</translation>
 <translation id="2056878612599315956">사이트 일시중지됨</translation>
 <translation id="2063713494490388661">탭하여 검색</translation>
+<translation id="2067805253194386918">텍스트</translation>
 <translation id="2079545284768500474">실행취소</translation>
 <translation id="2082238445998314030">전체 결과 <ph name="TOTAL_RESULTS" />개 중 <ph name="RESULT_NUMBER" />개</translation>
 <translation id="2091887806945687916">소리</translation>
@@ -165,7 +167,6 @@
 <translation id="2131665479022868825"><ph name="DATA" /> 절약됨</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> 닫음</translation>
 <translation id="2139186145475833000">홈 화면에 추가</translation>
-<translation id="2142289305367051020">즐겨찾는 페이지가 여기에 표시됩니다.</translation>
 <translation id="2146738493024040262">인스턴트 앱 열기</translation>
 <translation id="2148716181193084225">오늘</translation>
 <translation id="2154484045852737596">카드 수정</translation>
@@ -324,6 +325,7 @@
 <translation id="3384347053049321195">이미지 공유</translation>
 <translation id="3386292677130313581">사이트에서 내 위치를 파악하도록 허용하기 전에 확인(권장)</translation>
 <translation id="3387650086002190359">파일 시스템에 오류가 발생하여 <ph name="FILE_NAME" />을(를) 다운로드할 수 없습니다.</translation>
+<translation id="3389286852084373014">텍스트가 너무 큼</translation>
 <translation id="3398320232533725830">북마크 관리자 열기</translation>
 <translation id="3414952576877147120">크기:</translation>
 <translation id="3443221991560634068">현재 페이지 새로고침</translation>
@@ -348,6 +350,7 @@
 <translation id="3599863153486145794">로그인된 모든 기기에서 방문 기록을 지웁니다. Google 계정의 내 활동(<ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />)에는 인터넷 사용 기록이 다른 형식으로 남아 있을 수도 있습니다.</translation>
 <translation id="3600792891314830896">소리를 재생하는 사이트 음소거</translation>
 <translation id="3616113530831147358">오디오</translation>
+<translation id="3631987586758005671"><ph name="DEVICE_NAME" />에 공유하는 중</translation>
 <translation id="3632295766818638029">비밀번호 공개</translation>
 <translation id="363596933471559332">저장된 사용자 인증 정보를 사용하여 자동으로 웹사이트에 로그인합니다. 이 기능이 꺼져 있는 경우에는 웹사이트에 로그인할 때마다 인증 요청 메시지가 표시됩니다.</translation>
 <translation id="3658159451045945436">재설정하면 방문한 사이트 목록을 비롯한 데이터 절약 기록이 삭제됩니다.</translation>
@@ -358,7 +361,6 @@
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> 북마크에 추가됨</translation>
 <translation id="3744111309925758534">기타 앱 <ph name="MEGABYTES" />MB</translation>
 <translation id="3744111561329211289">백그라운드 동기화</translation>
-<translation id="3745176700485982507">이 페이지에서 즐겨찾는 웹사이트 링크를 찾을 수 있습니다.</translation>
 <translation id="3771001275138982843">업데이트를 다운로드할 수 없음</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />블루투스를 사용 설정<ph name="END_LINK" />하여 페어링을 허용하세요.</translation>
 <translation id="3775705724665058594">기기로 전송</translation>
@@ -563,7 +565,6 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="5224771365102442243">동영상 포함</translation>
 <translation id="5230560987958996918"><ph name="SITE" />에서 주변 블루투스 기기를 검색하려고 합니다. 다음 기기가 발견되었습니다.</translation>
 <translation id="5233638681132016545">새 탭</translation>
-<translation id="5234764350956374838">숨기기</translation>
 <translation id="526421993248218238">이 페이지를 로드할 수 없습니다.</translation>
 <translation id="5271967389191913893">기기에서 다운로드하려는 콘텐츠를 열 수 없습니다.</translation>
 <translation id="528192093759286357">전체화면을 종료하려면 상단에서 드래그하여 뒤로 버튼을 터치하세요.</translation>
@@ -578,8 +579,8 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="5324858694974489420">자녀 보호 설정</translation>
 <translation id="5327248766486351172">이름</translation>
 <translation id="5335288049665977812">사이트에서 자바스크립트를 실행하도록 허용(권장)</translation>
+<translation id="5342314432463739672">권한 요청</translation>
 <translation id="5357811892247919462">탭 수신함</translation>
-<translation id="5363230136052241468">새 탭 페이지를 로드하려면 홈 버튼을 탭하세요.</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{열려 있는 탭 <ph name="OPEN_TABS_ONE" />개, 탭 간에 전환하려면 탭하세요.}other{열려 있는 탭 <ph name="OPEN_TABS_MANY" />개, 탭 간에 전환하려면 탭하세요.}}</translation>
 <translation id="5391532827096253100">이 사이트와의 연결은 안전하지 않습니다. 사이트 정보</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(외 1개)}other{(외 #개)}}</translation>
@@ -748,6 +749,7 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="6532866250404780454">Chrome에서 방문한 사이트가 표시되지 않습니다. 모든 사이트 타이머가 삭제됩니다.</translation>
 <translation id="6534565668554028783">Google에서 응답하는 데 시간이 너무 오래 걸립니다.</translation>
 <translation id="6538442820324228105"><ph name="GBS" />GB 다운로드됨</translation>
+<translation id="6539092367496845964">문제가 발생했습니다. 나중에 다시 시도해 보세요.</translation>
 <translation id="654446541061731451">공유할 탭을 선택하세요.</translation>
 <translation id="6545017243486555795">모든 데이터 삭제</translation>
 <translation id="6545864417968258051">블루투스 검색</translation>
@@ -802,7 +804,6 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="6912998170423641340">사이트에서 클립보드의 텍스트 및 이미지에 액세스하지 못하도록 차단</translation>
 <translation id="6914783257214138813">내보낸 파일을 볼 수 있는 모든 사용자에게 비밀번호가 표시됩니다.</translation>
 <translation id="6942665639005891494">언제든지 설정 메뉴 옵션으로 기본 다운로드 위치 변경 가능</translation>
-<translation id="6944102653068653326">새 탭 페이지를 로드하려면 탭하세요.</translation>
 <translation id="6945221475159498467">선택</translation>
 <translation id="6963642900430330478">이 페이지는 위험합니다. 사이트 정보</translation>
 <translation id="6963766334940102469">북마크 삭제</translation>
@@ -879,6 +880,7 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="7493994139787901920"><ph name="VERSION" />(<ph name="TIME_SINCE_UPDATE" />에 업데이트됨)</translation>
 <translation id="7494974237137038751">데이터 절약됨</translation>
 <translation id="7498271377022651285">잠시 기다려 주세요…</translation>
+<translation id="7510943789645525906">사용 중인 비밀번호가 정보 유출에 포함된 경우 경고를 표시합니다.</translation>
 <translation id="7514365320538308">다운로드</translation>
 <translation id="751961395872307827">사이트에 연결할 수 없습니다</translation>
 <translation id="7521387064766892559">자바스크립트</translation>
@@ -996,7 +998,6 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="8284326494547611709">자막</translation>
 <translation id="8300705686683892304">앱에서 관리함</translation>
 <translation id="8310344678080805313">일반 탭</translation>
-<translation id="8313455859591948645">시작 페이지 수정</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> 및 그 외 사이트</translation>
 <translation id="8327155640814342956">최고의 탐색 환경을 사용하려면 Chrome을 열고 업데이트하세요.</translation>
 <translation id="8339163506404995330"><ph name="LANGUAGE" />로 된 페이지를 번역하지 않습니다.</translation>

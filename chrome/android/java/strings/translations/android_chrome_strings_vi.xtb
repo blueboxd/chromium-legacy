@@ -21,7 +21,6 @@
 <translation id="1146678959555564648">Nhập VR</translation>
 <translation id="116280672541001035">Đã sử dụng</translation>
 <translation id="1171770572613082465">Xem các trang web phổ biến bằng cách nhấn vào nút "Trang web hàng đầu"</translation>
-<translation id="1172593791219290334">Trang khởi động</translation>
 <translation id="1173894706177603556">Đổi tên</translation>
 <translation id="1175310183703641346">Dấu trang, lịch sử, mật khẩu và các dữ liệu khác sẽ không còn đồng bộ hóa với Tài khoản Google của bạn nữa</translation>
 <translation id="1178581264944972037">Tạm dừng</translation>
@@ -42,6 +41,7 @@
 <translation id="1258753120186372309">Hình tượng trưng của Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Tìm kiếm và khám phá</translation>
 <translation id="1264974993859112054">Thể thao</translation>
+<translation id="1266864766717917324">Không thể chia sẻ <ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">Dừng</translation>
 <translation id="1283039547216852943">Nhấn để mở rộng</translation>
 <translation id="1285320974508926690">Không bao giờ dịch trang web này</translation>
@@ -71,6 +71,7 @@
 <translation id="1430915738399379752">In</translation>
 <translation id="1445680696957526815">Các cấu phần của Chrome không tương thích với nhau. Chrome có thể đang nâng cấp, vui lòng thử lại sau ít phút. Nếu sự cố vẫn tiếp diễn, hãy thử gỡ cài đặt và cài đặt lại Chrome.</translation>
 <translation id="1446450296470737166">Cho phép kiểm soát hoàn toàn thiết bị MIDI</translation>
+<translation id="1450753235335490080">Không thể chia sẻ <ph name="CONTENT_TYPE" /></translation>
 <translation id="145097072038377568">Tắt trong Cài đặt Android</translation>
 <translation id="1477626028522505441">Tải xuống <ph name="FILE_NAME" /> không thành công do sự cố máy chủ.</translation>
 <translation id="1501480321619201731">Xóa nhóm</translation>
@@ -153,6 +154,7 @@
 <translation id="2049961518639794558">Việc thay đổi đuôi tệp có thể dẫn đến hành vi không mong muốn và gây hại cho thiết bị của bạn.</translation>
 <translation id="2056878612599315956">Đã tạm dừng trang web</translation>
 <translation id="2063713494490388661">Nhấn để tìm kiếm</translation>
+<translation id="2067805253194386918">văn bản</translation>
 <translation id="2079545284768500474">Hoàn tác</translation>
 <translation id="2082238445998314030">Kết quả <ph name="RESULT_NUMBER" /> trong tổng số <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Âm thanh</translation>
@@ -165,7 +167,6 @@
 <translation id="2131665479022868825">Đã tiết kiệm <ph name="DATA" /></translation>
 <translation id="213279576345780926">Đã đóng <ph name="TAB_TITLE" /></translation>
 <translation id="2139186145475833000">Thêm vào Màn hình chính</translation>
-<translation id="2142289305367051020">Các trang bạn yêu thích đều ở đây</translation>
 <translation id="2146738493024040262">Mở ứng dụng tức thì</translation>
 <translation id="2148716181193084225">Hôm nay</translation>
 <translation id="2154484045852737596">Chỉnh sửa thẻ</translation>
@@ -324,6 +325,7 @@
 <translation id="3384347053049321195">Chia sẻ hình ảnh</translation>
 <translation id="3386292677130313581">Hỏi trước khi cho phép các trang web biết vị trí của bạn (được đề xuất)</translation>
 <translation id="3387650086002190359">Tải xuống <ph name="FILE_NAME" /> không thành công do lỗi hệ thống tệp.</translation>
+<translation id="3389286852084373014">Văn bản quá lớn</translation>
 <translation id="3398320232533725830">Mở trình quản lý dấu trang</translation>
 <translation id="3414952576877147120">Kích thước:</translation>
 <translation id="3443221991560634068">Tải lại trang hiện tại</translation>
@@ -348,6 +350,7 @@
 <translation id="3599863153486145794">Xóa lịch sử khỏi tất cả các thiết bị đã đăng nhập. Tài khoản Google của bạn có thể có các dạng lịch sử duyệt web khác tại <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Tắt tiếng trên các trang web phát âm thanh</translation>
 <translation id="3616113530831147358">Âm thanh</translation>
+<translation id="3631987586758005671">Đang chia sẻ đến <ph name="DEVICE_NAME" /></translation>
 <translation id="3632295766818638029">Hiển thị mật khẩu</translation>
 <translation id="363596933471559332">Tự động đăng nhập vào các trang web bằng thông tin đăng nhập được lưu trữ. Khi tính năng này tắt, bạn sẽ luôn được yêu cầu xác minh trước khi đăng nhập vào trang web.</translation>
 <translation id="3658159451045945436">Việc đặt lại sẽ xóa lịch sử tiết kiệm dữ liệu, bao gồm cả danh sách các trang web bạn đã truy cập.</translation>
@@ -358,7 +361,6 @@
 <translation id="3739899004075612870">Đã đánh dấu trang trong <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534">Các ứng dụng khác chiếm <ph name="MEGABYTES" /> MB</translation>
 <translation id="3744111561329211289">Đồng bộ hóa dưới nền</translation>
-<translation id="3745176700485982507">Trang này chứa các đường dẫn liên kết đến trang web yêu thích của bạn</translation>
 <translation id="3771001275138982843">Không thể tải bản cập nhật xuống</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Bật Bluetooth<ph name="END_LINK" /> để cho phép ghép nối</translation>
 <translation id="3775705724665058594">Gửi đến các thiết bị của bạn</translation>
@@ -563,7 +565,6 @@ Nhớ kiểm tra xem trang web này có tin cậy không trước khi vào chế
 <translation id="5224771365102442243">Có video</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> muốn quét tìm các thiết bị Bluetooth ở gần và đã tìm thấy các thiết bị sau đây:</translation>
 <translation id="5233638681132016545">Tab mới</translation>
-<translation id="5234764350956374838">Loại bỏ</translation>
 <translation id="526421993248218238">Không thể tải trang này</translation>
 <translation id="5271967389191913893">Thiết bị không thể mở nội dung được tải xuống.</translation>
 <translation id="528192093759286357">Kéo từ trên xuống và chạm vào nút quay lại để thoát khỏi chế độ toàn màn hình.</translation>
@@ -578,8 +579,8 @@ Nhớ kiểm tra xem trang web này có tin cậy không trước khi vào chế
 <translation id="5324858694974489420">Cài đặt dành cho cha mẹ</translation>
 <translation id="5327248766486351172">Tên</translation>
 <translation id="5335288049665977812">Cho phép các trang web chạy JavaScript (được đề xuất)</translation>
+<translation id="5342314432463739672">Yêu cầu cấp quyền</translation>
 <translation id="5357811892247919462">Đã nhận tab</translation>
-<translation id="5363230136052241468">Chạm vào nút màn hình chính để tải trang tab mới</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> tab đang mở, nhấn để chuyển tab}other{<ph name="OPEN_TABS_MANY" /> tab đang mở, nhấn để chuyển tab}}</translation>
 <translation id="5391532827096253100">Kết nối của bạn tới trang web này không an toàn. Thông tin trang web</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 lựa chọn khác)}other{(+ # lựa chọn khác)}}</translation>
@@ -748,6 +749,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6532866250404780454">Các trang web bạn truy cập trên Chrome sẽ không hiển thị. Tất cả lịch hẹn giờ trên trang web sẽ bị xóa.</translation>
 <translation id="6534565668554028783">Google mất quá nhiều thời gian để phản hồi</translation>
 <translation id="6538442820324228105">Đã tải xuống <ph name="GBS" /> GB</translation>
+<translation id="6539092367496845964">Đã xảy ra lỗi. Hãy thử lại sau.</translation>
 <translation id="654446541061731451">Chọn một tab để chiếu</translation>
 <translation id="6545017243486555795">Xóa tất cả dữ liệu</translation>
 <translation id="6545864417968258051">Quét tìm Bluetooth</translation>
@@ -802,7 +804,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6912998170423641340">Chặn trang web đọc văn bản và hình ảnh từ khay nhớ tạm</translation>
 <translation id="6914783257214138813">Bất cứ ai có thể xem tệp đã xuất đều có thể biết mật khẩu của bạn.</translation>
 <translation id="6942665639005891494">Thay đổi vị trí tải xuống mặc định bất cứ lúc nào bằng cách sử dụng tùy chọn menu Cài đặt</translation>
-<translation id="6944102653068653326">Nhấn để tải trang tab mới</translation>
 <translation id="6945221475159498467">Chọn</translation>
 <translation id="6963642900430330478">Trang này nguy hiểm. Thông tin trang web</translation>
 <translation id="6963766334940102469">Xóa dấu trang</translation>
@@ -879,6 +880,7 @@ Trang web này KHÔNG có quyền truy cập vào máy ảnh. Chỉ bạn mới 
 <translation id="7493994139787901920"><ph name="VERSION" /> (Đã cập nhật <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">dữ liệu đã tiết kiệm</translation>
 <translation id="7498271377022651285">Vui lòng đợi…</translation>
+<translation id="7510943789645525906">Cảnh báo bạn nếu mật khẩu bạn sử dụng bị ảnh hưởng trong một vụ rò rỉ dữ liệu</translation>
 <translation id="7514365320538308">Tải xuống</translation>
 <translation id="751961395872307827">Không thể kết nối với trang web</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -996,7 +998,6 @@ Trang web này KHÔNG có quyền truy cập vào máy ảnh. Chỉ bạn mới 
 <translation id="8284326494547611709">Phụ đề</translation>
 <translation id="8300705686683892304">Do ứng dụng quản lý</translation>
 <translation id="8310344678080805313">Tab chuẩn</translation>
-<translation id="8313455859591948645">Chỉnh sửa trang khởi động</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> và các trang web khác</translation>
 <translation id="8327155640814342956">Để có trải nghiệm duyệt web tuyệt vời nhất, hãy mở để cập nhật Chrome</translation>
 <translation id="8339163506404995330">Các trang viết bằng <ph name="LANGUAGE" /> sẽ không được dịch</translation>

@@ -220,6 +220,20 @@ bool DisplayResourceProvider::IsBackedBySurfaceTexture(ResourceId id) {
 size_t DisplayResourceProvider::CountPromotionHintRequestsForTesting() {
   return wants_promotion_hints_set_.size();
 }
+
+void DisplayResourceProvider::InitializePromotionHintRequest(ResourceId id) {
+  ChildResource* resource = TryGetResource(id);
+  // TODO(ericrk): We should never fail TryGetResource, but we appear to
+  // be doing so on Android in rare cases. Handle this gracefully until a
+  // better solution can be found. https://crbug.com/811858
+  if (!resource)
+    return;
+
+  // We could sync all |wants_promotion_hint| resources elsewhere, and send 'no'
+  // to all resources that weren't used.  However, there's no real advantage.
+  if (resource->transferable.wants_promotion_hint)
+    wants_promotion_hints_set_.insert(id);
+}
 #endif
 
 bool DisplayResourceProvider::DoesResourceWantPromotionHint(
@@ -277,13 +291,11 @@ void DisplayResourceProvider::WaitSyncToken(ResourceId id) {
   if (!resource)
     return;
   WaitSyncTokenInternal(resource);
+
 #if defined(OS_ANDROID)
-  // Now that the resource is synced, we may send it a promotion hint.  We could
-  // sync all |wants_promotion_hint| resources elsewhere, and send 'no' to all
-  // resources that weren't used.  However, there's no real advantage.
-  if (resource->transferable.wants_promotion_hint)
-    wants_promotion_hints_set_.insert(id);
-#endif  // OS_ANDROID
+  // Now that the resource is synced, we may send it a promotion hint.
+  InitializePromotionHintRequest(id);
+#endif
 }
 
 int DisplayResourceProvider::CreateChild(const ReturnCallback& return_callback,

@@ -103,6 +103,9 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
 
   // Return the number of resources that request promotion hints.
   size_t CountPromotionHintRequestsForTesting();
+
+  // This should be called after WaitSyncToken in GLRenderer.
+  void InitializePromotionHintRequest(ResourceId id);
 #endif
 
   // Indicates if this resource wants to receive promotion hints.

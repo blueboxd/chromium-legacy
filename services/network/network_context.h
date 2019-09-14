@@ -84,6 +84,7 @@ class CookieManager;
 class ExpectCTReporter;
 class HostResolver;
 class NetworkService;
+class NetworkServiceNetworkDelegate;
 class NetworkServiceProxyDelegate;
 class MdnsResponderManager;
 class NSSTempCertsCacheChromeOS;
@@ -408,9 +409,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
     return origin_policy_manager_.get();
   }
 
- private:
-  class ContextNetworkDelegate;
+  domain_reliability::DomainReliabilityMonitor* domain_reliability_monitor() {
+    return domain_reliability_monitor_.get();
+  }
 
+ private:
   URLRequestContextOwner MakeURLRequestContext();
 
   // Invoked when the HTTP cache was cleared. Invokes |callback|.
@@ -473,7 +476,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   net::URLRequestContext* url_request_context_;
 
   // Owned by URLRequestContext.
-  ContextNetworkDelegate* context_network_delegate_ = nullptr;
+  NetworkServiceNetworkDelegate* network_delegate_ = nullptr;
 
   mojom::NetworkContextParamsPtr params_;
 

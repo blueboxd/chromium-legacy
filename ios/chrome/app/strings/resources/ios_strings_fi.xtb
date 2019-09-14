@@ -315,6 +315,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 Handoff täytyy ottaa käyttöön myös Asetusten Yleiset-osiossa. Lisäksi molempien laitteiden on käytettävä samaa iCloud-tiliä.</translation>
 <translation id="5551897871312988470">Tarjoudu kääntämään</translation>
 <translation id="5556459405103347317">Lataa uudelleen</translation>
+<translation id="5592679540098330836">Ota synkronointi käyttöön: <ph name="NAME" /></translation>
 <translation id="5614553682702429503">Tallennetaanko salasana?</translation>
 <translation id="5626245204502895507">Tiedostoa ei voi ladata tällä hetkellä.</translation>
 <translation id="5631164295104953411">Lisää maksutapa</translation>

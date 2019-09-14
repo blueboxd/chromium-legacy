@@ -16,6 +16,8 @@
     [CallWith=ScriptState] readonly attribute object total;
     readonly attribute FrozenArray<PaymentDetailsModifier> modifiers;
     readonly attribute DOMString instrumentKey;
+    [CallWith=ScriptState, RuntimeEnabled=PaymentHandlerHandlesShippingAndContact] readonly attribute object? paymentOptions;
+    [RuntimeEnabled=PaymentHandlerHandlesShippingAndContact] readonly attribute FrozenArray<PaymentShippingOption>? shippingOptions;
 
     [CallWith=ScriptState] Promise<WindowClient?> openWindow(USVString url);
     [CallWith=ScriptState, RaisesException, RuntimeEnabled=PaymentHandlerChangePaymentMethod] Promise<PaymentMethodChangeResponse?> changePaymentMethod(DOMString methodName, optional object? methodDetails = null);

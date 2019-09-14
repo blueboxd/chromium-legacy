@@ -95,9 +95,10 @@ base::Value GetPrintPreviewTicket() {
 
   // Make some modifications to match a preview print ticket.
   print_ticket.SetKey(kSettingPageRange, base::Value());
-  print_ticket.SetKey(kIsFirstRequest, base::Value(true));
-  print_ticket.SetKey(kPreviewRequestID, base::Value(0));
-  print_ticket.SetKey(kSettingPreviewModifiable, base::Value(false));
+  print_ticket.SetBoolKey(kIsFirstRequest, true);
+  print_ticket.SetIntKey(kPreviewRequestID, 0);
+  print_ticket.SetBoolKey(kSettingPreviewModifiable, false);
+  print_ticket.SetBoolKey(kSettingPreviewIsPDF, true);
   print_ticket.RemoveKey(kSettingPageWidth);
   print_ticket.RemoveKey(kSettingPageHeight);
   print_ticket.RemoveKey(kSettingShowSystemDialog);

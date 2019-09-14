@@ -1275,6 +1275,14 @@ void GL_APIENTRY GLES2DispatchCompute(GLuint num_groups_x,
 void GL_APIENTRY GLES2DispatchComputeIndirect(GLintptr offset) {
   gles2::GetGLContext()->DispatchComputeIndirect(offset);
 }
+void GL_APIENTRY GLES2DrawArraysIndirect(GLenum mode, const void* offset) {
+  gles2::GetGLContext()->DrawArraysIndirect(mode, offset);
+}
+void GL_APIENTRY GLES2DrawElementsIndirect(GLenum mode,
+                                           GLenum type,
+                                           const void* offset) {
+  gles2::GetGLContext()->DrawElementsIndirect(mode, type, offset);
+}
 void GL_APIENTRY GLES2GetProgramInterfaceiv(GLuint program,
                                             GLenum program_interface,
                                             GLenum pname,
@@ -2977,6 +2985,14 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glDispatchComputeIndirect",
         reinterpret_cast<GLES2FunctionPointer>(glDispatchComputeIndirect),
+    },
+    {
+        "glDrawArraysIndirect",
+        reinterpret_cast<GLES2FunctionPointer>(glDrawArraysIndirect),
+    },
+    {
+        "glDrawElementsIndirect",
+        reinterpret_cast<GLES2FunctionPointer>(glDrawElementsIndirect),
     },
     {
         "glGetProgramInterfaceiv",

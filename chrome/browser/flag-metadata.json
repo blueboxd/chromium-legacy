@@ -907,11 +907,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-aura-tooltips-on-windows",
-    "owners": [ "cliffsmo" ],
-    "expiry_milestone": 78
-  },
-  {
     "name": "enable-autofill-account-wallet-storage",
     "owners": [ "treib", "jsaul@google.com", "butter-team@google.com" ],
     "expiry_milestone": 81
@@ -2532,11 +2527,6 @@
     "name": "offlining-recent-pages",
     "owners": [ "carlosk", "offline-dev" ],
     "expiry_milestone": 76
-  },
-  {
-    "name": "omnibox-alternate-match-description-separator",
-    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 80
   },
   {
     "name": "omnibox-autocomplete-titles",

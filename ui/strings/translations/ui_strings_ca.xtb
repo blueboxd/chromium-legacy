@@ -8,14 +8,17 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 m}other{# m}}</translation>
 <translation id="1181037720776840403">Suprimeix</translation>
 <translation id="1243314992276662751">Penja</translation>
+<translation id="1266864766717917324">No s'ha pogut compartir <ph name="CONTENT_TYPE" />.</translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1290982764014248209">Mou <ph name="DRAGGED_APP" /> a la carpeta <ph name="FOLDER_NAME" />.</translation>
+<translation id="1291104554099683393">Prova de compartir el text en fragments més petits.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">APLICACIONS RECOMANADES</translation>
 <translation id="1368832886055348810">D'esquerra a dreta</translation>
 <translation id="1383876407941801731">Cerca</translation>
 <translation id="1398853756734560583">Maximitza</translation>
 <translation id="1409544243779336081">Recomanació d'aplicació</translation>
+<translation id="1450753235335490080">No es pot compartir <ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">Ja has fet aquesta cerca anteriorment. En suprimir "<ph name="QUERY" />" de l'historial, també se suprimirà permanentment del teu compte en tots els dispositius.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minut i }other{# minuts i }}</translation>
 <translation id="1643823602425662293">Notificació</translation>
@@ -35,6 +38,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Selecciona-ho &amp;tot</translation>
 <translation id="1938451708255335766">Per ajustar la densitat de visualització de la finestra, reinicia l'aplicació.</translation>
+<translation id="2006524834898217237">Comprova que el dispositiu estigui connectat a Internet.</translation>
 <translation id="208586643495776849">Torna-ho a provar</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 d}other{# d}}</translation>
 <translation id="2148716181193084225">Avui</translation>
@@ -76,6 +80,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 dia}other{# dies}}</translation>
 <translation id="3295886253693811851">Fes una trucada amb</translation>
 <translation id="335581015389089642">Veu</translation>
+<translation id="3389286852084373014">El text és massa llarg</translation>
 <translation id="3443810440409579745">S'ha rebut una pestanya.</translation>
 <translation id="3479552764303398839">Ara no</translation>
 <translation id="348799646910989694">El prestatge s'amaga automàticament</translation>
@@ -151,11 +156,13 @@
 <translation id="6404817160109697034">{SECONDS,plural, =1{fa 1 s}other{fa # s}}</translation>
 <translation id="6430678249303439055">Bloqueja totes les notificacions d'aquesta aplicació</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Fa 1 segon}other{Fa # segons}}</translation>
+<translation id="6539092367496845964">S'ha produït un error. Torna-ho a provar més tard.</translation>
 <translation id="654149438358937226">Bloqueja totes les notificacions</translation>
 <translation id="6567071839949112727">fes clic a l'antecedent</translation>
 <translation id="6578407462441924264">Sense nom</translation>
 <translation id="6612467943526193239">Prem Esc per sortir del calibratge.</translation>
 <translation id="6620110761915583480">Desa el fitxer</translation>
+<translation id="6656912866303152668">Comprova que <ph name="TARGET_DEVICE_NAME" /> tingui la sincronització activada a Chrome i després prova de tornar a fer l'enviament.</translation>
 <translation id="6699343763173986273">Fitxer multimèdia: pista següent</translation>
 <translation id="673773751041746814">Supressió</translation>
 <translation id="6779314412797872738">Per enviar un número des d'aquest dispositiu al telèfon Android, <ph name="TROUBLESHOOT_LINK" /> a la configuració de tots dos dispositius.</translation>
@@ -221,6 +228,7 @@
 <translation id="8876215549894133151">Format:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8926951137623668982">El prestatge està sempre amagat</translation>
+<translation id="8996630695507351249">Assegura't que el dispositiu <ph name="TARGET_DEVICE_NAME" /> estigui connectat a Internet.</translation>
 <translation id="9002566407876343676">obrir</translation>
 <translation id="9039076430527029379">Mou a la pàgina <ph name="PAGE_NUMBER" />, fila <ph name="ROW_NUMBER" />, columna <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}other{# s}}</translation>

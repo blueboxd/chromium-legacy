@@ -55,9 +55,9 @@ struct BASE_EXPORT ExecutionEnvironment {
 // RegisteredTaskSource after obtaining it from the queue:
 // 1- Check whether a task can run with WillRunTask() (and register/enqueue the
 //    task source again if not saturated).
-// 2- Iff (1) determined that a task can run, access the next task with
-//    TakeTask().
-// 3- Execute the task.
+// 2- (optional) Iff (1) determined that a task can run, access the next task
+//    with TakeTask().
+// 3- (optional) Execute the task.
 // 4- Inform the task source that a task was processed with DidProcessTask(),
 //    and re-enqueue the task source iff requested.
 // When a task source is registered multiple times, many overlapping chains of
@@ -86,10 +86,10 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
   enum class RunStatus {
     // TakeTask() cannot be called.
     kDisallowed,
-    // TakeTask() must be called, and the TaskSource has not reached its maximum
+    // TakeTask() may called, and the TaskSource has not reached its maximum
     // concurrency (i.e. the TaskSource still needs to be queued).
     kAllowedNotSaturated,
-    // TakeTask() must be called, and the TaskSource has reached its maximum
+    // TakeTask() may called, and the TaskSource has reached its maximum
     // concurrency (i.e. the TaskSource no longer needs to be queued).
     kAllowedSaturated,
   };
@@ -218,7 +218,7 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
   // A pointer to the TaskRunner that posts to this TaskSource, if any. The
   // derived class is responsible for calling AddRef() when a TaskSource from
   // which no Task is executing becomes non-empty and Release() when
-  // DidProcessTask() returns false.
+  // it becomes empty again (e.g. when DidProcessTask() returns false).
   TaskRunner* task_runner_;
 
   TaskSourceExecutionMode execution_mode_;
@@ -270,11 +270,11 @@ class BASE_EXPORT RegisteredTaskSource {
   Optional<Task> TakeTask(TaskSource::Transaction* transaction = nullptr)
       WARN_UNUSED_RESULT;
 
-  // Must be called once the task was run. This resets this RegisteredTaskSource
-  // to its initial state so that WillRunTask() may be called again.
-  // |transaction| is optional and should only be provided if this operation is
-  // already part of a transaction. Returns true if the TaskSource should be
-  // queued after this operation.
+  // Must be called after WillRunTask() or once the task was run if TakeTask()
+  // was called. This resets this RegisteredTaskSource to its initial state so
+  // that WillRunTask() may be called again. |transaction| is optional and
+  // should only be provided if this operation is already part of a transaction.
+  // Returns true if the TaskSource should be queued after this operation.
   bool DidProcessTask(TaskSource::Transaction* transaction = nullptr);
 
   // Returns a task that clears this TaskSource to make it empty. |transaction|
@@ -293,7 +293,6 @@ class BASE_EXPORT RegisteredTaskSource {
   enum class State {
     kInitial,       // WillRunTask() may be called.
     kReady,         // After WillRunTask() returned a valid RunStatus.
-    kTaskAcquired,  // After TakeTask().
   };
 
   State run_step_ = State::kInitial;

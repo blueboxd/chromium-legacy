@@ -1541,4 +1541,19 @@ TEST_F(LocalCardMigrationManagerTest,
       AutofillMetrics::LocalCardMigrationDecisionMetric::OFFERED);
 }
 
+// Tests that if payment client returns an invalid legal message migration
+// should not be offered.
+TEST_F(LocalCardMigrationManagerTest,
+       InvalidLegalMessageInOnDidGetUploadDetails) {
+  payments_client_->SetUseInvalidLegalMessageInGetUploadDetails(true);
+
+  base::HistogramTester histogram_tester;
+  UseLocalCardWithOtherLocalCardsOnFile();
+
+  // Verify that the correct histogram entries were logged.
+  ExpectUniqueLocalCardMigrationDecision(
+      histogram_tester, AutofillMetrics::LocalCardMigrationDecisionMetric::
+                            NOT_OFFERED_INVALID_LEGAL_MESSAGE);
+}
+
 }  // namespace autofill

@@ -676,6 +676,8 @@ void SVGImage::AdvanceAnimationForTesting() {
     base::TimeTicks current_animation_time =
         page_->Animator().Clock().CurrentTime();
     page_->Animator().Clock().ResetTimeForTesting();
+    if (root_element->TimeContainer()->IsStarted())
+      root_element->TimeContainer()->ResetDocumentTime();
     page_->Animator().ServiceScriptedAnimations(
         root_element->GetDocument().Timeline().ZeroTime() +
         base::TimeDelta::FromSecondsD(root_element->getCurrentTime()));

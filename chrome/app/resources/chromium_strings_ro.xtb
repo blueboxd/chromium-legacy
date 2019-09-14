@@ -194,6 +194,8 @@ Chromium nu poate recupera setările.</translation>
 <translation id="753534427205733210">{0,plural, =1{Chromium se va relansa într-un minut}few{Chromium se va relansa în # minute}other{Chromium se va relansa în # de minute}}</translation>
 <translation id="7549178288319965365">Despre sistemul de operare Chromium</translation>
 <translation id="7561906087460245826">Șterge și datele din Chromium (<ph name="URL" />)</translation>
+<translation id="7585853947355360626">Dacă o setare nu apare în pagină, încearcă <ph name="LINK_BEGIN" />
+    setările sistemului de operare Chromium<ph name="LINK_END" /></translation>
 <translation id="761356813943268536">Chromium utilizează camera foto și microfonul.</translation>
 <translation id="7617377681829253106">Chromium a devenit și mai bun</translation>
 <translation id="7686590090926151193">Chromium nu este browserul prestabilit</translation>
@@ -227,6 +229,8 @@ Chromium nu poate recupera setările.</translation>
 <translation id="8619360774459241877">Se lansează Chromium...</translation>
 <translation id="8621669128220841554">Instalarea nu a reușit din cauza unei erori neprecizate. Descărcați Chromium din nou.</translation>
 <translation id="8667808506758191620">Dispozitivul <ph name="DEVICE_TYPE" /> este actualizat.</translation>
+<translation id="8682540261359803721">Dacă o setare nu apare în pagină, încearcă <ph name="LINK_BEGIN" />
+    setările browserului Chromium<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">Stabilește și ce pagină se afișează când porniți Chromium sau când căutați din caseta polivalentă.</translation>
 <translation id="8704119203788522458">Acesta este browserul dvs. Chromium</translation>
 <translation id="8739167630197873875">Când închizi Chromium, cookie-urile sunt șterse. Modifică <ph name="COOKIE_SETTINGS_LINK" /> pentru a continua sincronizarea.</translation>

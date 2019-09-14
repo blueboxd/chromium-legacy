@@ -42,16 +42,14 @@ AccessibilityTreeFormatter::TestPass AccessibilityTreeFormatter::GetTestPass(
 
 base::string16 AccessibilityTreeFormatter::DumpAccessibilityTreeFromManager(
     BrowserAccessibilityManager* ax_mgr,
-    bool internal) {
+    bool internal,
+    std::vector<PropertyFilter> property_filters) {
   std::unique_ptr<AccessibilityTreeFormatter> formatter;
   if (internal)
     formatter = std::make_unique<AccessibilityTreeFormatterBlink>();
   else
     formatter = Create();
   base::string16 accessibility_contents_utf16;
-  std::vector<PropertyFilter> property_filters;
-  property_filters.push_back(
-      PropertyFilter(base::ASCIIToUTF16("*"), PropertyFilter::ALLOW));
   formatter->SetPropertyFilters(property_filters);
   formatter->FormatAccessibilityTree(ax_mgr->GetRoot(),
                                      &accessibility_contents_utf16);

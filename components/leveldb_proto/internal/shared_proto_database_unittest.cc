@@ -147,6 +147,50 @@ TEST_F(SharedProtoDatabaseTest, GetClient_DifferentThreads) {
       FROM_HERE, quit_cooldown.QuitClosure(), base::TimeDelta::FromSeconds(3));
 }
 
+// If not attempt to create the db, kInvalidOperation will be returned in the
+// callback.
+TEST_F(SharedProtoDatabaseTest, InitNotCreateDb) {
+  base::RunLoop run_init_loop;
+  InitDB(false /* create_if_missing */, "TestDatabaseUMA",
+         base::BindOnce(
+             [](base::OnceClosure signal, Enums::InitStatus status,
+                SharedDBMetadataProto::MigrationStatus migration_status) {
+               EXPECT_EQ(SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED,
+                         migration_status);
+               EXPECT_EQ(status, Enums::InitStatus::kInvalidOperation);
+               std::move(signal).Run();
+             },
+             run_init_loop.QuitClosure()));
+  run_init_loop.Run();
+}
+
+// If two initialize calls with different create_if_missing parameter arrive at
+// the same time, the shared db will be created.
+TEST_F(SharedProtoDatabaseTest, InitWithDifferentCreateIfMissing) {
+  base::RunLoop run_init_loop;
+  InitDB(false /* create_if_missing */, "TestDatabaseUMA1",
+         base::BindOnce(
+             [](base::OnceClosure signal, Enums::InitStatus status,
+                SharedDBMetadataProto::MigrationStatus migration_status) {
+               EXPECT_EQ(SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED,
+                         migration_status);
+               EXPECT_EQ(status, Enums::InitStatus::kOK);
+               std::move(signal).Run();
+             },
+             run_init_loop.QuitClosure()));
+
+  InitDB(true /* create_if_missing */, "TestDatabaseUMA2",
+         base::BindOnce(
+             [](Enums::InitStatus status,
+                SharedDBMetadataProto::MigrationStatus migration_status) {
+               EXPECT_EQ(SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED,
+                         migration_status);
+               EXPECT_EQ(status, Enums::InitStatus::kOK);
+             }));
+
+  run_init_loop.Run();
+}
+
 // Tests that the shared DB's destructor behaves appropriately once the
 // backing LevelDB has been initialized on another thread.
 TEST_F(SharedProtoDatabaseTest, TestDBDestructionAfterInit) {

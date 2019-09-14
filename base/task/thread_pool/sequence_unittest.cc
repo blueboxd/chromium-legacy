@@ -184,7 +184,7 @@ TEST(ThreadPoolSequenceTest, GetSortKeyForeground) {
 
 // Verify that a DCHECK fires if DidProcessTask() is called on a sequence which
 // didn't return a Task.
-TEST(ThreadPoolSequenceTest, DidProcessTaskWithoutTakeTask) {
+TEST(ThreadPoolSequenceTest, DidProcessTaskWithoutWillRunTask) {
   scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>(
       TaskTraits(ThreadPool()), nullptr, TaskSourceExecutionMode::kParallel);
   Sequence::Transaction sequence_transaction(sequence->BeginTransaction());
@@ -193,7 +193,6 @@ TEST(ThreadPoolSequenceTest, DidProcessTaskWithoutTakeTask) {
   auto registered_task_source =
       RegisteredTaskSource::CreateForTesting(sequence);
   EXPECT_DCHECK_DEATH({
-    registered_task_source.WillRunTask();
     registered_task_source.DidProcessTask(&sequence_transaction);
   });
 }

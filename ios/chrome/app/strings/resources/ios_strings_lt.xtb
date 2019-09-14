@@ -44,6 +44,7 @@
 <translation id="1449835205994625556">Slėpti slaptažodį</translation>
 <translation id="145015347812617860">Elementų: <ph name="COUNT" /></translation>
 <translation id="1491277525950327607">Dukart palieskite, kad perjungtumėte nustatymą</translation>
+<translation id="1509486075633541495">Prisijungti prie svetainės</translation>
 <translation id="152234381334907219">Niekada neišsaugota</translation>
 <translation id="1540800554400757039">1 adreso eil.</translation>
 <translation id="1545749641540134597">Nuskaitykite QR kodą</translation>
@@ -315,6 +316,7 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įrenginiuose turi būti naudojama ta pati „iCloud“ paskyra.</translation>
 <translation id="5551897871312988470">Siūlyti versti</translation>
 <translation id="5556459405103347317">Įkelti iš naujo</translation>
+<translation id="5592679540098330836">Naudotojo <ph name="NAME" /> sinchronizavimo įjungimas</translation>
 <translation id="5614553682702429503">Išsaugoti slaptažodį?</translation>
 <translation id="5626245204502895507">Šiuo metu negalima atsisiųsti programos.</translation>
 <translation id="5631164295104953411">Pridėti mokėjimo metodą</translation>

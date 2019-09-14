@@ -106,10 +106,10 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
     ASSERT_TRUE(value);
     base::DictionaryValue* dictionary;
     ASSERT_TRUE(value->GetAsDictionary(&dictionary));
-    std::unique_ptr<base::DictionaryValue> legal_message =
-        dictionary->CreateDeepCopy();
-    controller()->OfferUploadSave(CreditCard(), std::move(legal_message),
-                                  options,
+    LegalMessageLines legal_message_lines;
+    LegalMessageLine::Parse(*dictionary, &legal_message_lines,
+                            /*escape_apostrophes=*/true);
+    controller()->OfferUploadSave(CreditCard(), legal_message_lines, options,
                                   base::BindOnce(&UploadSaveCardCallback));
   }
 
@@ -1456,90 +1456,6 @@ TEST_F(SaveCardBubbleControllerImplTest,
   histogram_tester.ExpectUniqueSample(
       "Autofill.SaveCreditCardPrompt.Upload.Reshows.RequestingExpirationDate",
       AutofillMetrics::SAVE_CARD_PROMPT_DISMISS_CLICK_LEGAL_MESSAGE, 1);
-}
-
-// SAVE_CARD_PROMPT_END_INVALID_LEGAL_MESSAGE is only possible for
-// Upload.FirstShow.
-TEST_F(SaveCardBubbleControllerImplTest,
-       Metrics_Upload_FirstShow_InvalidLegalMessage) {
-  base::HistogramTester histogram_tester;
-
-  // Legal message is invalid because it's missing the url.
-  SetLegalMessage(
-      "{"
-      "  \"line\" : [ {"
-      "     \"template\": \"Panda {0}.\","
-      "     \"template_parameter\": [ {"
-      "        \"display_text\": \"bear\""
-      "     } ]"
-      "  } ]"
-      "}");
-
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples(
-          "Autofill.SaveCreditCardPrompt.Upload.FirstShow"),
-      ElementsAre(
-          Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, 1),
-          Bucket(AutofillMetrics::SAVE_CARD_PROMPT_END_INVALID_LEGAL_MESSAGE,
-                 1)));
-}
-
-// SAVE_CARD_PROMPT_END_INVALID_LEGAL_MESSAGE is only possible for
-// Upload.FirstShow.
-TEST_F(SaveCardBubbleControllerImplTest,
-       Metrics_Upload_FirstShow_RequestingCardholderName_InvalidLegalMessage) {
-  base::HistogramTester histogram_tester;
-
-  // Legal message is invalid because it's missing the url.
-  SetLegalMessage(
-      "{"
-      "  \"line\" : [ {"
-      "     \"template\": \"Panda {0}.\","
-      "     \"template_parameter\": [ {"
-      "        \"display_text\": \"bear\""
-      "     } ]"
-      "  } ]"
-      "}",
-      AutofillClient::SaveCreditCardOptions()
-          .with_should_request_name_from_user(true)
-          .with_show_prompt(true));
-
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("Autofill.SaveCreditCardPrompt.Upload."
-                                     "FirstShow.RequestingCardholderName"),
-      ElementsAre(
-          Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, 1),
-          Bucket(AutofillMetrics::SAVE_CARD_PROMPT_END_INVALID_LEGAL_MESSAGE,
-                 1)));
-}
-
-// SAVE_CARD_PROMPT_END_INVALID_LEGAL_MESSAGE is only possible for
-// Upload.FirstShow.
-TEST_F(SaveCardBubbleControllerImplTest,
-       Metrics_Upload_FirstShow_RequestingExpirationDate_InvalidLegalMessage) {
-  base::HistogramTester histogram_tester;
-
-  // Legal message is invalid because it's missing the url.
-  SetLegalMessage(
-      "{"
-      "  \"line\" : [ {"
-      "     \"template\": \"Panda {0}.\","
-      "     \"template_parameter\": [ {"
-      "        \"display_text\": \"bear\""
-      "     } ]"
-      "  } ]"
-      "}",
-      AutofillClient::SaveCreditCardOptions()
-          .with_should_request_expiration_date_from_user(true)
-          .with_show_prompt());
-
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("Autofill.SaveCreditCardPrompt.Upload."
-                                     "FirstShow.RequestingExpirationDate"),
-      ElementsAre(
-          Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, 1),
-          Bucket(AutofillMetrics::SAVE_CARD_PROMPT_END_INVALID_LEGAL_MESSAGE,
-                 1)));
 }
 
 TEST_F(SaveCardBubbleControllerImplTest, OnlyOneActiveBubble_RepeatedLocal) {

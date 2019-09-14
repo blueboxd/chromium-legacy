@@ -24,10 +24,10 @@ class DiscardsUI : public ui::MojoWebUIController {
 
  private:
   void BindDiscardsDetailsProvider(
-      mojom::DiscardsDetailsProviderRequest request);
-  void BindWebUIGraphDumpProvider(mojom::WebUIGraphDumpRequest request);
+      discards::mojom::DetailsProviderRequest request);
+  void BindDiscardsGraphDumpProvider(discards::mojom::GraphDumpRequest request);
 
-  std::unique_ptr<mojom::DiscardsDetailsProvider> ui_handler_;
+  std::unique_ptr<discards::mojom::DetailsProvider> ui_handler_;
   resource_coordinator::LocalSiteCharacteristicsDataStoreInspector*
       data_store_inspector_;
 

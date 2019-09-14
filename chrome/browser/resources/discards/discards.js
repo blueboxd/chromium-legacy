@@ -10,11 +10,11 @@ cr.define('discards', function() {
   let discardsDetailsProvider;
 
   /**
-   * @return {!mojom.DiscardsDetailsProviderRemote} Provides discards details.
+   * @return {!discards.mojom.DetailsProviderRemote} Provides discards details.
    */
   function getOrCreateDetailsProvider() {
     if (!discardsDetailsProvider) {
-      discardsDetailsProvider = mojom.DiscardsDetailsProvider.getRemote();
+      discardsDetailsProvider = discards.mojom.DetailsProvider.getRemote();
     }
     return discardsDetailsProvider;
   }

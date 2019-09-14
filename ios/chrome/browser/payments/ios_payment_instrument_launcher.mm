@@ -246,7 +246,7 @@ void IOSPaymentInstrumentLauncher::CompleteLaunchRequest(
   } else if (details.empty()) {
     delegate_->OnInstrumentDetailsError(errors::kMissingDetailsFromPaymentApp);
   } else {
-    delegate_->OnInstrumentDetailsReady(method_name, details);
+    delegate_->OnInstrumentDetailsReady(method_name, details, PayerData());
   }
   delegate_ = nullptr;
   payment_request_id_ = "";

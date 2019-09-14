@@ -447,7 +447,7 @@ void RenderViewTest::SetUp() {
   view_params->proxy_routing_id = MSG_ROUTING_NONE;
   view_params->hidden = false;
   view_params->never_visible = false;
-  view_params->visual_properties = *InitialVisualProperties();
+  view_params->visual_properties = InitialVisualProperties();
 
   RenderViewImpl* view_impl = RenderViewImpl::Create(
       compositor_deps_.get(), std::move(view_params),
@@ -788,11 +788,11 @@ ContentRendererClient* RenderViewTest::CreateContentRendererClient() {
   return new ContentRendererClient;
 }
 
-std::unique_ptr<VisualProperties> RenderViewTest::InitialVisualProperties() {
-  auto initial_visual_properties = std::make_unique<VisualProperties>();
+VisualProperties RenderViewTest::InitialVisualProperties() {
+  VisualProperties initial_visual_properties;
   // Ensure the view has some size so tests involving scrolling bounds work.
-  initial_visual_properties->new_size = gfx::Size(400, 300);
-  initial_visual_properties->visible_viewport_size = gfx::Size(400, 300);
+  initial_visual_properties.new_size = gfx::Size(400, 300);
+  initial_visual_properties.visible_viewport_size = gfx::Size(400, 300);
   return initial_visual_properties;
 }
 

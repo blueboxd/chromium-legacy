@@ -46,12 +46,12 @@ void ProducerClient::Connect(
 
 void ProducerClient::BindClientAndHostPipesForTesting(
     mojom::ProducerClientRequest producer_client_request,
-    mojom::ProducerHostPtrInfo producer_host_info) {
+    mojo::PendingRemote<mojom::ProducerHost> producer_host_remote) {
   task_runner()->GetOrCreateTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&ProducerClient::BindClientAndHostPipesOnSequence,
                      base::Unretained(this), std::move(producer_client_request),
-                     std::move(producer_host_info)));
+                     std::move(producer_host_remote)));
 }
 
 void ProducerClient::ResetSequenceForTesting() {

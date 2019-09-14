@@ -149,6 +149,8 @@ class MockScrollableAreaForAnimatorTest
   mutable scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner_;
 };
 
+}  // namespace
+
 class TestScrollAnimator : public ScrollAnimator {
  public:
   TestScrollAnimator(ScrollableArea* scrollable_area,
@@ -176,8 +178,6 @@ class TestScrollAnimator : public ScrollAnimator {
  private:
   bool should_send_to_compositor_ = false;
 };
-
-}  // namespace
 
 static void Reset(ScrollAnimator& scroll_animator) {
   scroll_animator.ScrollToOffsetWithoutAnimation(ScrollOffset());

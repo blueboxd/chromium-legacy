@@ -40,8 +40,9 @@ typedef NS_ENUM(int, TrailingButtonState) {
   kVoiceSearchButton,
 };
 
-// FullScreen progress threshold in which to hide the badge view.
-const double kHideBadgeViewThreshold = 0.1;
+// FullScreen progress threshold in which to toggle between full screen on and
+// off mode for the badge view.
+const double kFullscreenProgressBadgeViewThreshold = 0.85;
 
 }  // namespace
 
@@ -204,7 +205,8 @@ const double kHideBadgeViewThreshold = 0.1;
   CGFloat alphaValue = fmax((progress - 0.85) / 0.15, 0);
   CGFloat scaleValue = 0.79 + 0.21 * progress;
   self.locationBarSteadyView.trailingButton.alpha = alphaValue;
-  BOOL badgeViewShouldCollapse = progress <= kHideBadgeViewThreshold;
+  BOOL badgeViewShouldCollapse =
+      progress <= kFullscreenProgressBadgeViewThreshold;
   [self.locationBarSteadyView
       setFullScreenCollapsedMode:badgeViewShouldCollapse];
   self.locationBarSteadyView.transform =

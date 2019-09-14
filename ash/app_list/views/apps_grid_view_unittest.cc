@@ -305,6 +305,15 @@ class AppsGridViewTest : public views::ViewsTestBase,
     apps_grid_view_->OnKeyReleased(key_event);
   }
 
+  // Points are in |apps_grid_view_|'s coordinates, and fixed for RTL.
+  ui::GestureEvent SimulateTap(const gfx::Point& location) {
+    ui::GestureEvent gesture_event(
+        apps_grid_view_->GetMirroredXInView(location.x()), location.y(), 0,
+        base::TimeTicks(), ui::GestureEventDetails(ui::ET_GESTURE_TAP));
+    apps_grid_view_->OnGestureEvent(&gesture_event);
+    return gesture_event;
+  }
+
   // Tests that the order of item views in the AppsGridView is in accordance
   // with the order in the view model.
   void TestAppListItemViewIndice() {
@@ -674,26 +683,21 @@ TEST_F(AppsGridViewTest, CloseFolderByClickingBackground) {
   EXPECT_FALSE(apps_container_view->IsInFolderView());
 }
 
-TEST_F(AppsGridViewTest, TapsBetweenAppsWontCloseAppList) {
+// Tests that taps between apps within the AppsGridView does not result in the
+// AppList closing.
+TEST_P(AppsGridViewTest, TapsBetweenAppsWontCloseAppList) {
   model_->PopulateApps(2);
   gfx::Point between_apps = GetItemRectOnCurrentPageAt(0, 0).right_center();
   gfx::Point empty_space = GetItemRectOnCurrentPageAt(0, 2).CenterPoint();
 
-  ui::GestureEvent tap_between(between_apps.x(), between_apps.y(), 0,
-                               base::TimeTicks(),
-                               ui::GestureEventDetails(ui::ET_GESTURE_TAP));
-  ui::GestureEvent tap_outside(empty_space.x(), empty_space.y(), 0,
-                               base::TimeTicks(),
-                               ui::GestureEventDetails(ui::ET_GESTURE_TAP));
-
   // Taps between apps should be handled to prevent them from going into
   // app_list
-  apps_grid_view_->OnGestureEvent(&tap_between);
+  ui::GestureEvent tap_between = SimulateTap(between_apps);
   EXPECT_TRUE(tap_between.handled());
 
   // Taps outside of occupied tiles should not be handled, that they may close
   // the app_list
-  apps_grid_view_->OnGestureEvent(&tap_outside);
+  ui::GestureEvent tap_outside = SimulateTap(empty_space);
   EXPECT_FALSE(tap_outside.handled());
 }
 

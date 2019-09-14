@@ -155,7 +155,7 @@ class IpcPacketSocket : public rtc::AsyncPacketSocket,
   network::P2PSocketType type_;
 
   // Used to verify that a method runs on the thread that created this socket.
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   // Corresponding P2P socket client.
   std::unique_ptr<blink::P2PSocketClient> client_;
@@ -282,7 +282,7 @@ bool IpcPacketSocket::Init(network::P2PSocketType type,
                            uint16_t min_port,
                            uint16_t max_port,
                            const rtc::SocketAddress& remote_address) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_EQ(state_, IS_UNINITIALIZED);
 
   type_ = type;
@@ -328,7 +328,7 @@ void IpcPacketSocket::InitAcceptedTcp(
     std::unique_ptr<blink::P2PSocketClient> client,
     const rtc::SocketAddress& local_address,
     const rtc::SocketAddress& remote_address) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_EQ(state_, IS_UNINITIALIZED);
 
   client_ = std::move(client);
@@ -341,25 +341,25 @@ void IpcPacketSocket::InitAcceptedTcp(
 
 // rtc::AsyncPacketSocket interface.
 rtc::SocketAddress IpcPacketSocket::GetLocalAddress() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return local_address_;
 }
 
 rtc::SocketAddress IpcPacketSocket::GetRemoteAddress() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return remote_address_;
 }
 
 int IpcPacketSocket::Send(const void *data, size_t data_size,
                           const rtc::PacketOptions& options) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return SendTo(data, data_size, remote_address_, options);
 }
 
 int IpcPacketSocket::SendTo(const void *data, size_t data_size,
                             const rtc::SocketAddress& address,
                             const rtc::PacketOptions& options) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   switch (state_) {
     case IS_UNINITIALIZED:
@@ -440,7 +440,7 @@ int IpcPacketSocket::SendTo(const void *data, size_t data_size,
 }
 
 int IpcPacketSocket::Close() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   client_->Close();
   state_ = IS_CLOSED;
@@ -449,7 +449,7 @@ int IpcPacketSocket::Close() {
 }
 
 rtc::AsyncPacketSocket::State IpcPacketSocket::GetState() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   switch (state_) {
     case IS_UNINITIALIZED:
@@ -487,7 +487,7 @@ int IpcPacketSocket::GetOption(rtc::Socket::Option option, int* value) {
 }
 
 int IpcPacketSocket::SetOption(rtc::Socket::Option option, int value) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   network::P2PSocketOption p2p_socket_option = network::P2P_SOCKET_OPT_MAX;
   if (!JingleSocketOptionToP2PSocketOption(option, &p2p_socket_option)) {
@@ -505,7 +505,7 @@ int IpcPacketSocket::SetOption(rtc::Socket::Option option, int value) {
 }
 
 int IpcPacketSocket::DoSetOption(network::P2PSocketOption option, int value) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_EQ(state_, IS_OPEN);
 
   client_->SetOption(option, value);
@@ -513,18 +513,18 @@ int IpcPacketSocket::DoSetOption(network::P2PSocketOption option, int value) {
 }
 
 int IpcPacketSocket::GetError() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return error_;
 }
 
 void IpcPacketSocket::SetError(int error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   error_ = error;
 }
 
 void IpcPacketSocket::OnOpen(const net::IPEndPoint& local_address,
                              const net::IPEndPoint& remote_address) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!jingle_glue::IPEndPointToSocketAddress(local_address, &local_address_)) {
     // Always expect correct IPv4 address to be allocated.
@@ -568,7 +568,7 @@ void IpcPacketSocket::OnOpen(const net::IPEndPoint& local_address,
 void IpcPacketSocket::OnIncomingTcpConnection(
     const net::IPEndPoint& address,
     std::unique_ptr<blink::P2PSocketClient> client) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   std::unique_ptr<IpcPacketSocket> socket(new IpcPacketSocket());
 
@@ -583,7 +583,7 @@ void IpcPacketSocket::OnIncomingTcpConnection(
 
 void IpcPacketSocket::OnSendComplete(
     const network::P2PSendPacketMetrics& send_metrics) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   CHECK(!in_flight_packet_records_.empty());
 
@@ -615,7 +615,7 @@ void IpcPacketSocket::OnSendComplete(
 }
 
 void IpcPacketSocket::OnError() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   bool was_closed = (state_ == IS_ERROR || state_ == IS_CLOSED);
   state_ = IS_ERROR;
   error_ = ECONNABORTED;
@@ -627,7 +627,7 @@ void IpcPacketSocket::OnError() {
 void IpcPacketSocket::OnDataReceived(const net::IPEndPoint& address,
                                      const std::vector<int8_t>& data,
                                      const base::TimeTicks& timestamp) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   rtc::SocketAddress address_lj;
 

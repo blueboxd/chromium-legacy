@@ -97,7 +97,6 @@
 <translation id="138218114945450791">Lichtblauw</translation>
 <translation id="1382194467192730611">USB-apparaat toegestaan door je beheerder</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> heeft geen gegevens verzonden.</translation>
-<translation id="140316286225361634">De site <ph name="ORIGIN" /> heeft gevraagd een beveiligingsbeleid toe te passen op alle verzoeken van de site en dit beleid beschouwt de site momenteel als onveilig.</translation>
 <translation id="1405567553485452995">Lichtgroen</translation>
 <translation id="1407135791313364759">Alles openen</translation>
 <translation id="1413809658975081374">Privacyfout</translation>
@@ -133,6 +132,7 @@
 <translation id="1569487616857761740">Vervaldatum invoeren</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Er is iets misgegaan met het weergeven van deze webpagina.</translation>
+<translation id="1588438908519853928">Normaal</translation>
 <translation id="1592005682883173041">Lokale gegevenstoegang</translation>
 <translation id="1594030484168838125">Kiezen</translation>
 <translation id="161042844686301425">Cyaan</translation>
@@ -210,7 +210,6 @@
 <translation id="1981206234434200693">De gegevens van de Chrome-browsegeschiedenis wissen</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{en 1 andere}other{en # andere}}</translation>
 <translation id="2003709556000175978">Stel je wachtwoord nu opnieuw in</translation>
-<translation id="20053308747750172">De server waar je naartoe gaat (<ph name="ORIGIN" />), heeft gevraagd om een beveiligingsbeleid toe te passen op alle verzoeken aan de server. De server heeft nu echter een ongeldig beleid geleverd, waardoor de browser je verzoek voor <ph name="SITE" /> niet kan uitvoeren.</translation>
 <translation id="2025186561304664664">Proxy is ingesteld op automatische configuratie.</translation>
 <translation id="202813660234680402">Nee, niet toevoegen</translation>
 <translation id="2030481566774242610">Bedoelde je <ph name="LINK" />?</translation>
@@ -288,7 +287,6 @@
 <translation id="2409589295040002961">Je beheerder kan je browserinstellingen op afstand wijzigen. Activiteit op dit apparaat kan ook buiten Chrome worden beheerd. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server is mogelijk ingetrokken. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
-<translation id="2418081434543109369">De server waar je naartoe gaat (<ph name="ORIGIN" />), heeft gevraagd om een beveiligingsbeleid toe te passen op alle verzoeken aan de server. De server heeft nu echter geen beleid geleverd, waardoor de browser je verzoek voor <ph name="SITE" /> niet kan uitvoeren.</translation>
 <translation id="2463193859425327265">Homepage wijzigen</translation>
 <translation id="2463739503403862330">Invullen</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -575,6 +573,7 @@
 <translation id="4103249731201008433">Serienummer van apparaat is ongeldig</translation>
 <translation id="410351446219883937">Automatisch afspelen</translation>
 <translation id="4103763322291513355">Ga naar &lt;strong&gt;chrome://policy&lt;/strong&gt; om de lijst met URL's op de zwarte lijst en andere beleidsregels te bekijken die worden afgedwongen door je systeembeheerder.</translation>
+<translation id="4108231218301530806">Gebruik je vingerafdruk om deze kaart de volgende keer te verifiëren.</translation>
 <translation id="4110652170750985508">Je betaling controleren</translation>
 <translation id="4112140312785995938">Achteruit zoeken</translation>
 <translation id="4116663294526079822">Altijd toestaan op deze site</translation>
@@ -777,6 +776,7 @@
 <translation id="5141240743006678641">Gesynchroniseerde wachtwoorden versleutelen met je Google-aanmeldingsgegevens</translation>
 <translation id="5145883236150621069">Foutcode aanwezig in de beleidsreactie</translation>
 <translation id="515292512908731282">C4 (envelop)</translation>
+<translation id="5158275234811857234">Omslag</translation>
 <translation id="5159010409087891077">Pagina openen in een nieuw incognitovenster (⇧⌘N)</translation>
 <translation id="516920405563544094">Geef de CVC-code voor <ph name="CREDIT_CARD" /> op. Nadat je hebt bevestigd, worden de creditcardgegevens uit je Google-account gedeeld met deze site.</translation>
 <translation id="5169827969064885044">Je kunt de toegang tot het account van je organisatie kwijtraken of slachtoffer worden van identiteitsdiefstal. Chrome raadt je aan je wachtwoord nu te wijzigen.</translation>
@@ -835,7 +835,7 @@
 <translation id="5457113250005438886">Ongeldig</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> en nog <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" /> en nog <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="5470861586879999274">&amp;Opnieuw bewerken</translation>
-<translation id="5473728911100096288">Als je deze functies inschakelt, gebruik je verouderde functies die in toekomstige versies verdwijnen.</translation>
+<translation id="5473728911100096288">Als je deze functies inschakelt, gebruik je verouderde functies die in toekomstige versies gaan verdwijnen.</translation>
 <translation id="5478437291406423475">B6/C4 (envelop)</translation>
 <translation id="5481076368049295676">Deze content probeert mogelijk gevaarlijke software op je apparaat te installeren die je gegevens steelt of verwijdert. <ph name="BEGIN_LINK" />Toch weergeven<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Voeg een geldig adres toe</translation>
@@ -935,6 +935,7 @@
 <translation id="598637245381783098">Kan betaal-app niet openen</translation>
 <translation id="5989320800837274978">Er worden geen vaste proxyservers en geen pac-script-URL gespecificeerd.</translation>
 <translation id="5990559369517809815">Verzoeken aan de server zijn door een extensie geblokkeerd.</translation>
+<translation id="6000758707621254961"><ph name="RESULT_COUNT" /> resultaten voor '<ph name="SEARCH_TEXT" />'</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">Jaar</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Pagina 1}other{Pagina #}}</translation>
@@ -992,6 +993,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Geen}=1{1 wachtwoord (voor <ph name="DOMAIN_LIST" />, gesynchroniseerd)}=2{2 wachtwoorden (voor <ph name="DOMAIN_LIST" />, gesynchroniseerd)}other{# wachtwoorden (voor <ph name="DOMAIN_LIST" />, gesynchroniseerd)}}</translation>
 <translation id="6358450015545214790">Wat betekent dit?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6377268785556383139">Eén resultaat voor '<ph name="SEARCH_TEXT" />'</translation>
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Er worden later mogelijk kosten in rekening gebracht.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 andere suggestie}other{# andere suggesties}}</translation>
@@ -1126,7 +1128,6 @@
 <translation id="717330890047184534">Gaia-ID:</translation>
 <translation id="7174545416324379297">Samengevoegd</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> en nog <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> en nog <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
-<translation id="7177397715882417099">De server waar je naartoe gaat (<ph name="ORIGIN" />), heeft gevraagd om een beveiligingsbeleid toe te passen op alle verzoeken aan de server. De server heeft echter geen beleid geleverd, maar heeft de browser omgeleid naar een andere locatie. Hierdoor kan de browser je verzoek voor <ph name="SITE" /> niet uitvoeren.</translation>
 <translation id="7179323680825933600">Betaalmethoden toevoegen en invullen</translation>
 <translation id="7180611975245234373">Vernieuwen</translation>
 <translation id="7182878459783632708">Geen beleid ingesteld</translation>
@@ -1153,6 +1154,7 @@ Aanvullende informatie:
 <translation id="7300012071106347854">Kobaltblauw</translation>
 <translation id="7302712225291570345">'<ph name="TEXT" />'</translation>
 <translation id="7303701124147721189">Sla je kaartgegevens en factuuradres op in je Google-account en op dit apparaat zodat je de volgende keer sneller kunt betalen.</translation>
+<translation id="7304030187361489308">Hoog</translation>
 <translation id="7309308571273880165">Crashrapport vastgelegd op <ph name="CRASH_TIME" /> (upload aangevraagd door gebruiker, nog niet geüpload)</translation>
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />Safe Browsing<ph name="END_LINK" />-waarschuwingen</translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1514,7 +1516,6 @@ Aanvullende informatie:
 <translation id="939736085109172342">Nieuwe map</translation>
 <translation id="945855313015696284">Controleer de informatie hieronder en verwijder alle ongeldige passen</translation>
 <translation id="951104842009476243">Geaccepteerde betaalpassen en prepaidkaarten</translation>
-<translation id="958202389743790697">Geblokkeerd op basis van het beveiligingsbeleid van <ph name="ORIGIN" />.</translation>
 <translation id="962484866189421427">Deze content kan mogelijk proberen misleidende apps te installeren die zich voordoen als iets anders of gegevens verzamelen die kunnen worden gebruikt om je te volgen. <ph name="BEGIN_LINK" />Toch weergeven<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Officiële build</translation>
 <translation id="973773823069644502">Afleveradres toevoegen</translation>

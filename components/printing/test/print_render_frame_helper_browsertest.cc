@@ -127,6 +127,7 @@ void CreatePrintSettingsDictionary(base::DictionaryValue* dict) {
   dict->SetBoolean(kIsFirstRequest, true);
   dict->SetInteger(kSettingMarginsType, DEFAULT_MARGINS);
   dict->SetBoolean(kSettingPreviewModifiable, true);
+  dict->SetBoolean(kSettingPreviewIsPDF, false);
   dict->SetBoolean(kSettingHeaderFooterEnabled, false);
   dict->SetBoolean(kSettingShouldPrintBackgrounds, false);
   dict->SetBoolean(kSettingShouldPrintSelectionOnly, false);
@@ -260,7 +261,7 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
   void OnPrintPreview(const base::DictionaryValue& dict) {
     PrintRenderFrameHelper* print_render_frame_helper =
         GetPrintRenderFrameHelper();
-    print_render_frame_helper->OnInitiatePrintPreview(false);
+    print_render_frame_helper->InitiatePrintPreview(false);
     base::RunLoop run_loop;
     DidPreviewPageListener filter(&run_loop);
     render_thread_->sink().AddFilter(&filter);

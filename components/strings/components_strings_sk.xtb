@@ -97,7 +97,6 @@
 <translation id="138218114945450791">Svetlomodrá</translation>
 <translation id="1382194467192730611">Zariadenie USB je povolené správcom</translation>
 <translation id="139305205187523129">Web <ph name="HOST_NAME" /> neodoslal žiadne údaje.</translation>
-<translation id="140316286225361634">Web <ph name="ORIGIN" /> požiadal, aby sa na všetky jeho žiadosti vzťahovalo pravidlo zabezpečenia, podľa ktorého je tento web momentálne nebezpečný.</translation>
 <translation id="1405567553485452995">Svetlozelená</translation>
 <translation id="1407135791313364759">Otvoriť všetko</translation>
 <translation id="1413809658975081374">Chyba v ochrane osobných údajov</translation>
@@ -133,6 +132,7 @@
 <translation id="1569487616857761740">Zadajte dátum vypršania platnosti</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Pri zobrazovaní webovej stránky sa niečo pokazilo.</translation>
+<translation id="1588438908519853928">Normálny</translation>
 <translation id="1592005682883173041">Prístup k miestnym údajom</translation>
 <translation id="1594030484168838125">Zvoliť</translation>
 <translation id="161042844686301425">Azúrová</translation>
@@ -210,7 +210,6 @@
 <translation id="1981206234434200693">Vymažte údaje histórie prehliadania Chromu</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{a 1 ďalšia}few{a # ďalšie}many{a # ďalšej}other{a # ďalších}}</translation>
 <translation id="2003709556000175978">Obnovte heslo</translation>
-<translation id="20053308747750172">Server <ph name="ORIGIN" />, na ktorý prechádzate, požiadal, aby sa na všetky naň odoslané žiadosti vzťahovalo pravidlo zabezpečenia. Poskytol však neplatné pravidlo, ktoré bráni prehliadaču splniť vašu žiadosť týkajúcu sa webu <ph name="SITE" />.</translation>
 <translation id="2025186561304664664">Proxy je nastavené na automatickú konfiguráciu.</translation>
 <translation id="202813660234680402">Nie, nepridať</translation>
 <translation id="2030481566774242610">Mysleli ste stránku <ph name="LINK" />?</translation>
@@ -288,7 +287,6 @@
 <translation id="2409589295040002961">Nastavenia prehliadača môže vzdialene zmeniť správca. Aktivita v tomto zariadení môže byť tiež spravovaná mimo Chromu. <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Vládny právny dokument</translation>
 <translation id="2413528052993050574">Server nedokáže overiť, či ide o doménu <ph name="DOMAIN" />, jej bezpečnostný certifikát bol zrejme zrušený. Môže to byť spôsobené nesprávnou konfiguráciou alebo tým, že vaše pripojenie zachytil útočník.</translation>
-<translation id="2418081434543109369">Server <ph name="ORIGIN" />, na ktorý prechádzate, požiadal, aby sa na všetky naň odoslané žiadosti vzťahovalo pravidlo zabezpečenia. Neposkytol však pravidlo, ktoré bráni prehliadaču splniť vašu žiadosť týkajúcu sa webu <ph name="SITE" />.</translation>
 <translation id="2463193859425327265">Zmeniť domovskú stránku</translation>
 <translation id="2463739503403862330">Vyplniť</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -576,6 +574,7 @@
 <translation id="4103249731201008433">Sériové číslo zariadenia je neplatné</translation>
 <translation id="410351446219883937">Automatické prehrávanie</translation>
 <translation id="4103763322291513355">Na stránke &lt;strong&gt;chrome://policy&lt;/strong&gt; nájdete zoznam zakázaných webových adries a ďalšie pravidlá vynútené vaším správcom systému.</translation>
+<translation id="4108231218301530806">Pri ďalšom overení tejto karty použiť odtlačok prsta</translation>
 <translation id="4110652170750985508">Kontrola platby</translation>
 <translation id="4112140312785995938">Pretočiť dozadu</translation>
 <translation id="4116663294526079822">Vždy povoliť na tomto webe</translation>
@@ -778,6 +777,7 @@
 <translation id="5141240743006678641">Šifrovať synchronizované heslá pomocou poverení Google</translation>
 <translation id="5145883236150621069">V odpovedi na pravidlo sa nachádza kód chyby</translation>
 <translation id="515292512908731282">C4 (obálka)</translation>
+<translation id="5158275234811857234">Titulná strana</translation>
 <translation id="5159010409087891077">Otvorte stránku v novom okne inkognito (⇧⌘N)</translation>
 <translation id="516920405563544094">Zadajte kód CVC karty <ph name="CREDIT_CARD" />. Po potvrdení sa budú údaje o karte z vášho účtu Google zdieľať s týmto webom.</translation>
 <translation id="5169827969064885044">Môžete stratiť prístup do účtu svojej organizácie alebo vám niekto môže ukradnúť totožnosť. Chrome odporúča, aby ste si ihneď zmenili heslo.</translation>
@@ -936,6 +936,7 @@
 <translation id="598637245381783098">Nie je možné otvoriť platobnú aplikáciu</translation>
 <translation id="5989320800837274978">Nie sú určené pevne dané servery proxy ani skript PAC webovej adresy.</translation>
 <translation id="5990559369517809815">Žiadosti odoslané serveru boli zablokované rozšírením.</translation>
+<translation id="6000758707621254961">Viacero výsledkov (<ph name="RESULT_COUNT" />) pre hľadaný výraz „<ph name="SEARCH_TEXT" />“</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">Rok</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Strana 1}few{Strana #}many{Strana #}other{Strana #}}</translation>
@@ -993,6 +994,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Žiadne}=1{Jedno heslo (pre zoznam domén <ph name="DOMAIN_LIST" />, synchronizované)}=2{Dve heslá (pre zoznam domén <ph name="DOMAIN_LIST" />, synchronizované)}few{# heslá (pre zoznam domén <ph name="DOMAIN_LIST" />, synchronizované)}many{# passwords (for <ph name="DOMAIN_LIST" />, synced)}other{# hesiel (pre zoznam domén <ph name="DOMAIN_LIST" />, synchronizovaných)}}</translation>
 <translation id="6358450015545214790">Čo znamenajú tieto položky?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6377268785556383139">1 výsledok pre hľadaný výraz „<ph name="SEARCH_TEXT" />“</translation>
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Ak prejdete ďalej, môžu vám byť účtované poplatky.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 ďalší návrh}few{# ďalšie návrhy}many{# ďalšieho návrhu}other{# ďalších návrhov}}</translation>
@@ -1127,7 +1129,6 @@
 <translation id="717330890047184534">ID služby Gaia:</translation>
 <translation id="7174545416324379297">Zlúčené</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ďalšia}few{<ph name="SHIPPING_OPTION_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ďalšie}many{<ph name="SHIPPING_OPTION_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ďalšej}other{<ph name="SHIPPING_OPTION_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ďalších}}</translation>
-<translation id="7177397715882417099">Server <ph name="ORIGIN" />, na ktorý prechádzate, požiadal, aby sa na všetky naň odoslané žiadosti vzťahovalo pravidlo zabezpečenia. Namiesto poskytnutia pravidla presmeroval prehliadač inam, čo bráni prehliadaču splniť vašu žiadosť týkajúcu sa webu <ph name="SITE" />.</translation>
 <translation id="7179323680825933600">Ukladať a dopĺňať spôsoby platby</translation>
 <translation id="7180611975245234373">Obnoviť</translation>
 <translation id="7182878459783632708">Nie sú nastavené žiadne pravidlá</translation>
@@ -1154,6 +1155,7 @@
 <translation id="7300012071106347854">Kobaltová modrá</translation>
 <translation id="7302712225291570345">„<ph name="TEXT" />“</translation>
 <translation id="7303701124147721189">Ak chcete nabudúce zaplatiť rýchlejšie, uložte si kartu a fakturačnú adresu do účtu Google a tohto zariadenia</translation>
+<translation id="7304030187361489308">Vysoký</translation>
 <translation id="7309308571273880165">Správa o zlyhaní zaznamenaná v čase <ph name="CRASH_TIME" /> (nahranie vyžiadané používateľom, zatiaľ nebola nahraná)</translation>
 <translation id="7313965965371928911">Upozornenia <ph name="BEGIN_LINK" />Bezpečného prehliadania<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1516,7 +1518,6 @@
 <translation id="939736085109172342">Nový priečinok</translation>
 <translation id="945855313015696284">Skontrolujte informácie nižšie a odstráňte neplatné karty</translation>
 <translation id="951104842009476243">Akceptované debetné a predplatené karty</translation>
-<translation id="958202389743790697">Blokované pravidlom zabezpečenia zo zdroja <ph name="ORIGIN" />.</translation>
 <translation id="962484866189421427">Tento obsah sa môže pokúsiť nainštalovať klamlivé aplikácie vydávajúce sa za iné aplikácie alebo zhromažďovať údaje, ktoré sa dajú použiť na sledovanie vašej osoby. <ph name="BEGIN_LINK" />Napriek tomu zobraziť<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">oficiálna zostava</translation>
 <translation id="973773823069644502">Pridať adresu doručenia</translation>

@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/badges/badge_button.h"
 #import "ios/chrome/browser/ui/badges/badge_button_action_handler.h"
 #import "ios/chrome/browser/ui/badges/badge_constants.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -52,7 +53,8 @@
 - (BadgeButton*)passwordsSaveBadgeButton {
   BadgeButton* button =
       [self createButtonForType:BadgeType::kBadgeTypePasswordSave
-                     imageNamed:@"infobar_passwords_icon"];
+                     imageNamed:@"infobar_passwords_icon"
+                  renderingMode:UIImageRenderingModeAlwaysTemplate];
   [button addTarget:self.actionHandler
                 action:@selector(passwordsBadgeButtonTapped:)
       forControlEvents:UIControlEventTouchUpInside];
@@ -66,7 +68,8 @@
 - (BadgeButton*)passwordsUpdateBadgeButton {
   BadgeButton* button =
       [self createButtonForType:BadgeType::kBadgeTypePasswordUpdate
-                     imageNamed:@"infobar_passwords_icon"];
+                     imageNamed:@"infobar_passwords_icon"
+                  renderingMode:UIImageRenderingModeAlwaysTemplate];
   [button addTarget:self.actionHandler
                 action:@selector(passwordsBadgeButtonTapped:)
       forControlEvents:UIControlEventTouchUpInside];
@@ -78,11 +81,13 @@
 }
 
 - (BadgeButton*)incognitoBadgeButton {
-  BadgeButton* button = [self createButtonForType:BadgeType::kBadgeTypeIncognito
-                                       imageNamed:@"incognito_badge"];
-  UIImage* image = [[UIImage imageNamed:@"incognito_badge"]
-      imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-  [button setImage:image forState:UIControlStateDisabled];
+  BadgeButton* button =
+      [self createButtonForType:BadgeType::kBadgeTypeIncognito
+                     imageNamed:@"incognito_badge"
+                  renderingMode:UIImageRenderingModeAlwaysOriginal];
+  button.fullScreenImage = [[UIImage imageNamed:@"incognito_small_badge"]
+      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  button.tintColor = [UIColor colorNamed:kTextPrimaryColor];
   button.accessibilityTraits &= ~UIAccessibilityTraitButton;
   button.enabled = NO;
   button.accessibilityIdentifier = kBadgeButtonIncognitoAccessibilityIdentifier;
@@ -92,11 +97,13 @@
 }
 
 - (BadgeButton*)createButtonForType:(BadgeType)badgeType
-                         imageNamed:(NSString*)imageName {
+                         imageNamed:(NSString*)imageName
+                      renderingMode:(UIImageRenderingMode)renderingMode {
   BadgeButton* button = [BadgeButton badgeButtonWithType:badgeType];
-  UIImage* image = [[UIImage imageNamed:imageName]
-      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-  [button setImage:image forState:UIControlStateNormal];
+  UIImage* image =
+      [[UIImage imageNamed:imageName] imageWithRenderingMode:renderingMode];
+  button.image = image;
+  button.fullScreenOn = NO;
   button.imageView.contentMode = UIViewContentModeScaleAspectFit;
   [NSLayoutConstraint
       activateConstraints:@[ [button.widthAnchor

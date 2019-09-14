@@ -12,6 +12,14 @@ let deviceHandler;
 /** Mock chrome APIs. */
 let mockChrome;
 
+/**
+ * Mock metrics.
+ * @type {!Object}
+ */
+window.metrics = {
+  recordEnum: function() {},
+};
+
 // Set up the test components.
 function setUp() {
   // Set up string assets.

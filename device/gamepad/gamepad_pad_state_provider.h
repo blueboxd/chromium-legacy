@@ -14,6 +14,10 @@
 #include "device/gamepad/gamepad_standard_mappings.h"
 #include "device/gamepad/public/cpp/gamepad.h"
 
+namespace service_manager {
+class Connector;
+}  // namespace service_manager
+
 namespace device {
 
 class GamepadDataFetcher;
@@ -103,7 +107,9 @@ class DEVICE_GAMEPAD_EXPORT GamepadPadStateProvider {
  protected:
   void ClearPadState(PadState& state);
 
-  void InitializeDataFetcher(GamepadDataFetcher* fetcher);
+  void InitializeDataFetcher(
+      GamepadDataFetcher* fetcher,
+      service_manager::Connector* service_manager_connector);
 
   void MapAndSanitizeGamepadData(PadState* pad_state,
                                  Gamepad* pad,

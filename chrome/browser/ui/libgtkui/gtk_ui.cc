@@ -926,6 +926,13 @@ void GtkUi::UpdateColors() {
             frame_color_incognito_inactive)
             .color;
 
+    color_map[ThemeProperties::COLOR_OMNIBOX_TEXT] =
+        native_theme_->GetSystemColor(
+            ui::NativeTheme::kColorId_TextfieldDefaultColor);
+    color_map[ThemeProperties::COLOR_OMNIBOX_BACKGROUND] =
+        native_theme_->GetSystemColor(
+            ui::NativeTheme::kColorId_TextfieldDefaultBackground);
+
     // These colors represent the border drawn around tabs and between
     // the tabstrip and toolbar.
     SkColor toolbar_top_separator = GetBorderColor(

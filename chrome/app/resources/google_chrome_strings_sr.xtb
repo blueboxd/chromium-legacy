@@ -47,6 +47,8 @@
 <translation id="1873233029667955273">Google Chrome није подразумевани прегледач</translation>
 <translation id="1874309113135274312">Google Chrome бета (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome је застарео</translation>
+<translation id="1900795423379050516">Ако се подешавање не приказује на овој страници, потражите га у <ph name="LINK_BEGIN" />
+      подешавањима Chrome прегледача<ph name="LINK_END" /></translation>
 <translation id="1915828456209461693">Ново ажурирање за Chrome је доступно и примениће се чим га поново покренете.</translation>
 <translation id="1919130412786645364">Дозволи пријављивање у Chrome</translation>
 <translation id="2063848847527508675">Треба да рестартујете Chrome OS да бисте применили ажурирање.</translation>
@@ -164,6 +166,8 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="5543953544073077331">Друге копије Chrome-а су активне. Затворите их да бисте га ажурирали.</translation>
 <translation id="556024056938947818">Google Chrome покушава да прикаже лозинке.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
+<translation id="5657226924540934362">Ако се подешавање не приказује на овој страници, потражите га у <ph name="LINK_BEGIN" />
+      подешавањима Chrome ОС-а<ph name="LINK_END" /></translation>
 <translation id="565744775970812598">Датотека <ph name="FILE_NAME" /> је можда опасна, па ју је Chrome блокирао.</translation>
 <translation id="5686916850681061684">Прилагодите и контролишите Google Chrome. Треба да обратите пажњу на нешто – кликните за више детаља.</translation>
 <translation id="5690427481109656848">Google LLC</translation>

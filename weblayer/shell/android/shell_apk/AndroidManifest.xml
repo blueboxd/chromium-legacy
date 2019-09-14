@@ -24,7 +24,7 @@
                   android:launchMode="singleTask"
                   android:theme="@android:style/Theme.Holo.Light.NoActionBar"
                   android:configChanges="orientation|keyboardHidden|keyboard|screenSize"
-                  android:windowSoftInputMode="stateUnspecified">
+                  android:windowSoftInputMode="adjustPan|stateUnspecified">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

@@ -89,7 +89,7 @@ Polymer({
   properties: {
     /**
      * List of tabinfos.
-     * @private {?Array<!mojom.TabDiscardsInfo>}
+     * @private {?Array<!discards.mojom.TabDiscardsInfo>}
      */
     tabInfos_: {
       type: Array,
@@ -99,7 +99,7 @@ Polymer({
   /** @private The current update timer if any. */
   updateTimer_: 0,
 
-  /** @private {(mojom.DiscardsDetailsProviderRemote|null)} */
+  /** @private {(discards.mojom.DetailsProviderRemote|null)} */
   discardsDetailsProvider_: null,
 
   /** @override */
@@ -137,17 +137,18 @@ Polymer({
   /**
    * Returns a string representation of a visibility enum value for display in
    * a table.
-   * @param {mojom.LifecycleUnitVisibility} visibility A visibility value.
+   * @param {discards.mojom.LifecycleUnitVisibility} visibility A visibility
+   *     value.
    * @return {string} A string representation of the visibility.
    * @private
    */
   visibilityToString_: function(visibility) {
     switch (visibility) {
-      case mojom.LifecycleUnitVisibility.HIDDEN:
+      case discards.mojom.LifecycleUnitVisibility.HIDDEN:
         return 'hidden';
-      case mojom.LifecycleUnitVisibility.OCCLUDED:
+      case discards.mojom.LifecycleUnitVisibility.OCCLUDED:
         return 'occluded';
-      case mojom.LifecycleUnitVisibility.VISIBLE:
+      case discards.mojom.LifecycleUnitVisibility.VISIBLE:
         return 'visible';
     }
     assertNotReached('Unknown visibility: ' + visibility);
@@ -196,7 +197,8 @@ Polymer({
    * @param {mojom.LifecycleUnitState} state The lifecycle state.
    * @param {mojom.LifecycleUnitDiscardReason} reason The discard reason. This
    *     is only used if the state is discard related.
-   * @param {mojom.LifecycleUnitVisibility} visibility A visibility value.
+   * @param {discards.mojom.LifecycleUnitVisibility} visibility A visibility
+   *     value.
    * @param {boolean} hasFocus Whether or not the tab has input focus.
    * @param {mojoBase.mojom.TimeDelta} stateChangeTime Delta between Unix Epoch
    *     and time at which the lifecycle state has changed.
@@ -208,11 +210,11 @@ Polymer({
       state, reason, visibility, hasFocus, stateChangeTime) {
     const pageLifecycleStateFromVisibilityAndFocus = function() {
       switch (visibility) {
-        case mojom.LifecycleUnitVisibility.HIDDEN:
-        case mojom.LifecycleUnitVisibility.OCCLUDED:
+        case discards.mojom.LifecycleUnitVisibility.HIDDEN:
+        case discards.mojom.LifecycleUnitVisibility.OCCLUDED:
           // An occluded page is also considered hidden.
           return 'hidden';
-        case mojom.LifecycleUnitVisibility.VISIBLE:
+        case discards.mojom.LifecycleUnitVisibility.VISIBLE:
           return hasFocus ? 'active' : 'passive';
       }
       assertNotReached('Unknown visibility: ' + visibility);
@@ -269,7 +271,7 @@ Polymer({
 
   /**
    * Formats an items reactivation for display.
-   * @param {mojom.TabDiscardsInfo} item The item in question.
+   * @param {discards.mojom.TabDiscardsInfo} item The item in question.
    * @return {string} The formatted reactivation score.
    * @private
    */
@@ -280,7 +282,7 @@ Polymer({
 
   /**
    * Formats an items site engagement score for display.
-   * @param {mojom.TabDiscardsInfo} item The item in question.
+   * @param {discards.mojom.TabDiscardsInfo} item The item in question.
    * @return {string} The formatted site engagemetn score.
    * @private
    */
@@ -290,7 +292,7 @@ Polymer({
 
   /**
    * Retrieves favicon style tag value for an item.
-   * @param {mojom.TabDiscardsInfo} item The item in question.
+   * @param {discards.mojom.TabDiscardsInfo} item The item in question.
    * @return {string} A style to retrieve and display the item's favicon.
    * @private
    */
@@ -301,7 +303,7 @@ Polymer({
 
   /**
    * Formats an items lifecycle state for display.
-   * @param {mojom.TabDiscardsInfo} item The item in question.
+   * @param {discards.mojom.TabDiscardsInfo} item The item in question.
    * @return {string} A human readable lifecycle state.
    * @private
    */
@@ -338,7 +340,7 @@ Polymer({
 
   /**
    * Tests whether an item has reasons why it cannot be frozen.
-   * @param {mojom.TabDiscardsInfo} item The item in question.
+   * @param {discards.mojom.TabDiscardsInfo} item The item in question.
    * @return {boolean} true iff there are reasons why the item cannot be frozen.
    * @private
    */
@@ -347,7 +349,7 @@ Polymer({
   },
   /**
    * Tests whether an item has reasons why it cannot be discarded.
-   * @param {mojom.TabDiscardsInfo} item The item in question.
+   * @param {discards.mojom.TabDiscardsInfo} item The item in question.
    * @return {boolean} true iff there are reasons why the item cannot be
    *     discarded.
    * @private
@@ -358,7 +360,7 @@ Polymer({
 
   /**
    * Tests whether an item can be loaded.
-   * @param {mojom.TabDiscardsInfo} item The item in question.
+   * @param {discards.mojom.TabDiscardsInfo} item The item in question.
    * @return {boolean} true iff the item can be loaded.
    * @private
    */
@@ -368,13 +370,13 @@ Polymer({
 
   /**
    * Tests whether an item can be frozen.
-   * @param {mojom.TabDiscardsInfo} item The item in question.
+   * @param {discards.mojom.TabDiscardsInfo} item The item in question.
    * @return {boolean} true iff the item can be frozen.
    * @private
    */
   canFreeze_: function(item) {
-    if (item.visibility == mojom.LifecycleUnitVisibility.HIDDEN ||
-        item.visibility == mojom.LifecycleUnitVisibility.OCCLUDED) {
+    if (item.visibility == discards.mojom.LifecycleUnitVisibility.HIDDEN ||
+        item.visibility == discards.mojom.LifecycleUnitVisibility.OCCLUDED) {
       // Only tabs that aren't visible can be frozen for now.
       switch (item.state) {
         case mojom.LifecycleUnitState.DISCARDED:
@@ -390,13 +392,13 @@ Polymer({
 
   /**
    * Tests whether an item can be discarded.
-   * @param {mojom.TabDiscardsInfo} item The item in question.
+   * @param {discards.mojom.TabDiscardsInfo} item The item in question.
    * @return {boolean} true iff the item can be discarded.
    * @private
    */
   canDiscard_: function(item) {
-    if (item.visibility == mojom.LifecycleUnitVisibility.HIDDEN ||
-        item.visibility == mojom.LifecycleUnitVisibility.OCCLUDED) {
+    if (item.visibility == discards.mojom.LifecycleUnitVisibility.HIDDEN ||
+        item.visibility == discards.mojom.LifecycleUnitVisibility.OCCLUDED) {
       // Only tabs that aren't visible can be discarded for now.
       switch (item.state) {
         case mojom.LifecycleUnitState.DISCARDED:

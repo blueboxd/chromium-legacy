@@ -303,6 +303,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 }
 
+#pragma mark - SettingsRootTableViewController
+
+- (BOOL)shouldDismissViewControllerBySwipeDown {
+  return !self.tableView.editing;
+}
+
 #pragma mark - Actions
 
 - (void)buttonTapped:(UIButton*)button {

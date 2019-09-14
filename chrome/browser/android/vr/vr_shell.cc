@@ -192,8 +192,9 @@ VrShell::VrShell(JNIEnv* env,
 
   UpdateVrAssetsComponent(g_browser_process->component_updater());
 
-  content::GetSystemConnector()->BindInterface(device::mojom::kServiceName,
-                                               &geolocation_config_);
+  content::GetSystemConnector()->Connect(
+      device::mojom::kServiceName,
+      geolocation_config_.BindNewPipeAndPassReceiver());
 }
 
 void VrShell::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {

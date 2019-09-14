@@ -145,6 +145,11 @@ const char kSettingPinValue[] = "pinValue";
 // Policies affecting printing destination.
 const char kSettingPolicies[] = "policies";
 
+// Whether the source page content is PDF or not.
+const char kSettingPreviewIsPDF[] = "previewIsPDF";
+
+// Whether the source page content is modifiable. True for web content.
+// i.e. Anything from Blink. False for everything else. e.g. PDF/Flash.
 const char kSettingPreviewModifiable[] = "previewModifiable";
 
 // Keys that specifies the printable area details.

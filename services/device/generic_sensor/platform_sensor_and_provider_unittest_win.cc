@@ -7,7 +7,10 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/win/iunknown_impl.h"
 #include "base/win/propvarutil.h"
@@ -764,6 +767,107 @@ TEST_F(PlatformSensorAndProviderTestWin,
   auto quaternion_sensor =
       CreateSensor(SensorType::ABSOLUTE_ORIENTATION_QUATERNION);
   EXPECT_FALSE(quaternion_sensor);
+}
+
+// Tests the sensor activation histogram tracks sensor activation return
+// codes correctly.
+TEST_F(PlatformSensorAndProviderTestWin, CheckSensorActivationHistogram) {
+  base::HistogramTester histogram_tester;
+
+  // Trigger ERROR_NOT_FOUND
+  SetUnsupportedSensor(SENSOR_TYPE_AMBIENT_LIGHT);
+  auto sensor = CreateSensor(SensorType::AMBIENT_LIGHT);
+  EXPECT_FALSE(sensor);
+  EXPECT_EQ(histogram_tester.GetBucketCount(
+                "Sensors.Windows.ISensor.Activation.Result",
+                HRESULT_FROM_WIN32(ERROR_NOT_FOUND)),
+            1);
+
+  // Trigger S_OK
+  SetSupportedSensor(SENSOR_TYPE_AMBIENT_LIGHT);
+  sensor = CreateSensor(SensorType::AMBIENT_LIGHT);
+  EXPECT_TRUE(sensor);
+  EXPECT_EQ(histogram_tester.GetBucketCount(
+                "Sensors.Windows.ISensor.Activation.Result", S_OK),
+            1);
+
+  histogram_tester.ExpectTotalCount("Sensors.Windows.ISensor.Activation.Result",
+                                    2);
+}
+
+// Tests the sensor start histogram tracks sensor start return codes
+// correctly.
+TEST_F(PlatformSensorAndProviderTestWin, CheckSensorStartHistogram) {
+  base::HistogramTester histogram_tester;
+
+  SetSupportedSensor(SENSOR_TYPE_AMBIENT_LIGHT);
+  auto sensor = CreateSensor(SensorType::AMBIENT_LIGHT);
+  EXPECT_TRUE(sensor);
+  auto client = std::make_unique<NiceMock<MockPlatformSensorClient>>(sensor);
+  PlatformSensorConfiguration configuration(10);
+
+  // Trigger S_OK
+  EXPECT_TRUE(sensor->StartListening(client.get(), configuration));
+  EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
+  base::Optional<base::RunLoop> run_loop;
+  run_loop.emplace();
+  provider_->GetComStaTaskRunnerForTesting()->PostTaskAndReply(
+      FROM_HERE, base::DoNothing(), run_loop->QuitClosure());
+  run_loop->Run();
+  EXPECT_EQ(histogram_tester.GetBucketCount(
+                "Sensors.Windows.ISensor.Start.Result", S_OK),
+            1);
+
+  // Trigger E_OUTOFMEMORY
+  ON_CALL(*sensor_, SetEventSink(NotNull()))
+      .WillByDefault(Invoke([](ISensorEvents*) { return E_OUTOFMEMORY; }));
+
+  // StartListening() swallows SetEventSink() errors so this will return
+  // true even if the sensor failed to start.
+  EXPECT_TRUE(sensor->StartListening(client.get(), configuration));
+  EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
+  run_loop.emplace();
+  provider_->GetComStaTaskRunnerForTesting()->PostTaskAndReply(
+      FROM_HERE, base::DoNothing(), run_loop->QuitClosure());
+  run_loop->Run();
+  EXPECT_EQ(histogram_tester.GetBucketCount(
+                "Sensors.Windows.ISensor.Start.Result", E_OUTOFMEMORY),
+            1);
+
+  histogram_tester.ExpectTotalCount("Sensors.Windows.ISensor.Start.Result", 2);
+}
+
+// Tests the sensor stop histogram tracks sensor stop return codes
+// correctly.
+TEST_F(PlatformSensorAndProviderTestWin, CheckSensorStopHistogram) {
+  base::HistogramTester histogram_tester;
+
+  SetSupportedSensor(SENSOR_TYPE_AMBIENT_LIGHT);
+  auto sensor = CreateSensor(SensorType::AMBIENT_LIGHT);
+  EXPECT_TRUE(sensor);
+  auto client = std::make_unique<NiceMock<MockPlatformSensorClient>>(sensor);
+  PlatformSensorConfiguration configuration(10);
+
+  // Trigger S_OK
+  EXPECT_TRUE(sensor->StartListening(client.get(), configuration));
+  EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
+  EXPECT_EQ(histogram_tester.GetBucketCount(
+                "Sensors.Windows.ISensor.Stop.Result", S_OK),
+            1);
+
+  // Trigger E_POINTER
+  ON_CALL(*sensor_, SetEventSink(IsNull()))
+      .WillByDefault(Invoke([&](ISensorEvents*) { return E_POINTER; }));
+
+  // StopListening() swallows SetEventSink() errors so this will return
+  // true even if the sensor failed to start.
+  EXPECT_TRUE(sensor->StartListening(client.get(), configuration));
+  EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
+  EXPECT_EQ(histogram_tester.GetBucketCount(
+                "Sensors.Windows.ISensor.Stop.Result", E_POINTER),
+            1);
+
+  histogram_tester.ExpectTotalCount("Sensors.Windows.ISensor.Stop.Result", 2);
 }
 
 }  // namespace device

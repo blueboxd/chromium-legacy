@@ -9,6 +9,7 @@
 #include "chrome/browser/data_saver/data_saver_top_host_provider.h"
 #include "chrome/browser/optimization_guide/optimization_guide_hints_manager.h"
 #include "chrome/browser/optimization_guide/optimization_guide_navigation_data.h"
+#include "chrome/browser/optimization_guide/optimization_guide_session_statistic.h"
 #include "chrome/browser/optimization_guide/optimization_guide_web_contents_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
@@ -186,4 +187,13 @@ void OptimizationGuideKeyedService::Shutdown() {
     hints_manager_->Shutdown();
     hints_manager_ = nullptr;
   }
+}
+
+void OptimizationGuideKeyedService::UpdateSessionFCP(base::TimeDelta fcp) {
+  // TODO(crbug/1001194): This will be passed to the
+  // OptimizationGuidePredictionManager that will own the FCP session
+  // statistics.
+  if (!session_fcp_)
+    session_fcp_ = std::make_unique<OptimizationGuideSessionStatistic>();
+  session_fcp_->AddSample(static_cast<float>(fcp.InMilliseconds()));
 }

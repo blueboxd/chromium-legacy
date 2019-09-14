@@ -806,7 +806,7 @@ PasswordFormManager::PasswordFormManager(
       metrics_recorder_(metrics_recorder),
       owned_form_fetcher_(form_fetcher
                               ? nullptr
-                              : std::make_unique<FormFetcherImpl>(
+                              : FormFetcherImpl::CreateFormFetcherImpl(
                                     std::move(form_digest),
                                     client_,
                                     true /* should_migrate_http_passwords */)),

@@ -241,12 +241,16 @@ crbug.com/983600 [ mojave amd-0x6821 ] Pixel_CSSFilterEffects_NoOverlays [ Retry
 # Skip swap chain tests on non-Windows
 [ android ] Pixel_CanvasLowLatency2DSwapChain [ Skip ]
 [ android ] Pixel_CanvasLowLatencyWebGLSwapChain [ Skip ]
+[ android ] Pixel_CanvasLowLatencyWebGLSwapChainAlphaFalse [ Skip ]
 [ chromeos ] Pixel_CanvasLowLatency2DSwapChain [ Skip ]
 [ chromeos ] Pixel_CanvasLowLatencyWebGLSwapChain [ Skip ]
+[ chromeos ] Pixel_CanvasLowLatencyWebGLSwapChainAlphaFalse [ Skip ]
 [ linux ] Pixel_CanvasLowLatency2DSwapChain [ Skip ]
 [ linux ] Pixel_CanvasLowLatencyWebGLSwapChain [ Skip ]
+[ linux ] Pixel_CanvasLowLatencyWebGLSwapChainAlphaFalse [ Skip ]
 [ mac ] Pixel_CanvasLowLatency2DSwapChain [ Skip ]
 [ mac ] Pixel_CanvasLowLatencyWebGLSwapChain [ Skip ]
+[ mac ] Pixel_CanvasLowLatencyWebGLSwapChainAlphaFalse [ Skip ]
 
 # Producing incorrect image on Win10 Intel HD 630 w/ 26.20.100.6912 drivers.
 crbug.com/997313 [ win intel-0x5912 ] Pixel_WebGL_PremultipliedAlpha_False [ Failure ]

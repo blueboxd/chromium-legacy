@@ -29,16 +29,16 @@
 
 namespace blink {
 
-SMILTime operator*(const SMILTime& a, const SMILTime& b) {
+SMILTime SMILTime::operator*(SMILTime other) const {
   // Equal operators have to be used instead of negation here to make NaN work
   // as well.
-  if (a.Value() == 0 || b.Value() == 0)
+  if (time_ == 0 || other.time_ == 0)
     return SMILTime(0);
-  return a.Value() * b.Value();
+  return time_ * other.time_;
 }
 
 std::ostream& operator<<(std::ostream& os, SMILTime time) {
-  return os << time.Value() << " s";
+  return os << time.InSecondsF() << " s";
 }
 
 }  // namespace blink

@@ -84,7 +84,8 @@ public class ActivityTabStartupMetricsTracker {
             private boolean mShouldRecordHistograms;
 
             @Override
-            public void onNewNavigation(WebContents webContents, long navigationId) {
+            public void onNewNavigation(WebContents webContents, long navigationId,
+                    boolean isFirstNavigationInWebContents) {
                 if (mNavigationId != NO_NAVIGATION_ID) return;
 
                 mNavigationId = navigationId;

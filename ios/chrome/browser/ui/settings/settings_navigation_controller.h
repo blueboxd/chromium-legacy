@@ -39,6 +39,11 @@ extern NSString* const kSettingsDoneButtonId;
 // closed.
 - (void)closeSettings;
 
+// Informs the delegate that settings navigation controller has been dismissed
+// (e.g. it was swiped down). This means that closeSettings wasn't called and we
+// need to perform some clean up tasks.
+- (void)settingsWasDismissed;
+
 // Asks the delegate for a dispatcher that can be passed into child view
 // controllers when they are created.
 - (id<ApplicationCommands, BrowserCommands>)dispatcherForSettings;
@@ -146,9 +151,9 @@ initWithRootViewController:(UIViewController*)rootViewController
 // Returns the current main browser state.
 - (ios::ChromeBrowserState*)mainBrowserState;
 
-// Notifies this |SettingsNavigationController| that it will be dismissed such
+// Notifies this |SettingsNavigationController| of a dismissal such
 // that it has a possibility to do necessary clean up.
-- (void)settingsWillBeDismissed;
+- (void)cleanUpSettings;
 
 // Closes this |SettingsNavigationController| by asking its delegate.
 - (void)closeSettings;

@@ -102,13 +102,12 @@ TEST_F(RenderWidgetTest, OnSynchronizeVisualProperties) {
 
 class RenderWidgetInitialSizeTest : public RenderWidgetTest {
  protected:
-  std::unique_ptr<VisualProperties> InitialVisualProperties() override {
-    std::unique_ptr<VisualProperties> initial_visual_properties(
-        new VisualProperties());
-    initial_visual_properties->new_size = initial_size_;
-    initial_visual_properties->compositor_viewport_pixel_rect =
+  VisualProperties InitialVisualProperties() override {
+    VisualProperties initial_visual_properties;
+    initial_visual_properties.new_size = initial_size_;
+    initial_visual_properties.compositor_viewport_pixel_rect =
         gfx::Rect(initial_size_);
-    initial_visual_properties->local_surface_id_allocation =
+    initial_visual_properties.local_surface_id_allocation =
         local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
     return initial_visual_properties;
   }

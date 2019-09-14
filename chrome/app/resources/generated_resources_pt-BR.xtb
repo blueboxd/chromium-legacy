@@ -1509,7 +1509,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="321799795901478485">Zip Archiver</translation>
 <translation id="321834671654278338">Desinstalador do Linux</translation>
 <translation id="3220586366024592812">Houve uma falha no processo de conexão de <ph name="CLOUD_PRINT_NAME" />. Quer reiniciá-lo?</translation>
-<translation id="3221634914176615296">Explorar o conteúdo do dispositivo no aplicativo Arquivos.</translation>
 <translation id="3222066309010235055">Pré-processar: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
 <translation id="3225084153129302039">Avatar roxo padrão</translation>
 <translation id="3225319735946384299">Assinatura do código</translation>
@@ -1550,7 +1549,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3282568296779691940">Fazer login no Google Chrome</translation>
 <translation id="3285322247471302225">Nova &amp;guia</translation>
 <translation id="328571385944182268">Salvar senhas?</translation>
-<translation id="3286654161521615710">Usado pelo navegador Chrome e pelo acesso rápido do <ph name="DEVICE_TYPE" /></translation>
 <translation id="3286737518123001369">Ver e excluir os dados de login armazenados na sua chave de segurança</translation>
 <translation id="3288047731229977326">Extensões executadas no modo de desenvolvedor podem prejudicar o computador. Se você não for desenvolvedor, para sua segurança, desative essas extensões que estão sendo executadas no modo de desenvolvedor.</translation>
 <translation id="3289856944988573801">Para verificar se há atualizações, utilize Ethernet ou Wi-Fi.</translation>
@@ -1774,7 +1772,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3613134908380545408">Mostrar <ph name="FOLDER_NAME" /></translation>
 <translation id="3613422051106148727">&amp;Abrir em nova guia</translation>
 <translation id="3615073365085224194">Toque no sensor de impressão digital com seu dedo</translation>
-<translation id="3616113530831147358">Áudio</translation>
 <translation id="3616741288025931835">&amp;Limpar dados de navegação...</translation>
 <translation id="3617891479562106823">Os planos de fundo estão indisponíveis. Tente novamente mais tarde.</translation>
 <translation id="3619115746895587757">Cappuccino</translation>
@@ -2836,6 +2833,7 @@ Verifique se você confia neste site antes de entrar na RV.</translation>
 <translation id="5233231016133573565">ID de processo</translation>
 <translation id="5233638681132016545">Nova guia</translation>
 <translation id="5233736638227740678">&amp;Colar</translation>
+<translation id="5234764350956374838">Dispensar</translation>
 <translation id="5235050375939235066">Desinstalar app?</translation>
 <translation id="5235750401727657667">Substituir a página que você vê ao abrir uma nova guia</translation>
 <translation id="5238278114306905396">O aplicativo "<ph name="EXTENSION_NAME" />" foi removido automaticamente.</translation>
@@ -2875,6 +2873,7 @@ Verifique se você confia neste site antes de entrar na RV.</translation>
 <translation id="5283677936944177147">O sistema falhou ao determinar o modelo ou número de série do dispositivo.</translation>
 <translation id="5284445933715251131">Continuar o download</translation>
 <translation id="5285635972691565180">Tela <ph name="DISPLAY_ID" /></translation>
+<translation id="5286194356314741248">Verificando</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5287425679749926365">Suas contas</translation>
 <translation id="5288678174502918605">R&amp;eabrir guia fechada</translation>
@@ -3510,7 +3509,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6196854373336333322">A extensão "<ph name="EXTENSION_NAME" />" assumiu o controle das suas configurações de proxy, o que significa que ela pode alterar, invadir ou escutar qualquer coisa que você fizer on-line. Se você não tiver certeza do motivo dessa alteração, provavelmente não a deseja.</translation>
 <translation id="6198102561359457428">Saia e faça login novamente...</translation>
 <translation id="6198252989419008588">Alterar PIN</translation>
-<translation id="6199184144777428084">Adicionar idiomas ou reordenar lista</translation>
 <translation id="6201792273624501289">Aplicativos Linux</translation>
 <translation id="6202304368170870640">Use seu PIN para fazer login ou desbloquear seu dispositivo.</translation>
 <translation id="6206311232642889873">&amp;Copiar imagem</translation>

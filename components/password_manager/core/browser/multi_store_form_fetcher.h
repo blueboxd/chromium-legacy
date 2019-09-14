@@ -6,7 +6,7 @@
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_MULTI_STORE_FORM_FETCHER_H_
 
 #include "base/macros.h"
-#include "components/password_manager/core/browser/form_fetcher.h"
+#include "components/password_manager/core/browser/form_fetcher_impl.h"
 
 namespace password_manager {
 
@@ -14,41 +14,22 @@ namespace password_manager {
 // with a particular origin from both the account and profile password stores.
 // When adding new member fields to this class, please, update the Clone()
 // method accordingly.
-class MutliStoreFormFetcher : public FormFetcher {
-  MutliStoreFormFetcher();
-  ~MutliStoreFormFetcher() override;
+class MultiStoreFormFetcher : public FormFetcherImpl {
+ public:
+  MultiStoreFormFetcher(PasswordStore::FormDigest form_digest,
+                        const PasswordManagerClient* client,
+                        bool should_migrate_http_passwords);
+  ~MultiStoreFormFetcher() override;
 
-  // FormFetcher:
-  void AddConsumer(FormFetcher::Consumer* consumer) override;
-  void RemoveConsumer(FormFetcher::Consumer* consumer) override;
-  State GetState() const override;
-  const std::vector<InteractionsStats>& GetInteractionsStats() const override;
-  std::vector<const autofill::PasswordForm*> GetNonFederatedMatches()
-      const override;
-  std::vector<const autofill::PasswordForm*> GetFederatedMatches()
-      const override;
-  std::vector<const autofill::PasswordForm*> GetBlacklistedMatches()
-      const override;
-  const std::vector<const autofill::PasswordForm*>& GetAllRelevantMatches()
-      const override;
-  const std::map<base::string16, const autofill::PasswordForm*>&
-  GetBestMatches() const override;
-  const autofill::PasswordForm* GetPreferredMatch() const override;
   void Fetch() override;
-  std::unique_ptr<FormFetcher> Clone() override;
+  void OnGetPasswordStoreResults(
+      std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
 
  private:
-  // Set of nonblacklisted PasswordForms from the password store that best match
-  // the form being managed by |this|, indexed by username.
-  std::map<base::string16, const autofill::PasswordForm*> best_matches_;
+  int wait_counter_ = 0;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> partial_results_;
 
-  // Non-federated credentials of the same scheme as the observed form.
-  std::vector<const autofill::PasswordForm*> non_federated_same_scheme_;
-
-  // Statistics for the current domain.
-  std::vector<InteractionsStats> interactions_stats_;
-
-  DISALLOW_COPY_AND_ASSIGN(MutliStoreFormFetcher);
+  DISALLOW_COPY_AND_ASSIGN(MultiStoreFormFetcher);
 };
 
 }  // namespace password_manager

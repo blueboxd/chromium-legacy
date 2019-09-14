@@ -33,8 +33,6 @@ const char kHistogramExploreName[] = "explore";
 const char kTileTypeSuffixIconColor[] = "IconsColor";
 const char kTileTypeSuffixIconGray[] = "IconsGray";
 const char kTileTypeSuffixIconReal[] = "IconsReal";
-const char kTileTypeSuffixThumbnail[] = "Thumbnail";
-const char kTileTypeSuffixThumbnailFailed[] = "ThumbnailFailed";
 
 void LogUmaHistogramAge(const std::string& name, const base::TimeDelta& value) {
   // Log the value in number of seconds.
@@ -73,10 +71,6 @@ const char* GetTileTypeSuffix(TileVisualType type) {
       return kTileTypeSuffixIconGray;
     case TileVisualType::ICON_REAL:
       return kTileTypeSuffixIconReal;
-    case THUMBNAIL:
-      return kTileTypeSuffixThumbnail;
-    case THUMBNAIL_FAILED:
-      return kTileTypeSuffixThumbnailFailed;
     case TileVisualType::NONE:                     // Fall through.
     case TileVisualType::UNKNOWN_TILE_TYPE:
       break;

@@ -280,6 +280,7 @@ TEST_F(ElementAnimationsTest,
                                          ->curve()
                                          ->ToScrollOffsetAnimationCurve()
                                          ->GetValue(base::TimeDelta()));
+  animation_->RemoveKeyframeModel(animation1_id);
 
   // Animation without initial value set.
   std::unique_ptr<ScrollOffsetAnimationCurve> curve(
@@ -297,6 +298,7 @@ TEST_F(ElementAnimationsTest,
                           ->curve()
                           ->ToScrollOffsetAnimationCurve()
                           ->GetValue(base::TimeDelta()));
+  animation_->RemoveKeyframeModel(animation2_id);
 }
 
 class TestAnimationDelegateThatDestroysAnimation

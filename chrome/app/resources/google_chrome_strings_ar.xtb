@@ -45,6 +45,8 @@
 <translation id="1873233029667955273">‏Google Chrome ليس متصفحك التلقائي.</translation>
 <translation id="1874309113135274312">‏الإصدار التجريبي من Google Chrome‏ (mDNS-In)</translation>
 <translation id="1877026089748256423">‏إصدار Chrome قديم</translation>
+<translation id="1900795423379050516">‏في حال عدم عرض إعداد على هذه الصفحة، ابحث عن <ph name="LINK_BEGIN" />
+    إعدادات متصفِّح Chrome<ph name="LINK_END" />.</translation>
 <translation id="1915828456209461693">‏يتوفر تحديث جديد لبرنامج Chrome وسيتم تطبيقه عند إعادة التشغيل.</translation>
 <translation id="1919130412786645364">‏السماح بتسجيل الدخول إلى Chrome</translation>
 <translation id="2063848847527508675">‏يلزم إعادة تشغيل نظام التشغيل Chrome حتى يتم تطبيق التحديث.</translation>
@@ -160,6 +162,8 @@
 <translation id="5543953544073077331">‏هناك نُسخ أخرى من Chrome قيد التشغيل. يُرجى إغلاقها لإجراء التحديث.</translation>
 <translation id="556024056938947818">‏يحاول Google Chrome إظهار كلمات المرور.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
+<translation id="5657226924540934362">‏في حال عدم عرض إعداد على هذه الصفحة، ابحث عن <ph name="LINK_BEGIN" />
+      إعدادات نظام التشغيل Chrome<ph name="LINK_END" /></translation>
 <translation id="565744775970812598">‏قد يكون ملف <ph name="FILE_NAME" /> ضارًا، لذلك فقد حظره Chrome.</translation>
 <translation id="5686916850681061684">‏تخصيص Google Chrome والتحكم فيه معلومات مهمة - انقر للحصول على التفاصيل.</translation>
 <translation id="5690427481109656848">Google LLC</translation>

@@ -159,12 +159,8 @@ class XRSession final
   const AtomicString& InterfaceName() const override;
 
   void OnFocusChanged();
-  void OnFrame(
-      double timestamp,
-      std::unique_ptr<TransformationMatrix> base_pose_matrix,
-      const base::Optional<gpu::MailboxHolder>& output_mailbox_holder,
-      const device::mojom::blink::XRPlaneDetectionDataPtr& detected_planes_data,
-      const device::mojom::blink::XRAnchorsDataPtr& tracked_anchors_data);
+  void OnFrame(double timestamp,
+               const base::Optional<gpu::MailboxHolder>& output_mailbox_holder);
 
   void OnInputStateChange(
       int16_t frame_id,
@@ -225,7 +221,18 @@ class XRSession final
   // ScriptWrappable
   bool HasPendingActivity() const override;
 
+  // Creates presentation frame based on current state of the session.
+  // State currently used in XRFrame creation is base_pose_matrix_ and
+  // world_information_. The created XRFrame also stores a reference to this
+  // XRSession.
   XRFrame* CreatePresentationFrame();
+
+  // Updates the internal XRSession state that is relevant to creating
+  // presentation frames.
+  void UpdatePresentationFrameState(
+      double timestamp,
+      std::unique_ptr<TransformationMatrix> base_pose_matrix,
+      const device::mojom::blink::XRFrameDataPtr& frame_data);
 
  private:
   class XRSessionResizeObserverDelegate;

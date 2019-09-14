@@ -192,6 +192,8 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="753534427205733210">{0,plural, =1{Pārlūks Chromium pēc 1 minūtes tiks restartēts}zero{Pārlūks Chromium pēc # minūtēm tiks restartēts}one{Pārlūks Chromium pēc # minūtes tiks restartēts}other{Pārlūks Chromium pēc # minūtēm tiks restartēts}}</translation>
 <translation id="7549178288319965365">Par Chromium OS</translation>
 <translation id="7561906087460245826">Notīrīt arī datus no Chromium (<ph name="URL" />)</translation>
+<translation id="7585853947355360626">Ja šajā lapā iestatījums nav pieejams, skatiet to sadaļā <ph name="LINK_BEGIN" />
+      Chromium OS iestatījumi<ph name="LINK_END" />.</translation>
 <translation id="761356813943268536">Pārlūkā Chromium tiek izmantota jūsu kamera un mikrofons.</translation>
 <translation id="7617377681829253106">Pārlūkā Chromium ir veikti uzlabojumi</translation>
 <translation id="7686590090926151193">Chromium nav jūsu noklusējuma pārlūks.</translation>
@@ -225,6 +227,8 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="8619360774459241877">Notiek Chromium palaišana...</translation>
 <translation id="8621669128220841554">Instalēšana neizdevās nenoteiktas kļūdas dēļ. Lejupielādējiet pārlūku Chromium vēlreiz.</translation>
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> ierīce ir atjaunināta.</translation>
+<translation id="8682540261359803721">Ja šajā lapā iestatījums nav pieejams, skatiet to sadaļā <ph name="LINK_BEGIN" />
+      Pārlūkprogrammas Chromium iestatījumi<ph name="LINK_END" />.</translation>
 <translation id="8697124171261953979">Tas nosaka arī to, kāda lapa tiks rādīta, kad atvērsiet pārlūku Chromium vai meklēsiet, izmantojot universālo lodziņu.</translation>
 <translation id="8704119203788522458">Šis ir jūsu Chromium</translation>
 <translation id="8739167630197873875">Aizverot Chromium, tiek notīrīti sīkfaili. Lai turpinātu sinhronizāciju, mainiet šo <ph name="COOKIE_SETTINGS_LINK" />.</translation>

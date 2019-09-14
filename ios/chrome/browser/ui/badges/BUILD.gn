@@ -32,6 +32,7 @@ source_set("badges") {
   deps = [
     ":public",
     "resources:incognito_badge",
+    "resources:incognito_small_badge",
     "//base:base",
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser/infobars:badge",

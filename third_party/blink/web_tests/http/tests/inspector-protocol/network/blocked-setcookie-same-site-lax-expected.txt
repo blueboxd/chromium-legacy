@@ -2,7 +2,9 @@ Verifies that making cross origin requests which set SameSite=Lax cookies send u
 
 Javascript initiated subresource blocked set-cookies: [
   {
-    "blockedReason": "SameSiteLax",
+    "blockedReasons": [
+      "SameSiteLax"
+    ],
     "cookieLine": "name=value; SameSite=Lax",
     "cookie": {
       "name": "name",

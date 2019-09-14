@@ -196,6 +196,8 @@ Chromium에서 설정을 복구할 수 없습니다.</translation>
 <translation id="753534427205733210">{0,plural, =1{1분 후 Chromium이 다시 시작됩니다}other{#분 후 Chromium이 다시 시작됩니다}}</translation>
 <translation id="7549178288319965365">Chromium OS 정보</translation>
 <translation id="7561906087460245826">Chromium(<ph name="URL" />)에서도 데이터 삭제</translation>
+<translation id="7585853947355360626">페이지에 표시되지 않는 설정이 있다면 <ph name="LINK_BEGIN" />
+      Chromium OS 설정<ph name="LINK_END" />을 확인해 보세요.</translation>
 <translation id="761356813943268536">Chromium이 카메라와 마이크를 사용 중입니다.</translation>
 <translation id="7617377681829253106">더욱 업그레이드된 Chromium</translation>
 <translation id="7686590090926151193">Chromium이 기본 브라우저로 설정되어 있지 않습니다</translation>
@@ -229,6 +231,8 @@ Chromium에서 설정을 복구할 수 없습니다.</translation>
 <translation id="8619360774459241877">Chromium 실행 중...</translation>
 <translation id="8621669128220841554">알 수 없는 오류로 인해 설치에 실패했습니다. Chromium을 다시 다운로드하세요.</translation>
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" />이(가) 최신 버전입니다.</translation>
+<translation id="8682540261359803721">페이지에 표시되지 않는 설정이 있다면 <ph name="LINK_BEGIN" />
+      Chromium 브라우저 설정<ph name="LINK_END" />을 확인해 보세요.</translation>
 <translation id="8697124171261953979">또한 Chromium을 시작하거나 검색주소창에서 검색할 때 표시되는 페이지를 설정합니다.</translation>
 <translation id="8704119203788522458">나만의 Chromium</translation>
 <translation id="8739167630197873875">Chromium을 종료할 때 쿠키를 삭제합니다. 동기화를 계속하려면 이 <ph name="COOKIE_SETTINGS_LINK" />을(를) 변경하세요.</translation>

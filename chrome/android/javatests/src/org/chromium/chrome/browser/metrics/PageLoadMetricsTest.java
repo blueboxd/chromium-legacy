@@ -79,10 +79,13 @@ public class PageLoadMetricsTest {
         private final CountDownLatch mFirstContentfulPaintLatch = new CountDownLatch(1);
         private final CountDownLatch mLoadEventStartLatch = new CountDownLatch(1);
         private long mNavigationId = NO_NAVIGATION_ID;
+        private Boolean mIsFirstNavigationInWebContents;
 
         @Override
-        public void onNewNavigation(WebContents webContents, long navigationId) {
+        public void onNewNavigation(WebContents webContents, long navigationId,
+                boolean isFirstNavigationInWebContents) {
             if (mNavigationId == NO_NAVIGATION_ID) mNavigationId = navigationId;
+            mIsFirstNavigationInWebContents = isFirstNavigationInWebContents;
         }
 
         @Override
@@ -123,6 +126,10 @@ public class PageLoadMetricsTest {
         public long getNavigationId() {
             return mNavigationId;
         }
+
+        public Boolean getIsFirstNavigationInWebContents() {
+            return mIsFirstNavigationInWebContents;
+        }
     }
 
     @Test
@@ -135,8 +142,14 @@ public class PageLoadMetricsTest {
         TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> PageLoadMetrics.addObserver(metricsObserver));
 
+        Assert.assertNull(metricsObserver.getIsFirstNavigationInWebContents());
+
         mActivityTestRule.loadUrl(mTestPage);
+        Assert.assertTrue(metricsObserver.getIsFirstNavigationInWebContents().booleanValue());
         assertMetricsEmitted(metricsObserver);
+
+        mActivityTestRule.loadUrl(mTestPage);
+        Assert.assertFalse(metricsObserver.getIsFirstNavigationInWebContents().booleanValue());
 
         TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> PageLoadMetrics.removeObserver(metricsObserver));

@@ -6,19 +6,41 @@
 #define ASH_PUBLIC_CPP_SHELF_CONFIG_H_
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/tablet_mode_observer.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace ash {
 
 // Provides layout and drawing config for the Shelf. Note That some of these
 // values could change at runtime.
-class ASH_EXPORT ShelfConfig {
+class ASH_EXPORT ShelfConfig : public TabletModeObserver {
  public:
+  class Observer : public base::CheckedObserver {
+   public:
+    // Invoked when shelf config values are changed.
+    virtual void OnShelfConfigUpdated() {}
+  };
+
   ShelfConfig();
-  ~ShelfConfig();
+  ~ShelfConfig() override;
 
   static ShelfConfig* Get();
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
+  // Add observers to this objects's dependencies.
+  void Init();
+
+  // Remove observers from this object's dependencies.
+  void Shutdown();
+
+  // TabletModeObserver:
+  void OnTabletModeStarted() override;
+  void OnTabletModeEnded() override;
 
   // Size of the shelf when visible (height when the shelf is horizontal and
   // width when the shelf is vertical).
@@ -44,6 +66,9 @@ class ASH_EXPORT ShelfConfig {
 
   // The distance between the edge of the shelf and the home and back button.
   int home_button_edge_spacing() const;
+
+  // The extra padding added to status area tray buttons on the shelf.
+  int status_area_hit_region_padding() const;
 
   int app_icon_group_margin() const { return app_icon_group_margin_; }
   SkColor shelf_control_permanent_highlight_background() const {
@@ -97,8 +122,11 @@ class ASH_EXPORT ShelfConfig {
   }
 
  private:
+  // Updates |is_dense_| and notifies all observers of the update.
+  void UpdateIsDense();
+
   // Whether shelf is currently standard or dense.
-  const bool is_dense_;
+  bool is_dense_;
 
   // Size of the shelf when visible (height when the shelf is horizontal and
   // width when the shelf is vertical).
@@ -127,6 +155,10 @@ class ASH_EXPORT ShelfConfig {
   // The margin around the overflow button on the shelf.
   const int shelf_overflow_button_margin_;
   const int shelf_overflow_button_margin_dense_;
+
+  // The extra padding added to status area tray buttons on the shelf.
+  const int shelf_status_area_hit_region_padding_;
+  const int shelf_status_area_hit_region_padding_dense_;
 
   // The margin on either side of the group of app icons (including the overflow
   // button).
@@ -184,6 +216,8 @@ class ASH_EXPORT ShelfConfig {
   const int shelf_tooltip_preview_max_width_;
   const float shelf_tooltip_preview_max_ratio_;
   const float shelf_tooltip_preview_min_ratio_;
+
+  base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfConfig);
 };

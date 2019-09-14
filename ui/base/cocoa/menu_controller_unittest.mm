@@ -822,7 +822,15 @@ TEST_F(MenuControllerTest, OwningDelegate) {
   }
   EXPECT_FALSE(did_dealloc);
   EXPECT_FALSE(did_delete);
-  [[item target] performSelector:[item action] withObject:item];
+
+  // On 10.15+, [NSMenuItem target] indirectly causes an extra
+  // retain+autorelease of the target. That avoids bugs caused by the
+  // NSMenuItem's action causing destruction of the target, but also causes the
+  // NSMenuItem to get cleaned up later than this test expects. Deal with that
+  // by creating an explicit autorelease pool here.
+  @autoreleasepool {
+    [[item target] performSelector:[item action] withObject:item];
+  }
   EXPECT_TRUE(did_dealloc);
   EXPECT_TRUE(did_delete);
 }

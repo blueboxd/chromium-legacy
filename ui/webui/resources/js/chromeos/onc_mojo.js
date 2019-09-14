@@ -506,16 +506,17 @@ class OncMojo {
   /**
    * Returns a NetworkStateProperties object with type set and default values.
    * @param {!chromeos.networkConfig.mojom.NetworkType} type
+   * @param {?string=} opt_name Optional name, intended for testing.
    * @return {chromeos.networkConfig.mojom.NetworkStateProperties}
    */
-  static getDefaultNetworkState(type) {
+  static getDefaultNetworkState(type, opt_name) {
     const mojom = chromeos.networkConfig.mojom;
     const result = {
       connectable: false,
       connectRequested: false,
       connectionState: mojom.ConnectionStateType.kNotConnected,
-      guid: '',
-      name: '',
+      guid: opt_name ? (opt_name + '_guid') : '',
+      name: opt_name || '',
       priority: 0,
       proxyMode: mojom.ProxyMode.kDirect,
       prohibitedByPolicy: false,
@@ -556,7 +557,7 @@ class OncMojo {
         result.wifi = {
           bssid: '',
           frequency: 0,
-          hexSsid: '',
+          hexSsid: opt_name || '',
           security: mojom.SecurityType.kNone,
           signalStrength: 0,
           ssid: '',

@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/chromeos/extensions/default_web_app_ids.h"
 #include "chrome/browser/chromeos/release_notes/release_notes_storage.h"
 #include "chrome/browser/favicon/large_icon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -70,7 +69,7 @@ InternalAppResult::InternalAppResult(Profile* profile,
         ash::SearchResultDisplayLocation::kSuggestionChipContainer);
   }
 
-  if (id() == chromeos::default_web_apps::kReleaseNotesAppId) {
+  if (id() == kReleaseNotesAppId) {
     SetNotifyVisibilityChange(true);
     // Make sure that if both Continue Reading and Release Notes are available,
     // Release Notes shows up first in the suggestion chip container.
@@ -196,7 +195,7 @@ void InternalAppResult::GetContextMenuModel(GetMenuModelCallback callback) {
 }
 
 void InternalAppResult::OnVisibilityChanged(bool visibility) {
-  DCHECK_EQ(id(), chromeos::default_web_apps::kReleaseNotesAppId);
+  DCHECK_EQ(id(), kReleaseNotesAppId);
   DCHECK(chromeos::ReleaseNotesStorage(profile()).ShouldShowSuggestionChip());
   chromeos::ReleaseNotesStorage(profile())
       .DecreaseTimesLeftToShowSuggestionChip();

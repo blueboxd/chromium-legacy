@@ -19,6 +19,7 @@
 <translation id="2501953888035679275">Fotografuokite ir filmuokite naudodami fotoaparatą.</translation>
 <translation id="2549985041256363841">Pradėti įrašymą</translation>
 <translation id="2599796128805996109">Užpakalinis fotoaparatas</translation>
+<translation id="2912439424121107408">Šiame įrenginyje eksperto režimas nepalaikomas</translation>
 <translation id="2968794441791257519">Nuotraukos ir vaizdo įrašai, sukurti naudojant fotoaparatą, bus perkelti į aplanką „Atsisiuntimai“. Juos galite pasiekti Failų programoje.
 
         Programos su saugyklos leidimais galės pasiekti jūsų nuotraukas ir vaizdo įrašus.</translation>
@@ -41,10 +42,12 @@
         Patikrinkite, ar fotoaparatas tinkamai prijungtas.</translation>
 <translation id="5152121255775685072">Eiti į galeriją</translation>
 <translation id="5671277269877808209">Kvadratas</translation>
+<translation id="5775960006311140197">Eksperto režimas</translation>
 <translation id="5869546221129391014">Tinklelis</translation>
 <translation id="6040143037577758943">Uždaryti</translation>
 <translation id="6073451960410192870">Sustabdyti įrašymą</translation>
 <translation id="6165508094623778733">Sužinokite daugiau</translation>
+<translation id="6197807149213783179">Išsaugoti metaduomenis</translation>
 <translation id="6233780560267770709">3 iš 3</translation>
 <translation id="6243827288366940320">Geriausias įvertinimas</translation>
 <translation id="6248749904681914629">Išorinis fotoaparatas</translation>
@@ -66,6 +69,7 @@
 <translation id="8261506727792406068">Ištrinti</translation>
 <translation id="8428213095426709021">Nustatymai</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" /> p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8732462232047530626">Peržiūrėti metaduomenis</translation>
 <translation id="8815966864175525708">Perjungti į portretinės nuotraukos režimą</translation>
 <translation id="8870695351537079478">Nepavyko pradėti įrašymo</translation>
 <translation id="9045155556724273246">10 sek.</translation>

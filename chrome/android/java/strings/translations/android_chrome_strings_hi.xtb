@@ -21,7 +21,6 @@
 <translation id="1146678959555564648">VR डालें</translation>
 <translation id="116280672541001035">इस्तेमाल किया गया</translation>
 <translation id="1171770572613082465">"मुख्य साइटें" बटन पर टैप करके लोकप्रिय साइटें देखें</translation>
-<translation id="1172593791219290334">शुरुआती पन्ना</translation>
 <translation id="1173894706177603556">नाम बदलें</translation>
 <translation id="1175310183703641346">आपके बुकमार्क, इतिहास, पासवर्ड वगैरह अब आपके Google खाते से समन्‍वयित नहीं किए जाएंगे</translation>
 <translation id="1178581264944972037">रोकें</translation>
@@ -165,7 +164,6 @@
 <translation id="2131665479022868825"><ph name="DATA" /> बचाया गया</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> बंद है</translation>
 <translation id="2139186145475833000">होम स्क्रीन में जोड़ें</translation>
-<translation id="2142289305367051020">ये रहे आपके पसंदीदा पेज</translation>
 <translation id="2146738493024040262">इंस्टैंट ऐप्लिकेशन खोलें</translation>
 <translation id="2148716181193084225">आज</translation>
 <translation id="2154484045852737596">कार्ड में बदलाव करें</translation>
@@ -358,7 +356,6 @@
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> में बुकमार्क किया गया</translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> एमबी अन्य ऐप्लिकेशन</translation>
 <translation id="3744111561329211289">बैकग्राउंड सिंक</translation>
-<translation id="3745176700485982507">इस पेज पर आपकी पसंदीदा वेबसाइटों की लिंक मिल सकते हैं</translation>
 <translation id="3771001275138982843">अपडेट डाउनलोड नहीं किया जा सका</translation>
 <translation id="3773755127849930740">युग्मन की अनुमति देने के लिए <ph name="BEGIN_LINK" />ब्लूटूथ चालू करें<ph name="END_LINK" /></translation>
 <translation id="3775705724665058594">अपने डिवाइस पर भेजें</translation>
@@ -563,7 +560,6 @@
 <translation id="5224771365102442243">वीडियो के साथ</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> आस-पास मौजूद ब्लूटूथ वाले डिवाइस स्कैन करना चाहती है. ये डिवाइस मिले हैं:</translation>
 <translation id="5233638681132016545">नया टैब</translation>
-<translation id="5234764350956374838">खारिज करें</translation>
 <translation id="526421993248218238">यह पेज लोड नहीं हो पा रहा है</translation>
 <translation id="5271967389191913893">डाउनलोड की जाने वाली सामग्री को डिवाइस नहीं खोल सकता.</translation>
 <translation id="528192093759286357">फ़ुल स्क्रीन से बाहर निकलने के लिए ऊपर से खींचें और वापस जाएं स्पर्श करें.</translation>
@@ -579,7 +575,6 @@
 <translation id="5327248766486351172">नाम</translation>
 <translation id="5335288049665977812">साइटों को JavaScript चलाने की अनुमति दें (हम इस सेटिंग को चालू रखने का सुझाव देते हैं)</translation>
 <translation id="5357811892247919462">टैब मिला</translation>
-<translation id="5363230136052241468">'नया टैब पेज' लोड करने के लिए 'होम' बटन पर टैप करें</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> टैब खुला है, एक टैब से दूसरे टैब पर जाने के लिए टैप करें}one{<ph name="OPEN_TABS_MANY" /> टैब खुले हैं, एक टैब से दूसरे टैब पर जाने के लिए टैप करें}other{<ph name="OPEN_TABS_MANY" /> टैब खुले हैं, एक टैब से दूसरे टैब पर जाने के लिए टैप करें}}</translation>
 <translation id="5391532827096253100">इस साइट से आपका कनेक्शन सुरक्षित नहीं है. साइट की जानकारी</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 और)}one{(+ # और)}other{(+ # और)}}</translation>
@@ -802,7 +797,6 @@
 <translation id="6912998170423641340">साइटों को क्लिपबोर्ड से टेक्स्ट और इमेज पढ़ने से रोकें</translation>
 <translation id="6914783257214138813">आपके पासवर्ड, निर्यात की गई फ़ाइल देख पाने वाले सभी व्यक्तियों को दिखाई देंगे.</translation>
 <translation id="6942665639005891494">सेटिंग मेन्यू विकल्प का इस्तेमाल करके डिफ़ॉल्ट डाउनलोड स्थान किसी भी समय बदलें</translation>
-<translation id="6944102653068653326">'नया टैब पेज' लोड करने के लिए टैप करें</translation>
 <translation id="6945221475159498467">चुनें</translation>
 <translation id="6963642900430330478">यह पेज खतरनाक है. साइट की जानकारी</translation>
 <translation id="6963766334940102469">बुकमार्क मिटाएं</translation>
@@ -996,7 +990,6 @@
 <translation id="8284326494547611709">कैप्शन</translation>
 <translation id="8300705686683892304">ऐप्लिकेशन प्रबंधित करता है</translation>
 <translation id="8310344678080805313">मानक टैब</translation>
-<translation id="8313455859591948645">शुरुआती पन्ने में बदलाव करें</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> और कई साइटें</translation>
 <translation id="8327155640814342956">बेहतरीन ब्राउज़िंग अनुभव के लिए, Chrome अपडेट करें</translation>
 <translation id="8339163506404995330"><ph name="LANGUAGE" /> भाषा के पेज का अनुवाद नहीं किया जाएगा</translation>

@@ -97,9 +97,6 @@
 <translation id="138218114945450791">Azzurro</translation>
 <translation id="1382194467192730611">Dispositivo USB consentito dall'amministratore</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> non ha inviato dati.</translation>
-<translation id="140316286225361634">Il sito <ph name="ORIGIN" /> ha richiesto l'applicazione di una norma di sicurezza
-    a tutte le richieste e questa norma attualmente reputa il sito
-    pericoloso.</translation>
 <translation id="1405567553485452995">Verde chiaro</translation>
 <translation id="1407135791313364759">Apri tutte</translation>
 <translation id="1413809658975081374">Errore di privacy</translation>
@@ -135,6 +132,7 @@
 <translation id="1569487616857761740">Inserisci data di scadenza</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Si è verificato un problema durante la visualizzazione della pagina web.</translation>
+<translation id="1588438908519853928">Normale</translation>
 <translation id="1592005682883173041">Accesso ai dati locali</translation>
 <translation id="1594030484168838125">Scegli</translation>
 <translation id="161042844686301425">Ciano</translation>
@@ -212,10 +210,6 @@
 <translation id="1981206234434200693">Cancella i dati della cronologia di navigazione di Chrome</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{e un'altra}other{e altre #}}</translation>
 <translation id="2003709556000175978">Reimposta ora la password</translation>
-<translation id="20053308747750172">Il server a cui ti stai collegando, <ph name="ORIGIN" />, ha richiesto
-    l'applicazione di una norma di sicurezza per tutte le richieste. Ma adesso ha
-    pubblicato una norma non valida che impedisce al browser
-    di soddisfare la tua richiesta per il sito <ph name="SITE" />.</translation>
 <translation id="2025186561304664664">È stata impostata la configurazione automatica del proxy.</translation>
 <translation id="202813660234680402">No, non aggiungere</translation>
 <translation id="2030481566774242610">Forse cercavi <ph name="LINK" />?</translation>
@@ -293,10 +287,6 @@
 <translation id="2409589295040002961">Il tuo amministratore può modificare da remoto la configurazione del browser. L'attività svolta su questo dispositivo potrebbe essere gestita anche al di fuori di Chrome. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Questo server non è riuscito a dimostrare che si tratta di <ph name="DOMAIN" />; il relativo certificato di sicurezza potrebbe essere revocato. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione.</translation>
-<translation id="2418081434543109369">Il server a cui ti stai collegando, <ph name="ORIGIN" />, ha richiesto
-    l'applicazione di una norma di sicurezza per tutte le richieste. Ma adesso non
-    è riuscito a pubblicare una norma e ciò impedisce al browser
-    di soddisfare la tua richiesta per il sito <ph name="SITE" />.</translation>
 <translation id="2463193859425327265">Cambia la pagina iniziale</translation>
 <translation id="2463739503403862330">Compila</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -354,7 +344,7 @@
 <translation id="2721148159707890343">Richiesta riuscita</translation>
 <translation id="2728127805433021124">Il certificato del server è stato firmato utilizzando un algoritmo di firma debole.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Eseguire lo strumento Diagnostica della connettività<ph name="END_LINK" /></translation>
-<translation id="2734544361860335147">Se attivi queste funzioni, potresti perdere i dati del browser
+<translation id="2734544361860335147">Se attivi queste funzioni, potresti perdere i dati del browser oppure
     compromettere la sicurezza o la privacy. Le funzioni attivate vengono applicate per tutti
     gli utenti di questo browser.</translation>
 <translation id="2735043616039983645">È presente più di un'origine con valori in conflitto per questo criterio.</translation>
@@ -587,6 +577,7 @@
 <translation id="4103249731201008433">Il numero di serie del dispositivo non è valido</translation>
 <translation id="410351446219883937">Riproduzione automatica</translation>
 <translation id="4103763322291513355">Visita &lt;strong&gt;chrome://policy&lt;/strong&gt; per visualizzare l'elenco di URL inseriti nella blacklist e altre norme applicate dall'amministratore di sistema.</translation>
+<translation id="4108231218301530806">Usa l'impronta per verificare questa carta la prossima volta</translation>
 <translation id="4110652170750985508">Verifica il pagamento</translation>
 <translation id="4112140312785995938">Vai indietro</translation>
 <translation id="4116663294526079822">Consenti sempre su questo sito</translation>
@@ -789,6 +780,7 @@
 <translation id="5141240743006678641">Cripta le password sincronizzate con le tue credenziali Google</translation>
 <translation id="5145883236150621069">Codice di errore presente nella risposta del criterio</translation>
 <translation id="515292512908731282">C4 (Envelope)</translation>
+<translation id="5158275234811857234">Copertina</translation>
 <translation id="5159010409087891077">Apri la pagina in un'altra finestra di navigazione in incognito (⇧⌘N)</translation>
 <translation id="516920405563544094">Inserisci il codice CVC della carta <ph name="CREDIT_CARD" />. Dopo essere stati confermati, i dati della carta del tuo Account Google saranno condivisi con questo sito.</translation>
 <translation id="5169827969064885044">Potresti perdere l'accesso all'account della tua organizzazione o subire un furto d'identità. Chrome ti consiglia di cambiare subito la password.</translation>
@@ -948,6 +940,7 @@
 <translation id="598637245381783098">Impossibile aprire l'app per i pagamenti</translation>
 <translation id="5989320800837274978">Non sono stati specificati né server proxy fissi né un URL script .pac.</translation>
 <translation id="5990559369517809815">Le richieste al server sono state bloccate da un'estensione.</translation>
+<translation id="6000758707621254961"><ph name="RESULT_COUNT" /> risultati per "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">Anno</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Pagina 1}other{Pagina #}}</translation>
@@ -1005,6 +998,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Nessuna}=1{1 password per <ph name="DOMAIN_LIST" /> (sincronizzata)}=2{2 password per <ph name="DOMAIN_LIST" /> (sincronizzate)}other{# password per (<ph name="DOMAIN_LIST" />, sincronizzate)}}</translation>
 <translation id="6358450015545214790">Che cosa significano?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6377268785556383139">1 risultato per "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Potrebbe essere applicato un addebito.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 altro suggerimento}other{# altri suggerimenti}}</translation>
@@ -1070,7 +1064,7 @@
 <translation id="6738516213925468394">I tuoi dati sono stati criptati con la tua <ph name="BEGIN_LINK" />passphrase di sincronizzazione<ph name="END_LINK" /> in data <ph name="TIME" />. Inseriscila per avviare la sincronizzazione.</translation>
 <translation id="674375294223700098">Errore sconosciuto del certificato del server.</translation>
 <translation id="6744009308914054259">In attesa di una connessione, puoi visitare la pagina Download per leggere gli articoli offline.</translation>
-<translation id="6747611005629681221">Avviso: seguono funzionalità obsolete.</translation>
+<translation id="6747611005629681221">Avviso: le funzionalità verranno ritirate a breve.</translation>
 <translation id="6753269504797312559">Valore criterio</translation>
 <translation id="6757797048963528358">Il dispositivo è entrato in modalità sospensione.</translation>
 <translation id="6768213884286397650">Hagaki (Postcard)</translation>
@@ -1139,10 +1133,6 @@
 <translation id="717330890047184534">ID GAIA:</translation>
 <translation id="7174545416324379297">Uniti</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> e <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> altra}other{<ph name="SHIPPING_OPTION_PREVIEW" /> e altre <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
-<translation id="7177397715882417099">Il server a cui ti stai collegando, <ph name="ORIGIN" />, ha richiesto
-    l'applicazione di una norma di sicurezza per tutte le richieste. Ma anziché
-    pubblicare una norma ha reindirizzato il browser altrove, impedendo
-    così al browser di soddisfare la tua richiesta per il sito <ph name="SITE" />.</translation>
 <translation id="7179323680825933600">Salva e compila i metodi di pagamento</translation>
 <translation id="7180611975245234373">Aggiorna</translation>
 <translation id="7182878459783632708">Nessuna norma impostata</translation>
@@ -1169,6 +1159,7 @@ Ulteriori dettagli:
 <translation id="7300012071106347854">Blu cobalto</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
 <translation id="7303701124147721189">Per pagare più velocemente la prossima volta, memorizza la carta e l'indirizzo di fatturazione nel tuo Account Google e su questo dispositivo.</translation>
+<translation id="7304030187361489308">Alto</translation>
 <translation id="7309308571273880165">Rapporto sugli arresti anomali generato <ph name="CRASH_TIME" /> (caricamento richiesto dall'utente, ma non ancora eseguito)</translation>
 <translation id="7313965965371928911">Avvisi di <ph name="BEGIN_LINK" />Navigazione sicura<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1530,7 +1521,6 @@ Ulteriori dettagli:
 <translation id="939736085109172342">Nuova cartella</translation>
 <translation id="945855313015696284">Controlla le informazioni riportate di seguito ed elimina le schede non valide</translation>
 <translation id="951104842009476243">Carte di debito e prepagate accettate</translation>
-<translation id="958202389743790697">Bloccato secondo la norma sulla sicurezza di <ph name="ORIGIN" />.</translation>
 <translation id="962484866189421427">Questi contenuti potrebbero installare app ingannevoli che si spacciano per qualcos'altro o raccolgono dati che potrebbero essere usati per monitorare la tua attività. <ph name="BEGIN_LINK" />Mostra comunque<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Build ufficiale</translation>
 <translation id="973773823069644502">Aggiungi l'indirizzo di consegna</translation>

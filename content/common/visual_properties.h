@@ -15,6 +15,40 @@
 
 namespace content {
 
+// Visual properties contain context required to render a frame tree.
+// For legacy reasons, both Page visual properties [shared by all Renderers] and
+// Widget visual properties [unique to local frame roots] are passed along the
+// same data structure. Separating these is tricky because they both affect
+// rendering, and if updates are received asynchronously, this can cause
+// incorrect behavior.
+// Visual properties are also used for Pepper fullscreen and popups, which are
+// also based on Widgets.
+//
+// The data flow for VisualProperties is tricky. For legacy reasons, visual
+// properties are currently always sent from RenderWidgetHosts to RenderWidgets.
+// However, RenderWidgets can also send visual properties to out-of-process
+// subframes [by bouncing through CrossProcessFrameConnector]. This causes a
+// cascading series of VisualProperty messages. This is necessary due to the
+// current implementation to make sure that cross-process surfaces get
+// simultaneously synchronized. For more details, see:
+// https://docs.google.com/document/d/1VKOLBYlujcn862w9LAyUbv6oW9RZgD65oDCI_G5AEVQ/edit#heading=h.wno2seszsyen
+// https://docs.google.com/document/d/1J7BTRsylGApm6KHaaTu-m6LLvSWJgf1B9CM-USKIp1k/edit#heading=h.ichmoicfam1y
+//
+// Known problems:
+// + It's not clear which properties are page-specific and which are
+// widget-specific. We should document them.
+// + It's not clear which properties are only set by the browser, which are only
+// set by the renderer, and which are set by both.
+// + Given the frame tree A(B(A')) where A and A' are same-origin, same process
+// and B is separate origin separate process:
+//   (1) RenderWidget A gets SynchronizeVisualProperties, passes it to proxy for
+//   B, sets values on RenderView/Page.
+//   (2) RenderWidget B gets SynchronizeVisualProperties, passes it to proxy for
+//   A'
+//   (3) RenderWidget A' gets SynchronizeVisualProperties.
+// In between (1) and (3), frames associated with RenderWidget A' will see
+// updated page properties from (1) but are still seeing old widget properties.
+
 struct CONTENT_EXPORT VisualProperties {
   VisualProperties();
   VisualProperties(const VisualProperties& other);

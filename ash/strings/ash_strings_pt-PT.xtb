@@ -104,7 +104,6 @@
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2365393535144473978">A ativação dos dados móveis ativa o Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
-<translation id="239188844683466770">Ativar/desativar opção Não incomodar</translation>
 <translation id="2412593942846481727">Atualização disponível</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> é uma sessão gerida por <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Clicar com o botão esquerdo do rato</translation>
@@ -224,6 +223,7 @@
 <translation id="4181841719683918333">Idiomas</translation>
 <translation id="4195877955194704651">Botão de cliques automáticos</translation>
 <translation id="4217571870635786043">Ditado</translation>
+<translation id="421885205185866088">PIN do cartão inteligente de <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Mostrar definições de notificação. As notificações estão desativadas</translation>
 <translation id="4269883910223712419">O administrador deste dispositivo pode:</translation>
@@ -239,6 +239,7 @@
 <translation id="4379531060876907730">Estas são as suas ferramentas da caneta stylus</translation>
 <translation id="4389184120735010762">Premiu o atalho de teclado da lupa ancorada. Pretende ativá-la?</translation>
 <translation id="4421231901400348175">A partilhar o controlo do seu ecrã com <ph name="HELPER_NAME" /> através da Assistência remota.</translation>
+<translation id="4430019312045809116">Volume</translation>
 <translation id="4450893287417543264">Não mostrar de novo</translation>
 <translation id="4477350412780666475">Faixa seguinte</translation>
 <translation id="4479639480957787382">Ethernet</translation>

@@ -43,6 +43,8 @@
 <translation id="1873233029667955273">Google Chrome nie jest domyślną przeglądarką</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome jest nieaktualny</translation>
+<translation id="1900795423379050516">Jeśli ustawienia nie widać na tej stronie, zajrzyj do
+      <ph name="LINK_BEGIN" />ustawień przeglądarki Chrome<ph name="LINK_END" /></translation>
 <translation id="1915828456209461693">Dostępna jest aktualizacja Chrome, która zostanie zastosowana natychmiast po ponownym uruchomieniu.</translation>
 <translation id="1919130412786645364">Zezwalaj na logowanie się w Chrome</translation>
 <translation id="2063848847527508675">Żeby system operacyjny Chrome mógł zastosować aktualizacje, musisz go ponownie uruchomić.</translation>
@@ -156,6 +158,8 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="5543953544073077331">Są uruchomione inne kopie Chrome. Zamknij je, by przeprowadzić aktualizację.</translation>
 <translation id="556024056938947818">Google Chrome próbuje pokazać hasła.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
+<translation id="5657226924540934362">Jeśli ustawienia nie widać na tej stronie, zajrzyj do <ph name="LINK_BEGIN" />
+      ustawień systemu operacyjnego Chrome<ph name="LINK_END" /></translation>
 <translation id="565744775970812598">Plik <ph name="FILE_NAME" /> może być niebezpieczny, dlatego został zablokowany przez Chrome.</translation>
 <translation id="5686916850681061684">Dostosuj i kontroluj Google Chrome. Pewna kwestia wymaga Twojej uwagi – kliknij, by przejść do szczegółów.</translation>
 <translation id="5690427481109656848">Google LLC</translation>

@@ -18,7 +18,8 @@
         search-term="[[searchTerm]]">
     </settings-cups-printers-entry-list>
     <div class="secondary" id="noPrinterMessage"
-        hidden="[[nearbyPrinters_.length]]">
+        hidden="[[!shouldShowNoNearbyPrinterMessage_(searchTerm,
+                                                     nearbyPrinters_)]]">
         $i18n{noPrinterNearbyMessage}
     </div>
   </template>

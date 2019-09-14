@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module mojom;
+module discards.mojom;
 
 import "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom";
 import "mojo/public/mojom/base/process_id.mojom";
@@ -93,9 +93,9 @@ struct TabDiscardsInfo {
   // The visibility of the LifecycleUnit.
   LifecycleUnitVisibility visibility;
   // The loading state of the LifecycleUnit.
-  LifecycleUnitLoadingState loading_state;
+  mojom.LifecycleUnitLoadingState loading_state;
   // The state of the LifecycleUnit.
-  LifecycleUnitState state;
+  mojom.LifecycleUnitState state;
   // Whether the tab can be frozen.
   bool can_freeze;
   // List of human-readable reasons why a tab can't be frozen.
@@ -108,7 +108,7 @@ struct TabDiscardsInfo {
   // session.
   int32 discard_count;
   // If the tab is currently discarded, the discard reason.
-  LifecycleUnitDiscardReason discard_reason;
+  mojom.LifecycleUnitDiscardReason discard_reason;
   // The rank of the tab in the "importance to user" list. The tab with 1 is the
   // most important, the tab with N is the least important.
   int32 utility_rank;
@@ -137,7 +137,7 @@ struct TabDiscardsInfo {
 // Interface for providing information about discards. Lives in the browser
 // process and is invoked in the renderer process via Javascript code running in
 // the chrome://discards WebUI.
-interface DiscardsDetailsProvider {
+interface DetailsProvider {
   // Returns an array of TabDiscardsInfo containing discard information about
   // each tab currently open in the browser, across all profiles.
   GetTabDiscardsInfo() => (array<TabDiscardsInfo> infos);
@@ -181,7 +181,7 @@ interface DiscardsDetailsProvider {
 };
 
 // Represents the momentary state of a Page CU.
-struct WebUIPageInfo {
+struct PageInfo {
   int64 id;
 
   url.mojom.Url main_frame_url;
@@ -190,7 +190,7 @@ struct WebUIPageInfo {
 };
 
 // Represents the momentary state of a Frame CU.
-struct WebUIFrameInfo {
+struct FrameInfo {
   int64 id;
 
   url.mojom.Url url;
@@ -200,7 +200,7 @@ struct WebUIFrameInfo {
 };
 
 // Represents the momentary state of a Process CU.
-struct WebUIProcessInfo {
+struct ProcessInfo {
   int64 id;
 
   mojo_base.mojom.ProcessId pid;
@@ -209,7 +209,7 @@ struct WebUIProcessInfo {
 };
 
 // Used to transport favicon data.
-struct WebUIFavIconInfo {
+struct FavIconInfo {
   int64 node_id;
 
   // Contains the base64-encoded icon data, suitable for inclusion in a
@@ -219,24 +219,24 @@ struct WebUIFavIconInfo {
 
 // Implement to receive a stream of notifications when performance manager
 // graph nodes are created, changed or deleted.
-interface WebUIGraphChangeStream {
+interface GraphChangeStream {
   // The |frame| was created.
-  FrameCreated(WebUIFrameInfo frame);
+  FrameCreated(FrameInfo frame);
   // The |page| was created.
-  PageCreated(WebUIPageInfo pages);
+  PageCreated(PageInfo pages);
   // The |process| was created.
-  ProcessCreated(WebUIProcessInfo process);
+  ProcessCreated(ProcessInfo process);
 
   // The |frame| changed.
-  FrameChanged(WebUIFrameInfo frame);
+  FrameChanged(FrameInfo frame);
   // The |page| changed.
-  PageChanged(WebUIPageInfo page);
+  PageChanged(PageInfo page);
   // The |process| changed.
-  ProcessChanged(WebUIProcessInfo process);
+  ProcessChanged(ProcessInfo process);
 
   // A |favicon| became available, whether because the associated page changed
   // its favicon, or because an initial lookup completed.
-  FavIconDataAvailable(WebUIFavIconInfo favicon);
+  FavIconDataAvailable(FavIconInfo favicon);
 
   // The node with |node_id| was deleted.
   NodeDeleted(int64 node_id);
@@ -244,7 +244,7 @@ interface WebUIGraphChangeStream {
 
 // This interface allows subscribing to a stream of events that track the state
 // of the performance manager graph.
-interface WebUIGraphDump {
+interface GraphDump {
   // Subscribes |change_subscriber| to a graph change stream.
-  SubscribeToChanges(WebUIGraphChangeStream change_subscriber);
+  SubscribeToChanges(GraphChangeStream change_subscriber);
 };

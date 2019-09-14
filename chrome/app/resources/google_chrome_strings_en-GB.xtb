@@ -55,6 +55,9 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2094919256425865063">Quit Chrome anyway?</translation>
 <translation id="2120620239521071941">This will delete <ph name="ITEMS_COUNT" /> items from this device. To retrieve your data later, sign in to Chrome as <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Help make Chrome better by reporting the <ph name="BEGIN_LINK" />current settings<ph name="END_LINK" /></translation>
+<translation id="2128103434102193461">For Chrome OS details, please see <ph name="LINK_BEGIN" />
+      About Chrome OS<ph name="LINK_END" /></translation>
+<translation id="2151406531797534936">Please restart Chrome now</translation>
 <translation id="216054706567564023">Install Chrome on your phone. We’ll send an SMS to your account recovery phone number.</translation>
 <translation id="2246246234298806438">Google Chrome cannot show the print preview when the built-in PDF viewer is missing.</translation>
 <translation id="2252923619938421629">Help make Google Chrome better by reporting the current settings</translation>
@@ -227,6 +230,7 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="7589360514048265910">This computer will no longer receive Google Chrome updates because Mac OS X 10.9 is no longer supported.</translation>
 <translation id="7592736734348559088">Google Chrome could not sync your data because your account sign-in details are out of date.</translation>
 <translation id="7626032353295482388">Welcome to Chrome</translation>
+<translation id="7629695634924605473">Chrome lets you know if your passwords are ever compromised</translation>
 <translation id="7641148173327520642">Your system administrator has configured Google Chrome to open <ph name="ALTERNATIVE_BROWSER_NAME" /> to access <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Chrome Enterprise logo</translation>
 <translation id="7747138024166251722">The installer couldn't create a temporary directory. Please check for free disk space and permission to install software.</translation>

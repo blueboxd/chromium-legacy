@@ -189,63 +189,6 @@ TEST(RecordTileImpressionTest, ShouldRecordUmaForIcons) {
               ElementsAre(base::Bucket(/*min=*/6, /*count=*/1)));
 }
 
-TEST(RecordTileImpressionTest, ShouldRecordUmaForThumbnails) {
-  base::HistogramTester histogram_tester;
-
-  RecordTileImpression(Builder()
-                           .WithIndex(0)
-                           .WithSource(TileSource::TOP_SITES)
-                           .WithVisualType(THUMBNAIL_FAILED)
-                           .Build(),
-                       /*rappor_service=*/nullptr);
-  RecordTileImpression(Builder()
-                           .WithIndex(1)
-                           .WithSource(TileSource::SUGGESTIONS_SERVICE)
-                           .WithVisualType(THUMBNAIL)
-                           .Build(),
-                       /*rappor_service=*/nullptr);
-  RecordTileImpression(Builder()
-                           .WithIndex(2)
-                           .WithSource(TileSource::POPULAR)
-                           .WithVisualType(THUMBNAIL)
-                           .Build(),
-                       /*rappor_service=*/nullptr);
-
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression"),
-      ElementsAre(base::Bucket(/*min=*/0, /*count=*/1),
-                  base::Bucket(/*min=*/1, /*count=*/1),
-                  base::Bucket(/*min=*/2, /*count=*/1)));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.server"),
-      ElementsAre(base::Bucket(/*min=*/1, /*count=*/1)));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.client"),
-      ElementsAre(base::Bucket(/*min=*/0, /*count=*/1)));
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "NewTabPage.SuggestionsImpression.popular_fetched"),
-              ElementsAre(base::Bucket(/*min=*/2, /*count=*/1)));
-  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.TileType"),
-              ElementsAre(base::Bucket(/*min=*/THUMBNAIL, /*count=*/2),
-                          base::Bucket(/*min=*/THUMBNAIL_FAILED, /*count=*/1)));
-  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.TileType.server"),
-              ElementsAre(base::Bucket(/*min=*/THUMBNAIL, /*count=*/1)));
-  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.TileType.client"),
-              ElementsAre(base::Bucket(/*min=*/THUMBNAIL_FAILED, /*count=*/1)));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.TileType.popular_fetched"),
-      ElementsAre(base::Bucket(/*min=*/THUMBNAIL, /*count=*/1)));
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "NewTabPage.SuggestionsImpression.IconsReal"),
-              IsEmpty());
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "NewTabPage.SuggestionsImpression.IconsColor"),
-              IsEmpty());
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "NewTabPage.SuggestionsImpression.IconsGray"),
-              IsEmpty());
-}
-
 TEST(RecordTileImpressionTest, ShouldRecordImpressionsForTileTitleSource) {
   base::HistogramTester histogram_tester;
   RecordTileImpression(Builder()
@@ -375,46 +318,6 @@ TEST(RecordTileClickTest, ShouldRecordUmaForIcon) {
   EXPECT_THAT(
       histogram_tester.GetAllSamples("NewTabPage.MostVisited.IconsGray"),
       IsEmpty());
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.MostVisited.Thumbnail"),
-      IsEmpty());
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.MostVisited.ThumbnailFailed"),
-      IsEmpty());
-}
-
-TEST(RecordTileClickTest, ShouldRecordUmaForThumbnail) {
-  base::HistogramTester histogram_tester;
-  RecordTileClick(Builder()
-                      .WithIndex(3)
-                      .WithSource(TileSource::TOP_SITES)
-                      .WithVisualType(THUMBNAIL)
-                      .Build());
-
-  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.MostVisited"),
-              ElementsAre(base::Bucket(/*min=*/3, /*count=*/1)));
-  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.MostVisited.client"),
-              ElementsAre(base::Bucket(/*min=*/3, /*count=*/1)));
-  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.MostVisited.server"),
-              IsEmpty());
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.MostVisited.popular_fetched"),
-      IsEmpty());
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.MostVisited.IconsReal"),
-      IsEmpty());
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.MostVisited.IconsColor"),
-      IsEmpty());
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.MostVisited.IconsGray"),
-      IsEmpty());
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.MostVisited.Thumbnail"),
-      ElementsAre(base::Bucket(/*min=*/3, /*count=*/1)));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.MostVisited.ThumbnailFailed"),
-      IsEmpty());
 }
 
 TEST(RecordTileClickTest, ShouldNotRecordUnknownTileType) {
@@ -444,12 +347,6 @@ TEST(RecordTileClickTest, ShouldNotRecordUnknownTileType) {
       IsEmpty());
   EXPECT_THAT(
       histogram_tester.GetAllSamples("NewTabPage.MostVisited.IconsGray"),
-      IsEmpty());
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.MostVisited.Thumbnail"),
-      IsEmpty());
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.MostVisited.ThumbnailFailed"),
       IsEmpty());
 }
 

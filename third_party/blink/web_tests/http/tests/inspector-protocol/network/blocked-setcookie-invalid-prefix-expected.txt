@@ -2,13 +2,17 @@ Verifies that setting a cookie with an invalid __Secure- or __Host- prefix sends
 
 Bad __Secure- prefix blocked set-cookies: [
   {
-    "blockedReason": "InvalidPrefix",
+    "blockedReasons": [
+      "InvalidPrefix"
+    ],
     "cookieLine": "__Secure-name=value"
   }
 ]
 Bad __Host- prefix blocked set-cookies: [
   {
-    "blockedReason": "InvalidPrefix",
+    "blockedReasons": [
+      "InvalidPrefix"
+    ],
     "cookieLine": "__Host-name=value; Secure"
   }
 ]

@@ -58,6 +58,7 @@
 <translation id="2509394361235492552">Der er oprettet forbindelse til <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">BEMÆRK! Du kan sikre, at alle tastaturgenveje er tilgængelige ved at konfigurere Chrome Fjernskrivebord til "Åbn som vindue".</translation>
 <translation id="2540992418118313681">Vil du dele denne computer, så en anden bruger kan se og styre den?</translation>
+<translation id="254771646005658629">Giv eksterne brugere tilladelse til at styre denne Mac</translation>
 <translation id="2579271889603567289">Hosten gik ned eller kunne ikke starte.</translation>
 <translation id="2599300881200251572">Denne tjeneste muliggør indgående forbindelse fra klienter i Chrome Fjernskrivebord.</translation>
 <translation id="2647232381348739934">Tjenesten Chromoting</translation>
@@ -182,6 +183,11 @@
 <translation id="5419185025274123272">Applikationen kunne ikke nulstilles. Du kan stadig sende en fejlrapport.</translation>
 <translation id="5419418238395129586">Sidst online: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Hosten har lukket ned.</translation>
+<translation id="5463789431147491241">Hvis du vil bruge <ph name="PRODUCT_NAME" /> på denne Mac, skal du gennemføre disse trin:
+
+Vælg "<ph name="BUTTON_NAME" />" nedenfor. I præferencerne for Sikkerhed &amp; anonymitet skal du markere feltet ud for "<ph name="SERVICE_SCRIPT_NAME" />".
+
+Hvis "<ph name="SERVICE_SCRIPT_NAME" />" allerede er markeret, skal du fjerne markeringen og markere det igen.</translation>
 <translation id="5510035215749041527">Afbryd nu</translation>
 <translation id="5593560073513909978">Tjenesten er midlertidigt utilgængelig. Prøv igen senere.</translation>
 <translation id="5601503069213153581">Pinkode</translation>
@@ -298,12 +304,14 @@
 <translation id="837021510621780684">Fra denne computer</translation>
 <translation id="8383794970363966105">Hvis du vil bruge Chromoting, skal du føje en Google-konto til din enhed.</translation>
 <translation id="8386846956409881180">Hosten er konfigureret med ugyldige OAuth-loginoplysninger.</translation>
+<translation id="8406498562923498210">Vælg, hvilken session du vil starte på dit Chrome Fjernskrivebord. Bemærk! Visse sessionstyper understøtter muligvis ikke kørsel på Chrome Fjernskrivebord og den lokale konsol samtidig.</translation>
 <translation id="8428213095426709021">Indstillinger</translation>
 <translation id="8445362773033888690">Se i Google Play Butik</translation>
 <translation id="8509907436388546015">Proces til skrivebordsintegration</translation>
 <translation id="8513093439376855948">Indbygget beskedhost til fjernadministration</translation>
 <translation id="8525306231823319788">Fuld skærm</translation>
 <translation id="8548209692293300397">Du har tidligere logget ind som <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). For at få adgang til dine computere på den pågældende konto skal du <ph name="LINK_BEGIN" />logge ind på Google Chrome<ph name="LINK_END" /> med denne konto og geninstallere Chrome Fjernskrivebord.</translation>
+<translation id="858006550102277544">Kommentar</translation>
 <translation id="8642984861538780905">Rimelig</translation>
 <translation id="8712909229180978490">Jeg kan ikke se mine gemte filer online i Google Drev.</translation>
 <translation id="8743328882720071828">Vil du give <ph name="CLIENT_USERNAME" /> tilladelse til at se og styre din computer?</translation>
@@ -321,6 +329,7 @@
 <translation id="9126115402994542723">Bed ikke om en pinkode igen, når der oprettes forbindelse til denne host fra denne enhed.</translation>
 <translation id="9149580767411232853">Hold hele fjernskrivebordet synligt</translation>
 <translation id="9149992051684092333">Hvis du vil begynde at dele dit skrivebord, skal du give adgangskoden nedenfor til den person, som skal hjælpe dig.</translation>
+<translation id="916856682307586697">Start standard XSession</translation>
 <translation id="9188433529406846933">Autoriser</translation>
 <translation id="9213184081240281106">Ugyldig hostkonfiguration.</translation>
 <translation id="951991426597076286">Afvis</translation>

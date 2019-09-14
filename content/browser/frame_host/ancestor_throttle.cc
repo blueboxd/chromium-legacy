@@ -12,10 +12,14 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
+#include "content/common/content_security_policy/csp_context.h"
+#include "content/common/content_security_policy/csp_source_list.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "net/http/http_response_headers.h"
+#include "services/network/public/cpp/content_security_policy.h"
+#include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "url/origin.h"
 
@@ -140,6 +144,40 @@ NavigationThrottle::ThrottleCheckResult AncestorThrottle::ProcessResponseImpl(
   // proceed if this is a download.
   if (handle->IsDownload())
     return NavigationThrottle::PROCEED;
+
+  // Evaluate whether the navigation should be allowed or blocked based on
+  // existing content-security-policy on the response.
+  if (base::FeatureList::IsEnabled(
+          network::features::kOutOfBlinkFrameAncestors)) {
+    if (network::mojom::ContentSecurityPolicyPtr policy =
+            handle->navigation_request()
+                ->response()
+                ->head.content_security_policy) {
+      if (auto& frame_ancestors = policy->frame_ancestors) {
+        CSPSourceList frame_ancestors_list(*frame_ancestors);
+        frame_ancestors_list.allow_response_redirects = true;
+        FrameTreeNode* parent = handle->frame_tree_node()->parent();
+        // Since the navigation hasn't committed yet, we need to create a
+        // CSPContext for the navigation handle.
+        CSPContext csp_context;
+        csp_context.SetSelf(url::Origin::Create(navigation_handle()->GetURL()));
+        while (parent) {
+          if (CSPSourceList::Allow(frame_ancestors_list,
+                                   parent->current_frame_host()
+                                       ->GetLastCommittedOrigin()
+                                       .GetURL(),
+                                   &csp_context,
+                                   false /* has_followed_redirect */,
+                                   true /* is_response_check) */)) {
+            parent = parent->parent();
+            continue;
+          }
+          return NavigationThrottle::BLOCK_RESPONSE;
+        }
+        return NavigationThrottle::PROCEED;
+      }
+    }
+  }
 
   std::string header_value;
   HeaderDisposition disposition =
@@ -305,6 +343,8 @@ AncestorThrottle::HeaderDisposition AncestorThrottle::ParseHeader(
   if (result != HeaderDisposition::NONE &&
       result != HeaderDisposition::ALLOWALL &&
       HeadersContainFrameAncestorsCSP(headers)) {
+    DCHECK(!base::FeatureList::IsEnabled(
+        network::features::kOutOfBlinkFrameAncestors));
     // TODO(mkwst): 'frame-ancestors' is currently handled in Blink. We should
     // handle it here instead. Until then, don't block the request, and let
     // Blink handle it. https://crbug.com/555418

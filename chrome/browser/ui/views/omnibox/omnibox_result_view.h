@@ -30,10 +30,13 @@ class OmniboxPopupContentsView;
 class OmniboxTabSwitchButton;
 enum class OmniboxPart;
 enum class OmniboxPartState;
-enum class OmniboxTint;
 
 namespace gfx {
 class Image;
+}
+
+namespace ui {
+class ThemeProvider;
 }
 
 namespace views {
@@ -47,10 +50,11 @@ class OmniboxResultView : public views::View,
                           public ui::SimpleMenuModel::Delegate {
  public:
   OmniboxResultView(OmniboxPopupContentsView* popup_contents_view,
-                    int model_index);
+                    int model_index,
+                    const ui::ThemeProvider* theme_provider);
   ~OmniboxResultView() override;
 
-  // Helper to get the color for |part| using the current state and tint.
+  // Helper to get the color for |part| using the current state.
   SkColor GetColor(OmniboxPart part) const;
 
   // Updates the match used to paint the contents of this result view. We copy
@@ -69,7 +73,6 @@ class OmniboxResultView : public views::View,
   bool IsSelected() const;
 
   OmniboxPartState GetThemeState() const;
-  OmniboxTint CalculateTint() const;
 
   // Notification that the match icon has changed and schedules a repaint.
   void OnMatchIconUpdated();
@@ -138,6 +141,9 @@ class OmniboxResultView : public views::View,
 
   // This result's model index.
   size_t model_index_;
+
+  // The theme provider associated with this view.
+  const ui::ThemeProvider* theme_provider_;
 
   // Whether this view is in the hovered state.
   bool is_hovered_;

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/guid.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread.h"
@@ -27,6 +28,7 @@
 
 using base::Time;
 using base::TimeDelta;
+using sync_pb::BookmarkSpecifics;
 using sync_pb::EntitySpecifics;
 using sync_pb::ModelTypeState;
 using sync_pb::SyncEntity;
@@ -79,25 +81,6 @@ std::string GetNigoriName(const Nigori& nigori) {
 KeyParams GetNthKeyParams(int n) {
   return {KeyDerivationParams::CreateForPbkdf2(),
           base::StringPrintf("pw%02d", n)};
-}
-
-// Modifies the input/output parameter |specifics| by encrypting it with
-// a Nigori intialized with the specified KeyParams.
-void EncryptUpdate(const KeyParams& params, EntitySpecifics* specifics) {
-  std::unique_ptr<Nigori> nigori =
-      Nigori::CreateByDerivation(params.derivation_params, params.password);
-
-  EntitySpecifics original_specifics = *specifics;
-  std::string plaintext;
-  original_specifics.SerializeToString(&plaintext);
-
-  std::string encrypted;
-  nigori->Encrypt(plaintext, &encrypted);
-
-  specifics->Clear();
-  AddDefaultFieldValue(PREFERENCES, specifics);
-  specifics->mutable_encrypted()->set_key_name(GetNigoriName(*nigori));
-  specifics->mutable_encrypted()->set_blob(encrypted);
 }
 
 sync_pb::EntitySpecifics EncryptPasswordSpecifics(
@@ -307,6 +290,25 @@ class ModelTypeWorkerTest : public ::testing::Test {
           std::make_unique<Cryptographer>(*cryptographer_));
       worker()->EncryptionAcceptedMaybeApplyUpdates();
     }
+  }
+
+  // Modifies the input/output parameter |specifics| by encrypting it with
+  // a Nigori initialized with the specified KeyParams.
+  void EncryptUpdate(const KeyParams& params, EntitySpecifics* specifics) {
+    std::unique_ptr<Nigori> nigori =
+        Nigori::CreateByDerivation(params.derivation_params, params.password);
+
+    EntitySpecifics original_specifics = *specifics;
+    std::string plaintext;
+    original_specifics.SerializeToString(&plaintext);
+
+    std::string encrypted;
+    nigori->Encrypt(plaintext, &encrypted);
+
+    specifics->Clear();
+    AddDefaultFieldValue(model_type_, specifics);
+    specifics->mutable_encrypted()->set_key_name(GetNigoriName(*nigori));
+    specifics->mutable_encrypted()->set_blob(encrypted);
   }
 
   // Use the Nth nigori instance to encrypt incoming updates.
@@ -1234,7 +1236,7 @@ TEST_F(ModelTypeWorkerTest, ReceiveCorruptEncryption) {
   entity.set_deleted(false);
 
   // Encrypt it.
-  entity.mutable_specifics()->CopyFrom(GenerateSpecifics(kTag1, kValue1));
+  *entity.mutable_specifics() = GenerateSpecifics(kTag1, kValue1);
   EncryptUpdate(GetNthKeyParams(1), entity.mutable_specifics());
 
   // Replace a few bytes to corrupt it.
@@ -1333,14 +1335,13 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseData) {
   entity.set_id_string("SomeID");
   entity.set_parent_id_string("ParentID");
   entity.set_folder(false);
-  entity.mutable_unique_position()->CopyFrom(
-      UniquePosition::InitialPosition(UniquePosition::RandomSuffix())
-          .ToProto());
+  *entity.mutable_unique_position() =
+      UniquePosition::InitialPosition(UniquePosition::RandomSuffix()).ToProto();
   entity.set_version(1);
   entity.set_client_defined_unique_tag("CLIENT_TAG");
   entity.set_server_defined_unique_tag("SERVER_TAG");
   entity.set_deleted(false);
-  entity.mutable_specifics()->CopyFrom(GenerateSpecifics(kTag1, kValue1));
+  *entity.mutable_specifics() = GenerateSpecifics(kTag1, kValue1);
   UpdateResponseData response_data;
 
   Cryptographer cryptographer;
@@ -1375,9 +1376,8 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataForBookmarkTombstone) {
   entity.set_id_string("SomeID");
   entity.set_parent_id_string("ParentID");
   entity.set_folder(false);
-  entity.mutable_unique_position()->CopyFrom(
-      UniquePosition::InitialPosition(UniquePosition::RandomSuffix())
-          .ToProto());
+  *entity.mutable_unique_position() =
+      UniquePosition::InitialPosition(UniquePosition::RandomSuffix()).ToProto();
   entity.set_version(1);
   entity.set_server_defined_unique_tag("SERVER_TAG");
   // Mark this as a tombstone.
@@ -1404,7 +1404,7 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataWithPositionInParent) {
   entity.set_position_in_parent(5);
   entity.set_client_defined_unique_tag("CLIENT_TAG");
   entity.set_server_defined_unique_tag("SERVER_TAG");
-  entity.mutable_specifics()->CopyFrom(GenerateSpecifics(kTag1, kValue1));
+  *entity.mutable_specifics() = GenerateSpecifics(kTag1, kValue1);
 
   UpdateResponseData response_data;
   Cryptographer cryptographer;
@@ -1431,7 +1431,7 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataWithInsertAfterItemId) {
   entity.set_insert_after_item_id("ITEM_ID");
   entity.set_client_defined_unique_tag("CLIENT_TAG");
   entity.set_server_defined_unique_tag("SERVER_TAG");
-  entity.mutable_specifics()->CopyFrom(GenerateSpecifics(kTag1, kValue1));
+  *entity.mutable_specifics() = GenerateSpecifics(kTag1, kValue1);
 
   UpdateResponseData response_data;
   Cryptographer cryptographer;
@@ -1460,7 +1460,7 @@ TEST_F(ModelTypeWorkerTest,
   EntitySpecifics specifics;
   specifics.mutable_bookmark()->set_url("http://www.url.com");
 
-  entity.mutable_specifics()->CopyFrom(specifics);
+  *entity.mutable_specifics() = specifics;
 
   UpdateResponseData response_data;
   Cryptographer cryptographer;
@@ -1484,7 +1484,7 @@ TEST_F(ModelTypeWorkerTest,
   sync_pb::SyncEntity entity;
 
   EntitySpecifics specifics;
-  entity.mutable_specifics()->CopyFrom(GenerateSpecifics(kTag1, kValue1));
+  *entity.mutable_specifics() = GenerateSpecifics(kTag1, kValue1);
 
   UpdateResponseData response_data;
   Cryptographer cryptographer;
@@ -1498,6 +1498,82 @@ TEST_F(ModelTypeWorkerTest,
       syncer::UniquePosition::FromProto(data.unique_position).IsValid());
   histogram_tester.ExpectTotalCount("Sync.Entities.PositioningScheme",
                                     /*count=*/0);
+}
+
+TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataWithBookmarkGUID) {
+  const std::string kGuid1 = base::GenerateGUID();
+  const std::string kGuid2 = base::GenerateGUID();
+
+  NormalInitialize();
+  sync_pb::SyncEntity entity;
+
+  // Generate specifics with a GUID.
+  entity.mutable_specifics()->mutable_bookmark()->set_guid(kGuid1);
+  entity.set_originator_client_item_id(kGuid2);
+  *entity.mutable_unique_position() =
+      UniquePosition::InitialPosition(UniquePosition::RandomSuffix()).ToProto();
+
+  UpdateResponseData response_data;
+  Cryptographer cryptographer;
+
+  EXPECT_EQ(ModelTypeWorker::SUCCESS,
+            ModelTypeWorker::PopulateUpdateResponseData(
+                &cryptographer, BOOKMARKS, entity, &response_data));
+
+  const EntityData& data = *response_data.entity;
+
+  EXPECT_EQ(kGuid1, data.specifics.bookmark().guid());
+  EXPECT_EQ(kGuid2, data.originator_client_item_id);
+}
+
+TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataWithMissingBookmarkGUID) {
+  const std::string kGuid1 = base::GenerateGUID();
+
+  NormalInitialize();
+  sync_pb::SyncEntity entity;
+
+  // Generate specifics without a GUID.
+  entity.set_originator_client_item_id(kGuid1);
+  *entity.mutable_unique_position() =
+      UniquePosition::InitialPosition(UniquePosition::RandomSuffix()).ToProto();
+
+  UpdateResponseData response_data;
+  Cryptographer cryptographer;
+
+  EXPECT_EQ(ModelTypeWorker::SUCCESS,
+            ModelTypeWorker::PopulateUpdateResponseData(
+                &cryptographer, BOOKMARKS, entity, &response_data));
+
+  const EntityData& data = *response_data.entity;
+
+  EXPECT_EQ(kGuid1, data.originator_client_item_id);
+  EXPECT_EQ(kGuid1, data.specifics.bookmark().guid());
+}
+
+TEST_F(ModelTypeWorkerTest,
+       PopulateUpdateResponseDataWithMissingBookmarkGUIDAndInvalidOCII) {
+  const std::string kInvalidOCII = "INVALID OCII";
+
+  NormalInitialize();
+  sync_pb::SyncEntity entity;
+
+  // Generate specifics without a GUID and with an invalid
+  // originator_client_item_id.
+  entity.set_originator_client_item_id(kInvalidOCII);
+  *entity.mutable_unique_position() =
+      UniquePosition::InitialPosition(UniquePosition::RandomSuffix()).ToProto();
+
+  UpdateResponseData response_data;
+  Cryptographer cryptographer;
+
+  EXPECT_EQ(ModelTypeWorker::SUCCESS,
+            ModelTypeWorker::PopulateUpdateResponseData(
+                &cryptographer, BOOKMARKS, entity, &response_data));
+
+  const EntityData& data = *response_data.entity;
+
+  EXPECT_EQ(kInvalidOCII, data.originator_client_item_id);
+  EXPECT_TRUE(data.specifics.bookmark().guid().empty());
 }
 
 class GetLocalChangesRequestTest : public testing::Test {
@@ -1749,6 +1825,189 @@ TEST_F(ModelTypeWorkerPasswordsTest, ReceiveUndecryptablePasswordEntries) {
   EXPECT_EQ(kPassword, update.entity->specifics.password()
                            .client_only_encrypted_data()
                            .password_value());
+}
+
+// Analogous test fixture but uses BOOKMARKS instead of PREFERENCES, in order
+// to test some special encryption requirements for BOOKMARKS.
+class ModelTypeWorkerBookmarksTest : public ModelTypeWorkerTest {
+ protected:
+  ModelTypeWorkerBookmarksTest() : ModelTypeWorkerTest(BOOKMARKS) {}
+};
+
+TEST_F(ModelTypeWorkerBookmarksTest, CanDecryptUpdateWithMissingBookmarkGUID) {
+  const std::string kGuid1 = base::GenerateGUID();
+
+  // Initialize the worker with basic encryption state.
+  NormalInitialize();
+  AddPendingKey();
+  EXPECT_EQ(0U, processor()->GetNumUpdateResponses());
+
+  // Generate specifics without a GUID.
+  sync_pb::SyncEntity entity;
+  entity.mutable_specifics()->mutable_bookmark()->set_url("www.foo.com");
+  entity.mutable_specifics()->mutable_bookmark()->set_title("Title");
+  entity.set_originator_client_item_id(kGuid1);
+  *entity.mutable_unique_position() =
+      UniquePosition::InitialPosition(UniquePosition::RandomSuffix()).ToProto();
+
+  // Encrypt it.
+  EncryptUpdate(GetNthKeyParams(1), entity.mutable_specifics());
+  EXPECT_EQ(0U, processor()->GetNumUpdateResponses());
+
+  DecryptPendingKey();
+
+  worker()->ProcessGetUpdatesResponse(server()->GetProgress(),
+                                      server()->GetContext(), {&entity},
+                                      status_controller());
+  worker()->ApplyUpdates(status_controller());
+
+  EXPECT_EQ(2U, processor()->GetNumUpdateResponses());
+
+  // First response should contain no updates, since ApplyUpdates() was called
+  // from within DecryptPendingKey() before any were added.
+  EXPECT_EQ(0U, processor()->GetNthUpdateResponse(0).size());
+  EXPECT_EQ(1U, processor()->GetNthUpdateResponse(1).size());
+
+  EXPECT_EQ(kGuid1, processor()
+                        ->GetNthUpdateResponse(1)
+                        .at(0)
+                        ->entity->originator_client_item_id);
+
+  EXPECT_EQ(kGuid1, processor()
+                        ->GetNthUpdateResponse(1)
+                        .at(0)
+                        ->entity->specifics.bookmark()
+                        .guid());
+}
+
+TEST_F(ModelTypeWorkerBookmarksTest,
+       CanDecryptUpdateWithMissingBookmarkGUIDAndInvalidOCII) {
+  const std::string kInvalidOCII = "INVALID OCII";
+
+  // Initialize the worker with basic encryption state.
+  NormalInitialize();
+  AddPendingKey();
+  EXPECT_EQ(0U, processor()->GetNumUpdateResponses());
+
+  // Generate specifics without a GUID and with an invalid
+  // originator_client_item_id.
+  sync_pb::SyncEntity entity;
+  entity.mutable_specifics()->mutable_bookmark()->set_url("www.foo.com");
+  entity.mutable_specifics()->mutable_bookmark()->set_title("Title");
+  entity.set_originator_client_item_id(kInvalidOCII);
+  *entity.mutable_unique_position() =
+      UniquePosition::InitialPosition(UniquePosition::RandomSuffix()).ToProto();
+
+  // Encrypt it.
+  EncryptUpdate(GetNthKeyParams(1), entity.mutable_specifics());
+  EXPECT_EQ(0U, processor()->GetNumUpdateResponses());
+
+  DecryptPendingKey();
+
+  worker()->ProcessGetUpdatesResponse(server()->GetProgress(),
+                                      server()->GetContext(), {&entity},
+                                      status_controller());
+  worker()->ApplyUpdates(status_controller());
+
+  EXPECT_EQ(2U, processor()->GetNumUpdateResponses());
+
+  // First response should contain no updates, since ApplyUpdates() was called
+  // from within DecryptPendingKey() before any were added.
+  EXPECT_EQ(0U, processor()->GetNthUpdateResponse(0).size());
+  EXPECT_EQ(1U, processor()->GetNthUpdateResponse(1).size());
+
+  EXPECT_EQ(kInvalidOCII, processor()
+                              ->GetNthUpdateResponse(1)
+                              .at(0)
+                              ->entity->originator_client_item_id);
+
+  EXPECT_EQ("", processor()
+                    ->GetNthUpdateResponse(1)
+                    .at(0)
+                    ->entity->specifics.bookmark()
+                    .guid());
+}
+
+TEST_F(ModelTypeWorkerBookmarksTest,
+       CannotDecryptUpdateWithMissingBookmarkGUID) {
+  const std::string kGuid1 = base::GenerateGUID();
+
+  // Initialize the worker with basic encryption state.
+  NormalInitialize();
+  AddPendingKey();
+  EXPECT_EQ(0U, processor()->GetNumUpdateResponses());
+
+  // Generate specifics without a GUID.
+  sync_pb::SyncEntity entity;
+  entity.mutable_specifics()->mutable_bookmark();
+  entity.set_originator_client_item_id(kGuid1);
+  *entity.mutable_unique_position() =
+      UniquePosition::InitialPosition(UniquePosition::RandomSuffix()).ToProto();
+
+  // Encrypt it.
+  EncryptUpdate(GetNthKeyParams(1), entity.mutable_specifics());
+  EXPECT_EQ(0U, processor()->GetNumUpdateResponses());
+
+  worker()->ProcessGetUpdatesResponse(server()->GetProgress(),
+                                      server()->GetContext(), {&entity},
+                                      status_controller());
+  worker()->ApplyUpdates(status_controller());
+
+  DecryptPendingKey();
+  EXPECT_EQ(1U, processor()->GetNumUpdateResponses());
+
+  EXPECT_EQ(kGuid1, processor()
+                        ->GetNthUpdateResponse(0)
+                        .at(0)
+                        ->entity->originator_client_item_id);
+
+  EXPECT_EQ(kGuid1, processor()
+                        ->GetNthUpdateResponse(0)
+                        .at(0)
+                        ->entity->specifics.bookmark()
+                        .guid());
+}
+
+TEST_F(ModelTypeWorkerBookmarksTest,
+       CannotDecryptUpdateWithMissingBookmarkGUIDAndInvalidOCII) {
+  const std::string kInvalidOCII = "INVALID OCII";
+
+  // Initialize the worker with basic encryption state.
+  NormalInitialize();
+  AddPendingKey();
+  EXPECT_EQ(0U, processor()->GetNumUpdateResponses());
+
+  // Generate specifics without a GUID and with an invalid
+  // originator_client_item_id.
+  sync_pb::SyncEntity entity;
+  entity.mutable_specifics()->mutable_bookmark();
+  entity.set_originator_client_item_id(kInvalidOCII);
+  *entity.mutable_unique_position() =
+      UniquePosition::InitialPosition(UniquePosition::RandomSuffix()).ToProto();
+
+  // Encrypt it.
+  EncryptUpdate(GetNthKeyParams(1), entity.mutable_specifics());
+  EXPECT_EQ(0U, processor()->GetNumUpdateResponses());
+
+  worker()->ProcessGetUpdatesResponse(server()->GetProgress(),
+                                      server()->GetContext(), {&entity},
+                                      status_controller());
+  worker()->ApplyUpdates(status_controller());
+
+  DecryptPendingKey();
+  EXPECT_EQ(1U, processor()->GetNumUpdateResponses());
+
+  EXPECT_EQ(kInvalidOCII, processor()
+                              ->GetNthUpdateResponse(0)
+                              .at(0)
+                              ->entity->originator_client_item_id);
+
+  EXPECT_TRUE(processor()
+                  ->GetNthUpdateResponse(0)
+                  .at(0)
+                  ->entity->specifics.bookmark()
+                  .guid()
+                  .empty());
 }
 
 }  // namespace syncer

@@ -104,7 +104,6 @@
 <translation id="2359808026110333948">계속</translation>
 <translation id="2365393535144473978">모바일 데이터를 사용 설정하면 블루투스가 사용 설정됩니다.</translation>
 <translation id="2391579633712104609">180°</translation>
-<translation id="239188844683466770">방해 금지 모드 전환</translation>
 <translation id="2412593942846481727">업데이트 가능</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" />은(는) <ph name="DOMAIN" />에서 관리하는 관리 세션입니다.</translation>
 <translation id="2427507373259914951">왼쪽 클릭</translation>
@@ -224,6 +223,7 @@
 <translation id="4181841719683918333">언어</translation>
 <translation id="4195877955194704651">자동 클릭 버튼</translation>
 <translation id="4217571870635786043">음성기록</translation>
+<translation id="421885205185866088"><ph name="USER_EMAIL_ADDRESS" /> 스마트 카드 PIN</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">알림 설정을 표시합니다. 알림이 사용 중지되어 있습니다.</translation>
 <translation id="4269883910223712419">이 기기의 관리자는 다음과 같은 작업을 할 수 있습니다.</translation>
@@ -239,6 +239,7 @@
 <translation id="4379531060876907730">스타일러스 도구입니다</translation>
 <translation id="4389184120735010762">고정 돋보기 단축키를 누르셨습니다. 사용 설정할까요?</translation>
 <translation id="4421231901400348175">원격 지원을 통해 <ph name="HELPER_NAME" />와(과) 화면 제어 공유</translation>
+<translation id="4430019312045809116">볼륨</translation>
 <translation id="4450893287417543264">다시 표시하지 않음</translation>
 <translation id="4477350412780666475">다음 트랙</translation>
 <translation id="4479639480957787382">이더넷</translation>

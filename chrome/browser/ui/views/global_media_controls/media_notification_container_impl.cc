@@ -23,6 +23,10 @@ constexpr gfx::Size kDismissButtonSize = gfx::Size(24, 24);
 constexpr int kDismissButtonIconSize = 20;
 constexpr SkColor kDefaultForegroundColor = SK_ColorBLACK;
 
+// The minimum number of enabled and visible user actions such that we should
+// force the MediaNotificationView to be expanded.
+constexpr int kMinVisibleActionsForExpanding = 4;
+
 }  // anonymous namespace
 
 MediaNotificationContainerImpl::MediaNotificationContainerImpl(
@@ -52,6 +56,7 @@ MediaNotificationContainerImpl::MediaNotificationContainerImpl(
   view_ = std::make_unique<media_message_center::MediaNotificationView>(
       this, std::move(item), dismiss_button_.get(), base::string16());
   view_->set_owned_by_client();
+  ForceExpandedState();
 
   AddChildView(view_.get());
 }
@@ -71,6 +76,18 @@ void MediaNotificationContainerImpl::OnMediaSessionInfoChanged(
                            media_session::mojom::MediaPlaybackState::kPlaying);
 }
 
+void MediaNotificationContainerImpl::OnVisibleActionsChanged(
+    const std::set<media_session::mojom::MediaSessionAction>& actions) {
+  has_many_actions_ = actions.size() >= kMinVisibleActionsForExpanding;
+  ForceExpandedState();
+}
+
+void MediaNotificationContainerImpl::OnMediaArtworkChanged(
+    const gfx::ImageSkia& image) {
+  has_artwork_ = !image.isNull();
+  ForceExpandedState();
+}
+
 void MediaNotificationContainerImpl::OnForegoundColorChanged(SkColor color) {
   foreground_color_ = color;
   UpdateDismissButtonIcon();
@@ -86,4 +103,11 @@ void MediaNotificationContainerImpl::UpdateDismissButtonIcon() {
   views::SetImageFromVectorIcon(dismiss_button_.get(),
                                 vector_icons::kCloseRoundedIcon,
                                 kDismissButtonIconSize, foreground_color_);
+}
+
+void MediaNotificationContainerImpl::ForceExpandedState() {
+  if (view_) {
+    bool should_expand = has_many_actions_ || has_artwork_;
+    view_->SetForcedExpandedState(&should_expand);
+  }
 }

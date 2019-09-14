@@ -145,6 +145,20 @@ int GridFocusCornerRadiusForType(ash::AppListConfigType type) {
   return GridFocusCornerRadiusForType(ash::AppListConfigType::kShared);
 }
 
+int GridFadeoutMaskHeightForType(ash::AppListConfigType type) {
+  switch (type) {
+    case ash::AppListConfigType::kShared:
+      return 24;
+    case ash::AppListConfigType::kLarge:
+    case ash::AppListConfigType::kMedium:
+    case ash::AppListConfigType::kSmall:
+      return 16;
+  }
+
+  NOTREACHED();
+  return GridFadeoutMaskHeightForType(ash::AppListConfigType::kShared);
+}
+
 int AppTitleMaxLineHeightForType(ash::AppListConfigType type) {
   switch (type) {
     case ash::AppListConfigType::kShared:
@@ -251,6 +265,7 @@ AppListConfig::AppListConfig(ash::AppListConfigType type)
       grid_focus_dimension_(GridFocusDimensionForType(type)),
       grid_focus_corner_radius_(GridFocusCornerRadiusForType(type)),
       grid_fadeout_zone_height_(24),
+      grid_fadeout_mask_height_(GridFadeoutMaskHeightForType(type)),
       search_tile_icon_dimension_(48),
       search_tile_badge_icon_dimension_(22),
       search_tile_badge_icon_offset_(5),
@@ -355,6 +370,10 @@ AppListConfig::AppListConfig(const AppListConfig& base_config,
           min_y_scale
               ? 8
               : MinScale(base_config.grid_fadeout_zone_height_, scale_y, 1)),
+      grid_fadeout_mask_height_(
+          min_y_scale
+              ? 8
+              : MinScale(base_config.grid_fadeout_mask_height_, scale_y, 1)),
       search_tile_icon_dimension_(base_config.search_tile_icon_dimension_),
       search_tile_badge_icon_dimension_(
           base_config.search_tile_badge_icon_dimension_),

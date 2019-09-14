@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/autofill/payments/local_card_migration_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/local_card_migration_controller_observer.h"
 #include "chrome/browser/ui/autofill/payments/local_card_migration_dialog_controller_impl.h"
+#include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace autofill {
@@ -55,7 +56,7 @@ class ManageMigrationUiController
   void ShowBubble(base::OnceClosure show_migration_dialog_closure);
 
   void ShowOfferDialog(
-      std::unique_ptr<base::DictionaryValue> legal_message,
+      const LegalMessageLines& legal_message_lines,
       const std::string& user_email,
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       AutofillClient::LocalCardMigrationCallback

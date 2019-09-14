@@ -194,6 +194,8 @@ Chromium не може відновити ваші налаштування.</tr
 <translation id="753534427205733210">{0,plural, =1{Chromium перезапуститься через 1 хвилину}one{Chromium перезапуститься через # хвилину}few{Chromium перезапуститься через # хвилини}many{Chromium перезапуститься через # хвилин}other{Chromium перезапуститься через # хвилини}}</translation>
 <translation id="7549178288319965365">Про ОС Chromium</translation>
 <translation id="7561906087460245826">Також очистити дані Chromium (<ph name="URL" />)</translation>
+<translation id="7585853947355360626">Якщо налаштування не з'явиться на цій сторінці, пошукайте його в <ph name="LINK_BEGIN" />
+      налаштуваннях ОС Chromium<ph name="LINK_END" /></translation>
 <translation id="761356813943268536">Chromium використовує вашу камеру та мікрофон.</translation>
 <translation id="7617377681829253106">Chromium став ще кращим</translation>
 <translation id="7686590090926151193">Chromium не є вашим веб-переглядачем за умовчанням</translation>
@@ -227,6 +229,8 @@ Chromium не може відновити ваші налаштування.</tr
 <translation id="8619360774459241877">Запускається Chromium…</translation>
 <translation id="8621669128220841554">Не вдалося встановити через невизначену помилку. Завантажте Chromium ще раз.</translation>
 <translation id="8667808506758191620">Ваш пристрій <ph name="DEVICE_TYPE" /> оновлено.</translation>
+<translation id="8682540261359803721">Якщо налаштування не з'явиться на цій сторінці, пошукайте його в <ph name="LINK_BEGIN" />
+      налаштуваннях веб-переглядача Chromium<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">Розширення також змінило сторінку, яка відкривається під час запуску Chromium або пошуку в універсальному вікні пошуку.</translation>
 <translation id="8704119203788522458">Це ваш Chromium</translation>
 <translation id="8739167630197873875">Файли cookie видаляються, коли ви закриваєте Chromium. Щоб продовжити синхронізацію, змініть ці <ph name="COOKIE_SETTINGS_LINK" />.</translation>

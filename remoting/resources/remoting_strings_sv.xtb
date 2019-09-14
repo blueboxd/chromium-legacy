@@ -58,6 +58,7 @@
 <translation id="2509394361235492552">Ansluten till <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">Obs! Om du vill vara säker på att alla kortkommandon är tillgängliga kan du ställa in Chrome Remote Desktop på Öppna som fönster.</translation>
 <translation id="2540992418118313681">Vill du dela den här datorn så att en annan användare kan visa och styra den?</translation>
+<translation id="254771646005658629">Tillåt fjärranvändare att styra denna Mac</translation>
 <translation id="2579271889603567289">Värden kraschade eller gick inte att starta.</translation>
 <translation id="2599300881200251572">Med den här tjänsten aktiveras inkommande anslutningar från Chrome Remote Desktop-klienter.</translation>
 <translation id="2647232381348739934">Tjänsten Chromoting</translation>
@@ -182,6 +183,11 @@
 <translation id="5419185025274123272">Det gick inte att återställa programmet. Du kan fortfarande skicka en felrapport.</translation>
 <translation id="5419418238395129586">Senast online: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Värdenheten har stängts av.</translation>
+<translation id="5463789431147491241">Om du vill använda <ph name="PRODUCT_NAME" /> på denna Mac följer du dessa steg:
+
+Välj <ph name="BUTTON_NAME" /> nedan. Markera kryssrutan bredvid <ph name="SERVICE_SCRIPT_NAME" /> på inställningspanelen Säkerhet och sekretess.
+
+Om <ph name="SERVICE_SCRIPT_NAME" /> redan har markerats avmarkerar du rutan och markerar den på nytt.</translation>
 <translation id="5510035215749041527">Koppla från nu</translation>
 <translation id="5593560073513909978">Tjänsten är inte tillgänglig för närvarande. Försök igen senare.</translation>
 <translation id="5601503069213153581">PIN-kod</translation>
@@ -298,12 +304,14 @@
 <translation id="837021510621780684">Från den här datorn</translation>
 <translation id="8383794970363966105">Om du vill använda Chromoting måste du lägga till ett Google-konto på enheten.</translation>
 <translation id="8386846956409881180">Värden konfigurerades med ogiltiga användaruppgifter för OAuth.</translation>
+<translation id="8406498562923498210">Välj vilken session du vill starta i Chrome Remote Desktop-miljön. (Observera att vissa sessionstyper kanske inte har stöd för att köras i Chrome Remote Desktop och på den lokala konsolen samtidigt.)</translation>
 <translation id="8428213095426709021">Inställningar</translation>
 <translation id="8445362773033888690">Visa i Google Play Butik</translation>
 <translation id="8509907436388546015">Integreringsprocess för Desktop</translation>
 <translation id="8513093439376855948">Lokal meddelandevärd för fjärrvärdshantering</translation>
 <translation id="8525306231823319788">Helskärm</translation>
 <translation id="8548209692293300397">Du har tidigare loggat in som <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Om du vill kunna ansluta till de datorer som sparats i det kontot <ph name="LINK_BEGIN" />loggar du in i Google Chrome<ph name="LINK_END" /> med det kontot och installerar om Chrome Remote Desktop.</translation>
+<translation id="858006550102277544">Kommentar</translation>
 <translation id="8642984861538780905">OK</translation>
 <translation id="8712909229180978490">Jag ser inte mina sparade filer online på Google Drive.</translation>
 <translation id="8743328882720071828">Vill du tillåta att <ph name="CLIENT_USERNAME" /> ser och styr din dator?</translation>
@@ -321,6 +329,7 @@
 <translation id="9126115402994542723">Be inte om en pinkod igen när du ansluter till den här värden från den här enheten.</translation>
 <translation id="9149580767411232853">Låt hela fjärrskrivbordet vara synligt</translation>
 <translation id="9149992051684092333">Om du vill dela ditt skrivbord ger du åtkomstkoden nedan till den som ska hjälpa dig.</translation>
+<translation id="916856682307586697">Starta XSession med standardinställningar</translation>
 <translation id="9188433529406846933">Auktorisera</translation>
 <translation id="9213184081240281106">Ogiltig värdkonfiguration.</translation>
 <translation id="951991426597076286">Godkänn inte</translation>

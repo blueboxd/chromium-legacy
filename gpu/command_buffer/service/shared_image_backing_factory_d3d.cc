@@ -491,11 +491,10 @@ std::unique_ptr<SharedImageBacking> SharedImageBackingFactoryD3D::MakeBacking(
     DCHECK(d3d11_texture);
   }
 
-  const gfx::BufferFormat buffer_format = format == viz::RGBA_F16
-                                              ? gfx::BufferFormat::RGBA_F16
-                                              : gfx::BufferFormat::BGRA_8888;
-
-  auto image = base::MakeRefCounted<gl::GLImageD3D>(size, buffer_format,
+  // The GL internal format can differ from the underlying swap chain format
+  // e.g. RGBA8 or RGB8 instead of BGRA8.
+  const GLenum internal_format = viz::GLInternalFormat(format);
+  auto image = base::MakeRefCounted<gl::GLImageD3D>(size, internal_format,
                                                     d3d11_texture, swap_chain);
   if (!image->Initialize()) {
     DLOG(ERROR) << "GLImageD3D::Initialize failed";
@@ -518,8 +517,6 @@ std::unique_ptr<SharedImageBacking> SharedImageBackingFactoryD3D::MakeBacking(
                                &texture_memory_size);
     texture_passthrough->SetEstimatedSize(texture_memory_size);
   } else {
-    // Image internal format could be different from |format| e.g. BGRA vs RGBA.
-    const GLuint internal_format = image->GetInternalFormat();
     const GLenum gl_format =
         gles2::TextureManager::ExtractFormatFromStorageFormat(internal_format);
     const GLenum gl_type =
@@ -557,10 +554,15 @@ SharedImageBackingFactoryD3D::CreateSwapChain(
   if (!SharedImageBackingFactoryD3D::IsSwapChainSupported())
     return {nullptr, nullptr};
 
+  DXGI_FORMAT swap_chain_format;
   switch (format) {
     case viz::RGBA_8888:
+    case viz::RGBX_8888:
     case viz::BGRA_8888:
+      swap_chain_format = DXGI_FORMAT_B8G8R8A8_UNORM;
+      break;
     case viz::RGBA_F16:
+      swap_chain_format = DXGI_FORMAT_R16G16B16A16_FLOAT;
       break;
     default:
       DLOG(ERROR) << gfx::BufferFormatToString(viz::BufferFormat(format))
@@ -578,14 +580,10 @@ SharedImageBackingFactoryD3D::CreateSwapChain(
   dxgi_adapter->GetParent(IID_PPV_ARGS(&dxgi_factory));
   DCHECK(dxgi_factory);
 
-  DXGI_FORMAT output_format = format == viz::RGBA_F16
-                                  ? DXGI_FORMAT_R16G16B16A16_FLOAT
-                                  : DXGI_FORMAT_B8G8R8A8_UNORM;
-
   DXGI_SWAP_CHAIN_DESC1 desc = {};
   desc.Width = size.width();
   desc.Height = size.height();
-  desc.Format = output_format;
+  desc.Format = swap_chain_format;
   desc.Stereo = FALSE;
   desc.SampleDesc.Count = 1;
   desc.BufferCount = 2;
@@ -593,6 +591,8 @@ SharedImageBackingFactoryD3D::CreateSwapChain(
   desc.Scaling = DXGI_SCALING_STRETCH;
   desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
   desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+  desc.AlphaMode = viz::HasAlpha(format) ? DXGI_ALPHA_MODE_PREMULTIPLIED
+                                         : DXGI_ALPHA_MODE_IGNORE;
 
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain;
 

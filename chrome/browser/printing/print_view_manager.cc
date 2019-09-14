@@ -16,6 +16,7 @@
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/common/chrome_content_client.h"
+#include "components/printing/common/print.mojom.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
@@ -26,6 +27,7 @@
 #include "content/public/common/webplugininfo.h"
 #include "ipc/ipc_message_macros.h"
 #include "printing/buildflags/buildflags.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 using content::BrowserThread;
 
@@ -114,10 +116,13 @@ bool PrintViewManager::PrintPreviewNow(content::RenderFrameHost* rfh,
   if (print_preview_state_ != NOT_PREVIEWING)
     return false;
 
-  auto message = std::make_unique<PrintMsg_InitiatePrintPreview>(
-      rfh->GetRoutingID(), has_selection);
-  if (!PrintNowInternal(rfh, std::move(message)))
+  // Don't print / print preview interstitials or crashed tabs.
+  if (IsInterstitialOrCrashed())
     return false;
+
+  mojom::PrintRenderFrameAssociatedPtr print_render_frame;
+  rfh->GetRemoteAssociatedInterfaces()->GetInterface(&print_render_frame);
+  print_render_frame->InitiatePrintPreview(has_selection);
 
   DCHECK(!print_preview_rfh_);
   print_preview_rfh_ = rfh;

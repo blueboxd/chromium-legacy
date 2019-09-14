@@ -50,10 +50,12 @@ static size_t kKeywordSuggestionIndent = 70;
 
 OmniboxResultView::OmniboxResultView(
     OmniboxPopupContentsView* popup_contents_view,
-    int model_index)
+    int model_index,
+    const ui::ThemeProvider* theme_provider)
     : AnimationDelegateViews(this),
       popup_contents_view_(popup_contents_view),
       model_index_(model_index),
+      theme_provider_(theme_provider),
       is_hovered_(false),
       animation_(new gfx::SlideAnimation(this)) {
   CHECK_GE(model_index, 0);
@@ -80,7 +82,7 @@ OmniboxResultView::OmniboxResultView(
 OmniboxResultView::~OmniboxResultView() {}
 
 SkColor OmniboxResultView::GetColor(OmniboxPart part) const {
-  return GetOmniboxColor(part, CalculateTint(), GetThemeState());
+  return GetOmniboxColor(theme_provider_, part, GetThemeState());
 }
 
 void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
@@ -97,12 +99,12 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
           popup_contents_view_, this,
           l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT),
           l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_SHORT_HINT),
-          omnibox::kSwitchIcon);
+          omnibox::kSwitchIcon, theme_provider_);
     } else {
       suggestion_tab_switch_button_ = std::make_unique<OmniboxTabSwitchButton>(
           // TODO(krb): Make official strings when we accept the feature.
           popup_contents_view_, this, base::ASCIIToUTF16("Open in this tab"),
-          base::ASCIIToUTF16("Open"), omnibox::kSwitchIcon);
+          base::ASCIIToUTF16("Open"), omnibox::kSwitchIcon, theme_provider_);
     }
 
     suggestion_tab_switch_button_->set_owned_by_client();
@@ -237,10 +239,6 @@ OmniboxPartState OmniboxResultView::GetThemeState() const {
   if (IsSelected())
     return OmniboxPartState::SELECTED;
   return is_hovered_ ? OmniboxPartState::HOVERED : OmniboxPartState::NORMAL;
-}
-
-OmniboxTint OmniboxResultView::CalculateTint() const {
-  return popup_contents_view_->CalculateTint();
 }
 
 void OmniboxResultView::OnMatchIconUpdated() {

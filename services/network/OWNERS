@@ -37,7 +37,7 @@ per-file network_quality*=file://net/nqe/OWNERS
 per-file BUILD.gn=file://net/nqe/OWNERS
 per-file BUILD.gn=file://services/network/resource_scheduler/OWNERS
 
-# CSP Parser:
+# Content Security Policy
 per-file content_security_policy*=lfg@chromium.org
 per-file content_security_policy*=nasko@chromium.org
 

@@ -174,6 +174,9 @@ class MetricsWebContentsObserver
  private:
   friend class content::WebContentsUserData<MetricsWebContentsObserver>;
 
+  void WillStartNavigationRequestImpl(
+      content::NavigationHandle* navigation_handle);
+
   // page_load_metrics::mojom::PageLoadMetrics implementation.
   void UpdateTiming(
       mojom::PageLoadTimingPtr timing,

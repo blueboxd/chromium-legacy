@@ -8,14 +8,17 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 m}other{# m}}</translation>
 <translation id="1181037720776840403">Verwijderen</translation>
 <translation id="1243314992276662751">Uploaden</translation>
+<translation id="1266864766717917324">Kan <ph name="CONTENT_TYPE" /> niet delen</translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1290982764014248209"><ph name="DRAGGED_APP" /> verplaatsen naar map <ph name="FOLDER_NAME" />.</translation>
+<translation id="1291104554099683393">Probeer de tekst in kleinere gedeelten te delen.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">AANBEVOLEN APPS</translation>
 <translation id="1368832886055348810">Links naar rechts</translation>
 <translation id="1383876407941801731">Zoeken</translation>
 <translation id="1398853756734560583">Maximaliseren</translation>
 <translation id="1409544243779336081">App-aanbeveling</translation>
+<translation id="1450753235335490080">Kan <ph name="CONTENT_TYPE" /> niet delen</translation>
 <translation id="1498028757988366001">Je hebt hier eerder naar gezocht. Als je '<ph name="QUERY" />' uit je geschiedenis verwijdert, wordt deze zoekopdracht definitief op al je apparaten uit je account verwijderd.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuut en }other{# minuten en }}</translation>
 <translation id="1643823602425662293">Melding</translation>
@@ -35,6 +38,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">&amp;Alles selecteren</translation>
 <translation id="1938451708255335766">Als je de weergavedichtheid van het venster wilt aanpassen, start je de app opnieuw.</translation>
+<translation id="2006524834898217237">Zorg dat dit apparaat is verbonden met internet.</translation>
 <translation id="208586643495776849">Probeer het opnieuw</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 d}other{# d}}</translation>
 <translation id="2148716181193084225">Vandaag</translation>
@@ -76,6 +80,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 dag}other{# dagen}}</translation>
 <translation id="3295886253693811851">Bellen via</translation>
 <translation id="335581015389089642">Spraak</translation>
+<translation id="3389286852084373014">Tekst is te groot</translation>
 <translation id="3443810440409579745">Tabblad ontvangen.</translation>
 <translation id="3479552764303398839">Niet nu</translation>
 <translation id="348799646910989694">Plank automatisch verborgen</translation>
@@ -151,11 +156,13 @@
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 sec. geleden}other{# sec. geleden}}</translation>
 <translation id="6430678249303439055">Alle meldingen van deze app blokkeren</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 seconde geleden}other{# seconden geleden}}</translation>
+<translation id="6539092367496845964">Er is iets misgegaan. Probeer het later opnieuw.</translation>
 <translation id="654149438358937226">Alle meldingen blokkeren</translation>
 <translation id="6567071839949112727">klik via bovenliggende entiteit</translation>
 <translation id="6578407462441924264">Naamloos</translation>
 <translation id="6612467943526193239">Druk op Esc om de kalibratie af te sluiten.</translation>
 <translation id="6620110761915583480">Bestand opslaan</translation>
+<translation id="6656912866303152668">Zorg dat synchronisatie in Chrome is ingeschakeld voor <ph name="TARGET_DEVICE_NAME" /> en probeer opnieuw te verzenden.</translation>
 <translation id="6699343763173986273">Volgende track voor media</translation>
 <translation id="673773751041746814">Verwijdering</translation>
 <translation id="6779314412797872738">Als je vanaf hier een nummer naar je Android-telefoon wilt sturen, moet je in de instellingen <ph name="TROUBLESHOOT_LINK" /> voor beide apparaten.</translation>
@@ -221,6 +228,7 @@
 <translation id="8876215549894133151">Indeling:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" />  KB</translation>
 <translation id="8926951137623668982">Plank altijd verborgen</translation>
+<translation id="8996630695507351249">Zorg dat <ph name="TARGET_DEVICE_NAME" /> is verbonden met internet.</translation>
 <translation id="9002566407876343676">openen</translation>
 <translation id="9039076430527029379">Verplaatsen naar pagina <ph name="PAGE_NUMBER" />, rij <ph name="ROW_NUMBER" />, kolom <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 sec.}other{# sec.}}</translation>

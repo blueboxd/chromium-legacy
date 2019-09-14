@@ -46,4 +46,39 @@ void CastScreen::OnDisplayChanged(int64_t display_id,
   ProcessDisplayChanged(display, true /* is_primary */);
 }
 
+void CastScreen::OverridePrimaryDisplaySettings(
+    const gfx::Rect& bounds,
+    float scale_factor,
+    display::Display::Rotation rotation) {
+  const auto primary_display = GetPrimaryDisplay();
+
+  stashed_display_settings_ = primary_display;
+
+  LOG(INFO) << "Stashing primary display settings; device_scale_factor: "
+            << stashed_display_settings_->device_scale_factor()
+            << " rotation: " << stashed_display_settings_->RotationAsDegree()
+            << " size (pixels): "
+            << stashed_display_settings_->GetSizeInPixel().ToString();
+}
+
+bool CastScreen::RestorePrimaryDisplaySettings() {
+  if (!stashed_display_settings_) {
+    return false;
+  }
+
+  LOG(INFO)
+      << "Restoring original primary display settings; device_scale_factor: "
+      << stashed_display_settings_->device_scale_factor()
+      << " rotation: " << stashed_display_settings_->RotationAsDegree()
+      << " size (pixels): "
+      << stashed_display_settings_->GetSizeInPixel().ToString();
+  OnDisplayChanged(stashed_display_settings_->id(),
+                   stashed_display_settings_->device_scale_factor(),
+                   stashed_display_settings_->rotation(),
+                   gfx::Rect(stashed_display_settings_->GetSizeInPixel()));
+  stashed_display_settings_.reset();
+
+  return true;
+}
+
 }  // namespace chromecast

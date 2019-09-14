@@ -42,6 +42,7 @@
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/wake_lock/wake_lock_context_host.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/accessibility_tree_formatter.h"
 #include "content/public/browser/color_chooser.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/media_stream_request.h"
@@ -563,7 +564,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       const AXEventNotificationDetails& details) override;
   void AccessibilityLocationChangesReceived(
       const std::vector<AXLocationChangeNotificationDetails>& details) override;
-  base::string16 DumpAccessibilityTree(bool internal) override;
+  base::string16 DumpAccessibilityTree(
+      bool internal,
+      std::vector<content::AccessibilityTreeFormatter::PropertyFilter>
+          property_filters) override;
   RenderFrameHost* GetGuestByInstanceID(
       RenderFrameHost* render_frame_host,
       int browser_plugin_instance_id) override;

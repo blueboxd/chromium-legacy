@@ -275,7 +275,17 @@ bool ChromeAuthenticatorRequestDelegate::SupportsResidentKeys() {
 
 bool ChromeAuthenticatorRequestDelegate::ShouldPermitCableExtension(
     const url::Origin& origin) {
-  return true;
+  // Because the future of the caBLE extension might be that we transition
+  // everything to QR-code or sync-based pairing, we don't want use of the
+  // extension to spread without consideration. Therefore it's limited to
+  // origins that are already depending on it and test sites.
+  if (origin.DomainIs("google.com")) {
+    return true;
+  }
+
+  const GURL test_site("https://webauthndemo.appspot.com");
+  DCHECK(test_site.is_valid());
+  return origin.IsSameOriginWith(url::Origin::Create(test_site));
 }
 
 bool ChromeAuthenticatorRequestDelegate::SetCableTransportInfo(

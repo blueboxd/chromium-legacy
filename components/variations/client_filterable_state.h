@@ -51,6 +51,11 @@ struct ClientFilterableState {
   // Based on base::SysInfo::IsLowEndDevice().
   bool is_low_end_device = false;
 
+  // Whether this is an enterprise client. Always false on android, iOS, and
+  // linux. Determined by VariationsServiceClient::IsEnterprise for windows,
+  // chromeOs, and mac.
+  bool is_enterprise = false;
+
   // The country code to use for studies configured with session consistency.
   std::string session_consistency_country;
 

@@ -135,10 +135,22 @@ def GetSharedLibraryDependenciesMac(binary, exe_path):
   #    string, causing "@loader_path/foo" to incorrectly expand to "/foo".
   loader_path = os.path.dirname(os.path.realpath(binary))
   env = os.environ.copy()
-  developer_dir = GetDeveloperDirMac()
-  if developer_dir:
-    env['DEVELOPER_DIR'] = developer_dir
-  otool = subprocess.check_output(['otool', '-l', binary], env=env).splitlines()
+
+  SRC_ROOT_PATH = os.path.join(os.path.dirname(__file__), '../../../..')
+  hermetic_otool_path = os.path.join(
+      SRC_ROOT_PATH, 'build', 'mac_files', 'xcode_binaries', 'Contents',
+      'Developer', 'Toolchains', 'XcodeDefault.xctoolchain', 'usr', 'bin',
+      'otool')
+  if os.path.exists(hermetic_otool_path):
+    otool_path = hermetic_otool_path
+  else:
+    developer_dir = GetDeveloperDirMac()
+    if developer_dir:
+      env['DEVELOPER_DIR'] = developer_dir
+    otool_path = 'otool'
+
+  otool = subprocess.check_output(
+      [otool_path, '-l', binary], env=env).splitlines()
   rpaths = []
   dylib_id = None
   for idx, line in enumerate(otool):
@@ -157,7 +169,8 @@ def GetSharedLibraryDependenciesMac(binary, exe_path):
   # contains all the rpaths it needs on its own, without relying on rpaths of
   # the loading executables.
 
-  otool = subprocess.check_output(['otool', '-L', binary], env=env).splitlines()
+  otool = subprocess.check_output(
+      [otool_path, '-L', binary], env=env).splitlines()
   lib_re = re.compile('\t(.*) \(compatibility .*\)$')
   deps = []
   for line in otool:

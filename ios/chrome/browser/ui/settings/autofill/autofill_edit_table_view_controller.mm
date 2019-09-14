@@ -73,6 +73,10 @@
   return YES;
 }
 
+- (BOOL)shouldDismissViewControllerBySwipeDown {
+  return !self.tableView.editing;
+}
+
 #pragma mark - UITextFieldDelegate
 
 - (void)textFieldDidBeginEditing:(UITextField*)textField {

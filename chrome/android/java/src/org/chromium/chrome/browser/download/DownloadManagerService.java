@@ -364,6 +364,11 @@ public class DownloadManagerService
         return isIncognito ? mIncognitoInfoBarController : mInfoBarController;
     }
 
+    /** For testing only. */
+    public void setInfoBarControllerForTesting(DownloadInfoBarController infoBarController) {
+        mInfoBarController = infoBarController;
+    }
+
     @Override
     public void onDownloadCompleted(final DownloadInfo downloadInfo) {
         @DownloadStatus
@@ -829,7 +834,12 @@ public class DownloadManagerService
         }
 
         // TODO(shaktisahu): We should show this on infobar instead.
-        DownloadUtils.showDownloadStartToast(ContextUtils.getApplicationContext());
+        if (FeatureUtilities.isDownloadProgressInfoBarEnabled()) {
+            getInfoBarController(downloadItem.getDownloadInfo().isOffTheRecord())
+                    .onDownloadStarted();
+        } else {
+            DownloadUtils.showDownloadStartToast(ContextUtils.getApplicationContext());
+        }
         addUmaStatsEntry(new DownloadUmaStatsEntry(String.valueOf(response.downloadId),
                 downloadItem.getStartTime(), 0, false, true, 0, 0));
     }
@@ -1411,6 +1421,10 @@ public class DownloadManagerService
                                     && canResolve) {
                                 handleAutoOpenAfterDownload(item);
                             } else {
+                                getInfoBarController(item.getDownloadInfo().isOffTheRecord())
+                                        .onItemUpdated(DownloadInfo.createOfflineItem(
+                                                               item.getDownloadInfo()),
+                                                null);
                                 mDownloadSnackbarController.onDownloadSucceeded(
                                         item.getDownloadInfo(),
                                         DownloadSnackbarController.INVALID_NOTIFICATION_ID,

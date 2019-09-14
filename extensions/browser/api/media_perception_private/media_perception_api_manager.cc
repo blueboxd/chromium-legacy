@@ -11,6 +11,8 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -26,6 +28,8 @@
 namespace extensions {
 
 namespace {
+
+const int kStartupDelayMs = 1000;
 
 extensions::api::media_perception_private::State GetStateForServiceError(
     const extensions::api::media_perception_private::ServiceError
@@ -370,7 +374,14 @@ void MediaPerceptionAPIManager::UpstartStartProcessCallback(
     return;
   }
 
-  SendMojoInvitation(std::move(callback));
+  // TODO(crbug.com/1003968): Look into using
+  // ObjectProxy::WaitForServiceToBeAvailable instead, since a timeout is
+  // inherently not deterministic, even if it works in practice.
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&MediaPerceptionAPIManager::SendMojoInvitation,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
+      base::TimeDelta::FromMilliseconds(kStartupDelayMs));
 }
 
 void MediaPerceptionAPIManager::SendMojoInvitation(

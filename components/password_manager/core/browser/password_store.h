@@ -49,6 +49,10 @@ using StateSubscription =
 
 namespace password_manager {
 
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+using metrics_util::GaiaPasswordHashChange;
+#endif
+
 class AffiliatedMatchHelper;
 class PasswordStoreConsumer;
 class PasswordStoreSigninNotifier;
@@ -273,7 +277,7 @@ class PasswordStore : protected PasswordStoreSync,
   // hash change event and other non-sync GAIA password change event.
   virtual void SaveGaiaPasswordHash(const std::string& username,
                                     const base::string16& password,
-                                    metrics_util::GaiaPasswordHashChange event);
+                                    GaiaPasswordHashChange event);
 
   // Saves |username| and a hash of |password| for enterprise password reuse
   // checking.
@@ -283,7 +287,7 @@ class PasswordStore : protected PasswordStoreSync,
   // Saves |sync_password_data| for sync password reuse checking.
   // |event| is used for metric logging.
   virtual void SaveSyncPasswordHash(const PasswordHashData& sync_password_data,
-                                    metrics_util::GaiaPasswordHashChange event);
+                                    GaiaPasswordHashChange event);
 
   // Clears the saved GAIA password hash for |username|.
   virtual void ClearGaiaPasswordHash(const std::string& username);
@@ -450,7 +454,7 @@ class PasswordStore : protected PasswordStoreSync,
   void SaveProtectedPasswordHash(const std::string& username,
                                  const base::string16& password,
                                  bool is_gaia_password,
-                                 metrics_util::GaiaPasswordHashChange event);
+                                 GaiaPasswordHashChange event);
 
   // Synchronous implementation of CheckReuse().
   void CheckReuseImpl(std::unique_ptr<CheckReuseRequest> request,

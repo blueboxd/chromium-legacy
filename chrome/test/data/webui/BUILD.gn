@@ -98,6 +98,8 @@ js2gtest("browser_tests_js_webui") {
     "webui_resource_async_browsertest.js",
   ]
 
+  gen_include_files = [ "a11y/accessibility_audit_rules.js" ]
+
   extra_js_files = [
     "test_browser_proxy.js",
     "settings/test_password_manager_proxy.js",

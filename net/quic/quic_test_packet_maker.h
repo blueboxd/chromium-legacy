@@ -280,10 +280,6 @@ class QuicTestPacketMaker {
   std::unique_ptr<quic::QuicReceivedPacket> MakeInitialSettingsPacket(
       uint64_t packet_number);
 
-  std::unique_ptr<quic::QuicReceivedPacket> MakeSettingsPacket(
-      uint64_t packet_number,
-      bool should_include_version);
-
   std::unique_ptr<quic::QuicReceivedPacket> MakePriorityPacket(
       uint64_t packet_number,
       bool should_include_version,

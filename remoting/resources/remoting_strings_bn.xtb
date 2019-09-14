@@ -58,6 +58,7 @@
 <translation id="2509394361235492552"><ph name="HOSTNAME" /> এ সংযুক্ত হয়েছে</translation>
 <translation id="2512228156274966424">দ্রষ্টব্য: সমস্ত কীবোর্ড শর্টকাট উপলভ্য থাকাকে নিশ্চিত করতে, আপনি Chrome রিমোট ডেস্কটপ ‘উইন্ডো হিসাবে খোলার জন্য’ কনফিগার করতে পারেন৷</translation>
 <translation id="2540992418118313681">আপনি কি অন্য ব্যবহারকারীকে দেখার এবং নিয়ন্ত্রণ করার জন্য এই কম্পিউটারটি শেয়ার করতে চান?</translation>
+<translation id="254771646005658629">রিমোট ব্যবহারকারীদের এই Mac সিস্টেমকে কন্ট্রোল করার অনুমতি দিন</translation>
 <translation id="2579271889603567289">হোস্ট ক্র্যাশ হয়েছে বা শুরু হতে পারেনি।</translation>
 <translation id="2599300881200251572">এই পরিষেবাটি Chrome রিমোট ডেস্কটপ থেকে আগত কানেকশন চালু করে৷</translation>
 <translation id="2647232381348739934">Chromoting পরিষেবা</translation>
@@ -182,6 +183,11 @@
 <translation id="5419185025274123272">অ্যাপ রিসেট করা গেল না। আপনি এখনও বাগ রিপোর্ট পাঠাতে পারবেন।</translation>
 <translation id="5419418238395129586">শেষ অনলাইনে ছিলেন: <ph name="DATE" /> তারিখে</translation>
 <translation id="544077782045763683">হোস্ট বন্ধ হয়ে গেছে৷</translation>
+<translation id="5463789431147491241"><ph name="PRODUCT_NAME" /> এই Mac-এ ব্যবহার করতে, নিচের ধাপগুলি অনুসরণ করুন:
+
+নিচে '<ph name="BUTTON_NAME" />' বিকল্পটি বেছে নিন। নিরাপত্তা ও গোপনীয়তা সংক্রান্ত অভিরুচির মেনু খুলুন ও '<ph name="SERVICE_SCRIPT_NAME" />'-এর পাশে টিক চিহ্ন দিন।
+
+'<ph name="SERVICE_SCRIPT_NAME" />'-এ আগে থেকেই টিক চিহ্ন দেওয়া থাকলে, আপনাকে সেটি সরিয়ে দিয়ে আবার দিতে হবে।</translation>
 <translation id="5510035215749041527">এখনই সংযোগ বিচ্ছিন্ন করুন</translation>
 <translation id="5593560073513909978">এই পরিষেবাটি অস্থায়ীভাবে অনুপলব্ধ আছে৷ দয়া করে পরে আবার চেষ্টা করুন৷</translation>
 <translation id="5601503069213153581">পিন</translation>
@@ -298,12 +304,14 @@
 <translation id="837021510621780684">এই কম্পিউটার থেকে</translation>
 <translation id="8383794970363966105">Chromoting ব্যবহারের জন্য, আপনাকে আপনার ডিভাইসে একটি Google অ্যাকাউন্ট যোগ করতে হবে৷</translation>
 <translation id="8386846956409881180">হোস্ট ভুল OAuth সার্টিফিকেটের সঙ্গে কনফিগার করা আছে।</translation>
+<translation id="8406498562923498210">আপনার Chrome Remote Desktop এনভায়রনমেন্টের মধ্যে লঞ্চ করার জন্য একটি সেশন বেছে নিন। (মনে রাখবেন কয়েক ধরনের সেশন Chrome Remote Desktop এবং স্থানীয় কনসোলে একসাথে চালানোর জন্য সমর্থিত নয়।)</translation>
 <translation id="8428213095426709021">সেটিংস</translation>
 <translation id="8445362773033888690">Google Play স্টোরে দেখুন</translation>
 <translation id="8509907436388546015">ডেস্কটপ ইন্টিগ্রেশন প্রক্রিয়া</translation>
 <translation id="8513093439376855948">দূরবর্তী হোস্ট পরিচালনার জন্য নেটিভ বার্তাপ্রেরণের হোস্ট</translation>
 <translation id="8525306231823319788">পূর্ণ স্ক্রীণ</translation>
 <translation id="8548209692293300397">আপনি আগে<ph name="USER_NAME" /><ph name="USER_EMAIL" /> হিসেবে সাইন-ইন করেছিলেন। সেই অ্যাকাউন্টে আপনার কম্পিউটার অ্যাক্সেস করতে, সেই অ্যাকাউন্টের মাধ্যমে<ph name="LINK_BEGIN" />Chromium-এ সাইন-ইন<ph name="LINK_END" /> এবং Chromoting আবার ইনস্টল করুন।</translation>
+<translation id="858006550102277544">মন্তব্য</translation>
 <translation id="8642984861538780905">মোটামুটি</translation>
 <translation id="8712909229180978490">আমি Google ড্রাইভে আমার সেভ করা ফাইলগুলি অনলাইন হিসেবে দেখতে পাচ্ছি না</translation>
 <translation id="8743328882720071828">আপনি কি <ph name="CLIENT_USERNAME" /> কে আপনার কম্পিউটার দেখার ও নিয়ন্ত্রণ করার অনুমতি দিতে চান?</translation>
@@ -321,6 +329,7 @@
 <translation id="9126115402994542723">এই কম্পিউটার থেকে এই হোস্টে সংযুক্ত হওয়ার সময় আবার পিন দিতে হবে না৷</translation>
 <translation id="9149580767411232853">পুরো রিমোট ডেস্কটপ দেখার মতন রাখুন</translation>
 <translation id="9149992051684092333">আপনার ডেস্কটপ শেয়ার করা শুরু করতে, আপনাকে যে ব্যক্তি সহায়তা করবে তাকে নীচের অ্যাক্সেস কোডটি দিন৷</translation>
+<translation id="916856682307586697">ডিফল্ট XSession লঞ্চ করুন</translation>
 <translation id="9188433529406846933">অনুমতি দিন</translation>
 <translation id="9213184081240281106">ভুল হোস্ট কনফিগারেশন।</translation>
 <translation id="951991426597076286">প্রত্যাখ্যান</translation>

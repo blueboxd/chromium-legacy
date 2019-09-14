@@ -39,6 +39,63 @@ printing::proto::MediaSize RequestedMediaToProto(
   return media_size_proto;
 }
 
+printing::proto::PrintJobInfo_PrintJobSource PrintJobSourceToProto(
+    ::printing::PrintJob::Source source) {
+  switch (source) {
+    case ::printing::PrintJob::Source::PRINT_PREVIEW:
+      return printing::proto::PrintJobInfo_PrintJobSource_PRINT_PREVIEW;
+    case ::printing::PrintJob::Source::ARC:
+      return printing::proto::PrintJobInfo_PrintJobSource_ARC;
+    default:
+      NOTREACHED();
+  }
+  return printing::proto::PrintJobInfo_PrintJobSource_PRINT_PREVIEW;
+}
+
+printing::proto::PrintJobInfo_PrintJobStatus PrintJobStateToProto(
+    CupsPrintJob::State state) {
+  switch (state) {
+    case CupsPrintJob::State::STATE_FAILED:
+      return printing::proto::PrintJobInfo_PrintJobStatus_FAILED;
+    case CupsPrintJob::State::STATE_CANCELLED:
+      return printing::proto::PrintJobInfo_PrintJobStatus_CANCELED;
+    case CupsPrintJob::State::STATE_DOCUMENT_DONE:
+      return printing::proto::PrintJobInfo_PrintJobStatus_PRINTED;
+    // Only completed print jobs are saved in the database so we shouldn't
+    // handle other states.
+    default:
+      NOTREACHED();
+  }
+  return printing::proto::PrintJobInfo_PrintJobStatus_CANCELED;
+}
+
+printing::proto::Printer_PrinterSource PrinterSourceToProto(
+    chromeos::Printer::Source source) {
+  switch (source) {
+    case chromeos::Printer::Source::SRC_USER_PREFS:
+      return printing::proto::Printer_PrinterSource_USER;
+    case chromeos::Printer::Source::SRC_POLICY:
+      return printing::proto::Printer_PrinterSource_POLICY;
+    default:
+      NOTREACHED();
+  }
+  return printing::proto::Printer_PrinterSource_USER;
+}
+
+// Helper method to convert base::Time to the number of milliseconds past the
+// Unix epoch. Loses precision beyond milliseconds.
+int64_t TimeToMillisecondsPastUnixEpoch(const base::Time& time) {
+  return static_cast<int64_t>(time.ToJsTime());
+}
+
+printing::proto::Printer PrinterToProto(const chromeos::Printer& printer) {
+  printing::proto::Printer printer_proto;
+  printer_proto.set_name(printer.display_name());
+  printer_proto.set_uri(printer.uri());
+  printer_proto.set_source(PrinterSourceToProto(printer.source()));
+  return printer_proto;
+}
+
 }  // namespace
 
 printing::proto::PrintSettings PrintSettingsToProto(
@@ -50,6 +107,26 @@ printing::proto::PrintSettings PrintSettingsToProto(
       RequestedMediaToProto(settings.requested_media());
   settings_proto.set_copies(settings.copies());
   return settings_proto;
+}
+
+printing::proto::PrintJobInfo CupsPrintJobToProto(
+    const CupsPrintJob& print_job,
+    const std::string& id,
+    const base::Time& completion_time) {
+  printing::proto::PrintJobInfo print_job_info_proto;
+  print_job_info_proto.set_id(id);
+  print_job_info_proto.set_title(print_job.document_title());
+  print_job_info_proto.set_source(PrintJobSourceToProto(print_job.source()));
+  print_job_info_proto.set_source_id(print_job.source_id());
+  print_job_info_proto.set_status(PrintJobStateToProto(print_job.state()));
+  print_job_info_proto.set_creation_time(
+      TimeToMillisecondsPastUnixEpoch(print_job.creation_time()));
+  print_job_info_proto.set_completion_time(
+      TimeToMillisecondsPastUnixEpoch(completion_time));
+  *print_job_info_proto.mutable_printer() = PrinterToProto(print_job.printer());
+  *print_job_info_proto.mutable_settings() = print_job.settings();
+  print_job_info_proto.set_number_of_pages(print_job.total_page_number());
+  return print_job_info_proto;
 }
 
 }  // namespace chromeos

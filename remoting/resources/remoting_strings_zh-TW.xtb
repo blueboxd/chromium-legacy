@@ -58,6 +58,7 @@
 <translation id="2509394361235492552">已連線至「<ph name="HOSTNAME" />」</translation>
 <translation id="2512228156274966424">注意：如要確保所有鍵盤快捷鍵都能正常使用，請將 Chrome 遠端桌面設定為 [在視窗中開啟]。</translation>
 <translation id="2540992418118313681">您要與其他使用者分享這台電腦的瀏覽及控制權限嗎？</translation>
+<translation id="254771646005658629">允許遠端使用者控制這部 Mac</translation>
 <translation id="2579271889603567289">主機當機或無法啟動。</translation>
 <translation id="2599300881200251572">這項服務允許來自 Chrome 遠端桌面用戶端的連線。</translation>
 <translation id="2647232381348739934">Chromoting 服務</translation>
@@ -182,6 +183,11 @@
 <translation id="5419185025274123272">無法重設應用程式。您仍然可以傳送錯誤報告。</translation>
 <translation id="5419418238395129586">上次上線日期：<ph name="DATE" /></translation>
 <translation id="544077782045763683">主機已關閉。</translation>
+<translation id="5463789431147491241">如要在這部 Mac 上使用 <ph name="PRODUCT_NAME" />，請按照下列步驟操作：
+
+選取下方的 [<ph name="BUTTON_NAME" />]。在「安全性和隱私權」偏好設定中，勾選 [<ph name="SERVICE_SCRIPT_NAME" />] 旁邊的方塊。
+
+如果 [<ph name="SERVICE_SCRIPT_NAME" />] 已勾選，請先取消勾選，然後再次勾選。</translation>
 <translation id="5510035215749041527">立即中斷連線</translation>
 <translation id="5593560073513909978">服務暫時無法使用，請稍後再試。</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -298,12 +304,14 @@
 <translation id="837021510621780684">從這台電腦</translation>
 <translation id="8383794970363966105">你必須在裝置上新增 Google 帳戶，才能使用 Chromoting。</translation>
 <translation id="8386846956409881180">用於設定主機的 OAuth 憑證無效。</translation>
+<translation id="8406498562923498210">選取要在 Chrome 遠端桌面環境中啟動的工作階段。請注意，部分工作階段類型無法同時在 Chrome 遠端桌面及本地主機中執行。</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8445362773033888690">前往 Google Play 商店查看</translation>
 <translation id="8509907436388546015">桌面整合處理序</translation>
 <translation id="8513093439376855948">用於遠端處理主機管理的內建訊息傳遞主機</translation>
 <translation id="8525306231823319788">全螢幕</translation>
 <translation id="8548209692293300397">您先前曾以<ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) 身分登入。如要透過該帳戶存取您的電腦，請使用該帳戶<ph name="LINK_BEGIN" />登入 Google Chrome<ph name="LINK_END" />，並重新安裝 Chrome 遠端桌面。</translation>
+<translation id="858006550102277544">註解</translation>
 <translation id="8642984861538780905">普通</translation>
 <translation id="8712909229180978490">我已儲存的檔案未顯示在線上 Google 雲端硬碟中。</translation>
 <translation id="8743328882720071828">你要將電腦的瀏覽及控制權限授予 <ph name="CLIENT_USERNAME" /> 嗎？</translation>
@@ -321,6 +329,7 @@
 <translation id="9126115402994542723">此裝置連線至這個主機時，不必再次詢問 PIN。</translation>
 <translation id="9149580767411232853">一律顯示整個遠端桌面</translation>
 <translation id="9149992051684092333">如要開始共用你的電腦，請將下方的存取碼告知要協助你的人員。</translation>
+<translation id="916856682307586697">啟動預設的 XSession</translation>
 <translation id="9188433529406846933">授權</translation>
 <translation id="9213184081240281106">主機設定無效。</translation>
 <translation id="951991426597076286">拒絕</translation>

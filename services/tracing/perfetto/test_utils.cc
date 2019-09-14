@@ -317,12 +317,12 @@ MockProducerHost::MockProducerHost(
       datasource_registered_callback_(
           std::move(datasource_registered_callback)) {
   mojom::ProducerClientPtr client;
-  mojom::ProducerHostPtrInfo host_info;
+  mojo::PendingRemote<mojom::ProducerHost> host_remote;
   auto client_request = mojo::MakeRequest(&client);
   Initialize(std::move(client), service, producer_name_);
-  binding_.Bind(mojo::MakeRequest(&host_info));
+  receiver_.Bind(host_remote.InitWithNewPipeAndPassReceiver());
   producer_client->BindClientAndHostPipesForTesting(std::move(client_request),
-                                                    std::move(host_info));
+                                                    std::move(host_remote));
   producer_client->SetupDataSource(data_source_name);
 }
 

@@ -70,6 +70,9 @@ class TestPaymentsClient : public payments::PaymentsClient {
 
   void SetSupportedBINRanges(std::vector<std::pair<int, int>> bin_ranges);
 
+  void SetUseInvalidLegalMessageInGetUploadDetails(
+      bool use_invalid_legal_message);
+
   int detected_values_in_upload_details() const { return detected_values_; }
   const std::vector<AutofillProfile>& addresses_in_upload_details() const {
     return upload_details_addresses_;
@@ -99,6 +102,8 @@ class TestPaymentsClient : public payments::PaymentsClient {
   int billable_service_number_;
   PaymentsClient::UploadCardSource upload_card_source_;
   std::unique_ptr<std::unordered_map<std::string, std::string>> save_result_;
+  bool use_invalid_legal_message_ = false;
+  std::unique_ptr<base::Value> LegalMessage();
 
   DISALLOW_COPY_AND_ASSIGN(TestPaymentsClient);
 };

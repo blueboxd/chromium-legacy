@@ -860,6 +860,11 @@ void GLES2InterfaceStub::DispatchCompute(GLuint /* num_groups_x */,
                                          GLuint /* num_groups_y */,
                                          GLuint /* num_groups_z */) {}
 void GLES2InterfaceStub::DispatchComputeIndirect(GLintptr /* offset */) {}
+void GLES2InterfaceStub::DrawArraysIndirect(GLenum /* mode */,
+                                            const void* /* offset */) {}
+void GLES2InterfaceStub::DrawElementsIndirect(GLenum /* mode */,
+                                              GLenum /* type */,
+                                              const void* /* offset */) {}
 void GLES2InterfaceStub::GetProgramInterfaceiv(GLuint /* program */,
                                                GLenum /* program_interface */,
                                                GLenum /* pname */,

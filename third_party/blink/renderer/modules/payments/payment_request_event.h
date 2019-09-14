@@ -56,6 +56,9 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
   const ScriptValue total(ScriptState*) const;
   const HeapVector<Member<PaymentDetailsModifier>>& modifiers() const;
   const String& instrumentKey() const;
+  const ScriptValue paymentOptions(ScriptState*) const;
+  const HeapVector<Member<PaymentShippingOption>>& shippingOptions(
+      bool& is_null) const;
 
   ScriptPromise openWindow(ScriptState*, const String& url);
   ScriptPromise changePaymentMethod(ScriptState*,
@@ -81,6 +84,8 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
   Member<PaymentCurrencyAmount> total_;
   HeapVector<Member<PaymentDetailsModifier>> modifiers_;
   String instrument_key_;
+  Member<PaymentOptions> payment_options_;
+  HeapVector<Member<PaymentShippingOption>> shipping_options_;
 
   Member<ScriptPromiseResolver> change_payment_method_resolver_;
   Member<RespondWithObserver> observer_;

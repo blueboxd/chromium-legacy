@@ -26,9 +26,9 @@
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
 
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/animation_frame/worker_animation_frame_provider.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_image_source.h"
-#include "third_party/blink/renderer/core/workers/worker_animation_frame_provider.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"

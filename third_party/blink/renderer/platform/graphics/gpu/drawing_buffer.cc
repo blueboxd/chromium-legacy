@@ -673,12 +673,11 @@ DrawingBuffer::ColorBuffer::~ColorBuffer() {
 
   sii->DestroySharedImage(receive_sync_token, mailbox);
   gpu_memory_buffer.reset();
-  gl->DeleteTextures(1, &texture_id);
-  if (rgb_workaround_texture_id) {
-    sii->DestroySharedImage(receive_sync_token, rgb_workaround_mailbox);
-    // Avoid deleting this texture if it was unused.
-    gl->DeleteTextures(1, &rgb_workaround_texture_id);
-  }
+  gl->DeleteTextures(1u, &texture_id);
+
+  // Avoid deleting this texture if it was unused.
+  if (rgb_workaround_texture_id)
+    gl->DeleteTextures(1u, &rgb_workaround_texture_id);
 }
 
 bool DrawingBuffer::Initialize(const IntSize& size, bool use_multisampling) {
@@ -811,16 +810,6 @@ bool DrawingBuffer::Initialize(const IntSize& size, bool use_multisampling) {
       //  - extra command buffer validation for CopyTexImage
       //  - explicity re-binding as RGB for FramebufferBlit
       allocate_alpha_channel_ = false;
-      have_alpha_channel_ = true;
-    }
-    if (UsingSwapChain()) {
-      // Swap chains always have an alpha channel, and multisample resolve
-      // doesn't work if we pretend we don't have one.
-      // This configuration will
-      //  - allow invalid CopyTexImage to RGBA targets
-      //  - fail valid FramebufferBlit from RGB targets
-      // TODO(sunnyps): Copy into intermediate texture for blitFramebuffer.
-      allocate_alpha_channel_ = true;
       have_alpha_channel_ = true;
     }
   }
@@ -1510,7 +1499,6 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
     format = use_half_float_storage_ ? viz::RGBA_F16 : viz::RGBA_8888;
   } else {
     DCHECK(!use_half_float_storage_);
-    DCHECK(!UsingSwapChain());
     format = viz::RGBX_8888;
   }
 

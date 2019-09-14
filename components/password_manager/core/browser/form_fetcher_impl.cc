@@ -13,16 +13,16 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/credentials_filter.h"
+#include "components/password_manager/core/browser/multi_store_form_fetcher.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
 #include "components/password_manager/core/browser/statistics_table.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 
 using autofill::PasswordForm;
 
-// Shorten the name to spare line breaks. The code provides enough context
-// already.
 using Logger = autofill::SavePasswordProgressLogger;
 
 namespace password_manager {
@@ -53,6 +53,20 @@ std::vector<std::unique_ptr<PasswordForm>> MakeCopies(
 }
 
 }  // namespace
+
+// static
+std::unique_ptr<FormFetcherImpl> FormFetcherImpl::CreateFormFetcherImpl(
+    PasswordStore::FormDigest form_digest,
+    const PasswordManagerClient* client,
+    bool should_migrate_http_passwords) {
+  return base::FeatureList::IsEnabled(
+             password_manager::features::kEnablePasswordsAccountStorage)
+             ? std::make_unique<MultiStoreFormFetcher>(
+                   std::move(form_digest), client,
+                   should_migrate_http_passwords)
+             : std::make_unique<FormFetcherImpl>(std::move(form_digest), client,
+                                                 should_migrate_http_passwords);
+}
 
 FormFetcherImpl::FormFetcherImpl(PasswordStore::FormDigest form_digest,
                                  const PasswordManagerClient* client,

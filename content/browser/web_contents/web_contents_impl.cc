@@ -99,6 +99,7 @@
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/view_messages.h"
 #include "content/common/widget_messages.h"
+#include "content/public/browser/accessibility_tree_formatter.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
@@ -3264,11 +3265,13 @@ void WebContentsImpl::AccessibilityLocationChangesReceived(
     observer.AccessibilityLocationChangesReceived(details);
 }
 
-base::string16 WebContentsImpl::DumpAccessibilityTree(bool internal) {
+base::string16 WebContentsImpl::DumpAccessibilityTree(
+    bool internal,
+    std::vector<AccessibilityTreeFormatter::PropertyFilter> property_filters) {
   auto* ax_mgr = GetOrCreateRootBrowserAccessibilityManager();
   DCHECK(ax_mgr);
-  return AccessibilityTreeFormatter::DumpAccessibilityTreeFromManager(ax_mgr,
-                                                                      internal);
+  return AccessibilityTreeFormatter::DumpAccessibilityTreeFromManager(
+      ax_mgr, internal, property_filters);
 }
 
 RenderFrameHost* WebContentsImpl::GetGuestByInstanceID(

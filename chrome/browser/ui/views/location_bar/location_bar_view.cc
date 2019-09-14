@@ -120,6 +120,10 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(USE_AURA) || defined(OS_MACOSX)
+#include "ui/native_theme/native_theme_dark_aura.h"
+#endif
+
 namespace {
 
 // This feature shows the full URL when the user focuses the omnibox via
@@ -192,16 +196,20 @@ void LocationBarView::Init() {
 
   RefreshBackground();
 
+  ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
+
   // Initialize the inline autocomplete view which is visible only when IME is
   // turned on.  Use the same font with the omnibox and highlighted background.
   auto ime_inline_autocomplete_view = std::make_unique<views::Label>(
       base::string16(), views::Label::CustomFont{font_list});
   ime_inline_autocomplete_view->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   ime_inline_autocomplete_view->SetAutoColorReadabilityEnabled(false);
-  ime_inline_autocomplete_view->SetBackground(views::CreateSolidBackground(
-      GetColor(OmniboxPart::LOCATION_BAR_IME_AUTOCOMPLETE_BACKGROUND)));
-  ime_inline_autocomplete_view->SetEnabledColor(
-      GetColor(OmniboxPart::LOCATION_BAR_IME_AUTOCOMPLETE_TEXT));
+  ime_inline_autocomplete_view->SetBackground(
+      views::CreateSolidBackground(native_theme->GetSystemColor(
+          ui::NativeTheme::ColorId::
+              kColorId_TextfieldSelectionBackgroundFocused)));
+  ime_inline_autocomplete_view->SetEnabledColor(native_theme->GetSystemColor(
+      ui::NativeTheme::ColorId::kColorId_TextfieldSelectionColor));
   ime_inline_autocomplete_view->SetVisible(false);
   ime_inline_autocomplete_view_ =
       AddChildView(std::move(ime_inline_autocomplete_view));
@@ -321,7 +329,8 @@ bool LocationBarView::IsInitialized() const {
 }
 
 SkColor LocationBarView::GetColor(OmniboxPart part) const {
-  return GetOmniboxColor(part, CalculateTint());
+  return GetOmniboxColor(&ThemeService::GetThemeProviderForProfile(profile()),
+                         part);
 }
 
 SkColor LocationBarView::GetOpaqueBorderColor(bool incognito) const {
@@ -846,12 +855,12 @@ void LocationBarView::RefreshBackground() {
   if (omnibox_view_->model()->is_caret_visible()) {
     background_color = border_color = GetColor(OmniboxPart::RESULTS_BACKGROUND);
   } else {
-    const SkColor normal =
-        GetOmniboxColor(OmniboxPart::LOCATION_BAR_BACKGROUND, CalculateTint(),
-                        OmniboxPartState::NORMAL);
-    const SkColor hovered =
-        GetOmniboxColor(OmniboxPart::LOCATION_BAR_BACKGROUND, CalculateTint(),
-                        OmniboxPartState::HOVERED);
+    const SkColor normal = GetOmniboxColor(GetThemeProvider(),
+                                           OmniboxPart::LOCATION_BAR_BACKGROUND,
+                                           OmniboxPartState::NORMAL);
+    const SkColor hovered = GetOmniboxColor(
+        GetThemeProvider(), OmniboxPart::LOCATION_BAR_BACKGROUND,
+        OmniboxPartState::HOVERED);
     const double opacity = hover_animation_.GetCurrentValue();
     background_color = gfx::Tween::ColorValueBetween(opacity, normal, hovered);
     border_color = GetBorderColor();
@@ -1251,15 +1260,6 @@ void LocationBarView::OnOmniboxHovered(bool is_hovering) {
   }
 }
 
-OmniboxTint LocationBarView::CalculateTint() const {
-  if (GetNativeTheme()->ShouldUseDarkColors())
-    return OmniboxTint::DARK;
-  ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile());
-  return (theme_service->UsingDefaultTheme() && profile()->IsIncognitoProfile())
-             ? OmniboxTint::DARK
-             : OmniboxTint::LIGHT;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, private DropdownBarHostDelegate implementation:
 
@@ -1315,7 +1315,7 @@ void LocationBarView::OnLocationIconDragged(const ui::MouseEvent& event) {
 
 SkColor LocationBarView::GetSecurityChipColor(
     security_state::SecurityLevel security_level) const {
-  return GetOmniboxSecurityChipColor(CalculateTint(), security_level);
+  return GetOmniboxSecurityChipColor(GetThemeProvider(), security_level);
 }
 
 bool LocationBarView::ShowPageInfoDialog() {

@@ -58,6 +58,7 @@
 <translation id="2509394361235492552">Izveidots savienojums ar “<ph name="HOSTNAME" />”</translation>
 <translation id="2512228156274966424">PIEZĪME. Lai būtu pieejami visi īsinājumtaustiņi, Chrome attālo darbvirsmu varat konfigurēt šādi: “Atvērt kā logu”.</translation>
 <translation id="2540992418118313681">Vai vēlaties koplietot šo datoru ar citu lietotāju, lai viņš varētu skatīt un pārvaldīt tajā esošo saturu?</translation>
+<translation id="254771646005658629">Atļaujiet attālajiem lietotājiem kontrolēt šo Mac datoru</translation>
 <translation id="2579271889603567289">Saimniekdators avarēja, vai neizdevās to palaist.</translation>
 <translation id="2599300881200251572">Izmantojot šo pakalpojumu, tiek iespējota ienākošo savienojumu izveide no Chrome attālās darbvirsmas klientiem.</translation>
 <translation id="2647232381348739934">Chrome saites pakalpojums</translation>
@@ -182,6 +183,11 @@
 <translation id="5419185025274123272">Nevarēja atiestatīt lietojumprogrammu. Jūs joprojām varat nosūtīt kļūdu pārskatu.</translation>
 <translation id="5419418238395129586">Pēdējoreiz tiešsaistē: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Saimniekdators tika izslēgts.</translation>
+<translation id="5463789431147491241">Lai varētu izmantot <ph name="PRODUCT_NAME" /> šajā Mac datorā, veiciet tālāk norādītās darbības.
+
+Tālāk nospiediet pogu “<ph name="BUTTON_NAME" />”. Drošības un konfidencialitātes preferencēs atzīmējiet izvēles rūtiņu blakus vienumam “<ph name="SERVICE_SCRIPT_NAME" />”.
+
+Ja vienums “<ph name="SERVICE_SCRIPT_NAME" />” jau ir atzīmēts, noņemiet atzīmi no tā un pēc tam vēlreiz to atzīmējiet.</translation>
 <translation id="5510035215749041527">Atvienot tūlīt</translation>
 <translation id="5593560073513909978">Šobrīd pakalpojums nav pieejams. Lūdzu, vēlāk mēģiniet vēlreiz.</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -298,12 +304,14 @@
 <translation id="837021510621780684">No šī datora</translation>
 <translation id="8383794970363966105">Lai izmantotu Chrome saiti, jums ir jāpievieno savā ierīcē Google konts.</translation>
 <translation id="8386846956409881180">Saimniekdators ir konfigurēts ar nederīgiem OAuth akreditācijas datiem.</translation>
+<translation id="8406498562923498210">Atlasiet sesiju, ko uzsākt Chrome attālās darbvirsmas vidē. (Ņemiet vērā, ko noteiktu veidu sesijas, iespējams, nedarbosies Chrome attālajā darbvirsmā un vietējā konsolē vienlaicīgi.)</translation>
 <translation id="8428213095426709021">Iestatījumi</translation>
 <translation id="8445362773033888690">Skatīt Google Play veikalā</translation>
 <translation id="8509907436388546015">Darbvirsmas integrācijas process</translation>
 <translation id="8513093439376855948">Vietējais ziņojumapmaiņas saimniekdators attālai saimniekdatora pārvaldībai</translation>
 <translation id="8525306231823319788">Pilnekrāna režīms</translation>
 <translation id="8548209692293300397">Iepriekš bijāt pierakstījies kā <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Lai piekļūtu datoriem šajā kontā, <ph name="LINK_BEGIN" />pierakstieties pārlūkā Google Chrome<ph name="LINK_END" />, izmantojot šo kontu, un atkārtoti instalējiet Chrome attālo darbvirsmu.</translation>
+<translation id="858006550102277544">Komentārs</translation>
 <translation id="8642984861538780905">viduvējs</translation>
 <translation id="8712909229180978490">Google diskā neredzu savus tiešsaistē saglabātos failus.</translation>
 <translation id="8743328882720071828">Vai atļausiet lietotājam <ph name="CLIENT_USERNAME" /> skatīt un pārvaldīt jūsu datoru?</translation>
@@ -321,6 +329,7 @@
 <translation id="9126115402994542723">Nepieprasīt PIN kodu vēlreiz, kad no šīs ierīces izveidoju savienojumu ar šo saimniekdatoru.</translation>
 <translation id="9149580767411232853">Rādīt visu attālo darbvirsmu</translation>
 <translation id="9149992051684092333">Lai koplietotu savu darbvirsmu, paziņojiet tālāk redzamo piekļuves kodu lietotājam, kurš jums palīdzēs.</translation>
+<translation id="916856682307586697">Uzsākt noklusējuma XSession</translation>
 <translation id="9188433529406846933">Autorizēšana</translation>
 <translation id="9213184081240281106">Saimniekdatora konfigurācija nav derīga.</translation>
 <translation id="951991426597076286">Noraidīt</translation>

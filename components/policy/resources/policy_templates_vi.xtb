@@ -483,10 +483,6 @@
       Khi bạn đặt chính sách này thành một URL hợp lệ, thì <ph name="PRODUCT_NAME" /> tải danh sách trang web từ URL đó và áp dụng các quy tắc như thể chúng đã được định cấu hình bằng chính sách <ph name="SITELIST_POLICY_NAME" />.
 
       Để biết thêm thông tin về chính sách <ph name="IEEM_SITELIST_POLICY" /> của Internet Explorer, hãy truy cập vào trang web: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
-<translation id="1839060937202387559">Báo cáo thống kê phần cứng và giá trị nhận dạng cho thiết bị lưu trữ.
-
-      Nếu bạn đặt chính sách này thành false, thì số liệu thống kê sẽ không được báo cáo.
-      Nếu bạn đặt chính sách này thành true hoặc không đặt, thì số liệu thống kê sẽ được báo cáo.</translation>
 <translation id="1843117931376765605">Chính sách tốc độ làm mới cho người dùng</translation>
 <translation id="1844620919405873871">Định cấu hình chính sách liên quan đến mở khóa nhanh.</translation>
 <translation id="1845405905602899692">Cài đặt kiosk</translation>
@@ -3393,17 +3389,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
       Nếu không thiết lập chính sách này, người dùng có thể được hỏi có nhập hay không hoặc quá trình nhập có thể diễn ra tự động.</translation>
 <translation id="7063895219334505671">Cho phép cửa sổ bật lên trên các trang web này</translation>
-<translation id="706568410943497889">
-      Nếu đặt chính sách này thành true, thì <ph name="PRODUCT_NAME" /> được phép thu thập nhật ký sự kiện WebRTC từ các dịch vụ của Google (ví dụ như Google Meet) và tải các nhật ký đó lên Google.
-
-      Nếu đặt chính sách này thành false hoặc không đặt, thì <ph name="PRODUCT_NAME" /> có thể sẽ không thu thập cũng như tải các nhật ký đó lên.
-
-      Các nhật ký này chứa thông tin chẩn đoán hữu ích khi gỡ lỗi sự cố về cuộc gọi âm thanh hoặc video trên Chrome, chẳng hạn như thời gian và kích thước gói RTP gửi đi và nhận được, phản hồi về tình trạng nghẽn mạng cũng như siêu dữ liệu về thời gian và chất lượng của khung video và âm thanh. Các nhật ký này không chứa nội dung âm thanh hoặc video của cuộc gọi.
-
-      Chỉ các dịch vụ web của Google, chẳng hạn như Google Hangouts hoặc Google Meet, mới có thể kích hoạt chức năng thu thập dữ liệu này trên Chrome.
-
-      Thông qua ID phiên, Google có thể liên kết các nhật ký này với các nhật ký khác do dịch vụ của Google tự thu thập, nhằm giúp quá trình gỡ lỗi trở nên dễ dàng hơn.
-      </translation>
 <translation id="706669471845501145">Cho phép các trang web hiển thị thông báo trên màn hình</translation>
 <translation id="7068108874199666656">Cho phép áp dụng tùy chọn đẩy cấu hình mạng cho tất cả những người dùng thiết bị <ph name="PRODUCT_OS_NAME" />. Cấu hình mạng là một chuỗi có định dạng JSON như được xác định trong định dạng Cấu hình mạng mở.</translation>
 <translation id="7070525176564511548">Yêu cầu nhập mật khẩu hàng tuần (168 giờ).</translation>
@@ -4091,10 +4076,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
           Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi hay ghi đè chính sách.
 
           Nếu bạn không đặt chính sách này, thì ban đầu, tính năng đọc chính tả sẽ tắt nhưng người dùng có thể bật bất cứ lúc nào.</translation>
-<translation id="8292322992383748446">Báo cáo thống kê phần cứng cho các thành phần SoC.
-
-      Nếu bạn đặt chính sách này thành false, thì số liệu thống kê sẽ không được báo cáo.
-      Nếu bạn đặt chính sách này thành true hoặc không đặt, thì số liệu thống kê sẽ được báo cáo.</translation>
 <translation id="829337533107201925">Nếu bạn bật chính sách này, thì các chính sách từ một nhóm không thể phân chia không có chung nguồn với các chính sách có mức độ ưu tiên cao nhất trong nhóm đó sẽ bị bỏ qua.
 
       Nếu bạn tắt chính sách này, thì sẽ không có chính sách nào bị bỏ qua do nguồn liên quan nữa. Các chính sách sẽ chỉ bị bỏ qua nếu có xung đột và chính sách này không có mức độ ưu tiên cao nhất.
@@ -4130,10 +4111,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="8367209241899435947">Bật tính năng Làm sạch Chrome trên Windows</translation>
 <translation id="8369602308428138533">Độ trễ tắt màn hình khi chạy trên nguồn AC</translation>
 <translation id="8371178326720637170">Bật tiện ích được quản lý để sử dụng Enterprise Hardware Platform API</translation>
-<translation id="8374747520743832795">Báo cáo thống kê phần cứng và giá trị nhận dạng liên quan đến nguồn.
-
-      Nếu bạn đặt chính sách này thành false, thì số liệu thống kê sẽ không được báo cáo.
-      Nếu bạn đặt chính sách này thành true hoặc không đặt, thì số liệu thống kê sẽ được báo cáo.</translation>
 <translation id="8380490658357556620">Cho phép sử dụng máy chủ chuyển tiếp khi ứng dụng từ xa cố gắng thiết lập kết nối với máy này.
 
           Nếu bạn bật tùy chọn cài đặt này, các ứng dụng từ xa có thể sử dụng máy chủ chuyển tiếp để kết nối với máy này khi không có kết nối trực tiếp (ví dụ: do giới hạn tường lửa).

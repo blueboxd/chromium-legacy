@@ -58,6 +58,7 @@
 <translation id="2509394361235492552">בוצעה התחברות אל <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">‏הערה: על מנת לוודא שכל מקשי הקיצור זמינים, ניתן להגדיר את Chrome Remote Desktop ל'פתח כחלון'.</translation>
 <translation id="2540992418118313681">האם ברצונך לשתף מחשב זה כך שמשתמש אחר יראה אותו וישלוט בו?</translation>
+<translation id="254771646005658629">‏הענקת שליטה במחשב ה-Mac הזה למשתמשים מרוחקים</translation>
 <translation id="2579271889603567289">המארח קרס או שלא הופעל.</translation>
 <translation id="2599300881200251572">‏שירות זה מאפשר חיבורים נכנסים מלקוחות Chrome Remote Desktop.</translation>
 <translation id="2647232381348739934">‏שירות Chromoting</translation>
@@ -182,6 +183,11 @@
 <translation id="5419185025274123272">לא ניתן היה לאפס את היישום. תוכל עדיין לשלוח דוח באגים.</translation>
 <translation id="5419418238395129586">חיבור אחרון לרשת: <ph name="DATE" /></translation>
 <translation id="544077782045763683">המארח כבה.</translation>
+<translation id="5463789431147491241">‏כדי להשתמש ב-<ph name="PRODUCT_NAME" /> במחשב ה-Mac הזה:
+
+לוחצים למטה על '<ph name="BUTTON_NAME" />'. בהעדפות של 'אבטחה ופרטיות' מסמנים את התיבה לצד '<ph name="SERVICE_SCRIPT_NAME" />'.
+
+אם האפשרות '<ph name="SERVICE_SCRIPT_NAME" />' כבר מסומנת, מבטלים את הסימון ואז מסמנים שוב.</translation>
 <translation id="5510035215749041527">נתק עכשיו</translation>
 <translation id="5593560073513909978">באופן זמני, השירות אינו זמין. נסה שוב מאוחר יותר.</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -298,12 +304,14 @@
 <translation id="837021510621780684">ממחשב זה</translation>
 <translation id="8383794970363966105">‏כדי להשתמש ב-Chromoting, עליך להוסיף חשבון Google למכשיר שלך.</translation>
 <translation id="8386846956409881180">‏בהגדרת המארח נעשה שימוש בפרטי כניסת OAuth לא חוקיים.</translation>
+<translation id="8406498562923498210">‏יש לבחור את הסשן שברצונך להפעיל בסביבה של Chrome Remote Desktop. (לתשומת ליבך, ייתכן שחלק מסוגי הסשנים לא יתמכו בהפעלה בו-זמנית ב-Chrome Remote Desktop ובמסוף המקומי.)</translation>
 <translation id="8428213095426709021">הגדרות</translation>
 <translation id="8445362773033888690">‏הצג בחנות Google Play</translation>
 <translation id="8509907436388546015">תהליך השילוב של שולחנות עבודה</translation>
 <translation id="8513093439376855948">מארח העברת הודעות ייעודי עבור ניהול אירוח מרחוק</translation>
 <translation id="8525306231823319788">מסך מלא</translation>
 <translation id="8548209692293300397">‏נכנסת בעבר כ-<ph name="USER_NAME" /> ‏(<ph name="USER_EMAIL" />). כדי להיכנס למחשבים שלך בחשבון הזה, <ph name="LINK_BEGIN" />יש להיכנס אל Google Chrome<ph name="LINK_END" /> עם החשבון ולהתקין מחדש את Chrome Remote Desktop.</translation>
+<translation id="858006550102277544">הערה</translation>
 <translation id="8642984861538780905">איכות סבירה</translation>
 <translation id="8712909229180978490">‏איני יכול לראות את הקבצים השמורים שלי ב-Google Drive באינטרנט.</translation>
 <translation id="8743328882720071828">האם ברצונך לאפשר ל-<ph name="CLIENT_USERNAME" /> לראות את המחשב שלך ולשלוט בו?</translation>
@@ -321,6 +329,7 @@
 <translation id="9126115402994542723">‏אל תבקש שוב PIN בעת התחברות למארח הזה ממכשיר זה.</translation>
 <translation id="9149580767411232853">הצגה של כל שולחן העבודה המרוחק במסך</translation>
 <translation id="9149992051684092333">כדי להתחיל לשתף את שולחן העבודה שלך, תן את קוד הגישה שלמטה לאדם שיסייע לך.</translation>
+<translation id="916856682307586697">‏הפעלת ה-XSession שמוגדר כברירת מחדל</translation>
 <translation id="9188433529406846933">מתן הרשאה</translation>
 <translation id="9213184081240281106">תצורה לא חוקית של המארח.</translation>
 <translation id="951991426597076286">דחה</translation>

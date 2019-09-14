@@ -982,6 +982,8 @@ void PrintPreviewHandler::SendInitialSettings(
                                 print_preview_ui()->initiator_title());
   initial_settings.SetBoolKey(kSettingPreviewModifiable,
                               print_preview_ui()->source_is_modifiable());
+  initial_settings.SetBoolKey(kSettingPreviewIsPDF,
+                              print_preview_ui()->source_is_pdf());
   initial_settings.SetStringKey(kSettingPrinterName, default_printer);
   initial_settings.SetBoolKey(kDocumentHasSelection,
                               print_preview_ui()->source_has_selection());

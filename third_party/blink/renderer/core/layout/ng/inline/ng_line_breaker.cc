@@ -579,7 +579,6 @@ void NGLineBreaker::HandleText(const NGInlineItem& item,
             !override_break_anywhere_));
     position_ += item_result->inline_size;
     DCHECK_EQ(break_result == kSuccess, position_ <= available_width);
-    item_result->may_break_inside = break_result == kSuccess;
     MoveToNextOf(*item_result);
 
     if (break_result == kSuccess ||
@@ -677,12 +676,12 @@ NGLineBreaker::BreakResult NGLineBreaker::BreakText(
   unsigned try_count = 0;
 #endif
   LayoutUnit inline_size;
+  ShapingLineBreaker::Result result;
   while (true) {
 #if DCHECK_IS_ON()
     ++try_count;
     DCHECK_LE(try_count, 2u);
 #endif
-    ShapingLineBreaker::Result result;
     scoped_refptr<const ShapeResultView> shape_result = breaker.ShapeLine(
         item_result->start_offset, available_width.ClampNegativeToZero(),
         options, &result);
@@ -752,6 +751,13 @@ NGLineBreaker::BreakResult NGLineBreaker::BreakText(
       item_result->can_break_after = true;
     trailing_whitespace_ = WhitespaceState::kUnknown;
   }
+
+  // This result is not breakable any further if overflow. This information is
+  // useful to optimize |HandleOverflow()|.
+  item_result->may_break_inside = !result.is_overflow;
+
+  // TODO(crbug.com/1003742): We should use |result.is_overflow| here. For now,
+  // use |inline_size| because some tests rely on this behavior.
   return inline_size <= available_width ? kSuccess : kOverflow;
 }
 

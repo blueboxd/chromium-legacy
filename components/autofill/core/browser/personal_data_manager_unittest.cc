@@ -297,8 +297,8 @@ class PersonalDataManagerTestBase {
     run_loop.Run();
   }
 
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::UI};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::UI};
   std::unique_ptr<PrefService> prefs_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   signin::IdentityTestEnvironment identity_test_env_;

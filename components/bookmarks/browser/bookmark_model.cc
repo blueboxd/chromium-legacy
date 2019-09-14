@@ -555,22 +555,23 @@ void BookmarkModel::GetBookmarks(std::vector<UrlAndTitle>* bookmarks) {
     url_index_->GetBookmarks(bookmarks);
 }
 
-const BookmarkNode* BookmarkModel::AddFolder(const BookmarkNode* parent,
-                                             size_t index,
-                                             const base::string16& title) {
-  return AddFolderWithMetaInfo(parent, index, title, nullptr);
-}
-const BookmarkNode* BookmarkModel::AddFolderWithMetaInfo(
+const BookmarkNode* BookmarkModel::AddFolder(
     const BookmarkNode* parent,
     size_t index,
     const base::string16& title,
-    const BookmarkNode::MetaInfoMap* meta_info) {
+    const BookmarkNode::MetaInfoMap* meta_info,
+    base::Optional<std::string> guid) {
   DCHECK(loaded_);
   DCHECK(!is_root_node(parent));
   DCHECK(IsValidIndex(parent, index, true));
 
-  std::unique_ptr<BookmarkNode> new_node = std::make_unique<BookmarkNode>(
-      generate_next_node_id(), base::GenerateGUID(), GURL());
+  if (guid)
+    DCHECK(base::IsValidGUID(*guid));
+  else
+    guid = base::GenerateGUID();
+
+  auto new_node =
+      std::make_unique<BookmarkNode>(generate_next_node_id(), *guid, GURL());
   new_node->set_date_folder_modified(Time::Now());
   // Folders shouldn't have line breaks in their titles.
   new_node->SetTitle(title);
@@ -580,34 +581,35 @@ const BookmarkNode* BookmarkModel::AddFolderWithMetaInfo(
   return AddNode(AsMutable(parent), index, std::move(new_node));
 }
 
-const BookmarkNode* BookmarkModel::AddURL(const BookmarkNode* parent,
-                                          size_t index,
-                                          const base::string16& title,
-                                          const GURL& url) {
-  return AddURLWithCreationTimeAndMetaInfo(parent, index, title, url,
-                                           Time::Now(), nullptr);
-}
-
-const BookmarkNode* BookmarkModel::AddURLWithCreationTimeAndMetaInfo(
+const BookmarkNode* BookmarkModel::AddURL(
     const BookmarkNode* parent,
     size_t index,
     const base::string16& title,
     const GURL& url,
-    const Time& creation_time,
-    const BookmarkNode::MetaInfoMap* meta_info) {
+    const BookmarkNode::MetaInfoMap* meta_info,
+    base::Optional<base::Time> creation_time,
+    base::Optional<std::string> guid) {
   DCHECK(loaded_);
   DCHECK(url.is_valid());
   DCHECK(!is_root_node(parent));
   DCHECK(IsValidIndex(parent, index, true));
 
-  // Syncing may result in dates newer than the last modified date.
-  if (creation_time > parent->date_folder_modified())
-    SetDateFolderModified(parent, creation_time);
+  if (guid)
+    DCHECK(base::IsValidGUID(*guid));
+  else
+    guid = base::GenerateGUID();
 
-  std::unique_ptr<BookmarkNode> new_node = std::make_unique<BookmarkNode>(
-      generate_next_node_id(), base::GenerateGUID(), url);
+  if (!creation_time)
+    creation_time = Time::Now();
+
+  // Syncing may result in dates newer than the last modified date.
+  if (*creation_time > parent->date_folder_modified())
+    SetDateFolderModified(parent, *creation_time);
+
+  auto new_node =
+      std::make_unique<BookmarkNode>(generate_next_node_id(), *guid, url);
   new_node->SetTitle(title);
-  new_node->set_date_added(creation_time);
+  new_node->set_date_added(*creation_time);
   if (meta_info)
     new_node->SetMetaInfoMap(*meta_info);
 

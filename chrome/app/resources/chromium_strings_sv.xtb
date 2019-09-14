@@ -196,6 +196,8 @@ Chromium kan inte återställa dina inställningar.</translation>
 <translation id="753534427205733210">{0,plural, =1{Om en minut startas Chromium om}other{Om # minuter startas Chromium om}}</translation>
 <translation id="7549178288319965365">Om Chromium OS</translation>
 <translation id="7561906087460245826">Rensa även data från Chromium (<ph name="URL" />)</translation>
+<translation id="7585853947355360626">Om en inställning saknas på den här sidan tittar du i <ph name="LINK_BEGIN" />
+      inställningarna för Chromium OS<ph name="LINK_END" /></translation>
 <translation id="761356813943268536">Chromium använder din kamera och mikrofon.</translation>
 <translation id="7617377681829253106">Vi har förbättrat Chromium</translation>
 <translation id="7686590090926151193">Chromium är inte din standardwebbläsare</translation>
@@ -229,6 +231,8 @@ Chromium kan inte återställa dina inställningar.</translation>
 <translation id="8619360774459241877">Chromium startas …</translation>
 <translation id="8621669128220841554">Installationen misslyckades på grund av ett okänt fel. Ladda ned Chromium igen.</translation>
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> är uppdaterad.</translation>
+<translation id="8682540261359803721">Om en inställning saknas på den här sidan tittar du i <ph name="LINK_BEGIN" />
+      inställningarna för webbläsaren Chromium<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">Det styr också vilken sida som visas när du startar Chromium eller söker i adressfältet.</translation>
 <translation id="8704119203788522458">Det här är Chromium</translation>
 <translation id="8739167630197873875">Cookies raderas när du avslutar Chromium. Ändra <ph name="COOKIE_SETTINGS_LINK" /> om du vill fortsätta synkronisera.</translation>

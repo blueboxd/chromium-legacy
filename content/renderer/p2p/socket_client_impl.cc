@@ -6,11 +6,8 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
-#include "content/renderer/render_thread_impl.h"
 #include "crypto/random.h"
 #include "services/network/public/cpp/p2p_param_traits.h"
 #include "third_party/blink/public/platform/modules/p2p/socket_client_delegate.h"
@@ -53,7 +50,7 @@ void P2PSocketClientImpl::Init(
     uint16_t max_port,
     const network::P2PHostAndIPEndPoint& remote_address,
     blink::P2PSocketClientDelegate* delegate) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(delegate);
   // |delegate_| is only accessesed on |delegate_message_loop_|.
   delegate_ = delegate;
@@ -101,7 +98,7 @@ void P2PSocketClientImpl::SetOption(network::P2PSocketOption option,
 }
 
 void P2PSocketClientImpl::Close() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   delegate_ = nullptr;
   if (socket_)
@@ -116,21 +113,21 @@ int P2PSocketClientImpl::GetSocketID() const {
 
 void P2PSocketClientImpl::SetDelegate(
     blink::P2PSocketClientDelegate* delegate) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   delegate_ = delegate;
 }
 
 void P2PSocketClientImpl::SocketCreated(const net::IPEndPoint& local_address,
                                         const net::IPEndPoint& remote_address) {
   state_ = STATE_OPEN;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (delegate_)
     delegate_->OnOpen(local_address, remote_address);
 }
 
 void P2PSocketClientImpl::SendComplete(
     const network::P2PSendPacketMetrics& send_metrics) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (delegate_)
     delegate_->OnSendComplete(send_metrics);
 }
@@ -151,7 +148,7 @@ void P2PSocketClientImpl::IncomingTcpConnection(
   new_client->binding_.set_connection_error_handler(base::BindOnce(
       &P2PSocketClientImpl::OnConnectionError, base::Unretained(this)));
 
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (delegate_) {
     delegate_->OnIncomingTcpConnection(socket_address, std::move(new_client));
   } else {
@@ -164,7 +161,7 @@ void P2PSocketClientImpl::DataReceived(const net::IPEndPoint& socket_address,
                                        const std::vector<int8_t>& data,
                                        base::TimeTicks timestamp) {
   DCHECK_EQ(STATE_OPEN, state_);
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (delegate_)
     delegate_->OnDataReceived(socket_address, data, timestamp);
 }

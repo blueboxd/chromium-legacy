@@ -29,7 +29,7 @@
 #include <algorithm>
 #include "base/optional.h"
 #include "base/strings/string_util.h"
-#include "third_party/blink/renderer/platform/wtf/dtoa/dtoa.h"
+#include "third_party/blink/renderer/platform/wtf/dtoa.h"
 #include "third_party/blink/renderer/platform/wtf/text/integer_to_string_conversion.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 

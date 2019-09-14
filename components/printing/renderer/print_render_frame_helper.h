@@ -16,8 +16,10 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_canvas.h"
+#include "components/printing/common/print.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "printing/buildflags/buildflags.h"
 #include "printing/common/metafile_utils.h"
 #include "third_party/blink/public/web/web_node.h"
@@ -86,7 +88,8 @@ class FrameReference {
 // copying the DOM of the document and creating a new WebView with the contents.
 class PrintRenderFrameHelper
     : public content::RenderFrameObserver,
-      public content::RenderFrameObserverTracker<PrintRenderFrameHelper> {
+      public content::RenderFrameObserverTracker<PrintRenderFrameHelper>,
+      public mojom::PrintRenderFrame {
  public:
   class Delegate {
    public:
@@ -192,11 +195,16 @@ class PrintRenderFrameHelper
   void ScriptedPrint(bool user_initiated) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
+  void OnPrintRenderFrameRequest(
+      mojom::PrintRenderFrameAssociatedRequest request);
+
+  // printing::mojom::PrintRenderFrame:
+  void InitiatePrintPreview(bool has_selection) override;
+
   // Message handlers ---------------------------------------------------------
   void OnPrintPages();
   void OnPrintForSystemDialog();
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  void OnInitiatePrintPreview(bool has_selection);
   void OnPrintPreview(const base::DictionaryValue& settings);
   void OnClosePrintPreviewDialog();
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -392,6 +400,8 @@ class PrintRenderFrameHelper
 
   // Used to check the prerendering status.
   const std::unique_ptr<Delegate> delegate_;
+
+  mojo::AssociatedBinding<mojom::PrintRenderFrame> print_render_frame_binding_;
 
   // Keeps track of the state of print preview between messages.
   // TODO(vitalybuka): Create PrintPreviewContext when needed and delete after

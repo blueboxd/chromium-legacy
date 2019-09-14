@@ -469,10 +469,6 @@
       如將這項政策設為有效的網址，<ph name="PRODUCT_NAME" /> 就會從該網址下載網站清單，然後按照 <ph name="SITELIST_POLICY_NAME" /> 政策中的設定套用規則。
 
       如要進一步瞭解 Internet Explorer 的 <ph name="IEEM_SITELIST_POLICY" /> 政策，請參閱：https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
-<translation id="1839060937202387559">回報儲存裝置的硬體統計資料和 ID。
-
-      如果將這項政策設為 False，系統不會回報統計資料。
-      如果設為 True 或不設定，則系統會回報統計資料。</translation>
 <translation id="1843117931376765605">使用者政策的重新整理頻率</translation>
 <translation id="1844620919405873871">設定快速解鎖相關政策。</translation>
 <translation id="1845405905602899692">資訊站設定</translation>
@@ -3252,17 +3248,6 @@
 <translation id="7049373494483449255">啟用「<ph name="PRODUCT_NAME" />」將文件提交至「<ph name="CLOUD_PRINT_NAME" />」列印。注意：這只會影響可支援「<ph name="PRODUCT_NAME" />」的「<ph name="CLOUD_PRINT_NAME" />」，但無法禁止使用者提交至網站上的列印工作。如果啟用或尚未設定這項設定，使用者可以從「<ph name="PRODUCT_NAME" />」列印對話方塊中使用「<ph name="CLOUD_PRINT_NAME" />」進行列印。如果停用這項設定，使用者則無法從「<ph name="PRODUCT_NAME" />」列印對話方塊中使用「<ph name="CLOUD_PRINT_NAME" />」進行列印。</translation>
 <translation id="7053678646221257043">如果啟用的話，這項政策會強迫系統從目前預設的瀏覽器匯入書籤，並且會影響匯入對話方塊。如果停用的話，系統不會匯入任何書籤。如果未設定的話，系統會自動匯入書籤，或詢問使用者是否要匯入書籤。</translation>
 <translation id="7063895219334505671">允許這些網站的彈出式視窗</translation>
-<translation id="706568410943497889">
-      如果將這項政策設為 True，<ph name="PRODUCT_NAME" /> 就能從 Google 服務 (例如 Google Meet) 收集 WebRTC 事件記錄，並將這些記錄上傳至 Google。
-
-      如果將這項政策設為 False 或不予設定，<ph name="PRODUCT_NAME" /> 就可能不會收集或上傳這類記錄。
-
-      這些記錄包含有助於偵錯 Chrome 語音或視訊通話問題的診斷資訊，例如收發 RTP 封包的時間和大小、網路壅塞情形回報、關於語音及視訊畫格的時間和品質等中繼資料，但不包含通話的語音和視訊內容。
-
-      Chrome 這項資料收集作業只能由 Google 的網路服務觸發，例如 Google Hangouts 或 Google Meet。
-
-      Google 可能會依照工作階段 ID 將這些記錄和 Google 服務本身收集的其他記錄建立關聯，目的是簡化偵錯作業。
-      </translation>
 <translation id="706669471845501145">允許網站顯示桌面通知</translation>
 <translation id="7068108874199666656">這項政策可將網路設定強制套用至 <ph name="PRODUCT_OS_NAME" />裝置的所有使用者。這個網路設定是根據「開放式網路設定」格式所定義的 JSON 格式字串。</translation>
 <translation id="7070525176564511548">每週 (168 小時) 需輸入一次密碼</translation>
@@ -3935,10 +3920,6 @@
           設定這項政策後，使用者即無法變更或覆寫。
 
           如果未設定這項政策，系統預設會停用語音輸入功能，但使用者隨時可以啟用這項功能。</translation>
-<translation id="8292322992383748446">回報 SoC 元件的硬體統計資料。
-
-      如果將這項政策設為 False，系統不會回報統計資料。
-      如果設為 True 或不設定，則系統會回報統計資料。</translation>
 <translation id="829337533107201925">如果啟用這項政策，那麼只要是來自不可部分完成的群組，而且來源與該群組中最高優先權項目不同的政策，即會遭到忽略。
 
       如果將這項政策設為停用，政策不會因來源而遭到忽略，只會在發生政策衝突或沒有最高優先權的情況下遭到忽略。
@@ -3974,8 +3955,6 @@
 <translation id="8367209241899435947">在 Windows 裝置上啟用 Chrome 清理功能</translation>
 <translation id="8369602308428138533">在 AC 供電環境下執行時的螢幕關閉延遲時間</translation>
 <translation id="8371178326720637170">啟用受管理擴充功能以使用 Enterprise Hardware Platform API</translation>
-<translation id="8374747520743832795">回報與電源相關的硬體統計資料和 ID。如果將這項政策設為 False，系統不會回報統計資料。
-      如果設為 True 或不設定，則系統會回報統計資料。</translation>
 <translation id="8380490658357556620">這項政策會在遠端用戶端嘗試與這台電腦建立連線時，允許用戶端使用轉送伺服器。
 
           如果啟用這項設定，遠端用戶端即可在無法直接連線時 (例如受到防火牆限制的情況)，使用轉送伺服器與這台電腦建立連線。

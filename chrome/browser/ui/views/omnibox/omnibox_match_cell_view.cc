@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/optional.h"
@@ -17,7 +16,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/omnibox/browser/vector_icons.h"
-#include "components/omnibox/common/omnibox_features.h"
 #include "extensions/common/image_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -190,12 +188,8 @@ OmniboxMatchCellView::OmniboxMatchCellView(OmniboxResultView* result_view) {
   answer_image_view_->SetHorizontalAlignment(Alignment::kCenter);
   answer_image_view_->SetVerticalAlignment(Alignment::kCenter);
 
-  const base::string16 separator = l10n_util::GetStringUTF16(
-      base::FeatureList::IsEnabled(
-          omnibox::kOmniboxAlternateMatchDescriptionSeparator)
-          ? IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR_ALTERNATE
-          : IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR);
-  separator_view_->SetText(separator);
+  separator_view_->SetText(
+      l10n_util::GetStringUTF16(IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR));
 }
 
 OmniboxMatchCellView::~OmniboxMatchCellView() = default;

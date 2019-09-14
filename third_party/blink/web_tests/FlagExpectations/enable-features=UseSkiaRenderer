@@ -1,3 +1,1 @@
-# Tests fail even with a fuzzy pixel diff. They require a re-baseline.
-crbug.com/954328 media/video-layer-crash.html [ Failure ]
-crbug.com/954328 transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
+# TODO(jonross): Remove once Finch completes.

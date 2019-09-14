@@ -97,9 +97,6 @@
 <translation id="138218114945450791">Celeste</translation>
 <translation id="1382194467192730611">El dispositivo USB que permite tu administrador</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> no envió ningún dato.</translation>
-<translation id="140316286225361634">El sitio <ph name="ORIGIN" /> solicitó que se aplicara una política de seguridad
-    a todas las solicitudes. Esta política actualmente considera que el sitio
-    no es seguro.</translation>
 <translation id="1405567553485452995">Verde claro</translation>
 <translation id="1407135791313364759">Abrir todas</translation>
 <translation id="1413809658975081374">Error de privacidad</translation>
@@ -135,6 +132,7 @@
 <translation id="1569487616857761740">Ingresa una fecha de vencimiento</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Se produjo un error cuando se mostraba la página web.</translation>
+<translation id="1588438908519853928">Normal</translation>
 <translation id="1592005682883173041">Acceso a datos locales</translation>
 <translation id="1594030484168838125">Seleccionar</translation>
 <translation id="161042844686301425">Cian</translation>
@@ -212,10 +210,6 @@
 <translation id="1981206234434200693">Borrar datos del historial de navegación de Chrome</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{y 1 más}other{y # más}}</translation>
 <translation id="2003709556000175978">Restablecer tu contraseña ahora</translation>
-<translation id="20053308747750172">El servidor <ph name="ORIGIN" /> al que te diriges solicitó
-    que se aplicara una política de seguridad a todas las solicitudes. Sin embargo, ahora
-    entregó una política no válida que impide que el navegador
-    cumpla con tu solicitud para <ph name="SITE" />.</translation>
 <translation id="2025186561304664664">El proxy se estableció en configuración automática.</translation>
 <translation id="202813660234680402">No, no agregar</translation>
 <translation id="2030481566774242610">¿Quisiste decir: <ph name="LINK" />?</translation>
@@ -293,10 +287,6 @@
 <translation id="2409589295040002961">Tu administrador puede cambiar la configuración de tu navegador de forma remota. Es posible que la actividad en este dispositivo también se administre fuera de Chrome. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" /> y se podría revocar el certificado de seguridad. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
-<translation id="2418081434543109369">El servidor <ph name="ORIGIN" /> al que te diriges solicitó
-    que se aplicara una política de seguridad a todas las solicitudes. Sin embargo, ahora
-    no pudo entregar una política, lo que impide que el navegador cumpla con
-    tu solicitud para <ph name="SITE" />.</translation>
 <translation id="2463193859425327265">Cambiar página principal</translation>
 <translation id="2463739503403862330">Llenar</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -589,6 +579,7 @@
 <translation id="4103249731201008433">El número de serie del dispositivo no es válido.</translation>
 <translation id="410351446219883937">Reproducción automática</translation>
 <translation id="4103763322291513355">Visita &lt;strong&gt;chrome://policy&lt;/strong&gt; para ver las URL en lista negra y otras políticas que estableció el administrador del sistema.</translation>
+<translation id="4108231218301530806">Usar la huella digital para verificar esta tarjeta la próxima vez</translation>
 <translation id="4110652170750985508">Revisar el pago</translation>
 <translation id="4112140312785995938">Buscar más atrás</translation>
 <translation id="4116663294526079822">Permitir siempre en este sitio</translation>
@@ -791,6 +782,7 @@
 <translation id="5141240743006678641">Encriptar contraseñas sincronizadas con tus credenciales de Google</translation>
 <translation id="5145883236150621069">Código de error en la respuesta de la política</translation>
 <translation id="515292512908731282">C4 (Envelope)</translation>
+<translation id="5158275234811857234">Portada</translation>
 <translation id="5159010409087891077">Abre la página en una nueva ventana de incógnito (⇧⌘N).</translation>
 <translation id="516920405563544094">Ingresa el CVC de la tarjeta <ph name="CREDIT_CARD" />. Después de confirmarla, los datos de la tarjeta en tu Cuenta de Google se compartirán con este sitio.</translation>
 <translation id="5169827969064885044">Es posible que hayas perdido el acceso a la cuenta de tu organización o sufrido un robo de identidad. Chrome te recomienda que cambies la contraseña ahora.</translation>
@@ -949,6 +941,7 @@
 <translation id="598637245381783098">No se puede abrir la app de pago</translation>
 <translation id="5989320800837274978">No se especifican servidores proxy fijos ni URL de secuencias de comandos .pac.</translation>
 <translation id="5990559369517809815">Una extensión bloqueó las solicitudes al servidor.</translation>
+<translation id="6000758707621254961"><ph name="RESULT_COUNT" /> resultados para "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">Año</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Página 1}other{Página #}}</translation>
@@ -1007,6 +1000,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Ninguna}=1{1 contraseña (para <ph name="DOMAIN_LIST" />, sincronizada)}=2{2 contraseñas (para <ph name="DOMAIN_LIST" />, sincronizadas)}other{# contraseñas (para <ph name="DOMAIN_LIST" />, sincronizadas)}}</translation>
 <translation id="6358450015545214790">¿Qué significa esto?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6377268785556383139">1 resultado para "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Es posible que se cobren cargos.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 sugerencia más}other{# sugerencias más}}</translation>
@@ -1141,10 +1135,6 @@
 <translation id="717330890047184534">ID de GAIA:</translation>
 <translation id="7174545416324379297">Combinados</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> y <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> más}other{<ph name="SHIPPING_OPTION_PREVIEW" /> y <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> más}}</translation>
-<translation id="7177397715882417099">El servidor <ph name="ORIGIN" /> al que te diriges solicitó
-    que se aplicara una política de seguridad a todas las solicitudes. Sin embargo, en lugar de
-    entregar una política, redirigió al navegador a otro sitio, lo que impide que
-    el navegador cumpla con tu solicitud para el sitio <ph name="SITE" />.</translation>
 <translation id="7179323680825933600">Guardar y completar formas de pago</translation>
 <translation id="7180611975245234373">Actualizar</translation>
 <translation id="7182878459783632708">No hay políticas establecidas.</translation>
@@ -1171,6 +1161,7 @@ Detalles adicionales:
 <translation id="7300012071106347854">Azul cobalto</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
 <translation id="7303701124147721189">Para realizar pagos de forma más rápida la próxima vez, almacena tu tarjeta y dirección de facturación en la Cuenta de Google y este dispositivo.</translation>
+<translation id="7304030187361489308">Alto</translation>
 <translation id="7309308571273880165">El informe de fallos se capturó a las <ph name="CRASH_TIME" /> (el usuario solicitó la carga; todavía no se cargó)</translation>
 <translation id="7313965965371928911">Advertencias de <ph name="BEGIN_LINK" />Navegación segura<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1533,7 +1524,6 @@ Detalles adicionales:
 <translation id="939736085109172342">Nueva carpeta</translation>
 <translation id="945855313015696284">Comprueba la información que se muestra a continuación y borra las tarjetas que no sean válidas</translation>
 <translation id="951104842009476243">Tarjetas de débito y prepago aceptadas</translation>
-<translation id="958202389743790697">Se bloqueó conforme a la política de seguridad de <ph name="ORIGIN" />.</translation>
 <translation id="962484866189421427">Este contenido podría intentar instalar apps engañosas que se hagan pasar por otro tipo de contenido o que recopilen datos que se usen para rastrearte. <ph name="BEGIN_LINK" />Mostrar de todos modos<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Build oficial</translation>
 <translation id="973773823069644502">Agregar dirección de entrega</translation>

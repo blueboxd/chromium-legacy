@@ -21,7 +21,6 @@
 <translation id="1146678959555564648">Увійти у VR-режим</translation>
 <translation id="116280672541001035">Використано</translation>
 <translation id="1171770572613082465">Натисніть кнопку "Популярні сайти", щоб переглянути їх.</translation>
-<translation id="1172593791219290334">Стартова сторінка</translation>
 <translation id="1173894706177603556">Перейменувати</translation>
 <translation id="1175310183703641346">Закладки, історія, паролі тощо більше не синхронізуватимуться з обліковим записом Google</translation>
 <translation id="1178581264944972037">Пауза</translation>
@@ -42,6 +41,7 @@
 <translation id="1258753120186372309">Дудл Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Пошук і огляд</translation>
 <translation id="1264974993859112054">Спорт</translation>
+<translation id="1266864766717917324">Не вдалося надіслати контент (<ph name="CONTENT_TYPE" />)</translation>
 <translation id="1272079795634619415">Зупинити</translation>
 <translation id="1283039547216852943">Торкніться, щоб розгорнути</translation>
 <translation id="1285320974508926690">Ніколи не перекладати цей сайт</translation>
@@ -71,6 +71,7 @@
 <translation id="1430915738399379752">Друк</translation>
 <translation id="1445680696957526815">Компоненти Chrome несумісні одне з одним. Веб-переглядач може оновлюватися, спробуйте через декілька хвилин. Якщо проблема не зникне, видаліть Chrome і встановіть його знову.</translation>
 <translation id="1446450296470737166">Повний контроль пристроїв MIDI</translation>
+<translation id="1450753235335490080">Не вдалося надіслати контент (<ph name="CONTENT_TYPE" />)</translation>
 <translation id="145097072038377568">Вимкнено в налаштуваннях Android</translation>
 <translation id="1477626028522505441">Файл <ph name="FILE_NAME" /> не завантажено через проблеми із сервером.</translation>
 <translation id="1501480321619201731">Видалити групу</translation>
@@ -153,6 +154,7 @@
 <translation id="2049961518639794558">Якщо змінити розширення файлу, це може спричинити неочікувану поведінку або зашкодити пристрою.</translation>
 <translation id="2056878612599315956">Роботу сайту призупинено</translation>
 <translation id="2063713494490388661">Торкніться, щоб шукати</translation>
+<translation id="2067805253194386918">SMS</translation>
 <translation id="2079545284768500474">Відмінити</translation>
 <translation id="2082238445998314030">Результат <ph name="RESULT_NUMBER" /> з <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Сигнал</translation>
@@ -165,7 +167,6 @@
 <translation id="2131665479022868825">Заощаджено <ph name="DATA" /></translation>
 <translation id="213279576345780926">Вкладку "<ph name="TAB_TITLE" />" закрито</translation>
 <translation id="2139186145475833000">Додати на головний екран</translation>
-<translation id="2142289305367051020">Ваші улюблені сторінки доступні тут</translation>
 <translation id="2146738493024040262">Відкрити додаток із миттєвим запуском</translation>
 <translation id="2148716181193084225">Сьогодні</translation>
 <translation id="2154484045852737596">Редагувати картку</translation>
@@ -324,6 +325,7 @@
 <translation id="3384347053049321195">Поділитися зображенням</translation>
 <translation id="3386292677130313581">Запитувати, перш ніж дозволити сайтам визначати ваше місцезнаходження (рекомендується)</translation>
 <translation id="3387650086002190359">Файл <ph name="FILE_NAME" /> не завантажено через помилки файлової системи.</translation>
+<translation id="3389286852084373014">SMS-повідомлення завелике</translation>
 <translation id="3398320232533725830">Відкрити Диспетчер закладок</translation>
 <translation id="3414952576877147120">Розмір:</translation>
 <translation id="3443221991560634068">Оновити поточну сторінку</translation>
@@ -348,6 +350,7 @@
 <translation id="3599863153486145794">Видалення історії на всіх пристроях, на яких ви ввійшли в обліковий запис. Історія веб-перегляду може також зберігатися у вашому обліковому записі Google на сторінці  <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Вимкнути звук на сайтах, які відтворюють його</translation>
 <translation id="3616113530831147358">Аудіо</translation>
+<translation id="3631987586758005671">Надсилання на пристрій <ph name="DEVICE_NAME" /></translation>
 <translation id="3632295766818638029">Показати пароль</translation>
 <translation id="363596933471559332">Автоматично входити в облікові записи на веб-сайтах за допомогою збережених даних. Якщо цю функцію вимкнено, потрібно вводити облікові дані під час кожного входу.</translation>
 <translation id="3658159451045945436">Буде скинуто історію заощадження трафіку, зокрема список відвіданих веб-сайтів.</translation>
@@ -358,7 +361,6 @@
 <translation id="3739899004075612870">Створено закладку в продукті <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> МБ використовується іншими додатками</translation>
 <translation id="3744111561329211289">Фонова синхронізація</translation>
-<translation id="3745176700485982507">На цій сторінці можна знайти посилання на улюблені веб-сайти</translation>
 <translation id="3771001275138982843">Не вдалося завантажити оновлення</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Увімкніть Bluetooth<ph name="END_LINK" />, щоб підключити</translation>
 <translation id="3775705724665058594">Надіслати на пристрої</translation>
@@ -563,7 +565,6 @@
 <translation id="5224771365102442243">З відео</translation>
 <translation id="5230560987958996918">Сайт <ph name="SITE" /> хоче шукати пристрої Bluetooth поруч. Виявлено такі пристрої:</translation>
 <translation id="5233638681132016545">Нова вкладка</translation>
-<translation id="5234764350956374838">Відхилити</translation>
 <translation id="526421993248218238">Не вдається завантажити цю сторінку</translation>
 <translation id="5271967389191913893">Вміст, який ви хочете завантажити, не можна відкрити на цьому пристрої.</translation>
 <translation id="528192093759286357">Щоб вийти з повноекранного режиму, проведіть пальцем по екрану згори вниз і торкніться кнопки "Назад".</translation>
@@ -578,8 +579,8 @@
 <translation id="5324858694974489420">Батьківські налаштування</translation>
 <translation id="5327248766486351172">Назва</translation>
 <translation id="5335288049665977812">Дозволити сайтам запускати Javascript (рекомендується)</translation>
+<translation id="5342314432463739672">Запити на дозволи</translation>
 <translation id="5357811892247919462">Вкладку отримано</translation>
-<translation id="5363230136052241468">Торкніться кнопки головного екрана, щоб завантажити сторінку нової вкладки</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> відкрита вкладка: натисніть, щоб перейти на іншу вкладку}one{<ph name="OPEN_TABS_MANY" /> відкрита вкладка: натисніть, щоб перейти на іншу вкладку}few{<ph name="OPEN_TABS_MANY" /> відкриті вкладки: натисніть, щоб перейти на іншу вкладку}many{<ph name="OPEN_TABS_MANY" /> відкритих вкладок: натисніть, щоб перейти на іншу вкладку}other{<ph name="OPEN_TABS_MANY" /> відкритої вкладки: натисніть, щоб перейти на іншу вкладку}}</translation>
 <translation id="5391532827096253100">Ваше з’єднання з цим сайтом незахищене. Інформація про сайт</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ ще 1)}one{(+ ще #)}few{(+ ще #)}many{(+ ще #)}other{(+ ще #)}}</translation>
@@ -748,6 +749,7 @@
 <translation id="6532866250404780454">Відвідані в Chrome веб-сайти не відображатимуться. Усі таймери для них буде видалено.</translation>
 <translation id="6534565668554028783">Google довго не відповідає</translation>
 <translation id="6538442820324228105">Завантажено <ph name="GBS" /> ГБ</translation>
+<translation id="6539092367496845964">Сталася помилка. Спробуйте пізніше.</translation>
 <translation id="654446541061731451">Виберіть вкладку для передавання даних</translation>
 <translation id="6545017243486555795">Видалити всі дані</translation>
 <translation id="6545864417968258051">Пошук пристроїв Bluetooth</translation>
@@ -802,7 +804,6 @@
 <translation id="6912998170423641340">Не дозволяти сайтам переглядати тексти й зображення в буфері обміну</translation>
 <translation id="6914783257214138813">Ваші паролі бачитимуть усі, хто може переглядати експортований файл.</translation>
 <translation id="6942665639005891494">Будь-коли змінюйте папку для завантажень за умовчанням, використовуючи відповідну опцію в меню "Налаштування"</translation>
-<translation id="6944102653068653326">Торкніться, щоб завантажити сторінку нової вкладки</translation>
 <translation id="6945221475159498467">Вибрати</translation>
 <translation id="6963642900430330478">Ця сторінка небезпечна. Інформація про сайт</translation>
 <translation id="6963766334940102469">Видалити закладки</translation>
@@ -879,6 +880,7 @@
 <translation id="7493994139787901920"><ph name="VERSION" /> (оновлено: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">заощаджений трафік</translation>
 <translation id="7498271377022651285">Зачекайте…</translation>
+<translation id="7510943789645525906">Попереджає вас, якщо пароль розкрито внаслідок порушення безпеки даних</translation>
 <translation id="7514365320538308">Завантажити</translation>
 <translation id="751961395872307827">Немає з’єднання із сайтом</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -996,7 +998,6 @@
 <translation id="8284326494547611709">Субтитри</translation>
 <translation id="8300705686683892304">Керуються додатком</translation>
 <translation id="8310344678080805313">Стандартні вкладки</translation>
-<translation id="8313455859591948645">Редагувати стартову сторінку</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> та інші сайти</translation>
 <translation id="8327155640814342956">Оновіть Chrome для зручнішого перегляду веб-сторінок</translation>
 <translation id="8339163506404995330">Сторінки цією мовою (<ph name="LANGUAGE" />) не перекладатимуться</translation>

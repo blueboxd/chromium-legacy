@@ -396,7 +396,14 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
 
 // Prompts are only shown for active tabs and (on Desktop) hidden on tab
 // switching
-IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest, MultipleTabs) {
+// Flaky on Win bots crbug.com/1003747.
+#if defined(OS_WIN)
+#define MAYBE_MultipleTabs DISABLED_MultipleTabs
+#else
+#define MAYBE_MultipleTabs MultipleTabs
+#endif
+IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
+                       MAYBE_MultipleTabs) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(

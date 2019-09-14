@@ -308,7 +308,6 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, VerifyInitiatorSharedWorker) {
       [&](URLLoaderInterceptor::RequestParams* params) {
         auto it = expected_request_urls.find(params->url_request.url);
         if (it != expected_request_urls.end()) {
-          EXPECT_FALSE(params->url_request.top_frame_origin.has_value());
           EXPECT_TRUE(params->url_request.request_initiator.has_value());
           EXPECT_EQ(expected_origin,
                     params->url_request.request_initiator.value());

@@ -278,6 +278,8 @@
 #define glBindImageTexture GLES2_GET_FUN(BindImageTexture)
 #define glDispatchCompute GLES2_GET_FUN(DispatchCompute)
 #define glDispatchComputeIndirect GLES2_GET_FUN(DispatchComputeIndirect)
+#define glDrawArraysIndirect GLES2_GET_FUN(DrawArraysIndirect)
+#define glDrawElementsIndirect GLES2_GET_FUN(DrawElementsIndirect)
 #define glGetProgramInterfaceiv GLES2_GET_FUN(GetProgramInterfaceiv)
 #define glGetProgramResourceIndex GLES2_GET_FUN(GetProgramResourceIndex)
 #define glGetProgramResourceName GLES2_GET_FUN(GetProgramResourceName)

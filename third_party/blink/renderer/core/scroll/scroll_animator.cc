@@ -297,15 +297,9 @@ bool ScrollAnimator::SendAnimationToCompositor() {
   // using the current time on main thread.
   animation->SetStartTime(start_time_);
 
-  int animation_id = animation->Id();
-  int animation_group_id = animation->Group();
-
   bool sent_to_compositor = AddAnimation(std::move(animation));
-  if (sent_to_compositor) {
+  if (sent_to_compositor)
     run_state_ = RunState::kRunningOnCompositor;
-    compositor_animation_id_ = animation_id;
-    compositor_animation_group_id_ = animation_group_id;
-  }
 
   return sent_to_compositor;
 }
@@ -330,7 +324,7 @@ void ScrollAnimator::UpdateCompositorAnimations() {
   }
 
   if (run_state_ == RunState::kWaitingToCancelOnCompositor) {
-    DCHECK(compositor_animation_id_);
+    DCHECK(compositor_animation_id());
     AbortAnimation();
     PostAnimationCleanupAndReset();
     return;
@@ -342,7 +336,7 @@ void ScrollAnimator::UpdateCompositorAnimations() {
     // because a main thread scrolling reason is added, and simply trying
     // to ::sendAnimationToCompositor will fail and we will run on the main
     // thread.
-    ResetAnimationIds();
+    RemoveAnimation();
     run_state_ = RunState::kWaitingToSendToCompositor;
   }
 
@@ -352,7 +346,6 @@ void ScrollAnimator::UpdateCompositorAnimations() {
     // Abort the running animation before a new one with an updated
     // target is added.
     AbortAnimation();
-    ResetAnimationIds();
 
     if (run_state_ != RunState::kRunningOnCompositorButNeedsAdjustment) {
       // When in RunningOnCompositorButNeedsAdjustment, the call to

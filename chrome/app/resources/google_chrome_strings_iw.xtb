@@ -43,6 +43,8 @@
 <translation id="1873233029667955273">‏Google Chrome‏ אינו דפדפן ברירת המחדל שלך</translation>
 <translation id="1874309113135274312">‏גרסת הביטא של Google Chrome‏ (mDNS-In)</translation>
 <translation id="1877026089748256423">‏Chrome אינו מעודכן</translation>
+<translation id="1900795423379050516">‏אם הגדרה מסוימת לא מופיעה בדף הזה, אפשר לחפש אותה <ph name="LINK_BEGIN" />
+בהגדרות של דפדפן Chrome<ph name="LINK_END" /></translation>
 <translation id="1915828456209461693">‏יש עדכון בשביל Chrome והמערכת תחיל אותו ברגע שתבוצע הפעלה מחדש.</translation>
 <translation id="1919130412786645364">‏התרת כניסה אל Chrome</translation>
 <translation id="2063848847527508675">‏יש להפעיל מחדש את מערכת ההפעלה של Chrome כדי להחיל את העדכון.</translation>
@@ -156,6 +158,8 @@
 <translation id="5543953544073077331">‏עותקים אחרים של Chrome פועלים. כדי לעדכן צריך לסגור אותם.</translation>
 <translation id="556024056938947818">‏Google Chrome מנסה להציג סיסמאות.</translation>
 <translation id="5566025111015594046">‏Google Chrome‏ (mDNS-In)</translation>
+<translation id="5657226924540934362">‏אם הגדרה מסוימת לא מופיעה בדף הזה, אפשר לחפש אותה <ph name="LINK_BEGIN" />
+בהגדרות ה-OS של Chrome<ph name="LINK_END" /></translation>
 <translation id="565744775970812598">‏<ph name="FILE_NAME" /> עלול להיות מסוכן, ולכן Chrome חסם אותו.</translation>
 <translation id="5686916850681061684">‏התאמה אישית וניהול של Google Chrome. נחוצה פעולה שלך - יש ללחוץ לקבלת פרטים נוספים.</translation>
 <translation id="5690427481109656848">Google LLC</translation>

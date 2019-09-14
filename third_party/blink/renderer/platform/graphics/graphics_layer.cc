@@ -209,6 +209,13 @@ void GraphicsLayer::RemoveFromParent() {
     SetParent(nullptr);
   }
 
+  // Avoid inconsistencies for detached content since GraphicsLayers in that
+  // state will not have GraphicsLayer::Paint called on them, and Paint updates
+  // the GraphicsLayer's display item's references back to the layout tree.
+  // Only do this if there's a paint controller.
+  if (PaintsContentOrHitTest())
+    GetPaintController().InvalidateAll();
+
   // cc::Layers are created and removed in PaintArtifactCompositor so ensure it
   // is notified that something has changed.
   client_.GraphicsLayersDidChange();

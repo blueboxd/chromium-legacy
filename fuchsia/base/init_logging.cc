@@ -29,8 +29,7 @@ bool InitLoggingFromCommandLine(const base::CommandLine& command_line) {
   }
   logging::SetLogItems(true /* Process ID */, true /* Thread ID */,
                        true /* Timestamp */, false /* Tick count */);
-  return true;
-  // return logging::InitLogging(settings);
+  return logging::InitLogging(settings);
 }
 
 }  // namespace cr_fuchsia

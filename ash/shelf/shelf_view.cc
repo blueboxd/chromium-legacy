@@ -13,7 +13,6 @@
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/ash_constants.h"
-#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
@@ -309,6 +308,7 @@ ShelfView::ShelfView(ShelfModel* model, Shelf* shelf)
   DCHECK(shelf_);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
   Shell::Get()->system_tray_model()->virtual_keyboard()->AddObserver(this);
+  ShelfConfig::Get()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
   bounds_animator_->AddObserver(this);
   set_context_menu_controller(this);
@@ -323,12 +323,13 @@ ShelfView::~ShelfView() {
   if (Shell::Get()->tablet_mode_controller())
     Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   Shell::Get()->system_tray_model()->virtual_keyboard()->RemoveObserver(this);
+  ShelfConfig::Get()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
   bounds_animator_->RemoveObserver(this);
   model_->RemoveObserver(this);
 
   // Resets the shelf tooltip delegate when the main shelf gets destroyed.
-  if (!is_overflow_mode())
+  if (!is_overflow_mode() && !chromeos::switches::ShouldShowScrollableShelf())
     shelf_->tooltip()->set_shelf_tooltip_delegate(nullptr);
 }
 
@@ -375,8 +376,9 @@ void ShelfView::Init() {
 
   // We'll layout when our bounds change.
 
-  // Add the main shelf view as ShelfTooltipDelegate.
-  if (!is_overflow_mode())
+  // Add the main shelf view as ShelfTooltipDelegate when scrollable shelf
+  // is not enabled.
+  if (!is_overflow_mode() && !chromeos::switches::ShouldShowScrollableShelf())
     shelf_->tooltip()->set_shelf_tooltip_delegate(this);
 }
 
@@ -838,6 +840,18 @@ void ShelfView::OnVirtualKeyboardVisibilityChanged() {
   LayoutToIdealBounds();
 }
 
+void ShelfView::OnShelfConfigUpdated() {
+  // Ensure the shelf app buttons have an icon which is up to date with the
+  // current ShelfConfig sizing.
+  for (int i = 0; i < view_model_->view_size(); i++) {
+    ShelfAppButton* button =
+        static_cast<ShelfAppButton*>(view_model_->view_at(i));
+
+    if (!button->IsIconSizeCurrent())
+      ShelfItemChanged(i, model_->items()[i]);
+  }
+}
+
 bool ShelfView::ShouldEventActivateButton(View* view, const ui::Event& event) {
   // This only applies to app buttons.
   DCHECK_EQ(ShelfAppButton::kViewClassName, view->GetClassName());
@@ -929,27 +943,30 @@ views::View* ShelfView::FindFirstOrLastFocusableChild(bool last) {
   return last ? FindLastFocusableChild() : FindFirstFocusableChild();
 }
 
-void ShelfView::HandleGestureEvent(ui::GestureEvent* event) {
+bool ShelfView::HandleGestureEvent(const ui::GestureEvent* event) {
+  // Avoid changing |event|'s location since |event| may be received by post
+  // event handlers.
+  ui::GestureEvent copy_event(*event);
+
   // Convert the event location from current view to screen, since swiping up on
   // the shelf can open the fullscreen app list. Updating the bounds of the app
   // list during dragging is based on screen coordinate space.
-  gfx::Point location_in_screen(event->location());
+  gfx::Point location_in_screen(copy_event.location());
   View::ConvertPointToScreen(this, &location_in_screen);
-  event->set_location(location_in_screen);
+  copy_event.set_location(location_in_screen);
 
-  if (shelf_->ProcessGestureEvent(*event)) {
-    event->StopPropagation();
-    return;
-  }
+  if (shelf_->ProcessGestureEvent(copy_event))
+    return true;
 
   // If the event hasn't been processed yet and the overflow shelf is showing,
   // give the bubble a chance to process the event.
-  if (is_overflow_mode()) {
-    if (main_shelf_->overflow_bubble()->bubble_view()->ProcessGestureEvent(
-            *event)) {
-      event->StopPropagation();
-    }
+  if (is_overflow_mode() &&
+      main_shelf_->overflow_bubble()->bubble_view()->ProcessGestureEvent(
+          copy_event)) {
+    return true;
   }
+
+  return false;
 }
 
 // static
@@ -2044,8 +2061,11 @@ int ShelfView::CancelDrag(int modified_index) {
 }
 
 void ShelfView::OnGestureEvent(ui::GestureEvent* event) {
-  if (overflow_mode_ || ShouldHandleGestures(*event))
-    HandleGestureEvent(event);
+  if (!overflow_mode_ && !ShouldHandleGestures(*event))
+    return;
+
+  if (HandleGestureEvent(event))
+    event->StopPropagation();
 }
 
 void ShelfView::ShelfItemAdded(int model_index) {

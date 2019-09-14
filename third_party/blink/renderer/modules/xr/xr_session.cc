@@ -916,27 +916,43 @@ void XRSession::ApplyPendingRenderState() {
   }
 }
 
-void XRSession::OnFrame(
+void XRSession::UpdatePresentationFrameState(
     double timestamp,
     std::unique_ptr<TransformationMatrix> base_pose_matrix,
-    const base::Optional<gpu::MailboxHolder>& output_mailbox_holder,
-    const device::mojom::blink::XRPlaneDetectionDataPtr& detected_planes_data,
-    const device::mojom::blink::XRAnchorsDataPtr& tracked_anchors_data) {
+    const device::mojom::blink::XRFrameDataPtr& frame_data) {
   TRACE_EVENT0("gpu", __FUNCTION__);
-  DVLOG(2) << __FUNCTION__;
-
+  DVLOG(2) << __FUNCTION__ << " : frame_data valid? "
+           << (frame_data ? true : false);
   // Don't process any outstanding frames once the session is ended.
   if (ended_)
     return;
 
   base_pose_matrix_ = std::move(base_pose_matrix);
+  DVLOG(2) << __FUNCTION__ << " : base_pose_matrix_ valid? "
+           << (base_pose_matrix_ ? true : false);
+
+  // Update objects that might change on per-frame basis.
+  if (frame_data) {
+    world_information_->ProcessPlaneInformation(
+        frame_data->detected_planes_data, timestamp);
+    ProcessAnchorsData(frame_data->anchors_data, timestamp);
+  } else {
+    world_information_->ProcessPlaneInformation(nullptr, timestamp);
+    ProcessAnchorsData(nullptr, timestamp);
+  }
+}
+
+void XRSession::OnFrame(
+    double timestamp,
+    const base::Optional<gpu::MailboxHolder>& output_mailbox_holder) {
+  TRACE_EVENT0("gpu", __FUNCTION__);
+  DVLOG(2) << __FUNCTION__;
+  // Don't process any outstanding frames once the session is ended.
+  if (ended_)
+    return;
 
   // If there are pending render state changes, apply them now.
   ApplyPendingRenderState();
-
-  // Update objects that might change on per-frame basis.
-  world_information_->ProcessPlaneInformation(detected_planes_data, timestamp);
-  ProcessAnchorsData(tracked_anchors_data, timestamp);
 
   if (pending_frame_) {
     pending_frame_ = false;
@@ -1000,9 +1016,13 @@ void XRSession::LogGetPose() const {
 }
 
 XRFrame* XRSession::CreatePresentationFrame() {
+  DVLOG(2) << __func__;
+
   XRFrame* presentation_frame =
       MakeGarbageCollected<XRFrame>(this, world_information_);
   if (base_pose_matrix_) {
+    DVLOG(2) << __func__
+             << " : base_pose_matrix_ is set, updating presentation frame";
     presentation_frame->SetBasePoseMatrix(*base_pose_matrix_);
   }
   return presentation_frame;

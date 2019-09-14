@@ -252,6 +252,7 @@ VariationsFieldTrialCreator::GetClientFilterableStateForVersion(
   // evaluated, that field trial would not be able to apply for this case.
   state->is_low_end_device = base::SysInfo::IsLowEndDevice();
 #endif
+  state->is_enterprise = client_->IsEnterprise();
   state->session_consistency_country = GetLatestCountry();
   state->permanent_consistency_country = LoadPermanentConsistencyCountry(
       version, state->session_consistency_country);

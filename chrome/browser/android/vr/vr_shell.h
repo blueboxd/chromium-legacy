@@ -33,6 +33,7 @@
 #include "device/vr/public/cpp/session_mode.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/geolocation_config.mojom.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 
@@ -368,7 +369,7 @@ class VrShell : device::GvrGamepadDataProvider,
 
   bool reprojected_rendering_;
 
-  device::mojom::GeolocationConfigPtr geolocation_config_;
+  mojo::Remote<device::mojom::GeolocationConfig> geolocation_config_;
 
   base::CancelableClosure poll_capturing_state_task_;
   CapturingStateModel active_capturing_;

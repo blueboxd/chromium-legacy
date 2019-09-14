@@ -235,8 +235,7 @@ static bool ShouldScaleColumnsForParent(LayoutTable* table) {
     // block. However, this just doesn't work if this is a flex or grid item, so
     // disallow scaling in that case.
     const bool is_deprecated_webkit_box =
-        (cb->StyleRef().Display() == EDisplay::kWebkitBox ||
-         cb->StyleRef().Display() == EDisplay::kWebkitInlineBox);
+        cb->StyleRef().IsDeprecatedWebkitBox();
     if ((!is_deprecated_webkit_box && cb->IsFlexibleBoxIncludingNG()) ||
         cb->IsLayoutGrid()) {
       return false;

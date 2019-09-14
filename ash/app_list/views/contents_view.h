@@ -189,6 +189,10 @@ class APP_LIST_EXPORT ContentsView : public views::View,
       ash::AppListState state,
       ash::AppListViewState view_state) const;
 
+  // Returns the expected search box bounds based on the app list transition
+  // progress.
+  gfx::Rect GetSearchBoxExpectedBoundsForProgress(float progress) const;
+
   // Performs the 'back' action for the active page. Returns whether the action
   // was handled.
   bool Back();
@@ -282,10 +286,6 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // bounds.
   int GetSearchBoxTopForViewState(ash::AppListState state,
                                   ash::AppListViewState view_state) const;
-
-  // Returns the expected search box bounds based on the app list transition
-  // progress.
-  gfx::Rect GetSearchBoxExpectedBoundsForProgress(float progress) const;
 
   // Unowned pointer to application list model.
   AppListModel* model_ = nullptr;

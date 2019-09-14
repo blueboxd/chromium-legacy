@@ -76,6 +76,44 @@ PaymentMethodData* ToPaymentMethodData(
   return method_data;
 }
 
+PaymentOptions* ToPaymentOptions(
+    payments::mojom::blink::PaymentOptionsPtr options) {
+  DCHECK(options);
+  PaymentOptions* payment_options = PaymentOptions::Create();
+  payment_options->setRequestPayerName(options->request_payer_name);
+  payment_options->setRequestPayerEmail(options->request_payer_email);
+  payment_options->setRequestPayerPhone(options->request_payer_phone);
+  payment_options->setRequestShipping(options->request_shipping);
+
+  String shipping_type = "";
+  switch (options->shipping_type) {
+    case payments::mojom::PaymentShippingType::SHIPPING:
+      shipping_type = "shipping";
+      break;
+    case payments::mojom::PaymentShippingType::DELIVERY:
+      shipping_type = "delivery";
+      break;
+    case payments::mojom::PaymentShippingType::PICKUP:
+      shipping_type = "pickup";
+      break;
+  }
+  payment_options->setShippingType(shipping_type);
+  return payment_options;
+}
+
+PaymentShippingOption* ToShippingOption(
+    payments::mojom::blink::PaymentShippingOptionPtr option) {
+  DCHECK(option);
+  PaymentShippingOption* shipping_option = PaymentShippingOption::Create();
+
+  shipping_option->setAmount(
+      ToPaymentCurrencyAmount(std::move(option->amount)));
+  shipping_option->setLabel(option->label);
+  shipping_option->setId(option->id);
+  shipping_option->setSelected(option->selected);
+  return shipping_option;
+}
+
 }  // namespace
 
 PaymentRequestEventInit* PaymentEventDataConversion::ToPaymentRequestEventInit(
@@ -107,6 +145,21 @@ PaymentRequestEventInit* PaymentEventDataConversion::ToPaymentRequestEventInit(
   }
   event_init->setModifiers(modifiers);
   event_init->setInstrumentKey(event_data->instrument_key);
+
+  bool request_shipping = false;
+  if (event_data->payment_options) {
+    request_shipping = event_data->payment_options->request_shipping;
+    event_init->setPaymentOptions(
+        ToPaymentOptions(std::move(event_data->payment_options)));
+  }
+  if (event_data->shipping_options.has_value() && request_shipping) {
+    HeapVector<Member<PaymentShippingOption>> shipping_options;
+    for (auto& option : event_data->shipping_options.value()) {
+      shipping_options.push_back(ToShippingOption(std::move(option)));
+    }
+    event_init->setShippingOptions(shipping_options);
+  }
+
   return event_init;
 }
 

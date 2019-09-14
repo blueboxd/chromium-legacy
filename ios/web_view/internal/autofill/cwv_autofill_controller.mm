@@ -443,22 +443,16 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
   _saver = saver;
 }
 
-- (void)confirmSaveCreditCardToCloud:(const autofill::CreditCard&)creditCard
-                        legalMessage:
-                            (std::unique_ptr<base::DictionaryValue>)legalMessage
-               saveCreditCardOptions:
-                   (autofill::AutofillClient::SaveCreditCardOptions)
-                       saveCreditCardOptions
-                            callback:
-                                (autofill::AutofillClient::
-                                     UploadSaveCardPromptCallback)callback {
+- (void)
+    confirmSaveCreditCardToCloud:(const autofill::CreditCard&)creditCard
+               legalMessageLines:(autofill::LegalMessageLines)legalMessageLines
+           saveCreditCardOptions:
+               (autofill::AutofillClient::SaveCreditCardOptions)
+                   saveCreditCardOptions
+                        callback:(autofill::AutofillClient::
+                                      UploadSaveCardPromptCallback)callback {
   if (![_delegate respondsToSelector:@selector(autofillController:
                                           saveCreditCardWithSaver:)]) {
-    return;
-  }
-  autofill::LegalMessageLines legalMessageLines;
-  if (!autofill::LegalMessageLine::Parse(*legalMessage, &legalMessageLines,
-                                         /*escape_apostrophes=*/true)) {
     return;
   }
   CWVCreditCardSaver* saver = [[CWVCreditCardSaver alloc]

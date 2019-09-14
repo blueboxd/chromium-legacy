@@ -52,12 +52,6 @@ int GetLazyImageLoadingViewportDistanceThresholdPx(const Document& document) {
   return 0;
 }
 
-Document* GetRootDocumentOrNull(Element* element) {
-  if (LocalFrame* frame = element->GetDocument().GetFrame())
-    return frame->LocalFrameRoot().GetDocument();
-  return nullptr;
-}
-
 // Returns if the element or its ancestors are invisible, due to their style or
 // attribute or due to themselves not connected to the main document tree.
 bool IsElementInInvisibleSubTree(const Element& element) {
@@ -77,40 +71,6 @@ bool IsElementInInvisibleSubTree(const Element& element) {
 }
 
 }  // namespace
-
-void LazyLoadImageObserver::StartMonitoring(Element* element,
-                                            DeferralMessage deferral_message) {
-  if (Document* document = GetRootDocumentOrNull(element)) {
-    document->EnsureLazyLoadImageObserver().StartMonitoringNearViewport(
-        document, element, deferral_message);
-  }
-}
-
-void LazyLoadImageObserver::StopMonitoring(Element* element) {
-  if (Document* document = GetRootDocumentOrNull(element)) {
-    document->EnsureLazyLoadImageObserver()
-        .lazy_load_intersection_observer_->unobserve(element);
-  }
-}
-
-void LazyLoadImageObserver::StartTrackingVisibilityMetrics(
-    HTMLImageElement* image_element) {
-  if (!RuntimeEnabledFeatures::LazyImageVisibleLoadTimeMetricsEnabled())
-    return;
-  if (Document* document = GetRootDocumentOrNull(image_element)) {
-    document->EnsureLazyLoadImageObserver().StartMonitoringVisibility(
-        document, image_element);
-  }
-}
-
-void LazyLoadImageObserver::RecordMetricsOnLoadFinished(
-    HTMLImageElement* image_element) {
-  if (!RuntimeEnabledFeatures::LazyImageVisibleLoadTimeMetricsEnabled())
-    return;
-  if (Document* document = GetRootDocumentOrNull(image_element)) {
-    document->EnsureLazyLoadImageObserver().OnLoadFinished(image_element);
-  }
-}
 
 LazyLoadImageObserver::LazyLoadImageObserver() = default;
 
@@ -151,6 +111,10 @@ void LazyLoadImageObserver::StartMonitoringNearViewport(
     UseCounter::Count(root_document,
                       WebFeature::kLazyLoadImageMissingDimensionsForLazy);
   }
+}
+
+void LazyLoadImageObserver::StopMonitoring(Element* element) {
+  lazy_load_intersection_observer_->unobserve(element);
 }
 
 void LazyLoadImageObserver::LoadIfNearViewport(

@@ -196,6 +196,7 @@ Chromium kan je instellingen niet herstellen.</translation>
 <translation id="753534427205733210">{0,plural, =1{Chromium wordt over één minuut opnieuw gestart}other{Chromium wordt over # minuten opnieuw gestart}}</translation>
 <translation id="7549178288319965365">Over Chromium OS</translation>
 <translation id="7561906087460245826">Ook gegevens van Chromium wissen (<ph name="URL" />)</translation>
+<translation id="7585853947355360626">Als je een instelling niet ziet op deze pagina, kijk je in de <ph name="LINK_BEGIN" />Chromium OS-instellingen<ph name="LINK_END" /></translation>
 <translation id="761356813943268536">Chromium gebruikt je camera en microfoon.</translation>
 <translation id="7617377681829253106">Chromium is nu nog beter</translation>
 <translation id="7686590090926151193">Chromium is niet je standaardbrowser</translation>
@@ -229,6 +230,7 @@ Chromium kan je instellingen niet herstellen.</translation>
 <translation id="8619360774459241877">Chromium starten…</translation>
 <translation id="8621669128220841554">De installatie is mislukt wegens een onbekende fout. Download Chromium opnieuw.</translation>
 <translation id="8667808506758191620">Je <ph name="DEVICE_TYPE" /> is up-to-date.</translation>
+<translation id="8682540261359803721">Als je een instelling niet ziet op deze pagina, kijk je in de <ph name="LINK_BEGIN" />instellingen van je Chromium-browser<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">Hiermee wordt ook gecontroleerd welke pagina wordt weergegeven wanneer je Chromium start of vanuit de omnibox zoekt.</translation>
 <translation id="8704119203788522458">Personaliseer jouw Chromium</translation>
 <translation id="8739167630197873875">Je wist cookies wanneer je Chromium sluit. Als je wilt doorgaan met synchroniseren, wijzig je deze <ph name="COOKIE_SETTINGS_LINK" />.</translation>

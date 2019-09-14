@@ -104,7 +104,6 @@
 <translation id="2359808026110333948">Teruskan</translation>
 <translation id="2365393535144473978">Tindakan mendayakan data mudah alih akan turut mendayakan Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
-<translation id="239188844683466770">Togol Jangan ganggu</translation>
 <translation id="2412593942846481727">Kemas kini tersedia</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> ialah sesi terurus yang diurus oleh <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Klik kiri</translation>
@@ -225,6 +224,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4181841719683918333">Bahasa</translation>
 <translation id="4195877955194704651">Mengklik butang secara automatik</translation>
 <translation id="4217571870635786043">Pengimlakan</translation>
+<translation id="421885205185866088">PIN kad pintar untuk <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Tunjukkan tetapan pemberitahuan. Pemberitahuan dimatikan</translation>
 <translation id="4269883910223712419">Pentadbir peranti ini berkeupayaan untuk:</translation>
@@ -240,6 +240,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4379531060876907730">Berikut ialah alatan stilus anda</translation>
 <translation id="4389184120735010762">Anda menekan pintasan papan kekunci untuk penggadang yang didok. Adakah anda ingin menghidupkannya?</translation>
 <translation id="4421231901400348175">Berkongsi kawalan skrin anda dengan <ph name="HELPER_NAME" /> melalui Bantuan Jauh.</translation>
+<translation id="4430019312045809116">Kelantangan</translation>
 <translation id="4450893287417543264">Jangan tunjukkan lagi</translation>
 <translation id="4477350412780666475">Lagu Seterusnya</translation>
 <translation id="4479639480957787382">Ethernet</translation>

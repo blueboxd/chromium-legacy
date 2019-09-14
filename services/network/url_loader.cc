@@ -46,6 +46,7 @@
 #include "services/network/origin_policy/origin_policy_constants.h"
 #include "services/network/origin_policy/origin_policy_manager.h"
 #include "services/network/public/cpp/constants.h"
+#include "services/network/public/cpp/content_security_policy.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/header_util.h"
 #include "services/network/public/cpp/net_adapters.h"
@@ -396,7 +397,6 @@ URLLoader::URLLoader(
       GURL(request.url), request.priority, this, traffic_annotation);
   url_request_->set_method(request.method);
   url_request_->set_site_for_cookies(request.site_for_cookies);
-  url_request_->set_top_frame_origin(request.top_frame_origin);
   url_request_->set_attach_same_site_cookies(request.attach_same_site_cookies);
   url_request_->SetReferrer(ComputeReferrer(request.referrer));
   url_request_->set_referrer_policy(request.referrer_policy);
@@ -991,6 +991,14 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
       // treat the response as "text/plain".  This is the most secure option.
       response_->head.mime_type.assign("text/plain");
     }
+  }
+
+  if (base::FeatureList::IsEnabled(
+          network::features::kOutOfBlinkFrameAncestors)) {
+    // Parse the Content-Security-Policy headers.
+    ContentSecurityPolicy policy;
+    if (policy.Parse(*url_request_->response_headers()))
+      response_->head.content_security_policy = std::move(policy);
   }
 
   // If necessary, retrieve the associated origin policy, before sending the

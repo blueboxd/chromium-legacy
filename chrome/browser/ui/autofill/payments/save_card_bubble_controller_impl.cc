@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_controller_impl.h"
 
 #include <stddef.h>
+#include <string>
 #include <utility>
 
 #include "base/metrics/field_trial_params.h"
@@ -115,7 +116,7 @@ void SaveCardBubbleControllerImpl::OfferLocalSave(
 
 void SaveCardBubbleControllerImpl::OfferUploadSave(
     const CreditCard& card,
-    std::unique_ptr<base::DictionaryValue> legal_message,
+    const LegalMessageLines& legal_message_lines,
     AutofillClient::SaveCreditCardOptions options,
     AutofillClient::UploadSaveCardPromptCallback save_card_prompt_callback) {
   // Don't show the bubble if it's already visible.
@@ -140,20 +141,10 @@ void SaveCardBubbleControllerImpl::OfferUploadSave(
         GetSecurityLevel(), GetSyncState());
   }
 
-  if (!LegalMessageLine::Parse(*legal_message, &legal_message_lines_,
-                               /*escape_apostrophes=*/true)) {
-    AutofillMetrics::LogSaveCardPromptMetric(
-        AutofillMetrics::SAVE_CARD_PROMPT_END_INVALID_LEGAL_MESSAGE,
-        is_upload_save_, is_reshow_, options_,
-        pref_service_->GetInteger(
-            prefs::kAutofillAcceptSaveCreditCardPromptState),
-        GetSecurityLevel(), GetSyncState());
-    return;
-  }
-
   card_ = card;
   upload_save_card_prompt_callback_ = std::move(save_card_prompt_callback);
   current_bubble_type_ = BubbleType::UPLOAD_SAVE;
+  legal_message_lines_ = legal_message_lines;
 
   if (options_.show_prompt)
     ShowBubble();

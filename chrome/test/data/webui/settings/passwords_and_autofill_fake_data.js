@@ -167,6 +167,14 @@ class PasswordSectionElementFactory {
 
     // Create a passwords-section to use for testing.
     const passwordsSection = this.document.createElement('passwords-section');
+    passwordsSection.prefs = {
+      credentials_enable_service: {},
+      profile: {
+        password_manager_leak_detection: {
+          value: true,
+        }
+      },
+    };
     this.document.body.appendChild(passwordsSection);
     Polymer.dom.flush();
     return passwordsSection;

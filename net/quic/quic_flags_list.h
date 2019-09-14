@@ -268,7 +268,7 @@ QUIC_FLAG(bool,
 // frames.
 QUIC_FLAG(
     bool,
-    FLAGS_quic_reloadable_flag_quic_add_upper_limit_of_buffered_control_frames,
+    FLAGS_quic_reloadable_flag_quic_add_upper_limit_of_buffered_control_frames2,
     false)
 
 // If true, static streams should never be closed before QuicSession
@@ -367,4 +367,9 @@ QUIC_FLAG(
 // https://tools.ietf.org/html/draft-ietf-quic-recovery-22#section-6.1.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_enable_ietf_loss_detection,
+          false)
+
+// If true, skip packet number before sending the last PTO retransmission.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_skip_packet_number_for_pto,
           false)

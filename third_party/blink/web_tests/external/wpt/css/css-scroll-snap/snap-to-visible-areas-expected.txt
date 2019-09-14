@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-PASS Only snap to visible area on X axis, even when the non-visible ones are closer
-PASS Only snap to visible area on Y axis, even when the non-visible ones are closer
-FAIL snap to snap area inflated by scroll-margin, even when the non-visible ones are closer assert_equals: expected 800 but got 0
-Harness: the test ran to completion.
-

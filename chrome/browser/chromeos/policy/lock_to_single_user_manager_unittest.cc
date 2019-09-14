@@ -8,7 +8,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
@@ -25,7 +24,6 @@
 #include "components/arc/test/fake_arc_session.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/user_manager/scoped_user_manager.h"
-#include "content/public/browser/notification_service.h"
 
 namespace policy {
 
@@ -71,10 +69,10 @@ class LockToSingleUserManagerTest : public BrowserWithTestWindowTest {
         profile()->GetProfileUserName(), "1234567890"));
     fake_user_manager_->AddUserWithAffiliation(account_id, is_affiliated);
     fake_user_manager_->LoginUser(account_id);
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_PROFILE_CREATED,
-        content::Source<Profile>(profile()),
-        content::NotificationService::NoDetails());
+    // This step should be part of LoginUser(). There's a TODO to add it there,
+    // but it breaks many tests.
+    fake_user_manager_->SwitchActiveUser(account_id);
+
     chromeos::LoginState::Get()->SetLoggedInState(
         chromeos::LoginState::LOGGED_IN_ACTIVE,
         chromeos::LoginState::LOGGED_IN_USER_REGULAR);

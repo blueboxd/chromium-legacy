@@ -8,14 +8,17 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 phút}other{# phút}}</translation>
 <translation id="1181037720776840403">Xóa</translation>
 <translation id="1243314992276662751">Tải lên</translation>
+<translation id="1266864766717917324">Không thể chia sẻ <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Phím Win</translation>
 <translation id="1290982764014248209">Di chuyển <ph name="DRAGGED_APP" /> sang thư mục <ph name="FOLDER_NAME" />.</translation>
+<translation id="1291104554099683393">Hãy thử chia sẻ văn bản theo các đoạn nhỏ hơn.</translation>
 <translation id="1293699935367580298">Thoát</translation>
 <translation id="1306549533752902673">ỨNG DỤNG ĐỀ XUẤT</translation>
 <translation id="1368832886055348810">Trái sang Phải</translation>
 <translation id="1383876407941801731">Tìm kiếm</translation>
 <translation id="1398853756734560583">Phóng to</translation>
 <translation id="1409544243779336081">Ứng dụng đề xuất</translation>
+<translation id="1450753235335490080">Không thể chia sẻ <ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">Bạn đã tìm kiếm nội dung này trước đây. Việc xóa "<ph name="QUERY" />" khỏi lịch sử sẽ xóa vĩnh viễn cụm từ tìm kiếm này khỏi tài khoản của bạn trên tất cả các thiết bị.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 phút và }other{# phút và }}</translation>
 <translation id="1643823602425662293">Thông báo</translation>
@@ -35,6 +38,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Chọn &amp;tất cả</translation>
 <translation id="1938451708255335766">Để điều chỉnh mật độ hiển thị cửa sổ, hãy khởi động lại ứng dụng.</translation>
+<translation id="2006524834898217237">Hãy đảm bảo thiết bị này có kết nối Internet.</translation>
 <translation id="208586643495776849">Vui lòng thử lại</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 ngày}other{# ngày}}</translation>
 <translation id="2148716181193084225">Hôm nay</translation>
@@ -76,6 +80,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 ngày}other{# ngày}}</translation>
 <translation id="3295886253693811851">Gọi điện từ</translation>
 <translation id="335581015389089642">Giọng nói</translation>
+<translation id="3389286852084373014">Văn bản quá lớn</translation>
 <translation id="3443810440409579745">Đã nhận tab.</translation>
 <translation id="3479552764303398839">Không phải bây giờ</translation>
 <translation id="348799646910989694">Giá tự động ẩn</translation>
@@ -151,11 +156,13 @@
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 giây trước}other{# giây trước}}</translation>
 <translation id="6430678249303439055">Chặn tất cả thông báo từ ứng dụng này</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 giây trước}other{# giây trước}}</translation>
+<translation id="6539092367496845964">Đã xảy ra lỗi. Hãy thử lại sau.</translation>
 <translation id="654149438358937226">Chặn tất cả thông báo</translation>
 <translation id="6567071839949112727">nhấp vào đối tượng cấp trên</translation>
 <translation id="6578407462441924264">Chưa đặt tên</translation>
 <translation id="6612467943526193239">Để thoát chế độ hiệu chỉnh, nhấn Esc.</translation>
 <translation id="6620110761915583480">Lưu Tệp</translation>
+<translation id="6656912866303152668">Đảm bảo bạn đã bật tính năng đồng bộ hóa của <ph name="TARGET_DEVICE_NAME" /> trong Chrome, rồi thử gửi lại.</translation>
 <translation id="6699343763173986273">Bản nhạc tiếp theo của trình phát phương tiện</translation>
 <translation id="673773751041746814">Xóa</translation>
 <translation id="6779314412797872738">Để chuyển một số điện thoại từ đây sang điện thoại Android, hãy <ph name="TROUBLESHOOT_LINK" /> cho cả hai thiết bị trong phần cài đặt.</translation>
@@ -221,6 +228,7 @@
 <translation id="8876215549894133151">Định dạng:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8926951137623668982">Giá luôn ẩn</translation>
+<translation id="8996630695507351249">Hãy đảm bảo <ph name="TARGET_DEVICE_NAME" /> có kết nối Internet.</translation>
 <translation id="9002566407876343676">mở</translation>
 <translation id="9039076430527029379">Chuyển tới trang <ph name="PAGE_NUMBER" />, hàng <ph name="ROW_NUMBER" />, cột <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 giây}other{# giây}}</translation>

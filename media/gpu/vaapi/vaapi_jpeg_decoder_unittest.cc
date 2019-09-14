@@ -328,8 +328,8 @@ TEST_F(VaapiJpegDecoderTest, MinimalImageFormatSupport) {
   ASSERT_TRUE(VaapiWrapper::IsImageFormatSupported(i420_format));
 
   // Additionally, the mesa VAAPI driver should support YV12, NV12 and YUYV.
-  if (base::StartsWith(VaapiWrapper::GetVendorStringForTesting(),
-                       "Mesa Gallium driver", base::CompareCase::SENSITIVE)) {
+  if (base::StartsWith(VaapiWrapper::GetVendorString(), "Mesa Gallium driver",
+                       base::CompareCase::SENSITIVE)) {
     VAImageFormat yv12_format{};
     yv12_format.fourcc = VA_FOURCC_YV12;
     ASSERT_TRUE(VaapiWrapper::IsImageFormatSupported(yv12_format));
@@ -502,8 +502,8 @@ class VaapiJpegDecoderWithDmaBufsTest : public VaapiJpegDecoderTest {
 
 // TODO(andrescj): test other JPEG formats besides YUV 4:2:0.
 TEST_P(VaapiJpegDecoderWithDmaBufsTest, DecodeSucceeds) {
-  if (base::StartsWith(VaapiWrapper::GetVendorStringForTesting(),
-                       "Mesa Gallium driver", base::CompareCase::SENSITIVE)) {
+  if (base::StartsWith(VaapiWrapper::GetVendorString(), "Mesa Gallium driver",
+                       base::CompareCase::SENSITIVE)) {
     // TODO(crbug.com/974438): until we support surfaces with multiple buffer
     // objects, the AMD driver fails this test.
     GTEST_SKIP();

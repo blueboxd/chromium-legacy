@@ -434,10 +434,6 @@ void CastAudioOutputStream::CmaWrapper::OnPushBufferComplete(
 
   // Schedule next push buffer.
   const base::TimeTicks now = base::TimeTicks::Now();
-  render_buffer_size_estimate_ -= buffer_duration_;
-  render_buffer_size_estimate_ += now - last_push_complete_time_;
-  last_push_complete_time_ = now;
-
   base::TimeDelta delay;
   if (is_audio_prefetch_) {
     // For multizone-playback, we don't care about AV sync and want to pre-fetch

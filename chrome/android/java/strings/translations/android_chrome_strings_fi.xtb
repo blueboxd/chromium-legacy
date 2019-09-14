@@ -21,7 +21,6 @@
 <translation id="1146678959555564648">Siirry VR-tilaan</translation>
 <translation id="116280672541001035">Käytetty</translation>
 <translation id="1171770572613082465">Katso suositut sivustot napauttamalla Suosituimmat sivustot ‑painiketta</translation>
-<translation id="1172593791219290334">Aloitussivu</translation>
 <translation id="1173894706177603556">Muuta nimeä</translation>
 <translation id="1175310183703641346">Kirjanmerkkejäsi, historiaasi, salasanojasi tai muita ei enää synkronoida Google-tilillesi</translation>
 <translation id="1178581264944972037">Tauko</translation>
@@ -42,6 +41,7 @@
 <translation id="1258753120186372309">Google-piirros: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Hae ja tutki</translation>
 <translation id="1264974993859112054">Urheilu</translation>
+<translation id="1266864766717917324">Jakaminen epäonnistui: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">Pysäytä</translation>
 <translation id="1283039547216852943">Laajenna napauttamalla.</translation>
 <translation id="1285320974508926690">Älä käännä tätä sivustoa</translation>
@@ -71,6 +71,7 @@
 <translation id="1430915738399379752">Tulosta</translation>
 <translation id="1445680696957526815">Chromen osat eivät ole yhteensopivia toistensa kanssa. Chromen päivitys voi olla kesken; yritä uudelleen muutaman minuutin kuluttua. Jos ongelma ei ratkea, poista Chrome ja asenna se uudelleen.</translation>
 <translation id="1446450296470737166">Salli MIDI-laitteiden täysi käyttöoik.</translation>
+<translation id="1450753235335490080">Jakaminen ei onnistu: <ph name="CONTENT_TYPE" /></translation>
 <translation id="145097072038377568">Poistettu käytöstä Android-asetuksissa</translation>
 <translation id="1477626028522505441">Tiedoston <ph name="FILE_NAME" /> lataus epäonnistui palvelinongelman vuoksi.</translation>
 <translation id="1501480321619201731">Poista ryhmä</translation>
@@ -153,6 +154,7 @@
 <translation id="2049961518639794558">Tiedostotunnisteen muuttaminen voi aiheuttaa odottamatonta toimintaa ja vahingoittaa laitetta.</translation>
 <translation id="2056878612599315956">Sivusto keskeytetty</translation>
 <translation id="2063713494490388661">Hae napauttamalla</translation>
+<translation id="2067805253194386918">tekstiviesti</translation>
 <translation id="2079545284768500474">Kumoa</translation>
 <translation id="2082238445998314030">Tulos <ph name="RESULT_NUMBER" />/<ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Ääni</translation>
@@ -165,7 +167,6 @@
 <translation id="2131665479022868825"><ph name="DATA" /> tallennettu</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> suljettiin</translation>
 <translation id="2139186145475833000">Lisää aloitusnäyttöön</translation>
-<translation id="2142289305367051020">Suosikkisivusi löytyvät täältä</translation>
 <translation id="2146738493024040262">Avaa Instant-sovellus</translation>
 <translation id="2148716181193084225">Tänään</translation>
 <translation id="2154484045852737596">Muokkaa korttia</translation>
@@ -324,6 +325,7 @@
 <translation id="3384347053049321195">Jaa kuva</translation>
 <translation id="3386292677130313581">Pyydä lupaa, kun sivustot yrittävät käyttää sijaintiasi (suositus).</translation>
 <translation id="3387650086002190359">Tiedoston <ph name="FILE_NAME" /> lataus epäonnistui tiedostojärjestelmävirheen vuoksi.</translation>
+<translation id="3389286852084373014">Teksti on liian suuri</translation>
 <translation id="3398320232533725830">Avaa kirjanmerkkien hallinta</translation>
 <translation id="3414952576877147120">Koko:</translation>
 <translation id="3443221991560634068">Päivitä nykyinen sivu</translation>
@@ -348,6 +350,7 @@
 <translation id="3599863153486145794">Tyhjentää kaikkien sisäänkirjautuneiden laitteiden historian. Google-tililläsi voi olla muuta toimintaa osoitteessa <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Mykistä ääniä toistavat sivustot</translation>
 <translation id="3616113530831147358">Ääni</translation>
+<translation id="3631987586758005671">Jaetaan: <ph name="DEVICE_NAME" /></translation>
 <translation id="3632295766818638029">Paljasta salasana</translation>
 <translation id="363596933471559332">Kirjaudu automaattisesti verkkosivustoille käyttämällä tallennettuja kirjautumistietoja. Jos tämä toiminto ei ole käytössä, sinua pyydetään vahvistamaan kirjautuminen aina, kun kirjaudut sivustolle.</translation>
 <translation id="3658159451045945436">Nollaaminen tyhjentää datansäästöhistoriasi, mukaan lukien luettelon paikoista, joissa olet käynyt.</translation>
@@ -358,7 +361,6 @@
 <translation id="3739899004075612870">Lisätty kirjanmerkkeihin: <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> Mt muita sovelluksia</translation>
 <translation id="3744111561329211289">Taustasynkronointi</translation>
-<translation id="3745176700485982507">Tältä sivulta löydät linkit suosikkisivuillesi</translation>
 <translation id="3771001275138982843">Päivityksen lataaminen epäonnistui</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Ota Bluetooth käyttöön<ph name="END_LINK" />, jotta laiteparin muodostus onnistuu.</translation>
 <translation id="3775705724665058594">Lähetä laitteillesi</translation>
@@ -563,7 +565,6 @@ Varmista, että sivusto on luotettava, ennen kuin siirryt VR-tilaan.</translatio
 <translation id="5224771365102442243">Video sivulla</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> haluaa etsiä lähellä olevia Bluetooth-laitteita. Seuraavat laitteet löydettiin:</translation>
 <translation id="5233638681132016545">Uusi välilehti</translation>
-<translation id="5234764350956374838">Piilota</translation>
 <translation id="526421993248218238">Sivun lataaminen epäonnistui</translation>
 <translation id="5271967389191913893">Laite ei voi avata ladattavaa sisältöä.</translation>
 <translation id="528192093759286357">Poistu koko näytön tilasta vetämällä näytön yläreunasta ja koskettamalla Takaisin-painiketta.</translation>
@@ -578,8 +579,8 @@ Varmista, että sivusto on luotettava, ennen kuin siirryt VR-tilaan.</translatio
 <translation id="5324858694974489420">Vanhempien asetukset</translation>
 <translation id="5327248766486351172">Nimi</translation>
 <translation id="5335288049665977812">Anna kaikkien sivustojen käyttää JavaScriptiä (suositus).</translation>
+<translation id="5342314432463739672">Käyttöoikeuspyynnöt</translation>
 <translation id="5357811892247919462">Välilehti vastaanotettu</translation>
-<translation id="5363230136052241468">Napauta aloitusnäyttöpainiketta ladataksesi uusi välilehti ‑sivun.</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> avoin välilehti, vaihda välilehteä napauttamalla}other{<ph name="OPEN_TABS_MANY" /> avointa välilehteä, vaihda välilehteä napauttamalla}}</translation>
 <translation id="5391532827096253100">Sivustolle muodostamasi yhteys ei ole turvallinen. Sivuston tiedot</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 muu)}other{(+ # muuta)}}</translation>
@@ -748,6 +749,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="6532866250404780454">Chromessa käyttämäsi sivustot eivät näy. Kaikki sivuston ajastimet poistetaan.</translation>
 <translation id="6534565668554028783">Google ei vastannut riittävän nopeasti.</translation>
 <translation id="6538442820324228105">Ladattu: <ph name="GBS" /> Gt</translation>
+<translation id="6539092367496845964">Jotain meni vikaan. Yritä myöhemmin uudelleen.</translation>
 <translation id="654446541061731451">Valitse siirrettävä välilehti</translation>
 <translation id="6545017243486555795">Poista kaikki tiedot</translation>
 <translation id="6545864417968258051">Bluetooth-haku</translation>
@@ -802,7 +804,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="6912998170423641340">Estä sivustoja lukemasta tekstiä ja kuvia leikepöydältä</translation>
 <translation id="6914783257214138813">Salasanasi näkyvät kaikille, jotka näkevät viedyn tiedoston.</translation>
 <translation id="6942665639005891494">Muuta oletuslataussijaintia milloin tahansa Asetukset-valikon kautta</translation>
-<translation id="6944102653068653326">Lataa uusi välilehti-sivu napauttamalla.</translation>
 <translation id="6945221475159498467">Valitse</translation>
 <translation id="6963642900430330478">Tämä sivu on vaarallinen. Sivuston tiedot</translation>
 <translation id="6963766334940102469">Poista kirjanmerkkejä</translation>
@@ -879,6 +880,7 @@ Sivusto EI saa kameran käyttöoikeutta. Kamerakuvat näkyvät vain sinulle.</tr
 <translation id="7493994139787901920"><ph name="VERSION" /> (päivitettiin <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">dataa säästetty</translation>
 <translation id="7498271377022651285">Odota…</translation>
+<translation id="7510943789645525906">Varoittaa sinua, jos käyttämäsi salasana oli osallisena tietosuojaloukkauksessa</translation>
 <translation id="7514365320538308">Lataa</translation>
 <translation id="751961395872307827">Yhteyden muodostaminen sivustoon epäonnistui</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -996,7 +998,6 @@ Sivusto EI saa kameran käyttöoikeutta. Kamerakuvat näkyvät vain sinulle.</tr
 <translation id="8284326494547611709">Tekstitykset</translation>
 <translation id="8300705686683892304">Sovelluksen ylläpitämät</translation>
 <translation id="8310344678080805313">Tavalliset välilehdet</translation>
-<translation id="8313455859591948645">Muokkaa aloitussivua</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> ja muita sivustoja</translation>
 <translation id="8327155640814342956">Jotta saat parhaan mahdollisen selauskokemuksen, avaa ja päivitä Chrome nyt</translation>
 <translation id="8339163506404995330">Kielellä <ph name="LANGUAGE" /> kirjoitettuja sivuja ei käännetä.</translation>

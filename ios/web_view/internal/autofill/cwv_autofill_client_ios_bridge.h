@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/payments/card_unmask_delegate.h"
+#include "components/autofill/core/browser/payments/legal_message_line.h"
 
 namespace autofill {
 class CreditCard;
@@ -33,8 +34,8 @@ class FormStructure;
 
 // Bridge for AutofillClient's method |ConfirmSaveCreditCardToCloud|.
 - (void)confirmSaveCreditCardToCloud:(const autofill::CreditCard&)creditCard
-                        legalMessage:
-                            (std::unique_ptr<base::DictionaryValue>)legalMessage
+                   legalMessageLines:
+                       (autofill::LegalMessageLines)legalMessageLines
                saveCreditCardOptions:
                    (autofill::AutofillClient::SaveCreditCardOptions)
                        saveCreditCardOptions

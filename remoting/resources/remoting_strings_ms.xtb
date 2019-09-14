@@ -58,6 +58,7 @@
 <translation id="2509394361235492552">Disambungkan ke <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">PERHATIAN: Untuk memastikan semua pintasan papan kekunci tersedia, anda boleh mengkonfigurasi Desktop Jauh Chrome kepada ‘Buka sebagai tetingkap’.</translation>
 <translation id="2540992418118313681">Adakah anda ingin berkongsi komputer ini untuk dilihat dan dikawal oleh pengguna lain?</translation>
+<translation id="254771646005658629">Benarkan pengguna jauh mengawal Mac ini</translation>
 <translation id="2579271889603567289">Hos mengalami ranap sistem atau gagal bermula.</translation>
 <translation id="2599300881200251572">Perkhidmatan ini membolehkan sambungan masuk daripada klien Desktop Jauh Chrome.</translation>
 <translation id="2647232381348739934">Perkhidmatan Chromoting</translation>
@@ -182,6 +183,11 @@
 <translation id="5419185025274123272">Tidak dapat menetapkan semula aplikasi. Anda masih boleh menghantar laporan pepijat.</translation>
 <translation id="5419418238395129586">Terakhir dalam talian: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Hos telah ditutup.</translation>
+<translation id="5463789431147491241">Untuk menggunakan <ph name="PRODUCT_NAME" /> pada Mac ini, ikuti langkah berikut:
+
+Pilih '<ph name="BUTTON_NAME" />' di bawah. Dalam pilihan Keselamatan dan Privasi anda, tandai kotak di sebelah '<ph name="SERVICE_SCRIPT_NAME" />'.
+
+Jika '<ph name="SERVICE_SCRIPT_NAME" />' telah pun ditandai, nyahtanda dan kemudian tandai semula.</translation>
 <translation id="5510035215749041527">Putuskan sambungan sekarang</translation>
 <translation id="5593560073513909978">Perkhidmatan ini tergendala buat sementara waktu. Sila cuba lagi kemudian.</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -298,12 +304,14 @@
 <translation id="837021510621780684">Dari komputer ini</translation>
 <translation id="8383794970363966105">Untuk menggunakan Chromoting, anda perlu menambahkan Akaun Google kepada peranti anda.</translation>
 <translation id="8386846956409881180">Hos dikonfigurasikan dengan bukti kelayakan OAuth yang tidak sah.</translation>
+<translation id="8406498562923498210">Pilih sesi untuk dilancarkan dalam persekitaran Desktop Jauh Chrome anda. (Sila ambil perhatian bahawa sesetengah jenis sesi mungkin tidak menyokong dijalankan secara serentak dalam Desktop Jauh Chrome dan konsol setempat.)</translation>
 <translation id="8428213095426709021">Tetapan</translation>
 <translation id="8445362773033888690">Lihat di Gedung Google Play</translation>
 <translation id="8509907436388546015">Proses Persepaduan Desktop</translation>
 <translation id="8513093439376855948">Hos pemesejan asal untuk pengurusan hos kejauhan</translation>
 <translation id="8525306231823319788">Skrin penuh</translation>
 <translation id="8548209692293300397">Sebelum ini anda telah log masuk sebagai <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />).  Untuk mengakses komputer anda dalam akaun itu, <ph name="LINK_BEGIN" />log masuk ke Google Chrome<ph name="LINK_END" /> dengan akaun itu dan pasang semula Desktop Jauh Chrome.</translation>
+<translation id="858006550102277544">Ulas</translation>
 <translation id="8642984861538780905">Sederhana</translation>
 <translation id="8712909229180978490">Saya tidak nampak fail saya yang disimpan dalam talian di Google Drive.</translation>
 <translation id="8743328882720071828">Adakah anda ingin membenarkan <ph name="CLIENT_USERNAME" /> melihat dan mengawal komputer anda?</translation>
@@ -321,6 +329,7 @@
 <translation id="9126115402994542723">Jangan meminta PIN lagi apabila bersambung ke hos ini dari peranti ini.</translation>
 <translation id="9149580767411232853">Pastikan seluruh desktop jauh boleh dilihat</translation>
 <translation id="9149992051684092333">Untuk mula berkongsi desktop anda, berikan kod akses di bawah kepada orang yang akan membantu anda.</translation>
+<translation id="916856682307586697">Lancarkan XSession lalai</translation>
 <translation id="9188433529406846933">Beri keizinan</translation>
 <translation id="9213184081240281106">Konfigurasi hos tidak sah.</translation>
 <translation id="951991426597076286">Tolak</translation>

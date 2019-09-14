@@ -11,12 +11,6 @@ namespace features {
 
 // Please keep alphabetized.
 
-#if defined(OS_WIN)
-// Uses aura tooltips instead of the native comctl32 tooltips on Windows.
-const base::Feature kEnableAuraTooltipsOnWindows{
-    "EnableAuraTooltipsOnWindows", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // OS_WIN
-
 // Increases corner radius on Dialogs for the material design refresh.
 // TODO(sajadm): Remove this feature flag when platform inconsistencies
 // have been fixed as recorded on: https://crbug.com/932970

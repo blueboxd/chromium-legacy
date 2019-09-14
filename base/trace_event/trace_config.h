@@ -255,11 +255,6 @@ class BASE_EXPORT TraceConfig {
   // Write the string representation of the CategoryFilter part.
   std::string ToCategoryFilterString() const;
 
-  // Write the string representation of the trace options part (record mode,
-  // systrace, argument filtering). Does not include category filters, event
-  // filters, or memory dump configs.
-  std::string ToTraceOptionsString() const;
-
   // Returns true if at least one category in the list is enabled by this
   // trace config. This is used to determine if the category filters are
   // enabled in the TRACE_* macros.
@@ -321,6 +316,8 @@ class BASE_EXPORT TraceConfig {
   void SetHistogramNamesFromConfigList(const Value& histogram_names);
   void SetEventFiltersFromConfigList(const Value& event_filters);
   Value ToValue() const;
+
+  std::string ToTraceOptionsString() const;
 
   TraceRecordMode record_mode_;
   size_t trace_buffer_size_in_events_ = 0;  // 0 specifies default size

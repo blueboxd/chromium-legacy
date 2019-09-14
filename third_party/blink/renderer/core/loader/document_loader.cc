@@ -36,6 +36,7 @@
 #include "base/time/default_tick_clock.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/origin_policy/origin_policy.h"
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
@@ -767,8 +768,11 @@ ContentSecurityPolicy* DocumentLoader::CreateCSP(
       }
     }
   }
-  if (!csp->AllowAncestors(frame_, response.CurrentRequestUrl()))
-    return nullptr;
+  if (!base::FeatureList::IsEnabled(
+          network::features::kOutOfBlinkFrameAncestors)) {
+    if (!csp->AllowAncestors(frame_, response.CurrentRequestUrl()))
+      return nullptr;
+  }
 
   if (!frame_->GetSettings()->BypassCSP() &&
       !GetFrameLoader().RequiredCSP().IsEmpty()) {

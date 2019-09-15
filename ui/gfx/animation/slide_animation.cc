@@ -76,11 +76,6 @@ void SlideAnimation::AnimateToState(double state) {
       Tween::CalculateValue(tween_type_, base::ClampToRange(state, 0.0, 1.0));
   value_current_ = value_start_ + (value_end_ - value_start_) * state;
 
-  // Implement snapping.
-  if (tween_type_ == Tween::EASE_OUT_SNAP &&
-      fabs(value_current_ - value_end_) <= 0.06)
-    value_current_ = value_end_;
-
   // Correct for any overshoot (while state may be capped at 1.0, let's not
   // take any rounding error chances.
   if ((value_end_ >= value_start_) ? (value_current_ > value_end_)

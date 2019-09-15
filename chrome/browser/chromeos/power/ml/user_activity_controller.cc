@@ -4,8 +4,9 @@
 
 #include "chrome/browser/chromeos/power/ml/user_activity_controller.h"
 
+#include "base/feature_list.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
-#include "chromeos/constants/devicetype.h"
+#include "chrome/common/chrome_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/session_manager/session_manager_types.h"
 #include "components/viz/host/host_frame_sink_manager.h"
@@ -18,7 +19,7 @@ namespace power {
 namespace ml {
 
 UserActivityController::UserActivityController() {
-  if (chromeos::GetDeviceType() != chromeos::DeviceType::kChromebook)
+  if (!base::FeatureList::IsEnabled(features::kSmartDim))
     return;
 
   chromeos::PowerManagerClient* power_manager_client =

@@ -5,8 +5,9 @@
 #include "chrome/browser/chromeos/dbus/machine_learning_decision_service_provider.h"
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_controller.h"
-#include "chromeos/constants/devicetype.h"
+#include "chrome/common/chrome_features.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -47,9 +48,9 @@ void MachineLearningDecisionServiceProvider::ShouldDeferScreenDim(
   std::unique_ptr<dbus::Response> response =
       dbus::Response::FromMethodCall(method_call);
 
-  // Smart dim only works on chromebook devices. Simply return false on other
-  // device types.
-  if (chromeos::GetDeviceType() != chromeos::DeviceType::kChromebook) {
+  // Smart dim only works when features::kSmartDim is enabled. Simply return
+  // false otherwise.
+  if (!base::FeatureList::IsEnabled(features::kSmartDim)) {
     SendSmartDimDecision(std::move(response), std::move(response_sender),
                          false);
     return;

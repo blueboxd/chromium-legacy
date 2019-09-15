@@ -797,6 +797,9 @@ const base::Feature kCrOSEnableUSMUserService{"CrOSEnableUSMUserService",
 const base::Feature kMachineLearningService{"MachineLearningService",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables SmartDim on Chrome OS.
+const base::Feature kSmartDim{"SmartDim", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable USBGuard at the lockscreen on Chrome OS.
 // TODO(crbug.com/874630): Remove this kill-switch
 const base::Feature kUsbguard{"USBGuard", base::FEATURE_DISABLED_BY_DEFAULT};

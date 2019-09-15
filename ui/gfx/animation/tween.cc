@@ -39,14 +39,7 @@ double Tween::CalculateValue(Tween::Type type, double state) {
         return pow(state * 2, 2) / 2.0;
       return 1.0 - (pow((state - 1.0) * 2, 2) / 2.0);
 
-    case FAST_IN_OUT:
-      return (pow(state - 0.5, 3) + 0.125) / 0.25;
-
     case LINEAR:
-      return state;
-
-    case EASE_OUT_SNAP:
-      state = 0.95 * (1.0 - pow(1.0 - state, 2));
       return state;
 
     case EASE_OUT:

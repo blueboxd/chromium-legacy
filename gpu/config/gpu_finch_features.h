@@ -50,6 +50,8 @@ GPU_EXPORT extern const base::Feature kVaapiJpegImageDecodeAcceleration;
 
 GPU_EXPORT extern const base::Feature kVaapiWebPImageDecodeAcceleration;
 
+GPU_EXPORT extern const base::Feature kVulkan;
+
 #if defined(OS_ANDROID)
 GPU_EXPORT bool IsAndroidSurfaceControlEnabled();
 #endif

@@ -23,6 +23,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/android_opengl/etc1/etc1.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -201,7 +202,8 @@ void ThumbnailCache::Put(TabId tab_id,
   // Vulkan does not yet support compressed texture uploads. Disable compression
   // and approximation when in experimental Vulkan mode.
   // TODO(ericrk): Remove this restriction. https://crbug.com/906794
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseVulkan)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseVulkan) ||
+      base::FeatureList::IsEnabled(features::kVulkan)) {
     return;
   }
 

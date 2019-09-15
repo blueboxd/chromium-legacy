@@ -73,6 +73,15 @@ Vector<char> ChooserResourceLoader::GetCalendarPickerJS() {
 #endif
 }
 
+Vector<char> ChooserResourceLoader::GetMonthPickerJS() {
+#if !defined(OS_ANDROID)
+  return UncompressResourceAsBinary(IDR_MONTH_PICKER_JS);
+#else
+  NOTREACHED();
+  return Vector<char>();
+#endif
+}
+
 Vector<char> ChooserResourceLoader::GetColorSuggestionPickerStyleSheet() {
 #if !defined(OS_ANDROID)
   return UncompressResourceAsBinary(IDR_COLOR_SUGGESTION_PICKER_CSS);

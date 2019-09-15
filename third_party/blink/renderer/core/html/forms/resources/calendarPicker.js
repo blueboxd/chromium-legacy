@@ -833,6 +833,12 @@ function openSuggestionPicker() {
 
 function openCalendarPicker() {
   closePicker();
+  if (global.params.isFormControlsRefreshEnabled) {
+    if (global.params.mode == 'month') {
+      return initializeMonthPicker(global.params);
+    }
+  }
+
   global.picker = new CalendarPicker(global.params.mode, global.params);
   global.picker.attachTo($('main'));
 };

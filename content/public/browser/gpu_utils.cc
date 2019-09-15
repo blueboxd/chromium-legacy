@@ -91,19 +91,6 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
 
   gpu_preferences.enable_oop_rasterization_ddl =
       command_line->HasSwitch(switches::kEnableOopRasterizationDDL);
-  if (command_line->HasSwitch(switches::kUseVulkan)) {
-    auto value = command_line->GetSwitchValueASCII(switches::kUseVulkan);
-    if (value.empty() || value == switches::kVulkanImplementationNameNative) {
-      gpu_preferences.use_vulkan = gpu::VulkanImplementationName::kNative;
-    } else if (value == switches::kVulkanImplementationNameSwiftshader) {
-      gpu_preferences.use_vulkan = gpu::VulkanImplementationName::kSwiftshader;
-    } else {
-      gpu_preferences.use_vulkan = gpu::VulkanImplementationName::kNone;
-    }
-  } else {
-    gpu_preferences.use_vulkan = gpu::VulkanImplementationName::kNone;
-  }
-
   gpu_preferences.enforce_vulkan_protected_memory =
       command_line->HasSwitch(switches::kEnforceVulkanProtectedMemory);
   gpu_preferences.disable_vulkan_fallback_to_gl_for_testing =

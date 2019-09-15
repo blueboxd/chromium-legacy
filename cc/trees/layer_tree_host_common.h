@@ -38,20 +38,15 @@ class CC_EXPORT LayerTreeHostCommon {
    public:
     CalcDrawPropsMainInputsForTesting(Layer* root_layer,
                                       const gfx::Rect& device_viewport_rect,
-                                      const gfx::Transform& device_transform,
                                       float device_scale_factor,
                                       float page_scale_factor,
                                       const Layer* page_scale_layer,
                                       const Layer* inner_viewport_scroll_layer,
                                       const Layer* outer_viewport_scroll_layer);
     CalcDrawPropsMainInputsForTesting(Layer* root_layer,
-                                      const gfx::Rect& device_viewport_rect,
-                                      const gfx::Transform& device_transform);
-    CalcDrawPropsMainInputsForTesting(Layer* root_layer,
                                       const gfx::Rect& device_viewport_rect);
     Layer* root_layer;
     gfx::Rect device_viewport_rect;
-    gfx::Transform device_transform;
     float device_scale_factor;
     float page_scale_factor;
     const Layer* page_scale_layer;

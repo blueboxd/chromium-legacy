@@ -120,6 +120,10 @@ const base::Feature kVaapiJpegImageDecodeAcceleration{
 const base::Feature kVaapiWebPImageDecodeAcceleration{
     "VaapiWebPImageDecodeAcceleration", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable Vulkan graphics backend if --use-vulkan flag is not used. Otherwise
+// --use-vulkan will be followed.
+const base::Feature kVulkan{"Vulkan", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_ANDROID)
 bool IsAndroidSurfaceControlEnabled() {
   if (!gl::SurfaceControl::IsSupported())

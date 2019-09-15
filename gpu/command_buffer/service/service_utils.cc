@@ -11,6 +11,7 @@
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gl_utils.h"
 
@@ -155,6 +156,8 @@ GpuPreferences ParseGpuPreferences(const base::CommandLine* command_line) {
   gpu_preferences.enable_webgpu =
       command_line->HasSwitch(switches::kEnableUnsafeWebGPU);
   if (command_line->HasSwitch(switches::kUseVulkan)) {
+    DLOG_IF(ERROR, base::FeatureList::IsEnabled(features::kVulkan))
+        << "--enabled-features=Vulkan is overrided by --use-vulkan.";
     auto value = command_line->GetSwitchValueASCII(switches::kUseVulkan);
     if (value.empty() || value == switches::kVulkanImplementationNameNative) {
       gpu_preferences.use_vulkan = VulkanImplementationName::kNative;
@@ -164,7 +167,9 @@ GpuPreferences ParseGpuPreferences(const base::CommandLine* command_line) {
       gpu_preferences.use_vulkan = VulkanImplementationName::kNone;
     }
   } else {
-    gpu_preferences.use_vulkan = VulkanImplementationName::kNone;
+    gpu_preferences.use_vulkan = base::FeatureList::IsEnabled(features::kVulkan)
+                                     ? gpu::VulkanImplementationName::kNative
+                                     : gpu::VulkanImplementationName::kNone;
   }
   gpu_preferences.disable_vulkan_surface =
       command_line->HasSwitch(switches::kDisableVulkanSurface);

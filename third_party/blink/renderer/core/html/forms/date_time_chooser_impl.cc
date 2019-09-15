@@ -223,6 +223,9 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
 
   data->Append(ChooserResourceLoader::GetPickerCommonJS());
   data->Append(ChooserResourceLoader::GetSuggestionPickerJS());
+  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
+    data->Append(ChooserResourceLoader::GetMonthPickerJS());
+  }
   data->Append(ChooserResourceLoader::GetCalendarPickerJS());
   AddString("</script></body>\n", data);
 }

@@ -104,11 +104,11 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
                                       float device_scale_factor = 1.0f,
                                       float page_scale_factor = 1.0f,
                                       Layer* page_scale_layer = nullptr) {
-    if (!host()->IsUsingLayerLists()) {
-      if (device_scale_factor != host()->device_scale_factor() ||
-          page_scale_factor != host()->page_scale_factor()) {
-        host()->property_trees()->needs_rebuild = true;
-      }
+    if (!host()->IsUsingLayerLists() &&
+        device_scale_factor != host()->device_scale_factor()) {
+      DCHECK_EQ(1.0f, page_scale_factor);
+      DCHECK(!page_scale_layer);
+      host()->property_trees()->needs_rebuild = true;
     }
 
     EXPECT_TRUE(page_scale_layer || (page_scale_factor == 1.f));
@@ -7034,9 +7034,8 @@ TEST_F(LayerTreeHostCommonTestWithLayerTree, RenderSurfaceLayerListMembership) {
 }
 
 // Needs layer tree mode: mask layer.
-TEST_F(LayerTreeHostCommonTestWithLayerTree, DrawPropertyScales) {
+TEST_F(LayerTreeHostCommonTestWithLayerTree, DrawPropertyDeviceScale) {
   auto root = Layer::Create();
-  auto page_scale = Layer::Create();
   auto child1 = Layer::Create();
   auto child2 = Layer::Create();
 
@@ -7055,13 +7054,10 @@ TEST_F(LayerTreeHostCommonTestWithLayerTree, DrawPropertyScales) {
   mask->SetBounds(child1->bounds());
   child1->SetMaskLayer(mask);
 
-  page_scale->AddChild(child1);
-  page_scale->AddChild(child2);
-  root->AddChild(page_scale);
+  root->AddChild(child1);
+  root->AddChild(child2);
   host()->SetRootLayer(root);
   host()->SetElementIdsForTesting();
-
-  CommitAndActivate();
 
   TransformOperations scale;
   scale.AppendScale(5.f, 8.f, 3.f);
@@ -7075,9 +7071,72 @@ TEST_F(LayerTreeHostCommonTestWithLayerTree, DrawPropertyScales) {
   CommitAndActivate();
 
   EXPECT_FLOAT_EQ(1.f, ImplOf(root)->GetIdealContentsScale());
-  EXPECT_FLOAT_EQ(1.f, ImplOf(page_scale)->GetIdealContentsScale());
   EXPECT_FLOAT_EQ(3.f, ImplOf(child1)->GetIdealContentsScale());
   EXPECT_FLOAT_EQ(3.f, ImplOf(mask)->GetIdealContentsScale());
+  EXPECT_FLOAT_EQ(5.f, ImplOf(child2)->GetIdealContentsScale());
+
+  EXPECT_FLOAT_EQ(kNotScaled, GetMaximumAnimationScale(ImplOf(root)));
+  EXPECT_FLOAT_EQ(kNotScaled, GetMaximumAnimationScale(ImplOf(child1)));
+  EXPECT_FLOAT_EQ(8.f, GetMaximumAnimationScale(ImplOf(child2)));
+
+  // Changing device-scale would affect ideal_contents_scale and
+  // maximum_animation_contents_scale.
+
+  float device_scale_factor = 4.0f;
+  CommitAndActivate(device_scale_factor);
+
+  EXPECT_FLOAT_EQ(4.f, ImplOf(root)->GetIdealContentsScale());
+  EXPECT_FLOAT_EQ(12.f, ImplOf(child1)->GetIdealContentsScale());
+  EXPECT_FLOAT_EQ(12.f, ImplOf(mask)->GetIdealContentsScale());
+  EXPECT_FLOAT_EQ(20.f, ImplOf(child2)->GetIdealContentsScale());
+
+  EXPECT_FLOAT_EQ(kNotScaled, GetMaximumAnimationScale(ImplOf(root)));
+  EXPECT_FLOAT_EQ(kNotScaled, GetMaximumAnimationScale(ImplOf(child1)));
+  EXPECT_FLOAT_EQ(32.f, GetMaximumAnimationScale(ImplOf(child2)));
+}
+
+TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
+  auto root = Layer::Create();
+  auto page_scale = Layer::Create();
+  auto child1 = Layer::Create();
+  auto child2 = Layer::Create();
+
+  gfx::Transform scale_transform_child1, scale_transform_child2;
+  scale_transform_child1.Scale(2, 3);
+  scale_transform_child2.Scale(4, 5);
+
+  root->SetBounds(gfx::Size(1, 1));
+  root->SetIsDrawable(true);
+  child1->SetBounds(gfx::Size(1, 1));
+  child1->SetIsDrawable(true);
+  child2->SetBounds(gfx::Size(1, 1));
+  child2->SetIsDrawable(true);
+
+  root->AddChild(child1);
+  root->AddChild(child2);
+  root->AddChild(page_scale);
+  host()->SetRootLayer(root);
+  host()->SetElementIdsForTesting();
+
+  SetupRootProperties(root.get());
+  CopyProperties(root.get(), page_scale.get());
+  CreateTransformNode(page_scale.get());
+  CopyProperties(page_scale.get(), child1.get());
+  CreateTransformNode(child1.get()).local = scale_transform_child1;
+  CopyProperties(page_scale.get(), child2.get());
+  CreateTransformNode(child2.get()).local = scale_transform_child2;
+
+  TransformOperations scale;
+  scale.AppendScale(5.f, 8.f, 3.f);
+
+  AddAnimatedTransformToElementWithAnimation(child2->element_id(), timeline(),
+                                             1.0, TransformOperations(), scale);
+
+  CommitAndActivate();
+
+  EXPECT_FLOAT_EQ(1.f, ImplOf(root)->GetIdealContentsScale());
+  EXPECT_FLOAT_EQ(1.f, ImplOf(page_scale)->GetIdealContentsScale());
+  EXPECT_FLOAT_EQ(3.f, ImplOf(child1)->GetIdealContentsScale());
   EXPECT_FLOAT_EQ(5.f, ImplOf(child2)->GetIdealContentsScale());
 
   EXPECT_FLOAT_EQ(kNotScaled, GetMaximumAnimationScale(ImplOf(root)));
@@ -7095,7 +7154,6 @@ TEST_F(LayerTreeHostCommonTestWithLayerTree, DrawPropertyScales) {
   EXPECT_FLOAT_EQ(1.f, ImplOf(root)->GetIdealContentsScale());
   EXPECT_FLOAT_EQ(3.f, ImplOf(page_scale)->GetIdealContentsScale());
   EXPECT_FLOAT_EQ(9.f, ImplOf(child1)->GetIdealContentsScale());
-  EXPECT_FLOAT_EQ(9.f, ImplOf(mask)->GetIdealContentsScale());
   EXPECT_FLOAT_EQ(15.f, ImplOf(child2)->GetIdealContentsScale());
 
   EXPECT_FLOAT_EQ(kNotScaled, GetMaximumAnimationScale(ImplOf(root)));
@@ -7112,7 +7170,6 @@ TEST_F(LayerTreeHostCommonTestWithLayerTree, DrawPropertyScales) {
   EXPECT_FLOAT_EQ(4.f, ImplOf(root)->GetIdealContentsScale());
   EXPECT_FLOAT_EQ(12.f, ImplOf(page_scale)->GetIdealContentsScale());
   EXPECT_FLOAT_EQ(36.f, ImplOf(child1)->GetIdealContentsScale());
-  EXPECT_FLOAT_EQ(36.f, ImplOf(mask)->GetIdealContentsScale());
   EXPECT_FLOAT_EQ(60.f, ImplOf(child2)->GetIdealContentsScale());
 
   EXPECT_FLOAT_EQ(kNotScaled, GetMaximumAnimationScale(ImplOf(root)));

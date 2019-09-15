@@ -137,15 +137,6 @@ if (!is_android && !is_mac) {
       output_name = "chrome"
     }
 
-    sources = []
-    if (!is_win && use_aura) {
-      # Non-Windows aura entrypoint.
-      sources += [ "app/chrome_exe_main_aura.cc" ]
-    }
-
-    deps = []
-    data = []
-
     if (!is_win || is_clang) {
       # Normally, we need to pass specific flags to the linker to
       # create an executable that gathers profile data. However, when
@@ -159,12 +150,18 @@ if (!is_android && !is_mac) {
     # Because the sources list varies so significantly per-platform, generally
     # each platform lists its own files rather than relying on filtering or
     # removing unused files.
-    sources += [ "app/chrome_exe_resource.h" ]
+    sources = [
+      "app/chrome_exe_resource.h",
+    ]
     defines = []
     public_deps = []
-    deps += [ "//printing/buildflags" ]
+    deps = [
+      "//printing/buildflags",
+    ]
 
-    data += [ "$root_out_dir/resources.pak" ]
+    data = [
+      "$root_out_dir/resources.pak",
+    ]
     if (is_linux || is_win) {
       data += [
         "$root_out_dir/chrome_100_percent.pak",
@@ -245,11 +242,14 @@ if (!is_android && !is_mac) {
         # Increase the initial stack size. The default is 1MB, this is 1.5MB.
         # To mitigate address space pressure, |CreateThreadInternal| sets the
         # default back to 1MB for non-main threads.
-        ldflags = [ "/STACK:1572864" ]
+        ldflags = [ "/STACK:0x180000" ]
       } else {
         # Increase the initial stack size. The default is 1MB, this is 8MB.
-        ldflags = [ "/STACK:8388608" ]
+        ldflags = [ "/STACK:0x800000" ]
       }
+    } else if (use_aura) {
+      # Non-Windows aura entrypoint.
+      sources += [ "app/chrome_exe_main_aura.cc" ]
     }
 
     if (is_linux) {

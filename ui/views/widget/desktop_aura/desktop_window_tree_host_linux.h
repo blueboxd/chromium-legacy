@@ -11,6 +11,8 @@
 
 namespace views {
 
+class WindowEventFilter;
+
 // Contains Linux specific implementation.
 class VIEWS_EXPORT DesktopWindowTreeHostLinux
     : public DesktopWindowTreeHostPlatform {
@@ -19,6 +21,13 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
       internal::NativeWidgetDelegate* native_widget_delegate,
       DesktopNativeWidgetAura* desktop_native_widget_aura);
   ~DesktopWindowTreeHostLinux() override;
+
+ protected:
+  // Overridden from DesktopWindowTreeHost:
+  void OnNativeWidgetCreated(const Widget::InitParams& params) override;
+
+  // PlatformWindowDelegateBase:
+  void OnClosed() override;
 
  private:
   // Overridden from display::DisplayObserver via aura::WindowTreeHost:
@@ -29,6 +38,12 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   void AddAdditionalInitProperties(
       const Widget::InitParams& params,
       ui::PlatformWindowInitProperties* properties) override;
+
+  void AddNonClientEventFilter();
+  void RemoveNonClientEventFilter();
+
+  // A handler for events intended for non client area.
+  std::unique_ptr<WindowEventFilter> non_client_window_event_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostLinux);
 };

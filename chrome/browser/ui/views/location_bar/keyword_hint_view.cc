@@ -61,7 +61,8 @@ KeywordHintView::KeywordHintView(LocationBarView* parent, Profile* profile)
   chip_container_->SetBackground(CreateBackgroundFromPainter(
       views::Painter::CreateRoundRectWith1PxBorderPainter(
           tab_bg_color, tab_border_color,
-          GetLayoutConstant(LOCATION_BAR_BUBBLE_CORNER_RADIUS))));
+          views::LayoutProvider::Get()->GetCornerRadiusMetric(
+              views::EMPHASIS_HIGH))));
   chip_container_->AddChildView(chip_label_);
   chip_container_->SetLayoutManager(std::make_unique<views::FillLayout>());
   AddChildView(chip_container_);
@@ -230,7 +231,8 @@ void KeywordHintView::OnThemeChanged() {
   chip_container_->SetBackground(CreateBackgroundFromPainter(
       views::Painter::CreateRoundRectWith1PxBorderPainter(
           tab_bg_color, tab_border_color,
-          GetLayoutConstant(LOCATION_BAR_BUBBLE_CORNER_RADIUS))));
+          views::LayoutProvider::Get()->GetCornerRadiusMetric(
+              views::EMPHASIS_HIGH))));
 
   trailing_label_->SetEnabledColor(text_color);
   trailing_label_->SetBackgroundColor(background_color);

@@ -865,7 +865,7 @@ ScriptPromise Cache::AddAllImpl(ScriptState* script_state,
 
   HeapVector<RequestInfo> request_infos;
   request_infos.resize(requests.size());
-  HeapVector<ScriptPromise> promises;
+  Vector<ScriptPromise> promises;
   promises.resize(requests.size());
   for (wtf_size_t i = 0; i < requests.size(); ++i) {
     if (!requests[i]->url().ProtocolIsInHTTPFamily()) {

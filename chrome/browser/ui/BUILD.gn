@@ -58,8 +58,6 @@ jumbo_split_static_library("ui") {
     "autofill/chrome_autofill_client.h",
     "autofill/payments/autofill_dialog_models.cc",
     "autofill/payments/autofill_dialog_models.h",
-    "autofill/payments/autofill_ui_util.cc",
-    "autofill/payments/autofill_ui_util.h",
     "autofill/payments/create_card_unmask_prompt_view.h",
     "autofill/payments/credit_card_scanner_controller.cc",
     "autofill/payments/credit_card_scanner_controller.h",
@@ -2466,8 +2464,6 @@ jumbo_split_static_library("ui") {
 
     if (use_x11) {
       sources += [
-        "views/frame/browser_desktop_window_tree_host_x11.cc",
-        "views/frame/browser_desktop_window_tree_host_x11.h",
         "views/frame/global_menu_bar_registrar_x11.cc",
         "views/frame/global_menu_bar_registrar_x11.h",
         "views/frame/global_menu_bar_x11.cc",
@@ -2489,12 +2485,20 @@ jumbo_split_static_library("ui") {
       ]
     }
     if (use_ozone) {
-      sources += [
-        "views/frame/browser_desktop_window_tree_host_platform.cc",
-        "views/frame/browser_desktop_window_tree_host_platform.h",
-        "views/frame/native_browser_frame_factory_ozone.cc",
-      ]
+      if (!is_desktop_linux) {
+        sources += [
+          "views/frame/browser_desktop_window_tree_host_platform.cc",
+          "views/frame/browser_desktop_window_tree_host_platform.h",
+        ]
+      }
+      sources += [ "views/frame/native_browser_frame_factory_ozone.cc" ]
       deps += [ "//ui/platform_window" ]
+    }
+    if (is_desktop_linux) {
+      sources += [
+        "views/frame/browser_desktop_window_tree_host_linux.cc",
+        "views/frame/browser_desktop_window_tree_host_linux.h",
+      ]
     }
     if (use_gtk) {
       # This is the only component that can interact with gtk.

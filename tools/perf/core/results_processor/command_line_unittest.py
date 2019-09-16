@@ -16,12 +16,13 @@ import unittest
 
 import mock
 
+from core.results_processor import command_line
 from core.results_processor import processor
 
 
-# To easily mock module level symbols within the processor module.
+# To easily mock module level symbols within the command_line module.
 def module(symbol):
-  return 'core.results_processor.processor.' + symbol
+  return 'core.results_processor.command_line.' + symbol
 
 
 class ProcessOptionsTestCase(unittest.TestCase):
@@ -52,10 +53,10 @@ class ProcessOptionsTestCase(unittest.TestCase):
     mock.patch.stopall()
 
   def ParseArgs(self, args):
-    parser = processor.ArgumentParser(
+    parser = command_line.ArgumentParser(
         standalone=self.standalone, legacy_formats=self.legacy_formats)
     options = parser.parse_args(args)
-    processor.ProcessOptions(options)
+    command_line.ProcessOptions(options)
     return options
 
 
@@ -132,7 +133,7 @@ class TestProcessOptions(ProcessOptionsTestCase):
     with self.assertRaises(SystemExit):
       self.ParseArgs(['--output-format', 'unknown'])
 
-  @mock.patch.dict(module('SUPPORTED_FORMATS'), {'new-format': None})
+  @mock.patch(module('SUPPORTED_FORMATS'), ['new-format'])
   def testOutputFormatsSplit(self):
     self.legacy_formats = ['old-format']
     options = self.ParseArgs(
@@ -140,7 +141,7 @@ class TestProcessOptions(ProcessOptionsTestCase):
     self.assertEqual(options.output_formats, ['new-format'])
     self.assertEqual(options.legacy_output_formats, ['old-format'])
 
-  @mock.patch.dict(module('SUPPORTED_FORMATS'), {'new-format': None})
+  @mock.patch(module('SUPPORTED_FORMATS'), ['new-format'])
   def testNoDuplicateOutputFormats(self):
     self.legacy_formats = ['old-format']
     options = self.ParseArgs(
@@ -159,15 +160,23 @@ class StandaloneTestProcessOptions(ProcessOptionsTestCase):
     with self.assertRaises(SystemExit):
       self.ParseArgs([])
 
-  @mock.patch.dict(module('SUPPORTED_FORMATS'), {'new-format': None})
+  @mock.patch(module('SUPPORTED_FORMATS'), ['new-format'])
   def testIntermediateDirRequired(self):
     with self.assertRaises(SystemExit):
       self.ParseArgs(['--output-format', 'new-format'])
 
-  @mock.patch.dict(module('SUPPORTED_FORMATS'), {'new-format': None})
+  @mock.patch(module('SUPPORTED_FORMATS'), ['new-format'])
   def testSuccessful(self):
     options = self.ParseArgs(
         ['--output-format', 'new-format', '--intermediate-dir', 'some_dir'])
     self.assertEqual(options.output_formats, ['new-format'])
     self.assertEqual(options.intermediate_dir, '/path/to/curdir/some_dir')
     self.assertEqual(options.output_dir, '/path/to/output_dir')
+
+
+class TestSupportedFormats(unittest.TestCase):
+  def testAllSupportedFormatsHaveFormatters(self):
+    for output_format in command_line.SUPPORTED_FORMATS:
+      if output_format == 'none':
+        continue
+      self.assertIn(output_format, processor.FORMATTERS)

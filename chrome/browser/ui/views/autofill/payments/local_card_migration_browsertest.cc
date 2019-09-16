@@ -450,26 +450,21 @@ class LocalCardMigrationBrowserTest
             ->local_card_migration_dialog_view());
   }
 
-  LocalCardMigrationIconView* GetLocalCardMigrationIconView(
-      bool icon_in_status_chip) {
-    LocalCardMigrationIconView* icon_view = nullptr;
-    if (!browser())
-      return icon_view;
-
+  PageActionIconView* GetLocalCardMigrationIconView() {
     BrowserView* browser_view =
         BrowserView::GetBrowserViewForBrowser(browser());
-    if (icon_in_status_chip) {
-      ToolbarPageActionIconContainerView*
-          toolbar_page_action_icon_container_view =
-              browser_view->toolbar()->toolbar_page_action_container();
-      icon_view = toolbar_page_action_icon_container_view
-                      ->local_card_migration_icon_view();
+    PageActionIconView* icon =
+        browser_view->toolbar_button_provider()->GetPageActionIconView(
+            PageActionIconType::kLocalCardMigration);
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillEnableToolbarStatusChip)) {
+      EXPECT_TRUE(
+          browser_view->toolbar()->toolbar_page_action_container()->Contains(
+              icon));
     } else {
-      LocationBarView* location_bar_view = browser_view->GetLocationBarView();
-      icon_view = location_bar_view->local_card_migration_icon_view();
+      EXPECT_TRUE(browser_view->GetLocationBarView()->Contains(icon));
     }
-    CHECK(icon_view);
-    return icon_view;
+    return icon;
   }
 
   views::View* GetCloseButton() {
@@ -693,8 +688,7 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
   SaveLocalCard(kSecondCardNumber);
   UseCardAndWaitForMigrationOffer(kFirstCardNumber);
 
-  EXPECT_TRUE(GetLocalCardMigrationIconView(/*icon_in_status_chip=*/false)
-                  ->GetVisible());
+  EXPECT_TRUE(GetLocalCardMigrationIconView()->GetVisible());
 }
 
 // Ensures that clicking on the credit card icon in the omnibox reopens the
@@ -708,7 +702,7 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
   UseCardAndWaitForMigrationOffer(kFirstCardNumber);
   ClickOnDialogViewAndWait(GetCloseButton(),
                            GetLocalCardMigrationOfferBubbleViews());
-  ClickOnView(GetLocalCardMigrationIconView(/*icon_in_status_chip=*/false));
+  ClickOnView(GetLocalCardMigrationIconView());
 
   // Clicking the icon should reshow the bubble.
   EXPECT_TRUE(
@@ -921,7 +915,7 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
   ClickOnDialogViewAndWait(GetCloseButton(),
                            GetLocalCardMigrationOfferBubbleViews());
   base::HistogramTester histogram_tester;
-  ClickOnView(GetLocalCardMigrationIconView(/*icon_in_status_chip=*/false));
+  ClickOnView(GetLocalCardMigrationIconView());
 
   // Clicking the icon should reshow the bubble.
   EXPECT_TRUE(
@@ -947,8 +941,7 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTestForStatusChip,
   SaveLocalCard(kSecondCardNumber);
   UseCardAndWaitForMigrationOffer(kFirstCardNumber);
 
-  EXPECT_TRUE(GetLocalCardMigrationIconView(/*icon_in_status_chip=*/true)
-                  ->GetVisible());
+  EXPECT_TRUE(GetLocalCardMigrationIconView()->GetVisible());
 }
 
 // TODO(crbug.com/999510): Crashes flakily on Linux.
@@ -969,7 +962,7 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTestForStatusChip,
   UseCardAndWaitForMigrationOffer(kFirstCardNumber);
   ClickOnDialogViewAndWait(GetCloseButton(),
                            GetLocalCardMigrationOfferBubbleViews());
-  ClickOnView(GetLocalCardMigrationIconView(/*icon_in_status_chip=*/true));
+  ClickOnView(GetLocalCardMigrationIconView());
 
   // Clicking the icon should reshow the bubble.
   EXPECT_TRUE(
@@ -1020,8 +1013,7 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTestForStatusChip,
                   ->ActivateFirstInactiveBubbleForAccessibility());
 
   // Ensure the bubble's widget refreshed appropriately.
-  EXPECT_TRUE(GetLocalCardMigrationIconView(/*icon_in_status_chip=*/true)
-                  ->GetVisible());
+  EXPECT_TRUE(GetLocalCardMigrationIconView()->GetVisible());
   EXPECT_TRUE(widget->IsVisible());
   EXPECT_TRUE(widget->IsActive());
 }
@@ -1035,8 +1027,7 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTestForStatusChip,
   UseCardAndWaitForMigrationOffer(kFirstCardNumber);
 
   // Ensures flow is triggered, and bubble and icon view are visible.
-  EXPECT_TRUE(GetLocalCardMigrationIconView(/*icon_in_status_chip=*/true)
-                  ->GetVisible());
+  EXPECT_TRUE(GetLocalCardMigrationIconView()->GetVisible());
   EXPECT_TRUE(GetLocalCardMigrationOfferBubbleViews()->GetVisible());
 
   AddTabAtIndex(1, GURL("http://example.com/"), ui::PAGE_TRANSITION_TYPED);
@@ -1044,15 +1035,13 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTestForStatusChip,
   tab_model->ActivateTabAt(1, {TabStripModel::GestureType::kOther});
 
   // Ensures bubble and icon go away if user navigates to another tab.
-  EXPECT_FALSE(GetLocalCardMigrationIconView(/*icon_in_status_chip=*/true)
-                   ->GetVisible());
+  EXPECT_FALSE(GetLocalCardMigrationIconView()->GetVisible());
   EXPECT_FALSE(GetLocalCardMigrationOfferBubbleViews());
 
   tab_model->ActivateTabAt(0, {TabStripModel::GestureType::kOther});
 
   // If the user navigates back, shows only the icon not the bubble.
-  EXPECT_TRUE(GetLocalCardMigrationIconView(/*icon_in_status_chip=*/true)
-                  ->GetVisible());
+  EXPECT_TRUE(GetLocalCardMigrationIconView()->GetVisible());
   EXPECT_FALSE(GetLocalCardMigrationOfferBubbleViews());
 }
 #endif  // !defined(OS_CHROMEOS)

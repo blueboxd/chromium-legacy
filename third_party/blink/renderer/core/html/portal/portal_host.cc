@@ -65,7 +65,7 @@ void PortalHost::OnPortalActivated() {
 void PortalHost::postMessage(ScriptState* script_state,
                              const ScriptValue& message,
                              const String& target_origin,
-                             HeapVector<ScriptValue>& transfer,
+                             Vector<ScriptValue>& transfer,
                              ExceptionState& exception_state) {
   WindowPostMessageOptions* options = WindowPostMessageOptions::Create();
   options->setTargetOrigin(target_origin);

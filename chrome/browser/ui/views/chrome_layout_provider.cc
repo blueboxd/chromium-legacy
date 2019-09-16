@@ -198,40 +198,6 @@ bool ChromeLayoutProvider::ShouldShowWindowIcon() const {
   return false;
 }
 
-int ChromeLayoutProvider::GetCornerRadiusMetric(
-    views::EmphasisMetric emphasis_metric,
-    const gfx::Size& size) const {
-  switch (emphasis_metric) {
-    case views::EMPHASIS_NONE:
-      NOTREACHED();
-      return 0;
-    case views::EMPHASIS_LOW:
-    case views::EMPHASIS_MEDIUM:
-      return 4;
-    case views::EMPHASIS_HIGH:
-      return 8;
-    case views::EMPHASIS_MAXIMUM:
-      return std::min(size.width(), size.height()) / 2;
-  }
-}
-
-int ChromeLayoutProvider::GetShadowElevationMetric(
-    views::EmphasisMetric emphasis_metric) const {
-  switch (emphasis_metric) {
-    case views::EMPHASIS_NONE:
-      NOTREACHED();
-      return 0;
-    case views::EMPHASIS_LOW:
-      return 1;
-    case views::EMPHASIS_MEDIUM:
-      return 2;
-    case views::EMPHASIS_HIGH:
-      return 3;
-    case views::EMPHASIS_MAXIMUM:
-      return 16;
-  }
-}
-
 gfx::ShadowValues ChromeLayoutProvider::MakeShadowValues(int elevation,
                                                          SkColor color) const {
   return gfx::ShadowValue::MakeRefreshShadowValues(elevation, color);

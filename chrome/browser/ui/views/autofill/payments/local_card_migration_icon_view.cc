@@ -21,12 +21,10 @@ namespace autofill {
 
 LocalCardMigrationIconView::LocalCardMigrationIconView(
     CommandUpdater* command_updater,
-    PageActionIconView::Delegate* delegate,
-    const gfx::FontList& font_list)
+    PageActionIconView::Delegate* delegate)
     : PageActionIconView(command_updater,
                          IDC_MIGRATE_LOCAL_CREDIT_CARD_FOR_PAGE,
-                         delegate,
-                         font_list) {
+                         delegate) {
   DCHECK(delegate);
   SetID(VIEW_ID_MIGRATE_LOCAL_CREDIT_CARD_BUTTON);
   SetUpForInOutAnimation();

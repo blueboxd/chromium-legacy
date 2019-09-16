@@ -203,6 +203,45 @@ LayoutUnit CalculateAvailableBlockSizeForLegacy(
   return space.PercentageResolutionBlockSize();
 }
 
+void SetupBoxLayoutExtraInput(const NGConstraintSpace& space,
+                              const LayoutBox& box,
+                              BoxLayoutExtraInput* input) {
+  input->containing_block_content_inline_size =
+      CalculateAvailableInlineSizeForLegacy(box, space);
+  input->containing_block_content_block_size =
+      CalculateAvailableBlockSizeForLegacy(box, space);
+
+  WritingMode writing_mode = box.StyleRef().GetWritingMode();
+  if (LayoutObject* containing_block = box.ContainingBlock()) {
+    if (!IsParallelWritingMode(containing_block->StyleRef().GetWritingMode(),
+                               writing_mode)) {
+      // The sizes should be in the containing block writing mode.
+      std::swap(input->containing_block_content_block_size,
+                input->containing_block_content_inline_size);
+
+      // We cannot lay out without a definite containing block inline-size. We
+      // end up here if we're performing a measure pass (as part of resolving
+      // the intrinsic min/max inline-size of some ancestor, for instance).
+      // Legacy layout has a tendency of clamping negative sizes to 0 anyway,
+      // but this is missing when it comes to resolving percentage-based
+      // padding, for instance.
+      if (input->containing_block_content_inline_size == kIndefiniteSize)
+        input->containing_block_content_inline_size = LayoutUnit();
+    }
+  }
+
+  // We need a definite containing block inline-size, or we'd be unable to
+  // resolve percentages.
+  DCHECK_GE(input->containing_block_content_inline_size, LayoutUnit());
+
+  input->available_inline_size = space.AvailableSize().inline_size;
+
+  if (space.IsFixedInlineSize())
+    input->override_inline_size = space.AvailableSize().inline_size;
+  if (space.IsFixedBlockSize())
+    input->override_block_size = space.AvailableSize().block_size;
+}
+
 }  // namespace
 
 scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
@@ -796,6 +835,9 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
                                         physical_fragment);
     }
 
+    BoxLayoutExtraInput input(*block);
+    SetupBoxLayoutExtraInput(constraint_space, *block, &input);
+
     // |ComputeOverflow()| below calls |AddVisualOverflowFromChildren()|, which
     // computes visual overflow from |RootInlineBox| if |ChildrenInline()|
     block->SetNeedsOverflowRecalc();
@@ -1089,42 +1131,9 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunLegacyLayout(
 
   if (box_->NeedsLayout() || !layout_result || needs_force_relayout) {
     BoxLayoutExtraInput input(*box_);
-    input.containing_block_content_inline_size =
-        CalculateAvailableInlineSizeForLegacy(*box_, constraint_space);
-    input.containing_block_content_block_size =
-        CalculateAvailableBlockSizeForLegacy(*box_, constraint_space);
-
     WritingMode writing_mode = Style().GetWritingMode();
-    if (LayoutObject* containing_block = box_->ContainingBlock()) {
-      if (!IsParallelWritingMode(containing_block->StyleRef().GetWritingMode(),
-                                 writing_mode)) {
-        // The sizes should be in the containing block writing mode.
-        std::swap(input.containing_block_content_block_size,
-                  input.containing_block_content_inline_size);
 
-        // We cannot lay out without a definite containing block inline-size. We
-        // end up here if we're performing a measure pass (as part of resolving
-        // the intrinsic min/max inline-size of some ancestor, for instance).
-        // Legacy layout has a tendency of clamping negative sizes to 0 anyway,
-        // but this is missing when it comes to resolving percentage-based
-        // padding, for instance.
-        if (input.containing_block_content_inline_size == kIndefiniteSize) {
-          DCHECK(constraint_space.IsIntermediateLayout());
-          input.containing_block_content_inline_size = LayoutUnit();
-        }
-      }
-    }
-
-    // We need a definite containing block inline-size, or we'd be unable to
-    // resolve percentages.
-    DCHECK_GE(input.containing_block_content_inline_size, LayoutUnit());
-
-    input.available_inline_size = constraint_space.AvailableSize().inline_size;
-
-    if (constraint_space.IsFixedInlineSize())
-      input.override_inline_size = constraint_space.AvailableSize().inline_size;
-    if (constraint_space.IsFixedBlockSize())
-      input.override_block_size = constraint_space.AvailableSize().block_size;
+    SetupBoxLayoutExtraInput(constraint_space, *box_, &input);
     box_->ComputeAndSetBlockDirectionMargins(box_->ContainingBlock());
 
     // Using |LayoutObject::LayoutIfNeeded| save us a little bit of overhead,

@@ -125,9 +125,13 @@ public class BackgroundSyncBackgroundTaskScheduler {
         Bundle taskExtras = new Bundle();
         taskExtras.putLong(SOONEST_EXPECTED_WAKETIME, System.currentTimeMillis() + minDelayMs);
 
+        // We setWindowEndTime to Long.MAX_VALUE to wait a long time for network connectivity,
+        // so that we can process the pending sync event. setExpiresAfterWindowEndTime ensures
+        // that we never wake up Chrome without network connectivity.
         TaskInfo.TimingInfo timingInfo = TaskInfo.OneOffInfo.create()
                                                  .setWindowStartTimeMs(minDelayMs)
-                                                 .setWindowEndTimeMs(Integer.MAX_VALUE)
+                                                 .setWindowEndTimeMs(Long.MAX_VALUE)
+                                                 .setExpiresAfterWindowEndTime(true)
                                                  .build();
         TaskInfo taskInfo = TaskInfo.createTask(getAppropriateTaskId(taskType), timingInfo)
                                     .setRequiredNetworkType(TaskInfo.NetworkType.ANY)

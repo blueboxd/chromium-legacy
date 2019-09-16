@@ -16,12 +16,10 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/platform_window/platform_window.h"
-#include "ui/platform_window/platform_window_handler/wm_move_resize_handler.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_ozone.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
-#include "ui/views/widget/desktop_aura/window_event_filter.h"
 #include "ui/views/widget/widget_aura_utils.h"
 #include "ui/views/window/native_frame_view.h"
 #include "ui/wm/core/window_util.h"
@@ -152,26 +150,11 @@ void DesktopWindowTreeHostPlatform::Init(const Widget::InitParams& params) {
 
 void DesktopWindowTreeHostPlatform::OnNativeWidgetCreated(
     const Widget::InitParams& params) {
-  native_widget_delegate_->OnNativeWidgetCreated();
-
   platform_window()->SetUseNativeFrame(params.type ==
                                            Widget::InitParams::TYPE_WINDOW &&
                                        !params.remove_standard_frame);
 
-#if defined(OS_LINUX)
-  // Setup a non_client_window_event_filter, which handles resize/move, double
-  // click and other events.
-  DCHECK(!non_client_window_event_filter_);
-  std::unique_ptr<WindowEventFilter> window_event_filter =
-      std::make_unique<WindowEventFilter>(this);
-  auto* wm_move_resize_handler = GetWmMoveResizeHandler(*platform_window());
-  if (wm_move_resize_handler)
-    window_event_filter->SetWmMoveResizeHandler(
-        GetWmMoveResizeHandler(*(platform_window())));
-
-  non_client_window_event_filter_ = std::move(window_event_filter);
-  window()->AddPreTargetHandler(non_client_window_event_filter_.get());
-#endif
+  native_widget_delegate_->OnNativeWidgetCreated();
 }
 
 void DesktopWindowTreeHostPlatform::OnWidgetInitDone() {}
@@ -674,8 +657,6 @@ void DesktopWindowTreeHostPlatform::DispatchEvent(ui::Event* event) {
 }
 
 void DesktopWindowTreeHostPlatform::OnClosed() {
-  RemoveNonClientEventFilter();
-
   SetPlatformWindow(nullptr);
   desktop_native_widget_aura_->OnHostClosed();
 }
@@ -756,16 +737,6 @@ void DesktopWindowTreeHostPlatform::Relayout() {
   }
 }
 
-void DesktopWindowTreeHostPlatform::RemoveNonClientEventFilter() {
-#if defined(OS_LINUX)
-  if (!non_client_window_event_filter_)
-    return;
-
-  window()->RemovePreTargetHandler(non_client_window_event_filter_.get());
-  non_client_window_event_filter_.reset();
-#endif
-}
-
 Widget* DesktopWindowTreeHostPlatform::GetWidget() {
   return native_widget_delegate_->AsWidget();
 }
@@ -792,11 +763,8 @@ void DesktopWindowTreeHostPlatform::AddAdditionalInitProperties(
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHost:
 
-// As DWTHX11 subclasses DWTHPlatform now (during transition period. see
-// https://crbug.com/990756), we need to guard this factory method.
-// TODO(msisov): remove this guard once DWTHX11 is finally merged into
-// DWTHPlatform.
-#if !defined(USE_X11)
+// Linux subclasses this host and adds some Linux specific bits.
+#if !defined(OS_LINUX)
 // static
 DesktopWindowTreeHost* DesktopWindowTreeHost::Create(
     internal::NativeWidgetDelegate* native_widget_delegate,

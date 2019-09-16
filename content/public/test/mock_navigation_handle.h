@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "net/base/ip_endpoint.h"
@@ -35,6 +36,7 @@ class MockNavigationHandle : public NavigationHandle {
   MOCK_METHOD0(IsParentMainFrame, bool());
   bool IsRendererInitiated() override { return true; }
   MOCK_METHOD0(GetFrameTreeNodeId, int());
+  MOCK_METHOD0(GetPreviousRenderFrameHostId, GlobalFrameRoutingId());
   RenderFrameHost* GetParentFrame() override {
     return render_frame_host_ ? render_frame_host_->GetParent() : nullptr;
   }
@@ -48,8 +50,6 @@ class MockNavigationHandle : public NavigationHandle {
   RestoreType GetRestoreType() override { return RestoreType::NONE; }
   const GURL& GetBaseURLForDataURL() override { return base_url_for_data_url_; }
   MOCK_METHOD0(IsPost, bool());
-  MOCK_METHOD0(GetResourceRequestBody,
-               const scoped_refptr<network::ResourceRequestBody>&());
   const blink::mojom::Referrer& GetReferrer() override { return referrer_; }
   MOCK_METHOD0(HasUserGesture, bool());
   ui::PageTransition GetPageTransition() override { return page_transition_; }

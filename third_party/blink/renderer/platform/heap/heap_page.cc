@@ -724,10 +724,7 @@ void NormalPageArena::PromptlyFreeObject(HeapObjectHeader* header) {
           ->ClearBit(address);
       return;
     }
-    // The object may be on a page that has not been swept yet and requires
-    // manual unmarking.
-    if (header->IsMarked())
-      header->Unmark();
+    DCHECK(!header->IsMarked());
     PromptlyFreeObjectInFreeList(header, size);
   }
 }

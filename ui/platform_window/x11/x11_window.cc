@@ -74,7 +74,11 @@ ui::XWindow::Configuration ConvertInitPropertiesToXWindowConfig(
 }  // namespace
 
 X11Window::X11Window(PlatformWindowDelegateLinux* platform_window_delegate)
-    : platform_window_delegate_(platform_window_delegate) {}
+    : platform_window_delegate_(platform_window_delegate) {
+  // Set a class property key, which allows |this| to be used for interactive
+  // events, e.g. move or resize.
+  SetWmMoveResizeHandler(this, static_cast<WmMoveResizeHandler*>(this));
+}
 
 X11Window::~X11Window() {
   PrepareForShutdown();
@@ -320,11 +324,6 @@ ZOrderLevel X11Window::GetZOrderLevel() const {
                               : ui::ZOrderLevel::kNormal;
 }
 
-void X11Window::SetPlatformEventDispatcher() {
-  DCHECK(PlatformEventSource::GetInstance());
-  PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
-}
-
 bool X11Window::CanDispatchEvent(const PlatformEvent& xev) {
 #if defined(USE_X11)
   return XWindow::IsTargetedBy(*xev);
@@ -435,6 +434,17 @@ base::Optional<gfx::Size> X11Window::GetMinimumSizeForXWindow() {
 
 base::Optional<gfx::Size> X11Window::GetMaximumSizeForXWindow() {
   return platform_window_delegate_->GetMaximumSizeForWindow();
+}
+
+void X11Window::DispatchHostWindowDragMovement(
+    int hittest,
+    const gfx::Point& pointer_location) {
+  XWindow::WmMoveResize(hittest, pointer_location);
+}
+
+void X11Window::SetPlatformEventDispatcher() {
+  DCHECK(PlatformEventSource::GetInstance());
+  PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
 }
 
 gfx::Size X11Window::AdjustSizeForDisplay(

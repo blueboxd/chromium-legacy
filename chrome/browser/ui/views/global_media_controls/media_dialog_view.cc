@@ -17,12 +17,6 @@
 
 using media_session::mojom::MediaSessionAction;
 
-namespace {
-
-constexpr int kMediaDialogCornerRadius = 8;
-
-}  // anonymous namespace
-
 // static
 MediaDialogView* MediaDialogView::instance_ = nullptr;
 
@@ -85,8 +79,10 @@ bool MediaDialogView::Close() {
 
 void MediaDialogView::AddedToWidget() {
   views::BubbleFrameView* frame = GetBubbleFrameView();
-  if (frame)
-    frame->SetCornerRadius(kMediaDialogCornerRadius);
+  if (frame) {
+    frame->SetCornerRadius(views::LayoutProvider::Get()->GetCornerRadiusMetric(
+        views::EMPHASIS_HIGH));
+  }
 
   controller_->SetDialogDelegate(this);
 }

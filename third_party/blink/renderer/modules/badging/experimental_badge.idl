@@ -13,5 +13,5 @@
 ] interface ExperimentalBadge {
   [CallWith=ScriptState, RaisesException, MeasureAs=BadgeSet]
   static void set(optional [EnforceRange] unsigned long long contents, optional BadgeOptions options);
-  [CallWith=ScriptState, MeasureAs=BadgeClear] static void clear(optional BadgeOptions options);
+  [CallWith=ScriptState, RaisesException, MeasureAs=BadgeClear] static void clear(optional BadgeOptions options);
 };

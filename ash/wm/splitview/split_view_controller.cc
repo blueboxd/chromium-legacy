@@ -422,8 +422,9 @@ void SplitViewController::SnapWindow(aura::Window* window,
 
     OnWindowSnapped(window);
   } else {
-    // Otherwise, try to snap it first. The split view state will be updated
-    // after the window is snapped.
+    // Otherwise, try to snap it first. It will be activated later after the
+    // window is snapped. The split view state will also be updated after the
+    // window is snapped.
     const WMEvent event((snap_position == LEFT) ? WM_EVENT_SNAP_LEFT
                                                 : WM_EVENT_SNAP_RIGHT);
     WindowState::Get(window)->OnWMEvent(&event);
@@ -1523,7 +1524,7 @@ int SplitViewController::GetDividerEndPosition() {
 void SplitViewController::OnWindowSnapped(aura::Window* window) {
   RestoreTransformIfApplicable(window);
   UpdateSplitViewStateAndNotifyObservers();
-  UpdateWindowStackingAfterSnap(window);
+  ActivateSnappedWindowAndUpdateStacking(window);
 
   // If there are two window snapped in clamshell mode, splitview mode is ended.
   if (state_ == SplitViewState::kBothSnapped &&
@@ -1718,19 +1719,16 @@ void SplitViewController::RestoreTransformIfApplicable(aura::Window* window) {
   }
 }
 
-void SplitViewController::UpdateWindowStackingAfterSnap(
-    aura::Window* newly_snapped) {
-  if (split_view_divider_)
-    split_view_divider_->SetAlwaysOnTop(true);
-
-  aura::Window* other_snapped =
-      newly_snapped == left_window_ ? right_window_ : left_window_;
-  if (other_snapped) {
-    DCHECK(newly_snapped == left_window_ || newly_snapped == right_window_);
-    other_snapped->parent()->StackChildAtTop(other_snapped);
+void SplitViewController::ActivateSnappedWindowAndUpdateStacking(
+    aura::Window* window) {
+  aura::Window* other_window =
+      window == left_window_ ? right_window_ : left_window_;
+  if (other_window) {
+    DCHECK(window == left_window_ || window == right_window_);
+    other_window->parent()->StackChildAtTop(other_window);
   }
 
-  newly_snapped->parent()->StackChildAtTop(newly_snapped);
+  wm::ActivateWindow(window);
 }
 
 void SplitViewController::SetWindowsTransformDuringResizing() {
@@ -1901,7 +1899,6 @@ void SplitViewController::EndWindowDragImpl(
       // location. Note if there is already a window at |desired_snap_postion|,
       // SnapWindow() will put the previous snapped window in overview.
       SnapWindow(window, GetSnapPosition(window, last_location_in_screen));
-      wm::ActivateWindow(window);
     } else {
       // Restore the dragged window's transform first if it's not identity. It
       // needs to be called before the transformed window's bounds change so
@@ -1937,7 +1934,6 @@ void SplitViewController::EndWindowDragImpl(
     // |desired_snap_position| in overview.
     SnapWindow(window, desired_snap_position,
                /*use_divider_spawn_animation=*/!initiator_window);
-    wm::ActivateWindow(window);
 
     if (!was_splitview_active) {
       // If splitview mode was not active before snapping the dragged

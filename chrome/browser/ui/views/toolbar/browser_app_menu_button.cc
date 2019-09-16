@@ -199,10 +199,8 @@ void BrowserAppMenuButton::SetTypeAndSeverity(
       break;
   }
 
-  if (base::FeatureList::IsEnabled(features::kUseTextForUpdateButton)) {
-    SetHighlightColor(color);
-    SetText(text);
-  }
+  if (base::FeatureList::IsEnabled(features::kUseTextForUpdateButton))
+    SetHighlight(text, color);
 
   SetTooltipText(l10n_util::GetStringUTF16(message_id));
   UpdateIcon();

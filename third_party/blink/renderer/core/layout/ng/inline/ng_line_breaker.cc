@@ -324,6 +324,10 @@ void NGLineBreaker::PrepareNextLine(NGLineInfo* line_info) {
   position_ = line_info->TextIndent();
 
   overflow_item_index_ = 0;
+
+#if DCHECK_IS_ON()
+  last_rewind_from_item_index_ = last_rewind_to_item_index_ = 0;
+#endif
 }
 
 void NGLineBreaker::NextLine(
@@ -1687,6 +1691,9 @@ void NGLineBreaker::HandleOverflow(NGLineInfo* line_info) {
       Rewind(0, line_info);
     state_ = LineBreakState::kContinue;
     overflow_item_index_ = 0;
+#if DCHECK_IS_ON()
+    last_rewind_from_item_index_ = last_rewind_to_item_index_ = 0;
+#endif
     return;
   }
 
@@ -1709,6 +1716,15 @@ void NGLineBreaker::HandleOverflow(NGLineInfo* line_info) {
 }
 
 void NGLineBreaker::Rewind(unsigned new_end, NGLineInfo* line_info) {
+#if DCHECK_IS_ON()
+  // Detect rewind-loop. If we're trying to rewind to the same index twice,
+  // we're in the infinite loop.
+  DCHECK(item_index_ != last_rewind_from_item_index_ ||
+         new_end != last_rewind_to_item_index_);
+  last_rewind_from_item_index_ = item_index_;
+  last_rewind_to_item_index_ = new_end;
+#endif
+
   NGInlineItemResults& item_results = *line_info->MutableResults();
   DCHECK_LT(new_end, item_results.size());
 
@@ -1809,26 +1825,26 @@ void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
 
   if (auto_wrap_) {
     LineBreakType line_break_type;
-    switch (style.WordBreak()) {
+    EWordBreak word_break = style.WordBreak();
+    switch (word_break) {
       case EWordBreak::kNormal:
-        break_anywhere_if_overflow_ =
-            style.OverflowWrap() == EOverflowWrap::kBreakWord &&
-            mode_ == NGLineBreakerMode::kContent;
         line_break_type = LineBreakType::kNormal;
         break;
       case EWordBreak::kBreakAll:
-        break_anywhere_if_overflow_ = false;
         line_break_type = LineBreakType::kBreakAll;
         break;
       case EWordBreak::kBreakWord:
-        break_anywhere_if_overflow_ = true;
         line_break_type = LineBreakType::kNormal;
         break;
       case EWordBreak::kKeepAll:
-        break_anywhere_if_overflow_ = false;
         line_break_type = LineBreakType::kKeepAll;
         break;
     }
+    break_anywhere_if_overflow_ =
+        word_break == EWordBreak::kBreakWord ||
+        // `overflow-/word-wrap: break-word` affects layout but not min-content.
+        (style.OverflowWrap() == EOverflowWrap::kBreakWord &&
+         mode_ == NGLineBreakerMode::kContent);
     if (UNLIKELY((override_break_anywhere_ && break_anywhere_if_overflow_) ||
                  style.GetLineBreak() == LineBreak::kAnywhere)) {
       line_break_type = LineBreakType::kBreakCharacter;

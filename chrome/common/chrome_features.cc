@@ -793,10 +793,6 @@ const base::Feature kTPMFirmwareUpdate{"TPMFirmwareUpdate",
 const base::Feature kCrOSEnableUSMUserService{"CrOSEnableUSMUserService",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables or disables initialization & use of the Chrome OS ML Service.
-const base::Feature kMachineLearningService{"MachineLearningService",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables or disables SmartDim on Chrome OS.
 const base::Feature kSmartDim{"SmartDim", base::FEATURE_DISABLED_BY_DEFAULT};
 

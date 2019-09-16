@@ -98,7 +98,7 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData {
   void postMessage(v8::Isolate*,
                    const ScriptValue& message,
                    const String& target_origin,
-                   HeapVector<ScriptValue>& transfer,
+                   Vector<ScriptValue>& transfer,
                    ExceptionState&);
 
   void postMessage(v8::Isolate*,

@@ -56,7 +56,13 @@ class ToolbarButton : public views::LabelButton,
   // Should be called before first paint.
   void Init();
 
-  void SetHighlightColor(base::Optional<SkColor> color);
+  // Highlights the button by setting the label to given |highlight_text|, using
+  // tinting it using the |hightlight_color| if set. The highlight is displayed
+  // using an animation. If some highlight is already set, it shows the new
+  // highlight directly without any animation. To clear the previous highlight
+  // (also using an animation), call this function with both parameters empty.
+  void SetHighlight(const base::string16& highlight_text,
+                    base::Optional<SkColor> highlight_color);
 
   // Sets |margin_leading_| when the browser is maximized and updates layout
   // to make the focus rectangle centered.
@@ -122,7 +128,17 @@ class ToolbarButton : public views::LabelButton,
  private:
   friend test::ToolbarButtonTestApi;
 
+  // Clears the current highlight, i.e. it sets the label to an empty string and
+  // clears the highlight color. If there was a non-empty highlight, previously,
+  // it hides the current highlight using an animation. Otherwise, it is a
+  // no-op.
+  void ClearHighlight();
+
   void UpdateHighlightBackgroundAndInsets();
+
+  // Sets the spacing on the outer side of the label (not the side where the
+  // image is). The spacing is applied only when the label is non-empty.
+  void SetLabelSideSpacing(int spacing);
 
   // Callback for MenuModelAdapter.
   void OnMenuClosed();

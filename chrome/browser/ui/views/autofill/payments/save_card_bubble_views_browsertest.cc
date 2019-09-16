@@ -687,28 +687,20 @@ class SaveCardBubbleViewsFullFormBrowserTest
     return static_cast<SaveCardBubbleViews*>(save_card_bubble_view);
   }
 
-  SaveCardIconView* GetSaveCardIconView() {
-    if (!browser())
-      return nullptr;
-
-    SaveCardIconView* icon_view = nullptr;
+  PageActionIconView* GetSaveCardIconView() {
     BrowserView* browser_view =
         BrowserView::GetBrowserViewForBrowser(browser());
+    PageActionIconView* icon =
+        browser_view->toolbar_button_provider()->GetPageActionIconView(
+            PageActionIconType::kSaveCard);
     if (base::FeatureList::IsEnabled(
             features::kAutofillEnableToolbarStatusChip)) {
-      ToolbarPageActionIconContainerView*
-          toolbar_page_action_icon_container_view =
-              browser_view->toolbar()->toolbar_page_action_container();
-      DCHECK(toolbar_page_action_icon_container_view->save_card_icon_view());
-      icon_view =
-          toolbar_page_action_icon_container_view->save_card_icon_view();
+      DCHECK(browser_view->toolbar()->toolbar_page_action_container()->Contains(
+          icon));
     } else {
-      LocationBarView* location_bar_view = browser_view->GetLocationBarView();
-      DCHECK(location_bar_view->save_credit_card_icon_view());
-      icon_view = location_bar_view->save_credit_card_icon_view();
+      DCHECK(browser_view->GetLocationBarView()->Contains(icon));
     }
-
-    return icon_view;
+    return icon;
   }
 
   void OpenSettingsFromManageCardsPrompt() {

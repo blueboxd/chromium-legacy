@@ -37,7 +37,8 @@ void Badge::set(ScriptState* script_state,
                 const BadgeOptions* options,
                 ExceptionState& exception_state) {
   BadgeFromState(script_state)
-      ->SetBadge(options->scope(), mojom::blink::BadgeValue::NewFlag(0));
+      ->SetBadge(options->scope(), mojom::blink::BadgeValue::NewFlag(0),
+                 exception_state);
 }
 
 // static
@@ -53,28 +54,38 @@ void Badge::set(ScriptState* script_state,
                 const BadgeOptions* options,
                 ExceptionState& exception_state) {
   if (content == 0) {
-    Badge::clear(script_state, options);
+    Badge::clear(script_state, options, exception_state);
   } else {
     BadgeFromState(script_state)
         ->SetBadge(options->scope(),
-                   mojom::blink::BadgeValue::NewNumber(content));
+                   mojom::blink::BadgeValue::NewNumber(content),
+                   exception_state);
   }
 }
 
 // static
-void Badge::clear(ScriptState* script_state, const BadgeOptions* options) {
-  BadgeFromState(script_state)->ClearBadge(options->scope());
+void Badge::clear(ScriptState* script_state,
+                  const BadgeOptions* options,
+                  ExceptionState& exception_state) {
+  BadgeFromState(script_state)->ClearBadge(options->scope(), exception_state);
 }
 
-void Badge::SetBadge(WTF::String scope, mojom::blink::BadgeValuePtr value) {
-  // Resolve |scope| against the URL of the current document/worker.
-  KURL scope_url = KURL(execution_context_->Url(), scope);
-  badge_service_->SetBadge(scope_url, std::move(value));
+void Badge::SetBadge(WTF::String scope,
+                     mojom::blink::BadgeValuePtr value,
+                     ExceptionState& exception_state) {
+  base::Optional<KURL> scope_url = ScopeStringToURL(scope, exception_state);
+  if (!scope_url)
+    return;
+
+  badge_service_->SetBadge(*scope_url, std::move(value));
 }
 
-void Badge::ClearBadge(WTF::String scope) {
-  // Resolve |scope| against the URL of the current document/worker.
-  badge_service_->ClearBadge(KURL(execution_context_->Url(), scope));
+void Badge::ClearBadge(WTF::String scope, ExceptionState& exception_state) {
+  base::Optional<KURL> scope_url = ScopeStringToURL(scope, exception_state);
+  if (!scope_url)
+    return;
+
+  badge_service_->ClearBadge(*scope_url);
 }
 
 void Badge::Trace(blink::Visitor* visitor) {
@@ -93,6 +104,24 @@ Badge::Badge(ExecutionContext* context) : execution_context_(context) {
 // static
 Badge* Badge::BadgeFromState(ScriptState* script_state) {
   return Badge::From(ExecutionContext::From(script_state));
+}
+
+base::Optional<KURL> Badge::ScopeStringToURL(WTF::String& scope,
+                                             ExceptionState& exception_state) {
+  // Resolve |scope| against the URL of the current document/worker.
+  KURL scope_url = KURL(execution_context_->Url(), scope);
+
+  if (!scope_url.IsValid()) {
+    exception_state.ThrowTypeError("Invalid scope URL");
+    return base::nullopt;
+  }
+
+  // TODO(mgiuca): Check that URL is same-origin as the execution context. If
+  // not, fail with SecurityError (https://crbug.com/1001404). (This is not a
+  // security bug, since the same-origin check is currently done on the browser
+  // side, but we still want to report the failure as an exception.)
+
+  return base::Optional<KURL>(scope_url);
 }
 
 }  // namespace blink

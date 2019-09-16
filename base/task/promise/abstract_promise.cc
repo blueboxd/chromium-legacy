@@ -66,6 +66,10 @@ AbstractPromise::~AbstractPromise() {
   OnCanceled();
 }
 
+void AbstractPromise::EmplaceResolvedVoid() {
+  emplace(Resolved<void>());
+}
+
 bool AbstractPromise::IsCanceled() const {
   if (dependents_.IsCanceled())
     return true;

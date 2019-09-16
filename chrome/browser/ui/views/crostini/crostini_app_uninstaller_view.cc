@@ -85,8 +85,6 @@ CrostiniAppUninstallerView::CrostiniAppUninstallerView(
       views::BoxLayout::Orientation::kVertical,
       provider->GetInsetsMetric(views::InsetsMetric::INSETS_DIALOG),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
-  set_margins(provider->GetDialogInsetsForContentType(
-      views::DialogContentType::TEXT, views::DialogContentType::TEXT));
 
   crostini::CrostiniRegistryService* registry =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(profile);

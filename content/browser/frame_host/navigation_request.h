@@ -26,6 +26,7 @@
 #include "content/common/content_export.h"
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params.mojom.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/navigation_type.h"
@@ -243,6 +244,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   bool FromDownloadCrossOriginRedirect();
   void RegisterSubresourceOverride(
       mojom::TransferrableURLLoaderPtr transferrable_loader);
+  GlobalFrameRoutingId GetPreviousRenderFrameHostId();
 
   // Called on the UI thread by the Navigator to start the navigation.
   // The NavigationRequest can be deleted while BeginNavigation() is called.
@@ -1043,6 +1045,9 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // NavigationRequest is associated with (if any).
   int64_t frame_entry_item_sequence_number_ = -1;
   int64_t frame_entry_document_sequence_number_ = -1;
+
+  // This is used to store the current_frame_host id at request creation time.
+  GlobalFrameRoutingId previous_render_frame_host_id_;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 

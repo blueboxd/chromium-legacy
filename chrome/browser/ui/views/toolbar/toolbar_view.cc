@@ -34,8 +34,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
-#include "chrome/browser/ui/views/autofill/payments/local_card_migration_icon_view.h"
-#include "chrome/browser/ui/views/autofill/payments/save_card_icon_view.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
@@ -821,17 +819,9 @@ PageActionIconView* ToolbarView::GetPageActionIconView(
           type);
   if (icon)
     return icon;
-  if (toolbar_page_action_container_)
-    icon = toolbar_page_action_container_->GetIconView(type);
-  if (icon)
-    return icon;
-  // TODO(https://crbug.com/788051): Migrate remaining page action icons out of
-  // LocationBarView.
-  if (type == PageActionIconType::kSaveCard)
-    return location_bar_->save_credit_card_icon_view();
-  if (type == PageActionIconType::kLocalCardMigration)
-    return location_bar_->local_card_migration_icon_view();
-  return nullptr;
+  return toolbar_page_action_container_
+             ? toolbar_page_action_container_->GetIconView(type)
+             : nullptr;
 }
 
 AppMenuButton* ToolbarView::GetAppMenuButton() {

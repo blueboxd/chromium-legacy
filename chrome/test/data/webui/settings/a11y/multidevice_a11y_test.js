@@ -32,7 +32,7 @@ AccessibilityTest.define('MultideviceA11yTest', {
   /** @override */
   name: 'MULTIDEVICE',
   /** @override */
-  axeOptions: SettingsAccessibilityTest.axeOptionsExcludeLinkInTextBlock,
+  axeOptions: SettingsAccessibilityTest.axeOptions,
   /** @override */
   setup: function() {
     settings.router.navigateTo(settings.routes.MULTIDEVICE);

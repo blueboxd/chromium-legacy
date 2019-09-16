@@ -43,9 +43,15 @@ class FinallyExecutor {
 
   void Execute(AbstractPromise* promise) {
     AbstractPromise* prerequisite = promise->GetOnlyPrerequisite();
-    CallbackT* resolve_executor = static_cast<CallbackT*>(&common_.callback_);
-    RunHelper<CallbackT, void, ResolveStorage, RejectStorage>::Run(
-        std::move(*resolve_executor), prerequisite, promise);
+    // Internally RunHelper uses const RepeatingCallback<>& to avoid the
+    // binary size overhead of moving a scoped_refptr<> about.  We respect
+    // the onceness of the callback and RunHelper will overwrite the callback
+    // with the result.
+    using RepeatingCB = typename ToRepeatingCallback<CallbackT>::value;
+    RepeatingCB* resolve_executor =
+        static_cast<RepeatingCB*>(&common_.callback_);
+    RunHelper<RepeatingCB, void, ResolveStorage, RejectStorage>::Run(
+        *resolve_executor, prerequisite, promise);
   }
 
 #if DCHECK_IS_ON()

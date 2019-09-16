@@ -564,8 +564,7 @@ float SVGSVGElement::getCurrentTime() const {
 
 void SVGSVGElement::setCurrentTime(float seconds) {
   DCHECK(std::isfinite(seconds));
-  seconds = max(seconds, 0.0f);
-  time_container_->SetElapsed(seconds);
+  time_container_->SetElapsed(SMILTime::FromSecondsD(std::max(seconds, 0.0f)));
 }
 
 bool SVGSVGElement::SelfHasRelativeLengths() const {

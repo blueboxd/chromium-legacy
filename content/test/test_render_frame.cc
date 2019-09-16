@@ -20,7 +20,9 @@
 #include "content/renderer/input/frame_input_handler_impl.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/data_url.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -461,10 +463,11 @@ mojom::FrameHost* TestRenderFrame::GetFrameHost() {
 
 mojom::FrameInputHandler* TestRenderFrame::GetFrameInputHandler() {
   if (!frame_input_handler_) {
-    mojom::FrameInputHandlerRequest frame_input_handler_request =
-        mojo::MakeRequest(&frame_input_handler_);
+    mojo::PendingReceiver<mojom::FrameInputHandler>
+        frame_input_handler_receiver =
+            frame_input_handler_.BindNewPipeAndPassReceiver();
     FrameInputHandlerImpl::CreateMojoService(
-        weak_factory_.GetWeakPtr(), std::move(frame_input_handler_request));
+        weak_factory_.GetWeakPtr(), std::move(frame_input_handler_receiver));
   }
   return frame_input_handler_.get();
 }

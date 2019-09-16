@@ -17,6 +17,10 @@
     <module name="IllegalCatch">
       <property name="severity" value="info"/>
     </module>
+    <module name="ModifierOrder">
+      <message key="mod.order" value="&quot;{0}&quot; modifier out of order with the JLS suggestions. The correct order: public protected private abstract default static final transient volatile synchronized native strictfp. See https://crbug.com/1003711 for details."/>
+      <property name="severity" value="error"/>
+    </module>
     <module name="RedundantImport">
       <message key="import.redundant" value="Redundant import: {0}. Use :JavaImportOrganize (ECLIM) or Ctrl+Shift+O (Eclipse) to sort imports"/>
       <property name="severity" value="error"/>

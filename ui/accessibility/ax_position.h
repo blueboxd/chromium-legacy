@@ -44,7 +44,8 @@ enum class AXPositionKind { NULL_POSITION, TREE_POSITION, TEXT_POSITION };
 enum class AXBoundaryBehavior {
   CrossBoundary,
   StopAtAnchorBoundary,
-  StopIfAlreadyAtBoundary
+  StopIfAlreadyAtBoundary,
+  StopAtLastAnchorBoundary
 };
 
 // Specifies how AXPosition::ExpandToEnclosingTextBoundary behaves.
@@ -296,7 +297,6 @@ class AXPosition {
   bool AtStartOfAnchor() const {
     if (!GetAnchor())
       return false;
-
     switch (kind_) {
       case AXPositionKind::NULL_POSITION:
         return false;
@@ -309,14 +309,11 @@ class AXPosition {
       case AXPositionKind::TEXT_POSITION:
         return text_offset_ == 0;
     }
-
-    return false;
   }
 
   bool AtEndOfAnchor() const {
     if (!GetAnchor())
       return false;
-
     switch (kind_) {
       case AXPositionKind::NULL_POSITION:
         return false;
@@ -325,8 +322,6 @@ class AXPosition {
       case AXPositionKind::TEXT_POSITION:
         return text_offset_ == MaxTextOffset();
     }
-
-    return false;
   }
 
   bool AtStartOfWord() const {
@@ -344,7 +339,6 @@ class AXPosition {
             word_starts, static_cast<int32_t>(text_position->text_offset_));
       }
     }
-    return false;
   }
 
   bool AtEndOfWord() const {
@@ -362,7 +356,6 @@ class AXPosition {
             word_ends, static_cast<int32_t>(text_position->text_offset_));
       }
     }
-    return false;
   }
 
   bool AtStartOfLine() const {
@@ -390,7 +383,6 @@ class AXPosition {
                    INVALID_ANCHOR_ID &&
                text_position->AtStartOfAnchor();
     }
-    return false;
   }
 
   bool AtEndOfLine() const {
@@ -407,9 +399,8 @@ class AXPosition {
         // a non-empty text position in which case the end of line iterators
         // must move to the line end of the non-empty content. Specified next
         // line IDs are ignored.
-        if (!text_position->MaxTextOffset()) {
+        if (!text_position->MaxTextOffset())
           return false;
-        }
 
         // If affinity has been used to specify whether the caret is at the end
         // of a line or at the start of the next one, this should have been
@@ -423,24 +414,17 @@ class AXPosition {
         // of white space that is on a line by itself as being at the end of
         // that line. Note that white space that ends a line of text should be
         // connected to that text with a "previous on line ID".
-        if (GetNextOnLineID(text_position->anchor_id_) == INVALID_ANCHOR_ID) {
-          if (text_position->IsInWhiteSpace()) {
-            if (GetPreviousOnLineID(text_position->anchor_id_) ==
-                INVALID_ANCHOR_ID) {
-              return text_position->AtEndOfAnchor();
-            } else {
-              return text_position->AtStartOfAnchor();
-            }
-          }
-
-          return text_position->AtEndOfAnchor();
-        }
+        if (GetNextOnLineID(text_position->anchor_id_) == INVALID_ANCHOR_ID)
+          return (!text_position->IsInWhiteSpace() ||
+                  GetPreviousOnLineID(text_position->anchor_id_) ==
+                      INVALID_ANCHOR_ID)
+                     ? text_position->AtEndOfAnchor()
+                     : text_position->AtStartOfAnchor();
 
         // The current anchor might be followed by a soft line break.
-        if (text_position->AtEndOfAnchor())
-          return text_position->CreateNextLeafTextPosition()->AtEndOfLine();
+        return text_position->AtEndOfAnchor() &&
+               text_position->CreateNextLeafTextPosition()->AtEndOfLine();
     }
-    return false;
   }
 
   // |AtStartOfParagraph| is asymmetric from |AtEndOfParagraph| because of
@@ -472,10 +456,9 @@ class AXPosition {
 
         // 2. The current position is not whitespace only, unless it is also
         //    the first leaf text position within the document.
-        if (text_position->IsInWhiteSpace()) {
+        if (text_position->IsInWhiteSpace())
           return text_position->CreatePreviousLeafTextPosition()
               ->IsNullPosition();
-        }
 
         // 3. Either (a) the current leaf text position is the first leaf text
         //    position in the document, or (b) there are no line breaking
@@ -507,7 +490,6 @@ class AXPosition {
         return previous_text_position->IsNullPosition();
       }
     }
-    return false;
   }
 
   // |AtEndOfParagraph| is asymmetric from |AtStartOfParagraph| because of
@@ -589,7 +571,6 @@ class AXPosition {
             ->AtStartOfParagraph();
       }
     }
-    return false;
   }
 
   bool AtStartOfPage() const {
@@ -616,7 +597,6 @@ class AXPosition {
         return previous_text_position->IsNullPosition();
       }
     }
-    return false;
   }
 
   bool AtEndOfPage() const {
@@ -642,7 +622,6 @@ class AXPosition {
         return next_text_position->IsNullPosition();
       }
     }
-    return false;
   }
 
   bool AtStartOfFormat() const {
@@ -697,8 +676,7 @@ class AXPosition {
   // Also, this method uses position instead of tree logic to traverse the tree,
   // because positions can handle moving across multiple trees, while trees
   // cannot.
-  AXPositionInstance LowestCommonAncestor(
-      const AXPosition<AXPositionType, AXNodeType>& second) const {
+  AXPositionInstance LowestCommonAncestor(const AXPosition& second) const {
     if (IsNullPosition() || second.IsNullPosition())
       return CreateNullPosition();
     if (GetAnchor() == second.GetAnchor())
@@ -971,6 +949,42 @@ class AXPosition {
             break;
           case AXTextBoundaryDirection::kForwards:
             resulting_position = CreatePositionAtEndOfAnchor();
+            break;
+        }
+        break;
+
+      case AXTextBoundary::kPageEnd:
+        switch (direction) {
+          case AXTextBoundaryDirection::kBackwards:
+            resulting_position =
+                CreatePreviousPageEndPosition(boundary_behavior);
+            break;
+          case AXTextBoundaryDirection::kForwards:
+            resulting_position = CreateNextPageEndPosition(boundary_behavior);
+            break;
+        }
+        break;
+
+      case AXTextBoundary::kPageStart:
+        switch (direction) {
+          case AXTextBoundaryDirection::kBackwards:
+            resulting_position =
+                CreatePreviousPageStartPosition(boundary_behavior);
+            break;
+          case AXTextBoundaryDirection::kForwards:
+            resulting_position = CreateNextPageStartPosition(boundary_behavior);
+            break;
+        }
+        break;
+
+      case AXTextBoundary::kPageStartOrEnd:
+        switch (direction) {
+          case AXTextBoundaryDirection::kBackwards:
+            resulting_position =
+                CreatePreviousPageStartPosition(boundary_behavior);
+            break;
+          case AXTextBoundaryDirection::kForwards:
+            resulting_position = CreateNextPageEndPosition(boundary_behavior);
             break;
         }
         break;
@@ -1308,9 +1322,13 @@ class AXPosition {
 
     const bool was_tree_position = IsTreePosition();
     AXPositionInstance text_position = AsPositionBeforeCharacter();
+
     // There is no next character position.
-    if (text_position->IsNullPosition())
+    if (text_position->IsNullPosition()) {
+      if (boundary_behavior == AXBoundaryBehavior::StopAtLastAnchorBoundary)
+        text_position = Clone();
       return text_position;
+    }
 
     ++text_position->text_offset_;
     DCHECK_LE(text_position->text_offset_, text_position->MaxTextOffset());
@@ -1334,9 +1352,13 @@ class AXPosition {
 
     const bool was_tree_position = IsTreePosition();
     AXPositionInstance text_position = AsPositionAfterCharacter();
+
     // There is no previous character position.
-    if (text_position->IsNullPosition())
+    if (text_position->IsNullPosition()) {
+      if (boundary_behavior == AXBoundaryBehavior::StopAtLastAnchorBoundary)
+        text_position = Clone();
       return text_position;
+    }
 
     --text_position->text_offset_;
     DCHECK_GE(text_position->text_offset_, 0);
@@ -1351,10 +1373,11 @@ class AXPosition {
 
   AXPositionInstance CreateNextWordStartPosition(
       AXBoundaryBehavior boundary_behavior) const {
-    bool was_tree_position = IsTreePosition();
+    const bool was_tree_position = IsTreePosition();
     AXPositionInstance text_position = AsLeafTextPosition();
     if (text_position->IsNullPosition())
       return text_position;
+
     if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
         text_position->AtStartOfWord()) {
       AXPositionInstance clone = Clone();
@@ -1368,17 +1391,33 @@ class AXPosition {
                          static_cast<int32_t>(text_position->text_offset_));
     do {
       if (iterator == word_starts.end()) {
+        bool at_last_anchor_boundary = false;
+
         // Ignore any nodes with no text or no word boundaries.
         do {
-          text_position = text_position->CreateNextLeafTextPosition();
-          if (text_position->IsNullPosition()) {
-            if (AtEndOfAnchor() &&
-                boundary_behavior == AXBoundaryBehavior::CrossBoundary)
-              return text_position;
-            return CreatePositionAtEndOfAnchor();
+          AXPositionInstance next_position =
+              text_position->CreateNextLeafTextPosition();
+
+          if (next_position->IsNullPosition()) {
+            if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary)
+              return CreatePositionAtEndOfAnchor();
+            if (boundary_behavior ==
+                AXBoundaryBehavior::StopAtLastAnchorBoundary) {
+              // We can't simply return the following position; after breaking
+              // both loops we'll try to do some adjustments to text_position.
+              text_position = text_position->CreatePositionAtEndOfAnchor();
+              at_last_anchor_boundary = true;
+              break;
+            }
+            return next_position;
           }
+
+          text_position = std::move(next_position);
         } while (!text_position->MaxTextOffset() ||
                  text_position->GetWordStartOffsets().empty());
+
+        if (at_last_anchor_boundary)
+          break;
 
         word_starts = text_position->GetWordStartOffsets();
         DCHECK(!word_starts.empty());
@@ -1415,8 +1454,11 @@ class AXPosition {
 
   AXPositionInstance CreatePreviousWordStartPosition(
       AXBoundaryBehavior boundary_behavior) const {
-    bool was_tree_position = IsTreePosition();
+    const bool was_tree_position = IsTreePosition();
     AXPositionInstance text_position = AsLeafTextPosition();
+    if (text_position->IsNullPosition())
+      return text_position;
+
     if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
         text_position->AtStartOfWord()) {
       AXPositionInstance clone = Clone();
@@ -1430,17 +1472,34 @@ class AXPosition {
                          static_cast<int32_t>(text_position->text_offset_));
     do {
       if (word_starts.empty() || iterator == word_starts.begin()) {
+        bool at_last_anchor_boundary = false;
+
         // Ignore any nodes with no text or no word boundaries.
         do {
-          text_position = text_position->CreatePreviousLeafTextPosition()
-                              ->CreatePositionAtEndOfAnchor();
-          if (text_position->IsNullPosition()) {
+          AXPositionInstance previous_position =
+              text_position->CreatePreviousLeafTextPosition()
+                  ->CreatePositionAtEndOfAnchor();
+
+          if (previous_position->IsNullPosition()) {
             if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary)
               return CreatePositionAtStartOfAnchor();
-            return text_position;
+            if (boundary_behavior ==
+                AXBoundaryBehavior::StopAtLastAnchorBoundary) {
+              // We can't simply return the following position; after breaking
+              // both loops we'll try to do some adjustments to text_position.
+              text_position = text_position->CreatePositionAtStartOfAnchor();
+              at_last_anchor_boundary = true;
+              break;
+            }
+            return previous_position;
           }
+
+          text_position = std::move(previous_position);
         } while (!text_position->MaxTextOffset() ||
                  text_position->GetWordStartOffsets().empty());
+
+        if (at_last_anchor_boundary)
+          break;
 
         word_starts = text_position->GetWordStartOffsets();
         DCHECK(!word_starts.empty());
@@ -1478,8 +1537,11 @@ class AXPosition {
   // Word end positions are one past the last character of the word.
   AXPositionInstance CreateNextWordEndPosition(
       AXBoundaryBehavior boundary_behavior) const {
-    bool was_tree_position = IsTreePosition();
+    const bool was_tree_position = IsTreePosition();
     AXPositionInstance text_position = AsLeafTextPosition();
+    if (text_position->IsNullPosition())
+      return text_position;
+
     if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
         text_position->AtEndOfWord()) {
       AXPositionInstance clone = Clone();
@@ -1499,16 +1561,33 @@ class AXPosition {
                          static_cast<int32_t>(text_position->text_offset_));
     do {
       if (iterator == word_ends.end()) {
+        bool at_last_anchor_boundary = false;
+
         // Ignore any nodes with no text or no word boundaries.
         do {
-          text_position = text_position->CreateNextLeafTextPosition();
-          if (text_position->IsNullPosition()) {
+          AXPositionInstance next_position =
+              text_position->CreateNextLeafTextPosition();
+
+          if (next_position->IsNullPosition()) {
             if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary)
               return CreatePositionAtEndOfAnchor();
-            return text_position;
+            if (boundary_behavior ==
+                AXBoundaryBehavior::StopAtLastAnchorBoundary) {
+              // We can't simply return the following position; after breaking
+              // both loops we'll try to do some adjustments to text_position.
+              text_position = text_position->CreatePositionAtEndOfAnchor();
+              at_last_anchor_boundary = true;
+              break;
+            }
+            return next_position;
           }
+
+          text_position = std::move(next_position);
         } while (!text_position->MaxTextOffset() ||
                  text_position->GetWordEndOffsets().empty());
+
+        if (at_last_anchor_boundary)
+          break;
 
         word_ends = text_position->GetWordEndOffsets();
         DCHECK(!word_ends.empty());
@@ -1546,8 +1625,11 @@ class AXPosition {
   // Word end positions are one past the last character of the word.
   AXPositionInstance CreatePreviousWordEndPosition(
       AXBoundaryBehavior boundary_behavior) const {
-    bool was_tree_position = IsTreePosition();
+    const bool was_tree_position = IsTreePosition();
     AXPositionInstance text_position = AsLeafTextPosition();
+    if (text_position->IsNullPosition())
+      return text_position;
+
     if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
         text_position->AtEndOfWord()) {
       AXPositionInstance clone = Clone();
@@ -1567,18 +1649,34 @@ class AXPosition {
                          static_cast<int32_t>(text_position->text_offset_));
     do {
       if (word_ends.empty() || iterator == word_ends.begin()) {
+        bool at_last_anchor_boundary = false;
+
         // Ignore any nodes with no text or no word boundaries.
         do {
-          text_position = text_position->CreatePreviousLeafTextPosition()
-                              ->CreatePositionAtEndOfAnchor();
-          if (text_position->IsNullPosition()) {
-            if (AtStartOfAnchor() &&
-                boundary_behavior == AXBoundaryBehavior::CrossBoundary)
-              return text_position;
-            return CreatePositionAtStartOfAnchor();
+          AXPositionInstance previous_position =
+              text_position->CreatePreviousLeafTextPosition()
+                  ->CreatePositionAtEndOfAnchor();
+
+          if (previous_position->IsNullPosition()) {
+            if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary)
+              return CreatePositionAtStartOfAnchor();
+            if (boundary_behavior ==
+                AXBoundaryBehavior::StopAtLastAnchorBoundary) {
+              // We can't simply return the following position; after breaking
+              // both loops we'll try to do some adjustments to text_position.
+              text_position = text_position->CreatePositionAtStartOfAnchor();
+              at_last_anchor_boundary = true;
+              break;
+            }
+            return previous_position;
           }
+
+          text_position = std::move(previous_position);
         } while (!text_position->MaxTextOffset() ||
                  text_position->GetWordStartOffsets().empty());
+
+        if (at_last_anchor_boundary)
+          break;
 
         word_ends = text_position->GetWordEndOffsets();
         DCHECK(!word_ends.empty());
@@ -1614,223 +1712,38 @@ class AXPosition {
 
   AXPositionInstance CreateNextLineStartPosition(
       AXBoundaryBehavior boundary_behavior) const {
-    bool was_tree_position = IsTreePosition();
-    AXPositionInstance text_position = AsLeafTextPosition();
-    if (text_position->IsNullPosition())
-      return text_position;
-
-    if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
-        text_position->AtStartOfLine()) {
-      AXPositionInstance clone = Clone();
-      clone->affinity_ = ax::mojom::TextAffinity::kDownstream;
-      return clone;
-    }
-
-    do {
-      AXPositionInstance next_position =
-          text_position->CreateNextLeafTextPosition();
-
-      if (next_position->IsNullPosition()) {
-        if (boundary_behavior == AXBoundaryBehavior::CrossBoundary) {
-          if (AtEndOfAnchor())
-            return next_position;
-          // We can't simply return the following position; break and after this
-          // loop we'll try to do some adjustments to the result position.
-          text_position = text_position->CreatePositionAtEndOfAnchor();
-          break;
-        }
-        return CreatePositionAtEndOfAnchor();
-      }
-
-      // Continue searching for the next line start until the next logical text
-      // position is reached.
-      text_position = std::move(next_position);
-    } while (
-        !text_position->AtStartOfLine() ||
-        (boundary_behavior != AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
-         *this == *text_position));
-
-    // If the line boundary is in the same subtree, return a position rooted at
-    // this position's anchor. This is necessary because we don't want to return
-    // a position that might be in the shadow DOM when this position is not.
-    AXPositionInstance common_ancestor =
-        text_position->LowestCommonAncestor(*this);
-    if (GetAnchor() == common_ancestor->GetAnchor()) {
-      text_position = std::move(common_ancestor);
-    } else if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary) {
-      return CreatePositionAtEndOfAnchor();
-    }
-
-    if (was_tree_position)
-      text_position = text_position->AsTreePosition();
-    return text_position;
+    return CreateBoundaryStartPosition(
+        boundary_behavior, AXTextBoundaryDirection::kForwards,
+        base::BindRepeating(&AtStartOfLinePredicate),
+        base::BindRepeating(&AtEndOfLinePredicate));
   }
 
   AXPositionInstance CreatePreviousLineStartPosition(
       AXBoundaryBehavior boundary_behavior) const {
-    bool was_tree_position = IsTreePosition();
-    AXPositionInstance text_position = AsLeafTextPosition();
-    if (text_position->IsNullPosition())
-      return text_position;
-
-    if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
-        text_position->AtStartOfLine()) {
-      AXPositionInstance clone = Clone();
-      clone->affinity_ = ax::mojom::TextAffinity::kDownstream;
-      return clone;
-    }
-
-    do {
-      text_position = text_position->AtStartOfAnchor()
-                          ? text_position->CreatePreviousLeafTextPosition()
-                          : text_position->CreatePositionAtStartOfAnchor();
-
-      if (text_position->IsNullPosition()) {
-        if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary)
-          return CreatePositionAtStartOfAnchor();
-        return text_position;
-      }
-
-      // Continue searching for the previous line start until the next logical
-      // text position is reached.
-    } while (
-        !text_position->AtStartOfLine() ||
-        (boundary_behavior != AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
-         *this == *text_position));
-
-    // If the line boundary is in the same subtree, return a position rooted at
-    // this position's anchor. This is necessary because we don't want to return
-    // a position that might be in the shadow DOM when this position is not.
-    AXPositionInstance common_ancestor =
-        text_position->LowestCommonAncestor(*this);
-    if (GetAnchor() == common_ancestor->GetAnchor()) {
-      text_position = std::move(common_ancestor);
-    } else if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary) {
-      return CreatePositionAtStartOfAnchor();
-    }
-
-    if (was_tree_position)
-      text_position = text_position->AsTreePosition();
-    return text_position;
+    return CreateBoundaryStartPosition(
+        boundary_behavior, AXTextBoundaryDirection::kBackwards,
+        base::BindRepeating(&AtStartOfLinePredicate),
+        base::BindRepeating(&AtEndOfLinePredicate));
   }
 
   // Line end positions are one past the last character of the line, excluding
   // any white space or newline characters that separate the lines.
   AXPositionInstance CreateNextLineEndPosition(
       AXBoundaryBehavior boundary_behavior) const {
-    bool was_tree_position = IsTreePosition();
-    AXPositionInstance text_position = AsLeafTextPosition();
-    if (text_position->IsNullPosition())
-      return text_position;
-
-    if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
-        text_position->AtEndOfLine()) {
-      AXPositionInstance clone = Clone();
-      // If there is no ambiguity as to whether the position is at the end of
-      // the current line or the start of the next line, affinity should be
-      // reset in order to get consistent output from this function regardless
-      // of input affinity.
-      clone->affinity_ = ax::mojom::TextAffinity::kDownstream;
-      if (clone->AtStartOfLine())
-        clone->affinity_ = ax::mojom::TextAffinity::kUpstream;
-      return clone;
-    }
-
-    do {
-      if (text_position->AtEndOfAnchor())
-        text_position = text_position->CreateNextLeafTextPosition();
-      text_position = text_position->CreatePositionAtEndOfAnchor();
-
-      if (text_position->IsNullPosition()) {
-        if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary)
-          return CreatePositionAtEndOfAnchor();
-        return text_position;
-      }
-
-      // Continue searching for the next line end until the next logical text
-      // position is reached.
-    } while (
-        !text_position->AtEndOfLine() ||
-        (boundary_behavior != AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
-         *this == *text_position));
-
-    // If the line boundary is in the same subtree, return a position rooted at
-    // this position's anchor. This is necessary because we don't want to return
-    // a position that might be in the shadow DOM when this position is not.
-    AXPositionInstance common_ancestor =
-        text_position->LowestCommonAncestor(*this);
-    if (GetAnchor() == common_ancestor->GetAnchor()) {
-      text_position = std::move(common_ancestor);
-    } else if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary) {
-      return CreatePositionAtEndOfAnchor();
-    }
-
-    if (was_tree_position)
-      text_position = text_position->AsTreePosition();
-    return text_position;
+    return CreateBoundaryEndPosition(
+        boundary_behavior, AXTextBoundaryDirection::kForwards,
+        base::BindRepeating(&AtStartOfLinePredicate),
+        base::BindRepeating(&AtEndOfLinePredicate));
   }
 
   // Line end positions are one past the last character of the line, excluding
   // any white space or newline characters separating the lines.
   AXPositionInstance CreatePreviousLineEndPosition(
       AXBoundaryBehavior boundary_behavior) const {
-    bool was_tree_position = IsTreePosition();
-    AXPositionInstance text_position = AsLeafTextPosition();
-    if (text_position->IsNullPosition())
-      return text_position;
-
-    if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
-        text_position->AtEndOfLine()) {
-      AXPositionInstance clone = Clone();
-      // If there is no ambiguity as to whether the position is at the end of
-      // the current line or the start of the next line, affinity should be
-      // reset in order to get consistent output from this function regardless
-      // of input affinity.
-      clone->affinity_ = ax::mojom::TextAffinity::kDownstream;
-      if (clone->AtStartOfLine())
-        clone->affinity_ = ax::mojom::TextAffinity::kUpstream;
-      return clone;
-    }
-
-    do {
-      AXPositionInstance previous_position =
-          text_position->CreatePreviousLeafTextPosition()
-              ->CreatePositionAtEndOfAnchor();
-
-      if (previous_position->IsNullPosition()) {
-        if (boundary_behavior == AXBoundaryBehavior::CrossBoundary) {
-          if (AtStartOfAnchor())
-            return previous_position;
-          // We can't simply return the following position; break and after this
-          // loop we'll try to do some adjustments to the result position.
-          text_position = text_position->CreatePositionAtStartOfAnchor();
-          break;
-        }
-        return CreatePositionAtStartOfAnchor();
-      }
-
-      // Continue searching for the previous line end until the next logical
-      // text position is reached.
-      text_position = std::move(previous_position);
-    } while (
-        !text_position->AtEndOfLine() ||
-        (boundary_behavior != AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
-         *this == *text_position));
-
-    // If the line boundary is in the same subtree, return a position rooted at
-    // this position's anchor. This is necessary because we don't want to return
-    // a position that might be in the shadow DOM when this position is not.
-    AXPositionInstance common_ancestor =
-        text_position->LowestCommonAncestor(*this);
-    if (GetAnchor() == common_ancestor->GetAnchor()) {
-      text_position = std::move(common_ancestor);
-    } else if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary) {
-      return CreatePositionAtStartOfAnchor();
-    }
-
-    if (was_tree_position)
-      text_position = text_position->AsTreePosition();
-    return text_position;
+    return CreateBoundaryEndPosition(
+        boundary_behavior, AXTextBoundaryDirection::kBackwards,
+        base::BindRepeating(&AtStartOfLinePredicate),
+        base::BindRepeating(&AtEndOfLinePredicate));
   }
 
   AXPositionInstance CreatePreviousFormatStartPosition(
@@ -1841,7 +1754,9 @@ class AXPosition {
     // AtStartOfFormat() always returns true if we are at the first iterable
     // position, i.e. CreatePreviousLeafTreePosition()->IsNullPosition().
     if (AtStartOfFormat()) {
-      if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary) {
+      if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary ||
+          (boundary_behavior == AXBoundaryBehavior::StopAtLastAnchorBoundary &&
+           CreatePreviousLeafTreePosition()->IsNullPosition())) {
         AXPositionInstance clone = Clone();
         // In order to make equality checks simpler, affinity should be reset so
         // that we would get consistent output from this function regardless of
@@ -1849,7 +1764,6 @@ class AXPosition {
         clone->affinity_ = ax::mojom::TextAffinity::kDownstream;
         return clone;
       } else if (boundary_behavior == AXBoundaryBehavior::CrossBoundary &&
-                 AtStartOfAnchor() &&
                  CreatePreviousLeafTreePosition()->IsNullPosition()) {
         // If we're at a format boundary and there are no more text positions
         // to traverse, return a null position for cross-boundary moves.
@@ -1857,7 +1771,7 @@ class AXPosition {
       }
     }
 
-    bool was_text_position = IsTextPosition();
+    const bool was_text_position = IsTextPosition();
     AXPositionInstance tree_position =
         AsTreePosition()->CreatePositionAtStartOfAnchor();
     AXPositionInstance previous_tree_position =
@@ -1905,7 +1819,9 @@ class AXPosition {
     // AtEndOfFormat() always returns true if we are at the last iterable
     // position, i.e. CreateNextLeafTreePosition()->IsNullPosition().
     if (AtEndOfFormat()) {
-      if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary) {
+      if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary ||
+          (boundary_behavior == AXBoundaryBehavior::StopAtLastAnchorBoundary &&
+           CreateNextLeafTreePosition()->IsNullPosition())) {
         AXPositionInstance clone = Clone();
         // In order to make equality checks simpler, affinity should be reset so
         // that we would get consistent output from this function regardless of
@@ -1913,7 +1829,6 @@ class AXPosition {
         clone->affinity_ = ax::mojom::TextAffinity::kDownstream;
         return clone;
       } else if (boundary_behavior == AXBoundaryBehavior::CrossBoundary &&
-                 AtEndOfAnchor() &&
                  CreateNextLeafTreePosition()->IsNullPosition()) {
         // If we're at a format boundary and there are no more text positions
         // to traverse, return a null position for cross-boundary moves.
@@ -1921,7 +1836,7 @@ class AXPosition {
       }
     }
 
-    bool was_text_position = IsTextPosition();
+    const bool was_text_position = IsTextPosition();
     AXPositionInstance tree_position =
         AsTreePosition()->CreatePositionAtEndOfAnchor();
     AXPositionInstance next_tree_position =
@@ -1965,68 +1880,78 @@ class AXPosition {
 
   AXPositionInstance CreateNextParagraphStartPosition(
       AXBoundaryBehavior boundary_behavior) const {
-    return CreateNextBoundaryStartPosition(
-        boundary_behavior, base::BindRepeating(&AtStartOfParagraphPredicate),
+    return CreateBoundaryStartPosition(
+        boundary_behavior, AXTextBoundaryDirection::kForwards,
+        base::BindRepeating(&AtStartOfParagraphPredicate),
         base::BindRepeating(&AtEndOfParagraphPredicate));
   }
 
   AXPositionInstance CreatePreviousParagraphStartPosition(
       AXBoundaryBehavior boundary_behavior) const {
-    return CreatePreviousBoundaryStartPosition(
-        boundary_behavior, base::BindRepeating(&AtStartOfParagraphPredicate),
+    return CreateBoundaryStartPosition(
+        boundary_behavior, AXTextBoundaryDirection::kBackwards,
+        base::BindRepeating(&AtStartOfParagraphPredicate),
         base::BindRepeating(&AtEndOfParagraphPredicate));
   }
 
   AXPositionInstance CreateNextParagraphEndPosition(
       AXBoundaryBehavior boundary_behavior) const {
-    return CreateNextBoundaryEndPosition(
-        boundary_behavior, base::BindRepeating(&AtStartOfParagraphPredicate),
+    return CreateBoundaryEndPosition(
+        boundary_behavior, AXTextBoundaryDirection::kForwards,
+        base::BindRepeating(&AtStartOfParagraphPredicate),
         base::BindRepeating(&AtEndOfParagraphPredicate));
   }
 
   AXPositionInstance CreatePreviousParagraphEndPosition(
       AXBoundaryBehavior boundary_behavior) const {
-    return CreatePreviousBoundaryEndPosition(
-        boundary_behavior, base::BindRepeating(&AtStartOfParagraphPredicate),
+    return CreateBoundaryEndPosition(
+        boundary_behavior, AXTextBoundaryDirection::kBackwards,
+        base::BindRepeating(&AtStartOfParagraphPredicate),
         base::BindRepeating(&AtEndOfParagraphPredicate));
   }
 
   AXPositionInstance CreateNextPageStartPosition(
       AXBoundaryBehavior boundary_behavior) const {
-    return CreateNextBoundaryStartPosition(
-        boundary_behavior, base::BindRepeating(&AtStartOfPagePredicate),
+    return CreateBoundaryStartPosition(
+        boundary_behavior, AXTextBoundaryDirection::kForwards,
+        base::BindRepeating(&AtStartOfPagePredicate),
         base::BindRepeating(&AtEndOfPagePredicate));
   }
 
   AXPositionInstance CreatePreviousPageStartPosition(
       AXBoundaryBehavior boundary_behavior) const {
-    return CreatePreviousBoundaryStartPosition(
-        boundary_behavior, base::BindRepeating(&AtStartOfPagePredicate),
+    return CreateBoundaryStartPosition(
+        boundary_behavior, AXTextBoundaryDirection::kBackwards,
+        base::BindRepeating(&AtStartOfPagePredicate),
         base::BindRepeating(&AtEndOfPagePredicate));
   }
 
   AXPositionInstance CreateNextPageEndPosition(
       AXBoundaryBehavior boundary_behavior) const {
-    return CreateNextBoundaryEndPosition(
-        boundary_behavior, base::BindRepeating(&AtStartOfPagePredicate),
+    return CreateBoundaryEndPosition(
+        boundary_behavior, AXTextBoundaryDirection::kForwards,
+        base::BindRepeating(&AtStartOfPagePredicate),
         base::BindRepeating(&AtEndOfPagePredicate));
   }
 
   AXPositionInstance CreatePreviousPageEndPosition(
       AXBoundaryBehavior boundary_behavior) const {
-    return CreatePreviousBoundaryEndPosition(
-        boundary_behavior, base::BindRepeating(&AtStartOfPagePredicate),
+    return CreateBoundaryEndPosition(
+        boundary_behavior, AXTextBoundaryDirection::kBackwards,
+        base::BindRepeating(&AtStartOfPagePredicate),
         base::BindRepeating(&AtEndOfPagePredicate));
   }
 
-  AXPositionInstance CreateNextBoundaryStartPosition(
+  AXPositionInstance CreateBoundaryStartPosition(
       AXBoundaryBehavior boundary_behavior,
+      AXTextBoundaryDirection boundary_direction,
       BoundaryConditionPredicate at_start_condition,
       BoundaryConditionPredicate at_end_condition) const {
-    bool was_tree_position = IsTreePosition();
+    const bool was_tree_position = IsTreePosition();
     AXPositionInstance text_position = AsLeafTextPosition();
     if (text_position->IsNullPosition())
       return text_position;
+
     if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
         at_start_condition.Run(text_position)) {
       AXPositionInstance clone = Clone();
@@ -2035,15 +1960,34 @@ class AXPosition {
     }
 
     do {
-      text_position = text_position->CreateNextLeafTextPosition();
-      if (text_position->IsNullPosition()) {
+      AXPositionInstance next_position;
+      if (boundary_direction == AXTextBoundaryDirection::kForwards)
+        next_position = text_position->CreateNextLeafTextPosition();
+      else
+        next_position = text_position->AtStartOfAnchor()
+                            ? text_position->CreatePreviousLeafTextPosition()
+                            : text_position->CreatePositionAtStartOfAnchor();
+
+      if (next_position->IsNullPosition()) {
         if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary)
-          return CreatePositionAtEndOfAnchor();
-        return text_position;
+          return (boundary_direction == AXTextBoundaryDirection::kForwards)
+                     ? CreatePositionAtEndOfAnchor()
+                     : CreatePositionAtStartOfAnchor();
+        if (boundary_behavior == AXBoundaryBehavior::StopAtLastAnchorBoundary) {
+          // We can't simply return the following position; break and after this
+          // loop we'll try to do some adjustments to text_position.
+          text_position =
+              (boundary_direction == AXTextBoundaryDirection::kForwards)
+                  ? text_position->CreatePositionAtEndOfAnchor()
+                  : text_position->CreatePositionAtStartOfAnchor();
+          break;
+        }
+        return next_position;
       }
 
-      // Continue searching for the next boundary start until the next logical
-      // text position is reached.
+      // Continue searching for the next boundary end in the specified direction
+      // until the next logical text position is reached.
+      text_position = std::move(next_position);
     } while (
         !at_start_condition.Run(text_position) ||
         (boundary_behavior != AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
@@ -2057,7 +2001,9 @@ class AXPosition {
     if (GetAnchor() == common_ancestor->GetAnchor()) {
       text_position = std::move(common_ancestor);
     } else if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary) {
-      return CreatePositionAtEndOfAnchor();
+      return (boundary_direction == AXTextBoundaryDirection::kForwards)
+                 ? CreatePositionAtEndOfAnchor()
+                 : CreatePositionAtStartOfAnchor();
     }
 
     if (was_tree_position)
@@ -2065,68 +2011,23 @@ class AXPosition {
     return text_position;
   }
 
-  AXPositionInstance CreatePreviousBoundaryStartPosition(
+  AXPositionInstance CreateBoundaryEndPosition(
       AXBoundaryBehavior boundary_behavior,
+      AXTextBoundaryDirection boundary_direction,
       BoundaryConditionPredicate at_start_condition,
       BoundaryConditionPredicate at_end_condition) const {
-    bool was_tree_position = IsTreePosition();
+    const bool was_tree_position = IsTreePosition();
     AXPositionInstance text_position = AsLeafTextPosition();
-    if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
-        at_start_condition.Run(text_position)) {
-      AXPositionInstance clone = Clone();
-      clone->affinity_ = ax::mojom::TextAffinity::kDownstream;
-      return clone;
-    }
+    if (text_position->IsNullPosition())
+      return text_position;
 
-    do {
-      if (text_position->AtStartOfAnchor()) {
-        text_position = text_position->CreatePreviousLeafTextPosition();
-      } else {
-        text_position = text_position->CreatePositionAtStartOfAnchor();
-      }
-
-      if (text_position->IsNullPosition()) {
-        if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary)
-          return CreatePositionAtStartOfAnchor();
-        return text_position;
-      }
-
-      // Continue searching for the previous boundary start until the next
-      // logical text position is reached.
-    } while (
-        !at_start_condition.Run(text_position) ||
-        (boundary_behavior != AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
-         *this == *text_position));
-
-    // If the boundary is in the same subtree, return a position rooted at this
-    // position's anchor. This is necessary because we don't want to return a
-    // position that might be in the shadow DOM when this position is not.
-    AXPositionInstance common_ancestor =
-        text_position->LowestCommonAncestor(*this);
-    if (GetAnchor() == common_ancestor->GetAnchor()) {
-      text_position = std::move(common_ancestor);
-    } else if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary) {
-      return CreatePositionAtStartOfAnchor();
-    }
-
-    if (was_tree_position)
-      text_position = text_position->AsTreePosition();
-    return text_position;
-  }
-
-  AXPositionInstance CreateNextBoundaryEndPosition(
-      AXBoundaryBehavior boundary_behavior,
-      BoundaryConditionPredicate at_start_condition,
-      BoundaryConditionPredicate at_end_condition) const {
-    bool was_tree_position = IsTreePosition();
-    AXPositionInstance text_position = AsLeafTextPosition();
     if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
         at_end_condition.Run(text_position)) {
       AXPositionInstance clone = Clone();
       // If there is no ambiguity as to whether the position is at the end of
-      // the current boundary or the start of the next boundary, affinity
-      // should be reset in order to get consistent output from this function
-      // regardless of input affinity.
+      // the current boundary or the start of the next boundary, affinity should
+      // be reset in order to get consistent output from this method, regardless
+      // of input affinity.
       clone->affinity_ = ax::mojom::TextAffinity::kDownstream;
       if (at_start_condition.Run(clone))
         clone->affinity_ = ax::mojom::TextAffinity::kUpstream;
@@ -2134,21 +2035,36 @@ class AXPosition {
     }
 
     do {
-      if (text_position->AtEndOfAnchor()) {
-        text_position = text_position->CreateNextLeafTextPosition()
+      AXPositionInstance next_position;
+      if (boundary_direction == AXTextBoundaryDirection::kForwards)
+        next_position = !text_position->AtEndOfAnchor()
+                            ? text_position->CreatePositionAtEndOfAnchor()
+                            : text_position->CreateNextLeafTextPosition()
+                                  ->CreatePositionAtEndOfAnchor();
+      else
+        next_position = text_position->CreatePreviousLeafTextPosition()
                             ->CreatePositionAtEndOfAnchor();
-      } else {
-        text_position = text_position->CreatePositionAtEndOfAnchor();
-      }
 
-      if (text_position->IsNullPosition()) {
+      if (next_position->IsNullPosition()) {
         if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary)
-          return CreatePositionAtEndOfAnchor();
-        return text_position;
+          return (boundary_direction == AXTextBoundaryDirection::kForwards)
+                     ? CreatePositionAtEndOfAnchor()
+                     : CreatePositionAtStartOfAnchor();
+        if (boundary_behavior == AXBoundaryBehavior::StopAtLastAnchorBoundary) {
+          // We can't simply return the following position; break and after this
+          // loop we'll try to do some adjustments to text_position.
+          text_position =
+              (boundary_direction == AXTextBoundaryDirection::kForwards)
+                  ? text_position->CreatePositionAtEndOfAnchor()
+                  : text_position->CreatePositionAtStartOfAnchor();
+          break;
+        }
+        return next_position;
       }
 
-      // Continue searching for the next boundary end until the next logical
-      // text position is reached.
+      // Continue searching for the next boundary end in the specified direction
+      // until the next logical text position is reached.
+      text_position = std::move(next_position);
     } while (
         !at_end_condition.Run(text_position) ||
         (boundary_behavior != AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
@@ -2162,60 +2078,9 @@ class AXPosition {
     if (GetAnchor() == common_ancestor->GetAnchor()) {
       text_position = std::move(common_ancestor);
     } else if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary) {
-      return CreatePositionAtEndOfAnchor();
-    }
-
-    if (was_tree_position)
-      text_position = text_position->AsTreePosition();
-    return text_position;
-  }
-
-  AXPositionInstance CreatePreviousBoundaryEndPosition(
-      AXBoundaryBehavior boundary_behavior,
-      BoundaryConditionPredicate at_start_condition,
-      BoundaryConditionPredicate at_end_condition) const {
-    bool was_tree_position = IsTreePosition();
-    AXPositionInstance text_position = AsLeafTextPosition();
-    if (text_position->IsNullPosition())
-      return text_position;
-    if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
-        at_end_condition.Run(text_position)) {
-      AXPositionInstance clone = Clone();
-      // If there is no ambiguity as to whether the position is at the end of
-      // the current boundary or the start of the next boundary, affinity
-      // should be reset in order to get consistent output from this function
-      // regardless of input affinity.
-      clone->affinity_ = ax::mojom::TextAffinity::kDownstream;
-      if (at_start_condition.Run(clone))
-        clone->affinity_ = ax::mojom::TextAffinity::kUpstream;
-      return clone;
-    }
-
-    do {
-      text_position = text_position->CreatePreviousLeafTextPosition()
-                          ->CreatePositionAtEndOfAnchor();
-      if (text_position->IsNullPosition()) {
-        if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary)
-          return CreatePositionAtStartOfAnchor();
-        return text_position;
-      }
-
-      // Continue searching for the previous boundary end until the next
-      // logical text position is reached.
-    } while (
-        !at_end_condition.Run(text_position) ||
-        (boundary_behavior != AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
-         *this == *text_position));
-
-    // If the boundary is in the same subtree, return a position rooted at this
-    // position's anchor. This is necessary because we don't want to return a
-    // position that might be in the shadow DOM when this position is not.
-    AXPositionInstance common_ancestor =
-        text_position->LowestCommonAncestor(*this);
-    if (GetAnchor() == common_ancestor->GetAnchor()) {
-      text_position = std::move(common_ancestor);
-    } else if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary) {
-      return CreatePositionAtStartOfAnchor();
+      return (boundary_direction == AXTextBoundaryDirection::kForwards)
+                 ? CreatePositionAtEndOfAnchor()
+                 : CreatePositionAtStartOfAnchor();
     }
 
     if (was_tree_position)
@@ -2247,8 +2112,7 @@ class AXPosition {
   //    0: if this position is logically equivalent to the other position
   //   <0: if this position is logically less than the other position
   //   >0: if this position is logically greater than the other position
-  base::Optional<int> CompareTo(
-      const AXPosition<AXPositionType, AXNodeType>& other) const {
+  base::Optional<int> CompareTo(const AXPosition& other) const {
     if (this->IsNullPosition() && other.IsNullPosition())
       return base::Optional<int>(0);
     if (this->IsNullPosition() || other.IsNullPosition())
@@ -2266,16 +2130,12 @@ class AXPosition {
     // common ancestor position when converted to tree positions?" The answer is
     // when they are both text positions and they either have the same anchor,
     // or one is the ancestor of the other.
-    std::unique_ptr<AXPosition<AXPositionType, AXNodeType>> this_tree_position =
-        this->AsTreePosition();
-    std::unique_ptr<AXPosition<AXPositionType, AXNodeType>>
-        other_tree_position = other.AsTreePosition();
-    std::unique_ptr<AXPosition<AXPositionType, AXNodeType>>
-        this_tree_position_ancestor =
-            this_tree_position->LowestCommonAncestor(*other_tree_position);
-    std::unique_ptr<AXPosition<AXPositionType, AXNodeType>>
-        other_tree_position_ancestor =
-            other_tree_position->LowestCommonAncestor(*this_tree_position);
+    std::unique_ptr<AXPosition> this_tree_position = this->AsTreePosition();
+    std::unique_ptr<AXPosition> other_tree_position = other.AsTreePosition();
+    std::unique_ptr<AXPosition> this_tree_position_ancestor =
+        this_tree_position->LowestCommonAncestor(*other_tree_position);
+    std::unique_ptr<AXPosition> other_tree_position_ancestor =
+        other_tree_position->LowestCommonAncestor(*this_tree_position);
     DCHECK_EQ(this_tree_position_ancestor->GetAnchor(),
               other_tree_position_ancestor->GetAnchor());
     if (this_tree_position_ancestor->IsNullPosition())
@@ -2289,8 +2149,7 @@ class AXPosition {
       // This text position's anchor is the common ancestor of the other text
       // position's anchor.
       if (this->GetAnchor() == other_tree_position_ancestor->GetAnchor()) {
-        std::unique_ptr<AXPosition<AXPositionType, AXNodeType>>
-            other_text_position = other.Clone();
+        std::unique_ptr<AXPosition> other_text_position = other.Clone();
         while (other_text_position->GetAnchor() != this->GetAnchor())
           other_text_position = other_text_position->CreateParentPosition();
         return base::Optional<int>(this->text_offset_ -
@@ -2300,8 +2159,7 @@ class AXPosition {
       // The other text position's anchor is the common ancestor of this text
       // position's anchor.
       if (other.GetAnchor() == this_tree_position_ancestor->GetAnchor()) {
-        std::unique_ptr<AXPosition<AXPositionType, AXNodeType>>
-            this_text_position = this->Clone();
+        std::unique_ptr<AXPosition> this_text_position = this->Clone();
         while (this_text_position->GetAnchor() != other.GetAnchor())
           this_text_position = this_text_position->CreateParentPosition();
         return base::Optional<int>(this_text_position->text_offset_ -
@@ -2310,10 +2168,10 @@ class AXPosition {
 
       // All optimizations failed. Fall back to comparing text positions with
       // the common text position ancestor.
-      std::unique_ptr<AXPosition<AXPositionType, AXNodeType>>
-          this_text_position_ancestor = this->LowestCommonAncestor(other);
-      std::unique_ptr<AXPosition<AXPositionType, AXNodeType>>
-          other_text_position_ancestor = other.LowestCommonAncestor(*this);
+      std::unique_ptr<AXPosition> this_text_position_ancestor =
+          this->LowestCommonAncestor(other);
+      std::unique_ptr<AXPosition> other_text_position_ancestor =
+          other.LowestCommonAncestor(*this);
       DCHECK(this_text_position_ancestor->IsTextPosition());
       DCHECK(other_text_position_ancestor->IsTextPosition());
       DCHECK_EQ(this_text_position_ancestor->GetAnchor(),
@@ -2378,9 +2236,8 @@ class AXPosition {
 
  protected:
   AXPosition() = default;
-  AXPosition(const AXPosition<AXPositionType, AXNodeType>& other) = default;
-  virtual AXPosition<AXPositionType, AXNodeType>& operator=(
-      const AXPosition<AXPositionType, AXNodeType>& other) = default;
+  AXPosition(const AXPosition& other) = default;
+  virtual AXPosition& operator=(const AXPosition& other) = default;
 
   virtual void Initialize(AXPositionKind kind,
                           AXTreeID tree_id,
@@ -2477,14 +2334,14 @@ class AXPosition {
     kPreviousInTree,
   };
 
-  // type of predicate function called during anchor navigation.
+  // Type of predicate function called during anchor navigation.
   // When the predicate returns |true|, the navigation stops and returns a
   // null position object.
-  using AbortMovePredicate = base::RepeatingCallback<bool(
-      const AXPosition<AXPositionType, AXNodeType>& move_from,
-      const AXPosition<AXPositionType, AXNodeType>& move_to,
-      const AXMoveType type,
-      const AXMoveDirection direction)>;
+  using AbortMovePredicate =
+      base::RepeatingCallback<bool(const AXPosition& move_from,
+                                   const AXPosition& move_to,
+                                   const AXMoveType type,
+                                   const AXMoveDirection direction)>;
 
   // Uses depth-first pre-order traversal.
   AXPositionInstance CreateNextAnchorPosition(
@@ -2660,7 +2517,7 @@ class AXPosition {
     return previous_leaf;
   }
 
-  // Static helpers for lambda usage
+  // Static helpers for lambda usage.
   static bool AtStartOfParagraphPredicate(const AXPositionInstance& position) {
     return position->AtStartOfParagraph();
   }
@@ -2685,21 +2542,19 @@ class AXPosition {
     return position->AtEndOfLine();
   }
 
-  // Default behavior is to never abort
-  static bool DefaultAbortMovePredicate(
-      const AXPosition<AXPositionType, AXNodeType>& move_from,
-      const AXPosition<AXPositionType, AXNodeType>& move_to,
-      const AXMoveType move_type,
-      const AXMoveDirection direction) {
+  // Default behavior is to never abort.
+  static bool DefaultAbortMovePredicate(const AXPosition& move_from,
+                                        const AXPosition& move_to,
+                                        const AXMoveType move_type,
+                                        const AXMoveDirection direction) {
     return false;
   }
 
   // AbortMovePredicate function used to detect format boundaries.
-  static bool AbortMoveAtFormatBoundary(
-      const AXPosition<AXPositionType, AXNodeType>& move_from,
-      const AXPosition<AXPositionType, AXNodeType>& move_to,
-      const AXMoveType move_type,
-      const AXMoveDirection direction) {
+  static bool AbortMoveAtFormatBoundary(const AXPosition& move_from,
+                                        const AXPosition& move_to,
+                                        const AXMoveType move_type,
+                                        const AXMoveDirection direction) {
     if (move_from.IsNullPosition() || move_to.IsNullPosition())
       return true;
 
@@ -2720,8 +2575,8 @@ class AXPosition {
   // AbortMovePredicate function used to detect paragraph boundaries.
   static bool AbortMoveAtParagraphBoundary(
       bool& crossed_potential_boundary_token,
-      const AXPosition<AXPositionType, AXNodeType>& move_from,
-      const AXPosition<AXPositionType, AXNodeType>& move_to,
+      const AXPosition& move_from,
+      const AXPosition& move_to,
       const AXMoveType move_type,
       const AXMoveDirection direction) {
     if (move_from.IsNullPosition() || move_to.IsNullPosition())
@@ -2757,25 +2612,22 @@ class AXPosition {
           move_to.IsInWhiteSpace()) {
         return false;
       }
-
       return true;
     }
-
     return false;
   }
 
   // AbortMovePredicate function used to detect page boundaries.
-  static bool AbortMoveAtPageBoundary(
-      const AXPosition<AXPositionType, AXNodeType>& move_from,
-      const AXPosition<AXPositionType, AXNodeType>& move_to,
-      const AXMoveType move_type,
-      const AXMoveDirection direction) {
+  static bool AbortMoveAtPageBoundary(const AXPosition& move_from,
+                                      const AXPosition& move_to,
+                                      const AXMoveType move_type,
+                                      const AXMoveDirection direction) {
     if (move_from.IsNullPosition() || move_to.IsNullPosition())
       return true;
 
-    const bool move_from_break = move_from.GetAnchor()->data().GetBoolAttribute(
+    const bool move_from_break = move_from.GetAnchor()->GetBoolAttribute(
         ax::mojom::BoolAttribute::kIsPageBreakingObject);
-    const bool move_to_break = move_to.GetAnchor()->data().GetBoolAttribute(
+    const bool move_to_break = move_to.GetAnchor()->GetBoolAttribute(
         ax::mojom::BoolAttribute::kIsPageBreakingObject);
 
     switch (move_type) {
@@ -2794,7 +2646,7 @@ class AXPosition {
         // break, because that would mean exiting and/or entering a page break.
         return move_from_break && move_to_break;
     }
-
+    NOTREACHED();
     return false;
   }
 

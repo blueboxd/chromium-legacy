@@ -41,10 +41,9 @@ badge_test(() => { ExperimentalBadge.set({}); }, undefined, undefined,
 // }, undefined, undefined, 'SecurityError');
 
 // Invalid URL.
-// TODO(mgiuca): Currently succeeds with scope = "". https://crbug.com/1001405
-// badge_test(() => {
-//   ExperimentalBadge.set(1, {scope: 'https://example.com:99999'});
-// }, undefined, undefined, 'TypeError');
+badge_test(() => {
+  ExperimentalBadge.set(1, {scope: 'https://example.com:99999'});
+}, undefined, undefined, 'TypeError');
 
 </script>
 </body>

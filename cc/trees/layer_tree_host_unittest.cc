@@ -3106,15 +3106,16 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestFrameTimeUpdatesAfterDraw);
 // from LayerTreeHost to LayerTreeHostImpl in the MT compositor.
 class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
  public:
-  LayerTreeHostTestStartPageScaleAnimation() { SetUseLayerLists(); }
+  LayerTreeHostTestStartPageScaleAnimation() = default;
 
   void SetupTree() override {
     LayerTreeHostTest::SetupTree();
 
     Layer* root_layer = layer_tree_host()->root_layer();
 
-    scroll_layer_ = FakePictureLayer::Create(&client_);
-    scroll_layer_->set_always_update_resources(true);
+    scoped_refptr<FakePictureLayer> layer = FakePictureLayer::Create(&client_);
+    layer->set_always_update_resources(true);
+    scroll_layer_ = layer;
 
     scroll_layer_->SetBounds(gfx::Size(2 * root_layer->bounds().width(),
                                        2 * root_layer->bounds().height()));
@@ -3168,7 +3169,7 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
   }
 
   FakeContentLayerClient client_;
-  scoped_refptr<FakePictureLayer> scroll_layer_;
+  scoped_refptr<Layer> scroll_layer_;
 };
 
 // Single thread proxy does not support impl-side page scale changes.
@@ -3176,16 +3177,28 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestStartPageScaleAnimation);
 
 class ViewportDeltasAppliedDuringPinch : public LayerTreeHostTest {
  protected:
-  ViewportDeltasAppliedDuringPinch() : sent_gesture_(false) {
-    SetUseLayerLists();
-  }
+  ViewportDeltasAppliedDuringPinch() : sent_gesture_(false) {}
 
   void SetupTree() override {
-    SetInitialRootBounds(gfx::Size(200, 200));
-    LayerTreeHostTest::SetupTree();
-    Layer* root = layer_tree_host()->root_layer();
-    SetupViewport(root, gfx::Size(500, 500), gfx::Size(500, 500));
+    scoped_refptr<Layer> root_clip = Layer::Create();
+    root_clip->SetBounds(gfx::Size(500, 500));
+    scoped_refptr<Layer> page_scale_layer = Layer::Create();
+    page_scale_layer->SetBounds(gfx::Size(500, 500));
+
+    scoped_refptr<Layer> pinch = Layer::Create();
+    pinch->SetBounds(gfx::Size(500, 500));
+    pinch->SetScrollable(gfx::Size(200, 200));
+    page_scale_layer->AddChild(pinch);
+    root_clip->AddChild(page_scale_layer);
+
+    ViewportLayers viewport_layers;
+    viewport_layers.page_scale = page_scale_layer;
+    viewport_layers.inner_viewport_container = root_clip;
+    viewport_layers.inner_viewport_scroll = pinch;
+    layer_tree_host()->RegisterViewportLayers(viewport_layers);
     layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 1.f, 4.f);
+    layer_tree_host()->SetRootLayer(root_clip);
+    LayerTreeHostTest::SetupTree();
   }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
@@ -5367,26 +5380,45 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestUpdateLayerInEmptyViewport);
 class LayerTreeHostTestElasticOverscroll : public LayerTreeHostTest {
  public:
   LayerTreeHostTestElasticOverscroll()
-      : scroll_elasticity_helper_(nullptr), num_draws_(0) {
-    SetUseLayerLists();
-  }
+      : scroll_elasticity_helper_(nullptr), num_draws_(0) {}
 
   void InitializeSettings(LayerTreeSettings* settings) override {
     settings->enable_elastic_overscroll = true;
   }
 
   void SetupTree() override {
-    LayerTreeHostTest::SetupTree();
-    root_layer_ = layer_tree_host()->root_layer();
-    SetupViewport(root_layer_, root_layer_->bounds(), root_layer_->bounds());
+    root_layer_ = Layer::Create();
+    root_layer_->SetBounds(gfx::Size(10, 10));
+
+    scoped_refptr<Layer> inner_viewport_container_layer = Layer::Create();
+    inner_viewport_container_layer->SetBounds(gfx::Size(10, 10));
+    scoped_refptr<Layer> overscroll_elasticity_layer = Layer::Create();
+    overscroll_elasticity_layer->SetElementId(
+        LayerIdToElementIdForTesting(overscroll_elasticity_layer->id()));
+    scoped_refptr<Layer> page_scale_layer = Layer::Create();
+    scoped_refptr<Layer> inner_viewport_scroll_layer = Layer::Create();
+    inner_viewport_scroll_layer->SetScrollable(
+        inner_viewport_container_layer->bounds());
+
+    root_layer_->AddChild(inner_viewport_container_layer);
+    inner_viewport_container_layer->AddChild(overscroll_elasticity_layer);
+    overscroll_elasticity_layer->AddChild(page_scale_layer);
+    page_scale_layer->AddChild(inner_viewport_scroll_layer);
 
     scoped_refptr<Layer> content_layer = FakePictureLayer::Create(&client_);
     content_layer_id_ = content_layer->id();
     content_layer->SetBounds(gfx::Size(10, 10));
-    CopyProperties(layer_tree_host()->outer_viewport_scroll_layer(),
-                   content_layer.get());
-    root_layer_->AddChild(content_layer);
+    inner_viewport_scroll_layer->AddChild(content_layer);
 
+    layer_tree_host()->SetRootLayer(root_layer_);
+    ViewportLayers viewport_layers;
+    viewport_layers.overscroll_elasticity_element_id =
+        overscroll_elasticity_layer->element_id();
+    viewport_layers.page_scale = page_scale_layer;
+    viewport_layers.inner_viewport_container = inner_viewport_container_layer;
+    viewport_layers.inner_viewport_scroll = inner_viewport_scroll_layer;
+    layer_tree_host()->RegisterViewportLayers(viewport_layers);
+    LayerTreeHostTest::SetupTree();
     client_.set_bounds(content_layer->bounds());
   }
 
@@ -5435,7 +5467,7 @@ class LayerTreeHostTestElasticOverscroll : public LayerTreeHostTest {
 
  private:
   FakeContentLayerClient client_;
-  Layer* root_layer_;
+  scoped_refptr<Layer> root_layer_;
   ScrollElasticityHelper* scroll_elasticity_helper_;
   int content_layer_id_;
   int num_draws_;
@@ -6857,19 +6889,23 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
  protected:
   LayerTreeHostTestCrispUpAfterPinchEnds()
       : playback_allowed_event_(base::WaitableEvent::ResetPolicy::MANUAL,
-                                base::WaitableEvent::InitialState::SIGNALED) {
-    SetUseLayerLists();
-  }
+                                base::WaitableEvent::InitialState::SIGNALED) {}
 
   void SetupTree() override {
     frame_ = 1;
     posted_ = false;
     client_.set_fill_with_nonsolid_color(true);
 
-    SetInitialRootBounds(gfx::Size(500, 500));
-    LayerTreeHostTest::SetupTree();
-    Layer* root = layer_tree_host()->root_layer();
-    SetupViewport(root, root->bounds(), root->bounds());
+    scoped_refptr<Layer> root_clip = Layer::Create();
+    root_clip->SetBounds(gfx::Size(500, 500));
+    scoped_refptr<Layer> page_scale_layer = Layer::Create();
+    page_scale_layer->SetBounds(gfx::Size(500, 500));
+
+    scoped_refptr<Layer> pinch = Layer::Create();
+    pinch->SetBounds(gfx::Size(500, 500));
+    pinch->SetScrollable(gfx::Size(500, 500));
+    page_scale_layer->AddChild(pinch);
+    root_clip->AddChild(page_scale_layer);
 
     std::unique_ptr<FakeRecordingSource> recording(new FakeRecordingSource);
     recording->SetPlaybackAllowedEvent(&playback_allowed_event_);
@@ -6880,12 +6916,17 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
     layer->SetContentsOpaque(true);
     // Avoid LCD text on the layer so we don't cause extra commits when we
     // pinch.
-    CopyProperties(layer_tree_host()->inner_viewport_scroll_layer(),
-                   layer.get());
-    root->AddChild(layer);
+    pinch->AddChild(layer);
 
+    ViewportLayers viewport_layers;
+    viewport_layers.page_scale = page_scale_layer;
+    viewport_layers.inner_viewport_container = root_clip;
+    viewport_layers.inner_viewport_scroll = pinch;
+    layer_tree_host()->RegisterViewportLayers(viewport_layers);
     layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 1.f, 4.f);
-    client_.set_bounds(root->bounds());
+    layer_tree_host()->SetRootLayer(root_clip);
+    LayerTreeHostTest::SetupTree();
+    client_.set_bounds(root_clip->bounds());
   }
 
   // Returns the delta scale of all quads in the frame's root pass from their
@@ -7152,20 +7193,23 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
  protected:
   LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles()
       : playback_allowed_event_(base::WaitableEvent::ResetPolicy::MANUAL,
-                                base::WaitableEvent::InitialState::SIGNALED) {
-    SetUseLayerLists();
-  }
+                                base::WaitableEvent::InitialState::SIGNALED) {}
 
   void SetupTree() override {
     step_ = 1;
     continuous_draws_ = 0;
     client_.set_fill_with_nonsolid_color(true);
 
-    SetInitialRootBounds(gfx::Size(500, 500));
-    LayerTreeHostTest::SetupTree();
+    scoped_refptr<Layer> root_clip = Layer::Create();
+    root_clip->SetBounds(gfx::Size(500, 500));
+    scoped_refptr<Layer> page_scale_layer = Layer::Create();
+    page_scale_layer->SetBounds(gfx::Size(500, 500));
 
-    Layer* root = layer_tree_host()->root_layer();
-    SetupViewport(root, root->bounds(), root->bounds());
+    scoped_refptr<Layer> pinch = Layer::Create();
+    pinch->SetBounds(gfx::Size(500, 500));
+    pinch->SetScrollable(gfx::Size(500, 500));
+    page_scale_layer->AddChild(pinch);
+    root_clip->AddChild(page_scale_layer);
 
     std::unique_ptr<FakeRecordingSource> recording(new FakeRecordingSource);
     recording->SetPlaybackAllowedEvent(&playback_allowed_event_);
@@ -7174,12 +7218,19 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
                                                     std::move(recording));
     layer->SetBounds(gfx::Size(500, 500));
     layer->SetContentsOpaque(true);
-    CopyProperties(layer_tree_host()->inner_viewport_scroll_layer(),
-                   layer.get());
-    root->AddChild(layer);
+    // Avoid LCD text on the layer so we don't cause extra commits when we
+    // pinch.
+    pinch->AddChild(layer);
 
+    ViewportLayers viewport_layers;
+    viewport_layers.page_scale = page_scale_layer;
+    viewport_layers.inner_viewport_container = root_clip;
+    viewport_layers.inner_viewport_scroll = pinch;
+    layer_tree_host()->RegisterViewportLayers(viewport_layers);
     layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 1.f, 4.f);
-    client_.set_bounds(root->bounds());
+    layer_tree_host()->SetRootLayer(root_clip);
+    LayerTreeHostTest::SetupTree();
+    client_.set_bounds(root_clip->bounds());
   }
 
   // Returns the delta scale of all quads in the frame's root pass from their
@@ -7512,42 +7563,44 @@ class LayerTreeHostTestUpdateCopyRequests : public LayerTreeHostTest {
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestUpdateCopyRequests);
 
 class LayerTreeTestPageScaleFlags : public LayerTreeTest {
- public:
-  LayerTreeTestPageScaleFlags() { SetUseLayerLists(); }
-
  protected:
   void SetupTree() override {
     // -root
     //   -pre page scale
-    //   -viewport layers
+    //   -page scale
+    //     -inner viewport scroll
+    //       -page scale grandchild
     //   -post page scale
 
-    LayerTreeTest::SetupTree();
-    Layer* root = layer_tree_host()->root_layer();
-
+    scoped_refptr<Layer> root = Layer::Create();
     scoped_refptr<Layer> pre_page_scale = Layer::Create();
-    CopyProperties(root, pre_page_scale.get());
-    root->AddChild(pre_page_scale);
-
-    SetupViewport(root, root->bounds(), root->bounds());
-
+    scoped_refptr<Layer> page_scale = Layer::Create();
+    scoped_refptr<Layer> inner_viewport_scroll = Layer::Create();
+    scoped_refptr<Layer> page_scale_grandchild = Layer::Create();
     scoped_refptr<Layer> post_page_scale = Layer::Create();
-    CopyProperties(root, post_page_scale.get());
+
+    root->AddChild(pre_page_scale);
+    root->AddChild(page_scale);
     root->AddChild(post_page_scale);
 
-    affected_by_page_scale_.push_back(
-        layer_tree_host()->page_scale_layer()->id());
-    affected_by_page_scale_.push_back(
-        layer_tree_host()->inner_viewport_scroll_layer()->id());
-    affected_by_page_scale_.push_back(
-        layer_tree_host()->outer_viewport_container_layer()->id());
-    affected_by_page_scale_.push_back(
-        layer_tree_host()->outer_viewport_scroll_layer()->id());
+    page_scale->AddChild(inner_viewport_scroll);
+    inner_viewport_scroll->AddChild(page_scale_grandchild);
+
+    layer_tree_host()->SetRootLayer(root);
+    LayerTreeTest::SetupTree();
+
+    ViewportLayers viewport_layers;
+    viewport_layers.inner_viewport_container = root;
+    viewport_layers.page_scale = page_scale;
+    viewport_layers.inner_viewport_scroll = inner_viewport_scroll;
+    layer_tree_host()->RegisterViewportLayers(viewport_layers);
+
+    affected_by_page_scale_.push_back(page_scale->id());
+    affected_by_page_scale_.push_back(inner_viewport_scroll->id());
+    affected_by_page_scale_.push_back(page_scale_grandchild->id());
 
     not_affected_by_page_scale_.push_back(root->id());
     not_affected_by_page_scale_.push_back(pre_page_scale->id());
-    not_affected_by_page_scale_.push_back(
-        layer_tree_host()->inner_viewport_container_layer()->id());
     not_affected_by_page_scale_.push_back(post_page_scale->id());
   }
 
@@ -8762,8 +8815,6 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestPartialTileDamage);
 class LayerTreeHostTopControlsDeltaTriggersViewportUpdate
     : public LayerTreeHostTest {
  public:
-  LayerTreeHostTopControlsDeltaTriggersViewportUpdate() { SetUseLayerLists(); }
-
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void SetupTree() override {

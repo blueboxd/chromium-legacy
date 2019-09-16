@@ -33,6 +33,7 @@
 
 namespace content {
 
+struct GlobalFrameRoutingId;
 class NavigationUIData;
 class SiteInstanceImpl;
 
@@ -60,8 +61,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   base::TimeTicks NavigationStart() override;
   base::TimeTicks NavigationInputStart() override;
   bool IsPost() override;
-  const scoped_refptr<network::ResourceRequestBody>& GetResourceRequestBody()
-      override;
   const blink::mojom::Referrer& GetReferrer() override;
   bool HasUserGesture() override;
   ui::PageTransition GetPageTransition() override;
@@ -69,6 +68,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   bool IsExternalProtocol() override;
   net::Error GetNetErrorCode() override;
   RenderFrameHostImpl* GetRenderFrameHost() override;
+  GlobalFrameRoutingId GetPreviousRenderFrameHostId() override;
   bool IsSameDocument() override;
   bool HasCommitted() override;
   bool IsErrorPage() override;

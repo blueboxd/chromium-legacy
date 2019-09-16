@@ -44,9 +44,7 @@ static constexpr base::TimeDelta kAnimationPolicyOnceDuration =
     base::TimeDelta::FromSeconds(3);
 
 SMILTimeContainer::SMILTimeContainer(SVGSVGElement& owner)
-    : presentation_time_(0),
-      latest_update_time_(0),
-      frame_scheduling_state_(kIdle),
+    : frame_scheduling_state_(kIdle),
       started_(false),
       paused_(false),
       document_order_indexes_dirty_(false),
@@ -150,7 +148,7 @@ void SMILTimeContainer::NotifyIntervalsChanged() {
 
 SMILTime SMILTimeContainer::Elapsed() const {
   if (!IsStarted())
-    return 0;
+    return SMILTime();
 
   if (IsPaused())
     return presentation_time_;
@@ -160,8 +158,9 @@ SMILTime SMILTimeContainer::Elapsed() const {
           base::TimeDelta()) -
       reference_time_;
   DCHECK_GE(time_offset, base::TimeDelta());
-  SMILTime elapsed = presentation_time_ + time_offset.InSecondsF();
-  DCHECK_GE(elapsed, 0.0);
+  SMILTime elapsed = presentation_time_ +
+                     SMILTime::FromMicroseconds(time_offset.InMicroseconds());
+  DCHECK_GE(elapsed, SMILTime());
   return elapsed;
 }
 
@@ -271,7 +270,7 @@ void SMILTimeContainer::SetElapsed(SMILTime elapsed) {
   prevent_scheduled_animations_changes_ = false;
 #endif
   intervals_dirty_ = true;
-  latest_update_time_ = 0;
+  latest_update_time_ = SMILTime();
   UpdateAnimationsAndScheduleFrameIfNeeded(elapsed);
 }
 
@@ -437,7 +436,7 @@ void SMILTimeContainer::UpdateAnimationsAndScheduleFrameIfNeeded(
 // A helper function to fetch the next interesting time after document_time
 SMILTime SMILTimeContainer::NextInterestingTime(
     SMILTime presentation_time) const {
-  DCHECK_GE(presentation_time, 0);
+  DCHECK_GE(presentation_time, SMILTime());
   SMILTime next_interesting_time = SMILTime::Indefinite();
   for (const auto& sandwich : scheduled_animations_) {
     next_interesting_time =
@@ -461,7 +460,7 @@ void SMILTimeContainer::RemoveUnusedKeys() {
 
 void SMILTimeContainer::UpdateIntervals(SMILTime document_time) {
   DCHECK(document_time.IsFinite());
-  DCHECK(document_time >= 0.0);
+  DCHECK_GE(document_time, SMILTime());
   do {
     intervals_dirty_ = false;
 
@@ -549,7 +548,7 @@ void SMILTimeContainer::ApplyAnimationValues(SMILTime elapsed) {
 }
 
 void SMILTimeContainer::AdvanceFrameForTesting() {
-  const SMILTime kFrameDuration = 0.025;
+  const SMILTime kFrameDuration = SMILTime::FromSecondsD(0.025);
   SetElapsed(Elapsed() + kFrameDuration);
 }
 

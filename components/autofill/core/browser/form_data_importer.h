@@ -19,6 +19,8 @@
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 
+class SaveCardOfferObserver;
+
 namespace autofill {
 
 // Manages logic for importing address profiles and credit card information from
@@ -155,6 +157,7 @@ class FormDataImporter {
   friend class LocalCardMigrationBrowserTest;
   friend class SaveCardBubbleViewsFullFormBrowserTest;
   friend class SaveCardInfobarEGTestHelper;
+  friend class ::SaveCardOfferObserver;
   FRIEND_TEST_ALL_PREFIXES(AutofillMergeTest, MergeProfiles);
   FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
                            AllowDuplicateMaskedServerCardIfFlagEnabled);

@@ -18,6 +18,7 @@
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/vector_icons.h"
 #include "ui/views/view_class_properties.h"
 
@@ -121,7 +122,10 @@ void PrivacyInfoView::InitLayout() {
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
   row_container_->SetBorder(views::CreateRoundedRectBorder(
-      /*thickness=*/1, /*corner_radius=*/4, gfx::kGoogleGrey300));
+      /*thickness=*/1,
+      views::LayoutProvider::Get()->GetCornerRadiusMetric(
+          views::EMPHASIS_MEDIUM),
+      gfx::kGoogleGrey300));
 
   // Info icon.
   InitInfoIcon();

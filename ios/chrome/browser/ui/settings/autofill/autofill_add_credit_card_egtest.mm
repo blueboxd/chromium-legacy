@@ -77,6 +77,12 @@ id<GREYMatcher> InvalidCardNumberAlert() {
       IDS_IOS_ADD_CREDIT_CARD_INVALID_CARD_NUMBER_ALERT);
 }
 
+// Matcher for the Invalid Card Expiry Date Alert.
+id<GREYMatcher> InvalidCardExpiryDateAlert() {
+  return StaticTextWithAccessibilityLabelId(
+      IDS_IOS_ADD_CREDIT_CARD_INVALID_EXPIRATION_DATE_ALERT);
+}
+
 }  // namespace
 
 // Tests for Settings Autofill add credit cards section.
@@ -164,6 +170,19 @@ id<GREYMatcher> InvalidCardNumberAlert() {
                                    grey_not(grey_enabled()), nil)];
 }
 
+// Tests that the 'Cancel' button dismisses the screen.
+- (void)testCancelButtonDismissesScreen {
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::AddCreditCardView()]
+      assertWithMatcher:grey_notNil()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::AddCreditCardCancelButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::AddCreditCardView()]
+      assertWithMatcher:grey_nil()];
+}
+
+#pragma mark - Test adding Valid/Inavlid card details
+
 // Tests when a user tries to add an invalid card number, an alert is shown. On
 // clicking 'OK' the alert is dismissed.
 - (void)testAddButtonAlertOnInvalidNumber {
@@ -178,6 +197,28 @@ id<GREYMatcher> InvalidCardNumberAlert() {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OKButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:InvalidCardNumberAlert()]
+      assertWithMatcher:grey_nil()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OKButton()]
+      assertWithMatcher:grey_nil()];
+}
+
+// Tests when a user tries to add an invalid card number, an alert is shown. On
+// clicking 'OK' the alert is dismissed.
+- (void)testAddButtonAlertOnInvalidExpiryDate {
+  [[EarlGrey selectElementWithMatcher:CardNumberTextField()]
+      performAction:grey_typeText(@"4111111111111111")];
+  [[EarlGrey selectElementWithMatcher:MonthOfExpiryTextField()]
+      performAction:grey_typeText(@"00")];
+  [[EarlGrey selectElementWithMatcher:YearOfExpiryTextField()]
+      performAction:grey_typeText(@"0000")];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::AddCreditCardButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:InvalidCardExpiryDateAlert()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OKButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:InvalidCardExpiryDateAlert()]
       assertWithMatcher:grey_nil()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OKButton()]
       assertWithMatcher:grey_nil()];
@@ -209,16 +250,7 @@ id<GREYMatcher> InvalidCardNumberAlert() {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
-// Tests that the 'Cancel' button dismisses the screen.
-- (void)testCancelButtonDismissesScreen {
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::AddCreditCardView()]
-      assertWithMatcher:grey_notNil()];
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::AddCreditCardCancelButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::AddCreditCardView()]
-      assertWithMatcher:grey_nil()];
-}
+#pragma mark - Test Use Camera button
 
 // Tests that the 'Use Camera' button opens the credit card scanner.
 - (void)testUseCameraButtonOpensCreditCardScanner {

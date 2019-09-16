@@ -25,6 +25,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/image/canvas_image_source.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -47,6 +49,7 @@ ProfileMenuViewBase* g_profile_bubble_ = nullptr;
 constexpr int kMenuWidth = 288;
 constexpr int kIconSize = 16;
 constexpr int kIdentityImageSize = 64;
+constexpr int kMaxImageSize = kIdentityImageSize;
 
 // If the bubble is too large to fit on the screen, it still needs to be at
 // least this tall to show one row.
@@ -55,6 +58,15 @@ constexpr int kMinimumScrollableContentHeight = 40;
 // Spacing between the edge of the user menu and the top/bottom or left/right of
 // the menu items.
 constexpr int kMenuEdgeMargin = 16;
+
+gfx::ImageSkia SizeImage(const gfx::ImageSkia& image, int size) {
+  return gfx::ImageSkiaOperations::CreateResizedImage(
+      image, skia::ImageOperations::RESIZE_BEST, gfx::Size(size, size));
+}
+
+gfx::ImageSkia ColorImage(const gfx::ImageSkia& image, SkColor color) {
+  return gfx::ImageSkiaOperations::CreateColorMask(image, color);
+}
 
 std::unique_ptr<views::BoxLayout> CreateBoxLayout(
     views::BoxLayout::Orientation orientation,
@@ -68,7 +80,6 @@ std::unique_ptr<views::View> CreateBorderedBoxView(
     std::unique_ptr<views::View> children_container) {
   constexpr int kOuterMargin = 16;
   constexpr int kBorderThickness = 1;
-  constexpr int kCornerRadius = 8;
   const SkColor kBorderColor =
       ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
           ui::NativeTheme::kColorId_MenuSeparatorColor);
@@ -77,7 +88,9 @@ std::unique_ptr<views::View> CreateBorderedBoxView(
   children_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
   children_container->SetBorder(views::CreateRoundedRectBorder(
-      kBorderThickness, kCornerRadius, kBorderColor));
+      kBorderThickness,
+      views::LayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_HIGH),
+      kBorderColor));
 
   // Create outer view with margin.
   // The outer view is needed because |BoxLayout| doesn't support outer
@@ -219,7 +232,7 @@ void ProfileMenuViewBase::AddShortcutFeatureButton(
     const gfx::VectorIcon& icon,
     const base::string16& text,
     base::RepeatingClosure action) {
-  constexpr int kTopMargin = 8;
+  constexpr int kVerticalMargin = 8;
   constexpr int kButtonSpacing = 6;
   constexpr int kIconSize = 16;
   constexpr int kIconPadding = 6;
@@ -235,7 +248,7 @@ void ProfileMenuViewBase::AddShortcutFeatureButton(
     views::BoxLayout* layout = shortcut_features_container_->SetLayoutManager(
         std::make_unique<views::BoxLayout>(
             views::BoxLayout::Orientation::kHorizontal,
-            gfx::Insets(kTopMargin, 0, 0, 0), kButtonSpacing));
+            gfx::Insets(kVerticalMargin, 0), kButtonSpacing));
     layout->set_main_axis_alignment(
         views::BoxLayout::MainAxisAlignment::kCenter);
   }
@@ -251,6 +264,32 @@ void ProfileMenuViewBase::AddShortcutFeatureButton(
       kBorderThickness, kButtonRadius, kBorderColor);
   button->SetBorder(views::CreatePaddedBorder(std::move(circular_border),
                                               gfx::Insets(kIconPadding)));
+
+  RegisterClickAction(button, std::move(action));
+}
+
+void ProfileMenuViewBase::AddAccountFeatureButton(
+    const gfx::ImageSkia& icon,
+    const base::string16& text,
+    base::RepeatingClosure action) {
+  constexpr int kIconSize = 16;
+  const SkColor kIconColor =
+      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+          ui::NativeTheme::kColorId_DefaultIconColor);
+
+  // Initialize layout if this is the first time a button is added.
+  if (!account_features_container_->GetLayoutManager()) {
+    account_features_container_->SetLayoutManager(
+        std::make_unique<views::BoxLayout>(
+            views::BoxLayout::Orientation::kVertical));
+  }
+
+  account_features_container_->AddChildView(
+      std::make_unique<views::Separator>());
+
+  views::Button* button =
+      account_features_container_->AddChildView(std::make_unique<HoverButton>(
+          this, SizeImage(ColorImage(icon, kIconColor), kIconSize), text));
 
   RegisterClickAction(button, std::move(action));
 }
@@ -275,6 +314,19 @@ void ProfileMenuViewBase::AddSelectableProfile(const gfx::Image& image,
   views::Button* button = selectable_profiles_container_->AddChildView(
       std::make_unique<HoverButton>(this, sized_image.AsImageSkia(), name));
   RegisterClickAction(button, std::move(action));
+}
+
+gfx::ImageSkia ProfileMenuViewBase::ImageForMenu(const gfx::VectorIcon& icon,
+                                                 float icon_to_image_ratio) {
+  const SkColor kIconColor =
+      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+          ui::NativeTheme::kColorId_DefaultIconColor);
+  const int padding =
+      static_cast<int>(kMaxImageSize * (1.0 - icon_to_image_ratio) / 2.0);
+
+  auto sized_icon =
+      gfx::CreateVectorIcon(icon, kMaxImageSize - 2 * padding, kIconColor);
+  return gfx::CanvasImageSource::CreatePadded(sized_icon, gfx::Insets(padding));
 }
 
 ax::mojom::Role ProfileMenuViewBase::GetAccessibleWindowRole() {
@@ -367,6 +419,8 @@ void ProfileMenuViewBase::Reset() {
   identity_info_container_ =
       bordered_box_container->AddChildView(std::make_unique<views::View>());
   shortcut_features_container_ =
+      bordered_box_container->AddChildView(std::make_unique<views::View>());
+  account_features_container_ =
       bordered_box_container->AddChildView(std::make_unique<views::View>());
   components->AddChildView(
       CreateBorderedBoxView(std::move(bordered_box_container)));

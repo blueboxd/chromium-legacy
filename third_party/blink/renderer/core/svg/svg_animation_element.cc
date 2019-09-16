@@ -261,13 +261,14 @@ float SVGAnimationElement::getSimpleDuration(
 
 void SVGAnimationElement::beginElementAt(float offset) {
   DCHECK(std::isfinite(offset));
-  AddInstanceTime(kBegin, Elapsed() + offset,
+  AddInstanceTime(kBegin, Elapsed() + SMILTime::FromSecondsD(offset),
                   SMILTimeWithOrigin::kScriptOrigin);
 }
 
 void SVGAnimationElement::endElementAt(float offset) {
   DCHECK(std::isfinite(offset));
-  AddInstanceTime(kEnd, Elapsed() + offset, SMILTimeWithOrigin::kScriptOrigin);
+  AddInstanceTime(kEnd, Elapsed() + SMILTime::FromSecondsD(offset),
+                  SMILTimeWithOrigin::kScriptOrigin);
 }
 
 void SVGAnimationElement::UpdateAnimationMode() {
@@ -400,7 +401,7 @@ float SVGAnimationElement::CalculatePercentForSpline(
   gfx::CubicBezier bezier = key_splines_[spline_index];
   SMILTime duration = SimpleDuration();
   if (!duration.IsFinite())
-    duration = 100.0;
+    duration = SMILTime::FromSecondsD(100.0);
   return clampTo<float>(
       bezier.SolveWithEpsilon(percent, SolveEpsilon(duration.InSecondsF())));
 }

@@ -15,8 +15,6 @@
 
 namespace views {
 
-class WindowEventFilter;
-
 class VIEWS_EXPORT DesktopWindowTreeHostPlatform
     : public aura::WindowTreeHostPlatform,
       public DesktopWindowTreeHost {
@@ -127,8 +125,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
 
   void Relayout();
 
-  void RemoveNonClientEventFilter();
-
   Widget* GetWidget();
   const Widget* GetWidget() const;
 
@@ -151,11 +147,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   // children who we're responsible for closing when we CloseNow().
   DesktopWindowTreeHostPlatform* window_parent_ = nullptr;
   std::set<DesktopWindowTreeHostPlatform*> window_children_;
-
-#if defined(OS_LINUX)
-  // A handler for events intended for non client area.
-  std::unique_ptr<WindowEventFilter> non_client_window_event_filter_;
-#endif
 
   // Keep track of PlatformWindow state so that we would react correctly and set
   // visibility only if the window was minimized or was unminimized from the

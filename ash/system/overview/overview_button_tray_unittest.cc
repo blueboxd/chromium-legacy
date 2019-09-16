@@ -398,9 +398,9 @@ TEST_F(OverviewButtonTrayTest, SplitviewModeQuickSwitch) {
   // Splitview is only available in tablet mode.
   TabletModeControllerTestApi().EnterTabletMode();
 
-  std::unique_ptr<aura::Window> window3 = CreateTestWindow();
   std::unique_ptr<aura::Window> window1 = CreateTestWindow();
   std::unique_ptr<aura::Window> window2 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window3 = CreateTestWindow();
 
   // Enter splitview mode. Snap |window1| to the left, this will be the default
   // splitview window.
@@ -410,6 +410,7 @@ TEST_F(OverviewButtonTrayTest, SplitviewModeQuickSwitch) {
   split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
   split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
   ASSERT_EQ(window1.get(), split_view_controller->GetDefaultSnappedWindow());
+  EXPECT_EQ(window2.get(), window_util::GetActiveWindow());
 
   // Verify that after double tapping, we have switched to |window3|, even
   // though |window1| is more recently used.

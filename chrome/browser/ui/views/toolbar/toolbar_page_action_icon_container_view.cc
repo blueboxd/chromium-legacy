@@ -28,23 +28,20 @@ ToolbarPageActionIconContainerView::ToolbarPageActionIconContainerView(
   page_action_icons_.push_back(manage_passwords_icon_views_);
 
   local_card_migration_icon_view_ = new autofill::LocalCardMigrationIconView(
-      browser->command_controller(), this,
-      // TODO(crbug.com/932818): The font list and the icon color may not be
-      // what we want here. Put placeholders for now.
-      views::style::GetFont(CONTEXT_TOOLBAR_BUTTON,
-                            views::style::STYLE_PRIMARY));
+      browser->command_controller(), this);
   page_action_icons_.push_back(local_card_migration_icon_view_);
 
-  save_card_icon_view_ = new autofill::SaveCardIconView(
-      browser->command_controller(), this,
-      // TODO(crbug.com/932818): The font list and the icon color may not be
-      // what we want here. Put placeholders for now.
-      views::style::GetFont(CONTEXT_TOOLBAR_BUTTON,
-                            views::style::STYLE_PRIMARY));
+  save_card_icon_view_ =
+      new autofill::SaveCardIconView(browser->command_controller(), this);
   page_action_icons_.push_back(save_card_icon_view_);
 
+  // TODO(crbug.com/932818): The font list and the icon color may not be
+  // what we want here. Put placeholders for now.
+  const gfx::FontList& font_list = views::style::GetFont(
+      CONTEXT_TOOLBAR_BUTTON, views::style::STYLE_PRIMARY);
   for (PageActionIconView* icon_view : page_action_icons_) {
     icon_view->SetVisible(false);
+    icon_view->SetFontList(font_list);
     icon_view->AddButtonObserver(this);
     icon_view->views::View::AddObserver(this);
     AddChildView(icon_view);

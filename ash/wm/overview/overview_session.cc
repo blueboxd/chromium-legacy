@@ -650,21 +650,10 @@ void OverviewSession::OnStartingAnimationComplete(bool canceled,
   if (canceled)
     return;
   if (overview_focus_widget_) {
-    if (should_focus_overview) {
+    if (should_focus_overview)
       overview_focus_widget_->Show();
-    } else {
+    else
       overview_focus_widget_->ShowInactive();
-
-      // Check if the active window is in overview. There is at least one
-      // workflow where it will be: the active window is being dragged, and the
-      // previous window carries over from clamshell mode to tablet split view.
-      if (IsWindowInOverview(window_util::GetActiveWindow())) {
-        // We do not want an active window in overview. It will cause blatantly
-        // broken behavior as in the video linked in crbug.com/992223.
-        wm::ActivateWindow(
-            Shell::Get()->split_view_controller()->GetDefaultSnappedWindow());
-      }
-    }
   }
   Shell::Get()->overview_controller()->DelayedUpdateRoundedCornersAndShadow();
 }

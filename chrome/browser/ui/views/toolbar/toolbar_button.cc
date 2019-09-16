@@ -82,16 +82,29 @@ void ToolbarButton::Init() {
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 }
 
-void ToolbarButton::SetHighlightColor(base::Optional<SkColor> color) {
-  if (highlight_color_ == color)
+void ToolbarButton::SetHighlight(const base::string16& highlight_text,
+                                 base::Optional<SkColor> highlight_color) {
+  if (highlight_color_ == highlight_color && GetText() == highlight_text)
     return;
+  if (highlight_text.empty() && !highlight_color.has_value()) {
+    ClearHighlight();
+    return;
+  }
 
-  highlight_color_ = color;
+  LabelButton::SetText(highlight_text);
+  highlight_color_ = highlight_color;
   UpdateHighlightBackgroundAndInsets();
 }
 
 void ToolbarButton::SetText(const base::string16& text) {
-  LabelButton::SetText(text);
+  NOTREACHED() << "Use SetHighlight(text, _) instead of SetText(text)";
+}
+
+void ToolbarButton::ClearHighlight() {
+  DCHECK(!GetText().empty() || highlight_color_.has_value());
+
+  LabelButton::SetText(base::string16());
+  highlight_color_.reset();
   UpdateHighlightBackgroundAndInsets();
 }
 
@@ -117,20 +130,31 @@ void ToolbarButton::UpdateHighlightBackgroundAndInsets() {
                            layout_inset_delta_ +
                            *GetProperty(views::kInternalPaddingKey);
 
-  if (!GetText().empty()) {
-    const int text_side_inset = highlight_radius / 2;
-
-    // Some subclasses (AvatarToolbarButton) may be change alignment. This adds
-    // an inset to the text-label side.
-    if (GetHorizontalAlignment() == gfx::ALIGN_RIGHT) {
-      new_insets += gfx::Insets(0, text_side_inset, 0, 0);
-    } else {
-      new_insets += gfx::Insets(0, 0, 0, text_side_inset);
-    }
-  }
-
   if (!border() || new_insets != border()->GetInsets())
     SetBorder(views::CreateEmptyBorder(new_insets));
+
+  // Update spacing on the outer-side of the label to match the current
+  // highlight radius.
+  SetLabelSideSpacing(highlight_radius / 2);
+}
+
+void ToolbarButton::SetLabelSideSpacing(int spacing) {
+  gfx::Insets label_insets;
+  // Add the spacing only if text is non-empty.
+  if (GetText().empty()) {
+    // Add spacing to the opposing side.
+    if (GetHorizontalAlignment() == gfx::ALIGN_RIGHT) {
+      label_insets = gfx::Insets(0, spacing, 0, 0);
+    } else {
+      DCHECK_EQ(GetHorizontalAlignment(), gfx::ALIGN_LEFT);
+      label_insets = gfx::Insets(0, 0, 0, spacing);
+    }
+  }
+  if (!label()->border() || label_insets != label()->border()->GetInsets()) {
+    label()->SetBorder(views::CreateEmptyBorder(label_insets));
+    // Forces LabelButton to dump the cached preferred size and recompute it.
+    PreferredSizeChanged();
+  }
 }
 
 void ToolbarButton::SetLayoutInsetDelta(const gfx::Insets& inset_delta) {

@@ -57,7 +57,7 @@ class CORE_EXPORT ScriptPromise final {
 
  public:
   // Constructs an empty promise.
-  ScriptPromise() = default;
+  ScriptPromise();
 
   // Constructs a ScriptPromise from |promise|.
   // If |promise| is not a Promise object, throws a v8 TypeError.
@@ -65,7 +65,7 @@ class CORE_EXPORT ScriptPromise final {
 
   ScriptPromise(const ScriptPromise&);
 
-  ~ScriptPromise() = default;
+  ~ScriptPromise();
 
   ScriptPromise Then(v8::Local<v8::Function> on_fulfilled,
                      v8::Local<v8::Function> on_rejected = {});
@@ -121,13 +121,7 @@ class CORE_EXPORT ScriptPromise final {
   // Constructs and returns a ScriptPromise to be resolved when all |promises|
   // are resolved. If one of |promises| is rejected, the returned
   // ScriptPromise is rejected.
-  static ScriptPromise All(ScriptState*,
-                           const HeapVector<ScriptPromise>& promises);
-
-  void Trace(Visitor* visitor) {
-    visitor->Trace(promise_);
-    visitor->Trace(script_state_);
-  }
+  static ScriptPromise All(ScriptState*, const Vector<ScriptPromise>& promises);
 
   // This is a utility class intended to be used internally.
   // ScriptPromiseResolver is for general purpose.
@@ -142,10 +136,7 @@ class CORE_EXPORT ScriptPromise final {
     void Reject(v8::Local<v8::Value>);
     void Clear() { resolver_.Clear(); }
     ScriptState* GetScriptState() const { return script_state_; }
-    void Trace(blink::Visitor* visitor) {
-      visitor->Trace(script_state_);
-      visitor->Trace(resolver_);
-    }
+    void Trace(blink::Visitor* visitor) { visitor->Trace(script_state_); }
 
    private:
     Member<ScriptState> script_state_;
@@ -156,21 +147,12 @@ class CORE_EXPORT ScriptPromise final {
   static void IncreaseInstanceCount();
   static void DecreaseInstanceCount();
 
-  Member<ScriptState> script_state_;
+  // TODO(peria): Move ScriptPromise to Oilpan heap.
+  GC_PLUGIN_IGNORE("813731")
+  Persistent<ScriptState> script_state_;
   ScriptValue promise_;
 };
 
 }  // namespace blink
-
-namespace WTF {
-
-template <>
-struct VectorTraits<blink::ScriptPromise>
-    : VectorTraitsBase<blink::ScriptPromise> {
-  STATIC_ONLY(VectorTraits);
-  static constexpr bool kCanClearUnusedSlotsWithMemset = true;
-};
-
-}  // namespace WTF
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_PROMISE_H_

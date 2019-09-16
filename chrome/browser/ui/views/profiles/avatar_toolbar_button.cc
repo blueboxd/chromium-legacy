@@ -210,9 +210,8 @@ void AvatarToolbarButton::UpdateText() {
   }
 
   SetInsets();
-  SetHighlightColor(color);
-  SetText(text);
   SetTooltipText(GetAvatarTooltipText());
+  SetHighlight(text, color);
 }
 
 void AvatarToolbarButton::SetAutofillIconVisible(bool autofill_icon_visible) {

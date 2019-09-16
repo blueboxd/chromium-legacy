@@ -124,6 +124,7 @@ function createStatsSelectionOptionElements() {
   const p = document.createElement('p');
 
   const selectElement = document.createElement('select');
+  selectElement.setAttribute('id', 'statsSelectElement');
   selectElement.onchange = () => {
     currentGetStatsMethod = selectElement.value;
     Object.keys(peerConnectionDataStore).forEach(id => {
@@ -174,6 +175,18 @@ function requestLegacyStats() {
   if (Object.keys(peerConnectionDataStore).length > 0) {
     chrome.send('getLegacyStats');
   }
+}
+
+/*
+ * Change to use the legacy getStats() API instead. This is used for a
+ * work-around for https://crbug.com/999136.
+ * TODO(https://crbug.com/1004239): Delete this method.
+ */
+function changeToLegacyGetStats() {
+  currentGetStatsMethod = OPTION_GETSTATS_LEGACY;
+  const selectElement = $('statsSelectElement');
+  selectElement.value = currentGetStatsMethod;
+  requestStats();
 }
 
 /**

@@ -27,10 +27,6 @@ X11WindowOzone::X11WindowOzone(PlatformWindowDelegate* delegate,
                                X11WindowManagerOzone* window_manager)
     : X11Window(delegate), window_manager_(window_manager) {
   DCHECK(window_manager_);
-
-  // Set a class property key, which allows |this| to be used for interactive
-  // events, e.g. move or resize.
-  SetWmMoveResizeHandler(this, static_cast<WmMoveResizeHandler*>(this));
 }
 
 X11WindowOzone::~X11WindowOzone() {
@@ -150,12 +146,6 @@ uint32_t X11WindowOzone::DispatchEvent(const PlatformEvent& event) {
         GetBounds().origin(), event->AsLocatedEvent());
   }
   return window_manager_->event_grabber()->DispatchEvent(event);
-}
-
-void X11WindowOzone::DispatchHostWindowDragMovement(
-    int hittest,
-    const gfx::Point& pointer_location) {
-  XWindow::WmMoveResize(hittest, pointer_location);
 }
 
 void X11WindowOzone::SetWidget(XID xid) {

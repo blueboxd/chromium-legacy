@@ -598,6 +598,9 @@ void InstallableManager::CheckServiceWorker() {
   DCHECK(!worker_->fetched);
   DCHECK(!manifest().IsEmpty());
 
+  if (!service_worker_context_)
+    return;
+
   // Check to see if there is a service worker for the manifest's scope.
   service_worker_context_->CheckHasServiceWorker(
       manifest().scope,

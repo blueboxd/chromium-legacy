@@ -26,6 +26,7 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/scoped_account_consistency.h"
+#include "chrome/browser/sync/test/integration/secondary_account_helper.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -48,6 +49,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/webview/webview.h"
@@ -709,10 +711,11 @@ class ProfileMenuClickTest_WithPrimaryAccount : public ProfileMenuClickTest {
  public:
   // List of actionable items in the correct order as they appear in the menu.
   // If a new button is added to the menu, it should also be added to this list.
-  static constexpr ProfileMenuView::ActionableItem kOrderedActionableItems[4] =
+  static constexpr ProfileMenuView::ActionableItem kOrderedActionableItems[5] =
       {ProfileMenuView::ActionableItem::kPasswordsButton,
        ProfileMenuView::ActionableItem::kCreditCardsButton,
        ProfileMenuView::ActionableItem::kAddressesButton,
+       ProfileMenuView::ActionableItem::kManageGoogleAccountButton,
        // The first button is added again to finish the cycle and test that
        // there are no other buttons at the end.
        ProfileMenuView::ActionableItem::kPasswordsButton};
@@ -748,3 +751,74 @@ INSTANTIATE_TEST_SUITE_P(
         size_t(0),
         base::size(
             ProfileMenuClickTest_WithPrimaryAccount::kOrderedActionableItems)));
+
+class ProfileMenuClickTest_WithUnconsentedPrimaryAccount
+    : public ProfileMenuClickTest {
+ public:
+  // List of actionable items in the correct order as they appear in the menu.
+  // If a new button is added to the menu, it should also be added to this list.
+  static constexpr ProfileMenuView::ActionableItem kOrderedActionableItems[6] =
+      {ProfileMenuView::ActionableItem::kPasswordsButton,
+       ProfileMenuView::ActionableItem::kCreditCardsButton,
+       ProfileMenuView::ActionableItem::kAddressesButton,
+       ProfileMenuView::ActionableItem::kManageGoogleAccountButton,
+       ProfileMenuView::ActionableItem::kSignoutButton,
+       // The first button is added again to finish the cycle and test that
+       // there are no other buttons at the end.
+       ProfileMenuView::ActionableItem::kPasswordsButton};
+
+  ProfileMenuClickTest_WithUnconsentedPrimaryAccount() = default;
+
+  void SetUpInProcessBrowserTestFixture() override {
+    // This is required to support (fake) secondary-account-signin (based on
+    // cookies) in tests. Without this, the real GaiaCookieManagerService would
+    // try talking to Google servers which of course wouldn't work in tests.
+    test_signin_client_factory_ =
+        secondary_account_helper::SetUpSigninClient(&test_url_loader_factory_);
+    ProfileMenuClickTest::SetUpInProcessBrowserTestFixture();
+  }
+
+  ProfileMenuView::ActionableItem GetExpectedActionableItemAtIndex(
+      size_t index) override {
+    return kOrderedActionableItems[index];
+  }
+
+  void SetUnconsentedPrimaryAccount() {
+    signin::MakeAccountAvailableWithCookies(
+        IdentityManagerFactory::GetForProfile(browser()->profile()),
+        &test_url_loader_factory_, "account@example.com", "dummyId");
+  }
+
+ private:
+  secondary_account_helper::ScopedSigninClientFactory
+      test_signin_client_factory_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProfileMenuClickTest_WithUnconsentedPrimaryAccount);
+};
+
+// static
+constexpr ProfileMenuView::ActionableItem
+    ProfileMenuClickTest_WithUnconsentedPrimaryAccount::kOrderedActionableItems
+        [];
+
+IN_PROC_BROWSER_TEST_P(ProfileMenuClickTest_WithUnconsentedPrimaryAccount,
+                       SetupAndRunTest) {
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(browser()->profile());
+
+  ASSERT_FALSE(identity_manager->HasUnconsentedPrimaryAccount());
+  SetUnconsentedPrimaryAccount();
+  ASSERT_FALSE(identity_manager->HasPrimaryAccount());
+  ASSERT_TRUE(identity_manager->HasUnconsentedPrimaryAccount());
+
+  RunTest();
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    ProfileMenuClickTest_WithUnconsentedPrimaryAccount,
+    ::testing::Range(
+        size_t(0),
+        base::size(ProfileMenuClickTest_WithUnconsentedPrimaryAccount::
+                       kOrderedActionableItems)));

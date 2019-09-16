@@ -8,7 +8,6 @@
 
 #include "chrome/browser/autofill/strike_database_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/autofill/payments/autofill_ui_util.h"
 #include "chrome/browser/ui/autofill/payments/local_card_migration_bubble.h"
 #include "chrome/browser/ui/autofill/payments/payments_ui_constants.h"
 #include "chrome/browser/ui/browser.h"
@@ -185,8 +184,11 @@ void LocalCardMigrationBubbleControllerImpl::ShowBubbleImplementation() {
 }
 
 void LocalCardMigrationBubbleControllerImpl::UpdateLocalCardMigrationIcon() {
-  ::autofill::UpdatePageActionIcon(PageActionIconType::kLocalCardMigration,
-                                   web_contents());
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+  if (browser) {
+    browser->window()->UpdatePageActionIcon(
+        PageActionIconType::kLocalCardMigration);
+  }
 }
 
 void LocalCardMigrationBubbleControllerImpl::AddStrikesForBubbleClose() {

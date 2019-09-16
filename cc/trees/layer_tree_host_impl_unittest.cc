@@ -945,11 +945,11 @@ TEST_F(LayerTreeHostImplTest, ScrollDeltaRepeatedScrolls) {
   auto* root = SetupDefaultRootLayer(gfx::Size(110, 110));
   root->SetHitTestable(true);
   root->SetScrollable(gfx::Size(10, 10));
-  CreateScrollNode(root);
   root->layer_tree_impl()
       ->property_trees()
       ->scroll_tree.UpdateScrollOffsetBaseForTesting(root->element_id(),
                                                      scroll_offset);
+  CreateScrollNode(root);
   UpdateDrawProperties(host_impl_->active_tree());
 
   std::unique_ptr<ScrollAndScaleSet> scroll_info;

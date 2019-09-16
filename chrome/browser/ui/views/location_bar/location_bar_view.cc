@@ -270,9 +270,17 @@ void LocationBarView::Init() {
       params.types_enabled.push_back(PageActionIconType::kCookieControls);
     }
   }
+  // Add icons only when feature is not enabled. Otherwise icons will
+  // be added to the ToolbarPageActionIconContainerView.
+  if (!base::FeatureList::IsEnabled(
+          autofill::features::kAutofillEnableToolbarStatusChip)) {
+    params.types_enabled.push_back(PageActionIconType::kSaveCard);
+    params.types_enabled.push_back(PageActionIconType::kLocalCardMigration);
+  }
   params.icon_size = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
   params.icon_color = icon_color;
   params.between_icon_spacing = 0;
+  params.font_list = &font_list;
   params.browser = browser_;
   params.command_updater = command_updater();
   params.page_action_icon_delegate = this;
@@ -281,22 +289,6 @@ void LocationBarView::Init() {
 
   std::vector<std::unique_ptr<PageActionIconView>> page_action_icons;
   if (browser_) {
-    // Add icons only when feature is not enabled. Otherwise icons will
-    // be added to the ToolbarPageActionIconContainerView.
-    if (!base::FeatureList::IsEnabled(
-            autofill::features::kAutofillEnableToolbarStatusChip)) {
-      auto save_credit_card_icon_view =
-          std::make_unique<autofill::SaveCardIconView>(command_updater(), this,
-                                                       font_list);
-      save_credit_card_icon_view_ = save_credit_card_icon_view.get();
-      page_action_icons.push_back(std::move(save_credit_card_icon_view));
-
-      auto local_card_migration_icon_view =
-          std::make_unique<autofill::LocalCardMigrationIconView>(
-              command_updater(), this, font_list);
-      local_card_migration_icon_view_ = local_card_migration_icon_view.get();
-      page_action_icons.push_back(std::move(local_card_migration_icon_view));
-    }
     auto star_view =
         std::make_unique<StarView>(command_updater(), browser_, this);
     star_view_ = star_view.get();
@@ -592,10 +584,6 @@ void LocationBarView::Layout() {
   if (star_view_)
     add_trailing_decoration(star_view_);
   add_trailing_decoration(omnibox_page_action_icon_container_view_);
-  if (save_credit_card_icon_view_)
-    add_trailing_decoration(save_credit_card_icon_view_);
-  if (local_card_migration_icon_view_)
-    add_trailing_decoration(local_card_migration_icon_view_);
   for (ContentSettingViews::const_reverse_iterator i(
            content_setting_views_.rbegin());
        i != content_setting_views_.rend(); ++i) {
@@ -827,9 +815,7 @@ int LocationBarView::GetMinimumLeadingWidth() const {
 int LocationBarView::GetMinimumTrailingWidth() const {
   int trailing_width =
       IncrementalMinimumWidth(omnibox_page_action_icon_container_view_) +
-      IncrementalMinimumWidth(star_view_) +
-      IncrementalMinimumWidth(save_credit_card_icon_view_) +
-      IncrementalMinimumWidth(local_card_migration_icon_view_);
+      IncrementalMinimumWidth(star_view_);
 
   for (auto* content_setting_view : content_setting_views_)
     trailing_width += IncrementalMinimumWidth(content_setting_view);
@@ -1032,20 +1018,6 @@ void LocationBarView::FocusSearch() {
 
 void LocationBarView::UpdateContentSettingsIcons() {
   if (RefreshContentSettingViews()) {
-    Layout();
-    SchedulePaint();
-  }
-}
-
-void LocationBarView::UpdateSaveCreditCardIcon() {
-  if (save_credit_card_icon_view_->Update()) {
-    Layout();
-    SchedulePaint();
-  }
-}
-
-void LocationBarView::UpdateLocalCardMigrationIcon() {
-  if (local_card_migration_icon_view_->Update()) {
     Layout();
     SchedulePaint();
   }
@@ -1279,8 +1251,7 @@ void LocationBarView::OnTouchUiChanged() {
   selected_keyword_view_->SetFontList(font_list);
   for (ContentSettingImageView* view : content_setting_views_)
     view->SetFontList(font_list);
-  if (save_credit_card_icon_view_)
-    save_credit_card_icon_view_->SetFontList(font_list);
+  omnibox_page_action_icon_container_view_->SetFontList(font_list);
   location_icon_view_->Update(/*suppress_animations=*/false);
   PreferredSizeChanged();
 }

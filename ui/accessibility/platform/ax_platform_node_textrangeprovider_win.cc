@@ -157,14 +157,10 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
     case TextUnit_Word:
       start_ = start_->CreatePreviousWordStartPosition(
           AXBoundaryBehavior::StopIfAlreadyAtBoundary);
-
       // Since start_ is already located at a word boundary, we need to cross it
-      // in order to move to the next one; the only edge case here is the last
-      // word in the document, which will result in a null position.
+      // in order to move to the next one (stopping at the last anchor's end).
       end_ = start_->CreateNextWordStartPosition(
-          AXBoundaryBehavior::CrossBoundary);
-      if (end_->IsNullPosition())
-        end_ = start_->CreatePositionAtEndOfDocument();
+          AXBoundaryBehavior::StopAtLastAnchorBoundary);
       break;
     case TextUnit_Line:
       start_ = start_->CreatePreviousLineStartPosition(
@@ -587,8 +583,7 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::MoveEndpointByUnit(
       new_position = MoveEndpointByFormat(position_to_move, count, units_moved);
       break;
     case TextUnit_Word:
-      new_position = MoveEndpointByWord(position_to_move, is_start_endpoint,
-                                        count, units_moved);
+      new_position = MoveEndpointByWord(position_to_move, count, units_moved);
       break;
     case TextUnit_Line:
       new_position = MoveEndpointByLine(position_to_move, is_start_endpoint,
@@ -829,39 +824,17 @@ AXPlatformNodeTextRangeProviderWin::MoveEndpointByCharacter(
     const AXPositionInstance& endpoint,
     const int count,
     int* units_moved) {
-  DCHECK_NE(count, 0);
   return MoveEndpointByUnitHelper(
-      std::move(endpoint),
-      (count > 0) ? &AXPositionInstanceType::CreateNextCharacterPosition
-                  : &AXPositionInstanceType::CreatePreviousCharacterPosition,
-      count, units_moved);
+      std::move(endpoint), AXTextBoundary::kCharacter, count, units_moved);
 }
 
 AXPlatformNodeTextRangeProviderWin::AXPositionInstance
 AXPlatformNodeTextRangeProviderWin::MoveEndpointByWord(
     const AXPositionInstance& endpoint,
-    bool is_start_endpoint,
     const int count,
     int* units_moved) {
-  DCHECK_NE(count, 0);
-
-  bool going_forward = count > 0;
-  AXPositionInstance new_position = MoveEndpointByUnitHelper(
-      std::move(endpoint),
-      going_forward ? &AXPositionInstanceType::CreateNextWordStartPosition
-                    : &AXPositionInstanceType::CreatePreviousWordStartPosition,
-      count, units_moved);
-
-  if (going_forward && *units_moved < count &&
-      !new_position->AsPositionBeforeCharacter()->IsNullPosition()) {
-    AXPositionInstance next_word_position =
-        new_position->CreatePositionAtEndOfDocument();
-    DCHECK(!next_word_position->IsNullPosition());
-
-    new_position = std::move(next_word_position);
-    ++*units_moved;
-  }
-  return new_position;
+  return MoveEndpointByUnitHelper(
+      std::move(endpoint), AXTextBoundary::kWordStart, count, units_moved);
 }
 
 AXPlatformNodeTextRangeProviderWin::AXPositionInstance
@@ -870,21 +843,10 @@ AXPlatformNodeTextRangeProviderWin::MoveEndpointByLine(
     bool is_start_endpoint,
     const int count,
     int* units_moved) {
-  DCHECK_NE(count, 0);
-
-  CreateNextPositionFunction create_next_position = nullptr;
-  if (count > 0)
-    create_next_position =
-        is_start_endpoint ? &AXPositionInstanceType::CreateNextLineStartPosition
-                          : &AXPositionInstanceType::CreateNextLineEndPosition;
-  else
-    create_next_position =
-        is_start_endpoint
-            ? &AXPositionInstanceType::CreatePreviousLineStartPosition
-            : &AXPositionInstanceType::CreatePreviousLineEndPosition;
-
-  return MoveEndpointByUnitHelper(std::move(endpoint), create_next_position,
-                                  count, units_moved);
+  return MoveEndpointByUnitHelper(
+      std::move(endpoint),
+      is_start_endpoint ? AXTextBoundary::kLineStart : AXTextBoundary::kLineEnd,
+      count, units_moved);
 }
 
 AXPlatformNodeTextRangeProviderWin::AXPositionInstance
@@ -892,106 +854,39 @@ AXPlatformNodeTextRangeProviderWin::MoveEndpointByFormat(
     const AXPositionInstance& endpoint,
     const int count,
     int* units_moved) {
-  DCHECK_NE(count, 0);
-
-  CreateNextPositionFunction create_next_position = nullptr;
-  if (count > 0)
-    create_next_position = &AXPositionInstanceType::CreateNextFormatEndPosition;
-  else
-    create_next_position =
-        &AXPositionInstanceType::CreatePreviousFormatStartPosition;
-
-  return MoveEndpointByUnitHelper(std::move(endpoint), create_next_position,
-                                  count, units_moved);
+  return MoveEndpointByUnitHelper(
+      std::move(endpoint), AXTextBoundary::kFormatChange, count, units_moved);
 }
 
 AXPlatformNodeTextRangeProviderWin::AXPositionInstance
 AXPlatformNodeTextRangeProviderWin::MoveEndpointByParagraph(
-    const AXNodePosition::AXPositionInstance& endpoint,
+    const AXPositionInstance& endpoint,
     const bool is_start_endpoint,
     const int count,
-    int* count_moved) {
-  auto current_endpoint = endpoint->Clone();
-  const bool forwards = count > 0;
-  const int count_abs = std::abs(count);
-  const auto behavior = AXBoundaryBehavior::CrossBoundary;
-  int iteration = 0;
-  for (iteration = 0; iteration < count_abs; ++iteration) {
-    AXPositionInstance next_endpoint;
-    if (forwards) {
-      next_endpoint =
-          is_start_endpoint
-              ? current_endpoint->CreateNextParagraphStartPosition(behavior)
-              : current_endpoint->CreateNextParagraphEndPosition(behavior);
-    } else {
-      next_endpoint =
-          is_start_endpoint
-              ? current_endpoint->CreatePreviousParagraphStartPosition(behavior)
-              : current_endpoint->CreatePreviousParagraphEndPosition(behavior);
-    }
-
-    // End of document
-    if (next_endpoint->IsNullPosition()) {
-      int document_moved;
-      next_endpoint = MoveEndpointByDocument(endpoint, count, &document_moved);
-      if (*endpoint != *next_endpoint && !next_endpoint->IsNullPosition()) {
-        ++iteration;
-        current_endpoint = std::move(next_endpoint);
-      }
-      break;
-    }
-    current_endpoint = std::move(next_endpoint);
-  }
-
-  *count_moved = (forwards) ? iteration : -iteration;
-  return current_endpoint;
+    int* units_moved) {
+  return MoveEndpointByUnitHelper(std::move(endpoint),
+                                  is_start_endpoint
+                                      ? AXTextBoundary::kParagraphStart
+                                      : AXTextBoundary::kParagraphEnd,
+                                  count, units_moved);
 }
 
 AXPlatformNodeTextRangeProviderWin::AXPositionInstance
 AXPlatformNodeTextRangeProviderWin::MoveEndpointByPage(
-    const AXNodePosition::AXPositionInstance& endpoint,
+    const AXPositionInstance& endpoint,
     const bool is_start_endpoint,
     const int count,
-    int* count_moved) {
-  // If the document doesn't support pagination, default to document navigation
-  // per UIA spec
+    int* units_moved) {
+  // Per UIA spec, if the document containing the current endpoint doesn't
+  // support pagination, default to document navigation.
   AXPositionInstance common_ancestor = start_->LowestCommonAncestor(*end_);
   if (!common_ancestor->GetAnchor()->tree()->HasPaginationSupport())
-    return MoveEndpointByDocument(std::move(endpoint), count, count_moved);
+    return MoveEndpointByDocument(std::move(endpoint), count, units_moved);
 
-  auto current_endpoint = endpoint->Clone();
-  const bool forwards = count > 0;
-  const int count_abs = std::abs(count);
-  const auto behavior = ui::AXBoundaryBehavior::CrossBoundary;
-  int iteration = 0;
-  for (iteration = 0; iteration < count_abs; ++iteration) {
-    AXPositionInstance next_endpoint;
-    if (forwards) {
-      next_endpoint =
-          is_start_endpoint
-              ? current_endpoint->CreateNextPageStartPosition(behavior)
-              : current_endpoint->CreateNextPageEndPosition(behavior);
-    } else {
-      next_endpoint =
-          is_start_endpoint
-              ? current_endpoint->CreatePreviousPageStartPosition(behavior)
-              : current_endpoint->CreatePreviousPageEndPosition(behavior);
-    }
-    // End of document
-    if (next_endpoint->IsNullPosition()) {
-      int document_moved;
-      next_endpoint = MoveEndpointByDocument(endpoint, count, &document_moved);
-      if (*endpoint != *next_endpoint && !next_endpoint->IsNullPosition()) {
-        ++iteration;
-        current_endpoint = std::move(next_endpoint);
-      }
-      break;
-    }
-    current_endpoint = std::move(next_endpoint);
-  }
-
-  *count_moved = (forwards) ? iteration : -iteration;
-  return current_endpoint;
+  return MoveEndpointByUnitHelper(
+      std::move(endpoint),
+      is_start_endpoint ? AXTextBoundary::kPageStart : AXTextBoundary::kPageEnd,
+      count, units_moved);
 }
 
 AXPlatformNodeTextRangeProviderWin::AXPositionInstance
@@ -1001,39 +896,39 @@ AXPlatformNodeTextRangeProviderWin::MoveEndpointByDocument(
     int* units_moved) {
   DCHECK_NE(count, 0);
 
-  *units_moved = 0;
-  AXPositionInstance current_endpoint = endpoint->Clone();
-  const bool forwards = count > 0;
-
-  if (forwards && !current_endpoint->AtEndOfDocument()) {
-    current_endpoint = endpoint->CreatePositionAtEndOfDocument();
-    *units_moved = 1;
-  } else if (!forwards && !current_endpoint->AtStartOfDocument()) {
-    current_endpoint = endpoint->CreatePositionAtStartOfDocument();
-    *units_moved = -1;
+  if (count < 0) {
+    *units_moved = !endpoint->AtStartOfDocument() ? -1 : 0;
+    return endpoint->CreatePositionAtStartOfDocument();
   }
-
-  return current_endpoint;
+  *units_moved = !endpoint->AtEndOfDocument() ? 1 : 0;
+  return endpoint->CreatePositionAtEndOfDocument();
 }
 
 AXPlatformNodeTextRangeProviderWin::AXPositionInstance
 AXPlatformNodeTextRangeProviderWin::MoveEndpointByUnitHelper(
     const AXPositionInstance& endpoint,
-    CreateNextPositionFunction create_next_position,
+    const AXTextBoundary boundary_type,
     const int count,
     int* units_moved) {
   DCHECK_NE(count, 0);
+  const bool going_forward = count > 0;
 
   AXPositionInstance current_endpoint = endpoint->Clone();
-
   for (int iteration = 0; iteration < std::abs(count); ++iteration) {
     AXPositionInstance next_endpoint =
-        (current_endpoint.get()->*create_next_position)(
-            AXBoundaryBehavior::CrossBoundary);
+        current_endpoint->CreatePositionAtTextBoundary(
+            boundary_type,
+            going_forward ? AXTextBoundaryDirection::kForwards
+                          : AXTextBoundaryDirection::kBackwards,
+            AXBoundaryBehavior::StopAtLastAnchorBoundary);
+    DCHECK(!next_endpoint->IsNullPosition());
 
-    // We've reached either the start or the end of the document.
-    if (next_endpoint->IsNullPosition()) {
-      *units_moved = (count > 0) ? iteration : -iteration;
+    // Since AXBoundaryBehavior::StopAtLastAnchorBoundary forces the next text
+    // boundary position to be different than the input position, the only case
+    // where these are equal is when they're already located at the last anchor
+    // boundary. In such case, there is no next position to move to.
+    if (*current_endpoint == *next_endpoint) {
+      *units_moved = going_forward ? iteration : -iteration;
       return current_endpoint;
     }
     current_endpoint = std::move(next_endpoint);

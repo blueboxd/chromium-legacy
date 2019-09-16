@@ -18,6 +18,9 @@
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/autofill/content/browser/content_autofill_driver.h"
+#include "components/autofill/core/browser/form_data_importer.h"
+#include "components/autofill/core/browser/payments/credit_card_save_manager.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "ui/base/theme_provider.h"
@@ -29,6 +32,8 @@ class BrowserNonClientFrameViewBrowserTest
   ~BrowserNonClientFrameViewBrowserTest() override = default;
 
   void SetUp() override {
+    embedded_test_server()->ServeFilesFromSourceDirectory(
+        "components/test/data");
     ASSERT_TRUE(embedded_test_server()->Start());
 
     extensions::ExtensionBrowserTest::SetUp();
@@ -37,10 +42,13 @@ class BrowserNonClientFrameViewBrowserTest
   // Note: A "bookmark app" is a type of hosted app. All of these tests apply
   // equally to hosted and bookmark apps, but it's easier to install a bookmark
   // app in a test.
-  void InstallAndLaunchBookmarkApp() {
+  void InstallAndLaunchBookmarkApp(
+      base::Optional<GURL> app_url = base::nullopt) {
+    if (!app_url)
+      app_url = GetAppURL();
     WebApplicationInfo web_app_info;
-    web_app_info.app_url = GetAppURL();
-    web_app_info.scope = GetAppURL().GetWithoutFilename();
+    web_app_info.app_url = *app_url;
+    web_app_info.scope = app_url->GetWithoutFilename();
     if (app_theme_color_)
       web_app_info.theme_color = *app_theme_color_;
 
@@ -51,16 +59,16 @@ class BrowserNonClientFrameViewBrowserTest
         browser()->profile(), app);
     web_contents_ = app_browser_->tab_strip_model()->GetActiveWebContents();
     // Ensure the main page has loaded and is ready for ExecJs DOM manipulation.
-    ASSERT_TRUE(content::NavigateToURL(web_contents_, GetAppURL()));
+    ASSERT_TRUE(content::NavigateToURL(web_contents_, *app_url));
 
-    BrowserView* browser_view =
-        BrowserView::GetBrowserViewForBrowser(app_browser_);
-    app_frame_view_ = browser_view->frame()->GetFrameView();
+    app_browser_view_ = BrowserView::GetBrowserViewForBrowser(app_browser_);
+    app_frame_view_ = app_browser_view_->frame()->GetFrameView();
   }
 
  protected:
   base::Optional<SkColor> app_theme_color_ = SK_ColorBLUE;
   Browser* app_browser_ = nullptr;
+  BrowserView* app_browser_view_ = nullptr;
   content::WebContents* web_contents_ = nullptr;
   BrowserNonClientFrameView* app_frame_view_ = nullptr;
 
@@ -201,4 +209,50 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
   )"));
   EXPECT_EQ(app_frame_view_->GetFrameColor(), SK_ColorYELLOW);
   DCHECK_NE(*app_theme_color_, SK_ColorYELLOW);
+}
+
+class SaveCardOfferObserver
+    : public autofill::CreditCardSaveManager::ObserverForTest {
+ public:
+  explicit SaveCardOfferObserver(content::WebContents* web_contents) {
+    manager_ = autofill::ContentAutofillDriver::GetForRenderFrameHost(
+                   web_contents->GetMainFrame())
+                   ->autofill_manager()
+                   ->client()
+                   ->GetFormDataImporter()
+                   ->credit_card_save_manager_.get();
+    manager_->SetEventObserverForTesting(this);
+  }
+
+  ~SaveCardOfferObserver() override {
+    manager_->SetEventObserverForTesting(nullptr);
+  }
+
+  // CreditCardSaveManager::ObserverForTest:
+  void OnOfferLocalSave() override { run_loop_.Quit(); }
+
+  void Wait() { run_loop_.Run(); }
+
+ private:
+  autofill::CreditCardSaveManager* manager_ = nullptr;
+  base::RunLoop run_loop_;
+};
+
+// Tests that hosted app frames reflect the theme color set by HTML meta tags.
+IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest, SaveCardIcon) {
+  InstallAndLaunchBookmarkApp(embedded_test_server()->GetURL(
+      "/autofill/credit_card_upload_form_address_and_cc.html"));
+  ASSERT_TRUE(content::ExecJs(web_contents_, "fill_form.click();"));
+
+  content::TestNavigationObserver nav_observer(web_contents_);
+  SaveCardOfferObserver offer_observer(web_contents_);
+  ASSERT_TRUE(content::ExecJs(web_contents_, "submit.click();"));
+  nav_observer.Wait();
+  offer_observer.Wait();
+
+  PageActionIconView* icon =
+      app_browser_view_->toolbar_button_provider()->GetPageActionIconView(
+          PageActionIconType::kSaveCard);
+  EXPECT_TRUE(app_frame_view_->Contains(icon));
+  EXPECT_TRUE(icon->GetVisible());
 }

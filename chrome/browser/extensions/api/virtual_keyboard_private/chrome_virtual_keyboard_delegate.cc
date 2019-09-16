@@ -383,8 +383,8 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
       "fstinputlogic",
       base::FeatureList::IsEnabled(chromeos::features::kImeInputLogicFst)));
   features->AppendString(GenerateFeatureFlag(
-      "fstnonenglish", base::FeatureList::IsEnabled(
-                           chromeos::features::kImeInputLogicFstNonEnglish)));
+      "fstnonenglish",
+      base::FeatureList::IsEnabled(chromeos::features::kImeInputLogicFst)));
 
   results->Set("features", std::move(features));
 

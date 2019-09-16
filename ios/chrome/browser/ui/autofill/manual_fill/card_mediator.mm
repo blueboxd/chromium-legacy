@@ -134,7 +134,7 @@ NSString* const ManageCardsAccessibilityIdentifier =
         initWithTitle:addCreditCardsTitle
                action:^{
                  base::RecordAction(base::UserMetricsAction(
-                     "ManualFallback_CreditCard_OpenAddCreditCard"));
+                     "ManualFallback_CreditCard_OpenAddPaymentMethod"));
                  // TODO(crbug.com/984561): Add action to navigate to the add
                  // credit card details screen here.
                }];

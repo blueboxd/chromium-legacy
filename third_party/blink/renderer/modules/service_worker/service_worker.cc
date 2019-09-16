@@ -56,7 +56,7 @@ const AtomicString& ServiceWorker::InterfaceName() const {
 
 void ServiceWorker::postMessage(ScriptState* script_state,
                                 const ScriptValue& message,
-                                HeapVector<ScriptValue>& transfer,
+                                Vector<ScriptValue>& transfer,
                                 ExceptionState& exception_state) {
   PostMessageOptions* options = PostMessageOptions::Create();
   if (!transfer.IsEmpty())

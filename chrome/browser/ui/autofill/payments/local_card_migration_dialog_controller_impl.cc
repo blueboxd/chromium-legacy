@@ -19,7 +19,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/autofill/strike_database_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/autofill/payments/autofill_ui_util.h"
 #include "chrome/browser/ui/autofill/payments/local_card_migration_dialog.h"
 #include "chrome/browser/ui/autofill/payments/local_card_migration_dialog_factory.h"
 #include "chrome/browser/ui/autofill/payments/local_card_migration_dialog_state.h"
@@ -266,8 +265,11 @@ void LocalCardMigrationDialogControllerImpl::OpenUrl(const GURL& url) {
 }
 
 void LocalCardMigrationDialogControllerImpl::UpdateLocalCardMigrationIcon() {
-  ::autofill::UpdatePageActionIcon(PageActionIconType::kLocalCardMigration,
-                                   web_contents());
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+  if (browser) {
+    browser->window()->UpdatePageActionIcon(
+        PageActionIconType::kLocalCardMigration);
+  }
 }
 
 bool LocalCardMigrationDialogControllerImpl::HasFailedCard() const {

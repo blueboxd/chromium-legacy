@@ -1547,9 +1547,6 @@
     'service_worker': {
       'filepath': 'content/(browser|renderer|child|common)/service_worker/',
     },
-    'services_public': {
-      'filepath': 'services/([^/]*/)*public/',
-    },
     'settings': {
       'filepath': 'chrome/browser/resources/settings/'\
                   '|chrome/browser/ui/webui/settings/'\
@@ -2259,8 +2256,7 @@
                      'vmpstr+watch@chromium.org'],
     'clipboard': ['dcheng@chromium.org'],
     'codereview_settings': ['agable+watch@chromium.org'],
-    'components_deps': ['blundell+watchlist@chromium.org',
-                        'droger+watchlist@chromium.org'],
+    'components_deps': ['droger+watchlist@chromium.org'],
     'compositor_animator': ['mdjones+watch@chromium.org'],
     'content_bluetooth': ['mattreynolds+watch@chromium.org',
                           'ortuno+watch@chromium.org'],
@@ -2541,7 +2537,6 @@
                        'nhiroki@chromium.org',
                        'serviceworker-reviews@chromium.org',
                        'shimazu+serviceworker@chromium.org'],
-    'services_public': ['blundell+services-watchlist@chromium.org'],
     'settings': ['dbeam+watch-settings@chromium.org',
                  'michaelpg+watch-md-settings@chromium.org',
                  'stevenjb+watch-md-settings@chromium.org',

@@ -8,6 +8,8 @@
 #include "chrome/browser/sharing/click_to_call/click_to_call_ui_controller.h"
 #include "chrome/browser/sharing/shared_clipboard/shared_clipboard_ui_controller.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/views/autofill/payments/local_card_migration_icon_view.h"
+#include "chrome/browser/ui/views/autofill/payments/save_card_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/cookie_controls_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/find_bar_icon.h"
 #include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
@@ -119,8 +121,15 @@ OmniboxPageActionIconContainerView::OmniboxPageActionIconContainerView(
         page_action_icons_.push_back(shared_clipboard_icon_view_);
         break;
       case PageActionIconType::kLocalCardMigration:
+        local_card_migration_icon_view_ =
+            new autofill::LocalCardMigrationIconView(
+                params.command_updater, params.page_action_icon_delegate);
+        page_action_icons_.push_back(local_card_migration_icon_view_);
+        break;
       case PageActionIconType::kSaveCard:
-        NOTREACHED();
+        save_card_icon_view_ = new autofill::SaveCardIconView(
+            params.command_updater, params.page_action_icon_delegate);
+        page_action_icons_.push_back(save_card_icon_view_);
         break;
     }
   }
@@ -129,6 +138,7 @@ OmniboxPageActionIconContainerView::OmniboxPageActionIconContainerView(
     icon->SetVisible(false);
     icon->set_icon_size(params.icon_size);
     icon->SetIconColor(params.icon_color);
+    icon->SetFontList(params.font_list ? *params.font_list : gfx::FontList());
     AddChildView(icon);
   }
 
@@ -171,11 +181,9 @@ PageActionIconView* OmniboxPageActionIconContainerView::GetIconView(
     case PageActionIconType::kSharedClipboard:
       return shared_clipboard_icon_view_;
     case PageActionIconType::kLocalCardMigration:
+      return local_card_migration_icon_view_;
     case PageActionIconType::kSaveCard:
-      // TODO(https://crbug.com/788051): Merge
-      // ToolbarPageActionIconContainerView into this class as a generic "any
-      // page action icon" container.
-      return nullptr;
+      return save_card_icon_view_;
   }
   return nullptr;
 }
@@ -203,6 +211,12 @@ bool OmniboxPageActionIconContainerView::
 void OmniboxPageActionIconContainerView::SetIconColor(SkColor icon_color) {
   for (PageActionIconView* icon : page_action_icons_)
     icon->SetIconColor(icon_color);
+}
+
+void OmniboxPageActionIconContainerView::SetFontList(
+    const gfx::FontList& font_list) {
+  for (PageActionIconView* icon : page_action_icons_)
+    icon->SetFontList(font_list);
 }
 
 void OmniboxPageActionIconContainerView::ZoomChangedForActiveTab(

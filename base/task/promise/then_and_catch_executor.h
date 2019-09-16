@@ -130,10 +130,16 @@ class ThenAndCatchExecutor {
                                   AbstractPromise* promise,
                                   CallbackBase* resolve_callback,
                                   std::true_type can_resolve) {
-    RunHelper<ResolveOnceCallback, Resolved<ArgResolve>, ResolveStorage,
-              RejectStorage>::
-        Run(std::move(*static_cast<ResolveOnceCallback*>(resolve_callback)),
-            prerequisite, promise);
+    // Internally RunHelper uses const RepeatingCallback<>& to avoid the
+    // binary size overhead of moving a scoped_refptr<> about.  We respect
+    // the onceness of the callback and RunHelper will overwrite the callback
+    // with the result.
+    using RepeatingResolveCB =
+        typename ToRepeatingCallback<ResolveOnceCallback>::value;
+    RunHelper<
+        RepeatingResolveCB, Resolved<ArgResolve>, ResolveStorage,
+        RejectStorage>::Run(*static_cast<RepeatingResolveCB*>(resolve_callback),
+                            prerequisite, promise);
   }
 
   static void ExecuteThenInternal(AbstractPromise* prerequisite,
@@ -147,10 +153,16 @@ class ThenAndCatchExecutor {
                                    AbstractPromise* promise,
                                    CallbackBase* reject_callback,
                                    std::true_type can_reject) {
-    RunHelper<RejectOnceCallback, Rejected<ArgReject>, ResolveStorage,
-              RejectStorage>::
-        Run(std::move(*static_cast<RejectOnceCallback*>(reject_callback)),
-            prerequisite, promise);
+    // Internally RunHelper uses const RepeatingCallback<>& to avoid the
+    // binary size overhead of moving a scoped_refptr<> about.  We respect
+    // the onceness of the callback and RunHelper will overwrite the callback
+    // with the result.
+    using RepeatingRejectCB =
+        typename ToRepeatingCallback<RejectOnceCallback>::value;
+    RunHelper<
+        RepeatingRejectCB, Rejected<ArgReject>, ResolveStorage,
+        RejectStorage>::Run(*static_cast<RepeatingRejectCB*>(reject_callback),
+                            prerequisite, promise);
   }
 
   static void ExecuteCatchInternal(AbstractPromise* prerequisite,

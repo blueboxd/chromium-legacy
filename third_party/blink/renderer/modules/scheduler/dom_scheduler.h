@@ -51,7 +51,7 @@ class MODULES_EXPORT DOMScheduler : public ScriptWrappable,
   // documents, this returns nullptr.
   DOMTask* postTask(V8Function*,
                     SchedulerPostTaskOptions*,
-                    const HeapVector<ScriptValue>& args);
+                    const Vector<ScriptValue>& args);
 
   // Callbacks invoked by DOMTaskQueues when they run scheduled tasks.
   void OnTaskStarted(DOMTaskQueue*, DOMTask*);

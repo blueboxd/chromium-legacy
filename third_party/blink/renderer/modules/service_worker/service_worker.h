@@ -80,7 +80,7 @@ class MODULES_EXPORT ServiceWorker final
 
   void postMessage(ScriptState*,
                    const ScriptValue& message,
-                   HeapVector<ScriptValue>& transfer,
+                   Vector<ScriptValue>& transfer,
                    ExceptionState&);
   void postMessage(ScriptState*,
                    const ScriptValue& message,

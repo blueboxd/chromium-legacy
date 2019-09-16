@@ -2714,10 +2714,10 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 
     BrowserAccessibilityPositionInstance startLinePosition =
         endPosition->CreatePreviousLineStartPosition(
-            ui::AXBoundaryBehavior::CrossBoundary);
+            ui::AXBoundaryBehavior::StopAtLastAnchorBoundary);
     BrowserAccessibilityPositionInstance endLinePosition =
         endPosition->CreatePreviousLineEndPosition(
-            ui::AXBoundaryBehavior::CrossBoundary);
+            ui::AXBoundaryBehavior::StopAtLastAnchorBoundary);
     BrowserAccessibilityPositionInstance startPosition =
         *startLinePosition <= *endLinePosition ? std::move(endLinePosition)
                                                : std::move(startLinePosition);
@@ -2735,10 +2735,10 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 
     BrowserAccessibilityPositionInstance startLinePosition =
         startPosition->CreateNextLineStartPosition(
-            ui::AXBoundaryBehavior::CrossBoundary);
+            ui::AXBoundaryBehavior::StopAtLastAnchorBoundary);
     BrowserAccessibilityPositionInstance endLinePosition =
         startPosition->CreateNextLineEndPosition(
-            ui::AXBoundaryBehavior::CrossBoundary);
+            ui::AXBoundaryBehavior::StopAtLastAnchorBoundary);
     BrowserAccessibilityPositionInstance endPosition =
         *startLinePosition <= *endLinePosition ? std::move(startLinePosition)
                                                : std::move(endLinePosition);

@@ -75,8 +75,6 @@ CrostiniUpgradeView::CrostiniUpgradeView() {
       views::BoxLayout::Orientation::kVertical,
       provider->GetInsetsMetric(views::InsetsMetric::INSETS_DIALOG),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
-  set_margins(provider->GetDialogInsetsForContentType(
-      views::DialogContentType::TEXT, views::DialogContentType::TEXT));
 
   const base::string16 message =
       l10n_util::GetStringUTF16(IDS_CROSTINI_TERMINA_UPDATE_OFFLINE);

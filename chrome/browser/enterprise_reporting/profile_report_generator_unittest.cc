@@ -31,7 +31,10 @@ class ProfileReportGeneratorTest : public ::testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(profile_manager_.SetUp());
-    profile_ = profile_manager_.CreateTestingProfile(kProfile);
+    profile_ = profile_manager_.CreateTestingProfile(
+        kProfile, {}, base::UTF8ToUTF16(kProfile), 0, {},
+        IdentityTestEnvironmentProfileAdaptor::
+            GetIdentityTestEnvironmentFactories());
   }
 
   std::unique_ptr<em::ChromeUserProfileInfo> GenerateReport(

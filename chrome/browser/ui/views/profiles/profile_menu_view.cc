@@ -170,6 +170,7 @@ void ProfileMenuView::BuildMenu() {
   }
   BuildIdentity();
   BuildAutofillButtons();
+  BuildAccountFeatureButtons();
   BuildSelectableProfiles();
 }
 
@@ -199,8 +200,14 @@ void ProfileMenuView::OnManageGoogleAccountButtonClicked() {
   // TODO(crbug.com/995757): Remove user action.
   base::RecordAction(
       base::UserMetricsAction("ProfileChooser_ManageGoogleAccountClicked"));
-  DCHECK(!dice_accounts_.empty());
-  NavigateToGoogleAccountPage(browser()->profile(), dice_accounts_[0].email);
+
+  Profile* profile = browser()->profile();
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+  DCHECK(identity_manager->HasUnconsentedPrimaryAccount());
+
+  NavigateToGoogleAccountPage(
+      profile, identity_manager->GetUnconsentedPrimaryAccountInfo().email);
 }
 
 void ProfileMenuView::OnPasswordsButtonClicked() {
@@ -412,6 +419,34 @@ void ProfileMenuView::BuildAutofillButtons() {
       l10n_util::GetStringUTF16(IDS_PROFILES_ADDRESSES_LINK),
       base::BindRepeating(&ProfileMenuView::OnAddressesButtonClicked,
                           base::Unretained(this)));
+}
+
+void ProfileMenuView::BuildAccountFeatureButtons() {
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(browser()->profile());
+  if (!identity_manager->HasUnconsentedPrimaryAccount())
+    return;
+
+  AddAccountFeatureButton(
+#if defined(GOOGLE_CHROME_BUILD)
+      // The Google G icon needs to be shrunk, so it won't look too big
+      // compared to the other icons.
+      ImageForMenu(kGoogleGLogoIcon, /*icon_to_image_ratio=*/0.75),
+#else
+      gfx::ImageSkia(),
+#endif
+      l10n_util::GetStringUTF16(IDS_SETTINGS_MANAGE_GOOGLE_ACCOUNT),
+      base::BindRepeating(&ProfileMenuView::OnManageGoogleAccountButtonClicked,
+                          base::Unretained(this)));
+
+  if (!identity_manager->HasPrimaryAccount()) {
+    // The sign-out button is only shown when sync is off.
+    AddAccountFeatureButton(
+        ImageForMenu(kSignOutIcon),
+        l10n_util::GetStringUTF16(IDS_SCREEN_LOCK_SIGN_OUT),
+        base::BindRepeating(&ProfileMenuView::OnSignoutButtonClicked,
+                            base::Unretained(this)));
+  }
 }
 
 void ProfileMenuView::BuildSelectableProfiles() {

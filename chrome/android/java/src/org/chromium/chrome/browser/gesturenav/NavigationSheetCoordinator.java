@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.gesturenav;
 
 import android.content.Context;
 import android.os.Handler;
+import android.support.annotation.IdRes;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
@@ -78,6 +79,10 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
     private final ModelList mModelList = new ModelList();
     private final ModelListAdapter mModelAdapter = new ModelListAdapter(mModelList);
 
+    private final int mItemHeight;
+    private final int mContentPadding;
+    private final View mParentView;
+
     private static class NavigationItemViewBinder {
         public static void bind(PropertyModel model, View view, PropertyKey propertyKey) {
             if (ItemProperties.ICON == propertyKey) {
@@ -104,6 +109,7 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
      */
     NavigationSheetCoordinator(
             View parent, Supplier<BottomSheetController> bottomSheetController, Delegate delegate) {
+        mParentView = parent;
         mBottomSheetController = bottomSheetController;
         mDelegate = delegate;
         Context context = parent.getContext();
@@ -132,12 +138,21 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
         mLongSwipePeekThreshold = Math.min(
                 context.getResources().getDisplayMetrics().density * LONG_SWIPE_PEEK_THRESHOLD_DP,
                 parent.getWidth() / 2);
+        mItemHeight = getSizePx(context, R.dimen.navigation_popup_item_height);
+        mContentPadding = getSizePx(context, R.dimen.navigation_sheet_content_top_padding)
+                + getSizePx(context, R.dimen.navigation_sheet_content_bottom_padding)
+                + getSizePx(context, R.dimen.navigation_sheet_content_wrap_padding);
+    }
+
+    private static int getSizePx(Context context, @IdRes int id) {
+        return context.getResources().getDimensionPixelSize(id);
     }
 
     // Transition to either peeked or expanded state.
     private void openSheet() {
         NavigationHistory history = mDelegate.getHistory(mForward);
         mMediator.populateEntries(history);
+        mContentView.requestListViewLayout();
         mBottomSheetController.get().requestShowContent(this, true);
         mBottomSheetController.get().getBottomSheet().addObserver(mSheetObserver);
         mSheetTriggered = true;
@@ -272,7 +287,23 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
 
     @Override
     public boolean wrapContentEnabled() {
-        return true;
+        return false;
+    }
+
+    @Override
+    public float getCustomHalfRatio() {
+        return getCappedHeightRatio(mParentView.getHeight() / 2 + mItemHeight / 2);
+    }
+
+    @Override
+    public float getCustomFullRatio() {
+        return getCappedHeightRatio(mParentView.getHeight());
+    }
+
+    private float getCappedHeightRatio(float maxHeight) {
+        int entryCount = mModelAdapter.getCount();
+        return Math.min(maxHeight, entryCount * mItemHeight + mContentPadding)
+                / mParentView.getHeight();
     }
 
     @Override
@@ -292,8 +323,7 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
 
     @Override
     public int getSheetHalfHeightAccessibilityStringId() {
-        assert false : "No half state exists. Should not be invoked.";
-        return -1;
+        return R.string.overscroll_navigation_sheet_opened_half;
     }
 
     @Override

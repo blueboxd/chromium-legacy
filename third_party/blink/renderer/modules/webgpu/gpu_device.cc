@@ -103,7 +103,7 @@ GPUBuffer* GPUDevice::createBuffer(const GPUBufferDescriptor* descriptor) {
   return GPUBuffer::Create(this, descriptor);
 }
 
-HeapVector<ScriptValue> GPUDevice::createBufferMapped(
+WTF::Vector<ScriptValue> GPUDevice::createBufferMapped(
     ScriptState* script_state,
     const GPUBufferDescriptor* descriptor,
     ExceptionState& exception_state) {
@@ -115,7 +115,7 @@ HeapVector<ScriptValue> GPUDevice::createBufferMapped(
   v8::Isolate* isolate = script_state->GetIsolate();
   v8::Local<v8::Object> creation_context = script_state->GetContext()->Global();
 
-  return HeapVector<ScriptValue>({
+  return WTF::Vector<ScriptValue>({
       ScriptValue(script_state, ToV8(gpu_buffer, creation_context, isolate)),
       ScriptValue(script_state, ToV8(array_buffer, creation_context, isolate)),
   });

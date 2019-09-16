@@ -23,7 +23,9 @@
 
 namespace views {
 
-TEST(MenuItemViewUnitTest, AddAndRemoveChildren) {
+using MenuItemViewUnitTest = ViewsTestBase;
+
+TEST_F(MenuItemViewUnitTest, AddAndRemoveChildren) {
   views::TestMenuItemView root_menu;
   root_menu.set_owned_by_client();
 
@@ -55,7 +57,7 @@ class SquareView : public views::View {
 
 }  // namespace
 
-TEST(MenuItemViewUnitTest, TestMenuItemViewWithFlexibleWidthChild) {
+TEST_F(MenuItemViewUnitTest, TestMenuItemViewWithFlexibleWidthChild) {
   views::TestMenuItemView root_menu;
   root_menu.set_owned_by_client();
 
@@ -94,7 +96,7 @@ TEST(MenuItemViewUnitTest, TestMenuItemViewWithFlexibleWidthChild) {
 
 // Tests that the top-level menu item with hidden children should contain the
 // "(empty)" menu item to display.
-TEST(MenuItemViewUnitTest, TestEmptyTopLevelWhenAllItemsAreHidden) {
+TEST_F(MenuItemViewUnitTest, TestEmptyTopLevelWhenAllItemsAreHidden) {
   views::TestMenuItemView root_menu;
   views::MenuItemView* item1 =
       root_menu.AppendMenuItemWithLabel(1, base::ASCIIToUTF16("item 1"));
@@ -125,7 +127,7 @@ TEST(MenuItemViewUnitTest, TestEmptyTopLevelWhenAllItemsAreHidden) {
 
 // Tests that submenu with hidden children should contain the "(empty)" menu
 // item to display.
-TEST(MenuItemViewUnitTest, TestEmptySubmenuWhenAllChildItemsAreHidden) {
+TEST_F(MenuItemViewUnitTest, TestEmptySubmenuWhenAllChildItemsAreHidden) {
   views::TestMenuItemView root_menu;
   MenuItemView* submenu_item =
       root_menu.AppendSubMenu(1, base::ASCIIToUTF16("My Submenu"));
@@ -161,7 +163,7 @@ TEST(MenuItemViewUnitTest, TestEmptySubmenuWhenAllChildItemsAreHidden) {
             empty_item->title());
 }
 
-TEST(MenuItemViewUnitTest, UseMnemonicOnPlatform) {
+TEST_F(MenuItemViewUnitTest, UseMnemonicOnPlatform) {
   views::TestMenuItemView root_menu;
   views::MenuItemView* item1 =
       root_menu.AppendMenuItemWithLabel(1, base::ASCIIToUTF16("&Item 1"));
@@ -179,7 +181,7 @@ TEST(MenuItemViewUnitTest, UseMnemonicOnPlatform) {
   }
 }
 
-class MenuItemViewLayoutTest : public ::testing::Test {
+class MenuItemViewLayoutTest : public ViewsTestBase {
  public:
   MenuItemViewLayoutTest()
       : test_item_(root_menu_.AppendMenuItemWithLabel(1, base::string16())) {}

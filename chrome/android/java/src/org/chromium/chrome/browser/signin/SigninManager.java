@@ -237,18 +237,20 @@ public class SigninManager
      */
     @CalledByNative
     private static SigninManager create(long nativeSigninManagerAndroid,
-            AccountTrackerService accountTrackerService, IdentityManager identityManager) {
+            AccountTrackerService accountTrackerService, IdentityManager identityManager,
+            IdentityMutator identityMutator) {
         assert nativeSigninManagerAndroid != 0;
         assert accountTrackerService != null;
         assert identityManager != null;
+        assert identityMutator != null;
         return new SigninManager(ContextUtils.getApplicationContext(), nativeSigninManagerAndroid,
-                accountTrackerService, identityManager, AndroidSyncSettings.get());
+                accountTrackerService, identityManager, identityMutator, AndroidSyncSettings.get());
     }
 
     @VisibleForTesting
     SigninManager(Context context, long nativeSigninManagerAndroid,
             AccountTrackerService accountTrackerService, IdentityManager identityManager,
-            AndroidSyncSettings androidSyncSettings) {
+            IdentityMutator identityMutator, AndroidSyncSettings androidSyncSettings) {
         ThreadUtils.assertOnUiThread();
         assert context != null;
         assert androidSyncSettings != null;
@@ -256,7 +258,7 @@ public class SigninManager
         mNativeSigninManagerAndroid = nativeSigninManagerAndroid;
         mAccountTrackerService = accountTrackerService;
         mIdentityManager = identityManager;
-        mIdentityMutator = identityManager.getIdentityMutator();
+        mIdentityMutator = identityMutator;
         mAndroidSyncSettings = androidSyncSettings;
 
         mSigninAllowedByPolicy =

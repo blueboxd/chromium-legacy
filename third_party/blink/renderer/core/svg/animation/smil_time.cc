@@ -25,16 +25,15 @@
 
 #include "third_party/blink/renderer/core/svg/animation/smil_time.h"
 
-#include <float.h>
+#include "third_party/blink/renderer/core/svg/animation/smil_repeat_count.h"
 
 namespace blink {
 
-SMILTime SMILTime::operator*(SMILTime other) const {
-  // Equal operators have to be used instead of negation here to make NaN work
-  // as well.
-  if (time_ == 0 || other.time_ == 0)
-    return SMILTime(0);
-  return time_ * other.time_;
+SMILTime SMILTime::Repeat(SMILRepeatCount repeat_count) const {
+  DCHECK(repeat_count.IsValid());
+  if (repeat_count.IsIndefinite() || repeat_count.IsUnspecified())
+    return SMILTime::Indefinite();
+  return SMILTime(time_ * repeat_count.NumericValue());
 }
 
 std::ostream& operator<<(std::ostream& os, SMILTime time) {

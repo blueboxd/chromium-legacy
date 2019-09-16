@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_ANIMATION_SVG_SMIL_ELEMENT_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/svg/animation/smil_repeat_count.h"
 #include "third_party/blink/renderer/core/svg/animation/smil_time.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_tests.h"
@@ -74,7 +75,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
   SMILTime Dur() const;
   SMILTime RepeatDur() const;
-  SMILTime RepeatCount() const;
+  SMILRepeatCount RepeatCount() const;
   SMILTime MaxValue() const;
   SMILTime MinValue() const;
 
@@ -143,8 +144,8 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   enum BeginOrEnd { kBegin, kEnd };
 
   void IntervalIsDirty() {
-    interval_.begin = 0.0;
-    interval_.end = 0.0;
+    interval_.begin = SMILTime();
+    interval_.end = SMILTime();
   }
 
   void AddInstanceTime(
@@ -292,7 +293,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
   mutable SMILTime cached_dur_;
   mutable SMILTime cached_repeat_dur_;
-  mutable SMILTime cached_repeat_count_;
+  mutable SMILRepeatCount cached_repeat_count_;
   mutable SMILTime cached_min_;
   mutable SMILTime cached_max_;
 

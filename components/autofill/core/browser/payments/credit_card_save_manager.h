@@ -25,6 +25,8 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "url/origin.h"
 
+class SaveCardOfferObserver;
+
 namespace autofill {
 
 // Manages logic for determining whether upload credit card save to Google
@@ -80,12 +82,13 @@ class CreditCardSaveManager {
   // particular actions occur.
   class ObserverForTest {
    public:
-    virtual void OnOfferLocalSave() = 0;
-    virtual void OnDecideToRequestUploadSave() = 0;
-    virtual void OnReceivedGetUploadDetailsResponse() = 0;
-    virtual void OnSentUploadCardRequest() = 0;
-    virtual void OnReceivedUploadCardResponse() = 0;
-    virtual void OnStrikeChangeComplete() = 0;
+    virtual ~ObserverForTest() {}
+    virtual void OnOfferLocalSave() {}
+    virtual void OnDecideToRequestUploadSave() {}
+    virtual void OnReceivedGetUploadDetailsResponse() {}
+    virtual void OnSentUploadCardRequest() {}
+    virtual void OnReceivedUploadCardResponse() {}
+    virtual void OnStrikeChangeComplete() {}
   };
 
   // The parameters should outlive the CreditCardSaveManager.
@@ -139,6 +142,7 @@ class CreditCardSaveManager {
   friend class TestCreditCardSaveManager;
   friend class SaveCardBubbleViewsFullFormBrowserTest;
   friend class SaveCardInfobarEGTestHelper;
+  friend class ::SaveCardOfferObserver;
   FRIEND_TEST_ALL_PREFIXES(SaveCardBubbleViewsFullFormBrowserTest,
                            StrikeDatabase_Local_FullFlowTest);
   FRIEND_TEST_ALL_PREFIXES(SaveCardBubbleViewsFullFormBrowserTest,

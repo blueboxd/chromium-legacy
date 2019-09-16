@@ -129,7 +129,7 @@ bool IsFeatureValidForMode(device::mojom::XRSessionFeature feature,
 
 template <typename Fn>
 XRSessionFeatureSet ParseRequestedFeatures(
-    const HeapVector<ScriptValue>& features,
+    const WTF::Vector<ScriptValue>& features,
     XRSession::SessionMode session_mode,
     Fn&& error_fn) {
   XRSessionFeatureSet result;

@@ -127,6 +127,8 @@ void BlinkLeakDetector::ReportResult() {
   result->number_of_live_context_lifecycle_state_observers =
       InstanceCounters::CounterValue(
           InstanceCounters::kContextLifecycleStateObserverCounter);
+  result->number_of_live_script_promises =
+      InstanceCounters::CounterValue(InstanceCounters::kScriptPromiseCounter);
   result->number_of_live_frames =
       InstanceCounters::CounterValue(InstanceCounters::kFrameCounter);
   result->number_of_live_v8_per_context_data = InstanceCounters::CounterValue(

@@ -9,12 +9,15 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "content/common/input/ime_text_span_conversions.h"
+#include "content/common/input/input_handler.mojom.h"
 #include "content/renderer/compositor/layer_tree_view.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/input/widget_input_handler_manager.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/web/web_input_method_controller.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
@@ -22,9 +25,8 @@ namespace content {
 
 FrameInputHandlerImpl::FrameInputHandlerImpl(
     base::WeakPtr<RenderFrameImpl> render_frame,
-    mojom::FrameInputHandlerRequest request)
-    : binding_(this),
-      render_frame_(render_frame),
+    mojo::PendingReceiver<mojom::FrameInputHandler> receiver)
+    : render_frame_(render_frame),
       input_event_queue_(
           render_frame->GetLocalRootRenderWidget()->GetInputEventQueue()),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
@@ -37,10 +39,10 @@ FrameInputHandlerImpl::FrameInputHandlerImpl(
     // Mojo channel bound on compositor thread.
     RenderThreadImpl::current()->compositor_task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&FrameInputHandlerImpl::BindNow,
-                                  base::Unretained(this), std::move(request)));
+                                  base::Unretained(this), std::move(receiver)));
   } else {
     // Mojo channel bound on main thread.
-    BindNow(std::move(request));
+    BindNow(std::move(receiver));
   }
 }
 
@@ -49,11 +51,11 @@ FrameInputHandlerImpl::~FrameInputHandlerImpl() {}
 // static
 void FrameInputHandlerImpl::CreateMojoService(
     base::WeakPtr<RenderFrameImpl> render_frame,
-    mojom::FrameInputHandlerRequest request) {
+    mojo::PendingReceiver<mojom::FrameInputHandler> receiver) {
   DCHECK(render_frame);
 
   // Owns itself. Will be deleted when message pipe is destroyed.
-  new FrameInputHandlerImpl(render_frame, std::move(request));
+  new FrameInputHandlerImpl(render_frame, std::move(receiver));
 }
 
 void FrameInputHandlerImpl::RunOnMainThread(base::OnceClosure closure) {
@@ -450,9 +452,9 @@ void FrameInputHandlerImpl::ExecuteCommandOnMainThread(
 
 void FrameInputHandlerImpl::Release() {
   if (!main_thread_task_runner_->BelongsToCurrentThread()) {
-    // Close the binding on the compositor thread first before telling the main
+    // Close the receiver on the compositor thread first before telling the main
     // thread to delete this object.
-    binding_.Close();
+    receiver_.reset();
     main_thread_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&FrameInputHandlerImpl::Release, weak_this_));
     return;
@@ -460,9 +462,10 @@ void FrameInputHandlerImpl::Release() {
   delete this;
 }
 
-void FrameInputHandlerImpl::BindNow(mojom::FrameInputHandlerRequest request) {
-  binding_.Bind(std::move(request));
-  binding_.set_connection_error_handler(
+void FrameInputHandlerImpl::BindNow(
+    mojo::PendingReceiver<mojom::FrameInputHandler> receiver) {
+  receiver_.Bind(std::move(receiver));
+  receiver_.set_disconnect_handler(
       base::BindOnce(&FrameInputHandlerImpl::Release, base::Unretained(this)));
 }
 

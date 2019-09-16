@@ -1125,7 +1125,7 @@ NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsInConstruction() const {
 
 template <HeapObjectHeader::AccessMode mode>
 NO_SANITIZE_ADDRESS inline void HeapObjectHeader::MarkFullyConstructed() {
-  DCHECK(IsInConstruction());
+  DCHECK(IsInConstruction<mode>());
   StoreEncoded<mode, EncodedHalf::kHigh>(kHeaderIsInConstructionMask,
                                          kHeaderIsInConstructionMask);
 }
@@ -1191,7 +1191,7 @@ NO_SANITIZE_ADDRESS inline void HeapObjectHeader::Mark() {
 template <HeapObjectHeader::AccessMode mode>
 NO_SANITIZE_ADDRESS inline void HeapObjectHeader::Unmark() {
   CheckHeader();
-  DCHECK(IsMarked());
+  DCHECK(IsMarked<mode>());
   StoreEncoded<mode, EncodedHalf::kLow>(0u, kHeaderMarkBitMask);
 }
 

@@ -26,6 +26,7 @@ RecalcStyleDuration
 ResourceFetchers
 Resources
 ScriptDuration
+ScriptPromises
 TaskDuration
 TaskOtherDuration
 ThreadTime

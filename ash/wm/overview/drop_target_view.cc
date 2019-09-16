@@ -11,6 +11,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/layout/layout_provider.h"
 
 namespace ash {
 namespace {
@@ -52,8 +53,10 @@ DropTargetView::DropTargetView(bool has_plus_icon) {
   background_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
   background_view_->layer()->SetColor(kDropTargetBackgroundColor);
   background_view_->layer()->SetOpacity(kDropTargetBackgroundOpacity);
-  constexpr gfx::RoundedCornersF kRadii(kOverviewWindowRoundingDp);
-  background_view_->layer()->SetRoundedCornerRadius(kRadii);
+  const int corner_radius =
+      views::LayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_LOW);
+  background_view_->layer()->SetRoundedCornerRadius(
+      gfx::RoundedCornersF(corner_radius));
   background_view_->layer()->SetIsFastRoundedCorner(true);
   AddChildView(background_view_);
 
@@ -62,9 +65,8 @@ DropTargetView::DropTargetView(bool has_plus_icon) {
     AddChildView(plus_icon_);
   }
 
-  SetBorder(views::CreateRoundedRectBorder(kDropTargetBorderThickness,
-                                           kOverviewWindowRoundingDp,
-                                           kDropTargetBorderColor));
+  SetBorder(views::CreateRoundedRectBorder(
+      kDropTargetBorderThickness, corner_radius, kDropTargetBorderColor));
 }
 
 void DropTargetView::UpdateBackgroundVisibility(bool visible) {

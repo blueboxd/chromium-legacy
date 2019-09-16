@@ -202,7 +202,7 @@ ScriptPromise HTMLPortalElement::activate(ScriptState* script_state,
 void HTMLPortalElement::postMessage(ScriptState* script_state,
                                     const ScriptValue& message,
                                     const String& target_origin,
-                                    const HeapVector<ScriptValue>& transfer,
+                                    const Vector<ScriptValue>& transfer,
                                     ExceptionState& exception_state) {
   WindowPostMessageOptions* options = WindowPostMessageOptions::Create();
   options->setTargetOrigin(target_origin);

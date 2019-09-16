@@ -358,6 +358,10 @@ std::string WebRtcTestBase::ExecuteJavascript(
   return result;
 }
 
+void WebRtcTestBase::ChangeToLegacyGetStats(content::WebContents* tab) const {
+  content::ExecuteScriptAsync(tab, "changeToLegacyGetStats()");
+}
+
 void WebRtcTestBase::SetupPeerconnectionWithLocalStream(
     content::WebContents* tab,
     const std::string& certificate_keygen_algorithm) const {

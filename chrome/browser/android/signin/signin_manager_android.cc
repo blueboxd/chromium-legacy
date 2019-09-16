@@ -146,7 +146,8 @@ SigninManagerAndroid::SigninManagerAndroid(
   java_signin_manager_ = Java_SigninManager_create(
       base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this),
       identity_manager_->LegacyGetAccountTrackerServiceJavaObject(),
-      identity_manager_->GetJavaObject());
+      identity_manager_->GetJavaObject(),
+      identity_manager_->GetIdentityMutatorJavaObject());
 }
 
 base::android::ScopedJavaLocalRef<jobject>

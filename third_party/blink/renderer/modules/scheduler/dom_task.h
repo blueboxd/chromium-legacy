@@ -33,7 +33,7 @@ class MODULES_EXPORT DOMTask : public ScriptWrappable,
   DOMTask(DOMTaskQueue*,
           ExecutionContext*,
           V8Function*,
-          const HeapVector<ScriptValue>& args,
+          const Vector<ScriptValue>& args,
           base::TimeDelta delay);
 
   // Task IDL Interface.
@@ -85,7 +85,7 @@ class MODULES_EXPORT DOMTask : public ScriptWrappable,
   TaskHandle task_handle_;
   Member<DOMTaskQueue> task_queue_;
   Member<V8Function> callback_;
-  HeapVector<ScriptValue> arguments_;
+  Vector<ScriptValue> arguments_;
   const base::TimeDelta delay_;
   // Only set if |delay_| > 0 since Now() can be somewhat expensive. This
   // optimizes the case where there is no delay, which we expect to be the

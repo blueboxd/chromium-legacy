@@ -51,7 +51,7 @@ class MODULES_EXPORT DOMTaskQueue : public ScriptWrappable,
   // documents, this returns nullptr.
   DOMTask* postTask(V8Function*,
                     TaskQueuePostTaskOptions*,
-                    const HeapVector<ScriptValue>& args);
+                    const Vector<ScriptValue>& args);
 
   // Move the task from its current DOMTaskQueue to this one. For pending
   // non-delayed tasks, the task is enqueued at the end of this DOMTaskQueue.

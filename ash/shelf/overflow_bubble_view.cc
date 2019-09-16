@@ -22,6 +22,7 @@
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/scoped_canvas.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/view_model.h"
 #include "ui/views/widget/widget.h"
 
@@ -230,7 +231,9 @@ OverflowBubbleView::OverflowBubbleView(ShelfView* shelf_view,
   DCHECK(shelf_view_);
   DCHECK(GetShelf());
 
-  set_border_radius(ShelfConfig::Get()->shelf_size() / 2);
+  const int shelf_size = ShelfConfig::Get()->shelf_size() / 2;
+  set_border_radius(views::LayoutProvider::Get()->GetCornerRadiusMetric(
+      views::EMPHASIS_MAXIMUM, {shelf_size, shelf_size}));
   SetArrow(views::BubbleBorder::NONE);
   SetBackground(nullptr);
   set_shadow(views::BubbleBorder::NO_ASSETS);

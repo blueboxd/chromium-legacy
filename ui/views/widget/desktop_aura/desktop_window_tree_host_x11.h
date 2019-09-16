@@ -23,7 +23,6 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/platform_window/platform_window_delegate.h"
-#include "ui/platform_window/platform_window_handler/wm_move_resize_handler.h"
 #include "ui/platform_window/x11/x11_window.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"
@@ -44,10 +43,8 @@ namespace views {
 class DesktopDragDropClientAuraX11;
 class DesktopWindowTreeHostObserverX11;
 class X11DesktopWindowMoveClient;
-class WindowEventFilter;
 
 class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
-                                              public ui::WmMoveResizeHandler,
                                               public ui::XEventDelegate {
  public:
   DesktopWindowTreeHostX11(
@@ -80,9 +77,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
 
   void AddObserver(DesktopWindowTreeHostObserverX11* observer);
   void RemoveObserver(DesktopWindowTreeHostObserverX11* observer);
-
-  void AddNonClientEventFilter();
-  void RemoveNonClientEventFilter();
 
   // Runs the |func| callback for each content-window, and deallocates the
   // internal list of open windows.
@@ -141,11 +135,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
 
  private:
   friend class DesktopWindowTreeHostX11HighDPITest;
-
-  // Overridden from WmMoveResizeHandler
-  void DispatchHostWindowDragMovement(
-      int hittest,
-      const gfx::Point& pointer_location) override;
 
   // Sets whether the window's borders are provided by the window manager.
   void SetUseNativeFrame(bool use_native_frame);
@@ -210,7 +199,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
 
   DesktopDragDropClientAuraX11* drag_drop_client_ = nullptr;
 
-  std::unique_ptr<WindowEventFilter> non_client_event_filter_;
   std::unique_ptr<X11DesktopWindowMoveClient> x11_window_move_client_;
 
   base::ObserverList<DesktopWindowTreeHostObserverX11>::Unchecked

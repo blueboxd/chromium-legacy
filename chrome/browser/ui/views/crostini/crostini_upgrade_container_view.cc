@@ -100,7 +100,7 @@ base::string16 CrostiniUpgradeContainerView::GetWindowTitle() const {
 }
 
 bool CrostiniUpgradeContainerView::ShouldShowCloseButton() const {
-  return true;
+  return false;
 }
 
 gfx::Size CrostiniUpgradeContainerView::CalculatePreferredSize() const {
@@ -124,8 +124,6 @@ CrostiniUpgradeContainerView::CrostiniUpgradeContainerView() {
       views::BoxLayout::Orientation::kVertical,
       provider->GetInsetsMetric(views::InsetsMetric::INSETS_DIALOG),
       kDialogSpacingVertical));
-  set_margins(provider->GetDialogInsetsForContentType(
-      views::DialogContentType::TEXT, views::DialogContentType::TEXT));
 
   const base::string16 message =
       l10n_util::GetStringUTF16(IDS_CROSTINI_UPGRADING_SUBTEXT);

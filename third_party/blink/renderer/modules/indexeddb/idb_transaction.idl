@@ -47,10 +47,7 @@ enum IDBTransactionMode {
 
     // Methods
     [RaisesException] IDBObjectStore objectStore(DOMString name);
-    [
-      RaisesException,
-      RuntimeEnabled=IDBTransactionCommit
-    ] void commit();
+    [RaisesException] void commit();
     [RaisesException] void abort();
 
     // Events

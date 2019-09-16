@@ -30,9 +30,6 @@ constexpr int kHeaderHeightDp = 40;
 // the grid.
 constexpr float kShieldOpacity = 0.4f;
 
-// The amount of rounding on window edges in overview mode.
-constexpr int kOverviewWindowRoundingDp = 4;
-
 // Amount of blur to apply on the wallpaper when we enter or exit overview
 // mode.
 constexpr float kWallpaperBlurSigma = 10.f;

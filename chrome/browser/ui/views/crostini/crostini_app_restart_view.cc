@@ -74,8 +74,6 @@ CrostiniAppRestartView::CrostiniAppRestartView(const ash::ShelfID& id,
       views::BoxLayout::Orientation::kVertical,
       provider->GetInsetsMetric(views::InsetsMetric::INSETS_DIALOG),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
-  set_margins(provider->GetDialogInsetsForContentType(
-      views::DialogContentType::TEXT, views::DialogContentType::TEXT));
 
   const base::string16 device_type = ui::GetChromeOSDeviceName();
   const base::string16 message =

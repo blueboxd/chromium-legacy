@@ -30,6 +30,7 @@ class ProxyServer;
 }  // namespace net
 
 namespace content {
+struct GlobalFrameRoutingId;
 struct GlobalRequestID;
 class NavigationThrottle;
 class NavigationUIData;
@@ -144,12 +145,6 @@ class CONTENT_EXPORT NavigationHandle {
   // |bool IsPost()| as opposed to |const std::string& GetMethod()| method.
   virtual bool IsPost() = 0;
 
-  // Returns the POST body associated with this navigation. This will be null
-  // for GET and/or other non-POST requests (or if a response to a POST request
-  // was a redirect that changed the method to GET - for example 302).
-  virtual const scoped_refptr<network::ResourceRequestBody>&
-  GetResourceRequestBody() = 0;
-
   // Returns a sanitized version of the referrer for this request.
   virtual const blink::mojom::Referrer& GetReferrer() = 0;
 
@@ -181,6 +176,14 @@ class CONTENT_EXPORT NavigationHandle {
   // response has been delivered for processing, or after the navigation fails
   // with an error page.
   virtual RenderFrameHost* GetRenderFrameHost() = 0;
+
+  // Returns the id of the RenderFrameHost this navigation is committing from.
+  // In case a navigation happens within the same RenderFrameHost,
+  // GetRenderFrameHost() and GetPreviousRenderFrameHostId() will refer to the
+  // same RenderFrameHost.
+  // Note: This is not guaranteed to refer to a RenderFrameHost that still
+  // exists.
+  virtual GlobalFrameRoutingId GetPreviousRenderFrameHostId() = 0;
 
   // Whether the navigation happened without changing document. Examples of
   // same document navigations are:

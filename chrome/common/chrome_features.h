@@ -498,9 +498,6 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kTPMFirmwareUpdate;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kCrOSEnableUSMUserService;
 
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kMachineLearningService;
-
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kSmartDim;
 
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kUsbguard;

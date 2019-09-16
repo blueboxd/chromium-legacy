@@ -209,7 +209,7 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
     else:
         native_array_element_type = idl_type.native_array_element_type
     if native_array_element_type:
-        vector_type = cpp_ptr_type('Vector', 'HeapVector', native_array_element_type.is_traceable)
+        vector_type = cpp_ptr_type('Vector', 'HeapVector', native_array_element_type.is_gc_type)
         vector_template_type = cpp_template_type(vector_type, native_array_element_type.cpp_type_args(used_in_cpp_sequence=True))
         if used_as_rvalue_type:
             return 'const %s&' % vector_template_type
@@ -217,7 +217,7 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
 
     # Record types.
     if idl_type.is_record_type:
-        vector_type = cpp_ptr_type('Vector', 'HeapVector', idl_type.value_type.is_traceable)
+        vector_type = cpp_ptr_type('Vector', 'HeapVector', idl_type.value_type.is_gc_type)
         value_type = idl_type.value_type.cpp_type_args(used_in_cpp_sequence=True)
         vector_template_type = cpp_template_type(vector_type,
                                                  'std::pair<String, %s>' % value_type)
@@ -382,7 +382,7 @@ IdlTypeBase.is_gc_type = property(is_gc_type)
 
 
 def is_traceable(idl_type):
-    return idl_type.is_garbage_collected or idl_type.is_callback_function or idl_type.cpp_type in ('ScriptValue', 'ScriptPromise')
+    return idl_type.is_garbage_collected or idl_type.is_callback_function
 
 IdlTypeBase.is_traceable = property(is_traceable)
 IdlUnionType.is_traceable = property(lambda self: True)

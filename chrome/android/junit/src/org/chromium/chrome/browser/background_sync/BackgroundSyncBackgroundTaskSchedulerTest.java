@@ -77,6 +77,7 @@ public class BackgroundSyncBackgroundTaskSchedulerTest {
         assertEquals(taskClass, info.getBackgroundTaskClass());
         assertTrue(info.isPersisted());
         assertFalse(info.isPeriodic());
+        assertTrue(info.getOneOffInfo().expiresAfterWindowEndTime());
         assertEquals(TaskInfo.NetworkType.ANY, info.getRequiredNetworkType());
 
         long expectedSoonestDelayTime = info.getExtras().getLong(

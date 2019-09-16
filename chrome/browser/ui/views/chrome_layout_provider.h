@@ -92,10 +92,6 @@ class ChromeLayoutProvider : public views::LayoutProvider {
   int GetDistanceMetric(int metric) const override;
   int GetSnappedDialogWidth(int min_width) const override;
   const views::TypographyProvider& GetTypographyProvider() const override;
-  int GetCornerRadiusMetric(views::EmphasisMetric emphasis_metric,
-                            const gfx::Size& size = gfx::Size()) const override;
-  int GetShadowElevationMetric(
-      views::EmphasisMetric emphasis_metric) const override;
   gfx::ShadowValues MakeShadowValues(int elevation,
                                      SkColor color) const override;
 

@@ -18,12 +18,10 @@
 namespace autofill {
 
 SaveCardIconView::SaveCardIconView(CommandUpdater* command_updater,
-                                   PageActionIconView::Delegate* delegate,
-                                   const gfx::FontList& font_list)
+                                   PageActionIconView::Delegate* delegate)
     : PageActionIconView(command_updater,
                          IDC_SAVE_CREDIT_CARD_FOR_PAGE,
-                         delegate,
-                         font_list) {
+                         delegate) {
   DCHECK(delegate);
   SetID(VIEW_ID_SAVE_CREDIT_CARD_BUTTON);
 

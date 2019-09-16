@@ -430,6 +430,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // credit card details.
 - (void)handleAddPayment:(id)sender {
   DCHECK(base::FeatureList::IsEnabled(kSettingsAddPaymentMethod));
+  base::RecordAction(
+      base::UserMetricsAction("MobileAddCreditCard.AddPaymentMethodButton"));
 
   self.addCreditCardCoordinator = [[AutofillAddCreditCardCoordinator alloc]
       initWithBaseViewController:self

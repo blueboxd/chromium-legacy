@@ -851,6 +851,11 @@ NavigationRequest::NavigationRequest(
     bindings_ = entry->bindings();
   }
 
+  // Store the old RenderFrameHost id at request creation to be used later.
+  previous_render_frame_host_id_ = GlobalFrameRoutingId(
+      frame_tree_node->current_frame_host()->GetProcess()->GetID(),
+      frame_tree_node->current_frame_host()->GetRoutingID());
+
   // Update the load flags with cache information.
   UpdateLoadFlagsWithCacheFlags(&begin_params_->load_flags,
                                 common_params_->navigation_type,
@@ -3601,6 +3606,10 @@ bool NavigationRequest::FromDownloadCrossOriginRedirect() {
 
 const net::ProxyServer& NavigationRequest::GetProxyServer() {
   return proxy_server_;
+}
+
+GlobalFrameRoutingId NavigationRequest::GetPreviousRenderFrameHostId() {
+  return previous_render_frame_host_id_;
 }
 
 }  // namespace content

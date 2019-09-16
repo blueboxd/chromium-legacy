@@ -164,7 +164,7 @@ String WebGL2ComputeRenderingContextBase::getProgramResourceName(
   return String(name.get(), static_cast<uint32_t>(length));
 }
 
-base::Optional<HeapVector<ScriptValue>>
+base::Optional<Vector<ScriptValue>>
 WebGL2ComputeRenderingContextBase::getProgramResource(
     ScriptState* script_state,
     WebGLProgram* program,
@@ -229,7 +229,7 @@ WebGL2ComputeRenderingContextBase::getProgramResource(
 
   // Interpret the returned values and construct the result array. The type of
   // each array element is the natural type for the requested property.
-  HeapVector<ScriptValue> result;
+  Vector<ScriptValue> result;
   wtf_size_t auxiliary_param_index = 0;
   wtf_size_t extended_param_index = auxiliary_params.size();
   for (GLenum prop : props) {

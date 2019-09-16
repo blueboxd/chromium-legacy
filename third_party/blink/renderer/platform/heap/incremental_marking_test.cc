@@ -1806,7 +1806,8 @@ TEST_F(IncrementalMarkingTest,
   driver.FinishSteps();
   // GCs here are without stack. This is just to show that we don't want this
   // object marked.
-  CHECK(!HeapObjectHeader::FromPayload(nested)->IsMarked());
+  CHECK(!HeapObjectHeader::FromPayload(nested)
+             ->IsMarked<HeapObjectHeader::AccessMode::kAtomic>());
   nested = nullptr;
   driver.FinishGC();
 }
@@ -1838,7 +1839,8 @@ TEST_F(IncrementalMarkingTest, AdjustMarkedBytesOnMarkedBackingStore) {
   driver.Start();
   driver.FinishSteps();
   // The object is marked at this point.
-  CHECK(HeapObjectHeader::FromPayload(holder.Get())->IsMarked());
+  CHECK(HeapObjectHeader::FromPayload(holder.Get())
+            ->IsMarked<HeapObjectHeader::AccessMode::kAtomic>());
   driver.FinishGC(false);
   // The object is still marked as sweeping did not make any progress.
   CHECK(HeapObjectHeader::FromPayload(holder.Get())->IsMarked());

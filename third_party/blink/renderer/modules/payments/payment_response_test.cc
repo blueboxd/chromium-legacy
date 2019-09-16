@@ -42,9 +42,7 @@ class MockPaymentStateResolver final
                ScriptPromise(ScriptState*,
                              const PaymentValidationErrors* errorFields));
 
-  void Trace(blink::Visitor* visitor) override {
-    visitor->Trace(dummy_promise_);
-  }
+  void Trace(blink::Visitor* visitor) override {}
 
  private:
   ScriptPromise dummy_promise_;

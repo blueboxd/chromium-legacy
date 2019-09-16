@@ -23,6 +23,7 @@ jumbo_component("x11") {
     "//ui/events/platform/x11",
     "//ui/gfx/x",
     "//ui/platform_window",
+    "//ui/platform_window/platform_window_handler",
   ]
 
   configs += [ "//build/config/linux:x11" ]

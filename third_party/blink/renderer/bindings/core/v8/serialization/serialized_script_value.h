@@ -205,7 +205,7 @@ class CORE_EXPORT SerializedScriptValue
                                    Transferables&,
                                    ExceptionState&);
   static bool ExtractTransferables(v8::Isolate*,
-                                   const HeapVector<ScriptValue>&,
+                                   const Vector<ScriptValue>&,
                                    Transferables&,
                                    ExceptionState&);
 

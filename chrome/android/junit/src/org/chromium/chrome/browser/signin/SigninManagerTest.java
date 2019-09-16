@@ -71,14 +71,13 @@ public class SigninManagerTest {
 
         mIdentityMutator = mock(IdentityMutator.class);
 
-        mIdentityManager =
-                spy(new IdentityManager(0 /* nativeIdentityManager */, mIdentityMutator));
+        mIdentityManager = spy(new IdentityManager(0 /* nativeIdentityManager */));
 
         AndroidSyncSettings androidSyncSettings = mock(AndroidSyncSettings.class);
 
         mSigninManager = new SigninManager(ContextUtils.getApplicationContext(),
                 0 /* nativeSigninManagerAndroid */, mAccountTrackerService, mIdentityManager,
-                androidSyncSettings);
+                mIdentityMutator, androidSyncSettings);
 
         mAccount = new CoreAccountInfo(new CoreAccountId("gaia-id-user"),
                 AccountManagerFacade.createAccountFromName("user@domain.com"), "gaia-id-user");

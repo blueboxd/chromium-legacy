@@ -1526,20 +1526,15 @@ config("default_warnings") {
 
           # TODO(https://crbug.com/999886): Clean up, enable.
           "-Wno-final-dtor-non-final-class",
+
+          # TODO(https://crbug.com/1002945): Evaluate and possibly enable.
+          "-Wno-sizeof-array-div",
         ]
 
         cflags_c += [
           # TODO(https://crbug.com/995993): Clean up and enable.
           "-Wno-implicit-fallthrough",
         ]
-
-        if (llvm_force_head_revision) {
-          cflags += [
-            # TODO(https://crbug.com/1002945): Evaluate and possibly enable.
-            "-Wno-error=sizeof-array-div",
-          ]
-        }
-
       }
     }
   }

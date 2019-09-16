@@ -100,7 +100,7 @@ IdentityManager::IdentityManager(
     UpdateUnconsentedPrimaryAccount();
 
 #if defined(OS_ANDROID)
-  base::android::ScopedJavaLocalRef<jobject> java_identity_mutator =
+  java_identity_mutator_ =
       primary_account_mutator_
           ? Java_IdentityMutator_Constructor(
                 base::android::AttachCurrentThread(),
@@ -109,8 +109,7 @@ IdentityManager::IdentityManager(
           : nullptr;
 
   java_identity_manager_ = Java_IdentityManager_create(
-      base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this),
-      java_identity_mutator);
+      base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this));
 #endif
 }
 
@@ -127,6 +126,9 @@ IdentityManager::~IdentityManager() {
   if (java_identity_manager_)
     Java_IdentityManager_destroy(base::android::AttachCurrentThread(),
                                  java_identity_manager_);
+  if (java_identity_mutator_)
+    Java_IdentityMutator_destroy(base::android::AttachCurrentThread(),
+                                 java_identity_mutator_);
 #endif
 }
 
@@ -425,6 +427,12 @@ IdentityManager::LegacyGetOAuth2TokenServiceJavaObject() {
 base::android::ScopedJavaLocalRef<jobject> IdentityManager::GetJavaObject() {
   DCHECK(java_identity_manager_);
   return base::android::ScopedJavaLocalRef<jobject>(java_identity_manager_);
+}
+
+base::android::ScopedJavaLocalRef<jobject>
+IdentityManager::GetIdentityMutatorJavaObject() {
+  DCHECK(java_identity_manager_);
+  return base::android::ScopedJavaLocalRef<jobject>(java_identity_mutator_);
 }
 
 void IdentityManager::ForceRefreshOfExtendedAccountInfo(

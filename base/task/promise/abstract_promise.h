@@ -407,7 +407,9 @@ class BASE_EXPORT AbstractPromise
    public:
     PromiseValue& value() { return value_; }
 
+#if DCHECK_IS_ON()
     ~ValueHandle() { value_.reset(); }
+#endif
 
    private:
     friend class AbstractPromise;
@@ -417,6 +419,8 @@ class BASE_EXPORT AbstractPromise
     PromiseValue& value_;
   };
 
+  // Used for promise results that require move semantics.  E.g. a promise chain
+  // involving a std::unique_ptr<>.
   ValueHandle TakeValue() { return ValueHandle(value_); }
 
   // Returns nullptr if there isn't a curried promise.
@@ -439,6 +443,10 @@ class BASE_EXPORT AbstractPromise
     static_assert(!std::is_same<std::decay_t<T>, AbstractPromise*>::value,
                   "Use scoped_refptr<AbstractPromise> instead");
   }
+
+  // An out-of line emplace(Resolved<void>()); Useful for reducing binary
+  // bloat in executor templates.
+  void EmplaceResolvedVoid();
 
   // This is separate from AbstractPromise to reduce the memory footprint of
   // regular PostTask without promise chains.

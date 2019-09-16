@@ -74,7 +74,7 @@ bool MarkingVisitorBase::RegisterWeakTable(
 
 void MarkingVisitorBase::AdjustMarkedBytes(HeapObjectHeader* header,
                                            size_t old_size) {
-  DCHECK(header->IsMarked());
+  DCHECK(header->IsMarked<HeapObjectHeader::AccessMode::kAtomic>());
   // Currently, only expansion of an object is supported during marking.
   DCHECK_GE(header->size(), old_size);
   marked_bytes_ += header->size() - old_size;
@@ -90,7 +90,7 @@ bool MarkingVisitor::WriteBarrierSlow(void* value) {
 
   HeapObjectHeader* const header = HeapObjectHeader::FromInnerAddress(
       reinterpret_cast<Address>(const_cast<void*>(value)));
-  if (header->IsMarked())
+  if (header->IsMarked<HeapObjectHeader::AccessMode::kAtomic>())
     return false;
 
   if (header->IsInConstruction()) {

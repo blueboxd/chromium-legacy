@@ -37,9 +37,9 @@ import zipfile
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://chromium.googlesource.com/chromium/src/+/master/docs/updating_clang.md
 # Reverting problematic clang rolls is safe, though.
-CLANG_REVISION = '8455294f2ac13d587b13d728038a9bffa7185f2b'
-CLANG_SVN_REVISION = '371202'
-CLANG_SUB_REVISION = 2
+CLANG_REVISION = 'b4160cb94c54f0b31d0ce14694950dac7b6cd83f'
+CLANG_SVN_REVISION = '371856'
+CLANG_SUB_REVISION = 1
 
 PACKAGE_VERSION = '%s-%s-%s' % (CLANG_SVN_REVISION, CLANG_REVISION[:8],
                                 CLANG_SUB_REVISION)

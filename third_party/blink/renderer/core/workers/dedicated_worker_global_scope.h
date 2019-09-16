@@ -97,7 +97,7 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   const String name() const;
   void postMessage(ScriptState*,
                    const ScriptValue& message,
-                   HeapVector<ScriptValue>& transfer,
+                   Vector<ScriptValue>& transfer,
                    ExceptionState&);
   void postMessage(ScriptState*,
                    const ScriptValue& message,

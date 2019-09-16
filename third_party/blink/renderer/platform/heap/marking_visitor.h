@@ -54,7 +54,8 @@ class PLATFORM_EXPORT MarkingVisitorBase : public Visitor {
     // ensures that any newly set value after this point is kept alive and does
     // not require the callback.
     if (desc.base_object_payload != BlinkGC::kNotFullyConstructedObject &&
-        HeapObjectHeader::FromPayload(desc.base_object_payload)->IsMarked())
+        HeapObjectHeader::FromPayload(desc.base_object_payload)
+            ->IsMarked<HeapObjectHeader::AccessMode::kAtomic>())
       return;
     RegisterWeakCallback(object_weak_ref, callback);
   }
@@ -159,7 +160,7 @@ inline bool MarkingVisitorBase::MarkHeaderNoTracing(HeapObjectHeader* header) {
   // freed backing store.
   DCHECK(!header->IsFree());
 
-  if (header->TryMark()) {
+  if (header->TryMark<HeapObjectHeader::AccessMode::kAtomic>()) {
     AccountMarkedBytes(header);
     return true;
   }
@@ -171,7 +172,7 @@ inline void MarkingVisitorBase::MarkHeader(HeapObjectHeader* header,
   DCHECK(header);
   DCHECK(callback);
 
-  if (header->IsInConstruction()) {
+  if (header->IsInConstruction<HeapObjectHeader::AccessMode::kAtomic>()) {
     not_fully_constructed_worklist_.Push(header->Payload());
   } else if (MarkHeaderNoTracing(header)) {
     marking_worklist_.Push(

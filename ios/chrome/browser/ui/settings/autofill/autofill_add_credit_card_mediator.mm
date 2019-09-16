@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_mediator.h"
 
+#include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -90,6 +91,8 @@
 
     self.personalDataManager->UpdateCreditCard(savedCreditCardCopy);
   } else {
+    base::RecordAction(
+        base::UserMetricsAction("MobileAddCreditCard.CardSaved"));
     self.personalDataManager->AddCreditCard(creditCard);
   }
 

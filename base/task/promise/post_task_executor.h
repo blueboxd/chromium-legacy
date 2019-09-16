@@ -52,10 +52,14 @@ class PostTaskExecutor {
     static_assert(sizeof(CallbackBase) == sizeof(OnceCallback<ReturnType()>),
                   "We assume it's possible to cast from CallbackBase to "
                   "OnceCallback<ReturnType()>");
-    OnceCallback<ReturnType()>* task =
-        static_cast<OnceCallback<ReturnType()>*>(&task_);
-    internal::RunHelper<OnceCallback<ReturnType()>, void, ResolveStorage,
-                        RejectStorage>::Run(std::move(*task), nullptr, promise);
+    // Internally RunHelper uses const RepeatingCallback<>& to avoid the
+    // binary size overhead of moving a scoped_refptr<> about.  We respect
+    // the onceness of the callback and RunHelper will overwrite the callback
+    // with the result.
+    RepeatingCallback<ReturnType()>* task =
+        static_cast<RepeatingCallback<ReturnType()>*>(&task_);
+    internal::RunHelper<RepeatingCallback<ReturnType()>, void, ResolveStorage,
+                        RejectStorage>::Run(*task, nullptr, promise);
   }
 
  private:

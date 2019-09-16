@@ -208,8 +208,6 @@ class TestBrowserWindow : public BrowserWindow {
     void FocusLocation(bool select_all) override {}
     void FocusSearch() override {}
     void UpdateContentSettingsIcons() override {}
-    void UpdateSaveCreditCardIcon() override {}
-    void UpdateLocalCardMigrationIcon() override {}
     void UpdateBookmarkStarVisibility() override {}
     void SaveStateToContents(content::WebContents* contents) override {}
     void Revert() override {}

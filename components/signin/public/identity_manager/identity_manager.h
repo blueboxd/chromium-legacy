@@ -451,6 +451,9 @@ class IdentityManager : public KeyedService,
   // Get the reference on the java IdentityManager.
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
+  // Provide the reference on the java IdentityMutator.
+  base::android::ScopedJavaLocalRef<jobject> GetIdentityMutatorJavaObject();
+
   // This method has the contractual assumption that the account is a known
   // account and has as its semantics that it fetches the account info for the
   // account, triggering an OnExtendedAccountInfoUpdated() callback if the info
@@ -686,6 +689,8 @@ class IdentityManager : public KeyedService,
 #if defined(OS_ANDROID)
   // Java-side IdentityManager object.
   base::android::ScopedJavaGlobalRef<jobject> java_identity_manager_;
+  // Java-side IdentityMutator object.
+  base::android::ScopedJavaGlobalRef<jobject> java_identity_mutator_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(IdentityManager);

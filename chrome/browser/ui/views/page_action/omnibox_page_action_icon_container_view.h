@@ -28,6 +28,11 @@ class SharingIconView;
 class TranslateIconView;
 class ZoomView;
 
+namespace autofill {
+class LocalCardMigrationIconView;
+class SaveCardIconView;
+}  // namespace autofill
+
 namespace send_tab_to_self {
 class SendTabToSelfIconView;
 }
@@ -44,6 +49,7 @@ class OmniboxPageActionIconContainerView
     int icon_size = 0;
     SkColor icon_color = gfx::kPlaceholderColor;
     int between_icon_spacing = 0;
+    const gfx::FontList* font_list = nullptr;
     Browser* browser = nullptr;
     CommandUpdater* command_updater = nullptr;
     PageActionIconView::Delegate* page_action_icon_delegate = nullptr;
@@ -64,8 +70,11 @@ class OmniboxPageActionIconContainerView
   // whether any icons were activated.
   bool ActivateFirstInactiveBubbleForAccessibility();
 
-  // Update the icons color.
+  // Update the icons' color.
   void SetIconColor(SkColor icon_color);
+
+  // Update the icons' fonts.
+  void SetFontList(const gfx::FontList& font_list);
 
   // See comment in browser_window.h for more info.
   void ZoomChangedForActiveTab(bool can_show_bubble);
@@ -92,6 +101,10 @@ class OmniboxPageActionIconContainerView
   ReaderModeIconView* reader_mode_icon_ = nullptr;
   SharingIconView* click_to_call_icon_view_ = nullptr;
   SharingIconView* shared_clipboard_icon_view_ = nullptr;
+  autofill::LocalCardMigrationIconView* local_card_migration_icon_view_ =
+      nullptr;
+  autofill::SaveCardIconView* save_card_icon_view_ = nullptr;
+
   std::vector<PageActionIconView*> page_action_icons_;
 
   ScopedObserver<zoom::ZoomEventManager, zoom::ZoomEventManagerObserver>

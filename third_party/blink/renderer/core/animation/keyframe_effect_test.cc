@@ -110,7 +110,7 @@ TEST_F(AnimationKeyframeEffectV8Test, CanCreateAnAnimation) {
   ScriptState* script_state = scope.GetScriptState();
   NonThrowableExceptionState exception_state;
 
-  HeapVector<ScriptValue> blink_keyframes = {
+  Vector<ScriptValue> blink_keyframes = {
       V8ObjectBuilder(script_state)
           .AddString("width", "100px")
           .AddString("offset", "0")
@@ -194,7 +194,7 @@ TEST_F(AnimationKeyframeEffectV8Test, KeyframeCompositeOverridesEffect) {
                                   effect_options_dictionary, exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
-  HeapVector<ScriptValue> blink_keyframes = {
+  Vector<ScriptValue> blink_keyframes = {
       V8ObjectBuilder(script_state)
           .AddString("width", "100px")
           .AddString("composite", "replace")
@@ -347,7 +347,7 @@ TEST_F(AnimationKeyframeEffectV8Test, SetKeyframesAdditiveCompositeOperation) {
 
   // But if we then setKeyframes with CSS-targeting keyframes, the composite
   // should fallback to 'replace'.
-  HeapVector<ScriptValue> blink_keyframes = {
+  Vector<ScriptValue> blink_keyframes = {
       V8ObjectBuilder(script_state).AddString("width", "10px").GetScriptValue(),
       V8ObjectBuilder(script_state).AddString("width", "0px").GetScriptValue()};
   ScriptValue new_js_keyframes(

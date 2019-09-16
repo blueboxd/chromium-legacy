@@ -12,6 +12,7 @@
 #include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/ax_position.h"
 #include "ui/accessibility/ax_range.h"
+#include "ui/accessibility/ax_text_boundary.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 
 namespace ui {
@@ -83,11 +84,10 @@ class AX_EXPORT __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
   using AXPositionInstance = AXNodePosition::AXPositionInstance;
   using AXPositionInstanceType = typename AXPositionInstance::element_type;
   using AXNodeRange = AXRange<AXPositionInstanceType>;
-  using CreateNextPositionFunction =
-      AXPositionInstance (AXPositionInstanceType::*)(AXBoundaryBehavior) const;
 
   friend class AXPlatformNodeTextRangeProviderTest;
   friend class AXPlatformNodeTextProviderTest;
+
   base::string16 GetString(int max_count);
   AXPlatformNodeWin* owner() const;
   AXPlatformNodeDelegate* GetDelegate(
@@ -104,7 +104,6 @@ class AX_EXPORT __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
                                              const int count,
                                              int* units_moved);
   AXPositionInstance MoveEndpointByWord(const AXPositionInstance& endpoint,
-                                        bool endpoint_is_start,
                                         const int count,
                                         int* units_moved);
   AXPositionInstance MoveEndpointByLine(const AXPositionInstance& endpoint,
@@ -114,11 +113,11 @@ class AX_EXPORT __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
   AXPositionInstance MoveEndpointByParagraph(const AXPositionInstance& endpoint,
                                              const bool is_start_endpoint,
                                              const int count,
-                                             int* count_moved);
+                                             int* units_moved);
   AXPositionInstance MoveEndpointByPage(const AXPositionInstance& endpoint,
                                         const bool is_start_endpoint,
                                         const int count,
-                                        int* count_moved);
+                                        int* units_moved);
   AXPositionInstance MoveEndpointByFormat(const AXPositionInstance& endpoint,
                                           const int count,
                                           int* units_moved);
@@ -128,7 +127,7 @@ class AX_EXPORT __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
 
   AXPositionInstance MoveEndpointByUnitHelper(
       const AXPositionInstance& endpoint,
-      CreateNextPositionFunction create_next_position,
+      const AXTextBoundary boundary_type,
       const int count,
       int* units_moved);
 

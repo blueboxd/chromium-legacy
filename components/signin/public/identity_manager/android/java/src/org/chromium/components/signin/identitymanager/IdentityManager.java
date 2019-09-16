@@ -37,26 +37,21 @@ public class IdentityManager {
     }
 
     private long mNativeIdentityManager;
-    private IdentityMutator mIdentityMutator;
 
     private final ObserverList<Observer> mObservers = new ObserverList<>();
 
     /**
      * Called by native to create an instance of IdentityManager.
-     * @param identityMutator can be null if native's IdentityManager received a null
-     * IdentityMutator, this happens in tests.
      */
     @CalledByNative
-    static private IdentityManager create(
-            long nativeIdentityManager, @Nullable IdentityMutator identityMutator) {
+    private static IdentityManager create(long nativeIdentityManager) {
         assert nativeIdentityManager != 0;
-        return new IdentityManager(nativeIdentityManager, identityMutator);
+        return new IdentityManager(nativeIdentityManager);
     }
 
     @VisibleForTesting
-    public IdentityManager(long nativeIdentityManager, IdentityMutator identityMutator) {
+    public IdentityManager(long nativeIdentityManager) {
         mNativeIdentityManager = nativeIdentityManager;
-        mIdentityMutator = identityMutator;
     }
 
     /**
@@ -118,14 +113,6 @@ public class IdentityManager {
         return IdentityManagerJni.get()
                 .findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
                         mNativeIdentityManager, email);
-    }
-
-    /*
-     * Returns pointer to the object used to change the signed-in state of the
-     * primary account.
-     */
-    public IdentityMutator getIdentityMutator() {
-        return mIdentityMutator;
     }
 
     @NativeMethods

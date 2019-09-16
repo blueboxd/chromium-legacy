@@ -15,6 +15,7 @@
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "components/subresource_filter/core/common/time_measurements.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -186,21 +187,16 @@ void SubframeNavigationFilteringThrottle::NotifyLoadPolicy() const {
   if (!observer_manager)
     return;
 
-  // TODO(crbug.com/843646): Use an API that NavigationHandle supports rather
-  // than trying to infer what the NavigationHandle is doing.
-  content::RenderFrameHost* starting_rfh =
-      navigation_handle()->GetWebContents()->UnsafeFindFrameByFrameTreeNodeId(
-          navigation_handle()->GetFrameTreeNodeId());
-  if (!starting_rfh) {
-    // TODO(arthursonzogni): Remove this block, this must not happen.
-    // See https://crbug.com/904248.
-    observer_manager->NotifySubframeNavigationEvaluated(
-        navigation_handle(), load_policy_, false /* is_ad_subframe */);
-    return;
-  }
+  content::GlobalFrameRoutingId starting_rfh_id =
+      navigation_handle()->GetPreviousRenderFrameHostId();
+  content::RenderFrameHost* starting_rfh = content::RenderFrameHost::FromID(
+      starting_rfh_id.child_id, starting_rfh_id.frame_routing_id);
 
-  bool is_ad_subframe =
-      delegate_->CalculateIsAdSubframe(starting_rfh, load_policy_);
+  // |starting_rfh| can be null if the navigation started from a non live
+  // RenderFrameHost. For instance when a renderer process crashed.
+  // See https://crbug.com/904248
+  bool is_ad_subframe = starting_rfh && delegate_->CalculateIsAdSubframe(
+                                            starting_rfh, load_policy_);
 
   observer_manager->NotifySubframeNavigationEvaluated(
       navigation_handle(), load_policy_, is_ad_subframe);

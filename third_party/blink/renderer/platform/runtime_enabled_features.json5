@@ -780,10 +780,6 @@
       status: "experimental",
     },
     {
-      name: "IDBTransactionCommit",
-      status: "stable",
-    },
-    {
       name: "IdleDetection",
       status: "experimental",
     },

@@ -37,12 +37,11 @@ ios_unsupported_locales = [
 ]
 
 # These list are defined even when not building for Android or iOS for the
-# sake of build/locale_tool.py. These asserts ensure that GN doesn't complain
-# about them being unused.
-assert(android_chrome_omitted_locales != [])
-assert(ios_unsupported_locales != [])
+# sake of build/locale_tool.py. Ensure that GN doesn't complain about them
+# being unused.
+not_needed([ "android_chrome_omitted_locales" ])
+not_needed([ "ios_unsupported_locales" ])
 
-# Note: keep in sync with below.
 locales = [
   "am",
   "ar",

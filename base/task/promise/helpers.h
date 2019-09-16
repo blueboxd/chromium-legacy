@@ -407,9 +407,26 @@ class ArgMoveSemanticsHelper {
   }
 };
 
+// Helper for converting a callback to its repeating variant.
+template <typename Cb>
+struct ToRepeatingCallback;
+
+template <typename Cb>
+struct ToRepeatingCallback<OnceCallback<Cb>> {
+  using value = RepeatingCallback<Cb>;
+};
+
+template <typename Cb>
+struct ToRepeatingCallback<RepeatingCallback<Cb>> {
+  using value = RepeatingCallback<Cb>;
+};
+
 // Helper for running a promise callback and storing the result if any.
 //
-// Callback = signature of the callback to execute,
+// Callback = signature of the callback to execute. Note we use repeating
+// callbacks to avoid the binary size overhead of a once callback which will
+// generate a destructor which is redundant because we overwrite the executor
+// with the promise result which also triggers the destructor.
 // ArgStorageType = type of the callback parameter (or void if none)
 // ResolveStorage = type to use for resolve, usually Resolved<T>.
 // RejectStorage = type to use for reject, usually Rejected<T>.
@@ -426,18 +443,18 @@ template <typename CbResult,
           typename ArgStorageType,
           typename ResolveStorage,
           typename RejectStorage>
-struct RunHelper<OnceCallback<CbResult(CbArg)>,
+struct RunHelper<RepeatingCallback<CbResult(CbArg)>,
                  ArgStorageType,
                  ResolveStorage,
                  RejectStorage> {
-  using Callback = OnceCallback<CbResult(CbArg)>;
+  using Callback = RepeatingCallback<CbResult(CbArg)>;
 
-  static void Run(Callback&& executor,
+  static void Run(const Callback& executor,
                   AbstractPromise* arg,
                   AbstractPromise* result) {
     EmplaceHelper<ResolveStorage, RejectStorage>::Emplace(
-        result, std::move(executor).Run(
-                    ArgMoveSemanticsHelper<CbArg, ArgStorageType>::Get(arg)));
+        result,
+        executor.Run(ArgMoveSemanticsHelper<CbArg, ArgStorageType>::Get(arg)));
   }
 };
 
@@ -446,19 +463,18 @@ template <typename CbArg,
           typename ArgStorageType,
           typename ResolveStorage,
           typename RejectStorage>
-struct RunHelper<OnceCallback<void(CbArg)>,
+struct RunHelper<RepeatingCallback<void(CbArg)>,
                  ArgStorageType,
                  ResolveStorage,
                  RejectStorage> {
-  using Callback = OnceCallback<void(CbArg)>;
+  using Callback = RepeatingCallback<void(CbArg)>;
 
-  static void Run(Callback&& executor,
+  static void Run(const Callback& executor,
                   AbstractPromise* arg,
                   AbstractPromise* result) {
     static_assert(std::is_void<typename ResolveStorage::Type>::value, "");
-    std::move(executor).Run(
-        ArgMoveSemanticsHelper<CbArg, ArgStorageType>::Get(arg));
-    result->emplace(Resolved<void>());
+    executor.Run(ArgMoveSemanticsHelper<CbArg, ArgStorageType>::Get(arg));
+    result->EmplaceResolvedVoid();
   }
 };
 
@@ -467,17 +483,17 @@ template <typename CbResult,
           typename ArgStorageType,
           typename ResolveStorage,
           typename RejectStorage>
-struct RunHelper<OnceCallback<CbResult()>,
+struct RunHelper<RepeatingCallback<CbResult()>,
                  ArgStorageType,
                  ResolveStorage,
                  RejectStorage> {
-  using Callback = OnceCallback<CbResult()>;
+  using Callback = RepeatingCallback<CbResult()>;
 
-  static void Run(Callback&& executor,
+  static void Run(const Callback& executor,
                   AbstractPromise* arg,
                   AbstractPromise* result) {
-    EmplaceHelper<ResolveStorage, RejectStorage>::Emplace(
-        result, std::move(executor).Run());
+    EmplaceHelper<ResolveStorage, RejectStorage>::Emplace(result,
+                                                          executor.Run());
   }
 };
 
@@ -485,16 +501,16 @@ struct RunHelper<OnceCallback<CbResult()>,
 template <typename ArgStorageType,
           typename ResolveStorage,
           typename RejectStorage>
-struct RunHelper<OnceCallback<void()>,
+struct RunHelper<RepeatingCallback<void()>,
                  ArgStorageType,
                  ResolveStorage,
                  RejectStorage> {
-  static void Run(OnceCallback<void()>&& executor,
+  static void Run(const RepeatingCallback<void()>& executor,
                   AbstractPromise* arg,
                   AbstractPromise* result) {
     static_assert(std::is_void<typename ResolveStorage::Type>::value, "");
-    std::move(executor).Run();
-    result->emplace(Resolved<void>());
+    executor.Run();
+    result->EmplaceResolvedVoid();
   }
 };
 
@@ -533,47 +549,45 @@ template <typename CbResult,
           typename... CbArgs,
           typename ResolveStorage,
           typename RejectStorage>
-struct RunHelper<OnceCallback<CbResult(CbArgs...)>,
+struct RunHelper<RepeatingCallback<CbResult(CbArgs...)>,
                  Resolved<std::tuple<CbArgs...>>,
                  ResolveStorage,
                  RejectStorage> {
-  using Callback = OnceCallback<CbResult(CbArgs...)>;
+  using Callback = RepeatingCallback<CbResult(CbArgs...)>;
   using StorageType = Resolved<std::tuple<CbArgs...>>;
   using IndexSequence = std::index_sequence_for<CbArgs...>;
 
-  static void Run(Callback&& executor,
+  static void Run(const Callback& executor,
                   AbstractPromise* arg,
                   AbstractPromise* result) {
     AbstractPromise::ValueHandle value = arg->TakeValue();
     std::tuple<CbArgs...>& tuple = value.value().Get<StorageType>()->value;
-    RunInternal(std::move(executor), tuple, result,
+    RunInternal(executor, tuple, result,
                 std::integral_constant<bool, std::is_void<CbResult>::value>(),
                 IndexSequence{});
   }
 
  private:
   template <typename Callback, size_t... Indices>
-  static void RunInternal(Callback&& executor,
+  static void RunInternal(const Callback& executor,
                           std::tuple<CbArgs...>& tuple,
                           AbstractPromise* result,
                           std::false_type void_result,
                           std::index_sequence<Indices...>) {
-    EmplaceHelper<ResolveStorage, RejectStorage>::Emplace(
-        std::move(executor).Run(
-            TupleArgMoveSemanticsHelper<Callback, std::tuple<CbArgs...>,
-                                        Indices>::Get(tuple)...));
+    EmplaceHelper<ResolveStorage, RejectStorage>::Emplace(executor.Run(
+        TupleArgMoveSemanticsHelper<Callback, std::tuple<CbArgs...>,
+                                    Indices>::Get(tuple)...));
   }
 
   template <typename Callback, size_t... Indices>
-  static void RunInternal(Callback&& executor,
+  static void RunInternal(const Callback& executor,
                           std::tuple<CbArgs...>& tuple,
                           AbstractPromise* result,
                           std::true_type void_result,
                           std::index_sequence<Indices...>) {
-    std::move(executor).Run(
-        TupleArgMoveSemanticsHelper<Callback, std::tuple<CbArgs...>,
-                                    Indices>::Get(tuple)...);
-    result->emplace(Resolved<void>());
+    executor.Run(TupleArgMoveSemanticsHelper<Callback, std::tuple<CbArgs...>,
+                                             Indices>::Get(tuple)...);
+    result->EmplaceResolvedVoid();
   }
 };
 

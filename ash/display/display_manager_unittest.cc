@@ -4433,7 +4433,8 @@ TEST_F(DisplayManagerTest, DISABLED_SoftwareMirrorRotationForTablet) {
   EXPECT_EQ(gfx::RectF(0.0f, 100.0f, 800.0f, 600.0f), transformed_rect3);
 }
 
-TEST_F(DisplayManagerTest, SoftwareMirrorRotationForNonTablet) {
+// crbug.com/1003339
+TEST_F(DisplayManagerTest, DISABLED_SoftwareMirrorRotationForNonTablet) {
   MirrorWindowTestApi test_api;
   UpdateDisplay("400x300,800x800");
 

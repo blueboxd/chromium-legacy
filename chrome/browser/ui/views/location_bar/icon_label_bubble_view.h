@@ -98,6 +98,10 @@ class IconLabelBubbleView : public views::InkDropObserver,
     next_element_interior_padding_ = padding;
   }
 
+  // Reduces the slide duration to 1ms such that animation still follows
+  // through in the code but is short enough that it is essentially skipped.
+  void ReduceAnimationTimeForTesting();
+
  protected:
   static constexpr int kOpenTimeMS = 150;
 
@@ -172,10 +176,6 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // Returns true iff the slide animation has started, has not ended and is
   // currently paused.
   bool is_animation_paused() const { return is_animation_paused_; }
-
-  // Reduces the slide duration to 1ms such that animation still follows
-  // through in the code but is short enough that it is essentially skipped.
-  void ReduceAnimationTimeForTesting();
 
  private:
   // Spacing between the image and the label.

@@ -10696,10 +10696,10 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="ManualFallback_CreditCard_OpenAddCreditCard">
+<action name="ManualFallback_CreditCard_OpenAddPaymentMethod">
   <owner>javierrobles@chromium.org</owner>
   <description>
-    The user tapped on &quot;Add credit card&quot; on the Password Manual
+    The user tapped on &quot;Add Payment Method...&quot; on the Password Manual
     Fallback view.
   </description>
 </action>
@@ -11508,6 +11508,22 @@ should be able to be added at any place in this file.
   <owner>newt@chromium.org</owner>
   <description>
     User added a bookmark to Chrome via an intent from a third-party app.
+  </description>
+</action>
+
+<action name="MobileAddCreditCard.AddPaymentMethodButton">
+  <owner>gambard@chromium.org</owner>
+  <description>
+    The user tapped on &quot;Add Payment Method...&quot; in the Settings,
+    Payment Methods menu.
+  </description>
+</action>
+
+<action name="MobileAddCreditCard.CardSaved">
+  <owner>gambard@chromium.org</owner>
+  <description>
+    The user saved a new credit card by tapping on &quot;Add&quot; in the
+    Settings, Add Payment Methods menu.
   </description>
 </action>
 

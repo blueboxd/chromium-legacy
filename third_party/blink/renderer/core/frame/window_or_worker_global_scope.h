@@ -67,34 +67,34 @@ class WindowOrWorkerGlobalScope {
                         EventTarget&,
                         V8Function* handler,
                         int timeout,
-                        const HeapVector<ScriptValue>& arguments);
+                        const Vector<ScriptValue>& arguments);
   static int setTimeout(ScriptState*,
                         EventTarget&,
                         const StringOrTrustedScript&,
                         int timeout,
-                        const HeapVector<ScriptValue>&,
+                        const Vector<ScriptValue>&,
                         ExceptionState&);
   static int setTimeoutFromString(ScriptState*,
                                   EventTarget&,
                                   const String& handler,
                                   int timeout,
-                                  const HeapVector<ScriptValue>&);
+                                  const Vector<ScriptValue>&);
   static int setInterval(ScriptState*,
                          EventTarget&,
                          V8Function* handler,
                          int timeout,
-                         const HeapVector<ScriptValue>&);
+                         const Vector<ScriptValue>&);
   static int setInterval(ScriptState*,
                          EventTarget&,
                          const StringOrTrustedScript&,
                          int timeout,
-                         const HeapVector<ScriptValue>&,
+                         const Vector<ScriptValue>&,
                          ExceptionState&);
   static int setIntervalFromString(ScriptState*,
                                    EventTarget&,
                                    const String& handler,
                                    int timeout,
-                                   const HeapVector<ScriptValue>&);
+                                   const Vector<ScriptValue>&);
   static void clearTimeout(EventTarget&, int timeout_id);
   static void clearInterval(EventTarget&, int timeout_id);
 

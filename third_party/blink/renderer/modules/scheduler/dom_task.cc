@@ -20,7 +20,7 @@ namespace blink {
 DOMTask::DOMTask(DOMTaskQueue* task_queue,
                  ExecutionContext* context,
                  V8Function* callback,
-                 const HeapVector<ScriptValue>& args,
+                 const Vector<ScriptValue>& args,
                  base::TimeDelta delay)
     : ContextLifecycleObserver(context),
       status_(Status::kPending),
@@ -39,7 +39,6 @@ DOMTask::DOMTask(DOMTaskQueue* task_queue,
 void DOMTask::Trace(Visitor* visitor) {
   visitor->Trace(task_queue_);
   visitor->Trace(callback_);
-  visitor->Trace(arguments_);
   visitor->Trace(result_value_);
   visitor->Trace(result_promise_);
   visitor->Trace(exception_);

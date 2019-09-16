@@ -230,12 +230,11 @@ BrowserSwitcherService::BrowserSwitcherService(Profile* profile)
 BrowserSwitcherService::~BrowserSwitcherService() = default;
 
 void BrowserSwitcherService::Init() {
+  LoadRulesFromPrefs();
   StartDownload(fetch_delay());
 }
 
 void BrowserSwitcherService::StartDownload(base::TimeDelta delay) {
-  LoadRulesFromPrefs();
-
   // This destroys the previous XmlDownloader, which cancels any scheduled
   // refresh operations.
   sitelist_downloader_ = std::make_unique<XmlDownloader>(

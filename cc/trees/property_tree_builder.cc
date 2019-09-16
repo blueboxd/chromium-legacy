@@ -17,7 +17,7 @@
 #include "cc/trees/clip_node.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/effect_node.h"
-#include "cc/trees/layer_tree_host.h"
+#include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/scroll_node.h"
@@ -39,6 +39,8 @@ struct DataForRecursion {
   int closest_ancestor_with_copy_request;
   uint32_t main_thread_scrolling_reasons;
   SkColor safe_opaque_background_color;
+  bool in_subtree_of_page_scale_layer;
+  bool affected_by_outer_viewport_bounds_delta;
   bool should_flatten;
   bool scroll_tree_parent_created_by_uninheritable_criteria;
   bool animation_axis_aligned_since_render_target;
@@ -49,24 +51,34 @@ struct DataForRecursion {
 
 class PropertyTreeBuilderContext {
  public:
-  explicit PropertyTreeBuilderContext(LayerTreeHost* layer_tree_host)
-      : layer_tree_host_(layer_tree_host),
-        root_layer_(layer_tree_host->root_layer()),
-        mutator_host_(*layer_tree_host->mutator_host()),
-        property_trees_(*layer_tree_host->property_trees()),
-        transform_tree_(property_trees_.transform_tree),
-        clip_tree_(property_trees_.clip_tree),
-        effect_tree_(property_trees_.effect_tree),
-        scroll_tree_(property_trees_.scroll_tree) {
-    // This class is for UI compositor only
-    DCHECK(!layer_tree_host->page_scale_layer());
-    DCHECK(!layer_tree_host->inner_viewport_scroll_layer());
-    DCHECK(!layer_tree_host->outer_viewport_scroll_layer());
-    DCHECK(!layer_tree_host->overscroll_elasticity_element_id());
-    DCHECK(layer_tree_host->elastic_overscroll().IsZero());
-  }
+  PropertyTreeBuilderContext(Layer* root_layer,
+                             const Layer* page_scale_layer,
+                             const Layer* inner_viewport_scroll_layer,
+                             const Layer* outer_viewport_scroll_layer,
+                             const ElementId overscroll_elasticity_element_id,
+                             const gfx::Vector2dF& elastic_overscroll,
+                             float page_scale_factor,
+                             const gfx::Transform& device_transform,
+                             MutatorHost* mutator_host,
+                             PropertyTrees* property_trees)
+      : root_layer_(root_layer),
+        page_scale_layer_(page_scale_layer),
+        inner_viewport_scroll_layer_(inner_viewport_scroll_layer),
+        outer_viewport_scroll_layer_(outer_viewport_scroll_layer),
+        overscroll_elasticity_element_id_(overscroll_elasticity_element_id),
+        elastic_overscroll_(elastic_overscroll),
+        page_scale_factor_(page_scale_factor),
+        device_transform_(device_transform),
+        mutator_host_(*mutator_host),
+        property_trees_(*property_trees),
+        transform_tree_(property_trees->transform_tree),
+        clip_tree_(property_trees->clip_tree),
+        effect_tree_(property_trees->effect_tree),
+        scroll_tree_(property_trees->scroll_tree) {}
 
-  void BuildPropertyTrees();
+  void BuildPropertyTrees(float device_scale_factor,
+                          const gfx::Rect& viewport,
+                          SkColor root_background_color) const;
 
  private:
   void BuildPropertyTreesInternal(
@@ -96,8 +108,14 @@ class PropertyTreeBuilderContext {
                                    bool subtree_has_rounded_corner,
                                    bool created_transform_node) const;
 
-  LayerTreeHost* layer_tree_host_;
   Layer* root_layer_;
+  const Layer* page_scale_layer_;
+  const Layer* inner_viewport_scroll_layer_;
+  const Layer* outer_viewport_scroll_layer_;
+  const ElementId overscroll_elasticity_element_id_;
+  const gfx::Vector2dF elastic_overscroll_;
+  float page_scale_factor_;
+  const gfx::Transform& device_transform_;
   MutatorHost& mutator_host_;
   PropertyTrees& property_trees_;
   TransformTree& transform_tree_;
@@ -227,6 +245,10 @@ bool PropertyTreeBuilderContext::AddTransformNodeIfNeeded(
     bool created_render_surface,
     DataForRecursion* data_for_children) const {
   const bool is_root = !layer->parent();
+  const bool is_page_scale_layer = layer == page_scale_layer_;
+  const bool is_overscroll_elasticity_layer =
+      overscroll_elasticity_element_id_ &&
+      layer->element_id() == overscroll_elasticity_element_id_;
   const bool is_scrollable = layer->scrollable();
   // Scrolling a layer should not move it from being pixel-aligned to moving off
   // the pixel grid and becoming fuzzy. So always snap scrollable things to the
@@ -255,6 +277,7 @@ bool PropertyTreeBuilderContext::AddTransformNodeIfNeeded(
   DCHECK(!is_scrollable || is_snapped);
   bool requires_node = is_root || is_snapped || has_significant_transform ||
                        has_any_transform_animation || has_surface ||
+                       is_page_scale_layer || is_overscroll_elasticity_layer ||
                        is_at_boundary_of_3d_rendering_context ||
                        layer->HasRoundedCorner();
 
@@ -297,20 +320,31 @@ bool PropertyTreeBuilderContext::AddTransformNodeIfNeeded(
   node->flattens_inherited_transform = data_for_children->should_flatten;
   node->sorting_context_id = layer->sorting_context_id();
 
-  if (is_root) {
+  if (is_root || is_page_scale_layer) {
     // Root layer and page scale layer should not have transform or offset.
     DCHECK(layer->position().IsOrigin());
     DCHECK(parent_offset.IsZero());
     DCHECK(layer->transform().IsIdentity());
 
-    transform_tree_.SetRootScaleAndTransform(
-        transform_tree_.device_scale_factor(), gfx::Transform());
+    if (is_root) {
+      DCHECK(!is_page_scale_layer);
+      transform_tree_.SetRootScaleAndTransform(
+          transform_tree_.device_scale_factor(), device_transform_);
+    } else {
+      DCHECK(is_page_scale_layer);
+      transform_tree_.set_page_scale_factor(page_scale_factor_);
+      node->local.Scale(page_scale_factor_, page_scale_factor_);
+      data_for_children->in_subtree_of_page_scale_layer = true;
+    }
   } else {
     node->local = layer->transform();
     node->origin = layer->transform_origin();
     node->post_translation =
         parent_offset + layer->position().OffsetFromOrigin();
   }
+
+  node->in_subtree_of_page_scale_layer =
+      data_for_children->in_subtree_of_page_scale_layer;
 
   // Surfaces inherently flatten transforms.
   data_for_children->should_flatten =
@@ -321,7 +355,12 @@ bool PropertyTreeBuilderContext::AddTransformNodeIfNeeded(
   GetAnimationScales(mutator_host_, layer, &node->maximum_animation_scale,
                      &node->starting_animation_scale);
 
-  node->scroll_offset = layer->CurrentScrollOffset();
+  if (is_overscroll_elasticity_layer) {
+    DCHECK(!is_scrollable);
+    node->scroll_offset = gfx::ScrollOffset(elastic_overscroll_);
+  } else {
+    node->scroll_offset = layer->CurrentScrollOffset();
+  }
 
   node->needs_local_transform_update = true;
   transform_tree_.UpdateTransforms(node->id);
@@ -452,7 +491,7 @@ RenderSurfaceReason ComputeRenderSurfaceReason(const MutatorHost& mutator_host,
   return RenderSurfaceReason::kNone;
 }
 
-bool UpdateSubtreeHasCopyRequestRecursive(Layer* layer) {
+static bool UpdateSubtreeHasCopyRequestRecursive(Layer* layer) {
   bool subtree_has_copy_request = false;
   if (layer->HasCopyRequest())
     subtree_has_copy_request = true;
@@ -569,11 +608,12 @@ bool PropertyTreeBuilderContext::AddEffectNodeIfNeeded(
     }
     node->clip_id = data_from_ancestor.clip_tree_parent;
   } else {
-    // The root render surface acts as the unbounded and untransformed surface
-    // into which content is drawn. The transform node created from the root
-    // layer (which includes device scale factor) and the clip node created from
-    // the root layer apply to the root render surface's content, but not to the
-    // root render surface itself.
+    // The root render surface acts as the unbounded and untransformed
+    // surface into which content is drawn. The transform node created
+    // from the root layer (which includes device scale factor) and
+    // the clip node created from the root layer (which includes
+    // viewports) apply to the root render surface's content, but not
+    // to the root render surface itself.
     node->transform_id = TransformTree::kRootNodeId;
     node->clip_id = ClipTree::kViewportNodeId;
   }
@@ -682,6 +722,14 @@ void PropertyTreeBuilderContext::AddScrollNodeIfNeeded(
     ScrollNode node;
     node.scrollable = scrollable;
     node.main_thread_scrolling_reasons = main_thread_scrolling_reasons;
+    node.scrolls_inner_viewport = layer == inner_viewport_scroll_layer_;
+    node.scrolls_outer_viewport = layer == outer_viewport_scroll_layer_;
+
+    if (node.scrolls_inner_viewport &&
+        data_from_ancestor.in_subtree_of_page_scale_layer) {
+      node.max_scroll_offset_affected_by_page_scale = true;
+    }
+
     node.bounds = layer->bounds();
     node.container_bounds = layer->scroll_container_bounds();
     node.offset_to_transform_parent = layer->offset_to_transform_parent();
@@ -800,21 +848,29 @@ void PropertyTreeBuilderContext::BuildPropertyTreesInternal(
   }
 }
 
-void PropertyTreeBuilderContext::BuildPropertyTrees() {
-  property_trees_.is_main_thread = true;
-  property_trees_.is_active = false;
-
-  if (layer_tree_host_->has_copy_request())
-    UpdateSubtreeHasCopyRequestRecursive(root_layer_);
-
+void PropertyTreeBuilderContext::BuildPropertyTrees(
+    float device_scale_factor,
+    const gfx::Rect& viewport,
+    SkColor root_background_color) const {
   if (!property_trees_.needs_rebuild) {
-    clip_tree_.SetViewportClip(
-        gfx::RectF(layer_tree_host_->device_viewport_rect()));
+    DCHECK_NE(page_scale_layer_, root_layer_);
+    if (page_scale_layer_) {
+      DCHECK_GE(page_scale_layer_->transform_tree_index(),
+                TransformTree::kRootNodeId);
+      TransformNode* node = property_trees_.transform_tree.Node(
+          page_scale_layer_->transform_tree_index());
+      draw_property_utils::UpdatePageScaleFactor(&property_trees_, node,
+                                                 page_scale_factor_);
+    }
+    draw_property_utils::UpdateElasticOverscroll(
+        &property_trees_, overscroll_elasticity_element_id_,
+        elastic_overscroll_);
+    clip_tree_.SetViewportClip(gfx::RectF(viewport));
     // SetRootScaleAndTransform will be incorrect if the root layer has
     // non-zero position, so ensure it is zero.
     DCHECK(root_layer_->position().IsOrigin());
-    transform_tree_.SetRootScaleAndTransform(
-        layer_tree_host_->device_scale_factor(), gfx::Transform());
+    transform_tree_.SetRootScaleAndTransform(device_scale_factor,
+                                             device_transform_);
     return;
   }
 
@@ -827,6 +883,8 @@ void PropertyTreeBuilderContext::BuildPropertyTrees() {
       EffectTree::kInvalidNodeId;
   data_for_recursion.closest_ancestor_with_copy_request =
       EffectTree::kInvalidNodeId;
+  data_for_recursion.in_subtree_of_page_scale_layer = false;
+  data_for_recursion.affected_by_outer_viewport_bounds_delta = false;
   data_for_recursion.should_flatten = false;
   data_for_recursion.main_thread_scrolling_reasons =
       MainThreadScrollingReason::kNotScrollingOnMain;
@@ -835,18 +893,13 @@ void PropertyTreeBuilderContext::BuildPropertyTrees() {
   data_for_recursion.compound_transform_since_render_target = gfx::Transform();
   data_for_recursion.animation_axis_aligned_since_render_target = true;
   data_for_recursion.not_axis_aligned_since_last_clip = false;
-
-  SkColor root_background_color = layer_tree_host_->background_color();
-  if (SkColorGetA(root_background_color) != 255)
-    root_background_color = SkColorSetA(root_background_color, 255);
   data_for_recursion.safe_opaque_background_color = root_background_color;
 
   property_trees_.clear();
-  transform_tree_.set_device_scale_factor(
-      layer_tree_host_->device_scale_factor());
+  transform_tree_.set_device_scale_factor(device_scale_factor);
   ClipNode root_clip;
   root_clip.clip_type = ClipNode::ClipType::APPLIES_LOCAL_CLIP;
-  root_clip.clip = gfx::RectF(layer_tree_host_->device_viewport_rect());
+  root_clip.clip = gfx::RectF(viewport);
   root_clip.transform_id = TransformTree::kRootNodeId;
   data_for_recursion.clip_tree_parent =
       clip_tree_.Insert(root_clip, ClipTree::kRootNodeId);
@@ -868,15 +921,37 @@ void PropertyTreeBuilderContext::BuildPropertyTrees() {
 
 }  // namespace
 
-void PropertyTreeBuilder::BuildPropertyTrees(LayerTreeHost* layer_tree_host) {
-  PropertyTreeBuilderContext(layer_tree_host).BuildPropertyTrees();
-
-  layer_tree_host->property_trees()->ResetCachedData();
+void PropertyTreeBuilder::BuildPropertyTrees(
+    Layer* root_layer,
+    const Layer* page_scale_layer,
+    const Layer* inner_viewport_scroll_layer,
+    const Layer* outer_viewport_scroll_layer,
+    const ElementId overscroll_elasticity_element_id,
+    const gfx::Vector2dF& elastic_overscroll,
+    float page_scale_factor,
+    float device_scale_factor,
+    const gfx::Rect& viewport,
+    const gfx::Transform& device_transform,
+    PropertyTrees* property_trees) {
+  property_trees->is_main_thread = true;
+  property_trees->is_active = false;
+  SkColor color = root_layer->layer_tree_host()->background_color();
+  if (SkColorGetA(color) != 255)
+    color = SkColorSetA(color, 255);
+  if (root_layer->layer_tree_host()->has_copy_request())
+    UpdateSubtreeHasCopyRequestRecursive(root_layer);
+  PropertyTreeBuilderContext(
+      root_layer, page_scale_layer, inner_viewport_scroll_layer,
+      outer_viewport_scroll_layer, overscroll_elasticity_element_id,
+      elastic_overscroll, page_scale_factor, device_transform,
+      root_layer->layer_tree_host()->mutator_host(), property_trees)
+      .BuildPropertyTrees(device_scale_factor, viewport, color);
+  property_trees->ResetCachedData();
   // During building property trees, all copy requests are moved from layers to
   // effect tree, which are then pushed at commit to compositor thread and
   // handled there. LayerTreeHost::has_copy_request is only required to
   // decide if we want to create a effect node. So, it can be reset now.
-  layer_tree_host->SetHasCopyRequest(false);
+  root_layer->layer_tree_host()->SetHasCopyRequest(false);
 }
 
 }  // namespace cc

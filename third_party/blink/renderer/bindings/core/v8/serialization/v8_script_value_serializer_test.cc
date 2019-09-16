@@ -1850,8 +1850,7 @@ TEST(V8ScriptValueSerializerTest, RoundTripReadableStream) {
 
   auto* rs = ReadableStream::Create(script_state, ASSERT_NO_EXCEPTION);
   v8::Local<v8::Value> wrapper = ToV8(rs, script_state);
-  HeapVector<ScriptValue> transferable_array = {
-      ScriptValue(script_state, wrapper)};
+  Vector<ScriptValue> transferable_array = {ScriptValue(script_state, wrapper)};
   Transferables transferables;
   ASSERT_TRUE(SerializedScriptValue::ExtractTransferables(
       isolate, transferable_array, transferables, ASSERT_NO_EXCEPTION));

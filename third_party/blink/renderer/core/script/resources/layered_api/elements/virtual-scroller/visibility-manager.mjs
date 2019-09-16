@@ -189,9 +189,8 @@ export class VisibilityManager {
         // This should include all of the elements to be revealed and
         // also 1 element above and below those (if such elements
         // exist).
-        const newObserved = new Set();
+        const newObserved = new Set(newRevealed);
         if (newRevealed.size !== 0) {
-          newObserved.add(...newRevealed);
           const p = newBounds.low.previousElementSibling;
           if (p) {
             newObserved.add(p);

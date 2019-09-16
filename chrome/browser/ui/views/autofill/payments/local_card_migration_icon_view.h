@@ -19,8 +19,7 @@ class ManageMigrationUiController;
 class LocalCardMigrationIconView : public PageActionIconView {
  public:
   LocalCardMigrationIconView(CommandUpdater* command_updater,
-                             PageActionIconView::Delegate* delegate,
-                             const gfx::FontList& font_list);
+                             PageActionIconView::Delegate* delegate);
   ~LocalCardMigrationIconView() override;
 
   // PageActionIconView:

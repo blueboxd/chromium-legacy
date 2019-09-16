@@ -10,6 +10,7 @@ title: test1
 	MediaKeys
 	Nodes
 	Resources
+	ScriptPromises
 	ContextLifecycleStateObservers
 	V8PerContextDatas
 	WorkerGlobalScopes
@@ -43,6 +44,7 @@ title: test1
 	MediaKeys
 	Nodes
 	Resources
+	ScriptPromises
 	ContextLifecycleStateObservers
 	V8PerContextDatas
 	WorkerGlobalScopes
@@ -76,6 +78,7 @@ title:
 	MediaKeys
 	Nodes
 	Resources
+	ScriptPromises
 	ContextLifecycleStateObservers
 	V8PerContextDatas
 	WorkerGlobalScopes

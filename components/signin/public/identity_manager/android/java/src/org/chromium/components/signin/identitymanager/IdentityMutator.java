@@ -16,8 +16,10 @@ import org.chromium.components.signin.metrics.SignoutReason;
 public class IdentityMutator {
     private static final String TAG = "IdentityMutator";
 
-    private final long mNativePrimaryAccountMutator;
-    private final long mNativeIdentityManager;
+    // Pointer to native PrimaryAccountMutator, not final because of destroy().
+    private long mNativePrimaryAccountMutator;
+    // Pointer to native IdentityManager, not final because of destroy().
+    private long mNativeIdentityManager;
 
     @CalledByNative
     private IdentityMutator(long nativePrimaryAccountMutator, long nativeIdentityManager) {
@@ -25,6 +27,15 @@ public class IdentityMutator {
         assert nativeIdentityManager != 0;
         mNativePrimaryAccountMutator = nativePrimaryAccountMutator;
         mNativeIdentityManager = nativeIdentityManager;
+    }
+
+    /**
+     * Called by native IdentityManager upon KeyedService's shutdown
+     */
+    @CalledByNative
+    private void destroy() {
+        mNativeIdentityManager = 0;
+        mNativePrimaryAccountMutator = 0;
     }
 
     /**

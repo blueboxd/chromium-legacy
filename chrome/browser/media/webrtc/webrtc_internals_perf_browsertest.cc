@@ -107,6 +107,9 @@ class WebRtcInternalsPerfBrowserTest : public WebRtcTestBase {
     content::WebContents* webrtc_internals_tab =
         browser()->tab_strip_model()->GetActiveWebContents();
 
+    // TODO(https://crbug.com/1004239): Stop relying on the legacy getStats()
+    // API.
+    ChangeToLegacyGetStats(webrtc_internals_tab);
     test::SleepInJavascript(webrtc_internals_tab, duration_msec);
 
     return std::unique_ptr<base::DictionaryValue>(

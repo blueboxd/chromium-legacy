@@ -517,7 +517,7 @@ bool SerializedScriptValue::ExtractTransferables(
   if (value.IsEmpty() || value->IsUndefined())
     return true;
 
-  const HeapVector<ScriptValue>& transferable_array =
+  const Vector<ScriptValue>& transferable_array =
       NativeValueTraits<IDLSequence<ScriptValue>>::NativeValue(isolate, value,
                                                                exception_state);
   if (exception_state.HadException())
@@ -529,7 +529,7 @@ bool SerializedScriptValue::ExtractTransferables(
 
 bool SerializedScriptValue::ExtractTransferables(
     v8::Isolate* isolate,
-    const HeapVector<ScriptValue>& object_sequence,
+    const Vector<ScriptValue>& object_sequence,
     Transferables& transferables,
     ExceptionState& exception_state) {
   // Validate the passed array of transferables.

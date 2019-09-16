@@ -56,7 +56,6 @@
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_observer_x11.h"
-#include "ui/views/widget/desktop_aura/window_event_filter.h"
 #include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
 #include "ui/views/widget/desktop_aura/x11_desktop_window_move_client.h"
 #include "ui/views/window/native_frame_view.h"
@@ -204,21 +203,6 @@ void DesktopWindowTreeHostX11::RemoveObserver(
   observer_list_.RemoveObserver(observer);
 }
 
-void DesktopWindowTreeHostX11::AddNonClientEventFilter() {
-  if (non_client_event_filter_)
-    return;
-  non_client_event_filter_ = std::make_unique<WindowEventFilter>(this);
-  non_client_event_filter_->SetWmMoveResizeHandler(this);
-  window()->AddPreTargetHandler(non_client_event_filter_.get());
-}
-
-void DesktopWindowTreeHostX11::RemoveNonClientEventFilter() {
-  if (!non_client_event_filter_)
-    return;
-  window()->RemovePreTargetHandler(non_client_event_filter_.get());
-  non_client_event_filter_.reset();
-}
-
 void DesktopWindowTreeHostX11::CleanUpWindowList(
     void (*func)(aura::Window* window)) {
   if (!open_windows_)
@@ -267,16 +251,12 @@ void DesktopWindowTreeHostX11::OnNativeWidgetCreated(
   // notify events.
   X11DesktopHandler::get();
 
-  AddNonClientEventFilter();
-  SetUseNativeFrame(params.type == Widget::InitParams::TYPE_WINDOW &&
-                    !params.remove_standard_frame);
-
   x11_window_move_client_ = std::make_unique<X11DesktopWindowMoveClient>();
   wm::SetWindowMoveClient(window(), x11_window_move_client_.get());
 
   SetWindowTransparency();
 
-  native_widget_delegate()->OnNativeWidgetCreated();
+  DesktopWindowTreeHostLinux::OnNativeWidgetCreated(params);
 }
 
 std::unique_ptr<aura::client::DragDropClient>
@@ -524,12 +504,6 @@ void DesktopWindowTreeHostX11::ReleaseCapture() {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11, private:
 
-void DesktopWindowTreeHostX11::DispatchHostWindowDragMovement(
-    int hittest,
-    const gfx::Point& pointer_location) {
-  GetXWindow()->WmMoveResize(hittest, pointer_location);
-}
-
 void DesktopWindowTreeHostX11::SetUseNativeFrame(bool use_native_frame) {
   GetXWindow()->SetUseNativeFrame(use_native_frame);
   ResetWindowRegion();
@@ -698,12 +672,8 @@ void DesktopWindowTreeHostX11::DispatchEvent(ui::Event* event) {
 }
 
 void DesktopWindowTreeHostX11::OnClosed() {
-  // Remove the event listeners we've installed. We need to remove these
-  // because otherwise we get assert during ~WindowEventDispatcher().
-  RemoveNonClientEventFilter();
-
   open_windows().remove(GetAcceleratedWidget());
-  DesktopWindowTreeHostPlatform::OnClosed();
+  DesktopWindowTreeHostLinux::OnClosed();
 }
 
 void DesktopWindowTreeHostX11::OnWindowStateChanged(

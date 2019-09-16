@@ -44,9 +44,6 @@ enum LayoutConstant {
   // contained text.
   LOCATION_BAR_BUBBLE_FONT_VERTICAL_PADDING,
 
-  // The corner radius used for the location bar bubble.
-  LOCATION_BAR_BUBBLE_CORNER_RADIUS,
-
   // The vertical inset to apply to the bounds of a location bar bubble's anchor
   // view, to bring the bubble closer to the anchor.  This compensates for the
   // space between the bottoms of most such views and the visible bottoms of the

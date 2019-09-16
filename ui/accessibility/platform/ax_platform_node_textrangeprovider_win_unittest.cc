@@ -535,18 +535,12 @@ class AXPlatformNodeTextRangeProviderTest : public ui::AXPlatformNodeWinTest {
     ui::AXTreeUpdate update;
     update.has_tree_data = true;
     update.root_id = root_data.id;
-    update.nodes.push_back(root_data);
-    update.nodes.push_back(group1_data);
-    update.nodes.push_back(text_data);
-    update.nodes.push_back(group2_data);
-    update.nodes.push_back(line_break1_data);
-    update.nodes.push_back(standalone_text_data);
-    update.nodes.push_back(line_break2_data);
-    update.nodes.push_back(bold_text_data);
-    update.nodes.push_back(paragraph1_data);
-    update.nodes.push_back(paragraph1_text_data);
-    update.nodes.push_back(paragraph2_data);
-    update.nodes.push_back(paragraph2_text_data);
+    update.nodes = {root_data,        group1_data,
+                    text_data,        group2_data,
+                    line_break1_data, standalone_text_data,
+                    line_break2_data, bold_text_data,
+                    paragraph1_data,  paragraph1_text_data,
+                    paragraph2_data,  paragraph2_text_data};
     update.tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
     return update;
   }
@@ -656,29 +650,26 @@ class AXPlatformNodeTextRangeProviderTest : public ui::AXPlatformNodeWinTest {
     root_data.child_ids = {2, 4, 8, 10, 12, 14, 16};
 
     ui::AXTreeUpdate update;
-    ui::AXTreeData tree_data;
-    tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
-    update.tree_data = tree_data;
     update.has_tree_data = true;
     update.root_id = root_data.id;
-    update.nodes.push_back(root_data);
-    update.nodes.push_back(group1_data);
-    update.nodes.push_back(text_data);
-    update.nodes.push_back(group2_data);
-    update.nodes.push_back(group3_data);
-    update.nodes.push_back(line_break1_data);
-    update.nodes.push_back(standalone_text_data);
-    update.nodes.push_back(line_break2_data);
-    update.nodes.push_back(bold_text_data);
-    update.nodes.push_back(paragraph1_data);
-    update.nodes.push_back(paragraph1_text_data);
-    update.nodes.push_back(paragraph2_data);
-    update.nodes.push_back(paragraph2_text_data);
-    update.nodes.push_back(paragraph3_data);
-    update.nodes.push_back(paragraph3_text_data);
-    update.nodes.push_back(paragraph4_data);
-    update.nodes.push_back(paragraph4_text_data);
-
+    update.nodes = {root_data,
+                    group1_data,
+                    text_data,
+                    group2_data,
+                    group3_data,
+                    line_break1_data,
+                    standalone_text_data,
+                    line_break2_data,
+                    bold_text_data,
+                    paragraph1_data,
+                    paragraph1_text_data,
+                    paragraph2_data,
+                    paragraph2_text_data,
+                    paragraph3_data,
+                    paragraph3_text_data,
+                    paragraph4_data,
+                    paragraph4_text_data};
+    update.tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
     return update;
   }
 
@@ -731,15 +722,12 @@ class AXPlatformNodeTextRangeProviderTest : public ui::AXPlatformNodeWinTest {
     root_data.child_ids = {2, 4, 6};
 
     ui::AXTreeUpdate update;
-    ui::AXTreeData tree_data;
-    tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
-    update.tree_data = tree_data;
     update.has_tree_data = true;
     update.root_id = root_data.id;
     update.nodes = {root_data,       page_1_data,      page_1_text_data,
                     page_2_data,     page_2_text_data, page_3_data,
                     page_3_text_data};
-
+    update.tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
     return update;
   }
 };
@@ -1668,7 +1656,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMovePage) {
       /*count*/ 5,
       /*expected_text*/
       L"some text on page 1\nsome text on page 2some more text on page 3",
-      /*expected_count*/ 4);
+      /*expected_count*/ 3);
 
   // Range moves
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Page,
@@ -1934,9 +1922,9 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
                   /*expected_text*/ L"Standalone line\n",
                   /*expected_count*/ -3);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Paragraph,
-                  /*count*/ -2,
+                  /*count*/ -1,
                   /*expected_text*/ L"First line of text\n",
-                  /*expected_count*/ -2);
+                  /*expected_count*/ -1);
 
   // Moving backward by any number of paragraphs at the start of document
   // should have no effect.
@@ -1988,7 +1976,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Paragraph,
                   /*count*/ -7,
                   /*expected_text*/ L"First line of text\n",
-                  /*expected_count*/ -5);
+                  /*expected_count*/ -4);
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Paragraph,
       /*count*/ -1,

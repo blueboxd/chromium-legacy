@@ -906,7 +906,14 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PRE_DataIsRemoved) {
   given_name_update->SetKey("sanity.check@example.com", base::Value("Anne"));
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DataIsRemoved) {
+// Disabled on ASan and LSAn builds due to a consistent failure. See
+// crbug.com/1004228
+#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
+#define MAYBE_DataIsRemoved DISABLED_DataIsRemoved
+#else
+#define MAYBE_DataIsRemoved DataIsRemoved
+#endif
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MAYBE_DataIsRemoved) {
   // The device local account should have been removed.
   EXPECT_FALSE(g_browser_process->local_state()
                    ->GetDictionary("UserGivenName")

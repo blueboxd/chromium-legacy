@@ -140,7 +140,8 @@ RoundedOmniboxResultsFrame::RoundedOmniboxResultsFrame(
   // selection highlights.
   // TODO(tapted): Remove this and have the contents paint a half-rounded rect
   // for the background, and when selecting the bottom row.
-  int corner_radius = GetLayoutConstant(LOCATION_BAR_BUBBLE_CORNER_RADIUS);
+  int corner_radius =
+      views::LayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_HIGH);
   contents_mask_ = views::Painter::CreatePaintedLayer(
       views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK,
                                                   corner_radius));

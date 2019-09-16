@@ -38,7 +38,7 @@ class CreditCardSaveManagerTestObserverBridge
   explicit CreditCardSaveManagerTestObserverBridge(
       CreditCardSaveManager* credit_card_save_manager,
       id<CreditCardSaveManagerTestObserver> observer);
-  virtual ~CreditCardSaveManagerTestObserverBridge() = default;
+  ~CreditCardSaveManagerTestObserverBridge() override = default;
 
   // CreditCardSaveManager::ObserverForTest:
   void OnOfferLocalSave() override;

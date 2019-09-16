@@ -5,10 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BADGING_BADGE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_BADGING_BADGE_H_
 
+#include "base/optional.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/badging/badging.mojom-blink.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -39,15 +41,21 @@ class Badge final : public ScriptWrappable,
                   ExceptionState&);
   static void set(ScriptState*, ExceptionState&);
   static void set(ScriptState*, uint64_t content, ExceptionState&);
-  static void clear(ScriptState*, const BadgeOptions*);
+  static void clear(ScriptState*, const BadgeOptions*, ExceptionState&);
 
-  void SetBadge(WTF::String scope, mojom::blink::BadgeValuePtr value);
-  void ClearBadge(WTF::String scope);
+  void SetBadge(WTF::String scope,
+                mojom::blink::BadgeValuePtr value,
+                ExceptionState&);
+  void ClearBadge(WTF::String scope, ExceptionState&);
 
   void Trace(blink::Visitor*) override;
 
  private:
   static Badge* BadgeFromState(ScriptState* script_state);
+
+  // If the URL is invalid, sets an exception and returns nullopt, which callers
+  // should check for and stop doing work.
+  base::Optional<KURL> ScopeStringToURL(WTF::String& scope, ExceptionState&);
 
   mojo::Remote<blink::mojom::blink::BadgeService> badge_service_;
   Member<ExecutionContext> execution_context_;

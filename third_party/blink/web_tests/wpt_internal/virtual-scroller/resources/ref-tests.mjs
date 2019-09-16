@@ -26,6 +26,24 @@ export function testFullScroll500px(target) {
   });
 };
 
+/**
+ * Tests scrolling in 2 steps to the end of the page.
+ * This reproduces crbug.com/1004102.
+ */
+export function testFullScrollToEndIn2Steps(target) {
+  helpers.appendDivs(target, MORE_THAN_SCREENFUL, '10px');
+  // TODO(fergal): rewrite tests to use await.
+  // Give the scroller time to settle.
+  helpers.inNFrames(10, () => {
+    target.children[1].scrollIntoView(/* alignToTop= */ true);
+    // Give the scroller time to settle.
+    helpers.inNFrames(10, () => {
+      window.scrollBy(0, target.getBoundingClientRect().height);
+      helpers.stopWaiting();
+    });
+  });
+};
+
 export function testLargeChild(target) {
   // This scrollTo and nextFrame are not necessary for the ref-test
   // however it helps when trying to debug this test in a

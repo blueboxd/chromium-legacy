@@ -50,11 +50,6 @@ class Profile;
 class SelectedKeywordView;
 class StarView;
 
-namespace autofill {
-class LocalCardMigrationIconView;
-class SaveCardIconView;
-}  // namespace autofill
-
 namespace views {
 class ImageButton;
 class Label;
@@ -141,16 +136,6 @@ class LocationBarView : public LocationBar,
 
   // The star. It may not be visible.  It will be null when |browser_| is null.
   StarView* star_view() { return star_view_; }
-
-  // The save credit card icon. It may not be visible.  It will be null when
-  // |browser_| is null.
-  autofill::SaveCardIconView* save_credit_card_icon_view() {
-    return save_credit_card_icon_view_;
-  }
-
-  autofill::LocalCardMigrationIconView* local_card_migration_icon_view() {
-    return local_card_migration_icon_view_;
-  }
 
   OmniboxPageActionIconContainerView*
   omnibox_page_action_icon_container_view() {
@@ -305,8 +290,6 @@ class LocationBarView : public LocationBar,
   void AcceptInput(base::TimeTicks match_selection_timestamp) override;
   void FocusSearch() override;
   void UpdateContentSettingsIcons() override;
-  void UpdateSaveCreditCardIcon() override;
-  void UpdateLocalCardMigrationIcon() override;
   void UpdateBookmarkStarVisibility() override;
   void SaveStateToContents(content::WebContents* contents) override;
   const OmniboxView* GetOmniboxView() const override;
@@ -398,13 +381,6 @@ class LocationBarView : public LocationBar,
 
   // The page action icons.
   OmniboxPageActionIconContainerView* omnibox_page_action_icon_container_view_ =
-      nullptr;
-
-  // The save credit card icon.  It will be null when |browser_| is null.
-  autofill::SaveCardIconView* save_credit_card_icon_view_ = nullptr;
-
-  // The icon for the local card migration prompt.
-  autofill::LocalCardMigrationIconView* local_card_migration_icon_view_ =
       nullptr;
 
   // The star for bookmarking.  It will be null when |browser_| is null.

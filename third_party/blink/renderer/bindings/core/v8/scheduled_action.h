@@ -55,14 +55,14 @@ class ScheduledAction final : public GarbageCollectedFinalized<ScheduledAction>,
   static ScheduledAction* Create(ScriptState*,
                                  ExecutionContext* target,
                                  V8Function* handler,
-                                 const HeapVector<ScriptValue>& arguments);
+                                 const Vector<ScriptValue>& arguments);
   static ScheduledAction* Create(ScriptState*,
                                  ExecutionContext* target,
                                  const String& handler);
 
   explicit ScheduledAction(ScriptState*,
                            V8Function* handler,
-                           const HeapVector<ScriptValue>& arguments);
+                           const Vector<ScriptValue>& arguments);
   explicit ScheduledAction(ScriptState*, const String& handler);
   // Creates an empty ScheduledAction.
   explicit ScheduledAction(ScriptState*);
@@ -83,7 +83,7 @@ class ScheduledAction final : public GarbageCollectedFinalized<ScheduledAction>,
 
   Member<ScriptStateProtectingContext> script_state_;
   Member<V8Function> function_;
-  HeapVector<ScriptValue> arguments_;
+  Vector<ScriptValue> arguments_;
   String code_;
 };
 

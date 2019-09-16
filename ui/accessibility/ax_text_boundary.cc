@@ -20,6 +20,12 @@ std::string ToString(const AXTextBoundary boundary) {
       return "LineStartOrEndBoundary";
     case AXTextBoundary::kObject:
       return "ObjectBoundary";
+    case AXTextBoundary::kPageEnd:
+      return "PageEndBoundary";
+    case AXTextBoundary::kPageStart:
+      return "PageStartBoundary";
+    case AXTextBoundary::kPageStartOrEnd:
+      return "PageStartOrEndBoundary";
     case AXTextBoundary::kParagraphEnd:
       return "ParagraphEndBoundary";
     case AXTextBoundary::kParagraphStart:

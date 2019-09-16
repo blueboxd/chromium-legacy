@@ -289,6 +289,12 @@ class CORE_EXPORT NGLineBreaker {
   // This is copied from NGInlineNode, then updated after each forced line break
   // if 'unicode-bidi: plaintext'.
   TextDirection base_direction_;
+
+#if DCHECK_IS_ON()
+  // These fields are to detect rewind-loop.
+  unsigned last_rewind_from_item_index_ = 0;
+  unsigned last_rewind_to_item_index_ = 0;
+#endif
 };
 
 }  // namespace blink

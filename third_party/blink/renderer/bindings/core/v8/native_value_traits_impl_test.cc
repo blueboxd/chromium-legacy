@@ -259,7 +259,7 @@ TEST(NativeValueTraitsImplTest, IDLSequence) {
         EvaluateScriptForArray(scope, "['Vini, vidi, vici.', 65535, 0.125]");
 
     NonThrowableExceptionState exception_state;
-    HeapVector<ScriptValue> script_value_vector =
+    Vector<ScriptValue> script_value_vector =
         NativeValueTraits<IDLSequence<ScriptValue>>::NativeValue(
             scope.GetIsolate(), v8_array, exception_state);
     EXPECT_EQ(3U, script_value_vector.size());

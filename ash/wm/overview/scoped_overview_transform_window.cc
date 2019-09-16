@@ -35,6 +35,7 @@
 #include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/transform_util.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/shadow_controller.h"
@@ -418,8 +419,9 @@ void ScopedOverviewTransformWindow::UpdateRoundedCorners(bool show,
   // shadow around the window.
   ui::Layer* layer = window_->layer();
   const float scale = layer->transform().Scale2d().x();
-  const gfx::RoundedCornersF radii(
-      show_corners ? kOverviewWindowRoundingDp / scale : 0.0f);
+  const int radius =
+      views::LayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_LOW);
+  const gfx::RoundedCornersF radii(show_corners ? (radius / scale) : 0.0f);
   layer->SetRoundedCornerRadius(radii);
   layer->SetIsFastRoundedCorner(true);
 

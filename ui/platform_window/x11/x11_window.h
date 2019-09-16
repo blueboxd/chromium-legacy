@@ -9,6 +9,7 @@
 #include "ui/base/x/x11_window.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/platform_window_handler/wm_move_resize_handler.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/platform_window/x11/x11_window_export.h"
 
@@ -33,6 +34,7 @@ class X11_WINDOW_EXPORT XEventDelegate {
 
 // PlatformWindow implementation for X11. PlatformEvents are XEvents.
 class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
+                                    public WmMoveResizeHandler,
                                     public XWindow,
                                     public PlatformEventDispatcher {
  public:
@@ -102,6 +104,11 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   void OnXWindowRawKeyEvent(XEvent* xev) override;
   base::Optional<gfx::Size> GetMinimumSizeForXWindow() override;
   base::Optional<gfx::Size> GetMaximumSizeForXWindow() override;
+
+  // WmMoveResizeHandler
+  void DispatchHostWindowDragMovement(
+      int hittest,
+      const gfx::Point& pointer_location) override;
 
   // X11WindowOzone sets own event dispatcher now.
   virtual void SetPlatformEventDispatcher();

@@ -91,10 +91,6 @@ WebRequestProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
       &WebRequestProxyingURLLoaderFactory::InProgressRequest::OnRequestError,
       weak_factory_.GetWeakPtr(),
       network::URLLoaderCompletionStatus(net::ERR_ABORTED)));
-  proxied_loader_binding_.set_connection_error_handler(base::BindOnce(
-      &WebRequestProxyingURLLoaderFactory::InProgressRequest::OnRequestError,
-      weak_factory_.GetWeakPtr(),
-      network::URLLoaderCompletionStatus(net::ERR_ABORTED)));
 }
 
 WebRequestProxyingURLLoaderFactory::InProgressRequest::~InProgressRequest() {

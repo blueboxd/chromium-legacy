@@ -100,9 +100,17 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   void AddShortcutFeatureButton(const gfx::VectorIcon& icon,
                                 const base::string16& text,
                                 base::RepeatingClosure action);
+  void AddAccountFeatureButton(const gfx::ImageSkia& icon,
+                               const base::string16& text,
+                               base::RepeatingClosure action);
   void AddSelectableProfile(const gfx::Image& image,
                             const base::string16& name,
                             base::RepeatingClosure action);
+  // 0 < |icon_to_image_ratio| <= 1 is the size ratio of |icon| in the returned
+  // image. E.g. a value of 0.8 means that |icon| only takes up 80% of the
+  // returned image, with the rest being padding around it.
+  gfx::ImageSkia ImageForMenu(const gfx::VectorIcon& icon,
+                              float icon_to_image_ratio = 1.0f);
 
   // Initializes a new group of menu items. A separator is added before them if
   // |add_separator| is true.
@@ -203,6 +211,7 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   // Component containers.
   views::View* identity_info_container_ = nullptr;
   views::View* shortcut_features_container_ = nullptr;
+  views::View* account_features_container_ = nullptr;
   views::View* selectable_profiles_container_ = nullptr;
 
   CloseBubbleOnTabActivationHelper close_bubble_helper_;

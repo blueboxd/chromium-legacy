@@ -175,7 +175,10 @@ PASS oldChildWindow.ontouchcancel is newChildWindow.ontouchcancel
 PASS oldChildWindow.ontouchend is newChildWindow.ontouchend
 PASS oldChildWindow.ontouchmove is newChildWindow.ontouchmove
 PASS oldChildWindow.ontouchstart is newChildWindow.ontouchstart
+PASS oldChildWindow.ontransitioncancel is newChildWindow.ontransitioncancel
 PASS oldChildWindow.ontransitionend is newChildWindow.ontransitionend
+PASS oldChildWindow.ontransitionrun is newChildWindow.ontransitionrun
+PASS oldChildWindow.ontransitionstart is newChildWindow.ontransitionstart
 PASS oldChildWindow.onunhandledrejection is newChildWindow.onunhandledrejection
 PASS oldChildWindow.onunload is newChildWindow.onunload
 PASS oldChildWindow.onvolumechange is newChildWindow.onvolumechange

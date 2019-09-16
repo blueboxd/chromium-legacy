@@ -62,12 +62,12 @@ class PageActionIconView : public IconLabelBubbleView {
 
   void set_icon_size(int size) { icon_size_ = size; }
 
+  // Updates the visibility of the icon based on the associated model state,
+  // returns whether any change occurred.
+  virtual bool Update() = 0;
+
   // Returns the bubble instance for the icon.
   virtual views::BubbleDialogDelegateView* GetBubble() const = 0;
-
-  // Updates the icon state and associated bubble when the WebContents changes.
-  // Returns true if there was a change.
-  virtual bool Update();
 
   // Retrieve the text to be used for a tooltip or accessible name.
   virtual base::string16 GetTextForTooltipAndAccessibleName() const = 0;

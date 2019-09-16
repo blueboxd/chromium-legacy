@@ -76,10 +76,6 @@ bool PageActionIconView::SetCommandEnabled(bool enabled) const {
   return command_updater_->IsCommandEnabled(command_id_);
 }
 
-bool PageActionIconView::Update() {
-  return false;
-}
-
 SkColor PageActionIconView::GetLabelColorForTesting() const {
   return label()->GetEnabledColor();
 }

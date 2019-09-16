@@ -135,7 +135,13 @@ bool MockWMRCameraPose::TryGetViewTransform(
   float col_major_transform[16];
   origin_to_device.matrix().asColMajorf(col_major_transform);
 
+  // index of matrix[3][0] in 1d array
+  int index = 3 * 4;
+  float original_x = col_major_transform[index];
+  float ipd = hook.GetHook()->WaitGetDeviceConfig().interpupillary_distance;
+  col_major_transform[index] = original_x - ipd / 2;
   CopyRowMajorFloatArrayToWindowsMatrix(col_major_transform, transform->Left);
+  col_major_transform[index] = original_x + ipd / 2;
   CopyRowMajorFloatArrayToWindowsMatrix(col_major_transform, transform->Right);
 
   return true;

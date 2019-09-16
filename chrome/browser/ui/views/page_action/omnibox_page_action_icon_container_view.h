@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/ui/page_action/page_action_icon_container.h"
+#include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "components/zoom/zoom_event_manager.h"
 #include "components/zoom/zoom_event_manager_observer.h"
@@ -34,7 +34,6 @@ class SendTabToSelfIconView;
 
 class OmniboxPageActionIconContainerView
     : public views::View,
-      public PageActionIconContainer,
       public zoom::ZoomEventManagerObserver {
  public:
   struct Params {
@@ -56,7 +55,7 @@ class OmniboxPageActionIconContainerView
   explicit OmniboxPageActionIconContainerView(const Params& params);
   ~OmniboxPageActionIconContainerView() override;
 
-  PageActionIconView* GetPageActionIconView(PageActionIconType type);
+  PageActionIconView* GetIconView(PageActionIconType type);
 
   // Updates the visual state of all enabled page action icons.
   void UpdateAll();
@@ -70,10 +69,6 @@ class OmniboxPageActionIconContainerView
 
   // See comment in browser_window.h for more info.
   void ZoomChangedForActiveTab(bool can_show_bubble);
-
-  // PageActionIconContainer:
-  void UpdatePageActionIcon(PageActionIconType type) override;
-  void ExecutePageActionIconForTesting(PageActionIconType type) override;
 
  private:
   // views::View:

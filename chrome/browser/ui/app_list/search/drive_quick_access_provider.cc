@@ -7,7 +7,11 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
+#include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/ui/app_list/search/drive_quick_access_result.h"
 
@@ -16,7 +20,21 @@ namespace {
 
 constexpr int kMaxItems = 5;
 
+// Given a vector of QuickAccessItems, return only those that exist on-disk.
+std::vector<drive::QuickAccessItem> FilterResults(
+    const drive::DriveIntegrationService* drive_service,
+    const std::vector<drive::QuickAccessItem>& drive_results) {
+  std::vector<drive::QuickAccessItem> valid_results;
+  for (const auto& result : drive_results) {
+    if (base::PathExists(
+            drive_service->GetMountPointPath().Append(result.path))) {
+      valid_results.emplace_back(result);
+    }
+  }
+  return valid_results;
 }
+
+}  // namespace
 
 DriveQuickAccessProvider::DriveQuickAccessProvider(Profile* profile)
     : profile_(profile),
@@ -24,6 +42,9 @@ DriveQuickAccessProvider::DriveQuickAccessProvider(Profile* profile)
           drive::DriveIntegrationServiceFactory::GetForProfile(profile)) {
   DCHECK(profile_);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  task_runner_ = base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
   // Warm up the cache.
   AppListShown();
@@ -78,8 +99,18 @@ void DriveQuickAccessProvider::OnGetQuickAccessItems(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // An empty |drive_results| is likely caused by a failed call to ItemSuggest,
   // so don't replace the cache.
-  if (!drive_results.empty())
-    results_cache_ = std::move(drive_results);
+  if (!drive_results.empty()) {
+    base::PostTaskAndReplyWithResult(
+        task_runner_.get(), FROM_HERE,
+        base::BindOnce(&FilterResults, drive_service_, drive_results),
+        base::BindOnce(&DriveQuickAccessProvider::SetResultsCache,
+                       weak_factory_.GetWeakPtr()));
+  }
+}
+
+void DriveQuickAccessProvider::SetResultsCache(
+    const std::vector<drive::QuickAccessItem>& drive_results) {
+  results_cache_ = std::move(drive_results);
 }
 
 }  // namespace app_list

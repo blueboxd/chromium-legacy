@@ -701,11 +701,11 @@ void LocationBarView::Update(const WebContents* contents) {
   else
     omnibox_view_->Update();
 
-  if (omnibox_page_action_icon_container_view_->GetPageActionIconView(
-          PageActionIconType::kSendTabToSelf))
-    omnibox_page_action_icon_container_view_
-        ->GetPageActionIconView(PageActionIconType::kSendTabToSelf)
-        ->SetVisible(false);
+  PageActionIconView* send_tab_to_self_icon =
+      omnibox_page_action_icon_container_view_->GetIconView(
+          PageActionIconType::kSendTabToSelf);
+  if (send_tab_to_self_icon)
+    send_tab_to_self_icon->SetVisible(false);
 
   OnChanged();  // NOTE: Calls Layout().
 }
@@ -1063,7 +1063,7 @@ void LocationBarView::UpdateBookmarkStarVisibility() {
 
 inline bool LocationBarView::UpdateSendTabToSelfIcon() {
   PageActionIconView* icon =
-      this->omnibox_page_action_icon_container_view()->GetPageActionIconView(
+      omnibox_page_action_icon_container_view_->GetIconView(
           PageActionIconType::kSendTabToSelf);
   return icon && icon->Update();
 }

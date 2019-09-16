@@ -138,5 +138,8 @@
 
     // CSS Transitions
     // https://drafts.csswg.org/css-transitions/#interface-globaleventhandlers-idl
+    attribute EventHandler ontransitionrun;
+    attribute EventHandler ontransitionstart;
     attribute EventHandler ontransitionend;
+    attribute EventHandler ontransitioncancel;
 };

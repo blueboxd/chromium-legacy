@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_type.h"
 #include "chrome/browser/ui/in_product_help/in_product_help.h"
-#include "chrome/browser/ui/page_action/page_action_icon_container.h"
+#include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/common/buildflags.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/translate/core/common/translate_errors.h"
@@ -40,7 +40,6 @@ class ExtensionsContainer;
 class FindBar;
 class GURL;
 class LocationBar;
-class PageActionIconContainer;
 class SharingUiController;
 class StatusBubble;
 class ToolbarActionsBar;
@@ -245,14 +244,12 @@ class BrowserWindow : public ui::BaseWindow {
   // be called after the TabStripModel has an active tab.
   virtual void SetContentsSize(const gfx::Size& size) = 0;
 
-  // Returns the container of page action icons.
-  virtual PageActionIconContainer* GetOmniboxPageActionIconContainer() = 0;
+  // Updates the visual state of the specified page action icon if present on
+  // the window. Returns whether any change occurred.
+  virtual bool UpdatePageActionIcon(PageActionIconType type) = 0;
 
-  // Returns the container of toolbar page action icons. The page action icon
-  // container above is in the omnibox. The toolbar page action icon container
-  // is in the toolbar which contains user-account-related data icons and the
-  // profile avatar icon.
-  virtual PageActionIconContainer* GetToolbarPageActionIconContainer() = 0;
+  // Executes the action for the specified page action icon.
+  virtual void ExecutePageActionIconForTesting(PageActionIconType type) = 0;
 
   // Returns the location bar.
   virtual LocationBar* GetLocationBar() const = 0;

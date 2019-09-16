@@ -149,7 +149,6 @@ void ParentToBrowser(Browser* browser,
   zoom_bubble->SetHighlightedButton(
       BrowserView::GetBrowserViewForBrowser(browser)
           ->toolbar_button_provider()
-          ->GetOmniboxPageActionIconContainerView()
           ->GetPageActionIconView(PageActionIconType::kZoom));
 
   views::BubbleDialogDelegateView::CreateBubble(zoom_bubble);
@@ -296,7 +295,6 @@ base::string16 ZoomBubbleView::GetAccessibleWindowTitle() const {
     return {};
   return BrowserView::GetBrowserViewForBrowser(browser)
       ->toolbar_button_provider()
-      ->GetOmniboxPageActionIconContainerView()
       ->GetPageActionIconView(PageActionIconType::kZoom)
       ->GetTextForTooltipAndAccessibleName();
 }
@@ -565,12 +563,8 @@ void ZoomBubbleView::UpdateZoomIconVisibility() {
   // may also be destroyed: the call to WindowClosing() may be triggered by
   // parent window destruction tearing down its child windows.
   Browser* browser = chrome::FindBrowserWithID(session_id_);
-  if (browser && browser->window() &&
-      browser->window()->GetOmniboxPageActionIconContainer()) {
-    browser->window()
-        ->GetOmniboxPageActionIconContainer()
-        ->UpdatePageActionIcon(PageActionIconType::kZoom);
-  }
+  if (browser && browser->window())
+    browser->window()->UpdatePageActionIcon(PageActionIconType::kZoom);
 }
 
 void ZoomBubbleView::StartTimerIfNecessary() {

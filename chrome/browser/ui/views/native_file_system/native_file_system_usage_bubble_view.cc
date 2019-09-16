@@ -250,6 +250,7 @@ void NativeFileSystemUsageBubbleView::ShowBubble(
 
   ToolbarButtonProvider* button_provider =
       BrowserView::GetBrowserViewForBrowser(browser)->toolbar_button_provider();
+
   // Writable directories are generally also readable, but we don't want to
   // display the same directory twice. So filter out any writable directories
   // from the readable directories list.
@@ -267,9 +268,8 @@ void NativeFileSystemUsageBubbleView::ShowBubble(
           PageActionIconType::kNativeFileSystemAccess),
       web_contents, origin, std::move(usage));
 
-  bubble_->SetHighlightedButton(
-      button_provider->GetOmniboxPageActionIconContainerView()
-          ->GetPageActionIconView(PageActionIconType::kNativeFileSystemAccess));
+  bubble_->SetHighlightedButton(button_provider->GetPageActionIconView(
+      PageActionIconType::kNativeFileSystemAccess));
   views::BubbleDialogDelegateView::CreateBubble(bubble_);
 
   bubble_->ShowForReason(DisplayReason::USER_GESTURE,
@@ -307,17 +307,10 @@ base::string16 NativeFileSystemUsageBubbleView::GetAccessibleWindowTitle()
   if (!browser)
     return {};
 
-  OmniboxPageActionIconContainerView* page_action_icon_container_view =
-      BrowserView::GetBrowserViewForBrowser(browser)
-          ->toolbar_button_provider()
-          ->GetOmniboxPageActionIconContainerView();
-  if (!page_action_icon_container_view)
-    return {};
-
-  PageActionIconView* icon_view =
-      page_action_icon_container_view->GetPageActionIconView(
-          PageActionIconType::kNativeFileSystemAccess);
-  return icon_view->GetTextForTooltipAndAccessibleName();
+  return BrowserView::GetBrowserViewForBrowser(browser)
+      ->toolbar_button_provider()
+      ->GetPageActionIconView(PageActionIconType::kNativeFileSystemAccess)
+      ->GetTextForTooltipAndAccessibleName();
 }
 
 int NativeFileSystemUsageBubbleView::GetDialogButtons() const {

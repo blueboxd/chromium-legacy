@@ -458,6 +458,18 @@ bool OpenXrTestHelper::UpdateData() {
   return false;
 }
 
+bool OpenXrTestHelper::UpdateViewFOV(XrView views[], uint32_t size) {
+  RETURN_IF(size != 2, XR_ERROR_VALIDATION_FAILURE,
+            "UpdateViewFOV currently only supports 2 viewports config");
+  base::AutoLock auto_lock(lock_);
+  if (test_hook_) {
+    auto config = test_hook_->WaitGetDeviceConfig();
+    views[0].pose.position.x = config.interpupillary_distance / 2;
+    views[1].pose.position.x = -config.interpupillary_distance / 2;
+  }
+  return true;
+}
+
 XrResult OpenXrTestHelper::ValidateAction(XrAction action) const {
   RETURN_IF(actions_.count(action) != 1, XR_ERROR_HANDLE_INVALID,
             "ValidateAction: Invalid Action");

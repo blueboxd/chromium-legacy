@@ -16,6 +16,8 @@ namespace vr {
 
 namespace {
 
+const float kIPD = 0.2f;
+
 struct Frame {
   device_test::mojom::SubmittedFrameDataPtr submitted;
   device_test::mojom::PoseFrameDataPtr pose;
@@ -56,7 +58,7 @@ class MyXRMock : public MockXRDeviceHookBase {
 
   device_test::mojom::DeviceConfigPtr GetDeviceConfig() {
     auto config = device_test::mojom::DeviceConfig::New();
-    config->interpupillary_distance = 0.2f;
+    config->interpupillary_distance = kIPD;
     config->projection_left =
         device_test::mojom::ProjectionRaw::New(0.1f, 0.2f, 0.3f, 0.4f);
     config->projection_right =
@@ -170,6 +172,9 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestPresentationPoses) {
   // Load the test page, and enter presentation.
   t->LoadUrlAndAwaitInitialization(
       t->GetFileUrlForHtmlTestFile("test_webxr_poses"));
+  ASSERT_TRUE(
+      t->RunJavaScriptAndExtractBoolOrFail("checkMagicWindowViewOffset()"))
+      << "view under Magic Window should not have any offset from frame";
   t->EnterSessionWithUserGestureOrFail();
 
   // Wait for JavaScript to submit at least one frame.
@@ -227,6 +232,10 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestPresentationPoses) {
     ASSERT_TRUE(t->RunJavaScriptAndExtractBoolOrFail(base::StringPrintf(
         "checkFramePose(%d, %s)", frame_id, GetPoseAsString(frame).c_str())))
         << "JavaScript-side frame cache has incorrect pose";
+
+    ASSERT_TRUE(t->RunJavaScriptAndExtractBoolOrFail(
+        base::StringPrintf("checkFrameLeftEyeIPD(%d, %f)", frame_id, kIPD / 2)))
+        << "JavaScript-side frame cache has incorrect eye position";
   }
 
   // Tell JavaScript that it is done with the test.

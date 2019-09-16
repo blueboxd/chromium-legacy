@@ -169,8 +169,6 @@ void AppListClientImpl::ViewShown(int64_t display_id) {
                              current_model_updater_->BadgedItemCount());
   }
   display_id_ = display_id;
-  if (search_controller_)
-    search_controller_->AppListShown();
 }
 
 void AppListClientImpl::ActivateItem(int profile_id,
@@ -226,6 +224,8 @@ void AppListClientImpl::OnAppListTargetVisibilityChanged(bool visible) {
 
 void AppListClientImpl::OnAppListVisibilityChanged(bool visible) {
   app_list_visible_ = visible;
+  if (visible && search_controller_)
+    search_controller_->AppListShown();
 }
 
 void AppListClientImpl::OnFolderCreated(

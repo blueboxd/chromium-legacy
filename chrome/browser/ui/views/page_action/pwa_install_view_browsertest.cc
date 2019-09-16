@@ -83,7 +83,6 @@ class PwaInstallViewBrowserTest : public extensions::ExtensionBrowserTest {
     pwa_install_view_ =
         BrowserView::GetBrowserViewForBrowser(browser())
             ->toolbar_button_provider()
-            ->GetOmniboxPageActionIconContainerView()
             ->GetPageActionIconView(PageActionIconType::kPwaInstall);
     EXPECT_FALSE(pwa_install_view_->GetVisible());
 

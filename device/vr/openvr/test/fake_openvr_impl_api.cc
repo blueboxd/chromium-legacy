@@ -439,7 +439,8 @@ HmdMatrix34_t TestVRSystem::GetEyeToHeadTransform(EVREye eye) {
   ret.m[0][0] = 1;
   ret.m[1][1] = 1;
   ret.m[2][2] = 1;
-  ret.m[0][3] = (eye == Eye_Left) ? 0.1f : -0.1f;
+  float ipd = g_test_helper.GetInterpupillaryDistance();
+  ret.m[0][3] = ((eye == Eye_Left) ? 1 : -1) * ipd / 2;
   return ret;
 }
 

@@ -32,20 +32,12 @@ namespace {
 
 // ShapingLineBreaker computes using visual positions. This function flips
 // logical advance to visual, or vice versa.
-LayoutUnit FlipRtl(LayoutUnit value, TextDirection direction) {
+inline LayoutUnit FlipRtl(LayoutUnit value, TextDirection direction) {
   return IsLtr(direction) ? value : -value;
 }
 
-// Snaps a visual position to the line start direction.
-LayoutUnit SnapStart(float value, TextDirection direction) {
-  return IsLtr(direction) ? LayoutUnit::FromFloatFloor(value)
-                          : LayoutUnit::FromFloatCeil(value);
-}
-
-// Snaps a visual position to the line end direction.
-LayoutUnit SnapEnd(float value, TextDirection direction) {
-  return IsLtr(direction) ? LayoutUnit::FromFloatCeil(value)
-                          : LayoutUnit::FromFloatFloor(value);
+inline float FlipRtl(float value, TextDirection direction) {
+  return IsLtr(direction) ? value : -value;
 }
 
 inline bool IsBreakableSpace(UChar ch) {
@@ -221,17 +213,16 @@ scoped_refptr<const ShapeResultView> ShapingLineBreaker::ShapeLine(
   const String& text = GetText();
 
   // The start position in the original shape results.
-  float start_position_float =
-      result_->CachedPositionForOffset(start - range_start);
-  TextDirection direction = result_->Direction();
-  LayoutUnit start_position = SnapStart(start_position_float, direction);
+  float start_position = result_->CachedPositionForOffset(start - range_start);
 
   // Find a candidate break opportunity by identifying the last offset before
   // exceeding the available space and the determine the closest valid break
   // preceding the candidate.
-  LayoutUnit end_position = SnapEnd(start_position_float, direction) +
-                            FlipRtl(available_space, direction);
-  DCHECK_GE(FlipRtl(end_position - start_position, direction), LayoutUnit(0));
+  TextDirection direction = result_->Direction();
+  float end_position = start_position + FlipRtl(available_space, direction);
+  DCHECK_GE(FlipRtl(LayoutUnit::FromFloatCeil(end_position - start_position),
+                    direction),
+            LayoutUnit(0));
   unsigned candidate_break =
       result_->CachedOffsetForPosition(end_position) + range_start;
 
@@ -283,11 +274,10 @@ scoped_refptr<const ShapeResultView> ShapingLineBreaker::ShapeLine(
       return ShapeResultView::Create(
           Shape(start, break_opportunity.offset).get());
     }
-    LayoutUnit original_width = FlipRtl(
-        SnapEnd(result_->CachedPositionForOffset(first_safe - range_start),
-                direction) -
-            start_position,
-        direction);
+    float first_safe_position =
+        result_->CachedPositionForOffset(first_safe - range_start);
+    LayoutUnit original_width = LayoutUnit::FromFloatCeil(
+        FlipRtl(first_safe_position - start_position, direction));
     line_start_result = Shape(start, first_safe);
     available_space += line_start_result->SnappedWidth() - original_width;
   }
@@ -334,10 +324,10 @@ scoped_refptr<const ShapeResultView> ShapingLineBreaker::ShapeLine(
       }
 
       // Check if this opportunity can fit after reshaping the line end.
-      LayoutUnit safe_position = SnapStart(
-          result_->CachedPositionForOffset(last_safe - range_start), direction);
+      float safe_position =
+          result_->CachedPositionForOffset(last_safe - range_start);
       line_end_result = Shape(last_safe, break_opportunity.offset);
-      if (line_end_result->SnappedWidth() <=
+      if (line_end_result->Width() <=
           FlipRtl(end_position - safe_position, direction))
         break;
 

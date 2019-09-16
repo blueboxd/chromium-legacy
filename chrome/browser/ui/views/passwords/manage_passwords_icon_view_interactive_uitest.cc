@@ -51,7 +51,6 @@ class ManagePasswordsIconViewTest : public ManagePasswordsTest,
     } else {
       view = BrowserView::GetBrowserViewForBrowser(browser())
                  ->toolbar_button_provider()
-                 ->GetOmniboxPageActionIconContainerView()
                  ->GetPageActionIconView(PageActionIconType::kManagePasswords);
     }
     DCHECK_EQ(view->GetClassName(), ManagePasswordsIconViews::kClassName);

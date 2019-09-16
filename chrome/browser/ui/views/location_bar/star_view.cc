@@ -71,6 +71,12 @@ void StarView::ShowPromo() {
   }
 }
 
+bool StarView::Update() {
+  // Updates are handled by |LocationBarView::UpdateBookmarkStarVisibility()|.
+  // TODO(https://crbug.com/788051): Make updates handled here.
+  return false;
+}
+
 void StarView::OnExecuting(PageActionIconView::ExecuteSource execute_source) {
   BookmarkEntryPoint entry_point = BOOKMARK_ENTRY_POINT_STAR_MOUSE;
   switch (execute_source) {

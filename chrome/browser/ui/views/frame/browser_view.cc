@@ -946,7 +946,6 @@ void BrowserView::ZoomChangedForActiveTab(bool can_show_bubble) {
       toolbar_button_provider()->GetAppMenuButton();
   bool app_menu_showing = app_menu_button && app_menu_button->IsMenuShowing();
   toolbar_button_provider()
-      ->GetOmniboxPageActionIconContainerView()
       ->ZoomChangedForActiveTab(can_show_bubble && !app_menu_showing);
 }
 
@@ -1100,12 +1099,14 @@ void BrowserView::SetToolbarButtonProvider(ToolbarButtonProvider* provider) {
   toolbar_button_provider_ = provider;
 }
 
-PageActionIconContainer* BrowserView::GetOmniboxPageActionIconContainer() {
-  return toolbar_button_provider_->GetOmniboxPageActionIconContainerView();
+bool BrowserView::UpdatePageActionIcon(PageActionIconType type) {
+  PageActionIconView* icon =
+      toolbar_button_provider_->GetPageActionIconView(type);
+  return icon ? icon->Update() : false;
 }
 
-PageActionIconContainer* BrowserView::GetToolbarPageActionIconContainer() {
-  return toolbar_ ? toolbar_->toolbar_page_action_container() : nullptr;
+void BrowserView::ExecutePageActionIconForTesting(PageActionIconType type) {
+  toolbar_button_provider_->GetPageActionIconView(type)->ExecuteForTesting();
 }
 
 LocationBar* BrowserView::GetLocationBar() const {
@@ -1360,24 +1361,11 @@ autofill::SaveCardBubbleView* BrowserView::ShowSaveCreditCardBubble(
     autofill::SaveCardBubbleController* controller,
     bool user_gesture) {
   autofill::BubbleType bubble_type = controller->GetBubbleType();
-  PageActionIconView* icon_view = nullptr;
+  PageActionIconView* icon_view =
+      toolbar_button_provider_->GetPageActionIconView(
+          PageActionIconType::kSaveCard);
   views::View* anchor_view =
       toolbar_button_provider_->GetAnchorView(PageActionIconType::kSaveCard);
-
-  if (base::FeatureList::IsEnabled(
-          autofill::features::kAutofillEnableToolbarStatusChip)) {
-    // Icon will be shown in the status chip when feature is enabled. The anchor
-    // view for the bubble is the status chip container.
-    ToolbarPageActionIconContainerView* toolbar_page_action_container =
-        toolbar_->toolbar_page_action_container();
-    icon_view = toolbar_page_action_container->GetIconView(
-        PageActionIconType::kSaveCard);
-  } else {
-    // Otherwise the bubble is anchored to the credit card icon in the location
-    // bar. This will be removed when the feature is fully enabled.
-    LocationBarView* location_bar = GetLocationBarView();
-    icon_view = location_bar->save_credit_card_icon_view();
-  }
 
   autofill::SaveCardBubbleViews* bubble = nullptr;
   switch (bubble_type) {
@@ -1438,16 +1426,14 @@ send_tab_to_self::SendTabToSelfBubbleView* BrowserView::ShowSendTabToSelfBubble(
           toolbar_button_provider()->GetAnchorView(
               PageActionIconType::kSendTabToSelf),
           web_contents, controller);
-  views::BubbleDialogDelegateView::CreateBubble(bubble);
-  bubble->Show(send_tab_to_self::SendTabToSelfBubbleViewImpl::USER_GESTURE);
-
   PageActionIconView* icon_view =
       toolbar_button_provider()
-          ->GetOmniboxPageActionIconContainerView()
           ->GetPageActionIconView(PageActionIconType::kSendTabToSelf);
   if (icon_view)
     bubble->SetHighlightedButton(icon_view);
 
+  views::BubbleDialogDelegateView::CreateBubble(bubble);
+  bubble->Show(send_tab_to_self::SendTabToSelfBubbleViewImpl::USER_GESTURE);
   return bubble;
 }
 
@@ -1455,24 +1441,15 @@ autofill::LocalCardMigrationBubble* BrowserView::ShowLocalCardMigrationBubble(
     content::WebContents* web_contents,
     autofill::LocalCardMigrationBubbleController* controller,
     bool user_gesture) {
-  views::View* anchor_view = toolbar_button_provider_->GetAnchorView(
-      PageActionIconType::kLocalCardMigration);
   autofill::LocalCardMigrationBubbleViews* bubble =
-      new autofill::LocalCardMigrationBubbleViews(anchor_view, web_contents,
-                                                  controller);
+      new autofill::LocalCardMigrationBubbleViews(
+          toolbar_button_provider_->GetAnchorView(
+              PageActionIconType::kLocalCardMigration),
+          web_contents, controller);
 
-  PageActionIconView* icon_view = nullptr;
-  if (base::FeatureList::IsEnabled(
-          autofill::features::kAutofillEnableToolbarStatusChip)) {
-    // Icon will be shown in the status chip when feature is enabled. The anchor
-    // view for the bubble is the status chip container.
-    icon_view = toolbar_->toolbar_page_action_container()->GetIconView(
-        PageActionIconType::kLocalCardMigration);
-  } else {
-    // Otherwise the bubble is anchored to the credit card icon in the location
-    // bar. This will be removed when the feature is fully enabled.
-    icon_view = GetLocationBarView()->local_card_migration_icon_view();
-  }
+  PageActionIconView* icon_view =
+      toolbar_button_provider_->GetPageActionIconView(
+          PageActionIconType::kLocalCardMigration);
   if (icon_view)
     bubble->SetHighlightedButton(icon_view);
 
@@ -1505,7 +1482,6 @@ ShowTranslateBubbleResult BrowserView::ShowTranslateBubble(
 
   PageActionIconView* translate_icon =
       toolbar_button_provider()
-          ->GetOmniboxPageActionIconContainerView()
           ->GetPageActionIconView(PageActionIconType::kTranslate);
   TranslateBubbleView::ShowBubble(
       toolbar_button_provider()->GetAnchorView(PageActionIconType::kTranslate),
@@ -3271,6 +3247,5 @@ void BrowserView::OnImmersiveModeControllerDestroyed() {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, banners::AppBannerManager::Observer implementation:
 void BrowserView::OnInstallableWebAppStatusUpdated() {
-  GetOmniboxPageActionIconContainer()->UpdatePageActionIcon(
-      PageActionIconType::kPwaInstall);
+  UpdatePageActionIcon(PageActionIconType::kPwaInstall);
 }

@@ -411,9 +411,9 @@ views::View* WebAppFrameToolbarView::GetDefaultExtensionDialogAnchorView() {
   return GetAppMenuButton();
 }
 
-OmniboxPageActionIconContainerView*
-WebAppFrameToolbarView::GetOmniboxPageActionIconContainerView() {
-  return omnibox_page_action_icon_container_view_;
+PageActionIconView* WebAppFrameToolbarView::GetPageActionIconView(
+    PageActionIconType type) {
+  return omnibox_page_action_icon_container_view_->GetIconView(type);
 }
 
 AppMenuButton* WebAppFrameToolbarView::GetAppMenuButton() {
@@ -450,6 +450,11 @@ views::View* WebAppFrameToolbarView::GetAnchorView(PageActionIconType type) {
   return web_app_menu_button_;
 }
 
+void WebAppFrameToolbarView::ZoomChangedForActiveTab(bool can_show_bubble) {
+  omnibox_page_action_icon_container_view_->ZoomChangedForActiveTab(
+      can_show_bubble);
+}
+
 void WebAppFrameToolbarView::OnWidgetVisibilityChanged(views::Widget* widget,
                                                        bool visibility) {
   if (!visibility || !pending_widget_visibility_)
@@ -462,6 +467,14 @@ void WebAppFrameToolbarView::OnWidgetVisibilityChanged(views::Widget* widget,
         FROM_HERE, kTitlebarAnimationDelay, this,
         &WebAppFrameToolbarView::StartTitlebarAnimation);
   }
+}
+
+void WebAppFrameToolbarView::DisableAnimationForTesting() {
+  g_animation_disabled_for_testing = true;
+}
+
+views::View* WebAppFrameToolbarView::GetPageActionIconContainerForTesting() {
+  return omnibox_page_action_icon_container_view_;
 }
 
 gfx::Size WebAppFrameToolbarView::CalculatePreferredSize() const {
@@ -502,10 +515,6 @@ void WebAppFrameToolbarView::StartTitlebarAnimation() {
 void WebAppFrameToolbarView::FadeInContentSettingIcons() {
   if (content_settings_container_)
     content_settings_container_->FadeIn();
-}
-
-void WebAppFrameToolbarView::DisableAnimationForTesting() {
-  g_animation_disabled_for_testing = true;
 }
 
 views::View* WebAppFrameToolbarView::GetContentSettingContainerForTesting() {

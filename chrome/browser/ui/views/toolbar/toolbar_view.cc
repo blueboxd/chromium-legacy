@@ -34,6 +34,8 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/autofill/payments/local_card_migration_icon_view.h"
+#include "chrome/browser/ui/views/autofill/payments/save_card_icon_view.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
@@ -415,10 +417,8 @@ void ToolbarView::ShowIntentPickerBubble(
     bool show_remember_selection,
     PageActionIconType icon_type,
     IntentPickerResponse callback) {
-  PageActionIconView* intent_picker_view =
-      location_bar()
-          ->omnibox_page_action_icon_container_view()
-          ->GetPageActionIconView(icon_type);
+  PageActionIconView* const intent_picker_view =
+      GetPageActionIconView(icon_type);
   if (!intent_picker_view)
     return;
 
@@ -814,9 +814,24 @@ views::View* ToolbarView::GetDefaultExtensionDialogAnchorView() {
   return GetAppMenuButton();
 }
 
-OmniboxPageActionIconContainerView*
-ToolbarView::GetOmniboxPageActionIconContainerView() {
-  return location_bar_->omnibox_page_action_icon_container_view();
+PageActionIconView* ToolbarView::GetPageActionIconView(
+    PageActionIconType type) {
+  PageActionIconView* icon =
+      location_bar()->omnibox_page_action_icon_container_view()->GetIconView(
+          type);
+  if (icon)
+    return icon;
+  if (toolbar_page_action_container_)
+    icon = toolbar_page_action_container_->GetIconView(type);
+  if (icon)
+    return icon;
+  // TODO(https://crbug.com/788051): Migrate remaining page action icons out of
+  // LocationBarView.
+  if (type == PageActionIconType::kSaveCard)
+    return location_bar_->save_credit_card_icon_view();
+  if (type == PageActionIconType::kLocalCardMigration)
+    return location_bar_->local_card_migration_icon_view();
+  return nullptr;
 }
 
 AppMenuButton* ToolbarView::GetAppMenuButton() {
@@ -845,28 +860,22 @@ views::AccessiblePaneView* ToolbarView::GetAsAccessiblePaneView() {
 }
 
 views::View* ToolbarView::GetAnchorView(PageActionIconType type) {
-  if (base::FeatureList::IsEnabled(
-          autofill::features::kAutofillEnableToolbarStatusChip)) {
-    switch (type) {
-      case PageActionIconType::kLocalCardMigration:
-      case PageActionIconType::kManagePasswords:
-      case PageActionIconType::kSaveCard:
-        return toolbar_page_action_container_;
-      case PageActionIconType::kFind:
-      case PageActionIconType::kIntentPicker:
-      case PageActionIconType::kPwaInstall:
-      case PageActionIconType::kReaderMode:
-      case PageActionIconType::kSendTabToSelf:
-      case PageActionIconType::kSharedClipboard:
-      case PageActionIconType::kTranslate:
-      case PageActionIconType::kZoom:
-      case PageActionIconType::kNativeFileSystemAccess:
-      case PageActionIconType::kClickToCall:
-      case PageActionIconType::kCookieControls:
-        break;
+  // Return the container visually housing the icon so all the bubbles align
+  // with the same visible edge.
+  if (toolbar_page_action_container_) {
+    views::View* icon = GetPageActionIconView(type);
+    if (toolbar_page_action_container_->Contains(icon)) {
+      DCHECK(base::FeatureList::IsEnabled(
+          autofill::features::kAutofillEnableToolbarStatusChip));
+      return toolbar_page_action_container_;
     }
   }
   return location_bar_;
+}
+
+void ToolbarView::ZoomChangedForActiveTab(bool can_show_bubble) {
+  location_bar_->omnibox_page_action_icon_container_view()
+      ->ZoomChangedForActiveTab(can_show_bubble);
 }
 
 BrowserRootView::DropIndex ToolbarView::GetDropIndex(

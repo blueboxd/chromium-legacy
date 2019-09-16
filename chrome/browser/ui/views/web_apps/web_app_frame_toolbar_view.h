@@ -27,6 +27,7 @@
 class AppMenuButton;
 class BrowserView;
 class ExtensionsToolbarContainer;
+class OmniboxPageActionIconContainerView;
 class WebAppOriginText;
 class WebAppMenuButton;
 
@@ -110,16 +111,19 @@ class WebAppFrameToolbarView : public views::AccessiblePaneView,
   BrowserActionsContainer* GetBrowserActionsContainer() override;
   ToolbarActionView* GetToolbarActionViewForId(const std::string& id) override;
   views::View* GetDefaultExtensionDialogAnchorView() override;
-  OmniboxPageActionIconContainerView* GetOmniboxPageActionIconContainerView()
-      override;
+  PageActionIconView* GetPageActionIconView(PageActionIconType type) override;
   AppMenuButton* GetAppMenuButton() override;
   gfx::Rect GetFindBarBoundingBox(int contents_height) const override;
   void FocusToolbar() override;
   views::AccessiblePaneView* GetAsAccessiblePaneView() override;
   views::View* GetAnchorView(PageActionIconType type) override;
+  void ZoomChangedForActiveTab(bool can_show_bubble) override;
 
   // views::WidgetObserver:
   void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
+
+  static void DisableAnimationForTesting();
+  views::View* GetPageActionIconContainerForTesting();
 
  protected:
   // views::AccessiblePaneView:
@@ -129,7 +133,6 @@ class WebAppFrameToolbarView : public views::AccessiblePaneView,
 
  private:
   friend class WebAppNonClientFrameViewAshTest;
-  friend class WebAppGlassBrowserFrameViewTest;
   friend class ImmersiveModeControllerAshWebAppBrowserTest;
   friend class WebAppAshInteractiveUITest;
 
@@ -142,7 +145,6 @@ class WebAppFrameToolbarView : public views::AccessiblePaneView,
   bool ShouldAnimate() const;
   void StartTitlebarAnimation();
   void FadeInContentSettingIcons();
-  static void DisableAnimationForTesting();
 
   class ContentSettingsContainer;
 

@@ -18,12 +18,10 @@ IN_PROC_BROWSER_TEST_F(ZoomViewBrowserTest, SharedPageVisibility) {
   views::View* zoom_icon =
       BrowserView::GetBrowserViewForBrowser(browser())
           ->toolbar_button_provider()
-          ->GetOmniboxPageActionIconContainerView()
           ->GetPageActionIconView(PageActionIconType::kZoom);
   views::View* second_zoom_icon =
       BrowserView::GetBrowserViewForBrowser(CreateBrowser(browser()->profile()))
           ->toolbar_button_provider()
-          ->GetOmniboxPageActionIconContainerView()
           ->GetPageActionIconView(PageActionIconType::kZoom);
 
   // Initially no icon.

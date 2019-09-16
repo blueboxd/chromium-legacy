@@ -8,7 +8,6 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
-#include "chrome/browser/ui/page_action/page_action_icon_container.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 
 #if !defined(OS_ANDROID)
@@ -26,38 +25,32 @@ void UpdatePageActionIcon(PageActionIconType icon_type,
   if (!browser)
     return;
 
-  // If feature is enabled, icon will be in the
-  // ToolbarPageActionIconContainerView.
-  if (base::FeatureList::IsEnabled(
+  // If feature is disabled, kLocalCardMigration and kSaveCard will be children
+  // of the LocationBarView.
+  // TODO(crbug.com/788051): Make these always be children of a
+  // |PageActionIconContainer| so we can just use |GetPageActionIcon|.
+  if (!base::FeatureList::IsEnabled(
           features::kAutofillEnableToolbarStatusChip)) {
-    PageActionIconContainer* toolbar_page_action_container =
-        browser->window()->GetToolbarPageActionIconContainer();
-    if (!toolbar_page_action_container)
-      return;
-
-    toolbar_page_action_container->UpdatePageActionIcon(icon_type);
-  } else {
-    // Otherwise the icon will be in the LocationBar.
     LocationBar* location_bar = browser->window()->GetLocationBar();
-    if (!location_bar)
-      return;
-
     switch (icon_type) {
       case PageActionIconType::kLocalCardMigration:
-        location_bar->UpdateLocalCardMigrationIcon();
-        break;
+        if (location_bar)
+          location_bar->UpdateLocalCardMigrationIcon();
+        return;
       case PageActionIconType::kSaveCard:
-        location_bar->UpdateSaveCreditCardIcon();
+        if (location_bar)
+          location_bar->UpdateSaveCreditCardIcon();
+        return;
+      case PageActionIconType::kManagePasswords: {
+        // Handled by |UpdatePageActionIcon| below.
         break;
-      case PageActionIconType::kManagePasswords:
-        browser->window()
-            ->GetOmniboxPageActionIconContainer()
-            ->UpdatePageActionIcon(icon_type);
-        break;
+      }
       default:
         NOTREACHED();
     }
   }
+
+  browser->window()->UpdatePageActionIcon(icon_type);
 #endif
 }
 

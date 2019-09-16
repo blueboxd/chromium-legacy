@@ -73,8 +73,6 @@ void ToolbarPageActionIconContainerView::UpdateAllIcons() {
 
   if (avatar_)
     avatar_->UpdateIcon();
-
-  UpdateAvatarIconStateUi();
 }
 
 PageActionIconView* ToolbarPageActionIconContainerView::GetIconView(
@@ -101,22 +99,6 @@ bool ToolbarPageActionIconContainerView::
   return false;
 }
 
-void ToolbarPageActionIconContainerView::UpdatePageActionIcon(
-    PageActionIconType icon_type) {
-  PageActionIconView* icon = GetIconView(icon_type);
-  if (icon)
-    icon->Update();
-
-  UpdateAvatarIconStateUi();
-}
-
-void ToolbarPageActionIconContainerView::ExecutePageActionIconForTesting(
-    PageActionIconType type) {
-  PageActionIconView* icon = GetIconView(type);
-  if (icon)
-    icon->ExecuteForTesting();
-}
-
 SkColor ToolbarPageActionIconContainerView::GetPageActionInkDropColor() const {
   return GetToolbarInkDropBaseColor(this);
 }
@@ -139,20 +121,9 @@ void ToolbarPageActionIconContainerView::OnThemeChanged() {
   UpdateAllIcons();
 }
 
-bool ToolbarPageActionIconContainerView::FocusInactiveBubbleForIcon(
-    PageActionIconView* icon_view) {
-  if (!icon_view->GetVisible() || !icon_view->GetBubble())
-    return false;
-
-  views::Widget* widget = icon_view->GetBubble()->GetWidget();
-  if (widget && widget->IsVisible() && !widget->IsActive()) {
-    widget->Show();
-    return true;
-  }
-  return false;
-}
-
-void ToolbarPageActionIconContainerView::UpdateAvatarIconStateUi() {
+void ToolbarPageActionIconContainerView::ChildVisibilityChanged(View* child) {
+  // The avatar should not show UI for paused state or error state when any icon
+  // in the toolbar page action icon container view is visible.
   // If it is in Incognito window, the avatar button shows a text "Incognito"
   // which should not be updated in any case.
   if (browser_->profile()->IsIncognitoProfile())
@@ -166,4 +137,17 @@ void ToolbarPageActionIconContainerView::UpdateAvatarIconStateUi() {
     }
   }
   avatar_->SetAutofillIconVisible(autofill_icon_visible);
+}
+
+bool ToolbarPageActionIconContainerView::FocusInactiveBubbleForIcon(
+    PageActionIconView* icon_view) {
+  if (!icon_view->GetVisible() || !icon_view->GetBubble())
+    return false;
+
+  views::Widget* widget = icon_view->GetBubble()->GetWidget();
+  if (widget && widget->IsVisible() && !widget->IsActive()) {
+    widget->Show();
+    return true;
+  }
+  return false;
 }

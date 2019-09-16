@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_message.h"
-#include "third_party/blink/renderer/modules/nfc/nfc_constants.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_error_event.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_proxy.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_reading_event.h"
@@ -67,11 +66,11 @@ void NFCReader::scan(const NFCScanOptions* options) {
   // pattern, fire a NFCErrorEvent with "SyntaxError" DOMException, then return.
   if (options->hasURL() && !options->url().IsEmpty()) {
     KURL pattern_url(options->url());
-    if (!pattern_url.IsValid() || pattern_url.Protocol() != kNfcProtocolHttps) {
+    if (!pattern_url.IsValid() || pattern_url.Protocol() != "https") {
       DispatchEvent(*MakeGarbageCollected<NFCErrorEvent>(
-          event_type_names::kError,
-          MakeGarbageCollected<DOMException>(DOMExceptionCode::kSyntaxError,
-                                             kNfcUrlPatternError)));
+          event_type_names::kError, MakeGarbageCollected<DOMException>(
+                                        DOMExceptionCode::kSyntaxError,
+                                        "Invalid URL pattern was provided.")));
       return;
     }
   }
@@ -116,7 +115,8 @@ bool NFCReader::CheckSecurity() {
     DispatchEvent(*MakeGarbageCollected<NFCErrorEvent>(
         event_type_names::kError,
         MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotAllowedError,
-                                           kNfcAccessInNonTopFrame)));
+                                           "NFC interfaces are only avaliable "
+                                           "in a top-level browsing context")));
     return false;
   }
   return true;

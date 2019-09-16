@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
-#include "chrome/browser/ui/page_action/page_action_icon_container.h"
 #include "chrome/common/buildflags.h"
 
 #if !defined(OS_ANDROID)
@@ -94,8 +93,8 @@ class TestBrowserWindow : public BrowserWindow {
   bool IsFullscreen() const override;
   bool IsFullscreenBubbleVisible() const override;
   LocationBar* GetLocationBar() const override;
-  PageActionIconContainer* GetOmniboxPageActionIconContainer() override;
-  PageActionIconContainer* GetToolbarPageActionIconContainer() override;
+  bool UpdatePageActionIcon(PageActionIconType type) override;
+  void ExecutePageActionIconForTesting(PageActionIconType type) override {}
   void SetFocusToLocationBar(bool select_all) override {}
   void UpdateReloadStopState(bool is_loading, bool force) override {}
   void UpdateToolbar(content::WebContents* contents) override {}
@@ -222,22 +221,8 @@ class TestBrowserWindow : public BrowserWindow {
     DISALLOW_COPY_AND_ASSIGN(TestLocationBar);
   };
 
-  class TestOmniboxPageActionIconContainer : public PageActionIconContainer {
-   public:
-    TestOmniboxPageActionIconContainer() {}
-    ~TestOmniboxPageActionIconContainer() override {}
-
-    // PageActionIconContainer:
-    void UpdatePageActionIcon(PageActionIconType type) override {}
-    void ExecutePageActionIconForTesting(PageActionIconType type) override {}
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(TestOmniboxPageActionIconContainer);
-  };
-
   TestDownloadShelf download_shelf_;
   TestLocationBar location_bar_;
-  TestOmniboxPageActionIconContainer omnibox_page_action_icon_container_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserWindow);
 };

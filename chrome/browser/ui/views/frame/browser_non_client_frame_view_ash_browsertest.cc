@@ -821,7 +821,6 @@ class WebAppNonClientFrameViewAshTest
 
   PageActionIconView* GetPageActionIcon(PageActionIconType type) {
     return browser_view_->toolbar_button_provider()
-        ->GetOmniboxPageActionIconContainerView()
         ->GetPageActionIconView(type);
   }
 

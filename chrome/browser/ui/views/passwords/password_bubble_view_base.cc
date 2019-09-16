@@ -44,21 +44,11 @@ void PasswordBubbleViewBase::ShowBubble(content::WebContents* web_contents,
   PasswordBubbleViewBase* bubble =
       CreateBubble(web_contents, anchor_view, reason);
   DCHECK(bubble);
-  DCHECK(bubble == g_manage_passwords_bubble_);
+  DCHECK_EQ(bubble, g_manage_passwords_bubble_);
 
-  views::Button* highlighted_button;
-  if (base::FeatureList::IsEnabled(
-          autofill::features::kAutofillEnableToolbarStatusChip)) {
-    highlighted_button =
-        browser_view->toolbar()->toolbar_page_action_container()->GetIconView(
-            PageActionIconType::kManagePasswords);
-  } else {
-    highlighted_button =
-        browser_view->toolbar_button_provider()
-            ->GetOmniboxPageActionIconContainerView()
-            ->GetPageActionIconView(PageActionIconType::kManagePasswords);
-  }
-  g_manage_passwords_bubble_->SetHighlightedButton(highlighted_button);
+  g_manage_passwords_bubble_->SetHighlightedButton(
+      button_provider->GetPageActionIconView(
+          PageActionIconType::kManagePasswords));
 
   views::BubbleDialogDelegateView::CreateBubble(g_manage_passwords_bubble_);
 

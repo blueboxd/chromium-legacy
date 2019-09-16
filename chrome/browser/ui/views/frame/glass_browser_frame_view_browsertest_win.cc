@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_view.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -98,11 +97,9 @@ IN_PROC_BROWSER_TEST_F(WebAppGlassBrowserFrameViewTest, SpaceConstrained) {
   if (!InstallAndLaunchWebApp())
     return;
 
-  views::View* omnibox_page_action_icon_container =
-      browser_view_->toolbar_button_provider()
-          ->GetOmniboxPageActionIconContainerView();
-  EXPECT_EQ(omnibox_page_action_icon_container->parent(),
-            web_app_frame_toolbar_);
+  views::View* page_action_icon_container =
+      web_app_frame_toolbar_->GetPageActionIconContainerForTesting();
+  EXPECT_EQ(page_action_icon_container->parent(), web_app_frame_toolbar_);
 
   views::View* menu_button =
       browser_view_->toolbar_button_provider()->GetAppMenuButton();
@@ -110,7 +107,7 @@ IN_PROC_BROWSER_TEST_F(WebAppGlassBrowserFrameViewTest, SpaceConstrained) {
 
   // Initially the page action icons are not visible, just the menu button has
   // width.
-  EXPECT_EQ(omnibox_page_action_icon_container->width(), 0);
+  EXPECT_EQ(page_action_icon_container->width(), 0);
   int original_menu_button_width = menu_button->width();
   EXPECT_GT(original_menu_button_width, 0);
 
@@ -118,20 +115,20 @@ IN_PROC_BROWSER_TEST_F(WebAppGlassBrowserFrameViewTest, SpaceConstrained) {
   chrome::Zoom(app_browser_, content::PAGE_ZOOM_IN);
 
   // The page action icons should now take up width.
-  EXPECT_GT(omnibox_page_action_icon_container->width(), 0);
+  EXPECT_GT(page_action_icon_container->width(), 0);
   EXPECT_EQ(menu_button->width(), original_menu_button_width);
 
   // Resize the WebAppFrameToolbarView just enough to clip out the page action
   // icons.
   web_app_frame_toolbar_->SetSize(
       gfx::Size(web_app_frame_toolbar_->width() -
-                    omnibox_page_action_icon_container->bounds().right(),
+                    page_action_icon_container->bounds().right(),
                 web_app_frame_toolbar_->height()));
   web_app_frame_toolbar_->Layout();
 
   // The page action icons should be clipped to 0 width while the app menu
   // button retains its full width.
-  EXPECT_EQ(omnibox_page_action_icon_container->width(), 0);
+  EXPECT_EQ(page_action_icon_container->width(), 0);
   EXPECT_EQ(menu_button->width(), original_menu_button_width);
 }
 

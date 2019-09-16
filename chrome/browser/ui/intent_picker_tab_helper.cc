@@ -7,7 +7,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/page_action/page_action_icon_container.h"
 
 IntentPickerTabHelper::~IntentPickerTabHelper() = default;
 
@@ -22,8 +21,7 @@ void IntentPickerTabHelper::SetShouldShowIcon(
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (!browser)
     return;
-  browser->window()->GetOmniboxPageActionIconContainer()->UpdatePageActionIcon(
-      PageActionIconType::kIntentPicker);
+  browser->window()->UpdatePageActionIcon(PageActionIconType::kIntentPicker);
 }
 
 IntentPickerTabHelper::IntentPickerTabHelper(content::WebContents* web_contents)

@@ -1,0 +1,27 @@
+This is a testharness.js-based test.
+PASS RelativeOrientationSensor: Test that onerror is sent when sensor is not supported.
+PASS RelativeOrientationSensor: Test that onerror is sent when permissions are not granted.
+PASS RelativeOrientationSensor: Test that onerror is send when start() call has failed.
+PASS RelativeOrientationSensor: Test that frequency is capped to allowed maximum.
+PASS RelativeOrientationSensor: Test that frequency is capped to the maximum supported frequency.
+PASS RelativeOrientationSensor: Test that frequency is limited to the minimum supported frequency.
+PASS RelativeOrientationSensor: Test that sensor cannot be constructed within iframe disallowed to use feature policy.
+PASS RelativeOrientationSensor: Test that sensor can be constructed within an iframe allowed to use feature policy.
+PASS RelativeOrientationSensor: Test that 'onreading' is called and sensor reading is valid.
+PASS RelativeOrientationSensor: sensor reading is correct.
+PASS RelativeOrientationSensor: sensor timestamp is updated when time passes.
+PASS RelativeOrientationSensor: Test that sensor can be successfully created and its states are correct.
+PASS RelativeOrientationSensor: sensor.start() returns undefined.
+PASS RelativeOrientationSensor: no exception is thrown when calling start() on already started sensor.
+PASS RelativeOrientationSensor: sensor.stop() returns undefined.
+PASS RelativeOrientationSensor: no exception is thrown when calling stop() on already stopped sensor.
+PASS RelativeOrientationSensor: Test that fresh reading is fetched on start().
+FAIL RelativeOrientationSensor: frequency hint works. assert_greater_than: Fast sensor overtakes the slow one expected a number greater than 2 but got 2
+PASS RelativeOrientationSensor: sensor receives suspend / resume notifications when cross-origin subframe is focused.
+PASS RelativeOrientationSensor: throw 'TypeError' if frequency is invalid.
+PASS RelativeOrientationSensor: sensor reading is correct when options.referenceFrame is 'screen'.
+PASS RelativeOrientationSensor: throw 'TypeError' if referenceFrame is not one of enumeration values.
+PASS RelativeOrientationSensor.quaternion return a four-element FrozenArray.
+PASS RelativeOrientationSensor.populateMatrix() method works correctly.
+Harness: the test ran to completion.
+

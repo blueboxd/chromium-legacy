@@ -140,7 +140,7 @@ OmniboxPageActionIconContainerView::OmniboxPageActionIconContainerView(
 
 OmniboxPageActionIconContainerView::~OmniboxPageActionIconContainerView() {}
 
-PageActionIconView* OmniboxPageActionIconContainerView::GetPageActionIconView(
+PageActionIconView* OmniboxPageActionIconContainerView::GetIconView(
     PageActionIconType type) {
   // TODO(https://crbug.com/788051): Update page action icons here as update
   // methods are migrated out of LocationBar to the PageActionIconContainer
@@ -172,7 +172,9 @@ PageActionIconView* OmniboxPageActionIconContainerView::GetPageActionIconView(
       return shared_clipboard_icon_view_;
     case PageActionIconType::kLocalCardMigration:
     case PageActionIconType::kSaveCard:
-      NOTREACHED();
+      // TODO(https://crbug.com/788051): Merge
+      // ToolbarPageActionIconContainerView into this class as a generic "any
+      // page action icon" container.
       return nullptr;
   }
   return nullptr;
@@ -181,20 +183,6 @@ PageActionIconView* OmniboxPageActionIconContainerView::GetPageActionIconView(
 void OmniboxPageActionIconContainerView::UpdateAll() {
   for (PageActionIconView* icon : page_action_icons_)
     icon->Update();
-}
-
-void OmniboxPageActionIconContainerView::UpdatePageActionIcon(
-    PageActionIconType type) {
-  PageActionIconView* icon = GetPageActionIconView(type);
-  if (icon)
-    icon->Update();
-}
-
-void OmniboxPageActionIconContainerView::ExecutePageActionIconForTesting(
-    PageActionIconType type) {
-  PageActionIconView* icon = GetPageActionIconView(type);
-  if (icon)
-    icon->ExecuteForTesting();
 }
 
 bool OmniboxPageActionIconContainerView::

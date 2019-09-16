@@ -83,9 +83,7 @@ void SharingUiController::UpdateIcon() {
   if (!window)
     return;
 
-  auto* icon_container = window->GetOmniboxPageActionIconContainer();
-  if (icon_container)
-    icon_container->UpdatePageActionIcon(GetIconType());
+  window->UpdatePageActionIcon(GetIconType());
 }
 
 void SharingUiController::OnDialogClosed(SharingDialog* dialog) {

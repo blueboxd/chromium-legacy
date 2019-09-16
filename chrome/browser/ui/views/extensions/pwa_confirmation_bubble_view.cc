@@ -178,7 +178,6 @@ void ShowPWAInstallBubble(content::WebContents* web_contents,
           PageActionIconType::kPwaInstall);
   PageActionIconView* icon =
       browser_view->toolbar_button_provider()
-          ->GetOmniboxPageActionIconContainerView()
           ->GetPageActionIconView(PageActionIconType::kPwaInstall);
 
   g_bubble_ = new PWAConfirmationBubbleView(

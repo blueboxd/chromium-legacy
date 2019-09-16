@@ -45,15 +45,17 @@ ScriptPromise NFCWriter::push(ScriptState* script_state,
     return ScriptPromise::RejectWithDOMException(
         script_state,
         MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotAllowedError,
-                                           kNfcAccessInNonTopFrame));
+                                           "NFC interfaces are only avaliable "
+                                           "in a top-level browsing context"));
   }
 
   if (options->hasSignal() && options->signal()->aborted()) {
     // If signal’s aborted flag is set, then reject p with an "AbortError"
     // DOMException and return p.
     return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kAbortError, kNfcCancelled));
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError,
+                                           "The NFC operation was cancelled."));
   }
 
   // 9. If timeout value is NaN or negative, reject promise with "TypeError"
@@ -61,8 +63,10 @@ ScriptPromise NFCWriter::push(ScriptState* script_state,
   if (options->hasTimeout() &&
       (std::isnan(options->timeout()) || options->timeout() < 0)) {
     return ScriptPromise::Reject(
-        script_state, V8ThrowException::CreateTypeError(
-                          script_state->GetIsolate(), kNfcInvalidPushTimeout));
+        script_state,
+        V8ThrowException::CreateTypeError(
+            script_state->GetIsolate(),
+            "Invalid NFCPushOptions.timeout value was provided."));
   }
 
   // Step 10.8: Run "create Web NFC message", if this throws an exception,
@@ -75,9 +79,10 @@ ScriptPromise NFCWriter::push(ScriptState* script_state,
 
   // If NDEFMessage.records is empty, reject promise with TypeError
   if (ndef_message->records().size() == 0) {
-    return ScriptPromise::Reject(script_state,
-                                 V8ThrowException::CreateTypeError(
-                                     script_state->GetIsolate(), kNfcEmptyMsg));
+    return ScriptPromise::Reject(
+        script_state,
+        V8ThrowException::CreateTypeError(script_state->GetIsolate(),
+                                          "Empty NDEFMessage was provided."));
   }
 
   auto message = device::mojom::blink::NDEFMessage::From(ndef_message);
@@ -86,16 +91,17 @@ ScriptPromise NFCWriter::push(ScriptState* script_state,
   if (!SetNDEFMessageURL(execution_context->GetSecurityOrigin()->ToString(),
                          message.get())) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kSyntaxError, kNfcSetIdError));
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kSyntaxError,
+                                           "Cannot set WebNFC Id."));
   }
 
   if (GetNDEFMessageSize(*message) >
       device::mojom::blink::NDEFMessage::kMaxSize) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
-                                           kNfcMsgMaxSizeError));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kNotSupportedError,
+                          "NDEFMessage exceeds maximum supported size."));
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);

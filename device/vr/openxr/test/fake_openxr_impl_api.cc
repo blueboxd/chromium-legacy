@@ -582,6 +582,11 @@ XrResult xrLocateViews(XrSession session,
             XR_ERROR_VALIDATION_FAILURE,
             "xrLocateViews view_locate_info type invalid");
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSpace(view_locate_info->space));
+  if (view_capacity_input != 0) {
+    RETURN_IF_FALSE(g_test_helper.UpdateViewFOV(views, view_capacity_input),
+                    XR_ERROR_VALIDATION_FAILURE,
+                    "xrLocateViews UpdateViewFOV failed");
+  }
 
   return XR_SUCCESS;
 }

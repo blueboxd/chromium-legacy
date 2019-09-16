@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Test that Badge API accepts expected types.</title>
+<title>Correct interpretation of valid badge values.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
@@ -11,16 +11,51 @@
 <body>
 <script>
 
-badge_test(() => { ExperimentalBadge.set(); }, 'flag');
+// The default scope URL is the current origin.
+const defaultScope = new URL('/', location).href;
 
-badge_test(() => { ExperimentalBadge.set(undefined); }, 'flag');
+badge_test(() => { ExperimentalBadge.set(); }, 'flag', defaultScope);
 
-badge_test(() => { ExperimentalBadge.set(1); }, 'number');
+badge_test(() => { ExperimentalBadge.set(undefined); }, 'flag', defaultScope);
+
+badge_test(() => { ExperimentalBadge.set(1); }, 'number:1', defaultScope);
+
+// Non-whole number should round down to nearest integer.
+badge_test(() => { ExperimentalBadge.set(10.6); }, 'number:10', defaultScope);
+
+// Maximum allowed value (2^53 - 1).
+badge_test(() => { ExperimentalBadge.set(9007199254740991); },
+           'number:9007199254740991', defaultScope);
 
 // Setting the Badge to 0 should be equivalent to clearing the badge.
-badge_test(() => { ExperimentalBadge.set(0); }, 'clear');
+badge_test(() => { ExperimentalBadge.set(0); }, 'clear', defaultScope);
 
-badge_test(() => { ExperimentalBadge.clear(); }, 'clear');
+badge_test(() => { ExperimentalBadge.clear(); }, 'clear', defaultScope);
+
+// Non-numeric values that convert to integer.
+badge_test(() => { ExperimentalBadge.set(null); }, 'clear', defaultScope);
+badge_test(() => { ExperimentalBadge.set(false); }, 'clear', defaultScope);
+badge_test(() => { ExperimentalBadge.set(true); }, 'number:1', defaultScope);
+badge_test(() => { ExperimentalBadge.set('3'); }, 'number:3', defaultScope);
+
+// Test options dictionary.
+
+badge_test(() => { ExperimentalBadge.set(1, {}); }, 'number:1', defaultScope);
+badge_test(() => { ExperimentalBadge.set(1, {foo: 4}); }, 'number:1',
+           defaultScope);
+
+badge_test(() => {
+  ExperimentalBadge.set(1, {scope: new URL('/scope', location).href});
+}, 'number:1', new URL('/scope', location).href);
+// Scope URL resolved against document.
+badge_test(() => { ExperimentalBadge.set(1, {scope: '/scope'}); },
+           'number:1', new URL('/scope', location).href);
+
+// Explicit undefined to set a flag with a scope.
+// TODO(mgiuca): Currently fails with TypeError. https://crbug.com/1001411
+// badge_test(() => {
+//   ExperimentalBadge.set(undefined, {scope: 'https://example.com/scope'});
+// }, 'number:1', 'https://example.com/scope');
 
 </script>
 </body>

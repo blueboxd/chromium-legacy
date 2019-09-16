@@ -137,7 +137,10 @@ PASS childWindow.ontouchcancel is null
 PASS childWindow.ontouchend is null
 PASS childWindow.ontouchmove is null
 PASS childWindow.ontouchstart is null
+PASS childWindow.ontransitioncancel is null
 PASS childWindow.ontransitionend is null
+PASS childWindow.ontransitionrun is null
+PASS childWindow.ontransitionstart is null
 PASS childWindow.onunhandledrejection is null
 PASS childWindow.onunload is null
 PASS childWindow.onvolumechange is null

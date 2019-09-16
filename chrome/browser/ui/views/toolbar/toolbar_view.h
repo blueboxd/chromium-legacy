@@ -12,7 +12,7 @@
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/command_observer.h"
-#include "chrome/browser/ui/page_action/page_action_icon_container.h"
+#include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/ui/toolbar/app_menu_icon_controller.h"
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 #include "chrome/browser/ui/views/frame/browser_root_view.h"
@@ -231,13 +231,13 @@ class ToolbarView : public views::AccessiblePaneView,
   BrowserActionsContainer* GetBrowserActionsContainer() override;
   ToolbarActionView* GetToolbarActionViewForId(const std::string& id) override;
   views::View* GetDefaultExtensionDialogAnchorView() override;
-  OmniboxPageActionIconContainerView* GetOmniboxPageActionIconContainerView()
-      override;
+  PageActionIconView* GetPageActionIconView(PageActionIconType type) override;
   AppMenuButton* GetAppMenuButton() override;
   gfx::Rect GetFindBarBoundingBox(int contents_height) const override;
   void FocusToolbar() override;
   views::AccessiblePaneView* GetAsAccessiblePaneView() override;
   views::View* GetAnchorView(PageActionIconType type) override;
+  void ZoomChangedForActiveTab(bool can_show_bubble) override;
 
   // BrowserRootView::DropTarget
   BrowserRootView::DropIndex GetDropIndex(

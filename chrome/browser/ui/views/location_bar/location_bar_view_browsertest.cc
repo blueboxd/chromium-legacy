@@ -51,7 +51,6 @@ class LocationBarViewBrowserTest : public InProcessBrowserTest {
   PageActionIconView* GetZoomView() {
     return BrowserView::GetBrowserViewForBrowser(browser())
         ->toolbar_button_provider()
-        ->GetOmniboxPageActionIconContainerView()
         ->GetPageActionIconView(PageActionIconType::kZoom);
   }
 

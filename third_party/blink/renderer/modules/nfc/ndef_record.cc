@@ -31,7 +31,8 @@ static NDEFRecord* CreateTextRecord(const String& media_type,
                                     ExceptionState& exception_state) {
   // https://w3c.github.io/web-nfc/#mapping-string-to-ndef
   if (data.IsEmpty() || !data.V8Value()->IsString()) {
-    exception_state.ThrowTypeError(kNfcTextRecordTypeError);
+    exception_state.ThrowTypeError(
+        "The data for 'text' NDEFRecords must be a String.");
     return nullptr;
   }
 
@@ -43,10 +44,10 @@ static NDEFRecord* CreateTextRecord(const String& media_type,
   // always uses "lang=en-US;charset=UTF-8" when pushing the record to a NFC
   // tag.
   if (mime_type.IsEmpty()) {
-    mime_type = kNfcPlainTextMimeType;
-  } else if (!mime_type.StartsWithIgnoringASCIICase(kNfcPlainTextMimePrefix)) {
+    mime_type = "text/plain";
+  } else if (!mime_type.StartsWithIgnoringASCIICase("text/")) {
     exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
-                                      kNfcTextRecordMediaTypeError);
+                                      "Invalid media type for 'text' record.");
     return nullptr;
   }
 
@@ -60,7 +61,8 @@ static NDEFRecord* CreateUrlRecord(const String& media_type,
                                    ExceptionState& exception_state) {
   // https://w3c.github.io/web-nfc/#mapping-url-to-ndef
   if (data.IsEmpty() || !data.V8Value()->IsString()) {
-    exception_state.ThrowTypeError(kNfcUrlRecordTypeError);
+    exception_state.ThrowTypeError(
+        "The data for 'url' NDEFRecord must be a String.");
     return nullptr;
   }
 
@@ -68,7 +70,7 @@ static NDEFRecord* CreateUrlRecord(const String& media_type,
   String url = ToCoreString(data.V8Value().As<v8::String>());
   if (!KURL(NullURL(), url).IsValid()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
-                                      kNfcUrlRecordParseError);
+                                      "Cannot parse data for 'url' record.");
     return nullptr;
   }
   return MakeGarbageCollected<NDEFRecord>("url", media_type,
@@ -80,22 +82,22 @@ static NDEFRecord* CreateJsonRecord(const String& media_type,
                                     ExceptionState& exception_state) {
   // https://w3c.github.io/web-nfc/#mapping-json-to-ndef
   if (data.IsEmpty()) {
-    exception_state.ThrowTypeError(kNfcJsonRecordNoDataError);
+    exception_state.ThrowTypeError(
+        "The data for 'json' NDEFRecord is missing.");
     return nullptr;
   }
 
   // ExtractMIMETypeFromMediaType() ignores parameters of the MIME type.
   String mime_type = ExtractMIMETypeFromMediaType(AtomicString(media_type));
   if (mime_type.IsEmpty()) {
-    mime_type = kNfcJsonMimeType;
-  } else if (mime_type != kNfcJsonMimeType &&
-             mime_type != kNfcJsonTextMimeType &&
-             !mime_type.EndsWithIgnoringASCIICase(kNfcJsonMimePostfix)) {
+    mime_type = "application/json";
+  } else if (mime_type != "application/json" && mime_type != "text/json" &&
+             !mime_type.EndsWithIgnoringASCIICase("+json")) {
     // According to https://mimesniff.spec.whatwg.org/#json-mime-type, a JSON
     // MIME type is any MIME type whose subtype ends in "+json" or whose
     // essence is "application/json" or "text/json".
     exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
-                                      kNfcJsonRecordMediaTypeError);
+                                      "Invalid media type for 'json' record.");
     return nullptr;
   }
 
@@ -120,14 +122,15 @@ static NDEFRecord* CreateOpaqueRecord(const String& media_type,
                                       ExceptionState& exception_state) {
   // https://w3c.github.io/web-nfc/#mapping-binary-data-to-ndef
   if (data.IsEmpty() || !data.V8Value()->IsArrayBuffer()) {
-    exception_state.ThrowTypeError(kNfcOpaqueRecordTypeError);
+    exception_state.ThrowTypeError(
+        "The data for 'opaque' NDEFRecord must be an ArrayBuffer.");
     return nullptr;
   }
 
   // ExtractMIMETypeFromMediaType() ignores parameters of the MIME type.
   String mime_type = ExtractMIMETypeFromMediaType(AtomicString(media_type));
   if (mime_type.IsEmpty()) {
-    mime_type = kNfcOpaqueMimeType;
+    mime_type = "application/octet-stream";
   }
   DOMArrayBuffer* array_buffer =
       V8ArrayBuffer::ToImpl(data.V8Value().As<v8::Object>());
@@ -178,7 +181,7 @@ NDEFRecord* NDEFRecord::Create(const NDEFRecordInit* init,
   } else {
     // TODO(https://crbug.com/520391): Support creating smart-poster and
     // external type records.
-    exception_state.ThrowTypeError(kNfcRecordTypeError);
+    exception_state.ThrowTypeError("Unknown NDEFRecord type.");
     return nullptr;
   }
 }
@@ -192,11 +195,11 @@ NDEFRecord::NDEFRecord(const String& record_type,
 
 NDEFRecord::NDEFRecord(const String& text)
     : record_type_("text"),
-      media_type_(StringView(kNfcPlainTextMimeType) + kNfcCharSetUTF8),
+      media_type_("text/plain;charset=UTF-8"),
       data_(GetUTF8DataFromString(text)) {}
 
 NDEFRecord::NDEFRecord(DOMArrayBuffer* array_buffer)
-    : record_type_("opaque"), media_type_(kNfcOpaqueMimeType) {
+    : record_type_("opaque"), media_type_("application/octet-stream") {
   data_.Append(static_cast<uint8_t*>(array_buffer->Data()),
                array_buffer->ByteLength());
 }

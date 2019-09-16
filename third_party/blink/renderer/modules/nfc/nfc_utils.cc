@@ -9,7 +9,6 @@
 
 #include "services/device/public/mojom/nfc.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/modules/nfc/nfc_constants.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_type_converters.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -69,32 +68,35 @@ DOMException* NFCErrorTypeToDOMException(
   switch (error_type) {
     case device::mojom::blink::NFCErrorType::NOT_ALLOWED:
       return MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNotAllowedError, kNfcNotAllowed);
+          DOMExceptionCode::kNotAllowedError, "NFC operation not allowed.");
     case device::mojom::blink::NFCErrorType::NOT_SUPPORTED:
       return MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNotSupportedError, kNfcNotSupported);
+          DOMExceptionCode::kNotSupportedError,
+          "No NFC adapter or cannot establish connection.");
     case device::mojom::blink::NFCErrorType::NOT_READABLE:
       return MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNotReadableError, kNfcNotReadable);
+          DOMExceptionCode::kNotReadableError, "NFC is not enabled.");
     case device::mojom::blink::NFCErrorType::NOT_FOUND:
       return MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNotFoundError, kNfcWatchIdNotFound);
+          DOMExceptionCode::kNotFoundError,
+          "Provided watch id cannot be found.");
     case device::mojom::blink::NFCErrorType::INVALID_MESSAGE:
-      return MakeGarbageCollected<DOMException>(DOMExceptionCode::kSyntaxError,
-                                                kNfcInvalidMsg);
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kSyntaxError, "Invalid NFC message was provided.");
     case device::mojom::blink::NFCErrorType::OPERATION_CANCELLED:
-      return MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError,
-                                                kNfcCancelled);
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kAbortError, "The NFC operation was cancelled.");
     case device::mojom::blink::NFCErrorType::TIMER_EXPIRED:
       return MakeGarbageCollected<DOMException>(DOMExceptionCode::kTimeoutError,
-                                                kNfcTimeout);
+                                                "NFC operation has timed out.");
     case device::mojom::blink::NFCErrorType::CANNOT_CANCEL:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNoModificationAllowedError,
-          kNfcNoModificationAllowed);
+          "NFC operation cannot be cancelled.");
     case device::mojom::blink::NFCErrorType::IO_ERROR:
-      return MakeGarbageCollected<DOMException>(DOMExceptionCode::kNetworkError,
-                                                kNfcDataTransferError);
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNetworkError,
+          "NFC data transfer error has occurred.");
   }
   NOTREACHED();
   // Don't need to handle the case after a NOTREACHED().

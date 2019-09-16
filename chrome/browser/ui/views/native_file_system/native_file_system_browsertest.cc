@@ -111,7 +111,6 @@ class NativeFileSystemBrowserTest : public InProcessBrowserTest {
   bool IsUsageIndicatorVisible() {
     auto* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
     auto* icon_view = browser_view->toolbar_button_provider()
-                          ->GetOmniboxPageActionIconContainerView()
                           ->GetPageActionIconView(
                               PageActionIconType::kNativeFileSystemAccess);
     return icon_view && icon_view->GetVisible();

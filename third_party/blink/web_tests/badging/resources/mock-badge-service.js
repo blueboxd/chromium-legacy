@@ -10,8 +10,9 @@ class MockBadgeService {
     this.interceptor_.start();
   }
 
-  init_(expectedAction) {
+  init_(expectedAction, expectedScope) {
     this.expectedAction = expectedAction;
+    this.expectedScope = expectedScope;
     return new Promise((resolve, reject) => {
       this.reject_ = reject;
       this.resolve_ = resolve;
@@ -29,17 +30,19 @@ class MockBadgeService {
     }
 
     try {
-      const action = number === undefined ? 'flag' : 'number';
-      assert_equals(this.expectedAction, action);
+      const action = number === undefined ? 'flag' : 'number:' + number;
+      assert_equals(action, this.expectedAction);
+      assert_equals(scope.url, this.expectedScope);
       this.resolve_();
     } catch (error) {
-      this.reject_();
+      this.reject_(error);
     }
   }
 
   clearBadge(scope) {
     try {
-      assert_equals(this.expectedAction, 'clear');
+      assert_equals('clear', this.expectedAction);
+      assert_equals(scope.url, this.expectedScope);
       this.resolve_();
     } catch (error) {
       this.reject_(error);
@@ -64,9 +67,10 @@ function callAndObserveErrors(func, expectedErrorName) {
   });
 }
 
-function badge_test(func, expectedAction, expectError) {
+function badge_test(func, expectedAction, expectedScope, expectedError) {
   promise_test(() => {
-    let mockPromise = mockBadgeService.init_(expectedAction);
-    return Promise.race([callAndObserveErrors(func, expectError), mockPromise]);
+    let mockPromise = mockBadgeService.init_(expectedAction, expectedScope);
+    return Promise.race(
+        [callAndObserveErrors(func, expectedError), mockPromise]);
   });
 }

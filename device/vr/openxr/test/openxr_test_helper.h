@@ -64,6 +64,7 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   void GetPose(XrPosef* pose);
   std::string PathToString(XrPath path) const;
   bool UpdateData();
+  bool UpdateViewFOV(XrView views[], uint32_t size);
 
   uint32_t NextSwapchainImageIndex();
   XrTime NextPredictedDisplayTime();

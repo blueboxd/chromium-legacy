@@ -79,7 +79,6 @@ IN_PROC_BROWSER_TEST_F(LocationIconViewTest,
 
   PageActionIconView* icon_view =
       browser_view->toolbar_button_provider()
-          ->GetOmniboxPageActionIconContainerView()
           ->GetPageActionIconView(PageActionIconType::kTranslate);
   ASSERT_TRUE(icon_view);
   EXPECT_TRUE(icon_view->GetVisible());

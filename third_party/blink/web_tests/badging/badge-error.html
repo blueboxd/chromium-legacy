@@ -11,9 +11,40 @@
 <body>
 <script>
 
-badge_test(() => { ExperimentalBadge.set(-1); }, undefined, 'TypeError');
+// Negative value not allowed.
+badge_test(() => { ExperimentalBadge.set(-1); }, undefined, undefined,
+           'TypeError');
 
-badge_test(() => { ExperimentalBadge.set("Foo"); }, undefined, 'TypeError');
+// Value too large (2^53).
+badge_test(() => { ExperimentalBadge.set(9007199254740992); }, undefined,
+           undefined, 'TypeError');
+
+// Illegal numeric values.
+badge_test(() => { ExperimentalBadge.set(Infinity); }, undefined, undefined,
+           'TypeError');
+badge_test(() => { ExperimentalBadge.set(-Infinity); }, undefined, undefined,
+           'TypeError');
+badge_test(() => { ExperimentalBadge.set(NaN); }, undefined, undefined,
+           'TypeError');
+
+// Other values that can't convert to a long.
+badge_test(() => { ExperimentalBadge.set("Foo"); }, undefined, undefined,
+           'TypeError');
+badge_test(() => { ExperimentalBadge.set({}); }, undefined, undefined,
+           'TypeError');
+
+// Wrong origin.
+// TODO(mgiuca): Currently succeeds (failing in the browser).
+// https://crbug.com/1001404
+// badge_test(() => {
+//   ExperimentalBadge.set(1, {scope: 'https://wrongorigin.com/scope'});
+// }, undefined, undefined, 'SecurityError');
+
+// Invalid URL.
+// TODO(mgiuca): Currently succeeds with scope = "". https://crbug.com/1001405
+// badge_test(() => {
+//   ExperimentalBadge.set(1, {scope: 'https://example.com:99999'});
+// }, undefined, undefined, 'TypeError');
 
 </script>
 </body>

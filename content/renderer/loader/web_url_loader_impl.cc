@@ -16,6 +16,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -56,6 +57,7 @@
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
 #include "net/url_request/url_request_data_job.h"
+#include "net/url_request/url_request_job.h"
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -660,10 +662,29 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   }
   if (!request.IsolatedWorldOrigin().IsNull())
     resource_request->isolated_world_origin = request.IsolatedWorldOrigin();
-  resource_request->referrer = referrer_url;
 
+  resource_request->referrer = referrer_url;
   resource_request->referrer_policy =
       Referrer::ReferrerPolicyForUrlRequest(request.GetReferrerPolicy());
+
+  // Record information to help debug issues like http://crbug.com/422871. We
+  // perform this check here, before the request is passed to the network
+  // service, because the stack trace here has more information regarding the
+  // request's origins.
+  if (resource_request->referrer !=
+      net::URLRequestJob::ComputeReferrerForPolicy(
+          resource_request->referrer_policy, resource_request->referrer,
+          resource_request->request_initiator.value_or(url::Origin()),
+          resource_request->url)) {
+    if (resource_request->url.SchemeIsHTTPOrHTTPS()) {
+      auto referrer_policy = resource_request->referrer_policy;
+      base::debug::Alias(&referrer_policy);
+      DEBUG_ALIAS_FOR_GURL(target_buf, resource_request->url);
+      DEBUG_ALIAS_FOR_GURL(referrer_buf, resource_request->referrer);
+      base::debug::DumpWithoutCrashing();
+    }
+  }
+
   resource_request->resource_type =
       static_cast<int>(WebURLRequestToResourceType(request));
 

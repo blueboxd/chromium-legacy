@@ -10,8 +10,6 @@ blink_modules_sources("nfc") {
     "ndef_message.h",
     "ndef_record.cc",
     "ndef_record.h",
-    "nfc_constants.cc",
-    "nfc_constants.h",
     "nfc_error_event.cc",
     "nfc_error_event.h",
     "nfc_proxy.cc",

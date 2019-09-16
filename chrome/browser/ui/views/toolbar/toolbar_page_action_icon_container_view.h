@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_PAGE_ACTION_ICON_CONTAINER_VIEW_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/page_action/page_action_icon_container.h"
+#include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_icon_container_view.h"
 
@@ -22,7 +22,6 @@ class SaveCardIconView;
 // A container view for user-account-related PageActionIconViews and the profile
 // avatar icon.
 class ToolbarPageActionIconContainerView : public ToolbarIconContainerView,
-                                           public PageActionIconContainer,
                                            public PageActionIconView::Delegate {
  public:
   explicit ToolbarPageActionIconContainerView(Browser* browser);
@@ -37,10 +36,6 @@ class ToolbarPageActionIconContainerView : public ToolbarIconContainerView,
   // ToolbarIconContainerView:
   void UpdateAllIcons() override;
 
-  // PageActionIconContainer:
-  void UpdatePageActionIcon(PageActionIconType icon_type) override;
-  void ExecutePageActionIconForTesting(PageActionIconType icon_type) override;
-
   // PageActionIconView::Delegate:
   SkColor GetPageActionInkDropColor() const override;
   content::WebContents* GetWebContentsForPageActionIconView() override;
@@ -48,6 +43,7 @@ class ToolbarPageActionIconContainerView : public ToolbarIconContainerView,
 
   // views::View:
   void OnThemeChanged() override;
+  void ChildVisibilityChanged(View* child) override;
 
   autofill::LocalCardMigrationIconView* local_card_migration_icon_view() const {
     return local_card_migration_icon_view_;
@@ -65,10 +61,6 @@ class ToolbarPageActionIconContainerView : public ToolbarIconContainerView,
 
  private:
   bool FocusInactiveBubbleForIcon(PageActionIconView* icon_view);
-
-  // The avatar should not show Ui for paused state or error state when any icon
-  // in the toolbar page action icon container view is visible.
-  void UpdateAvatarIconStateUi();
 
   autofill::LocalCardMigrationIconView* local_card_migration_icon_view_ =
       nullptr;

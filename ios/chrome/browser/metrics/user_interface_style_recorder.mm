@@ -44,15 +44,6 @@ void ReportUserInterfaceStyleUsed(UIUserInterfaceStyle userInterfaceStyle) {
                                 userInterfaceStyleForReporting);
 }
 
-// Reports the interface style changed while Chrome is active.
-void ReportUserInterfaceStyleChangedWhileActive(
-    UIUserInterfaceStyle userInterfaceStyle) {
-  InterfaceStyleForReporting userInterfaceStyleForReporting =
-      InterfaceStyleForReportingForUIUserInterfaceStyle(userInterfaceStyle);
-  base::UmaHistogramEnumeration("UserInterfaceStyle.ChangedWhileActive",
-                                userInterfaceStyleForReporting);
-}
-
 }  // namespace
 
 @interface UserInterfaceStyleRecorder ()
@@ -92,12 +83,13 @@ void ReportUserInterfaceStyleChangedWhileActive(
 
 - (void)userInterfaceStyleDidChange:
     (UIUserInterfaceStyle)newUserInterfaceStyle {
-  // Record the new user interface style.
-  ReportUserInterfaceStyleUsed(newUserInterfaceStyle);
-
-  // Record if changed while in foreground.
+  // When an app goes to the background iOS toggles the user interface 2 times.
+  // This is probably to take screenshots of the screen for multitask. After
+  // this if the interface style changes, the app is not notified until it comes
+  // to the foreground. We only care if changed was registered while in
+  // foreground.
   if (!self.applicationInBackground) {
-    ReportUserInterfaceStyleChangedWhileActive(newUserInterfaceStyle);
+    ReportUserInterfaceStyleUsed(newUserInterfaceStyle);
   }
 }
 

@@ -104,11 +104,15 @@ void AudioManagerPulse::GetAudioOutputDeviceNames(
 AudioParameters AudioManagerPulse::GetInputStreamParameters(
     const std::string& device_id) {
   int user_buffer_size = GetUserBufferSize();
-  int buffer_size = user_buffer_size ?
-      user_buffer_size : kDefaultInputBufferSize;
+  int buffer_size =
+      user_buffer_size ? user_buffer_size : kDefaultInputBufferSize;
 
-  // TODO(xians): add support for querying native channel layout for pulse.
   UpdateNativeAudioHardwareInfo();
+  auto* operation = pa_context_get_source_info_by_name(
+      input_context_, default_source_name_.c_str(), DefaultSourceInfoCallback,
+      this);
+  WaitForOperationCompletion(input_mainloop_, operation);
+
   // We don't want to accidentally open a monitor device, so return invalid
   // parameters for those.
   if (device_id == AudioDeviceDescription::kDefaultDeviceId &&
@@ -260,18 +264,19 @@ void AudioManagerPulse::UpdateNativeAudioHardwareInfo() {
   pa_operation* operation = pa_context_get_server_info(
       input_context_, AudioHardwareInfoCallback, this);
   WaitForOperationCompletion(input_mainloop_, operation);
-  operation = pa_context_get_source_info_by_name(
-      input_context_, default_source_name_.c_str(), DefaultSourceInfoCallback,
-      this);
-  WaitForOperationCompletion(input_mainloop_, operation);
+
+  // Be careful about adding OS calls to this method.
+  // GetPreferredOutputStreamParameters() calls this method on a critical path.
+  // If the OS calls hang they will hang all device authorizations.
 }
 
 void AudioManagerPulse::InputDevicesInfoCallback(pa_context* context,
                                                  const pa_source_info* info,
-                                                 int error, void *user_data) {
+                                                 int eol,
+                                                 void* user_data) {
   AudioManagerPulse* manager = reinterpret_cast<AudioManagerPulse*>(user_data);
 
-  if (error) {
+  if (eol) {
     // Signal the pulse object that it is done.
     pa_threaded_mainloop_signal(manager->input_mainloop_, 0);
     return;
@@ -297,17 +302,17 @@ void AudioManagerPulse::InputDevicesInfoCallback(pa_context* context,
 
 void AudioManagerPulse::OutputDevicesInfoCallback(pa_context* context,
                                                   const pa_sink_info* info,
-                                                  int error, void *user_data) {
+                                                  int eol,
+                                                  void* user_data) {
   AudioManagerPulse* manager = reinterpret_cast<AudioManagerPulse*>(user_data);
 
-  if (error) {
+  if (eol) {
     // Signal the pulse object that it is done.
     pa_threaded_mainloop_signal(manager->input_mainloop_, 0);
     return;
   }
 
-  manager->devices_->push_back(AudioDeviceName(info->description,
-                                               info->name));
+  manager->devices_->push_back(AudioDeviceName(info->description, info->name));
 }
 
 void AudioManagerPulse::AudioHardwareInfoCallback(pa_context* context,

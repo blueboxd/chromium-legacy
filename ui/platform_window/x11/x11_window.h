@@ -108,7 +108,7 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   // WmMoveResizeHandler
   void DispatchHostWindowDragMovement(
       int hittest,
-      const gfx::Point& pointer_location) override;
+      const gfx::Point& pointer_location_in_px) override;
 
   // X11WindowOzone sets own event dispatcher now.
   virtual void SetPlatformEventDispatcher();

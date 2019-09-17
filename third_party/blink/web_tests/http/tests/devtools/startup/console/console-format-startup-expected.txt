@@ -374,8 +374,8 @@ console-format-startup.html:162 Array(2)
     __proto__: Array(0)
 console-format-startup.html:164 Object table
 console-format-startup.html:165 Object
-    bar: {a: 3, b: 4}
     foo: {a: 1, b: 2}
+    bar: {a: 3, b: 4}
     __proto__: Object
 console-format-startup.html:167 Null as columns
 console-format-startup.html:168 Array(2)
@@ -452,21 +452,22 @@ console-format-startup.html:195 Array(3)
     length: 3
     __proto__: Array(0)
 console-format-startup.html:206 HTMLCollection(1)
-    0: select#sel
     length: 1
+    0: select#sel
     sel: select#sel
     __proto__: HTMLCollection
 console-format-startup.html:210 HTMLCollection(1)
-    0: script
     length: 1
+    0: script
     __proto__: HTMLCollection
 console-format-startup.html:214 HTMLOptionsCollection(2)
-    0: option
-    1: option
     length: 2
     selectedIndex: 0
+    0: option
+    1: option
     __proto__: HTMLOptionsCollection
 console-format-startup.html:218 HTMLAllCollection(14)
+    length: 14
     0: html
     1: head
     2: script
@@ -481,26 +482,25 @@ console-format-startup.html:218 HTMLAllCollection(14)
     11: option
     12: input
     13: input
-    length: 14
-    f: form#f
-    p: p#p
-    sel: select#sel
-    svg-node: svg#svg-node
     x: HTMLCollection(3) [div#x, input, input, x: div#x]
+    p: p#p
+    svg-node: svg#svg-node
+    f: form#f
+    sel: select#sel
     __proto__: HTMLAllCollection
 console-format-startup.html:222 HTMLFormControlsCollection(3)
+    length: 3
     0: select#sel
     1: input
     2: input
-    length: 3
     sel: select#sel
     x: RadioNodeList(2) [input, input, value: ""]
     __proto__: HTMLFormControlsCollection
 console-format-startup.html:226 RadioNodeList(2)
+    value: ""
+    length: 2
     0: input
     1: input
-    length: 2
-    value: ""
     __proto__: RadioNodeList
 console-format-startup.html:232 Array(2)
     0: 1
@@ -508,14 +508,14 @@ console-format-startup.html:232 Array(2)
     length: 2
     __proto__: Array(0)
 console-format-startup.html:235 NonArrayWithLength
-    keys: []
     length: (...)
+    keys: []
     __proto__: Object
 console-format-startup.html:242 Arguments(2)
     0: 1
     1: "2"
-    callee: ƒ generateArguments(foo, bar)
     length: 2
+    callee: ƒ generateArguments(foo, bar)
     Symbol(Symbol.iterator): ƒ values()
     __proto__: Object
 console-format-startup.html:246 DOMTokenList(0)
@@ -775,12 +775,12 @@ console-format-startup.html:8 [svg#svg-node]
 globals[25]
     <svg id="svg-node"></svg>
 console-format-startup.html:7 {enumerableProp: 4, __underscoreEnumerableProp__: 5, __underscoreNonEnumerableProp: 2, abc: 3, getFoo: ƒ, …}
+    bar: (...)
     enumerableProp: 4
     __underscoreEnumerableProp__: 5
-    abc: 3
-    bar: (...)
-    getFoo: ƒ ()
     __underscoreNonEnumerableProp: 2
+    abc: 3
+    getFoo: ƒ ()
     get bar: ƒ ()
     set bar: ƒ (x)
     __proto__: Object
@@ -790,12 +790,12 @@ console-format-startup.html:8 [{…}]
     __proto__: Array(0)
 globals[26]
 {enumerableProp: 4, __underscoreEnumerableProp__: 5, __underscoreNonEnumerableProp: 2, abc: 3, getFoo: ƒ, …}
+    bar: (...)
     enumerableProp: 4
     __underscoreEnumerableProp__: 5
-    abc: 3
-    bar: (...)
-    getFoo: ƒ ()
     __underscoreNonEnumerableProp: 2
+    abc: 3
+    getFoo: ƒ ()
     get bar: ƒ ()
     set bar: ƒ (x)
     __proto__: Object
@@ -824,16 +824,16 @@ globals[29]
 ƒ Object() { [native code] }
 console-format-startup.html:7 {constructor: ƒ, __defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, …}
     constructor: ƒ Object()
-    hasOwnProperty: ƒ hasOwnProperty()
-    isPrototypeOf: ƒ isPrototypeOf()
-    propertyIsEnumerable: ƒ propertyIsEnumerable()
-    toLocaleString: ƒ toLocaleString()
-    toString: ƒ toString()
-    valueOf: ƒ valueOf()
     __defineGetter__: ƒ __defineGetter__()
     __defineSetter__: ƒ __defineSetter__()
+    hasOwnProperty: ƒ hasOwnProperty()
     __lookupGetter__: ƒ __lookupGetter__()
     __lookupSetter__: ƒ __lookupSetter__()
+    isPrototypeOf: ƒ isPrototypeOf()
+    propertyIsEnumerable: ƒ propertyIsEnumerable()
+    toString: ƒ toString()
+    valueOf: ƒ valueOf()
+    toLocaleString: ƒ toLocaleString()
     get __proto__: ƒ __proto__()
     set __proto__: ƒ __proto__()
 console-format-startup.html:8 [{…}]
@@ -843,16 +843,16 @@ console-format-startup.html:8 [{…}]
 globals[30]
 {constructor: ƒ, __defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, …}
     constructor: ƒ Object()
-    hasOwnProperty: ƒ hasOwnProperty()
-    isPrototypeOf: ƒ isPrototypeOf()
-    propertyIsEnumerable: ƒ propertyIsEnumerable()
-    toLocaleString: ƒ toLocaleString()
-    toString: ƒ toString()
-    valueOf: ƒ valueOf()
     __defineGetter__: ƒ __defineGetter__()
     __defineSetter__: ƒ __defineSetter__()
+    hasOwnProperty: ƒ hasOwnProperty()
     __lookupGetter__: ƒ __lookupGetter__()
     __lookupSetter__: ƒ __lookupSetter__()
+    isPrototypeOf: ƒ isPrototypeOf()
+    propertyIsEnumerable: ƒ propertyIsEnumerable()
+    toString: ƒ toString()
+    valueOf: ƒ valueOf()
+    toLocaleString: ƒ toLocaleString()
     get __proto__: ƒ __proto__()
     set __proto__: ƒ __proto__()
 console-format-startup.html:7 ƒ ( /**/ foo/**/, /*/**/bar,
@@ -895,13 +895,13 @@ String {"abc"}
     __proto__: String
     [[PrimitiveValue]]: "abc"
 console-format-startup.html:7 Uint16Array(3) [1, 2, 3]
-    0: 1
-    1: 2
-    2: 3
     buffer: (...)
     byteLength: (...)
     byteOffset: (...)
     length: (...)
+    0: 1
+    1: 2
+    2: 3
     Symbol(Symbol.toStringTag): (...)
     __proto__: TypedArray
 console-format-startup.html:8 [Uint16Array(3)]
@@ -910,13 +910,13 @@ console-format-startup.html:8 [Uint16Array(3)]
     __proto__: Array(0)
 globals[34]
 Uint16Array(3) [1, 2, 3]
-    0: 1
-    1: 2
-    2: 3
     buffer: (...)
     byteLength: (...)
     byteOffset: (...)
     length: (...)
+    0: 1
+    1: 2
+    2: 3
     Symbol(Symbol.toStringTag): (...)
     __proto__: TypedArray
 console-format-startup.html:7 #text
@@ -934,11 +934,11 @@ console-format-startup.html:8 [DOMException: Failed to execute 'removeChild' on 
 globals[36]
 DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
 console-format-startup.html:7 Uint8Array [3]
-    0: 3
     buffer: (...)
     byteLength: (...)
     byteOffset: (...)
     length: (...)
+    0: 3
     Symbol(Symbol.toStringTag): (...)
     __proto__: TypedArray
 console-format-startup.html:8 [Uint8Array(1)]
@@ -947,11 +947,11 @@ console-format-startup.html:8 [Uint8Array(1)]
     __proto__: Array(0)
 globals[37]
 Uint8Array [3]
-    0: 3
     buffer: (...)
     byteLength: (...)
     byteOffset: (...)
     length: (...)
+    0: 3
     Symbol(Symbol.toStringTag): (...)
     __proto__: TypedArray
 console-format-startup.html:7 Uint8Array(400) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]
@@ -1044,10 +1044,10 @@ Number {42, 1: "foo", a: "bar"}
     [[PrimitiveValue]]: 42
 console-format-startup.html:7 String {"abc", 3: "foo", 01: "foo", a: "bar"}
     0: "a"
-    01: "foo"
     1: "b"
     2: "c"
     3: "foo"
+    01: "foo"
     a: "bar"
     length: 3
     __proto__: String
@@ -1059,10 +1059,10 @@ console-format-startup.html:8 [String]
 globals[44]
 String {"abc", 3: "foo", 01: "foo", a: "bar"}
     0: "a"
-    01: "foo"
     1: "b"
     2: "c"
     3: "foo"
+    01: "foo"
     a: "bar"
     length: 3
     __proto__: String
@@ -1121,8 +1121,8 @@ console-format-startup.html:8 [Symbol(a)]
 globals[49]
 Symbol(a)
 console-format-startup.html:7 {a: Symbol(), Symbol(a): 2}
-    a: Symbol()
     getter: (...)
+    a: Symbol()
     Symbol(a): 2
     get getter: ƒ getter()
     __proto__: Object
@@ -1132,8 +1132,8 @@ console-format-startup.html:8 [{…}]
     __proto__: Array(0)
 globals[50]
 {a: Symbol(), Symbol(a): 2}
-    a: Symbol()
     getter: (...)
+    a: Symbol()
     Symbol(a): 2
     get getter: ƒ getter()
     __proto__: Object

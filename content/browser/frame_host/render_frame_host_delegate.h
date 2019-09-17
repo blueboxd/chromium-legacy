@@ -21,6 +21,7 @@
 #include "content/public/common/javascript_dialog_type.h"
 #include "content/public/common/resource_load_info.mojom.h"
 #include "content/public/common/resource_type.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/http/http_response_headers.h"
@@ -260,7 +261,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
 
 #if defined(OS_ANDROID)
   // Gets an NFC implementation within the context of this delegate.
-  virtual void GetNFC(device::mojom::NFCRequest request);
+  virtual void GetNFC(mojo::PendingReceiver<device::mojom::NFC> receiver);
 #endif
 
   // Notification that the frame wants to go into fullscreen mode.

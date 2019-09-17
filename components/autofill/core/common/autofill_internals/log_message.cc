@@ -5,6 +5,7 @@
 #include "components/autofill/core/common/autofill_internals/log_message.h"
 
 #include "base/logging.h"
+#include "components/autofill/core/common/logging/log_buffer.h"
 
 namespace autofill {
 
@@ -48,6 +49,13 @@ const char* LogMessageValue(LogMessage message) {
 
   NOTREACHED();
   return "";
+}
+
+LogBuffer& operator<<(LogBuffer& buf, LogMessage message) {
+  if (!buf.active())
+    return buf;
+  return buf << Tag{"div"} << Attrib{"message", LogMessageToString(message)}
+             << Attrib{"class", "log-message"} << LogMessageValue(message);
 }
 
 }  // namespace autofill

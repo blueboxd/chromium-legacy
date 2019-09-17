@@ -2049,6 +2049,27 @@ TEST_F(ShelfViewTest, TestDragWithinOverflow) {
   test_api_->HideOverflowBubble();
 }
 
+// Checks how the overflow button and menu get laid out when the display is
+// very narrow.
+TEST_F(ShelfViewTest, TestOverflowWithNarrowDisplay) {
+  // No overflow bubble when scrollable shelf enabled.
+  // TODO(https://crbug.com/1002576): revisit when scrollable shelf is launched.
+  if (chromeos::switches::ShouldShowScrollableShelf())
+    return;
+
+  UpdateDisplay("200x600");
+
+  AddAppShortcutsUntilOverflow();
+  OverflowButton* overflow_button = shelf_view_->GetOverflowButton();
+  EXPECT_TRUE(overflow_button->GetVisible());
+
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->set_current_screen_location(
+      overflow_button->GetBoundsInScreen().CenterPoint());
+  generator->ClickLeftButton();
+  ASSERT_TRUE(shelf_view_->IsShowingOverflowBubble());
+}
+
 // Checks creating app shortcut for an opened platform app in overflow bubble
 // should be invisible to the shelf. See crbug.com/605793.
 TEST_F(ShelfViewTest, CheckOverflowStatusPinOpenedAppToShelf) {

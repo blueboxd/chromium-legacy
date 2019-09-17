@@ -934,7 +934,6 @@ Elements.ElementsTreeOutline = class extends UI.TreeOutline {
 
       style = document.createElement('style');
       style.id = styleTagId;
-      style.type = 'text/css';
       style.textContent = rule;
 
       localRoot.appendChild(style);
@@ -1456,9 +1455,9 @@ Elements.ElementsTreeOutline.Events = {
  * @type {!Object.<string, string>}
  */
 Elements.ElementsTreeOutline.MappedCharToEntity = {
-  '\u00a0': 'nbsp',
-  '\u0093': '#147',  // <control>
-  '\u00ad': 'shy',
+  '\xA0': 'nbsp',
+  '\x93': '#147',  // <control>
+  '\xAD': 'shy',
   '\u2002': 'ensp',
   '\u2003': 'emsp',
   '\u2009': 'thinsp',

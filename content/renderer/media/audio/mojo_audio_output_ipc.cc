@@ -228,14 +228,15 @@ void MojoAudioOutputIPC::ReceivedDeviceAuthorization(
 }
 
 void MojoAudioOutputIPC::Created(
-    media::mojom::AudioOutputStreamPtr stream,
+    mojo::PendingRemote<media::mojom::AudioOutputStream> pending_stream,
     media::mojom::ReadWriteAudioDataPipePtr data_pipe) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(delegate_);
 
   UMA_HISTOGRAM_TIMES("Media.Audio.Render.OutputDeviceStreamCreationTime",
                       base::TimeTicks::Now() - stream_creation_start_time_);
-  stream_ = std::move(stream);
+  stream_.reset();
+  stream_.Bind(std::move(pending_stream));
 
   base::PlatformFile socket_handle;
   auto result =

@@ -6,9 +6,9 @@
 
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
-#include "components/autofill/core/browser/logging/log_buffer.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/logging/log_receiver.h"
+#include "components/autofill/core/common/logging/log_buffer.h"
 #include "net/base/escape.h"
 
 namespace autofill {

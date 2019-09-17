@@ -1107,6 +1107,14 @@ public class PrefServiceBridge {
         PrefServiceBridgeJni.get().setExplicitLanguageAskPromptShown(PrefServiceBridge.this, shown);
     }
 
+    /**
+     * @param enabled The value to set whether or not ForceWebContentsDarkMode is enabled.
+     */
+    public void setForceWebContentsDarkModeEnabled(boolean enabled) {
+        PrefServiceBridgeJni.get().setForceWebContentsDarkModeEnabled(
+                PrefServiceBridge.this, enabled);
+    }
+
     @VisibleForTesting
     public static void setInstanceForTesting(@Nullable PrefServiceBridge instanceForTesting) {
         sInstance = instanceForTesting;
@@ -1246,5 +1254,6 @@ public class PrefServiceBridge {
         void setPromptForDownloadAndroid(PrefServiceBridge caller, int status);
         boolean getExplicitLanguageAskPromptShown(PrefServiceBridge caller);
         void setExplicitLanguageAskPromptShown(PrefServiceBridge caller, boolean shown);
+        void setForceWebContentsDarkModeEnabled(PrefServiceBridge caller, boolean enabled);
     }
 }

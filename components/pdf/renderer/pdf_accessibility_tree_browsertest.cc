@@ -19,6 +19,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 namespace pdf {
+
 namespace {
 
 const PP_PrivateAccessibilityTextRunInfo kFirstTextRun = {
@@ -40,6 +41,8 @@ const PP_PrivateAccessibilityTextRunInfo kThirdRunMultiLine = {
     9, 12, PP_MakeFloatRectFromXYWH(26.0f, 189.0f, 84.0f, 13.0f)};
 const PP_PrivateAccessibilityTextRunInfo kFourthRunMultiLine = {
     6, 12, PP_MakeFloatRectFromXYWH(26.0f, 189.0f, 84.0f, 13.0f)};
+
+const char kChromiumTestUrl[] = "www.cs.chromium.org";
 
 void CompareRect(PP_Rect expected_rect, PP_Rect actual_rect) {
   EXPECT_EQ(expected_rect.point.x, actual_rect.point.x);
@@ -217,23 +220,29 @@ TEST_F(PdfAccessibilityTreeTest, TestAccessibilityDisabledDuringPDFLoad) {
 }
 
 TEST_F(PdfAccessibilityTreeTest, TestPdfAccessibilityTreeCreation) {
+  static const char kTestAltText[] = "Alternate text for image";
+
   text_runs_.emplace_back(kFirstTextRun);
   text_runs_.emplace_back(kSecondTextRun);
   chars_.insert(chars_.end(), std::begin(kDummyCharsData),
                 std::end(kDummyCharsData));
 
-  ppapi::PdfAccessibilityLinkInfo link;
-  link.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
-  link.url = "www.cs.chromium.org";
-  link.text_run_index = 0;
-  link.text_run_count = 1;
-  links_.push_back(std::move(link));
+  {
+    ppapi::PdfAccessibilityLinkInfo link;
+    link.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
+    link.url = kChromiumTestUrl;
+    link.text_run_index = 0;
+    link.text_run_count = 1;
+    links_.push_back(std::move(link));
+  }
 
-  ppapi::PdfAccessibilityImageInfo image;
-  image.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
-  image.alt_text = "Alternate text for image";
-  image.text_run_index = 2;
-  images_.push_back(image);
+  {
+    ppapi::PdfAccessibilityImageInfo image;
+    image.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
+    image.alt_text = kTestAltText;
+    image.text_run_index = 2;
+    images_.push_back(std::move(image));
+  }
 
   page_info_.text_run_count = text_runs_.size();
   page_info_.char_count = chars_.size();
@@ -281,7 +290,7 @@ TEST_F(PdfAccessibilityTreeTest, TestPdfAccessibilityTreeCreation) {
 
   ui::AXNode* link_node = paragraph_node->children()[0];
   ASSERT_TRUE(link_node);
-  EXPECT_EQ(link.url,
+  EXPECT_EQ(kChromiumTestUrl,
             link_node->GetStringAttribute(ax::mojom::StringAttribute::kUrl));
   EXPECT_EQ(ax::mojom::Role::kLink, link_node->data().role);
   ASSERT_EQ(1u, link_node->children().size());
@@ -299,7 +308,7 @@ TEST_F(PdfAccessibilityTreeTest, TestPdfAccessibilityTreeCreation) {
   ui::AXNode* image_node = paragraph_node->children()[1];
   ASSERT_TRUE(image_node);
   EXPECT_EQ(ax::mojom::Role::kImage, image_node->data().role);
-  EXPECT_EQ(image.alt_text,
+  EXPECT_EQ(kTestAltText,
             image_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
 }
 
@@ -311,12 +320,14 @@ TEST_F(PdfAccessibilityTreeTest, TestPreviousNextOnLine) {
   chars_.insert(chars_.end(), std::begin(kDummyCharsData),
                 std::end(kDummyCharsData));
 
-  ppapi::PdfAccessibilityLinkInfo link;
-  link.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
-  link.url = "www.cs.chromium.org";
-  link.text_run_index = 2;
-  link.text_run_count = 2;
-  links_.push_back(std::move(link));
+  {
+    ppapi::PdfAccessibilityLinkInfo link;
+    link.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
+    link.url = kChromiumTestUrl;
+    link.text_run_index = 2;
+    link.text_run_count = 2;
+    links_.push_back(std::move(link));
+  }
 
   page_info_.text_run_count = text_runs_.size();
   page_info_.char_count = chars_.size();
@@ -390,7 +401,7 @@ TEST_F(PdfAccessibilityTreeTest, TestPreviousNextOnLine) {
 
   ui::AXNode* link_node = paragraph_node->children()[1];
   ASSERT_TRUE(link_node);
-  EXPECT_EQ(link.url,
+  EXPECT_EQ(kChromiumTestUrl,
             link_node->GetStringAttribute(ax::mojom::StringAttribute::kUrl));
   EXPECT_EQ(ax::mojom::Role::kLink, link_node->data().role);
   ASSERT_EQ(1u, link_node->children().size());
@@ -459,17 +470,23 @@ TEST_F(PdfAccessibilityTreeTest, UnsortedLinkVector) {
   chars_.insert(chars_.end(), std::begin(kDummyCharsData),
                 std::end(kDummyCharsData));
 
-  ppapi::PdfAccessibilityLinkInfo link;
-  link.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
-  // Add first link in the vector.
-  link.text_run_index = 2;
-  link.text_run_count = 0;
-  links_.push_back(link);
+  {
+    // Add first link in the vector.
+    ppapi::PdfAccessibilityLinkInfo link;
+    link.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
+    link.text_run_index = 2;
+    link.text_run_count = 0;
+    links_.push_back(std::move(link));
+  }
 
-  // Add second link in the vector.
-  link.text_run_index = 0;
-  link.text_run_count = 1;
-  links_.push_back(std::move(link));
+  {
+    // Add second link in the vector.
+    ppapi::PdfAccessibilityLinkInfo link;
+    link.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
+    link.text_run_index = 0;
+    link.text_run_count = 1;
+    links_.push_back(std::move(link));
+  }
 
   page_info_.text_run_count = text_runs_.size();
   page_info_.char_count = chars_.size();
@@ -499,11 +516,13 @@ TEST_F(PdfAccessibilityTreeTest, OutOfBoundLink) {
   chars_.insert(chars_.end(), std::begin(kDummyCharsData),
                 std::end(kDummyCharsData));
 
-  ppapi::PdfAccessibilityLinkInfo link;
-  link.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
-  link.text_run_index = 3;
-  link.text_run_count = 0;
-  links_.push_back(std::move(link));
+  {
+    ppapi::PdfAccessibilityLinkInfo link;
+    link.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
+    link.text_run_index = 3;
+    link.text_run_count = 0;
+    links_.push_back(std::move(link));
+  }
 
   page_info_.text_run_count = text_runs_.size();
   page_info_.char_count = chars_.size();
@@ -533,15 +552,21 @@ TEST_F(PdfAccessibilityTreeTest, UnsortedImageVector) {
   chars_.insert(chars_.end(), std::begin(kDummyCharsData),
                 std::end(kDummyCharsData));
 
-  ppapi::PdfAccessibilityImageInfo image;
-  image.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
-  // Add first image to the vector.
-  image.text_run_index = 1;
-  images_.push_back(image);
+  {
+    // Add first image to the vector.
+    ppapi::PdfAccessibilityImageInfo image;
+    image.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
+    image.text_run_index = 1;
+    images_.push_back(std::move(image));
+  }
 
-  // Add second image to the vector.
-  image.text_run_index = 0;
-  images_.push_back(image);
+  {
+    // Add second image to the vector.
+    ppapi::PdfAccessibilityImageInfo image;
+    image.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
+    image.text_run_index = 0;
+    images_.push_back(std::move(image));
+  }
 
   page_info_.text_run_count = text_runs_.size();
   page_info_.char_count = chars_.size();
@@ -571,10 +596,12 @@ TEST_F(PdfAccessibilityTreeTest, OutOfBoundImage) {
   chars_.insert(chars_.end(), std::begin(kDummyCharsData),
                 std::end(kDummyCharsData));
 
-  ppapi::PdfAccessibilityImageInfo image;
-  image.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
-  image.text_run_index = 3;
-  images_.push_back(image);
+  {
+    ppapi::PdfAccessibilityImageInfo image;
+    image.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
+    image.text_run_index = 3;
+    images_.push_back(std::move(image));
+  }
 
   page_info_.text_run_count = text_runs_.size();
   page_info_.char_count = chars_.size();
@@ -668,13 +695,15 @@ TEST_F(PdfAccessibilityTreeTest, TestClickActionDataConversion) {
   chars_.insert(chars_.end(), std::begin(kDummyCharsData),
                 std::end(kDummyCharsData));
 
-  ppapi::PdfAccessibilityLinkInfo link;
-  link.url = "www.cs.chromium.org";
-  link.text_run_index = 0;
-  link.text_run_count = 1;
-  link.bounds = {{0, 0}, {10, 10}};
-  link.index_in_page = 0;
-  links_.push_back(std::move(link));
+  {
+    ppapi::PdfAccessibilityLinkInfo link;
+    link.url = kChromiumTestUrl;
+    link.text_run_index = 0;
+    link.text_run_count = 1;
+    link.bounds = {{0, 0}, {10, 10}};
+    link.index_in_page = 0;
+    links_.push_back(std::move(link));
+  }
 
   page_info_.text_run_count = text_runs_.size();
   page_info_.char_count = chars_.size();

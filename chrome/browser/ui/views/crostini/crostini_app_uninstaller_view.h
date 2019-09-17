@@ -7,14 +7,14 @@
 
 #include <string>
 
-#include "ui/views/window/dialog_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 class Profile;
 
 // The Crostini application uninstaller. Displays a confirmation prompt,
 // and kicks off the uninstall if the user confirms that they want the app
 // uninstalled. Subsequent notifications are handled by CrostiniPackageService.
-class CrostiniAppUninstallerView : public views::DialogDelegateView {
+class CrostiniAppUninstallerView : public views::BubbleDialogDelegateView {
  public:
   // Show the "are you sure?"-style confirmation prompt. |app_id| should be an
   // ID understood by CrostiniRegistryService::GetRegistration().

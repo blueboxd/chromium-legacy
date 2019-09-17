@@ -16,15 +16,12 @@
 #include "media/base/video_util.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/linux/dmabuf_video_frame_pool.h"
-#include "media/gpu/linux/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/va_surface.h"
 #include "media/gpu/vaapi/vaapi_h264_accelerator.h"
 #include "media/gpu/vaapi/vaapi_vp8_accelerator.h"
 #include "media/gpu/vaapi/vaapi_vp9_accelerator.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
-#include "ui/gfx/linux/native_pixmap_dmabuf.h"
-#include "ui/gfx/native_pixmap.h"
 
 namespace media {
 
@@ -409,20 +406,11 @@ scoped_refptr<VASurface> VaapiVideoDecoder::CreateSurface() {
 
   frame->set_timestamp(current_decode_task_->buffer_->timestamp());
 
-  // Create a native pixmap from the video frame.
-  scoped_refptr<gfx::NativePixmap> native_pixmap =
-      CreateNativePixmapDmaBuf(frame.get());
-  if (!native_pixmap) {
-    VLOGF(1) << "Failed to create NativePixmap from VideoFrame";
-    SetState(State::kError);
-    return nullptr;
-  }
-
   // Create VASurface from the native pixmap.
   scoped_refptr<VASurface> va_surface =
-      vaapi_wrapper_->CreateVASurfaceForPixmap(native_pixmap);
+      vaapi_wrapper_->CreateVASurfaceForVideoFrame(frame.get());
   if (!va_surface || va_surface->id() == VA_INVALID_ID) {
-    VLOGF(1) << "Failed to create VASurface from NativePixmap";
+    VLOGF(1) << "Failed to create VASurface from VideoFrame";
     SetState(State::kError);
     return nullptr;
   }

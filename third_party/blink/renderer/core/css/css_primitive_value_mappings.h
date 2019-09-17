@@ -754,6 +754,37 @@ inline FontDescription::Kerning CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
+inline CSSIdentifierValue::CSSIdentifierValue(OpticalSizing optical_sizing)
+    : CSSValue(kIdentifierClass) {
+  switch (optical_sizing) {
+    case kAutoOpticalSizing:
+      value_id_ = CSSValueID::kAuto;
+      return;
+    case kNoneOpticalSizing:
+      value_id_ = CSSValueID::kNone;
+      return;
+  }
+
+  NOTREACHED();
+  value_id_ = CSSValueID::kAuto;
+}
+
+template <>
+inline OpticalSizing CSSIdentifierValue::ConvertTo() const {
+  switch (value_id_) {
+    case CSSValueID::kAuto:
+      return kAutoOpticalSizing;
+    case CSSValueID::kNone:
+      return kNoneOpticalSizing;
+    default:
+      break;
+  }
+
+  NOTREACHED();
+  return kAutoOpticalSizing;
+}
+
+template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EFillSizeType fill_size)
     : CSSValue(kIdentifierClass) {
   switch (fill_size) {

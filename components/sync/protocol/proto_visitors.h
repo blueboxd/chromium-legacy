@@ -340,10 +340,18 @@ VISIT_PROTO_FIELDS(const sync_pb::DeviceInfoSpecifics& proto) {
   VISIT(signin_scoped_device_id);
   VISIT(last_updated_timestamp);
   VISIT(feature_fields);
+  VISIT(sharing_fields);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::FeatureSpecificFields& proto) {
   VISIT(send_tab_to_self_receiving_enabled);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::SharingSpecificFields& proto) {
+  VISIT(fcm_token);
+  VISIT_BYTES(p256dh);
+  VISIT_BYTES(auth_secret);
+  VISIT_REP(enabled_features);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::DictionarySpecifics& proto) {

@@ -14,10 +14,6 @@ GN_ARG_PREFIX = 'GN_ARG_'
 class GnPrepareOut(cr.PrepareOut):
   """A prepare action that runs gn whenever you select an output directory."""
 
-  ACTIVE = cr.Config.From(
-      GN_ARG_is_component_build='true',
-  )
-
   @property
   def priority(self):
     return -1

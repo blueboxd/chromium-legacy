@@ -85,5 +85,6 @@ interface AudioOutputStreamProviderClient {
   // to transfer the audio data.
   // TODO(https://crbug.com/787806): Currently, this will be called at most
   // once. In the future, it may be called several times.
-  Created(AudioOutputStream stream, ReadWriteAudioDataPipe data_pipe);
+  Created(pending_remote<AudioOutputStream> stream,
+          ReadWriteAudioDataPipe data_pipe);
 };

@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
@@ -392,8 +393,7 @@ const char* const kSettingsSyncURL = "internal://settings-sync";
                                             action:^(const GURL& URL) {
                                               [weakSelf openSettings];
                                             }];
-    [self.settingsLinkController
-        setLinkColor:[[MDCPalette cr_bluePalette] tint500]];
+    [self.settingsLinkController setLinkColor:[UIColor colorNamed:kBlueColor]];
     [self.settingsLinkController
         addLinkWithRange:range
                      url:URL

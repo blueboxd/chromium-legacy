@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_PRINTING_HISTORY_PRINT_JOB_DATABASE_IMPL_H_
 #define CHROME_BROWSER_CHROMEOS_PRINTING_HISTORY_PRINT_JOB_DATABASE_IMPL_H_
 
+#include <queue>
 #include <unordered_map>
 
 #include "base/macros.h"
@@ -33,12 +34,14 @@ class PrintJobDatabaseImpl : public PrintJobDatabase {
   bool IsInitialized() override;
   void SavePrintJob(const printing::proto::PrintJobInfo& print_job_info,
                     SavePrintJobCallback callback) override;
-  void DeletePrintJob(const std::string& id,
-                      DeletePrintJobCallback callback) override;
+  void DeletePrintJobs(const std::vector<std::string>& ids,
+                       DeletePrintJobsCallback callback) override;
   void GetPrintJobs(GetPrintJobsCallback callback) override;
 
  private:
   friend class PrintJobDatabaseImplTest;
+
+  enum class InitStatus { UNINITIALIZED, PENDING, INITIALIZED, FAILED };
 
   void OnInitialized(InitializeCallback callback,
                      leveldb_proto::Enums::InitStatus status);
@@ -55,8 +58,8 @@ class PrintJobDatabaseImpl : public PrintJobDatabase {
                        SavePrintJobCallback callback,
                        bool success);
 
-  void OnPrintJobDeleted(const std::string& id,
-                         DeletePrintJobCallback callback,
+  void OnPrintJobDeleted(const std::vector<std::string>& ids,
+                         DeletePrintJobsCallback callback,
                          bool success);
 
   void GetPrintJobsFromProtoDatabase(GetPrintJobsCallback callback);
@@ -73,12 +76,14 @@ class PrintJobDatabaseImpl : public PrintJobDatabase {
   // Cached PrintJobInfo entries.
   std::unordered_map<std::string, printing::proto::PrintJobInfo> cache_;
 
-  // Whether or not the ProtoDatabase database has been initialized and entries
-  // have been loaded.
-  bool is_initialized_ = false;
+  // Indicates the status of database initialization.
+  InitStatus init_status_;
 
   // Number of initialize attempts.
   int initialize_attempts_ = 0;
+
+  // Stores callbacks for delayed execution once database is initialized.
+  std::queue<base::OnceClosure> deferred_callbacks_;
 
   base::WeakPtrFactory<PrintJobDatabaseImpl> weak_ptr_factory_{this};
 

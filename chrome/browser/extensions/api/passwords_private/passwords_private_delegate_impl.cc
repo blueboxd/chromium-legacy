@@ -265,6 +265,8 @@ void PasswordsPrivateDelegateImpl::SetPasswordList(
           IDS_PASSWORDS_VIA_FEDERATION, GetDisplayFederation(*form))));
     }
 
+    entry.from_account_store = form->IsUsingAccountStore();
+
     current_entries_.push_back(std::move(entry));
   }
 
@@ -292,6 +294,8 @@ void PasswordsPrivateDelegateImpl::SetPasswordExceptionList(
     current_exception_entry.urls = CreateUrlCollectionFromForm(*form);
     current_exception_entry.id = exception_id_generator_.GenerateId(
         password_manager::CreateSortKey(*form));
+
+    current_exception_entry.from_account_store = form->IsUsingAccountStore();
     current_exceptions_.push_back(std::move(current_exception_entry));
   }
 

@@ -297,6 +297,9 @@ Vector<LayoutText::TextBoxInfo> LayoutText::GetTextBoxInfo() const {
     for (const NGPaintFragment* fragment : fragments) {
       const auto& text_fragment =
           To<NGPhysicalTextFragment>(fragment->PhysicalFragment());
+      // TODO(yosin): We should introduce
+      // |NGPhysicalTextFragment::IsTruncated()| to skip them instead of using
+      // |IsHiddenForPaint()| with ordering of fragments.
       if (text_fragment.IsHiddenForPaint()) {
         in_hidden_for_paint = true;
       } else if (in_hidden_for_paint) {
@@ -304,6 +307,10 @@ Vector<LayoutText::TextBoxInfo> LayoutText::GetTextBoxInfo() const {
         // ignore truncated fragments (actually painted).
         break;
       }
+      // We don't put generated texts, e.g. ellipsis, hyphen, etc. not in text
+      // content, into results. Note: CSS "content" aren't categorized this.
+      if (text_fragment.TextType() == NGPhysicalTextFragment::kGeneratedText)
+        continue;
       // When the corresponding DOM range contains collapsed whitespaces, NG
       // produces one fragment but legacy produces multiple text boxes broken at
       // collapsed whitespaces. We break the fragment at collapsed whitespaces
@@ -311,6 +318,7 @@ Vector<LayoutText::TextBoxInfo> LayoutText::GetTextBoxInfo() const {
       for (const NGOffsetMappingUnit& unit :
            mapping->GetMappingUnitsForTextContentOffsetRange(
                text_fragment.StartOffset(), text_fragment.EndOffset())) {
+        DCHECK_EQ(unit.GetLayoutObject(), this);
         if (unit.GetType() == NGOffsetMappingUnitType::kCollapsed)
           continue;
         // [clamped_start, clamped_end] of |fragment| matches a legacy text box.

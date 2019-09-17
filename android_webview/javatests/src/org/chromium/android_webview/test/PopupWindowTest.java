@@ -244,7 +244,7 @@ public class PopupWindowTest {
         // additional onPageFinished() callback. Also, this eventually affects commit stage of the
         // navigation which creates additional navigationStateChanged() and one additional
         // onPageFinished() callback.
-        onPageFinishedHelper.waitForCallback(onPageFinishedCount, 3);
+        onPageFinishedHelper.waitForCallback(onPageFinishedCount, 4);
         // This is the URL that gets shown to the user because parent changed DOM of the popup
         // window.
         List<String> urlList = onPageFinishedHelper.getUrlList();
@@ -253,8 +253,8 @@ public class PopupWindowTest {
         // that we wanted. The loaded page does not have the changed DOM. This is slightly different
         // from the original workflow in b/19325392 as there is no good hook to stop navigation and
         // trigger DidAccessInitialDocument at the same time.
-        Assert.assertTrue(urlList.get(onPageFinishedCount + 1).endsWith(popupPath));
         Assert.assertTrue(urlList.get(onPageFinishedCount + 2).endsWith(popupPath));
+        Assert.assertTrue(urlList.get(onPageFinishedCount + 3).endsWith(popupPath));
     }
 
     @Test

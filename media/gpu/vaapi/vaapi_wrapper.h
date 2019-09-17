@@ -230,10 +230,20 @@ class MEDIA_GPU_EXPORT VaapiWrapper
       const gfx::Size& size,
       const base::Optional<gfx::Size>& visible_size = base::nullopt);
 
-  // Creates a self-releasing VASurface from |pixmap|. The ownership of the
-  // surface is transferred to the caller.
+  // Creates a self-releasing VASurface from |frame|. The created VASurface
+  // doesn't have the ownership of |frame|, while it shares the ownership of the
+  // underlying buffer represented by |frame|. In other words, the buffer is
+  // alive at least until both |frame| and the created VASurface are destroyed.
+  scoped_refptr<VASurface> CreateVASurfaceForVideoFrame(
+      const VideoFrame* frame);
+
+  // Creates a self-releasing VASurface from |pixmap|. The created VASurface
+  // shares the ownership of the underlying buffer represented by |pixmap|. The
+  // ownership of the surface is transferred to the caller. A caller can destroy
+  // |pixmap| after this method returns and the underlying buffer will be kept
+  // alive by the VASurface.
   scoped_refptr<VASurface> CreateVASurfaceForPixmap(
-      const scoped_refptr<gfx::NativePixmap>& pixmap);
+      scoped_refptr<gfx::NativePixmap> pixmap);
 
   // Syncs and exports |va_surface| as a gfx::NativePixmapDmaBuf. Currently, the
   // only VAAPI surface pixel formats supported are VA_FOURCC_IMC3 and

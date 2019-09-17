@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_ARC_VIDEO_ACCELERATOR_ARC_VIDEO_ACCELERATOR_UTIL_H_
 #define COMPONENTS_ARC_VIDEO_ACCELERATOR_ARC_VIDEO_ACCELERATOR_UTIL_H_
 
+#include <string>
 #include <vector>
 
 #include "base/files/scoped_file.h"
@@ -32,5 +33,9 @@ base::Optional<gfx::GpuMemoryBufferHandle> CreateGpuMemoryBufferHandle(
     const gfx::Size& coded_size,
     base::ScopedFD fd,
     const std::vector<VideoFramePlane>& planes);
+
+// Create a temp file and write |data| into the file.
+base::ScopedFD CreateTempFileForTesting(const std::string& data);
+
 }  // namespace arc
 #endif  // COMPONENTS_ARC_VIDEO_ACCELERATOR_ARC_VIDEO_ACCELERATOR_UTIL_H_

@@ -263,8 +263,8 @@ bool IsValidNigoriSpecifics(const NigoriSpecifics& specifics) {
       }
       break;
     case NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE:
-      NOTIMPLEMENTED();
-      return false;
+      return base::FeatureList::IsEnabled(
+          switches::kSyncSupportTrustedVaultPassphrase);
   }
   return true;
 }
@@ -290,7 +290,8 @@ bool IsValidPassphraseTransition(
       NOTREACHED();
       return false;
     case NigoriSpecifics::KEYSTORE_PASSPHRASE:
-      return new_passphrase_type == NigoriSpecifics::CUSTOM_PASSPHRASE;
+      return new_passphrase_type == NigoriSpecifics::CUSTOM_PASSPHRASE ||
+             new_passphrase_type == NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE;
     case NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:
       // There is no client side code which can cause such transition, but
       // technically it's a valid one and can be implemented in the future.
@@ -509,7 +510,11 @@ NigoriSyncBridgeImpl::NigoriSyncBridgeImpl(
   // verifications, taking into account sensitivity of this data.
   base::Optional<sync_pb::NigoriLocalData> deserialized_data =
       storage_->RestoreData();
-  if (!deserialized_data) {
+  if (!deserialized_data ||
+      (deserialized_data->nigori_model().passphrase_type() ==
+           NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE &&
+       !base::FeatureList::IsEnabled(
+           switches::kSyncSupportTrustedVaultPassphrase))) {
     // We either have no Nigori node stored locally or it was corrupted.
     processor_->ModelReadyToSync(this, NigoriMetadataBatch());
     return;
@@ -1054,6 +1059,15 @@ const Cryptographer& NigoriSyncBridgeImpl::GetCryptographerForTesting() const {
   return cryptographer_;
 }
 
+sync_pb::NigoriSpecifics::PassphraseType
+NigoriSyncBridgeImpl::GetPassphraseTypeForTesting() const {
+  return passphrase_type_;
+}
+
+ModelTypeSet NigoriSyncBridgeImpl::GetEncryptedTypesForTesting() const {
+  return GetEncryptedTypes(encrypt_everything_);
+}
+
 std::string NigoriSyncBridgeImpl::PackExplicitPassphraseKeyForTesting(
     const Encryptor& encryptor,
     const Cryptographer& cryptographer) {
@@ -1108,6 +1122,9 @@ void NigoriSyncBridgeImpl::MaybeNotifyBootstrapTokenUpdated() const {
       NOTIMPLEMENTED();
       return;
     case NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE:
+      // This may be problematic for the MIGRATION_DONE case because the local
+      // keybag will be cleared and it won't be automatically recovered from
+      // prefs.
       NOTIMPLEMENTED();
       return;
     case NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:

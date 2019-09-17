@@ -2560,6 +2560,15 @@ const CSSValue* FontKerning::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.GetFontDescription().GetKerning());
 }
 
+const CSSValue* FontOpticalSizing::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  return CSSIdentifierValue::Create(
+      style.GetFontDescription().FontOpticalSizing());
+}
+
 const CSSValue* FontSizeAdjust::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,

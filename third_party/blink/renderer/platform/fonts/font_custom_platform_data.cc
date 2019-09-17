@@ -67,6 +67,7 @@ FontPlatformData FontCustomPlatformData::GetFontPlatformData(
     bool italic,
     const FontSelectionRequest& selection_request,
     const FontSelectionCapabilities& selection_capabilities,
+    const OpticalSizing& optical_sizing,
     FontOrientation orientation,
     const FontVariationSettings* variation_settings) {
   DCHECK(base_typeface_);
@@ -105,13 +106,22 @@ FontPlatformData FontCustomPlatformData::GetFontPlatformData(
     axes.push_back(width_axis);
     axes.push_back(slant_axis);
 
+    bool explicit_opsz_configured = false;
     if (variation_settings && variation_settings->size() < UINT16_MAX) {
       axes.ReserveCapacity(variation_settings->size() + axes.size());
       for (const auto& setting : *variation_settings) {
+        if (setting.Tag() == AtomicString("opsz"))
+          explicit_opsz_configured = true;
         SkFontArguments::Axis axis = {AtomicStringToFourByteTag(setting.Tag()),
                                       SkFloatToScalar(setting.Value())};
         axes.push_back(axis);
       }
+    }
+
+    if (optical_sizing == kAutoOpticalSizing && !explicit_opsz_configured) {
+      SkFontArguments::Axis opsz_axis = {SkSetFourByteTag('o', 'p', 's', 'z'),
+                                         SkFloatToScalar(size)};
+      axes.push_back(opsz_axis);
     }
 
     int index;

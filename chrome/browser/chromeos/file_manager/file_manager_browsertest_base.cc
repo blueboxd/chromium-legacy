@@ -2357,19 +2357,14 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
 
 drive::DriveIntegrationService*
 FileManagerBrowserTestBase::CreateDriveIntegrationService(Profile* profile) {
-  if (base::FeatureList::IsEnabled(chromeos::features::kDriveFs)) {
-    drive_volumes_[profile->GetOriginalProfile()] =
-        std::make_unique<DriveFsTestVolume>(profile->GetOriginalProfile());
-    if (!IsIncognitoModeTest() && !DoesTestStartWithNoVolumesMounted() &&
-        profile->GetPath().BaseName().value() == "user") {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(base::IgnoreResult(&LocalTestVolume::Mount),
-                         base::Unretained(local_volume_.get()), profile));
-    }
-  } else {
-    drive_volumes_[profile->GetOriginalProfile()] =
-        std::make_unique<DriveTestVolume>();
+  drive_volumes_[profile->GetOriginalProfile()] =
+      std::make_unique<DriveFsTestVolume>(profile->GetOriginalProfile());
+  if (!IsIncognitoModeTest() && !DoesTestStartWithNoVolumesMounted() &&
+      profile->GetPath().BaseName().value() == "user") {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(base::IgnoreResult(&LocalTestVolume::Mount),
+                       base::Unretained(local_volume_.get()), profile));
   }
   if (DoesTestStartWithNoVolumesMounted()) {
     profile->GetPrefs()->SetBoolean(drive::prefs::kDriveFsPinnedMigrated, true);

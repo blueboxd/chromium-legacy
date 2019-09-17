@@ -161,7 +161,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
       override;
   void BindInterface(const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe) override;
-  void BindHostReceiver(mojo::GenericPendingReceiver receiver) override;
+  void BindHostReceiver(mojo::GenericPendingReceiver generic_receiver) override;
   void RunService(
       const std::string& service_name,
       mojo::PendingReceiver<service_manager::mojom::Service> receiver) override;

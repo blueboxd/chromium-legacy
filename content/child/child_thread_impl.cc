@@ -63,6 +63,7 @@
 #include "ipc/ipc_sync_message_filter.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
@@ -547,8 +548,8 @@ void ChildThreadImpl::SetFieldTrialGroup(const std::string& trial_name,
 void ChildThreadImpl::OnFieldTrialGroupFinalized(
     const std::string& trial_name,
     const std::string& group_name) {
-  mojom::FieldTrialRecorderPtr field_trial_recorder;
-  BindHostReceiver(mojo::MakeRequest(&field_trial_recorder));
+  mojo::Remote<mojom::FieldTrialRecorder> field_trial_recorder;
+  BindHostReceiver(field_trial_recorder.BindNewPipeAndPassReceiver());
   field_trial_recorder->FieldTrialActivated(trial_name);
 }
 

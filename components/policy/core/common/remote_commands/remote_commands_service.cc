@@ -98,11 +98,20 @@ void RemoteCommandsService::VerifyAndEnqueueSignedCommand(
       signed_command.signature(),
       CloudPolicyValidatorBase::SignatureType::SHA1);
 
+  auto ignore_result = base::BindOnce(
+      [](std::vector<em::RemoteCommandResult>* unsent_results,
+         const char* error_msg) {
+        SYSLOG(ERROR) << error_msg;
+        em::RemoteCommandResult result;
+        result.set_result(em::RemoteCommandResult_ResultType_RESULT_IGNORED);
+        result.set_command_id(-1);
+        unsent_results->push_back(result);
+      },
+      &unsent_results_);
+
   if (!valid_signature) {
-    SYSLOG(ERROR) << "Secure remote command signature verification failed";
-    em::RemoteCommandResult result;
-    result.set_result(em::RemoteCommandResult_ResultType_RESULT_IGNORED);
-    unsent_results_.push_back(result);
+    std::move(ignore_result)
+        .Run("Secure remote command signature verification failed");
     return;
   }
 
@@ -111,24 +120,25 @@ void RemoteCommandsService::VerifyAndEnqueueSignedCommand(
       !policy_data.has_policy_type() ||
       policy_data.policy_type() !=
           dm_protocol::kChromeRemoteCommandPolicyType) {
-    SYSLOG(ERROR) << "Secure remote command with wrong PolicyData type";
-    em::RemoteCommandResult result;
-    result.set_result(em::RemoteCommandResult_ResultType_RESULT_IGNORED);
-    unsent_results_.push_back(result);
+    std::move(ignore_result)
+        .Run("Secure remote command with wrong PolicyData type");
     return;
   }
 
   em::RemoteCommand command;
   if (!policy_data.has_policy_value() ||
       !command.ParseFromString(policy_data.policy_value())) {
-    SYSLOG(ERROR) << "Secure remote command invalid RemoteCommand data";
-    em::RemoteCommandResult result;
-    result.set_result(em::RemoteCommandResult_ResultType_RESULT_IGNORED);
-    unsent_results_.push_back(result);
+    std::move(ignore_result)
+        .Run("Secure remote command invalid RemoteCommand data");
     return;
   }
 
-  // TODO(isandrk): Also make sure that target_device_id matches and add tests!
+  const em::PolicyData* const policy = store_->policy();
+  if (!policy || policy->device_id() != command.target_device_id()) {
+    std::move(ignore_result)
+        .Run("Secure remote command wrong target device id");
+    return;
+  }
 
   // Signature verification passed.
   EnqueueCommand(command, &signed_command);

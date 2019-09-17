@@ -1272,6 +1272,11 @@ void NavigationRequest::OnRequestRedirected(
   response_head_ = response_head;
   ssl_info_ = response_head->head.ssl_info;
   auth_challenge_info_ = response_head->head.auth_challenge_info;
+
+  // Reset the page state as it can no longer be used at commit time since the
+  // navigation was redirected.
+  commit_params_->page_state = PageState();
+
 #if defined(OS_ANDROID)
   base::WeakPtr<NavigationRequest> this_ptr(weak_factory_.GetWeakPtr());
 

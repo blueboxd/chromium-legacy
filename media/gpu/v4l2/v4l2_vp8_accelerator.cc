@@ -222,7 +222,7 @@ bool V4L2VP8Accelerator::SubmitDecode(
 
   struct v4l2_ext_control ctrl;
   memset(&ctrl, 0, sizeof(ctrl));
-  ctrl.id = V4L2_CTRL_TYPE_VP8_FRAME_HEADER;
+  ctrl.id = V4L2_CID_MPEG_VIDEO_VP8_FRAME_HEADER;
   ctrl.size = sizeof(v4l2_frame_hdr);
   ctrl.ptr = &v4l2_frame_hdr;
 

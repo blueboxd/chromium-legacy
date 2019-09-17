@@ -762,6 +762,21 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithTwoBlockedQueues) {
   task_queue2->UnregisterTaskQueue();
 }
 
+TEST_F(TaskQueueSelectorTest, CollectSkippedOverLowerPriorityTasks) {
+  size_t queue_order[] = {0, 1, 2, 3, 2, 1, 0};
+  PushTasks(queue_order, 7);
+  selector_.SetQueuePriority(task_queues_[3].get(), TaskQueue::kHighPriority);
+
+  std::vector<const Task*> result;
+  selector_.CollectSkippedOverLowerPriorityTasks(
+      task_queues_[3]->immediate_work_queue(), &result);
+
+  ASSERT_EQ(3u, result.size());
+  EXPECT_EQ(2u, result[0]->enqueue_order());  // The order here isn't important.
+  EXPECT_EQ(3u, result[1]->enqueue_order());
+  EXPECT_EQ(4u, result[2]->enqueue_order());
+}
+
 class DisabledAntiStarvationLogicTaskQueueSelectorTest
     : public TaskQueueSelectorTestBase,
       public testing::WithParamInterface<TaskQueue::QueuePriority> {

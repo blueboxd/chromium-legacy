@@ -248,6 +248,12 @@ const char kAutoScreenBrightnessDescription[] =
     "Uses Auto Screen Brightness model to adjust screen brightness based on "
     "ambient light";
 
+const char kBackForwardCacheName[] = "Back-forward cache";
+const char kBackForwardCacheDescription[] =
+    "Enables back-forward cache. NOTE: this feature is highly experimental and "
+    "will lead to various breakages, up to and including user data loss. "
+    "Do not enable unless you work on this feature";
+
 const char kBrowserTaskSchedulerName[] = "Task Scheduler";
 const char kBrowserTaskSchedulerDescription[] =
     "Enables redirection of some task posting APIs to the task scheduler.";
@@ -357,6 +363,13 @@ const char kCooperativeSchedulingDescription[] =
 const char kCreditCardAssistName[] = "Credit Card Assisted Filling";
 const char kCreditCardAssistDescription[] =
     "Enable assisted credit card filling on certain sites.";
+
+const char kDarkenWebsitesCheckboxInThemesSettingName[] =
+    "Darken websites checkbox in themes setting";
+const char kDarkenWebsitesCheckboxInThemesSettingDescription[] =
+    "Show a darken websites checkbox in themes settings when system default or "
+    "dark is selected. The checkbox can toggle the auto-darkening web contents "
+    "feature";
 
 const char kDataSaverServerPreviewsName[] = "Data Saver Server Previews";
 const char kDataSaverServerPreviewsDescription[] =

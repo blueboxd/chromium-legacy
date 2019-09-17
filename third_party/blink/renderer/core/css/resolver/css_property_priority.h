@@ -87,7 +87,7 @@ inline CSSPropertyID CSSPropertyPriorityData<kHighPropertyPriority>::First() {
 template <>
 inline CSSPropertyID CSSPropertyPriorityData<kHighPropertyPriority>::Last() {
   static_assert(static_cast<int>(CSSPropertyID::kZoom) ==
-                    static_cast<int>(CSSPropertyID::kColor) + 26,
+                    static_cast<int>(CSSPropertyID::kColor) + 27,
                 "CSSPropertyID::kZoom should be the end of the high priority "
                 "property range");
   static_assert(static_cast<int>(CSSPropertyID::kWritingMode) ==

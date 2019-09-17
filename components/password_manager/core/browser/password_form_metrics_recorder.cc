@@ -643,9 +643,9 @@ void PasswordFormMetricsRecorder::RecordUIDismissalReason(
             username_updated_in_bubble_
                 ? SavingOnUsernameFirstFlow::kSavedWithEditedUsername
                 : SavingOnUsernameFirstFlow::kSaved;
-        UMA_HISTOGRAM_ENUMERATION("PasswordManager.SavingOnUsernameFirstFlow",
-                                  saving_on_username_first_flow);
       }
+      UMA_HISTOGRAM_ENUMERATION("PasswordManager.SavingOnUsernameFirstFlow",
+                                saving_on_username_first_flow);
     }
   }
 

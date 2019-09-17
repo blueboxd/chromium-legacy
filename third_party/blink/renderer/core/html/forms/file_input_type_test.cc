@@ -140,7 +140,7 @@ TEST(FileInputTypeTest, DropTouchesNoPopupOpeningObserver) {
   auto& input = *ToHTMLInputElement(doc.body()->firstChild());
 
   base::RunLoop run_loop;
-  MockFileChooser chooser(&doc.GetFrame()->GetInterfaceProvider(),
+  MockFileChooser chooser(doc.GetFrame()->GetBrowserInterfaceBroker(),
                           run_loop.QuitClosure());
   DragData drag_data(DataObject::Create(), FloatPoint(), FloatPoint(),
                      kDragOperationCopy);

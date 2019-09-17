@@ -120,33 +120,24 @@ def _FileRangeToVirtualAddressRange(data, l, r):
   segments is required here.
   """
   elf = elf_headers.ElfHeader(data)
-  for phdr in elf.GetPhdrs():
-    if phdr.p_type == elf_headers.ProgramHeader.Type.PT_LOAD:
-      # Current version of the prototype only supports ranges which are fully
-      # contained inside one LOAD segment. It should cover most of the common
-      # cases.
-      if phdr.p_offset >= r or phdr.p_offset + phdr.p_filesz <= l:
-        # Range doesn't overlap.
-        continue
-      if phdr.p_offset > l or phdr.p_offset + phdr.p_filesz < r:
-        # Range overlap with LOAD segment but isn't fully covered by it.
-        raise RuntimeError('Range is not contained within one LOAD segment')
-      l_virt = phdr.p_vaddr + (l - phdr.p_offset)
-      r_virt = phdr.p_vaddr + (r - phdr.p_offset)
-      return l_virt, r_virt
+  for phdr in elf.GetPhdrsByType(elf_headers.ProgramHeader.Type.PT_LOAD):
+    # Current version of the prototype only supports ranges which are fully
+    # contained inside one LOAD segment. It should cover most of the common
+    # cases.
+    if phdr.p_offset >= r or phdr.FilePositionEnd() <= l:
+      # Range doesn't overlap.
+      continue
+    if phdr.p_offset > l or phdr.FilePositionEnd() < r:
+      # Range overlap with LOAD segment but isn't fully covered by it.
+      raise RuntimeError('Range is not contained within one LOAD segment')
+    l_virt = phdr.p_vaddr + (l - phdr.p_offset)
+    r_virt = phdr.p_vaddr + (r - phdr.p_offset)
+    return l_virt, r_virt
   raise RuntimeError('Specified range is outside of all LOAD segments.')
 
 
 def _CopyRangeIntoCompressedSection(data, l, r):
   """Adds a new section containing compressed version of provided range."""
-  virtual_l, virtual_r = _FileRangeToVirtualAddressRange(data, l, r)
-  # LOAD segments borders are being rounded to the page size so we have to
-  # shrink [l, r) so corresponding virtual addresses are aligned.
-  l += AlignUp(virtual_l) - virtual_l
-  r -= virtual_r - AlignDown(virtual_r)
-  if l >= r:
-    raise RuntimeError('Range collapsed after aligning by page size')
-
   compressed_range = compression.CompressData(data[l:r])
 
   with tempfile.TemporaryDirectory() as tmpdir:
@@ -197,12 +188,16 @@ def _MovePhdrToTheEnd(data):
   if elf_hdr.e_phoff + elf_hdr.e_phnum * elf_hdr.e_phentsize == len(data):
     return
 
-  new_phoff = len(data)
+  old_phoff = elf_hdr.e_phoff
+  new_phoff = elf_hdr.e_phoff = len(data)
+
   unaligned_new_vaddr = _FindNewVaddr(elf_hdr.GetPhdrs())
   new_vaddr = MatchVaddrAlignment(unaligned_new_vaddr, new_phoff)
   # Since we moved the PHDR section to the end of the file, we need to create a
   # new LOAD segment to load it in.
-  new_filesz = (elf_hdr.e_phnum + 1) * elf_hdr.e_phentsize
+  current_filesize = elf_hdr.e_phnum * elf_hdr.e_phentsize
+  # We are using current_filesize while adding new program header due to
+  # AddPhdr handling the increase of size due to addition of new header.
   elf_hdr.AddPhdr(
       elf_headers.ProgramHeader.Create(
           elf_hdr.byte_order,
@@ -211,30 +206,100 @@ def _MovePhdrToTheEnd(data):
           p_offset=new_phoff,
           p_vaddr=new_vaddr,
           p_paddr=new_vaddr,
-          p_filesz=new_filesz,
-          p_memsz=new_filesz,
+          p_filesz=current_filesize,
+          p_memsz=current_filesize,
           p_align=ADDRESS_ALIGN,
       ))
 
   # PHDR segment if it exists should point to the new location.
-  for phdr in elf_hdr.GetPhdrs():
-    if phdr.p_type == elf_headers.ProgramHeader.Type.PT_PHDR:
-      phdr.p_offset = new_phoff
-      phdr.p_vaddr = new_vaddr
-      phdr.p_paddr = new_vaddr
-      phdr.p_filesz = new_filesz
-      phdr.p_memsz = new_filesz
-      phdr.p_align = ADDRESS_ALIGN
+  for phdr in elf_hdr.GetPhdrsByType(elf_headers.ProgramHeader.Type.PT_PHDR):
+    phdr.p_offset = new_phoff
+    phdr.p_vaddr = new_vaddr
+    phdr.p_paddr = new_vaddr
+    phdr.p_align = ADDRESS_ALIGN
 
   # We need to replace the previous phdr placement with zero bytes to fail
   # fast if dynamic linker doesn't like the new program header.
   previous_phdr_size = (elf_hdr.e_phnum - 1) * elf_hdr.e_phentsize
-  data[elf_hdr.e_phoff:elf_hdr.e_phoff +
-       previous_phdr_size] = [0] * previous_phdr_size
+  data[old_phoff:old_phoff + previous_phdr_size] = [0] * previous_phdr_size
 
   # Updating ELF header to point to the new location.
-  elf_hdr.e_phoff = new_phoff
   elf_hdr.PatchData(data)
+
+
+def _SplitLoadSegmentAndNullifyRange(data, l, r):
+  """Find LOAD segment covering [l, r) and splits it into three segments.
+
+  Split is done so one of the LOAD segments contains only [l, r) and nothing
+  else. If the range is located at the start or at the end of the segment less
+  than three segments may be created.
+
+  The resulting LOAD segment containing [l, r) is edited so it sets the
+  corresponding virtual address range to zeroes, ignoring file content.
+  """
+  elf_hdr = elf_headers.ElfHeader(data)
+
+  range_phdr = None
+  for phdr in elf_hdr.GetPhdrsByType(elf_headers.ProgramHeader.Type.PT_LOAD):
+    if phdr.p_offset <= l and phdr.FilePositionEnd() >= r:
+      range_phdr = phdr
+      break
+  if range_phdr is None:
+    raise RuntimeError('No LOAD segment covering the range found')
+
+  # The range_phdr will become the LOAD segment containing the [l, r) range
+  # but we need to create the additional two segments.
+  left_segment_size = l - range_phdr.p_offset
+  if left_segment_size > 0:
+    # Creating LOAD segment containing the [phdr.p_offset, l) part.
+    elf_hdr.AddPhdr(
+        elf_headers.ProgramHeader.Create(
+            elf_hdr.byte_order,
+            p_type=range_phdr.p_type,
+            p_flags=range_phdr.p_flags,
+            p_offset=range_phdr.p_offset,
+            p_vaddr=range_phdr.p_vaddr,
+            p_paddr=range_phdr.p_paddr,
+            p_filesz=left_segment_size,
+            p_memsz=left_segment_size,
+            p_align=range_phdr.p_align,
+        ))
+  if range_phdr.p_offset + range_phdr.p_memsz > r:
+    # Creating LOAD segment containing the [r, phdr.p_offset + phdr.p_memsz).
+    right_segment_delta = r - range_phdr.p_offset
+    right_segment_address = range_phdr.p_vaddr + right_segment_delta
+    right_segment_filesize = max(range_phdr.p_filesz - right_segment_delta, 0)
+    right_segment_memsize = range_phdr.p_memsz - right_segment_delta
+    elf_hdr.AddPhdr(
+        elf_headers.ProgramHeader.Create(
+            elf_hdr.byte_order,
+            p_type=range_phdr.p_type,
+            p_flags=range_phdr.p_flags,
+            p_offset=r,
+            p_vaddr=right_segment_address,
+            p_paddr=right_segment_address,
+            p_filesz=right_segment_filesize,
+            p_memsz=right_segment_memsize,
+            p_align=range_phdr.p_align,
+        ))
+  # Modifying the range_phdr
+  central_segment_address = range_phdr.p_vaddr + left_segment_size
+  range_phdr.p_offset = l
+  range_phdr.p_vaddr = central_segment_address
+  range_phdr.p_paddr = central_segment_address
+  range_phdr.p_filesz = 0
+  range_phdr.p_memsz = r - l
+
+  elf_hdr.PatchData(data)
+
+
+def _ShrinkRangeToAlignVirtualAddress(data, l, r):
+  virtual_l, virtual_r = _FileRangeToVirtualAddressRange(data, l, r)
+  # LOAD segments borders are being rounded to the page size so we have to
+  # shrink [l, r) so corresponding virtual addresses are aligned.
+  l += AlignUp(virtual_l) - virtual_l
+  r -= virtual_r - AlignDown(virtual_r)
+  return l, r
 
 
 def main():
@@ -245,8 +310,14 @@ def main():
     data = f.read()
     data = bytearray(data)
 
-  _CopyRangeIntoCompressedSection(data, args.left_range, args.right_range)
+  left_range, right_range = _ShrinkRangeToAlignVirtualAddress(
+      data, args.left_range, args.right_range)
+  if left_range >= right_range:
+    raise RuntimeError('Range collapsed after aligning by page size')
+
+  _CopyRangeIntoCompressedSection(data, left_range, right_range)
   _MovePhdrToTheEnd(data)
+  _SplitLoadSegmentAndNullifyRange(data, left_range, right_range)
 
   with open(args.output, 'wb') as f:
     f.write(data)

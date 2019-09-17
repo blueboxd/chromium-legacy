@@ -1689,5 +1689,52 @@ TEST_P(WebSocketStreamCreateTest, HandleErrTunnelConnectionFailed) {
             failure_message());
 }
 
+TEST_P(WebSocketStreamCreateTest, CancelSSLRequestAfterDelete) {
+  auto ssl_socket_data = std::make_unique<SSLSocketDataProvider>(
+      ASYNC, ERR_CERT_AUTHORITY_INVALID);
+  ssl_socket_data->ssl_info.cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "unittest.selfsigned.der");
+  ASSERT_TRUE(ssl_socket_data->ssl_info.cert.get());
+  url_request_context_host_.AddSSLSocketDataProvider(
+      std::move(ssl_socket_data));
+
+  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_CONNECTION_RESET, 0)};
+  MockWrite writes[] = {MockWrite(SYNCHRONOUS, ERR_CONNECTION_RESET, 1)};
+  std::unique_ptr<SequencedSocketData> raw_socket_data(
+      BuildSocketData(reads, writes));
+  CreateAndConnectRawExpectations("wss://www.example.org/", NoSubProtocols(),
+                                  HttpRequestHeaders(),
+                                  std::move(raw_socket_data));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(has_failed());
+  ASSERT_TRUE(ssl_error_callbacks_);
+  stream_request_.reset();
+  ssl_error_callbacks_->CancelSSLRequest(ERR_CERT_AUTHORITY_INVALID,
+                                         &ssl_info_);
+}
+
+TEST_P(WebSocketStreamCreateTest, ContinueSSLRequestAfterDelete) {
+  auto ssl_socket_data = std::make_unique<SSLSocketDataProvider>(
+      ASYNC, ERR_CERT_AUTHORITY_INVALID);
+  ssl_socket_data->ssl_info.cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "unittest.selfsigned.der");
+  ASSERT_TRUE(ssl_socket_data->ssl_info.cert.get());
+  url_request_context_host_.AddSSLSocketDataProvider(
+      std::move(ssl_socket_data));
+
+  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_CONNECTION_RESET, 0)};
+  MockWrite writes[] = {MockWrite(SYNCHRONOUS, ERR_CONNECTION_RESET, 1)};
+  std::unique_ptr<SequencedSocketData> raw_socket_data(
+      BuildSocketData(reads, writes));
+  CreateAndConnectRawExpectations("wss://www.example.org/", NoSubProtocols(),
+                                  HttpRequestHeaders(),
+                                  std::move(raw_socket_data));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(has_failed());
+  ASSERT_TRUE(ssl_error_callbacks_);
+  stream_request_.reset();
+  ssl_error_callbacks_->ContinueSSLRequest();
+}
+
 }  // namespace
 }  // namespace net

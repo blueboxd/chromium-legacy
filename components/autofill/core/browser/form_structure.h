@@ -130,7 +130,7 @@ class FormStructure {
   void UpdateAutofillCount();
 
   // Returns true if this form matches the structural requirements for Autofill.
-  bool ShouldBeParsed() const;
+  bool ShouldBeParsed(LogManager* log_manager = nullptr) const;
 
   // Returns true if heuristic autofill type detection should be attempted for
   // this form.

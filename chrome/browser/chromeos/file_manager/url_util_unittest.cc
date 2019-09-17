@@ -59,13 +59,9 @@ TEST(FileManagerUrlUtilTest, GetFileManagerMainPageUrlWithParams_NoFileTypes) {
   EXPECT_TRUE(url.query().find("+") == std::string::npos);
   EXPECT_TRUE(url.query().find("%20") != std::string::npos);
   // With DriveFS, Drive is always allowed where native paths are.
-  std::string allowed_paths =
-      base::FeatureList::IsEnabled(chromeos::features::kDriveFs)
-          ? "nativeOrDrivePath"
-          : "nativePath";
   EXPECT_EQ(base::StringPrintf(
                 "{\n"
-                "   \"allowedPaths\": \"%s\",\n"
+                "   \"allowedPaths\": \"nativeOrDrivePath\",\n"
                 "   \"currentDirectoryURL\": "
                 "\"filesystem:chrome-extension://abc/Downloads/\",\n"
                 "   \"defaultExtension\": \"txt\",\n"
@@ -75,8 +71,7 @@ TEST(FileManagerUrlUtilTest, GetFileManagerMainPageUrlWithParams_NoFileTypes) {
                 "   \"targetName\": \"foo.txt\",\n"
                 "   \"title\": \"some title\",\n"
                 "   \"type\": \"open-file\"\n"
-                "}\n",
-                allowed_paths.c_str()),
+                "}\n"),
             PrettyPrintEscapedJson(url.query()));
 }
 

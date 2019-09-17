@@ -44,11 +44,21 @@ recordPanelShown:
     audits : 18
     console : 8
     drawer-animations : 11
+    drawer-changes.changes : 23
     drawer-console-view : 10
+    drawer-coverage : 19
+    drawer-live_heap_profile : 26
+    drawer-network.blocked-urls : 28
     drawer-network.config : 12
+    drawer-performance.monitor : 24
+    drawer-protocol-monitor : 20
+    drawer-release-note : 25
+    drawer-remote-devices : 21
     drawer-rendering : 13
     drawer-sensors : 14
+    drawer-sources.quick : 27
     drawer-sources.search : 15
+    drawer-web-audio : 22
     elements : 1
     heap_profiler : 6
     js_profiler : 17

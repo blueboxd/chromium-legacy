@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_CROSTINI_CROSTINI_UNINSTALLER_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_CROSTINI_CROSTINI_UNINSTALLER_VIEW_H_
 
-#include "ui/views/window/dialog_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 namespace views {
 class Label;
@@ -20,7 +20,7 @@ class Profile;
 
 // The Crostini uninstaller. Provides a warning to the user and
 // uninstalls Crostinin if the user chooses to do so.
-class CrostiniUninstallerView : public views::DialogDelegateView {
+class CrostiniUninstallerView : public views::BubbleDialogDelegateView {
  public:
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.

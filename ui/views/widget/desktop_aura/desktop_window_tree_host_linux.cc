@@ -10,7 +10,7 @@
 #include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/views_delegate.h"
-#include "ui/views/widget/desktop_aura/window_event_filter.h"
+#include "ui/views/widget/desktop_aura/window_event_filter_linux.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -87,14 +87,8 @@ void DesktopWindowTreeHostLinux::AddAdditionalInitProperties(
 
 void DesktopWindowTreeHostLinux::AddNonClientEventFilter() {
   DCHECK(!non_client_window_event_filter_);
-  std::unique_ptr<WindowEventFilter> window_event_filter =
-      std::make_unique<WindowEventFilter>(this);
-  auto* wm_move_resize_handler = GetWmMoveResizeHandler(*platform_window());
-  if (wm_move_resize_handler)
-    window_event_filter->SetWmMoveResizeHandler(
-        GetWmMoveResizeHandler(*(platform_window())));
-
-  non_client_window_event_filter_ = std::move(window_event_filter);
+  non_client_window_event_filter_ = std::make_unique<WindowEventFilterLinux>(
+      this, GetWmMoveResizeHandler(*platform_window()));
   window()->AddPreTargetHandler(non_client_window_event_filter_.get());
 }
 

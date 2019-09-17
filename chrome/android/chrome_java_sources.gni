@@ -947,6 +947,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/night_mode/PowerSavingModeMonitor.java",
   "java/src/org/chromium/chrome/browser/night_mode/RemoteViewsWithNightModeInflater.java",
   "java/src/org/chromium/chrome/browser/night_mode/SystemNightModeMonitor.java",
+  "java/src/org/chromium/chrome/browser/night_mode/WebContentsDarkModeController.java",
   "java/src/org/chromium/chrome/browser/notifications/ActionInfo.java",
   "java/src/org/chromium/chrome/browser/notifications/ChromeNotification.java",
   "java/src/org/chromium/chrome/browser/notifications/ChromeNotificationBuilder.java",

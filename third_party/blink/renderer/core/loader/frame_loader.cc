@@ -906,11 +906,12 @@ void FrameLoader::CommitNavigation(
       navigation_params->frame_load_type,
       !navigation_params->http_body.IsNull(), false /* have_event */);
 
-  HistoryItem* history_item = nullptr;
-  if (IsBackForwardLoadType(navigation_params->frame_load_type)) {
-    history_item = navigation_params->history_item;
-    DCHECK(history_item);
-  }
+  // Keep track of the current Document HistoryItem as the new DocumentLoader
+  // might need to copy state from it. Note that the current DocumentLoader
+  // should always exist, as the initial empty document is committed through
+  // FrameLoader::Init.
+  DCHECK(!StateMachine()->CreatingInitialEmptyDocument());
+  HistoryItem* previous_history_item = GetDocumentLoader()->GetHistoryItem();
 
   base::Optional<Document::UnloadEventTiming> unload_timing;
   scoped_refptr<SecurityOrigin> security_origin =
@@ -924,8 +925,6 @@ void FrameLoader::CommitNavigation(
 
   {
     base::AutoReset<bool> scoped_committing(&committing_navigation_, true);
-    if (history_item)
-      provisional_document_loader->SetItemForHistoryNavigation(history_item);
     if (is_javascript_url)
       provisional_document_loader->SetLoadingJavaScriptUrl();
 
@@ -947,6 +946,14 @@ void FrameLoader::CommitNavigation(
   }
 
   std::move(call_before_attaching_new_document).Run();
+
+  // Following the call to StartLoading, the provisional DocumentLoader state
+  // has taken into account all redirects that happened during navigation. Its
+  // HistoryItem can be properly updated for the commit, using the HistoryItem
+  // of the previous Document.
+  provisional_document_loader_->SetHistoryItemStateForCommit(
+      previous_history_item, provisional_document_loader_->LoadType(),
+      DocumentLoader::HistoryNavigationType::kDifferentDocument);
 
   CommitDocumentLoader(provisional_document_loader_.Release(), unload_timing);
 

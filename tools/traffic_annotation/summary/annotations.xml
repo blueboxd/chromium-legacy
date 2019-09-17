@@ -29,7 +29,7 @@ Refer to README.md for content description and update process.
  <item id="blob_reader" hash_code="5154306" type="0" deprecated="2018-06-14" content_hash_code="39702178" file_path=""/>
  <item id="bluetooth_socket" hash_code="94099818" type="0" content_hash_code="30932349" os_list="linux,windows" file_path="device/bluetooth/bluetooth_socket_net.cc"/>
  <item id="brandcode_config" hash_code="109679553" type="0" content_hash_code="128843792" os_list="linux,windows" file_path="chrome/browser/profile_resetter/brandcode_config_fetcher.cc"/>
- <item id="browser_switcher_ieem_sitelist" hash_code="97159948" type="0" content_hash_code="40881413" os_list="linux,windows" file_path="chrome/browser/browser_switcher/browser_switcher_service.cc"/>
+ <item id="browser_switcher_ieem_sitelist" hash_code="97159948" type="0" content_hash_code="129062966" os_list="linux,windows" file_path="chrome/browser/browser_switcher/browser_switcher_service.cc"/>
  <item id="bundled_exchanges_start_url_loader" hash_code="105810794" type="0" content_hash_code="20630448" os_list="linux,windows" file_path="content/browser/web_package/bundled_exchanges_handle.cc"/>
  <item id="captive_portal_service" hash_code="88754904" type="0" content_hash_code="70737580" os_list="linux,windows" file_path="chrome/browser/captive_portal/captive_portal_service.cc"/>
  <item id="cast_channel_send" hash_code="103172229" type="0" deprecated="2018-08-23" content_hash_code="33946302" file_path=""/>

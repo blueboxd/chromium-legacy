@@ -14,12 +14,15 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
+import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
@@ -135,7 +138,7 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
 
     public Account setUpTestAccountAndSignIn() {
         Account account = setUpTestAccount();
-        signIn(account);
+        signinAndEnableSync(account);
         return account;
     }
 
@@ -153,9 +156,24 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
-    public void signIn(final Account account) {
+    public void signinAndEnableSync(final Account account) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            IdentityServicesProvider.getSigninManager().signIn(account, null, null);
+            IdentityServicesProvider.getSigninManager().signIn(
+                    account, null, new SigninManager.SignInCallback() {
+                        @Override
+                        public void onSignInComplete() {
+                            if (ChromeFeatureList.isEnabled(
+                                        ChromeFeatureList.SYNC_MANUAL_START_ANDROID)) {
+                                mProfileSyncService.setFirstSetupComplete(
+                                        SyncFirstSetupCompleteSource.BASIC_FLOW);
+                            }
+                        }
+
+                        @Override
+                        public void onSignInAborted() {
+                            Assert.fail("Sign-in was aborted");
+                        }
+                    });
             // Outside of tests, URL-keyed anonymized data collection is enabled by sign-in UI.
             UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(true);
         });

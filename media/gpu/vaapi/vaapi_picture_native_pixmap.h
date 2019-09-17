@@ -18,10 +18,6 @@ namespace gl {
 class GLImage;
 }
 
-namespace gfx {
-class NativePixmap;
-}
-
 namespace media {
 
 class VaapiWrapper;
@@ -46,9 +42,6 @@ class VaapiPictureNativePixmap : public VaapiPicture {
   VASurfaceID va_surface_id() const override;
 
  protected:
-  // Ozone buffer, the storage of the EGLImage and the VASurface.
-  scoped_refptr<gfx::NativePixmap> pixmap_;
-
   // GLImage bound to the GL textures used by the VDA client.
   scoped_refptr<gl::GLImage> gl_image_;
 

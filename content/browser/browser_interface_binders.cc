@@ -51,6 +51,8 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
 
   map->Add<blink::mojom::LockManager>(base::BindRepeating(
       &RenderFrameHostImpl::CreateLockManager, base::Unretained(host)));
+  map->Add<blink::mojom::FileChooser>(base::BindRepeating(
+      &RenderFrameHostImpl::GetFileChooser, base::Unretained(host)));
 }
 
 void PopulateBinderMapWithContext(

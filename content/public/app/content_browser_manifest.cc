@@ -225,7 +225,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.DateTimeChooser",
                   "blink.mojom.DisplayCutoutHost",
                   "blink.mojom.DedicatedWorkerHostFactory",
-                  "blink.mojom.FileChooser",
                   "blink.mojom.GeolocationService",
                   "blink.mojom.HidService",
                   "blink.mojom.IDBFactory",

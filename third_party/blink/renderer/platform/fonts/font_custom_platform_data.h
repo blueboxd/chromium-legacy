@@ -33,6 +33,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_CUSTOM_PLATFORM_DATA_H_
 
 #include "base/macros.h"
+#include "third_party/blink/renderer/platform/fonts/font_optical_sizing.h"
 #include "third_party/blink/renderer/platform/fonts/font_orientation.h"
 #include "third_party/blink/renderer/platform/fonts/font_selection_types.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -64,6 +65,7 @@ class PLATFORM_EXPORT FontCustomPlatformData
       bool italic,
       const FontSelectionRequest&,
       const FontSelectionCapabilities&,
+      const OpticalSizing& optical_sizing,
       FontOrientation = FontOrientation::kHorizontal,
       const FontVariationSettings* = nullptr);
 

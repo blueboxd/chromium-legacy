@@ -12,7 +12,6 @@
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
-#include "ui/gfx/linux/native_pixmap_dmabuf.h"
 
 namespace media {
 
@@ -126,14 +125,8 @@ scoped_refptr<VideoFrame> VaapiDmaBufVideoFrameMapper::Map(
     return nullptr;
   }
 
-  const scoped_refptr<gfx::NativePixmap> pixmap =
-      CreateNativePixmapDmaBuf(video_frame.get());
-  if (!pixmap) {
-    VLOGF(1) << "Failed to create NativePixmap";
-    return nullptr;
-  }
   scoped_refptr<VASurface> va_surface =
-      vaapi_wrapper_->CreateVASurfaceForPixmap(pixmap);
+      vaapi_wrapper_->CreateVASurfaceForVideoFrame(video_frame.get());
   if (!va_surface) {
     VLOGF(1) << "Failed to create VASurface";
     return nullptr;

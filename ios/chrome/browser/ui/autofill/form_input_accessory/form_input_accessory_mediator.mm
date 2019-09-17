@@ -169,37 +169,42 @@
                       selector:@selector(handleTextInputDidEndEditing:)
                           name:UITextFieldTextDidEndEditingNotification
                         object:nil];
+    [defaultCenter addObserver:self
+                      selector:@selector(applicationDidEnterBackground:)
+                          name:UIApplicationDidEnterBackgroundNotification
+                        object:nil];
+
     _keyboardObserver = [[KeyboardObserverHelper alloc] init];
     _keyboardObserver.consumer = self;
-  }
-  // In BVC unit tests the password store doesn't exist. Skip creating the
-  // fetcher.
-  // TODO:(crbug.com/878388) Remove this workaround.
-  if (passwordStore) {
-    _passwordFetcher =
-        [[PasswordFetcher alloc] initWithPasswordStore:passwordStore
-                                              delegate:self
-                                                   URL:GURL::EmptyGURL()];
-  }
-  if (personalDataManager) {
-    _personalDataManager = personalDataManager;
-    _personalDataManagerObserver.reset(
-        new autofill::PersonalDataManagerObserverBridge(self));
-    personalDataManager->AddObserver(_personalDataManagerObserver.get());
 
-    // TODO:(crbug.com/845472) Add earl grey test to verify the credit card
-    // button is hidden when local cards are saved and then
-    // kAutofillCreditCardEnabled is changed to disabled.
-    consumer.creditCardButtonHidden =
-        personalDataManager->GetCreditCards().empty();
+    // In BVC unit tests the password store doesn't exist. Skip creating the
+    // fetcher.
+    // TODO:(crbug.com/878388) Remove this workaround.
+    if (passwordStore) {
+      _passwordFetcher =
+          [[PasswordFetcher alloc] initWithPasswordStore:passwordStore
+                                                delegate:self
+                                                     URL:GURL::EmptyGURL()];
+    }
+    if (personalDataManager) {
+      _personalDataManager = personalDataManager;
+      _personalDataManagerObserver.reset(
+          new autofill::PersonalDataManagerObserverBridge(self));
+      personalDataManager->AddObserver(_personalDataManagerObserver.get());
 
-    consumer.addressButtonHidden =
-        personalDataManager->GetProfilesToSuggest().empty();
-  } else {
-    consumer.creditCardButtonHidden = YES;
-    consumer.addressButtonHidden = YES;
+      // TODO:(crbug.com/845472) Add earl grey test to verify the credit card
+      // button is hidden when local cards are saved and then
+      // kAutofillCreditCardEnabled is changed to disabled.
+      consumer.creditCardButtonHidden =
+          personalDataManager->GetCreditCards().empty();
+
+      consumer.addressButtonHidden =
+          personalDataManager->GetProfilesToSuggest().empty();
+    } else {
+      consumer.creditCardButtonHidden = YES;
+      consumer.addressButtonHidden = YES;
+    }
   }
-
   return self;
 }
 
@@ -505,6 +510,11 @@
     [self.consumer showAccessorySuggestions:suggestions
                            suggestionClient:provider];
   }
+}
+
+// Inform the delegate that the app went to the background.
+- (void)applicationDidEnterBackground:(NSNotification*)notification {
+  [self.delegate mediatorDidDetectMovingToBackground:self];
 }
 
 #pragma mark - Keyboard Notifications

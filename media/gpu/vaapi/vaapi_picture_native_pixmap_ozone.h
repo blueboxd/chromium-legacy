@@ -14,6 +14,10 @@
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
 
+namespace gfx {
+class NativePixmap;
+}  // namespace gfx
+
 namespace media {
 
 class VaapiWrapper;
@@ -40,7 +44,7 @@ class VaapiPictureNativePixmapOzone : public VaapiPictureNativePixmap {
       gfx::GpuMemoryBufferHandle gpu_memory_buffer_handle) override;
 
  private:
-  bool Initialize();
+  bool Initialize(scoped_refptr<gfx::NativePixmap> pixmap);
 
   DISALLOW_COPY_AND_ASSIGN(VaapiPictureNativePixmapOzone);
 };

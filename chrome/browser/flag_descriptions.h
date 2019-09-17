@@ -160,6 +160,9 @@ extern const char kAutofillUseImprovedLabelDisambiguationDescription[];
 extern const char kAutoScreenBrightnessName[];
 extern const char kAutoScreenBrightnessDescription[];
 
+extern const char kBackForwardCacheName[];
+extern const char kBackForwardCacheDescription[];
+
 extern const char kBrowserTaskSchedulerName[];
 extern const char kBrowserTaskSchedulerDescription[];
 
@@ -237,6 +240,9 @@ extern const char kCooperativeSchedulingDescription[];
 
 extern const char kCreditCardAssistName[];
 extern const char kCreditCardAssistDescription[];
+
+extern const char kDarkenWebsitesCheckboxInThemesSettingName[];
+extern const char kDarkenWebsitesCheckboxInThemesSettingDescription[];
 
 extern const char kDataSaverServerPreviewsName[];
 extern const char kDataSaverServerPreviewsDescription[];

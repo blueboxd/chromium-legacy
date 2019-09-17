@@ -45,10 +45,10 @@
 #include "ipc/ipc_sync_channel.h"
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
 #include "net/base/network_change_notifier.h"
@@ -725,8 +725,8 @@ class CONTENT_EXPORT RenderThreadImpl
   viz::mojom::CompositingModeReporterPtr compositing_mode_reporter_;
   // The class is a CompositingModeWatcher, which is bound to mojo through
   // this member.
-  mojo::Binding<viz::mojom::CompositingModeWatcher>
-      compositing_mode_watcher_binding_;
+  mojo::Receiver<viz::mojom::CompositingModeWatcher>
+      compositing_mode_watcher_receiver_{this};
 
   base::WeakPtrFactory<RenderThreadImpl> weak_factory_{this};
 

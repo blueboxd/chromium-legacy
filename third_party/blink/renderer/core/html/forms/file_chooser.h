@@ -30,7 +30,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_FILE_CHOOSER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_FILE_CHOOSER_H_
 
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom-blink.h"
 #include "third_party/blink/renderer/core/page/popup_opening_observer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -99,7 +99,7 @@ class FileChooser : public RefCounted<FileChooser> {
   WeakPersistent<FileChooserClient> client_;
   mojom::blink::FileChooserParamsPtr params_;
   Persistent<ChromeClientImpl> chrome_client_impl_;
-  mojom::blink::FileChooserPtr file_chooser_;
+  mojo::Remote<mojom::blink::FileChooser> file_chooser_;
 };
 
 CORE_EXPORT mojom::blink::FileChooserFileInfoPtr

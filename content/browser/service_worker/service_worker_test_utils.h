@@ -64,6 +64,11 @@ base::OnceCallback<void(blink::ServiceWorkerStatusCode)>
 ReceiveServiceWorkerStatus(base::Optional<blink::ServiceWorkerStatusCode>* out,
                            base::OnceClosure quit_closure);
 
+blink::ServiceWorkerStatusCode StartServiceWorker(
+    ServiceWorkerVersion* version);
+
+void StopServiceWorker(ServiceWorkerVersion* version);
+
 // Container for keeping the Mojo connection to the service worker provider on
 // the renderer alive.
 class ServiceWorkerRemoteProviderEndpoint {

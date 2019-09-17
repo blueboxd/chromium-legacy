@@ -147,6 +147,10 @@ class ProgramHeader(ElfEntry):
     ]
     super(ProgramHeader, self).__init__(byte_order, fields)
 
+  def FilePositionEnd(self):
+    """Returns the end (exclusive) of the segment file range."""
+    return self.p_offset + self.p_filesz
+
 
 class ElfHeader(ElfEntry):
   """This class represents ELFHdr from the ELF standard.
@@ -266,14 +270,56 @@ class ElfHeader(ElfEntry):
     """Returns the list of file's program headers."""
     return self.phdrs
 
+  def GetPhdrsByType(self, phdr_type):
+    """Yields program headers of the given type."""
+    return (phdr for phdr in self.phdrs if phdr.p_type == phdr_type)
+
   def AddPhdr(self, phdr):
     """Adds a new ProgramHeader entry correcting the e_phnum variable.
+
+    This method will increase the size of LOAD segment containing the program
+    headers without correcting the other offsets. It is up to the caller to
+    deal with the results. One way to avoid any problems would be to move
+    program headers to the end of the file.
 
     Args:
       phdr: ProgramHeader. Instance of ProgramHeader to add.
     """
     self.phdrs.append(phdr)
+
+    phdrs_size = self.e_phnum * self.e_phentsize
+    # We need to locate the LOAD segment containing program headers and
+    # increase its size.
+    phdr_found = False
+    for phdr in self.GetPhdrsByType(ProgramHeader.Type.PT_LOAD):
+      if phdr.p_offset > self.e_phoff:
+        continue
+      if phdr.FilePositionEnd() < self.e_phoff + phdrs_size:
+        continue
+      phdr.p_filesz += self.e_phentsize
+      phdr.p_memsz += self.e_phentsize
+      phdr_found = True
+      break
+    if not phdr_found:
+      raise RuntimeError('Failed to increase program headers LOAD segment')
+
+    # If PHDR segment exists it needs to be corrected as well.
+    for phdr in self.GetPhdrsByType(ProgramHeader.Type.PT_PHDR):
+      phdr.p_filesz += self.e_phentsize
+      phdr.p_memsz += self.e_phentsize
     self.e_phnum += 1
+
+  def _OrderPhdrs(self):
+    """Orders program LOAD headers by p_vaddr to comply with standard."""
+
+    def HeaderToKey(phdr):
+      if phdr.p_type == ProgramHeader.Type.PT_LOAD:
+        return (0, phdr.p_vaddr)
+      else:
+        # We want to preserve the order of non LOAD segments.
+        return (1, 0)
+
+    self.phdrs.sort(key=HeaderToKey)
 
   def PatchData(self, data):
     """Patches the given data array to reflect all changes made to the header.
@@ -294,6 +340,7 @@ class ElfHeader(ElfEntry):
     elf_bytes = self.ToBytes()
     data[:len(elf_bytes)] = elf_bytes
     current_offset = self.e_phoff
+    self._OrderPhdrs()
     for phdr in self.GetPhdrs():
       phdr_bytes = phdr.ToBytes()
       data[current_offset:current_offset + len(phdr_bytes)] = phdr_bytes

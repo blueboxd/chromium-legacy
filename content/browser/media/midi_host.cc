@@ -17,7 +17,7 @@
 #include "media/midi/message_util.h"
 #include "media/midi/midi_message_queue.h"
 #include "media/midi/midi_service.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace content {
 namespace {
@@ -59,13 +59,14 @@ MidiHost::~MidiHost() {
 }
 
 // static
-void MidiHost::BindRequest(int render_process_id,
-                           midi::MidiService* midi_service,
-                           midi::mojom::MidiSessionProviderRequest request) {
+void MidiHost::BindReceiver(
+    int render_process_id,
+    midi::MidiService* midi_service,
+    mojo::PendingReceiver<midi::mojom::MidiSessionProvider> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  mojo::MakeStrongBinding(
+  mojo::MakeSelfOwnedReceiver(
       base::WrapUnique(new MidiHost(render_process_id, midi_service)),
-      std::move(request));
+      std::move(receiver));
 }
 
 void MidiHost::CompleteStartSession(Result result) {

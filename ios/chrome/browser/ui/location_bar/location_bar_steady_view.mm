@@ -449,7 +449,10 @@ const CGFloat kbadgeViewAnimationDuration = 0.2;
   }
 
   if (self.trailingButton.enabled) {
-    [self.accessibleElements addObject:self.trailingButton];
+    if ([self.accessibleElements indexOfObject:self.trailingButton] ==
+        NSNotFound) {
+      [self.accessibleElements addObject:self.trailingButton];
+    }
   } else {
     [self.accessibleElements removeObject:self.trailingButton];
   }

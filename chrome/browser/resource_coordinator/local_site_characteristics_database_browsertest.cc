@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -456,8 +457,14 @@ IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest,
 
 // Test that the favicon update feature usage in background gets detected
 // properly.
+// TODO(crbug.com/1004641): Investigate and reenable.
+#if defined(OS_WIN)
+#define MAYBE_FaviconUpdateFeatureUsage DISABLED_FaviconUpdateFeatureUsage
+#else
+#define MAYBE_FaviconUpdateFeatureUsage FaviconUpdateFeatureUsage
+#endif
 IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest,
-                       FaviconUpdateFeatureUsage) {
+                       MAYBE_FaviconUpdateFeatureUsage) {
   TestFeatureUsageDetection(
       &SiteCharacteristicsDataReader::UpdatesFaviconInBackground,
       internal::LocalSiteCharacteristicsDataImpl::TrackedBackgroundFeatures::

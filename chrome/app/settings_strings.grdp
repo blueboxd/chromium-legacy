@@ -3905,13 +3905,13 @@
       Add account
     </message>
     <message name="IDS_SETTINGS_ACCOUNT_MANAGER_DESCRIPTION" desc="Description of the Account Manager Settings page. Shown just below the title of the page.">
-      Manage your signed-in Google Accounts. Websites, apps, and extensions in Chrome and Google Play may use these accounts to customize your experience, depending on permissions.
+      Manage your signed-in accounts. Websites, apps, and extensions in Chrome and Google Play may use these accounts to customize your experience, depending on permissions.
     </message>
     <message name="IDS_SETTINGS_ACCOUNT_MANAGER_LIST_HEADER" desc="List header for Account List in Account Manager Settings page.">
       Accounts
     </message>
     <message name="IDS_SETTINGS_ACCOUNT_MANAGER_PAGE_TITLE" desc="Title of Account Manager Settings page.">
-      Google Accounts
+      My accounts
     </message>
     <message name="IDS_SETTINGS_ACCOUNT_MANAGER_SUBMENU_LABEL" desc="Label of Account Manager submenu in Settings page.">
       Google Accounts

@@ -100,6 +100,7 @@ import org.chromium.chrome.browser.multiwindow.MultiInstanceChromeTabbedActivity
 import org.chromium.chrome.browser.multiwindow.MultiInstanceManager;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.native_page.NativePageAssassin;
+import org.chromium.chrome.browser.night_mode.WebContentsDarkModeController;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.omaha.OmahaBase;
@@ -892,6 +893,11 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
     public void startNativeInitialization() {
         try (TraceEvent e = TraceEvent.scoped("ChromeTabbedActivity.startNativeInitialization")) {
             // This is on the critical path so don't delay.
+            if (FeatureUtilities.isNightModeAvailable()
+                    && ChromeFeatureList.isEnabled(
+                            ChromeFeatureList.DARKEN_WEBSITES_CHECKBOX_IN_THEMES_SETTING)) {
+                WebContentsDarkModeController.createInstance();
+            }
             setupCompositorContent();
 
             // All this initialization can be expensive so it's split into multiple tasks.

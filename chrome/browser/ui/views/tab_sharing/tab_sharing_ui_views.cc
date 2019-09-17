@@ -32,8 +32,8 @@
 
 namespace {
 
-const int kContentsBorderThickness = 10;
-const float kContentsBorderOpacity = 0.24;
+const int kContentsBorderThickness = 5;
+const float kContentsBorderOpacity = 0.50;
 const SkColor kContentsBorderColor = gfx::kGoogleBlue500;
 
 void InitContentsBorderWidget(content::WebContents* contents) {

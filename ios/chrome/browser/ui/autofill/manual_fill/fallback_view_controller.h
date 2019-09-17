@@ -23,6 +23,7 @@
 
 // If set to YES, the controller will add negative content insets inverse to the
 // ones added by UITableViewController to accommodate for the keyboard.
+// Not needed and ignored on iOS >= 13.
 @property(nonatomic, assign) BOOL contentInsetsAlwaysEqualToSafeArea;
 
 // Data source for images.

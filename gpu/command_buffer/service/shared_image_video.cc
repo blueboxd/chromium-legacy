@@ -500,8 +500,9 @@ std::unique_ptr<SharedImageRepresentationSkia> SharedImageVideo::ProduceSkia(
   auto gl_representation =
       std::make_unique<SharedImageRepresentationGLTextureVideo>(
           manager, this, tracker, texture);
-  return SharedImageRepresentationSkiaGL::Create(
-      std::move(gl_representation), nullptr, manager, this, tracker);
+  return SharedImageRepresentationSkiaGL::Create(std::move(gl_representation),
+                                                 std::move(context_state),
+                                                 manager, this, tracker);
 }
 
 void SharedImageVideo::BeginGLReadAccess() {

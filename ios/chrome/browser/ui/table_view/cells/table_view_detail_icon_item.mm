@@ -293,4 +293,8 @@ const CGFloat kCellLabelsWidthProportion = 3.0f;
   return self.detailTextLabel.text;
 }
 
+- (NSArray<NSString*>*)accessibilityUserInputLabels {
+  return @[ self.textLabel.text ];
+}
+
 @end

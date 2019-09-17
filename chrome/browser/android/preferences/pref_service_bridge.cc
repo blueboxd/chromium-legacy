@@ -1395,3 +1395,10 @@ const char* PrefServiceBridge::GetPrefNameExposedToJava(int pref_index) {
   DCHECK_LT(pref_index, Pref::PREF_NUM_PREFS);
   return kPrefsExposedToJava[pref_index];
 }
+
+static void JNI_PrefServiceBridge_SetForceWebContentsDarkModeEnabled(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jboolean enabled) {
+  GetPrefService()->SetBoolean(prefs::kWebKitForceDarkModeEnabled, enabled);
+}

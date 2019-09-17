@@ -43,11 +43,12 @@ class CONTENT_EXPORT MidiHost : public midi::MidiManagerClient,
  public:
   ~MidiHost() override;
 
-  // Creates an instance of MidiHost and binds |request| to the instance using
-  // a strong binding. Should be called on the IO thread.
-  static void BindRequest(int render_process_id,
-                          midi::MidiService* midi_service,
-                          midi::mojom::MidiSessionProviderRequest request);
+  // Creates an instance of MidiHost and binds |receiver| to the instance using
+  // a self owned receiver. Should be called on the IO thread.
+  static void BindReceiver(
+      int render_process_id,
+      midi::MidiService* midi_service,
+      mojo::PendingReceiver<midi::mojom::MidiSessionProvider> receiver);
 
   // MidiManagerClient implementation. These methods can be called on any thread
   // by platform specific implementations of MidiManager, so use locks

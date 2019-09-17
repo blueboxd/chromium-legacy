@@ -3308,9 +3308,10 @@ device::mojom::WakeLockContext* WebContentsImpl::GetWakeLockContext() {
 }
 
 #if defined(OS_ANDROID)
-void WebContentsImpl::GetNFC(device::mojom::NFCRequest request) {
+void WebContentsImpl::GetNFC(
+    mojo::PendingReceiver<device::mojom::NFC> receiver) {
   NFCHost nfc_host(this);
-  nfc_host.GetNFC(std::move(request));
+  nfc_host.GetNFC(std::move(receiver));
 }
 #endif
 

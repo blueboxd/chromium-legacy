@@ -321,6 +321,9 @@ cca.models.FileSystem.saveVideo = async function(tempfile, filename) {
   // Assuming content of tempfile contains all recorded chunks appended together
   // and is a well-formed video. The work needed here is just to move the file
   // to the correct directory and rename as the specified filename.
+  if (tempfile.name == filename) {
+    return tempfile;
+  }
   return new Promise(
       (resolve, reject) =>
           tempfile.moveTo(nonNullDir, filename, resolve, reject));

@@ -141,6 +141,15 @@ constexpr CGFloat kMinimumLoadingTime = 0.5;
   [self presentQueuedActionItems];
 }
 
+#pragma mark - Getters
+
+- (BOOL)contentInsetsAlwaysEqualToSafeArea {
+  if (@available(iOS 13, *)) {
+    return NO;
+  }
+  return _contentInsetsAlwaysEqualToSafeArea;
+}
+
 #pragma mark - Private
 
 // Presents the data items currently in queue.

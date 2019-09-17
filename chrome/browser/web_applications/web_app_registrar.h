@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "chrome/browser/web_applications/abstract_web_app_database.h"
+#include "chrome/browser/web_applications/abstract_web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 
@@ -26,7 +26,8 @@ class WebAppRegistryUpdate;
 // A registry. This is a read-only container, which owns WebApp objects.
 class WebAppRegistrar : public AppRegistrar {
  public:
-  explicit WebAppRegistrar(Profile* profile, AbstractWebAppDatabase* database);
+  explicit WebAppRegistrar(Profile* profile,
+                           AbstractWebAppSyncBridge* sync_bridge);
   ~WebAppRegistrar() override;
 
   void RegisterApp(std::unique_ptr<WebApp> web_app);
@@ -128,8 +129,8 @@ class WebAppRegistrar : public AppRegistrar {
 
   Registry registry_;
 
-  // An abstract database, not owned by this registrar.
-  AbstractWebAppDatabase* database_;
+  // An abstract sync bridge to handle all local changes and persistence.
+  AbstractWebAppSyncBridge* sync_bridge_;
 
   bool is_in_update_ = false;
 

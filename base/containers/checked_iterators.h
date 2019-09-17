@@ -62,6 +62,16 @@ class CheckedRandomAccessIterator {
     return current_ <= other.current_;
   }
 
+  bool operator>(const CheckedRandomAccessIterator& other) const {
+    CheckComparable(other);
+    return current_ > other.current_;
+  }
+
+  bool operator>=(const CheckedRandomAccessIterator& other) const {
+    CheckComparable(other);
+    return current_ >= other.current_;
+  }
+
   CheckedRandomAccessIterator& operator++() {
     CHECK(current_ != end_);
     ++current_;
@@ -133,6 +143,12 @@ class CheckedRandomAccessIterator {
   pointer operator->() const {
     CHECK(current_ != end_);
     return current_;
+  }
+
+  reference operator[](difference_type rhs) const {
+    CHECK_GE(rhs, 0);
+    CHECK_LT(rhs, end_ - current_);
+    return current_[rhs];
   }
 
   static bool IsRangeMoveSafe(const CheckedRandomAccessIterator& from_begin,
@@ -217,6 +233,16 @@ class CheckedRandomAccessConstIterator {
     return current_ <= other.current_;
   }
 
+  bool operator>(const CheckedRandomAccessConstIterator& other) const {
+    CheckComparable(other);
+    return current_ > other.current_;
+  }
+
+  bool operator>=(const CheckedRandomAccessConstIterator& other) const {
+    CheckComparable(other);
+    return current_ >= other.current_;
+  }
+
   CheckedRandomAccessConstIterator& operator++() {
     CHECK(current_ != end_);
     ++current_;
@@ -289,6 +315,12 @@ class CheckedRandomAccessConstIterator {
   pointer operator->() const {
     CHECK(current_ != end_);
     return current_;
+  }
+
+  reference operator[](difference_type rhs) const {
+    CHECK_GE(rhs, 0);
+    CHECK_LT(rhs, end_ - current_);
+    return current_[rhs];
   }
 
   static bool IsRangeMoveSafe(

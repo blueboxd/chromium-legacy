@@ -8,8 +8,10 @@
 #include <stdint.h>
 
 #include <string>
+#include <vector>
 
 #include "ppapi/c/private/ppb_pdf.h"
+#include "ppapi/cpp/rect.h"
 
 struct PP_BrowserFont_Trusted_Description;
 
@@ -20,6 +22,24 @@ class Var;
 
 class PDF {
  public:
+  // C++ version of PP_PrivateAccessibilityLinkInfo.
+  // Needs to stay in sync with the C version.
+  struct PrivateAccessibilityLinkInfo {
+    std::string url;
+    uint32_t index_in_page;
+    uint32_t text_run_index;
+    uint32_t text_run_count;
+    FloatRect bounds;
+  };
+
+  // C++ version of PP_PrivateAccessibilityImageInfo.
+  // Needs to stay in sync with the C version.
+  struct PrivateAccessibilityImageInfo {
+    std::string alt_text;
+    uint32_t text_run_index;
+    FloatRect bounds;
+  };
+
   // Returns true if the required interface is available.
   static bool IsAvailable();
 
@@ -66,17 +86,17 @@ class PDF {
                                         int* snapshot_size_out);
   static void SetAccessibilityViewportInfo(
       const InstanceHandle& instance,
-      PP_PrivateAccessibilityViewportInfo* viewport_info);
+      const PP_PrivateAccessibilityViewportInfo* viewport_info);
   static void SetAccessibilityDocInfo(
       const InstanceHandle& instance,
-      PP_PrivateAccessibilityDocInfo* doc_info);
+      const PP_PrivateAccessibilityDocInfo* doc_info);
   static void SetAccessibilityPageInfo(
       const InstanceHandle& instance,
-      PP_PrivateAccessibilityPageInfo* page_info,
-      PP_PrivateAccessibilityTextRunInfo text_runs[],
-      PP_PrivateAccessibilityCharInfo chars[],
-      PP_PrivateAccessibilityLinkInfo links[],
-      PP_PrivateAccessibilityImageInfo images[]);
+      const PP_PrivateAccessibilityPageInfo* page_info,
+      const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
+      const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
+      const std::vector<PrivateAccessibilityLinkInfo>& links,
+      const std::vector<PrivateAccessibilityImageInfo>& images);
   static void SetCrashData(const InstanceHandle& instance,
                            const char* pdf_url,
                            const char* top_level_url);

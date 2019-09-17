@@ -8,7 +8,8 @@
 #include "base/macros.h"
 #include "components/viz/service/viz_service_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/viz/public/mojom/compositing/compositing_mode_watcher.mojom.h"
 
 namespace viz {
@@ -32,12 +33,12 @@ class VIZ_SERVICE_EXPORT CompositingModeReporterImpl
 
   // mojom::CompositingModeReporter implementation.
   void AddCompositingModeWatcher(
-      mojom::CompositingModeWatcherPtr watcher) override;
+      mojo::PendingRemote<mojom::CompositingModeWatcher> watcher) override;
 
  private:
   bool gpu_ = true;
   mojo::BindingSet<mojom::CompositingModeReporter> bindings_;
-  mojo::InterfacePtrSet<mojom::CompositingModeWatcher> watchers_;
+  mojo::RemoteSet<mojom::CompositingModeWatcher> watchers_;
 };
 
 }  // namespace viz

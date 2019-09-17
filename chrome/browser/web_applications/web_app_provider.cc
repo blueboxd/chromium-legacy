@@ -24,7 +24,6 @@
 #include "chrome/browser/web_applications/file_utils_wrapper.h"
 #include "chrome/browser/web_applications/pending_app_manager_impl.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
-#include "chrome/browser/web_applications/web_app_database.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
 #include "chrome/browser/web_applications/web_app_file_handler_manager.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
@@ -156,9 +155,8 @@ void WebAppProvider::CreateCommonSubsystems(Profile* profile) {
 
 void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
   database_factory_ = std::make_unique<WebAppDatabaseFactory>(profile);
-  database_ = std::make_unique<WebAppDatabase>(database_factory_.get());
-  registrar_ = std::make_unique<WebAppRegistrar>(profile, database_.get());
-  sync_bridge_ = std::make_unique<WebAppSyncBridge>();
+  sync_bridge_ = std::make_unique<WebAppSyncBridge>(database_factory_.get());
+  registrar_ = std::make_unique<WebAppRegistrar>(profile, sync_bridge_.get());
   auto icon_manager = std::make_unique<WebAppIconManager>(
       profile, *registrar_->AsWebAppRegistrar(),
       std::make_unique<FileUtilsWrapper>());

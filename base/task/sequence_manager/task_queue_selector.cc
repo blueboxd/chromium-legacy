@@ -159,6 +159,15 @@ void TaskQueueSelector::WorkQueueSetBecameNonEmpty(size_t set_index) {
   }
 }
 
+void TaskQueueSelector::CollectSkippedOverLowerPriorityTasks(
+    const internal::WorkQueue* selected_work_queue,
+    std::vector<const Task*>* result) const {
+  delayed_work_queue_sets_.CollectSkippedOverLowerPriorityTasks(
+      selected_work_queue, result);
+  immediate_work_queue_sets_.CollectSkippedOverLowerPriorityTasks(
+      selected_work_queue, result);
+}
+
 #if DCHECK_IS_ON() || !defined(NDEBUG)
 bool TaskQueueSelector::CheckContainsQueueForTest(
     const internal::TaskQueueImpl* queue) const {

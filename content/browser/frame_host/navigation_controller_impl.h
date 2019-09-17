@@ -444,9 +444,6 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // Removes the entry at |index|, as long as it is not the current entry.
   void RemoveEntryAtIndexInternal(int index);
 
-  // Discards both the pending and transient entries.
-  void DiscardNonCommittedEntriesInternal();
-
   // Discards only the transient entry.
   void DiscardTransientEntry();
 

@@ -43,6 +43,7 @@ component("webrtc") {
     deps += [
       "//media",
       "//third_party/webrtc/api:libjingle_peerconnection_api",
+      "//third_party/webrtc/api:media_stream_interface",
       "//third_party/webrtc/api/audio:aec3_factory",
       "//third_party/webrtc/modules/audio_processing/aec_dump:aec_dump",
       "//third_party/webrtc/rtc_base:rtc_task_queue",

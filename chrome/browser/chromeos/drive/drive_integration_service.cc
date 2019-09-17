@@ -654,12 +654,10 @@ DriveIntegrationService::DriveIntegrationService(
       cache_root_directory_(!test_cache_root.empty()
                                 ? test_cache_root
                                 : util::GetCacheRootPath(profile)),
-      drivefs_holder_(base::FeatureList::IsEnabled(chromeos::features::kDriveFs)
-                          ? std::make_unique<DriveFsHolder>(
-                                profile_,
-                                this,
-                                std::move(test_drivefs_mojo_listener_factory))
-                          : nullptr),
+      drivefs_holder_(std::make_unique<DriveFsHolder>(
+          profile_,
+          this,
+          std::move(test_drivefs_mojo_listener_factory))),
       preference_watcher_(preference_watcher),
       power_manager_observer_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

@@ -79,10 +79,6 @@ class PendingAppManagerImpl : public PendingAppManager {
 
   void OnUrlLoaded(WebAppUrlLoader::Result result);
 
-  void UninstallPlaceholderIfNecessary();
-
-  void OnPlaceholderUninstalled(bool succeeded);
-
   void OnInstalled(PendingAppInstallTask::Result result);
 
   void CurrentInstallationFinished(const base::Optional<std::string>& app_id,

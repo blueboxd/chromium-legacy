@@ -1072,7 +1072,7 @@ TEST_F(NavigationControllerTest, LoadURL_IgnorePreemptsPending) {
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_TRUE(controller.GetPendingEntry());
   EXPECT_EQ(-1, controller.GetLastCommittedEntryIndex());
-  EXPECT_EQ(1, delegate->navigation_state_change_count());
+  EXPECT_EQ(2, delegate->navigation_state_change_count());
 
   // Certain rare cases can make a direct DidCommitProvisionalLoad call without
   // going to the browser. Renderer reload of an about:blank is such a case.
@@ -1083,7 +1083,7 @@ TEST_F(NavigationControllerTest, LoadURL_IgnorePreemptsPending) {
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_FALSE(controller.GetPendingEntry());
   EXPECT_EQ(-1, controller.GetLastCommittedEntryIndex());
-  EXPECT_EQ(2, delegate->navigation_state_change_count());
+  EXPECT_EQ(3, delegate->navigation_state_change_count());
 
   contents()->SetDelegate(nullptr);
 }
@@ -1110,7 +1110,7 @@ TEST_F(NavigationControllerTest, LoadURL_AbortDoesntCancelPending) {
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_TRUE(controller.GetPendingEntry());
   EXPECT_EQ(-1, controller.GetLastCommittedEntryIndex());
-  EXPECT_EQ(1, delegate->navigation_state_change_count());
+  EXPECT_EQ(2, delegate->navigation_state_change_count());
 
   // It may abort before committing, if it's a download or due to a stop or
   // a new navigation from the user.
@@ -1122,7 +1122,7 @@ TEST_F(NavigationControllerTest, LoadURL_AbortDoesntCancelPending) {
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_TRUE(controller.GetPendingEntry());
   EXPECT_EQ(-1, controller.GetLastCommittedEntryIndex());
-  EXPECT_EQ(1, delegate->navigation_state_change_count());
+  EXPECT_EQ(2, delegate->navigation_state_change_count());
   NavigationEntry* pending_entry = controller.GetPendingEntry();
 
   // Ensure that a reload keeps the same pending entry.
@@ -1163,9 +1163,9 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortDoesntShowPendingURL) {
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_TRUE(controller.GetPendingEntry());
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
-  // The delegate should have been notified twice: once for the loading state
-  // change, and once for the url change.
-  EXPECT_EQ(2, delegate->navigation_state_change_count());
+  // The delegate should have been notified at least twice: once for the loading
+  // state change, and once for the url change.
+  EXPECT_EQ(3, delegate->navigation_state_change_count());
 
   // The visible entry should be the last committed URL, not the pending one.
   EXPECT_EQ(kExistingURL, controller.GetVisibleEntry()->GetURL());
@@ -1189,7 +1189,7 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortDoesntShowPendingURL) {
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
   // The delegate should have been notified twice: once for the loading state
   // change, and once for the url change.
-  EXPECT_EQ(4, delegate->navigation_state_change_count());
+  EXPECT_EQ(5, delegate->navigation_state_change_count());
 
   // The visible entry should be the last committed URL, not the pending one,
   // so that no spoof is possible.

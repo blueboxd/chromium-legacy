@@ -1815,11 +1815,8 @@
   <message name="IDS_LOGIN_ERROR_OFFLINE_FAILED_NETWORK_NOT_CONNECTED" desc="Couldn't sign in because offline sign-in has failed and network is not connected">
     Sorry, your email or password could not be verified. Try connecting to a network first.
   </message>
-  <message name="IDS_LOGIN_ERROR_KEYBOARD_SWITCH_HINT" desc="A hint text for the login and lock screens about layout switching">
-    Hit Control-Shift-Space to switch keyboard layout.
-  </message>
-  <message name="IDS_LOGIN_ERROR_CAPS_LOCK_HINT" desc="A hint text for the login and lock screens that Caps Lock is on">
-    Caps Lock is on.
+  <message name="IDS_LOGIN_ERROR_KEYBOARD_SWITCH_HINT" desc="A hint text for the login and lock screens about correct layout">
+    Check your keyboard layout and try again.
   </message>
   <message name="IDS_LOGIN_ERROR_CAPTIVE_PORTAL" desc="An error message shown when we suggest that user may be behind the captive portal.">
     Before signing in, please enter as Guest to activate the network <ph name="NETWORK_ID">$1<ex>Public Wifi</ex></ph>

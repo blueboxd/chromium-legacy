@@ -753,8 +753,8 @@ jumbo_component("views") {
         sources += [
           "style/platform_style_linux.cc",
           "widget/desktop_aura/desktop_window_tree_host_linux.cc",
-          "widget/desktop_aura/window_event_filter.cc",
-          "widget/desktop_aura/window_event_filter.h",
+          "widget/desktop_aura/window_event_filter_linux.cc",
+          "widget/desktop_aura/window_event_filter_linux.h",
         ]
         deps += [ "//ui/base:hit_test" ]
       }
@@ -1283,8 +1283,8 @@ source_set("views_interactive_ui_tests") {
       "//ui/wm/public",
     ]
 
-    if (!is_chromeos && (is_linux && !use_x11)) {
-      sources += [ "widget/desktop_aura/desktop_window_tree_host_platform_interactive_uitest.cc" ]
+    if (is_desktop_linux) {
+      sources += [ "widget/desktop_aura/desktop_window_tree_host_linux_interactive_uitest.cc" ]
     }
 
     deps += [

@@ -15,6 +15,7 @@
 #include "content/renderer/pepper/pepper_file_chooser_host.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/test/test_content_client.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/ppapi_host.h"
@@ -26,7 +27,6 @@
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/test_globals.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 
@@ -37,27 +37,23 @@ using blink::mojom::FileChooserFileInfo;
 using blink::mojom::FileChooserFileInfoPtr;
 using blink::mojom::FileChooserParams;
 using blink::mojom::FileChooserParamsPtr;
-using blink::mojom::FileChooserPtr;
-using blink::mojom::FileChooserRequest;
 
 namespace {
 
 class MockFileChooser : public FileChooser {
  public:
-  MockFileChooser(service_manager::InterfaceProvider* provider,
+  MockFileChooser(blink::BrowserInterfaceBrokerProxy* broker,
                   base::OnceClosure reached_callback)
       : reached_callback_(std::move(reached_callback)) {
-    service_manager::InterfaceProvider::TestApi test_api(provider);
-    test_api.SetBinderForName(
+    broker->SetBinderForTesting(
         FileChooser::Name_,
-        base::BindRepeating(&MockFileChooser::OnFileChooserRequest,
+        base::BindRepeating(&MockFileChooser::BindFileChooserReceiver,
                             base::Unretained(this)));
-    provider_ = provider;
+    broker_ = broker;
   }
 
   ~MockFileChooser() override {
-    service_manager::InterfaceProvider::TestApi test_api(provider_);
-    test_api.ClearBinderForName(FileChooser::Name_);
+    broker_->SetBinderForTesting(FileChooser::Name_, {});
   }
 
   const FileChooserParams& params() const {
@@ -70,12 +66,12 @@ class MockFileChooser : public FileChooser {
     DCHECK(params_);
     std::move(callback_).Run(blink::mojom::FileChooserResult::New(
         std::move(files), base::FilePath()));
-    bindings_.FlushForTesting();
+    receivers_.FlushForTesting();
   }
 
  private:
-  void OnFileChooserRequest(mojo::ScopedMessagePipeHandle handle) {
-    bindings_.AddBinding(this, FileChooserRequest(std::move(handle)));
+  void BindFileChooserReceiver(mojo::ScopedMessagePipeHandle handle) {
+    receivers_.Add(this, mojo::PendingReceiver<FileChooser>(std::move(handle)));
   }
 
   void OpenFileChooser(FileChooserParamsPtr params,
@@ -89,8 +85,8 @@ class MockFileChooser : public FileChooser {
       const base::FilePath& directory_path,
       EnumerateChosenDirectoryCallback callback) override {}
 
-  service_manager::InterfaceProvider* provider_;
-  mojo::BindingSet<FileChooser> bindings_;
+  blink::BrowserInterfaceBrokerProxy* broker_;
+  mojo::ReceiverSet<FileChooser> receivers_;
   OpenFileChooserCallback callback_;
   FileChooserParamsPtr params_;
   base::OnceClosure reached_callback_;
@@ -107,7 +103,7 @@ class PepperFileChooserHostTest : public RenderViewTest {
     globals_.GetResourceTracker()->DidCreateInstance(pp_instance_);
     mock_file_chooser_ = std::make_unique<MockFileChooser>(
         static_cast<RenderFrameImpl*>(view_->GetMainRenderFrame())
-            ->GetInterfaceProvider(),
+            ->GetBrowserInterfaceBroker(),
         run_loop_.QuitClosure());
   }
   void TearDown() override {

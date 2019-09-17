@@ -121,8 +121,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   gfx::Rect ToPixelRect(const gfx::Rect& rect_in_dip) const;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(DesktopWindowTreeHostPlatformTest, HitTest);
-
   void Relayout();
 
   Widget* GetWidget();

@@ -9,6 +9,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -20,6 +21,7 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/card_view_controller.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/autofill/features.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
@@ -87,6 +89,13 @@ id<GREYMatcher> CreditCardTableViewMatcher() {
 // fallback.
 id<GREYMatcher> ManageCreditCardsMatcher() {
   return grey_accessibilityID(manual_fill::ManageCardsAccessibilityIdentifier);
+}
+
+// Returns a matcher for the button to add credit cards settings in manual
+// fallback.
+id<GREYMatcher> AddCreditCardsMatcher() {
+  return grey_accessibilityID(
+      manual_fill::kAddCreditCardsAccessibilityIdentifier);
 }
 
 // Returns a matcher for the credit card settings collection view.
@@ -243,7 +252,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
       assertWithMatcher:grey_interactable()];
 }
 
-// Tests that the "Manage Credt Cards..." action works.
+// Tests that the "Manage Credit Cards..." action works.
 - (void)testManageCreditCardsActionOpensCreditCardSettings {
   [self saveLocalCreditCard];
 
@@ -265,6 +274,33 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
   // Verify the credit cards settings opened.
   [[EarlGrey selectElementWithMatcher:CreditCardSettingsMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Tests that the "Add Credit Cards..." action works.
+- (void)testAddCreditCardsActionOpensAddCreditCardSettings {
+  base::test::ScopedFeatureList featureList;
+  featureList.InitAndEnableFeature(kSettingsAddPaymentMethod);
+  [self saveLocalCreditCard];
+
+  // Bring up the keyboard.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+
+  // Tap on the credit card icon.
+  [[EarlGrey selectElementWithMatcher:CreditCardIconMatcher()]
+      performAction:grey_tap()];
+
+  // Try to scroll.
+  [[EarlGrey selectElementWithMatcher:CreditCardTableViewMatcher()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
+
+  // Tap the "Add Credit Cards..." action.
+  [[EarlGrey selectElementWithMatcher:AddCreditCardsMatcher()]
+      performAction:grey_tap()];
+
+  // Verify the credit cards settings opened.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::AddCreditCardView()]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 

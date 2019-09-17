@@ -63,7 +63,7 @@ class CONTENT_EXPORT BackForwardCache {
 
   // Posts a task to destroy all frames in the BackForwardCache that have been
   // marked as evicted.
-  void PostTaskToFlushEvictedFrames();
+  void PostTaskToDestroyEvictedFrames();
 
   // List of reasons the BackForwardCache was disabled for a specific test. If a
   // test needs to be disabled for a reason not covered below, please add to
@@ -126,7 +126,7 @@ class CONTENT_EXPORT BackForwardCache {
 
  private:
   // Destroys all evicted frames in the BackForwardCache.
-  void FlushEvictedFrames();
+  void DestroyEvictedFrames();
 
   // Contains the set of stored RenderFrameHost.
   // Invariant:

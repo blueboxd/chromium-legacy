@@ -689,6 +689,7 @@ enum CSSSampleId {
     kOverscrollBehaviorInline = 644,
     kOverscrollBehaviorBlock = 645,
     kContentSize = 646,
+    kFontOpticalSizing = 647
     // 1. Add new features above this line (don't change the assigned numbers of
     // the existing items).
     // 2. Run the update_use_counter_css.py script in

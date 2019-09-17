@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
-#include "chrome/browser/web_applications/abstract_web_app_database.h"
+#include "chrome/browser/web_applications/abstract_web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "components/sync/model/model_type_store.h"
 
@@ -27,23 +27,26 @@ class WebApp;
 class WebAppProto;
 
 // Exclusively used from the UI thread.
-class WebAppDatabase : public AbstractWebAppDatabase {
+class WebAppDatabase {
  public:
   explicit WebAppDatabase(AbstractWebAppDatabaseFactory* database_factory);
-  ~WebAppDatabase() override;
+  ~WebAppDatabase();
 
-  // AbstractWebAppDatabase:
-  void OpenDatabase(OnceRegistryOpenedCallback callback) override;
-  void WriteWebApps(AppsToWrite apps, CompletionCallback callback) override;
-  void DeleteWebApps(std::vector<AppId> app_ids,
-                     CompletionCallback callback) override;
+  using RegistryOpenedCallback =
+      AbstractWebAppSyncBridge::RegistryOpenedCallback;
+  using CompletionCallback = AbstractWebAppSyncBridge::CompletionCallback;
+  using AppsToWrite = AbstractWebAppSyncBridge::AppsToWrite;
+
+  void OpenDatabase(RegistryOpenedCallback callback);
+  void WriteWebApps(AppsToWrite apps, CompletionCallback callback);
+  void DeleteWebApps(std::vector<AppId> app_ids, CompletionCallback callback);
 
   // Exposed for testing.
   static std::unique_ptr<WebAppProto> CreateWebAppProto(const WebApp& web_app);
   // Exposed for testing.
   static std::unique_ptr<WebApp> CreateWebApp(const WebAppProto& proto);
   // Exposed for testing.
-  void ReadRegistry(OnceRegistryOpenedCallback callback);
+  void ReadRegistry(RegistryOpenedCallback callback);
 
  private:
   void CreateStore(syncer::OnceModelTypeStoreFactory store_factory,
@@ -53,7 +56,7 @@ class WebAppDatabase : public AbstractWebAppDatabase {
                       std::unique_ptr<syncer::ModelTypeStore> store);
 
   void OnAllDataRead(
-      OnceRegistryOpenedCallback callback,
+      RegistryOpenedCallback callback,
       const base::Optional<syncer::ModelError>& error,
       std::unique_ptr<syncer::ModelTypeStore::RecordList> data_records);
 

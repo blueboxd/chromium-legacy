@@ -39,84 +39,103 @@ namespace blink {
 class SMILRepeatCount;
 struct SMILInterval;
 
+// SMILTime is used as both a time and time delta in the SMIL animation
+// code. It is a small wrapper around TimeDelta that adds two sentinel values
+// for SMIL concepts: "indefinite" and "unresolved".
+//
+// For ordering, the special values have the properties that:
+//
+//  <finite SMILTime> < SMILTime::Indefinite() < SMILTime::Unresolved()
+//
+// SMILTime::Earliest() and SMILTime::Latest() are smallest and largest finite
+// time values respectively and sort accordingly.
+//
+// Addition and subtraction follow the semantics defined for computations of
+// active duration (https://www.w3.org/TR/SMIL3/smil-timing.html#q78).
 class SMILTime {
   DISALLOW_NEW();
 
  public:
-  constexpr SMILTime() : time_(0) {}
+  constexpr SMILTime() = default;
 
-  static constexpr SMILTime Unresolved() {
-    return std::numeric_limits<double>::quiet_NaN();
-  }
+  static constexpr SMILTime Unresolved() { return base::TimeDelta::Max(); }
   static constexpr SMILTime Indefinite() {
-    return std::numeric_limits<double>::infinity();
+    return base::TimeDelta::Max() - base::TimeDelta::FromMicroseconds(1);
   }
-  static constexpr SMILTime Earliest() {
-    return -std::numeric_limits<double>::infinity();
+  static constexpr SMILTime Latest() {
+    return base::TimeDelta::Max() - base::TimeDelta::FromMicroseconds(2);
   }
+  static constexpr SMILTime Earliest() { return base::TimeDelta::Min(); }
   static constexpr SMILTime FromSecondsD(double seconds) {
-    return SMILTime(seconds);
+    return base::TimeDelta::FromSecondsD(seconds);
   }
   static constexpr SMILTime FromMicroseconds(int64_t us) {
-    return SMILTime(static_cast<double>(us) /
-                    base::Time::kMicrosecondsPerSecond);
+    return base::TimeDelta::FromMicroseconds(us);
   }
 
   // Used for computing progress. Don't use for anything else.
-  double InternalValueAsDouble() const { return time_; }
-  double InSecondsF() const { return time_; }
-  int64_t InMicroseconds() const {
-    return time_ * base::Time::kMicrosecondsPerSecond;
-  }
+  double InternalValueAsDouble() const { return time_.InMicrosecondsF(); }
+  double InSecondsF() const { return time_.InSecondsF(); }
+  int64_t InMicroseconds() const { return time_.InMicroseconds(); }
 
-  bool IsFinite() const { return std::isfinite(time_); }
-  bool IsIndefinite() const { return std::isinf(time_); }
-  bool IsUnresolved() const { return std::isnan(time_); }
+  bool IsFinite() const { return *this < Indefinite(); }
+  bool IsIndefinite() const { return *this == Indefinite(); }
+  bool IsUnresolved() const { return *this == Unresolved(); }
 
   SMILTime Repeat(SMILRepeatCount repeat_count) const;
 
-  SMILTime operator+(SMILTime other) const { return time_ + other.time_; }
-  SMILTime operator-(SMILTime other) const { return time_ - other.time_; }
-  SMILTime operator-() const { return SMILTime(-time_); }
+  SMILTime operator+(SMILTime other) const {
+    if (!IsFinite())
+      return time_;
+    if (!other.IsFinite())
+      return other;
+    SMILTime result(time_ + other.time_);
+    return result.IsFinite() ? result : Latest();
+  }
+  SMILTime operator-(SMILTime other) const {
+    if (!IsFinite())
+      return time_;
+    if (!other.IsFinite())
+      return other;
+    SMILTime result(time_ - other.time_);
+    return result.IsFinite() ? result : Latest();
+  }
+  SMILTime operator-() const { return -time_; }
   // Division and /modulo are used primarily for computing interval
   // progress/repeats.
   int64_t operator/(SMILTime other) const {
-    return int64_t(time_ / other.time_);
+    DCHECK(IsFinite());
+    DCHECK(other.IsFinite());
+    return time_ / other.time_;
   }
   SMILTime operator%(SMILTime other) const {
     DCHECK(IsFinite());
     DCHECK(other.IsFinite());
-    return SMILTime(fmod(time_, other.time_));
+    return SMILTime(time_ % other.time_);
   }
 
-  bool operator==(SMILTime other) const {
-    return (IsUnresolved() && other.IsUnresolved()) || time_ == other.time_;
-  }
-  explicit operator bool() const { return IsFinite() && time_; }
-  bool operator!=(SMILTime other) const { return !this->operator==(other); }
+  bool operator==(SMILTime other) const { return time_ == other.time_; }
+  explicit operator bool() const { return IsFinite() && !time_.is_zero(); }
+  bool operator!=(SMILTime other) const { return time_ != other.time_; }
 
-  // Ordering of SMILTimes has to follow: finite < indefinite (Inf) < unresolved
-  // (NaN). The first comparison is handled by IEEE754 but NaN values must be
-  // checked explicitly to guarantee that unresolved is ordered correctly too.
-  bool operator>(SMILTime other) const {
-    return IsUnresolved() || time_ > other.time_;
-  }
-  bool operator<(SMILTime other) const { return other.operator>(*this); }
-  bool operator>=(SMILTime other) const {
-    return this->operator>(other) || this->operator==(other);
-  }
-  bool operator<=(SMILTime other) const {
-    return this->operator<(other) || this->operator==(other);
-  }
+  // Ordering of SMILTimes has to follow: finite < indefinite < unresolved. We
+  // set this up by assigning consecutive sentinel values for the two latter
+  // (see above).
+  bool operator>(SMILTime other) const { return time_ > other.time_; }
+  bool operator<(SMILTime other) const { return time_ < other.time_; }
+  bool operator>=(SMILTime other) const { return time_ >= other.time_; }
+  bool operator<=(SMILTime other) const { return time_ <= other.time_; }
 
  private:
   friend bool operator!=(const SMILInterval& a, const SMILInterval& b);
   friend struct SMILTimeHash;
 
-  constexpr SMILTime(double time) : time_(time) {}
+  constexpr SMILTime(base::TimeDelta time) : time_(time) {}
 
-  double time_;
+  base::TimeDelta time_;
 };
+
+std::ostream& operator<<(std::ostream& os, SMILTime time);
 
 class SMILTimeWithOrigin {
   DISALLOW_NEW();
@@ -139,8 +158,6 @@ class SMILTimeWithOrigin {
   SMILTime time_;
   Origin origin_;
 };
-
-std::ostream& operator<<(std::ostream& os, SMILTime time);
 
 inline bool operator<(const SMILTimeWithOrigin& a,
                       const SMILTimeWithOrigin& b) {
@@ -174,19 +191,15 @@ struct SMILInterval {
 };
 
 inline bool operator!=(const SMILInterval& a, const SMILInterval& b) {
-  // Compare the "raw" values since the operator!= for SMILTime always return
-  // true for non-finite times.
-  return a.begin.time_ != b.begin.time_ || a.end.time_ != b.end.time_;
+  return a.begin != b.begin || a.end != b.end;
 }
 
 struct SMILTimeHash {
   STATIC_ONLY(SMILTimeHash);
   static unsigned GetHash(const SMILTime& key) {
-    return WTF::FloatHash<double>::GetHash(key.time_);
+    return WTF::IntHash<int64_t>::GetHash(key.time_.InMicroseconds());
   }
-  static bool Equal(const SMILTime& a, const SMILTime& b) {
-    return WTF::FloatHash<double>::Equal(a.time_, b.time_);
-  }
+  static bool Equal(const SMILTime& a, const SMILTime& b) { return a == b; }
   static const bool safe_to_compare_to_empty_or_deleted = true;
 };
 

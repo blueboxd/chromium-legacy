@@ -11,5 +11,6 @@ Specific products include:
 - Chrome mobile browser for Android
 - Chrome OS system UI
 
-See //ios for the Chrome mobile browser for iOS, and note that code that is
-shared between //chrome and //ios is typically factored out into //components.
+See //ios/chrome for the Chrome mobile browser for iOS, and note that code that
+is shared between //chrome and //ios/chrome is typically factored out into
+//components.

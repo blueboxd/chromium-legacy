@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1271 tests; 1223 PASS, 48 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1271 tests; 1224 PASS, 47 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Document: original interface defined
 PASS Partial interface mixin DocumentOrShadowRoot: original interface mixin defined
@@ -1238,7 +1238,7 @@ PASS SVGElement interface: attribute oncut
 PASS SVGElement interface: attribute onpaste
 PASS SVGElement interface: attribute dataset
 PASS SVGElement interface: attribute nonce
-FAIL SVGElement interface: attribute autofocus assert_true: The prototype object must have a property "autofocus" expected true got false
+PASS SVGElement interface: attribute autofocus
 PASS SVGElement interface: attribute tabIndex
 PASS SVGElement interface: operation focus(FocusOptions)
 PASS SVGElement interface: operation blur()

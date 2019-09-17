@@ -252,8 +252,8 @@ scoped_refptr<SimpleFontData> RemoteFontFaceSource::CreateFontData(
           font_description.IsSyntheticBold(),
           font_description.IsSyntheticItalic(),
           font_description.GetFontSelectionRequest(),
-          font_selection_capabilities, font_description.Orientation(),
-          font_description.VariationSettings()),
+          font_selection_capabilities, font_description.FontOpticalSizing(),
+          font_description.Orientation(), font_description.VariationSettings()),
       CustomFontData::Create());
 }
 

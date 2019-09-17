@@ -8,6 +8,8 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/common/autofill_data_validation.h"
+#include "components/autofill/core/common/autofill_internals/log_message.h"
+#include "components/autofill/core/common/autofill_internals/logging_scope.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/signatures_util.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -267,12 +269,17 @@ bool AutofillHandler::ParseForm(const FormData& form,
                                 const FormStructure* cached_form,
                                 FormStructure** parsed_form_structure) {
   DCHECK(parsed_form_structure);
-  if (form_structures_.size() >= kAutofillHandlerMaxFormCacheSize)
+  if (form_structures_.size() >= kAutofillHandlerMaxFormCacheSize) {
+    if (log_manager_) {
+      log_manager_->Log() << LoggingScope::kAbortParsing
+                          << LogMessage::kAbortParsingTooManyForms << form;
+    }
     return false;
+  }
 
   auto form_structure = std::make_unique<FormStructure>(form);
   form_structure->ParseFieldTypesFromAutocompleteAttributes();
-  if (!form_structure->ShouldBeParsed())
+  if (!form_structure->ShouldBeParsed(log_manager_))
     return false;
 
   if (cached_form) {
@@ -284,9 +291,8 @@ bool AutofillHandler::ParseForm(const FormData& form,
     if (observer_for_testing_)
       observer_for_testing_->OnFormParsed();
 
-    if (form_structure.get()->value_from_dynamic_change_form()) {
+    if (form_structure.get()->value_from_dynamic_change_form())
       value_from_dynamic_change_form_ = true;
-    }
   }
 
   form_structure->DetermineHeuristicTypes(log_manager_);

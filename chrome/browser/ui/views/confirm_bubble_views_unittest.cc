@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "build/build_config.h"
 #include "chrome/browser/ui/confirm_bubble.h"
 #include "chrome/browser/ui/test/test_confirm_bubble_model.h"
 #include "chrome/browser/ui/views/chrome_constrained_window_views_client.h"
@@ -18,7 +19,13 @@ using views::Widget;
 
 typedef ChromeViewsTestBase ConfirmBubbleViewsTest;
 
-TEST_F(ConfirmBubbleViewsTest, CreateAndClose) {
+// TODO(crbug.com/1004633) Disabled on windows due to flake
+#if defined(OS_WIN)
+#define MAYBE_CreateAndClose DISABLED_CreateAndClose
+#else
+#define MAYBE_CreateAndClose CreateAndClose
+#endif
+TEST_F(ConfirmBubbleViewsTest, MAYBE_CreateAndClose) {
   SetConstrainedWindowViewsClient(CreateChromeConstrainedWindowViewsClient());
 
   // Create parent widget, as confirm bubble must have an owner.

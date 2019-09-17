@@ -17,6 +17,7 @@
 #include "chrome/browser/web_applications/test/test_web_app_database_factory.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "components/sync/model/model_type_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -45,8 +46,8 @@ class WebAppDatabaseTest : public testing::Test {
  public:
   WebAppDatabaseTest() {
     database_factory_ = std::make_unique<TestWebAppDatabaseFactory>();
-    database_ = std::make_unique<WebAppDatabase>(database_factory_.get());
-    registrar_ = std::make_unique<WebAppRegistrar>(nullptr, database_.get());
+    sync_bridge_ = std::make_unique<WebAppSyncBridge>(database_factory_.get());
+    registrar_ = std::make_unique<WebAppRegistrar>(nullptr, sync_bridge_.get());
   }
 
   void InitRegistrar() {
@@ -109,7 +110,7 @@ class WebAppDatabaseTest : public testing::Test {
     Registry registry;
     base::RunLoop run_loop;
 
-    database_->ReadRegistry(base::BindLambdaForTesting([&](Registry r) {
+    sync_bridge().ReadRegistry(base::BindLambdaForTesting([&](Registry r) {
       registry = std::move(r);
       run_loop.Quit();
     }));
@@ -159,7 +160,7 @@ class WebAppDatabaseTest : public testing::Test {
   }
 
  protected:
-  WebAppDatabase& database() { return *database_; }
+  WebAppSyncBridge& sync_bridge() { return *sync_bridge_; }
   WebAppRegistrar& registrar() { return *registrar_; }
 
  private:
@@ -167,7 +168,7 @@ class WebAppDatabaseTest : public testing::Test {
   base::test::SingleThreadTaskEnvironment task_environment_;
 
   std::unique_ptr<TestWebAppDatabaseFactory> database_factory_;
-  std::unique_ptr<WebAppDatabase> database_;
+  std::unique_ptr<WebAppSyncBridge> sync_bridge_;
   std::unique_ptr<WebAppRegistrar> registrar_;
 };
 
@@ -216,11 +217,11 @@ TEST_F(WebAppDatabaseTest, WriteAndDeleteAppsWithCallbacks) {
 
   {
     base::RunLoop run_loop;
-    database().WriteWebApps(std::move(apps_to_write),
-                            base::BindLambdaForTesting([&](bool success) {
-                              EXPECT_TRUE(success);
-                              run_loop.Quit();
-                            }));
+    sync_bridge().WriteWebApps(std::move(apps_to_write),
+                               base::BindLambdaForTesting([&](bool success) {
+                                 EXPECT_TRUE(success);
+                                 run_loop.Quit();
+                               }));
     run_loop.Run();
 
     Registry registry_written = ReadRegistry();
@@ -229,11 +230,11 @@ TEST_F(WebAppDatabaseTest, WriteAndDeleteAppsWithCallbacks) {
 
   {
     base::RunLoop run_loop;
-    database().DeleteWebApps(std::move(apps_to_delete),
-                             base::BindLambdaForTesting([&](bool success) {
-                               EXPECT_TRUE(success);
-                               run_loop.Quit();
-                             }));
+    sync_bridge().DeleteWebApps(std::move(apps_to_delete),
+                                base::BindLambdaForTesting([&](bool success) {
+                                  EXPECT_TRUE(success);
+                                  run_loop.Quit();
+                                }));
     run_loop.Run();
 
     Registry registry_deleted = ReadRegistry();

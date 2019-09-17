@@ -14,8 +14,8 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "media/audio/audio_output_ipc.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -38,7 +38,7 @@ std::unique_ptr<base::Thread> MakeIOThread() {
 
 class FakeRemoteFactory : public mojom::RendererAudioOutputStreamFactory {
  public:
-  FakeRemoteFactory() : binding_(this) {}
+  FakeRemoteFactory() = default;
   ~FakeRemoteFactory() override {}
 
   void RequestDeviceAuthorization(
@@ -58,14 +58,14 @@ class FakeRemoteFactory : public mojom::RendererAudioOutputStreamFactory {
   }
 
   void Bind(mojo::ScopedMessagePipeHandle handle) {
-    EXPECT_FALSE(binding_.is_bound());
-    binding_.Bind(
+    EXPECT_FALSE(receiver_.is_bound());
+    receiver_.Bind(
         mojo::InterfaceRequest<mojom::RendererAudioOutputStreamFactory>(
             std::move(handle)));
   }
 
  private:
-  mojo::Binding<mojom::RendererAudioOutputStreamFactory> binding_;
+  mojo::Receiver<mojom::RendererAudioOutputStreamFactory> receiver_{this};
   base::OnceClosure on_called_;
 };
 

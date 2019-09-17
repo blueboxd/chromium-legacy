@@ -24,7 +24,7 @@ WebAppDatabase::~WebAppDatabase() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void WebAppDatabase::OpenDatabase(OnceRegistryOpenedCallback callback) {
+void WebAppDatabase::OpenDatabase(RegistryOpenedCallback callback) {
   DCHECK(!store_);
 
   syncer::OnceModelTypeStoreFactory store_factory =
@@ -201,7 +201,7 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(const WebAppProto& proto) {
   return web_app;
 }
 
-void WebAppDatabase::ReadRegistry(OnceRegistryOpenedCallback callback) {
+void WebAppDatabase::ReadRegistry(RegistryOpenedCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(store_);
   store_->ReadAllData(base::BindOnce(&WebAppDatabase::OnAllDataRead,
@@ -235,7 +235,7 @@ void WebAppDatabase::OnStoreCreated(
 }
 
 void WebAppDatabase::OnAllDataRead(
-    OnceRegistryOpenedCallback callback,
+    RegistryOpenedCallback callback,
     const base::Optional<syncer::ModelError>& error,
     std::unique_ptr<syncer::ModelTypeStore::RecordList> data_records) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

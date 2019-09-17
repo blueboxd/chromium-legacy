@@ -388,7 +388,7 @@ class BASE_EXPORT SequenceManagerImpl
   TimeDelta GetDelayTillNextDelayedTask(LazyNow* lazy_now) const;
 
 #if DCHECK_IS_ON()
-  void LogTaskDebugInfo(const ExecutingTask& executing_task);
+  void LogTaskDebugInfo(const internal::WorkQueue* work_queue) const;
 #endif
 
   // Determines if wall time or thread time should be recorded for the next

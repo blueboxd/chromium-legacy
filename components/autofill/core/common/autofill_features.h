@@ -42,6 +42,7 @@ extern const base::Feature kAutofillPreferServerNamePredictions;
 extern const base::Feature kAutofillProfileClientValidation;
 extern const base::Feature kAutofillProfileServerValidation;
 extern const base::Feature kAutofillRejectCompanyBirthyear;
+extern const base::Feature kAutofillRejectCompanySocialTitle;
 extern const base::Feature kAutofillRestrictUnownedFieldsToFormlessCheckout;
 extern const base::Feature kAutofillRichMetadataQueries;
 extern const base::Feature kAutofillSaveOnProbablySubmitted;

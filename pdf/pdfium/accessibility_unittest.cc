@@ -8,7 +8,6 @@
 #include "pdf/pdfium/pdfium_test_base.h"
 #include "pdf/test/test_client.h"
 #include "pdf/test/test_utils.h"
-#include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/private/ppp_pdf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -73,8 +72,8 @@ TEST_F(AccessibilityTest, GetAccessibilityPage) {
   PP_PrivateAccessibilityPageInfo page_info;
   std::vector<PP_PrivateAccessibilityTextRunInfo> text_runs;
   std::vector<PP_PrivateAccessibilityCharInfo> chars;
-  std::vector<PP_PrivateAccessibilityLinkInfo> links;
-  std::vector<PP_PrivateAccessibilityImageInfo> images;
+  std::vector<pp::PDF::PrivateAccessibilityLinkInfo> links;
+  std::vector<pp::PDF::PrivateAccessibilityImageInfo> images;
   ASSERT_TRUE(GetAccessibilityInfo(engine.get(), 0, &page_info, &text_runs,
                                    &chars, &links, &images));
   EXPECT_EQ(0u, page_info.page_index);

@@ -1046,6 +1046,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void CreateLockManager(
       mojo::PendingReceiver<blink::mojom::LockManager> receiver);
+  void GetFileChooser(
+      mojo::PendingReceiver<blink::mojom::FileChooser> receiver);
 
   // https://mikewest.github.io/corpp/#initialize-embedder-policy-for-global
   network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy()
@@ -1521,7 +1523,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void CreateAudioInputStreamFactory(
       mojo::PendingReceiver<mojom::RendererAudioInputStreamFactory> receiver);
   void CreateAudioOutputStreamFactory(
-      mojom::RendererAudioOutputStreamFactoryRequest request);
+      mojo::PendingReceiver<mojom::RendererAudioOutputStreamFactory> receiver);
 
   void BindMediaInterfaceFactoryRequest(
       media::mojom::InterfaceFactoryRequest request);
@@ -1536,7 +1538,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnMediaInterfaceFactoryConnectionError();
 
 #if defined(OS_ANDROID)
-  void BindNFCRequest(device::mojom::NFCRequest request);
+  void BindNFCReceiver(mojo::PendingReceiver<device::mojom::NFC> receiver);
 #endif
 
 #if !defined(OS_ANDROID)

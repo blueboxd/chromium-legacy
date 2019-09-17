@@ -183,7 +183,6 @@ class CORE_EXPORT DocumentLoader
     navigation_type_ = navigation_type;
   }
 
-  void SetItemForHistoryNavigation(HistoryItem* item) { history_item_ = item; }
   HistoryItem* GetHistoryItem() const { return history_item_; }
 
   void StartLoading();
@@ -303,6 +302,16 @@ class CORE_EXPORT DocumentLoader
   // day though.
   void UpdateUrlForDocumentOpen(const KURL& url) { url_ = url; }
 
+  enum class HistoryNavigationType {
+    kDifferentDocument,
+    kFragment,
+    kHistoryApi
+  };
+
+  void SetHistoryItemStateForCommit(HistoryItem* old_item,
+                                    WebFrameLoadType,
+                                    HistoryNavigationType);
+
  protected:
   Vector<KURL> redirect_chain_;
 
@@ -331,7 +340,6 @@ class CORE_EXPORT DocumentLoader
   void WillCommitNavigation();
   void DidCommitNavigation(GlobalObjectReusePolicy);
 
-  void PrepareForNavigationCommit();
   void FinishNavigationCommit(const AtomicString& mime_type,
                               const KURL& overriding_url = KURL());
 
@@ -357,15 +365,6 @@ class CORE_EXPORT DocumentLoader
   void StartLoadingInternal();
   void FinishedLoading(base::TimeTicks finish_time);
   void CancelLoadAfterCSPDenied(const ResourceResponse&);
-
-  enum class HistoryNavigationType {
-    kDifferentDocument,
-    kFragment,
-    kHistoryApi
-  };
-  void SetHistoryItemStateForCommit(HistoryItem* old_item,
-                                    WebFrameLoadType,
-                                    HistoryNavigationType);
 
   void FinalizeMHTMLArchiveLoad();
   void HandleRedirect(const KURL& current_request_url);

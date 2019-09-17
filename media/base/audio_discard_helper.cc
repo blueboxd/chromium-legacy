@@ -156,7 +156,13 @@ bool AudioDiscardHelper::ProcessBuffers(const DecoderBuffer& encoded_buffer,
     // For simplicity require the start of the discard to be within the current
     // buffer.  Doing so allows us avoid complexity around tracking discards
     // across buffers.
-    CHECK_LT(discard_start, decoded_frames);
+    if (discard_start >= decoded_frames) {
+      DLOG(ERROR)
+          << "Unsupported discard padding and decoder delay mix. Due to "
+             "decoder delay, discard padding indicates data beyond the current "
+             "buffer should be discarded. This is not supported.";
+      return false;
+    }
 
     const size_t frames_to_discard =
         std::min(start_frames_to_discard, decoded_frames - discard_start);

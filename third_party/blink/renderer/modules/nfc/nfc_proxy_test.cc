@@ -8,6 +8,7 @@
 
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -62,7 +63,8 @@ class FakeNfcService : public device::mojom::blink::NFC {
 
   void BindRequest(mojo::ScopedMessagePipeHandle handle) {
     DCHECK(!receiver_.is_bound());
-    receiver_.Bind(device::mojom::blink::NFCRequest(std::move(handle)));
+    receiver_.Bind(
+        mojo::PendingReceiver<device::mojom::blink::NFC>(std::move(handle)));
     receiver_.set_disconnect_handler(
         WTF::Bind(&FakeNfcService::OnConnectionError, WTF::Unretained(this)));
   }

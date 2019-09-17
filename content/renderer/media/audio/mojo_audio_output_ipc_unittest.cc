@@ -17,6 +17,9 @@
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_parameters.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -54,23 +57,24 @@ class TestStreamProvider : public media::mojom::AudioOutputStreamProvider {
   ~TestStreamProvider() override {
     // If we expected a stream to be acquired, make sure it is so.
     if (stream_)
-      EXPECT_TRUE(binding_);
+      EXPECT_TRUE(receiver_);
   }
 
   void Acquire(
       const media::AudioParameters& params,
       media::mojom::AudioOutputStreamProviderClientPtr provider_client,
       const base::Optional<base::UnguessableToken>& processing_id) override {
-    EXPECT_EQ(binding_, base::nullopt);
+    EXPECT_EQ(receiver_, base::nullopt);
     EXPECT_NE(stream_, nullptr);
     std::swap(provider_client, provider_client_);
-    media::mojom::AudioOutputStreamPtr stream_ptr;
-    binding_.emplace(stream_, mojo::MakeRequest(&stream_ptr));
+    mojo::PendingRemote<media::mojom::AudioOutputStream> stream_pending_remote;
+    receiver_.emplace(stream_,
+                      stream_pending_remote.InitWithNewPipeAndPassReceiver());
     base::CancelableSyncSocket foreign_socket;
     EXPECT_TRUE(
         base::CancelableSyncSocket::CreatePair(&socket_, &foreign_socket));
     provider_client_->Created(
-        std::move(stream_ptr),
+        std::move(stream_pending_remote),
         {base::in_place, base::UnsafeSharedMemoryRegion::Create(kMemoryLength),
          mojo::WrapPlatformFile(foreign_socket.Release())});
   }
@@ -85,7 +89,7 @@ class TestStreamProvider : public media::mojom::AudioOutputStreamProvider {
  private:
   media::mojom::AudioOutputStream* stream_;
   media::mojom::AudioOutputStreamProviderClientPtr provider_client_;
-  base::Optional<mojo::Binding<media::mojom::AudioOutputStream>> binding_;
+  base::Optional<mojo::Receiver<media::mojom::AudioOutputStream>> receiver_;
   base::CancelableSyncSocket socket_;
 };
 
@@ -93,7 +97,7 @@ class TestRemoteFactory : public mojom::RendererAudioOutputStreamFactory {
  public:
   TestRemoteFactory()
       : expect_request_(false),
-        binding_(this, mojo::MakeRequest(&this_proxy_)) {}
+        receiver_(this, this_remote_.BindNewPipeAndPassReceiver()) {}
 
   ~TestRemoteFactory() override {}
 
@@ -146,9 +150,9 @@ class TestRemoteFactory : public mojom::RendererAudioOutputStreamFactory {
   }
 
   void Disconnect() {
-    binding_.Close();
-    this_proxy_.reset();
-    binding_.Bind(mojo::MakeRequest(&this_proxy_));
+    receiver_.reset();
+    this_remote_.reset();
+    receiver_.Bind(this_remote_.BindNewPipeAndPassReceiver());
     provider_binding_.reset();
     provider_.reset();
     expect_request_ = false;
@@ -159,14 +163,14 @@ class TestRemoteFactory : public mojom::RendererAudioOutputStreamFactory {
   }
 
  private:
-  mojom::RendererAudioOutputStreamFactory* get() { return this_proxy_.get(); }
+  mojom::RendererAudioOutputStreamFactory* get() { return this_remote_.get(); }
 
   bool expect_request_;
   base::Optional<base::UnguessableToken> expected_session_id_;
   std::string expected_device_id_;
 
-  mojom::RendererAudioOutputStreamFactoryPtr this_proxy_;
-  mojo::Binding<mojom::RendererAudioOutputStreamFactory> binding_;
+  mojo::Remote<mojom::RendererAudioOutputStreamFactory> this_remote_;
+  mojo::Receiver<mojom::RendererAudioOutputStreamFactory> receiver_{this};
   std::unique_ptr<TestStreamProvider> provider_;
   base::Optional<mojo::Binding<media::mojom::AudioOutputStreamProvider>>
       provider_binding_;

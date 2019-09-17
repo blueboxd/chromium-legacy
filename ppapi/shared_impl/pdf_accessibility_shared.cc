@@ -9,31 +9,29 @@ namespace ppapi {
 PdfAccessibilityLinkInfo::PdfAccessibilityLinkInfo() = default;
 
 PdfAccessibilityLinkInfo::PdfAccessibilityLinkInfo(
-    const PdfAccessibilityLinkInfo& other) = default;
-
-PdfAccessibilityLinkInfo::~PdfAccessibilityLinkInfo() = default;
+    const PP_PrivateAccessibilityLinkInfo& link)
+    : url(std::string(link.url, link.url_length)),
+      index_in_page(link.index_in_page),
+      text_run_index(link.text_run_index),
+      text_run_count(link.text_run_count),
+      bounds(link.bounds) {}
 
 PdfAccessibilityLinkInfo::PdfAccessibilityLinkInfo(
-    const PP_PrivateAccessibilityLinkInfo& link) {
-  url = std::string(link.url, link.url_length);
-  index_in_page = link.index_in_page;
-  text_run_index = link.text_run_index;
-  text_run_count = link.text_run_count;
-  bounds = link.bounds;
-}
+    PdfAccessibilityLinkInfo&& other) = default;
+
+PdfAccessibilityLinkInfo::~PdfAccessibilityLinkInfo() = default;
 
 PdfAccessibilityImageInfo::PdfAccessibilityImageInfo() = default;
 
 PdfAccessibilityImageInfo::PdfAccessibilityImageInfo(
-    const PdfAccessibilityImageInfo& other) = default;
-
-PdfAccessibilityImageInfo::~PdfAccessibilityImageInfo() = default;
+    const PP_PrivateAccessibilityImageInfo& image)
+    : alt_text(std::string(image.alt_text, image.alt_text_length)),
+      text_run_index(image.text_run_index),
+      bounds(image.bounds) {}
 
 PdfAccessibilityImageInfo::PdfAccessibilityImageInfo(
-    const PP_PrivateAccessibilityImageInfo& image) {
-  alt_text = std::string(image.alt_text, image.alt_text_length);
-  text_run_index = image.text_run_index;
-  bounds = image.bounds;
-}
+    PdfAccessibilityImageInfo&& other) = default;
+
+PdfAccessibilityImageInfo::~PdfAccessibilityImageInfo() = default;
 
 }  // namespace ppapi

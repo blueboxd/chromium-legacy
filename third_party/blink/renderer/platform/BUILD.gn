@@ -607,6 +607,8 @@ jumbo_component("platform") {
     "fonts/font_global_context.h",
     "fonts/font_metrics.cc",
     "fonts/font_metrics.h",
+    "fonts/font_optical_sizing.cc",
+    "fonts/font_optical_sizing.h",
     "fonts/font_orientation.cc",
     "fonts/font_orientation.h",
     "fonts/font_platform_data.cc",

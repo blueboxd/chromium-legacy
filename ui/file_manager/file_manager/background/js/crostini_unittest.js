@@ -211,4 +211,9 @@ function testCanSharePath() {
   assertFalse(crostini.canSharePath('vm', grandRootFolder, false));
   assertFalse(crostini.canSharePath('vm', computerRootFolder, false));
   assertTrue(crostini.canSharePath('vm', computerFolder, false));
+
+  // Sharing LinuxFiles is allowed for all VMs except termina.
+  volumeManagerRootType = VolumeManagerCommon.RootType.CROSTINI;
+  assertTrue(crostini.canSharePath('vm', root, false));
+  assertFalse(crostini.canSharePath('termina', root, false));
 }

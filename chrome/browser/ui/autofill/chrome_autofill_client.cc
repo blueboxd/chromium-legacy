@@ -39,7 +39,6 @@
 #include "components/autofill/content/browser/autofill_log_router_factory.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
-#include "components/autofill/core/browser/autofill_internals_service.h"
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_view.h"

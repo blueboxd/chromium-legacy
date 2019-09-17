@@ -1,9 +1,10 @@
 This is a testharness.js-based test.
-Found 2802 tests; 2716 PASS, 86 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 3036 tests; 2950 PASS, 86 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS head.title: 38 tests
 PASS head.lang: 38 tests
 PASS head.dir: 68 tests
 PASS head.className (<head class>): 38 tests
+PASS head.autofocus: 39 tests
 PASS head.hidden: 39 tests
 PASS head.accessKey: 38 tests
 PASS head.tabIndex: 26 tests
@@ -11,6 +12,7 @@ PASS title.title: 38 tests
 PASS title.lang: 38 tests
 PASS title.dir: 68 tests
 PASS title.className (<title class>): 38 tests
+PASS title.autofocus: 39 tests
 PASS title.hidden: 39 tests
 PASS title.accessKey: 38 tests
 PASS title.tabIndex: 26 tests
@@ -18,6 +20,7 @@ PASS base.title: 38 tests
 PASS base.lang: 38 tests
 PASS base.dir: 68 tests
 PASS base.className (<base class>): 38 tests
+PASS base.autofocus: 39 tests
 PASS base.hidden: 39 tests
 PASS base.accessKey: 38 tests
 PASS base.tabIndex: 26 tests
@@ -27,6 +30,7 @@ PASS link.title: 38 tests
 PASS link.lang: 38 tests
 PASS link.dir: 68 tests
 PASS link.className (<link class>): 38 tests
+PASS link.autofocus: 39 tests
 PASS link.hidden: 39 tests
 PASS link.accessKey: 38 tests
 PASS link.tabIndex: 26 tests
@@ -158,6 +162,7 @@ PASS meta.title: 38 tests
 PASS meta.lang: 38 tests
 PASS meta.dir: 68 tests
 PASS meta.className (<meta class>): 38 tests
+PASS meta.autofocus: 39 tests
 PASS meta.hidden: 39 tests
 PASS meta.accessKey: 38 tests
 PASS meta.tabIndex: 26 tests
@@ -169,6 +174,7 @@ PASS style.title: 38 tests
 PASS style.lang: 38 tests
 PASS style.dir: 68 tests
 PASS style.className (<style class>): 38 tests
+PASS style.autofocus: 39 tests
 PASS style.hidden: 39 tests
 PASS style.accessKey: 38 tests
 PASS style.tabIndex: 26 tests

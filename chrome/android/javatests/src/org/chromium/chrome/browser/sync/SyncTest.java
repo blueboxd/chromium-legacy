@@ -71,7 +71,7 @@ public class SyncTest {
         Assert.assertFalse(SyncTestUtil.isSyncRequested());
 
         // Signing back in should re-enable sync.
-        mSyncTestRule.signIn(account);
+        mSyncTestRule.signinAndEnableSync(account);
         SyncTestUtil.waitForSyncActive();
     }
 

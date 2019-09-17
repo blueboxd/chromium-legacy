@@ -149,85 +149,61 @@ TEST_F(FileManagerPathUtilTest, GetPathDisplayTextForSettings) {
                 "/media/fuse/crostini_0123456789abcdef_termina_penguin/foo"));
   EXPECT_EQ("foo", GetPathDisplayTextForSettings(profile_.get(),
                                                  "/media/removable/foo"));
-  {
-    base::test::ScopedFeatureList features;
-    features.InitAndDisableFeature(chromeos::features::kDriveFs);
-    drive::DriveIntegrationServiceFactory::GetForProfile(profile_.get())
-        ->SetEnabled(true);
-    EXPECT_EQ("Google Drive \u203a My Drive \u203a foo",
-              GetPathDisplayTextForSettings(
-                  profile_.get(), "/special/drive-0123456789abcdef/root/foo"));
-    EXPECT_EQ(
-        "Google Drive \u203a Shared drives \u203a A Team Drive \u203a foo",
-        GetPathDisplayTextForSettings(
-            profile_.get(),
-            "/special/drive-0123456789abcdef/team_drives/A Team Drive/foo"));
 
-    EXPECT_EQ(
-        "Google Drive \u203a Computers \u203a My Other Computer \u203a bar",
-        GetPathDisplayTextForSettings(
-            profile_.get(),
-            "/special/drive-0123456789abcdef/Computers/My Other Computer/bar"));
-  }
-  {
-    base::test::ScopedFeatureList features;
-    features.InitAndEnableFeature(chromeos::features::kDriveFs);
-    chromeos::disks::DiskMountManager::InitializeForTesting(
-        new FakeDiskMountManager);
-    TestingProfile profile2(base::FilePath("/home/chronos/u-0123456789abcdef"));
-    chromeos::FakeChromeUserManager user_manager;
-    user_manager.AddUser(
-        AccountId::FromUserEmailGaiaId(profile2.GetProfileUserName(), "12345"));
-    PrefService* prefs = profile2.GetPrefs();
-    prefs->SetString(drive::prefs::kDriveFsProfileSalt, "a");
+  chromeos::disks::DiskMountManager::InitializeForTesting(
+      new FakeDiskMountManager);
+  TestingProfile profile2(base::FilePath("/home/chronos/u-0123456789abcdef"));
+  chromeos::FakeChromeUserManager user_manager;
+  user_manager.AddUser(
+      AccountId::FromUserEmailGaiaId(profile2.GetProfileUserName(), "12345"));
+  PrefService* prefs = profile2.GetPrefs();
+  prefs->SetString(drive::prefs::kDriveFsProfileSalt, "a");
 
-    drive::DriveIntegrationServiceFactory::GetForProfile(&profile2)->SetEnabled(
-        true);
-    EXPECT_EQ(
-        "Google Drive \u203a My Drive \u203a foo",
-        GetPathDisplayTextForSettings(
-            &profile2,
-            "/media/fuse/drivefs-84675c855b63e12f384d45f033826980/root/foo"));
-    EXPECT_EQ(
-        "Google Drive \u203a Shared drives \u203a A Team Drive \u203a foo",
-        GetPathDisplayTextForSettings(
-            &profile2,
-            "/media/fuse/drivefs-84675c855b63e12f384d45f033826980/"
-            "team_drives/A Team Drive/foo"));
-    EXPECT_EQ(
-        "Google Drive \u203a Computers \u203a My Other Computer \u203a bar",
-        GetPathDisplayTextForSettings(
-            &profile2,
-            "/media/fuse/drivefs-84675c855b63e12f384d45f033826980/"
-            "Computers/My Other Computer/bar"));
+  drive::DriveIntegrationServiceFactory::GetForProfile(&profile2)->SetEnabled(
+      true);
+  EXPECT_EQ(
+      "Google Drive \u203a My Drive \u203a foo",
+      GetPathDisplayTextForSettings(
+          &profile2,
+          "/media/fuse/drivefs-84675c855b63e12f384d45f033826980/root/foo"));
+  EXPECT_EQ("Google Drive \u203a Shared drives \u203a A Team Drive \u203a foo",
+            GetPathDisplayTextForSettings(
+                &profile2,
+                "/media/fuse/drivefs-84675c855b63e12f384d45f033826980/"
+                "team_drives/A Team Drive/foo"));
+  EXPECT_EQ("Google Drive \u203a Computers \u203a My Other Computer \u203a bar",
+            GetPathDisplayTextForSettings(
+                &profile2,
+                "/media/fuse/drivefs-84675c855b63e12f384d45f033826980/"
+                "Computers/My Other Computer/bar"));
 
-    EXPECT_EQ("Google Drive \u203a My Drive \u203a foo",
-              GetPathDisplayTextForSettings(
-                  &profile2, "/special/drive-0123456789abcdef/root/foo"));
-    EXPECT_EQ(
-        "Google Drive \u203a Shared drives \u203a A Team Drive \u203a foo",
-        GetPathDisplayTextForSettings(
-            &profile2,
-            "/special/drive-0123456789abcdef/team_drives/A Team Drive/foo"));
+  EXPECT_EQ("Google Drive \u203a My Drive \u203a foo",
+            GetPathDisplayTextForSettings(
+                &profile2, "/special/drive-0123456789abcdef/root/foo"));
+  EXPECT_EQ(
+      "Google Drive \u203a Shared drives \u203a A Team Drive \u203a foo",
+      GetPathDisplayTextForSettings(
+          &profile2,
+          "/special/drive-0123456789abcdef/team_drives/A Team Drive/foo"));
 
-    EXPECT_EQ(
-        "Google Drive \u203a Computers \u203a My Other Computer \u203a bar",
-        GetPathDisplayTextForSettings(
-            &profile2,
-            "/special/drive-0123456789abcdef/Computers/My Other Computer/bar"));
+  EXPECT_EQ(
+      "Google Drive \u203a Computers \u203a My Other Computer \u203a bar",
+      GetPathDisplayTextForSettings(
+          &profile2,
+          "/special/drive-0123456789abcdef/Computers/My Other Computer/bar"));
 
-    TestingProfile guest_profile(base::FilePath("/home/chronos/guest"));
-    guest_profile.SetGuestSession(true);
-    guest_profile.set_profile_name("$guest");
-    ASSERT_TRUE(
-        drive::DriveIntegrationServiceFactory::GetForProfile(&guest_profile));
+  TestingProfile guest_profile(base::FilePath("/home/chronos/guest"));
+  guest_profile.SetGuestSession(true);
+  guest_profile.set_profile_name("$guest");
+  ASSERT_TRUE(
+      drive::DriveIntegrationServiceFactory::GetForProfile(&guest_profile));
 
-    EXPECT_EQ("Downloads", GetPathDisplayTextForSettings(
-                               &guest_profile, "/home/chronos/user/Downloads"));
-    // Test that a passthrough path doesn't crash on requesting the Drive mount
-    // path for a guest profile.
-    EXPECT_EQ("foo", GetPathDisplayTextForSettings(&guest_profile, "foo"));
-  }
+  EXPECT_EQ("Downloads", GetPathDisplayTextForSettings(
+                             &guest_profile, "/home/chronos/user/Downloads"));
+  // Test that a passthrough path doesn't crash on requesting the Drive mount
+  // path for a guest profile.
+  EXPECT_EQ("foo", GetPathDisplayTextForSettings(&guest_profile, "foo"));
+
   chromeos::disks::DiskMountManager::Shutdown();
 }
 
@@ -331,46 +307,30 @@ TEST_F(FileManagerPathUtilTest, MigrateToDriveFs) {
   base::FilePath my_drive = old_drive.Append("root");
   base::FilePath file_in_my_drive = old_drive.Append("root").Append("file.txt");
 
-  // DriveFS disabled, no changes.
-  base::FilePath result;
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndDisableFeature(chromeos::features::kDriveFs);
-    drive::DriveIntegrationServiceFactory::GetForProfile(profile_.get())
-        ->SetEnabled(true);
-    EXPECT_FALSE(MigrateToDriveFs(profile_.get(), other, &result));
-    EXPECT_FALSE(MigrateToDriveFs(profile_.get(), my_drive, &result));
-  }
-  // DriveFS enabled, migrate paths under old drive mount.
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(chromeos::features::kDriveFs);
-    TestingProfile profile2(base::FilePath("/home/chronos/u-0123456789abcdef"));
-    chromeos::FakeChromeUserManager user_manager;
-    user_manager.AddUser(
-        AccountId::FromUserEmailGaiaId(profile2.GetProfileUserName(), "12345"));
-    PrefService* prefs = profile2.GetPrefs();
-    prefs->SetString(drive::prefs::kDriveFsProfileSalt, "a");
-    drive::DriveIntegrationServiceFactory::GetForProfile(&profile2)->SetEnabled(
-        true);
+  // Migrate paths under old drive mount.
+  TestingProfile profile2(base::FilePath("/home/chronos/u-0123456789abcdef"));
+  chromeos::FakeChromeUserManager user_manager;
+  user_manager.AddUser(
+      AccountId::FromUserEmailGaiaId(profile2.GetProfileUserName(), "12345"));
+  PrefService* prefs = profile2.GetPrefs();
+  prefs->SetString(drive::prefs::kDriveFsProfileSalt, "a");
+  drive::DriveIntegrationServiceFactory::GetForProfile(&profile2)->SetEnabled(
+      true);
 
-    EXPECT_FALSE(MigrateToDriveFs(&profile2, other, &result));
-    EXPECT_TRUE(MigrateToDriveFs(&profile2, my_drive, &result));
-    EXPECT_EQ(base::FilePath(
-                  "/media/fuse/drivefs-84675c855b63e12f384d45f033826980/root"),
-              result);
-    EXPECT_TRUE(MigrateToDriveFs(&profile2, file_in_my_drive, &result));
-    EXPECT_EQ(
-        base::FilePath("/media/fuse/drivefs-84675c855b63e12f384d45f033826980/"
-                       "root/file.txt"),
-        result);
-  }
+  base::FilePath result;
+  EXPECT_FALSE(MigrateToDriveFs(&profile2, other, &result));
+  EXPECT_TRUE(MigrateToDriveFs(&profile2, my_drive, &result));
+  EXPECT_EQ(base::FilePath(
+                "/media/fuse/drivefs-84675c855b63e12f384d45f033826980/root"),
+            result);
+  EXPECT_TRUE(MigrateToDriveFs(&profile2, file_in_my_drive, &result));
+  EXPECT_EQ(
+      base::FilePath("/media/fuse/drivefs-84675c855b63e12f384d45f033826980/"
+                     "root/file.txt"),
+      result);
 }
 
 TEST_F(FileManagerPathUtilTest, ConvertFileSystemURLToPathInsideCrostini) {
-  base::test::ScopedFeatureList initial_features;
-  initial_features.InitAndEnableFeature(chromeos::features::kDriveFs);
-
   storage::ExternalMountPoints* mount_points =
       storage::ExternalMountPoints::GetSystemInstance();
   // Setup for DriveFS.
@@ -412,9 +372,6 @@ TEST_F(FileManagerPathUtilTest, ConvertFileSystemURLToPathInsideCrostini) {
       storage::FileSystemMountOption(), base::FilePath(kRemovableMediaPath));
 
   {
-    base::test::ScopedFeatureList features;
-    features.InitAndEnableFeature(chromeos::features::kDriveFs);
-
     base::FilePath inside;
     EXPECT_TRUE(ConvertFileSystemURLToPathInsideCrostini(
         profile_.get(),

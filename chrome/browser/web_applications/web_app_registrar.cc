@@ -14,7 +14,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/web_applications/abstract_web_app_database.h"
+#include "chrome/browser/web_applications/abstract_web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
@@ -22,9 +22,9 @@
 namespace web_app {
 
 WebAppRegistrar::WebAppRegistrar(Profile* profile,
-                                 AbstractWebAppDatabase* database)
-    : AppRegistrar(profile), database_(database) {
-  DCHECK(database_);
+                                 AbstractWebAppSyncBridge* sync_bridge)
+    : AppRegistrar(profile), sync_bridge_(sync_bridge) {
+  DCHECK(sync_bridge_);
 }
 
 WebAppRegistrar::~WebAppRegistrar() = default;
@@ -37,7 +37,7 @@ void WebAppRegistrar::RegisterApp(std::unique_ptr<WebApp> web_app) {
   DCHECK(!GetAppById(app_id));
 
   // TODO(loyso): Expose CompletionCallback as RegisterApp argument.
-  database_->WriteWebApps({web_app.get()}, base::DoNothing());
+  sync_bridge_->WriteWebApps({web_app.get()}, base::DoNothing());
 
   registry_.emplace(app_id, std::move(web_app));
 }
@@ -48,7 +48,7 @@ std::unique_ptr<WebApp> WebAppRegistrar::UnregisterApp(const AppId& app_id) {
   DCHECK(!app_id.empty());
 
   // TODO(loyso): Expose CompletionCallback as UnregisterApp argument.
-  database_->DeleteWebApps({app_id}, base::DoNothing());
+  sync_bridge_->DeleteWebApps({app_id}, base::DoNothing());
 
   auto kv = registry_.find(app_id);
   DCHECK(kv != registry_.end());
@@ -62,7 +62,7 @@ void WebAppRegistrar::UnregisterAll() {
   CountMutation();
 
   // TODO(loyso): Expose CompletionCallback as UnregisterAll argument.
-  database_->DeleteWebApps(GetAppIds(), base::DoNothing());
+  sync_bridge_->DeleteWebApps(GetAppIds(), base::DoNothing());
   registry_.clear();
 }
 
@@ -92,16 +92,16 @@ void WebAppRegistrar::CommitUpdate(std::unique_ptr<WebAppRegistryUpdate> update,
     DCHECK(GetAppById(app->app_id()));
 #endif
 
-  database_->WriteWebApps(
+  sync_bridge_->WriteWebApps(
       std::move(update->apps_to_update_),
       base::BindOnce(&WebAppRegistrar::OnDataWritten,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void WebAppRegistrar::Init(base::OnceClosure callback) {
-  database_->OpenDatabase(base::BindOnce(&WebAppRegistrar::OnDatabaseOpened,
-                                         weak_ptr_factory_.GetWeakPtr(),
-                                         std::move(callback)));
+  sync_bridge_->OpenDatabase(base::BindOnce(&WebAppRegistrar::OnDatabaseOpened,
+                                            weak_ptr_factory_.GetWeakPtr(),
+                                            std::move(callback)));
 }
 
 void WebAppRegistrar::OnDatabaseOpened(base::OnceClosure callback,

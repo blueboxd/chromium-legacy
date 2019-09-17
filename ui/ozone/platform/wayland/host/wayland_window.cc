@@ -305,7 +305,7 @@ void WaylandWindow::ApplyPendingBounds() {
 
 void WaylandWindow::DispatchHostWindowDragMovement(
     int hittest,
-    const gfx::Point& pointer_location) {
+    const gfx::Point& pointer_location_in_px) {
   DCHECK(xdg_surface_);
 
   connection_->ResetPointerFlags();
@@ -377,15 +377,6 @@ void WaylandWindow::Close() {
 void WaylandWindow::PrepareForShutdown() {}
 
 void WaylandWindow::SetBounds(const gfx::Rect& bounds_px) {
-  // TODO(crbug.com/958314): figure out if this return is legitimate.
-  //
-  // The X11 implementation says that even if the pixel bounds didn't change, we
-  // still need to forward this call to the delegate, and that the device scale
-  // factor may have changed which effectively changes the bounds.  Perhaps we
-  // need to do the same here.
-  //
-  // After this is resolved, update test expectations for calls to
-  // delegate's OnBoundsChanged.
   if (bounds_px_ == bounds_px)
     return;
   bounds_px_ = bounds_px;

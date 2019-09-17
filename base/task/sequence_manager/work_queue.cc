@@ -305,6 +305,16 @@ void WorkQueue::PopTaskForTesting() {
   tasks_.pop_front();
 }
 
+void WorkQueue::CollectTasksOlderThan(EnqueueOrder reference,
+                                      std::vector<const Task*>* result) const {
+  for (const Task& task : tasks_) {
+    if (task.enqueue_order() >= reference)
+      break;
+
+    result->push_back(&task);
+  }
+}
+
 }  // namespace internal
 }  // namespace sequence_manager
 }  // namespace base

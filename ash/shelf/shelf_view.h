@@ -575,7 +575,8 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   int first_visible_index_ = -1;
 
   // Last index of an app launcher button that is visible (does not go into
-  // overflow), or -1 if there are no apps.
+  // overflow), or -1 if there are no apps (or if only the overflow button is
+  // visible).
   int last_visible_index_ = -1;
 
   std::unique_ptr<views::BoundsAnimator> bounds_animator_;

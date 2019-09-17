@@ -238,11 +238,9 @@ select.sel-big:focus + .select-label::after {
 /** <input type='checkbox' or 'radio'> elements */
 input[type='checkbox'],
 input[type='radio'] {
-  position: absolute;
-  margin: 0;
+  margin: 4px 0;
   height: 18px;
   width: 18px;
-  opacity: 0;
 }
 .checkbox-wrapper,
 .radio-wrapper {

@@ -40,6 +40,8 @@ namespace manual_fill {
 
 NSString* const ManageCardsAccessibilityIdentifier =
     @"kManualFillManageCardsAccessibilityIdentifier";
+NSString* const kAddCreditCardsAccessibilityIdentifier =
+    @"kAddCreditCardsAccessibilityIdentifier";
 
 }  // namespace manual_fill
 
@@ -144,6 +146,8 @@ NSString* const ManageCardsAccessibilityIdentifier =
                      "ManualFallback_CreditCard_OpenAddCreditCard"));
                  [weakSelf.dispatcher showAddCreditCard];
                }];
+    addCreditCardsItem.accessibilityIdentifier =
+        manual_fill::kAddCreditCardsAccessibilityIdentifier;
     [self.consumer
         presentActions:@[ addCreditCardsItem, manageCreditCardsItem ]];
   } else {

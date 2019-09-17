@@ -11,7 +11,7 @@
 
 namespace views {
 
-class WindowEventFilter;
+class WindowEventFilterLinux;
 
 // Contains Linux specific implementation.
 class VIEWS_EXPORT DesktopWindowTreeHostLinux
@@ -30,6 +30,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   void OnClosed() override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(DesktopWindowTreeHostLinuxTest, HitTest);
+
   // Overridden from display::DisplayObserver via aura::WindowTreeHost:
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
@@ -43,7 +45,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   void RemoveNonClientEventFilter();
 
   // A handler for events intended for non client area.
-  std::unique_ptr<WindowEventFilter> non_client_window_event_filter_;
+  std::unique_ptr<WindowEventFilterLinux> non_client_window_event_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostLinux);
 };

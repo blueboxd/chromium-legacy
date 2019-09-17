@@ -9,11 +9,7 @@
 
 #include <vector>
 
-struct PP_PrivateAccessibilityCharInfo;
-struct PP_PrivateAccessibilityImageInfo;
-struct PP_PrivateAccessibilityLinkInfo;
-struct PP_PrivateAccessibilityPageInfo;
-struct PP_PrivateAccessibilityTextRunInfo;
+#include "ppapi/cpp/private/pdf.h"
 
 namespace chrome_pdf {
 
@@ -29,8 +25,8 @@ bool GetAccessibilityInfo(
     PP_PrivateAccessibilityPageInfo* page_info,
     std::vector<PP_PrivateAccessibilityTextRunInfo>* text_runs,
     std::vector<PP_PrivateAccessibilityCharInfo>* chars,
-    std::vector<PP_PrivateAccessibilityLinkInfo>* links,
-    std::vector<PP_PrivateAccessibilityImageInfo>* images);
+    std::vector<pp::PDF::PrivateAccessibilityLinkInfo>* links,
+    std::vector<pp::PDF::PrivateAccessibilityImageInfo>* images);
 
 }  // namespace chrome_pdf
 

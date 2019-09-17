@@ -4446,6 +4446,15 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBundledHTTPExchangesDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kBundledHTTPExchanges)},
 
+#if defined(OS_ANDROID)
+    {"darken-websites-checkbox-in-themes-setting",
+     flag_descriptions::kDarkenWebsitesCheckboxInThemesSettingName,
+     flag_descriptions::kDarkenWebsitesCheckboxInThemesSettingDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         chrome::android::kDarkenWebsitesCheckboxInThemesSetting)},
+#endif  // defined(OS_ANDROID)
+
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
     {"profile-menu-revamp", flag_descriptions::kProfileMenuRevampName,
      flag_descriptions::kProfileMenuRevampDescription,
@@ -4525,6 +4534,10 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillAlwaysReturnCloudTokenizedCard)},
+
+    {"back-forward-cache", flag_descriptions::kBackForwardCacheName,
+     flag_descriptions::kBackForwardCacheDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kBackForwardCache)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

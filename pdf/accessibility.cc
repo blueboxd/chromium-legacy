@@ -5,7 +5,6 @@
 #include "pdf/accessibility.h"
 
 #include "pdf/pdf_engine.h"
-#include "ppapi/c/private/ppb_pdf.h"
 
 namespace chrome_pdf {
 
@@ -15,8 +14,8 @@ bool GetAccessibilityInfo(
     PP_PrivateAccessibilityPageInfo* page_info,
     std::vector<PP_PrivateAccessibilityTextRunInfo>* text_runs,
     std::vector<PP_PrivateAccessibilityCharInfo>* chars,
-    std::vector<PP_PrivateAccessibilityLinkInfo>* links,
-    std::vector<PP_PrivateAccessibilityImageInfo>* images) {
+    std::vector<pp::PDF::PrivateAccessibilityLinkInfo>* links,
+    std::vector<pp::PDF::PrivateAccessibilityImageInfo>* images) {
   int page_count = engine->GetNumberOfPages();
   if (page_index < 0 || page_index >= page_count)
     return false;

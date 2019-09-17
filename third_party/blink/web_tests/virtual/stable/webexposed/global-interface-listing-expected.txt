@@ -2144,7 +2144,6 @@ interface HTMLBodyElement : HTMLElement
     setter vLink
 interface HTMLButtonElement : HTMLElement
     attribute @@toStringTag
-    getter autofocus
     getter disabled
     getter form
     getter formAction
@@ -2163,7 +2162,6 @@ interface HTMLButtonElement : HTMLElement
     method constructor
     method reportValidity
     method setCustomValidity
-    setter autofocus
     setter disabled
     setter formAction
     setter formEnctype
@@ -2244,6 +2242,7 @@ interface HTMLElement : Element
     attribute @@toStringTag
     getter accessKey
     getter autocapitalize
+    getter autofocus
     getter contentEditable
     getter dataset
     getter dir
@@ -2361,6 +2360,7 @@ interface HTMLElement : Element
     method focus
     setter accessKey
     setter autocapitalize
+    setter autofocus
     setter contentEditable
     setter dir
     setter draggable
@@ -2733,7 +2733,6 @@ interface HTMLInputElement : HTMLElement
     getter align
     getter alt
     getter autocomplete
-    getter autofocus
     getter checked
     getter defaultChecked
     getter defaultValue
@@ -2791,7 +2790,6 @@ interface HTMLInputElement : HTMLElement
     setter align
     setter alt
     setter autocomplete
-    setter autofocus
     setter checked
     setter defaultChecked
     setter defaultValue
@@ -3209,7 +3207,6 @@ interface HTMLScriptElement : HTMLElement
 interface HTMLSelectElement : HTMLElement
     attribute @@toStringTag
     getter autocomplete
-    getter autofocus
     getter disabled
     getter form
     getter labels
@@ -3236,7 +3233,6 @@ interface HTMLSelectElement : HTMLElement
     method reportValidity
     method setCustomValidity
     setter autocomplete
-    setter autofocus
     setter disabled
     setter length
     setter multiple
@@ -3411,7 +3407,6 @@ interface HTMLTemplateElement : HTMLElement
 interface HTMLTextAreaElement : HTMLElement
     attribute @@toStringTag
     getter autocomplete
-    getter autofocus
     getter cols
     getter defaultValue
     getter dirName
@@ -3443,7 +3438,6 @@ interface HTMLTextAreaElement : HTMLElement
     method setRangeText
     method setSelectionRange
     setter autocomplete
-    setter autofocus
     setter cols
     setter defaultValue
     setter dirName
@@ -5584,6 +5578,7 @@ interface SVGDiscardElement : SVGElement
     method constructor
 interface SVGElement : Element
     attribute @@toStringTag
+    getter autofocus
     getter className
     getter dataset
     getter nonce
@@ -5682,6 +5677,7 @@ interface SVGElement : Element
     method blur
     method constructor
     method focus
+    setter autofocus
     setter nonce
     setter onabort
     setter onanimationend

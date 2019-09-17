@@ -207,10 +207,6 @@ std::unique_ptr<RenderFrameHostImpl> BackForwardCache::RestoreDocument(
   auto matching_rfh = std::find_if(
       render_frame_hosts_.begin(), render_frame_hosts_.end(),
       [navigation_entry_id](std::unique_ptr<RenderFrameHostImpl>& rfh) {
-        // Never restore evicted frames.
-        if (rfh->is_evicted_from_back_forward_cache())
-          return false;
-
         return rfh->nav_entry_id() == navigation_entry_id;
       });
 
@@ -232,9 +228,9 @@ void BackForwardCache::Flush() {
   render_frame_hosts_.clear();
 }
 
-void BackForwardCache::PostTaskToFlushEvictedFrames() {
+void BackForwardCache::PostTaskToDestroyEvictedFrames() {
   base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&BackForwardCache::FlushEvictedFrames,
+                 base::BindOnce(&BackForwardCache::DestroyEvictedFrames,
                                 weak_factory_.GetWeakPtr()));
 }
 
@@ -264,7 +260,7 @@ RenderFrameHostImpl* BackForwardCache::GetDocument(int navigation_entry_id) {
   return (*matching_rfh).get();
 }
 
-void BackForwardCache::FlushEvictedFrames() {
+void BackForwardCache::DestroyEvictedFrames() {
   if (render_frame_hosts_.empty())
     return;
   render_frame_hosts_.erase(

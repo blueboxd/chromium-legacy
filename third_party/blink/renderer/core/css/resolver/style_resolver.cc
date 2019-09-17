@@ -1402,6 +1402,7 @@ static inline bool IsValidFirstLetterStyleProperty(CSSPropertyID id) {
     case CSSPropertyID::kFontFamily:
     case CSSPropertyID::kFontFeatureSettings:
     case CSSPropertyID::kFontKerning:
+    case CSSPropertyID::kFontOpticalSizing:
     case CSSPropertyID::kFontSize:
     case CSSPropertyID::kFontSizeAdjust:
     case CSSPropertyID::kFontStretch:

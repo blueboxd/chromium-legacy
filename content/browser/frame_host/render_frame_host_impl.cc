@@ -572,11 +572,12 @@ class FileChooserImpl : public blink::mojom::FileChooser,
   using FileChooserResult = blink::mojom::FileChooserResult;
 
  public:
-  static void Create(RenderFrameHostImpl* render_frame_host,
-                     blink::mojom::FileChooserRequest request) {
-    mojo::MakeStrongBinding(
+  static void Create(
+      RenderFrameHostImpl* render_frame_host,
+      mojo::PendingReceiver<blink::mojom::FileChooser> receiver) {
+    mojo::MakeSelfOwnedReceiver(
         std::make_unique<FileChooserImpl>(render_frame_host),
-        std::move(request));
+        std::move(receiver));
   }
 
   FileChooserImpl(RenderFrameHostImpl* render_frame_host)
@@ -1896,7 +1897,7 @@ bool RenderFrameHostImpl::CreateRenderFrame(int previous_routing_id,
 }
 
 void RenderFrameHostImpl::DeleteRenderFrame(FrameDeleteIntention intent) {
-  if (!is_active())
+  if (unload_state_ != UnloadState::NotRun)
     return;
 
   if (render_frame_created_) {
@@ -3485,7 +3486,7 @@ void RenderFrameHostImpl::EvictFromBackForwardCache() {
   // immediately, but destruction is delayed, so that callers don't have to
   // worry about use-after-free of |this|.
   top_document->is_evicted_from_back_forward_cache_ = true;
-  controller->back_forward_cache().PostTaskToFlushEvictedFrames();
+  controller->back_forward_cache().PostTaskToDestroyEvictedFrames();
 
   if (!is_navigation_to_evicted_frame_in_flight)
     return;
@@ -4307,7 +4308,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
 #if defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kWebNfc)) {
     registry_->AddInterface<device::mojom::NFC>(base::Bind(
-        &RenderFrameHostImpl::BindNFCRequest, base::Unretained(this)));
+        &RenderFrameHostImpl::BindNFCReceiver, base::Unretained(this)));
   }
 #endif
 
@@ -4468,9 +4469,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
 
   registry_->AddInterface(base::BindRepeating(&ContactsManagerImpl::Create,
                                               base::Unretained(this)));
-
-  registry_->AddInterface(
-      base::BindRepeating(&FileChooserImpl::Create, base::Unretained(this)));
 
   registry_->AddInterface(base::BindRepeating(&WakeLockServiceImpl::Create,
                                               base::Unretained(this)));
@@ -6246,21 +6244,21 @@ void RenderFrameHostImpl::CreateAudioInputStreamFactory(
 }
 
 void RenderFrameHostImpl::CreateAudioOutputStreamFactory(
-    mojom::RendererAudioOutputStreamFactoryRequest request) {
+    mojo::PendingReceiver<mojom::RendererAudioOutputStreamFactory> receiver) {
   if (base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams)) {
     media::AudioSystem* audio_system =
         BrowserMainLoop::GetInstance()->audio_system();
     MediaStreamManager* media_stream_manager =
         BrowserMainLoop::GetInstance()->media_stream_manager();
     audio_service_audio_output_stream_factory_.emplace(
-        this, audio_system, media_stream_manager, std::move(request));
+        this, audio_system, media_stream_manager, std::move(receiver));
   } else {
     RendererAudioOutputStreamFactoryContext* factory_context =
         GetProcess()->GetRendererAudioOutputStreamFactoryContext();
     DCHECK(factory_context);
     in_content_audio_output_stream_factory_ =
         RenderFrameAudioOutputStreamFactoryHandle::CreateFactory(
-            factory_context, GetRoutingID(), std::move(request));
+            factory_context, GetRoutingID(), std::move(receiver));
   }
 }
 
@@ -6295,7 +6293,8 @@ void RenderFrameHostImpl::OnMediaInterfaceFactoryConnectionError() {
 }
 
 #if defined(OS_ANDROID)
-void RenderFrameHostImpl::BindNFCRequest(device::mojom::NFCRequest request) {
+void RenderFrameHostImpl::BindNFCReceiver(
+    mojo::PendingReceiver<device::mojom::NFC> receiver) {
   // https://w3c.github.io/web-nfc/#security-policies
   // WebNFC API must be only accessible from top level browsing context.
   if (GetParent()) {
@@ -6304,7 +6303,7 @@ void RenderFrameHostImpl::BindNFCRequest(device::mojom::NFCRequest request) {
     return;
   }
   if (delegate_)
-    delegate_->GetNFC(std::move(request));
+    delegate_->GetNFC(std::move(receiver));
 }
 #endif
 
@@ -6356,6 +6355,11 @@ void RenderFrameHostImpl::GetSpeechSynthesis(
         GetProcess()->GetBrowserContext());
   }
   speech_synthesis_impl_->AddReceiver(std::move(receiver));
+}
+
+void RenderFrameHostImpl::GetFileChooser(
+    mojo::PendingReceiver<blink::mojom::FileChooser> receiver) {
+  FileChooserImpl::Create(this, std::move(receiver));
 }
 
 blink::mojom::FileChooserPtr RenderFrameHostImpl::BindFileChooserForTesting() {

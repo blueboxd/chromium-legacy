@@ -573,21 +573,7 @@ FileManagerPrivateGetSizeStatsFunction::Run() {
   if (!volume.get())
     return RespondNow(Error("Volume not found"));
 
-  if (volume->type() == file_manager::VOLUME_TYPE_GOOGLE_DRIVE &&
-      !base::FeatureList::IsEnabled(chromeos::features::kDriveFs)) {
-    drive::FileSystemInterface* file_system =
-        drive::util::GetFileSystemByProfile(chrome_details.GetProfile());
-    if (!file_system) {
-      // |file_system| is NULL if Drive is disabled.
-      // If stats couldn't be gotten for drive, result should be left
-      // undefined. See comments in GetDriveAvailableSpaceCallback().
-      return RespondNow(NoArguments());
-    }
-
-    file_system->GetAvailableSpace(base::BindOnce(
-        &FileManagerPrivateGetSizeStatsFunction::OnGetDriveAvailableSpace,
-        this));
-  } else if (volume->type() == file_manager::VOLUME_TYPE_MTP) {
+  if (volume->type() == file_manager::VOLUME_TYPE_MTP) {
     // Resolve storage_name.
     storage_monitor::StorageMonitor* storage_monitor =
         storage_monitor::StorageMonitor::GetInstance();

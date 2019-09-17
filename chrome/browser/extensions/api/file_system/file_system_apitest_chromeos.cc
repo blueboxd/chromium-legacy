@@ -144,16 +144,6 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
   // necessary because the fetch starts lazily upon the first read operation.
   void SetUpOnMainThread() override {
     PlatformAppBrowserTest::SetUpOnMainThread();
-
-    if (!base::FeatureList::IsEnabled(chromeos::features::kDriveFs)) {
-      std::unique_ptr<drive::ResourceEntry> entry;
-      drive::FileError error = drive::FILE_ERROR_FAILED;
-      integration_service_->file_system()->GetResourceEntry(
-          base::FilePath::FromUTF8Unsafe("drive/root"),  // whatever
-          google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-      content::RunAllTasksUntilIdle();
-      ASSERT_EQ(drive::FILE_ERROR_OK, error);
-    }
   }
 
   void TearDown() override {
@@ -161,13 +151,7 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
     PlatformAppBrowserTest::TearDown();
   }
 
-  base::FilePath GetDriveMountPoint() {
-    if (base::FeatureList::IsEnabled(chromeos::features::kDriveFs)) {
-      return drivefs_mount_point_;
-    } else {
-      return drive::util::GetDriveMountPointPath(browser()->profile());
-    }
-  }
+  base::FilePath GetDriveMountPoint() { return drivefs_mount_point_; }
 
  private:
   drive::DriveIntegrationService* CreateDriveIntegrationService(

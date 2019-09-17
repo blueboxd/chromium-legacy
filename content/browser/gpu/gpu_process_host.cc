@@ -46,6 +46,7 @@
 #include "content/browser/service_manager/service_manager_context.h"
 #include "content/common/child_process.mojom.h"
 #include "content/common/child_process_host_impl.h"
+#include "content/common/field_trial_recorder.mojom.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/common/service_manager/child_connection.h"
 #include "content/common/view_messages.h"
@@ -73,6 +74,8 @@
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/generic_pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -607,12 +610,15 @@ void GpuProcessHost::BindInterface(
                                               std::move(interface_pipe));
 }
 
-void GpuProcessHost::BindHostReceiver(mojo::GenericPendingReceiver receiver) {
-  if (auto field_trial_receiver = receiver.As<mojom::FieldTrialRecorder>()) {
-    mojom::FieldTrialRecorderRequest request(std::move(field_trial_receiver));
+void GpuProcessHost::BindHostReceiver(
+    mojo::GenericPendingReceiver generic_receiver) {
+  if (auto field_trial_receiver =
+          generic_receiver.As<mojom::FieldTrialRecorder>()) {
+    mojo::PendingReceiver<mojom::FieldTrialRecorder> receiver(
+        std::move(field_trial_receiver));
     base::PostTask(
         FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&FieldTrialRecorder::Create, std::move(request)));
+        base::BindOnce(&FieldTrialRecorder::Create, std::move(receiver)));
   }
 }
 

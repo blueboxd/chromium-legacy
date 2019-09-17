@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/logging/log_buffer.h"
 
 namespace autofill {
 
@@ -248,6 +249,27 @@ bool DeserializeFormDataFromBase64String(const base::StringPiece& input,
   base::Pickle pickle(pickle_data.data(), static_cast<int>(pickle_data.size()));
   base::PickleIterator iter(pickle);
   return DeserializeFormData(&iter, form_data);
+}
+
+LogBuffer& operator<<(LogBuffer& buffer, const FormData& form) {
+  buffer << Tag{"div"} << Attrib{"class", "form"};
+  buffer << Tag{"table"};
+  buffer << Tr{} << "Form name:" << form.name;
+  buffer << Tr{} << "Unique renderer Id:" << form.unique_renderer_id;
+  buffer << Tr{} << "URL:" << form.url;
+  buffer << Tr{} << "Action:" << form.action;
+  buffer << Tr{} << "Is <form> tag:" << form.is_form_tag;
+  for (size_t i = 0; i < form.fields.size(); ++i) {
+    buffer << Tag{"tr"};
+    buffer << Tag{"td"} << "Field " << i << ": " << CTag{};
+    buffer << Tag{"td"};
+    buffer << Tag{"table"} << form.fields.at(i) << CTag{"table"};
+    buffer << CTag{"td"};
+    buffer << CTag{"tr"};
+  }
+  buffer << CTag{"table"};
+  buffer << CTag{"div"};
+  return buffer;
 }
 
 }  // namespace autofill

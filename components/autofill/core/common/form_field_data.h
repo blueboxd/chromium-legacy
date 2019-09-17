@@ -22,6 +22,8 @@ class PickleIterator;
 
 namespace autofill {
 
+class LogBuffer;
+
 // The flags describing form field properties.
 enum FieldPropertiesFlags {
   NO_FLAGS = 0u,
@@ -201,6 +203,9 @@ std::ostream& operator<<(std::ostream& os, const FormFieldData& field);
     EXPECT_EQ(expected.id_attribute, actual.id_attribute);                     \
     EXPECT_EQ(expected.name_attribute, actual.name_attribute);                 \
   } while (0)
+
+// Produces a <table> element with information about the form.
+LogBuffer& operator<<(LogBuffer& buffer, const FormFieldData& form);
 
 }  // namespace autofill
 

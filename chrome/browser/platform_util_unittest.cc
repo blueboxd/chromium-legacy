@@ -213,7 +213,13 @@ TEST_F(PlatformUtilTest, OpenFile) {
   EXPECT_EQ(OPEN_FAILED_PATH_NOT_FOUND, CallOpenItem(nowhere_, OPEN_FILE));
 }
 
-TEST_F(PlatformUtilTest, OpenFolder) {
+// TODO(crbug.com/1004639) Disabled on Linux due to crashes and timeouts.
+#if defined(OS_LINUX)
+#define MAYBE_OpenFolder DISABLED_OpenFolder
+#else
+#define MAYBE_OpenFolder OpenFolder
+#endif
+TEST_F(PlatformUtilTest, MAYBE_OpenFolder) {
   EXPECT_EQ(OPEN_SUCCEEDED, CallOpenItem(existing_folder_, OPEN_FOLDER));
   EXPECT_EQ(OPEN_FAILED_INVALID_TYPE,
             CallOpenItem(existing_file_, OPEN_FOLDER));

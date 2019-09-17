@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_PRINTING_HISTORY_PRINT_JOB_DATABASE_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -24,7 +25,7 @@ class PrintJobDatabase {
 
   using SavePrintJobCallback = base::OnceCallback<void(bool success)>;
 
-  using DeletePrintJobCallback = base::OnceCallback<void(bool success)>;
+  using DeletePrintJobsCallback = base::OnceCallback<void(bool success)>;
 
   using GetPrintJobsCallback = base::OnceCallback<void(
       bool success,
@@ -42,9 +43,9 @@ class PrintJobDatabase {
   virtual void SavePrintJob(const printing::proto::PrintJobInfo& print_job_info,
                             SavePrintJobCallback callback) = 0;
 
-  // Removes the print job associated with given |id| from the storage.
-  virtual void DeletePrintJob(const std::string& id,
-                              DeletePrintJobCallback callback) = 0;
+  // Removes the print jobs associated with given |ids| from the storage.
+  virtual void DeletePrintJobs(const std::vector<std::string>& ids,
+                               DeletePrintJobsCallback callback) = 0;
 
   // Retrieves all print jobs from the storage.
   virtual void GetPrintJobs(GetPrintJobsCallback callback) = 0;

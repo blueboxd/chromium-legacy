@@ -681,4 +681,9 @@
 
     <!-- ChromeTextInputLayout dimensions -->
     <dimen name="text_input_layout_padding_start">3dp</dimen>
+
+    <!-- Appearance Settings dimensions -->
+    <dimen name="theme_preferences_checkbox_margin_end">8dp</dimen>
+    <dimen name="theme_preferences_checkbox_container_padding_start">60dp</dimen>
+    <dimen name="theme_preferences_checkbox_container_padding_end">16dp</dimen>
 </resources>

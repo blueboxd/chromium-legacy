@@ -175,8 +175,7 @@ void AudioOutputStreamBroker::StreamCreated(
     return;
   }
 
-  client_->Created(media::mojom::AudioOutputStreamPtr(std::move(stream)),
-                   std::move(data_pipe));
+  client_->Created(std::move(stream), std::move(data_pipe));
 }
 
 void AudioOutputStreamBroker::ObserverBindingLost(

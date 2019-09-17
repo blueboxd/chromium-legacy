@@ -22,6 +22,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -447,6 +448,7 @@ public class ContactsPickerDialogTest
 
     @Test
     @LargeTest
+    @DisabledTest(message = "https://crbug.com/1004762")
     public void testPropertiesRequested() throws Throwable {
         // Create a dialog showing names only.
         createDialog(/* multiselect = */ false, /* includeNames = */ true,

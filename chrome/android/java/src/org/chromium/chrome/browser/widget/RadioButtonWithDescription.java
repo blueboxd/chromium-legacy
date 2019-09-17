@@ -60,7 +60,11 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
                 R.dimen.radio_button_with_description_lateral_padding);
         final int verticalPadding = getResources().getDimensionPixelSize(
                 R.dimen.radio_button_with_description_vertical_padding);
-        setPaddingRelative(lateralPadding, verticalPadding, lateralPadding, verticalPadding);
+        // allow override
+        setPaddingRelative(getPaddingStart() == 0 ? lateralPadding : getPaddingStart(),
+                getPaddingTop() == 0 ? verticalPadding : getPaddingTop(),
+                getPaddingEnd() == 0 ? lateralPadding : getPaddingEnd(),
+                getPaddingBottom() == 0 ? verticalPadding : getPaddingBottom());
 
         // We want RadioButtonWithDescription to handle the clicks itself.
         setOnClickListener(this);

@@ -239,7 +239,9 @@ void ProfileMenuViewBase::AddShortcutFeatureButton(
   const SkColor kIconColor =
       ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
           ui::NativeTheme::kColorId_DefaultIconColor);
-  const SkColor kBorderColor = SkColorSetA(kIconColor, /*alpha=*/100);
+  const SkColor kBorderColor =
+      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+          ui::NativeTheme::kColorId_MenuSeparatorColor);
   constexpr int kBorderThickness = 1;
   constexpr int kButtonRadius = kIconSize / 2 + kIconPadding;
 

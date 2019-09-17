@@ -43,8 +43,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
-#include "ui/gfx/linux/native_pixmap_dmabuf.h"
-#include "ui/gfx/native_pixmap.h"
 
 namespace media {
 
@@ -378,14 +376,8 @@ bool VaapiMjpegDecodeAccelerator::OutputPictureVppOnTaskRunner(
   TRACE_EVENT1("jpeg", __func__, "input_buffer_id", input_buffer_id);
 
   // Bind a VA surface to |video_frame|.
-  scoped_refptr<gfx::NativePixmap> pixmap =
-      CreateNativePixmapDmaBuf(video_frame.get());
-  if (!pixmap) {
-    VLOGF(1) << "Cannot create native pixmap for output buffer";
-    return false;
-  }
   scoped_refptr<VASurface> output_surface =
-      vpp_vaapi_wrapper_->CreateVASurfaceForPixmap(pixmap);
+      vpp_vaapi_wrapper_->CreateVASurfaceForVideoFrame(video_frame.get());
   if (!output_surface) {
     VLOGF(1) << "Cannot create VA surface for output buffer";
     return false;

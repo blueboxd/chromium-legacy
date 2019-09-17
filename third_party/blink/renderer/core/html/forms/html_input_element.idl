@@ -31,7 +31,6 @@ enum SelectionMode { "select", "start", "end", "preserve" };
     [CEReactions, Reflect] attribute DOMString accept;
     [CEReactions, Reflect] attribute DOMString alt;
     [CEReactions, ImplementedAs=IDLExposedAutofillValue] attribute DOMString autocomplete;
-    [CEReactions, Reflect] attribute boolean autofocus;
     [CEReactions, Reflect=checked] attribute boolean defaultChecked;
     attribute boolean checked;
     [CEReactions, Reflect] attribute DOMString dirName;

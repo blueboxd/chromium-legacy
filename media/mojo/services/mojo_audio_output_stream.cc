@@ -21,8 +21,7 @@ MojoAudioOutputStream::MojoAudioOutputStream(
     StreamCreatedCallback stream_created_callback,
     DeleterCallback deleter_callback)
     : stream_created_callback_(std::move(stream_created_callback)),
-      deleter_callback_(std::move(deleter_callback)),
-      binding_(this) {
+      deleter_callback_(std::move(deleter_callback)) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(stream_created_callback_);
   DCHECK(deleter_callback_);
@@ -85,15 +84,16 @@ void MojoAudioOutputStream::OnStreamCreated(
 
   DCHECK(socket_handle.is_valid());
 
-  mojom::AudioOutputStreamPtr stream;
-  binding_.Bind(mojo::MakeRequest(&stream));
-  // |this| owns |binding_| so unretained is safe.
-  binding_.set_connection_error_handler(base::BindOnce(
+  mojo::PendingRemote<mojom::AudioOutputStream> pending_stream;
+  receiver_.Bind(pending_stream.InitWithNewPipeAndPassReceiver());
+  // |this| owns |receiver_| so unretained is safe.
+  receiver_.set_disconnect_handler(base::BindOnce(
       &MojoAudioOutputStream::StreamConnectionLost, base::Unretained(this)));
 
   std::move(stream_created_callback_)
-      .Run(std::move(stream), {base::in_place, std::move(shared_memory_region),
-                               std::move(socket_handle)});
+      .Run(std::move(pending_stream),
+           {base::in_place, std::move(shared_memory_region),
+            std::move(socket_handle)});
 }
 
 void MojoAudioOutputStream::OnStreamError(int stream_id) {

@@ -302,9 +302,12 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
 class SSLErrorCallbacks : public WebSocketEventInterface::SSLErrorCallbacks {
  public:
   explicit SSLErrorCallbacks(URLRequest* url_request)
-      : url_request_(url_request) {}
+      : url_request_(url_request->GetWeakPtr()) {}
 
   void CancelSSLRequest(int error, const SSLInfo* ssl_info) override {
+    if (!url_request_)
+      return;
+
     if (ssl_info) {
       url_request_->CancelWithSSLError(error, *ssl_info);
     } else {
@@ -313,11 +316,12 @@ class SSLErrorCallbacks : public WebSocketEventInterface::SSLErrorCallbacks {
   }
 
   void ContinueSSLRequest() override {
-    url_request_->ContinueDespiteLastError();
+    if (url_request_)
+      url_request_->ContinueDespiteLastError();
   }
 
  private:
-  URLRequest* url_request_;
+  base::WeakPtr<URLRequest> url_request_;
 };
 
 void Delegate::OnReceivedRedirect(URLRequest* request,

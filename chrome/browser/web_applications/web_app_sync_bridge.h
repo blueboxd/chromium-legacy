@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "chrome/browser/web_applications/abstract_web_app_sync_bridge.h"
 #include "components/sync/model/model_type_sync_bridge.h"
 
 namespace syncer {
@@ -17,14 +18,31 @@ class ModelTypeChangeProcessor;
 
 namespace web_app {
 
-class WebAppSyncBridge : public syncer::ModelTypeSyncBridge {
+class AbstractWebAppDatabaseFactory;
+class WebAppDatabase;
+
+// The sync bridge exclusively owns ModelTypeChangeProcessor and WebAppDatabase
+// (the storage).
+class WebAppSyncBridge : public AbstractWebAppSyncBridge,
+                         public syncer::ModelTypeSyncBridge {
  public:
-  WebAppSyncBridge();
+  explicit WebAppSyncBridge(AbstractWebAppDatabaseFactory* database_factory);
   // Tests may inject mock change_processor using this ctor.
-  explicit WebAppSyncBridge(
+  WebAppSyncBridge(
+      AbstractWebAppDatabaseFactory* database_factory,
       std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor);
   ~WebAppSyncBridge() override;
 
+  // AbstractWebAppSyncBridge:
+  void OpenDatabase(RegistryOpenedCallback callback) override;
+  void WriteWebApps(AppsToWrite apps, CompletionCallback callback) override;
+  void DeleteWebApps(std::vector<AppId> app_ids,
+                     CompletionCallback callback) override;
+
+  // Exposed for testing.
+  void ReadRegistry(RegistryOpenedCallback callback);
+
+ private:
   // syncer::ModelTypeSyncBridge:
   std::unique_ptr<syncer::MetadataChangeList> CreateMetadataChangeList()
       override;
@@ -39,7 +57,8 @@ class WebAppSyncBridge : public syncer::ModelTypeSyncBridge {
   std::string GetClientTag(const syncer::EntityData& entity_data) override;
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
 
- private:
+  std::unique_ptr<WebAppDatabase> database_;
+
   DISALLOW_COPY_AND_ASSIGN(WebAppSyncBridge);
 };
 

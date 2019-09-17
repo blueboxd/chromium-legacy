@@ -18,6 +18,8 @@
 
 namespace autofill {
 
+class LogBuffer;
+
 // Pair of a button title (e.g. "Register") and its type (e.g.
 // INPUT_ELEMENT_SUBMIT_TYPE).
 using ButtonTitleInfo = std::pair<base::string16, mojom::ButtonTitleType>;
@@ -119,6 +121,8 @@ void SerializeFormDataToBase64String(const FormData& form_data,
 // Deserialize FormData. Returns true on success.
 bool DeserializeFormDataFromBase64String(const base::StringPiece& input,
                                          FormData* form_data);
+
+LogBuffer& operator<<(LogBuffer& buffer, const FormData& form);
 
 }  // namespace autofill
 

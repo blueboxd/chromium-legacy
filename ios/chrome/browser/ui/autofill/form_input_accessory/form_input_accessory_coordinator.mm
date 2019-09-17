@@ -185,6 +185,11 @@
   }
 }
 
+- (void)mediatorDidDetectMovingToBackground:
+    (FormInputAccessoryMediator*)mediator {
+  [self.formInputAccessoryViewController reset];
+}
+
 #pragma mark - ManualFillAccessoryViewControllerDelegate
 
 - (void)keyboardButtonPressed {
@@ -225,22 +230,26 @@
 #pragma mark - PasswordCoordinatorDelegate
 
 - (void)openPasswordSettings {
+  [self.formInputAccessoryViewController reset];
   [self.navigator openPasswordSettings];
 }
 
 - (void)openAllPasswordsPicker {
+  [self.formInputAccessoryViewController reset];
   [self.navigator openAllPasswordsPicker];
 }
 
 #pragma mark - CardCoordinatorDelegate
 
 - (void)openCardSettings {
+  [self.formInputAccessoryViewController reset];
   [self.navigator openCreditCardSettings];
 }
 
 #pragma mark - AddressCoordinatorDelegate
 
 - (void)openAddressSettings {
+  [self.formInputAccessoryViewController reset];
   [self.navigator openAddressSettings];
 }
 

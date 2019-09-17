@@ -9,7 +9,7 @@
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/test/test_file_utils.h"
-#include "chrome/browser/web_applications/test/test_web_app_database.h"
+#include "chrome/browser/web_applications/test/test_web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -27,8 +27,8 @@ class WebAppIconManagerTest : public WebAppTest {
     auto file_utils = std::make_unique<TestFileUtils>();
     file_utils_ = file_utils.get();
 
-    database_ = std::make_unique<TestWebAppDatabase>();
-    registrar_ = std::make_unique<WebAppRegistrar>(nullptr, database_.get());
+    sync_bridge_ = std::make_unique<TestWebAppSyncBridge>();
+    registrar_ = std::make_unique<WebAppRegistrar>(nullptr, sync_bridge_.get());
     icon_manager_ = std::make_unique<WebAppIconManager>(profile(), *registrar_,
                                                         std::move(file_utils));
   }
@@ -69,7 +69,7 @@ class WebAppIconManagerTest : public WebAppTest {
     return icons;
   }
 
-  std::unique_ptr<TestWebAppDatabase> database_;
+  std::unique_ptr<TestWebAppSyncBridge> sync_bridge_;
   std::unique_ptr<WebAppRegistrar> registrar_;
   std::unique_ptr<WebAppIconManager> icon_manager_;
 

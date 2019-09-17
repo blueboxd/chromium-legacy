@@ -9,6 +9,7 @@
 
 #include "base/barrier_closure.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/time/time.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
@@ -293,6 +294,26 @@ ReceiveServiceWorkerStatus(base::Optional<blink::ServiceWorkerStatusCode>* out,
         std::move(quit_closure).Run();
       },
       std::move(quit_closure), out);
+}
+
+blink::ServiceWorkerStatusCode StartServiceWorker(
+    ServiceWorkerVersion* version) {
+  blink::ServiceWorkerStatusCode status;
+  base::RunLoop run_loop;
+  version->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
+                       base::BindLambdaForTesting(
+                           [&](blink::ServiceWorkerStatusCode result_status) {
+                             status = result_status;
+                             run_loop.Quit();
+                           }));
+  run_loop.Run();
+  return status;
+}
+
+void StopServiceWorker(ServiceWorkerVersion* version) {
+  base::RunLoop run_loop;
+  version->StopWorker(run_loop.QuitClosure());
+  run_loop.Run();
 }
 
 base::WeakPtr<ServiceWorkerProviderHost>

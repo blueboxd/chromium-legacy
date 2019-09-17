@@ -42,7 +42,6 @@ class WebAppUiManager;
 
 // Forward declarations for new extension-independent subsystems.
 class WebAppDatabaseFactory;
-class WebAppDatabase;
 class WebAppSyncBridge;
 
 // Connects Web App features, such as the installation of default and
@@ -78,7 +77,6 @@ class WebAppProvider : public WebAppProviderBase {
   FileHandlerManager& file_handler_manager() override;
   AppIconManager& icon_manager() override;
 
-  WebAppDatabaseFactory& database_factory() { return *database_factory_; }
   WebAppSyncBridge& sync_bridge() { return *sync_bridge_; }
   SystemWebAppManager& system_web_app_manager();
 
@@ -113,7 +111,6 @@ class WebAppProvider : public WebAppProviderBase {
 
   // New extension-independent subsystems:
   std::unique_ptr<WebAppDatabaseFactory> database_factory_;
-  std::unique_ptr<WebAppDatabase> database_;
   std::unique_ptr<WebAppSyncBridge> sync_bridge_;
 
   // Generalized subsystems:

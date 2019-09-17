@@ -113,6 +113,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kCCTTargetTranslateLanguage,
     &kChromeDuetFeature,
     &kChromeDuetAdaptive,
+    &kDarkenWebsitesCheckboxInThemesSetting,
     &kDontAutoHideBrowserControls,
     &kChromeDuetLabeled,
     &kChromeSmartSelection,
@@ -385,6 +386,9 @@ const base::Feature kContextualSearchTapDisableOverride{
 
 const base::Feature kContextualSearchTranslationModel{
     "ContextualSearchTranslationModel", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kDarkenWebsitesCheckboxInThemesSetting{
+    "DarkenWebsitesCheckboxInThemesSetting", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kDirectActions{"DirectActions",
                                    base::FEATURE_DISABLED_BY_DEFAULT};

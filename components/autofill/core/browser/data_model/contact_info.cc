@@ -250,15 +250,26 @@ void CompanyInfo::SetRawInfo(ServerFieldType type,
 }
 
 bool CompanyInfo::IsValidOrVerified(const base::string16& value) const {
-  if (!base::FeatureList::IsEnabled(
-          autofill::features::kAutofillRejectCompanyBirthyear))
+  if (profile_ && profile_->IsVerified()) {
     return true;
-
-  if (profile_ && profile_->IsVerified())
-    return true;
-
-  // Companies that are of the format of a four digit birth year are not valid.
-  return !MatchesPattern(value, base::UTF8ToUTF16("^(19|20)\\d{2}$"));
+  }
+  // |value| is a birthyear:
+  if (base::FeatureList::IsEnabled(
+          autofill::features::kAutofillRejectCompanyBirthyear) &&
+      MatchesPattern(value, base::UTF8ToUTF16("^(19|20)\\d{2}$"))) {
+    return false;
+  }
+  // |value| is a social title:
+  if (base::FeatureList::IsEnabled(
+          autofill::features::kAutofillRejectCompanySocialTitle) &&
+      MatchesPattern(value, base::UTF8ToUTF16(
+                                "^(Ms\\.?|Mrs\\.?|Mr\\.?|Miss|Mistress|Mister|"
+                                "Frau|Herr|"
+                                "Mlle|Mme|M\\.|"
+                                "Dr\\.?|Prof\\.?)$"))) {
+    return false;
+  }
+  return true;
 }
 
 }  // namespace autofill

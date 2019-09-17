@@ -76,6 +76,12 @@ class BASE_EXPORT TaskQueueSelector : public WorkQueueSets::Observer {
   void WorkQueueSetBecameEmpty(size_t set_index) override;
   void WorkQueueSetBecameNonEmpty(size_t set_index) override;
 
+  // Populates |result| with tasks with lower priority than the first task from
+  // |selected_work_queue| which could otherwise run now.
+  void CollectSkippedOverLowerPriorityTasks(
+      const internal::WorkQueue* selected_work_queue,
+      std::vector<const Task*>* result) const;
+
  protected:
   WorkQueueSets* delayed_work_queue_sets() { return &delayed_work_queue_sets_; }
 

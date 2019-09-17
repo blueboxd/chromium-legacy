@@ -18,6 +18,26 @@ template <> const char* interface_name<PPB_PDF>() {
   return PPB_PDF_INTERFACE;
 }
 
+void ConvertPrivateAccessibilityLinkInfo(
+    const PDF::PrivateAccessibilityLinkInfo& link,
+    PP_PrivateAccessibilityLinkInfo* info) {
+  info->url = link.url.c_str();
+  info->url_length = link.url.size();
+  info->index_in_page = link.index_in_page;
+  info->text_run_index = link.text_run_index;
+  info->text_run_count = link.text_run_count;
+  info->bounds = link.bounds;
+}
+
+void ConvertPrivateAccessibilityImageInfo(
+    const PDF::PrivateAccessibilityImageInfo& image,
+    PP_PrivateAccessibilityImageInfo* info) {
+  info->alt_text = image.alt_text.c_str();
+  info->alt_text_length = image.alt_text.size();
+  info->text_run_index = image.text_run_index;
+  info->bounds = image.bounds;
+}
+
 }  // namespace
 
 // static
@@ -183,7 +203,7 @@ void PDF::GetV8ExternalSnapshotData(const InstanceHandle& instance,
 // static
 void PDF::SetAccessibilityViewportInfo(
     const InstanceHandle& instance,
-    PP_PrivateAccessibilityViewportInfo* viewport_info) {
+    const PP_PrivateAccessibilityViewportInfo* viewport_info) {
   if (has_interface<PPB_PDF>()) {
     get_interface<PPB_PDF>()->SetAccessibilityViewportInfo(
         instance.pp_instance(), viewport_info);
@@ -191,8 +211,9 @@ void PDF::SetAccessibilityViewportInfo(
 }
 
 // static
-void PDF::SetAccessibilityDocInfo(const InstanceHandle& instance,
-                                  PP_PrivateAccessibilityDocInfo* doc_info) {
+void PDF::SetAccessibilityDocInfo(
+    const InstanceHandle& instance,
+    const PP_PrivateAccessibilityDocInfo* doc_info) {
   if (has_interface<PPB_PDF>()) {
     get_interface<PPB_PDF>()->SetAccessibilityDocInfo(instance.pp_instance(),
                                                       doc_info);
@@ -202,14 +223,23 @@ void PDF::SetAccessibilityDocInfo(const InstanceHandle& instance,
 // static
 void PDF::SetAccessibilityPageInfo(
     const InstanceHandle& instance,
-    PP_PrivateAccessibilityPageInfo* page_info,
-    PP_PrivateAccessibilityTextRunInfo text_runs[],
-    PP_PrivateAccessibilityCharInfo chars[],
-    PP_PrivateAccessibilityLinkInfo links[],
-    PP_PrivateAccessibilityImageInfo images[]) {
+    const PP_PrivateAccessibilityPageInfo* page_info,
+    const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
+    const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
+    const std::vector<PrivateAccessibilityLinkInfo>& links,
+    const std::vector<PrivateAccessibilityImageInfo>& images) {
   if (has_interface<PPB_PDF>()) {
+    std::vector<PP_PrivateAccessibilityLinkInfo> link_info(links.size());
+    for (size_t i = 0; i < links.size(); ++i)
+      ConvertPrivateAccessibilityLinkInfo(links[i], &link_info[i]);
+
+    std::vector<PP_PrivateAccessibilityImageInfo> image_info(images.size());
+    for (size_t i = 0; i < images.size(); ++i)
+      ConvertPrivateAccessibilityImageInfo(images[i], &image_info[i]);
+
     get_interface<PPB_PDF>()->SetAccessibilityPageInfo(
-        instance.pp_instance(), page_info, text_runs, chars, links, images);
+        instance.pp_instance(), page_info, text_runs.data(), chars.data(),
+        link_info.data(), image_info.data());
   }
 }
 

@@ -266,6 +266,12 @@ class CrostiniImpl {
       return false;
     }
 
+    // Disallow sharing LinuxFiles with itself.
+    if (vmName === CrostiniImpl.DEFAULT_VM &&
+        root === VolumeManagerCommon.RootType.CROSTINI) {
+      return false;
+    }
+
     return CrostiniImpl.VALID_ROOT_TYPES_FOR_SHARE.has(root);
   }
 }
@@ -297,6 +303,7 @@ CrostiniImpl.VALID_ROOT_TYPES_FOR_SHARE = new Map([
   [VolumeManagerCommon.RootType.DRIVE, 'MyDrive'],
   [VolumeManagerCommon.RootType.SHARED_DRIVES_GRAND_ROOT, 'TeamDrive'],
   [VolumeManagerCommon.RootType.SHARED_DRIVE, 'TeamDrive'],
+  [VolumeManagerCommon.RootType.CROSTINI, 'Crostini'],
 ]);
 
 /**

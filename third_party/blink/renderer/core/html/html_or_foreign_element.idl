@@ -9,6 +9,7 @@ interface mixin HTMLOrForeignElement {
   [SameObject, PerWorldBindings] readonly attribute DOMStringMap dataset;
   [CEReactions] attribute DOMString nonce;
 
+  [CEReactions, Reflect] attribute boolean autofocus;
   [Affects=Nothing, CEReactions, CustomElementCallbacks] attribute long tabIndex;
   void focus(optional FocusOptions options);
   void blur();

@@ -13,10 +13,12 @@
 
 namespace ppapi {
 
+// Needs to stay in sync with PP_PrivateAccessibilityLinkInfo.
 struct PPAPI_SHARED_EXPORT PdfAccessibilityLinkInfo {
   PdfAccessibilityLinkInfo();
-  PdfAccessibilityLinkInfo(const PdfAccessibilityLinkInfo& other);
-  PdfAccessibilityLinkInfo(const PP_PrivateAccessibilityLinkInfo& link);
+  explicit PdfAccessibilityLinkInfo(
+      const PP_PrivateAccessibilityLinkInfo& link);
+  PdfAccessibilityLinkInfo(PdfAccessibilityLinkInfo&& other);
   ~PdfAccessibilityLinkInfo();
 
   std::string url;
@@ -26,10 +28,12 @@ struct PPAPI_SHARED_EXPORT PdfAccessibilityLinkInfo {
   PP_FloatRect bounds;
 };
 
+// Needs to stay in sync with PP_PrivateAccessibilityImageInfo.
 struct PPAPI_SHARED_EXPORT PdfAccessibilityImageInfo {
   PdfAccessibilityImageInfo();
-  PdfAccessibilityImageInfo(const PdfAccessibilityImageInfo& other);
-  PdfAccessibilityImageInfo(const PP_PrivateAccessibilityImageInfo& image);
+  explicit PdfAccessibilityImageInfo(
+      const PP_PrivateAccessibilityImageInfo& image);
+  PdfAccessibilityImageInfo(PdfAccessibilityImageInfo&& other);
   ~PdfAccessibilityImageInfo();
 
   std::string alt_text;

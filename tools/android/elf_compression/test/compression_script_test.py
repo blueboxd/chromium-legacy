@@ -117,7 +117,7 @@ class CompressionScriptTest(unittest.TestCase):
 
     patched_library_path = self._RunScript(library_path)
     opener_output = self._RunOpener(opener_path, patched_library_path)
-    self.assertEqual(opener_output, '1046506\n')
+    self.assertEqual(opener_output, '4096\n')
 
   def testAlignUp(self):
     """Tests for AlignUp method of the script."""

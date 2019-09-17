@@ -104,7 +104,7 @@ class WaylandWindow : public PlatformWindow,
   // WmMoveResizeHandler
   void DispatchHostWindowDragMovement(
       int hittest,
-      const gfx::Point& pointer_location) override;
+      const gfx::Point& pointer_location_in_px) override;
 
   // WmDragHandler
   void StartDrag(const ui::OSExchangeData& data,

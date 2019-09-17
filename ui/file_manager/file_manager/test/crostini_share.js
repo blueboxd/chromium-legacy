@@ -194,11 +194,15 @@ shareBase.testSharePaths = async (
   await test.waitForFiles(
       test.TestEntryInfo.getExpectedRows(test.BASIC_CROSTINI_ENTRY_SET));
 
-  // Check 'Share with <VM>' is not shown in menu.
+  // Check 'Share with <VM>' is not shown in menu for termina.
   assertTrue(
       test.fakeMouseRightClick('#file-list [file-name="A"]'),
       'right-click directory A');
-  await test.waitForElement(menuNoShareWith);
+  if (vmName === 'termina') {
+    await test.waitForElement(menuNoShareWith);
+  } else {
+    await test.waitForElement(menuShareWith);
+  }
 
   // Select 'Google Drive' to show dir photos in file list.
   await test.waitForElement(googleDrive);

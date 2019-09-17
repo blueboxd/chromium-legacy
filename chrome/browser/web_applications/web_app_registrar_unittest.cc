@@ -16,7 +16,7 @@
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/test/test_web_app_database.h"
+#include "chrome/browser/web_applications/test/test_web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
@@ -52,12 +52,13 @@ class WebAppRegistrarTest : public WebAppTest {
   void SetUp() override {
     WebAppTest::SetUp();
 
-    database_ = std::make_unique<TestWebAppDatabase>();
-    registrar_ = std::make_unique<WebAppRegistrar>(profile(), database_.get());
+    sync_bridge_ = std::make_unique<TestWebAppSyncBridge>();
+    registrar_ =
+        std::make_unique<WebAppRegistrar>(profile(), sync_bridge_.get());
   }
 
  protected:
-  TestWebAppDatabase& database() { return *database_; }
+  TestWebAppSyncBridge& sync_bridge() { return *sync_bridge_; }
   WebAppRegistrar& registrar() { return *registrar_; }
 
   std::set<AppId> RegisterAppsForTesting(Registry registry) {
@@ -80,7 +81,7 @@ class WebAppRegistrarTest : public WebAppTest {
     Registry registry;
     registry.emplace(app_id, std::move(app));
 
-    database().TakeOpenDatabaseCallback().Run(std::move(registry));
+    sync_bridge().TakeOpenDatabaseCallback().Run(std::move(registry));
     return app_id;
   }
 
@@ -94,7 +95,7 @@ class WebAppRegistrarTest : public WebAppTest {
     for (auto& kv : registry)
       app_ids.insert(kv.second->app_id());
 
-    database().TakeOpenDatabaseCallback().Run(std::move(registry));
+    sync_bridge().TakeOpenDatabaseCallback().Run(std::move(registry));
     return app_ids;
   }
 
@@ -123,11 +124,11 @@ class WebAppRegistrarTest : public WebAppTest {
 
   void DestroySubsystems() {
     registrar_.reset();
-    database_.reset();
+    sync_bridge_.reset();
   }
 
  private:
-  std::unique_ptr<TestWebAppDatabase> database_;
+  std::unique_ptr<TestWebAppSyncBridge> sync_bridge_;
   std::unique_ptr<WebAppRegistrar> registrar_;
 };
 
@@ -246,7 +247,7 @@ TEST_F(WebAppRegistrarTest, DoForEachAndUnregisterAllApps) {
   EXPECT_TRUE(registrar().is_empty());
 }
 
-TEST_F(WebAppRegistrarTest, AbstractWebAppDatabase) {
+TEST_F(WebAppRegistrarTest, AbstractWebAppSyncBridge) {
   std::set<AppId> ids = InitRegistrarWithApps("https://example.com/path", 100);
 
   // Add 1 app after Init.
@@ -254,20 +255,20 @@ TEST_F(WebAppRegistrarTest, AbstractWebAppDatabase) {
   auto web_app = std::make_unique<WebApp>(app_id);
   registrar().RegisterApp(std::move(web_app));
 
-  EXPECT_EQ(1UL, database().write_web_app_ids().size());
-  EXPECT_EQ(app_id, database().write_web_app_ids()[0]);
+  EXPECT_EQ(1UL, sync_bridge().write_web_app_ids().size());
+  EXPECT_EQ(app_id, sync_bridge().write_web_app_ids()[0]);
 
   EXPECT_EQ(101UL, registrar().registry_for_testing().size());
 
   // Remove 1 app after Init.
   registrar().UnregisterApp(app_id);
   EXPECT_EQ(100UL, registrar().registry_for_testing().size());
-  EXPECT_EQ(1UL, database().delete_web_app_ids().size());
-  EXPECT_EQ(app_id, database().delete_web_app_ids()[0]);
+  EXPECT_EQ(1UL, sync_bridge().delete_web_app_ids().size());
+  EXPECT_EQ(app_id, sync_bridge().delete_web_app_ids()[0]);
 
   // Remove 100 apps after Init.
   registrar().UnregisterAll();
-  for (auto& app_id : database().delete_web_app_ids())
+  for (auto& app_id : sync_bridge().delete_web_app_ids())
     ids.erase(app_id);
 
   EXPECT_TRUE(ids.empty());
@@ -486,13 +487,13 @@ TEST_F(WebAppRegistrarTest, DatabaseWriteAndDeleteAppsFail) {
   auto app = CreateWebApp("https://example.com/path");
   auto app_id = app->app_id();
 
-  database().SetNextWriteWebAppsResult(false);
+  sync_bridge().SetNextWriteWebAppsResult(false);
   registrar().RegisterApp(std::move(app));
 
   // nothing crashes, the production database impl would DLOG an error.
   EXPECT_FALSE(registrar().is_empty());
 
-  database().SetNextDeleteWebAppsResult(false);
+  sync_bridge().SetNextDeleteWebAppsResult(false);
   registrar().UnregisterApp(app_id);
 
   // nothing crashes, the production database impl would DLOG an error.
@@ -520,9 +521,9 @@ TEST_F(WebAppRegistrarTest, BeginAndCommitUpdate) {
   RegistrarCommitUpdate(std::move(update));
 
   // Make sure that all app ids were written to the database.
-  EXPECT_EQ(ids.size(), database().write_web_app_ids().size());
+  EXPECT_EQ(ids.size(), sync_bridge().write_web_app_ids().size());
 
-  for (auto& written_app_id : database().write_web_app_ids())
+  for (auto& written_app_id : sync_bridge().write_web_app_ids())
     ids.erase(written_app_id);
 
   EXPECT_TRUE(ids.empty());
@@ -535,7 +536,7 @@ TEST_F(WebAppRegistrarTest, CommitEmptyUpdate) {
     std::unique_ptr<WebAppRegistryUpdate> update = registrar().BeginUpdate();
     RegistrarCommitUpdate(std::move(update));
 
-    EXPECT_TRUE(database().write_web_app_ids().empty());
+    EXPECT_TRUE(sync_bridge().write_web_app_ids().empty());
   }
 
   {
@@ -543,7 +544,7 @@ TEST_F(WebAppRegistrarTest, CommitEmptyUpdate) {
     update.reset();
     RegistrarCommitUpdate(std::move(update));
 
-    EXPECT_TRUE(database().write_web_app_ids().empty());
+    EXPECT_TRUE(sync_bridge().write_web_app_ids().empty());
   }
 
   {
@@ -554,14 +555,14 @@ TEST_F(WebAppRegistrarTest, CommitEmptyUpdate) {
 
     RegistrarCommitUpdate(std::move(update));
 
-    EXPECT_TRUE(database().write_web_app_ids().empty());
+    EXPECT_TRUE(sync_bridge().write_web_app_ids().empty());
   }
 }
 
 TEST_F(WebAppRegistrarTest, CommitUpdateFailed) {
   auto app = CreateWebApp("https://example.com/path");
   auto app_id = InitRegistrarWithApp(std::move(app));
-  EXPECT_TRUE(database().write_web_app_ids().empty());
+  EXPECT_TRUE(sync_bridge().write_web_app_ids().empty());
 
   std::unique_ptr<WebAppRegistryUpdate> update = registrar().BeginUpdate();
 
@@ -569,7 +570,7 @@ TEST_F(WebAppRegistrarTest, CommitUpdateFailed) {
   EXPECT_TRUE(update_app);
   update_app->SetName("New Name");
 
-  database().SetNextWriteWebAppsResult(false);
+  sync_bridge().SetNextWriteWebAppsResult(false);
 
   base::RunLoop run_loop;
   registrar().CommitUpdate(std::move(update),
@@ -586,7 +587,7 @@ TEST_F(WebAppRegistrarTest, ScopedRegistryUpdate) {
 
   // Test empty update first.
   { ScopedRegistryUpdate update(&registrar()); }
-  EXPECT_TRUE(database().write_web_app_ids().empty());
+  EXPECT_TRUE(sync_bridge().write_web_app_ids().empty());
 
   {
     ScopedRegistryUpdate update(&registrar());
@@ -599,9 +600,9 @@ TEST_F(WebAppRegistrarTest, ScopedRegistryUpdate) {
   }
 
   // Make sure that all app ids were written to the database.
-  EXPECT_EQ(ids.size(), database().write_web_app_ids().size());
+  EXPECT_EQ(ids.size(), sync_bridge().write_web_app_ids().size());
 
-  for (auto& written_app_id : database().write_web_app_ids())
+  for (auto& written_app_id : sync_bridge().write_web_app_ids())
     ids.erase(written_app_id);
 
   EXPECT_TRUE(ids.empty());

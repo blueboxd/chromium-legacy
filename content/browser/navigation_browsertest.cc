@@ -2435,24 +2435,24 @@ IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest,
   // URL here.
   {
     EXPECT_EQ(url_b, shell()->web_contents()->GetVisibleURL());
-    EXPECT_EQ(url_c, embedder_url_tracker.url());
+    EXPECT_EQ(url_b, embedder_url_tracker.url());
   }
   response_A2.WaitForRequest();
   {
     EXPECT_EQ(url_b, shell()->web_contents()->GetVisibleURL());
-    EXPECT_EQ(url_c, embedder_url_tracker.url());
+    EXPECT_EQ(url_b, embedder_url_tracker.url());
   }
 
   // 6. Start history same-document navigation, cancelling 5.
   EXPECT_TRUE(ExecJs(shell()->web_contents(), "history.forward()"));
   {
     EXPECT_EQ(url_b, shell()->web_contents()->GetVisibleURL());
-    EXPECT_EQ(url_c, embedder_url_tracker.url());
+    EXPECT_EQ(url_b, embedder_url_tracker.url());
   }
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   {
     EXPECT_EQ(url_b, shell()->web_contents()->GetVisibleURL());
-    EXPECT_EQ(url_c, embedder_url_tracker.url());
+    EXPECT_EQ(url_b, embedder_url_tracker.url());
   }
 
   // TODO(https://crbug.com/998284): The URL tracked by the embedder should have

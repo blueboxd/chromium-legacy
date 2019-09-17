@@ -678,8 +678,7 @@ RenderThreadImpl::RenderThreadImpl(
                           .Build()),
       main_thread_scheduler_(std::move(scheduler)),
       categorized_worker_pool_(new CategorizedWorkerPool()),
-      client_id_(1),
-      compositing_mode_watcher_binding_(this) {
+      client_id_(1) {
   TRACE_EVENT0("startup", "RenderThreadImpl::Create");
   Init();
 }
@@ -696,8 +695,7 @@ RenderThreadImpl::RenderThreadImpl(
                           .Build()),
       main_thread_scheduler_(std::move(scheduler)),
       categorized_worker_pool_(new CategorizedWorkerPool()),
-      is_scroll_animator_enabled_(false),
-      compositing_mode_watcher_binding_(this) {
+      is_scroll_animator_enabled_(false) {
   TRACE_EVENT0("startup", "RenderThreadImpl::Create");
   DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kRendererClientId));
@@ -961,12 +959,8 @@ void RenderThreadImpl::Init() {
   if (!is_gpu_compositing_disabled_) {
     BindHostReceiver(mojo::MakeRequest(&compositing_mode_reporter_));
 
-    // Make |this| a CompositingModeWatcher for the
-    // |compositing_mode_reporter_|.
-    viz::mojom::CompositingModeWatcherPtr watcher_ptr;
-    compositing_mode_watcher_binding_.Bind(mojo::MakeRequest(&watcher_ptr));
     compositing_mode_reporter_->AddCompositingModeWatcher(
-        std::move(watcher_ptr));
+        compositing_mode_watcher_receiver_.BindNewPipeAndPassRemote());
   }
 }
 

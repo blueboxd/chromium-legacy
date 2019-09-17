@@ -23,7 +23,6 @@
     Exposed=Window,
     HTMLConstructor
 ] interface HTMLButtonElement : HTMLElement {
-    [CEReactions, Reflect] attribute boolean autofocus;
     [CEReactions, Reflect] attribute boolean disabled;
     [ImplementedAs=formOwner] readonly attribute HTMLFormElement? form;
     [CEReactions, RaisesException=Setter] attribute URLString formAction;

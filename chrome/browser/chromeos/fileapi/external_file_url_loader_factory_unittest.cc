@@ -187,26 +187,6 @@ TEST_F(ExternalFileURLLoaderFactoryTest, RegularFile) {
   EXPECT_EQ(kExpectedFileContents, response_body);
 }
 
-TEST_F(ExternalFileURLLoaderFactoryTest, HostedDocument) {
-  // Hosted documents are never opened via externalfile: URLs with DriveFS.
-  if (base::FeatureList::IsEnabled(chromeos::features::kDriveFs)) {
-    return;
-  }
-  // Open a gdoc file.
-  network::TestURLLoaderClient client;
-  network::mojom::URLLoaderPtr loader = CreateURLLoaderAndStart(
-      &client,
-      CreateRequest("externalfile:drive-test-user-hash/root/Document 1 "
-                    "excludeDir-test.gdoc"));
-
-  client.RunUntilRedirectReceived();
-
-  // Make sure that a hosted document triggers redirection.
-  EXPECT_TRUE(client.has_received_redirect());
-  EXPECT_TRUE(client.redirect_info().new_url.is_valid());
-  EXPECT_TRUE(client.redirect_info().new_url.SchemeIs("https"));
-}
-
 TEST_F(ExternalFileURLLoaderFactoryTest, RootDirectory) {
   network::TestURLLoaderClient client;
   network::mojom::URLLoaderPtr loader = CreateURLLoaderAndStart(

@@ -886,6 +886,8 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
     case CSSPropertyID::kFontKerning:
       return value_id == CSSValueID::kAuto || value_id == CSSValueID::kNormal ||
              value_id == CSSValueID::kNone;
+    case CSSPropertyID::kFontOpticalSizing:
+      return value_id == CSSValueID::kAuto || value_id == CSSValueID::kNone;
     case CSSPropertyID::kWebkitFontSmoothing:
       return value_id == CSSValueID::kAuto || value_id == CSSValueID::kNone ||
              value_id == CSSValueID::kAntialiased ||
@@ -1061,6 +1063,7 @@ bool CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID property_id) {
     case CSSPropertyID::kFlexDirection:
     case CSSPropertyID::kFlexWrap:
     case CSSPropertyID::kFontKerning:
+    case CSSPropertyID::kFontOpticalSizing:
     case CSSPropertyID::kWebkitFontSmoothing:
     case CSSPropertyID::kLineBreak:
     case CSSPropertyID::kWebkitLineBreak:

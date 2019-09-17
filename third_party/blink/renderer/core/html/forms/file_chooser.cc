@@ -28,7 +28,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/file_chooser.h"
 
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/page/chrome_client_impl.h"
@@ -73,9 +73,10 @@ bool FileChooser::OpenFileChooser(ChromeClientImpl& chrome_client_impl) {
   if (!frame)
     return false;
   chrome_client_impl_ = chrome_client_impl;
-  frame->GetInterfaceProvider().GetInterface(
-      &file_chooser_, frame->GetTaskRunner(TaskType::kInternalDefault));
-  file_chooser_.set_connection_error_handler(
+  frame->GetBrowserInterfaceBroker().GetInterface(
+      file_chooser_.BindNewPipeAndPassReceiver(
+          frame->GetTaskRunner(TaskType::kInternalDefault)));
+  file_chooser_.set_disconnect_handler(
       WTF::Bind(&FileChooser::DidCloseChooser, WTF::Unretained(this)));
   file_chooser_->OpenFileChooser(
       params_.Clone(),
@@ -93,9 +94,10 @@ void FileChooser::EnumerateChosenDirectory() {
   if (!frame)
     return;
   DCHECK(!chrome_client_impl_);
-  frame->GetInterfaceProvider().GetInterface(
-      &file_chooser_, frame->GetTaskRunner(TaskType::kInternalDefault));
-  file_chooser_.set_connection_error_handler(
+  frame->GetBrowserInterfaceBroker().GetInterface(
+      file_chooser_.BindNewPipeAndPassReceiver(
+          frame->GetTaskRunner(TaskType::kInternalDefault)));
+  file_chooser_.set_disconnect_handler(
       WTF::Bind(&FileChooser::DidCloseChooser, WTF::Unretained(this)));
   file_chooser_->EnumerateChosenDirectory(
       std::move(params_->selected_files[0]),
@@ -143,8 +145,8 @@ void FileChooser::DidChooseFiles(mojom::blink::FileChooserResultPtr result) {
 }
 
 void FileChooser::DidCloseChooser() {
-  // Close the binding explicitly to avoid this function is called again as a
-  // connection error handler.
+  // Close the remote explicitly to avoid this function to be called again as a
+  // disconnect handler.
   file_chooser_.reset();
 
   // Some cleanup for OpenFileChooser() path.

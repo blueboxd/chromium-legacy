@@ -215,6 +215,7 @@ source_set("eg_tests") {
     "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/ui/settings",
     "//ios/chrome/browser/ui/settings/autofill",
+    "//ios/chrome/browser/ui/settings/autofill:feature_flags",
     "//ios/chrome/browser/ui/settings/password",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/test:eg_test_support",

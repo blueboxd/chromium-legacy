@@ -9,6 +9,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <limits>
+#include <utility>
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/metrics/histogram.h"
@@ -201,21 +205,21 @@ void PDFResource::GetV8ExternalSnapshotData(const char** natives_data_out,
 }
 
 void PDFResource::SetAccessibilityDocInfo(
-    PP_PrivateAccessibilityDocInfo* doc_info) {
+    const PP_PrivateAccessibilityDocInfo* doc_info) {
   Post(RENDERER, PpapiHostMsg_PDF_SetAccessibilityDocInfo(*doc_info));
 }
 
 void PDFResource::SetAccessibilityViewportInfo(
-    PP_PrivateAccessibilityViewportInfo* viewport_info) {
+    const PP_PrivateAccessibilityViewportInfo* viewport_info) {
   Post(RENDERER, PpapiHostMsg_PDF_SetAccessibilityViewportInfo(*viewport_info));
 }
 
 void PDFResource::SetAccessibilityPageInfo(
-    PP_PrivateAccessibilityPageInfo* page_info,
-    PP_PrivateAccessibilityTextRunInfo text_runs[],
-    PP_PrivateAccessibilityCharInfo chars[],
-    PP_PrivateAccessibilityLinkInfo links[],
-    PP_PrivateAccessibilityImageInfo images[]) {
+    const PP_PrivateAccessibilityPageInfo* page_info,
+    const PP_PrivateAccessibilityTextRunInfo text_runs[],
+    const PP_PrivateAccessibilityCharInfo chars[],
+    const PP_PrivateAccessibilityLinkInfo links[],
+    const PP_PrivateAccessibilityImageInfo images[]) {
   std::vector<PP_PrivateAccessibilityTextRunInfo> text_run_vector(
       text_runs, text_runs + page_info->text_run_count);
   std::vector<PP_PrivateAccessibilityCharInfo> char_vector(

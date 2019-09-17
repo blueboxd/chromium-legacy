@@ -13483,6 +13483,16 @@ Called by update_net_error_codes.py.-->
   <int value="16" label="Security"/>
   <int value="17" label="JavaScript Profiler"/>
   <int value="18" label="Audits"/>
+  <int value="19" label="Drawer - Coverage"/>
+  <int value="20" label="Drawer - Protocol monitor"/>
+  <int value="21" label="Drawer - Remote devices"/>
+  <int value="22" label="Drawer - WebAudio"/>
+  <int value="23" label="Drawer - Changes"/>
+  <int value="24" label="Drawer - Performance monitor"/>
+  <int value="25" label="Drawer - What's New"/>
+  <int value="26" label="Drawer - Live Heap Profile"/>
+  <int value="27" label="Drawer - Quick source"/>
+  <int value="28" label="Drawer - Request blocking"/>
 </enum>
 
 <enum name="DevToolsSetting">
@@ -31950,6 +31960,29 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="4" label="Unknown Reason"/>
 </enum>
 
+<enum name="InstallAttributesUsageEvent">
+  <int value="0" label="Cache read sucess"/>
+  <int value="1" label="First install"/>
+  <int value="2" label="Cache parse failed"/>
+  <int value="3" label="TPM not owned"/>
+  <int value="4" label="TPM invalid state"/>
+  <int value="5" label="NVRAM Space Absent"/>
+  <int value="6" label="NVRAM Invalid"/>
+  <int value="7" label="TPM Unavailable"/>
+  <int value="8" label="TPM Error"/>
+</enum>
+
+<enum name="InstallAttributesValidationEvent">
+  <int value="0" label="Cache write succeeded"/>
+  <int value="1" label="NVRAM read failed"/>
+  <int value="2" label="NVRAM invalid size"/>
+  <int value="3" label="NVRAM decode failed"/>
+  <int value="4" label="Data read failed"/>
+  <int value="5" label="Data verification of size failed"/>
+  <int value="6" label="Data verification of hash failed"/>
+  <int value="7" label="Cache write failed"/>
+</enum>
+
 <enum name="InstallStatus">
   <int value="0" label="FIRST_INSTALL_SUCCESS"/>
   <int value="1" label="INSTALL_REPAIRED"/>
@@ -34854,6 +34887,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1863962664" label="LockScreenNotifications:enabled"/>
   <int value="-1861814223" label="MidiManagerDynamicInstantiation:enabled"/>
   <int value="-1860481724" label="ChromeHomeExpandButton:enabled"/>
+  <int value="-1859421131" label="BackForwardCache:disabled"/>
   <int value="-1859095876" label="Previews:disabled"/>
   <int value="-1856902397" label="LoadingWithMojo:enabled"/>
   <int value="-1855347512" label="FormControlsRefresh:disabled"/>
@@ -36260,6 +36294,7 @@ from previous Chrome versions.
   </int>
   <int value="1343197" label="UseSearchClickForRightClick:enabled"/>
   <int value="1558582" label="ResamplingInputEvents:enabled"/>
+  <int value="3826348" label="DarkenWebsitesCheckboxInThemesSetting:disabled"/>
   <int value="5654819" label="CrostiniGpuSupport:disabled"/>
   <int value="7444737" label="NTPSuggestionsStandaloneUI:disabled"/>
   <int value="7533886" label="disable-offer-store-unmasked-wallet-cards"/>
@@ -37345,6 +37380,8 @@ from previous Chrome versions.
   <int value="1514119870" label="enable-file-manager-touch-mode"/>
   <int value="1515196403" label="fast-user-switching"/>
   <int value="1517863401" label="history-entry-requires-user-gesture"/>
+  <int value="1526718531"
+      label="DarkenWebsitesCheckboxInThemesSetting:enabled"/>
   <int value="1529979182" label="EnablePasswordSelection:enabled"/>
   <int value="1530113113" label="disable-pushstate-throttle"/>
   <int value="1530177325" label="LanguagesPreference:disabled"/>
@@ -37792,6 +37829,7 @@ from previous Chrome versions.
   <int value="2113804526" label="EnableAppShortcutSearch:enabled"/>
   <int value="2114843059" label="ContextualSuggestionsOptOut:enabled"/>
   <int value="2119964154" label="enable-download-resumption"/>
+  <int value="2120659210" label="BackForwardCache:enabled"/>
   <int value="2121056855" label="IncreaseInputAudioBufferSize:disabled"/>
   <int value="2121550859" label="PreferHtmlOverPlugins:enabled"/>
   <int value="2121776031" label="auto-virtual-keyboard"/>

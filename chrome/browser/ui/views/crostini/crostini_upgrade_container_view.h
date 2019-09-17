@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_CROSTINI_CROSTINI_UPGRADE_CONTAINER_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_CROSTINI_CROSTINI_UPGRADE_CONTAINER_VIEW_H_
 
-#include "ui/views/window/dialog_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 class Profile;
 
@@ -15,7 +15,7 @@ void SetCrostiniUpgradeSkipDelayForTesting(bool should_skip);
 
 // Provides a warning to the user that an upgrade is occurring and Crostini
 // start will take longer than usual.
-class CrostiniUpgradeContainerView : public views::DialogDelegateView {
+class CrostiniUpgradeContainerView : public views::BubbleDialogDelegateView {
  public:
   static void Show(Profile* profile);
 

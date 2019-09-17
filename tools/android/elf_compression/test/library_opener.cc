@@ -24,13 +24,13 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  TestFunction get_sum =
-      reinterpret_cast<TestFunction>(dlsym(handle, "GetSum"));
-  if (get_sum == nullptr) {
+  TestFunction get_zeroes =
+      reinterpret_cast<TestFunction>(dlsym(handle, "GetZeroes"));
+  if (get_zeroes == nullptr) {
     std::cerr << "GetSum method not found" << std::endl;
     return 1;
   }
 
-  std::cout << get_sum() << std::endl;
+  std::cout << get_zeroes() << std::endl;
   return 0;
 }

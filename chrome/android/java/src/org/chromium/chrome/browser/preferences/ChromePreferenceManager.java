@@ -229,6 +229,12 @@ public class ChromePreferenceManager {
     public static final String UI_THEME_SETTING_KEY = "ui_theme_setting";
 
     /**
+     * Whether or not darken websites is enabled.
+     * Default value is false.
+     */
+    public static final String DARKEN_WEBSITES_ENABLED_KEY = "darken_websites_enabled";
+
+    /**
      * Whether or not the download auto-resumption is enabled in native.
      * Default value is true.
      */

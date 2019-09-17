@@ -31,7 +31,9 @@
 #include "media/audio/simple_sources.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/media_switches.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -189,12 +191,12 @@ class RendererAudioOutputStreamFactoryIntegrationTest : public Test {
   }
 
   UniqueAudioOutputStreamFactoryPtr CreateAndBindFactory(
-      mojom::RendererAudioOutputStreamFactoryRequest request) {
+      mojo::PendingReceiver<mojom::RendererAudioOutputStreamFactory> receiver) {
     factory_context_.reset(new RendererAudioOutputStreamFactoryContextImpl(
         kRenderProcessId, &audio_system_, &audio_manager_,
         media_stream_manager_.get()));
     return RenderFrameAudioOutputStreamFactoryHandle::CreateFactory(
-        factory_context_.get(), kRenderFrameId, std::move(request));
+        factory_context_.get(), kRenderFrameId, std::move(receiver));
   }
 
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
@@ -229,35 +231,39 @@ TEST_F(RendererAudioOutputStreamFactoryIntegrationTest, StreamIntegrationTest) {
       },
       &create_stream_called, stream));
 
-  mojom::RendererAudioOutputStreamFactoryPtr stream_factory;
-  auto factory_handle =
-      CreateAndBindFactory(mojo::MakeRequest(&stream_factory));
+  mojo::PendingRemote<mojom::RendererAudioOutputStreamFactory>
+      pending_stream_factory;
+  auto factory_handle = CreateAndBindFactory(
+      pending_stream_factory.InitWithNewPipeAndPassReceiver());
 
   base::Thread renderer_side_ipc_thread("Renderer IPC thread");
   ASSERT_TRUE(renderer_side_ipc_thread.Start());
   auto renderer_ipc_task_runner = renderer_side_ipc_thread.task_runner();
 
-  // Bind |stream_factory| to |renderer_ipc_task_runner|.
-  mojom::RendererAudioOutputStreamFactory* factory_ptr;
+  // Bind |pending_stream_factory| to |renderer_ipc_task_runner|.
+  mojo::Remote<mojom::RendererAudioOutputStreamFactory> stream_factory;
+  mojom::RendererAudioOutputStreamFactory* factory_remote;
   renderer_ipc_task_runner->PostTask(
-      FROM_HERE, base::BindOnce(
-                     [](mojom::RendererAudioOutputStreamFactoryPtr* factory,
-                        mojom::RendererAudioOutputStreamFactoryPtrInfo info,
-                        mojom::RendererAudioOutputStreamFactory** ptr) {
-                       factory->Bind(std::move(info));
-                       *ptr = factory->get();
-                     },
-                     base::Unretained(&stream_factory),
-                     stream_factory.PassInterface(), &factory_ptr));
-  // Wait for factory_ptr to be set.
+      FROM_HERE,
+      base::BindOnce(
+          [](mojo::Remote<mojom::RendererAudioOutputStreamFactory>* factory,
+             mojo::PendingRemote<mojom::RendererAudioOutputStreamFactory>
+                 pending_remote,
+             mojom::RendererAudioOutputStreamFactory** ptr) {
+            factory->Bind(std::move(pending_remote));
+            *ptr = factory->get();
+          },
+          base::Unretained(&stream_factory), std::move(pending_stream_factory),
+          &factory_remote));
+  // Wait for factory_remote to be set.
   SyncWith(renderer_ipc_task_runner);
 
   auto renderer_side_ipc = std::make_unique<MojoAudioOutputIPC>(
       base::BindRepeating(
-          [](mojom::RendererAudioOutputStreamFactory* factory_ptr) {
-            return factory_ptr;
+          [](mojom::RendererAudioOutputStreamFactory* factory_remote) {
+            return factory_remote;
           },
-          factory_ptr),
+          factory_remote),
       renderer_ipc_task_runner);
 
   auto device = base::MakeRefCounted<media::AudioOutputDevice>(
@@ -278,7 +284,8 @@ TEST_F(RendererAudioOutputStreamFactoryIntegrationTest, StreamIntegrationTest) {
   // |stream_factory| must be destroyed on the correct thread.
   renderer_ipc_task_runner->PostTask(
       FROM_HERE,
-      base::BindOnce([](mojom::RendererAudioOutputStreamFactoryPtr) {},
+      base::BindOnce([](mojo::Remote<mojom::RendererAudioOutputStreamFactory>
+                            stream_factory) { stream_factory.reset(); },
                      std::move(stream_factory)));
   SyncWith(renderer_ipc_task_runner);
   // Wait for any clean-up tasks.

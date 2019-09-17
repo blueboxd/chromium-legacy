@@ -175,6 +175,7 @@
 #import "ios/chrome/browser/webui/net_export_tab_helper.h"
 #import "ios/chrome/browser/webui/net_export_tab_helper_delegate.h"
 #import "ios/chrome/browser/webui/show_mail_composer_context.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -1503,7 +1504,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                         action:@selector(shieldWasTapped:)
               forControlEvents:UIControlEventTouchUpInside];
   self.view.autoresizingMask = initialViewAutoresizing;
-  self.view.backgroundColor = [UIColor colorWithWhite:0.75 alpha:1.0];
+  self.view.backgroundColor = [UIColor colorNamed:kBackgroundColor];
 
   [self addChildViewController:self.browserContainerViewController];
   [self.view addSubview:self.contentArea];

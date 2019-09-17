@@ -220,6 +220,8 @@ public abstract class ChromeFeatureList {
             "ContextualSearchTapDisableOverride";
     public static final String CONTEXTUAL_SEARCH_TRANSLATION_MODEL =
             "ContextualSearchTranslationModel";
+    public static final String DARKEN_WEBSITES_CHECKBOX_IN_THEMES_SETTING =
+            "DarkenWebsitesCheckboxInThemesSetting";
     public static final String DIRECT_ACTIONS = "DirectActions";
     public static final String DOWNLOAD_FILE_PROVIDER = "DownloadFileProvider";
     public static final String DOWNLOAD_HOME_SHOW_STORAGE_INFO = "DownloadHomeShowStorageInfo";

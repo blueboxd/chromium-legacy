@@ -261,7 +261,7 @@ div.mode-item>span {
 
 #modes-group.hide,
 .mode-item.hide {
-  display: none;
+  visibility: hidden;
 }
 
 .mode-item>input {

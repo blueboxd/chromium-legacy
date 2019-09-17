@@ -35,6 +35,11 @@ class WebStateList;
 // present on the screen.
 - (void)mediatorDidDetectKeyboardHide:(FormInputAccessoryMediator*)mediator;
 
+// The mediator detected that the keyboard was hidden and it is no longer
+// present on the screen.
+- (void)mediatorDidDetectMovingToBackground:
+    (FormInputAccessoryMediator*)mediator;
+
 @end
 
 // This class contains all the logic to get and provide keyboard input accessory

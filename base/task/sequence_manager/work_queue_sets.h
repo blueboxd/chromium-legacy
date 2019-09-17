@@ -95,6 +95,12 @@ class BASE_EXPORT WorkQueueSets {
 
   const char* GetName() const { return name_; }
 
+  // Collects ready tasks which where skipped over when |selected_work_queue|
+  // was selected. Note this is somewhat expensive.
+  void CollectSkippedOverLowerPriorityTasks(
+      const internal::WorkQueue* selected_work_queue,
+      std::vector<const Task*>* result) const;
+
  private:
   struct OldestTaskEnqueueOrder {
     EnqueueOrder key;

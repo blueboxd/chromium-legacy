@@ -93,6 +93,7 @@ FontDescription::FontDescription()
   fields_.typesetting_features_ = default_typesetting_features_;
   fields_.variant_numeric_ = FontVariantNumeric().fields_as_unsigned_;
   fields_.subpixel_ascent_descent_ = false;
+  fields_.font_optical_sizing_ = OpticalSizing::kAutoOpticalSizing;
 }
 
 FontDescription::FontDescription(const FontDescription&) = default;
@@ -217,11 +218,12 @@ FontCacheKey FontDescription::CacheKey(
     bool is_unique_match,
     const FontSelectionRequest& font_selection_request) const {
   unsigned options =
-      static_cast<unsigned>(fields_.synthetic_italic_) << 6 |  // bit 7
-      static_cast<unsigned>(fields_.synthetic_bold_) << 5 |    // bit 6
-      static_cast<unsigned>(fields_.text_rendering_) << 3 |    // bits 4-5
-      static_cast<unsigned>(fields_.orientation_) << 1 |       // bit 2-3
-      static_cast<unsigned>(fields_.subpixel_text_position_);  // bit 1
+      static_cast<unsigned>(fields_.font_optical_sizing_) << 7 |  // bit 8
+      static_cast<unsigned>(fields_.synthetic_italic_) << 6 |     // bit 7
+      static_cast<unsigned>(fields_.synthetic_bold_) << 5 |       // bit 6
+      static_cast<unsigned>(fields_.text_rendering_) << 3 |       // bits 4-5
+      static_cast<unsigned>(fields_.orientation_) << 1 |          // bit 2-3
+      static_cast<unsigned>(fields_.subpixel_text_position_);     // bit 1
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
   float device_scale_factor_for_key = FontCache::DeviceScaleFactor();
@@ -229,7 +231,7 @@ FontCacheKey FontDescription::CacheKey(
   float device_scale_factor_for_key = 1.0f;
 #endif
   FontCacheKey cache_key(creation_params, EffectiveFontSize(),
-                         options | font_selection_request_.GetHash() << 8,
+                         options | font_selection_request_.GetHash() << 9,
                          device_scale_factor_for_key, variation_settings_,
                          is_unique_match);
   return cache_key;
@@ -496,7 +498,7 @@ String FontDescription::ToString() const {
       "keyword_size=%u, font_smoothing=%s, text_rendering=%s, "
       "synthetic_bold=%s, synthetic_italic=%s, subpixel_positioning=%s, "
       "subpixel_ascent_descent=%s, variant_numeric=[%s], "
-      "variant_east_asian=[%s]",
+      "variant_east_asian=[%s], font_optical_sizing=%s",
       family_list_.ToString().Ascii().c_str(),
       (feature_settings_ ? feature_settings_->ToString().Ascii().c_str() : ""),
       (variation_settings_ ? variation_settings_->ToString().Ascii().c_str()
@@ -524,7 +526,8 @@ String FontDescription::ToString() const {
       ToBooleanString(UseSubpixelPositioning()),
       ToBooleanString(SubpixelAscentDescent()),
       VariantNumeric().ToString().Ascii().c_str(),
-      VariantEastAsian().ToString().Ascii().c_str());
+      VariantEastAsian().ToString().Ascii().c_str(),
+      blink::ToString(FontOpticalSizing()).Ascii().c_str());
 }
 
 }  // namespace blink

@@ -21,6 +21,7 @@ class CreditCard;
 
 namespace manual_fill {
 extern NSString* const ManageCardsAccessibilityIdentifier;
+extern NSString* const kAddCreditCardsAccessibilityIdentifier;
 }  // namespace manual_fill
 
 // Object in charge of getting the cards relevant for the manual fill

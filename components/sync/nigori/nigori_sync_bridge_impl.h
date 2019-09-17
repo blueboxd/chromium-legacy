@@ -82,6 +82,9 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   // tests and decide whether this method should be a part of
   // SyncEncryptionHandler interface.
   const Cryptographer& GetCryptographerForTesting() const;
+  sync_pb::NigoriSpecifics::PassphraseType GetPassphraseTypeForTesting() const;
+  ModelTypeSet GetEncryptedTypesForTesting() const;
+
   static std::string PackExplicitPassphraseKeyForTesting(
       const Encryptor& encryptor,
       const Cryptographer& cryptographer);

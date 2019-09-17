@@ -365,6 +365,7 @@ class MenuControllerTest : public ViewsTestBase,
     owner_->CloseNow();
     DestroyMenuController();
     ViewsTestBase::TearDown();
+    base::i18n::SetRTLForTesting(false);
   }
 
   void ReleaseTouchId(int id) { event_generator_->ReleaseTouchId(id); }
@@ -1862,9 +1863,10 @@ TEST_P(MenuControllerTest, TestSubmenuFitsOnScreen) {
 
   const int menu_width = MenuConfig::instance().touchable_menu_width;
   const gfx::Size parent_size(menu_width, menu_width);
+  const gfx::Size parent_size_wide(menu_width * 2, menu_width);
 
-  const int kDisplayWidth = parent_size.width() * 2;
-  const int kDisplayHeight = parent_size.height() * 2;
+  const int kDisplayWidth = parent_size.width() * 3;
+  const int kDisplayHeight = parent_size.height() * 3;
 
   // Simulate multiple display layouts.
   for (int x = -1; x <= 1; x++)
@@ -1875,6 +1877,7 @@ TEST_P(MenuControllerTest, TestSubmenuFitsOnScreen) {
       const int x_min = monitor_bounds.x();
       const int x_max = monitor_bounds.right() - parent_size.width();
       const int x_mid = (x_min + x_max) / 2;
+      const int x_qtr = x_min + (x_max - x_min) / 4;
 
       const int y_min = monitor_bounds.y();
       const int y_max = monitor_bounds.bottom() - parent_size.height();
@@ -1890,6 +1893,11 @@ TEST_P(MenuControllerTest, TestSubmenuFitsOnScreen) {
                               gfx::Rect(gfx::Point(x_min, y_mid), parent_size));
       TestSubmenuFitsOnScreen(sub_item, monitor_bounds,
                               gfx::Rect(gfx::Point(x_min, y_max), parent_size));
+
+      // Extra wide menu: test with insufficient room on both sides.
+      TestSubmenuFitsOnScreen(
+          sub_item, monitor_bounds,
+          gfx::Rect(gfx::Point(x_qtr, y_min), parent_size_wide));
     }
 }
 

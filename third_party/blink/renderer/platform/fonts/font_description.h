@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/platform/font_family_names.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache_key.h"
 #include "third_party/blink/renderer/platform/fonts/font_family.h"
+#include "third_party/blink/renderer/platform/fonts/font_optical_sizing.h"
 #include "third_party/blink/renderer/platform/fonts/font_orientation.h"
 #include "third_party/blink/renderer/platform/fonts/font_selection_types.h"
 #include "third_party/blink/renderer/platform/fonts/font_smoothing_mode.h"
@@ -206,6 +207,9 @@ class PLATFORM_EXPORT FontDescription {
   FontSmoothingMode FontSmoothing() const {
     return static_cast<FontSmoothingMode>(fields_.font_smoothing_);
   }
+  OpticalSizing FontOpticalSizing() const {
+    return static_cast<OpticalSizing>(fields_.font_optical_sizing_);
+  }
   TextRenderingMode TextRendering() const {
     return static_cast<TextRenderingMode>(fields_.text_rendering_);
   }
@@ -281,6 +285,9 @@ class PLATFORM_EXPORT FontDescription {
   void SetKeywordSize(unsigned s) { fields_.keyword_size_ = s; }
   void SetFontSmoothing(FontSmoothingMode smoothing) {
     fields_.font_smoothing_ = smoothing;
+  }
+  void SetFontOpticalSizing(OpticalSizing font_optical_sizing) {
+    fields_.font_optical_sizing_ = font_optical_sizing;
   }
   void SetTextRendering(TextRenderingMode rendering) {
     fields_.text_rendering_ = rendering;
@@ -413,6 +420,7 @@ class PLATFORM_EXPORT FontDescription {
     unsigned variant_numeric_ : 8;
     unsigned variant_east_asian_ : 6;
     mutable unsigned subpixel_ascent_descent_ : 1;
+    unsigned font_optical_sizing_ : 1;
   };
 
   static_assert(sizeof(BitFields) == sizeof(FieldsAsUnsignedType),

@@ -29,6 +29,7 @@
 #include "media/base/output_device_info.h"
 #include "media/mojo/mojom/audio_output_stream.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace content {
 
@@ -38,11 +39,12 @@ class RenderFrameAudioOutputStreamFactory::Core final
   Core(RenderFrameHost* frame,
        media::AudioSystem* audio_system,
        MediaStreamManager* media_stream_manager,
-       mojom::RendererAudioOutputStreamFactoryRequest request);
+       mojo::PendingReceiver<mojom::RendererAudioOutputStreamFactory> receiver);
 
   ~Core() final = default;
 
-  void Init(mojom::RendererAudioOutputStreamFactoryRequest request);
+  void Init(
+      mojo::PendingReceiver<mojom::RendererAudioOutputStreamFactory> receiver);
 
   size_t current_number_of_providers_for_testing() {
     return stream_providers_.size();
@@ -130,7 +132,7 @@ class RenderFrameAudioOutputStreamFactory::Core final
   const int frame_id_;
   AudioOutputAuthorizationHandler authorization_handler_;
 
-  mojo::Binding<mojom::RendererAudioOutputStreamFactory> binding_;
+  mojo::Receiver<mojom::RendererAudioOutputStreamFactory> receiver_{this};
   // Always null-check this weak pointer before dereferencing it.
   base::WeakPtr<ForwardingAudioStreamFactory::Core> forwarding_factory_;
 
@@ -150,11 +152,11 @@ RenderFrameAudioOutputStreamFactory::RenderFrameAudioOutputStreamFactory(
     RenderFrameHost* frame,
     media::AudioSystem* audio_system,
     MediaStreamManager* media_stream_manager,
-    mojom::RendererAudioOutputStreamFactoryRequest request)
+    mojo::PendingReceiver<mojom::RendererAudioOutputStreamFactory> receiver)
     : core_(new Core(frame,
                      audio_system,
                      media_stream_manager,
-                     std::move(request))) {
+                     std::move(receiver))) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
@@ -179,11 +181,10 @@ RenderFrameAudioOutputStreamFactory::Core::Core(
     RenderFrameHost* frame,
     media::AudioSystem* audio_system,
     MediaStreamManager* media_stream_manager,
-    mojom::RendererAudioOutputStreamFactoryRequest request)
+    mojo::PendingReceiver<mojom::RendererAudioOutputStreamFactory> receiver)
     : process_id_(frame->GetProcess()->GetID()),
       frame_id_(frame->GetRoutingID()),
-      authorization_handler_(audio_system, media_stream_manager, process_id_),
-      binding_(this) {
+      authorization_handler_(audio_system, media_stream_manager, process_id_) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ForwardingAudioStreamFactory::Core* tmp_factory =
@@ -202,14 +203,14 @@ RenderFrameAudioOutputStreamFactory::Core::Core(
   // thread.
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&Core::Init, base::Unretained(this), std::move(request)));
+      base::BindOnce(&Core::Init, base::Unretained(this), std::move(receiver)));
 }
 
 void RenderFrameAudioOutputStreamFactory::Core::Init(
-    mojom::RendererAudioOutputStreamFactoryRequest request) {
+    mojo::PendingReceiver<mojom::RendererAudioOutputStreamFactory> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  binding_.Bind(std::move(request));
+  receiver_.Bind(std::move(receiver));
 }
 
 void RenderFrameAudioOutputStreamFactory::Core::RequestDeviceAuthorization(

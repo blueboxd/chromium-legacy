@@ -55,6 +55,7 @@
 #include "content/public/common/page_importance_signals.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/three_d_api_types.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/load_states.h"
@@ -574,7 +575,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   device::mojom::GeolocationContext* GetGeolocationContext() override;
   device::mojom::WakeLockContext* GetWakeLockContext() override;
 #if defined(OS_ANDROID)
-  void GetNFC(device::mojom::NFCRequest request) override;
+  void GetNFC(mojo::PendingReceiver<device::mojom::NFC> receiver) override;
 #endif
   void EnterFullscreenMode(const GURL& origin,
                            const blink::WebFullscreenOptions& options) override;

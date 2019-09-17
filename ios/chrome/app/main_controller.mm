@@ -964,6 +964,9 @@ enum class EnterTabSwitcherSnapshotResult {
 
 - (void)stopChromeMain {
   // The UI should be stopped before the models they observe are stopped.
+  [self.signinInteractionCoordinator cancel];
+  self.signinInteractionCoordinator = nil;
+
   [_mainCoordinator stop];
   _mainCoordinator = nil;
 

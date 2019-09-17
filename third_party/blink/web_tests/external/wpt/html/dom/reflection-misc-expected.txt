@@ -1,9 +1,10 @@
 This is a testharness.js-based test.
-Found 4411 tests; 4394 PASS, 17 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 4879 tests; 4862 PASS, 17 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS html.title: 38 tests
 PASS html.lang: 38 tests
 PASS html.dir: 68 tests
 PASS html.className (<html class>): 38 tests
+PASS html.autofocus: 39 tests
 PASS html.hidden: 39 tests
 PASS html.accessKey: 38 tests
 PASS html.tabIndex: 26 tests
@@ -12,6 +13,7 @@ PASS script.title: 38 tests
 PASS script.lang: 38 tests
 PASS script.dir: 68 tests
 PASS script.className (<script class>): 38 tests
+PASS script.autofocus: 39 tests
 PASS script.hidden: 39 tests
 PASS script.accessKey: 38 tests
 PASS script.tabIndex: 26 tests
@@ -47,6 +49,7 @@ PASS noscript.title: 38 tests
 PASS noscript.lang: 38 tests
 PASS noscript.dir: 68 tests
 PASS noscript.className (<noscript class>): 38 tests
+PASS noscript.autofocus: 39 tests
 PASS noscript.hidden: 39 tests
 PASS noscript.accessKey: 38 tests
 PASS noscript.tabIndex: 26 tests
@@ -54,6 +57,7 @@ PASS template.title: 38 tests
 PASS template.lang: 38 tests
 PASS template.dir: 68 tests
 PASS template.className (<template class>): 38 tests
+PASS template.autofocus: 39 tests
 PASS template.hidden: 39 tests
 PASS template.accessKey: 38 tests
 PASS template.tabIndex: 26 tests
@@ -61,6 +65,7 @@ PASS slot.title: 38 tests
 PASS slot.lang: 38 tests
 PASS slot.dir: 68 tests
 PASS slot.className (<slot class>): 38 tests
+PASS slot.autofocus: 39 tests
 PASS slot.hidden: 39 tests
 PASS slot.accessKey: 38 tests
 PASS slot.tabIndex: 26 tests
@@ -69,6 +74,7 @@ PASS ins.title: 38 tests
 PASS ins.lang: 38 tests
 PASS ins.dir: 68 tests
 PASS ins.className (<ins class>): 38 tests
+PASS ins.autofocus: 39 tests
 PASS ins.hidden: 39 tests
 PASS ins.accessKey: 38 tests
 PASS ins.tabIndex: 26 tests
@@ -78,6 +84,7 @@ PASS del.title: 38 tests
 PASS del.lang: 38 tests
 PASS del.dir: 68 tests
 PASS del.className (<del class>): 38 tests
+PASS del.autofocus: 39 tests
 PASS del.hidden: 39 tests
 PASS del.accessKey: 38 tests
 PASS del.tabIndex: 26 tests
@@ -87,6 +94,7 @@ PASS details.title: 38 tests
 PASS details.lang: 38 tests
 PASS details.dir: 68 tests
 PASS details.className (<details class>): 38 tests
+PASS details.autofocus: 39 tests
 PASS details.hidden: 39 tests
 PASS details.accessKey: 38 tests
 PASS details.tabIndex: 26 tests
@@ -95,6 +103,7 @@ PASS summary.title: 38 tests
 PASS summary.lang: 38 tests
 PASS summary.dir: 68 tests
 PASS summary.className (<summary class>): 38 tests
+PASS summary.autofocus: 39 tests
 PASS summary.hidden: 39 tests
 PASS summary.accessKey: 38 tests
 PASS summary.tabIndex: 26 tests
@@ -102,6 +111,7 @@ PASS menu.title: 38 tests
 PASS menu.lang: 38 tests
 PASS menu.dir: 68 tests
 PASS menu.className (<menu class>): 38 tests
+PASS menu.autofocus: 39 tests
 PASS menu.hidden: 39 tests
 PASS menu.accessKey: 38 tests
 PASS menu.tabIndex: 26 tests
@@ -110,6 +120,7 @@ PASS dialog.title: 38 tests
 PASS dialog.lang: 38 tests
 PASS dialog.dir: 68 tests
 PASS dialog.className (<dialog class>): 38 tests
+PASS dialog.autofocus: 39 tests
 PASS dialog.hidden: 39 tests
 PASS dialog.accessKey: 38 tests
 PASS dialog.tabIndex: 26 tests
@@ -118,6 +129,7 @@ PASS undefinedelement.title: 38 tests
 PASS undefinedelement.lang: 38 tests
 PASS undefinedelement.dir: 68 tests
 PASS undefinedelement.className (<undefinedelement class>): 38 tests
+PASS undefinedelement.autofocus: 39 tests
 PASS undefinedelement.hidden: 39 tests
 PASS undefinedelement.accessKey: 38 tests
 PASS undefinedelement.tabIndex: 26 tests

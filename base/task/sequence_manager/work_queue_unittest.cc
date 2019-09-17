@@ -555,6 +555,20 @@ TEST_F(WorkQueueTest, RemoveAllCanceledTasksFromFrontQueueBlockedByFence) {
   EXPECT_FALSE(work_queue_->GetFrontTaskEnqueueOrder(&enqueue_order));
 }
 
+TEST_F(WorkQueueTest, CollectTasksOlderThan) {
+  work_queue_->Push(FakeTaskWithEnqueueOrder(2));
+  work_queue_->Push(FakeTaskWithEnqueueOrder(3));
+  work_queue_->Push(FakeTaskWithEnqueueOrder(4));
+
+  std::vector<const Task*> result;
+  work_queue_->CollectTasksOlderThan(EnqueueOrder::FromIntForTesting(4),
+                                     &result);
+
+  ASSERT_EQ(2u, result.size());
+  EXPECT_EQ(2u, result[0]->enqueue_order());
+  EXPECT_EQ(3u, result[1]->enqueue_order());
+}
+
 }  // namespace internal
 }  // namespace sequence_manager
 }  // namespace base

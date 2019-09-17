@@ -27,7 +27,6 @@
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/vaapi_jpeg_encoder.h"
 #include "media/parsers/jpeg_parser.h"
-#include "ui/gfx/linux/native_pixmap_dmabuf.h"
 
 namespace media {
 
@@ -171,14 +170,8 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeWithDmaBufTask(
   // We need to explicitly blit the bound input surface here to make sure the
   // input we sent to VAAPI encoder is in tiled NV12 format since implicit
   // tiling logic is not contained in every driver.
-  auto input_pixmap = CreateNativePixmapDmaBuf(input_frame.get());
-  if (!input_pixmap) {
-    VLOGF(1) << "Cannot create native pixmap for input frame";
-    notify_error_cb_.Run(task_id, PLATFORM_FAILURE);
-    return;
-  }
   auto input_surface =
-      vpp_vaapi_wrapper_->CreateVASurfaceForPixmap(input_pixmap);
+      vpp_vaapi_wrapper_->CreateVASurfaceForVideoFrame(input_frame.get());
   if (!input_surface) {
     VLOGF(1) << "Failed to create input va surface";
     notify_error_cb_.Run(task_id, PLATFORM_FAILURE);

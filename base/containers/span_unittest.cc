@@ -474,6 +474,17 @@ TEST(SpanTest, TemplatedSubspan) {
   }
 }
 
+TEST(SpanTest, SubscriptedBeginIterator) {
+  int array[] = {1, 2, 3};
+  span<const int> const_span(array);
+  for (size_t i = 0; i < const_span.size(); ++i)
+    EXPECT_EQ(array[i], const_span.begin()[i]);
+
+  span<int> mutable_span(array);
+  for (size_t i = 0; i < mutable_span.size(); ++i)
+    EXPECT_EQ(array[i], mutable_span.begin()[i]);
+}
+
 TEST(SpanTest, TemplatedFirstOnDynamicSpan) {
   int array[] = {1, 2, 3};
   span<const int> span(array);
@@ -1212,12 +1223,16 @@ TEST(SpanTest, EnsureConstexprGoodness) {
 TEST(SpanTest, OutOfBoundsDeath) {
   constexpr span<int, 0> kEmptySpan;
   ASSERT_DEATH_IF_SUPPORTED(kEmptySpan[0], "");
+  ASSERT_DEATH_IF_SUPPORTED(kEmptySpan.begin()[0], "");
+  ASSERT_DEATH_IF_SUPPORTED(kEmptySpan.end()[0], "");
   ASSERT_DEATH_IF_SUPPORTED(kEmptySpan.first(1), "");
   ASSERT_DEATH_IF_SUPPORTED(kEmptySpan.last(1), "");
   ASSERT_DEATH_IF_SUPPORTED(kEmptySpan.subspan(1), "");
 
   constexpr span<int> kEmptyDynamicSpan;
   ASSERT_DEATH_IF_SUPPORTED(kEmptyDynamicSpan[0], "");
+  ASSERT_DEATH_IF_SUPPORTED(kEmptyDynamicSpan.begin()[0], "");
+  ASSERT_DEATH_IF_SUPPORTED(kEmptyDynamicSpan.end()[0], "");
   ASSERT_DEATH_IF_SUPPORTED(kEmptyDynamicSpan.front(), "");
   ASSERT_DEATH_IF_SUPPORTED(kEmptyDynamicSpan.first(1), "");
   ASSERT_DEATH_IF_SUPPORTED(kEmptyDynamicSpan.last(1), "");
@@ -1228,6 +1243,8 @@ TEST(SpanTest, OutOfBoundsDeath) {
   constexpr span<const int> kNonEmptyDynamicSpan(kArray);
   EXPECT_EQ(3U, kNonEmptyDynamicSpan.size());
   ASSERT_DEATH_IF_SUPPORTED(kNonEmptyDynamicSpan[4], "");
+  ASSERT_DEATH_IF_SUPPORTED(kNonEmptyDynamicSpan.begin()[-1], "");
+  ASSERT_DEATH_IF_SUPPORTED(kNonEmptyDynamicSpan.begin()[3], "");
   ASSERT_DEATH_IF_SUPPORTED(kEmptyDynamicSpan.subspan(10), "");
   ASSERT_DEATH_IF_SUPPORTED(kEmptyDynamicSpan.subspan(1, 7), "");
 }
@@ -1283,6 +1300,22 @@ TEST(SpanTest, IteratorIsRangeMoveSafe) {
   EXPECT_FALSE(CheckedRandomAccessConstIterator<const int>::IsRangeMoveSafe(
       span.cend(), span.cbegin(),
       CheckedRandomAccessConstIterator<const int>(span.data(), span.data())));
+}
+
+TEST(SpanTest, Sort) {
+  int array[] = {5, 4, 3, 2, 1};
+
+  span<int> dynamic_span = array;
+  std::sort(dynamic_span.begin(), dynamic_span.end());
+  EXPECT_THAT(array, ElementsAre(1, 2, 3, 4, 5));
+  std::sort(dynamic_span.rbegin(), dynamic_span.rend());
+  EXPECT_THAT(array, ElementsAre(5, 4, 3, 2, 1));
+
+  span<int, 5> static_span = array;
+  std::sort(static_span.rbegin(), static_span.rend(), std::greater<>());
+  EXPECT_THAT(array, ElementsAre(1, 2, 3, 4, 5));
+  std::sort(static_span.begin(), static_span.end(), std::greater<>());
+  EXPECT_THAT(array, ElementsAre(5, 4, 3, 2, 1));
 }
 
 }  // namespace base

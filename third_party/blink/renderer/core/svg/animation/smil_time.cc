@@ -32,8 +32,8 @@ namespace blink {
 SMILTime SMILTime::Repeat(SMILRepeatCount repeat_count) const {
   DCHECK(repeat_count.IsValid());
   if (repeat_count.IsIndefinite() || repeat_count.IsUnspecified())
-    return SMILTime::Indefinite();
-  return SMILTime(time_ * repeat_count.NumericValue());
+    return Indefinite();
+  return time_ * repeat_count.NumericValue();
 }
 
 std::ostream& operator<<(std::ostream& os, SMILTime time) {

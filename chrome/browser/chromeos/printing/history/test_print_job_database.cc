@@ -28,9 +28,10 @@ void TestPrintJobDatabase::SavePrintJob(
   std::move(callback).Run(true);
 }
 
-void TestPrintJobDatabase::DeletePrintJob(const std::string& id,
-                                          DeletePrintJobCallback callback) {
-  database_.erase(id);
+void TestPrintJobDatabase::DeletePrintJobs(const std::vector<std::string>& ids,
+                                           DeletePrintJobsCallback callback) {
+  for (const std::string& id : ids)
+    database_.erase(id);
   std::move(callback).Run(true);
 }
 

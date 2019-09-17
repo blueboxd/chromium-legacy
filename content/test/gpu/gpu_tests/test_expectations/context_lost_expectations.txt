@@ -42,3 +42,6 @@ crbug.com/880078 [ android ] ContextLost_WorkerRAFAfterGPUCrash_OOPD [ Failure ]
 # The Nexus 6 times out on these tests while waiting for the JS to complete
 crbug.com/611906 [ android qualcomm-adreno-(tm)-420 ] ContextLost_WebGLContextLostFromLoseContextExtension [ Failure ]
 crbug.com/611906 [ android qualcomm-adreno-(tm)-420 ] ContextLost_WebGLContextLostFromQuantity [ Failure ]
+crbug.com/609629 [ android qualcomm-adreno-(tm)-420 ] GpuCrash_GPUProcessCrashesExactlyOncePerVisitToAboutGpuCrash [ Skip ]
+crbug.com/609629 [ android qualcomm-adreno-(tm)-420 ] ContextLost_WebGLContextLostFromGPUProcessExit [ Skip ]
+crbug.com/609629 [ android qualcomm-adreno-(tm)-420 ] ContextLost_WebGLContextLostInHiddenTab [ Skip ]

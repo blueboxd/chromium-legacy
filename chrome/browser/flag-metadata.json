@@ -336,6 +336,11 @@
     "expiry_milestone": 79
   },
   {
+    "name": "back-forward-cache",
+    "owners": [ "bfcache-dev" ],
+    "expiry_milestone": 83
+  },
+  {
     "name": "background-task-component-update",
     "owners": [ "sorin", "waffles", "tiborg" ],
     "expiry_milestone": 76
@@ -564,6 +569,11 @@
     "name": "d3d11-video-decoder",
     "owners": [ "liberato", "tmathmeyer", "videostack-eng" ],
     "expiry_milestone": 78
+  },
+  {
+    "name": "darken-websites-checkbox-in-themes-setting",
+    "owners": [ "lazzzis@google.com", "twellington" ],
+    "expiry_milestone": 83
   },
   {
     "name": "data-saver-server-previews",

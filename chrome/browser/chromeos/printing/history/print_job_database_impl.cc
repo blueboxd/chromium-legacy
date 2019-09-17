@@ -30,7 +30,8 @@ const int kMaxInitializeAttempts = 3;
 
 PrintJobDatabaseImpl::PrintJobDatabaseImpl(
     leveldb_proto::ProtoDatabaseProvider* database_provider,
-    base::FilePath profile_path) {
+    base::FilePath profile_path)
+    : init_status_(InitStatus::UNINITIALIZED) {
   auto print_job_database_path = profile_path.Append(kPrintJobDatabaseName);
 
   scoped_refptr<base::SequencedTaskRunner> database_task_runner =
@@ -45,23 +46,38 @@ PrintJobDatabaseImpl::PrintJobDatabaseImpl(
 PrintJobDatabaseImpl::~PrintJobDatabaseImpl() {}
 
 void PrintJobDatabaseImpl::Initialize(InitializeCallback callback) {
+  if (init_status_ == InitStatus::PENDING)
+    return;
+  DCHECK_EQ(init_status_, InitStatus::UNINITIALIZED);
+  init_status_ = InitStatus::PENDING;
   database_->Init(base::BindOnce(&PrintJobDatabaseImpl::OnInitialized,
                                  weak_ptr_factory_.GetWeakPtr(),
                                  std::move(callback)));
 }
 
 bool PrintJobDatabaseImpl::IsInitialized() {
-  return is_initialized_;
+  return init_status_ == InitStatus::INITIALIZED;
 }
 
 void PrintJobDatabaseImpl::SavePrintJob(
     const printing::proto::PrintJobInfo& print_job_info,
     SavePrintJobCallback callback) {
-  if (!is_initialized_) {
+  if (init_status_ == InitStatus::FAILED) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), false));
     return;
   }
+
+  // Defer execution if database is uninitialized.
+  if (init_status_ != InitStatus::INITIALIZED) {
+    deferred_callbacks_.push(base::BindOnce(
+        &PrintJobDatabaseImpl::SavePrintJob, weak_ptr_factory_.GetWeakPtr(),
+        print_job_info, std::move(callback)));
+    return;
+  }
+
+  cache_[print_job_info.id()] = print_job_info;
+
   auto entries_to_save = std::make_unique<EntryVector>();
   entries_to_save->push_back(
       std::make_pair(print_job_info.id(), print_job_info));
@@ -73,23 +89,44 @@ void PrintJobDatabaseImpl::SavePrintJob(
                      std::move(callback)));
 }
 
-void PrintJobDatabaseImpl::DeletePrintJob(const std::string& id,
-                                          DeletePrintJobCallback callback) {
-  if (!is_initialized_) {
+void PrintJobDatabaseImpl::DeletePrintJobs(const std::vector<std::string>& ids,
+                                           DeletePrintJobsCallback callback) {
+  if (init_status_ == InitStatus::FAILED) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), false));
     return;
   }
-  auto keys_to_remove = std::make_unique<std::vector<std::string>>();
-  keys_to_remove->push_back(id);
+
+  // Defer execution if database is uninitialized.
+  if (init_status_ != InitStatus::INITIALIZED) {
+    deferred_callbacks_.push(base::BindOnce(
+        &PrintJobDatabaseImpl::DeletePrintJobs, weak_ptr_factory_.GetWeakPtr(),
+        ids, std::move(callback)));
+    return;
+  }
+
   database_->UpdateEntries(
       /*entries_to_save=*/std::make_unique<EntryVector>(),
-      /*keys_to_remove=*/std::move(keys_to_remove),
+      /*keys_to_remove=*/std::make_unique<std::vector<std::string>>(ids),
       base::BindOnce(&PrintJobDatabaseImpl::OnPrintJobDeleted,
-                     weak_ptr_factory_.GetWeakPtr(), id, std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(), ids, std::move(callback)));
 }
 
 void PrintJobDatabaseImpl::GetPrintJobs(GetPrintJobsCallback callback) {
+  if (init_status_ == InitStatus::FAILED) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false, nullptr));
+    return;
+  }
+
+  // Defer execution if database is uninitialized.
+  if (init_status_ != InitStatus::INITIALIZED) {
+    deferred_callbacks_.push(base::BindOnce(&PrintJobDatabaseImpl::GetPrintJobs,
+                                            weak_ptr_factory_.GetWeakPtr(),
+                                            std::move(callback)));
+    return;
+  }
+
   auto entries = std::make_unique<std::vector<printing::proto::PrintJobInfo>>();
   for (const auto& pair : cache_)
     entries->emplace_back(pair.second);
@@ -129,7 +166,6 @@ void PrintJobDatabaseImpl::OnKeysAndEntriesLoaded(
     bool success,
     std::unique_ptr<std::map<std::string, printing::proto::PrintJobInfo>>
         entries) {
-  is_initialized_ = success;
   if (success)
     cache_.insert(entries->begin(), entries->end());
   FinishInitialization(std::move(callback), success);
@@ -137,36 +173,55 @@ void PrintJobDatabaseImpl::OnKeysAndEntriesLoaded(
 
 void PrintJobDatabaseImpl::FinishInitialization(InitializeCallback callback,
                                                 bool success) {
+  init_status_ = success ? InitStatus::INITIALIZED : InitStatus::FAILED;
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), success));
+  // We run deferred callbacks even if initialization failed not to cause
+  // possible client-side blocks of next calls to the database.
+  while (!deferred_callbacks_.empty()) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, std::move(deferred_callbacks_.front()));
+    deferred_callbacks_.pop();
+  }
 }
 
 void PrintJobDatabaseImpl::OnPrintJobSaved(
     const printing::proto::PrintJobInfo& print_job_info,
     SavePrintJobCallback callback,
     bool success) {
-  if (success)
-    cache_[print_job_info.id()] = print_job_info;
+  if (!success)
+    cache_.erase(print_job_info.id());
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), success));
 }
 
-void PrintJobDatabaseImpl::OnPrintJobDeleted(const std::string& id,
-                                             DeletePrintJobCallback callback,
-                                             bool success) {
+void PrintJobDatabaseImpl::OnPrintJobDeleted(
+    const std::vector<std::string>& ids,
+    DeletePrintJobsCallback callback,
+    bool success) {
   if (success)
-    cache_.erase(id);
+    for (const std::string& id : ids)
+      cache_.erase(id);
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), success));
 }
 
 void PrintJobDatabaseImpl::GetPrintJobsFromProtoDatabase(
     GetPrintJobsCallback callback) {
-  if (!is_initialized_) {
+  if (init_status_ == InitStatus::FAILED) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), false, nullptr));
     return;
   }
+
+  // Defer execution if database is uninitialized.
+  if (init_status_ != InitStatus::INITIALIZED) {
+    deferred_callbacks_.push(
+        base::BindOnce(&PrintJobDatabaseImpl::GetPrintJobsFromProtoDatabase,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    return;
+  }
+
   database_->LoadEntries(
       base::BindOnce(&PrintJobDatabaseImpl::OnPrintJobsRetrieved,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));

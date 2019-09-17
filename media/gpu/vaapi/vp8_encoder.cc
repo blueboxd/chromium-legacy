@@ -18,8 +18,9 @@ constexpr int kCPBWindowSizeMs = 1500;
 
 // Based on WebRTC's defaults.
 constexpr int kMinQP = 4;
-// b/110059922: Tuned 112->113 for bitrate issue in a lower resolution (180p).
-constexpr int kMaxQP = 113;
+// b/110059922, crbug.com/1001900: Tuned 112->117 for bitrate issue in a lower
+// resolution (180p).
+constexpr int kMaxQP = 117;
 constexpr int kDefaultQP = (3 * kMinQP + kMaxQP) / 4;
 }  // namespace
 
@@ -153,10 +154,11 @@ void VP8Encoder::InitializeFrameHeader() {
   DCHECK(!visible_size_.IsEmpty());
   current_frame_hdr_.width = visible_size_.width();
   current_frame_hdr_.height = visible_size_.height();
-  // Since initial_qp is always kDefaultQP (=31), y_ac_qi should be 27
+  // Since initial_qp is always kDefaultQP (=32), y_ac_qi should be 28
   // (the table index for kDefaultQP, see rfc 14.1. table ac_qlookup)
+  static_assert(kDefaultQP == 32, "kDefault QP is not 32");
   DCHECK_EQ(current_params_.initial_qp, kDefaultQP);
-  constexpr uint8_t kDefaultQPACQIndex = 27;
+  constexpr uint8_t kDefaultQPACQIndex = 28;
   current_frame_hdr_.quantization_hdr.y_ac_qi = kDefaultQPACQIndex;
   current_frame_hdr_.show_frame = true;
   // TODO(sprang): Make this dynamic. Value based on reference implementation

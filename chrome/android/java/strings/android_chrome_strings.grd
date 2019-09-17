@@ -715,6 +715,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_THEMES_SYSTEM_DEFAULT_SUMMARY_API_29" desc="Summary for the System Default option (Android Q+).">
         Turn on dark theme when your device's dark theme or Battery Saver is on
       </message>
+      <message name="IDS_DARKEN_WEBSITES" desc="Title for the Darken websites option. [CHAR-LIMIT=32]">
+        Darken websites
+      </message>
 
       <!-- Privacy preferences -->
       <message name="IDS_PREFS_PRIVACY" desc="Title for the Privacy preferences. [CHAR-LIMIT=32]">

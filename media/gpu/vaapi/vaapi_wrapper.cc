@@ -41,6 +41,7 @@
 // Auto-generated for dlopen libva libraries
 #include "media/gpu/vaapi/va_stubs.h"
 
+#include "media/gpu/linux/platform_video_frame_utils.h"
 #include "media/gpu/vaapi/vaapi_picture.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
 #include "third_party/libyuv/include/libyuv.h"
@@ -1388,8 +1389,19 @@ bool VaapiWrapper::CreateContext(const gfx::Size& size) {
   return va_res == VA_STATUS_SUCCESS;
 }
 
+scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForVideoFrame(
+    const VideoFrame* frame) {
+  DCHECK(frame);
+  scoped_refptr<gfx::NativePixmap> pixmap = CreateNativePixmapDmaBuf(frame);
+  if (!pixmap) {
+    LOG(ERROR) << "Failed to create NativePixmap from VideoFrame";
+    return nullptr;
+  }
+  return CreateVASurfaceForPixmap(std::move(pixmap));
+}
+
 scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
-    const scoped_refptr<gfx::NativePixmap>& pixmap) {
+    scoped_refptr<gfx::NativePixmap> pixmap) {
   const gfx::BufferFormat buffer_format = pixmap->GetBufferFormat();
 
   // Create a VASurface for a NativePixmap by importing the underlying dmabufs.
@@ -1445,6 +1457,8 @@ scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
     VA_SUCCESS_OR_RETURN(va_res, "Failed to create unowned VASurface", nullptr);
   }
 
+  // VASurface shares an ownership of the buffer referred by the passed file
+  // descriptor. We can release |pixmap| here.
   return new VASurface(va_surface_id, size, va_format,
                        base::BindOnce(&VaapiWrapper::DestroySurface, this));
 }

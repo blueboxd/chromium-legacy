@@ -8,7 +8,8 @@
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted_memory.h"
 #include "build/build_config.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/device/device_service_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -65,10 +66,11 @@ class FakeHidConnection : public HidConnection {
 // report has been received. The contents of the input report are saved.
 class TestHidConnectionClient : public mojom::HidConnectionClient {
  public:
-  TestHidConnectionClient() : binding_(this) {}
+  TestHidConnectionClient() = default;
+  ~TestHidConnectionClient() override = default;
 
-  void Bind(mojom::HidConnectionClientRequest request) {
-    binding_.Bind(std::move(request));
+  void Bind(mojo::PendingReceiver<mojom::HidConnectionClient> receiver) {
+    receiver_.Bind(std::move(receiver));
   }
 
   // mojom::HidConnectionClient implementation.
@@ -86,7 +88,7 @@ class TestHidConnectionClient : public mojom::HidConnectionClient {
 
  private:
   base::RunLoop run_loop_;
-  mojo::Binding<mojom::HidConnectionClient> binding_;
+  mojo::Receiver<mojom::HidConnectionClient> receiver_{this};
   uint8_t report_id_ = 0;
   std::vector<uint8_t> buffer_;
 

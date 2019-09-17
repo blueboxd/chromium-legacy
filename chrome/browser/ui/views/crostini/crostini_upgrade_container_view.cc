@@ -105,7 +105,7 @@ bool CrostiniUpgradeContainerView::ShouldShowCloseButton() const {
 
 gfx::Size CrostiniUpgradeContainerView::CalculatePreferredSize() const {
   const int dialog_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-                               DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
+                               DISTANCE_STANDALONE_BUBBLE_PREFERRED_WIDTH) -
                            margins().width();
   return gfx::Size(dialog_width, GetHeightForWidth(dialog_width));
 }

@@ -320,6 +320,8 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
 
   bool is_in_drag() const { return is_in_drag_; }
 
+  bool ending_drag() const { return ending_drag_; }
+
   void set_onscreen_keyboard_shown(bool onscreen_keyboard_shown) {
     onscreen_keyboard_shown_ = onscreen_keyboard_shown;
   }
@@ -473,6 +475,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // True if the user is in the process of gesture-dragging on opened app list,
   // or dragging the app list from shelf.
   bool is_in_drag_ = false;
+
+  // Whether the app list view is going through state change due to drag ending.
+  bool ending_drag_ = false;
 
   // Whether the view is being built.
   bool is_building_ = false;

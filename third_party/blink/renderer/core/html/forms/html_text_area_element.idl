@@ -25,7 +25,6 @@
     HTMLConstructor
 ] interface HTMLTextAreaElement : HTMLElement {
     [CEReactions, ImplementedAs=IDLExposedAutofillValue] attribute DOMString autocomplete;
-    [CEReactions, Reflect] attribute boolean autofocus;
     [CEReactions] attribute unsigned long cols;
     [CEReactions, Reflect] attribute DOMString dirName;
     [CEReactions, Reflect] attribute boolean disabled;

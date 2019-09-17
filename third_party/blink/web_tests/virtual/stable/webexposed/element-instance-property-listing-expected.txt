@@ -35,6 +35,7 @@ namespace http://www.w3.org/1999/xhtml
     property attributeStyleMap
     property attributes
     property autocapitalize
+    property autofocus
     property baseURI
     property before
     property blur
@@ -403,7 +404,6 @@ html element body
 html element br
     property clear
 html element button
-    property autofocus
     property checkValidity
     property disabled
     property form
@@ -629,7 +629,6 @@ html element input
     property align
     property alt
     property autocomplete
-    property autofocus
     property checkValidity
     property checked
     property defaultChecked
@@ -859,7 +858,6 @@ html element section
 html element select
     property add
     property autocomplete
-    property autofocus
     property checkValidity
     property disabled
     property form
@@ -957,7 +955,6 @@ html element template
     property content
 html element textarea
     property autocomplete
-    property autofocus
     property checkValidity
     property cols
     property defaultValue
@@ -1155,6 +1152,7 @@ namespace http://www.w3.org/2000/svg
     property attachShadow
     property attributeStyleMap
     property attributes
+    property autofocus
     property baseURI
     property before
     property blur

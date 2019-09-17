@@ -55,26 +55,8 @@ namespace {
 // From service_worker_registration.cc.
 constexpr base::TimeDelta kMaxLameDuckTime = base::TimeDelta::FromMinutes(5);
 
-// TODO(falken): Make this a common helper function.
-void StartWorker(ServiceWorkerVersion* version,
-                 ServiceWorkerMetrics::EventType purpose) {
-  base::RunLoop loop;
-  blink::ServiceWorkerStatusCode code;
-  version->StartWorker(
-      purpose,
-      base::BindOnce(
-          [](base::OnceClosure done, blink::ServiceWorkerStatusCode* out_code,
-             blink::ServiceWorkerStatusCode result_code) {
-            *out_code = result_code;
-            std::move(done).Run();
-          },
-          loop.QuitClosure(), &code));
-  loop.Run();
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, code);
-}
-
 int CreateInflightRequest(ServiceWorkerVersion* version) {
-  StartWorker(version, ServiceWorkerMetrics::EventType::PUSH);
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, StartServiceWorker(version));
   return version->StartRequest(ServiceWorkerMetrics::EventType::PUSH,
                                base::DoNothing());
 }
@@ -481,7 +463,8 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest,
         helper_->AddNewPendingServiceWorker<FakeServiceWorker>(helper_.get());
 
     // Start the worker.
-    StartWorker(version_2.get(), ServiceWorkerMetrics::EventType::INSTALL);
+    ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk,
+              StartServiceWorker(version_2.get()));
     version_2->SetStatus(ServiceWorkerVersion::INSTALLED);
 
     // Set it to activate when ready. The original version should still be

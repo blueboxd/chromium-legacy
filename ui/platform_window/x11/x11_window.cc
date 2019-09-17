@@ -438,8 +438,8 @@ base::Optional<gfx::Size> X11Window::GetMaximumSizeForXWindow() {
 
 void X11Window::DispatchHostWindowDragMovement(
     int hittest,
-    const gfx::Point& pointer_location) {
-  XWindow::WmMoveResize(hittest, pointer_location);
+    const gfx::Point& pointer_location_in_px) {
+  XWindow::WmMoveResize(hittest, pointer_location_in_px);
 }
 
 void X11Window::SetPlatformEventDispatcher() {

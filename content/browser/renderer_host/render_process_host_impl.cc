@@ -2076,7 +2076,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
                           base::Unretained(file_system_manager_impl_.get())));
 
   registry->AddInterface(base::BindRepeating(
-      &MidiHost::BindRequest, GetID(),
+      &MidiHost::BindReceiver, GetID(),
       base::Unretained(BrowserMainLoop::GetInstance()->midi_service())));
 
   if (gpu_client_) {

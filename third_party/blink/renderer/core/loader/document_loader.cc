@@ -254,6 +254,16 @@ DocumentLoader::DocumentLoader(
     initiator_origin_trial_features_.push_back(
         static_cast<OriginTrialFeature>(feature));
   }
+
+  // For back/forward navigations, the browser passed a history item to use at
+  // commit time in |params_|. Set it as the current history item of this
+  // DocumentLoader. For other navigations, |history_item_| will be created when
+  // the FrameLoader calls SetHistoryItemStateForCommit.
+  if (IsBackForwardLoadType(params_->frame_load_type)) {
+    HistoryItem* history_item = params_->history_item;
+    DCHECK(history_item);
+    history_item_ = history_item;
+  }
 }
 
 FrameLoader& DocumentLoader::GetFrameLoader() const {
@@ -708,14 +718,6 @@ void DocumentLoader::HandleRedirect(const KURL& current_request_url) {
   DCHECK(!GetTiming().FetchStart().is_null());
   redirect_chain_.push_back(url_);
   GetTiming().AddRedirect(current_request_url, url_);
-
-  // If a redirection happens during a back/forward navigation, don't restore
-  // any state from the old HistoryItem. There is a provisional history item for
-  // back/forward navigation only. In the other case, clearing it is a no-op.
-  history_item_.Clear();
-
-  // TODO(creis): Determine if we need to clear any history state
-  // in embedder to fix https://crbug.com/671276.
 }
 
 bool DocumentLoader::ShouldReportTimingInfoToParent() {
@@ -827,22 +829,6 @@ void DocumentLoader::HandleResponse() {
   if (frame_->Owner() && response_.IsHTTP() &&
       !cors::IsOkStatus(response_.HttpStatusCode()))
     frame_->Owner()->RenderFallbackContent(frame_);
-}
-
-void DocumentLoader::PrepareForNavigationCommit() {
-  if (state_ != kProvisional)
-    return;
-
-  // Set history state before commitProvisionalLoad() so that we still have
-  // access to the previous committed DocumentLoader's HistoryItem, in case we
-  // need to copy state from it.
-  if (!GetFrameLoader().StateMachine()->CreatingInitialEmptyDocument()) {
-    SetHistoryItemStateForCommit(
-        GetFrameLoader().GetDocumentLoader()->GetHistoryItem(), load_type_,
-        HistoryNavigationType::kDifferentDocument);
-  }
-
-  DCHECK_EQ(state_, kProvisional);
 }
 
 void DocumentLoader::FinishNavigationCommit(const AtomicString& mime_type,
@@ -1152,7 +1138,6 @@ void DocumentLoader::StartLoadingInternal() {
 
   if (loading_url_as_empty_document_) {
     InitializeEmptyResponse();
-    PrepareForNavigationCommit();
     return;
   }
 
@@ -1262,7 +1247,6 @@ void DocumentLoader::StartLoadingInternal() {
       // TODO(clamy): Simplify this code path.
       FinalizeMHTMLArchiveLoad();
     }
-    PrepareForNavigationCommit();
     return;
   }
 
@@ -1270,8 +1254,6 @@ void DocumentLoader::StartLoadingInternal() {
 
   if (defers_loading_)
     body_loader_->SetDefersLoading(true);
-
-  PrepareForNavigationCommit();
 }
 
 void DocumentLoader::StartLoadingResponse() {

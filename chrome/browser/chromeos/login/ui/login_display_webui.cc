@@ -130,14 +130,8 @@ void LoginDisplayWebUI::ShowError(int error_msg_id,
       error_msg_id != IDS_LOGIN_ERROR_OWNER_KEY_LOST &&
       error_msg_id != IDS_LOGIN_ERROR_OWNER_REQUIRED &&
       error_msg_id != IDS_LOGIN_ERROR_GOOGLE_ACCOUNT_NOT_ALLOWED) {
-    // Display a warning if Caps Lock is on.
     input_method::InputMethodManager* ime_manager =
         input_method::InputMethodManager::Get();
-    if (ime_manager->GetImeKeyboard()->CapsLockIsEnabled()) {
-      // TODO(ivankr): use a format string instead of concatenation.
-      error_text +=
-          "\n" + l10n_util::GetStringUTF8(IDS_LOGIN_ERROR_CAPS_LOCK_HINT);
-    }
 
     // Display a hint to switch keyboards if there are other active input
     // methods.

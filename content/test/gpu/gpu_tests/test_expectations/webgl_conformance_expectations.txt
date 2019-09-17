@@ -296,6 +296,7 @@ crbug.com/931016 [ win amd vulkan passthrough ] conformance/textures/image_bitma
 crbug.com/931016 [ win amd vulkan passthrough ] conformance/textures/image_bitmap_from_canvas/tex-2d-rgb* [ Failure ]
 crbug.com/974347 [ win amd vulkan passthrough ] conformance/textures/image/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
 crbug.com/974347 [ win amd vulkan passthrough ] conformance/textures/image/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
+crbug.com/1004581 [ win amd vulkan passthrough ] conformance/rendering/multisample-corruption.html [ Failure ]
 
 # Vulkan / Win / Intel / Passthrough command decoder
 crbug.com/angleproject/2909 [ win intel vulkan passthrough ] conformance/ogles/GL/faceforward/faceforward_001_to_006.html [ Failure ]

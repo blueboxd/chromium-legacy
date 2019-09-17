@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "base/files/file_util.h"
 #include "base/files/platform_file.h"
 #include "base/numerics/checked_math.h"
 #include "base/numerics/safe_conversions.h"
@@ -193,6 +194,24 @@ base::Optional<gfx::GpuMemoryBufferHandle> CreateGpuMemoryBufferHandle(
   if (!VerifyGpuMemoryBufferHandle(pixel_format, coded_size, gmb_handle))
     return base::nullopt;
   return gmb_handle;
+}
+
+base::ScopedFD CreateTempFileForTesting(const std::string& data) {
+  base::FilePath path;
+  base::CreateTemporaryFile(&path);
+  if (base::WriteFile(path, data.c_str(), data.size()) !=
+      base::MakeStrictNum(data.size())) {
+    VLOGF(1) << "Cannot write the whole data into file.";
+    return base::ScopedFD();
+  }
+
+  base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  if (!file.IsValid()) {
+    VLOGF(1) << "Failed to create file.";
+    return base::ScopedFD();
+  }
+
+  return base::ScopedFD(file.TakePlatformFile());
 }
 
 }  // namespace arc

@@ -237,8 +237,6 @@ RenderViewHostImpl::RenderViewHostImpl(
   CHECK(result.second) << "Inserting a duplicate item!";
   GetProcess()->AddRoute(routing_id_, this);
 
-  GetWidget()->set_owner_delegate(this);
-
   GetProcess()->AddObserver(this);
   ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
 
@@ -255,6 +253,8 @@ RenderViewHostImpl::RenderViewHostImpl(
       &RenderViewHostImpl::ClosePageTimeout, weak_factory_.GetWeakPtr())));
 
   input_device_change_observer_.reset(new InputDeviceChangeObserver(this));
+
+  GetWidget()->set_owner_delegate(this);
 }
 
 RenderViewHostImpl::~RenderViewHostImpl() {

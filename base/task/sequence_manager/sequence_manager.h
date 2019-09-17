@@ -102,6 +102,11 @@ class BASE_EXPORT SequenceManager {
       kNone,
       kEnabled,
       kEnabledWithBacktrace,
+
+      // Logs high priority tasks and the lower priority tasks they skipped
+      // past.  Useful for debugging test failures caused by scheduler policy
+      // changes.
+      kReorderedOnly,
     };
     TaskLogging task_execution_logging = TaskLogging::kNone;
 

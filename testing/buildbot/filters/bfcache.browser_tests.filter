@@ -20,9 +20,3 @@
 
 # Very flaky. Can't reproduce locally, it always succeed.
 -SystemNetworkContextManagerMaxConnectionsPerProxyBrowsertest.MaxConnectionsPerProxy
-
-# RenderWidget owned by an iframe used OnClose() method.
-# Check failed: popup_ || pepper_fullscreen_.
-# https://crbug.com/992891
--DeclarativeNetRequestBrowserTest.BlockRequests_Domains/0
--DeclarativeNetRequestBrowserTest.BlockRequests_Domains/1

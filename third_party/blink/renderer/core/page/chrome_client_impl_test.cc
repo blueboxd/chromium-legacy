@@ -268,9 +268,9 @@ class FileChooserQueueTest : public testing::Test {
 
 TEST_F(FileChooserQueueTest, DerefQueuedChooser) {
   LocalFrame* frame = helper_.LocalMainFrame()->GetFrame();
-  base::RunLoop run_loop;
-  MockFileChooser chooser(&frame->GetInterfaceProvider(),
-                          run_loop.QuitClosure());
+  base::RunLoop run_loop_for_chooser1;
+  MockFileChooser chooser(frame->GetBrowserInterfaceBroker(),
+                          run_loop_for_chooser1.QuitClosure());
   auto* client1 = MakeGarbageCollected<MockFileChooserClient>(frame);
   auto* client2 = MakeGarbageCollected<MockFileChooserClient>(frame);
   mojom::blink::FileChooserParams params;
@@ -284,12 +284,15 @@ TEST_F(FileChooserQueueTest, DerefQueuedChooser) {
   chooser2.reset();
 
   // Kicks ChromeClientImpl::DidCompleteFileChooser() for chooser1.
-  run_loop.Run();
+  run_loop_for_chooser1.Run();
   chooser.ResponseOnOpenFileChooser(FileChooserFileInfoList());
 
   EXPECT_EQ(1u, chrome_client_impl_->file_chooser_queue_.size());
+  base::RunLoop run_loop_for_chooser2;
 
-  // Cleanup for the second OpenFileChooser request.
+  chooser.SetQuitClosure(run_loop_for_chooser2.QuitClosure());
+  run_loop_for_chooser2.Run();
+
   chooser.ResponseOnOpenFileChooser(FileChooserFileInfoList());
 }
 

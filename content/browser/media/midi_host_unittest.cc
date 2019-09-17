@@ -18,8 +18,8 @@
 #include "media/midi/midi_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -137,9 +137,8 @@ class MidiHostTest : public testing::Test {
     mojo::PendingRemote<midi::mojom::MidiSessionClient> client_remote;
     mojo::MakeSelfOwnedReceiver(std::make_unique<MidiSessionClientForTesting>(),
                                 client_remote.InitWithNewPipeAndPassReceiver());
-    midi::mojom::MidiSessionRequest session_request =
-        mojo::MakeRequest(&session_);
-    host_->StartSession(std::move(session_request), std::move(client_remote));
+    host_->StartSession(session_.BindNewPipeAndPassReceiver(),
+                        std::move(client_remote));
   }
   ~MidiHostTest() override {
     session_.reset();
@@ -195,7 +194,7 @@ class MidiHostTest : public testing::Test {
   base::WeakPtr<FakeMidiManagerFactory> factory_;
   std::unique_ptr<midi::MidiService> service_;
   std::unique_ptr<MidiHostForTesting> host_;
-  midi::mojom::MidiSessionPtr session_;
+  mojo::Remote<midi::mojom::MidiSession> session_;
 
   DISALLOW_COPY_AND_ASSIGN(MidiHostTest);
 };

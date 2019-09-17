@@ -35,13 +35,15 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_parsing/field_candidates.h"
 #include "components/autofill/core/browser/form_parsing/form_field.h"
-#include "components/autofill/core/browser/logging/log_buffer.h"
+#include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/proto/legacy_proto_bridge.h"
 #include "components/autofill/core/browser/randomized_encoder.h"
 #include "components/autofill/core/browser/rationalization_util.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_internals/log_message.h"
+#include "components/autofill/core/common/autofill_internals/logging_scope.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_regex_constants.h"
 #include "components/autofill/core/common/autofill_regexes.h"
@@ -50,6 +52,7 @@
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/form_field_data_predictions.h"
+#include "components/autofill/core/common/logging/log_buffer.h"
 #include "components/autofill/core/common/signatures_util.h"
 #include "components/security_state/core/security_state.h"
 #include "url/origin.h"
@@ -951,10 +954,15 @@ void FormStructure::UpdateAutofillCount() {
   }
 }
 
-bool FormStructure::ShouldBeParsed() const {
+bool FormStructure::ShouldBeParsed(LogManager* log_manager) const {
   // Exclude URLs not on the web via HTTP(S).
-  if (!HasAllowedScheme(source_url_))
+  if (!HasAllowedScheme(source_url_)) {
+    if (log_manager) {
+      log_manager->Log() << LoggingScope::kAbortParsing
+                         << LogMessage::kAbortParsingNotAllowedScheme << *this;
+    }
     return false;
+  }
 
   size_t min_required_fields =
       std::min({MinRequiredFieldsForHeuristics(), MinRequiredFieldsForQuery(),
@@ -963,6 +971,11 @@ bool FormStructure::ShouldBeParsed() const {
       (!all_fields_are_passwords() ||
        active_field_count() < kRequiredFieldsForFormsWithOnlyPasswordFields) &&
       !has_author_specified_types_) {
+    if (log_manager) {
+      log_manager->Log() << LoggingScope::kAbortParsing
+                         << LogMessage::kAbortParsingNotEnoughFields
+                         << active_field_count() << *this;
+    }
     return false;
   }
 
@@ -971,12 +984,22 @@ bool FormStructure::ShouldBeParsed() const {
       base::UTF8ToUTF16(kUrlSearchActionRe);
   if (MatchesPattern(base::UTF8ToUTF16(target_url_.path_piece()),
                      kUrlSearchActionPattern)) {
+    if (log_manager) {
+      log_manager->Log() << LoggingScope::kAbortParsing
+                         << LogMessage::kAbortParsingUrlMatchesSearchRegex
+                         << *this;
+    }
     return false;
   }
 
   bool has_text_field = false;
   for (const auto& it : *this) {
     has_text_field |= it->form_control_type != "select-one";
+  }
+
+  if (!has_text_field && log_manager) {
+    log_manager->Log() << LoggingScope::kAbortParsing
+                       << LogMessage::kAbortParsingFormHasNoTextfield << *this;
   }
 
   return has_text_field;
@@ -2192,6 +2215,7 @@ LogBuffer& operator<<(LogBuffer& buffer, const FormStructure& form) {
                           base::NumberToString(
                               HashFormSignature(form.form_signature()))});
   buffer << Tr{} << "Form name:" << form.form_name();
+  buffer << Tr{} << "Unique renderer Id:" << form.unique_renderer_id();
   buffer << Tr{} << "Target URL:" << form.target_url();
   for (size_t i = 0; i < form.field_count(); ++i) {
     buffer << Tag{"tr"};

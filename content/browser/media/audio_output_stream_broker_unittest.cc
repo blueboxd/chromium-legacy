@@ -19,6 +19,8 @@
 #include "media/mojo/mojom/audio_output_stream.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -54,7 +56,7 @@ class MockAudioOutputStreamProviderClient
   MockAudioOutputStreamProviderClient() : binding_(this) {}
   ~MockAudioOutputStreamProviderClient() override {}
 
-  void Created(media::mojom::AudioOutputStreamPtr,
+  void Created(mojo::PendingRemote<media::mojom::AudioOutputStream>,
                media::mojom::ReadWriteAudioDataPipePtr) override {
     OnCreated();
   }
@@ -96,7 +98,7 @@ class MockStreamFactory : public audio::FakeStreamFactory {
           group_id(group_id) {}
 
     bool requested = false;
-    media::mojom::AudioOutputStreamRequest stream_request;
+    mojo::PendingReceiver<media::mojom::AudioOutputStream> stream_receiver;
     media::mojom::AudioOutputStreamObserverAssociatedPtrInfo observer_info;
     media::mojom::AudioLogPtr log;
     const std::string output_device_id;
@@ -126,7 +128,7 @@ class MockStreamFactory : public audio::FakeStreamFactory {
     EXPECT_TRUE(stream_request_data_->params.Equals(params));
     EXPECT_EQ(stream_request_data_->group_id, group_id);
     stream_request_data_->requested = true;
-    stream_request_data_->stream_request = std::move(stream_receiver);
+    stream_request_data_->stream_receiver = std::move(stream_receiver);
     stream_request_data_->observer_info = std::move(observer);
     stream_request_data_->log.Bind(std ::move(log));
     stream_request_data_->created_callback = std::move(created_callback);

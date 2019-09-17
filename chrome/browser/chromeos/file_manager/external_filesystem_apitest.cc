@@ -102,12 +102,7 @@ class FakeSelectFileDialog : public ui::SelectFileDialog {
                       const base::FilePath::StringType& default_extension,
                       gfx::NativeWindow owning_window,
                       void* params) override {
-    listener_->FileSelected(
-        (base::FeatureList::IsEnabled(chromeos::features::kDriveFs)
-             ? drivefs_root_
-             : base::FilePath("/special/drive-user"))
-            .Append("root/test_dir"),
-        0, nullptr);
+    listener_->FileSelected(drivefs_root_.Append("root/test_dir"), 0, nullptr);
   }
 
   bool IsRunning(gfx::NativeWindow owning_window) const override {
@@ -657,30 +652,6 @@ class MultiProfileDriveFileSystemExtensionApiTest :
         drivefs_helper->CreateFakeDriveFsListenerFactory());
   }
 
-  void AddTestHostedDocuments() {
-    if (base::FeatureList::IsEnabled(chromeos::features::kDriveFs)) {
-      return;
-    }
-    const char kResourceId[] = "unique-id-for-multiprofile-copy-test";
-    drive::FakeDriveService* const main_service =
-        static_cast<drive::FakeDriveService*>(
-            drive::util::GetDriveServiceByProfile(profile()));
-    drive::FakeDriveService* const sub_service =
-        static_cast<drive::FakeDriveService*>(
-            drive::util::GetDriveServiceByProfile(second_profile_));
-
-    // Place a hosted document under root/test_dir of the sub profile.
-    sub_service->AddNewFileWithResourceId(
-        kResourceId, "application/vnd.google-apps.document", "", "test_dir",
-        "hosted_doc", true, base::Bind(&IgnoreDriveEntryResult));
-
-    // Place the hosted document with no parent in the main profile, for
-    // simulating the situation that the document is shared to the main profile.
-    main_service->AddNewFileWithResourceId(
-        kResourceId, "application/vnd.google-apps.document", "", "",
-        "hosted_doc", true, base::Bind(&IgnoreDriveEntryResult));
-  }
-
   base::ScopedTempDir tmp_dir_;
   DriveIntegrationServiceFactory::FactoryCallback
       create_drive_integration_service_;
@@ -898,7 +869,6 @@ IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest, RetainEntry) {
 
 IN_PROC_BROWSER_TEST_F(MultiProfileDriveFileSystemExtensionApiTest,
                        CrossProfileCopy) {
-  AddTestHostedDocuments();
   EXPECT_TRUE(RunFileSystemExtensionApiTest(
       "file_browser/multi_profile_copy",
       FILE_PATH_LITERAL("manifest.json"),

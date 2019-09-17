@@ -526,7 +526,7 @@ class PeekingResetAnimation : public ui::LayerAnimationElement {
             gfx::PointF(0, y_offset),
             gfx::PointF())),
         view_(view) {
-    DCHECK(view_->is_in_drag());
+    DCHECK(view_->ending_drag());
     DCHECK_EQ(view_->app_list_state(), ash::AppListViewState::kPeeking);
     DCHECK(!view_->is_tablet_mode());
   }
@@ -952,6 +952,9 @@ void AppListView::UpdateDrag(const gfx::Point& location) {
 }
 
 void AppListView::EndDrag(const gfx::Point& location) {
+  base::AutoReset<bool> auto_reset(&ending_drag_, true);
+  SetIsInDrag(false);
+
   // Change the app list state based on where the drag ended. If fling velocity
   // was over the threshold, snap to the next state in the direction of the
   // fling.
@@ -1065,7 +1068,6 @@ void AppListView::EndDrag(const gfx::Point& location) {
       }
     }
   }
-  SetIsInDrag(false);
   UpdateChildViewsYPositionAndOpacity();
   initial_drag_point_ = gfx::Point();
 }
@@ -1450,6 +1452,8 @@ void AppListView::OnTabletModeChanged(bool started) {
       ->horizontal_page_container()
       ->OnTabletModeChanged(started);
 
+  base::AutoReset<bool> auto_reset(&ending_drag_, is_in_drag_);
+
   if (is_in_drag_) {
     SetIsInDrag(false);
     UpdateChildViewsYPositionAndOpacity();
@@ -1596,7 +1600,7 @@ void AppListView::ApplyBoundsAnimation(ash::AppListViewState target_state,
   ui::ImplicitAnimationObserver* animation_observer =
       delegate_->GetAnimationObserver(target_state);
 
-  if (is_side_shelf_) {
+  if (is_side_shelf_ || is_in_drag_) {
     // There is no animation in side shelf.
     OnBoundsAnimationCompleted();
     UpdateAppListBackgroundYPosition(target_state);
@@ -2262,7 +2266,7 @@ bool AppListView::ShouldUpdateChildViewsDuringAnimation(
   if (is_tablet_mode_)
     return false;
 
-  if (target_state != ash::AppListViewState::kPeeking || !is_in_drag_ ||
+  if (target_state != ash::AppListViewState::kPeeking || !ending_drag_ ||
       app_list_state_ != target_state) {
     return false;
   }
@@ -2282,13 +2286,15 @@ void AppListView::OnTabletModeAnimationTransitionNotified(
 }
 
 void AppListView::EndDragFromShelf(ash::AppListViewState app_list_state) {
+  base::AutoReset<bool> auto_reset(&ending_drag_, true);
+  SetIsInDrag(false);
+
   if (app_list_state == ash::AppListViewState::kClosed ||
       app_list_state_ == ash::AppListViewState::kClosed) {
     Dismiss();
   } else {
     SetState(app_list_state);
   }
-  SetIsInDrag(false);
   UpdateChildViewsYPositionAndOpacity();
 }
 

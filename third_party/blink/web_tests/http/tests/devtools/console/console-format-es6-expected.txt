@@ -119,8 +119,8 @@ console-format-es6.js:16 [Symbol(a)]
 globals[4]
 Symbol(a)
 console-format-es6.js:15 {a: Symbol(), Symbol(a): 2}
-    a: Symbol()
     getter: (...)
+    a: Symbol()
     Symbol(a): 2
     get getter: ƒ getter()
     __proto__: Object
@@ -130,8 +130,8 @@ console-format-es6.js:16 [{…}]
     __proto__: Array(0)
 globals[5]
 {a: Symbol(), Symbol(a): 2}
-    a: Symbol()
     getter: (...)
+    a: Symbol()
     Symbol(a): 2
     get getter: ƒ getter()
     __proto__: Object

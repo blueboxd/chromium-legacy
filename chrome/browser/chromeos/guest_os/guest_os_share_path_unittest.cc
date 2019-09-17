@@ -347,7 +347,6 @@ TEST_F(GuestOsSharePathTest, SuccessPluginVm) {
 }
 
 TEST_F(GuestOsSharePathTest, SuccessDriveFsMyDrive) {
-  features_.InitWithFeatures({chromeos::features::kDriveFs}, {});
   SetUpVolume();
   guest_os_share_path_->SharePath(
       "vm-running", drivefs_.Append("root").Append("my"), PERSIST_NO,
@@ -359,20 +358,7 @@ TEST_F(GuestOsSharePathTest, SuccessDriveFsMyDrive) {
   run_loop()->Run();
 }
 
-TEST_F(GuestOsSharePathTest, FailureDriveFsDisabled) {
-  features_.InitWithFeatures({}, {chromeos::features::kDriveFs});
-  SetUpVolume();
-  guest_os_share_path_->SharePath(
-      "vm-running", drivefs_.Append("root").Append("my"), PERSIST_NO,
-      base::BindOnce(&GuestOsSharePathTest::SharePathCallback,
-                     base::Unretained(this), "vm-running", Persist::NO,
-                     SeneschalClientCalled::NO, nullptr, "my", Success::NO,
-                     "Path is not allowed"));
-  run_loop()->Run();
-}
-
 TEST_F(GuestOsSharePathTest, SuccessDriveFsMyDriveRoot) {
-  features_.InitWithFeatures({chromeos::features::kDriveFs}, {});
   SetUpVolume();
   guest_os_share_path_->SharePath(
       "vm-running", drivefs_.Append("root"), PERSIST_NO,
@@ -385,7 +371,6 @@ TEST_F(GuestOsSharePathTest, SuccessDriveFsMyDriveRoot) {
 }
 
 TEST_F(GuestOsSharePathTest, FailDriveFsRoot) {
-  features_.InitWithFeatures({chromeos::features::kDriveFs}, {});
   SetUpVolume();
   guest_os_share_path_->SharePath(
       "vm-running", drivefs_, PERSIST_NO,
@@ -397,7 +382,6 @@ TEST_F(GuestOsSharePathTest, FailDriveFsRoot) {
 }
 
 TEST_F(GuestOsSharePathTest, SuccessDriveFsTeamDrives) {
-  features_.InitWithFeatures({chromeos::features::kDriveFs}, {});
   SetUpVolume();
   guest_os_share_path_->SharePath(
       "vm-running", drivefs_.Append("team_drives").Append("team"), PERSIST_NO,
@@ -411,7 +395,6 @@ TEST_F(GuestOsSharePathTest, SuccessDriveFsTeamDrives) {
 
 // TODO(crbug.com/917920): Enable when DriveFS enforces allowed write paths.
 TEST_F(GuestOsSharePathTest, DISABLED_SuccessDriveFsComputersGrandRoot) {
-  features_.InitWithFeatures({chromeos::features::kDriveFs}, {});
   SetUpVolume();
   guest_os_share_path_->SharePath(
       "vm-running", drivefs_.Append("Computers"), PERSIST_NO,
@@ -425,7 +408,6 @@ TEST_F(GuestOsSharePathTest, DISABLED_SuccessDriveFsComputersGrandRoot) {
 
 // TODO(crbug.com/917920): Remove when DriveFS enforces allowed write paths.
 TEST_F(GuestOsSharePathTest, Bug917920DriveFsComputersGrandRoot) {
-  features_.InitWithFeatures({chromeos::features::kDriveFs}, {});
   SetUpVolume();
   guest_os_share_path_->SharePath(
       "vm-running", drivefs_.Append("Computers"), PERSIST_NO,
@@ -438,7 +420,6 @@ TEST_F(GuestOsSharePathTest, Bug917920DriveFsComputersGrandRoot) {
 
 // TODO(crbug.com/917920): Enable when DriveFS enforces allowed write paths.
 TEST_F(GuestOsSharePathTest, DISABLED_SuccessDriveFsComputerRoot) {
-  features_.InitWithFeatures({chromeos::features::kDriveFs}, {});
   SetUpVolume();
   guest_os_share_path_->SharePath(
       "vm-running", drivefs_.Append("Computers").Append("pc"), PERSIST_NO,
@@ -452,7 +433,6 @@ TEST_F(GuestOsSharePathTest, DISABLED_SuccessDriveFsComputerRoot) {
 
 // TODO(crbug.com/917920): Remove when DriveFS enforces allowed write paths.
 TEST_F(GuestOsSharePathTest, Bug917920DriveFsComputerRoot) {
-  features_.InitWithFeatures({chromeos::features::kDriveFs}, {});
   SetUpVolume();
   guest_os_share_path_->SharePath(
       "vm-running", drivefs_.Append("Computers").Append("pc"), PERSIST_NO,
@@ -464,7 +444,6 @@ TEST_F(GuestOsSharePathTest, Bug917920DriveFsComputerRoot) {
 }
 
 TEST_F(GuestOsSharePathTest, SuccessDriveFsComputersLevel3) {
-  features_.InitWithFeatures({chromeos::features::kDriveFs}, {});
   SetUpVolume();
   guest_os_share_path_->SharePath(
       "vm-running",
@@ -479,7 +458,6 @@ TEST_F(GuestOsSharePathTest, SuccessDriveFsComputersLevel3) {
 }
 
 TEST_F(GuestOsSharePathTest, FailDriveFsTrash) {
-  features_.InitWithFeatures({chromeos::features::kDriveFs}, {});
   SetUpVolume();
   guest_os_share_path_->SharePath(
       "vm-running", drivefs_.Append(".Trash").Append("in-the-trash"),

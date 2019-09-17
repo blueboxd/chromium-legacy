@@ -6,7 +6,7 @@
 
 #include "chrome/browser/chromeos/printing/cups_print_job_manager_factory.h"
 #include "chrome/browser/chromeos/printing/history/print_job_database_impl.h"
-#include "chrome/browser/chromeos/printing/history/print_job_history_service.h"
+#include "chrome/browser/chromeos/printing/history/print_job_history_service_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/storage_partition.h"
@@ -48,8 +48,8 @@ KeyedService* PrintJobHistoryServiceFactory::BuildServiceInstanceFor(
   CupsPrintJobManager* print_job_manager =
       chromeos::CupsPrintJobManagerFactory::GetForBrowserContext(profile);
 
-  return new PrintJobHistoryService(std::move(print_job_database),
-                                    print_job_manager);
+  return new PrintJobHistoryServiceImpl(std::move(print_job_database),
+                                        print_job_manager);
 }
 
 }  // namespace chromeos

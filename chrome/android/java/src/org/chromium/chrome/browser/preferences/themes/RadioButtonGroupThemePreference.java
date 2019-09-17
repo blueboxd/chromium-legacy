@@ -8,10 +8,14 @@ import android.content.Context;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceViewHolder;
 import android.util.AttributeSet;
+import android.view.View;
+import android.widget.CheckBox;
+import android.widget.LinearLayout;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.night_mode.NightModeMetrics;
 import org.chromium.chrome.browser.preferences.themes.ThemePreferences.ThemeSetting;
 import org.chromium.chrome.browser.widget.RadioButtonWithDescription;
@@ -27,6 +31,10 @@ public class RadioButtonGroupThemePreference
         extends Preference implements RadioButtonWithDescription.OnCheckedChangeListener {
     private @ThemeSetting int mSetting;
     private ArrayList<RadioButtonWithDescription> mButtons;
+    private boolean mDarkenWebsitesEnabled;
+    private CheckBox mCheckBox;
+    private LinearLayout mLayoutContainer;
+    private LinearLayout mCheckboxContainer;
 
     public RadioButtonGroupThemePreference(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -41,13 +49,24 @@ public class RadioButtonGroupThemePreference
     /**
      * @param setting The initial setting for this Preference
      */
-    public void initialize(@ThemeSetting int setting) {
+    public void initialize(@ThemeSetting int setting, boolean darkenWebsitesEnabled) {
         mSetting = setting;
+        mDarkenWebsitesEnabled = darkenWebsitesEnabled;
     }
 
     @Override
     public void onBindViewHolder(PreferenceViewHolder holder) {
         super.onBindViewHolder(holder);
+        mCheckboxContainer = (LinearLayout) holder.findViewById(R.id.checkbox_container);
+        mCheckBox = (CheckBox) holder.findViewById(R.id.darken_websites);
+        mLayoutContainer = (LinearLayout) holder.itemView;
+
+        mCheckboxContainer.setOnClickListener(x -> {
+            mCheckBox.setChecked(!mCheckBox.isChecked());
+            callChangeListener(mSetting);
+        });
+
+        mCheckBox.setChecked(mDarkenWebsitesEnabled);
 
         assert ThemeSetting.NUM_ENTRIES == 3;
         mButtons.set(ThemeSetting.SYSTEM_DEFAULT,
@@ -68,6 +87,23 @@ public class RadioButtonGroupThemePreference
         }
 
         mButtons.get(mSetting).setChecked(true);
+        positionCheckbox();
+    }
+
+    /**
+     * Remove and insert the checkbox to the view, based on the value of mSetting
+     */
+    private void positionCheckbox() {
+        if (ChromeFeatureList.isEnabled(
+                    ChromeFeatureList.DARKEN_WEBSITES_CHECKBOX_IN_THEMES_SETTING)) {
+            if (mSetting == ThemeSetting.SYSTEM_DEFAULT || mSetting == ThemeSetting.DARK) {
+                mLayoutContainer.removeView(mCheckboxContainer);
+                mCheckboxContainer.setVisibility(View.VISIBLE);
+                mLayoutContainer.addView(mCheckboxContainer, mSetting + 1);
+            } else {
+                mCheckboxContainer.setVisibility(View.GONE);
+            }
+        }
     }
 
     @Override
@@ -78,8 +114,13 @@ public class RadioButtonGroupThemePreference
                 break;
             }
         }
+        positionCheckbox();
         callChangeListener(mSetting);
         NightModeMetrics.recordThemePreferencesChanged(mSetting);
+    }
+
+    public boolean isDarkenWebsitesEnabled() {
+        return mCheckBox.isChecked();
     }
 
     @VisibleForTesting

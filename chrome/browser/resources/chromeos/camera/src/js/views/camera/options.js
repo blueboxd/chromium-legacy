@@ -224,7 +224,7 @@ cca.views.camera.Options.prototype.updateVideoDeviceId_ = function(
 cca.views.camera.Options.prototype.updateMirroring_ = function(facingMode) {
   // Update mirroring by detected facing-mode. Enable mirroring by default if
   // facing-mode isn't available.
-  var enabled = facingMode ? facingMode == 'user' : true;
+  var enabled = facingMode ? facingMode != 'environment' : true;
 
   // Override mirroring only if mirroring was toggled manually.
   if (this.videoDeviceId_ in this.mirroringToggles_) {

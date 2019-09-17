@@ -23,8 +23,8 @@ class TestPrintJobDatabase : public PrintJobDatabase {
   bool IsInitialized() override;
   void SavePrintJob(const printing::proto::PrintJobInfo& print_job_info,
                     SavePrintJobCallback callback) override;
-  void DeletePrintJob(const std::string& id,
-                      DeletePrintJobCallback callback) override;
+  void DeletePrintJobs(const std::vector<std::string>& ids,
+                       DeletePrintJobsCallback callback) override;
   void GetPrintJobs(GetPrintJobsCallback callback) override;
 
  private:

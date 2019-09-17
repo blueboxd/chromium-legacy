@@ -77,11 +77,14 @@ bool VideoFrame::IsStorageTypeMappable(VideoFrame::StorageType storage_type) {
       // level, DmaBufs are not mappable from userspace.
       storage_type != VideoFrame::STORAGE_DMABUFS &&
 #endif
+      // GpuMemoryBuffer is not mappable at VideoFrame level. In most places
+      // GpuMemoryBuffer is opaque to the CPU, and for places that really need
+      // to access the data on CPU they can get the buffer with
+      // GetGpuMemoryBuffer() and call gfx::GpuMemoryBuffer::Map().
       (storage_type == VideoFrame::STORAGE_UNOWNED_MEMORY ||
        storage_type == VideoFrame::STORAGE_OWNED_MEMORY ||
        storage_type == VideoFrame::STORAGE_SHMEM ||
-       storage_type == VideoFrame::STORAGE_MOJO_SHARED_BUFFER ||
-       storage_type == VideoFrame::STORAGE_GPU_MEMORY_BUFFER);
+       storage_type == VideoFrame::STORAGE_MOJO_SHARED_BUFFER);
 }
 
 // Checks if |source_format| can be wrapped into a |target_format| frame.

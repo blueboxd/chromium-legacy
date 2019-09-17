@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_CROSTINI_CROSTINI_UPGRADE_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_CROSTINI_CROSTINI_UPGRADE_VIEW_H_
 
-#include "ui/views/window/dialog_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 namespace crostini {
 enum class CrostiniResult;
@@ -15,7 +15,7 @@ class Profile;
 
 // Provides a warning to the user that an upgrade is required and and internet
 // connection is needed.
-class CrostiniUpgradeView : public views::DialogDelegateView {
+class CrostiniUpgradeView : public views::BubbleDialogDelegateView {
  public:
   static void Show(Profile* profile);
 

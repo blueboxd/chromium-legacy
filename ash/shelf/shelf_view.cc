@@ -1233,8 +1233,10 @@ ShelfView::AppCenteringStrategy ShelfView::CalculateAppCenteringStrategy() {
       last_visible_index_++;
     } else {
       strategy.overflow = true;
-      // Make space for the overflow button by showing one fewer app icon.
-      last_visible_index_--;
+      // Make space for the overflow button by showing one fewer app icon. If
+      // we already don't have enough space, don't decrement the last visible
+      // index further than -1.
+      last_visible_index_ = std::max(-1, last_visible_index_ - 1);
       break;
     }
   }
